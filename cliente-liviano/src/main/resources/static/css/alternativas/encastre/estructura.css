@@ -1,2 +1,1886 @@
-/* Encastre, zona estructura (iteración 2): la mesa, el riel de piezas, los layouts y el
-   tablero del inicio. Se carga después de app.css. */
+/*
+ * Encastre, zona estructura (iteración 2): la mesa y el rompecabezas. Todo el sitio es una mesa de
+ * tinta donde encastran piezas de color. El riel de secciones es una tira de piezas (columna a la
+ * izquierda en la computadora, fija abajo en el celular) y la sección actual es la pieza de sol,
+ * encastrada en el tablero. En el inicio cada dato es una pieza que encastra con la de al lado y
+ * lo que falta de la misión es un hueco con forma de pieza.
+ *
+ * La lengüeta (de concepto-b): un círculo del color de la pieza con un aro del color de la junta,
+ * en ::before o ::after. El aro pinta la muesca sobre la pieza vecina, así que ninguna pieza
+ * necesita conocer a la de al lado. Hacia dónde sale cada una cambia con la grilla de cada ancho.
+ * Los botones, campos y tablas los dibuja la zona componentes; acá solo se ubican.
+ * Solo tokens de uso y los quiebres de tokens.css, mobile first (InterfazFitnessTest).
+ */
+
+/* La mesa: medidas de las piezas y de la lengüeta, que heredan todas. */
+.sitio {
+  --espacio-relleno-bloque: var(--espacio-pieza-bloque);
+  --espacio-relleno-linea: var(--espacio-pieza-linea);
+  --medida-lengueta-r: var(--medida-lengueta);
+  --medida-lengueta-d: var(--medida-lengueta-salida);
+  --medida-lengueta-g: var(--medida-junta);
+  --color-pieza-junta: var(--color-junta);
+
+  padding-inline: var(--espacio-2);
+  background-color: var(--color-fondo-pagina);
+  color: var(--color-texto);
+}
+
+.saltar {
+  position: absolute;
+  top: var(--espacio-2);
+  left: var(--espacio-4);
+  z-index: calc(var(--capa-avisos) + 1);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-4);
+  background-color: var(--color-mesa);
+  border-radius: var(--radio-boton);
+  color: var(--color-mesa-texto);
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.saltar:focus {
+  transform: none;
+}
+
+.piezas-dibujadas {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* La lengüeta. */
+:is(.pieza, .piezas-chicas > *, .navegacion a)::before,
+:is(.pieza, .piezas-chicas > *, .navegacion a)::after {
+  --medida-lengueta-aro: calc(var(--medida-lengueta-r) + var(--medida-lengueta-g));
+
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    circle var(--medida-lengueta-aro) at var(--medida-lengueta-cx) var(--medida-lengueta-cy),
+    var(--color-pieza-fondo) calc(var(--medida-lengueta-r) - 0.5px),
+    var(--color-pieza-junta) var(--medida-lengueta-r),
+    var(--color-pieza-junta) calc(var(--medida-lengueta-aro) - 0.5px),
+    transparent var(--medida-lengueta-aro)
+  );
+}
+
+/* Hacia abajo: entra en la pieza de abajo. --medida-lengueta-x dice dónde, a lo ancho. */
+.mesa > .pieza:not(:last-child)::after,
+.tablero > .pieza:not(:last-child)::after,
+.ranura-cifra > .pieza::after,
+.recorrido > :not(:last-child)::after,
+.novedades-lista > :not(:last-child)::after {
+  content: "";
+  top: 100%;
+  bottom: auto;
+  left: calc(var(--medida-lengueta-x, 50%) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: var(--medida-lengueta-d);
+}
+
+/* Hacia la derecha: la tira del riel y las piezas chicas. --medida-lengueta-y dice a qué alto. */
+.navegacion li:not(:last-child) a::after,
+.saludo-fichas > :not(:last-child)::after {
+  content: "";
+  top: calc(var(--medida-lengueta-y, 50%) - var(--medida-lengueta-aro));
+  bottom: auto;
+  left: 100%;
+  width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  height: calc(2 * var(--medida-lengueta-aro));
+  --medida-lengueta-cx: var(--medida-lengueta-d);
+  --medida-lengueta-cy: 50%;
+}
+
+/* La pieza: un color, la junta de tinta alrededor (la mesa que se ve entre piezas). */
+.pieza {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: var(--espacio-relleno-bloque) var(--espacio-relleno-linea);
+  background: var(--color-pieza-fondo);
+  border: 0;
+  border-radius: var(--radio-pieza);
+  box-shadow: none;
+  color: var(--color-pieza-texto);
+}
+
+/* Piezas chicas dentro de una pieza: la junta es el color de la pieza que las contiene. */
+.piezas-chicas {
+  --color-pieza-junta: var(--color-pieza-fondo);
+  --medida-lengueta-r: 0.4375rem;
+  --medida-lengueta-d: 0.25rem;
+  --medida-lengueta-g: 0.25rem;
+
+  display: flex;
+  gap: var(--medida-lengueta-g);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.piezas-chicas > * {
+  position: relative;
+  margin: 0;
+  list-style: none;
+}
+
+/* Rótulos: el nombre del menú, chico y de tinta; los rótulos de una pieza, en la letra de texto. */
+.rotulo-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--medida-rotulo-menu);
+  margin: 0;
+  padding-inline: var(--espacio-3);
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.rotulo {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.bajada {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* Cabecera: la marca, la campana y la cuenta, sobre la crema. */
+.encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  max-width: var(--medida-mesa-maxima);
+  margin-inline: auto;
+  padding-block: var(--espacio-2);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  padding-inline-end: var(--espacio-2);
+  color: var(--color-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-marca);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.marca-simbolo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-chico);
+}
+
+.marca-simbolo svg {
+  width: 1.875rem;
+  height: 1.875rem;
+  fill: var(--color-pieza-sol);
+  transform: rotate(-12deg);
+}
+
+.marca-nombre em {
+  color: var(--color-marca-texto);
+  font-style: normal;
+}
+
+.encabezado-fin {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.boton-icono,
+.cuenta > summary {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--color-junta);
+  border-radius: 50%;
+  box-shadow: none;
+  color: var(--color-pieza-texto);
+}
+
+.boton-icono {
+  background: var(--color-pieza-crema);
+}
+
+.cuenta {
+  position: relative;
+  margin: 0;
+}
+
+.cuenta > summary {
+  background: var(--color-pieza-sol);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1;
+  list-style: none;
+}
+
+.cuenta > summary::after,
+.cuenta > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Cerrado, el menú no ocupa lugar. Abierto, es una pieza de crema que cuelga de la cuenta. */
+.cuenta:not([open]) > .cuenta-menu {
+  display: none;
+}
+
+.cuenta-menu {
+  position: absolute;
+  top: calc(100% + var(--espacio-2));
+  right: 0;
+  z-index: var(--capa-avisos);
+  display: grid;
+  min-width: 13.75rem;
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border: 2px solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+}
+
+.cuenta-menu p {
+  display: grid;
+  margin: 0 0 var(--espacio-2);
+}
+
+.cuenta-menu a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-pieza-texto);
+  font-weight: 700;
+}
+
+/* La mesa de las pantallas públicas: main es la bandeja de tinta; sus hijos, piezas. */
+.mesa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--medida-junta);
+  max-width: var(--medida-mesa-maxima);
+  margin-inline: auto;
+  padding: var(--medida-junta);
+  background: var(--color-mesa);
+  border-radius: var(--radio-mesa);
+}
+
+.pie {
+  max-width: var(--medida-mesa-maxima);
+  margin-inline: auto;
+  padding-block: var(--espacio-5);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+/* El armazón privado: la mesa guarda el riel y el tablero. En el celular, el riel sale de la
+   mesa y queda fijo abajo; la página deja lugar para que no tape el final. */
+.armazon {
+  padding-bottom: calc(var(--medida-riel-celular) + var(--espacio-4));
+}
+
+.armazon .avisos {
+  bottom: calc(var(--medida-riel-celular) + var(--espacio-3));
+}
+
+.tablero-zona {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--medida-junta);
+  align-content: start;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Una pantalla sin piezas propias (por ejemplo, una sección sin armar): su título, sobre la mesa. */
+.tablero-zona > h1:not(.rotulo-menu) {
+  margin: var(--espacio-4) var(--espacio-relleno-linea) var(--espacio-2);
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+}
+
+/* El nombre del menú, chico y de tinta, sobre el título propio de la primera pieza. */
+.tablero-zona > .rotulo-menu {
+  position: absolute;
+  top: var(--espacio-relleno-bloque);
+  left: var(--espacio-relleno-linea);
+  z-index: 3;
+}
+
+.tablero-zona > .rotulo-menu + .tablero > .saludo {
+  padding-top: calc(var(--espacio-relleno-bloque) + var(--medida-rotulo-menu) + var(--espacio-3));
+}
+
+/* El riel: una pieza por sección, sobre una tira de tinta. Así se ve en el catálogo y en la tira
+   del celular; desde 1100 px es una columna. La actual es la pieza de sol. */
+.navegacion {
+  --medida-lengueta-r: 0.5rem;
+  --medida-lengueta-d: 0.3125rem;
+
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: var(--medida-junta);
+  background: var(--color-mesa);
+  border-radius: var(--radio-pieza);
+}
+
+nav.navegacion ul {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--medida-junta);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav.navegacion li {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: var(--medida-toque-minimo);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navegacion :is(a, summary) {
+  --color-pieza-fondo: var(--color-pieza-gris);
+  --medida-lengueta-y: 1.5rem;
+
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espacio-1);
+  min-height: var(--medida-riel-pieza);
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-1);
+  background: var(--color-pieza-fondo);
+  border: 0;
+  border-radius: var(--radio-pieza);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-riel-corto);
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navegacion :is(a, summary):hover {
+  --color-pieza-fondo: var(--color-pieza-gris-alta);
+
+  color: var(--color-pieza-texto);
+}
+
+.navegacion a[aria-current="page"],
+.navegacion-mas:has([aria-current="page"]) summary {
+  --color-pieza-fondo: var(--color-pieza-sol);
+}
+
+/* La actual, hacia arriba: su lengüeta entra en el tablero, que en el celular está encima. */
+.navegacion a[aria-current="page"]::before {
+  content: "";
+  top: auto;
+  bottom: 100%;
+  left: calc(50% - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: calc(100% - var(--medida-lengueta-d));
+}
+
+.navegacion-signo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-pieza-crema);
+  border-radius: 50%;
+}
+
+.navegacion a[aria-current="page"] .navegacion-signo,
+.navegacion-mas:has([aria-current="page"]) summary .navegacion-signo {
+  background: var(--color-pieza-tinta);
+  color: var(--color-pieza-sol);
+}
+
+.navegacion-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Sobre la tinta, el foco va adentro de la pieza (app.css lo pinta de sol: acá, de tinta). */
+.navegacion :focus-visible,
+.navegacion a:focus-visible,
+.cifra:focus-visible,
+.mision :focus-visible {
+  outline-color: var(--color-foco);
+}
+
+.navegacion a:focus-visible,
+.navegacion summary:focus-visible,
+.cifra:focus-visible {
+  outline-offset: -0.5rem;
+}
+
+/* "Más" (la arma js/encastre.js con más de cinco secciones): solo en la tira del celular. */
+nav.navegacion .navegacion-mas {
+  display: none;
+}
+
+.navegacion-mas details {
+  display: flex;
+  flex: 1;
+  margin: 0;
+}
+
+.navegacion-mas summary {
+  list-style: none;
+}
+
+.navegacion-mas summary::-webkit-details-marker,
+.navegacion-mas summary::after {
+  display: none;
+}
+
+nav.navegacion .navegacion-mas ul {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--medida-junta));
+  flex-direction: column;
+  flex-wrap: nowrap;
+  min-width: 12rem;
+  padding: var(--medida-junta);
+  background: var(--color-mesa);
+  border-radius: var(--radio-pieza);
+}
+
+nav.navegacion .navegacion-mas a {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-3);
+  font-size: var(--tamano-chico);
+}
+
+nav.navegacion .navegacion-mas a::after,
+nav.navegacion .navegacion-mas a::before {
+  content: none;
+}
+
+.navegacion-mas .navegacion-texto {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+
+.navegacion-mas .navegacion-corto {
+  display: none;
+}
+
+.armazon nav.navegacion--con-mas .navegacion-extra {
+  display: none;
+}
+
+.armazon nav.navegacion--con-mas .navegacion-mas {
+  display: flex;
+}
+
+/* En el celular, la tira del riel baja y queda fija abajo, al alcance del pulgar. */
+.armazon .navegacion {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: calc(var(--capa-avisos) - 1);
+  border-radius: var(--radio-mesa) var(--radio-mesa) 0 0;
+}
+
+.armazon .mesa {
+  display: block;
+  max-width: var(--medida-mesa-maxima);
+  margin-inline: auto;
+  padding: var(--medida-junta);
+  background: var(--color-mesa);
+  border-radius: var(--radio-mesa);
+}
+
+/* El tablero del inicio: en el celular, una pieza debajo de la otra, en el orden de lectura. */
+.tablero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--medida-junta);
+}
+
+.tablero :is(h3, p) {
+  margin: 0;
+}
+
+.tablero h3 {
+  color: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-pieza-titulo);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* El saludo: el título propio, con el marcador de sol, y lo que ya armaste en piezas chicas. */
+.saludo {
+  --medida-lengueta-x: 70%;
+}
+
+.tablero .saludo h3 {
+  font-size: var(--tamano-saludo);
+  line-height: 1.08;
+  text-decoration: underline;
+  text-decoration-color: var(--color-marcador);
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: 0.34em;
+  text-underline-offset: -0.14em;
+}
+
+.saludo-texto {
+  max-width: 34ch;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 600;
+}
+
+.saludo-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.saludo-acciones > * {
+  margin: 0;
+}
+
+.saludo-armado {
+  display: grid;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-2);
+}
+
+.saludo-fichas {
+  min-height: 4.5rem;
+}
+
+.ficha {
+  display: grid;
+  flex: 1 1 0;
+  align-content: end;
+  min-width: 0;
+  padding: var(--espacio-2) var(--espacio-3) var(--espacio-2) 1rem;
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ficha b {
+  font-family: var(--fuente-juego);
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.25rem);
+  line-height: 1;
+}
+
+.ficha--lila {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.ficha--menta {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.ficha--rosa {
+  --color-pieza-fondo: var(--color-pieza-rosa);
+}
+
+/* Lo que te toca ahora: la única pieza naranja. */
+.mision {
+  --color-pieza-fondo: var(--color-pieza-naranja);
+  --medida-lengueta-x: 30%;
+
+  gap: var(--espacio-4);
+}
+
+.tablero .mision h3 {
+  font-size: var(--tamano-mision);
+  line-height: 1.02;
+}
+
+.mision-rango {
+  margin-top: var(--espacio-1);
+  font-weight: 800;
+}
+
+.mision-nombre {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.mision-nombre p {
+  display: grid;
+}
+
+.mision-nombre b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.15;
+}
+
+.mision-sello {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+}
+
+/* Las piezas de la misión: dibujadas con #encastre-pieza (layout.html), una por paso. El dibujo
+   va de 22,14 a 78,86: arriba, la lengüeta; abajo, el cuerpo. La lengüeta de la derecha sale de
+   la celda y entra en la muesca de la siguiente; la última es de borde. */
+.mision-piezas {
+  display: flex;
+  max-width: 32rem;
+}
+
+.mision-piezas > * {
+  position: relative;
+  display: grid;
+  flex: 1 1 0;
+  grid-template-rows: 16fr 56fr;
+  min-width: 0;
+  aspect-ratio: 56 / 72;
+  margin: 0;
+}
+
+.mision-forma {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mision-pieza .mision-forma {
+  fill: var(--color-pieza-crema);
+  stroke: var(--color-pieza-naranja);
+  stroke-width: 3;
+}
+
+.mision-pieza .icono {
+  width: 34%;
+  height: auto;
+  position: relative;
+  grid-row: 2;
+  place-self: center;
+  stroke-width: 3;
+}
+
+/* El hueco con forma de pieza: tinta con borde de crema a trazos, y lo que falta en texto. */
+.mision-hueco .mision-forma {
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
+  stroke-dasharray: 5 4;
+  stroke-width: 2;
+}
+
+/* El texto va en el cuerpo libre del hueco, a la derecha de la muesca donde entra la pieza de al
+   lado. */
+.mision-hueco > span {
+  position: relative;
+  grid-row: 2;
+  place-self: center;
+  margin-inline-start: 26%;
+  padding: var(--espacio-1);
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.mision-hueco--vacio .mision-forma {
+  fill: var(--color-junta-tenue);
+  stroke: var(--color-pieza-tinta);
+}
+
+.mision-suelta {
+  position: absolute;
+  top: -8%;
+  right: -16%;
+  z-index: 1;
+  width: 48%;
+  overflow: visible;
+  fill: var(--color-pieza-sol);
+  stroke: var(--color-junta);
+  stroke-width: 5;
+  transform: rotate(18deg);
+}
+
+.mision-barra {
+  height: 0.75rem;
+  margin: 0;
+  overflow: hidden;
+  appearance: none;
+  background: var(--color-junta-tenue);
+  border: 0;
+  border-radius: var(--radio-boton);
+}
+
+.mision-barra::-webkit-progress-bar {
+  background: var(--color-junta-tenue);
+}
+
+.mision .mision-barra::-webkit-progress-value {
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+}
+
+.mision-barra::-moz-progress-bar {
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+}
+
+.mision-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+.mision-pie > * {
+  margin: 0;
+}
+
+.mision-por {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+}
+
+/* Tu categoría: una pieza propia, más chica, que no compite con la misión. */
+.categoria {
+  --color-pieza-fondo: var(--color-pieza-rosa);
+
+  container-type: inline-size;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.categoria-signo {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-pieza-sol);
+}
+
+.categoria > .rotulo,
+.categoria-nombre {
+  grid-column: 2;
+}
+
+.categoria-nombre {
+  font-family: var(--fuente-juego);
+  font-size: clamp(1.625rem, 13cqi, 2.5rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.categoria-proxima {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+/* Donaciones realizadas (fragmento cifra): la pieza entera es el enlace. */
+.ranura-cifra {
+  display: grid;
+  min-width: 0;
+}
+
+.cifra {
+  --color-pieza-fondo: var(--color-pieza-lila);
+
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  text-decoration: none;
+}
+
+.cifra:hover {
+  --color-pieza-fondo: var(--color-pieza-lila-alta);
+
+  color: var(--color-pieza-texto);
+}
+
+.cifra-etiqueta {
+  font-weight: 800;
+}
+
+.cifra-ir {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+}
+
+.cifra-valor {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-cifra);
+  font-weight: 800;
+  line-height: 0.85;
+}
+
+.cifra-grafico {
+  width: 5.5rem;
+  height: 3.25rem;
+  fill: var(--color-junta-media);
+}
+
+.cifra-grafico .actual {
+  fill: var(--color-pieza-tinta);
+}
+
+.cifra-chip {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: var(--espacio-1) var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* Ya llegaron: el avance en cuatro tramos que encastran. */
+.llegaron {
+  --color-pieza-fondo: var(--color-pieza-menta);
+
+  container-type: inline-size;
+}
+
+.llegaron-cabeza {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.moneda {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+}
+
+/* Cada tramo lleva un borde del color de la pieza (la junta); la lengüeta, un círculo del color
+   del tramo con el mismo aro, muerde al siguiente. */
+.tramos {
+  display: block;
+  overflow: visible;
+}
+
+.tramos :is(rect, circle) {
+  fill: var(--color-tramo);
+  stroke: var(--color-pieza-menta);
+  stroke-width: 4;
+}
+
+.tramo--entregadas {
+  --color-tramo: var(--color-pieza-tinta);
+}
+
+.tramo--camino {
+  --color-tramo: var(--color-tramo-en-camino);
+}
+
+.tramo--proceso {
+  --color-tramo: var(--color-pieza-sol);
+}
+
+.tramo--sin-entregar {
+  --color-tramo: var(--color-tramo-sin-entregar);
+}
+
+.leyenda {
+  display: grid;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  list-style: none;
+}
+
+.leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  list-style: none;
+}
+
+.leyenda li::before {
+  content: "";
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--color-tramo);
+  border-radius: 50%;
+}
+
+@container (min-width: 20rem) {
+  .leyenda {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Por dónde va tu donación: un paso, una pieza (fragmento recorrido). */
+.viaje {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.viaje-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+.viaje > .enlace-fuerte {
+  justify-self: start;
+}
+
+.recorrido {
+  --medida-lengueta-x: calc(100% - 1.75rem);
+
+  flex-direction: column;
+}
+
+.recorrido-paso {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: 0.875rem var(--espacio-4);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+}
+
+.recorrido-nodo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+  font-weight: 800;
+}
+
+.recorrido-texto {
+  display: grid;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.recorrido-texto small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.recorrido-paso--actual {
+  --color-pieza-fondo: var(--color-ahora);
+}
+
+.recorrido-paso--actual .recorrido-texto small {
+  color: var(--color-pieza-texto);
+}
+
+/* Lo que falta: el hueco de tinta con borde de crema a trazos. */
+.recorrido-paso--pendiente {
+  --color-pieza-fondo: var(--color-hueco);
+
+  border: 2px dashed var(--color-hueco-borde);
+  color: var(--color-mesa-texto);
+}
+
+.recorrido-paso--pendiente .recorrido-nodo {
+  background: var(--color-hueco-borde);
+  color: var(--color-pieza-texto);
+}
+
+.recorrido-paso--pendiente .recorrido-texto small {
+  color: var(--color-mesa-texto-suave);
+}
+
+/* Lo último que pasó: cada aviso, una pieza chica de crema. */
+.novedades {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+}
+
+.novedades-lista {
+  --medida-lengueta-x: calc(100% - 1.75rem);
+
+  flex-direction: column;
+}
+
+.novedades-lista li {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+  padding: 1rem var(--espacio-4);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+}
+
+.novedades time {
+  align-self: flex-start;
+  padding: 0 var(--espacio-2);
+  background: var(--color-pieza-durazno);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+/* Estado de una entrega (fragmento insignia): una pieza chica del color del estado, con su
+   junta de tinta; "en camino" es lo de ahora, en naranja. */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  width: fit-content;
+  padding: 0.1875rem var(--espacio-3) 0.1875rem 0.1875rem;
+  background: var(--color-pieza-fondo);
+  border: 2px solid var(--color-junta);
+  border-radius: var(--radio-insignia);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.insignia-signo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+}
+
+.insignia--pendiente {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+}
+
+.insignia--en-camino {
+  --color-pieza-fondo: var(--color-ahora);
+}
+
+.insignia--entregada {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.insignia--con-problema {
+  --color-pieza-fondo: var(--color-pieza-rosa);
+}
+
+/* Tarjeta de una entrega: la foto, enmarcada en la pieza; el estado encastra en su borde. */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--espacio-4);
+}
+
+.tarjeta {
+  gap: 0;
+  padding: var(--medida-junta);
+  border: 2px solid var(--color-junta);
+}
+
+.tarjeta-foto,
+.tarjeta-portada {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 330 / 244;
+  border-radius: var(--radio-chico);
+  object-fit: cover;
+}
+
+.tarjeta-portada {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+
+  display: grid;
+  place-items: center;
+  background: var(--color-pieza-fondo);
+}
+
+.tarjeta-portada--cat-vestimenta {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.tarjeta-portada--cat-escolares {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.tarjeta-portada-signo {
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-pieza-sol);
+}
+
+.tarjeta > .insignia {
+  margin: -1rem 0 0 var(--espacio-3);
+  position: relative;
+}
+
+.tarjeta-cuerpo {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-2) var(--espacio-3) var(--espacio-3);
+}
+
+.tarjeta-cuerpo p,
+.tarjeta-titulo {
+  margin: 0;
+}
+
+.tarjeta-destino {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.tarjeta-titulo {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.tarjeta-titulo a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-pieza-texto);
+  text-decoration: none;
+}
+
+.tarjeta-titulo a:hover {
+  text-decoration: underline;
+}
+
+.tarjeta-fecha {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 600;
+}
+
+/* El catálogo: la portada de sol (lo que estás viendo), la muestra sobre la mesa y una pieza de
+   crema por componente, encastradas una debajo de la otra. */
+.portada {
+  --color-pieza-fondo: var(--color-pieza-sol);
+  --medida-lengueta-x: 18%;
+
+  gap: var(--espacio-3);
+}
+
+.portada-titulo {
+  margin: 0;
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-portada);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.catalogo-intro,
+.catalogo-patron {
+  max-width: var(--medida-lectura);
+  margin: 0;
+}
+
+.catalogo-patron {
+  color: var(--color-texto-suave);
+}
+
+.muestra-pantalla {
+  display: grid;
+  gap: var(--medida-junta);
+  margin: 0;
+}
+
+.muestra-cabeza {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-6) var(--espacio-relleno-linea) var(--espacio-4);
+  color: var(--color-mesa-texto);
+}
+
+.muestra-cabeza h2 {
+  margin: 0;
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-weight: 800;
+}
+
+.muestra-cabeza .catalogo-patron {
+  color: var(--color-mesa-texto-suave);
+}
+
+.catalogo {
+  --medida-lengueta-x: 18%;
+}
+
+.catalogo:nth-of-type(even) {
+  --medida-lengueta-x: 62%;
+}
+
+.catalogo-cabeza {
+  display: grid;
+  gap: var(--espacio-2);
+  align-content: start;
+}
+
+.catalogo-cabeza h2,
+.muestra-cabeza h2 {
+  font-size: var(--tamano-pieza-titulo);
+  line-height: 1.1;
+}
+
+.catalogo-cabeza h2 {
+  margin: 0;
+  font-family: var(--fuente-juego);
+  font-weight: 800;
+}
+
+.catalogo-demo {
+  min-width: 0;
+  margin: 0;
+}
+
+.catalogo-demo > :last-child {
+  margin-bottom: 0;
+}
+
+.catalogo-demo :is(h3, h4) {
+  font-family: var(--fuente-juego);
+  font-weight: 800;
+}
+
+.catalogo-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.catalogo-fila > * {
+  margin: 0;
+}
+
+.catalogo-oscuro {
+  margin-top: var(--espacio-4);
+  padding: var(--espacio-4);
+  background: var(--color-mesa);
+  border-radius: var(--radio-pieza);
+}
+
+.catalogo-columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--medida-tarjeta-minima)), 1fr));
+  gap: var(--espacio-5);
+}
+
+.muestras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: var(--espacio-3);
+  padding: 0;
+}
+
+.muestras li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin: 0;
+  color: var(--color-pieza-texto);
+  list-style: none;
+}
+
+.muestras li > .icono {
+  box-sizing: content-box;
+  flex: none;
+  padding: var(--espacio-2);
+  background: var(--color-pieza-gris);
+  border-radius: 50%;
+}
+
+.muestra {
+  flex: none;
+  width: var(--medida-muestra);
+  height: var(--medida-muestra);
+  border: 2px solid var(--color-junta);
+  border-radius: var(--radio-chico);
+}
+
+.muestra--destacado {
+  background-color: var(--color-destacado-fondo);
+}
+
+.muestra--marca {
+  background-color: var(--color-marca-brillante);
+}
+
+.muestra--marca-alterna {
+  background-color: var(--color-marca-alterna);
+}
+
+.muestra--marca-suave {
+  background-color: var(--color-marca-suave);
+}
+
+.muestra--fondo-pagina {
+  background-color: var(--color-fondo-pagina);
+}
+
+.muestra--fondo {
+  background-color: var(--color-fondo);
+}
+
+.muestra--superficie {
+  background-color: var(--color-superficie);
+}
+
+.muestra--texto {
+  background-color: var(--color-texto);
+}
+
+.muestra--texto-suave {
+  background-color: var(--color-texto-suave);
+}
+
+.muestra--accion {
+  background-color: var(--color-accion-primaria);
+}
+
+.muestra--foco {
+  background-color: var(--color-foco);
+}
+
+.muestra--exito {
+  background-color: var(--color-exito-texto);
+}
+
+.muestra--info {
+  background-color: var(--color-info-texto);
+}
+
+.muestra--advertencia {
+  background-color: var(--color-advertencia-texto);
+}
+
+.muestra--error {
+  background-color: var(--color-error-texto);
+}
+
+/* Movimiento, solo si la persona no pidió reducirlo: las piezas puestas de la misión encastran
+   una tras otra, la pieza suelta prueba su hueco dos veces y la moneda de lo que llegó salta. */
+@media (prefers-reduced-motion: no-preference) {
+  .mision-pieza {
+    animation: encastra var(--movimiento-lento) var(--movimiento-curva) both;
+  }
+
+  .mision-pieza:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  .mision-pieza:nth-child(n + 3) {
+    animation-delay: 300ms;
+  }
+
+  .mision-suelta {
+    animation: prueba 1.4s var(--movimiento-curva) 700ms 2;
+  }
+
+  .moneda {
+    animation: salta 600ms var(--movimiento-curva) 400ms both;
+  }
+
+  .navegacion :is(a, summary) {
+    transition: background-color var(--movimiento-rapido);
+  }
+}
+
+@keyframes encastra {
+  from {
+    transform: translateY(-0.75rem) rotate(-6deg) scale(1.08);
+  }
+}
+
+@keyframes prueba {
+  50% {
+    transform: translate(-0.5rem, 0.625rem) rotate(4deg);
+  }
+}
+
+@keyframes salta {
+  40% {
+    transform: scale(1.18) rotate(-8deg);
+  }
+}
+
+/* Alto contraste: los bordes dibujan las piezas; lo actual lleva además un contorno. */
+@media (forced-colors: active) {
+  .pieza,
+  .navegacion :is(a, summary),
+  .piezas-chicas > *,
+  .mesa {
+    border: 2px solid;
+  }
+
+  :is(.pieza, .piezas-chicas > *, .navegacion a)::before,
+  :is(.pieza, .piezas-chicas > *, .navegacion a)::after,
+  .leyenda li::before,
+  .tramos {
+    forced-color-adjust: none;
+  }
+
+  .navegacion a[aria-current="page"],
+  .recorrido-paso[aria-current="step"] {
+    border-width: 4px;
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .mision-forma,
+  .mision-suelta {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+}
+
+/* Desde 600 px: el riel vuelve arriba del tablero como tira entera, el tablero en dos columnas,
+   los pasos y los avisos en fila. */
+@media (min-width: 37.5em) {
+  .sitio {
+    --espacio-relleno-linea: var(--espacio-pieza-bloque);
+
+    padding-inline: var(--espacio-4);
+  }
+
+  .armazon {
+    padding-bottom: var(--espacio-6);
+  }
+
+  .armazon .avisos {
+    bottom: var(--espacio-4);
+  }
+
+  .armazon .mesa {
+    display: grid;
+    gap: var(--medida-junta);
+  }
+
+  .armazon .navegacion {
+    position: static;
+    padding: 0;
+    background: none;
+    border-radius: 0;
+  }
+
+  .armazon nav.navegacion--con-mas .navegacion-extra {
+    display: flex;
+  }
+
+  .armazon nav.navegacion--con-mas .navegacion-mas {
+    display: none;
+  }
+
+  .navegacion :is(a, summary) {
+    justify-content: center;
+    padding-inline: var(--espacio-2);
+    font-size: var(--tamano-mini);
+  }
+
+  /* La actual, ahora arriba del tablero: su lengüeta baja y entra en él. */
+  .navegacion a[aria-current="page"]::before {
+    top: 100%;
+    bottom: auto;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .tablero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "saludo saludo"
+      "mision mision"
+      "categoria cifra"
+      "llegaron llegaron"
+      "viaje viaje"
+      "novedades novedades";
+  }
+
+  .saludo {
+    --medida-lengueta-x: 22%;
+
+    grid-area: saludo;
+  }
+
+  .mision {
+    --medida-lengueta-x: 22%;
+
+    grid-area: mision;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "cabeza piezas"
+      "nombre piezas"
+      "barra barra"
+      "pie pie";
+    align-items: start;
+  }
+
+  .mision-cabeza {
+    grid-area: cabeza;
+  }
+
+  .mision-nombre {
+    grid-area: nombre;
+  }
+
+  .mision-piezas {
+    grid-area: piezas;
+    align-self: center;
+  }
+
+  .mision-barra {
+    grid-area: barra;
+  }
+
+  .mision-pie {
+    grid-area: pie;
+  }
+
+  .categoria {
+    grid-area: categoria;
+  }
+
+  .ranura-cifra {
+    grid-area: cifra;
+  }
+
+  .llegaron {
+    grid-area: llegaron;
+  }
+
+  .viaje {
+    grid-area: viaje;
+  }
+
+  .novedades {
+    grid-area: novedades;
+  }
+
+  /* La categoría encastra a la derecha, en la cifra. */
+  .tablero > .categoria::after {
+    content: "";
+    top: calc(50% - var(--medida-lengueta-aro));
+    bottom: auto;
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .recorrido,
+  .novedades-lista {
+    flex-direction: row;
+  }
+
+  .recorrido > :not(:last-child)::after,
+  .novedades-lista > :not(:last-child)::after {
+    top: calc(var(--medida-lengueta-y, 50%) - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .recorrido-paso {
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    padding: var(--espacio-3) var(--espacio-3) var(--espacio-3) 1.125rem;
+  }
+
+  .novedades-lista li {
+    padding-inline-start: 1.25rem;
+  }
+}
+
+/* Desde 860 px: cada pieza del catálogo, con su título y su patrón a la izquierda y la muestra a
+   la derecha, como una hoja de muestras. */
+@media (min-width: 53.75em) {
+  .catalogo {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+    gap: var(--espacio-4) var(--espacio-6);
+  }
+
+  .catalogo-cabeza {
+    position: sticky;
+    top: var(--espacio-4);
+  }
+}
+
+/* Desde 1100 px: el riel es una columna a la izquierda de la mesa, estirada hasta el pie, y la
+   sección actual entra de costado en el tablero; el tablero, en doce columnas. */
+@media (min-width: 68.75em) {
+  .sitio {
+    --espacio-relleno-bloque: var(--espacio-pieza-ancha);
+    --espacio-relleno-linea: var(--espacio-pieza-ancha);
+
+    padding-inline: var(--espacio-5);
+  }
+
+  .armazon .mesa {
+    grid-template-columns: var(--medida-riel-columna) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .armazon .navegacion {
+    align-self: stretch;
+  }
+
+  .catalogo .navegacion {
+    max-width: var(--medida-riel-columna);
+  }
+
+  nav.navegacion ul {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  nav.navegacion li {
+    flex: none;
+  }
+
+  .navegacion a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--espacio-3);
+    min-height: 4.25rem;
+    margin-inline-end: var(--espacio-3);
+    padding: var(--espacio-2) var(--espacio-4);
+    font-size: var(--tamano-chico);
+    white-space: normal;
+  }
+
+  .navegacion a[aria-current="page"] {
+    margin-inline-end: 0;
+  }
+
+  .navegacion-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .navegacion-corto {
+    display: none;
+  }
+
+  .navegacion li:not(:last-child) a::after {
+    top: 100%;
+    left: calc(50% - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .navegacion a[aria-current="page"]::before {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .tablero {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+      "saludo saludo saludo saludo saludo saludo saludo mision mision mision mision mision"
+      "categoria categoria categoria categoria categoria categoria categoria mision mision mision mision mision"
+      "cifra cifra cifra cifra cifra llegaron llegaron llegaron llegaron llegaron llegaron llegaron"
+      "viaje viaje viaje viaje viaje viaje viaje viaje viaje viaje viaje viaje"
+      "novedades novedades novedades novedades novedades novedades novedades novedades novedades novedades novedades novedades";
+  }
+
+  /* La misión, en una columna: el hueco manda. */
+  .mision {
+    --medida-lengueta-x: 50%;
+
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "cabeza"
+      "nombre"
+      "piezas"
+      "barra"
+      "pie";
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    align-content: stretch;
+  }
+
+  .mision-piezas {
+    width: 100%;
+  }
+
+  /* La categoría, una pieza baja bajo el saludo. */
+  .categoria {
+    --medida-lengueta-x: 30%;
+
+    align-content: center;
+  }
+
+  /* Lengüetas: el saludo entra a la derecha en la misión y abajo en la categoría; la categoría,
+     a la derecha en la misión y abajo en la cifra; la cifra, a la derecha en lo que llegó y abajo
+     en el recorrido. */
+  .tablero > .saludo::after,
+  .tablero > .categoria::after,
+  .ranura-cifra > .cifra::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .tablero > .saludo::before,
+  .tablero > .categoria::before,
+  .ranura-cifra > .cifra::before {
+    content: "";
+    top: 100%;
+    left: calc(var(--medida-lengueta-x) - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .saludo {
+    --medida-lengueta-x: 20%;
+  }
+
+  .cifra {
+    --medida-lengueta-x: 50%;
+  }
+}

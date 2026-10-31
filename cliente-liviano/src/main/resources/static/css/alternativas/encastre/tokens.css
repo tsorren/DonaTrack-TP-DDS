@@ -215,11 +215,8 @@
     var(--p-turquesa-500) 0%,
     var(--p-verde-500) 100%
   );
-  --color-degradado-pagina: radial-gradient(
-    900px 420px at 100% 0%,
-    var(--p-verde-50) 0%,
-    transparent 70%
-  );
+  /* Encastre (iteración 2, estructura): la página es crema lisa, sin el halo verde. */
+  --color-degradado-pagina: none;
   --color-degradado-halo: radial-gradient(circle, var(--p-verde-500-a16) 0%, transparent 70%);
   --color-degradado-esqueleto: linear-gradient(
     90deg,
@@ -265,6 +262,27 @@
   --medida-mesa-maxima: 96rem;
   --medida-riel-celular: 4.75rem;
   --tamano-riel-corto: 0.6875rem;
+
+  /* Encastre (iteración 2, estructura): la mesa de tinta sobre la que encastran las piezas, el
+     hueco de lo que falta (tinta con borde de crema a trazos), el marcador de sol del saludo y las
+     medidas de las piezas del tablero y del riel. Crema sobre tinta: 14,6:1. */
+  --color-mesa: var(--p-grafito-900);
+  --color-mesa-texto: var(--p-gris-50);
+  --color-mesa-texto-suave: var(--p-grafito-100);
+  --color-hueco: var(--p-grafito-900);
+  --color-hueco-borde: var(--p-gris-50);
+  --color-marcador: var(--p-sol);
+  --espacio-pieza-bloque: 1.625rem;
+  --espacio-pieza-linea: 1rem;
+  --espacio-pieza-ancha: 2rem;
+  --medida-riel-columna: 15rem;
+  --medida-riel-pieza: 4rem;
+  --medida-rotulo-menu: 1.75rem;
+  --tamano-marca: 1.375rem;
+  --tamano-saludo: clamp(2.25rem, 1.5rem + 3.5vw, 4.5rem);
+  --tamano-mision: clamp(1.75rem, 1.3rem + 1.6vw, 2.75rem);
+  --tamano-pieza-titulo: 1.625rem;
+  --tamano-portada: clamp(2.5rem, 1.6rem + 4vw, 5.5rem);
 
   /* Tamaños del prototipo (de celular a escritorio con clamp). */
   --tamano-mini: 0.8125rem;

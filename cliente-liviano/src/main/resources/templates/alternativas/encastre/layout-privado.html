@@ -1,6 +1,11 @@
 <!DOCTYPE html>
-<!--/* Estructura de las pantallas privadas (bitácora, 2026-10-30): barra lateral con la ruta
-       punteada en escritorio, barra inferior en el celular y, arriba, campana y cuenta, sin buscador.
+<!--/* Encastre: estructura de las pantallas privadas. Arriba, sobre la crema, la marca, la campana
+       y la cuenta, sin buscador. Abajo, la mesa de tinta: el riel de secciones (fragmento
+       navegacion, una pieza por sección) y el tablero (main), donde encastran las piezas de la
+       pantalla. La sección actual es la pieza de sol del riel, encastrada en el tablero con su
+       lengüeta. En la computadora, el riel es una columna a la izquierda de la mesa; en la tableta,
+       una tira arriba del tablero; en el celular, una tira fija abajo, al alcance del pulgar, con
+       el nombre corto de cada pieza. Va antes que main en el HTML, como en Glassmorphism.
        Uso: <html th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">. El modelo
        trae navegacion (List<OpcionNavegacion>) y cuenta (CuentaVista). Las pantallas de
        notificaciones y perfil, y la salida, llegan con sus flujos y con el IdP. */-->
@@ -9,7 +14,7 @@
 <head th:replace="~{alternativas/encastre/layout :: cabeza(${titulo})}">
   <title>DonaTrack</title>
 </head>
-<body class="armazon">
+<body class="sitio armazon">
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header class="encabezado">
     <a th:replace="~{alternativas/encastre/layout :: marca}">DonaTrack</a>
@@ -27,10 +32,11 @@
       </details>
     </div>
   </header>
-  <div class="armazon-cuerpo">
+  <div class="mesa armazon-cuerpo">
     <nav th:replace="~{alternativas/encastre/fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
-    <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+    <main id="contenido" class="tablero-zona" tabindex="-1" th:insert="${contenido}"></main>
   </div>
+  <svg th:replace="~{alternativas/encastre/layout :: piezas}"></svg>
   <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
   <div id="avisos" class="avisos" aria-live="polite"></div>
 </body>

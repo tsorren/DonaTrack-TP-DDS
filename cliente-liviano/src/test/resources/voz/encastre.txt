@@ -1,3 +1,19 @@
 # Voz propia de Encastre (brief-encastre.md, Voz): títulos y rótulos que Encastre dice a su
-# modo. Una línea por texto: <lo que dice Glassmorphism> => <lo que dice Encastre>. Sin números,
-# y nunca en un botón o un enlace. InterfazFitnessTest exige que cada línea esté en uso.
+# modo. Una línea por texto: <lo que dice Glassmorphism> => <lo que dice Encastre>. Un lado vacío es
+# un rótulo que Encastre suma (=> Las piezas del juego). Sin números, y nunca en un botón o un
+# enlace. InterfazFitnessTest exige que cada línea esté en uso. En el catálogo /estilos también
+# entra la descripción de un componente que Encastre dibuja de otro modo (la navegación es un riel
+# de piezas, no una barra con la ruta).
+
+# Inicio (iteración 1, concepto-b)
+Tu impacto => Lo que ya armaste
+Tu misión actual => Lo que te toca ahora
+Recorrido de tu última donación => Por dónde va tu donación
+Notificaciones recientes => Lo último que pasó
+Lo último que pasó con tus donaciones => Avisos de tus donaciones, lo más nuevo primero
+Donaciones => Ya llegaron
+Categoría actual => Tu categoría
+
+# Catálogo (iteración 2, estructura)
+=> Las piezas del juego
+: la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas privadas, en el celular, pasa a una barra inferior: => : el riel de piezas, una por sección. La actual es la pieza de sol, encastrada en el tablero. En las pantallas privadas, en el celular, baja y queda fija abajo, con el nombre corto:

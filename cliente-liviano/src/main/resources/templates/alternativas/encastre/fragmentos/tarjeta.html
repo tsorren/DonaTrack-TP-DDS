@@ -1,16 +1,20 @@
-<!--/* Tarjeta de una entrega: la tarjeta de donación del prototipo v2. Patrón: Material Cards. La
-       foto, si hay, va primero; si no, una portada con el ícono de lo donado (bitácora, 2026-10-30).
-       El estado flota arriba y el título es el enlace principal. entrega: EntregaVista. */-->
-<article th:fragment="tarjeta(entrega)" class="tarjeta">
+<!--/* Tarjeta de una entrega: una pieza de crema con la foto adentro, enmarcada por la junta de
+       tinta. Patrón: Material Cards. La foto, si hay, va primero; si no, una portada del color de
+       lo donado, con su ícono en un círculo de tinta (bitácora, 2026-10-30). El estado es una pieza
+       chica que encastra en la foto, y el título es el enlace principal. entrega: EntregaVista. */-->
+<article th:fragment="tarjeta(entrega)" class="tarjeta pieza">
   <img th:if="${entrega.foto}" class="tarjeta-foto" src="/img/ejemplo-entrega.svg"
        alt="Foto de la entrega" th:src="@{${entrega.foto}}" th:alt="${entrega.fotoAlt}"
        width="640" height="400" loading="lazy">
-  <div th:unless="${entrega.foto}" class="tarjeta-portada" aria-hidden="true"><svg
-       th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${entrega.categoria}, 72)}"></svg></div>
+  <div th:unless="${entrega.foto}" class="tarjeta-portada"
+       th:classappend="|tarjeta-portada--${entrega.categoria}|" aria-hidden="true"><span
+       class="tarjeta-portada-signo"><svg
+       th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${entrega.categoria}, 48)}"></svg></span></div>
   <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
   <div class="tarjeta-cuerpo">
-    <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
-         alt="" width="20" height="15"><span th:text="${entrega.destino}">Destino</span></p>
+    <p class="tarjeta-destino"><svg
+       th:replace="~{alternativas/encastre/fragmentos/icono :: icono('entidades', 16)}"></svg><span
+       th:text="${entrega.destino}">Destino</span></p>
     <h3 class="tarjeta-titulo">
       <a href="#" th:href="@{${entrega.enlace}}" th:text="${entrega.titulo}">Entrega</a>
     </h3>

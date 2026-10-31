@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!--/* Estructura común de las pantallas públicas. Uso:
-       <html th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">. Las privadas usan
-       layout-privado, que toma de acá la cabecera y la marca. data-theme="light": solo modo claro
-       (bitácora, 2026-10-30). Las hojas de identidad son las de Glassmorphism, salvo que el
-       modelo traiga alternativa (perfil maqueta, ?alternativa=cozy-medieval): entonces, las de
-       static/css/alternativas/<alternativa>/. */-->
+<!--/* Encastre: estructura común de las pantallas públicas. Todo el sitio es una mesa de tinta
+       donde encastran piezas de color: arriba, la marca sobre la crema; abajo, el contenido sobre
+       la mesa (main), hecho de piezas que se enganchan con su lengüeta. Uso:
+       <html th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">.
+       Las privadas usan layout-privado, que toma de acá la cabeza, la marca y la pieza dibujada
+       (#encastre-pieza). data-theme="light": solo modo claro (bitácora, 2026-10-30). */-->
 <html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
       th:fragment="pagina(titulo, contenido)">
 <head th:fragment="cabeza(titulo)">
@@ -26,21 +26,37 @@
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <script src="/webjars/htmx.org/dist/htmx.min.js"
           th:src="@{/webjars/htmx.org/dist/htmx.min.js}" defer></script>
+  <!--/* Mejora: la pieza "Más" del riel cuando hay más de cinco secciones. Sin él, el riel
+         muestra todas las piezas. */-->
+  <script src="/js/encastre.js" th:src="@{/js/encastre.js}" defer></script>
 </head>
-<body>
+<body class="sitio">
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header class="encabezado">
+    <!--/* La marca: una pieza de sol, girada, sobre un cuadro de tinta. */-->
     <a th:fragment="marca" class="marca" href="/" th:href="@{/}"
        aria-label="DonaTrack, ir al inicio">
-      <span class="marca-simbolo"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt=""
-            width="15" height="20"></span>
+      <span class="marca-simbolo" aria-hidden="true"><svg viewBox="10 10 90 90"
+            focusable="false"><use href="#encastre-pieza"/></svg></span>
       <span class="marca-nombre">Dona<em>Track</em></span>
     </a>
   </header>
-  <main id="contenido" class="container" tabindex="-1" th:insert="${contenido}"></main>
-  <footer class="pie container">
+  <main id="contenido" class="mesa" tabindex="-1" th:insert="${contenido}"></main>
+  <footer class="pie">
     <small>DonaTrack · UTN-FRBA · Diseño de Sistemas 2026</small>
   </footer>
+  <!--/* La pieza del rompecabezas, dibujada una vez: lengüeta arriba y a la derecha, muesca abajo
+         y a la izquierda, así dos piezas en fila encastran. El cuerpo es el cuadrado de 22,30 a
+         78,86; las lengüetas salen 16 unidades. La usan la marca y la misión. */-->
+  <svg th:fragment="piezas" class="piezas-dibujadas" aria-hidden="true" focusable="false"
+       width="0" height="0">
+    <defs>
+      <path id="encastre-pieza"
+            d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/>
+      <path id="encastre-pieza-borde"
+            d="M22 30H40A11 11 0 1 1 60 30H78V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/>
+    </defs>
+  </svg>
   <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
   <div id="avisos" class="avisos" aria-live="polite"></div>
 </body>

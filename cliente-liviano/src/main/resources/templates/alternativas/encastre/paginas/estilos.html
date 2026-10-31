@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<!--/* Catálogo /estilos (RF-CL-05). Cada fragmento de fragmentos/ figura acá con todos sus estados
-       y el patrón que sigue; InterfazFitnessTest falla si falta alguno. */-->
+<!--/* Catálogo /estilos (RF-CL-05) de Encastre: la mesa de tinta con una pieza por componente.
+       Arriba, la pieza de sol con el nombre de la página; después, la muestra del inicio (el
+       tablero, que también arma /estilos/armazon) y, una debajo de la otra, las piezas de crema del
+       catálogo, cada una con su título y su patrón a la izquierda y la muestra a la derecha. Cada
+       fragmento de alternativas/encastre/fragmentos/ figura acá con todos sus estados y el patrón
+       que sigue; InterfazFitnessTest falla si falta alguno. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -8,115 +12,160 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <h1>Catálogo de componentes</h1>
-  <p class="catalogo-intro">Cada componente de la interfaz con todos sus estados y el patrón que
-    sigue. Identidad: la de la alternativa activa. Sin indicar nada, Glassmorphism (la del
-    prototipo v2); con <code>?alternativa=cozy-medieval</code>, Cozy / Medieval.</p>
+  <div class="portada pieza">
+    <h1 class="rotulo-menu">Catálogo de componentes</h1>
+    <p class="portada-titulo">Las piezas del juego</p>
+    <p class="catalogo-intro">Cada componente de la interfaz con todos sus estados y el patrón que
+      sigue. Identidad: la de la alternativa activa. Sin indicar nada, Glassmorphism (la del
+      prototipo v2); con <code>?alternativa=cozy-medieval</code>, Cozy / Medieval.</p>
+  </div>
 
   <section class="muestra-pantalla" aria-labelledby="muestra-titulo">
-    <h2 id="muestra-titulo">Muestra: inicio de una persona donante</h2>
-    <p class="catalogo-patron">El tablero del prototipo v2 armado con los componentes del
-      catálogo. Datos de ejemplo. Las cifras (fragmento <code>cifra</code>) llevan a sus entregas;
-      el recorrido (fragmento <code>recorrido</code>, patrón Material Steppers) muestra los pasos
-      hechos, el actual y los pendientes.</p>
+    <div class="muestra-cabeza">
+      <h2 id="muestra-titulo">Muestra: inicio de una persona donante</h2>
+      <p class="catalogo-patron">El tablero del prototipo v2 armado con los componentes del
+        catálogo. Datos de ejemplo. Las cifras (fragmento <code>cifra</code>) llevan a sus entregas;
+        el recorrido (fragmento <code>recorrido</code>, patrón Material Steppers) muestra los pasos
+        hechos, el actual y los pendientes.</p>
+    </div>
 
-    <section class="destacado" aria-labelledby="hola-titulo">
-      <div>
-        <p class="destacado-etiqueta">Tu impacto</p>
+    <!--/* El tablero del inicio: cada dato es una pieza que encastra con la de al lado. La grilla
+           de cada ancho la arma estructura.css. /estilos/armazon lo trae entero y le pasa los id a
+           los que apuntan "Mis donaciones", "Ver el detalle" y "Ver incentivos" (la cifra y la
+           categoría); acá esos id son secciones del catálogo y no se repiten. */-->
+    <div class="tablero" th:fragment="tablero(anclaCifra, anclaCategoria)">
+      <section class="pieza saludo" aria-labelledby="hola-titulo">
         <h3 id="hola-titulo">Hola, Ana</h3>
-        <p>Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
-        <div class="destacado-acciones">
+        <p class="saludo-texto">Tu última donación ya salió del depósito y va camino a Comedor
+          Barrio Ejemplo.</p>
+        <div class="saludo-acciones">
           <a href="#recorrido-titulo" role="button">Ver seguimiento</a>
-          <a href="#tarjeta-titulo" role="button" class="fantasma">Mis donaciones</a>
+          <a href="#tarjeta-titulo" role="button" class="outline">Mis donaciones</a>
         </div>
-      </div>
-      <div class="destacado-red" aria-hidden="true">
-        <svg viewBox="0 0 360 200" preserveAspectRatio="none" focusable="false">
-          <path d="M18 168 C 80 150, 110 110, 160 102 S 270 60, 340 14"/>
-        </svg>
-        <span class="destacado-nodo destacado-nodo--1"></span>
-        <span class="destacado-nodo destacado-nodo--2"></span>
-        <span class="destacado-chip destacado-chip--1"><b>7</b><span>donaciones</span></span>
-        <span class="destacado-chip destacado-chip--2"><b>2</b><span>entidades ayudadas</span></span>
-        <span class="destacado-chip destacado-chip--3"><b>2</b><span>entregadas</span></span>
-      </div>
-    </section>
+        <div class="saludo-armado">
+          <p class="rotulo">Lo que ya armaste</p>
+          <div class="saludo-fichas piezas-chicas" aria-hidden="true">
+            <span class="ficha ficha--lila"><b>7</b><span>donaciones</span></span>
+            <span class="ficha ficha--menta"><b>2</b><span>entidades ayudadas</span></span>
+            <span class="ficha ficha--rosa"><b>2</b><span>entregadas</span></span>
+          </div>
+        </div>
+      </section>
 
-    <div class="cifras">
-      <a th:replace="~{alternativas/encastre/fragmentos/cifra :: cifra(${realizadas})}"></a>
-      <article class="resumen-entregas" aria-labelledby="entregadas-titulo">
-        <div class="resumen-entregas-cabecera">
-          <span class="moneda"><b>2</b></span>
-          <h3 id="entregadas-titulo">Donaciones <span>entregadas</span></h3>
+      <!--/* Lo que te toca ahora: la única pieza naranja del tablero. Los meses salen de las cifras
+             de la misión: los hechos son piezas puestas; el que sigue, el hueco con forma de pieza
+             y la pieza suelta que lo prueba; los demás que falten, huecos vacíos. La última es
+             pieza de borde, sin lengüeta a la derecha. */-->
+      <section class="pieza mision" aria-labelledby="mision-titulo" th:with="hechos=2, total=3">
+        <div class="mision-cabeza">
+          <h3 id="mision-titulo">Lo que te toca ahora</h3>
+          <p class="mision-rango">Colaborador → Sostenedor</p>
         </div>
-        <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
-             aria-hidden="true" focusable="false">
-          <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
-          <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
-          <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
-          <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
-        </svg>
-        <ul class="leyenda">
-          <li class="segmento--entregadas">2 entregadas</li>
-          <li class="segmento--camino">1 en camino</li>
-          <li class="segmento--proceso">3 en proceso</li>
-          <li class="segmento--sin-entregar">1 sin entregar</li>
-        </ul>
-      </article>
-      <section class="categoria" aria-labelledby="categoria-titulo">
-        <span class="cifra-etiqueta" id="categoria-titulo">Categoría actual</span>
+        <div class="mision-nombre">
+          <span class="mision-sello">2/3</span>
+          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        </div>
+        <div class="mision-piezas">
+          <th:block th:each="mes : ${#numbers.sequence(1, total)}"
+                    th:with="forma=${mes == total} ? '#encastre-pieza-borde' : '#encastre-pieza'">
+            <span class="mision-pieza" aria-hidden="true" th:if="${mes <= hechos}"><svg
+                  class="mision-forma" viewBox="22 14 56 72" focusable="false"><use
+                  href="#encastre-pieza" th:href="${forma}"/></svg><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 26)}"></svg></span>
+            <p class="mision-hueco" th:if="${mes == hechos + 1}"><svg class="mision-forma"
+               viewBox="22 14 56 72" aria-hidden="true" focusable="false"><use
+               href="#encastre-pieza" th:href="${forma}"/></svg><span>Falta 1 paso</span><svg
+               class="mision-suelta" viewBox="10 10 90 90" aria-hidden="true" focusable="false"><use
+               href="#encastre-pieza"/></svg></p>
+            <span class="mision-hueco mision-hueco--vacio" aria-hidden="true"
+                  th:if="${mes > hechos + 1}"><svg class="mision-forma" viewBox="22 14 56 72"
+                  focusable="false"><use href="#encastre-pieza" th:href="${forma}"/></svg></span>
+          </th:block>
+        </div>
+        <progress class="mision-barra" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <div class="mision-pie">
+          <span class="mision-por">66 %</span>
+          <a href="#insignia-titulo" role="button" class="outline">Ver incentivos</a>
+        </div>
+      </section>
+
+      <section class="pieza categoria" aria-labelledby="categoria-titulo"
+               th:id="${anclaCategoria}">
+        <span class="categoria-signo" aria-hidden="true"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('incentivos', 24)}"></svg></span>
+        <span class="rotulo" id="categoria-titulo">Tu categoría</span>
         <span class="categoria-nombre">Colaborador</span>
         <span class="categoria-proxima">Próxima: Sostenedor</span>
       </section>
-    </div>
 
-    <div class="muestra-grilla">
-      <section class="panel" aria-labelledby="recorrido-titulo">
-        <div class="panel-encabezado">
+      <div class="ranura-cifra" th:id="${anclaCifra}">
+        <a th:replace="~{alternativas/encastre/fragmentos/cifra :: cifra(${realizadas})}"></a>
+      </div>
+
+      <!--/* Ya llegaron: el avance en cuatro tramos que encastran, con el ancho de su cifra; la
+             lengüeta de cada tramo muerde al siguiente. La lista dice lo mismo en texto. */-->
+      <article class="pieza llegaron" aria-labelledby="entregadas-titulo"
+               th:with="cifras=${ {2, 1, 3, 1} },
+                        tonos=${ {'entregadas', 'camino', 'proceso', 'sin-entregar'} },
+                        total=${#aggregates.sum(cifras)}">
+        <div class="llegaron-cabeza">
+          <span class="moneda"><b>2</b></span>
+          <h3 id="entregadas-titulo">Ya llegaron</h3>
+        </div>
+        <svg class="tramos" aria-hidden="true" focusable="false" width="100%" height="28">
+          <rect th:each="cifra, vuelta : ${cifras}" th:class="|tramo--${tonos[vuelta.index]}|"
+                y="0" height="100%" rx="8" x="0" width="0"
+                th:with="antes=${vuelta.first ? 0 : #aggregates.sum(cifras.subList(0, vuelta.index))}"
+                th:attr="x=|${antes * 100.0 / total}%|,width=|${cifra * 100.0 / total}%|"></rect>
+          <circle th:each="cifra, vuelta : ${cifras}" th:unless="${vuelta.last}"
+                  th:class="|tramo--${tonos[vuelta.index]}|" cy="50%" r="7" cx="0"
+                  th:with="hasta=${#aggregates.sum(cifras.subList(0, vuelta.count))}"
+                  th:attr="cx=|${hasta * 100.0 / total}%|"></circle>
+        </svg>
+        <ul class="leyenda">
+          <li class="tramo--entregadas">2 entregadas</li>
+          <li class="tramo--camino">1 en camino</li>
+          <li class="tramo--proceso">3 en proceso</li>
+          <li class="tramo--sin-entregar">1 sin entregar</li>
+        </ul>
+      </article>
+
+      <section class="pieza viaje" aria-labelledby="recorrido-titulo">
+        <div class="viaje-cabeza">
           <div>
-            <h3 id="recorrido-titulo">Recorrido de tu última donación</h3>
-            <p class="panel-bajada">Lentejas secas · 15 kg</p>
+            <h3 id="recorrido-titulo">Por dónde va tu donación</h3>
+            <p class="bajada">Lentejas secas · 15 kg</p>
           </div>
           <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
         </div>
-        <ol th:replace="~{alternativas/encastre/fragmentos/recorrido :: recorrido('Recorrido de tu última donación',
+        <ol th:replace="~{alternativas/encastre/fragmentos/recorrido :: recorrido('Por dónde va tu donación',
             ${pasos})}"></ol>
         <a href="#tarjeta-titulo" class="enlace-fuerte">Ver el detalle</a>
       </section>
 
-      <section class="panel mision" aria-labelledby="mision-titulo">
-        <h3 id="mision-titulo">Tu misión actual</h3>
-        <p class="panel-bajada">Colaborador → Sostenedor</p>
-        <div class="mision-sello-fila">
-          <span class="mision-sello">2/3</span>
-          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
-        </div>
-        <progress class="mision-barra" value="66" max="100"
-                  aria-label="Progreso de la misión">66 %</progress>
-        <p class="mision-pie"><span>66 %</span><span>Falta 1 paso</span></p>
-        <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
+      <section class="pieza novedades" aria-labelledby="notas-titulo">
+        <h3 id="notas-titulo">Lo último que pasó</h3>
+        <p class="bajada">Avisos de tus donaciones, lo más nuevo primero</p>
+        <ul class="novedades-lista piezas-chicas">
+          <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+            <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+          <li><p>Tu donación quedó lista para entregar.</p>
+            <time datetime="2026-10-14T09:10">ayer</time></li>
+          <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+            <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+        </ul>
       </section>
     </div>
-
-    <section class="panel" aria-labelledby="notas-titulo">
-      <h3 id="notas-titulo">Notificaciones recientes</h3>
-      <p class="panel-bajada">Lo último que pasó con tus donaciones</p>
-      <ul class="notas">
-        <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
-          <time datetime="2026-10-15T14:30">hace 2 h</time></li>
-        <li><p>Tu donación quedó lista para entregar.</p>
-          <time datetime="2026-10-14T09:10">ayer</time></li>
-        <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
-          <time datetime="2026-10-13T11:00">hace 2 días</time></li>
-      </ul>
-    </section>
   </section>
 
-  <section class="catalogo" aria-labelledby="iconos-titulo">
-    <h2 id="iconos-titulo">Íconos</h2>
-    <p class="catalogo-patron">Fragmento <code>icono</code>: trazo de 24 × 24 que toma el color del
-      texto. Siempre acompañan a un texto.</p>
-    <ul class="muestras">
+  <section class="catalogo pieza" aria-labelledby="iconos-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="iconos-titulo">Íconos</h2>
+      <p class="catalogo-patron">Fragmento <code>icono</code>: trazo de 24 × 24 que toma el color del
+        texto. Siempre acompañan a un texto.</p>
+    </div>
+    <ul class="catalogo-demo muestras">
       <li th:each="nombre : ${ {'inicio', 'donaciones', 'entidades', 'incentivos', 'seguimiento',
           'notificaciones', 'camiones', 'cat-alimentos', 'cat-vestimenta', 'cat-escolares'} }"><svg
           th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${nombre}, 24)}"></svg><code
@@ -127,10 +176,12 @@
     </ul>
   </section>
 
-  <section class="catalogo" aria-labelledby="colores-titulo">
-    <h2 id="colores-titulo">Colores</h2>
-    <p class="catalogo-patron">Colores de uso definidos en <code>tokens.css</code>.</p>
-    <ul class="muestras">
+  <section class="catalogo pieza" aria-labelledby="colores-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="colores-titulo">Colores</h2>
+      <p class="catalogo-patron">Colores de uso definidos en <code>tokens.css</code>.</p>
+    </div>
+    <ul class="catalogo-demo muestras">
       <li><span class="muestra muestra--destacado"></span><code>--color-destacado-fondo</code></li>
       <li><span class="muestra muestra--marca"></span><code>--color-marca-brillante</code></li>
       <li><span class="muestra muestra--marca-alterna"></span><code>--color-marca-alterna</code></li>
@@ -149,38 +200,48 @@
     </ul>
   </section>
 
-  <section class="catalogo" aria-labelledby="tipografia-titulo">
-    <h2 id="tipografia-titulo">Tipografía</h2>
-    <p class="catalogo-patron">Escala de títulos y texto de <code>tokens.css</code>.</p>
-    <h3>Título de sección</h3>
-    <h4>Título de bloque</h4>
-    <p>Texto de lectura: las donaciones llegan a quienes las necesitan y cada paso queda a la
-      vista. <a href="#tipografia-titulo">Un enlace dentro del texto</a>.</p>
-    <p><small>Texto chico para ayudas y datos secundarios.</small></p>
-  </section>
-
-  <section class="catalogo" aria-labelledby="botones-titulo">
-    <h2 id="botones-titulo">Botones</h2>
-    <p class="catalogo-patron">Patrón: Material Buttons (filled, outlined, text). Una acción
-      principal por pantalla.</p>
-    <div class="catalogo-fila">
-      <button type="button">Confirmar recepción</button>
-      <button type="button" class="secondary">Ver detalle</button>
-      <button type="button" class="outline">Agregar otra foto</button>
-      <button type="button" disabled>Confirmar recepción</button>
-      <button type="button" aria-busy="true">Enviando…</button>
-      <a href="#botones-titulo" role="button" class="outline">Enlace con forma de botón</a>
+  <section class="catalogo pieza" aria-labelledby="tipografia-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="tipografia-titulo">Tipografía</h2>
+      <p class="catalogo-patron">Escala de títulos y texto de <code>tokens.css</code>.</p>
     </div>
-    <div class="catalogo-fila catalogo-oscuro">
-      <button type="button">Ver seguimiento</button>
-      <button type="button" class="fantasma">Mis donaciones</button>
+    <div class="catalogo-demo">
+      <h3>Título de sección</h3>
+      <h4>Título de bloque</h4>
+      <p>Texto de lectura: las donaciones llegan a quienes las necesitan y cada paso queda a la
+        vista. <a href="#tipografia-titulo">Un enlace dentro del texto</a>.</p>
+      <p><small>Texto chico para ayudas y datos secundarios.</small></p>
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="campo-titulo">
-    <h2 id="campo-titulo">Campo de formulario</h2>
-    <p class="catalogo-patron">Patrón: Material Text fields. Fragmento <code>campo</code>.</p>
-    <div class="catalogo-columnas">
+  <section class="catalogo pieza" aria-labelledby="botones-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="botones-titulo">Botones</h2>
+      <p class="catalogo-patron">Patrón: Material Buttons (filled, outlined, text). Una acción
+        principal por pantalla.</p>
+    </div>
+    <div class="catalogo-demo">
+      <div class="catalogo-fila">
+        <button type="button">Confirmar recepción</button>
+        <button type="button" class="secondary">Ver detalle</button>
+        <button type="button" class="outline">Agregar otra foto</button>
+        <button type="button" disabled>Confirmar recepción</button>
+        <button type="button" aria-busy="true">Enviando…</button>
+        <a href="#botones-titulo" role="button" class="outline">Enlace con forma de botón</a>
+      </div>
+      <div class="catalogo-fila catalogo-oscuro">
+        <button type="button">Ver seguimiento</button>
+        <button type="button" class="fantasma">Mis donaciones</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="catalogo pieza" aria-labelledby="campo-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="campo-titulo">Campo de formulario</h2>
+      <p class="catalogo-patron">Patrón: Material Text fields. Fragmento <code>campo</code>.</p>
+    </div>
+    <div class="catalogo-demo catalogo-columnas">
       <div th:replace="~{alternativas/encastre/fragmentos/campo :: campo('cantidad', 'Cantidad de bultos', 'number',
            'Contá las cajas o bolsas que recibiste.', null, false)}"></div>
       <div th:replace="~{alternativas/encastre/fragmentos/campo :: campo('remito', 'Número de remito', 'text', null,
@@ -190,10 +251,12 @@
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="fotos-titulo">
-    <h2 id="fotos-titulo">Carga de fotos</h2>
-    <p class="catalogo-patron">Patrón: HIG Photo pickers. Fragmento <code>carga-fotos</code>.</p>
-    <div class="catalogo-columnas">
+  <section class="catalogo pieza" aria-labelledby="fotos-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="fotos-titulo">Carga de fotos</h2>
+      <p class="catalogo-patron">Patrón: HIG Photo pickers. Fragmento <code>carga-fotos</code>.</p>
+    </div>
+    <div class="catalogo-demo catalogo-columnas">
       <div th:replace="~{alternativas/encastre/fragmentos/carga-fotos :: carga-fotos('fotos', 'Fotos de lo que llegó',
            'JPG o PNG, hasta 5 MB cada una. Se usan para mostrar que la donación llegó.', null)}"></div>
       <div th:replace="~{alternativas/encastre/fragmentos/carga-fotos :: carga-fotos('fotos-error', 'Fotos de lo que llegó',
@@ -201,53 +264,67 @@
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="aviso-titulo">
-    <h2 id="aviso-titulo">Aviso breve</h2>
-    <p class="catalogo-patron">Patrón: Material Snackbar. Fragmento <code>aviso</code>. En las
-      pantallas aparece en la región de avisos, abajo.</p>
-    <div class="catalogo-columnas">
+  <section class="catalogo pieza" aria-labelledby="aviso-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="aviso-titulo">Aviso breve</h2>
+      <p class="catalogo-patron">Patrón: Material Snackbar. Fragmento <code>aviso</code>. En las
+        pantallas aparece en la región de avisos, abajo.</p>
+    </div>
+    <div class="catalogo-demo catalogo-columnas">
       <div th:replace="~{alternativas/encastre/fragmentos/aviso :: aviso('Recepción confirmada. Gracias por avisar.', 'exito')}"></div>
       <div th:replace="~{alternativas/encastre/fragmentos/aviso :: aviso('Guardamos tus cambios.', 'info')}"></div>
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="banners-titulo">
-    <h2 id="banners-titulo">Banner</h2>
-    <p class="catalogo-patron">Patrón: Material Banners. Fragmento <code>banner</code>.</p>
-    <div th:replace="~{alternativas/encastre/fragmentos/banner :: banner('No pudimos cargar tus entregas',
-         'Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, escribinos con este código.',
-         'error', 'a1b2c3d4e5f6')}"></div>
-    <div th:replace="~{alternativas/encastre/fragmentos/banner :: banner('Estás sin conexión',
-         'Lo que cargues se envía cuando vuelva la conexión.', 'advertencia', null)}"></div>
+  <section class="catalogo pieza" aria-labelledby="banners-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="banners-titulo">Banner</h2>
+      <p class="catalogo-patron">Patrón: Material Banners. Fragmento <code>banner</code>.</p>
+    </div>
+    <div class="catalogo-demo">
+      <div th:replace="~{alternativas/encastre/fragmentos/banner :: banner('No pudimos cargar tus entregas',
+           'Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, escribinos con este código.',
+           'error', 'a1b2c3d4e5f6')}"></div>
+      <div th:replace="~{alternativas/encastre/fragmentos/banner :: banner('Estás sin conexión',
+           'Lo que cargues se envía cuando vuelva la conexión.', 'advertencia', null)}"></div>
+    </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="dialogo-demo-titulo-seccion">
-    <h2 id="dialogo-demo-titulo-seccion">Diálogo de confirmación</h2>
-    <p class="catalogo-patron">Patrón: Material Dialogs y HIG Alerts. Fragmento
-      <code>dialogo</code>. Solo para acciones que no se pueden deshacer.</p>
-    <form id="form-dialogo-demo" action="#" method="get">
-      <button type="button" class="outline" commandfor="dialogo-demo" command="show-modal">Cancelar
-        la entrega</button>
-    </form>
-    <dialog th:replace="~{alternativas/encastre/fragmentos/dialogo :: dialogo('dialogo-demo', '¿Cancelar la entrega?',
-            'La entidad deja de esperarla y no se puede deshacer.', 'Sí, cancelar',
-            'form-dialogo-demo')}"></dialog>
+  <section class="catalogo pieza" aria-labelledby="dialogo-demo-titulo-seccion">
+    <div class="catalogo-cabeza">
+      <h2 id="dialogo-demo-titulo-seccion">Diálogo de confirmación</h2>
+      <p class="catalogo-patron">Patrón: Material Dialogs y HIG Alerts. Fragmento
+        <code>dialogo</code>. Solo para acciones que no se pueden deshacer.</p>
+    </div>
+    <div class="catalogo-demo">
+      <form id="form-dialogo-demo" action="#" method="get">
+        <button type="button" class="outline" commandfor="dialogo-demo" command="show-modal">Cancelar
+          la entrega</button>
+      </form>
+      <dialog th:replace="~{alternativas/encastre/fragmentos/dialogo :: dialogo('dialogo-demo', '¿Cancelar la entrega?',
+              'La entidad deja de esperarla y no se puede deshacer.', 'Sí, cancelar',
+              'form-dialogo-demo')}"></dialog>
+    </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="carga-titulo">
-    <h2 id="carga-titulo">Carga en curso</h2>
-    <p class="catalogo-patron">Patrón: Material Progress indicators. Fragmentos
-      <code>esqueleto</code> (una lista que tarda) y <code>cargando</code> (una acción que tarda).</p>
-    <div class="catalogo-columnas">
+  <section class="catalogo pieza" aria-labelledby="carga-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="carga-titulo">Carga en curso</h2>
+      <p class="catalogo-patron">Patrón: Material Progress indicators. Fragmentos
+        <code>esqueleto</code> (una lista que tarda) y <code>cargando</code> (una acción que tarda).</p>
+    </div>
+    <div class="catalogo-demo catalogo-columnas">
       <div th:replace="~{alternativas/encastre/fragmentos/esqueleto :: esqueleto(3)}"></div>
       <p><span th:replace="~{alternativas/encastre/fragmentos/cargando :: cargando('cargando-demo', 'Enviando fotos…', true)}"></span></p>
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="vacio-titulo">
-    <h2 id="vacio-titulo">Estado vacío</h2>
-    <p class="catalogo-patron">Patrón: Material Empty states. Fragmento <code>estado-vacio</code>.</p>
-    <div class="catalogo-columnas">
+  <section class="catalogo pieza" aria-labelledby="vacio-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="vacio-titulo">Estado vacío</h2>
+      <p class="catalogo-patron">Patrón: Material Empty states. Fragmento <code>estado-vacio</code>.</p>
+    </div>
+    <div class="catalogo-demo catalogo-columnas">
       <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio('Todavía no tenés entregas para confirmar',
                'Cuando una donación llegue a tu entidad, aparece acá para que confirmes la recepción.',
                'Ver necesidades publicadas', '#vacio-titulo')}"></section>
@@ -256,61 +333,73 @@
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="insignia-titulo">
-    <h2 id="insignia-titulo">Estado de una entrega</h2>
-    <p class="catalogo-patron">Fragmento <code>insignia</code>. Color y texto siempre juntos.</p>
-    <p class="catalogo-fila">
+  <section class="catalogo pieza" aria-labelledby="insignia-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="insignia-titulo">Estado de una entrega</h2>
+      <p class="catalogo-patron">Fragmento <code>insignia</code>. Color y texto siempre juntos.</p>
+    </div>
+    <p class="catalogo-demo catalogo-fila">
       <th:block th:each="estado : ${estados}">
         <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estado})}">Estado</span>
       </th:block>
     </p>
   </section>
 
-  <section class="catalogo" aria-labelledby="tarjeta-titulo">
-    <h2 id="tarjeta-titulo">Tarjeta</h2>
-    <p class="catalogo-patron">Patrón: Material Cards. Fragmento <code>tarjeta</code>. Con foto y
-      sin foto: sin foto, la portada muestra el ícono de lo donado.</p>
-    <div class="tarjetas">
+  <section class="catalogo pieza" aria-labelledby="tarjeta-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="tarjeta-titulo">Tarjeta</h2>
+      <p class="catalogo-patron">Patrón: Material Cards. Fragmento <code>tarjeta</code>. Con foto y
+        sin foto: sin foto, la portada muestra el ícono de lo donado.</p>
+    </div>
+    <div class="catalogo-demo tarjetas">
       <th:block th:each="entrega : ${entregas}">
         <article th:replace="~{alternativas/encastre/fragmentos/tarjeta :: tarjeta(${entrega})}"></article>
       </th:block>
     </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="tabla-titulo">
-    <h2 id="tabla-titulo">Tabla</h2>
-    <p class="catalogo-patron">Patrón: Material Data tables. En el celular, cada fila se muestra
-      como una tarjeta.</p>
-    <table class="tabla">
-      <caption>Entregas de la semana</caption>
-      <thead>
-        <tr>
-          <th scope="col">Donación</th>
-          <th scope="col">Destino</th>
-          <th scope="col">Fecha</th>
-          <th scope="col">Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="entrega : ${entregas}">
-          <th scope="row" data-etiqueta="Donación" th:text="${entrega.titulo}">Donación</th>
-          <td data-etiqueta="Destino" th:text="${entrega.destino}">Destino</td>
-          <td data-etiqueta="Fecha" th:text="${entrega.fecha}">Fecha</td>
-          <td data-etiqueta="Estado">
-            <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <section class="catalogo pieza" aria-labelledby="tabla-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="tabla-titulo">Tabla</h2>
+      <p class="catalogo-patron">Patrón: Material Data tables. En el celular, cada fila se muestra
+        como una tarjeta.</p>
+    </div>
+    <div class="catalogo-demo">
+      <table class="tabla">
+        <caption>Entregas de la semana</caption>
+        <thead>
+          <tr>
+            <th scope="col">Donación</th>
+            <th scope="col">Destino</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="entrega : ${entregas}">
+            <th scope="row" data-etiqueta="Donación" th:text="${entrega.titulo}">Donación</th>
+            <td data-etiqueta="Destino" th:text="${entrega.destino}">Destino</td>
+            <td data-etiqueta="Fecha" th:text="${entrega.fecha}">Fecha</td>
+            <td data-etiqueta="Estado">
+              <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
-  <section class="catalogo" aria-labelledby="navegacion-titulo">
-    <h2 id="navegacion-titulo">Navegación</h2>
-    <p class="catalogo-patron">Patrón: Material Navigation rail. Fragmento <code>navegacion</code>:
-      la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas
-      privadas, en el celular, pasa a una barra inferior: <a href="/estilos/armazon"
-      th:href="@{/estilos/armazon}">ver la muestra del área privada</a>.</p>
-    <nav th:replace="~{alternativas/encastre/fragmentos/navegacion :: navegacion(${opciones})}"></nav>
+  <section class="catalogo pieza" aria-labelledby="navegacion-titulo">
+    <div class="catalogo-cabeza">
+      <h2 id="navegacion-titulo">Navegación</h2>
+      <p class="catalogo-patron">Patrón: Material Navigation rail. Fragmento <code>navegacion</code>:
+        el riel de piezas, una por sección. La actual es la pieza de sol, encastrada en el tablero.
+        En las pantallas privadas, en el celular, baja y queda fija abajo, con el nombre corto: <a
+        href="/estilos/armazon" th:href="@{/estilos/armazon}">ver la muestra del área privada</a>.</p>
+    </div>
+    <div class="catalogo-demo">
+      <nav th:replace="~{alternativas/encastre/fragmentos/navegacion :: navegacion(${opciones})}"></nav>
+    </div>
   </section>
 </th:block>
 </body>

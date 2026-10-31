@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<!--/* Muestra del armazón de las pantallas privadas (/estilos/armazon): el tablero del donante de
-       /estilos dentro de layout-privado. Datos de ejemplo. */-->
+<!--/* Muestra del armazón de las pantallas privadas (/estilos/armazon): el tablero del inicio del
+       donante de /estilos, entero, dentro de layout-privado. Datos de ejemplo. El nombre del menú
+       ("Inicio") queda a la vista como rótulo chico de tinta sobre el saludo. El tablero recibe acá
+       los id a los que apuntan sus enlaces: "Mis donaciones" y "Ver el detalle" llegan a la cifra
+       de donaciones realizadas, y "Ver incentivos", a la categoría; en /estilos esos id son
+       secciones del catálogo. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -8,11 +12,8 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <h1 class="solo-lectores">Inicio</h1>
-  <section th:replace="~{alternativas/encastre/paginas/estilos :: section.destacado}"></section>
-  <div th:replace="~{alternativas/encastre/paginas/estilos :: div.cifras}"></div>
-  <div th:replace="~{alternativas/encastre/paginas/estilos :: div.muestra-grilla}"></div>
-  <section th:replace="~{alternativas/encastre/paginas/estilos :: section[aria-labelledby='notas-titulo']}"></section>
+  <h1 class="rotulo-menu">Inicio</h1>
+  <div th:replace="~{alternativas/encastre/paginas/estilos :: tablero('tarjeta-titulo', 'insignia-titulo')}"></div>
 </th:block>
 </body>
 </html>

@@ -1,11 +1,18 @@
-<!--/* Recorrido de una donación: la ruta punteada del prototipo v2, con nodos numerados. Patrón:
-       Material Steppers. Cada paso dice su estado en texto; el actual lleva aria-current="step".
+<!--/* Recorrido de una donación: un paso, una pieza. Los hechos son piezas de crema puestas, con una
+       tilde; el actual, la pieza naranja de "lo de ahora", con el camión; lo que falta, un hueco de
+       tinta con borde a trazos y su número. Cada pieza encastra con la siguiente. Patrón: Material
+       Steppers. Cada paso dice su estado en texto; el actual lleva aria-current="step".
        titulo: nombre accesible de la lista. pasos: List<PasoRecorrido>. */-->
-<ol th:fragment="recorrido(titulo, pasos)" class="recorrido" th:aria-label="${titulo}">
+<ol th:fragment="recorrido(titulo, pasos)" class="recorrido piezas-chicas" th:aria-label="${titulo}">
   <li th:each="paso, vuelta : ${pasos}" class="recorrido-paso"
       th:classappend="|recorrido-paso--${paso.avance.tono}|"
       th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
-    <span class="recorrido-nodo" aria-hidden="true" th:text="${vuelta.count}">1</span>
+    <span class="recorrido-nodo" aria-hidden="true"><th:block
+          th:if="${paso.avance.tono == 'hecho'}"><svg
+          th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 18)}"></svg></th:block><th:block
+          th:if="${paso.avance.tono == 'actual'}"><svg
+          th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 18)}"></svg></th:block><th:block
+          th:if="${paso.avance.tono == 'pendiente'}" th:text="${vuelta.count}">1</th:block></span>
     <span class="recorrido-texto"><span th:text="${paso.nombre}">Paso</span><small
           th:text="${paso.detalle}">Detalle</small></span>
   </li>
