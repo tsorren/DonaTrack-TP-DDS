@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): la solicitud de la entidad ya
+       salió (RF-AUTH-06: queda pendiente hasta que el equipo la aprueba). La pieza del primer
+       paso encastra en su lugar (solo con movimiento); el que sigue, la revisión, es la pieza
+       naranja de lo de ahora, con su fecha. Salidas: el mapa y la portada. Hoy es el miércoles
+       14 de octubre de 2026; la revisión llega hasta el viernes 16 (2 días hábiles). Estilos:
+       prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Solicitud enviada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Registrarse</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-un-paso">
+    <section class="pieza pub-cabeza pub-menta pub-abajo" aria-labelledby="enviada-titulo">
+      <h2 id="enviada-titulo" class="pub-voz">Tu pieza ya está en la mesa</h2>
+      <div class="pub-aviso" role="status" tabindex="-1" autofocus>
+        <div th:replace="~{alternativas/encastre/fragmentos/aviso :: aviso('Recibimos la solicitud de tu entidad. Te escribimos al correo de contacto cuando el equipo la apruebe.', 'exito')}"></div>
+      </div>
+    </section>
+
+    <section class="pieza pub-sigue" aria-labelledby="sigue-titulo">
+      <h3 id="sigue-titulo">Cómo sigue</h3>
+      <ol class="recorrido piezas-chicas" aria-label="Cómo sigue la solicitud">
+        <li class="recorrido-paso recorrido-paso--hecho pub-encastrada">
+          <span class="recorrido-nodo" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 18)}"></svg></span>
+          <span class="recorrido-texto"><span>Enviaste la solicitud</span><small>Hoy, miércoles
+            14 de octubre</small></span>
+        </li>
+        <li class="recorrido-paso recorrido-paso--actual pieza-ahora" aria-current="step">
+          <span class="recorrido-nodo" aria-hidden="true">2</span>
+          <span class="recorrido-texto"><span>El equipo la revisa</span><small>Hasta el viernes
+            16 de octubre</small></span>
+        </li>
+        <li class="recorrido-paso recorrido-paso--pendiente">
+          <span class="recorrido-nodo" aria-hidden="true">3</span>
+          <span class="recorrido-texto"><span>Aparecés en el mapa</span><small>Te avisamos por
+            correo</small></span>
+        </li>
+      </ol>
+      <div class="pub-acciones">
+        <a href="/prototipo/encastre/publico-mapa" th:href="@{/prototipo/encastre/publico-mapa}"
+           role="button">Ver el mapa de entregadas</a>
+        <a href="/prototipo/encastre/publico-portada"
+           th:href="@{/prototipo/encastre/publico-portada}" class="enlace-fuerte">Volver a la
+          portada</a>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

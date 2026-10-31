@@ -1,0 +1,1432 @@
+/*
+ * Encastre, prototipo del flujo (iteración 3), parte pública: la portada se arma sola.
+ *
+ * La portada es un mosaico que se recorre de arriba abajo: el titular con su palabra resaltada
+ * en una pieza de sol, las cifras al costado, las cinco paradas de una donación encastradas en
+ * fila y, debajo de cada parada, la pieza del rol que la hace (el color dice quién: sol para vos,
+ * lila para el depósito, menta para la entidad). Al final del mosaico queda un hueco: falta tu
+ * pieza. Ingresar, recuperar y registrarse son una pieza de a un paso: cada dato es una pieza
+ * numerada que encastra en la que sigue, y la que estás llenando se pone de sol.
+ *
+ * Lengüetas: las mismas de estructura.css (el círculo del color de la pieza con el aro de la
+ * junta, en ::after o ::before); acá solo se dice hacia dónde sale cada una en cada ancho.
+ * Solo tokens de uso y los quiebres de tokens.css, mobile first (InterfazFitnessTest).
+ */
+
+/* La mesa pública: el nombre de la pantalla es una pestaña sobre la tinta. */
+.mesa > .pub-pestana {
+  margin: var(--espacio-2) 0 var(--espacio-1) var(--espacio-3);
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-mesa-texto-suave);
+}
+
+.pub {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--medida-junta);
+}
+
+/* Mientras una pieza cae girada, no ensancha la página. */
+.mesa > .pub {
+  overflow-x: clip;
+}
+
+.pub :is(h2, h3, p, ul, ol, section, form, fieldset) {
+  margin: 0;
+}
+
+.pub :is(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+
+.pub :is(h2, h3) {
+  color: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.pub h2 {
+  font-size: var(--tamano-pieza-titulo);
+  line-height: 1.08;
+}
+
+.pub h3 {
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.1;
+}
+
+/* Colores de pieza: cada color dice algo (quién, qué), nunca adorno. */
+.pub-sol {
+  --color-pieza-fondo: var(--color-pieza-sol);
+}
+
+.pub-lila {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.pub-menta {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.pub-azul {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.pub-durazno {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+}
+
+.pub-rosa {
+  --color-pieza-fondo: var(--color-pieza-rosa);
+}
+
+.pub-gris {
+  --color-pieza-fondo: var(--color-pieza-gris);
+}
+
+/* Lengüetas: hacia abajo (::after) y, en los mosaicos anchos, hacia la derecha. */
+.pub-abajo::after,
+.pub-pasos > .pieza:not(:last-child)::after,
+.pub-paradas > .pieza::after,
+.pub-cifras > .pieza:not(:last-child)::after,
+.pub-llegaron > .pieza:not(:last-child)::after,
+.pub-roles > .pieza:not(:last-child)::after,
+.pub-mapa-lista > .pieza:not(:last-child)::after {
+  content: "";
+  top: 100%;
+  bottom: auto;
+  left: calc(var(--medida-lengueta-x, 50%) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: var(--medida-lengueta-d);
+}
+
+/* Títulos: el de la portada, enorme; el de cada pantalla, en la letra del juego. */
+.pub-titulo {
+  max-width: 14ch;
+  font-size: var(--tamano-portada);
+}
+
+.pub .pub-titulo {
+  font-size: var(--tamano-portada);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.pub .pub-voz {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.02;
+}
+
+/* La palabra resaltada: una pieza de sol, con su junta y su pisada, apenas torcida. */
+.pub-resalta {
+  display: inline-block;
+  margin-block-start: var(--espacio-1);
+  padding: 0 0.16em 0.04em;
+  background: var(--color-pieza-sol);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: var(--sombra-pisada-alta);
+  transform: rotate(-2deg);
+}
+
+.pub-texto {
+  max-width: 44ch;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 600;
+}
+
+.pub-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.pub-acciones > * {
+  margin-block: 0;
+}
+
+.pub-numero {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pub-nota {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+/* ---------- Portada ---------- */
+
+.pub-titular {
+  --medida-lengueta-x: 18%;
+
+  gap: var(--espacio-4);
+  padding-block: var(--espacio-6);
+}
+
+.pub-titular.pub-abajo::after {
+  z-index: 3;
+}
+
+/* Las cifras: una pieza por dato, cada una de su color, encastradas en columna. */
+.pub-cifras {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-cifras > .pieza {
+  --medida-lengueta-x: 78%;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  padding-block: var(--espacio-4);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.pub-cifras b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-1);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pub-cifras small {
+  flex-basis: 100%;
+  font-size: var(--tamano-mini);
+}
+
+/* El viaje: la cabeza, las cinco paradas y los roles que las hacen. */
+.pub-viaje {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-viaje-cabeza {
+  --color-pieza-fondo: var(--color-pieza-crema);
+  --medida-lengueta-x: 2.6rem;
+}
+
+.pub-viaje-cabeza {
+  align-items: center;
+}
+
+/* Qué dice cada color: quién tiene la donación en esa parada. */
+.pub-quienes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.pub-quienes li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.pub-quienes li::before {
+  content: "";
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--color-pieza-fondo);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-chico);
+}
+
+.pub-paradas,
+.pub-roles {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-parada {
+  --medida-lengueta-x: 2.6rem;
+
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.pub-parada > :not(.pub-parada-signos) {
+  grid-column: 2;
+}
+
+.pub-parada-signos {
+  display: grid;
+  grid-row: span 3;
+  justify-items: center;
+  gap: var(--espacio-2);
+}
+
+.pub-parada-icono {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 50%;
+}
+
+.pub-parada p {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pub .pub-quien {
+  justify-self: start;
+  margin-block-start: var(--espacio-1);
+  padding: 0.125rem var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.pub-rol {
+  --medida-lengueta-x: 2.6rem;
+
+  gap: var(--espacio-3);
+  align-content: start;
+}
+
+.pub-rol p {
+  max-width: 40ch;
+  font-weight: 600;
+}
+
+.pub-rol > [role="button"],
+.pub-rol > .pub-acciones {
+  justify-self: start;
+  margin-block: var(--espacio-2) 0;
+}
+
+/* Ya llegaron: la cabeza, la entrega con foto y las otras, piezas del color de lo que se donó. */
+.pub-llegaron {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-llegaron-cabeza {
+  --color-pieza-fondo: var(--color-pieza-menta);
+  --medida-lengueta-x: 2.6rem;
+}
+
+.pub-llegaron-cabeza > .enlace-fuerte {
+  justify-self: start;
+}
+
+.pub-llegaron .tarjeta {
+  border: 0;
+}
+
+.pub-llegaron .tarjeta-foto {
+  max-height: 24rem;
+}
+
+.pub-llego {
+  --medida-lengueta-x: 2.6rem;
+
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.pub-llego > :not(.pub-llego-signo) {
+  grid-column: 2;
+}
+
+.pub-llego-signo {
+  display: grid;
+  grid-row: span 3;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-pieza-sol);
+}
+
+.pub-llego h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-pieza-texto);
+}
+
+.pub-llego p {
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.pub-llego .insignia {
+  margin-block-start: var(--espacio-1);
+}
+
+/* El final del mosaico: el hueco con forma de pieza. Falta la tuya. */
+.pub-falta {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-4);
+  padding: var(--espacio-5) var(--espacio-4);
+  border: var(--borde-junta) dashed var(--color-mesa-texto-suave);
+  border-radius: var(--radio-pieza);
+  color: var(--color-mesa-texto);
+}
+
+.pub-falta .pub-falta-dibujo {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.pub-falta-hueco {
+  fill: none;
+  stroke: var(--color-mesa-texto-suave);
+  stroke-dasharray: 6 5;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.pub-falta-suelta {
+  fill: var(--color-pieza-sol);
+  stroke: var(--color-junta);
+  stroke-width: 5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pub-falta > div {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.pub .pub-falta h2 {
+  color: var(--color-mesa-texto);
+}
+
+.pub-falta p {
+  color: var(--color-mesa-texto-suave);
+  font-weight: 600;
+}
+
+.pub-falta > .pub-acciones {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Mapa de entregadas ---------- */
+
+.pub-mapa-cabeza {
+  --medida-lengueta-x: 2.6rem;
+}
+
+/* La franja que filtra: va directo sobre la tinta, cada categoría es una pieza que se elige. */
+.pub-franja {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-2);
+}
+
+.pub-franja fieldset {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: 0;
+  border: 0;
+}
+
+.pub-franja legend {
+  margin-block-end: var(--espacio-2);
+  padding: 0;
+  color: var(--color-mesa-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.pub-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.pub-opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-4) var(--espacio-2) var(--espacio-2);
+  background: var(--color-pieza-gris);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-boton);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+/* El radio cubre la pieza entera: se toca en cualquier lugar y mide lo que mide la pieza. */
+.pub-opcion input {
+  position: absolute;
+  inset: calc(-1 * var(--borde-junta));
+  width: auto;
+  height: auto;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pub-opcion-signo {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-pieza-crema);
+  border-radius: 50%;
+}
+
+.pub-opcion:has(input:checked) {
+  background: var(--color-pieza-sol);
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-junta);
+}
+
+.pub-opcion:has(input:checked) .pub-opcion-signo {
+  background: var(--color-pieza-tinta);
+  color: var(--color-pieza-sol);
+}
+
+.pub-opcion:has(input:focus-visible) {
+  outline: var(--borde-foco) solid var(--color-foco-sobre-oscuro);
+  outline-offset: 2px;
+}
+
+.pub-franja > button {
+  justify-self: start;
+  width: auto;
+  margin: 0;
+}
+
+/* El plano: el barrio en manzanas, el depósito al centro y cada entidad con su número. */
+.pub-plano {
+  --color-pieza-fondo: var(--color-pieza-azul);
+  --medida-lengueta-x: 2.6rem;
+}
+
+.pub-plano-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.pub-plano-dibujo {
+  width: 100%;
+  height: auto;
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-chico);
+}
+
+.pub-manzana {
+  fill: var(--color-pieza-gris);
+}
+
+.pub-camino {
+  fill: none;
+  stroke: var(--color-pieza-tinta);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pub-deposito-fondo {
+  fill: var(--color-pieza-tinta);
+}
+
+.pub-deposito-pieza {
+  fill: var(--color-pieza-sol);
+}
+
+.pub-marca-entidad circle {
+  fill: var(--color-pieza-menta);
+  stroke: var(--color-junta);
+  stroke-width: 3;
+}
+
+.pub-marca-entidad text {
+  fill: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.pub-marca-entidad--sin circle {
+  fill: var(--color-pieza-crema);
+  stroke-dasharray: 5 4;
+}
+
+.pub-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.pub-leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.pub-leyenda li::before {
+  content: "";
+  width: 1.125rem;
+  height: 1.125rem;
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 50%;
+}
+
+.pub-leyenda .pub-leyenda-deposito::before {
+  background: var(--color-pieza-sol);
+  border-radius: var(--radio-chico);
+}
+
+.pub-leyenda .pub-leyenda-entidad::before {
+  background: var(--color-pieza-menta);
+}
+
+.pub-leyenda .pub-leyenda-camino::before {
+  height: 0.375rem;
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+}
+
+/* La lista y su cabeza, una columna de piezas. */
+.pub-mapa-lado {
+  display: grid;
+  align-content: start;
+  gap: var(--medida-junta);
+}
+
+.pub-mapa-lado > .pieza {
+  --medida-lengueta-x: 2.6rem;
+}
+
+/* Lo que llegó, por categoría: una pieza chica por categoría, del color de lo donado. */
+.pub-mapa-resumen > li {
+  display: grid;
+  flex: 1 1 0;
+  align-content: end;
+  min-width: 0;
+  padding: var(--espacio-2) var(--espacio-3) var(--espacio-2) var(--espacio-4);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pub-mapa-resumen b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  line-height: 1;
+}
+
+.pub-mapa-resumen > :not(:last-child)::after {
+  content: "";
+  top: calc(50% - var(--medida-lengueta-aro));
+  bottom: auto;
+  left: 100%;
+  width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  height: calc(2 * var(--medida-lengueta-aro));
+  --medida-lengueta-cx: var(--medida-lengueta-d);
+  --medida-lengueta-cy: 50%;
+}
+
+/* La lista del mapa: lo mismo que el plano, en texto. */
+.pub-mapa-lista {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-mapa-lista > .pieza {
+  --medida-lengueta-x: 2.6rem;
+
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espacio-2) var(--espacio-3);
+  scroll-margin-top: var(--espacio-4);
+}
+
+.pub-mapa-lista > .pieza > :not(.pub-numero) {
+  grid-column: 2;
+}
+
+.pub-mapa-lista .pub-numero {
+  grid-row: span 3;
+  background: var(--color-pieza-menta);
+  border: var(--borde-junta) solid var(--color-junta);
+  color: var(--color-pieza-texto);
+}
+
+.pub-mapa-lista > .pieza:target {
+  --color-pieza-fondo: var(--color-pieza-sol);
+}
+
+.pub-mapa-lista h3 {
+  overflow-wrap: anywhere;
+}
+
+.pub-cuenta {
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.pub-entregas {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.pub-entregas li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.pub-entregas small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+}
+
+.pub-salida {
+  --color-pieza-fondo: var(--color-pieza-sol);
+}
+
+/* ---------- Ingresar, recuperar y registrarse: una pieza de a un paso ---------- */
+
+.pub-cabeza {
+  --medida-lengueta-x: 2.6rem;
+
+  gap: var(--espacio-3);
+}
+
+.pub-cabeza > .banner {
+  margin: var(--espacio-2) 0 0;
+}
+
+/* El error es sobrio: la letra de texto, el color del estado y su signo. */
+.pub .banner h3 {
+  color: var(--color-banner-texto);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-titulo-4);
+  line-height: 1.3;
+}
+
+.pub-pasos {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-paso {
+  --medida-lengueta-x: calc(var(--espacio-relleno-linea) + 1.125rem);
+
+  gap: var(--espacio-3);
+  padding-block: var(--espacio-4);
+  padding-inline-start: calc(var(--espacio-relleno-linea) + 2.25rem + var(--espacio-3));
+}
+
+/* El número del paso, a la izquierda; la lengüeta sale justo debajo de él. */
+.pub-paso > .pub-numero {
+  position: absolute;
+  top: var(--espacio-4);
+  left: var(--espacio-relleno-linea);
+}
+
+/* Un paso de varios datos es un fieldset; su título, la leyenda, va en el flujo de la pieza. */
+fieldset.pub-paso {
+  border: 0;
+}
+
+.pub-paso > legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+}
+
+/* La pieza que estás llenando ahora se pone de sol: una cosa a la vez. */
+.pub-paso:focus-within {
+  --color-pieza-fondo: var(--color-pieza-sol);
+}
+
+.pub-paso .campo {
+  margin: 0;
+}
+
+.pub-paso-titulo {
+  margin: 0;
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-texto);
+  font-weight: 800;
+}
+
+.pub .campo > select {
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  color: var(--color-texto);
+  font-weight: 700;
+}
+
+/* La casilla: un cuadro de 48 px que se tilda con tinta. */
+.pub-casilla {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.pub-casilla input[type="checkbox"] {
+  flex: none;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  margin: 0;
+  background-color: var(--color-pieza-crema);
+  background-size: 1.5rem;
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-chico);
+}
+
+.pub-casilla input[type="checkbox"]:checked {
+  background-color: var(--color-pieza-tinta);
+  border-color: var(--color-junta);
+}
+
+.pub-fin {
+  gap: var(--espacio-3);
+}
+
+.pub-fin > :is(button, [role="button"]) {
+  justify-self: start;
+  margin-block: 0;
+}
+
+.pub-fin > .enlace-fuerte {
+  justify-self: start;
+}
+
+/* En el celular, la pieza de la acción espera abajo, al alcance del pulgar, mientras se llena
+   el resto; desde 860 px vuelve a su lugar. */
+.pub-pegada {
+  position: sticky;
+  bottom: var(--espacio-2);
+  z-index: 3;
+  box-shadow: 0 0 0 var(--medida-junta) var(--color-junta);
+}
+
+.pub-extra {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-extra > .pieza {
+  gap: var(--espacio-3);
+}
+
+.pub-extra > .pieza > :is([role="button"], button) {
+  justify-self: start;
+  margin-block: 0;
+}
+
+.pub-extra p {
+  font-weight: 600;
+}
+
+/* Los rangos que vas a armar: una escalera de piezas chicas; la primera, puesta; las otras,
+   huecos. Cada una entra en la de abajo. */
+.pub-rangos {
+  --medida-lengueta-x: 1.75rem;
+
+  flex-direction: column;
+}
+
+.pub-rangos > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-4);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.pub-rangos b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+}
+
+.pub-rangos > :first-child {
+  --color-pieza-fondo: var(--color-pieza-sol);
+}
+
+.pub-rangos > :not(:first-child) {
+  --color-pieza-fondo: var(--color-hueco);
+
+  outline: var(--borde-junta) dashed var(--color-hueco-borde);
+  outline-offset: calc(-1 * var(--borde-junta) - 2px);
+  color: var(--color-mesa-texto);
+}
+
+.pub-rangos > :not(:last-child)::after {
+  content: "";
+  top: 100%;
+  bottom: auto;
+  left: calc(var(--medida-lengueta-x) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: var(--medida-lengueta-d);
+}
+
+.pub-rangos-pieza {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+/* Elegir cuenta: las dos piezas de rol, cada una con lo que da y lo que pide. */
+.pub-eleccion {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.pub-eleccion > .pieza {
+  --medida-lengueta-x: 2.6rem;
+
+  gap: var(--espacio-3);
+  align-content: start;
+}
+
+.pub-eleccion > .pieza:not(:last-child)::after {
+  content: "";
+  top: 100%;
+  bottom: auto;
+  left: calc(var(--medida-lengueta-x) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: var(--medida-lengueta-d);
+}
+
+.pub-eleccion-cabeza {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.pub-eleccion-signo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-pieza-sol);
+}
+
+.pub-puntos {
+  display: grid;
+  gap: var(--espacio-2);
+  font-weight: 600;
+}
+
+.pub-puntos li {
+  display: flex;
+  gap: var(--espacio-2);
+}
+
+.pub-puntos li::before {
+  content: "";
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-block-start: 0.35em;
+  background: var(--color-pieza-tinta);
+  border-radius: 0.1875rem;
+  transform: rotate(45deg);
+}
+
+.pub-pide {
+  padding: var(--espacio-2) var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.pub-eleccion > .pieza > [role="button"] {
+  justify-self: start;
+  margin-block: var(--espacio-1) 0;
+}
+
+/* El recorrido de una solicitud o de un enlace: el del sistema, dentro de su pieza. */
+.pub-sigue {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.pub-sigue .recorrido-paso {
+  font-size: var(--tamano-chico);
+}
+
+.pub-aviso {
+  display: grid;
+}
+
+.pub-aviso:focus {
+  outline: none;
+}
+
+/* ---------- Movimiento: la portada se arma sola ---------- */
+
+/* Solo si la persona no pidió reducirlo: las piezas caen y encastran una tras otra, de arriba
+   abajo; la palabra resaltada cae última. Donde el navegador lo permite, las paradas, los roles
+   y lo que llegó encastran a medida que entran en pantalla. Sin movimiento, el mosaico ya está
+   armado. */
+@media (prefers-reduced-motion: no-preference) {
+  .pub-arma > * {
+    animation: pub-encastra 520ms var(--movimiento-curva) both;
+  }
+
+  .pub-arma > :nth-child(2) {
+    animation-delay: 120ms;
+  }
+
+  .pub-arma > :nth-child(3) {
+    animation-delay: 240ms;
+  }
+
+  .pub-arma > :nth-child(n + 4) {
+    animation-delay: 360ms;
+  }
+
+  .pub-resalta {
+    animation: pub-resalta 640ms var(--movimiento-curva) 520ms both;
+  }
+
+  .pub-falta-suelta {
+    animation: pub-prueba 1.4s var(--movimiento-curva) 900ms 2;
+  }
+
+  .pub-paso {
+    transition: background-color var(--movimiento-duracion);
+  }
+
+  .pub-encastrada {
+    animation: pub-encastra 620ms var(--movimiento-curva) 200ms both;
+  }
+
+  @supports (animation-timeline: view()) {
+    .pub-paradas > *,
+    .pub-roles > *,
+    .pub-llegaron > * {
+      animation: pub-encastra linear both;
+      animation-range: entry 0% entry 50%;
+      animation-timeline: view();
+    }
+  }
+}
+
+@keyframes pub-encastra {
+  from {
+    transform: translate(0.75rem, -1.5rem) rotate(-4deg);
+  }
+}
+
+@keyframes pub-resalta {
+  from {
+    transform: translateY(-2.5rem) rotate(12deg) scale(1.15);
+  }
+
+  70% {
+    transform: translateY(0.125rem) rotate(-3deg);
+  }
+}
+
+@keyframes pub-prueba {
+  50% {
+    transform: translate(-0.5rem, 0.625rem) rotate(4deg);
+  }
+}
+
+/* Alto contraste: los bordes dibujan las piezas, los huecos y las casillas. */
+@media (forced-colors: active) {
+  .pub-resalta,
+  .pub-quien,
+  .pub-opcion,
+  .pub-casilla input[type="checkbox"] {
+    border: 2px solid CanvasText;
+  }
+
+  .pub-opcion:has(input:checked) {
+    outline: 3px solid CanvasText;
+  }
+
+  .pub-falta-hueco,
+  .pub-falta-suelta {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .pub-paso:focus-within {
+    outline: 3px solid CanvasText;
+  }
+
+  .pub-rangos > :not(:first-child) {
+    outline-color: CanvasText;
+  }
+}
+
+/* Desde 600 px: las cifras en fila, las paradas en dos columnas de texto, más aire. */
+@media (min-width: 37.5em) {
+  .pub-cifras {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pub-cifras > .pieza:not(:last-child)::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-cifras > .pieza {
+    align-content: end;
+  }
+
+  .pub-falta {
+    grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+    padding: var(--espacio-5) var(--espacio-6);
+  }
+
+  .pub-falta > .pub-acciones {
+    grid-column: auto;
+  }
+
+  .pub-franja {
+    padding-inline: var(--espacio-4);
+  }
+
+  .pub-eleccion {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pub-eleccion > .pieza:not(:last-child)::after {
+    top: calc(var(--medida-lengueta-y, 40%) - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-llegaron {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pub-llegaron-cabeza,
+  .pub-llegaron .tarjeta {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Desde 860 px: el mosaico de verdad. El titular y las cifras lado a lado, las paradas en una
+   fila que encastra hacia la derecha y, debajo de cada parada, la pieza del rol que la hace.
+   Los formularios, en dos columnas: la cabeza y lo demás a la izquierda, los pasos a la derecha. */
+@media (min-width: 53.75em) {
+  .pub-arriba {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+
+  .pub-titular.pub-abajo::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-titular {
+    padding: var(--espacio-7) var(--espacio-6);
+  }
+
+  .pub-viaje-cabeza {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--espacio-6);
+  }
+
+  .pub-viaje-cabeza > :not(.pub-quienes) {
+    grid-column: 1;
+  }
+
+  .pub-quienes {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+  }
+
+  .pub-cifras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pub-cifras > .pieza {
+    padding-inline: var(--espacio-5);
+  }
+
+  .pub-cifras > .pieza:not(:last-child)::after {
+    top: 100%;
+    left: calc(var(--medida-lengueta-x) - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  /* Las paradas, en fila: tantas columnas como paradas; los roles, debajo, con el ancho de las
+     paradas que hacen (pub-ancho-N). Cada parada muerde la de la derecha y la de su rol. */
+  .pub-paradas,
+  .pub-roles {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+
+  .pub-ancho-2 {
+    grid-column: span 2;
+  }
+
+  .pub-ancho-3 {
+    grid-column: span 3;
+  }
+
+  .pub-ancho-4 {
+    grid-column: span 4;
+  }
+
+  .pub-parada {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    padding-block: var(--espacio-5);
+  }
+
+  .pub-parada > :not(.pub-parada-signos) {
+    grid-column: auto;
+  }
+
+  .pub-parada-signos {
+    display: flex;
+    grid-row: auto;
+    align-items: center;
+    gap: var(--espacio-2);
+  }
+
+  .pub-paradas > .pieza:not(:last-child)::before {
+    content: "";
+    top: calc(var(--medida-lengueta-y, 2.6rem) - var(--medida-lengueta-aro));
+    bottom: auto;
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-roles > .pieza:not(:last-child)::after {
+    content: none;
+  }
+
+  .pub-rol {
+    padding: var(--espacio-5) var(--espacio-5);
+  }
+
+  .pub-llegaron {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+
+  .pub-llegaron-cabeza {
+    grid-row: span 2;
+    grid-column: 1;
+  }
+
+  .pub-llegaron .tarjeta {
+    grid-row: span 2;
+    grid-column: 2;
+  }
+
+  .pub-llegaron > .pieza.pub-llegaron-cabeza:not(:last-child)::after {
+    top: calc(var(--medida-lengueta-y, 30%) - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-llegaron > .pieza.tarjeta:not(:last-child)::after {
+    top: calc(var(--medida-lengueta-y, 25%) - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-llego {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .pub-llego > :not(.pub-llego-signo) {
+    grid-column: auto;
+  }
+
+  .pub-llego-signo {
+    grid-row: auto;
+  }
+
+  /* El mapa: la cabeza y la franja arriba; el plano y su lista, lado a lado. */
+  .pub-mapa {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+
+  /* A la izquierda, la cabeza, la franja, el plano y la salida; a la derecha, la lista, a lo
+     alto de todo. Lo que sobra de alto queda debajo de la salida. */
+  .pub-mapa {
+    grid-template-rows: auto auto auto 1fr;
+  }
+
+  .pub-mapa > :not(.pub-mapa-lado) {
+    grid-column: 1;
+  }
+
+  /* En el celular la franja va después del plano, para verlo primero; acá, arriba de él. */
+  .pub-franja {
+    grid-row: 2;
+  }
+
+  .pub-plano {
+    grid-row: 3;
+  }
+
+  .pub-mapa-lado {
+    grid-row: 1 / span 4;
+    grid-column: 2;
+  }
+
+  .pub-salida {
+    align-self: start;
+  }
+
+
+
+  /* Los formularios: dos columnas que encastran por la lengüeta de la cabeza. */
+  .pub-un-paso {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "cabeza pasos"
+      "extra pasos";
+    align-items: start;
+  }
+
+  .pub-un-paso > .pub-cabeza {
+    grid-area: cabeza;
+    padding: var(--espacio-6) var(--espacio-5);
+  }
+
+  .pub-un-paso > :is(.pub-pasos, .pub-sigue) {
+    grid-area: pasos;
+  }
+
+  .pub-un-paso > .pub-extra {
+    grid-area: extra;
+  }
+
+  /* Al costado, la columna es angosta: el recorrido va de arriba abajo. */
+  .pub-extra .recorrido {
+    flex-direction: column;
+  }
+
+  .pub-extra .recorrido-paso {
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .pub-extra .recorrido > :not(:last-child)::after {
+    top: 100%;
+    left: calc(var(--medida-lengueta-x) - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .pub-un-paso > .pub-cabeza.pub-abajo::after {
+    top: calc(var(--medida-lengueta-y, 3.5rem) - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-pegada {
+    position: relative;
+    bottom: auto;
+    box-shadow: none;
+  }
+}
+
+/* Desde 1100 px: el titular respira más y las cifras se vuelven más grandes. */
+@media (min-width: 68.75em) {
+  .pub-arriba {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 2fr);
+  }
+
+  .pub-un-paso {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  }
+}

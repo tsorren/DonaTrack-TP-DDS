@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): recuperar la contraseña
+       (RF-AUTH-13). Una pieza de a un paso: la cabeza encastra en el único dato (el correo) y en
+       la pieza de enviar. El fragmento "recuperar" lo usa también publico-recuperar-enviado
+       (enviado = true): el paso del correo queda puesto y el que sigue, abrir el enlace, es la
+       pieza naranja de lo de ahora. La respuesta es la misma exista o no el correo. Estilos:
+       prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Recuperar la contraseña - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Recuperar contraseña</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-un-paso" th:fragment="recuperar(enviado)">
+    <section class="pieza pub-cabeza pub-sol pub-abajo" aria-labelledby="recuperar-titulo">
+      <h2 id="recuperar-titulo" class="pub-voz"
+          th:text="${enviado} ? 'Revisá tu correo' : 'Pedí una contraseña nueva'">Pedí una
+        contraseña nueva</h2>
+      <p th:unless="${enviado}" class="pub-texto">Te mandamos un enlace a tu correo para crear
+        una contraseña nueva.</p>
+      <div th:if="${enviado}" class="pub-aviso" role="status" tabindex="-1" autofocus>
+        <div th:replace="~{alternativas/encastre/fragmentos/aviso :: aviso('Si el correo está registrado, te mandamos un enlace. Vence en 30 minutos.', 'exito')}"></div>
+      </div>
+    </section>
+
+    <form th:unless="${enviado}" class="pub-pasos" action="/prototipo/encastre/publico-recuperar-enviado"
+          th:action="@{/prototipo/encastre/publico-recuperar-enviado}" method="post"
+          aria-labelledby="recuperar-titulo">
+      <div class="pieza pub-paso">
+        <span class="pub-numero" aria-hidden="true">1</span>
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" autocomplete="email" required
+                 aria-describedby="correo-ayuda">
+          <small id="correo-ayuda">El de tu cuenta. Si no lo encontramos, no te llega nada.</small>
+        </div>
+      </div>
+      <div class="pieza pub-paso pub-fin">
+        <span class="pub-numero" aria-hidden="true">2</span>
+        <button type="submit">Enviarme el enlace</button>
+      </div>
+    </form>
+
+    <!--/* Enviado: lo que sigue, de a un paso. El actual es lo de ahora. */-->
+    <section th:if="${enviado}" class="pieza pub-sigue" aria-labelledby="sigue-titulo">
+      <h3 id="sigue-titulo">Cómo sigue</h3>
+      <ol class="recorrido piezas-chicas" aria-label="Cómo sigue el cambio de contraseña">
+        <li class="recorrido-paso recorrido-paso--hecho">
+          <span class="recorrido-nodo" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 18)}"></svg></span>
+          <span class="recorrido-texto"><span>Pediste el enlace</span><small>Hoy, miércoles 14 de
+            octubre</small></span>
+        </li>
+        <li class="recorrido-paso recorrido-paso--actual pieza-ahora" aria-current="step">
+          <span class="recorrido-nodo" aria-hidden="true">2</span>
+          <span class="recorrido-texto"><span>Abrís el enlace del correo</span><small>Vence en 30
+            minutos</small></span>
+        </li>
+        <li class="recorrido-paso recorrido-paso--pendiente">
+          <span class="recorrido-nodo" aria-hidden="true">3</span>
+          <span class="recorrido-texto"><span>Creás tu contraseña nueva</span><small>Y ya podés
+            ingresar</small></span>
+        </li>
+      </ol>
+    </section>
+
+    <div class="pub-extra">
+      <section class="pieza pub-lila" aria-labelledby="volver-titulo">
+        <h3 id="volver-titulo" th:text="${enviado} ? '¿No te llegó?' : '¿Te acordaste?'">¿Te
+          acordaste?</h3>
+        <p th:if="${enviado}">Mirá en el correo no deseado o pedí otro enlace.</p>
+        <div class="pub-acciones">
+          <a href="/prototipo/encastre/publico-ingresar"
+             th:href="@{/prototipo/encastre/publico-ingresar}" role="button"
+             th:classappend="${enviado} ? '' : 'secondary'">Volver a ingresar</a>
+          <a th:if="${enviado}" href="/prototipo/encastre/publico-recuperar"
+             th:href="@{/prototipo/encastre/publico-recuperar}" class="enlace-fuerte">Pedir otro
+            enlace</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

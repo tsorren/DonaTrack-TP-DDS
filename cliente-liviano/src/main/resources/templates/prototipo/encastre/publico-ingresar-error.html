@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): ingresar con un error. El
+       mensaje es genérico (RF-AUTH-01: no dice si el correo existe), sobrio y dice qué hacer; el
+       foco va a él al cargar. Usa el fragmento "ingreso" de publico-ingresar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>No pudimos ingresar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Ingresar</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div th:replace="~{prototipo/encastre/publico-ingresar :: ingreso(true)}"></div>
+</th:block>
+</body>
+</html>

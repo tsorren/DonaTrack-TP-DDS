@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): el mapa de entregadas (RF-02),
+       sin cuenta. Arriba, la cabeza y la franja que filtra por categoría, directo sobre la tinta
+       (un formulario GET: anda sin JavaScript). Abajo, el plano del barrio en manzanas: el
+       depósito al centro, una pieza de sol; cada entidad, un círculo con su número; y cada camino
+       sale del depósito por las calles hasta la entidad, más grueso cuantas más entregas
+       recibió. Al lado, la lista dice lo mismo en texto, con los mismos números. Todo sale de la
+       lista "entidades" de th:with y aguanta cualquier cantidad. Hoy es el miércoles 14 de
+       octubre de 2026. Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Mapa de entregadas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Mapa de entregadas</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-mapa"
+       th:with="crudo=${param.categoria != null ? param.categoria[0] : 'todas'},
+                filtro=${ {'alimentos', 'vestimenta', 'escolares'}.contains(crudo) ? crudo : 'todas'},
+                etiquetas=${ {todas: 'Todas', alimentos: 'Alimentos', vestimenta: 'Ropa y abrigo',
+                              escolares: 'Útiles escolares'} },
+                entidades=${ {
+                  {nombre: 'Comedor Barrio Ejemplo', x: 150, y: 78, entregas: {
+                    {que: 'Arroz, 15 kg', cat: 'alimentos', fecha: 'martes 13 de octubre'},
+                    {que: 'Ropa de abrigo, 1 caja', cat: 'vestimenta', fecha: 'jueves 8 de octubre'},
+                    {que: 'Fideos secos, 8 kg', cat: 'alimentos', fecha: 'lunes 5 de octubre'} }},
+                  {nombre: 'Merendero Ejemplo Sur', x: 438, y: 366, entregas: {
+                    {que: 'Leche en polvo, 12 kg', cat: 'alimentos', fecha: 'lunes 12 de octubre'},
+                    {que: 'Ropa de abrigo, 12 prendas', cat: 'vestimenta', fecha: 'viernes 9 de octubre'} }},
+                  {nombre: 'Escuela Ejemplo 12', x: 510, y: 150, entregas: {
+                    {que: 'Mochilas, 12 unidades', cat: 'escolares', fecha: 'viernes 2 de octubre'} }},
+                  {nombre: 'Hogar Ejemplo Norte', x: 366, y: 78, entregas: {
+                    {que: 'Fideos secos, 25 kg', cat: 'alimentos', fecha: 'domingo 11 de octubre'},
+                    {que: 'Frazadas, 10 unidades', cat: 'vestimenta', fecha: 'miércoles 7 de octubre'} }},
+                  {nombre: 'Asociación Civil Manos Unidas del Barrio Ejemplo Norte', x: 78, y: 294, entregas: {
+                    {que: 'Útiles escolares, 15 cartucheras', cat: 'escolares', fecha: 'sábado 10 de octubre'},
+                    {que: 'Leche en polvo, 6 kg', cat: 'alimentos', fecha: 'martes 6 de octubre'} }}
+                } },
+                cuentas=${entidades.![#vars.filtro == 'todas' ? entregas.size() : entregas.?[cat == #vars.filtro].size()]},
+                total=${#aggregates.sum(cuentas)},
+                conEntregas=${cuentas.?[#this > 0].size()}">
+
+    <section class="pieza pub-mapa-cabeza" aria-labelledby="mapa-titulo">
+      <h2 id="mapa-titulo" class="pub-voz">Adónde llegaron</h2>
+      <p class="pub-texto">Las entregas que las entidades confirmaron en octubre. Cada número es
+        una entidad; cuanto más gruesa la línea, más llegaron.</p>
+    </section>
+
+    <!--/* El plano: decorativo (aria-hidden); la lista de al lado dice lo mismo. Las manzanas son
+           de 60 con calles de 12; los caminos van por las calles: del depósito, primero a lo
+           ancho y después a lo alto. */-->
+    <section class="pieza pub-plano" aria-labelledby="plano-titulo">
+      <div class="pub-plano-cabeza">
+        <h3 id="plano-titulo">El barrio</h3>
+        <p class="pub-cuenta"
+           th:text="${total == 0} ? 'Sin entregas en esta categoría' : |${total} ${total == 1 ? 'entrega' : 'entregas'} en ${conEntregas} ${conEntregas == 1 ? 'entidad' : 'entidades'}|">10
+          entregas en 5 entidades</p>
+      </div>
+      <p class="pub-nota">Actualizado hoy, miércoles 14 de octubre, 14:30.</p>
+      <ul class="pub-mapa-resumen piezas-chicas" aria-label="Entregas de octubre por categoría"
+          th:with="colores=${ {alimentos: 'durazno', vestimenta: 'lila', escolares: 'rosa'} }">
+        <li th:each="categoria : ${ {'alimentos', 'vestimenta', 'escolares'} }"
+            th:classappend="|pub-${colores.get(categoria)}|"><b
+            th:text="${#aggregates.sum(entidades.![entregas.?[cat == #vars.categoria].size()])}">5</b><span
+            th:text="${#strings.toLowerCase(etiquetas.get(categoria))}">alimentos</span></li>
+      </ul>
+      <svg class="pub-plano-dibujo" viewBox="0 0 588 444" aria-hidden="true" focusable="false">
+        <th:block th:each="fila : ${#numbers.sequence(0, 5)}">
+          <rect th:each="columna : ${#numbers.sequence(0, 7)}" class="pub-manzana" width="60"
+                height="60" rx="10" x="12" y="12"
+                th:attr="x=${12 + columna * 72},y=${12 + fila * 72}"></rect>
+        </th:block>
+        <path th:each="e, vuelta : ${entidades}" th:if="${cuentas[vuelta.index] > 0}"
+              class="pub-camino" d="M294 222H150V78" stroke-width="7"
+              th:attr="d=|M294 222H${e.x}V${e.y}|,stroke-width=${4 + 3 * cuentas[vuelta.index]}"></path>
+        <g class="pub-deposito" transform="translate(294 222)">
+          <rect class="pub-deposito-fondo" x="-32" y="-32" width="64" height="64" rx="14"></rect>
+          <use class="pub-deposito-pieza" href="#encastre-pieza"
+               transform="translate(-25 -27) scale(0.5)"></use>
+        </g>
+        <g th:each="e, vuelta : ${entidades}" class="pub-marca-entidad"
+           th:classappend="${cuentas[vuelta.index] == 0} ? 'pub-marca-entidad--sin'"
+           transform="translate(150 78)" th:attr="transform=|translate(${e.x} ${e.y})|">
+          <circle r="25"></circle>
+          <text text-anchor="middle" y="10" th:text="${vuelta.count}">1</text>
+        </g>
+      </svg>
+      <ul class="pub-leyenda" aria-label="Cómo se lee el plano">
+        <li class="pub-leyenda-deposito">El depósito</li>
+        <li class="pub-leyenda-entidad">Una entidad, con su número</li>
+        <li class="pub-leyenda-camino">El camino de sus entregas</li>
+      </ul>
+    </section>
+
+    <form class="pub-franja" action="/prototipo/encastre/publico-mapa"
+          th:action="@{/prototipo/encastre/publico-mapa}" method="get">
+      <fieldset>
+        <legend>Categoría</legend>
+        <div class="pub-opciones">
+          <label class="pub-opcion"
+                 th:each="valor : ${ {'todas', 'alimentos', 'vestimenta', 'escolares'} }">
+            <input type="radio" name="categoria" value="todas" th:value="${valor}"
+                   th:checked="${filtro == valor}">
+            <span class="pub-opcion-signo" aria-hidden="true"><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${valor == 'todas'} ? 'donaciones' : |cat-${valor}|, 16)}"></svg></span>
+            <span th:text="${etiquetas.get(valor)}">Todas</span>
+          </label>
+        </div>
+      </fieldset>
+      <button type="submit" class="fantasma">Filtrar el mapa</button>
+    </form>
+
+    <div class="pub-mapa-lado">
+      <section class="pieza" aria-labelledby="lista-titulo"
+               th:classappend="${total > 0} ? 'pub-abajo'">
+        <h3 id="lista-titulo">Las entidades del plano</h3>
+        <p class="bajada" th:if="${total > 0}"
+           th:text="|Lo mismo que muestra el plano, en lista: ${total} ${total == 1 ? 'entrega' : 'entregas'}${filtro == 'todas' ? '' : ' de ' + #strings.toLowerCase(etiquetas.get(filtro))}.|">Lo
+          mismo que muestra el plano, en lista.</p>
+        <th:block th:if="${total == 0}">
+          <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+                   |Todavía no hay entregas de ${#strings.toLowerCase(etiquetas.get(filtro))}|,
+                   'Cuando una entidad confirme una entrega de esta categoría, su camino aparece en el plano.',
+                   'Ver todas las categorías', '/prototipo/encastre/publico-mapa')}"></section>
+        </th:block>
+      </section>
+      <ol class="pub-mapa-lista" th:if="${total > 0}">
+        <li th:each="e, vuelta : ${entidades}" th:if="${cuentas[vuelta.index] > 0}"
+            class="pieza" th:id="|pub-entidad-${vuelta.count}|"
+            th:with="suyas=${filtro == 'todas' ? e.entregas : e.entregas.?[cat == #vars.filtro]}">
+          <span class="pub-numero" aria-hidden="true" th:text="${vuelta.count}">1</span>
+          <h3 th:text="${e.nombre}">Comedor Barrio Ejemplo</h3>
+          <p class="pub-cuenta"
+             th:text="${cuentas[vuelta.index] == 1} ? '1 entrega' : |${cuentas[vuelta.index]} entregas|">3
+            entregas</p>
+          <ul class="pub-entregas">
+            <li th:each="entrega : ${suyas}"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono(|cat-${entrega.cat}|, 20)}"></svg><span><span
+                th:text="${entrega.que}">Arroz, 15 kg</span><small
+                th:text="|${etiquetas.get(entrega.cat)} · ${entrega.fecha}|">Alimentos · martes 13
+                de octubre</small></span></li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!--/* La salida: el mapa no es un callejón. */-->
+    <section class="pieza pub-salida" aria-labelledby="salida-titulo">
+      <h3 id="salida-titulo">¿Querés sumar tu pieza?</h3>
+      <p>Doná y seguí tu donación hasta que aparezca en este plano.</p>
+      <div class="pub-acciones">
+        <a href="/prototipo/encastre/publico-registro-donante"
+           th:href="@{/prototipo/encastre/publico-registro-donante}" role="button">Registrarme como donante</a>
+        <a href="/prototipo/encastre/publico-ingresar"
+           th:href="@{/prototipo/encastre/publico-ingresar}" role="button"
+           class="outline">Ingresar</a>
+        <a href="/prototipo/encastre/publico-portada"
+           th:href="@{/prototipo/encastre/publico-portada}" class="enlace-fuerte">Volver a la
+          portada</a>
+      </div>
+    </section>
+
+  </div>
+</th:block>
+</body>
+</html>

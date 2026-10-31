@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): registro de una persona
+       donante (RF-03, RF-AUTH-05). Una pieza de a un paso: tres datos, cada uno una pieza
+       numerada, y la de crear la cuenta, que en el celular espera abajo, al alcance del pulgar.
+       Al costado, lo que vas a armar: los tres rangos, el primero puesto y los otros dos huecos
+       (salen de la lista "rangos" de th:with). Es un prototipo: crear la cuenta lleva al inicio
+       de Ana, donante de ejemplo. Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Registro de donante - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Registrarse</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-un-paso">
+    <section class="pieza pub-cabeza pub-sol pub-abajo" aria-labelledby="donante-titulo">
+      <h2 id="donante-titulo" class="pub-voz">Empezá a armar</h2>
+      <p class="pub-texto">Son tres datos. Después, tu primera donación.</p>
+    </section>
+
+    <form class="pub-pasos" action="/prototipo/encastre/donante-inicio"
+          th:action="@{/prototipo/encastre/donante-inicio}" method="post"
+          aria-labelledby="donante-titulo">
+      <div class="pieza pub-paso">
+        <span class="pub-numero" aria-hidden="true">1</span>
+        <div class="campo">
+          <label for="nombre">Tu nombre</label>
+          <input id="nombre" name="nombre" type="text" autocomplete="given-name" required
+                 aria-describedby="nombre-ayuda">
+          <small id="nombre-ayuda">Como querés que te saludemos.</small>
+        </div>
+      </div>
+      <div class="pieza pub-paso">
+        <span class="pub-numero" aria-hidden="true">2</span>
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" autocomplete="email" required
+                 aria-describedby="correo-ayuda">
+          <small id="correo-ayuda">Para avisarte en cada parada. No lo compartimos.</small>
+        </div>
+      </div>
+      <div class="pieza pub-paso">
+        <span class="pub-numero" aria-hidden="true">3</span>
+        <div class="campo">
+          <label for="contrasena">Contraseña</label>
+          <input id="contrasena" name="contrasena" type="password" autocomplete="new-password"
+                 minlength="8" required aria-describedby="contrasena-ayuda">
+          <small id="contrasena-ayuda">Al menos 8 caracteres, con una letra y un número.</small>
+        </div>
+        <label class="pub-casilla"><input type="checkbox" name="condiciones" required><span>Acepto
+          las condiciones de uso y la política de privacidad</span></label>
+      </div>
+      <div class="pieza pub-paso pub-fin pub-pegada">
+        <span class="pub-numero" aria-hidden="true">4</span>
+        <button type="submit">Crear mi cuenta</button>
+      </div>
+    </form>
+
+    <div class="pub-extra" th:with="rangos=${ {'Colaborador', 'Sostenedor', 'Transformador'} }">
+      <section class="pieza pub-rangos-pieza" aria-labelledby="armar-titulo">
+        <h3 id="armar-titulo">Lo que vas a armar</h3>
+        <ol class="pub-rangos piezas-chicas">
+          <li th:each="rango, vuelta : ${rangos}"><b th:text="${rango}">Colaborador</b><span
+              th:text="${vuelta.first} ? 'Arrancás acá' : (${vuelta.count == 2} ? 'El que sigue' : 'Más adelante')">Arrancás
+            acá</span></li>
+        </ol>
+        <p>Cada misión cumplida te acerca al rango que sigue. Cada donación que llega, se nota.</p>
+      </section>
+      <section class="pieza pub-gris" aria-labelledby="desvio-titulo">
+        <h3 id="desvio-titulo">¿No es tu caso?</h3>
+        <div class="pub-acciones">
+          <a href="/prototipo/encastre/publico-ingresar"
+             th:href="@{/prototipo/encastre/publico-ingresar}" role="button"
+             class="outline">Ingresar</a>
+          <a href="/prototipo/encastre/publico-registro-entidad"
+             th:href="@{/prototipo/encastre/publico-registro-entidad}" class="enlace-fuerte">Registrar
+            mi entidad</a>
+        </div>
+        <p class="pub-nota">Es un prototipo: no se guarda nada. Crear mi cuenta te lleva al inicio
+          de Ana, donante de ejemplo.</p>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

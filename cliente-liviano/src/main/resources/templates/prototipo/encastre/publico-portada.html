@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): la portada se arma sola.
+       Un mosaico que se recorre de arriba abajo: el titular con su palabra resaltada en una pieza
+       de sol y, al lado, las cifras; después, las cinco paradas de una donación encastradas en
+       fila y, debajo de cada parada, la pieza del rol que la hace (el color dice quién: sol para
+       vos, lila para el depósito, menta para la entidad); lo que llegó este mes; y al final, el
+       hueco con forma de pieza: falta la tuya. Las paradas y los roles salen de las listas de
+       th:with y aguantan cualquier cantidad: cada rol ocupa el ancho de sus paradas. Hoy es el
+       miércoles 14 de octubre de 2026. Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>DonaTrack: cada donación llega y se nota</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Inicio</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub"
+       th:with="paradas=${ {
+         {nombre: 'Donás', texto: 'Llevás alimentos, ropa o útiles al depósito.', rol: 'donante', icono: 'donaciones'},
+         {nombre: 'La registramos', texto: 'El depósito la anota con lo que es y cuándo vence.', rol: 'deposito', icono: 'check'},
+         {nombre: 'La asignamos', texto: 'Va a una necesidad real de una entidad.', rol: 'deposito', icono: 'entidades'},
+         {nombre: 'Sale en camino', texto: 'Un camión la lleva y vos ves por dónde va.', rol: 'deposito', icono: 'camiones'},
+         {nombre: 'Llega y se nota', texto: 'La entidad confirma que la recibió, con una foto.', rol: 'entidad', icono: 'seguimiento'}
+       } },
+       roles=${ {
+         {clave: 'donante', color: 'sol', quien: 'Vos'},
+         {clave: 'deposito', color: 'lila', quien: 'El depósito'},
+         {clave: 'entidad', color: 'menta', quien: 'La entidad'}
+       } }">
+
+    <!--/* Arriba: el titular y las cifras públicas (RF-01, HB-02), una pieza por dato. */-->
+    <div class="pub pub-arriba pub-arma">
+      <section class="pieza pub-titular pub-abajo" aria-labelledby="titular">
+        <h2 id="titular" class="pub-titulo">Cada donación llega. <span class="pub-resalta">Y se
+          nota.</span></h2>
+        <p class="pub-texto">DonaTrack une a quien dona, al depósito que ordena y a la entidad que
+          recibe. Seguís cada parada hasta que la entidad confirma que llegó.</p>
+        <div class="pub-acciones">
+          <a href="/prototipo/encastre/publico-registro"
+             th:href="@{/prototipo/encastre/publico-registro}" role="button">Registrarme</a>
+          <a href="/prototipo/encastre/publico-ingresar"
+             th:href="@{/prototipo/encastre/publico-ingresar}" role="button"
+             class="outline">Ingresar</a>
+        </div>
+      </section>
+      <ul class="pub-cifras" aria-label="DonaTrack hasta hoy">
+        <li class="pieza pub-durazno"><b>1.284</b> <span>donaciones llegaron a su entidad</span></li>
+        <li class="pieza pub-menta"><b>46</b> <span>entidades reciben</span></li>
+        <li class="pieza pub-lila"><b>312</b> <span>personas donan</span>
+          <small>Actualizado hoy, 14:30</small></li>
+      </ul>
+    </div>
+
+    <!--/* Las cinco paradas y los roles que las hacen. */-->
+    <section class="pub-viaje" aria-labelledby="viaje-titulo">
+      <div class="pieza pub-viaje-cabeza pub-abajo">
+        <h2 id="viaje-titulo">Así viaja una donación</h2>
+        <p class="bajada" th:text="|${#lists.size(paradas)} paradas. El color dice quién tiene tu donación en cada una.|">5
+          paradas. El color dice quién tiene tu donación en cada una.</p>
+        <ul class="pub-quienes" aria-label="Qué dice cada color">
+          <li th:each="rol : ${roles}" th:classappend="|pub-${rol.color}|" th:text="${rol.quien}">Vos</li>
+        </ul>
+      </div>
+      <ol class="pub-paradas">
+        <li th:each="parada, vuelta : ${paradas}" class="pieza pub-parada"
+            th:with="rol=${roles.^[clave == #vars.parada.rol]}"
+            th:classappend="|pub-${rol.color}|">
+          <span class="pub-parada-signos" aria-hidden="true"><span class="pub-numero"
+                th:text="${vuelta.count}">1</span><span class="pub-parada-icono"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${parada.icono}, 20)}"></svg></span></span>
+          <h3 th:text="${parada.nombre}">Donás</h3>
+          <p th:text="${parada.texto}">Llevás alimentos, ropa o útiles al depósito.</p>
+          <p class="pub-quien"><span class="solo-lectores">Quién la tiene: </span><span
+             th:text="${rol.quien}">Vos</span></p>
+        </li>
+      </ol>
+      <ul class="pub-roles">
+        <li class="pieza pub-rol pub-sol"
+            th:classappend="|pub-ancho-${paradas.?[rol == 'donante'].size()}|">
+          <h3>Si donás</h3>
+          <p>Doná, seguí cada parada y sumá misiones y rango: Colaborador, Sostenedor y
+            Transformador.</p>
+          <a href="/prototipo/encastre/publico-registro-donante"
+             th:href="@{/prototipo/encastre/publico-registro-donante}" role="button"
+             class="secondary">Registrarme como donante</a>
+        </li>
+        <li class="pieza pub-rol pub-lila"
+            th:classappend="|pub-ancho-${paradas.?[rol == 'deposito'].size()}|">
+          <h3>El depósito</h3>
+          <p>El equipo de DonaTrack registra, asigna y despacha. Cada paso queda con fecha y
+            responsable, y lo ve todo el mundo en el mapa.</p>
+          <a href="/prototipo/encastre/publico-mapa" th:href="@{/prototipo/encastre/publico-mapa}"
+             role="button" class="outline">Ver el mapa de entregadas</a>
+        </li>
+        <li class="pieza pub-rol pub-menta"
+            th:classappend="|pub-ancho-${paradas.?[rol == 'entidad'].size()}|">
+          <h3>Si sos una entidad</h3>
+          <p>Comedores, merenderos y escuelas: publicás lo que necesitás y confirmás lo que
+            llega.</p>
+          <a href="/prototipo/encastre/publico-registro-entidad"
+             th:href="@{/prototipo/encastre/publico-registro-entidad}" role="button"
+             class="secondary">Registrar mi entidad</a>
+        </li>
+      </ul>
+    </section>
+
+    <!--/* Lo que llegó este mes (RF-01): la más nueva con su foto; las otras, piezas del color de
+           lo que se donó. Cada una lleva a su entidad en el mapa. */-->
+    <section class="pub-llegaron" aria-labelledby="llegaron-titulo">
+      <div class="pieza pub-llegaron-cabeza">
+        <h2 id="llegaron-titulo">Ya llegaron</h2>
+        <p>Lo que las entidades confirmaron esta semana. La foto la sube la entidad al
+          recibir.</p>
+        <a href="/prototipo/encastre/publico-mapa" th:href="@{/prototipo/encastre/publico-mapa}"
+           class="enlace-fuerte">Ver el mapa de entregadas</a>
+      </div>
+      <article class="tarjeta pieza">
+        <img class="tarjeta-foto" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}"
+             alt="Cajas de arroz apiladas junto a la puerta del comedor" width="640" height="400"
+             loading="lazy">
+        <span class="insignia insignia--entregada"><span class="insignia-signo"
+              aria-hidden="true"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 14)}"></svg></span><span>Entregada</span></span>
+        <div class="tarjeta-cuerpo">
+          <p class="tarjeta-destino"><svg
+             th:replace="~{alternativas/encastre/fragmentos/icono :: icono('entidades', 16)}"></svg><span>Comedor
+             Barrio Ejemplo</span></p>
+          <h3 class="tarjeta-titulo"><a href="/prototipo/encastre/publico-mapa#pub-entidad-1"
+              th:href="@{/prototipo/encastre/publico-mapa#pub-entidad-1}">Arroz, 15 kg</a></h3>
+          <p class="tarjeta-fecha">Llegó ayer, martes 13 de octubre</p>
+        </div>
+      </article>
+      <article class="pieza pub-llego pub-durazno">
+        <span class="pub-llego-signo" aria-hidden="true"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('cat-alimentos', 26)}"></svg></span>
+        <h3><a href="/prototipo/encastre/publico-mapa#pub-entidad-2"
+               th:href="@{/prototipo/encastre/publico-mapa#pub-entidad-2}">Leche en polvo, 12 kg</a></h3>
+        <p>Merendero Ejemplo Sur · lunes 12 de octubre</p>
+        <span class="insignia insignia--entregada"><span class="insignia-signo"
+              aria-hidden="true"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 14)}"></svg></span><span>Entregada</span></span>
+      </article>
+      <article class="pieza pub-llego pub-durazno">
+        <span class="pub-llego-signo" aria-hidden="true"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('cat-alimentos', 26)}"></svg></span>
+        <h3><a href="/prototipo/encastre/publico-mapa#pub-entidad-4"
+               th:href="@{/prototipo/encastre/publico-mapa#pub-entidad-4}">Fideos secos, 25 kg</a></h3>
+        <p>Hogar Ejemplo Norte · domingo 11 de octubre</p>
+        <span class="insignia insignia--entregada"><span class="insignia-signo"
+              aria-hidden="true"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 14)}"></svg></span><span>Entregada</span></span>
+      </article>
+    </section>
+
+    <!--/* El final del mosaico: el hueco con forma de pieza y la pieza suelta que lo prueba. */-->
+    <section class="pub-falta" aria-labelledby="falta-titulo">
+      <svg class="pub-falta-dibujo" viewBox="14 0 100 96" aria-hidden="true" focusable="false">
+        <use class="pub-falta-hueco" href="#encastre-pieza"/>
+        <g transform="translate(62 -4) scale(0.52) rotate(18 55 52)">
+          <use class="pub-falta-suelta" href="#encastre-pieza"/>
+        </g>
+      </svg>
+      <div>
+        <h2 id="falta-titulo">Falta tu pieza</h2>
+        <p>Cada persona que dona y cada entidad que recibe completa el mosaico.</p>
+      </div>
+      <div class="pub-acciones">
+        <a href="/prototipo/encastre/publico-registro"
+           th:href="@{/prototipo/encastre/publico-registro}" role="button"
+           class="fantasma">Registrarme</a>
+        <a href="/prototipo/encastre/publico-ingresar"
+           th:href="@{/prototipo/encastre/publico-ingresar}" role="button"
+           class="fantasma">Ingresar</a>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

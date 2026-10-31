@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): registro de una entidad
+       (RF-03, RF-AUTH-06). Una pieza de a un paso: la entidad, dónde entregamos y cómo te
+       escribimos, cada uno una pieza numerada, y la de enviar, que en el celular espera abajo.
+       Al costado, cómo sigue la solicitud: el paso de hoy es la pieza naranja de lo de ahora
+       (por eso el botón de enviar es de tinta). La cuenta queda pendiente hasta que el equipo la
+       aprueba. Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Registro de entidad - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Registrarse</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-un-paso">
+    <section class="pieza pub-cabeza pub-menta pub-abajo" aria-labelledby="entidad-titulo">
+      <h2 id="entidad-titulo" class="pub-voz">Sumá tu entidad</h2>
+      <p class="pub-texto">Para comedores, merenderos, escuelas y otras organizaciones.</p>
+    </section>
+
+    <form class="pub-pasos" action="/prototipo/encastre/publico-registro-entidad-enviada"
+          th:action="@{/prototipo/encastre/publico-registro-entidad-enviada}" method="post"
+          aria-labelledby="entidad-titulo">
+      <fieldset class="pieza pub-paso">
+        <legend class="pub-paso-titulo">La entidad</legend>
+        <span class="pub-numero" aria-hidden="true">1</span>
+        <div class="campo">
+          <label for="entidad">Nombre de la entidad</label>
+          <input id="entidad" name="entidad" type="text" autocomplete="organization" required>
+        </div>
+        <div class="campo">
+          <label for="tipo">Tipo de entidad</label>
+          <select id="tipo" name="tipo" required>
+            <option>Comedor</option>
+            <option>Merendero</option>
+            <option>Escuela</option>
+            <option>Otra organización</option>
+          </select>
+        </div>
+      </fieldset>
+      <fieldset class="pieza pub-paso">
+        <legend class="pub-paso-titulo">Dónde entregamos</legend>
+        <span class="pub-numero" aria-hidden="true">2</span>
+        <div class="campo">
+          <label for="direccion">Dirección de entrega</label>
+          <input id="direccion" name="direccion" type="text" autocomplete="street-address" required
+                 aria-describedby="direccion-ayuda">
+          <small id="direccion-ayuda">Con ella te ubicamos en el mapa. En público mostramos solo
+            el barrio.</small>
+        </div>
+      </fieldset>
+      <fieldset class="pieza pub-paso">
+        <legend class="pub-paso-titulo">Cómo te escribimos</legend>
+        <span class="pub-numero" aria-hidden="true">3</span>
+        <div class="campo">
+          <label for="correo">Correo de contacto</label>
+          <input id="correo" name="correo" type="email" autocomplete="email" required
+                 aria-describedby="correo-ayuda">
+          <small id="correo-ayuda">Para avisarte cuando la solicitud esté aprobada.</small>
+        </div>
+        <div class="campo">
+          <label for="contrasena">Contraseña</label>
+          <input id="contrasena" name="contrasena" type="password" autocomplete="new-password"
+                 minlength="8" required aria-describedby="contrasena-ayuda">
+          <small id="contrasena-ayuda">Al menos 8 caracteres, con una letra y un número.</small>
+        </div>
+      </fieldset>
+      <div class="pieza pub-paso pub-fin pub-pegada">
+        <span class="pub-numero" aria-hidden="true">4</span>
+        <button type="submit">Enviar la solicitud</button>
+      </div>
+    </form>
+
+    <div class="pub-extra">
+      <section class="pieza pub-sigue" aria-labelledby="sigue-titulo">
+        <h3 id="sigue-titulo">Cómo sigue</h3>
+        <ol class="recorrido piezas-chicas" aria-label="Cómo sigue la solicitud">
+          <li class="recorrido-paso recorrido-paso--actual pieza-ahora" aria-current="step">
+            <span class="recorrido-nodo" aria-hidden="true">1</span>
+            <span class="recorrido-texto"><span>Completás la solicitud</span><small>Hoy, en dos
+              minutos</small></span>
+          </li>
+          <li class="recorrido-paso recorrido-paso--pendiente">
+            <span class="recorrido-nodo" aria-hidden="true">2</span>
+            <span class="recorrido-texto"><span>El equipo la revisa</span><small>Hasta 2 días
+              hábiles</small></span>
+          </li>
+          <li class="recorrido-paso recorrido-paso--pendiente">
+            <span class="recorrido-nodo" aria-hidden="true">3</span>
+            <span class="recorrido-texto"><span>Aparecés en el mapa</span><small>Te avisamos por
+              correo</small></span>
+          </li>
+        </ol>
+      </section>
+      <section class="pieza pub-gris" aria-labelledby="desvio-titulo">
+        <h3 id="desvio-titulo">¿No es tu caso?</h3>
+        <div class="pub-acciones">
+          <a href="/prototipo/encastre/publico-registro-donante"
+             th:href="@{/prototipo/encastre/publico-registro-donante}" role="button"
+             class="outline">Registrarme como donante</a>
+          <a href="/prototipo/encastre/publico-ingresar"
+             th:href="@{/prototipo/encastre/publico-ingresar}" class="enlace-fuerte">Ingresar
+            </a>
+        </div>
+        <p class="pub-nota">Es un prototipo: no se guarda nada.</p>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

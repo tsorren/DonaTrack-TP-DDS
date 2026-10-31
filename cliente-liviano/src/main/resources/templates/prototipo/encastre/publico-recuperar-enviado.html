@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): el enlace para recuperar la
+       contraseña ya salió. El aviso, con el foco al cargar, dice lo mismo exista o no el correo
+       (RF-AUTH-13); debajo, cómo sigue, y la salida a ingresar. Usa el fragmento "recuperar" de
+       publico-recuperar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Revisá tu correo - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Recuperar contraseña</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div th:replace="~{prototipo/encastre/publico-recuperar :: recuperar(true)}"></div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): ingresar (RF-04, RF-AUTH-01 y
+       02). Una pieza de a un paso: la cabeza de sol encastra en los pasos numerados (el correo,
+       la contraseña y entrar), y la pieza que estás llenando se pone de sol. En el celular, la
+       pieza de entrar espera abajo, al alcance del pulgar. Al costado, las otras
+       entradas: Google, crear una cuenta y, como ayuda del prototipo, las cuentas de ejemplo de
+       la entidad y de la administración. El fragmento "ingreso" lo usa también
+       publico-ingresar-error (error = true): el banner reemplaza la bajada y los campos quedan
+       marcados. Es un prototipo: el formulario lleva al inicio de Ana, donante de ejemplo.
+       Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Ingresar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Ingresar</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-un-paso" th:fragment="ingreso(error)">
+    <section class="pieza pub-cabeza pub-sol pub-abajo" aria-labelledby="ingresar-titulo">
+      <h2 id="ingresar-titulo" class="pub-voz">Volvé a lo tuyo</h2>
+      <p th:unless="${error}" class="pub-texto">Tus donaciones, tus entregas o tu turno siguen
+        donde los dejaste.</p>
+      <section th:if="${error}" class="banner banner--error" role="alert"
+               aria-labelledby="banner-error-titulo" tabindex="-1" autofocus>
+        <h3 id="banner-error-titulo">No pudimos ingresar</h3>
+        <p id="banner-error-texto">El correo o la contraseña no coinciden. Revisalos y probá de
+          nuevo, o pedí una contraseña nueva.</p>
+      </section>
+    </section>
+
+    <form class="pub-pasos" action="/prototipo/encastre/donante-inicio"
+          th:action="@{/prototipo/encastre/donante-inicio}" method="post"
+          aria-labelledby="ingresar-titulo">
+      <div class="pieza pub-paso">
+        <span class="pub-numero" aria-hidden="true">1</span>
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" autocomplete="email" required
+                 th:aria-invalid="${error} ? 'true' : null"
+                 th:aria-describedby="${error} ? 'banner-error-texto' : null">
+        </div>
+      </div>
+      <div class="pieza pub-paso">
+        <span class="pub-numero" aria-hidden="true">2</span>
+        <div class="campo">
+          <label for="contrasena">Contraseña</label>
+          <input id="contrasena" name="contrasena" type="password"
+                 autocomplete="current-password" required
+                 th:aria-invalid="${error} ? 'true' : null"
+                 th:aria-describedby="${error} ? 'banner-error-texto' : null">
+        </div>
+        <a href="/prototipo/encastre/publico-recuperar"
+           th:href="@{/prototipo/encastre/publico-recuperar}" class="enlace-fuerte">¿Olvidaste tu
+          contraseña?</a>
+        <label class="pub-casilla"><input type="checkbox" name="recordar"><span>Recordarme en
+          este dispositivo</span></label>
+      </div>
+      <div class="pieza pub-paso pub-fin pub-pegada">
+        <span class="pub-numero" aria-hidden="true">3</span>
+        <button type="submit">Ingresar</button>
+      </div>
+    </form>
+
+    <div class="pub-extra">
+      <form class="pieza" action="/prototipo/encastre/donante-inicio"
+            th:action="@{/prototipo/encastre/donante-inicio}" method="post"
+            aria-labelledby="google-titulo">
+        <h3 id="google-titulo">¿Usás Google?</h3>
+        <p>Entrás con tu cuenta de Google, sin otra contraseña.</p>
+        <button type="submit" class="outline">Continuar con Google</button>
+      </form>
+      <section class="pieza pub-lila" aria-labelledby="primera-titulo">
+        <h3 id="primera-titulo">¿Primera vez?</h3>
+        <p>Creá tu cuenta en dos minutos, para donar o para tu entidad.</p>
+        <a href="/prototipo/encastre/publico-registro"
+           th:href="@{/prototipo/encastre/publico-registro}" role="button"
+           class="secondary">Crear una cuenta</a>
+      </section>
+      <section class="pieza pub-gris" aria-labelledby="ejemplo-titulo">
+        <h3 id="ejemplo-titulo">Cuentas de ejemplo</h3>
+        <p>Es un prototipo: no se guarda nada. Ingresar te lleva al inicio de Ana, donante de
+          ejemplo. Para ver los otros roles:</p>
+        <div class="pub-acciones">
+          <a href="/prototipo/encastre/entidad-inicio"
+             th:href="@{/prototipo/encastre/entidad-inicio}" role="button"
+             class="outline">Entrar como Comedor Barrio Ejemplo</a>
+          <a href="/prototipo/encastre/admin-inicio" th:href="@{/prototipo/encastre/admin-inicio}"
+             role="button" class="outline">Entrar como administración</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

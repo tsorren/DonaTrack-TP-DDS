@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo de Encastre (iteración 3, parte pública): registrarse, elegir la cuenta
+       (RF-03, RF-AUTH-05 y 06). La cabeza encastra en las dos piezas de rol, con los mismos
+       colores que en la portada (sol para quien dona, menta para la entidad): qué te da cada
+       cuenta y qué te pedimos. Las dos elecciones pesan lo mismo: ninguna es naranja. Las cuentas
+       del depósito las crea el equipo (RF-AUTH-07). Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Registrarse - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu pub-pestana">Registrarse</h1>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/publico.css"
+        th:href="@{/css/alternativas/encastre/prototipo/publico.css}">
+  <div class="pub pub-arma">
+    <section class="pieza pub-cabeza pub-abajo" aria-labelledby="registro-titulo">
+      <h2 id="registro-titulo" class="pub-voz">Elegí tu pieza</h2>
+      <p class="pub-texto">Las dos cuentas son gratis. Según cuál elijas, te pedimos datos
+        distintos.</p>
+    </section>
+
+    <div class="pub-eleccion">
+      <section class="pieza pub-sol" aria-labelledby="donante-titulo">
+        <div class="pub-eleccion-cabeza">
+          <span class="pub-eleccion-signo" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('donaciones', 24)}"></svg></span>
+          <h3 id="donante-titulo">Persona donante</h3>
+        </div>
+        <p>Para quien dona alimentos, ropa o útiles.</p>
+        <a href="/prototipo/encastre/publico-registro-donante"
+           th:href="@{/prototipo/encastre/publico-registro-donante}" role="button"
+           class="secondary">Registrarme como donante</a>
+        <ul class="pub-puntos">
+          <li>Elegís a qué entidad o necesidad va tu donación.</li>
+          <li>Seguís cada parada hasta que la entidad confirma que llegó.</li>
+          <li>Sumás misiones, insignias y rango.</li>
+        </ul>
+        <p class="pub-pide">Te pedimos tu nombre, tu correo y una contraseña.</p>
+      </section>
+      <section class="pieza pub-menta" aria-labelledby="entidad-titulo">
+        <div class="pub-eleccion-cabeza">
+          <span class="pub-eleccion-signo" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('entidades', 24)}"></svg></span>
+          <h3 id="entidad-titulo">Entidad</h3>
+        </div>
+        <p>Para comedores, merenderos, escuelas y otras organizaciones que reciben donaciones.</p>
+        <a href="/prototipo/encastre/publico-registro-entidad"
+           th:href="@{/prototipo/encastre/publico-registro-entidad}" role="button"
+           class="secondary">Registrar mi entidad</a>
+        <ul class="pub-puntos">
+          <li>Publicás lo que necesitás y cuánto.</li>
+          <li>Confirmás cada entrega con una foto.</li>
+          <li>Aparecés en el mapa de entregadas.</li>
+        </ul>
+        <p class="pub-pide">Te pedimos los datos de la entidad y una dirección de entrega. El
+          equipo la revisa antes de sumarla.</p>
+      </section>
+    </div>
+
+    <section class="pieza pub-gris" aria-labelledby="cuenta-titulo">
+      <h3 id="cuenta-titulo">¿Ya tenés cuenta?</h3>
+      <p>Las cuentas del depósito las crea el equipo de DonaTrack.</p>
+      <div class="pub-acciones">
+        <a href="/prototipo/encastre/publico-ingresar"
+           th:href="@{/prototipo/encastre/publico-ingresar}" role="button"
+           class="outline">Ingresar</a>
+        <a href="/prototipo/encastre/publico-portada"
+           th:href="@{/prototipo/encastre/publico-portada}" class="enlace-fuerte">Volver a la
+          portada</a>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
