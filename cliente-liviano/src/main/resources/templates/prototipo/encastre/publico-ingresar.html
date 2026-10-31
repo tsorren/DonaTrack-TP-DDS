@@ -3,8 +3,8 @@
        02). Una pieza de a un paso: la cabeza de sol encastra en los pasos numerados (el correo,
        la contraseña y entrar), y la pieza que estás llenando se pone de sol. En el celular, la
        pieza de entrar espera abajo, al alcance del pulgar. Al costado, las otras
-       entradas: Google, crear una cuenta y, como ayuda del prototipo, las cuentas de ejemplo de
-       la entidad y de la administración. El fragmento "ingreso" lo usa también
+       entradas: Google y crear una cuenta; debajo del formulario, como ayuda del prototipo, las
+       cuentas de ejemplo de la entidad y de la administración. El fragmento "ingreso" lo usa también
        publico-ingresar-error (error = true): el banner reemplaza la bajada y los campos quedan
        marcados. Es un prototipo: el formulario lleva al inicio de Ana, donante de ejemplo.
        Estilos: prototipo/publico.css. */-->
@@ -79,19 +79,22 @@
            th:href="@{/prototipo/encastre/publico-registro}" role="button"
            class="secondary">Crear una cuenta</a>
       </section>
-      <section class="pieza pub-gris" aria-labelledby="ejemplo-titulo">
-        <h3 id="ejemplo-titulo">Cuentas de ejemplo</h3>
-        <p>Es un prototipo: no se guarda nada. Ingresar te lleva al inicio de Ana, donante de
-          ejemplo. Para ver los otros roles:</p>
-        <div class="pub-acciones">
-          <a href="/prototipo/encastre/entidad-inicio"
-             th:href="@{/prototipo/encastre/entidad-inicio}" role="button"
-             class="outline">Entrar como Comedor Barrio Ejemplo</a>
-          <a href="/prototipo/encastre/admin-inicio" th:href="@{/prototipo/encastre/admin-inicio}"
-             role="button" class="outline">Entrar como administración</a>
-        </div>
-      </section>
     </div>
+
+    <!--/* Ayuda del prototipo: en escritorio va debajo del formulario, para que las dos columnas
+           cierren a la par; en el celular, al final. */-->
+    <section class="pieza pub-gris pub-ejemplo" aria-labelledby="ejemplo-titulo">
+      <h3 id="ejemplo-titulo">Cuentas de ejemplo</h3>
+      <p>Es un prototipo: no se guarda nada. Ingresar te lleva al inicio de Ana, donante de
+        ejemplo. Para ver los otros roles:</p>
+      <div class="pub-acciones">
+        <a href="/prototipo/encastre/entidad-inicio"
+           th:href="@{/prototipo/encastre/entidad-inicio}" role="button"
+           class="outline">Entrar como Comedor Barrio Ejemplo</a>
+        <a href="/prototipo/encastre/admin-inicio" th:href="@{/prototipo/encastre/admin-inicio}"
+           role="button" class="outline">Entrar como administración</a>
+      </div>
+    </section>
   </div>
 </th:block>
 </body>

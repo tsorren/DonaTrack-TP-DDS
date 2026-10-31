@@ -3,8 +3,8 @@
        donante (RF-03, RF-AUTH-05). Una pieza de a un paso: tres datos, cada uno una pieza
        numerada, y la de crear la cuenta, que en el celular espera abajo, al alcance del pulgar.
        Al costado, lo que vas a armar: los tres rangos, el primero puesto y los otros dos huecos
-       (salen de la lista "rangos" de th:with). Es un prototipo: crear la cuenta lleva al inicio
-       de Ana, donante de ejemplo. Estilos: prototipo/publico.css. */-->
+       (salen de la lista "rangos" de th:with). Es un prototipo: crear la cuenta lleva a la
+       primera pieza por poner (donante-donaciones-vacio), no a la historia de Ana. Estilos: prototipo/publico.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/encastre/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -21,8 +21,8 @@
       <p class="pub-texto">Son tres datos. Después, tu primera donación.</p>
     </section>
 
-    <form class="pub-pasos" action="/prototipo/encastre/donante-inicio"
-          th:action="@{/prototipo/encastre/donante-inicio}" method="post"
+    <form class="pub-pasos" action="/prototipo/encastre/donante-donaciones-vacio"
+          th:action="@{/prototipo/encastre/donante-donaciones-vacio}" method="post"
           aria-labelledby="donante-titulo">
       <div class="pieza pub-paso">
         <span class="pub-numero" aria-hidden="true">1</span>
@@ -79,8 +79,8 @@
              th:href="@{/prototipo/encastre/publico-registro-entidad}" class="enlace-fuerte">Registrar
             mi entidad</a>
         </div>
-        <p class="pub-nota">Es un prototipo: no se guarda nada. Crear mi cuenta te lleva al inicio
-          de Ana, donante de ejemplo.</p>
+        <p class="pub-nota">Es un prototipo: no se guarda nada. Crear mi cuenta te lleva a armar
+          tu primera pieza.</p>
       </section>
     </div>
   </div>

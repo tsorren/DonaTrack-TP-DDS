@@ -3,9 +3,9 @@
  *
  * La portada es un mosaico que se recorre de arriba abajo: el titular con su palabra resaltada
  * en una pieza de sol, las cifras al costado, las cinco paradas de una donación encastradas en
- * fila y, debajo de cada parada, la pieza del rol que la hace (el color dice quién: sol para vos,
- * lila para el depósito, menta para la entidad). Al final del mosaico queda un hueco: falta tu
- * pieza. Ingresar, recuperar y registrarse son una pieza de a un paso: cada dato es una pieza
+ * fila, cada una del color de dónde está la donación (sol con vos, lila en el depósito, azul en
+ * camino, menta en la entidad) y, debajo, la pieza del rol que las hace, del ancho de sus
+ * paradas. Al final del mosaico queda un hueco: falta tu pieza. Ingresar, recuperar y registrarse son una pieza de a un paso: cada dato es una pieza
  * numerada que encastra en la que sigue, y la que estás llenando se pone de sol.
  *
  * Lengüetas: las mismas de estructura.css (el círculo del color de la pieza con el aro de la
@@ -56,7 +56,7 @@
   line-height: 1.1;
 }
 
-/* Colores de pieza: cada color dice algo (quién, qué), nunca adorno. */
+/* Colores de pieza: cada color dice algo (dónde está la donación, quién), nunca adorno. */
 .pub-sol {
   --color-pieza-fondo: var(--color-pieza-sol);
 }
@@ -88,10 +88,10 @@
 /* Lengüetas: hacia abajo (::after) y, en los mosaicos anchos, hacia la derecha. */
 .pub-abajo::after,
 .pub-pasos > .pieza:not(:last-child)::after,
-.pub-paradas > .pieza::after,
+.pub-parada::after,
 .pub-cifras > .pieza:not(:last-child)::after,
 .pub-llegaron > .pieza:not(:last-child)::after,
-.pub-roles > .pieza:not(:last-child)::after,
+.pub-tramo:not(:last-child) > .pub-rol::after,
 .pub-mapa-lista > .pieza:not(:last-child)::after {
   content: "";
   top: 100%;
@@ -228,7 +228,7 @@
   align-items: center;
 }
 
-/* Qué dice cada color: quién tiene la donación en esa parada. */
+/* Qué dice cada color: dónde está la donación en esa parada. */
 .pub-quienes {
   display: flex;
   flex-wrap: wrap;
@@ -252,8 +252,10 @@
   border-radius: var(--radio-chico);
 }
 
+/* En el celular, cada tramo apila su parada y, si es la última de su rol, la pieza del rol, que
+   encastra justo debajo de ella. */
 .pub-paradas,
-.pub-roles {
+.pub-tramo {
   display: grid;
   gap: var(--medida-junta);
 }
@@ -321,7 +323,8 @@
   margin-block: var(--espacio-2) 0;
 }
 
-/* Ya llegaron: la cabeza, la entrega con foto y las otras, piezas del color de lo que se donó. */
+/* Ya llegaron: la cabeza y las llegadas, cada una la pieza menta de una donación que llegó, con
+   el signo de su categoría. La más nueva va en grande, dibujada con su junta y su lengüeta. */
 .pub-llegaron {
   display: grid;
   gap: var(--medida-junta);
@@ -336,14 +339,6 @@
   justify-self: start;
 }
 
-.pub-llegaron .tarjeta {
-  border: 0;
-}
-
-.pub-llegaron .tarjeta-foto {
-  max-height: 24rem;
-}
-
 .pub-llego {
   --medida-lengueta-x: 2.6rem;
 
@@ -352,11 +347,12 @@
   gap: var(--espacio-1) var(--espacio-3);
 }
 
-.pub-llego > :not(.pub-llego-signo) {
+.pub-llego > :not(.pub-llego-signo, .pub-llego-dibujo) {
   grid-column: 2;
 }
 
-.pub-llego-signo {
+.pub-llego-signo,
+.pub-llego-dibujo {
   display: grid;
   grid-row: span 3;
   place-items: center;
@@ -365,6 +361,47 @@
   background: var(--color-pieza-tinta);
   border-radius: 50%;
   color: var(--color-pieza-sol);
+}
+
+/* La pieza dibujada: la forma del sistema en menta (llegó), con el signo de su categoría en el
+   cuerpo de la pieza (no en el centro de la caja, que incluye la lengüeta). */
+.pub-llego .pub-llego-dibujo {
+  position: relative;
+  width: 7rem;
+  height: auto;
+  background: none;
+  border-radius: 0;
+  color: var(--color-pieza-texto);
+}
+
+.pub-llego-forma {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.pub-llego-forma use {
+  fill: var(--color-pieza-menta);
+  stroke: var(--color-junta);
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.pub-llego-icono {
+  position: absolute;
+  top: 60%;
+  left: 41%;
+  display: grid;
+  translate: -50% -50%;
+}
+
+.pub-llego--nueva {
+  align-content: center;
+  padding-block: var(--espacio-5);
+}
+
+.pub-llego--nueva h3 {
+  font-size: var(--tamano-titulo-2);
 }
 
 .pub-llego h3 a {
@@ -402,8 +439,8 @@
 }
 
 .pub-falta-hueco {
-  fill: none;
-  stroke: var(--color-mesa-texto-suave);
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
   stroke-dasharray: 6 5;
   stroke-linejoin: round;
   stroke-width: 3;
@@ -865,8 +902,13 @@ fieldset.pub-paso {
   margin-block: 0;
 }
 
-.pub-extra p {
+.pub-extra p,
+.pub-ejemplo p {
   font-weight: 600;
+}
+
+.pub-ejemplo {
+  gap: var(--espacio-3);
 }
 
 /* Los rangos que vas a armar: una escalera de piezas chicas; la primera, puesta; las otras,
@@ -1056,8 +1098,8 @@ fieldset.pub-paso {
   }
 
   @supports (animation-timeline: view()) {
-    .pub-paradas > *,
-    .pub-roles > *,
+    .pub-parada,
+    .pub-rol,
     .pub-llegaron > * {
       animation: pub-encastra linear both;
       animation-range: entry 0% entry 50%;
@@ -1101,10 +1143,20 @@ fieldset.pub-paso {
     outline: 3px solid CanvasText;
   }
 
-  .pub-falta-hueco,
-  .pub-falta-suelta {
+  .pub-falta-hueco {
     fill: Canvas;
     stroke: CanvasText;
+  }
+
+  .pub-falta-suelta,
+  .pub-llego-forma use {
+    fill: CanvasText;
+    stroke: CanvasText;
+  }
+
+  .pub-llego-icono {
+    color: Canvas;
+    forced-color-adjust: none;
   }
 
   .pub-paso:focus-within {
@@ -1166,8 +1218,21 @@ fieldset.pub-paso {
   }
 
   .pub-llegaron-cabeza,
-  .pub-llegaron .tarjeta {
+  .pub-llego--nueva {
     grid-column: 1 / -1;
+  }
+
+  .pub-llego:not(.pub-llego--nueva):not(:last-child)::after {
+    top: calc(var(--medida-lengueta-y, 2.6rem) - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .pub-llego .pub-llego-dibujo {
+    width: 8.5rem;
   }
 }
 
@@ -1224,11 +1289,23 @@ fieldset.pub-paso {
   }
 
   /* Las paradas, en fila: tantas columnas como paradas; los roles, debajo, con el ancho de las
-     paradas que hacen (pub-ancho-N). Cada parada muerde la de la derecha y la de su rol. */
-  .pub-paradas,
-  .pub-roles {
+     paradas que hacen (pub-ancho-N). El tramo se disuelve en la grilla (display: contents): las
+     paradas van a la fila 1 y los roles a la 2, cada uno en orden, sin "order" (el foco y el
+     lector siguen el HTML). Cada parada muerde la de la derecha y la de su rol. */
+  .pub-paradas {
     grid-auto-columns: minmax(0, 1fr);
-    grid-auto-flow: column;
+  }
+
+  .pub-tramo {
+    display: contents;
+  }
+
+  .pub-parada {
+    grid-row: 1;
+  }
+
+  .pub-rol {
+    grid-row: 2;
   }
 
   .pub-ancho-2 {
@@ -1260,7 +1337,7 @@ fieldset.pub-paso {
     gap: var(--espacio-2);
   }
 
-  .pub-paradas > .pieza:not(:last-child)::before {
+  .pub-tramo:not(:last-child) > .pub-parada::before {
     content: "";
     top: calc(var(--medida-lengueta-y, 2.6rem) - var(--medida-lengueta-aro));
     bottom: auto;
@@ -1271,7 +1348,7 @@ fieldset.pub-paso {
     --medida-lengueta-cy: 50%;
   }
 
-  .pub-roles > .pieza:not(:last-child)::after {
+  .pub-tramo:not(:last-child) > .pub-rol::after {
     content: none;
   }
 
@@ -1279,23 +1356,29 @@ fieldset.pub-paso {
     padding: var(--espacio-5) var(--espacio-5);
   }
 
+  /* Ya llegaron: la cabeza a lo ancho, con el alto de su contenido, encastra en la más nueva;
+     debajo, las llegadas en fila, la más nueva el doble de ancha. */
   .pub-llegaron {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-    grid-template-rows: auto auto;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .pub-llegaron-cabeza {
-    grid-row: span 2;
-    grid-column: 1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: var(--espacio-6);
   }
 
-  .pub-llegaron .tarjeta {
-    grid-row: span 2;
+  .pub-llegaron-cabeza > .enlace-fuerte {
+    grid-row: 1 / span 2;
     grid-column: 2;
   }
 
-  .pub-llegaron > .pieza.pub-llegaron-cabeza:not(:last-child)::after {
-    top: calc(var(--medida-lengueta-y, 30%) - var(--medida-lengueta-aro));
+  .pub-llego--nueva {
+    grid-column: auto;
+  }
+
+  .pub-llegaron > .pub-llego--nueva:not(:last-child)::after {
+    top: calc(var(--medida-lengueta-y, 2.6rem) - var(--medida-lengueta-aro));
     left: 100%;
     width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
     height: calc(2 * var(--medida-lengueta-aro));
@@ -1303,21 +1386,12 @@ fieldset.pub-paso {
     --medida-lengueta-cy: 50%;
   }
 
-  .pub-llegaron > .pieza.tarjeta:not(:last-child)::after {
-    top: calc(var(--medida-lengueta-y, 25%) - var(--medida-lengueta-aro));
-    left: 100%;
-    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
-    height: calc(2 * var(--medida-lengueta-aro));
-    --medida-lengueta-cx: var(--medida-lengueta-d);
-    --medida-lengueta-cy: 50%;
-  }
-
-  .pub-llego {
+  .pub-llego:not(.pub-llego--nueva) {
     grid-template-columns: minmax(0, 1fr);
     align-content: start;
   }
 
-  .pub-llego > :not(.pub-llego-signo) {
+  .pub-llego:not(.pub-llego--nueva) > :not(.pub-llego-signo) {
     grid-column: auto;
   }
 
@@ -1361,14 +1435,47 @@ fieldset.pub-paso {
 
 
 
-  /* Los formularios: dos columnas que encastran por la lengüeta de la cabeza. */
+  /* Los formularios: dos columnas que encastran por la lengüeta de la cabeza y terminan a la par:
+     la última pieza de cada columna se estira hasta el final, así no queda tinta vacía debajo de
+     la columna corta. */
   .pub-un-paso {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     grid-template-rows: auto 1fr;
     grid-template-areas:
       "cabeza pasos"
       "extra pasos";
-    align-items: start;
+    align-items: stretch;
+  }
+
+  /* Ingresar: las cuentas de ejemplo van debajo del formulario. */
+  .pub-un-paso:has(> .pub-ejemplo) {
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "cabeza pasos"
+      "extra pasos"
+      "extra ejemplo";
+  }
+
+  .pub-un-paso > .pub-ejemplo {
+    grid-area: ejemplo;
+  }
+
+  /* Recuperar, ya enviado: "Cómo sigue" es corto; va al lado de la cabeza, con su alto, y lo
+     del costado pasa abajo, a lo ancho. */
+  .pub-un-paso:has(> .pub-sigue) {
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "cabeza pasos"
+      "extra extra";
+  }
+
+  .pub-un-paso > :is(.pub-pasos, .pub-extra) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pub-un-paso > :is(.pub-pasos, .pub-extra) > :last-child {
+    flex-grow: 1;
   }
 
   .pub-un-paso > .pub-cabeza {
