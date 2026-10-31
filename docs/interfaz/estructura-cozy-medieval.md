@@ -23,6 +23,7 @@ pantalla, cómo se navega y qué momentos se recuerdan. Rige para Cozy; Glassmor
 | Cada pantalla es una hoja del atlas | Cada pantalla es la **mesa de nogal del cartógrafo**, vista desde arriba, con objetos sueltos ordenados: cada objeto, una parte de la pantalla, con su forma y su papel |
 | Barra lateral: el lomo de cuero con la pestaña unida | **Los cajones de la mesa**: en escritorio, arriba; en el celular, abajo, en el borde de la mesa. El cajón de la sección actual está abierto y lleva el ◆ |
 | Celular: el alfiler sobre el camino de la barra de abajo | Los mismos cajones, con ícono y nombre corto; con muchas secciones, la fila se desplaza a lo ancho y el actual queda a la vista |
+| Admin: el lomo angosto y plegable (elección del usuario: "opción 1 y que sea plegable") | Los mismos cajones, con sus 7 secciones: en escritorio, con el nombre completo o con ícono y nombre corto según el ancho; en el celular, la fila se desplaza a lo ancho. No hay barra que plegar: los cajones ocupan solo una franja arriba y dejan todo el ancho a las tablas |
 | Una hoja con regiones y títulos al margen | **Un objeto por parte**: la nota del saludo, el mapa del viaje, la carta con las noticias, el libro de cuentas y el cuaderno de sellos |
 | El recorrido a lo ancho de la hoja | **El mapa del viaje**: el camino de tinta sale de los datos (cualquier cantidad de etapas), el lápiz marca lo que falta, el alfiler con "Estás acá" está en la actual y la leyenda dice lo mismo en texto |
 | El catálogo `/estilos` como hoja | **El muestrario del cartógrafo**: cada componente, una lámina sobre la mesa |
@@ -199,9 +200,9 @@ Algunas decisiones dependen de pantallas o datos que no existen. Quedan para cua
 | Decisión | Qué falta |
 |---|---|
 | Pendientes en latón | Un dato por sección (entregas por confirmar, entidades por aprobar) |
-| Admin plegable | Guardar la preferencia de barra plegada entre páginas, y el texto del control, en las dos alternativas |
-| Admin en el celular | Sus 7 secciones no entran con nombre en la barra de abajo: se decide con el flujo del admin |
-| Desvío en la barra | Que la navegación sepa la pantalla de nivel 3 |
+| ~~Admin plegable~~ | Ya no aplica: los cajones de la segunda versión no tienen barra lateral que plegar (ver la tabla del principio) |
+| ~~Admin en el celular~~ | Resuelto en la segunda versión: la fila de cajones se desplaza a lo ancho y deja el actual a la vista |
+| Desvío en la barra | Que la navegación sepa la pantalla de nivel 3. En el prototipo, el cajón de la sección queda abierto en sus pantallas de nivel 3 (`PrototipoController`) |
 | Inicio de la entidad y del admin, aldea | Las pantallas y sus datos |
 | Portada (encrucijada) | La landing y las destacadas del mes |
 | Mapa grabado | Las pantallas con mapa y un estilo propio de MapLibre |

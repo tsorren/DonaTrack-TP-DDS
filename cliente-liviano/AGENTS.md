@@ -51,7 +51,7 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `static/css/app.css` | Estilos de componentes y pantallas de Glassmorphism, solo con tokens de uso |
 | `static/css/alternativas/<nombre>/` | Los estilos de esa alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`) |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
-| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js`) |
+| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js` de Cozy y `prototipo-entidad.js` del prototipo) |
 | `templates/prototipo/cozy-medieval/` | El prototipo navegable del flujo completo de Cozy (perfil `maqueta`, `/prototipo/<pantalla>`, `PrototipoController`); sus estilos, en `static/css/alternativas/cozy-medieval/prototipo/`. No son pantallas del sistema ni tienen gemela: cada una se construye en las dos alternativas cuando se apruebe su flujo |
 | `src/test/resources/voz/<alternativa>.txt` | La tabla de voz de cada alternativa: los títulos y rótulos que dice a su modo (los vigila `InterfazFitnessTest`) |
 
@@ -65,7 +65,9 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
   revés). Una pantalla o un componente nuevo se crea en los dos lugares. Las dos muestran los
   mismos datos y las mismas acciones, con los mismos nombres de botones y enlaces: un test compara
   cada par. Cada alternativa puede decir a su modo los títulos y los rótulos (sin números y nunca en
-  un control), declarados en su tabla de voz, `src/test/resources/voz/<alternativa>.txt`.
+  un control), declarados en su tabla de voz, `src/test/resources/voz/<alternativa>.txt`. En el
+  catálogo `/estilos` también entra la descripción de un componente que esa alternativa dibuja de
+  otro modo (en Cozy, la navegación son cajones y no una barra).
 - El catálogo `/estilos` de cada alternativa
   (`templates/alternativas/<nombre>/paginas/estilos.html`) muestra todos los fragmentos de esa
   alternativa. Un test falla si falta.

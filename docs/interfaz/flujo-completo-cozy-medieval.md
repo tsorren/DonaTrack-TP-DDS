@@ -22,7 +22,14 @@ Con el perfil `maqueta` (`mvn -pl cliente-liviano spring-boot:run -Dspring-boot.
 en `http://localhost:8090/prototipo/<pantalla>`. Se empieza en
 [`/prototipo/publico-portada`](http://localhost:8090/prototipo/publico-portada). Cada rol tiene su
 menú (los cajones de la mesa): una sección que todavía no tiene pantalla muestra la tierra sin
-explorar y vuelve al inicio del rol.
+explorar y vuelve al inicio del rol. En la maqueta, `/notificaciones`, `/perfil` y `/salir` del layout
+privado también llevan al prototipo.
+
+**Qué se comprueba solo.** La verificación visual (`cliente-liviano/src/test/resources/verificacion/paginas.txt`)
+recorre una pantalla por sección. Los estados (vacíos, errores, avisos y resultados de cada
+decisión) se comprobaron en una corrida aparte con todas las plantillas del prototipo (56 rutas,
+2026-10-31, con el mismo piso y sin hallazgos); si
+se cambia una de esas pantallas, hay que sumarla a esa lista o correrla aparte.
 
 ## El recorrido
 

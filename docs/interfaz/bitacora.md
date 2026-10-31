@@ -55,10 +55,12 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   Donantes, Camiones, Ranking, Notificaciones de la entidad y del admin, y Mi perfil. El prototipo
   pidió piezas compartidas que no existen todavía (el diálogo con campos, `campo` con valor cargado y
   `autocomplete`, los pendientes en latón en la navegación) y mostró un problema que también tiene
-  Glassmorphism: la carga de fotos con `capture` le saca la galería al celular.
+  Glassmorphism: la carga de fotos con `capture` le saca la galería al celular. En la maqueta,
+  `/notificaciones`, `/perfil` y `/salir` llevan al prototipo de Cozy, también desde el layout de
+  Glassmorphism, hasta que existan esas pantallas.
 - **Quién decidió:** el agente, con la libertad que dio el usuario, después de tres críticos.
-- **Evidencia:** `evidencia/cozy-medieval/flujo-completo/` (las pantallas principales, 360 y
-  1280 px).
+- **Evidencia:** `evidencia/cozy-medieval/flujo-completo/` (las pantallas principales, 360, 1280
+  y 1920 px).
 
 ### 2026-10-31 · componente:navegacion (Cozy / Medieval) · Los cajones del cartógrafo
 
@@ -74,10 +76,13 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   sistema conservan el borde. Los carteles se leían más livianos, pero sobre la madera casi no se
   distinguían y parecían una ruta de migas.
 - **Costo:** son lo más pesado de la cabecera; se aliviaron (sin losa propia, solo la etiqueta del
-  cajón actual en papel claro). Reemplaza dos decisiones anteriores de Cozy: la barra con el lomo y
-  la pestaña con canto de latón, y el alfiler sobre el camino del celular.
+  cajón actual en papel claro). Reemplaza tres decisiones anteriores de Cozy: la barra con el lomo
+  y la pestaña con canto de latón; el alfiler sobre el camino del celular; y, para el admin, el lomo
+  angosto y plegable que había elegido el usuario ("opción 1 y que sea plegable"). Los cajones no
+  tienen barra lateral que plegar: ocupan una franja arriba y dejan todo el ancho a las tablas. Si
+  el usuario quiere volver a poder plegarlos, se decide con el flujo del admin.
 - **Quién decidió:** el agente, con dos críticos (arte y piso).
-- **Evidencia:** `evidencia/cozy-medieval/componente-navegacion/` (cajones y carteles, 360 y 1280 px).
+- **Evidencia:** `evidencia/cozy-medieval/componente-navegacion/` (cajones y carteles, 360, 1280 y 1920 px).
 
 ### 2026-10-31 · estructura (Cozy / Medieval) · Iteración 2: la mesa en todo Cozy
 
@@ -100,8 +105,8 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   lo ancho" y Almendra en los rótulos. La tierra sin explorar se queda como idea, dibujada como un
   trozo de mapa rectangular. El mapa todavía no nombra el destino: ese dato no llega al recorrido.
 - **Quién decidió:** el agente, con la libertad que dio el usuario, después de dos críticos.
-- **Evidencia:** `evidencia/cozy-medieval/la-mesa/` (inicio y muestrario, antes y después, 360 y
-  1280 px).
+- **Evidencia:** `evidencia/cozy-medieval/la-mesa/` (inicio y muestrario, antes y después, 360, 1280
+  y 1920 px; el muestrario de 1920 va en dos mitades).
 
 ### 2026-10-31 · concepto (Cozy / Medieval) · Iteración 1: la mesa del cartógrafo
 
@@ -133,7 +138,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   ancho".
 - **Quién decidió:** el agente, con la libertad que dio el usuario ("creatividad absoluta y
   decisiones autónomas"), después de dos críticos independientes (arte y piso).
-- **Evidencia:** `evidencia/cozy-medieval/concepto-inicio/` (antes, A, B y C; 360 y 1280 px).
+- **Evidencia:** `evidencia/cozy-medieval/concepto-inicio/` (antes, A, B y C; 360, 1280 y 1920 px).
 
 ### 2026-10-31 · referencias (Cozy / Medieval) · Esquemorfismo rústico, profesional y con juego liviano
 

@@ -125,7 +125,9 @@ Se elige **B**:
   escriben en cada juego de plantillas. `InterfazFitnessTest` exige que cada par de gemelas tenga:
   - los mismos textos (nodos de texto, `aria-label`, `alt`, `title`, `placeholder`, `data-etiqueta`
     y los textos entre comillas de los atributos `th:*`), salvo los títulos y rótulos de la tabla de
-    voz de la alternativa (`cliente-liviano/src/test/resources/voz/<nombre>.txt`);
+    voz de la alternativa (`cliente-liviano/src/test/resources/voz/<nombre>.txt`); en el catálogo
+    `/estilos`, la tabla también admite la descripción de un componente que la alternativa dibuja
+    de otro modo (en Cozy, la navegación son cajones y no una barra);
   - los mismos datos del modelo: las expresiones `${…}` que escriben texto o que reciben los
     fragmentos (los íconos, siempre decorativos, no cuentan);
   - los mismos controles (enlaces, botones, campos, formularios y `summary`), cada uno con su
