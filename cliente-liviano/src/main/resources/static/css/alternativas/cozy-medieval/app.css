@@ -6,8 +6,8 @@
  *
  * Reglas del brief: los datos (tablas, formularios, listas) van sobre pergamino limpio; lo
  * medieval va en los marcos, los títulos, la barra lateral, los vacíos y los logros, y cada adorno
- * cuenta algo del sistema. La audacia de la pantalla es el panel destacado: una hoja de mapa con
- * su rosa de los vientos y el camino de tinta.
+ * cuenta algo del sistema. Cada pantalla es una hoja del atlas (estructura-cozy-medieval.md): una
+ * sola hoja de pergamino con regiones, títulos al margen y una audacia por pantalla.
  */
 
 /* Base */
@@ -25,23 +25,6 @@ body {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.01em;
-}
-
-/* Las secciones abren con un filete de libro: un rombo y la línea de latón. */
-h2 {
-  position: relative;
-  padding-block-end: var(--espacio-3);
-}
-
-h2::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: min(10rem, 60%);
-  height: 0.75rem;
-  background-color: var(--color-laton);
-  mask: url("../../../img/cozy-medieval/filete.svg") left center / contain no-repeat;
 }
 
 .solo-lectores {
@@ -110,11 +93,11 @@ a {
   outline-color: var(--color-foco-sobre-oscuro);
 }
 
+/* Sin relleno a los costados: el texto queda alineado con el de la región. */
 .enlace-fuerte {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
-  padding-inline: var(--espacio-3);
   color: var(--color-enlace);
   font-size: var(--tamano-chico);
   font-weight: 700;
@@ -131,7 +114,7 @@ a {
   stroke-width: 1.5;
 }
 
-/* Layout: la cabecera es el borde superior de la hoja, con doble filete. */
+/* Layout: la cabecera va sobre la mesa, arriba de la hoja, con doble filete. */
 .saltar {
   position: absolute;
   top: var(--espacio-2);
@@ -216,14 +199,56 @@ a {
   font-style: normal;
 }
 
+/* La hoja: todo el contenido es una sola hoja de pergamino liso. En las pantallas públicas va
+   sobre la mesa, con su canto; en el armazón arranca pegada al lomo. En el celular ocupa todo el
+   ancho. */
 #contenido {
   padding-block: 1.625rem var(--espacio-7);
+  background-color: var(--color-fondo);
+}
+
+body > #contenido {
+  border-block-end: var(--borde-hoja) solid var(--color-filete);
 }
 
 .pie {
   padding-block: var(--espacio-5);
   color: var(--color-texto-suave);
-  border-block-start: var(--borde-ancho) solid var(--color-borde);
+}
+
+/* Desde 600 px se ve la mesa alrededor de la hoja, y el pie queda alineado con ella. */
+@media (min-width: 37.5em) {
+  body > :is(#contenido, .pie) {
+    max-width: min(100% - 2 * var(--espacio-5), var(--medida-hoja));
+    padding-inline: var(--espacio-6);
+  }
+
+  body > #contenido {
+    margin-block-start: var(--espacio-5);
+    border: var(--borde-hoja) solid var(--color-filete);
+    border-radius: var(--radio-panel);
+    box-shadow: var(--sombra-papel);
+  }
+}
+
+/* En el armazón, desde 860 px, la hoja arranca pegada al lomo, sin borde ni margen de ese lado ni
+   arriba; a la derecha y abajo, su canto sobre la mesa. */
+@media (min-width: 53.75em) {
+  .armazon #contenido {
+    max-width: var(--medida-hoja);
+    margin: 0 var(--espacio-5) var(--espacio-6) 0;
+    border: var(--borde-hoja) solid var(--color-filete);
+    border-block-start: 0;
+    border-inline-start: 0;
+    border-end-end-radius: var(--radio-panel);
+    box-shadow: var(--sombra-papel);
+  }
+}
+
+@media (min-width: 68.75em) {
+  body > :is(#contenido, .pie) {
+    padding-inline: var(--espacio-7);
+  }
 }
 
 /* Navegación por rol: la tapa de nogal del atlas. El camino es una línea de puntos de latón con
@@ -471,13 +496,19 @@ a {
   bottom: 6rem;
 }
 
-/* Panel: una hoja de pergamino con su trazo de tinta. */
+/* Panel: una región de la hoja, sin caja propia. La separa de lo anterior un filete de tinta y
+   aire; su título es una nota al margen. */
 .panel {
   position: relative;
   margin: 0;
+  padding-block-start: var(--espacio-5);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+/* La misión lleva marco propio (sección Misión). Mientras esa sección no declare su relleno, su
+   radio y su sombra, quedan acá los de antes, sin especificidad extra: la misión les gana. */
+.panel:where(.mision) {
   padding: 1.25rem 1.375rem;
-  background-color: var(--color-fondo);
-  border: var(--borde-hoja) solid var(--color-filete);
   border-radius: var(--radio-tarjeta);
   box-shadow: var(--sombra-papel);
 }
@@ -503,44 +534,145 @@ a {
   gap: var(--espacio-3);
 }
 
-/* Panel destacado: la hoja del mapa, con la cuadrícula de meridianos, la rosa de los vientos y,
-   en pantallas anchas, el camino de tinta con las cartelas de cada cifra. */
+/* El viaje: el título arriba, en grande, y en el renglón de abajo qué se donó y en qué estado
+   está, uno al lado del otro. Así el recorrido entra entero en la primera pantalla del celular. */
+.panel--viaje > .panel-encabezado {
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espacio-2) var(--espacio-3);
+  margin-block-end: var(--espacio-4);
+}
+
+.panel--viaje > .panel-encabezado > div {
+  display: contents;
+}
+
+.panel--viaje > .panel-encabezado h3 {
+  flex-basis: 100%;
+  font-size: var(--tamano-titulo-2);
+}
+
+.panel--viaje .panel-bajada {
+  margin: 0;
+}
+
+/* Inicio del donante (/estilos/armazon): la hoja del tablero. La audacia es el viaje en curso:
+   va enseguida de un saludo corto y ocupa todo el ancho de la hoja, con su título arriba y más
+   aire que el resto. Después, la leyenda de las cifras, las notificaciones y, al final, la misión.
+   El orden del HTML es el de lectura y las áreas lo siguen: ninguna variante cambia el orden del
+   foco. Toda la composición está en este grupo de reglas.
+   Las dos variantes que se van a comparar:
+   - B, viaje a lo ancho (la de estas reglas): el recorrido horizontal a todo el ancho de la hoja y
+     la leyenda debajo.
+   - A, viaje a lo alto: el recorrido vertical, con la leyenda al costado. Se arma con este bloque,
+     dentro de @media (min-width: 53.75em):
+       .tablero {
+         grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+         grid-template-areas: "saludo saludo" "viaje leyenda" "notas notas" "mision mision";
+         align-items: start;
+       }
+       .tablero-leyenda .cifras { grid-template-columns: minmax(0, 1fr); }
+     Mientras el recorrido se oriente por el ancho de la pantalla y no por el de su lugar (hasta
+     unir el frente de signos), A necesita además estas reglas, que lo ponen vertical:
+       .tablero .recorrido { grid-auto-flow: row; gap: 0.875rem; padding-inline-start: 2px; }
+       .tablero .recorrido::before {
+         inset: 15px auto 15px 15px;
+         border-block-start: 0;
+         border-inline-start: var(--borde-ruta) dotted var(--color-ruta);
+       }
+       .tablero .recorrido-paso { flex-direction: row; gap: var(--espacio-3); text-align: start; }
+     En las dos, el título del viaje va arriba y el de las notificaciones, al margen. */
+.tablero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "saludo" "viaje" "leyenda" "notas" "mision";
+  gap: var(--espacio-5);
+}
+
+.tablero > * {
+  margin: 0;
+}
+
+.tablero > .destacado {
+  grid-area: saludo;
+}
+
+.tablero > .panel--viaje {
+  grid-area: viaje;
+}
+
+.tablero > .tablero-leyenda {
+  grid-area: leyenda;
+}
+
+.tablero > .panel--notas {
+  grid-area: notas;
+}
+
+.tablero > .tablero-mision {
+  grid-area: mision;
+}
+
+/* Desde 860 px, más aire entre regiones, y más todavía alrededor del viaje. */
+@media (min-width: 53.75em) {
+  .tablero {
+    gap: var(--espacio-6);
+  }
+
+  .tablero > .panel--viaje {
+    padding-block: var(--espacio-6) var(--espacio-2);
+  }
+}
+
+/* Títulos al margen: desde 1100 px, el encabezado de cada región de lectura (título y bajada) va
+   en una columna angosta a la izquierda, como las notas de un códice. El viaje no: es la audacia
+   y usa todo el ancho de la hoja. La misión, que trae su título en su marco, va en la columna del
+   cuerpo, con el margen libre. El HTML no cambia de orden: primero el título, después el cuerpo. */
+@media (min-width: 68.75em) {
+  .tablero > :is(.panel:not(.panel--viaje), .tablero-mision) {
+    padding-inline-start: calc(var(--medida-margen-titulo) + var(--espacio-6));
+  }
+
+  .tablero > .panel:not(.panel--viaje) {
+    display: flow-root;
+  }
+
+  .tablero > .tablero-mision > * {
+    max-width: var(--medida-lectura);
+  }
+
+  .tablero > .panel:not(.panel--viaje) > .panel-encabezado {
+    float: inline-start;
+    flex-direction: column;
+    width: var(--medida-margen-titulo);
+    margin-inline-start: calc(-1 * (var(--medida-margen-titulo) + var(--espacio-6)));
+    overflow-wrap: break-word;
+    hyphens: auto;
+    hyphenate-limit-chars: 10 4 4;
+  }
+}
+
+/* Panel destacado: el saludo, con marco propio. Es corto, para que el viaje en curso se vea
+   enseguida: la audacia de la hoja es el viaje, no el saludo. El texto va en pergamino liso; en
+   pantallas anchas, a su lado, el mapa: la cuadrícula de meridianos, la rosa de los vientos y el
+   camino de tinta con sus pueblos. */
 .destacado {
   position: relative;
   display: grid;
   gap: var(--espacio-5);
-  min-height: 13.125rem;
-  padding: var(--espacio-5) 1.25rem;
+  padding: var(--espacio-4);
   overflow: hidden;
   isolation: isolate;
   background-color: var(--color-fondo);
-  background-image:
-    linear-gradient(var(--color-trama) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-trama) 1px, transparent 1px);
-  background-size: 3rem 3rem;
   border: var(--borde-hoja) solid var(--color-filete);
   border-radius: var(--radio-panel);
-  box-shadow: var(--sombra-papel);
-}
-
-/* En el celular, la rosa queda en la esquina, recortada, para no pasar por detrás del texto. */
-.destacado::before {
-  content: "";
-  position: absolute;
-  top: -1.75rem;
-  right: -1.75rem;
-  z-index: -1;
-  width: var(--medida-rosa);
-  aspect-ratio: 1;
-  background-color: var(--color-borde);
-  mask: url("../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
 }
 
 .destacado h3 {
-  margin: 0.875rem 0 var(--espacio-2);
+  margin: var(--espacio-1) 0 var(--espacio-2);
   color: var(--color-titulo);
-  font-size: var(--tamano-titulo-1);
-  line-height: 1.1;
+  font-size: var(--tamano-titulo-2);
+  line-height: 1.15;
 }
 
 .destacado p {
@@ -550,11 +682,8 @@ a {
   font-size: var(--tamano-texto-grande);
 }
 
+/* Sin rombo: el rombo es el signo de "ahora". */
 .destacado .destacado-etiqueta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-2);
-  width: fit-content;
   color: var(--color-laton-texto);
   font-family: var(--fuente-rotulos);
   font-size: var(--tamano-chico);
@@ -562,24 +691,54 @@ a {
   letter-spacing: 0.04em;
 }
 
-.destacado-etiqueta::before {
-  content: "";
-  width: var(--medida-rombo);
-  height: var(--medida-rombo);
-  background-color: var(--color-laton);
-  transform: rotate(45deg);
-}
-
+/* Los dos botones entran en un renglón desde 360 px; si no entran, el segundo baja. */
 .destacado-acciones {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.625rem;
-  margin-top: 1.25rem;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-4);
 }
 
+.destacado-acciones > * {
+  padding-inline: var(--espacio-4);
+}
+
+/* El mapa aparece desde 1100 px; antes, el saludo es solo texto. Es un grabado callado: la audacia
+   de la pantalla es el viaje en curso. El camino se estira con el mapa y los pueblos van en
+   proporción del dibujo (360 × 200): siguen sobre el camino con cualquier ancho y alto. */
 .destacado-red {
   display: none;
   position: relative;
+  min-height: 8rem;
+}
+
+/* La cuadrícula de meridianos va solo detrás del mapa, hasta el marco, que la recorta; la separa
+   del texto la línea de tinta del borde del mapa. Pico no repite los fondos de ningún elemento:
+   la cuadrícula lo pide. */
+.destacado-red::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--espacio-7)) calc(-1 * var(--espacio-7)) calc(-1 * var(--espacio-7))
+    calc(-1 * var(--espacio-3));
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--color-trama) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-trama) 1px, transparent 1px);
+  background-repeat: repeat;
+  background-size: 3rem 3rem;
+  border-inline-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+/* La rosa de los vientos, en la esquina libre del mapa, arriba a la izquierda del camino. */
+.destacado-red::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--medida-rosa-chica);
+  aspect-ratio: 1;
+  background-color: var(--color-filete);
+  mask: url("../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
 }
 
 .destacado-red svg {
@@ -595,62 +754,33 @@ a {
   stroke-dasharray: 0.5 9;
 }
 
-/* Cada parada del camino es un pueblo: un círculo de tinta con el centro de pergamino. */
+/* Cada parada del camino es un pueblo (⌂): una entidad ayudada, en tinta, centrada en su punto del
+   camino. */
 .destacado-nodo {
   position: absolute;
-  width: 0.875rem;
-  height: 0.875rem;
-  background-color: var(--color-fondo);
-  border: var(--borde-ruta) solid var(--color-titulo);
-  border-radius: var(--radio-sello);
+  width: 1.125rem;
+  height: 1.125rem;
+  translate: -50% -50%;
+  background-color: var(--color-titulo);
+  mask: url("../../../img/cozy-medieval/saludo-pueblo.svg") center / contain no-repeat;
 }
 
+/* El camino termina en un pueblo (340, 14) y pasa por otro (160, 102): las dos entidades
+   ayudadas. */
 .destacado-nodo--1 {
-  top: 161px;
-  left: 11px;
+  top: 7%;
+  left: 94.5%;
 }
 
 .destacado-nodo--2 {
-  top: 95px;
-  left: 153px;
+  top: 51%;
+  left: 44.5%;
 }
 
-/* Las cifras del mapa van en cartelas: el rótulo de un lugar en un mapa antiguo. */
+/* Las cartelas repetían las cifras, que en esta hoja son la leyenda, y no entran en el mapa corto.
+   Quedan en el HTML, sin mostrarse, porque los textos son los mismos que en Glassmorphism. */
 .destacado-chip {
-  position: absolute;
-  min-width: 7rem;
-  padding: 0.5rem var(--espacio-3);
-  background-color: var(--color-fondo);
-  border: var(--borde-ancho) solid var(--color-titulo);
-  border-radius: var(--radio-chico);
-  text-align: center;
-}
-
-.destacado-chip b {
-  display: block;
-  color: var(--color-titulo);
-  font-family: var(--fuente-rotulos);
-  font-size: 1.375rem;
-}
-
-.destacado-chip span {
-  color: var(--color-texto-suave);
-  font-size: var(--tamano-mini);
-}
-
-.destacado-chip--1 {
-  top: 84px;
-  left: 8px;
-}
-
-.destacado-chip--2 {
-  top: 118px;
-  left: 186px;
-}
-
-.destacado-chip--3 {
-  top: -8px;
-  right: -6px;
+  display: none;
 }
 
 /* Cifras: los asientos del libro de cuentas. */
@@ -1085,7 +1215,8 @@ a {
   justify-self: start;
 }
 
-/* Notificaciones: cada una lleva un rombo de tinta verde, como una marca en el mapa. */
+/* Notificaciones: el registro de lo que pasó, en pergamino liso, con una línea de tinta tenue
+   entre aviso y aviso. Sin marcas: cada signo del atlas ya tiene su significado. */
 .notas {
   display: grid;
   gap: 0;
@@ -1095,30 +1226,20 @@ a {
 
 .notas li {
   display: grid;
-  grid-template-columns: 12px 1fr;
-  align-items: center;
-  gap: var(--espacio-1) var(--espacio-3);
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-4);
   margin: 0;
-  padding: 0.625rem var(--espacio-3) 0.625rem 0.375rem;
+  padding: 0.625rem 0;
   border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
   list-style: none;
 }
 
+.notas li:first-child {
+  padding-block-start: 0;
+}
+
 .notas li:last-child {
   border-block-end: 0;
-}
-
-.notas li::before {
-  content: "";
-  width: var(--medida-rombo);
-  height: var(--medida-rombo);
-  margin-inline-start: 2px;
-  background-color: var(--color-marca);
-  transform: rotate(45deg);
-}
-
-.notas li:hover {
-  background-color: var(--color-fondo-pagina);
 }
 
 .notas p {
@@ -1128,7 +1249,6 @@ a {
 }
 
 .notas time {
-  grid-column: 2;
   color: var(--color-texto-suave);
   font-size: var(--tamano-mini);
   font-style: italic;
@@ -1202,10 +1322,6 @@ a {
   padding: 0;
   color: inherit;
   font-size: 1.125rem;
-}
-
-.banner h2::after {
-  content: none;
 }
 
 .banner p,
@@ -1592,24 +1708,59 @@ dialog > article > footer button {
   border-width: var(--borde-ruta);
 }
 
-/* Catálogo /estilos: cada sección es una hoja de pergamino. */
+/* Catálogo /estilos: cada sección es una región de la hoja, con un filete de tinta arriba y su
+   título al margen desde 1100 px. */
 .catalogo-intro,
 .catalogo-patron {
   max-width: var(--medida-lectura);
   color: var(--color-texto-suave);
 }
 
-.catalogo {
-  margin-block-end: 1.375rem;
-  padding: 1.375rem;
-  background-color: var(--color-fondo);
-  border: var(--borde-hoja) solid var(--color-filete);
-  border-radius: var(--radio-tarjeta);
-  box-shadow: var(--sombra-papel);
+:is(.catalogo, .muestra-pantalla) {
+  margin: 0;
+  padding-block: var(--espacio-6);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
 }
 
 .catalogo > h2 {
   margin-block-end: var(--espacio-3);
+}
+
+/* La muestra apila sus piezas en el orden del HTML, con el mismo aire que el tablero. Adentro,
+   las regiones llevan el título arriba: el margen ya lo usa el título de la muestra. */
+.muestra-pantalla > * {
+  margin-block: 0;
+}
+
+.muestra-pantalla > * + * {
+  margin-block-start: var(--espacio-6);
+}
+
+.muestra-pantalla > h2 + * {
+  margin-block-start: var(--espacio-3);
+}
+
+/* El título no cambia de lugar en el HTML: queda primero y flota hacia el margen. El cuerpo
+   arranca a la altura del título. */
+@media (min-width: 68.75em) {
+  :is(.catalogo, .muestra-pantalla) {
+    display: flow-root;
+    padding-inline-start: calc(var(--medida-margen-titulo) + var(--espacio-6));
+  }
+
+  :is(.catalogo, .muestra-pantalla) > h2 {
+    float: inline-start;
+    width: var(--medida-margen-titulo);
+    margin-inline-start: calc(-1 * (var(--medida-margen-titulo) + var(--espacio-6)));
+    font-size: var(--tamano-titulo-3);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    hyphenate-limit-chars: 10 4 4;
+  }
+
+  :is(.catalogo, .muestra-pantalla) > h2 + * {
+    margin-block-start: 0;
+  }
 }
 
 .catalogo-fila {
@@ -1636,19 +1787,13 @@ dialog > article > footer button {
   gap: var(--espacio-5);
 }
 
-.muestra-pantalla {
-  display: grid;
-  gap: 1.375rem;
-  margin-block-end: var(--espacio-6);
-}
-
-.muestra-pantalla > :is(h2, .catalogo-patron) {
-  margin: 0;
-}
-
 .muestra-grilla {
   display: grid;
-  gap: 1.125rem;
+  gap: var(--espacio-6);
+}
+
+.muestra-grilla > * {
+  margin: 0;
 }
 
 .muestras {
@@ -1855,7 +2000,7 @@ dialog > article > footer button {
   }
 
   .destacado {
-    padding: 1.875rem 2.125rem;
+    padding: var(--espacio-5) var(--espacio-6);
   }
 
   .cifras {
@@ -1894,27 +2039,14 @@ dialog > article > footer button {
   }
 
   .notas li {
-    grid-template-columns: 12px 1fr auto;
-  }
-
-  .notas time {
-    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
 /* Desde 1100 px: la hoja del mapa completa, con el camino de tinta y sus cartelas. */
 @media (min-width: 68.75em) {
   .destacado {
-    grid-template-columns: minmax(0, 1fr) 22.5rem;
-  }
-
-  /* La rosa pasa a la esquina libre del mapa, arriba a la izquierda del camino. */
-  .destacado::before {
-    top: 1.875rem;
-    right: auto;
-    left: calc(100% - 2.125rem - 22.5rem);
-    width: var(--medida-rosa-chica);
-    background-color: var(--color-filete);
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 
   .destacado-red {
@@ -1928,9 +2060,5 @@ dialog > article > footer button {
   .categoria {
     grid-column: auto;
     min-height: 12.25rem;
-  }
-
-  .muestra-grilla {
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   }
 }

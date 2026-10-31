@@ -287,7 +287,6 @@
   --medida-rombo: 0.5rem;
   --medida-barra-superior: 4.25rem;
   --medida-columna-estado: 11.5rem;
-  --medida-rosa: 9rem;
   --medida-rosa-chica: 3.5rem;
 
   /* Los mismos puntos de quiebre que Glassmorphism (600, 860 y 1100 px): las dos alternativas
@@ -295,6 +294,13 @@
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
+
+  /* Estructura: la hoja */
+  /* Ancho máximo de la hoja de pergamino, en el área pública y en el armazón. Pico agranda la
+     letra base con la pantalla: en 1920 px son unos 1470 px. */
+  --medida-hoja: 70rem;
+  /* Columna de los títulos al margen, como las notas de un códice; es también su ancho mínimo. */
+  --medida-margen-titulo: 10rem;
 
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);

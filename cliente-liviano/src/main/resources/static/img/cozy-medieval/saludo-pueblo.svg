@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
+  <!-- Un pueblo (⌂): una entidad en el mapa del saludo. Dibujo propio de la Alternativa Cozy /
+       Medieval, de un solo color: app.css lo usa como máscara. La puerta queda calada. -->
+  <path fill-rule="evenodd" d="M9 1.5 16.5 8V16.5H1.5V8Z M7.5 16.5V12H10.5V16.5Z"/>
+</svg>
