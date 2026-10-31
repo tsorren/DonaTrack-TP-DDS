@@ -653,22 +653,19 @@ a {
   right: -6px;
 }
 
-/* Cifras: los asientos del libro de cuentas. */
+/* Cifras: la leyenda de la hoja, cada entrada con su signo y su texto, sin caja. */
+/* Las columnas salen del lugar que hay: las entregadas a la izquierda y, a su lado, las
+   realizadas y la categoría. Van sobre el pergamino liso: los datos van limpios. */
 .cifras {
   display: grid;
-  gap: 1.125rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  align-items: start;
+  gap: var(--espacio-5) var(--espacio-6);
 }
 
 :is(.cifra, .resumen-entregas, .categoria) {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 12.25rem;
-  overflow: hidden;
-  isolation: isolate;
   container-type: inline-size;
-  border-radius: var(--radio-panel);
-  text-decoration: none;
 }
 
 .cifra-etiqueta {
@@ -678,123 +675,126 @@ a {
   letter-spacing: 0.03em;
 }
 
+/* Una entrada de la leyenda: el signo del camino de tinta con lo que cuenta y, debajo, el número.
+   Toda la entrada es el enlace a sus entregas. */
 .cifra {
-  padding: 1.25rem 1.375rem 1.125rem;
-  background-color: var(--color-fondo);
-  border: var(--borde-hoja) solid var(--color-filete);
-  box-shadow: var(--sombra-papel);
-  color: var(--color-texto);
-  transition: border-color var(--movimiento-duracion);
-}
-
-.cifra:hover {
-  border-color: var(--color-marca);
-}
-
-.cifra .cifra-etiqueta {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-2);
-  min-height: 2rem;
-  padding: 0 2.75rem 0 0;
-  color: var(--color-titulo);
-}
-
-.cifra .cifra-etiqueta::before {
-  content: "";
-  flex: none;
-  width: var(--medida-rombo);
-  height: var(--medida-rombo);
-  background-color: var(--color-laton);
-  transform: rotate(45deg);
-}
-
-.cifra-ir {
-  position: absolute;
-  top: var(--espacio-4);
-  right: var(--espacio-4);
   display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: var(--borde-ancho) solid var(--color-filete);
-  border-radius: var(--radio-sello);
-  color: var(--color-marca-texto);
+  grid-template-columns: var(--medida-signo) auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "signo etiqueta etiqueta ir"
+    ". valor chip chip"
+    ". grafico grafico grafico";
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+  color: var(--color-texto);
+  text-decoration: none;
 }
 
-.cifra-cuerpo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: var(--espacio-3);
+.cifra::before {
+  content: "";
+  grid-area: signo;
+  width: var(--medida-signo);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-tinta);
+  mask: url("../../../img/cozy-medieval/signo-camino-de-tinta.svg") center / contain no-repeat;
 }
 
+/* El número va en la letra de texto, que tiene cifras alineadas. */
 .cifra-valor {
+  grid-area: valor;
   color: var(--color-titulo);
-  font-size: clamp(40px, 18cqi, 60px);
+  font-family: var(--fuente-texto);
+  font-size: clamp(36px, 14cqi, 48px);
   font-weight: 800;
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1;
 }
 
+.cifra .cifra-etiqueta {
+  grid-area: etiqueta;
+  color: var(--color-titulo);
+}
+
+.cifra:hover .cifra-etiqueta {
+  text-decoration: underline;
+}
+
 .cifra-chip {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
+  grid-area: chip;
   gap: 0 5px;
-  margin-top: var(--espacio-2);
   color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
   font-style: italic;
 }
 
 .cifra-chip b {
-  color: var(--color-marca-texto);
+  color: var(--color-titulo);
   font-style: normal;
   font-weight: 800;
 }
 
+.cifra-ir {
+  display: grid;
+  grid-area: ir;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--borde-ancho) solid var(--color-borde-control);
+  border-radius: var(--radio-sello);
+  color: var(--color-titulo);
+}
+
+/* El gráfico de los meses, grabado en tinta: el mes actual, entintado. */
 .cifra-grafico {
   display: block;
+  grid-area: grafico;
+  justify-self: start;
   max-width: 100%;
-  height: 4.5rem;
-  margin: var(--espacio-4) 0 0 auto;
+  height: 2.75rem;
+  margin-block-start: var(--espacio-3);
   overflow: visible;
 }
 
 .cifra-grafico rect {
-  fill: var(--color-segmento-vacio);
-  stroke: var(--color-ruta);
-  stroke-width: 1;
+  fill: var(--color-fondo);
+  stroke: var(--color-signo-tinta);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
   rx: 1px;
 }
 
 .cifra-grafico rect.actual {
-  fill: var(--color-marca);
-  stroke: var(--color-marca);
+  fill: var(--color-signo-tinta);
 }
 
+/* Las entregadas: el sello de latón con su número, la tira del total y su leyenda, signo por
+   signo. Sin la tarjeta que Pico le da a un article. */
 .resumen-entregas {
+  display: grid;
+  grid-row: span 2;
   order: -1;
-  justify-content: center;
-  gap: var(--espacio-3);
-  padding: 1.25rem 1.375rem 1.375rem;
-  background-color: var(--color-fondo);
-  border: var(--borde-hoja) solid var(--color-filete);
-  box-shadow: var(--sombra-papel);
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* Si el título no entra al lado de la moneda, baja. */
+/* Si el título no entra al lado del sello, baja. */
 .resumen-entregas-cabecera {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--espacio-3) 1.125rem;
+  gap: var(--espacio-3) var(--espacio-4);
 }
 
 .resumen-entregas h3 {
   margin: 0;
   color: var(--color-titulo);
-  font-size: clamp(18px, 7cqi, 26px);
+  font-size: clamp(18px, 7cqi, 24px);
   line-height: 1.1;
 }
 
@@ -802,43 +802,47 @@ a {
   display: block;
 }
 
-/* La moneda: una medalla de latón con el canto grabado. */
+/* La moneda es el sello ◉ de las entregadas: latón con trazo oscuro, el canto grabado y el número
+   en el centro. */
 .moneda {
   position: relative;
   display: grid;
   flex: none;
   place-items: center;
-  width: clamp(72px, 26cqi, 100px);
+  width: clamp(56px, 20cqi, 72px);
   aspect-ratio: 1;
-  margin: 7px;
-  background-color: var(--color-laton-brillante);
-  border: var(--borde-marco) solid var(--color-laton-texto);
+  margin: 6px;
+  background-color: var(--color-signo-sello);
+  border: var(--borde-marco) solid var(--color-signo-trazo);
   border-radius: var(--radio-sello);
-  box-shadow: inset 0 0 0 4px var(--color-placa-brillo);
+  box-shadow: inset 0 0 0 3px var(--color-placa-brillo);
 }
 
 .moneda::before {
   content: "";
   position: absolute;
-  inset: -7px;
-  border: var(--borde-ruta) dotted var(--color-laton-texto);
+  inset: -6px;
+  border: var(--borde-ruta) dotted var(--color-signo-trazo);
   border-radius: var(--radio-sello);
 }
 
 .moneda b {
   color: var(--color-titulo);
   font-family: var(--fuente-rotulos);
-  font-size: clamp(30px, 11cqi, 44px);
-  font-weight: 900;
+  font-size: clamp(26px, 9cqi, 34px);
+  font-weight: 700;
   line-height: 1;
 }
 
+/* La tira del total: un tramo por estado, con la pintura de su signo. Es decorativa: la leyenda de
+   abajo dice lo mismo en texto. */
 .segmentos {
   display: block;
   width: 100%;
-  height: 12px;
+  height: 10px;
   overflow: hidden;
-  border: var(--borde-ancho) solid var(--color-titulo);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-signo-tinta);
   border-radius: var(--radio-chico);
 }
 
@@ -847,63 +851,60 @@ a {
 }
 
 .segmento--entregadas {
-  --color-segmento: var(--color-marca);
+  --color-segmento: var(--color-signo-sello);
 }
 
 .segmento--camino {
-  --color-segmento: var(--color-marca-alterna);
+  --color-segmento: var(--color-signo-tinta);
 }
 
 .segmento--proceso {
-  --color-segmento: var(--color-marca-suave);
+  --color-segmento: var(--color-superficie);
 }
 
 .segmento--sin-entregar {
-  --color-segmento: var(--color-segmento-vacio);
+  --color-segmento: var(--color-signo-problema);
 }
 
+/* La leyenda: cada renglón con su signo, en una columna fija para que los textos se alineen. */
 .leyenda {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.375rem 0.875rem;
+  gap: var(--espacio-2) var(--espacio-4);
   margin: 0;
   padding: 0;
-  color: var(--color-texto-suave);
+  color: var(--color-texto);
   font-size: var(--tamano-chico);
 }
 
 .leyenda li {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: var(--medida-signo) minmax(0, 1fr);
+  align-items: baseline;
   gap: var(--espacio-2);
   margin: 0;
   list-style: none;
 }
 
-.leyenda li::before {
-  content: "";
-  flex: none;
-  width: 11px;
-  height: 11px;
-  background-color: var(--color-segmento);
-  border: var(--borde-ancho) solid var(--color-titulo);
-}
-
-/* La categoría: una placa de latón, como la de una puerta. */
+/* La categoría: una placa de latón con su filete grabado, como la de una puerta. */
 .categoria {
-  justify-content: flex-end;
-  gap: 0.375rem;
-  padding: 1.25rem 1.375rem;
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-4) var(--espacio-5);
   background-color: var(--color-laton-brillante);
   border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: var(--radio-chico);
+  box-shadow:
+    inset 0 0 0 4px var(--color-laton-brillante),
+    inset 0 0 0 5px var(--color-laton-texto);
   color: var(--color-titulo);
 }
 
 /* El tamaño sigue al ancho de la placa para que el nombre entre entero. */
 .categoria-nombre {
   font-family: var(--fuente-titulos);
-  font-size: clamp(22px, 10cqi, 40px);
-  font-weight: 800;
+  font-size: clamp(22px, 9cqi, 32px);
+  font-weight: 700;
   line-height: 1.05;
 }
 
@@ -912,33 +913,35 @@ a {
   font-style: italic;
 }
 
-/* Recorrido: el camino de puntos de tinta, con una parada numerada por paso. Vertical en el
-   celular, horizontal desde el quiebre medio. */
+/* Recorrido: el camino de tinta de una entrega, entintado hasta la parada actual. */
+/* Vertical si el lugar es angosto; horizontal desde que la lista mide 37,5em, en cualquier
+   pantalla. Los signos de las paradas están con los del estado de una entrega. */
 .recorrido {
-  position: relative;
-  display: grid;
-  gap: 0.875rem;
-  margin: 0.375rem 0 var(--espacio-3);
-  padding: 0 0 0 2px;
-}
-
-.recorrido::before {
-  content: "";
-  position: absolute;
-  top: 15px;
-  bottom: 15px;
-  left: 15px;
-  border-inline-start: var(--borde-ruta) dotted var(--color-ruta);
+  display: flex;
+  flex-wrap: wrap;
+  margin: var(--espacio-2) 0 var(--espacio-3);
+  padding: 0;
+  font-size: var(--tamano-chico);
+  container-type: inline-size;
 }
 
 .recorrido-paso {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-3);
-  color: var(--color-texto-suave);
-  font-size: var(--tamano-chico);
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 var(--espacio-4) calc(var(--medida-signo) + var(--espacio-2));
+  color: var(--color-texto);
   list-style: none;
+}
+
+.recorrido-paso:last-child {
+  padding-block-end: 0;
+}
+
+/* El número de la parada queda en el marcado, sin verse: la parada la dice su signo. */
+.recorrido-nodo {
+  display: none;
 }
 
 .recorrido-texto {
@@ -946,30 +949,9 @@ a {
 }
 
 .recorrido-texto small {
+  color: var(--color-texto-suave);
   font-size: var(--tamano-mini);
   font-style: italic;
-}
-
-.recorrido-nodo {
-  z-index: 1;
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: var(--medida-nodo);
-  height: var(--medida-nodo);
-  background-color: var(--color-fondo);
-  border: var(--borde-ruta) solid var(--color-titulo);
-  border-radius: var(--radio-sello);
-  color: var(--color-titulo);
-  font-family: var(--fuente-rotulos);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.recorrido-paso--hecho .recorrido-nodo {
-  background-color: var(--color-marca);
-  border-color: var(--color-marca);
-  color: var(--color-texto-sobre-accion);
 }
 
 .recorrido-paso--actual {
@@ -977,16 +959,64 @@ a {
   font-weight: 700;
 }
 
-.recorrido-paso--actual .recorrido-nodo {
-  background-color: var(--color-destacado-fondo);
-  border-color: var(--color-destacado-fondo);
-  box-shadow: 0 0 0 3px var(--color-laton-brillante);
-  color: var(--color-destacado-texto);
+.recorrido-paso--pendiente {
+  color: var(--color-texto-suave);
 }
 
-.recorrido-paso--pendiente .recorrido-nodo {
-  border-style: dashed;
-  color: var(--color-texto-suave);
+/* El signo de la parada, en la columna del camino y a la altura del primer renglón. */
+.recorrido-paso::after {
+  position: absolute;
+  top: 0.75em;
+  left: calc(var(--medida-signo) / 2);
+  translate: -50% -50%;
+}
+
+/* El tramo hasta la parada siguiente, entintado si ya se recorrió. */
+.recorrido-paso::before {
+  content: "";
+  position: absolute;
+  top: 0.75em;
+  bottom: -0.75em;
+  left: calc(var(--medida-signo) / 2 - var(--borde-ruta) / 2);
+  border-inline-start: var(--borde-ruta) solid var(--color-signo-tinta);
+}
+
+/* Desde la parada actual, el camino que falta: en lápiz, sin entintar. */
+:is(.recorrido-paso--actual, .recorrido-paso--pendiente)::before {
+  border-style: dotted;
+  border-color: var(--color-camino-por-recorrer);
+}
+
+.recorrido-paso:last-child::before {
+  content: none;
+}
+
+/* Horizontal: las paradas en fila, el signo arriba y el tramo hasta el centro de la siguiente. */
+@container (min-width: 37.5em) {
+  .recorrido-paso {
+    flex: 1 1 0;
+    padding: calc(var(--medida-signo) + var(--espacio-2)) var(--espacio-1) 0;
+    text-align: center;
+  }
+
+  .recorrido-paso::after {
+    top: calc(var(--medida-signo) / 2);
+    left: 50%;
+  }
+
+  .recorrido-paso::before {
+    top: calc(var(--medida-signo) / 2 - var(--borde-ruta) / 2);
+    bottom: auto;
+    left: 50%;
+    width: 100%;
+    border-inline-start: 0;
+    border-block-start: var(--borde-ruta) solid var(--color-signo-tinta);
+  }
+
+  :is(.recorrido-paso--actual, .recorrido-paso--pendiente)::before {
+    border-style: dotted;
+    border-color: var(--color-camino-por-recorrer);
+  }
 }
 
 /* Misión: el logro va en cuero oscuro con un sello de latón. */
@@ -1320,44 +1350,104 @@ dialog > article > footer button {
   display: none;
 }
 
-/* Estado de una entrega: un sello en tinte, con un color por estado y su ícono. */
+/* Estado de una entrega: una anotación del mapa, con el signo del viaje y su texto. */
+/* Sin píldora: cambia la forma del signo, no solo el color. El texto va en cursiva, como los
+   nombres de un mapa. */
 .insignia {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
+  display: inline-grid;
+  grid-template-columns: var(--medida-signo) auto;
+  align-items: baseline;
+  gap: var(--espacio-1);
   width: fit-content;
-  padding: 0.25rem var(--espacio-3) 0.25rem 0.5rem;
-  border: var(--borde-ancho) solid currentcolor;
-  border-radius: var(--radio-insignia);
-  font-size: var(--tamano-mini);
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-style: italic;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  line-height: 1.3;
   white-space: nowrap;
 }
 
-.insignia .icono {
-  flex: none;
-  stroke-width: 2;
-}
-
 .insignia--pendiente {
-  background-color: var(--color-advertencia-fondo);
-  color: var(--color-advertencia-texto);
-}
-
-.insignia--en-camino {
-  background-color: var(--color-info-fondo);
-  color: var(--color-info-texto);
-}
-
-.insignia--entregada {
-  background-color: var(--color-exito-fondo);
-  color: var(--color-exito-texto);
+  color: var(--color-texto-suave);
 }
 
 .insignia--con-problema {
-  background-color: var(--color-error-fondo);
   color: var(--color-error-texto);
+}
+
+/* Sobre una foto, la anotación va en su rótulo de papel. */
+.tarjeta > .insignia {
+  padding: var(--espacio-1) var(--espacio-3) var(--espacio-1) var(--espacio-1);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-chico);
+}
+
+/* Signos del mapa: un signo, un significado, para el estado, la leyenda y el recorrido. */
+/* Cada componente los ubica en su lugar. El latón siempre lleva trazo oscuro para llegar a 3:1
+   sobre el pergamino. */
+:is(.insignia, .leyenda li)::before,
+.recorrido-paso::after {
+  content: "";
+  box-sizing: border-box;
+  place-self: center;
+}
+
+/* ○ Lo que falta: un círculo de tinta, vacío. */
+:is(.insignia--pendiente, .leyenda .segmento--proceso)::before,
+.recorrido-paso--pendiente::after {
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  background-color: var(--color-fondo);
+  border: var(--borde-ruta) solid var(--color-signo-tinta);
+  border-radius: var(--radio-sello);
+}
+
+/* ● Etapa cumplida: el círculo lleno de tinta. */
+.recorrido-paso--hecho::after {
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  background-color: var(--color-signo-tinta);
+  border-radius: var(--radio-sello);
+}
+
+/* ◆ Ahora: el alfiler de latón clavado en la etapa actual. */
+.recorrido-paso--actual::after {
+  width: var(--medida-alfiler);
+  height: var(--medida-alfiler);
+  background-color: var(--color-signo-sello);
+  border: var(--borde-ruta) solid var(--color-signo-trazo);
+  box-shadow: var(--sombra-foto);
+  rotate: 45deg;
+}
+
+/* ◉ Entregada: el pueblo sellado, de latón con el trazo y el centro en oscuro. En el recorrido,
+   la última parada cuando ya se cumplió. */
+:is(.insignia--entregada, .leyenda .segmento--entregadas)::before,
+.recorrido-paso--hecho:last-child::after {
+  width: var(--medida-signo-alto);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-trazo);
+  border: var(--borde-ruta) solid var(--color-signo-trazo);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 3px var(--color-signo-sello);
+}
+
+/* ┄▸ En camino: el camino de tinta en trazos, con su punta. */
+:is(.insignia--en-camino, .leyenda .segmento--camino)::before {
+  width: var(--medida-signo);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-tinta);
+  mask: url("../../../img/cozy-medieval/signo-en-camino.svg") center / contain no-repeat;
+}
+
+/* ┄╳┄ Con problema: el camino cortado, el único signo en rojo lacre. En la leyenda, las que no
+   se pudieron entregar. */
+:is(.insignia--con-problema, .leyenda .segmento--sin-entregar)::before {
+  width: var(--medida-signo);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-problema);
+  mask: url("../../../img/cozy-medieval/signo-con-problema.svg") center / contain no-repeat;
 }
 
 /* Tarjeta de una entrega: la foto va pegada a la hoja, con su borde de papel. */
@@ -1467,14 +1557,18 @@ dialog > article > footer button {
   font-style: italic;
 }
 
-/* Tabla: un libro de registro, con filas separadas por una línea de tinta. En el celular cada
-   fila es un bloque; desde el quiebre chico, columnas. */
+/* Tabla: el libro de registro, con una regla de tinta entre filas y el doble filete arriba. */
+/* Sin franjas ni caja. En el celular, cada fila en dos renglones: arriba lo registrado y su
+   estado; abajo, el resto. Desde el quiebre chico, columnas. */
 .tabla {
+  display: block;
   width: 100%;
   margin: 0;
 }
 
+/* Fuera de una tabla, el título ocuparía solo el ancho de su palabra más larga. */
 .tabla caption {
+  display: block;
   padding-block-end: var(--espacio-3);
   color: var(--color-titulo);
   font-family: var(--fuente-rotulos);
@@ -1490,25 +1584,23 @@ dialog > article > footer button {
   clip-path: inset(50%);
 }
 
-.tabla,
-.tabla tbody,
-.tabla tr,
-.tabla th,
-.tabla td {
+.tabla tbody {
   display: block;
+  border-block-start: var(--borde-regla-doble) double var(--color-titulo);
 }
 
 .tabla tr {
-  padding: var(--espacio-3) var(--espacio-2);
-  border-block-end: var(--borde-ancho) solid var(--color-borde);
-}
-
-.tabla tr:hover {
-  background-color: var(--color-fondo-pagina);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-4);
+  padding: var(--espacio-3) 0;
+  border-block-end: var(--borde-ancho) solid var(--color-filete);
 }
 
 .tabla :is(th, td) {
-  padding: var(--espacio-1) 0;
+  display: block;
+  padding: 0;
   background-color: transparent;
   border: 0;
   color: var(--color-texto-suave);
@@ -1521,9 +1613,21 @@ dialog > article > footer button {
   font-weight: 700;
 }
 
+/* El estado sube al primer renglón, al lado de lo registrado. */
+.tabla tr > :last-child {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+/* El nombre de cada dato queda para los lectores de pantalla. */
 .tabla td::before {
   content: attr(data-etiqueta) ": ";
-  font-weight: 700;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Campos de formulario: etiqueta fuerte, borde de 3:1 y el campo apenas hundido en el papel. */
@@ -1741,6 +1845,10 @@ dialog > article > footer button {
     border-collapse: collapse;
   }
 
+  .tabla caption {
+    display: table-caption;
+  }
+
   .tabla thead {
     position: static;
     display: table-header-group;
@@ -1752,31 +1860,35 @@ dialog > article > footer button {
 
   .tabla tbody {
     display: table-row-group;
+    border-block-start: 0;
   }
 
   .tabla tr {
     display: table-row;
+    padding: 0;
+    border: 0;
   }
 
   .tabla :is(th, td) {
     display: table-cell;
     padding: var(--espacio-3) var(--espacio-4);
-    vertical-align: middle;
-    border-block-end: var(--borde-ancho) solid var(--color-borde);
+    vertical-align: baseline;
+    border-block-end: var(--borde-ancho) solid var(--color-filete);
+  }
+
+  /* La primera columna arranca en el margen del libro, alineada con el título. */
+  .tabla :is(th, td):first-child {
+    padding-inline-start: 0;
   }
 
   .tabla thead th {
     color: var(--color-titulo);
     font-weight: 700;
-    border-block-end: 4px double var(--color-filete);
+    border-block-end: var(--borde-regla-doble) double var(--color-titulo);
   }
 
   .tabla tr > :last-child {
     width: var(--medida-columna-estado);
-  }
-
-  .tabla tbody tr:hover > * {
-    background-color: var(--color-fondo-pagina);
   }
 
   .tabla td::before {
@@ -1858,41 +1970,6 @@ dialog > article > footer button {
     padding: 1.875rem 2.125rem;
   }
 
-  .cifras {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .resumen-entregas {
-    order: 0;
-  }
-
-  .categoria {
-    grid-column: 1 / -1;
-    min-height: 9.375rem;
-  }
-
-  .recorrido {
-    grid-auto-columns: minmax(0, 1fr);
-    grid-auto-flow: column;
-    gap: 0;
-    padding: 0;
-  }
-
-  .recorrido::before {
-    top: 15px;
-    right: 10%;
-    bottom: auto;
-    left: 10%;
-    border-block-start: var(--borde-ruta) dotted var(--color-ruta);
-    border-inline-start: 0;
-  }
-
-  .recorrido-paso {
-    flex-direction: column;
-    gap: var(--espacio-2);
-    text-align: center;
-  }
-
   .notas li {
     grid-template-columns: 12px 1fr auto;
   }
@@ -1919,15 +1996,6 @@ dialog > article > footer button {
 
   .destacado-red {
     display: block;
-  }
-
-  .cifras {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .categoria {
-    grid-column: auto;
-    min-height: 12.25rem;
   }
 
   .muestra-grilla {

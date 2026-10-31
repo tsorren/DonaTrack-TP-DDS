@@ -1,5 +1,6 @@
-<!--/* Estado de una entrega: píldora en tinte, con un color y un ícono por estado. Color, ícono y
-       texto juntos: el color nunca va solo. estado: EstadoEntrega. */-->
-<span th:fragment="insignia(estado)" class="insignia" th:classappend="|insignia--${estado.tono}|"><svg
-      th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${estado.icono}, 14)}"></svg><span
+<!--/* Estado de una entrega: una anotación del mapa, con el signo del viaje y su texto. Cada estado
+       cambia la forma del signo, no solo el color: ○ pendiente, ┄▸ en camino, ◉ entregada y ┄╳┄
+       con problema (el único en rojo lacre). El signo lo dibuja app.css; el texto dice el estado.
+       estado: EstadoEntrega. */-->
+<span th:fragment="insignia(estado)" class="insignia" th:classappend="|insignia--${estado.tono}|"><span
       th:text="${estado.texto}">Estado</span></span>

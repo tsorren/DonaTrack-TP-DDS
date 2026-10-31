@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 16">
+  <!-- Signo ┄╳┄ "con problema": el camino cortado por una cruz. Dibujo propio de la Alternativa
+       Cozy / Medieval, de un solo color: app.css lo usa como máscara. -->
+  <path d="M1.5 8h2.5M5.5 8h1.5M21 8h1.5M24 8h2.5" stroke="#000" stroke-width="2.4"
+        stroke-linecap="round"/>
+  <path d="M10 2.5 18 13.5M18 2.5 10 13.5" stroke="#000" stroke-width="2.6"
+        stroke-linecap="round"/>
+</svg>

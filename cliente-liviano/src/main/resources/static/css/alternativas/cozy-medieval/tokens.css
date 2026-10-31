@@ -296,6 +296,24 @@
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
 
+  /* Estructura: signos, registro y leyenda */
+  /* Los signos del mapa (○ ┄▸ ◉ ┄╳┄ ● ◆): la tinta es el camino de una entrega; el sello, de
+     latón con trazo oscuro (6,08:1 sobre el pergamino), y el rojo lacre, solo "con problema". */
+  --color-signo-tinta: var(--p-tinta-600);
+  --color-signo-sello: var(--p-laton-300);
+  --color-signo-trazo: var(--p-laton-700);
+  --color-signo-problema: var(--p-lacre-700);
+  /* El tramo que falta va en lápiz: punteado, con el contraste de un borde (4,07:1). */
+  --color-camino-por-recorrer: var(--p-borde-control);
+  /* El doble filete del encabezado del libro de registro. */
+  --borde-regla-doble: 4px;
+  /* Columna del signo (y ancho de los signos de camino), su alto, el punto de una parada y el
+     alfiler de la etapa actual. */
+  --medida-signo: 1.75rem;
+  --medida-signo-alto: 1rem;
+  --medida-signo-punto: 0.875rem;
+  --medida-alfiler: 0.875rem;
+
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);
   --pico-border-radius: var(--radio-control);

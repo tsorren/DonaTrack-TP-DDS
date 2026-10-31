@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 16">
+  <!-- Signo del camino de tinta: el recorrido de una donación, desde donde sale hasta donde
+       llega. En la leyenda acompaña a las donaciones realizadas. Dibujo propio de la Alternativa
+       Cozy / Medieval, de un solo color: app.css lo usa como máscara. -->
+  <circle cx="3.5" cy="12" r="2.5"/>
+  <path d="M7 11.5C11 11 11 5 15.5 5.5S20 10.5 25 4" fill="none" stroke="#000" stroke-width="2"
+        stroke-linecap="round" stroke-dasharray="3 2.6"/>
+</svg>
