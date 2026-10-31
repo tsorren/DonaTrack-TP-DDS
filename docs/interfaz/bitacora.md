@@ -26,6 +26,85 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-30 · componente:barra-lomo (Cozy / Medieval) · Pestaña con canto de latón
+
+- **Decisión:** la pestaña de la sección actual sigue unida a la hoja y, del lado del lomo,
+  termina en una cinta de latón cortada en V, como el señalador de un libro.
+- **Alternativas:** pestaña de pergamino liso, sin canto.
+- **Por qué:** se encuentra más rápido dónde estás y suma la idea del libro con una pieza chica,
+  del material de la navegación. Era la recomendada.
+- **Costo:** ninguno. En el celular no cambia nada: ahí manda el alfiler.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/componente-barra-lomo/` (A y B, 360 y 1280 px).
+
+### 2026-10-30 · componente:estado-vacio (Cozy / Medieval) · Tierra sin explorar con rayado
+
+- **Decisión:** el estado vacío es una isla de mapa sin dibujar, con la costa punteada alrededor
+  del mensaje, unas líneas finas de agua por fuera y la rosa junto a la acción.
+- **Alternativas:** solo la costa punteada, sin el agua (la recomendada, por más sobria).
+- **Por qué:** al usuario le gustó más: tiene más aire de mapa antiguo.
+- **Costo:** el agua es muy tenue y suma un adorno a un componente que aparece en muchas
+  pantallas.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/componente-estado-vacio/` (A y B, 360 y 1280 px,
+  recortadas en la sección "Estado vacío").
+
+### 2026-10-30 · layout:inicio-donante (Cozy / Medieval) · El viaje a lo ancho
+
+- **Decisión:** en el inicio del donante, el recorrido de la última donación cruza la hoja de lado
+  a lado, a todo el ancho, y la leyenda de cifras va debajo. En el celular el recorrido baja de
+  arriba abajo.
+- **Alternativas:** el viaje a lo alto: el recorrido vertical y la leyenda al costado (la
+  recomendada).
+- **Por qué:** elección del usuario. Se queda la disposición de la estructura base.
+- **Costo:** en pantallas de 1920 px las paradas quedan muy separadas, y la leyenda queda un
+  renglón más abajo del viaje.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/layout-inicio-donante/` (A y B, 360 y 1280 px).
+
+### 2026-10-30 · estructura (Cozy / Medieval) · La estructura base, aplicada en el catálogo y el armazón
+
+- **Decisión:** la [directiva de estructura](estructura-cozy-medieval.md) queda aplicada en
+  `/estilos` y `/estilos/armazon`, sobre el juego de plantillas propio de Cozy. Ese juego ya está
+  en el código: la copia está en `templates/alternativas/cozy-medieval/`, `?alternativa=` la elige,
+  y cuatro tests vigilan que cada plantilla tenga su gemela, que los textos sean iguales, que Cozy
+  use solo sus piezas y que su catálogo esté completo. Lo aplicado:
+  - una hoja con regiones y títulos al margen;
+  - la veta de nogal en el lomo y el pergamino liso donde se lee;
+  - el lomo con la pestaña unida a la hoja y, en el celular, el alfiler sobre el camino;
+  - la carta de la posta en lugar de la campana;
+  - los estados como signos de mapa;
+  - las tablas como libro de registro;
+  - las cifras como leyenda;
+  - la misión como cuaderno de sellos;
+  - el vacío como tierra sin explorar;
+  - la hoja que se asienta al cambiar de página, solo sin "reducir movimiento".
+
+  Dos revisores (piso y arte) miraron el resultado. Por eso:
+  - el saludo quedó sin el mapa de adorno: su rosa, su camino entre entidades y su cuadrícula
+    rompían las reglas de los materiales y le competían al viaje;
+  - "Donaciones realizadas" quedó sin un signo que no estaba en la tabla;
+  - los avisos quedaron sin rombo, porque el rombo es "ahora";
+  - la carta quedó sin sello de latón;
+  - la categoría pasó a pergamino con trazo de latón;
+  - la cabecera fija ya no tapa el foco;
+  - los dibujos se ven con los colores de alto contraste del sistema.
+- **Alternativas:** — (aplica una directiva aprobada).
+- **Por qué:** pedido del usuario: la directiva de estructura y navegación.
+- **Costo:**
+  - "1 sin entregar" lleva el signo de "con problema", en lacre. El usuario no sabe si esa
+    donación tuvo un problema o todavía no salió: queda para confirmar con el equipo.
+  - El mes de cada sello y la condición de cada paso de la misión serían textos nuevos: llegan con
+    el flujo de misiones, en las dos alternativas.
+  - El texto del catálogo "En el celular, cada fila se muestra como una tarjeta" ya no describe a
+    Cozy. Es el mismo en las dos alternativas.
+  - Glassmorphism tiene la misma cabecera fija sin reserva arriba y no se tocó.
+  - Las decisiones de "Lo que todavía no se puede hacer" de la directiva siguen esperando sus
+    pantallas.
+- **Quién decidió:** usuario (directiva); equipo (detalles y ajustes de la revisión).
+- **Evidencia:** `evidencia/cozy-medieval/estructura-base/` (armazón antes y después, 360 y 1280
+  px).
+
 ### 2026-10-30 · estructura (Cozy / Medieval) · Cada pantalla es una hoja del atlas
 
 - **Decisión:** [directiva de estructura y navegación](estructura-cozy-medieval.md), con 24

@@ -328,13 +328,15 @@
   /* La veta del lomo de nogal: el mismo tono que --color-destacado-fondo-alto, así el texto de la
      barra conserva el contraste que mide su par en InterfazFitnessTest. */
   --color-destacado-veta: var(--p-nogal-800);
-  /* La pestaña de la sección actual (componente:barra-lomo, variante A: pergamino liso): el mismo
-     papel que la hoja, el texto en tinta, la curva hacia la hoja y cuánto tapa del canto de latón.
-     La variante B cambia estos valores y el dibujo de las curvas, en la sección de app.css. */
+  /* La pestaña de la sección actual (componente:barra-lomo, variante B: canto de latón cortado): el
+     mismo papel que la hoja, el texto en tinta, la curva hacia la hoja, cuánto tapa del canto del
+     lomo y el largo y la hondura del corte en V de su cinta de latón. */
   --color-pestana: var(--color-fondo);
   --color-pestana-texto: var(--color-titulo);
   --radio-pestana: var(--radio-control);
   --medida-pestana-solape: var(--borde-marco);
+  --medida-senalador: 0.625rem;
+  --medida-senalador-corte: 0.375rem;
   /* En el celular: alto de la barra de abajo y cuánto sobresale de ella el alfiler de la sección
      actual. La página reserva los dos al final. */
   --medida-barra-inferior: 4.375rem;

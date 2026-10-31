@@ -29,6 +29,7 @@ class InterfazFitnessTest {
   private static final Path RECURSOS = Path.of("src/main/resources");
   private static final Path CSS = RECURSOS.resolve("static/css");
   private static final String TOKENS = "tokens.css";
+  private static final String HTML = ".html";
   private static final Path VARIANTES = CSS.resolve("variantes");
   private static final Path PLANTILLAS = RECURSOS.resolve("templates");
 
@@ -211,7 +212,7 @@ class InterfazFitnessTest {
   @Test
   void plantillasSinEstilosEnLinea() {
     List<String> fallas = new ArrayList<>();
-    for (Path plantilla : archivos(PLANTILLAS, ".html")) {
+    for (Path plantilla : archivos(PLANTILLAS, HTML)) {
       List<String> lineas = lineas(plantilla);
       for (int i = 0; i < lineas.size(); i++) {
         if (ESTILO_EN_LINEA.matcher(lineas.get(i)).find()) {
@@ -250,7 +251,7 @@ class InterfazFitnessTest {
     plantillasDeGlassmorphism().forEach(plantilla -> comunes.add(relativa(PLANTILLAS, plantilla)));
     for (Path juego : juegosDeAlternativas()) {
       Set<String> propias = new TreeSet<>();
-      archivos(juego, ".html").forEach(plantilla -> propias.add(relativa(juego, plantilla)));
+      archivos(juego, HTML).forEach(plantilla -> propias.add(relativa(juego, plantilla)));
       diferencia(juego.toString(), comunes, propias, fallas);
     }
     assertThat(fallas)
@@ -279,7 +280,7 @@ class InterfazFitnessTest {
     List<String> fallas = new ArrayList<>();
     for (Path juego : juegosDeAlternativas()) {
       Pattern ajena = Pattern.compile("~\\{(?!::)(?!" + Pattern.quote(prefijo(juego)) + ")");
-      for (Path plantilla : archivos(juego, ".html")) {
+      for (Path plantilla : archivos(juego, HTML)) {
         List<String> lineas = lineas(plantilla);
         for (int i = 0; i < lineas.size(); i++) {
           if (ajena.matcher(lineas.get(i)).find()) {
@@ -344,8 +345,8 @@ class InterfazFitnessTest {
   private static List<String> faltanEnElCatalogo(Path juego, String prefijo) {
     Path catalogo = juego.resolve("paginas/estilos.html");
     String texto = leer(catalogo);
-    return archivos(juego.resolve("fragmentos"), ".html").stream()
-        .map(fragmento -> fragmento.getFileName().toString().replace(".html", ""))
+    return archivos(juego.resolve("fragmentos"), HTML).stream()
+        .map(fragmento -> fragmento.getFileName().toString().replace(HTML, ""))
         .filter(nombre -> !texto.contains("~{" + prefijo + "fragmentos/" + nombre + " ::"))
         .map(nombre -> catalogo + ": " + nombre)
         .toList();
@@ -387,7 +388,7 @@ class InterfazFitnessTest {
 
   /** Las plantillas de templates/ salvo los juegos de alternativas y las variantes A/B. */
   private static List<Path> plantillasDeGlassmorphism() {
-    return archivos(PLANTILLAS, ".html").stream()
+    return archivos(PLANTILLAS, HTML).stream()
         .filter(plantilla -> !plantilla.startsWith(JUEGOS) && !plantilla.startsWith(ESTRUCTURAS_AB))
         .toList();
   }

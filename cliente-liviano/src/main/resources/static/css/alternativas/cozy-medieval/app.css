@@ -337,17 +337,17 @@ nav.navegacion ul {
   display: none;
 }
 
-/* Pestaña unida (componente:barra-lomo, variante A: pergamino liso). La sección actual es una
-   pestaña del mismo papel que la hoja: tapa el canto de latón, se curva hacia la hoja arriba y
-   abajo, sin línea entre las dos, y lleva el signo ◆. Papel, tinta, curva y cuánto tapa del canto
-   salen de los tokens de la pestaña: la variante B (el canto de latón cortado, como un señalador)
-   cambia esos tokens y estas dos curvas. */
+/* Pestaña unida con canto de latón (componente:barra-lomo, variante B, elegida por el usuario). La
+   sección actual es una pestaña del mismo papel que la hoja: tapa el canto del lomo, se curva hacia
+   la hoja arriba y abajo, sin línea entre las dos, y lleva el signo ◆. Del lado del lomo termina en
+   una cinta de latón cortada en V, como un señalador: el latón es de la navegación y, del lado del
+   papel, lleva un trazo oscuro (6,08:1). El texto sigue alineado con el de las otras secciones. */
 .navegacion a[aria-current="page"] {
   z-index: 1;
   margin-inline-end: calc(var(--medida-pestana-solape) * -1);
   background-color: var(--color-pestana);
   color: var(--color-pestana-texto);
-  border-radius: var(--radio-pestana) 0 0 var(--radio-pestana);
+  border-radius: 0;
   font-weight: 700;
 }
 
@@ -355,21 +355,32 @@ nav.navegacion ul {
 .navegacion a[aria-current="page"]::after {
   content: "";
   position: absolute;
+}
+
+/* Las dos curvas hacia la hoja, arriba y abajo de la pestaña, en un solo dibujo. */
+.navegacion a[aria-current="page"]::after {
+  top: calc(var(--radio-pestana) * -1);
+  bottom: calc(var(--radio-pestana) * -1);
   inset-inline-end: 0;
   width: var(--radio-pestana);
-  height: var(--radio-pestana);
+  background:
+    radial-gradient(circle at 0 0, transparent var(--radio-pestana),
+      var(--color-pestana) calc(var(--radio-pestana) + 0.5px))
+      top / 100% var(--radio-pestana) no-repeat,
+    radial-gradient(circle at 0 100%, transparent var(--radio-pestana),
+      var(--color-pestana) calc(var(--radio-pestana) + 0.5px))
+      bottom / 100% var(--radio-pestana) no-repeat;
 }
 
+/* El canto: la cinta de latón pegada a la punta de la pestaña, cortada en V hacia el lomo. */
 .navegacion a[aria-current="page"]::before {
-  bottom: 100%;
-  background: radial-gradient(circle at 0 0, transparent var(--radio-pestana),
-    var(--color-pestana) calc(var(--radio-pestana) + 0.5px));
-}
-
-.navegacion a[aria-current="page"]::after {
-  top: 100%;
-  background: radial-gradient(circle at 0 100%, transparent var(--radio-pestana),
-    var(--color-pestana) calc(var(--radio-pestana) + 0.5px));
+  top: 0;
+  bottom: 0;
+  inset-inline: auto 100%;
+  width: var(--medida-senalador);
+  background: var(--color-laton);
+  border-inline-end: var(--borde-hoja) solid var(--color-laton-texto);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--medida-senalador-corte) 50%);
 }
 
 .navegacion a[aria-current="page"] .navegacion-nodo {
@@ -697,7 +708,7 @@ nav.navegacion ul {
     margin-inline-end: calc(var(--medida-pestana-solape) * -1);
     background-color: var(--color-pestana);
     color: var(--color-pestana-texto);
-    border-radius: var(--radio-pestana) 0 0 var(--radio-pestana);
+    border-radius: 0;
   }
 
   .armazon .navegacion a[aria-current="page"]::before,
@@ -831,20 +842,9 @@ nav.navegacion ul {
    aire que el resto. Después, la leyenda de las cifras, las notificaciones y, al final, la misión.
    El orden del HTML es el de lectura y las áreas lo siguen: ninguna variante cambia el orden del
    foco. Toda la composición está en este grupo de reglas.
-   Las dos variantes que se van a comparar:
-   - B, viaje a lo ancho (la de estas reglas): el recorrido horizontal a todo el ancho de la hoja y
-     la leyenda debajo.
-   - A, viaje a lo alto: el recorrido vertical, con la leyenda al costado. Es la variante
-     static/css/variantes/layout-inicio-donante-a.css. Deja el recorrido vertical en cualquier
-     ancho con .panel--viaje .recorrido { container-type: normal; }: la consulta que lo pone
-     horizontal no encuentra qué medir. Desde 1100 px pone el viaje y la leyenda en un renglón:
-       .tablero {
-         grid-template-columns: minmax(0, 24rem) minmax(16rem, 1fr);
-         grid-template-areas: "saludo saludo" "viaje leyenda" "notas notas" "mision mision";
-       }
-     La leyenda arranca bajo un filete, con el mismo aire que el viaje, y cada estado de la leyenda
-     va en su renglón.
-     En las dos, el título del viaje va arriba y el de las notificaciones, al margen. */
+   El usuario eligió el viaje a lo ancho (layout:inicio-donante, variante B; bitácora): el
+   recorrido horizontal a todo el ancho de la hoja y la leyenda debajo. El título del viaje va
+   arriba y el de las notificaciones, al margen. */
 .tablero {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1672,10 +1672,9 @@ svg.estado-vacio-costa {
   vector-effect: non-scaling-stroke;
 }
 
-/* Variante A: el rayado de agua, las líneas que el grabador seguía alrededor de la costa: cada
-   línea es un trazo ancho de agua tapado por uno apenas más angosto de pergamino. Rodea la isla y
-   nunca pasa por debajo del texto. La variante B (solo la costa punteada) lo apaga con
-   .estado-vacio-agua { display: none; }. */
+/* El rayado de agua (componente:estado-vacio, variante A, elegida por el usuario): las líneas
+   que el grabador seguía alrededor de la costa. Cada línea es un trazo ancho de agua tapado por
+   uno apenas más angosto de pergamino. Rodea la isla y nunca pasa por debajo del texto. */
 .estado-vacio-agua path:nth-child(odd) {
   stroke: var(--color-agua);
 }
