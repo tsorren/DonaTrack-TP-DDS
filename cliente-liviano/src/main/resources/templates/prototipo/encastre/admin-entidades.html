@@ -45,7 +45,7 @@
     <th:block th:if="${aprobada}">
       <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
                'Manos Unidas ya es parte de la red',
-               'Recibió su usuario y ya puede publicar lo que necesita.', 2)}"></section>
+               'Recibió su cuenta y ya puede publicar lo que necesita.', 2)}"></section>
     </th:block>
 
     <!--/* El pedido: los papeles, escritos una vez, son las piezas que lo completan. */-->
@@ -134,7 +134,7 @@
               <label for="nueva-correo">Correo de quien la representa</label>
               <input id="nueva-correo" name="correo" type="email" required
                      aria-describedby="nueva-correo-ayuda">
-              <small id="nueva-correo-ayuda">Le llega su usuario para entrar.</small>
+              <small id="nueva-correo-ayuda">Le llega su cuenta para entrar.</small>
             </div>
             <button type="submit" class="secondary">Registrar entidad</button>
           </form>

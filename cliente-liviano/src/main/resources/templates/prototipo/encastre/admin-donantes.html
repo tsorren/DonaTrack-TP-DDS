@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--/* Prototipo de Encastre, admin: Donantes (RF-15 registrar, RF-20 importar por CSV), la cuarta
        tarea del turno. La pieza de lo de ahora es la importación del padrón de la feria: el
-       archivo y el botón, y que se procesa sin esperar. Abajo, la franja de quienes tienen usuario
+       archivo y el botón, y que se procesa sin esperar. Abajo, la franja de quienes tienen cuenta
        sobre la mesa, que filtra la bandeja de donantes, y el alta a mano en un plegable. El
        resultado sale en la misma pantalla (admin-donantes-importado): la franja pasa a ser el
        padrón por fila (nuevos, actualizados, con error) y la bandeja, las filas que no entraron,
@@ -44,7 +44,7 @@
                      {'fila':'11.548', 'pasa':'El correo se repite con la fila 11.547.', 'hacer':'Dejá una sola fila por persona.'},
                      {'fila':'13.302', 'pasa':'La fila está vacía a la mitad.', 'hacer':'Completala o borrala.'},
                      {'fila':'15.880', 'pasa':'El teléfono tiene letras.', 'hacer':'Dejá solo números en el teléfono.'},
-                     {'fila':'18.214', 'pasa':'Falta el correo.', 'hacer':'Completá el correo: sin él no hay usuario.'},
+                     {'fila':'18.214', 'pasa':'Falta el correo.', 'hacer':'Completá el correo: sin él no hay cuenta.'},
                      {'fila':'19.977', 'pasa':'La fila tiene cinco columnas y van tres.', 'hacer':'Revisá que no sobre una coma.'}} }">
   <div class="tablero adm-tablero adm-seccion">
     <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Donantes',
@@ -53,7 +53,7 @@
     <th:block th:if="${importado}">
       <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
                'Entraron 19.940 donantes nuevos del padrón de la feria',
-               'Ya tienen usuario. Quedaron 12 filas afuera: están abajo.', 4)}"></section>
+               'Ya tienen cuenta. Quedaron 12 filas afuera: están abajo.', 4)}"></section>
       <section th:replace="~{prototipo/encastre/admin-inicio :: franja('El padrón de la feria', 'filas',
                '/prototipo/encastre/admin-donantes', ${ {
                  {'clave':'nuevo', 'texto':'Donantes nuevos', 'cifra':19940, 'tono':'menta'},
@@ -102,7 +102,7 @@
         </form>
         <div class="adm-foco-detalle">
           <p>Se procesa de a partes, sin que tengas que esperar: podés seguir con el turno. Cada
-            persona nueva recibe su usuario por correo.</p>
+            persona nueva recibe su cuenta por correo.</p>
           <ul class="adm-datos">
             <li>feria-sabado.csv</li>
             <li>20.000 filas</li>
@@ -113,8 +113,8 @@
 
       <section th:replace="~{prototipo/encastre/admin-inicio :: franja('Quienes donan', 'personas',
                '/prototipo/encastre/admin-donantes', ${ {
-                 {'clave':'con', 'texto':'Con usuario', 'cifra':80, 'tono':'menta'},
-                 {'clave':'sin', 'texto':'Sin usuario', 'cifra':6, 'tono':'sol'}} }, '')}"></section>
+                 {'clave':'con', 'texto':'Con cuenta', 'cifra':80, 'tono':'menta'},
+                 {'clave':'sin', 'texto':'Sin cuenta', 'cifra':6, 'tono':'sol'}} }, '')}"></section>
 
       <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
         <div class="adm-bandeja-cabeza">
@@ -134,7 +134,7 @@
                 <label for="alta-correo">Correo</label>
                 <input id="alta-correo" name="correo" type="email" required autocomplete="off"
                        aria-describedby="alta-correo-ayuda">
-                <small id="alta-correo-ayuda">Le llega su usuario para entrar.</small>
+                <small id="alta-correo-ayuda">Le llega su cuenta para entrar.</small>
               </div>
               <button type="submit" class="secondary">Registrar donante</button>
             </form>
@@ -143,7 +143,7 @@
         <table class="tabla" aria-labelledby="bandeja-titulo">
           <thead>
             <tr><th scope="col">Donante</th><th scope="col">Donaciones</th>
-              <th scope="col">Categoría</th><th scope="col">Usuario</th></tr>
+              <th scope="col">Categoría</th><th scope="col">Cuenta</th></tr>
           </thead>
           <tbody>
             <tr th:each="f : ${filas}" th:if="${ver == '' or ver == f.ver}">
@@ -151,9 +151,9 @@
                   th:text="${f.correo}">Correo</small></th>
               <td data-etiqueta="Donaciones" th:text="${f.donaciones}">0</td>
               <td data-etiqueta="Categoría" th:text="${f.categoria}">Categoría</td>
-              <td data-etiqueta="Usuario"><span class="adm-estado"
+              <td data-etiqueta="Cuenta"><span class="adm-estado"
                   th:classappend="${f.ver == 'con'} ? 'adm-tono--menta' : 'adm-tono--sol'"
-                  th:text="${f.ver == 'con'} ? 'Con usuario' : 'Sin usuario'">Usuario</span></td>
+                  th:text="${f.ver == 'con'} ? 'Con cuenta' : 'Sin cuenta'">Cuenta</span></td>
             </tr>
           </tbody>
         </table>
