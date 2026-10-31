@@ -19,6 +19,7 @@
 <!--/* importado: si el padrón de la feria ya se importó. */-->
 <th:block th:fragment="pantalla(importado)"
           th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   turno=${param.turno != null and param.turno[0] matches '[0-5]' ? #conversions.convert(param.turno[0], 'java.lang.Integer') : 0},
                    filas=${ {
                      {'nombre':'Panadería Ejemplo', 'correo':'panaderia@ejemplo.com', 'donaciones':31, 'categoria':'Transformador', 'ver':'con'},
                      {'nombre':'Bruno', 'correo':'bruno@ejemplo.com', 'donaciones':26, 'categoria':'Sostenedor', 'ver':'con'},
@@ -47,7 +48,7 @@
                      {'fila':'19.977', 'pasa':'La fila tiene cinco columnas y van tres.', 'hacer':'Revisá que no sobre una coma.'}} }">
   <div class="tablero adm-tablero adm-seccion">
     <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Donantes',
-             'Quienes donan y cómo entran.', ${importado ? 4 : 3})}"></section>
+             'Quienes donan y cómo entran.', ${importado ? 4 : turno})}"></section>
 
     <th:block th:if="${importado}">
       <section th:replace="~{prototipo/encastre/admin-inicio :: logro(

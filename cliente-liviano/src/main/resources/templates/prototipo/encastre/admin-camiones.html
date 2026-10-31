@@ -14,6 +14,7 @@
 <th:block th:fragment="contenido">
   <div class="tablero adm-tablero adm-seccion adm-camiones"
        th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                turno=${param.turno != null and param.turno[0] matches '[0-5]' ? #conversions.convert(param.turno[0], 'java.lang.Integer') : 0},
                 camiones=${ {
                   {'patente':'AB 123 CD', 'carga':'Hasta 1.500 kg', 'donde':'En la calle: va a Comedor Barrio Ejemplo', 'ver':'calle'},
                   {'patente':'AC 456 EF', 'carga':'Hasta 1.500 kg', 'donde':'En el taller desde el lunes 5', 'ver':'taller'},
@@ -27,17 +28,18 @@
                 paradas=${ {
                   {'nombre':'Depósito central', 'detalle':'Salió hoy, 14:30', 'avance':'hecho'},
                   {'nombre':'Merendero Ejemplo Sur', 'detalle':'Pan lactal · llegó 15:05', 'avance':'hecho'},
-                  {'nombre':'Comedor Barrio Ejemplo', 'detalle':'Lentejas de Ana · cerca de las 16:20', 'avance':'actual'},
+                  {'nombre':'Comedor Barrio Ejemplo', 'detalle':'Lentejas de Ana · a eso de las 16:30', 'avance':'actual'},
                   {'nombre':'Hogar Ejemplo Norte', 'detalle':'Abrigos · cerca de las 17:00', 'avance':'pendiente'}} }">
     <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Camiones',
-             'La flota y por dónde anda.', 4)}"></section>
+             'La flota y por dónde anda.', ${turno})}"></section>
 
     <section class="pieza adm-foco pieza-ahora" id="camion-taller" aria-labelledby="taller-titulo">
       <p class="adm-foco-rotulo"><span class="adm-urgencia adm-urgencia--semana">Esta
         semana</span><span>Lo que te toca ahora</span></p>
       <h2 id="taller-titulo" tabindex="-1">El camión AC 456 EF lleva nueve días en el taller</h2>
-      <form class="adm-acciones" method="post" action="/prototipo/encastre/admin-inicio-al-dia"
-            th:action="@{/prototipo/encastre/admin-inicio-al-dia}">
+      <!--/* Cierra el turno solo si es la última tarea que faltaba; si no, vuelve a Camiones. */-->
+      <form class="adm-acciones" method="post" action="/prototipo/encastre/admin-camiones"
+            th:attr="action=${turno == 4} ? @{/prototipo/encastre/admin-inicio-al-dia} : @{/prototipo/encastre/admin-camiones}">
         <input type="hidden" name="camion" value="AC 456 EF">
         <input type="hidden" name="estado" value="disponible">
         <button type="submit">Ya volvió: pasarlo a disponible</button>

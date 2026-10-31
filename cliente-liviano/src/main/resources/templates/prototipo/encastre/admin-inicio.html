@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--/* Prototipo de Encastre, admin (iteración 3): el turno del depósito, de a una tarea. Arriba, el
        título llano y la voz del turno ("Hoy te toca atender 5 cosas."), con el turno como una tira
-       de piezas que se completa: lo resuelto encastra en menta, lo de ahora es la pieza naranja y
-       lo que falta, el hueco. Abajo, la tarjeta de foco (Resolver / Después) con la cola al
+       de piezas que se completa: lo resuelto encastra en menta, lo de ahora lleva el contorno
+       naranja y lo que falta, el hueco. Abajo, la tarjeta de foco (Resolver / Después) con la cola al
        costado, la franja de circulación del depósito sobre la mesa, que filtra las donaciones, y lo
        último que pasó. Cuando la cola se vacía (admin-inicio-al-dia), la tira queda armada y la
        voz dice "Todo al día. Buen turno.".
@@ -50,13 +50,15 @@
 
     <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'cola')}"></th:block>
 
-    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('En circulación', 'donaciones',
+    <!--/* En el inicio, la franja no flota: va en su pieza crema, como el resto de la mesa. */-->
+    <div class="pieza adm-franja-pieza"
+         th:insert="~{prototipo/encastre/admin-inicio :: franja('En circulación', 'donaciones',
              '/prototipo/encastre/admin-donaciones', ${ {
-               {'clave':'deposito', 'texto':'En el depósito', 'cifra':(hechas == 5 ? 17 : 18), 'tono':'sol'},
-               {'clave':'asignada', 'texto':'Asignadas', 'cifra':(hechas == 5 ? 12 : 11), 'tono':'lila'},
-               {'clave':'lista', 'texto':'Listas para entregar', 'cifra':7, 'tono':'menta'},
+               {'clave':'deposito', 'texto':'En el depósito', 'cifra':(hechas == 5 ? 17 : 18), 'tono':'lila'},
+               {'clave':'asignada', 'texto':'Asignadas', 'cifra':(hechas == 5 ? 12 : 11), 'tono':'lila-alta'},
+               {'clave':'lista', 'texto':'Listas para entregar', 'cifra':7, 'tono':'lila'},
                {'clave':'camino', 'texto':'En camino', 'cifra':8, 'tono':'azul'},
-               {'clave':'problema', 'texto':'Con problema', 'cifra':1, 'tono':'rosa'}} }, '')}"></section>
+               {'clave':'problema', 'texto':'Con problema', 'cifra':1, 'tono':'rosa'}} }, '')}"></div>
 
     <section class="pieza novedades adm-novedades" aria-labelledby="novedades-titulo">
       <h2 id="novedades-titulo">Lo último que pasó</h2>
@@ -96,7 +98,9 @@
        vista las dibuja a su modo. hechas: cuántas están resueltas. vista: voz (la frase del
        turno) | tira (la tira grande del inicio) | mini (la de la cabeza de cada sección) | cola |
        foco (la tarjeta de foco del inicio, con Después) | sigue (lo que sigue, después de un
-       logro). */-->
+       logro). La tarea en foco es la que pide ?foco=<clave> si está pendiente; si no, la primera
+       pendiente. Cada enlace a una tarea lleva ?turno=<hechas>, para que la sección cuente lo
+       mismo que el inicio. */-->
 <th:block th:fragment="turno(hechas, vista)"
           th:with="tareas=${ {
             {'clave':'leche', 'corto':'Leche',
@@ -137,7 +141,9 @@
              'ruta':'/prototipo/encastre/admin-camiones#camion-taller',
              'datos':{'AC 456 EF · hasta 1.500 kg', 'En el taller desde el lunes 5 de octubre'},
              'hora':'16:03', 'hecho':'El camión AC 456 EF volvió a estar disponible.'}} },
-            total=${#lists.size(tareas)}">
+            total=${#lists.size(tareas)},
+            pedida=${param.foco != null ? tareas.![#this['clave']].indexOf(param.foco[0]) + 1 : 0},
+            enFoco=${pedida > hechas ? pedida : hechas + 1}">
 
   <p th:if="${vista == 'voz'}" class="adm-voz adm-voz--turno"
      th:classappend="${hechas == total} ? 'adm-voz--logro'"
@@ -149,7 +155,7 @@
     <ol class="adm-tira" th:classappend="|adm-tira--${vista}|"
         th:attr="aria-label=${vista == 'tira'} ? 'Tu turno' : null,aria-hidden=${vista == 'mini'} ? 'true' : null">
       <li th:each="t, v : ${tareas}"
-          th:with="estado=${v.count <= hechas ? 'hecha' : (v.count == hechas + 1 ? 'ahora' : 'falta')}"
+          th:with="estado=${v.count <= hechas ? 'hecha' : (v.count == enFoco ? 'ahora' : 'falta')}"
           th:class="|adm-tira-pieza adm-tira-pieza--${estado}|" th:attr="data-tarea=${t.clave}"
           th:classappend="${v.count == hechas} ? 'adm-tira-pieza--recien'"
           th:aria-current="${estado == 'ahora'} ? 'step' : null">
@@ -171,9 +177,9 @@
       cola de hoy</h2>
     <ol class="adm-cola-lista">
       <li th:each="t, v : ${tareas}" th:attr="data-tarea=${t.clave}"
-          th:classappend="${v.count == hechas + 1} ? 'adm-cola-item--foco'">
+          th:classappend="${v.count == enFoco} ? 'adm-cola-item--foco'">
         <a th:if="${v.count > hechas}" class="adm-cola-enlace" href="#"
-           th:href="@{${t.ruta}}"><span class="adm-urgencia"
+           th:href="@{${t.ruta}(turno=${hechas})}"><span class="adm-urgencia"
            th:classappend="|adm-urgencia--${t.tono}|" th:text="${t.urgencia}">Hoy</span><b
            th:text="${t.titulo}">Tarea</b><small th:text="${t.seccion}">Sección</small></a>
         <p th:unless="${v.count > hechas}" class="adm-cola-hecha"><span class="adm-cola-signo"
@@ -190,23 +196,24 @@
     <p class="adm-sigue-rotulo">Lo que sigue <small
        th:text="|Tarea ${v.count} de ${total}|">Tarea 1 de 5</small></p>
     <p class="adm-sigue-titulo" th:text="${t.titulo}">Tarea</p>
-    <a href="#" th:href="@{${t.ruta}}" role="button">Resolver</a>
+    <a href="#" th:href="@{${t.ruta}(turno=${hechas})}" role="button">Resolver</a>
   </div>
 
   <section th:each="t, v : ${tareas}" th:if="${vista == 'foco' and v.count > hechas}"
            class="pieza adm-foco pieza-ahora" th:id="|foco-${t.clave}|"
-           th:attr="data-tarea=${t.clave}" th:hidden="${v.count > hechas + 1}"
+           th:attr="data-tarea=${t.clave}" th:hidden="${v.count != enFoco}"
            th:aria-labelledby="|foco-${t.clave}-titulo|">
     <p class="adm-foco-rotulo"><span class="adm-urgencia"
        th:classappend="|adm-urgencia--${t.tono}|" th:text="${t.urgencia}">Urgente</span><span>Lo que
        te toca ahora</span><small th:text="|Tarea ${v.count} de ${total}|">Tarea 1 de 5</small></p>
     <h2 th:id="|foco-${t.clave}-titulo|" tabindex="-1" th:text="${t.titulo}">Tarea</h2>
     <div class="adm-acciones">
-      <a href="#" th:href="@{${t.ruta}}" role="button">Resolver</a>
-      <form class="adm-despues" method="post"
-            action="/prototipo/encastre/admin-inicio" th:action="@{/prototipo/encastre/admin-inicio}">
-        <button type="submit" class="outline">Después</button>
-      </form>
+      <a href="#" th:href="@{${t.ruta}(turno=${hechas})}" role="button">Resolver</a>
+      <!--/* Después no guarda nada: trae la tarea que sigue (después de la última, la primera
+             pendiente). Con JavaScript, rota sin recargar. */-->
+      <a class="adm-despues outline" role="button" href="/prototipo/encastre/admin-inicio"
+         th:with="sigue=${v.count < total ? v.count + 1 : hechas + 1}"
+         th:href="@{/prototipo/encastre/admin-inicio(foco=${tareas[sigue - 1].clave})}">Después</a>
     </div>
     <div class="adm-foco-detalle">
       <p th:text="${t.texto}">Qué es y qué hacer.</p>

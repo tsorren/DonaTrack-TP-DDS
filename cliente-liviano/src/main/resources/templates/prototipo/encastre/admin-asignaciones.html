@@ -19,6 +19,7 @@
 <!--/* aceptada: si la propuesta de la leche ya se aceptó. */-->
 <th:block th:fragment="pantalla(aceptada)"
           th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   turno=${param.turno != null and param.turno[0] matches '[0-5]' ? #conversions.convert(param.turno[0], 'java.lang.Integer') : 0},
                    filas=${ {
                      {'que':'Leche en polvo · 12 kg', 'de':'DT-0418 · de Almacén Ejemplo', 'entidad':'Merendero Ejemplo Sur', 'cuando':(aceptada ? 'Aceptada hoy, 15:20' : 'Vence el viernes 16 de octubre'), 'ver':(aceptada ? 'aceptada' : 'espera'), 'nueva':aceptada},
                      {'que':'Fideos secos · 35 kg', 'de':'DT-0415 · de Cooperativa Ejemplo', 'entidad':'Escuela Ejemplo 12', 'cuando':'Hace 6 días en el depósito', 'ver':'espera', 'nueva':false},
@@ -31,17 +32,17 @@
                      {'que':'Lentejas secas · 15 kg', 'de':'DT-0412 · de Ana', 'entidad':'Comedor Barrio Ejemplo', 'cuando':'Salió hoy, 14:30', 'ver':'camino', 'nueva':false},
                      {'que':'Pan lactal · 60 unidades', 'de':'DT-0404 · de Panadería Ejemplo', 'entidad':'Merendero Ejemplo Sur', 'cuando':'Salió hoy, 14:30', 'ver':'camino', 'nueva':false},
                      {'que':'Abrigos · 25 unidades', 'de':'DT-0403 · de Bruno', 'entidad':'Hogar Ejemplo Norte', 'cuando':'Salió hoy, 14:30', 'ver':'camino', 'nueva':false},
-                     {'que':'Ropa de abrigo · 18 unidades', 'de':'DT-0399 · de Ana', 'entidad':'Merendero Ejemplo Sur', 'cuando':'Llegó el martes 13', 'ver':'entregada', 'nueva':false},
+                     {'que':'Ropa de abrigo · 12 prendas', 'de':'DT-0399 · de Ana', 'entidad':'Merendero Ejemplo Sur', 'cuando':'Llegó el martes 13', 'ver':'entregada', 'nueva':false},
                      {'que':'Útiles escolares · 120 unidades', 'de':'DT-0401 · de Librería Ejemplo', 'entidad':'Escuela Ejemplo 12', 'cuando':'Llegó hoy, faltan dos cajas', 'ver':'entregada', 'nueva':false},
                      {'que':'Arroz · 30 kg', 'de':'DT-0397 · de Cooperativa Ejemplo', 'entidad':'Comedor Ejemplo Oeste', 'cuando':'Llegó el lunes 12', 'ver':'entregada', 'nueva':false},
                      {'que':'Jabón · 40 unidades', 'de':'DT-0396 · de Carla', 'entidad':'Hogar Ejemplo Norte', 'cuando':'Llegó el viernes 9', 'ver':'entregada', 'nueva':false}} },
-                   estados=${ {'espera':{'texto':'Espera tu decisión', 'tono':'sol'},
-                               'aceptada':{'texto':'Aceptada', 'tono':'lila'},
+                   estados=${ {'espera':{'texto':'Espera tu decisión', 'tono':'decision'},
+                               'aceptada':{'texto':'Aceptada', 'tono':'lila-alta'},
                                'camino':{'texto':'En camino', 'tono':'azul'},
                                'entregada':{'texto':'Entregada', 'tono':'menta'}} }">
   <div class="tablero adm-tablero adm-seccion">
     <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Asignar donaciones',
-             'Elegí a dónde va cada donación.', ${aceptada ? 1 : 0})}"></section>
+             'Elegí a dónde va cada donación.', ${aceptada ? 1 : turno})}"></section>
 
     <th:block th:if="${aceptada}">
       <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
@@ -91,8 +92,8 @@
 
     <section th:replace="~{prototipo/encastre/admin-inicio :: franja('Esta semana', 'asignaciones',
              '/prototipo/encastre/admin-asignaciones', ${ {
-               {'clave':'espera', 'texto':'Esperan tu decisión', 'cifra':(aceptada ? 1 : 2), 'tono':'sol'},
-               {'clave':'aceptada', 'texto':'Aceptadas', 'cifra':(aceptada ? 7 : 6), 'tono':'lila'},
+               {'clave':'espera', 'texto':'Esperan tu decisión', 'cifra':(aceptada ? 1 : 2), 'tono':'decision'},
+               {'clave':'aceptada', 'texto':'Aceptadas', 'cifra':(aceptada ? 7 : 6), 'tono':'lila-alta'},
                {'clave':'camino', 'texto':'En camino', 'cifra':3, 'tono':'azul'},
                {'clave':'entregada', 'texto':'Entregadas', 'cifra':4, 'tono':'menta'}} }, '')}"></section>
 
@@ -107,7 +108,7 @@
           <button type="submit" class="outline">Ejecutar la asignación</button>
         </form>
       </div>
-      <table class="tabla" aria-labelledby="bandeja-titulo">
+      <table class="tabla adm-tabla-asignaciones" aria-labelledby="bandeja-titulo">
         <thead>
           <tr><th scope="col">Donación</th><th scope="col">Entidad</th><th scope="col">Cuándo</th>
             <th scope="col">Estado</th></tr>

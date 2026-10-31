@@ -18,9 +18,10 @@
 
 <!--/* error: si el servidor no encontró al donante escrito. */-->
 <th:block th:fragment="formulario(error)">
-  <div class="tablero adm-tablero adm-seccion adm-registrar">
+  <div class="tablero adm-tablero adm-seccion adm-registrar"
+       th:with="turno=${param.turno != null and param.turno[0] matches '[0-5]' ? #conversions.convert(param.turno[0], 'java.lang.Integer') : 0}">
     <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Registrar donación',
-             'Anotá lo que entró al depósito.', 2)}"></section>
+             'Anotá lo que entró al depósito.', ${turno})}"></section>
 
     <div th:if="${error}" class="adm-aviso-error" tabindex="-1" autofocus
          th:insert="~{alternativas/encastre/fragmentos/banner :: banner('No encontramos a ese donante',

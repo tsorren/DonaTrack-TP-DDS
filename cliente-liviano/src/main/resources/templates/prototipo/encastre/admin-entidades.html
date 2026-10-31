@@ -18,6 +18,7 @@
 <!--/* aprobada: si el pedido de Manos Unidas ya se aprobó. */-->
 <th:block th:fragment="pantalla(aprobada)"
           th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   turno=${param.turno != null and param.turno[0] matches '[0-5]' ? #conversions.convert(param.turno[0], 'java.lang.Integer') : 0},
                    filas=${ {
                      {'nombre':'Asociación Civil Manos Unidas del Barrio Ejemplo Norte', 'tipo':'Comedor', 'lugar':'Barrio Ejemplo Norte · a 4,2 km', 'recibio':(aprobada ? 'Se sumó hoy' : 'Pidió sumarse el viernes 9'), 'ver':(aprobada ? 'activa' : 'pide'), 'nueva':aprobada},
                      {'nombre':'Biblioteca Popular Ejemplo', 'tipo':'Biblioteca', 'lugar':'Centro · a 3,4 km', 'recibio':'Pidió sumarse el lunes 12 · le falta la constancia de domicilio', 'ver':'pide', 'nueva':false},
@@ -39,7 +40,7 @@
                                'suspendida':{'texto':'Suspendida', 'tono':'gris'}} }">
   <div class="tablero adm-tablero adm-seccion">
     <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Entidades',
-             'Las que reciben y las que piden entrar.', ${aprobada ? 2 : 1})}"></section>
+             'Las que reciben y las que piden entrar.', ${aprobada ? 2 : turno})}"></section>
 
     <th:block th:if="${aprobada}">
       <section th:replace="~{prototipo/encastre/admin-inicio :: logro(

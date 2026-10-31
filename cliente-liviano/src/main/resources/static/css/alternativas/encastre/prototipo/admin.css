@@ -3,10 +3,11 @@
  * desde las plantillas prototipo/encastre/admin-*.html, después de estructura.css y
  * componentes.css, y solo usa sus piezas, sus tokens de uso y sus quiebres (mobile first).
  *
- * El turno es una tira de piezas (#encastre-pieza) que se completa: menta lo resuelto, naranja lo
- * de ahora, hueco lo que falta. La tarjeta de foco es la única pieza naranja de cada pantalla
- * (pieza-ahora). Las secciones de trabajo son bandejas sobrias: la franja que filtra va tallada
- * en la mesa de tinta, sin pieza, y la tabla es la bandeja del sistema.
+ * El turno es una tira de piezas (#encastre-pieza) que se completa: menta lo resuelto, contorno
+ * naranja lo de ahora, el hueco del sistema lo que falta. La tarjeta de foco es la única pieza
+ * naranja de cada pantalla (pieza-ahora). Las secciones de trabajo son bandejas sobrias: la franja
+ * que filtra va tallada en la mesa de tinta (en el inicio, en su pieza crema) y la tabla es la
+ * bandeja del sistema.
  */
 
 /* El tablero del admin: una pieza debajo de la otra en el celular; sin las áreas del inicio del
@@ -187,11 +188,21 @@
   --color-adm-pieza: var(--color-pieza-menta);
 }
 
+/* Lo de ahora, en la tira: crema con el contorno grueso naranja (la pieza naranja de la pantalla
+   es la tarjeta de foco). */
 .adm-tira-pieza--ahora {
-  --color-adm-pieza: var(--color-ahora);
+  --color-adm-pieza: var(--color-pieza-crema);
 }
 
+.adm-tira-pieza--ahora .adm-tira-forma {
+  stroke: var(--color-ahora);
+  stroke-width: 7;
+}
+
+/* Lo que falta: el hueco del sistema, como la misión de la ancla. */
 .adm-tira-pieza--falta .adm-tira-forma {
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
   stroke-dasharray: 5 4;
   stroke-width: 2;
 }
@@ -398,7 +409,7 @@
   box-shadow: inset 0 0 0 var(--borde-foco) var(--color-junta);
 }
 
-/* Cada criterio, una pieza: puesta (menta) si se cumple, hueco a trazos si no. */
+/* Cada criterio, una pieza: puesta (menta) si se cumple, el hueco del sistema si no. */
 .adm-criterios {
   display: flex;
   flex-wrap: wrap;
@@ -429,7 +440,8 @@
 }
 
 .adm-criterio--no .adm-criterio-forma {
-  fill: var(--color-junta-tenue);
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
   stroke-dasharray: 9 7;
   stroke-width: 4;
 }
@@ -473,8 +485,10 @@
   --color-adm-signo: var(--color-advertencia-texto);
 }
 
-.adm-urgencia--semana {
-  --color-adm-signo: var(--color-info-texto);
+/* "Esta semana": un punto hueco de tinta (el azul es "en camino"). */
+.adm-urgencia--semana::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-junta);
 }
 
 /* La cola: las tareas del turno en orden, la que está en foco puesta en tinta. */
@@ -571,7 +585,7 @@
   font-weight: 600;
 }
 
-/* La franja que filtra: tallada en la mesa de tinta, sin pieza. Los tramos tienen el ancho de su
+/* La franja que filtra: tallada en la mesa de tinta en las bandejas. Los tramos tienen el ancho de su
    cifra y muerden al siguiente con su lengüeta; cada filtro es una pieza crema con su punto. */
 .adm-franja {
   display: grid;
@@ -647,7 +661,7 @@
   flex: none;
   width: 0.875rem;
   height: 0.875rem;
-  background: var(--color-adm-tono);
+  background: var(--color-adm-signo);
   border: var(--borde-junta) solid var(--color-junta);
   border-radius: 50%;
 }
@@ -682,7 +696,49 @@
   text-decoration: underline;
 }
 
-/* El color de cada parte (tramo, filtro y estado). */
+/* En el inicio, la franja va dentro de su pieza crema: el texto pasa a tinta, los tramos se
+   separan con la crema y cada filtro es una pieza chica con su junta. */
+.adm-franja-pieza > .adm-franja {
+  padding: 0;
+  color: var(--color-pieza-texto);
+}
+
+.adm-franja-pieza .adm-franja :focus-visible {
+  outline-color: var(--color-foco);
+}
+
+.adm-tablero .adm-franja-pieza .adm-franja h2 {
+  color: var(--color-pieza-texto);
+}
+
+.adm-franja-pieza .adm-franja-tramos :is(rect, circle) {
+  stroke: var(--color-junta);
+  stroke-width: 2;
+}
+
+.adm-franja-pieza .adm-filtro {
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-junta);
+}
+
+.adm-franja-pieza .adm-filtro--todas,
+.adm-franja-pieza .adm-filtro--todas:hover {
+  color: var(--color-pieza-texto);
+}
+
+/* El color de cada parte (tramo, filtro y estado). Si la parte es una etapa de una donación,
+   sigue el código del sitio: en el depósito, lila (y lila alta para separar las asignadas); en
+   camino, el azul de tramo; con problema, el rosa de tramo; entregada, menta. "Espera tu
+   decisión" es crema con el signo en tinta. */
+.adm-tono--lila-alta {
+  --color-adm-tono: var(--color-pieza-lila-alta);
+  --color-adm-signo: var(--color-pieza-lila-alta);
+}
+
+.adm-tono--decision {
+  --color-adm-tono: var(--color-pieza-crema);
+  --color-adm-signo: var(--color-pieza-tinta);
+}
+
 .adm-tono--sol {
   --color-adm-tono: var(--color-pieza-sol);
   --color-adm-signo: var(--color-pieza-sol);
@@ -1273,8 +1329,26 @@
     stroke: CanvasText;
   }
 
+  /* Puesta: llena; de ahora: vacía con contorno grueso; falta: vacía a trazos. */
+  .adm-tira-pieza--hecha .adm-tira-forma,
+  .adm-criterio-forma {
+    fill: CanvasText;
+    stroke: CanvasText;
+  }
+
+  .adm-tira-pieza--hecha .adm-tira-cuerpo .icono {
+    color: Canvas;
+  }
+
   .adm-tira-pieza--ahora .adm-tira-forma {
-    stroke-width: 6;
+    stroke: CanvasText;
+    stroke-width: 7;
+  }
+
+  .adm-tira-pieza--falta .adm-tira-forma,
+  .adm-criterio--no .adm-criterio-forma {
+    fill: Canvas;
+    stroke: CanvasText;
   }
 
   .adm-filtro,
@@ -1334,6 +1408,19 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /* Asignaciones: la donación, el doble de ancho que la entidad y el cuándo; el estado, al ancho
+     de su insignia. */
+  .adm-tabla-asignaciones tbody tr > th[scope="row"] {
+    width: 50%;
+  }
+
+  .adm-tabla-asignaciones tbody tr > td:not(:last-child) {
+    width: 25%;
+  }
+
+  .adm-bandeja .adm-tabla-asignaciones tbody tr > :last-child {
+    width: 1%;
+  }
 
   .adm-torre-piezas {
     --medida-adm-torre: 2.25rem;
