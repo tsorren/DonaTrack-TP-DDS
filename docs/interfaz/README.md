@@ -45,7 +45,7 @@ y rótulos, para comparar qué mensaje transmite cada una
 |---|---|---|---|---|
 | Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `templates/` y `static/css/tokens.css` y `app.css` | Por defecto |
 | Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `templates/alternativas/cozy-medieval/` y `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
-| Encastre (en diseño) | Amable, clara y concreta | [brief-encastre.md](identidad/brief-encastre.md) | `templates/alternativas/encastre/` y `static/css/alternativas/encastre/` (los arma la corrida creativa del [encargo](encargos/encastre.md)) | `?alternativa=encastre` (perfil `maqueta`) |
+| Encastre (propuesta de la corrida creativa, sin aprobar) | Amable, clara y concreta | [brief-encastre.md](identidad/brief-encastre.md) | `templates/alternativas/encastre/`, `templates/prototipo/encastre/` y `static/css/alternativas/encastre/` (los armó la corrida creativa del [encargo](encargos/encastre.md)) | `?alternativa=encastre` y `/prototipo/encastre/<pantalla>` (perfil `maqueta`) |
 
 Cada pantalla o componente nuevo se escribe y se estiliza dos veces, una por alternativa, con los
 mismos datos y acciones (un test compara los dos juegos y deja pasar solo los títulos y rótulos de
@@ -204,4 +204,4 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |
 | [plantillas/](plantillas/) | Ficha de flujo, iteración A/B, brief de identidad y los tres encargos de una corrida creativa (el creativo, el del constructor y el del crítico) |
 | [encargos/](encargos/README.md) | Los encargos creativos aprobados por el usuario: la entrada de cada corrida creativa |
-| `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso: un brief por alternativa, las fichas de flujo y las capturas (las de Cozy / Medieval, en `evidencia/cozy-medieval/`) |
+| `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso: un brief por alternativa, las fichas de flujo y las capturas (las de Cozy / Medieval, en `evidencia/cozy-medieval/`; las de Encastre, en `evidencia/encastre/`: `concepto-armazon/`, `sistema/` y `flujo-completo/`) |
