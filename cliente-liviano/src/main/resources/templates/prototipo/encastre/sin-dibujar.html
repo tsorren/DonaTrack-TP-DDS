@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo de Encastre (PrototipoController, /prototipo/encastre/<pantalla>):
+       una sección del menú que todavía no tiene su pantalla. Su existencia habilita el prototipo de
+       la alternativa; la corrida creativa la rediseña con el resto. Usa el juego de plantillas de
+       Encastre (templates/alternativas/encastre/, lo crea la preparación de la corrida). seccion: el
+       nombre de la sección del menú. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Sin armar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 th:text="${seccion}">Sección</h1>
+  <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+           'Esta pantalla todavía no está armada',
+           'Llega con su flujo. Mientras tanto, volvé a tu inicio.',
+           'Volver al inicio', ${navegacion[0].ruta})}"></section>
+</th:block>
+</body>
+</html>
