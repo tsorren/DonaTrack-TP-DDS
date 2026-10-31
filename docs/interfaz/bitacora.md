@@ -26,6 +26,21 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · proceso (Encastre) · Encargo creativo: una tercera alternativa amable, clara y concreta, de bloques de color y de a una tarea
+
+- **Decisión:** se suma una tercera alternativa de identidad, Encastre, a partir de la opción 2 de
+  "Direcciones finales DonaTrack" y del grupo "MODERNO" del tablero de inspiración. Para todos por
+  igual; se lleva "un dato, un bloque de color", "una cosa a la vez" y la app de bolsillo con dock;
+  juego bien presente y voz cercana en voseo. Tres vueltas (concepto del inicio del donante,
+  sistema y flujo), video de presentación de hasta 4 minutos y PR en borrador.
+- **Alternativas:** reemplazar a Glassmorphism como la de por defecto, o rediseñar Cozy / Medieval.
+- **Por qué:** el usuario la quiere junto a las otras dos, sin tocarlas.
+- **Costo:** antes de la corrida, el prototipo navegable deja de ser solo de Cozy y se alojan dos
+  fuentes nuevas (Baloo 2 y Nunito). No reemplaza nada.
+- **Quién decidió:** usuario.
+- **Evidencia:** [encargo](encargos/encastre.md), [brief](identidad/brief-encastre.md) y
+  [referencias](identidad/referencias-encastre/README.md).
+
 ### 2026-10-31 · proceso · Diseño creativo desde cero: relevamiento con el usuario y corrida desatendida
 
 - **Decisión:** la forma de trabajar que rehízo Cozy / Medieval queda como proceso. La skill

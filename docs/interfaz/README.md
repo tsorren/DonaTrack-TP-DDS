@@ -45,6 +45,7 @@ y rótulos, para comparar qué mensaje transmite cada una
 |---|---|---|---|---|
 | Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `templates/` y `static/css/tokens.css` y `app.css` | Por defecto |
 | Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `templates/alternativas/cozy-medieval/` y `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
+| Encastre (en diseño) | Amable, clara y concreta | [brief-encastre.md](identidad/brief-encastre.md) | `templates/alternativas/encastre/` y `static/css/alternativas/encastre/` (los arma la corrida creativa del [encargo](encargos/encastre.md)) | `?alternativa=encastre` (perfil `maqueta`) |
 
 Cada pantalla o componente nuevo se escribe y se estiliza dos veces, una por alternativa, con los
 mismos datos y acciones (un test compara los dos juegos y deja pasar solo los títulos y rótulos de
@@ -196,6 +197,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval (segunda versión: la mesa del cartógrafo) |
 | [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md) | El flujo completo del sitio en Cozy: recorrido por rol, pantallas y decisiones del prototipo navegable (`/prototipo/<pantalla>` en la maqueta) |
 | [identidad/referencias-cozy-medieval/](identidad/referencias-cozy-medieval/README.md) | Las 18 imágenes de referencia de Cozy que trajo el usuario, con qué se toma de cada una |
+| [identidad/referencias-encastre/](identidad/referencias-encastre/README.md) | Las 11 imágenes de referencia de Encastre (la opción 2 de "Direcciones finales" y el grupo "MODERNO" del tablero de inspiración), con qué se toma de cada una |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |

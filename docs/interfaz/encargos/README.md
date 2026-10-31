@@ -14,4 +14,4 @@ uno nuevo y la bitácora dice cuál reemplaza.
 
 | Encargo | Alternativa | Estado |
 |---|---|---|
-| (todavía ninguno) | | |
+| [encastre.md](encastre.md) | Encastre (nueva, la tercera) | Aprobado el 2026-10-31 |
