@@ -135,7 +135,8 @@ public class Imagenes {
 
   /**
    * Compara píxel a píxel los PNG de antes con los de después que se llaman igual; de cada uno
-   * distinto, dice la caja donde cambió. Sale con 1 si alguno cambió o falta. Con una carpeta de
+   * distinto, dice la caja donde cambió. Sale con 1 si alguno cambió o falta, o si no hay nada que
+   * comparar. Con una carpeta de
    * ruido (otra corrida de la misma base), no cuenta lo que ya difiere entre antes y ruido: las
    * animaciones que la captura no congela.
    */
@@ -149,6 +150,10 @@ public class Imagenes {
             : archivos(antes, "*.png").stream()
                 .filter(png -> !png.getFileName().toString().contains("--"))
                 .toList();
+    if (pngs.isEmpty()) {
+      System.out.println("NADA QUE COMPARAR: ningún PNG de " + antes + " cumple el glob");
+      return 1;
+    }
     int distintas = 0;
     for (Path png : pngs) {
       String nombre = png.getFileName().toString();

@@ -12,7 +12,7 @@ java scripts/visual/Imagenes.java <orden> <argumentos>
 | Orden | Para qué | Ejemplo |
 |---|---|---|
 | `jpg` | Pasar capturas a JPG de 400 KB o menos (la evidencia de `docs/interfaz/evidencia/`). Con una carpeta, convierte todos los PNG que cumplen el glob | `jpg cliente-liviano/target/capturas docs/interfaz/evidencia/cozy-medieval/concepto-portada 400 "*--concepto-*"` |
-| `comparar` | Comprobar que una alternativa no cambió: compara píxel a píxel los PNG que se llaman igual y dice la caja de cada diferencia. Sin glob, solo los de Glassmorphism (sin `--` en el nombre). Con una carpeta de ruido (otra corrida de la misma base), no cuenta lo que ya cambia entre antes y ruido. Sale con 1 si algo cambió o falta | `comparar <carpeta-antes> cliente-liviano/target/capturas "*.png" <carpeta-ruido>` |
+| `comparar` | Comprobar que una alternativa no cambió: compara píxel a píxel los PNG que se llaman igual y dice la caja de cada diferencia. Sin glob, solo los de Glassmorphism (sin `--` en el nombre). Con una carpeta de ruido (otra corrida de la misma base), no cuenta lo que ya cambia entre antes y ruido. Sale con 1 si algo cambió o falta, o si el glob no encuentra ninguna captura | `comparar <carpeta-antes> cliente-liviano/target/capturas "*.png" <carpeta-ruido>` |
 | `recorte` | Una zona de una captura, opcionalmente escalada (para mirar de cerca o para un epígrafe) | `recorte a.png zona.png 0 0 1280 900 0.5` |
 | `lado` | La misma zona de dos capturas, lado a lado y con rótulos | `lado antes.png despues.png lado.png 0 0 1280 900 0.5 "Antes" "Después"` |
 | `tamano` | Ancho × alto de una o varias imágenes | `tamano a.png b.png` |

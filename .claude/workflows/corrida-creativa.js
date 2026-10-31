@@ -35,7 +35,7 @@ const ARREGLO = { model: 'opus', effort: 'medium' }
 const CRITICA = { model: 'opus', effort: 'medium' }
 const MECANICO = { model: 'sonnet', effort: 'high' }
 
-const COMUN = `Trabajás en el repo DonaTrack, cliente liviano (cliente-liviano/). Seguí AGENTS.md (raíz) y cliente-liviano/AGENTS.md. Español llano. Rutas con barra normal; los comandos, en Git Bash. Nunca edites una línea por número sin leerla antes. No hagas push. La carpeta de trabajo de la corrida (fuera del repo) es: ${A.carpeta}`
+const COMUN = `Trabajás en el repo DonaTrack, cliente liviano (cliente-liviano/). Seguí AGENTS.md (raíz) y cliente-liviano/AGENTS.md. Español llano. Rutas con barra normal; los comandos, en Git Bash. Nunca edites una línea por número sin leerla antes. No hagas push. Antes de cada verificación visual, rm -rf cliente-liviano/target/capturas: la verificación no la limpia y quedarían capturas de corridas anteriores. La carpeta de trabajo de la corrida (fuera del repo) es: ${A.carpeta}`
 
 const texto = { type: 'string' }
 const si = { type: 'boolean' }
