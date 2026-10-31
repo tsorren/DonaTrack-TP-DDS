@@ -128,7 +128,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   está dibujado para cinco etapas con la actual en la cuarta (tiene que salir de los datos); con las
   7 secciones del admin, la barra de abajo del celular no entra; y en 360 × 640 "Estás acá" queda
   apenas debajo de la primera pantalla. El nogal deja de ser solo lo que navega: pasa a ser la mesa.
-  Cuando se aplique, reemplaza tres decisiones anteriores de Cozy: la estructura "cada pantalla es
+  Al aplicarse (en la iteración 2) reemplazó tres decisiones anteriores de Cozy: la estructura "cada pantalla es
   una hoja del atlas", la barra con el lomo y la pestaña con canto de latón, y el inicio "a lo
   ancho".
 - **Quién decidió:** el agente, con la libertad que dio el usuario ("creatividad absoluta y
@@ -168,7 +168,8 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   nombres de botones y enlaces. Los títulos propios van en una tabla
   (`cliente-liviano/src/test/resources/voz/cozy-medieval.txt`), sin números. El test que comparaba
   los textos de las gemelas pasa a comparar datos, acciones y nombres de controles, y deja pasar
-  solo lo que dice la tabla.
+  solo lo que dice la tabla. Reemplaza la regla del brief aprobado "los mismos textos que
+  Glassmorphism" (entrada "Brief aprobado" de Cozy y directiva de estructura, Reglas fijas).
 - **Alternativas:** los mismos textos (la regla anterior); voz libre, sin test; la voz marcada en
   cada plantilla con un atributo (ver el
   [ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md),

@@ -78,9 +78,9 @@ flowchart LR
 | `entidad-seguimiento-sellada` | **La tinta llega y sella**: el último tramo se entinta y cae el sello, una sola vez; el aviso, en texto | `entidad-seguimiento-sellada-lentejas` y `-ropa` (el sello cae una vez); con "reducir movimiento" o sin JavaScript, ya sellada |
 | `entidad-necesidades` | **Lo que hace falta**: libro de registro y "Publicar otra necesidad" | `entidad-necesidades-publicada` |
 | `admin-inicio` | **La mesa de trabajo**: lo que espera decisión primero (legajos con pestaña de latón y cantidad) y las cuentas al día | — |
-| `admin-entidades` | **Nuevos pueblos para el mapa**: registro de solicitudes; "Aprobar" deshabilitado con el porqué si falta documentación; "Rechazar" con motivo en un diálogo | Aprobada, rechazada, `admin-entidades-vacio` |
-| `admin-donaciones` | **Lo que guarda el depósito**: registro con filtros; lo que vence pronto, con marca y texto | Sin resultados; `admin-donaciones-registrar` (con error) |
-| `admin-asignaciones` | **Caminos por trazar**: qué va adónde y por qué; la ruta propuesta en lápiz se entinta al aceptarla | Aceptada, destino cambiado, `admin-asignaciones-vacio` |
+| `admin-entidades` | **Entidades por aprobar** (bajada: "Nuevos pueblos para el mapa"): registro de solicitudes; el nombre abre lo que presentó; "Aprobar", o "Pedir documentación" si falta algo; "Rechazar" con el motivo en un plegable que anda sin JavaScript | `admin-entidades-{aprobada,pedida,rechazada}-<id>`, `admin-entidades-vacio` |
+| `admin-donaciones` | **Lo que guarda el depósito**: registro con filtros; lo que vence pronto, con marca y texto | Sin resultados; `admin-donaciones-registrar`, `admin-donaciones-registrar-error` y `admin-donaciones-registrada` |
+| `admin-asignaciones` | **Caminos por trazar**: qué va adónde y por qué; la ruta propuesta en lápiz se entinta al aceptarla | `admin-asignaciones-aceptada-<id>`, `admin-asignaciones-cambiada-<id>-<lugar>`, `admin-asignaciones-vacio` |
 
 Sin pantalla todavía (muestran la tierra sin explorar): Donaciones recibidas (entidad), Donantes,
 Camiones y Ranking (admin).
@@ -114,7 +114,7 @@ Camiones y Ranking (admin).
   sin explorar con la acción posible.
 - Errores de formulario: la lista arriba con enlaces y cada error junto a su campo.
 - Camino cortado: el aviso con la nueva salida y la ╳ de lacre sobre el tramo.
-- Documentación incompleta: "Aprobar" deshabilitado, con el porqué escrito.
+- Documentación incompleta: "Pedir documentación" en lugar de "Aprobar".
 
 ## Lo que falta para que una pantalla sea real
 
