@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--/* Estructura común de las pantallas públicas: la mesa del cartógrafo (bitácora, iteración 2). La
        pantalla es la mesa de nogal; arriba, la placa del fabricante (la marca); el contenido es una
-       hoja de pergamino apoyada en la mesa, y el pie va grabado en la madera. Uso:
+       hoja de pergamino apoyada en la mesa (el catálogo /estilos no lleva hoja: sus láminas van
+       sobre la madera), y el pie va grabado en la madera. Estilos: tokens.css y app.css. Uso:
        <html th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">. Las privadas usan
        layout-privado, que toma de acá la cabecera y la marca. data-theme="light": solo modo claro
        (bitácora, 2026-10-30). Las hojas de identidad son las de Glassmorphism, salvo que el
@@ -19,12 +20,6 @@
         th:href="${alternativa} ? @{/css/alternativas/{nombre}/tokens.css(nombre=${alternativa})} : @{/css/tokens.css}">
   <link rel="stylesheet" href="/css/app.css"
         th:href="${alternativa} ? @{/css/alternativas/{nombre}/app.css(nombre=${alternativa})} : @{/css/app.css}">
-  <!--/* Iteración 2 (provisorio): la mesa y el muestrario, en hojas aparte mientras se construyen
-         en paralelo; al cerrar se unen en app.css. */-->
-  <link th:if="${alternativa}" rel="stylesheet" href="/css/alternativas/cozy-medieval/mesa.css"
-        th:href="@{/css/alternativas/{nombre}/mesa.css(nombre=${alternativa})}">
-  <link th:if="${alternativa}" rel="stylesheet" href="/css/alternativas/cozy-medieval/muestrario.css"
-        th:href="@{/css/alternativas/{nombre}/muestrario.css(nombre=${alternativa})}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <script src="/webjars/htmx.org/dist/htmx.min.js"

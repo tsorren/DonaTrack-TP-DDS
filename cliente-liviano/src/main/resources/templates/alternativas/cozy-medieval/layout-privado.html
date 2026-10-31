@@ -2,11 +2,13 @@
 <!--/* Estructura de las pantallas privadas: la mesa del cartógrafo (bitácora, iteración 2). Toda la
        pantalla es la mesa de nogal vista desde arriba y el contenido son los objetos apoyados en
        ella. La cabecera es el borde de arriba de la mesa: la placa del fabricante (la marca), la
-       cajonera con un cajón por sección y, en la otra punta, la carta de la posta y la cuenta, sin
-       buscador. En el celular, los cajones bajan al borde de abajo, el más cercano a la mano.
+       carta de la posta y la cuenta en la otra punta, sin buscador, y los cajones, uno por
+       sección. En el celular, los cajones bajan al borde de abajo, el más cercano a la mano: por
+       eso van después de la carta y la cuenta, para que el foco siga el orden de la vista.
+       js/cozy-navegacion.js deja a la vista el cajón actual si la fila se desplaza (mejora).
        Uso: <html th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">. El modelo
        trae navegacion (List<OpcionNavegacion>) y cuenta (CuentaVista). Las pantallas de
-       notificaciones y perfil, y la salida, llegan con sus flujos y con el IdP. Estilos: mesa.css. */-->
+       notificaciones y perfil, y la salida, llegan con sus flujos y con el IdP. Estilos: app.css. */-->
 <html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
       th:fragment="pagina(titulo, contenido)">
 <head th:replace="~{alternativas/cozy-medieval/layout :: cabeza(${titulo})}">
@@ -16,7 +18,6 @@
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header class="encabezado">
     <a th:replace="~{alternativas/cozy-medieval/layout :: marca}">DonaTrack</a>
-    <nav th:replace="~{alternativas/cozy-medieval/fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
     <div class="encabezado-fin">
       <a class="boton-icono" href="/notificaciones" th:href="@{/notificaciones}"
          aria-label="Notificaciones"><svg
@@ -30,9 +31,11 @@
         </div>
       </details>
     </div>
+    <nav th:replace="~{alternativas/cozy-medieval/fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
   </header>
   <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
   <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
   <div id="avisos" class="avisos" aria-live="polite"></div>
+  <script src="/js/cozy-navegacion.js" th:src="@{/js/cozy-navegacion.js}" defer></script>
 </body>
 </html>

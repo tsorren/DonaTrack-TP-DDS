@@ -1,7 +1,8 @@
 <!--/* Tarjeta de una entrega: la tarjeta de donación del prototipo v2. Patrón: Material Cards. La
        foto, si hay, va primero; si no, una portada con el ícono de lo donado (bitácora, 2026-10-30).
-       El título es el enlace principal. En Cozy es una ficha de archivo: la foto pegada con dos
-       esquineros y el estado en una etiqueta con ojal, al pie de la foto (muestrario.css).
+       El título es el enlace principal. En Cozy es una ficha de archivo: la foto pegada, en sepia, con
+       dos esquineros y el estado en una etiqueta con ojal, al pie de la foto; los títulos de una
+       fila empiezan a la par (app.css).
        entrega: EntregaVista. */-->
 <article th:fragment="tarjeta(entrega)" class="tarjeta">
   <img th:if="${entrega.foto}" class="tarjeta-foto" src="/img/ejemplo-entrega.svg"

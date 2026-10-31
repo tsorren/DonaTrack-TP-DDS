@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <!--/* Catálogo /estilos (RF-CL-05). Cada fragmento de fragmentos/ figura acá con todos sus estados
        y el patrón que sigue; InterfazFitnessTest falla si falta alguno. En Cozy es el muestrario
-       del cartógrafo: cada sección es una lámina sobre la mesa de nogal, con su numeral romano
-       (contador de CSS), su rótulo grabado y su título; muestrario.css las ordena en la grilla
-       (catalogo--mayor y catalogo--menor reparten una fila desde 1100 px). */-->
+       del cartógrafo: sin hoja, cada sección es una lámina apoyada en la mesa de nogal, con su
+       numeral romano (contador de CSS), su rótulo grabado y su título; app.css las ordena en la
+       grilla (catalogo--mayor y catalogo--menor reparten una fila desde 1100 px). La muestra del
+       inicio es una lámina más, con un trozo de mesa adentro. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -28,7 +29,7 @@
     <!--/* La mesa del cartógrafo (bitácora, iteración 2): cada parte del inicio es un objeto apoyado
            en la mesa de nogal. El orden del HTML es el de lectura y el del celular: la nota del
            saludo, el mapa del viaje, la carta con las noticias, el libro de cuentas y el cuaderno
-           de sellos. La armazón (estilos-armazon.html) trae esta mesa entera; mesa.css acomoda los
+           de sellos. La armazón (estilos-armazon.html) trae esta mesa entera; app.css acomoda los
            objetos según el ancho que tienen, acá y allá. */-->
     <div class="mesa-objetos">
       <!--/* La nota del saludo: una esquela clavada a la mesa, lo primero que se lee. */-->
@@ -272,7 +273,7 @@
   </section>
 
   <!--/* El diálogo se muestra también cerrado, como la carta sobre la mesa en penumbra (lo hace
-         muestrario.css solo acá); el botón lo abre de verdad, encima de la página. */-->
+         app.css solo acá); el botón lo abre de verdad, encima de la página. */-->
   <section class="catalogo catalogo--menor" aria-labelledby="dialogo-demo-titulo-seccion">
     <p class="lamina-rotulo">Una carta en la penumbra</p>
     <h2 id="dialogo-demo-titulo-seccion">Diálogo de confirmación</h2>

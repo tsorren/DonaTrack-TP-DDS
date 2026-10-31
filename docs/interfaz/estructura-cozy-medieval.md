@@ -13,11 +13,34 @@
 El brief dijo cómo **se ve** Cozy. Esta directiva dice cómo **se arma**: cómo se reparte cada
 pantalla, cómo se navega y qué momentos se recuerdan. Rige para Cozy; Glassmorphism no cambia.
 
+> **Segunda versión (2026-10-31): la mesa del cartógrafo.** El usuario vio la primera versión
+> aplicada y dijo que se parecía a la página de siempre. Pidió repensarla de cero, con libertad
+> completa, y tres iteraciones cada vez más ambiciosas (ver la [bitácora](bitacora.md)). Lo que
+> cambia está en la tabla de abajo; lo demás de esta directiva sigue vigente.
+
+| Antes (primera versión) | Ahora (la mesa del cartógrafo) |
+|---|---|
+| Cada pantalla es una hoja del atlas | Cada pantalla es la **mesa de nogal del cartógrafo**, vista desde arriba, con objetos sueltos ordenados: cada objeto, una parte de la pantalla, con su forma y su papel |
+| Barra lateral: el lomo de cuero con la pestaña unida | **Los cajones de la mesa**: en escritorio, arriba; en el celular, abajo, en el borde de la mesa. El cajón de la sección actual está abierto y lleva el ◆ |
+| Celular: el alfiler sobre el camino de la barra de abajo | Los mismos cajones, con ícono y nombre corto; con muchas secciones, la fila se desplaza a lo ancho y el actual queda a la vista |
+| Una hoja con regiones y títulos al margen | **Un objeto por parte**: la nota del saludo, el mapa del viaje, la carta con las noticias, el libro de cuentas y el cuaderno de sellos |
+| El recorrido a lo ancho de la hoja | **El mapa del viaje**: el camino de tinta sale de los datos (cualquier cantidad de etapas), el lápiz marca lo que falta, el alfiler con "Estás acá" está en la actual y la leyenda dice lo mismo en texto |
+| El catálogo `/estilos` como hoja | **El muestrario del cartógrafo**: cada componente, una lámina sobre la mesa |
+| La madera de nogal es lo que navega | La madera es **la mesa**: el fondo de todo. Lo que navega son los cajones |
+| Los mismos textos que Glassmorphism | Los mismos datos y acciones; **voz propia** en títulos y rótulos (brief, Voz) |
+| Almendra en títulos y rótulos | Almendra solo en los títulos grandes; los rótulos chicos, en Alegreya (la "E" de Almendra se confunde en tamaño chico) |
+
+Regla nueva de oficio: **un solo recurso material por objeto** (los esquineros, en el mapa; la
+chinche, en la nota), para que la mesa se vea profesional y no un disfraz.
+
 ## La idea en una frase
 
-**Cada pantalla es una hoja del atlas.** La barra es el lomo de cuero; la sección actual, una
-pestaña que se funde con la hoja; cada donación, un camino de tinta que termina en un pueblo
-sellado.
+**Cada donación deja un camino en el mapa, sobre la mesa del cartógrafo.** La mesa es el lugar de
+trabajo; los cajones guardan las secciones; el mapa muestra el viaje en curso, con el alfiler donde
+estás; las cartas traen las noticias y el cuaderno guarda los sellos de cada misión.
+
+La primera versión decía: *cada pantalla es una hoja del atlas; la barra es el lomo de cuero; la
+sección actual, una pestaña que se funde con la hoja.*
 
 ## Reglas fijas
 
@@ -61,8 +84,9 @@ Rigen todas las decisiones de abajo. No se preguntaron: salen del brief y de los
 
 **Los datos van limpios.** Tablas, formularios y listas, en pergamino liso, sin adornos.
 
-**Los mismos textos que Glassmorphism** (brief). Si una decisión pide un texto nuevo, se agrega en
-las dos alternativas o no se agrega.
+**Los mismos datos y acciones que Glassmorphism; voz propia en títulos y rótulos** (brief). Si una
+decisión pide un dato o una acción nueva, se agrega en las dos alternativas o no se agrega. Un título
+o rótulo propio va en la tabla de voz (`cliente-liviano/src/test/resources/voz/cozy-medieval.txt`).
 
 ## Cómo se separa la estructura
 
@@ -80,7 +104,8 @@ Consecuencias:
 
 - **Cada pantalla y cada componente nuevo se escribe dos veces** (HTML y estilos), una por
   alternativa. El costo es el doble.
-- **Los textos se duplican.** Un test compara los textos de los dos juegos y falla si difieren.
+- **Los textos se duplican.** Un test compara los dos juegos (datos, acciones y nombres de los
+  controles) y deja pasar solo los títulos y rótulos de la tabla de voz.
 - Un test exige que cada plantilla de Glassmorphism tenga su gemela en Cozy, y al revés.
 - El catálogo `/estilos` de Cozy muestra los componentes de Cozy.
 - En la maqueta, `?alternativa=cozy-medieval` elige el juego de Cozy; `?variante=` sigue

@@ -65,7 +65,7 @@ class PrototipoController {
               new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
               new Seccion("Entidades", "entidades", "admin-entidades"),
               new Seccion("Donaciones", ICONO_DONACIONES, "admin-donaciones"),
-              new Seccion("Asignaciones", "Asignar", ICONO_SEGUIMIENTO, "admin-asignaciones"),
+              new Seccion("Asignar donaciones", "Asignar", ICONO_SEGUIMIENTO, "admin-asignaciones"),
               new Seccion("Camiones", "camiones", "admin-camiones"),
               new Seccion("Ranking", ICONO_INCENTIVOS, "admin-ranking")));
 

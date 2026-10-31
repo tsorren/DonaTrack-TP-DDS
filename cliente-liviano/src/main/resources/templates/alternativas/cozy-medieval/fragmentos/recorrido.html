@@ -1,19 +1,32 @@
-<!--/* Recorrido de una donación: el mapa del viaje y su leyenda (bitácora, iteración 2). Patrón:
-       Material Steppers, con un mapa al lado (RF-CL-06: la lista dice lo mismo que el dibujo).
-       El mapa sale de los datos, para cualquier cantidad de etapas y cualquier etapa actual: cada
-       paso dibuja su tramo desde la parada anterior y su parada, a lo ancho y alternando arriba y
-       abajo. El tramo va en tinta hasta la etapa actual y en lápiz lo que falta. Cada parada lleva
-       su signo (● cumplida, ◆ el alfiler de latón en la actual, ○ lo que falta y ◉ el pueblo
-       sellado si la última ya se cumplió) y su número; la actual, la banderita "Estás acá". Al
-       lado del camino, el depósito en la primera parada y el pueblo en la última; el resto del
+<!--/* Recorrido de una donación: el mapa del viaje y su leyenda, sobre la mesa del cartógrafo
+       (bitácora, iteración 2). Patrón: Material Steppers, con un mapa al lado (RF-CL-06: la lista
+       dice lo mismo que el dibujo). El mapa sale de los datos, para cualquier cantidad de etapas y
+       cualquier etapa actual: cada paso dibuja su tramo desde la parada anterior y su parada, a lo
+       ancho y alternando arriba y abajo. El tramo va en tinta hasta la etapa actual y en lápiz lo
+       que falta. Cada parada lleva su signo (● cumplida, ◆ el alfiler de latón en la actual, ○ lo
+       que falta y ◉ el pueblo sellado si la última ya se cumplió) y su número; la actual, la
+       banderita "Estás acá", corrida hacia adentro si es la primera o la última, para no tocar el
+       depósito ni el pueblo. Al lado del camino, el depósito en la primera parada y el pueblo en
+       la última; el río es una aguada clara, para no confundirse con el camino, y el resto del
        terreno es un dibujo fijo (img/cozy-medieval/mesa-mapa-terreno.svg) que deja libre la franja
-       del camino. El dibujo no se lee: la leyenda, una lista ordenada con el número, el signo y el
-       texto de cada etapa, dice lo mismo, con aria-current="step" y "Estás acá" en la actual.
-       titulo: nombre accesible de la lista. pasos: List<PasoRecorrido>. Estilos: mesa.css. */-->
+       del camino. Sin etapas no hay mapa. El dibujo no se lee: la leyenda, una lista ordenada con
+       el número, el signo y el texto de cada etapa, dice lo mismo, con aria-current="step" y
+       "Estás acá" en la actual (role="list": sin viñetas, algunos lectores dejan de anunciar la
+       lista). titulo: nombre accesible de la lista. pasos: List<PasoRecorrido>. Estilos: app.css. */-->
 <div th:fragment="recorrido(titulo, pasos)" class="viaje"
      th:with="n=${#lists.size(pasos)}, tramo=${n > 1 ? 500.0 / (n - 1) : 0}">
-  <div class="viaje-mapa">
+  <div class="viaje-mapa" th:if="${n > 0}">
     <svg viewBox="0 0 640 360" aria-hidden="true" focusable="false">
+      <!--/* El río: la aguada clara y, encima, el cauce a pluma, fino y ondulado. */-->
+      <g class="viaje-rio" th:with="cauce='m216 0 2.4 5 0 5 -3 5 -4.9 5 -4.9 5 -3 5 0 5 2.4 5 3.3 5 2.5 5 0.9 5 -0.1 5 0.1 5
+                1.7 5 3.9 5 4.9 5 4.2 5 1.6 5 -1.4 5 -3.5 5 -4 5 -2.6 5 -0.5 5 1 5 1 5 -0.5 5 -2.6 5
+                -4 5 -3.5 5 -1.4 5 1.5 5 4 5 4.6 5 3.4 5 1.5 5 0 5 0 5 1.5 5 3.4 5 4.6 5 4 5 1.5 5
+                -1.4 5 -3.5 5 -4 5 -2.6 5 -0.5 5 1 5 1 5 -0.5 5 -2.6 5 -4 5 -3.5 5 -1.4 5 1.5 5 4 5
+                4.6 5 3.4 5 1.5 5 0 5 0 5 1.5 5 3.4 5 4.6 5 4 5 1.5 5 -1.8 5 -4.4 5 -5.1 5 -3.5 5
+                -0.4 5 2.2 5'">
+        <path th:attr="d=${cauce}"/>
+        <path th:attr="d=${cauce}"/>
+      </g>
       <!--/* Los tramos, primero, para que las paradas queden encima. Cada parada está en x (a lo
              ancho, de 70 a 570) e y (abajo las impares, arriba las pares, con un poco de mano). */-->
       <path th:each="paso, vuelta : ${pasos}" th:unless="${vuelta.first}" class="viaje-tramo"
@@ -25,7 +38,7 @@
       <g th:each="paso, vuelta : ${pasos}" class="viaje-parada"
          th:classappend="|viaje-parada--${paso.avance.tono}|"
          th:with="x=${n > 1 ? 70 + vuelta.index * tramo : 320}, y=${(vuelta.odd ? 212 : 108) + vuelta.index % 3 * 6},
-                  lado=${vuelta.odd ? 1 : -1}"
+                  lado=${vuelta.odd ? 1 : -1}, corrida=${vuelta.first ? 60 : (vuelta.last ? -60 : 0)}"
          th:attr="transform=|translate(${x} ${y})|" transform="translate(70 212)">
         <!--/* El depósito, al lado de la primera parada; el pueblo de destino, al lado de la última. */-->
         <path th:if="${vuelta.first}" class="viaje-lugar"
@@ -38,7 +51,7 @@
         <!--/* El alfiler de latón, clavado en la actual, y su banderita del lado libre del camino. */-->
         <g th:if="${paso.avance.tono == 'actual'}" class="viaje-alfiler">
           <path class="viaje-hilo" th:attr="d=|m0 0v${lado * 34}|" d="M0 0V34"/>
-          <g class="viaje-bandera" th:attr="transform=|translate(0 ${lado * 48})|" transform="translate(0 48)">
+          <g class="viaje-bandera" th:attr="transform=|translate(${corrida} ${lado * 48})|" transform="translate(0 48)">
             <rect x="-75" y="-19" width="150" height="38" rx="3"/>
             <text y="1">Estás acá</text>
           </g>
@@ -49,7 +62,7 @@
       </g>
     </svg>
   </div>
-  <ol class="recorrido" th:aria-label="${titulo}">
+  <ol class="recorrido" role="list" th:aria-label="${titulo}">
     <li th:each="paso, vuelta : ${pasos}" class="recorrido-paso"
         th:classappend="|recorrido-paso--${paso.avance.tono}|"
         th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">

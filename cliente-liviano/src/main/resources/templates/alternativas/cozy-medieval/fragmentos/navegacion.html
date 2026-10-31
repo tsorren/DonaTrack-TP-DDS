@@ -1,9 +1,10 @@
-<!--/* Navegación por rol: los cajones de la cajonera del cartógrafo (bitácora, iteración 2). Cada
-       sección es un cajón con su portaetiquetas de latón y su tirador; el de la sección actual está
-       abierto y lleva el signo ◆ (ahora). En layout-privado, en la computadora, la cajonera va
-       arriba de la mesa, con los nombres completos; en el celular, en el borde de abajo, con el
-       ícono y el nombre corto, y se desplaza a lo ancho si las secciones no entran. Los cajones
-       los dibuja mesa.css. Patrón: Material Navigation bar. opciones: List<OpcionNavegacion>. */-->
+<!--/* Navegación por rol: los cajones de la mesa del cartógrafo (bitácora, iteración 2). Cada
+       sección es un cajón con su portaetiquetas de latón y su tirador, apoyado en la madera; el de
+       la sección actual está abierto, con la etiqueta de papel claro y el signo ◆ (ahora). En
+       layout-privado, en la computadora, los cajones van arriba de la mesa, con los nombres
+       completos; en el celular, en el borde de abajo, con el ícono y el nombre corto, y la fila se
+       desplaza a lo ancho si las secciones no entran, con el cajón actual a la vista. Los cajones
+       los dibuja app.css. Patrón: Material Navigation bar. opciones: List<OpcionNavegacion>. */-->
 <nav th:fragment="navegacion(opciones)" class="navegacion" aria-label="Secciones">
   <ul>
     <li th:each="opcion : ${opciones}">

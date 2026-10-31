@@ -1,6 +1,6 @@
 <!--/* Aviso breve (toast). Patrón: Material Snackbar. Confirma una acción que salió bien. Se agrega
        a la región #avisos del layout, que lo anuncia. En Cozy es una esquela: papel suelto con la
-       punta doblada y la cinta de su tipo al costado (muestrario.css). tipo: exito | info. */-->
+       punta doblada y la cinta de su tipo al costado (app.css). tipo: exito | info. */-->
 <div th:fragment="aviso(texto, tipo)" class="aviso" th:classappend="|aviso--${tipo}|">
   <p th:text="${texto}">Listo.</p>
 </div>

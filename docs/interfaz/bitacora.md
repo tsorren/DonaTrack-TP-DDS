@@ -26,6 +26,49 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · componente:navegacion (Cozy / Medieval) · Los cajones del cartógrafo
+
+- **Decisión:** la navegación de Cozy son los cajones de la mesa: en escritorio, una fila arriba; en
+  el celular, abajo, en el borde de la mesa más cercano. El cajón de la sección actual está abierto,
+  muestra su interior y lleva el ◆. Con muchas secciones (el admin tiene 7), la fila del celular se
+  desplaza a lo ancho y un script chico deja el actual a la vista; sin el script, la fila igual se
+  puede recorrer.
+- **Alternativas:** carteles de nogal con punta de flecha, con el alfiler ◆ en la sección actual
+  (del concepto "el camino es la página").
+- **Por qué:** los dos críticos eligieron los cajones. Dicen dónde estás por forma y por lugar, no
+  solo por un signo de 12 px; son lo único que suena a "cartógrafo"; y en el alto contraste del
+  sistema conservan el borde. Los carteles se leían más livianos, pero sobre la madera casi no se
+  distinguían y parecían una ruta de migas.
+- **Costo:** son lo más pesado de la cabecera; se aliviaron (sin losa propia, solo la etiqueta del
+  cajón actual en papel claro). Reemplaza dos decisiones anteriores de Cozy: la barra con el lomo y
+  la pestaña con canto de latón, y el alfiler sobre el camino del celular.
+- **Quién decidió:** el agente, con dos críticos (arte y piso).
+- **Evidencia:** `evidencia/cozy-medieval/componente-navegacion/` (cajones y carteles, 360 y 1280 px).
+
+### 2026-10-31 · estructura (Cozy / Medieval) · Iteración 2: la mesa en todo Cozy
+
+- **Decisión:** la mesa del cartógrafo pasa del concepto al juego real de plantillas de Cozy: la
+  mesa y la cabecera en las dos estructuras (pública y privada); el inicio del donante con sus cinco
+  objetos (la nota, el mapa del viaje, la carta, el libro de cuentas con el rango pegado y el
+  cuaderno de sellos); el mapa del viaje sale de los datos y sirve para cualquier cantidad de etapas
+  y cualquier etapa actual (probado con 3, 5 y 7); el catálogo `/estilos` es el muestrario del
+  cartógrafo, con cada componente como una lámina numerada sobre la mesa (botones de cuero, campos
+  como renglones de registro, aviso como esquela, banner clavado con chinches, diálogo como carta,
+  ficha con la foto pegada, libro de registro). Regla de oficio: un solo recurso material por objeto.
+  Los rótulos chicos pasan a Alegreya y Almendra queda en los títulos grandes.
+- **Alternativas:** dejar el concepto como variante y aplicar solo el inicio. Para la navegación,
+  ver la entrada de los cajones.
+- **Por qué:** el usuario pidió una segunda iteración más ambiciosa, con esquemorfismo rústico y
+  profesional. Los críticos marcaron lo que faltaba para que no pareciera un disfraz (demasiados
+  recursos por objeto, "Estás acá" repetido tres veces, la "E" de Almendra ilegible en chico) y se
+  corrigió en una pasada.
+- **Costo:** reemplaza tres decisiones de Cozy: "cada pantalla es una hoja del atlas", el inicio "a
+  lo ancho" y Almendra en los rótulos. La tierra sin explorar se queda como idea, dibujada como un
+  trozo de mapa rectangular. El mapa todavía no nombra el destino: ese dato no llega al recorrido.
+- **Quién decidió:** el agente, con la libertad que dio el usuario, después de dos críticos.
+- **Evidencia:** `evidencia/cozy-medieval/la-mesa/` (inicio y muestrario, antes y después, 360 y
+  1280 px).
+
 ### 2026-10-31 · concepto (Cozy / Medieval) · Iteración 1: la mesa del cartógrafo
 
 - **Decisión:** el inicio del donante, y desde ahí todo Cozy, es **la mesa del cartógrafo**: una

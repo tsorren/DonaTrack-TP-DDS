@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- La caja de la brújula de "cargando": el bisel y sus marcas, con el norte más largo. Dibujo
-       propio de la Alternativa Cozy / Medieval, de un solo color: muestrario.css lo usa como
+       propio de la Alternativa Cozy / Medieval, de un solo color: app.css lo usa como
        máscara; la aguja va aparte (muestrario-aguja.svg) para que solo ella se mueva. -->
   <g fill="none" stroke="#000" stroke-linecap="round">
     <circle cx="16" cy="16" r="14.6" stroke-width="1.6"/>
