@@ -26,6 +26,56 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · flujo (Encastre) · Iteración 3: se conservan las cuatro partes del flujo y el color dice dónde está la donación, en todo el sitio
+
+- **Decisión:** el flujo completo de Encastre queda como un prototipo navegable de 45 pantallas
+  (`/prototipo/encastre/<pantalla>`) con los cuatro roles: **público** (la portada que se arma sola,
+  formularios como paradas numeradas), **donante** (la pieza que viaja hasta la silueta de
+  "Entregada" y el tablero de carriles), **entidad** (lo que llega ahora y "Llegó y encastró") y
+  **admin** (un turno de a una tarea, con la tarjeta de foco). Las cuatro se conservan y reciben
+  arreglos. El código de color de etapa pasa a ser **uno solo**: sol con quien dona, lila en el
+  depósito, azul en camino, menta en la entidad, rosa con problema, y el naranja encima de lo
+  anterior solo para lo de ahora. "Falta" es siempre el hueco del sistema (a trazos); "viene" es una
+  pieza llena azul; "puesta" es una pieza llena con tilde. Otros arreglos: el foco ya no queda
+  tapado por el riel fijo (`scroll-padding-bottom`, el único bloqueo de la iteración), las chispas
+  de la confirmación ya no se cortan, "Después" del admin anda sin JavaScript, las lentejas, la leche
+  y el arroz coinciden entre roles y Donantes del admin tiene su ícono de persona. La ficha está en
+  [flujo-completo-encastre.md](flujo-completo-encastre.md).
+- **Alternativas:**
+  - **Quedarse con tres códigos de color** (el de la portada, el de los tramos de la ancla y el de
+    cada rol), o **dos que conviven** (por rol en la portada, por etapa adentro): el donante que
+    llega de la portada aprendería "sol es vos" y adentro vería "sol es en proceso" (3,65 contra
+    4,70 de la elegida).
+  - **El código de tramos de la ancla en todo el sitio**, con la portada cediendo y el rol en la
+    etiqueta: apaga el rol del mismo color que sus paradas, lo mejor de la portada (3,70).
+  - **Pasar la misión del donante a pastel** para dejar el naranja a la pieza que viaja: es volver
+    a "todo pastel y nada se destaca"; la pieza que viaja toma el azul de "en camino".
+  - **Que ceda la entidad en el dibujo del hueco:** la entidad ya seguía al sistema; cedió el admin.
+  - **Correr las horas del admin después de las 16:30**, o **`?foco=` en el `action` de "Después"**:
+    no hay contradicción de horas, y el `POST` del prototipo pierde la consulta; "Después" sin
+    JavaScript es un enlace a `admin-inicio?foco=<siguiente>`.
+  - **Un fragmento compartido de las lentejas entre las cuatro partes:** toca el sistema y todas las
+    partes a la vez; queda como ficha de datos para la próxima vuelta.
+  - **Quedarse con una sola parte del flujo:** no compiten, son los cuatro roles del mismo sitio.
+- **Por qué:** las tres críticas (arte, piso y flujo) coincidieron en que el idioma de Encastre
+  llegó a los cuatro roles y que lo que falla es de oficio y de cruce entre partes, no de idea. Con
+  un solo código, cada donación es una pieza con su color en cualquier pantalla, que es la promesa
+  del encargo ("cada donación llega y se nota"). Las puntuaciones ponderadas fueron 4,30 (público),
+  3,95 (donante), 4,35 (entidad) y 4,30 (admin).
+- **Costo:** quedan pedidos al sistema que no bloquean (estilo de `select`, casillas y `textarea`; el
+  fragmento `campo` sin `value`, `required` ni `autocomplete`; `aviso` y `banner` sin `tabindex` ni
+  `autofocus`; el pie público sin legales ni privacidad, RF-01; la campana y "Mi perfil" que llevan a
+  Cozy), una ficha de datos compartida del prototipo, y que las rutas de Encastre no están en
+  `verificacion/paginas.txt`. Las capturas de `evidencia/encastre/sistema/` son de la iteración 2:
+  el tramo "en proceso" de la ancla cambió desde entonces. **Reemplaza:** parte de la decisión de la
+  iteración 2 (sistema, corrida creativa desatendida): el tramo "en proceso" de la ancla en sol, y
+  los colores de etapa propios de cada parte (piezas del donante, franja del admin, "vienen" de la
+  entidad), que eran decisiones de los constructores de esta misma iteración.
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** [capturas del flujo](evidencia/encastre/flujo-completo/) (360 y 1280 de las 45
+  rutas y 360 × 640 de la ancla); [ficha del flujo](flujo-completo-encastre.md);
+  [encargo](encargos/encastre.md).
+
 ### 2026-10-31 · sistema (Encastre) · Iteración 2: se conservan las dos zonas (estructura y componentes) y el naranja queda para una sola pieza, la de lo de ahora
 
 - **Decisión:** el sistema de Encastre junta las dos mitades del mismo juego: **estructura**

@@ -196,6 +196,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
 | [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval (segunda versión: la mesa del cartógrafo) |
 | [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md) | El flujo completo del sitio en Cozy: recorrido por rol, pantallas y decisiones del prototipo navegable (`/prototipo/<pantalla>` en la maqueta) |
+| [flujo-completo-encastre.md](flujo-completo-encastre.md) | El flujo completo del sitio en Encastre: recorrido por rol, 45 pantallas, código de color y decisiones del prototipo navegable (`/prototipo/encastre/<pantalla>` en la maqueta) |
 | [identidad/referencias-cozy-medieval/](identidad/referencias-cozy-medieval/README.md) | Las 18 imágenes de referencia de Cozy que trajo el usuario, con qué se toma de cada una |
 | [identidad/referencias-encastre/](identidad/referencias-encastre/README.md) | Las 11 imágenes de referencia de Encastre (la opción 2 de "Direcciones finales" y el grupo "MODERNO" del tablero de inspiración), con qué se toma de cada una |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
