@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!--/* Encastre, concepto C "Recorrido" (corrida creativa, iteración 1): el inicio del donante como
+       una sola columna atravesada por una línea gruesa. La línea entra por el costado debajo del
+       saludo y baja: arriba lo que viene (punteada), en el medio el ahora (el único color fuerte)
+       y abajo lo que ya pasó (llena). Cada dato cuelga de su parada. Las secciones son una cápsula
+       segmentada fija arriba. Mismos datos y acciones que alternativas/encastre/paginas/
+       estilos-armazon.html. */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{alternativas/encastre/layout :: cabeza(~{::title})}">
+  <title>Muestra del área privada - DonaTrack</title>
+</head>
+<body class="cc">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="cc-arriba">
+    <a th:replace="~{alternativas/encastre/layout :: marca}">DonaTrack</a>
+    <div class="cc-arriba-fin">
+      <a class="boton-icono" href="/notificaciones" th:href="@{/notificaciones}"
+         aria-label="Notificaciones"><svg
+         th:replace="~{alternativas/encastre/fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
+      <details class="cuenta">
+        <summary th:aria-label="|Cuenta de ${cuenta.nombre}|" th:text="${cuenta.inicial}">A</summary>
+        <div class="cuenta-menu">
+          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
+          <a href="/salir" th:href="@{/salir}">Salir</a>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <!--/* La cápsula: una sola píldora con un segmento por sección. En el celular se desliza de
+         costado si no entra; en escritorio se centra en la barra de arriba. */-->
+  <nav class="cc-capsula" aria-label="Secciones">
+    <ul>
+      <li th:each="opcion : ${navegacion}">
+        <a href="#" th:href="@{${opcion.ruta}}"
+           th:aria-current="${opcion.actual} ? 'page' : null"><svg
+           th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${opcion.icono}, 20)}"></svg><span
+           th:text="${opcion.texto}">Sección</span></a>
+      </li>
+    </ul>
+  </nav>
+
+  <main id="contenido" tabindex="-1" class="cc-camino">
+    <h1 class="cc-rotulo">Inicio</h1>
+
+    <!--/* Salida: el saludo. Debajo entra la línea desde el borde de la pantalla y dobla hacia
+           abajo; las fichas viajan sobre ella. */-->
+    <section class="cc-salida" aria-labelledby="hola-titulo">
+      <h2 id="hola-titulo" class="cc-saludo">Hola, <span class="cc-resalte">Ana</span></h2>
+      <p class="cc-salida-texto">Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
+      <div class="cc-acciones">
+        <a href="#recorrido-titulo" role="button" class="cc-boton-fuerte">Ver seguimiento</a>
+        <a href="#tarjeta-titulo" role="button" class="cc-boton-linea">Mis donaciones</a>
+      </div>
+      <div class="cc-tren" aria-hidden="true">
+        <span class="cc-vagon cc-vagon--sol"><b>7</b><span>donaciones</span></span>
+        <span class="cc-vagon cc-vagon--lila"><b>2</b><span>entidades ayudadas</span></span>
+        <span class="cc-vagon cc-vagon--azul"><b>2</b><span>entregadas</span></span>
+      </div>
+    </section>
+
+    <!--/* Lo que viene: la misión, sobre el tramo punteado. */-->
+    <section class="cc-parada cc-parada--viene" aria-labelledby="mision-titulo">
+      <span class="cc-estacion cc-estacion--menta" aria-hidden="true"><svg
+            th:replace="~{alternativas/encastre/fragmentos/icono :: icono('incentivos', 24)}"></svg></span>
+      <h2 id="mision-titulo">Lo que te toca ahora</h2>
+      <div class="cc-colgado cc-mision">
+        <p class="cc-bajada">Colaborador → Sostenedor</p>
+        <div class="cc-sello-fila">
+          <span class="cc-sello">2/3</span>
+          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+          <span class="cc-tramos" aria-hidden="true"><span class="cc-tramo-hecho"></span><span
+                class="cc-tramo-hecho"></span><span class="cc-tramo-falta"></span></span>
+        </div>
+        <progress class="cc-barra" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <p class="cc-pie"><span>66 %</span><span class="cc-falta">Falta 1 paso</span></p>
+        <a href="#insignia-titulo" role="button" class="cc-boton-linea">Ver incentivos</a>
+      </div>
+    </section>
+
+    <!--/* El ahora: los pasos sobre la misma línea, del que falta (arriba) a los hechos (abajo).
+           La carga y su estado cuelgan del paso actual. */-->
+    <section class="cc-parada cc-parada--recorrido" aria-labelledby="recorrido-titulo">
+      <span class="cc-estacion cc-estacion--durazno" aria-hidden="true"><svg
+            th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 24)}"></svg></span>
+      <h2 id="recorrido-titulo">Por dónde va tu donación</h2>
+      <div class="cc-colgado cc-recorrido cc-con-horario">
+        <ol class="cc-pasos" reversed aria-label="Por dónde va tu donación">
+          <li th:each="i : ${#numbers.sequence(#lists.size(pasos) - 1, 0, -1)}"
+              th:with="paso=${pasos[i]}" class="cc-paso"
+              th:classappend="|cc-paso--${paso.avance.tono}|"
+              th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+            <span class="cc-paso-nodo" aria-hidden="true" th:text="${i + 1}">1</span>
+            <span class="cc-paso-nombre" th:text="${paso.nombre}">Paso</span>
+            <small class="cc-paso-detalle" th:text="${paso.detalle}">Detalle</small>
+            <th:block th:if="${paso.avance.name() == 'ACTUAL'}">
+              <p class="cc-carga"><span>Lentejas secas · 15 kg</span><span
+                 th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span></p>
+            </th:block>
+          </li>
+        </ol>
+        <div class="cc-detalle">
+          <a href="#tarjeta-titulo" class="cc-enlace">Ver el detalle</a>
+        </div>
+      </div>
+    </section>
+
+    <!--/* Lo que ya pasó: cada aviso, una marca sobre la línea con su hora. */-->
+    <section class="cc-parada" aria-labelledby="notas-titulo">
+      <span class="cc-estacion cc-estacion--lila" aria-hidden="true"><svg
+            th:replace="~{alternativas/encastre/fragmentos/icono :: icono('notificaciones', 24)}"></svg></span>
+      <h2 id="notas-titulo">Lo último que pasó</h2>
+      <p class="cc-bajada">Lo último que pasó con tus donaciones</p>
+      <ul class="cc-notas cc-con-horario">
+        <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+        <li><p>Tu donación quedó lista para entregar.</p>
+          <time datetime="2026-10-14T09:10">ayer</time></li>
+        <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+      </ul>
+    </section>
+
+    <!--/* El origen: lo que llevás hecho. Un dato, un bloque de color. Acá termina la línea. */-->
+    <section class="cc-parada cc-parada--origen" aria-labelledby="impacto-titulo">
+      <span class="cc-estacion cc-estacion--sol" aria-hidden="true"><svg
+            th:replace="~{alternativas/encastre/fragmentos/icono :: icono('donaciones', 24)}"></svg></span>
+      <h2 id="impacto-titulo">Tu impacto</h2>
+      <div class="cc-colgado cc-cifras">
+        <a class="cc-bloque cc-bloque--sol cc-cifra" href="#" th:href="@{${realizadas.ruta}}">
+          <span class="cc-cifra-etiqueta" th:text="${realizadas.etiqueta}">Donaciones realizadas</span>
+          <span class="cc-cifra-ir" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('flecha', 20)}"></svg></span>
+          <span class="cc-cifra-valor" th:text="${realizadas.valor}">7</span>
+          <span class="cc-cifra-cambio" th:if="${realizadas.cambio}"><b
+                th:text="${realizadas.cambio}">+3</b> <span
+                th:text="${realizadas.cambioTexto}">respecto al mes pasado</span></span>
+          <svg class="cc-cifra-barras" aria-hidden="true" focusable="false" viewBox="0 0 142 84"
+               th:if="${realizadas.barras}"
+               th:attr="viewBox=|0 0 ${#lists.size(realizadas.barras) * 25 - 8} 84|">
+            <rect th:each="alto, vuelta : ${realizadas.barras}"
+                  th:classappend="${vuelta.last} ? 'cc-barra-actual'"
+                  width="17" rx="8" x="0" y="0" height="84"
+                  th:attr="x=${vuelta.index * 25},y=${84 - alto},height=${alto}"></rect>
+          </svg>
+        </a>
+        <article class="cc-bloque cc-bloque--azul cc-entregadas" aria-labelledby="entregadas-titulo">
+          <div class="cc-entregadas-cabecera">
+            <span class="cc-moneda"><b>2</b></span>
+            <h3 id="entregadas-titulo">Donaciones <span>entregadas</span></h3>
+          </div>
+          <svg class="cc-segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
+               aria-hidden="true" focusable="false">
+            <rect class="cc-seg--entregadas" x="0" y="0" width="27.3" height="10" rx="2"/>
+            <rect class="cc-seg--camino" x="28.8" y="0" width="13.6" height="10" rx="2"/>
+            <rect class="cc-seg--proceso" x="43.9" y="0" width="40.9" height="10" rx="2"/>
+            <rect class="cc-seg--sin-entregar" x="86.3" y="0" width="13.7" height="10" rx="2"/>
+          </svg>
+          <ul class="cc-leyenda">
+            <li class="cc-seg--entregadas">2 entregadas</li>
+            <li class="cc-seg--camino">1 en camino</li>
+            <li class="cc-seg--proceso">3 en proceso</li>
+            <li class="cc-seg--sin-entregar">1 sin entregar</li>
+          </ul>
+        </article>
+        <section class="cc-bloque cc-bloque--lila cc-categoria" aria-labelledby="categoria-titulo">
+          <span class="cc-cifra-etiqueta" id="categoria-titulo">Categoría actual</span>
+          <span class="cc-categoria-nombre">Colaborador</span>
+          <span class="cc-categoria-proxima">Próxima: Sostenedor</span>
+        </section>
+      </div>
+    </section>
+  </main>
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>
