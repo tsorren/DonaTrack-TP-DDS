@@ -306,15 +306,15 @@ nav.navegacion ul {
 
 /* Pestaña unida (componente:barra-lomo, variante A: pergamino liso). La sección actual es una
    pestaña del mismo papel que la hoja: tapa el canto de latón, se curva hacia la hoja arriba y
-   abajo, sin línea entre las dos, y lleva el signo ◆. La variante B (el canto de latón cortado,
-   como un señalador) cambia solo este bloque. */
+   abajo, sin línea entre las dos, y lleva el signo ◆. Papel, tinta, curva y cuánto tapa del canto
+   salen de los tokens de la pestaña: la variante B (el canto de latón cortado, como un señalador)
+   cambia esos tokens y estas dos curvas. */
 .navegacion a[aria-current="page"] {
   z-index: 1;
-  margin-inline-end: calc(var(--borde-marco) * -1);
-  background-color: var(--color-fondo);
-  color: var(--color-titulo);
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
+  margin-inline-end: calc(var(--medida-pestana-solape) * -1);
+  background-color: var(--color-pestana);
+  color: var(--color-pestana-texto);
+  border-radius: var(--radio-pestana) 0 0 var(--radio-pestana);
   font-weight: 700;
 }
 
@@ -323,20 +323,20 @@ nav.navegacion ul {
   content: "";
   position: absolute;
   inset-inline-end: 0;
-  width: var(--radio-control);
-  height: var(--radio-control);
+  width: var(--radio-pestana);
+  height: var(--radio-pestana);
 }
 
 .navegacion a[aria-current="page"]::before {
   bottom: 100%;
-  background: radial-gradient(circle at 0 0, transparent var(--radio-control),
-    var(--color-fondo) calc(var(--radio-control) + 0.5px));
+  background: radial-gradient(circle at 0 0, transparent var(--radio-pestana),
+    var(--color-pestana) calc(var(--radio-pestana) + 0.5px));
 }
 
 .navegacion a[aria-current="page"]::after {
   top: 100%;
-  background: radial-gradient(circle at 0 100%, transparent var(--radio-control),
-    var(--color-fondo) calc(var(--radio-control) + 0.5px));
+  background: radial-gradient(circle at 0 100%, transparent var(--radio-pestana),
+    var(--color-pestana) calc(var(--radio-pestana) + 0.5px));
 }
 
 .navegacion a[aria-current="page"] .navegacion-nodo {
@@ -378,6 +378,11 @@ nav.navegacion ul {
 
 .boton-icono:hover {
   background-color: var(--color-superficie);
+}
+
+/* La carta de la posta cierra con un sello de latón, rodeado por el trazo de tinta del dibujo. */
+.icono-sello {
+  fill: var(--color-laton-brillante);
 }
 
 .cuenta {
@@ -487,19 +492,22 @@ nav.navegacion ul {
   white-space: nowrap;
 }
 
-/* Columnas iguales: cada tramo del camino mide lo mismo. */
+/* Columnas iguales: cada tramo del camino mide lo mismo. Un poco de aire a los costados, para que
+   el nombre de la última sección no toque el borde de la pantalla. */
 .armazon .navegacion ul {
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 0;
+  padding-inline: var(--espacio-1);
 }
 
 .armazon .navegacion li {
   position: relative;
 }
 
-/* Cada tramo de puntos va del centro del ícono anterior al centro de este. */
+/* Cada tramo de puntos va del centro del ícono anterior al centro de este, por debajo de los
+   enlaces: el camino pasa entre los íconos, nunca por encima. */
 .armazon .navegacion li + li::before {
   content: "";
   position: absolute;
@@ -510,6 +518,7 @@ nav.navegacion ul {
 }
 
 .armazon .navegacion a {
+  z-index: 1;
   flex-direction: column;
   justify-content: flex-start;
   gap: var(--espacio-1);
@@ -546,9 +555,17 @@ nav.navegacion ul {
   display: none;
 }
 
+/* El foco rodea la cabeza del alfiler: un anillo de tinta, que se ve sobre el papel, y otro de
+   latón, que se ve sobre el nogal. */
 .armazon .navegacion a[aria-current="page"]:focus-visible {
-  outline-color: var(--color-foco-sobre-oscuro);
-  outline-offset: 2px;
+  outline-color: transparent;
+  box-shadow: none;
+}
+
+.armazon .navegacion a[aria-current="page"]:focus-visible .icono {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 0;
+  box-shadow: 0 0 0 calc(var(--borde-foco) * 2) var(--color-foco-sobre-oscuro);
 }
 
 .armazon .navegacion a[aria-current="page"] .icono {
@@ -625,6 +642,7 @@ nav.navegacion ul {
     top: calc(var(--medida-barra-superior) + var(--espacio-4));
     display: flex;
     gap: var(--espacio-1);
+    padding-inline: 0;
   }
 
   .armazon .navegacion li + li::before {
@@ -646,12 +664,12 @@ nav.navegacion ul {
     display: none;
   }
 
-  /* La pestaña unida, con los valores de su bloque. */
+  /* Vuelve la pestaña unida, con los tokens de su bloque. */
   .armazon .navegacion a[aria-current="page"] {
-    margin-inline-end: calc(var(--borde-marco) * -1);
-    background-color: var(--color-fondo);
-    color: var(--color-titulo);
-    border-radius: var(--radio-control) 0 0 var(--radio-control);
+    margin-inline-end: calc(var(--medida-pestana-solape) * -1);
+    background-color: var(--color-pestana);
+    color: var(--color-pestana-texto);
+    border-radius: var(--radio-pestana) 0 0 var(--radio-pestana);
   }
 
   .armazon .navegacion a[aria-current="page"]::before,
@@ -661,7 +679,6 @@ nav.navegacion ul {
 
   .armazon .navegacion a[aria-current="page"]:focus-visible {
     outline-color: var(--color-foco);
-    outline-offset: calc(var(--borde-foco) * -2);
   }
 
   .armazon .navegacion a[aria-current="page"] .navegacion-nodo {
@@ -680,11 +697,12 @@ nav.navegacion ul {
     navigation: auto;
   }
 
-  #contenido {
+  .armazon #contenido {
     view-transition-name: hoja;
   }
 
-  .encabezado {
+  /* Con nombre propio, la cabecera y el lomo quedan por encima de la hoja mientras se asienta. */
+  .armazon .encabezado {
     view-transition-name: cabecera;
   }
 
@@ -692,15 +710,20 @@ nav.navegacion ul {
     view-transition-name: lomo;
   }
 
-  /* Nada se funde ni se desliza, salvo la hoja: la raíz, la cabecera y el lomo cambian de una. */
+  /* Nada se funde ni se desliza, salvo la hoja: de la página vieja no queda nada a la vista, y la
+     raíz, la cabecera y el lomo de la nueva aparecen de una, sin sumarse a la vieja. */
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none;
   }
 
-  ::view-transition-old(hoja) {
-    opacity: 0;
+  ::view-transition-old(*) {
+    display: none;
+  }
+
+  ::view-transition-new(*) {
+    mix-blend-mode: normal;
   }
 
   ::view-transition-new(hoja) {
