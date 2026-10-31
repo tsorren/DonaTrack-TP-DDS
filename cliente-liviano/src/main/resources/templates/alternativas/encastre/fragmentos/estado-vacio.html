@@ -1,8 +1,16 @@
 <!--/* Estado vacío. Patrón: Material Empty states. Dice qué significa y invita a la acción posible.
-       La ruta chica (tres nodos, el último encendido) es la del prototipo v2.
-       accionTexto y accionRuta pueden ser null si no hay acción. */-->
+       Encastre: es el hueco con forma de pieza, y al lado la pieza suelta que lo va a llenar; el
+       texto dice qué hacer para llenarlo. accionTexto y accionRuta pueden ser null si no hay
+       acción. */-->
 <section th:fragment="estado-vacio(titulo, texto, accionTexto, accionRuta)" class="estado-vacio">
-  <div class="ruta-chica" aria-hidden="true"><span></span><span></span><span></span></div>
+  <svg class="estado-vacio-dibujo" viewBox="14 0 100 96" aria-hidden="true" focusable="false">
+    <path class="estado-vacio-hueco"
+          d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/>
+    <g transform="translate(62 -4) scale(0.52) rotate(18 55 52)">
+      <path class="estado-vacio-suelta"
+            d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/>
+    </g>
+  </svg>
   <h3 th:text="${titulo}">Todavía no hay nada acá</h3>
   <p th:text="${texto}">Qué significa y qué se puede hacer.</p>
   <a th:if="${accionTexto}" href="#" th:href="@{${accionRuta}}" role="button"

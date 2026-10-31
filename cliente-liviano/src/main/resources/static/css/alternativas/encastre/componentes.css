@@ -1,2 +1,919 @@
 /* Encastre, zona componentes (iteración 2): controles, formularios, avisos, banners, diálogo,
-   carga y estado vacío. Se carga después de app.css y de estructura.css. */
+   carga y estado vacío. Se carga después de app.css y de estructura.css.
+
+   Las piezas sueltas: cada control y cada aviso es una pieza del mismo juego que el tablero, con
+   su junta de tinta. Donde se trabaja, son sobrias: crema, tinta y gris. El botón de "lo de
+   ahora" es la única pieza naranja y la única con lengüeta; los avisos son piezas que encastran
+   en la mesa, el diálogo es una pieza grande sobre la mesa velada, lo que carga son piezas grises
+   todavía sin color y un vacío es el hueco con la forma de la pieza que falta. */
+
+/* Botones. Todos son piezas con junta de tinta, apoyadas en la mesa por su pisada (una sombra
+   dura que se aplasta al apretar). El principal es la pieza de "lo de ahora": naranja, con su
+   lengüeta a la derecha, que reserva su lugar con el margen. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]) {
+  --color-pieza-boton: var(--color-accion-primaria);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  padding: 0.625rem 1.25rem;
+  background-color: var(--color-pieza-boton);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: var(--sombra-pisada);
+  color: var(--color-texto-sobre-accion);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    transform var(--movimiento-rapido),
+    box-shadow var(--movimiento-rapido);
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):hover {
+  --color-pieza-boton: var(--color-accion-primaria-activa);
+
+  border-color: var(--color-junta);
+  color: var(--color-texto-sobre-accion);
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):active {
+  box-shadow: none;
+  transform: translateY(0.1875rem);
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):focus-visible {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):not(
+    .secondary,
+    .outline,
+    .fantasma,
+    :disabled
+  ) {
+  margin-inline-end: calc(
+    var(--medida-lengueta-control-salida) + var(--medida-lengueta-control) + var(--borde-junta)
+  );
+}
+
+/* La lengüeta: un círculo del color de la pieza con el aro de la junta, que tapa el borde donde
+   nace y dibuja su contorno afuera. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):not(
+    .secondary,
+    .outline,
+    .fantasma,
+    :disabled
+  )::after {
+  --medida-lengueta-aro: calc(var(--medida-lengueta-control) + var(--borde-junta));
+  --medida-lengueta-centro: calc(var(--borde-junta) + var(--medida-lengueta-control-salida));
+
+  content: "";
+  position: absolute;
+  top: calc(50% - var(--medida-lengueta-aro));
+  left: 100%;
+  width: calc(var(--medida-lengueta-centro) + var(--medida-lengueta-aro));
+  height: calc(2 * var(--medida-lengueta-aro));
+  pointer-events: none;
+  background: radial-gradient(
+    circle var(--medida-lengueta-aro) at var(--medida-lengueta-centro) 50%,
+    var(--color-pieza-boton) calc(var(--medida-lengueta-control) - 0.5px),
+    var(--color-junta) var(--medida-lengueta-control),
+    var(--color-junta) calc(var(--medida-lengueta-aro) - 0.5px),
+    transparent var(--medida-lengueta-aro)
+  );
+  filter: drop-shadow(var(--sombra-pisada));
+}
+
+/* Al apretar, la lengüeta baja con la pieza y pierde la pisada con ella. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):active::after {
+  filter: none;
+}
+
+/* Si la pantalla ya tiene una pieza de "lo de ahora" (la misión naranja), el principal no compite
+   con ella: es una pieza de tinta con texto crema, y su lengüeta toma el mismo color. */
+main:has(.pieza-ahora)
+  :is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):not(
+    .secondary,
+    .outline,
+    .fantasma,
+    :disabled
+  ) {
+  --color-pieza-boton: var(--color-pieza-tinta);
+
+  color: var(--color-pieza-crema);
+}
+
+main:has(.pieza-ahora)
+  :is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):not(
+    .secondary,
+    .outline,
+    .fantasma,
+    :disabled
+  ):hover {
+  --color-pieza-boton: var(--color-accion-secundaria-activa);
+
+  color: var(--color-pieza-crema);
+}
+
+/* Secundario: una pieza de tinta. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]).secondary {
+  --color-pieza-boton: var(--color-accion-secundaria);
+
+  color: var(--color-texto-sobre-secundaria);
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]).secondary:hover {
+  --color-pieza-boton: var(--color-accion-secundaria-activa);
+
+  color: var(--color-texto-sobre-secundaria);
+}
+
+/* Con borde: una pieza crema. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]).outline {
+  --color-pieza-boton: var(--color-pieza-crema);
+
+  color: var(--color-pieza-texto);
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]).outline:hover {
+  --color-pieza-boton: var(--color-pieza-gris-alta);
+
+  color: var(--color-pieza-texto);
+}
+
+/* Fantasma: sobre la tinta, una pieza hueca con la junta en crema. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]).fantasma {
+  --color-pieza-boton: transparent;
+
+  border-color: var(--color-destacado-texto);
+  box-shadow: none;
+  color: var(--color-destacado-texto);
+}
+
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]).fantasma:hover {
+  border-color: var(--color-destacado-texto);
+  color: var(--color-destacado-texto);
+  text-decoration: underline;
+}
+
+/* Deshabilitado: una pieza gris, todavía sin poner (sin pisada y con la junta punteada). */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]):disabled {
+  --color-pieza-boton: var(--color-pieza-gris);
+
+  border-style: dashed;
+  border-color: var(--color-junta-media);
+  box-shadow: none;
+  color: var(--color-texto-suave);
+  opacity: 1;
+}
+
+/* Lo que tarda: la pieza gira buscando dónde encastrar (en lugar del círculo de Pico). */
+[aria-busy="true"]:not(input, select, textarea):is(
+    button,
+    [type="submit"],
+    [type="button"],
+    [type="reset"],
+    [role="button"]
+  ):not(.outline)::before,
+.cargando[aria-busy="true"]::before {
+  width: 1em;
+  height: 1em;
+  background: currentcolor;
+  filter: none;
+  mask: url("../../../img/encastre/componentes-pieza.svg") center / contain no-repeat;
+}
+
+/* Enlace suelto: tinta, fuerte y subrayado grueso. */
+.enlace-fuerte {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: var(--borde-junta);
+  text-underline-offset: 0.3em;
+}
+
+.enlace-fuerte:hover {
+  color: var(--color-texto);
+  text-decoration-thickness: 0.25rem;
+}
+
+/* Campo: una pieza crema con la junta de tinta, que se pone naranja al enfocarla. */
+.campo {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  margin-block-end: var(--espacio-4);
+}
+
+.campo > label {
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.campo > input {
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: none;
+  color: var(--color-texto);
+  font-weight: 700;
+  transition:
+    border-color var(--movimiento-rapido),
+    box-shadow var(--movimiento-rapido);
+}
+
+.campo > input:focus {
+  border-color: var(--color-ahora);
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-ahora);
+}
+
+.campo > input:focus-visible {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.campo > [aria-invalid="true"],
+.campo > [aria-invalid="true"]:focus {
+  border-color: var(--color-error-texto);
+}
+
+.campo > [aria-invalid="true"]:focus {
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-error-texto);
+}
+
+/* Deshabilitado: la pieza gris, sin poner. */
+.campo > input:disabled {
+  background-color: var(--color-pieza-gris);
+  border-style: dashed;
+  border-color: var(--color-junta-media);
+  color: var(--color-texto-suave);
+  opacity: 1;
+}
+
+.campo > small {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 600;
+}
+
+/* El error dice qué pasó y qué hacer, con su signo además del color. */
+.campo > .campo-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  color: var(--color-error-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.campo-error::before {
+  content: "!" / "";
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: var(--color-error-texto);
+  border-radius: 50%;
+  color: var(--color-texto-sobre-error);
+  font-size: var(--tamano-mini);
+  font-weight: 900;
+}
+
+/* Carga de fotos: el campo es el hueco punteado donde van a caer las fotos; elegirlas es una
+   pieza de tinta. */
+.carga-fotos > input[type="file"] {
+  min-height: auto;
+  padding: var(--espacio-2);
+  background-color: transparent;
+  border-style: dashed;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.carga-fotos > input[type="file"]::file-selector-button {
+  min-height: 2.75rem;
+  margin: 0 var(--espacio-3) 0 0;
+  padding: var(--espacio-2) var(--espacio-4);
+  background-color: var(--color-accion-secundaria);
+  border: 0;
+  border-radius: var(--radio-chico);
+  box-shadow: none;
+  color: var(--color-texto-sobre-secundaria);
+  font-weight: 800;
+}
+
+.carga-fotos > input[type="file"]:hover::file-selector-button {
+  background-color: var(--color-accion-secundaria-activa);
+}
+
+/* Aviso breve: una pieza que entra y encastra en la mesa por su lengüeta, que lleva el signo
+   (✓ salió bien, i para saber). */
+.aviso {
+  --color-pieza-aviso: var(--color-pieza-azul);
+  --medida-lengueta-aro: calc(var(--medida-lengueta-aviso) + var(--borde-junta));
+  --medida-lengueta-centro: calc(var(--borde-junta) + var(--medida-lengueta-control-salida));
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: var(--medida-lectura);
+  margin-inline-start: calc(var(--medida-lengueta-control-salida) + var(--medida-lengueta-aro));
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-3)
+    calc(var(--medida-lengueta-aviso) + var(--espacio-3));
+  background-color: var(--color-pieza-aviso);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: var(--sombra-pisada-alta);
+  color: var(--color-pieza-texto);
+  font-weight: 700;
+}
+
+.aviso--exito {
+  --color-pieza-aviso: var(--color-pieza-menta);
+}
+
+.aviso p {
+  margin: 0;
+}
+
+.aviso::before {
+  content: "";
+  position: absolute;
+  top: calc(50% - var(--medida-lengueta-aro));
+  right: 100%;
+  width: calc(var(--medida-lengueta-centro) + var(--medida-lengueta-aro));
+  height: calc(2 * var(--medida-lengueta-aro));
+  pointer-events: none;
+  background: radial-gradient(
+    circle var(--medida-lengueta-aro) at calc(100% - var(--medida-lengueta-centro)) 50%,
+    var(--color-pieza-aviso) calc(var(--medida-lengueta-aviso) - 0.5px),
+    var(--color-junta) var(--medida-lengueta-aviso),
+    var(--color-junta) calc(var(--medida-lengueta-aro) - 0.5px),
+    transparent var(--medida-lengueta-aro)
+  );
+}
+
+.aviso::after {
+  content: "i" / "";
+  position: absolute;
+  top: calc(50% - var(--medida-lengueta-aviso));
+  left: calc(-1 * (var(--medida-lengueta-centro) + var(--medida-lengueta-aviso)));
+  display: grid;
+  place-items: center;
+  width: calc(2 * var(--medida-lengueta-aviso));
+  height: calc(2 * var(--medida-lengueta-aviso));
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-texto);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.aviso--exito::after {
+  content: "✓" / "";
+}
+
+/* Banner: una pieza clara del color del estado, con su signo, que dice qué pasó y qué hacer.
+   Sin juego: es trabajo. */
+.banner {
+  --color-banner-texto: var(--color-error-texto);
+  --color-banner-fondo: var(--color-error-fondo);
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin-block-end: var(--espacio-5);
+  padding: var(--espacio-4) var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  background-color: var(--color-banner-fondo);
+  border: var(--borde-junta) solid var(--color-banner-texto);
+  border-radius: var(--radio-pieza);
+  box-shadow: 0 0.1875rem 0 var(--color-banner-texto);
+  color: var(--color-texto);
+}
+
+.banner--advertencia {
+  --color-banner-texto: var(--color-advertencia-texto);
+  --color-banner-fondo: var(--color-advertencia-fondo);
+}
+
+.banner::before {
+  content: "!" / "";
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--color-banner-texto);
+  border-radius: 50%;
+  color: var(--color-texto-sobre-estado);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.banner > * {
+  grid-column: 2;
+  margin: 0;
+}
+
+.banner h2 {
+  color: var(--color-banner-texto);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.banner p {
+  color: var(--color-texto);
+}
+
+.banner small {
+  display: inline-block;
+  margin-block-start: var(--espacio-1);
+  padding: 0 var(--espacio-2);
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-ancho) solid var(--color-junta-media);
+  border-radius: var(--radio-chico);
+  color: var(--color-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+/* Diálogo: una pieza grande sobre la mesa velada. En el celular sube desde abajo, como una hoja,
+   con la lengüeta arriba; desde 600 px queda al centro. Si no entra, se desplaza el velo. */
+dialog {
+  align-items: flex-end;
+  overflow-y: auto;
+}
+
+dialog > article {
+  --medida-lengueta-aro: calc(var(--medida-lengueta) + var(--borde-junta));
+  --medida-lengueta-centro: calc(var(--borde-junta) + var(--medida-lengueta-salida));
+
+  position: relative;
+  width: 100%;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+  padding: var(--espacio-6) var(--espacio-5) var(--espacio-5);
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-block-end: 0;
+  border-radius: var(--radio-mesa) var(--radio-mesa) 0 0;
+  box-shadow: none;
+  color: var(--color-texto);
+}
+
+dialog > article::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: calc(50% - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-centro) + var(--medida-lengueta-aro));
+  pointer-events: none;
+  background: radial-gradient(
+    circle var(--medida-lengueta-aro) at 50% calc(100% - var(--medida-lengueta-centro)),
+    var(--color-pieza-crema) calc(var(--medida-lengueta) - 0.5px),
+    var(--color-junta) var(--medida-lengueta),
+    var(--color-junta) calc(var(--medida-lengueta-aro) - 0.5px),
+    transparent var(--medida-lengueta-aro)
+  );
+}
+
+dialog > article h2 {
+  margin: 0 0 var(--espacio-2);
+  color: var(--color-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+dialog > article p {
+  margin: 0;
+}
+
+dialog > article > footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espacio-3);
+  margin: var(--espacio-5) 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+dialog > article > footer :is(button, [role="button"]) {
+  width: auto;
+  margin-block: 0;
+  margin-inline-start: 0;
+}
+
+/* Carga de una acción: el aviso "Actualizando…", una pieza de tinta con la pieza de sol que
+   gira. */
+.cargando {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-3) var(--espacio-1) var(--espacio-2);
+  background-color: var(--color-pieza-tinta);
+  border-radius: var(--radio-pieza);
+  color: var(--color-destacado-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.cargando[aria-busy="true"]::before {
+  margin: 0;
+  background: var(--color-pieza-sol);
+}
+
+/* Esqueleto: piezas grises, todavía sin color, encastradas en un pedazo de mesa velada (la tinta
+   a media fuerza, para que no pese en una pantalla clara). Cada una entra en la de arriba por su
+   lengüeta. */
+.esqueleto {
+  display: grid;
+  gap: var(--medida-junta);
+  padding: var(--medida-junta);
+  background-color: var(--color-junta-media);
+  border-radius: var(--radio-pieza);
+}
+
+/* Pico dibuja un círculo en todo aria-busy; acá la carga ya se ve en las piezas. */
+.esqueleto[aria-busy="true"]::before {
+  content: none;
+}
+
+.esqueleto-fila {
+  position: relative;
+  height: 3rem;
+  background-color: var(--color-pieza-gris);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-pieza-gris) 30%,
+    var(--color-pieza-gris-alta) 50%,
+    var(--color-pieza-gris) 70%
+  );
+  background-size: 200% 100%;
+  border-radius: calc(var(--radio-pieza) - var(--medida-junta));
+}
+
+.esqueleto-fila:last-child {
+  width: 60%;
+}
+
+.esqueleto-fila + .esqueleto-fila::before {
+  --medida-lengueta-aro: calc(var(--medida-lengueta-control) + var(--medida-junta));
+
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: calc(var(--espacio-6) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-control-salida) + var(--medida-lengueta-aro));
+  background: radial-gradient(
+    circle var(--medida-lengueta-aro) at 50% calc(100% - var(--medida-lengueta-control-salida)),
+    var(--color-pieza-gris) calc(var(--medida-lengueta-control) - 0.5px),
+    var(--color-junta-media) var(--medida-lengueta-control),
+    var(--color-junta-media) calc(var(--medida-lengueta-aro) - 0.5px),
+    transparent var(--medida-lengueta-aro)
+  );
+}
+
+/* Estado vacío: el hueco con forma de pieza, la pieza suelta que lo va a llenar y qué hacer. */
+.estado-vacio {
+  display: grid;
+  grid-template-columns: var(--medida-hueco) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  justify-items: start;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin: 0;
+  padding: var(--espacio-4);
+  border: var(--borde-junta) dashed var(--color-junta);
+  border-radius: var(--radio-pieza);
+}
+
+.estado-vacio > * {
+  grid-column: 2;
+  margin: 0;
+}
+
+.estado-vacio > .estado-vacio-dibujo {
+  grid-row: span 2;
+  grid-column: 1;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.estado-vacio-hueco {
+  fill: var(--color-junta-tenue);
+  stroke: var(--color-junta);
+  stroke-dasharray: 6 5;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.estado-vacio-suelta {
+  fill: var(--color-pieza-sol);
+  stroke: var(--color-junta);
+  stroke-width: 5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.estado-vacio h3 {
+  color: var(--color-texto);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.estado-vacio p {
+  max-width: var(--medida-lectura);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.estado-vacio > [role="button"] {
+  grid-column: 1 / -1;
+  margin-block-start: var(--espacio-2);
+}
+
+/* Tabla: una bandeja de tinta donde cada fila es una pieza crema. En el celular, cada fila es un
+   bloque con sus rótulos; desde 600 px, filas con columnas. */
+.tabla {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tabla caption {
+  display: block;
+  padding-block-end: var(--espacio-3);
+  color: var(--color-texto);
+  font-weight: 800;
+  text-align: start;
+}
+
+.tabla thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.tabla,
+.tabla tbody,
+.tabla tr,
+.tabla th,
+.tabla td {
+  display: block;
+}
+
+.tabla tbody {
+  display: grid;
+  gap: var(--medida-junta);
+  padding: var(--medida-junta);
+  background-color: var(--color-junta);
+  border-radius: var(--radio-pieza);
+}
+
+.tabla tr {
+  padding: var(--espacio-3) var(--espacio-4);
+  background-color: var(--color-pieza-crema);
+  border-radius: calc(var(--radio-pieza) - var(--medida-junta));
+}
+
+.tabla :is(th, td) {
+  padding: var(--espacio-1) 0;
+  background-color: transparent;
+  border: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.tabla th[scope="row"] {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto);
+  font-weight: 800;
+}
+
+.tabla td::before {
+  content: attr(data-etiqueta) ": ";
+  color: var(--color-texto);
+  font-weight: 700;
+}
+
+/* Movimiento, solo si la persona no pidió reducirlo. */
+@media (prefers-reduced-motion: no-preference) {
+  :is(button, [role="button"], [type="submit"], [type="button"], [type="reset"])[aria-busy="true"]::before,
+  .cargando[aria-busy="true"]::before {
+    animation: pieza-busca 2s var(--movimiento-curva) infinite;
+  }
+
+  .aviso {
+    animation: aviso-encastra var(--movimiento-encastre) var(--movimiento-curva) both;
+  }
+
+  dialog[open] > article {
+    animation: dialogo-encastra var(--movimiento-encastre) var(--movimiento-curva) both;
+  }
+
+  .esqueleto-fila {
+    animation: esqueleto-barrido var(--movimiento-pulso) ease-in-out infinite;
+  }
+
+  .estado-vacio-suelta {
+    animation: hueco-prueba 1.4s var(--movimiento-curva) 600ms 2;
+  }
+}
+
+/* La pieza da cuartos de vuelta, como cuando se prueba dónde entra. */
+@keyframes pieza-busca {
+  25% {
+    transform: rotate(90deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(270deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aviso-encastra {
+  from {
+    transform: translateX(-1.5rem) rotate(-4deg);
+  }
+
+  70% {
+    transform: translateX(0.125rem) rotate(0.5deg);
+  }
+}
+
+@keyframes dialogo-encastra {
+  from {
+    transform: translateY(2rem) rotate(-1.5deg);
+  }
+}
+
+@keyframes esqueleto-barrido {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes hueco-prueba {
+  50% {
+    transform: translate(-3rem, 2.5rem) rotate(-18deg);
+  }
+}
+
+/* Alto contraste: las juntas son bordes y los signos se ven sin los colores. */
+@media (forced-colors: active) {
+  :is(button, [role="button"], [type="submit"], [type="button"], [type="reset"])::after,
+  .aviso::before,
+  dialog > article::before,
+  .esqueleto-fila::before {
+    content: none;
+  }
+
+  .aviso::after,
+  .banner::before,
+  .campo-error::before {
+    border: var(--borde-junta) solid CanvasText;
+  }
+
+  dialog > article {
+    border-block-end: var(--borde-junta) solid CanvasText;
+  }
+
+  .esqueleto-fila {
+    border: var(--borde-junta) solid CanvasText;
+  }
+
+  .estado-vacio-hueco {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .estado-vacio-suelta {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+}
+
+/* Desde 600 px: la tabla pasa a filas con columnas sobre su bandeja de tinta, y el diálogo va al
+   centro. */
+@media (min-width: 37.5em) {
+  .tabla {
+    display: table;
+    padding: 0 var(--medida-junta);
+    background-color: var(--color-junta);
+    border-spacing: 0 var(--medida-junta);
+    border-radius: var(--radio-pieza);
+  }
+
+  .tabla caption {
+    display: table-caption;
+  }
+
+  .tabla thead {
+    position: static;
+    display: table-header-group;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .tabla tbody {
+    display: table-row-group;
+    padding: 0;
+    background: none;
+  }
+
+  .tabla tr {
+    display: table-row;
+    background: none;
+  }
+
+  .tabla :is(th, td) {
+    display: table-cell;
+    padding: var(--espacio-3) var(--espacio-4);
+    background-color: var(--color-pieza-crema);
+    vertical-align: middle;
+  }
+
+  .tabla thead th {
+    padding-block: var(--espacio-2) 0;
+    background-color: transparent;
+    color: var(--color-destacado-texto-suave);
+    font-size: var(--tamano-mini);
+    font-weight: 800;
+  }
+
+  .tabla tbody tr > :first-child {
+    border-start-start-radius: calc(var(--radio-pieza) - var(--medida-junta));
+    border-end-start-radius: calc(var(--radio-pieza) - var(--medida-junta));
+  }
+
+  .tabla tbody tr > :last-child {
+    width: var(--medida-columna-estado);
+    border-start-end-radius: calc(var(--radio-pieza) - var(--medida-junta));
+    border-end-end-radius: calc(var(--radio-pieza) - var(--medida-junta));
+  }
+
+  .tabla tbody tr:hover > * {
+    background-color: var(--color-pieza-lila-alta);
+  }
+
+  .tabla td::before {
+    content: none;
+  }
+
+  dialog {
+    align-items: center;
+  }
+
+  dialog > article {
+    max-width: 32rem;
+    margin: var(--espacio-6) var(--espacio-5);
+    border-block-end: var(--borde-junta) solid var(--color-junta);
+    border-radius: var(--radio-mesa);
+    box-shadow: var(--sombra-pisada-alta);
+  }
+}

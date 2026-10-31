@@ -361,6 +361,19 @@
 
   /* Zona componentes (iteración 2): los tokens nuevos de esa zona van solo debajo de esta línea.
      El resto del archivo es de la zona estructura. */
+  /* Cada control es una pieza: junta de tinta de 2 px, la pisada (una sombra dura de tinta que
+     la apoya en la mesa) y la lengüeta chica del botón de "lo de ahora" y del aviso. */
+  --borde-junta: 0.125rem;
+  --medida-lengueta-control: 0.5rem;
+  --medida-lengueta-control-salida: 0.25rem;
+  --medida-lengueta-aviso: 0.875rem;
+  --medida-hueco: 4.5rem;
+  --sombra-pisada: 0 0.1875rem 0 var(--color-junta);
+  --sombra-pisada-alta: 0 0.375rem 0 var(--color-junta);
+  /* El signo de un banner (! sobre el color del estado): 6,8:1 sobre el ámbar y 5,3:1 sobre el
+     rojo. */
+  --color-texto-sobre-estado: var(--p-blanco);
+  --movimiento-encastre: 420ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
