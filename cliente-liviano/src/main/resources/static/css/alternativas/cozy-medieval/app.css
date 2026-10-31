@@ -251,20 +251,32 @@ body > #contenido {
   }
 }
 
-/* Navegación por rol: la tapa de nogal del atlas. El camino es una línea de puntos de latón con
-   un remache por sección; la sección actual es una pestaña de pergamino. */
+/* Navegación por rol: el lomo de cuero del atlas, de nogal con su veta y un canto de latón del
+   lado de la hoja. Cada sección es un título del lomo; la actual es una pestaña de la hoja. */
 .navegacion {
   position: relative;
   display: block;
   max-width: 15.5rem;
-  padding: var(--espacio-4);
+  padding: var(--espacio-4) 0 var(--espacio-4) var(--espacio-3);
   background-color: var(--color-destacado-fondo);
   color: var(--color-destacado-texto);
-  border: var(--borde-ancho) solid var(--color-destacado-borde);
-  border-radius: var(--radio-tarjeta);
+  border-inline-end: var(--borde-marco) solid var(--color-laton);
+  border-radius: var(--radio-tarjeta) 0 0 var(--radio-tarjeta);
 }
 
-.navegacion ul {
+/* La veta del nogal: un dibujo de un solo color, apenas más claro que la madera. */
+.navegacion::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-destacado-veta);
+  border-radius: inherit;
+  mask: url("../../../img/cozy-medieval/veta-de-nogal.svg") 0 0 / 15.5rem auto repeat;
+  pointer-events: none;
+}
+
+/* Con nav adelante, la lista le gana al margen negativo que Pico le pone a los costados. */
+nav.navegacion ul {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -272,15 +284,6 @@ body > #contenido {
   gap: var(--espacio-1);
   margin: 0;
   padding: 0;
-}
-
-.navegacion ul::before {
-  content: "";
-  position: absolute;
-  top: 1.25rem;
-  bottom: 1.25rem;
-  left: 21px;
-  border-inline-start: var(--borde-ruta) dotted var(--color-ruta-sobre-oscuro);
 }
 
 .navegacion li {
@@ -293,9 +296,9 @@ body > #contenido {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: var(--espacio-3);
   min-height: var(--medida-toque-minimo);
-  margin: 0;
+  margin: 0 var(--espacio-3) 0 0;
   padding: 0.625rem var(--espacio-3);
   color: var(--color-destacado-texto-suave);
   border-radius: var(--radio-control);
@@ -309,35 +312,71 @@ body > #contenido {
   color: var(--color-destacado-texto);
 }
 
+/* El lugar del signo ◆ (ahora): un rombo de latón con trazo oscuro, solo en la sección actual. */
 .navegacion-nodo {
-  position: relative;
-  z-index: 1;
   flex: none;
   width: var(--medida-nodo-chico);
   height: var(--medida-nodo-chico);
-  margin-inline-start: var(--espacio-1);
-  background-color: var(--color-destacado-fondo);
-  border: var(--borde-ruta) solid var(--color-laton);
-  border-radius: var(--radio-sello);
-}
-
-.navegacion a[aria-current="page"] {
-  background-color: var(--color-fondo);
-  color: var(--color-titulo);
-  font-weight: 700;
-}
-
-.navegacion a[aria-current="page"] .navegacion-nodo {
-  background-color: var(--color-laton);
-  border-color: var(--color-laton-texto);
+  margin-inline: 0.125rem;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-hoja) solid var(--color-laton-texto);
+  border-radius: 1px;
+  transform: rotate(45deg);
+  visibility: hidden;
 }
 
 .navegacion :is(.icono, .navegacion-corto) {
   display: none;
 }
 
-/* Armazón de las pantallas privadas. En el celular, la navegación es una barra fija abajo, de
-   nogal con un canto de latón. */
+/* Pestaña unida (componente:barra-lomo, variante A: pergamino liso). La sección actual es una
+   pestaña del mismo papel que la hoja: tapa el canto de latón, se curva hacia la hoja arriba y
+   abajo, sin línea entre las dos, y lleva el signo ◆. Papel, tinta, curva y cuánto tapa del canto
+   salen de los tokens de la pestaña: la variante B (el canto de latón cortado, como un señalador)
+   cambia esos tokens y estas dos curvas. */
+.navegacion a[aria-current="page"] {
+  z-index: 1;
+  margin-inline-end: calc(var(--medida-pestana-solape) * -1);
+  background-color: var(--color-pestana);
+  color: var(--color-pestana-texto);
+  border-radius: var(--radio-pestana) 0 0 var(--radio-pestana);
+  font-weight: 700;
+}
+
+.navegacion a[aria-current="page"]::before,
+.navegacion a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 0;
+  width: var(--radio-pestana);
+  height: var(--radio-pestana);
+}
+
+.navegacion a[aria-current="page"]::before {
+  bottom: 100%;
+  background: radial-gradient(circle at 0 0, transparent var(--radio-pestana),
+    var(--color-pestana) calc(var(--radio-pestana) + 0.5px));
+}
+
+.navegacion a[aria-current="page"]::after {
+  top: 100%;
+  background: radial-gradient(circle at 0 100%, transparent var(--radio-pestana),
+    var(--color-pestana) calc(var(--radio-pestana) + 0.5px));
+}
+
+.navegacion a[aria-current="page"] .navegacion-nodo {
+  visibility: visible;
+}
+
+/* Sobre el papel, el foco es el anillo oscuro, por dentro de la pestaña. */
+.navegacion a[aria-current="page"]:focus-visible {
+  outline-color: var(--color-foco);
+  outline-offset: calc(var(--borde-foco) * -2);
+}
+
+/* Armazón de las pantallas privadas: el lomo y la hoja. En el celular, el lomo es una barra fija
+   abajo, de nogal con un canto de latón: el alfiler sobre el camino. Arriba, la carta de la posta
+   y la cuenta. */
 .armazon .encabezado {
   flex-wrap: nowrap;
   gap: var(--espacio-2);
@@ -364,6 +403,11 @@ body > #contenido {
 
 .boton-icono:hover {
   background-color: var(--color-superficie);
+}
+
+/* La carta de la posta cierra con un sello de latón, rodeado por el trazo de tinta del dibujo. */
+.icono-sello {
+  fill: var(--color-laton-brillante);
 }
 
 .cuenta {
@@ -428,14 +472,18 @@ body > #contenido {
   color: var(--color-enlace);
 }
 
+/* Abajo, la hoja deja lugar para la barra y el alfiler. */
 .armazon #contenido {
   display: grid;
   gap: 1.375rem;
   align-content: start;
   min-width: 0;
-  padding: 1.625rem var(--espacio-4) 7rem;
+  padding: 1.625rem var(--espacio-4)
+    calc(var(--medida-barra-inferior) + var(--medida-alfiler-barra) + var(--espacio-6));
 }
 
+/* La barra de abajo: una línea de puntos de latón une los íconos (el camino) y la sección actual
+   sube sobre ella como un alfiler de latón, con su nombre corto. */
 .armazon .navegacion {
   position: fixed;
   right: 0;
@@ -443,14 +491,18 @@ body > #contenido {
   left: 0;
   z-index: var(--capa-avisos);
   max-width: none;
-  padding: var(--espacio-1) var(--espacio-1) var(--espacio-2);
+  padding: var(--espacio-1) 0 var(--espacio-2);
   border: 0;
   border-block-start: var(--borde-marco) solid var(--color-laton);
   border-radius: 0;
   box-shadow: var(--sombra-flotante);
 }
 
-.armazon .navegacion ul::before,
+.armazon .navegacion::before {
+  mask-image: url("../../../img/cozy-medieval/veta-de-nogal-horizontal.svg");
+  mask-size: 30rem auto;
+}
+
 .armazon .navegacion-nodo {
   display: none;
 }
@@ -465,20 +517,40 @@ body > #contenido {
   white-space: nowrap;
 }
 
+/* Columnas iguales: cada tramo del camino mide lo mismo. Un poco de aire a los costados, para que
+   el nombre de la última sección no toque el borde de la pantalla. */
 .armazon .navegacion ul {
   display: grid;
-  grid-auto-columns: minmax(min-content, 1fr);
+  grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 0;
+  padding-inline: var(--espacio-1);
+}
+
+.armazon .navegacion li {
+  position: relative;
+}
+
+/* Cada tramo de puntos va del centro del ícono anterior al centro de este, por debajo de los
+   enlaces: el camino pasa entre los íconos, nunca por encima. */
+.armazon .navegacion li + li::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--espacio-2) + 10px);
+  right: 50%;
+  left: -50%;
+  border-block-start: var(--borde-ruta) dotted var(--color-laton);
 }
 
 .armazon .navegacion a {
+  z-index: 1;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--espacio-1);
-  padding: 0.375rem 0.125rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
+  margin: 0;
+  padding: var(--espacio-2) 0 0.375rem;
+  font-size: var(--tamano-mini);
+  line-height: 1.2;
   white-space: nowrap;
 }
 
@@ -486,14 +558,209 @@ body > #contenido {
   display: block;
 }
 
-.armazon .navegacion a[aria-current="page"] {
-  background-color: transparent;
-  color: var(--color-laton-brillante);
+/* Cada ícono tapa el camino con un círculo de nogal. */
+.armazon .navegacion .icono {
+  position: relative;
+  background-color: var(--color-destacado-fondo);
+  border-radius: var(--radio-sello);
+  box-shadow: 0 0 0 var(--espacio-1) var(--color-destacado-fondo);
 }
 
-/* Los avisos breves aparecen encima de la barra inferior, sin taparla. */
+/* El alfiler: la cabeza es una moneda de latón con el ícono en tinta y la punta, el rombo ◆
+   (ahora), clavado en el camino. El trazo oscuro lo despega del papel cuando sobresale. */
+.armazon .navegacion a[aria-current="page"] {
+  margin: 0;
+  background-color: transparent;
+  color: var(--color-laton-brillante);
+  border-radius: var(--radio-control);
+}
+
+.armazon .navegacion a[aria-current="page"]::before,
+.armazon .navegacion a[aria-current="page"]::after {
+  display: none;
+}
+
+/* El foco rodea la cabeza del alfiler: un anillo de tinta, que se ve sobre el papel, y otro de
+   latón, que se ve sobre el nogal. */
+.armazon .navegacion a[aria-current="page"]:focus-visible {
+  outline-color: transparent;
+  box-shadow: none;
+}
+
+.armazon .navegacion a[aria-current="page"]:focus-visible .icono {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 0;
+  box-shadow: 0 0 0 calc(var(--borde-foco) * 2) var(--color-foco-sobre-oscuro);
+}
+
+.armazon .navegacion a[aria-current="page"] .icono {
+  z-index: 1;
+  width: 2.625rem;
+  height: 2.625rem;
+  margin-block: -0.625rem;
+  padding: var(--espacio-2);
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  box-shadow: var(--sombra-foto);
+  color: var(--color-titulo);
+  transform: translateY(calc(var(--medida-alfiler-barra) * -1 - var(--espacio-1)));
+}
+
+.armazon .navegacion a[aria-current="page"] .navegacion-nodo {
+  position: absolute;
+  top: 0.125rem;
+  left: calc(50% - 0.4375rem);
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-width: var(--borde-marco);
+}
+
+/* Los avisos breves aparecen encima de la barra y del alfiler, sin taparlos. */
 .armazon .avisos {
-  bottom: 6rem;
+  bottom: calc(var(--medida-barra-inferior) + var(--medida-alfiler-barra) + var(--espacio-2));
+}
+
+/* La página reserva el alto de la barra y del alfiler (acá y al final de la hoja): no tapan el
+   foco ni el contenido. */
+:root:has(> .armazon) {
+  scroll-padding-block-end: calc(var(--medida-barra-inferior) + var(--medida-alfiler-barra));
+}
+
+/* Desde 860 px: el lomo a la izquierda, a todo el alto, con la pestaña unida a la hoja. Vuelve
+   lo que la barra de abajo cambió. */
+@media (min-width: 53.75em) {
+  :root:has(> .armazon) {
+    scroll-padding-block-end: auto;
+  }
+
+  .armazon .navegacion {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    padding: var(--espacio-4) 0 var(--espacio-4) var(--espacio-3);
+    border: 0;
+    border-inline-end: var(--borde-marco) solid var(--color-laton);
+    box-shadow: none;
+  }
+
+  .armazon .navegacion::before {
+    mask-image: url("../../../img/cozy-medieval/veta-de-nogal.svg");
+    mask-size: 15.5rem auto;
+  }
+
+  .armazon .navegacion-nodo {
+    display: block;
+  }
+
+  .armazon .navegacion-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .armazon .navegacion ul {
+    position: sticky;
+    top: calc(var(--medida-barra-superior) + var(--espacio-4));
+    display: flex;
+    gap: var(--espacio-1);
+    padding-inline: 0;
+  }
+
+  .armazon .navegacion li + li::before {
+    display: none;
+  }
+
+  .armazon .navegacion a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--espacio-3);
+    margin-inline-end: var(--espacio-3);
+    padding: 0.625rem var(--espacio-3);
+    font-size: var(--tamano-chico);
+    line-height: inherit;
+    white-space: normal;
+  }
+
+  .armazon .navegacion :is(.icono, .navegacion-corto) {
+    display: none;
+  }
+
+  /* Vuelve la pestaña unida, con los tokens de su bloque. */
+  .armazon .navegacion a[aria-current="page"] {
+    margin-inline-end: calc(var(--medida-pestana-solape) * -1);
+    background-color: var(--color-pestana);
+    color: var(--color-pestana-texto);
+    border-radius: var(--radio-pestana) 0 0 var(--radio-pestana);
+  }
+
+  .armazon .navegacion a[aria-current="page"]::before,
+  .armazon .navegacion a[aria-current="page"]::after {
+    display: block;
+  }
+
+  .armazon .navegacion a[aria-current="page"]:focus-visible {
+    outline-color: var(--color-foco);
+  }
+
+  .armazon .navegacion a[aria-current="page"] .navegacion-nodo {
+    position: static;
+    width: var(--medida-nodo-chico);
+    height: var(--medida-nodo-chico);
+    border-width: var(--borde-hoja);
+  }
+}
+
+/* La hoja se asienta: al pasar de página, la hoja nueva se apoya en la mesa con un descenso leve
+   (6 px en 200 ms). La cabecera y el lomo quedan quietos. Con "reducir movimiento", o si el
+   navegador no hace transiciones entre páginas, el cambio es inmediato. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  .armazon #contenido {
+    view-transition-name: hoja;
+  }
+
+  /* Con nombre propio, la cabecera y el lomo quedan por encima de la hoja mientras se asienta. */
+  .armazon .encabezado {
+    view-transition-name: cabecera;
+  }
+
+  .armazon .navegacion {
+    view-transition-name: lomo;
+  }
+
+  /* Nada se funde ni se desliza, salvo la hoja: de la página vieja no queda nada a la vista, y la
+     raíz, la cabecera y el lomo de la nueva aparecen de una, sin sumarse a la vieja. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+
+  ::view-transition-old(*) {
+    display: none;
+  }
+
+  ::view-transition-new(*) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-new(hoja) {
+    animation: hoja-se-asienta var(--movimiento-duracion) var(--movimiento-curva);
+  }
+}
+
+@keyframes hoja-se-asienta {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 /* Panel: una región de la hoja, sin caja propia. La separa de lo anterior un filete de tinta y
@@ -2089,56 +2356,6 @@ dialog > article > footer button {
 
   .armazon .avisos {
     bottom: var(--espacio-4);
-  }
-
-  .armazon .navegacion {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    padding: var(--espacio-4);
-    border: 0;
-    border-inline-end: var(--borde-marco) solid var(--color-laton);
-    box-shadow: none;
-  }
-
-  .armazon .navegacion ul::before,
-  .armazon .navegacion-nodo {
-    display: block;
-  }
-
-  .armazon .navegacion-texto {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
-  }
-
-  .armazon .navegacion ul {
-    position: sticky;
-    top: calc(var(--medida-barra-superior) + var(--espacio-4));
-    display: flex;
-    gap: var(--espacio-1);
-  }
-
-  .armazon .navegacion a {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 0.875rem;
-    padding: 0.625rem var(--espacio-3);
-    font-size: var(--tamano-chico);
-    font-weight: 400;
-  }
-
-  .armazon .navegacion a[aria-current="page"] {
-    background-color: var(--color-fondo);
-    color: var(--color-titulo);
-    font-weight: 700;
-  }
-
-  .armazon .navegacion :is(.icono, .navegacion-corto) {
-    display: none;
   }
 
   .destacado {
