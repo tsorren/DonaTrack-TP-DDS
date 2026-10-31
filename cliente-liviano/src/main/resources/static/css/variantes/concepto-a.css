@@ -1,0 +1,1159 @@
+/*
+ * Bolsillo: abrís y hay una sola cosa que hacer. Una tarjeta naranja enorme dice lo que te toca
+ * ahora y lo demás espera guardado en el bolsillo, apilado como tarjetas de billetera. Un dock
+ * oscuro flota abajo y te lleva al resto.
+ */
+
+/*
+ * Variante de estructura concepto-a (templates/variantes/concepto-a.html), sobre el app.css de
+ * Encastre. Mobile first. En el celular, la tarjeta de foco sale del bolsillo: lo tapa por arriba
+ * y las fichas que esperan asoman detrás, cada una metida debajo de la siguiente. Desde el quiebre
+ * medio, el bolsillo pasa al costado de la tarjeta de foco; desde el ancho, el camino de la
+ * donación se acuesta y la tarjeta de foco queda quieta mientras se recorre la cola. El dock es el
+ * mismo en todos los anchos: en el celular, solo íconos (el nombre de la sección está arriba, en
+ * el rótulo); desde el quiebre chico suma el nombre corto y desde el medio, el nombre entero.
+ * Paleta y fuentes del brief de Encastre, como valores base de esta hoja.
+ */
+
+/* Baloo 2 (títulos grandes y cifras) y Nunito (texto), autoalojadas, Google Fonts; licencias SIL
+   OFL 1.1 en static/fuentes/OFL-baloo-2.txt y OFL-nunito.txt. */
+@font-face {
+  font-family: "Baloo 2";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../../fuentes/baloo-2-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Baloo 2";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../../fuentes/baloo-2-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: Nunito;
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("../../fuentes/nunito-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Nunito;
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("../../fuentes/nunito-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* Retematiza Pico y los usos de tokens.css sin tocarlo: fondo crema, tinta y Nunito. */
+  --p-gris-50: #fbf4e6;
+  --p-tinta: #26242c;
+  --p-grafito-900: #26242c;
+  --p-fuente: nunito, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Paleta de Encastre (brief): crema, tinta y pasteles; el naranja es el único color fuerte y
+     es solo de lo que te toca ahora. Todo texto va en tinta (AA sobre cada pastel). */
+  --p-ca-crema: #fbf4e6;
+  --p-ca-papel: #fffdf8;
+  --p-ca-tinta: #26242c;
+  --p-ca-tinta-alta: #3b3843;
+  --p-ca-tinta-suave: #57525c;
+  --p-ca-claro: #ddd6ca;
+  --p-ca-naranja: #f28a4e;
+  --p-ca-sol: #f8dc72;
+  --p-ca-durazno: #f7d3b0;
+  --p-ca-lila: #d9cdf5;
+  --p-ca-azul: #c8daf7;
+  --p-ca-azul-fuerte: #3d6fcf;
+  --p-ca-menta: #bde6cf;
+  --p-ca-bolsa: #f0e0c3;
+  --p-ca-costura: #e2cba3;
+  --p-ca-linea: #ebe1d0;
+  --p-ca-tinta-a12: rgb(38 36 44 / 12%);
+  --p-ca-tinta-a25: rgb(38 36 44 / 25%);
+  --p-ca-crema-a14: rgb(251 244 230 / 14%);
+  --p-ca-papel-a70: rgb(255 253 248 / 70%);
+  --p-ca-papel-a00: rgb(255 253 248 / 0%);
+  --p-ca-sombra: rgb(38 36 44 / 16%);
+  --p-ca-sombra-fuerte: rgb(38 36 44 / 32%);
+  --p-ca-display: "Baloo 2", nunito, system-ui, sans-serif;
+  --p-ca-solape: 1.75rem;
+}
+
+/* La página: crema lisa, sin el halo de Glassmorphism; el dock deja su lugar abajo. */
+body.ca-bolsillo {
+  min-height: 100%;
+  padding-bottom: 6.5rem;
+  background-color: var(--p-ca-crema);
+  background-image: none;
+  color: var(--p-ca-tinta);
+}
+
+.ca-bolsillo :is(.ca-paradas, .ca-cola, .ca-leyenda, .ca-notas, .ca-dock ul) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ca-bolsillo :is(.ca-paradas, .ca-cola, .ca-leyenda, .ca-notas, .ca-dock ul) > li {
+  margin: 0;
+  list-style: none;
+}
+
+.ca-bolsillo :is(h1, h2, h3, h4, p) {
+  color: var(--p-ca-tinta);
+}
+
+/* Arriba: la marca y, a la derecha, campana y cuenta. Sin barra: no compite con el dock. */
+.ca-arriba {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  width: min(100% - 2rem, 96rem);
+  margin-inline: auto;
+  padding-block: var(--espacio-3);
+}
+
+.ca-bolsillo .marca {
+  color: var(--p-ca-tinta);
+  font-weight: 800;
+}
+
+.ca-bolsillo .marca-simbolo {
+  background-color: var(--p-ca-sol);
+  border-radius: 50%;
+  box-shadow: none;
+}
+
+.ca-bolsillo .marca-nombre em {
+  padding: 0 0.3em;
+  background-color: var(--p-ca-sol);
+  border-radius: 0.5em;
+  color: var(--p-ca-tinta);
+}
+
+.ca-arriba-fin {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.ca-redondo {
+  display: grid;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  padding: 0;
+  background-color: var(--p-ca-papel);
+  border: 2px solid var(--p-ca-tinta-a12);
+  border-radius: 50%;
+  color: var(--p-ca-tinta);
+}
+
+.ca-cuenta {
+  position: relative;
+  margin: 0;
+}
+
+.ca-cuenta > summary.ca-redondo {
+  margin: 0;
+  background-color: var(--p-ca-tinta);
+  border-color: var(--p-ca-tinta);
+  color: var(--p-ca-crema);
+  font-family: var(--p-ca-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  list-style: none;
+  cursor: pointer;
+}
+
+.ca-cuenta > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ca-cuenta > summary::after {
+  display: none;
+}
+
+.ca-cuenta-menu {
+  position: absolute;
+  top: calc(100% + var(--espacio-2));
+  right: 0;
+  z-index: 20;
+  display: grid;
+  min-width: 12rem;
+  padding: var(--espacio-3);
+  background-color: var(--p-ca-papel);
+  border: 2px solid var(--p-ca-tinta-a12);
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 34px var(--p-ca-sombra);
+}
+
+.ca-cuenta-menu p {
+  display: grid;
+  margin: 0 0 var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-2);
+}
+
+.ca-cuenta-menu small {
+  color: var(--p-ca-tinta-suave);
+}
+
+.ca-cuenta-menu a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-2);
+  border-radius: var(--radio-chico);
+  color: var(--p-ca-tinta);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ca-cuenta-menu a:hover {
+  background-color: var(--p-ca-crema);
+}
+
+/* La mesa: una columna en el celular; la tarjeta de foco y el bolsillo, después, lado a lado. */
+.ca-bolsillo #contenido.ca-mesa {
+  display: grid;
+  gap: var(--espacio-3);
+  width: min(100% - 2rem, 96rem);
+  margin-inline: auto;
+  padding-block: var(--espacio-2) var(--espacio-5);
+}
+
+/* El nombre del menú, siempre a la vista: un rótulo oscuro sobre la tarjeta. */
+.ca-bolsillo h1.ca-seccion {
+  justify-self: start;
+  margin: 0;
+  padding: 0.3rem 0.9rem;
+  background-color: var(--p-ca-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--p-ca-crema);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ca-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  width: fit-content;
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  background-color: var(--p-ca-papel);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ca-bajada {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* La tarjeta de foco: el único bloque naranja. Tapa la boca del bolsillo. */
+.ca-foco {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: var(--espacio-6);
+  margin-inline: var(--espacio-2);
+  padding: var(--espacio-5) var(--espacio-5) var(--espacio-6);
+  background-color: var(--p-ca-naranja);
+  border: 2px solid transparent;
+  border-radius: 2rem;
+  box-shadow: 0 18px 40px var(--p-ca-sombra);
+}
+
+.ca-foco-saludo .ca-rotulo::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: var(--p-ca-naranja);
+  border-radius: 50%;
+}
+
+.ca-foco h2 {
+  margin: var(--espacio-3) 0 var(--espacio-3);
+  font-family: var(--p-ca-display);
+  font-size: clamp(3.25rem, 2rem + 6vw, 9.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.ca-foco-mensaje {
+  max-width: 30ch;
+  margin: 0 0 var(--espacio-5);
+  font-size: clamp(1.125rem, 1rem + 0.7vw, 1.625rem);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.ca-foco-mensaje mark {
+  padding: 0 0.3em;
+  background-color: var(--p-ca-sol);
+  border-radius: 0.45em;
+  color: var(--p-ca-tinta);
+  box-decoration-break: clone;
+}
+
+.ca-acciones {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.ca-bolsillo .ca-boton {
+  min-height: 3.25rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--p-ca-tinta);
+  border: 2px solid var(--p-ca-tinta);
+  color: var(--p-ca-crema);
+  font-size: var(--tamano-texto);
+  font-weight: 800;
+}
+
+.ca-bolsillo .ca-boton:hover {
+  background-color: var(--p-ca-tinta-alta);
+  border-color: var(--p-ca-tinta-alta);
+  color: var(--p-ca-crema);
+}
+
+.ca-bolsillo .ca-boton--borde,
+.ca-bolsillo .ca-boton--borde:hover {
+  background-color: transparent;
+  border-color: var(--p-ca-tinta);
+  color: var(--p-ca-tinta);
+  box-shadow: none;
+}
+
+.ca-bolsillo .ca-boton--borde:hover {
+  background-color: var(--p-ca-tinta-a12);
+}
+
+/* El camino de la donación, dentro de la tarjeta de foco: paradas unidas por una línea gruesa. */
+.ca-camino {
+  display: grid;
+  gap: var(--espacio-4);
+  padding-top: var(--espacio-5);
+  border-top: 3px solid var(--p-ca-tinta-a25);
+}
+
+.ca-camino-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.ca-camino h3 {
+  margin: 0;
+  font-family: var(--p-ca-display);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+}
+
+.ca-paradas {
+  isolation: isolate;
+  display: grid;
+}
+
+.ca-parada {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--espacio-3);
+  padding-block: 0.375rem;
+}
+
+/* El tramo hasta la parada siguiente: lleno si ya pasó, tenue si falta. */
+.ca-parada:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  bottom: -50%;
+  left: calc(1.5rem - 3px);
+  width: 6px;
+  background-color: var(--p-ca-tinta);
+}
+
+:is(.ca-parada--actual, .ca-parada--pendiente):not(:last-child)::after {
+  background-color: var(--p-ca-tinta-a25);
+}
+
+.ca-parada-nodo {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-family: var(--p-ca-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.ca-parada--hecho .ca-parada-nodo {
+  background-color: var(--p-ca-tinta);
+  color: var(--p-ca-crema);
+}
+
+.ca-parada--actual .ca-parada-nodo {
+  background-color: var(--p-ca-sol);
+  border: 3px solid var(--p-ca-tinta);
+  color: var(--p-ca-tinta);
+}
+
+.ca-parada--pendiente .ca-parada-nodo {
+  background-color: var(--p-ca-naranja);
+  border: 3px solid var(--p-ca-tinta);
+  color: var(--p-ca-tinta);
+}
+
+.ca-parada-texto {
+  display: grid;
+  line-height: 1.3;
+}
+
+.ca-parada-texto small {
+  color: var(--p-ca-tinta);
+  font-size: var(--tamano-chico);
+}
+
+.ca-parada--actual .ca-parada-texto {
+  justify-self: start;
+  padding: var(--espacio-2) var(--espacio-4);
+  background-color: var(--p-ca-papel);
+  border-radius: 1rem;
+}
+
+.ca-parada--actual .ca-parada-texto b {
+  font-size: var(--tamano-texto-grande);
+}
+
+.ca-enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--medida-toque-minimo);
+  color: var(--p-ca-tinta);
+  font-weight: 800;
+  text-decoration: underline 2px;
+  text-underline-offset: 0.25em;
+}
+
+.ca-enlace:hover {
+  color: var(--p-ca-tinta);
+  text-decoration-thickness: 3px;
+}
+
+/* El bolsillo: lo que espera. En el celular sube detrás de la tarjeta de foco. */
+.ca-bolsa {
+  position: relative;
+  z-index: 1;
+  margin-top: -3.5rem;
+  padding: 4.5rem var(--espacio-2) var(--espacio-2);
+  background-color: var(--p-ca-bolsa);
+  border: 2px solid transparent;
+  border-radius: 2rem;
+}
+
+.ca-bolsillo .ca-bolsa-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0 var(--espacio-3) var(--espacio-4);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ca-bolsa-titulo::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  background-color: var(--p-ca-costura);
+  border-radius: 3px;
+}
+
+/* Las fichas de la cola, como en una billetera: cada una se mete debajo de la siguiente. */
+.ca-cola {
+  display: grid;
+}
+
+.ca-ficha {
+  position: relative;
+  container-type: inline-size;
+  padding: var(--espacio-5) var(--espacio-4) calc(var(--espacio-5) + var(--p-ca-solape));
+  border: 2px solid transparent;
+  border-radius: 1.75rem;
+  box-shadow: 0 -8px 20px var(--p-ca-sombra);
+}
+
+.ca-cola > .ca-ficha + .ca-ficha {
+  margin-top: calc(-1 * var(--p-ca-solape));
+}
+
+.ca-cola > .ca-ficha:last-child {
+  padding-bottom: var(--espacio-5);
+}
+
+.ca-ficha--mision {
+  background-color: var(--p-ca-lila);
+}
+
+.ca-ficha--numeros {
+  background-color: var(--p-ca-azul);
+}
+
+.ca-ficha--notas {
+  background-color: var(--p-ca-papel);
+}
+
+.ca-ficha-cabecera {
+  display: grid;
+  gap: var(--espacio-2);
+  margin-bottom: var(--espacio-4);
+}
+
+.ca-ficha h3 {
+  margin: 0;
+  font-family: var(--p-ca-display);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+/* La misión: el sello del avance, la barra y el rango. */
+.ca-escalones {
+  margin: 0;
+  font-weight: 800;
+}
+
+.ca-escalones span {
+  display: inline-block;
+  padding: 0.15rem 0.7rem;
+  background-color: var(--p-ca-papel);
+  border-radius: var(--radio-boton);
+}
+
+.ca-escalones span:last-child {
+  background-color: var(--p-ca-sol);
+}
+
+.ca-sello-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-4);
+}
+
+.ca-sello-fila p {
+  display: grid;
+  margin: 0;
+}
+
+.ca-sello-fila b {
+  font-family: var(--p-ca-display);
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.15;
+}
+
+.ca-sello {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  background-color: var(--p-ca-tinta);
+  border-radius: 50%;
+  color: var(--p-ca-sol);
+  font-family: var(--p-ca-display);
+  font-size: 1.875rem;
+  font-weight: 800;
+}
+
+.ca-chispas {
+  position: absolute;
+  inset: -0.875rem;
+  width: calc(100% + 1.75rem);
+  height: calc(100% + 1.75rem);
+  fill: var(--p-ca-tinta);
+}
+
+.ca-bolsillo .ca-barra {
+  width: 100%;
+  height: 1.125rem;
+  margin: var(--espacio-5) 0 var(--espacio-2);
+  background-color: var(--p-ca-papel);
+  border: 2px solid var(--p-ca-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--p-ca-tinta);
+  appearance: none;
+}
+
+.ca-bolsillo .ca-barra::-webkit-progress-bar {
+  background-color: var(--p-ca-papel);
+  border-radius: var(--radio-boton);
+}
+
+.ca-bolsillo .ca-barra[value]::-webkit-progress-value {
+  background-color: var(--p-ca-tinta);
+  border-radius: var(--radio-boton);
+}
+
+.ca-bolsillo .ca-barra::-moz-progress-bar {
+  background-color: var(--p-ca-tinta);
+  border-radius: var(--radio-boton);
+}
+
+.ca-barra-pie {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 var(--espacio-4);
+  font-weight: 800;
+}
+
+.ca-ficha-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.ca-categoria {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4);
+  background-color: var(--p-ca-sol);
+  border-radius: 1.25rem;
+}
+
+.ca-categoria-nombre {
+  font-family: var(--p-ca-display);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.ca-categoria-proxima {
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* Lo que llevás donado: un dato, un bloque de color. */
+.ca-bloques {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+@container (min-width: 30rem) {
+  .ca-bloques {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  }
+}
+
+.ca-cifra {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-1);
+  padding: var(--espacio-4);
+  background-color: var(--p-ca-sol);
+  border: 2px solid transparent;
+  border-radius: 1.5rem;
+  color: var(--p-ca-tinta);
+  text-decoration: none;
+  transition: transform var(--movimiento-rapido);
+}
+
+.ca-cifra:hover {
+  color: var(--p-ca-tinta);
+  transform: translateY(-2px);
+}
+
+.ca-cifra-etiqueta {
+  padding-right: 2.75rem;
+  font-weight: 800;
+}
+
+.ca-cifra-ir {
+  position: absolute;
+  top: var(--espacio-3);
+  right: var(--espacio-3);
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: var(--p-ca-tinta);
+  border-radius: 50%;
+  color: var(--p-ca-sol);
+}
+
+.ca-cifra-valor {
+  font-family: var(--p-ca-display);
+  font-size: var(--tamano-cifra);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ca-cifra-cambio {
+  width: fit-content;
+  padding: 0.2rem 0.7rem;
+  background-color: var(--p-ca-papel);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.ca-cifra-barras {
+  width: 100%;
+  height: 3.5rem;
+  margin-top: var(--espacio-3);
+  fill: var(--p-ca-tinta-a25);
+}
+
+.ca-cifra-barras .ca-barra-actual {
+  fill: var(--p-ca-tinta);
+}
+
+.ca-entregas {
+  padding: var(--espacio-4);
+  background-color: var(--p-ca-menta);
+  border: 2px solid transparent;
+  border-radius: 1.5rem;
+}
+
+.ca-entregas-cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.ca-moneda {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: var(--p-ca-tinta);
+  border-radius: 50%;
+  color: var(--p-ca-crema);
+  font-family: var(--p-ca-display);
+  font-size: 1.75rem;
+}
+
+.ca-entregas h4 {
+  margin: 0;
+  font-family: var(--p-ca-display);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.ca-entregas h4 span {
+  display: block;
+}
+
+.ca-tramos {
+  display: flex;
+  gap: 4px;
+  height: 0.875rem;
+  margin: var(--espacio-4) 0 var(--espacio-3);
+}
+
+.ca-tramo {
+  border-radius: var(--radio-boton);
+}
+
+/* El ancho de cada tramo es su cantidad (2, 1, 3 y 1), como la leyenda. */
+.ca-tramo.ca-tramo--entregadas {
+  flex: 2;
+}
+
+.ca-tramo.ca-tramo--camino {
+  flex: 1;
+}
+
+.ca-tramo.ca-tramo--proceso {
+  flex: 3;
+}
+
+.ca-tramo.ca-tramo--sin-entregar {
+  flex: 1;
+}
+
+.ca-tramo.ca-tramo--entregadas,
+.ca-leyenda .ca-tramo--entregadas::before {
+  background-color: var(--p-ca-tinta);
+}
+
+.ca-tramo.ca-tramo--camino,
+.ca-leyenda .ca-tramo--camino::before {
+  background-color: var(--p-ca-azul-fuerte);
+}
+
+.ca-tramo.ca-tramo--proceso,
+.ca-leyenda .ca-tramo--proceso::before {
+  background-color: var(--p-ca-naranja);
+}
+
+.ca-tramo.ca-tramo--sin-entregar,
+.ca-leyenda .ca-tramo--sin-entregar::before {
+  background-color: var(--p-ca-papel);
+  box-shadow: inset 0 0 0 2px var(--p-ca-tinta-a25);
+}
+
+.ca-leyenda {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.ca-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.ca-leyenda li::before {
+  content: "";
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+/* Novedades: la más nueva, arriba y marcada. */
+.ca-notas li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-2) var(--espacio-3);
+  padding-block: var(--espacio-3);
+  border-top: 2px solid var(--p-ca-linea);
+}
+
+.ca-notas li::before {
+  content: "";
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.4rem;
+  background-color: var(--p-ca-claro);
+  border-radius: 50%;
+}
+
+.ca-notas li:first-child::before {
+  background-color: var(--p-ca-naranja);
+}
+
+.ca-notas p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ca-notas li:first-child p {
+  font-weight: 800;
+}
+
+.ca-notas time {
+  grid-column: 2;
+  justify-self: start;
+  padding: 0.15rem 0.6rem;
+  background-color: var(--p-ca-durazno);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@container (min-width: 28rem) {
+  .ca-notas li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .ca-notas time {
+    grid-column: auto;
+  }
+}
+
+/* El dock: una píldora oscura que flota abajo, centrada, con el activo en un círculo de sol. */
+.ca-dock {
+  position: fixed;
+  bottom: var(--espacio-4);
+  left: 50%;
+  z-index: 15;
+  max-width: calc(100% - 2rem);
+  padding: 0.375rem;
+  background-color: var(--p-ca-tinta);
+  border: 2px solid transparent;
+  border-radius: var(--radio-boton);
+  box-shadow: 0 14px 34px var(--p-ca-sombra-fuerte);
+  transform: translateX(-50%);
+}
+
+.ca-dock ul {
+  display: flex;
+  gap: var(--espacio-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ca-dock a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-1);
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
+  border-radius: var(--radio-boton);
+  color: var(--p-ca-crema);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ca-dock a:hover {
+  background-color: var(--p-ca-crema-a14);
+  color: var(--p-ca-crema);
+}
+
+.ca-dock :focus-visible {
+  outline-color: var(--p-ca-sol);
+  outline-offset: -3px;
+}
+
+.ca-dock-icono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  border-radius: 50%;
+}
+
+.ca-dock a[aria-current="page"] .ca-dock-icono {
+  background-color: var(--p-ca-sol);
+  color: var(--p-ca-tinta);
+}
+
+.ca-dock-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ca-dock-corto {
+  display: none;
+}
+
+.ca-avisos {
+  bottom: 6rem;
+}
+
+/* Desde el quiebre chico: los botones en fila y el dock con el nombre corto. */
+@media (min-width: 37.5em) {
+  .ca-acciones {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .ca-dock a {
+    padding-right: var(--espacio-4);
+  }
+
+  .ca-dock-corto {
+    display: inline;
+  }
+
+  .ca-ficha {
+    padding-inline: var(--espacio-5);
+  }
+}
+
+/* Desde el quiebre medio: el bolsillo al costado de la tarjeta de foco y el dock con el nombre
+   entero. */
+@media (min-width: 53.75em) {
+  .ca-bolsillo #contenido.ca-mesa {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+    align-items: start;
+    column-gap: var(--espacio-5);
+  }
+
+  .ca-bolsillo h1.ca-seccion {
+    grid-column: 1 / -1;
+  }
+
+  .ca-foco {
+    margin-inline: 0;
+    padding: var(--espacio-6) var(--espacio-6) var(--espacio-7);
+  }
+
+  .ca-bolsa {
+    margin-top: 0;
+    padding: var(--espacio-5) var(--espacio-3) var(--espacio-3);
+    box-shadow: inset 0 0.625rem 0 var(--p-ca-costura);
+  }
+
+  .ca-dock-corto {
+    display: none;
+  }
+
+  .ca-dock-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+}
+
+/* Desde el quiebre ancho: el camino se acuesta y la tarjeta de foco queda quieta. */
+@media (min-width: 68.75em) {
+  .ca-bolsillo #contenido.ca-mesa {
+    grid-template-columns: minmax(0, 1fr) 28rem;
+    column-gap: var(--espacio-6);
+  }
+
+  .ca-foco {
+    position: sticky;
+    top: var(--espacio-4);
+    min-height: 40rem;
+    align-content: space-between;
+  }
+
+  .ca-paradas {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    margin-top: var(--espacio-3);
+  }
+
+  .ca-parada {
+    grid-template-columns: none;
+    align-items: start;
+    justify-items: center;
+    row-gap: var(--espacio-3);
+    padding: 0 var(--espacio-1);
+    text-align: center;
+  }
+
+  .ca-parada:not(:last-child)::after {
+    top: calc(1.5rem - 3px);
+    bottom: auto;
+    left: 50%;
+    width: 100%;
+    height: 6px;
+  }
+
+  .ca-parada--actual .ca-parada-texto {
+    justify-self: center;
+    padding-inline: var(--espacio-3);
+  }
+}
+
+/* Movimiento, solo si no se pidió reducirlo: el camión late en su parada y el sello festeja. */
+@media (prefers-reduced-motion: no-preference) {
+  .ca-parada--actual .ca-parada-nodo {
+    animation: ca-latido 1.8s var(--movimiento-curva) infinite;
+  }
+
+  .ca-sello {
+    animation: ca-festejo 0.9s var(--movimiento-curva) 0.3s both;
+  }
+
+  .ca-chispas {
+    animation: ca-brillo 2.4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes ca-latido {
+  0% {
+    box-shadow: 0 0 0 0 var(--p-ca-papel-a70);
+  }
+
+  100% {
+    box-shadow: 0 0 0 14px var(--p-ca-papel-a00);
+  }
+}
+
+@keyframes ca-festejo {
+  0% {
+    transform: scale(0.6) rotate(-14deg);
+  }
+
+  60% {
+    transform: scale(1.08) rotate(4deg);
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes ca-brillo {
+  from {
+    transform: scale(0.92) rotate(-6deg);
+  }
+
+  to {
+    transform: scale(1.05) rotate(6deg);
+  }
+}
+
+/* Contraste forzado: los signos pintados pasan a bordes del sistema. */
+@media (forced-colors: active) {
+  .ca-parada-nodo,
+  .ca-tramo,
+  .ca-leyenda li::before,
+  .ca-notas li::before,
+  .ca-sello {
+    border: 2px solid CanvasText;
+  }
+
+  .ca-parada:not(:last-child)::after {
+    background-color: CanvasText;
+  }
+
+  .ca-cifra-barras,
+  .ca-chispas {
+    fill: CanvasText;
+  }
+
+  .ca-dock a[aria-current="page"] .ca-dock-icono {
+    border: 3px solid CanvasText;
+  }
+}

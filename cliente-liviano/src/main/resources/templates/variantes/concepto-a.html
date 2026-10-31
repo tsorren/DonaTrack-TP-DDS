@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<!--/* Variante de estructura concepto-a del inicio del donante de Encastre (corrida creativa,
+       iteración 1): Bolsillo. Abrís y hay una sola cosa que hacer: la tarjeta de foco, enorme y del
+       único color fuerte, dice lo que te toca ahora (tu donación va en camino, y por dónde va). Lo
+       demás espera guardado en el bolsillo, apilado como tarjetas de billetera: detrás de la de
+       foco en el celular, al costado en escritorio. Un dock oscuro de cápsulas, flotante abajo en
+       todos los anchos, lleva al resto; el activo va en círculo. Sin barra lateral.
+       Mismos datos y acciones que alternativas/encastre/paginas/estilos-armazon.html dentro de
+       layout-privado. Estilos: variantes/concepto-a.css. Sin JavaScript propio. */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{alternativas/encastre/layout :: cabeza(~{::title})}">
+  <title>Muestra del área privada - DonaTrack</title>
+</head>
+<body class="ca-bolsillo">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="ca-arriba">
+    <a th:replace="~{alternativas/encastre/layout :: marca}">DonaTrack</a>
+    <div class="ca-arriba-fin">
+      <a class="ca-redondo" href="/notificaciones" th:href="@{/notificaciones}"
+         aria-label="Notificaciones"><svg
+         th:replace="~{alternativas/encastre/fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
+      <details class="ca-cuenta">
+        <summary class="ca-redondo" th:aria-label="|Cuenta de ${cuenta.nombre}|"
+                 th:text="${cuenta.inicial}">A</summary>
+        <div class="ca-cuenta-menu">
+          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
+          <a href="/salir" th:href="@{/salir}">Salir</a>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <main id="contenido" tabindex="-1" class="ca-mesa">
+    <h1 class="ca-seccion">Inicio</h1>
+
+    <!--/* La tarjeta de foco: lo único que te toca ahora. Saludo, acción y el camino de la
+           donación, en un solo bloque del color fuerte. */-->
+    <div class="ca-foco">
+      <section class="ca-foco-saludo" aria-labelledby="hola-titulo">
+        <p class="ca-rotulo">Lo que te toca ahora</p>
+        <h2 id="hola-titulo">Hola, Ana</h2>
+        <p class="ca-foco-mensaje">Tu última donación ya salió del depósito y va camino a
+          <mark>Comedor Barrio Ejemplo</mark>.</p>
+        <div class="ca-acciones">
+          <a href="#recorrido-titulo" role="button" class="ca-boton">Ver seguimiento</a>
+          <a href="#tarjeta-titulo" role="button" class="ca-boton ca-boton--borde">Mis donaciones</a>
+        </div>
+      </section>
+
+      <section class="ca-camino" aria-labelledby="recorrido-titulo">
+        <div class="ca-camino-cabecera">
+          <div>
+            <h3 id="recorrido-titulo">Por dónde va tu donación</h3>
+            <p class="ca-bajada">Lentejas secas · 15 kg</p>
+          </div>
+          <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
+        </div>
+        <ol class="ca-paradas" aria-label="Recorrido de tu última donación">
+          <li th:each="paso, vuelta : ${pasos}" class="ca-parada"
+              th:classappend="|ca-parada--${paso.avance.tono}|"
+              th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+            <span class="ca-parada-nodo" aria-hidden="true"><th:block
+                  th:if="${paso.avance.name() == 'HECHO'}"><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 20)}"></svg></th:block><th:block
+                  th:if="${paso.avance.name() == 'ACTUAL'}"><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 26)}"></svg></th:block><th:block
+                  th:if="${paso.avance.name() == 'PENDIENTE'}" th:text="${vuelta.count}">5</th:block></span>
+            <span class="ca-parada-texto"><b th:text="${paso.nombre}">Paso</b><small
+                  th:text="${paso.detalle}">Detalle</small></span>
+          </li>
+        </ol>
+        <a href="#tarjeta-titulo" class="ca-enlace">Ver el detalle</a>
+      </section>
+    </div>
+
+    <!--/* El bolsillo: lo que espera, apilado como tarjetas de billetera. Cada una asoma detrás de
+           la siguiente. */-->
+    <section class="ca-bolsa" aria-labelledby="sigue-titulo">
+      <h2 id="sigue-titulo" class="ca-bolsa-titulo">Lo que sigue</h2>
+      <ol class="ca-cola">
+        <li class="ca-ficha ca-ficha--mision">
+          <section aria-labelledby="mision-titulo">
+            <div class="ca-ficha-cabecera">
+              <h3 id="mision-titulo">Lo que te falta para subir</h3>
+              <p class="ca-escalones"><span>Colaborador</span> → <span>Sostenedor</span></p>
+            </div>
+            <div class="ca-sello-fila">
+              <span class="ca-sello"><span>2/3</span><svg class="ca-chispas" viewBox="0 0 120 120"
+                    aria-hidden="true" focusable="false"><path d="M14 30l4 9 9 4-9 4-4 9-4-9-9-4 9-4z"/><path
+                    d="M104 12l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/><path d="M100 92l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><circle
+                    cx="20" cy="98" r="4"/><circle cx="64" cy="6" r="3"/></svg></span>
+              <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+            </div>
+            <progress class="ca-barra" value="66" max="100"
+                      aria-label="Progreso de la misión">66 %</progress>
+            <p class="ca-barra-pie"><span>66 %</span><span>Falta 1 paso</span></p>
+            <div class="ca-ficha-pie">
+              <section class="ca-categoria" aria-labelledby="categoria-titulo">
+                <span class="ca-rotulo" id="categoria-titulo">Categoría actual</span>
+                <span class="ca-categoria-nombre">Colaborador</span>
+                <span class="ca-categoria-proxima">Próxima: Sostenedor</span>
+              </section>
+              <a href="#insignia-titulo" role="button" class="ca-boton">Ver incentivos</a>
+            </div>
+          </section>
+        </li>
+
+        <li class="ca-ficha ca-ficha--numeros">
+          <section aria-labelledby="tarjeta-titulo">
+            <div class="ca-ficha-cabecera">
+              <h3 id="tarjeta-titulo">Lo que llevás donado</h3>
+            </div>
+            <div class="ca-bloques">
+              <a class="ca-cifra" href="#" th:href="@{${realizadas.ruta}}">
+                <span class="ca-cifra-etiqueta" th:text="${realizadas.etiqueta}">Donaciones realizadas</span>
+                <span class="ca-cifra-ir" aria-hidden="true"><svg
+                      th:replace="~{alternativas/encastre/fragmentos/icono :: icono('flecha', 18)}"></svg></span>
+                <span class="ca-cifra-valor" th:text="${realizadas.valor}">7</span>
+                <span class="ca-cifra-cambio" th:if="${realizadas.cambio}"><b
+                      th:text="${realizadas.cambio}">+3</b> <span
+                      th:text="${realizadas.cambioTexto}">respecto al mes pasado</span></span>
+                <svg class="ca-cifra-barras" aria-hidden="true" focusable="false" viewBox="0 0 142 84"
+                     preserveAspectRatio="none" th:if="${realizadas.barras}"
+                     th:attr="viewBox=|0 0 ${#lists.size(realizadas.barras) * 25 - 8} 84|">
+                  <rect th:each="alto, vuelta : ${realizadas.barras}"
+                        th:classappend="${vuelta.last} ? 'ca-barra-actual'" width="17" rx="4"
+                        x="0" y="0" height="84"
+                        th:attr="x=${vuelta.index * 25},y=${84 - alto},height=${alto}"></rect>
+                </svg>
+              </a>
+              <article class="ca-entregas" aria-labelledby="entregadas-titulo">
+                <div class="ca-entregas-cabecera">
+                  <span class="ca-moneda"><b>2</b></span>
+                  <h4 id="entregadas-titulo">Donaciones <span>entregadas</span></h4>
+                </div>
+                <span class="ca-tramos" aria-hidden="true"><span
+                      class="ca-tramo ca-tramo--entregadas"></span><span
+                      class="ca-tramo ca-tramo--camino"></span><span
+                      class="ca-tramo ca-tramo--proceso"></span><span
+                      class="ca-tramo ca-tramo--sin-entregar"></span></span>
+                <ul class="ca-leyenda">
+                  <li class="ca-tramo--entregadas">2 entregadas</li>
+                  <li class="ca-tramo--camino">1 en camino</li>
+                  <li class="ca-tramo--proceso">3 en proceso</li>
+                  <li class="ca-tramo--sin-entregar">1 sin entregar</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+        </li>
+
+        <li class="ca-ficha ca-ficha--notas">
+          <section aria-labelledby="notas-titulo">
+            <div class="ca-ficha-cabecera">
+              <h3 id="notas-titulo">Novedades</h3>
+              <p class="ca-bajada">Lo último que pasó con tus donaciones</p>
+            </div>
+            <ul class="ca-notas">
+              <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+                <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+              <li><p>Tu donación quedó lista para entregar.</p>
+                <time datetime="2026-10-14T09:10">ayer</time></li>
+              <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+                <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+            </ul>
+          </section>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <!--/* El dock: cápsulas sobre una píldora oscura que flota abajo, en todos los anchos. */-->
+  <nav class="ca-dock" aria-label="Secciones">
+    <ul>
+      <li th:each="opcion : ${navegacion}">
+        <a href="#" th:href="@{${opcion.ruta}}"
+           th:aria-current="${opcion.actual} ? 'page' : null"><span class="ca-dock-icono"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${opcion.icono}, 22)}"></svg></span><span
+              class="ca-dock-texto" th:text="${opcion.texto}">Sección</span><span
+              class="ca-dock-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
+      </li>
+    </ul>
+  </nav>
+
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos ca-avisos" aria-live="polite"></div>
+</body>
+</html>
