@@ -26,6 +26,50 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-30 · estructura (Cozy / Medieval) · Cada pantalla es una hoja del atlas
+
+- **Decisión:** [directiva de estructura y navegación](estructura-cozy-medieval.md), con 24
+  decisiones en 8 rondas. Entre ellas: una hoja con regiones y títulos al margen, en lugar de
+  tarjetas iguales; barra de lomo de cuero con la pestaña unida a la hoja; alfiler sobre el camino
+  en el celular; carta de la posta en lugar de la campana; estados como signos de mapa; tablas como
+  libro de registro; cifras como leyenda del mapa; la tinta que llega y sella al confirmar una
+  recepción; y una audacia por pantalla. Reglas fijas: un signo, un significado; la tinta es una
+  donación; el latón sos vos y la navegación; el sello, solo lo confirmado; el lacre, solo "con
+  problema".
+- **Alternativas:** las de cada ronda, listadas en la directiva. El usuario se apartó de la
+  recomendada en 7 temas: el juego de páginas, dónde estoy (desvío en la barra), el movimiento (la
+  hoja se asienta), el admin (lomo angosto y plegable), la portada (encrucijada), las cifras
+  (leyenda del mapa) y el vacío (tierra sin explorar).
+- **Por qué:** pedido del usuario: repensar la estructura, la información y la navegación de Cozy
+  sin contenedores genéricos, con ambición y momentos memorables. Las preguntas salieron de tres
+  expertos (dirección de arte, arquitectura de la información y plantillas). Cuatro críticos (piso,
+  arte, lenguaje y alcance) las revisaron antes de mostrarlas y sacaron las efectistas, las que
+  inventaban datos y las que rompían el piso.
+- **Costo:** varias decisiones dependen de pantallas o datos que todavía no existen (tabla "Lo que
+  todavía no se puede hacer" de la directiva). La implementación y las tres primeras comparaciones
+  quedan para la sesión siguiente.
+- **Quién decidió:** usuario.
+- **Evidencia:** las vistas previas de cada opción están en la directiva. Las capturas llegan con
+  las comparaciones.
+
+### 2026-10-30 · proceso (Cozy / Medieval) · Cozy tiene su propio juego de páginas
+
+- **Decisión:** Cozy deja de compartir las plantillas con Glassmorphism y tiene una copia completa
+  (layouts, fragmentos y páginas) en `templates/alternativas/cozy-medieval/`. Las de `templates/`
+  siguen siendo las de Glassmorphism, sin cambios. Los textos se mantienen iguales en las dos: un
+  test compara los dos juegos. Cada plantilla tiene su gemela en la otra alternativa.
+- **Alternativas:** piezas propias con respaldo (la recomendada): Cozy guarda solo lo que cambia y
+  el resto sale de las compartidas. Desvíos dentro de las compartidas. Solo estilos, como hoy.
+- **Por qué:** el usuario prefirió darle a Cozy libertad total de estructura sin depender de las
+  piezas de Glassmorphism.
+- **Costo:** cada pantalla y cada componente se escriben dos veces (HTML y estilos) y los textos se
+  duplican. Cambia una regla del [brief](identidad/brief-cozy-medieval.md) ("lo propio de Cozy va
+  solo en sus hojas de estilo") y el
+  [ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md),
+  que se actualiza con la implementación.
+- **Quién decidió:** usuario.
+- **Evidencia:** —
+
 ### 2026-10-30 · paleta (Cozy / Medieval) · Nogal y bosque
 
 - **Decisión:** pergamino y tinta sepia para leer; barra lateral y cuero de nogal oscuro; acciones

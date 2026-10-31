@@ -18,8 +18,10 @@ mensaje transmitir, cuál es su identidad y a qué usuarios les habla:
 | Glassmorphism | Profesional y seria: vidrio, grafito y menta, números de impacto |
 | Cozy / Medieval | Cálida y de aventura, como un juego de rol para adultos: mapa, pergamino, tinta y madera |
 
-Las dos comparten pantallas, componentes y textos. Cambian solo los colores, las letras y los
-estilos: cada alternativa tiene su hoja completa (ver la [bitácora](../bitacora.md)).
+Las dos comparten las pantallas y los textos. Cada alternativa tiene su hoja de estilos completa
+(ver la [bitácora](../bitacora.md)). Desde la
+[directiva de estructura](../estructura-cozy-medieval.md), Cozy también arma sus pantallas a su
+modo, con su propio juego de páginas y los mismos textos.
 
 ## Personalidad
 
@@ -116,8 +118,9 @@ En una frase (propuesto): **cada donación deja un camino en el mapa.**
   controles de 48 px, nada desbordado entre 360 y 1920 px, lo esencial sin JavaScript y respeto
   por quien prefiere menos movimiento.
 - Letras con licencia OFL, servidas desde el propio sitio.
-- Las pantallas y los textos se comparten con Glassmorphism: lo propio de Cozy va solo en sus
-  hojas de estilo.
+- Los textos se comparten con Glassmorphism. La estructura de cada pantalla es propia de Cozy
+  desde la [directiva de estructura](../estructura-cozy-medieval.md) (2026-10-30); antes, lo propio
+  de Cozy iba solo en sus hojas de estilo.
 
 ## Primera tanda (decidida)
 

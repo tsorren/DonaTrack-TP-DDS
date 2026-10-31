@@ -45,7 +45,9 @@ componentes y textos, para comparar qué mensaje transmite cada una
 | Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `static/css/tokens.css` y `app.css` | Por defecto |
 | Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
 
-Cada pantalla o componente nuevo se estiliza en las hojas de las dos alternativas.
+Cada pantalla o componente nuevo se estiliza en las hojas de las dos alternativas. Cozy tiene
+además su propia [estructura y navegación](estructura-cozy-medieval.md) y, por decisión del
+usuario, va a tener su propio juego de páginas, con los mismos textos (implementación pendiente).
 
 **Comparaciones A/B.** Cuando una decisión de gusto o de forma tiene más de una buena respuesta
 (una paleta, una tipografía, el orden de una pantalla), el agente arma dos variantes que difieren
@@ -172,6 +174,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [bocetos-e1.md](bocetos-e1.md) | Inventario de los bocetos de E1 |
 | [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
+| [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |
