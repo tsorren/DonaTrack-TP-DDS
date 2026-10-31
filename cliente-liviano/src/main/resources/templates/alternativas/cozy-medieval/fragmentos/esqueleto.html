@@ -1,0 +1,7 @@
+<!--/* Esqueleto. Patrón: Material Progress indicators. Lugar de una lista o tarjeta que tarda más
+       de 300 ms. aria-busy avisa que la región se está cargando. En Cozy, renglones de lápiz que
+       se dibujan; quietos con "reducir movimiento" (app.css). */-->
+<div th:fragment="esqueleto(filas)" class="esqueleto" aria-busy="true">
+  <span class="solo-lectores">Cargando…</span>
+  <div class="esqueleto-fila" th:each="fila : ${#numbers.sequence(1, filas)}"></div>
+</div>

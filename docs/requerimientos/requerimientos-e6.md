@@ -251,8 +251,8 @@ Reglas para lo público (D26):
 | RNF-UI-04 | Microcopy y ayudas: etiquetas, tooltips, placeholders, onboarding hints | Checklist por flujo crítico (registro, donación, confirmar recepción, importar CSV) |
 | RNF-UI-05 | Feedback no intrusivo (toasts, modals, banners) en toda acción | Cada acción tiene mensaje de éxito y de error |
 | RNF-UI-06 | Loaders, skeletons o spinners si la latencia pasa de 300 ms | `hx-indicator` en cada request HTMX; prueba con la red throttled |
-| RNF-UI-07 | Responsive (media queries, flexbox, grillas): móvil, tablet, desktop | Capturas en 3 anchos (360, 768, 1280 px) |
-| RNF-UI-08 | Sin distorsión ni superposición en ningún tamaño | Mismo set de capturas |
+| RNF-UI-07 | Responsive (media queries, flexbox, grillas): móvil, tablet, desktop | Capturas en los anchos de referencia 360, 1280 y 1920 px; la tablet queda cubierta por un barrido automático de anchos intermedios ([decisión del 2026-10-30](../interfaz/bitacora.md)) |
+| RNF-UI-08 | Sin distorsión ni superposición en ningún tamaño | Mismas capturas + comprobación automática de desbordes entre 360 y 1920 px |
 | RNF-UI-09 | WCAG nivel AA: ARIA, foco visible, HTML semántico | axe o Lighthouse sobre `/estilos` y las pantallas principales, sin violaciones AA |
 | RNF-UI-10 | Áreas de toque de al menos 48x48 px | Auditoría de Lighthouse y token de tamaño mínimo |
 | RNF-UI-11 | Tokens de diseño unificados (colores, tipografías, espaciados, bordes) | Un solo `tokens.css`; las pantallas usan solo tokens semánticos (D20) |
@@ -650,9 +650,10 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | ADR-E6-03 Sesión del cliente liviano y ciclo de vida de los tokens | D5, D6, D7 | Sí | Estado y seguridad | Listo |
 | ADR-E6-04 Identidad y autorización: `sub`, roles, pertenencia y alta de cuentas | D9, D10, D11, D13, D14, D30 | Sí | Contratos entre IdP y negocio, seguridad | Esperar D30 (se puede redactar marcándola) |
 | ADR-E6-05 Autenticación entre servicios y retiro de `X-Actor` / `X-API-Key` | D15, D25 | Sí | *Breaking change* de contrato | Listo |
-| ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Listo |
+| ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Esperar D22 |
 | ADR-E6-08 Fotos de recepción en almacenamiento de objetos | D27 | Sí | Persistencia y privacidad | Listo |
+| Dos alternativas de identidad visual con hojas propias | Refina D20 | Sí | Cambia D20 y la verificación de RNF-UI-11; costo de mantener dos hojas | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md) |
 
 Sin ADR (AGENTS.md §9.2):
 - D28: endpoints aditivos sobre un patrón decidido.

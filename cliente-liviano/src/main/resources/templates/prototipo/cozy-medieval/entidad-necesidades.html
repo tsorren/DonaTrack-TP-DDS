@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!--/* Prototipo (iteración 3), entidad: las necesidades publicadas, en limpio. Un libro de registro
+       (la tabla del catálogo): qué hace falta, cuánto, hasta cuándo (con los días que faltan desde
+       hoy, 15 de octubre) y cómo va, con lo recibido en texto y una regla de tinta que se llena.
+       Sobre el título, el nombre del menú como rótulo. Arriba, "Publicar otra necesidad" abre el
+       formulario en la misma página (details, sin JavaScript), con POST y lo obligatorio con
+       required (la fecha, desde hoy); publicar lleva a entidad-necesidades-publicada, esta misma
+       hoja (fragmento hoja) con el aviso en texto y con foco. Los campos van escritos a mano con el
+       marcado del fragmento campo, que no admite required. Sin pantalla de detalle todavía.
+       Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-necesidades :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(publicada)">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/entidad.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/entidad.css}">
+  <div class="entidad-pedidos-hoja">
+    <header class="entidad-pedidos-titulo">
+      <h1>Lo que hace falta</h1>
+      <p class="entidad-rotulo" th:text="${seccion}">Necesidades</p>
+      <p class="mesa-bajada">Tus necesidades publicadas. Las ven los donantes y el mapa de
+        entidades.</p>
+    </header>
+
+    <p th:if="${publicada}" class="entidad-publicada" role="status" tabindex="-1" autofocus>Publicamos
+      tu necesidad. Ya la ven los donantes.</p>
+
+    <details id="publicar" class="entidad-publicar">
+      <summary>Publicar otra necesidad</summary>
+      <form action="/prototipo/entidad-necesidades-publicada"
+            th:action="@{/prototipo/entidad-necesidades-publicada}" method="post"
+            class="entidad-publicar-form">
+        <div class="campo">
+          <label for="necesidad">Qué hace falta</label>
+          <input id="necesidad" name="necesidad" type="text" required
+                 aria-describedby="necesidad-ayuda">
+          <small id="necesidad-ayuda">Por ejemplo: lentejas secas o ropa de abrigo para chicos.</small>
+        </div>
+        <div class="campo">
+          <label for="cantidad">Cuánto</label>
+          <input id="cantidad" name="cantidad" type="text" required aria-describedby="cantidad-ayuda">
+          <small id="cantidad-ayuda">Con la unidad: 40 kg, 6 cajas, 24 latas.</small>
+        </div>
+        <div class="campo">
+          <label for="hasta">Hasta cuándo</label>
+          <input id="hasta" name="hasta" type="date" min="2026-10-15" required
+                 aria-describedby="hasta-ayuda">
+          <small id="hasta-ayuda">Desde hoy, 15 de octubre, en adelante.</small>
+        </div>
+        <button type="submit">Publicar necesidad</button>
+      </form>
+    </details>
+
+    <table class="tabla entidad-pedidos-tabla">
+      <caption>Necesidades publicadas</caption>
+      <thead>
+        <tr>
+          <th scope="col">Qué hace falta</th>
+          <th scope="col">Cuánto</th>
+          <th scope="col">Hasta cuándo</th>
+          <th scope="col">Cómo va</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row" data-etiqueta="Qué hace falta">Lentejas secas</th>
+          <td data-etiqueta="Cuánto">40 kg</td>
+          <td data-etiqueta="Hasta cuándo">31 de octubre<small>faltan 16 días</small></td>
+          <td data-etiqueta="Cómo va"><span>10 de 40 kg recibidos</span><progress value="10" max="40"
+              aria-hidden="true"></progress></td>
+        </tr>
+        <tr>
+          <th scope="row" data-etiqueta="Qué hace falta">Ropa de abrigo</th>
+          <td data-etiqueta="Cuánto">6 cajas</td>
+          <td data-etiqueta="Hasta cuándo">15 de noviembre<small>falta un mes</small></td>
+          <td data-etiqueta="Cómo va"><span>1 de 6 cajas recibidas</span><progress value="1" max="6"
+              aria-hidden="true"></progress></td>
+        </tr>
+        <tr>
+          <th scope="row" data-etiqueta="Qué hace falta">Leche en polvo</th>
+          <td data-etiqueta="Cuánto">24 latas</td>
+          <td data-etiqueta="Hasta cuándo">25 de octubre<small>faltan 10 días</small></td>
+          <td data-etiqueta="Cómo va"><span>12 de 24 latas recibidas</span><progress value="12"
+              max="24" aria-hidden="true"></progress></td>
+        </tr>
+        <tr>
+          <th scope="row" data-etiqueta="Qué hace falta">Arroz</th>
+          <td data-etiqueta="Cuánto">40 kg</td>
+          <td data-etiqueta="Hasta cuándo">31 de octubre<small>faltan 16 días</small></td>
+          <td data-etiqueta="Cómo va"><span>15 de 40 kg recibidos</span><progress value="15" max="40"
+              aria-hidden="true"></progress></td>
+        </tr>
+        <tr>
+          <th scope="row" data-etiqueta="Qué hace falta">Aceite de girasol</th>
+          <td data-etiqueta="Cuánto">20 litros</td>
+          <td data-etiqueta="Hasta cuándo">20 de octubre<small>faltan 5 días</small></td>
+          <td data-etiqueta="Cómo va"><span>Todavía no llegó nada</span><progress value="0" max="20"
+              aria-hidden="true"></progress></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</th:block>
+</body>
+</html>

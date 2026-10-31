@@ -1,0 +1,6 @@
+<!--/* Estado de una entrega: una anotación del mapa, con el signo del viaje y su texto. Cada estado
+       cambia la forma del signo, no solo el color: ○ pendiente, ┄▸ en camino, ◉ entregada y ┄╳┄
+       con problema (el único en rojo lacre). El signo lo dibuja app.css; el texto dice el estado.
+       estado: EstadoEntrega. */-->
+<span th:fragment="insignia(estado)" class="insignia" th:classappend="|insignia--${estado.tono}|"><span
+      th:text="${estado.texto}">Estado</span></span>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): la propuesta de asignación. El libro de rutas: cada propuesta
+       es una hoja con qué donación va a qué necesidad, por qué (cercanía, vencimiento y categoría)
+       y las dos acciones; al lado, el trayecto propuesto en un mapa chico (el de la mesa:
+       cuadrícula, terreno a pluma y cenefa, de app.css) con su texto. El trayecto va en lápiz y a
+       trazos: todavía no es un viaje. En el mismo mapa, en lápiz tenue, los destinos descartados
+       (las otras entidades que piden lo mismo), con su lista al lado: el mapa muestra por qué ganó
+       el elegido. Todos los lugares están en el mismo sitio en cada mapa (lugares, abajo).
+       "Aceptar propuesta" y "Elegir este destino" son formularios POST a la pantalla del resultado
+       (admin-asignaciones-aceptada-<id> y admin-asignaciones-cambiada-<id>-<lugar>), que repite
+       este libro: el aviso enfocado arriba y el camino entintado (una sola vez, salvo con "reducir
+       movimiento"); el destino que pierde pasa a los descartados.
+       Fragmento de esta plantilla:
+       - libro(hecho, cual, nuevo): el libro entero; hecho es aceptada o cambiada, cual el id de la
+         propuesta y nuevo el lugar elegido al cambiar ('' sin decisión).
+       Sin propuestas: admin-asignaciones-vacio. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-asignaciones :: libro('', '', '')}"></th:block>
+</th:block>
+
+<th:block th:fragment="libro(hecho, cual, nuevo)">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
+  <!--/* Los lugares, con el camino desde el depósito (100 230) y dónde va su nombre. */-->
+  <section class="admin-libro" aria-labelledby="asignar-titulo"
+           th:with="lugares=${ {
+                      comedor: {nombre: 'Comedor Barrio Ejemplo', corto: 'Comedor', km: '4,2 km',
+                                tiempo: 'unos 15 minutos', punto: 'translate(330 120)', tx: -14, ty: -18,
+                                ruta: 'M100 230C150 228 176 170 228 152S300 126 330 120'},
+                      merendero: {nombre: 'Merendero Ejemplo Sur', corto: 'Merendero', km: '6,8 km',
+                                  tiempo: 'unos 20 minutos', punto: 'translate(420 300)', tx: -14, ty: 44,
+                                  ruta: 'M100 230C160 240 206 292 276 296S374 300 420 300'},
+                      escuela: {nombre: 'Escuela Ejemplo 12', corto: 'Escuela', km: '9,1 km',
+                                tiempo: 'unos 25 minutos', punto: 'translate(545 140)', tx: -14, ty: 44,
+                                ruta: 'M100 230C170 236 200 196 262 190S352 128 420 136S500 150 545 140'}
+                    } },
+                    propuestas=${ {
+                      {id: 'leche', que: 'la leche en polvo', donacion: 'Leche en polvo, 10 latas',
+                       donante: 'Ana', origen: 'Donó Ana el 5 de octubre. Está en el Depósito Central.',
+                       cercania: 'A 6,8 km del depósito, unos 20 minutos: llega antes de que venza.',
+                       vencimiento: 'Vence el 17 de octubre, en 2 días: el merendero la reparte mañana en la merienda.',
+                       categoria: 'Alimentos, lo que pide su necesidad «Leche para la merienda», a la que le faltan 12 latas.',
+                       opciones: {
+                         {lugar: 'merendero', detalle: 'A 6,8 km. La reparte mañana en la merienda.'},
+                         {lugar: 'escuela', detalle: 'A 9,1 km. Pide leche para el desayuno desde el lunes 19: llegaría vencida.'}
+                       }},
+                      {id: 'arroz', que: 'el arroz', donacion: 'Arroz, 25 kg', donante: 'Carla',
+                       origen: 'Donó Carla el 1 de octubre. Está en el Depósito Central.',
+                       cercania: 'A 4,2 km del depósito: la más cercana de las 3 entidades que piden alimentos.',
+                       vencimiento: 'Vence el 21 de octubre, en 6 días: el comedor lo cocina antes.',
+                       categoria: 'Alimentos, lo que pide su necesidad «Alimentos secos para el comedor», a la que le faltan 40 kg.',
+                       opciones: {
+                         {lugar: 'comedor', detalle: 'A 4,2 km. Le faltan 40 kg de alimentos secos.'},
+                         {lugar: 'merendero', detalle: 'A 6,8 km. Le faltan 10 kg de alimentos.'},
+                         {lugar: 'escuela', detalle: 'A 9,1 km. Pide alimentos para el comedor escolar.'}
+                       }}
+                    } },
+                    elegida=${propuestas.^[#this['id'] == #vars.cual]}">
+    <header class="admin-etiqueta">
+      <h1 id="asignar-titulo">Asignar donaciones</h1>
+      <p class="admin-rotulo">Caminos por trazar</p>
+    </header>
+    <div class="admin-hoja">
+      <div th:if="${elegida != null}" class="admin-avisos" role="status" tabindex="-1" autofocus
+           th:with="destino=${lugares.get(hecho == 'cambiada' ? nuevo : elegida.opciones[0].lugar)}">
+        <div th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso(|${hecho == 'cambiada' ? 'Cambiaste el destino' : 'Aceptaste la propuesta'}: ${elegida.que} va a ${destino.nombre}. Avisamos a ${elegida.donante} y a la entidad.|, 'exito')}"></div>
+      </div>
+      <p class="admin-bajada">Para cada donación, el sistema propone la necesidad que mejor le
+        sirve. Revisá el porqué y decidí: el camino se traza cuando aceptás.</p>
+
+      <article th:each="p, vuelta : ${propuestas}" class="admin-propuesta" th:id="|propuesta-${p.id}|"
+               th:with="decidida=${cual == p.id},
+                        clave=${decidida and hecho == 'cambiada' ? nuevo : p.opciones[0].lugar},
+                        destino=${lugares.get(clave)},
+                        propuesto=${lugares.get(p.opciones[0].lugar)},
+                        descartados=${p.opciones.?[#this['lugar'] != #vars.clave]}"
+               th:classappend="${decidida} ? 'admin-propuesta--aceptada'"
+               th:aria-labelledby="|propuesta-${p.id}-titulo|">
+        <header class="admin-propuesta-cabeza">
+          <p class="admin-rotulo" th:text="|Propuesta ${vuelta.count} de ${vuelta.size}|">Propuesta
+            1 de 2</p>
+          <h2 th:id="|propuesta-${p.id}-titulo|"><span th:text="${p.donacion}">Donación</span>
+            <span class="admin-hacia">para</span> <span th:text="${destino.nombre}">Entidad</span></h2>
+          <p th:text="${p.origen}">De dónde sale.</p>
+        </header>
+
+        <section class="admin-porque" th:aria-labelledby="|porque-${p.id}|">
+          <h3 th:id="|porque-${p.id}|"
+              th:text="${destino == propuesto} ? 'Por qué este destino' : |Por qué se proponía ${propuesto.nombre}|">Por
+            qué este destino</h3>
+          <dl>
+            <div><dt>Cercanía</dt><dd th:text="${p.cercania}">Cercanía</dd></div>
+            <div><dt>Vencimiento</dt><dd th:text="${p.vencimiento}">Vencimiento</dd></div>
+            <div><dt>Categoría</dt><dd th:text="${p.categoria}">Categoría</dd></div>
+          </dl>
+        </section>
+
+        <div class="admin-propuesta-acciones">
+          <p th:if="${decidida}" class="admin-decidida"
+             th:text="|Asignada. Avisamos a ${p.donante} y a ${destino.nombre}.|">Asignada.</p>
+          <th:block th:unless="${decidida}">
+            <form method="post" action="/prototipo/admin-asignaciones-aceptada-leche"
+                  th:action="@{|/prototipo/admin-asignaciones-aceptada-${p.id}|}">
+              <button type="submit">Aceptar propuesta</button>
+            </form>
+            <details class="admin-cambiar">
+              <summary>Cambiar destino</summary>
+              <p>Otras entidades que piden lo mismo:</p>
+              <ul role="list">
+                <li th:each="o : ${descartados}" th:with="d=${lugares.get(o.lugar)}">
+                  <p><b th:text="${d.nombre}">Entidad</b> <span th:text="${o.detalle}">Detalle</span></p>
+                  <form method="post" action="/prototipo/admin-asignaciones-cambiada-leche-escuela"
+                        th:action="@{|/prototipo/admin-asignaciones-cambiada-${p.id}-${o.lugar}|}">
+                    <button type="submit" class="outline">Elegir este destino<span
+                            class="solo-lectores" th:text="|: ${d.nombre}|">: entidad</span></button>
+                  </form>
+                </li>
+              </ul>
+            </details>
+          </th:block>
+        </div>
+
+        <!--/* El trayecto: el dibujo no se lee; la lista de al lado dice lo mismo. Primero los
+               descartados, debajo de todo; el destino va último (app.css sella el último ●). */-->
+        <figure class="admin-trayecto">
+          <div class="viaje-mapa admin-mapa">
+            <svg viewBox="0 0 640 360" aria-hidden="true" focusable="false">
+              <g th:each="o : ${descartados}" th:with="d=${lugares.get(o.lugar)}"
+                 class="admin-lugar-lapiz" th:attr="transform=${d.punto}">
+                <path d="M24 -30h20v14h-20zM24 -23h20M30 -30l-6 7M40 -6h16v12h-16zM40 0h16M45 -6l-5 6M20 4h14v11h-14zM20 9.5h14"/>
+                <circle r="8"/>
+                <text class="admin-mapa-nombre admin-mapa-nombre--fin" th:attr="x=${d.tx},y=${d.ty}"
+                      th:text="${d.corto}">Descartado</text>
+              </g>
+              <path class="viaje-tramo" th:classappend="${decidida} ? 'viaje-tramo--tinta' : 'viaje-tramo--lapiz'"
+                    th:attr="d=${destino.ruta}" d="M100 230C160 240 206 292 276 296S374 300 420 300"/>
+              <g class="viaje-parada viaje-parada--hecho" transform="translate(100 230)">
+                <path class="viaje-lugar" d="M-58 -14h30v22h-30zM-58 -14l15 -11 15 11M-49 8v-10h12v10M-43 -25v-6"/>
+                <circle class="viaje-signo" r="9"/>
+                <text class="admin-mapa-nombre" x="-40" y="44">Depósito</text>
+              </g>
+              <g class="viaje-parada viaje-parada--pendiente" th:attr="transform=${destino.punto}"
+                 transform="translate(420 300)">
+                <path class="viaje-lugar" d="M24 -30h20v14h-20zM24 -23h20M30 -30l-6 7M40 -6h16v12h-16zM40 0h16M45 -6l-5 6M20 4h14v11h-14zM20 9.5h14"/>
+                <circle class="viaje-signo" r="9"/>
+                <text class="admin-mapa-nombre admin-mapa-nombre--fin" th:attr="x=${destino.tx},y=${destino.ty}"
+                      th:text="${destino.corto}">Destino</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>
+            <h3 th:id="|trayecto-${p.id}|">El trayecto</h3>
+            <ol class="admin-trayecto-pasos" th:aria-labelledby="|trayecto-${p.id}|">
+              <li>Sale del Depósito Central.</li>
+              <li th:text="|Recorre ${destino.km}, ${destino.tiempo} en camión.|">Recorre.</li>
+              <li th:text="|Llega a ${destino.nombre}.|">Llega.</li>
+            </ol>
+            <p class="admin-trayecto-nota"
+               th:text="${decidida} ? 'Ya está en tinta: es un viaje.' : 'Va en lápiz hasta que aceptes la propuesta.'">Va
+              en lápiz.</p>
+            <h3 th:id="|descartados-${p.id}|">Descartados, en lápiz tenue</h3>
+            <ul role="list" class="admin-lista-lapiz" th:aria-labelledby="|descartados-${p.id}|">
+              <li th:each="o : ${descartados}" th:with="d=${lugares.get(o.lugar)}"
+                  th:text="|${d.nombre}, a ${d.km}.|">Entidad, a tantos km.</li>
+            </ul>
+          </figcaption>
+        </figure>
+      </article>
+    </div>
+  </section>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): lo que ve quien le pide la documentación a Biblioteca Popular Ejemplo (POST de "Pedir documentación"). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Pediste la documentación - Entidades por aprobar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-entidades :: libro('pedida', 'biblioteca')}"></th:block>
+</th:block>
+</body>
+</html>

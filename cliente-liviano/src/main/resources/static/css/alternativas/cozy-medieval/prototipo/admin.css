@@ -1,0 +1,1157 @@
+/*
+ * Prototipo de Cozy / Medieval, iteración 3: las pantallas de quien administra (admin-*). La mesa
+ * de trabajo, sobria: muchas horas en escritorio. La identidad va en el marco y en los títulos;
+ * los datos van limpios, en pergamino liso, como un libro de registro.
+ *
+ * El marco es uno solo, el libro: tapas de cuero con su filete gofrado y, pegada en la tapa, la
+ * etiqueta de papel con el título (el nombre llano del menú, que es lo que se busca, y debajo la
+ * bajada en la voz de Cozy). Adentro, la hoja. En el inicio, la bandeja de cuero lleva legajos en
+ * lugar de hoja, cada uno con su pestaña: la etiqueta de latón de los cajones, porque es lo que te
+ * espera. Los mapas chicos son el de la mesa (app.css): lo elegido en tinta y lo que no, en lápiz.
+ *
+ * Solo tokens de uso de tokens.css y sus quiebres, mobile first. Medidas propias: abajo.
+ */
+:root {
+  --medida-admin-ancho: 80rem;
+  --medida-admin-angosto: 42rem;
+  --medida-admin-dato: 7rem;
+  --medida-admin-decision: 16rem;
+}
+
+/* Los títulos chicos van en la letra de los rótulos: la "E" de Almendra se confunde en tamaño
+   chico (estructura-cozy-medieval.md), y acá casi todo nombre empieza con "Ejemplo". */
+:is(.admin-cuentas, .admin-porque, .admin-trayecto, .admin-errores) :is(h2, h3) {
+  font-family: var(--fuente-rotulos);
+  font-weight: 800;
+}
+
+/* El libro: tapas de cuero, con el filete gofrado por dentro del canto. */
+.admin-libro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-3);
+  max-width: var(--medida-admin-ancho);
+  margin: 0 auto var(--espacio-6);
+  padding: var(--espacio-3) var(--espacio-2) var(--espacio-2);
+  background-color: var(--color-mesa-cuero);
+  border-radius: var(--radio-chico);
+  box-shadow:
+    inset 0 0 0 var(--espacio-1) var(--color-mesa-cuero),
+    inset 0 0 0 calc(var(--espacio-1) + 1px) var(--color-destacado-pista),
+    var(--sombra-objeto);
+}
+
+.admin-libro--angosto {
+  max-width: var(--medida-admin-angosto);
+}
+
+/* La etiqueta pegada en la tapa: papel con su marco impreso de doble filete. */
+.admin-etiqueta {
+  justify-self: start;
+  max-width: 100%;
+  margin: 0;
+  padding: var(--espacio-3) var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  outline: var(--borde-regla-doble) double var(--color-filete);
+  outline-offset: calc(-1 * var(--espacio-2));
+  box-shadow: var(--sombra-objeto-bajo);
+  color: var(--color-titulo);
+}
+
+.admin-etiqueta h1,
+h2.admin-etiqueta {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+h2.admin-etiqueta {
+  font-size: var(--tamano-titulo-2);
+}
+
+.admin-rotulo {
+  margin: 0 0 var(--espacio-1);
+  color: var(--color-texto-suave);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* La bajada de la etiqueta: la voz de Cozy, debajo del nombre. */
+.admin-etiqueta h1 + .admin-rotulo {
+  margin: var(--espacio-2) 0 0;
+  font-size: var(--tamano-texto);
+}
+
+/* La acción principal del libro, en la tapa. Sobre el cuero, el foco es el anillo de latón. */
+.admin-libro > .admin-accion {
+  justify-self: stretch;
+}
+
+.admin-libro > :is(.admin-accion, .admin-volver):focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+/* La vuelta a la sección, en una pantalla de nivel 3: grabada en la tapa, en pergamino claro.
+   Va arriba de la etiqueta, aunque en el HTML el título viene primero. */
+.admin-libro > .admin-volver {
+  order: -1;
+  justify-self: start;
+  padding-inline: var(--espacio-2);
+  color: var(--color-destacado-texto);
+  text-decoration-color: var(--color-destacado-texto-suave);
+}
+
+/* La hoja: pergamino liso, sin textura, donde van los datos. */
+.admin-hoja {
+  min-width: 0;
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  color: var(--color-texto);
+}
+
+.admin-bajada {
+  max-width: var(--medida-lectura);
+  margin: 0 0 var(--espacio-4);
+  font-style: italic;
+}
+
+/* El aviso de lo que acabás de hacer y el resumen de errores llegan enfocados (el lector los lee
+   al cargar); el anillo de foco rodea la esquela. */
+.admin-avisos,
+.admin-errores {
+  margin-block-end: var(--espacio-5);
+}
+
+.admin-avisos {
+  max-width: max-content;
+}
+
+/* El resumen de errores: la hoja marcada con la regla del error y la lista de lo que falta, con un
+   enlace a cada campo. */
+.admin-errores {
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-3);
+  background-color: var(--color-error-fondo);
+  border-inline-start: var(--borde-acento) solid var(--color-error-texto);
+  border-radius: 2px;
+}
+
+.admin-errores h2 {
+  margin: 0 0 var(--espacio-2);
+  color: var(--color-error-texto);
+  font-size: var(--tamano-titulo-4);
+}
+
+.admin-errores ul {
+  margin: 0;
+  padding: 0;
+}
+
+.admin-errores li {
+  list-style: none;
+}
+
+.admin-errores a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-error-texto);
+  font-weight: 700;
+}
+
+/* Lo ya decidido queda escrito en el libro, con el signo de lo cumplido (●). */
+.admin-decidida {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  margin: 0;
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.admin-decidida::before {
+  content: "";
+  flex: none;
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  background-color: var(--color-signo-tinta);
+  border-radius: var(--radio-sello);
+}
+
+/* Vence pronto: el signo de alerta y el texto, en el ámbar de las advertencias. */
+.admin-vence {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  color: var(--color-advertencia-texto);
+  font-size: var(--tamano-chico);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.admin-vence .icono {
+  flex: none;
+  stroke-width: 2;
+}
+
+/* Campos que el catálogo no tiene (listas y textos largos): el mismo renglón del registro. */
+.campo > :is(select, textarea) {
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  border-block-end: var(--borde-marco) solid var(--color-borde-control);
+  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  box-shadow: var(--sombra-hundido);
+}
+
+.campo > :is(select, textarea):is(:hover, :focus) {
+  border-block-end-color: var(--color-marca);
+}
+
+/*
+ * La mesa de trabajo (admin-inicio): la nota del día, la bandeja de legajos y el libro de cuentas.
+ * En el celular, en ese orden; con lugar, la bandeja a la derecha y la nota y el libro a su lado.
+ */
+.admin-mesa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-5);
+  max-width: var(--medida-admin-ancho);
+  margin-inline: auto;
+}
+
+.admin-mesa > * {
+  margin: 0;
+}
+
+.admin-nota {
+  box-shadow: var(--sombra-objeto);
+}
+
+/* El título baja un poco: arriba, al centro, va la chinche de la nota. */
+.admin-nota h1 {
+  margin: var(--espacio-3) 0 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.admin-nota .admin-rotulo {
+  margin: var(--espacio-2) 0 var(--espacio-3);
+}
+
+.admin-nota p:last-child {
+  margin-block-end: 0;
+}
+
+/* Los legajos: papel grueso, uno debajo del otro, apenas corridos. La pestaña es la etiqueta de
+   latón de los cajones, montada en el canto: dice de qué cajón sale y es lo que te espera. Las
+   pestañas van escalonadas, como en un archivo. */
+.admin-legajos {
+  display: grid;
+  gap: var(--espacio-6);
+  margin: 0;
+  padding: var(--espacio-4) var(--espacio-1) var(--espacio-1);
+  container: legajos / inline-size;
+}
+
+.admin-legajo {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto-bajo);
+  color: var(--color-texto);
+  list-style: none;
+}
+
+.admin-legajo:nth-child(2) {
+  rotate: 0.3deg;
+}
+
+.admin-legajo:nth-child(3) {
+  rotate: -0.25deg;
+}
+
+.admin-legajo-pestana {
+  position: absolute;
+  top: 0;
+  left: var(--espacio-4);
+  translate: 0 -55%;
+  margin: 0;
+  padding: 1px var(--espacio-2);
+  background-color: var(--color-mesa-etiqueta);
+  border: var(--borde-marco) solid var(--color-laton-brillante);
+  border-radius: 2px;
+  box-shadow: 0 0 0 var(--borde-ancho) var(--color-laton-texto);
+  color: var(--color-titulo);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.admin-legajo:nth-child(2) .admin-legajo-pestana {
+  left: 30%;
+}
+
+.admin-legajo:nth-child(3) .admin-legajo-pestana {
+  left: auto;
+  right: var(--espacio-4);
+}
+
+.admin-legajo h3 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.admin-legajo p {
+  margin: 0;
+}
+
+.admin-legajo [role="button"] {
+  justify-self: stretch;
+  margin-block-start: var(--espacio-2);
+}
+
+/* La región, en el legajo de las entidades: el mapa chico y su lista. */
+.admin-region {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: var(--espacio-2) 0 0;
+}
+
+.admin-region figcaption p {
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Con lugar en la bandeja, el botón va al costado del texto. Mide en rem fijos, como los
+   cajones: la condición de @container no acepta var(). */
+@container legajos (min-width: 28rem) {
+  .admin-legajo {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--espacio-5);
+    align-items: center;
+  }
+
+  .admin-legajo > :not([role="button"]) {
+    grid-column: 1;
+  }
+
+  .admin-legajo [role="button"] {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    margin: 0;
+  }
+
+  /* El mapa, debajo del texto y del botón, a todo el ancho del legajo. */
+  .admin-legajo > .admin-region {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+}
+
+/* Con más lugar (la mesa ancha), la lista va al lado del mapa: el legajo no se estira. */
+@container legajos (min-width: 40rem) {
+  .admin-region {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: center;
+    gap: var(--espacio-5);
+  }
+}
+
+/* El libro de cuentas: las hojas y los asientos de app.css, una junto a la otra si entran, sin
+   cuero entre las dos; la etiqueta ocupa las dos hojas. */
+.admin-libro.admin-cuentas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0;
+}
+
+.admin-cuentas > .admin-etiqueta {
+  grid-column: 1 / -1;
+  margin-block-end: var(--espacio-3);
+}
+
+.admin-cuentas .mesa-libro-hoja {
+  color: var(--color-texto);
+}
+
+.admin-cuentas h3 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-4);
+}
+
+.admin-cuentas .enlace-fuerte {
+  align-self: start;
+}
+
+/*
+ * El libro de registro (tablas). En angosto, cada fila es un asiento: lo registrado arriba y cada
+ * dato con su nombre, en las columnas que entran. Desde 1100 px, la tabla, con el doble filete
+ * del encabezado y una regla de tinta entre filas. Sin franjas ni caja.
+ */
+.admin-registro {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.admin-registro caption {
+  display: block;
+  padding-block-end: var(--espacio-3);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-weight: 700;
+  text-align: start;
+}
+
+.admin-registro thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.admin-registro tbody {
+  display: block;
+  border-block-start: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.admin-registro tr {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--medida-admin-dato)), 1fr));
+  gap: var(--espacio-3) var(--espacio-4);
+  padding-block: var(--espacio-4);
+  border-block-end: var(--borde-ancho) solid var(--color-filete);
+}
+
+.admin-registro :is(th, td) {
+  display: block;
+  padding: 0;
+  background-color: transparent;
+  border: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+  text-align: start;
+}
+
+.admin-registro th[scope="row"] {
+  grid-column: 1 / -1;
+  color: var(--color-titulo);
+  font-size: var(--tamano-texto);
+  font-weight: 700;
+}
+
+.admin-registro th[scope="row"] small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 400;
+}
+
+.admin-registro td::before {
+  content: attr(data-etiqueta);
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+/* Lo que presentó la entidad: su nombre abre el legajo, con cada documento y su signo. */
+.admin-presentado {
+  margin: 0;
+}
+
+.admin-presentado > summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-titulo);
+  text-decoration: underline;
+  text-decoration-color: var(--color-filete);
+  text-underline-offset: 0.2em;
+}
+
+.admin-presentado[open] > summary {
+  margin-block-end: var(--espacio-2);
+}
+
+.admin-presentado > :not(summary) {
+  margin: 0 0 var(--espacio-2);
+  font-size: var(--tamano-chico);
+  font-weight: 400;
+}
+
+.admin-presentado ul {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: 0;
+}
+
+.admin-presentado li {
+  list-style: none;
+}
+
+/* La decisión ocupa su renglón: los botones, a la par; "Rechazar", abierto, baja el motivo a su
+   propio renglón. */
+.admin-registro .admin-decision {
+  grid-column: 1 / -1;
+}
+
+.admin-decision :is(form, button) {
+  display: inline-flex;
+  width: auto;
+  margin: 0 var(--espacio-2) var(--espacio-2) 0;
+  vertical-align: top;
+}
+
+.admin-decision small {
+  display: block;
+  margin-block-end: var(--espacio-3);
+  color: var(--color-texto-suave);
+  font-style: italic;
+}
+
+.admin-rechazar {
+  display: inline-block;
+  margin: 0 0 var(--espacio-2);
+  vertical-align: top;
+}
+
+.admin-rechazar[open] {
+  display: block;
+}
+
+.admin-rechazar form {
+  display: block;
+  margin: var(--espacio-3) 0 0;
+  padding-block-start: var(--espacio-3);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.admin-rechazar form > p {
+  margin: 0 0 var(--espacio-3);
+  font-style: italic;
+}
+
+/* El estado de cada donación y, debajo, adónde va o el camino a su propuesta. */
+.admin-estado small {
+  display: block;
+  margin-block-start: var(--espacio-1);
+  color: var(--color-texto-suave);
+}
+
+.admin-estado .enlace-fuerte {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* La documentación, con los signos del mapa: ● completa y ○ lo que falta (en ámbar). */
+.admin-doc {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  color: var(--color-advertencia-texto);
+  font-weight: 700;
+}
+
+.admin-doc::before {
+  content: "";
+  flex: none;
+  box-sizing: border-box;
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  border: var(--borde-ruta) solid currentcolor;
+  border-radius: var(--radio-sello);
+}
+
+.admin-doc--completa {
+  color: var(--color-texto);
+  font-weight: 400;
+}
+
+.admin-doc--completa::before {
+  background-color: var(--color-signo-tinta);
+  border-color: var(--color-signo-tinta);
+}
+
+/* Las que vencen pronto: la marca al margen del libro, en ámbar, además del texto. */
+.admin-vence-pronto > th[scope="row"]::before {
+  content: "";
+  position: absolute;
+  inset-block: var(--espacio-3);
+  left: calc(-1 * var(--espacio-3));
+  width: var(--borde-acento);
+  background-color: var(--color-advertencia-texto);
+  border-radius: 2px;
+}
+
+@media (min-width: 68.75em) {
+  .admin-registro {
+    display: table;
+  }
+
+  .admin-registro caption {
+    display: table-caption;
+  }
+
+  .admin-registro thead {
+    position: static;
+    display: table-header-group;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .admin-registro tbody {
+    display: table-row-group;
+    border: 0;
+  }
+
+  .admin-registro tr {
+    display: table-row;
+    padding: 0;
+    border: 0;
+  }
+
+  .admin-registro :is(th, td) {
+    display: table-cell;
+    padding: var(--espacio-3) var(--espacio-4);
+    vertical-align: baseline;
+    border-block-end: var(--borde-ancho) solid var(--color-filete);
+  }
+
+  .admin-registro :is(th, td):first-child {
+    position: relative;
+    padding-inline-start: 0;
+  }
+
+  .admin-registro :is(th, td):last-child {
+    padding-inline-end: 0;
+  }
+
+  .admin-registro thead th {
+    color: var(--color-titulo);
+    font-weight: 700;
+    border-block-end: var(--borde-regla-doble) double var(--color-titulo);
+  }
+
+  .admin-registro td::before {
+    content: none;
+  }
+
+  .admin-registro .admin-decision {
+    width: var(--medida-admin-decision);
+    vertical-align: middle;
+  }
+
+  .admin-registro--entidades .admin-decision {
+    padding-block-end: var(--espacio-1);
+  }
+
+  /* Las fechas y el aviso de vencimiento, en un renglón; el estado, que es lo largo, se parte. */
+  .admin-registro--donaciones td:not(.admin-estado) {
+    white-space: nowrap;
+  }
+
+  .admin-vence-pronto > th[scope="row"]::before {
+    inset-block: var(--espacio-2);
+    left: calc(-1 * var(--espacio-4));
+  }
+}
+
+/* Los filtros: un renglón del registro, separado de la tabla por una regla. */
+.admin-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 0 var(--espacio-4);
+  margin-block-end: var(--espacio-5);
+  padding-block-end: var(--espacio-2);
+  border-block-end: var(--borde-ancho) solid var(--color-filete);
+}
+
+.admin-filtros > :is(.admin-filtro-buscar, .admin-filtros-acciones) {
+  grid-column: 1 / -1;
+}
+
+.admin-filtros-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin-block-end: var(--espacio-4);
+}
+
+.admin-filtros-acciones button {
+  width: auto;
+  margin: 0;
+}
+
+/* El formulario de registrar: angosto, con cantidad y unidad a la par. */
+.admin-formulario-par {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 var(--espacio-4);
+}
+
+.admin-formulario-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-5);
+  margin-block-start: var(--espacio-2);
+  padding-block-start: var(--espacio-4);
+  border-block-start: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.admin-formulario-acciones button {
+  width: auto;
+  margin: 0;
+}
+
+/*
+ * La propuesta de asignación: cada una es una hoja del libro de rutas. Qué va adónde, el porqué y
+ * las acciones; al lado (desde 860 px), el trayecto en el mapa chico, con su texto.
+ */
+/* Sin la tarjeta que Pico le pone a un article: es una hoja más del libro. */
+.admin-propuesta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  margin: 0;
+  padding: var(--espacio-5) 0;
+  background: none;
+  border-block-start: var(--borde-regla-doble) double var(--color-titulo);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.admin-propuesta:last-child {
+  padding-block-end: 0;
+}
+
+.admin-propuesta > .admin-propuesta-cabeza {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.admin-propuesta-cabeza h2 {
+  margin: 0 0 var(--espacio-1);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.admin-hacia {
+  color: var(--color-texto-suave);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.admin-propuesta-cabeza p:last-child {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.admin-porque h3,
+.admin-trayecto h3 {
+  margin: 0 0 var(--espacio-2);
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-4);
+}
+
+.admin-porque dl {
+  margin: 0;
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.admin-porque dl > div {
+  display: grid;
+  gap: var(--espacio-1) var(--espacio-4);
+  padding-block: var(--espacio-3);
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.admin-porque dt {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.admin-porque dd {
+  margin: 0;
+}
+
+.admin-propuesta-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+}
+
+.admin-propuesta-acciones form {
+  margin: 0;
+}
+
+.admin-propuesta-acciones button {
+  width: auto;
+  margin: 0;
+}
+
+/* Cambiar destino y Rechazar: el plegable se ve como el botón de trazo; abierto, baja a su
+   renglón. */
+.admin-cambiar {
+  margin: 0;
+}
+
+.admin-cambiar[open] {
+  flex-basis: 100%;
+}
+
+:is(.admin-cambiar, .admin-rechazar) > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  padding: 0.6875rem 1.25rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-titulo);
+  border-radius: var(--radio-boton);
+  box-shadow: 0 2px 0 var(--color-filete), var(--sombra-foto);
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+:is(.admin-cambiar, .admin-rechazar) > summary:hover {
+  background-color: var(--color-superficie);
+}
+
+:is(.admin-cambiar, .admin-rechazar) > summary::after {
+  float: none;
+  margin: 0;
+}
+
+.admin-cambiar > p {
+  margin: var(--espacio-4) 0 var(--espacio-2);
+  font-style: italic;
+}
+
+.admin-cambiar ul {
+  margin: 0;
+  padding: 0;
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.admin-cambiar li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin: 0;
+  padding-block: var(--espacio-3);
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+  list-style: none;
+}
+
+.admin-cambiar li p {
+  flex: 1 1 14rem;
+  margin: 0;
+}
+
+.admin-cambiar li b {
+  display: block;
+  color: var(--color-titulo);
+}
+
+/* El trayecto: el mapa chico (el de la mesa, de app.css) y su texto. El camino propuesto va en
+   lápiz; aceptado, en tinta. */
+.admin-trayecto {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-4);
+  margin: 0;
+}
+
+.admin-trayecto-pasos {
+  margin: 0;
+  padding-inline-start: var(--espacio-5);
+}
+
+.admin-trayecto-pasos li {
+  margin-block-end: var(--espacio-1);
+}
+
+.admin-trayecto-nota {
+  margin: var(--espacio-2) 0 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.admin-mapa-nombre {
+  fill: var(--color-titulo);
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 7;
+  paint-order: stroke;
+  font-family: var(--fuente-texto);
+  font-size: 28px;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.admin-mapa-nombre--fin {
+  text-anchor: end;
+}
+
+/* Lo que no es camino todavía: los destinos descartados y los pueblos que piden sumarse, en
+   lápiz tenue (a trazos, sin relleno de tinta). El nombre, en el gris de la letra suave, que
+   llega al contraste sobre el papel. */
+.admin-lugar-lapiz :is(path, circle) {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-camino-por-recorrer);
+  stroke-width: 2;
+}
+
+.admin-lugar-lapiz circle {
+  stroke-width: 2.5;
+  stroke-dasharray: 4 3;
+}
+
+.admin-lugar-lapiz .admin-mapa-nombre {
+  fill: var(--color-texto-suave);
+  font-weight: 400;
+}
+
+/* Las entidades activas, en tinta: el ● de lo cumplido. */
+.admin-activas circle {
+  fill: var(--color-titulo);
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 3;
+}
+
+/* La lista de lo que va en lápiz, con el mismo ○ a trazos del mapa. */
+.admin-lista-lapiz {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+}
+
+.admin-lista-lapiz li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  margin: 0;
+  list-style: none;
+}
+
+.admin-lista-lapiz li::before {
+  content: "";
+  flex: none;
+  box-sizing: border-box;
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  border: var(--borde-ancho) dashed var(--color-camino-por-recorrer);
+  border-radius: var(--radio-sello);
+}
+
+.admin-trayecto-nota + h3 {
+  margin-block-start: var(--espacio-4);
+}
+
+/* La tinta llega: al aceptar, el camino se entinta una sola vez (600 es más que el largo de
+   cualquier ruta del dibujo). Con "reducir movimiento", ya entintado. */
+@media (prefers-reduced-motion: no-preference) {
+  .admin-propuesta--aceptada .viaje-tramo--tinta {
+    stroke-dasharray: 600;
+    animation: admin-entintar 1.4s var(--movimiento-curva) both;
+  }
+}
+
+@keyframes admin-entintar {
+  from {
+    stroke-dashoffset: 600;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Desde 600 px: la acción del libro va en la tapa, a la derecha de la etiqueta; los legajos ponen
+   su botón al costado; cada razón de la propuesta, con su nombre al margen. */
+@media (min-width: 37.5em) {
+  .admin-libro {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--espacio-4) var(--espacio-3) var(--espacio-3);
+  }
+
+  .admin-libro > :is(.admin-hoja, .admin-volver, .admin-legajos) {
+    grid-column: 1 / -1;
+  }
+
+  .admin-libro > .admin-accion {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin-inline-end: var(--espacio-3);
+  }
+
+  .admin-porque dl > div {
+    grid-template-columns: var(--medida-admin-dato) minmax(0, 1fr);
+  }
+
+  .admin-hoja {
+    padding: var(--espacio-6) var(--espacio-5);
+  }
+}
+
+/* Desde 860 px: la mesa en dos zonas y la propuesta con su mapa al lado. */
+@media (min-width: 53.75em) {
+  .admin-mesa {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "nota bandeja"
+      "cuentas bandeja";
+    gap: var(--espacio-6);
+  }
+
+  .admin-nota {
+    grid-area: nota;
+  }
+
+  .admin-bandeja {
+    grid-area: bandeja;
+  }
+
+  .admin-cuentas {
+    grid-area: cuentas;
+  }
+
+  .admin-hoja {
+    padding: var(--espacio-6);
+  }
+
+  .admin-filtros {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  }
+
+  .admin-filtros > :is(.admin-filtro-buscar, .admin-filtros-acciones) {
+    grid-column: auto;
+  }
+
+  .admin-propuesta {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas:
+      "cabeza mapa"
+      "porque mapa"
+      "acciones mapa";
+    grid-template-rows: auto auto 1fr;
+    column-gap: var(--espacio-6);
+  }
+
+  .admin-propuesta-cabeza {
+    grid-area: cabeza;
+  }
+
+  .admin-porque {
+    grid-area: porque;
+  }
+
+  .admin-propuesta-acciones {
+    grid-area: acciones;
+  }
+
+  .admin-trayecto {
+    grid-area: mapa;
+  }
+}
+
+/* Desde 1100 px: más aire en la hoja y entre los objetos. */
+@media (min-width: 68.75em) {
+  .admin-mesa {
+    gap: var(--espacio-7) var(--espacio-6);
+  }
+
+  .admin-hoja {
+    padding: var(--espacio-6) var(--espacio-7);
+  }
+}
+
+/* Los cajones del admin, arriba de la mesa (desde 860 px). Con siete secciones, en un renglón con
+   la placa y la cuenta (de 1100 a casi 1280 px) los nombres completos no entran y app.css deja el
+   ícono y el nombre corto, con el cajón abierto hacia arriba, como en el borde de abajo del
+   celular: su hueco negro quedaba colgando debajo. Acá baja hacia la mesa, como con los nombres
+   completos, y el hueco queda arriba. Con los nombres completos no cambia nada. */
+@media (min-width: 53.75em) {
+  @container cajonera (width < 36rem) {
+    nav.navegacion ul {
+      padding-block: 0;
+      overflow: visible;
+    }
+
+    nav.navegacion a[aria-current="page"] {
+      translate: 0 var(--medida-cajon-apertura);
+    }
+
+    nav.navegacion a[aria-current="page"]::before {
+      top: auto;
+      bottom: 100%;
+      height: calc(var(--medida-cajon-apertura) + var(--borde-ancho));
+    }
+  }
+}
+
+/* Con colores forzados (alto contraste), las tapas, las hojas y los legajos pierden el cuero y la
+   sombra: los marca un borde. Los signos pintados (● decidida o completa, la marca al margen de lo
+   que vence) y las piezas de los mapas toman el color del texto sobre el de la hoja. */
+@media (forced-colors: active) {
+  :is(.admin-libro, .admin-hoja, .admin-legajo, .admin-nota) {
+    border: var(--borde-ancho) solid;
+  }
+
+  :is(.admin-decidida, .admin-doc--completa)::before,
+  .admin-vence-pronto > th[scope="row"]::before {
+    forced-color-adjust: none;
+    background-color: var(--color-forzado-texto);
+  }
+
+  .admin-lugar-lapiz :is(path, circle) {
+    fill: var(--color-forzado-fondo);
+    stroke: var(--color-forzado-texto);
+  }
+
+  :is(.admin-activas circle, .admin-mapa-nombre, .admin-lugar-lapiz .admin-mapa-nombre) {
+    fill: var(--color-forzado-texto);
+    stroke: var(--color-forzado-fondo);
+  }
+}

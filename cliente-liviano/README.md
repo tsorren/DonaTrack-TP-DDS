@@ -1,46 +1,55 @@
-# cliente-liviano — Bounded Context Reservado
+# cliente-liviano — Interfaz web de DonaTrack
 
-> **Estado:** 🔒 `DEFERRED` — Reservado para entrega futura  
+> **Estado:** en construcción (Entrega 6). Hay layouts público y privado, componentes base, el
+> catálogo `/estilos` y la muestra del área privada `/estilos/armazon`; la identidad visual está
+> definida y todavía no hay pantallas de negocio.
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
 
-## Estado actual
+## Qué es
 
-`cliente-liviano` **no está implementado**. Existe únicamente como directorio placeholder registrado en [`.log4brains.yml`](../.log4brains.yml), con carpeta de ADRs reservada en `docs/adr/cliente-liviano/`.
+Es la interfaz web del sistema: un servidor Spring MVC que renderiza vistas Thymeleaf, mejoradas
+con HTMX y estilizadas con Pico.css y `tokens.css` (decisiones D17–D21 de
+[`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md)). No tiene lógica de negocio:
+consume las APIs REST de los servicios a través del gateway.
 
-**Hito canónico de construcción:** Entrega 6 — Interfaz de Usuario y Arquitectura MVC ([enunciado completo](../docs/entregas/Enunciado-TP-Anual-2026.pdf); requerimientos en [`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md)).
+## Antes de tocar este módulo
 
----
+- **Reglas del módulo:** [`AGENTS.md`](AGENTS.md). Las respetan las personas y los agentes.
+- **Proceso de diseño** (identidad visual, flujos, pantallas, A/B, revisión):
+  [`docs/interfaz/README.md`](../docs/interfaz/README.md).
+- **Decisiones de diseño tomadas:** [`docs/interfaz/bitacora.md`](../docs/interfaz/bitacora.md).
+- **Decisiones de arquitectura:** [`docs/adr/cliente-liviano/`](../docs/adr/cliente-liviano/).
 
-## Responsabilidades planificadas
+## Cómo levantarlo
 
-Este bounded context será responsable de:
+```bash
+mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/estilos
+mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, catálogo y vistas
+mvn test -pl cliente-liviano -Pvisual                                         # capturas, accesibilidad, toque y desbordes
+```
 
-- **Interfaz de usuario:** Capa de presentación Web MVC o SPA consumidora de las APIs REST de los microservicios
-- **Consumo de APIs REST:** Integración con los contratos OpenAPI 3.0 publicados por `donaciones-service`, `incentivos-service`, `logistica-service` y `notificaciones-service`
-- **Autenticación de sesión:** Integración con `auth-service` para la gestión de tokens de acceso y sesión del donante
+- Puerto 8090. El perfil `maqueta` usa datos de ejemplo y admite `?escenario=<nombre>` (vacío,
+  lento, error, sin permiso), `?variante=<tema>-a|b` para las comparaciones A/B y
+  `?alternativa=cozy-medieval` para ver la Alternativa Cozy / Medieval, con su propio juego de
+  plantillas y de estilos (sin él, Glassmorphism).
+- En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador.
+- La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el
+  resultado en `target/capturas/`. No corre en el CI
+  ([DTI-28](../docs/adr/DEUDA_TECNICA.md#dti-28)).
 
----
+## Responsabilidades
 
-## ADRs relevantes
-
-No existen ADRs formalizados para este bounded context en `docs/adr/cliente-liviano/` aún.  
-Las decisiones de diseño de la interfaz de usuario deberán documentarse allí cuando comience la Entrega 6.
-
-> Ver: [`docs/adr/DEUDA_TECNICA.md — DTI-05`](../docs/adr/DEUDA_TECNICA.md) — refactor previo a la integración con la interfaz Web MVC (Entrega 6; fecha de la DTI a revisar).
-
----
+- **Interfaz de usuario:** las pantallas del [mapa del sitio](../docs/interfaz/mapa-del-sitio.md)
+  para el público, los donantes, las entidades y el admin.
+- **Consumo de APIs REST:** los contratos de `donaciones-service`, `incentivos-service`,
+  `logistica-service` y `notificaciones-service`, a través del gateway.
+- **Sesión del usuario:** integración con `auth-service`; los tokens viven del lado del servidor
+  (RF-CL-01).
 
 ## Contratos REST disponibles para consumo
 
-Los contratos REST que este cliente consumirá están documentados en:
-
-- [`docs/arquitectura/contratos-rest.md`](../docs/arquitectura/contratos-rest.md) — Catálogo consolidado de endpoints
-- [`docs/arquitectura/contratos/`](../docs/arquitectura/contratos/) — Especificaciones OpenAPI 3.0 (YAML)
-
----
-
-## No agregar código a este directorio
-
-Este directorio no debe contener código fuente hasta que el equipo decida iniciar la Entrega 6. Cualquier decisión de diseño previa debe documentarse como ADR en `docs/adr/cliente-liviano/`.
+- [`docs/arquitectura/contratos-rest.md`](../docs/arquitectura/contratos-rest.md): catálogo
+  consolidado de endpoints.
+- [`docs/arquitectura/contratos/`](../docs/arquitectura/contratos/): especificaciones OpenAPI 3.0.

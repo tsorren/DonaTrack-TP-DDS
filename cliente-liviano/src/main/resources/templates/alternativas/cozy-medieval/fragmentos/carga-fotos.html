@@ -1,0 +1,13 @@
+<!--/* Carga de fotos. Patrón: HIG Photo pickers. Un input file real (abre la cámara en el
+       celular); el arrastre, si se suma, es un extra. En Cozy, el lugar donde se pegan las fotos,
+       con un esquinero en cada punta (app.css). ayuda y error pueden ser null. */-->
+<div th:fragment="carga-fotos(id, etiqueta, ayuda, error)" class="campo carga-fotos">
+  <label for="fotos" th:for="${id}" th:text="${etiqueta}">Fotos</label>
+  <input id="fotos" type="file" accept="image/*" capture="environment" multiple
+         th:id="${id}" th:name="${id}"
+         th:aria-invalid="${error != null} ? 'true' : null"
+         th:aria-describedby="${error != null or ayuda != null} ? ${id + '-ayuda'} : null">
+  <small th:if="${error != null or ayuda != null}" th:id="${id + '-ayuda'}"
+         th:classappend="${error != null} ? 'campo-error'" th:text="${error ?: ayuda}">Texto de
+    ayuda</small>
+</div>

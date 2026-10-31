@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): lo que ve quien rechaza a Hogar Ejemplo Norte (POST de "Rechazar solicitud"). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Rechazaste a Hogar Ejemplo Norte - Entidades por aprobar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-entidades :: libro('rechazada', 'hogar')}"></th:block>
+</th:block>
+</body>
+</html>

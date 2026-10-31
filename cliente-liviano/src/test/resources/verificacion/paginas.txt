@@ -1,0 +1,28 @@
+# Páginas que comprueba VerificacionVisualTest (mvn test -pl cliente-liviano -Pvisual).
+# Una ruta por línea, con su ?escenario= si hace falta. Las líneas con # se ignoran.
+/estilos
+/estilos/armazon
+# Prototipo navegable del flujo completo de Cozy (PrototipoController): una pantalla por sección.
+/prototipo/publico-portada
+/prototipo/publico-mapa
+/prototipo/publico-ingresar
+/prototipo/publico-registro
+/prototipo/publico-registro-entidad
+/prototipo/donante-inicio
+/prototipo/donante-donaciones
+/prototipo/donante-donaciones-detalle
+/prototipo/donante-seguimiento
+/prototipo/donante-incentivos
+/prototipo/donante-entidades
+/prototipo/donante-entidades-detalle
+/prototipo/donante-cartas
+/prototipo/entidad-inicio
+/prototipo/entidad-seguimiento
+/prototipo/entidad-seguimiento-confirmar
+/prototipo/entidad-seguimiento-sellada
+/prototipo/entidad-necesidades
+/prototipo/admin-inicio
+/prototipo/admin-entidades
+/prototipo/admin-donaciones
+/prototipo/admin-asignaciones
+/prototipo/admin-ranking

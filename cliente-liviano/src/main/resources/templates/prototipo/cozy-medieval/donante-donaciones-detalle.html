@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": el detalle de una donación (nivel 3 de Mis donaciones). Su audacia
+       es el viaje: el mapa grande (fragmento recorrido) y, cuando llegó, la foto de la entidad
+       pegada debajo de su pueblo sellado, con borde de papel, la cinta y el pie que dice cuándo
+       llegó; mientras viaja, en ese lugar queda el hueco en lápiz donde va a ir. Al lado, la
+       etiqueta del envío con los datos en limpio (qué, cuánto, para quién y las fechas) y la
+       carta con las noticias de ese viaje. Si el camino se cortó, el aviso arriba dice qué pasó y
+       cuándo vuelve a salir. ?donacion=<clave> elige la donación (viaje-datos.html); sin nada,
+       las lentejas en camino del inicio, con los pasos del modelo. Una clave que no existe muestra
+       la tierra sin explorar con la vuelta a Mis donaciones. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Detalle de una donación - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/viaje.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/viaje.css}">
+  <th:block th:replace="~{prototipo/cozy-medieval/viaje-datos :: viaje(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla"
+    th:with="pedida=${param.donacion == null ? 'lentejas' : param.donacion[0]},
+             elegidas=${donaciones.?[clave == #root.pedida]},
+             d=${#lists.isEmpty(elegidas) ? null : elegidas[0]}">
+  <div class="viaje-pagina viaje-detalle">
+    <th:block th:if="${d == null}">
+      <h1 class="solo-lectores">Detalle de una donación</h1>
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'No encontramos esa donación', 'Puede que el enlace esté incompleto. Buscala en tu lista.',
+               'Volver a Mis donaciones', '/prototipo/donante-donaciones')}"></section>
+    </th:block>
+
+    <!--/* El mapa del viaje, en grande: la cartela, el mapa con su leyenda y la foto en su pueblo. */-->
+    <section th:if="${d}" class="mesa-mapa detalle-mapa" aria-labelledby="detalle-titulo">
+      <div class="mesa-mapa-cartela">
+        <h1 id="detalle-titulo" th:text="${d.titulo}">Lentejas secas</h1>
+        <p class="viaje-rotulo" th:text="${seccion}">Mis donaciones</p>
+        <p th:text="${d.destino == null ? d.cantidad + ', todavía sin destino' : d.cantidad + ' para ' + d.destino}">15
+          kg para Comedor Barrio Ejemplo</p>
+        <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${d.estado})}">Estado</span>
+      </div>
+      <div class="detalle-viaje">
+        <div th:replace="~{alternativas/cozy-medieval/fragmentos/recorrido :: recorrido('El viaje de tu donación', ${d.pasos})}"></div>
+        <!--/* ┄╳┄ El camino cortado, sobre el tramo que falta; el aviso y la leyenda lo dicen en texto. */-->
+        <span th:if="${d.estado == conProblema}" class="detalle-corte" aria-hidden="true"></span>
+        <figure th:if="${d.foto}" class="foto-pegada">
+          <img src="/img/ejemplo-entrega.svg" th:src="@{${d.foto}}" alt="Foto de la entrega"
+               th:alt="${d.fotoAlt}" width="640" height="400">
+          <figcaption><span th:text="|Llegó el ${d.llego}|">Llegó el 9 de octubre de 2026</span><span
+              th:text="|Foto de ${d.destino}|">Foto de Merendero Ejemplo Sur</span></figcaption>
+        </figure>
+        <p th:unless="${d.foto}" class="foto-pegada foto-pegada--hueco">La foto de la entrega llega
+          cuando la entidad la recibe.</p>
+      </div>
+    </section>
+
+    <!--/* Después del h1 en el HTML y antes en pantalla (viaje.css): la vuelta a la sección y, si el
+           camino se cortó, el aviso. */-->
+    <a class="viaje-volver" href="/prototipo/donante-donaciones"
+       th:href="@{/prototipo/donante-donaciones}"><svg
+       th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Mis
+      donaciones</a>
+    <th:block th:if="${d != null and d.estado == conProblema}">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('El camino se cortó',
+               ${d.cartas[0].texto}, 'advertencia', null)}"></section>
+    </th:block>
+
+    <!--/* La etiqueta del envío: los datos de la donación, en limpio. */-->
+    <section th:if="${d}" class="etiqueta" aria-labelledby="etiqueta-titulo">
+      <h2 id="etiqueta-titulo">Qué viaja</h2>
+      <dl>
+        <div><dt>Donación</dt><dd th:text="|N.º ${d.numero}|">N.º 5</dd></div>
+        <div><dt>Qué</dt><dd th:text="${d.titulo}">Lentejas secas</dd></div>
+        <div><dt>Cuánto</dt><dd th:text="${d.cantidad}">15 kg</dd></div>
+        <div><dt>Categoría</dt><dd th:text="${d.categoriaTexto}">Alimentos</dd></div>
+        <div><dt>Para</dt><dd th:text="${d.destino ?: 'Todavía sin destino'}">Comedor Barrio Ejemplo</dd></div>
+        <div><dt>Donada</dt><dd th:text="${d.donada}">12 de octubre de 2026</dd></div>
+        <div th:if="${d.llego}"><dt>Entregada</dt><dd th:text="${d.llego}">9 de octubre de 2026</dd></div>
+      </dl>
+    </section>
+
+    <!--/* La carta: las noticias de este viaje, de la más nueva a la primera. */-->
+    <section th:if="${d}" class="mesa-carta detalle-cartas" aria-labelledby="cartas-titulo">
+      <h2 id="cartas-titulo">Las cartas de este viaje</h2>
+      <p class="mesa-bajada">De la más nueva a la primera</p>
+      <ul class="notas">
+        <li th:each="carta : ${d.cartas}"><p th:text="${carta.texto}">Noticia.</p>
+          <time datetime="2026-10-15T14:30" th:datetime="${carta.fecha}" th:text="${carta.cuando}">Hoy, 14:30</time></li>
+      </ul>
+      <a class="enlace-fuerte" href="/prototipo/donante-cartas"
+         th:href="@{/prototipo/donante-cartas}">Ver todas las cartas</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
