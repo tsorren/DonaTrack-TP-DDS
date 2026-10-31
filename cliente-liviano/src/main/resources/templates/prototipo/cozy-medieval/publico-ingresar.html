@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <!--/* Prototipo del flujo completo (iteración 3, grupo público): ingresar. La libreta de viaje,
        abierta sobre la mesa: a la izquierda, el paisaje de la encrucijada (adorno, solo con la
-       libreta abierta); a la derecha, el formulario. Es un prototipo: el envío lleva al inicio de la
-       persona donante de ejemplo con method="get". El fragmento libreta(error) lo reusa
-       publico-ingresar-error, con el banner de error. Estilos: prototipo/publico.css. */-->
+       libreta abierta); a la derecha, el formulario. Es un prototipo: el envío (post) lleva al
+       inicio de la persona donante de ejemplo. Los campos van escritos a mano, con el marcado y las
+       clases del fragmento campo, para llevar autocomplete y required. El fragmento libreta(error)
+       lo reusa publico-ingresar-error: el banner de error (escrito a mano con el marcado del
+       fragmento banner) toma el foco al cargar, y los dos campos quedan marcados y describidos por
+       él, sin decir cuál de los dos falló. Estilos: prototipo/publico.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -23,14 +26,26 @@
       <section class="libreta-hoja" aria-labelledby="ingresar-titulo">
         <h1 id="ingresar-titulo">Retomá tu viaje</h1>
         <p class="bajada">Ingresá para seguir tus donaciones o las entregas de tu entidad.</p>
-        <th:block th:if="${error}">
-          <section th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('No pudimos ingresar',
-                     'El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí una contraseña nueva.',
-                     'error', null)}"></section>
-        </th:block>
-        <form action="/prototipo/donante-inicio" method="get">
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo electrónico', 'email', null, null, false)}"></div>
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('contrasena', 'Contraseña', 'password', null, null, false)}"></div>
+        <section th:if="${error}" class="banner banner--error" role="alert"
+                 aria-labelledby="banner-error-titulo" tabindex="-1" autofocus>
+          <h2 id="banner-error-titulo">No pudimos ingresar</h2>
+          <p id="banner-error-texto">El correo o la contraseña no coinciden. Revisalos y probá de
+            nuevo, o pedí una contraseña nueva.</p>
+        </section>
+        <form action="/prototipo/donante-inicio" th:action="@{/prototipo/donante-inicio}" method="post">
+          <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" name="correo" type="email" autocomplete="email" required
+                   th:aria-invalid="${error} ? 'true' : null"
+                   th:aria-describedby="${error} ? 'banner-error-texto' : null">
+          </div>
+          <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" autocomplete="current-password"
+                   required
+                   th:aria-invalid="${error} ? 'true' : null"
+                   th:aria-describedby="${error} ? 'banner-error-texto' : null">
+          </div>
           <div class="libreta-fila">
             <label class="casilla"><input type="checkbox" name="recordar"><span>Recordarme en este
                 dispositivo</span></label>

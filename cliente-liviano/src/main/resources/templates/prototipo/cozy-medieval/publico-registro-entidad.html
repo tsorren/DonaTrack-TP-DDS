@@ -2,8 +2,10 @@
 <!--/* Prototipo del flujo completo (iteración 3, grupo público): el formulario corto de una entidad,
        en la libreta de viaje. La hoja de la izquierda dice cómo sigue (el equipo revisa cada
        entidad antes de sumarla al mapa: RF-21), con la leyenda del recorrido y el alfiler en el
-       paso actual; se ve también en el celular, antes del formulario. El envío (get) lleva a
-       publico-registro-entidad-enviada. */-->
+       paso actual; se ve también en el celular, antes del formulario. En el HTML va después del
+       formulario, para que el h1 sea lo primero que se lee: publico.css la pasa adelante. El envío
+       (post) lleva a publico-registro-entidad-enviada; los campos van escritos a mano, con el
+       marcado y las clases del fragmento campo, para llevar autocomplete y required. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -15,7 +17,50 @@
         th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
   <div class="publico">
     <div class="libreta">
-      <section class="libreta-hoja" aria-labelledby="como-sigue-titulo">
+      <section class="libreta-hoja" aria-labelledby="entidad-titulo">
+        <h1 id="entidad-titulo">Sumá tu entidad al mapa</h1>
+        <p class="bajada">Para comedores, merenderos, escuelas y otras organizaciones.</p>
+        <form action="/prototipo/publico-registro-entidad-enviada"
+              th:action="@{/prototipo/publico-registro-entidad-enviada}" method="post">
+          <div class="campo">
+            <label for="entidad">Nombre de la entidad</label>
+            <input id="entidad" name="entidad" type="text" autocomplete="organization" required>
+          </div>
+          <div class="campo">
+            <label for="tipo">Tipo de entidad</label>
+            <select id="tipo" name="tipo" required>
+              <option>Comedor</option>
+              <option>Merendero</option>
+              <option>Escuela</option>
+              <option>Otra organización</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="direccion">Dirección de entrega</label>
+            <input id="direccion" name="direccion" type="text" autocomplete="street-address" required
+                   aria-describedby="direccion-ayuda">
+            <small id="direccion-ayuda">Con esta dirección te ubicamos en el mapa. En público
+              mostramos solo el barrio.</small>
+          </div>
+          <div class="campo">
+            <label for="correo">Correo de contacto</label>
+            <input id="correo" name="correo" type="email" autocomplete="email" required
+                   aria-describedby="correo-ayuda">
+            <small id="correo-ayuda">Para avisarte cuando la solicitud esté aprobada.</small>
+          </div>
+          <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" autocomplete="new-password"
+                   minlength="8" required aria-describedby="contrasena-ayuda">
+            <small id="contrasena-ayuda">Al menos 8 caracteres, con una letra y un número.</small>
+          </div>
+          <button type="submit">Enviar la solicitud</button>
+        </form>
+        <p class="nota-prototipo">Es un prototipo: no se guarda nada.</p>
+        <p class="libreta-desvio">¿Sos una persona donante? <a
+            href="/prototipo/publico-registro-donante">Registrate como donante</a></p>
+      </section>
+      <section class="libreta-hoja libreta-hoja--antes" aria-labelledby="como-sigue-titulo">
         <h2 id="como-sigue-titulo">Cómo sigue</h2>
         <p class="bajada">El equipo de DonaTrack revisa cada entidad antes de sumarla al mapa.</p>
         <ol class="recorrido" role="list" aria-label="Cómo sigue la solicitud">
@@ -36,29 +81,6 @@
           </li>
         </ol>
         <div class="grabado-paisaje" aria-hidden="true"></div>
-      </section>
-      <section class="libreta-hoja" aria-labelledby="entidad-titulo">
-        <h1 id="entidad-titulo">Sumá tu entidad al mapa</h1>
-        <p class="bajada">Para comedores, merenderos, escuelas y otras organizaciones.</p>
-        <form action="/prototipo/publico-registro-entidad-enviada" method="get">
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('entidad', 'Nombre de la entidad', 'text', null, null, false)}"></div>
-          <div class="campo">
-            <label for="tipo">Tipo de entidad</label>
-            <select id="tipo" name="tipo">
-              <option>Comedor</option>
-              <option>Merendero</option>
-              <option>Escuela</option>
-              <option>Otra organización</option>
-            </select>
-          </div>
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('direccion', 'Dirección de entrega', 'text', 'Con esta dirección te ubicamos en el mapa. En público mostramos solo el barrio.', null, false)}"></div>
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo de contacto', 'email', 'Para avisarte cuando la solicitud esté aprobada.', null, false)}"></div>
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('contrasena', 'Contraseña', 'password', 'Al menos 8 caracteres, con una letra y un número.', null, false)}"></div>
-          <button type="submit">Enviar la solicitud</button>
-        </form>
-        <p class="nota-prototipo">Es un prototipo: no se guarda nada.</p>
-        <p class="libreta-desvio">¿Sos una persona donante? <a
-            href="/prototipo/publico-registro-donante">Registrate como donante</a></p>
       </section>
     </div>
   </div>

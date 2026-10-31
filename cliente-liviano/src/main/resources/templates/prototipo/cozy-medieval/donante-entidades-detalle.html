@@ -1,102 +1,160 @@
 <!DOCTYPE html>
-<!--/* Prototipo, iteración 3, grupo juego: una entidad, Merendero Ejemplo Sur, vista por el donante.
-       La tira dice quiénes son, con la vuelta a los pueblos. Lo principal es lo que necesitan: cada
-       necesidad con su categoría, para qué es, cuánto recibieron, cuánto falta y "Donar para esta
-       necesidad" (formulario get a esta misma pantalla, que con ?necesidad= muestra arriba el aviso
-       de que quedó anotada, con el camino a las cartas). Al costado, el plano del pueblo grabado a
-       pluma, visto desde arriba (las manzanas en tinta tenue, la plaza y el merendero), con el sello
-       de latón (◉) de la donación de Ana que ya llegó, y su huella en este pueblo, con el enlace a esa
-       donación. El plano no se lee: el pie y la huella lo dicen en texto. Datos de ejemplo, los mismos
-       de la ficha 2 del nomenclador. Estilos: juego.css. */-->
+<!--/* Prototipo, iteración 3, grupo juego: una entidad vista por el donante. ?pueblo= elige el pueblo
+       de la lista permitida de abajo (comedor, merendero, escuela y hogar, los mismos del
+       nomenclador de donante-entidades); sin el parámetro, Merendero Ejemplo Sur; una clave
+       desconocida muestra la tierra sin explorar con la vuelta a los pueblos. La tira dice quiénes
+       son, con la vuelta a los pueblos. Lo principal es lo que necesitan: cada necesidad con su
+       categoría, para qué es, cuánto recibieron, cuánto falta y "Donar para esta necesidad", que
+       lleva a esta misma pantalla con ?necesidad=: ahí la necesidad elegida abre el paso corto (qué
+       y cuánto vas a llevar, formulario post con campos obligatorios) que lleva a
+       donante-entidades-anotada, con la dirección y el horario del depósito. Al costado, el plano
+       del pueblo grabado a pluma, visto desde arriba (las manzanas en tinta tenue, la plaza y la
+       entidad), con el sello de latón (◉) si una donación de Ana ya llegó, y su huella en este
+       pueblo, cada una con el enlace a su donación (claves de viaje-datos). El plano no se lee: el
+       pie y la huella lo dicen en texto. Datos de ejemplo; hoy es el jueves 15 de octubre de 2026.
+       Estilos: juego.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
-  <title>Merendero Ejemplo Sur - DonaTrack</title>
+  <title th:with="clave=${param.pueblo == null ? 'merendero' : param.pueblo[0]},
+                  nombres=${ {comedor: 'Comedor Barrio Ejemplo', merendero: 'Merendero Ejemplo Sur',
+                              escuela: 'Escuela Ejemplo 12', hogar: 'Hogar Ejemplo Norte'} }"
+         th:text="${(nombres.get(clave) ?: 'No encontramos ese pueblo') + ' - DonaTrack'}">Merendero Ejemplo Sur -
+    DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/juego.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/juego.css}">
-  <div class="juego juego--detalle"
-       th:with="necesidad=${param.necesidad != null ? param.necesidad[0] : ''},
-                anotada=${necesidad == 'ropa' ? 'ropa de abrigo'
-                        : (necesidad == 'leche' ? 'leche en polvo'
-                        : (necesidad == 'cuadernos' ? 'cuadernos' : ''))}">
+  <div class="juego"
+       th:classappend="${p == null} ? 'juego--perdido' : 'juego--detalle'"
+       th:with="pedido=${param.pueblo == null ? 'merendero' : param.pueblo[0]},
+                elegida=${param.necesidad == null ? '' : param.necesidad[0]},
+                pueblos=${ {
+      {clave: 'comedor', nombre: 'Comedor Barrio Ejemplo', sellado: true,
+       frase: 'Un comedor comunitario en la zona oeste. Cocina el almuerzo para 120 personas de lunes a sábado.',
+       desde: 'marzo de 2026', recibidas: 58,
+       necesidades: {
+         {clave: 'lentejas', titulo: 'Lentejas secas', icono: 'cat-alimentos', recibido: 10, total: 40, unidad: 'kg',
+          motivo: 'Alimentos. Para el guiso de los martes y jueves.', ejemplo: 'Por ejemplo: dos paquetes de 5 kg.'},
+         {clave: 'leche', titulo: 'Leche en polvo', icono: 'cat-alimentos', recibido: 12, total: 24, unidad: 'latas',
+          motivo: 'Alimentos. Para el desayuno de los chicos.', ejemplo: 'Por ejemplo: latas de 800 g, entera.'},
+         {clave: 'aceite', titulo: 'Aceite de girasol', icono: 'cat-alimentos', recibido: 0, total: 20, unidad: 'litros',
+          motivo: 'Alimentos. Para cocinar todos los días.', ejemplo: 'Por ejemplo: botellas de 1,5 litros.'} },
+       huellas: {
+         {estado: 2, texto: 'Fideos secos, 8 kg. Llegó el 5 de octubre.', enlace: '/prototipo/donante-donaciones-detalle?donacion=fideos'},
+         {estado: 1, texto: 'Lentejas secas, 15 kg. Salió hoy a las 14:30.', enlace: '/prototipo/donante-donaciones-detalle'} } },
 
-    <section th:if="${anotada != ''}" class="juego-aviso" role="status"
-             aria-labelledby="aviso-titulo">
-      <h2 id="aviso-titulo">Anotamos tu donación</h2>
-      <p th:text="|Vas a donar ${anotada} para Merendero Ejemplo Sur. Llevá tu donación al depósito cuando puedas: cuando la registremos, te llega una carta.|">Vas
-        a donar ropa de abrigo para Merendero Ejemplo Sur.</p>
-      <a href="/prototipo/donante-cartas" th:href="@{/prototipo/donante-cartas}"
-         class="enlace-fuerte">Ver tus cartas</a>
-    </section>
+      {clave: 'merendero', nombre: 'Merendero Ejemplo Sur', sellado: true,
+       frase: 'Un merendero de barrio en la zona sur. Da la merienda a 60 chicos de lunes a viernes y apoyo escolar los sábados.',
+       desde: 'abril de 2026', recibidas: 41,
+       necesidades: {
+         {clave: 'ropa', titulo: 'Ropa de abrigo', icono: 'cat-vestimenta', recibido: 80, total: 120, unidad: 'prendas',
+          motivo: 'Ropa y abrigo. Camperas y buzos para el invierno, talles 8 a 14.', ejemplo: 'Por ejemplo: dos camperas talle 10.'},
+         {clave: 'leche', titulo: 'Leche en polvo', icono: 'cat-alimentos', recibido: 12, total: 30, unidad: 'kg',
+          motivo: 'Alimentos. Para la merienda de todos los días.', ejemplo: 'Por ejemplo: bolsas de 1 kg, entera.'},
+         {clave: 'cuadernos', titulo: 'Cuadernos', icono: 'cat-escolares', recibido: 10, total: 50, unidad: 'cuadernos',
+          motivo: 'Útiles escolares. Para el apoyo escolar de los sábados.', ejemplo: 'Por ejemplo: cuadernos rayados de 48 hojas.'} },
+       huellas: {
+         {estado: 2, texto: 'Ropa de abrigo, 12 prendas. Llegó el 9 de octubre.', enlace: '/prototipo/donante-donaciones-detalle?donacion=ropa'},
+         {estado: 0, texto: 'Leche en polvo, 6 kg. Sale del depósito mañana.', enlace: '/prototipo/donante-donaciones-detalle?donacion=leche'} } },
 
+      {clave: 'escuela', nombre: 'Escuela Ejemplo 12', sellado: false,
+       frase: 'Una escuela primaria en la zona centro, con 300 chicos en dos turnos.',
+       desde: 'junio de 2026', recibidas: 23,
+       necesidades: {
+         {clave: 'utiles', titulo: 'Útiles escolares', icono: 'cat-escolares', recibido: 35, total: 100, unidad: 'kits',
+          motivo: 'Útiles escolares. Un kit por chico: lápices, goma, regla y cuaderno.', ejemplo: 'Por ejemplo: kits armados en bolsitas.'},
+         {clave: 'guardapolvos', titulo: 'Guardapolvos', icono: 'cat-vestimenta', recibido: 15, total: 40, unidad: 'guardapolvos',
+          motivo: 'Ropa y abrigo. Blancos, talles 6 a 12.', ejemplo: 'Por ejemplo: tres guardapolvos talle 8.'} },
+       huellas: {
+         {estado: 3, texto: 'Útiles escolares, 2 cajas. No pudieron llegar: salen de nuevo el 17 de octubre.', enlace: '/prototipo/donante-donaciones-detalle?donacion=utiles'} } },
+
+      {clave: 'hogar', nombre: 'Hogar Ejemplo Norte', sellado: false,
+       frase: 'Un hogar de día para personas mayores en la zona norte. Da el desayuno y el almuerzo a 35 personas.',
+       desde: 'agosto de 2026', recibidas: 12,
+       necesidades: {
+         {clave: 'frazadas', titulo: 'Frazadas', icono: 'cat-vestimenta', recibido: 10, total: 60, unidad: 'frazadas',
+          motivo: 'Ropa y abrigo. Para las tardes de descanso.', ejemplo: 'Por ejemplo: frazadas de una plaza.'},
+         {clave: 'fideos', titulo: 'Fideos secos', icono: 'cat-alimentos', recibido: 40, total: 80, unidad: 'kg',
+          motivo: 'Alimentos. Para el almuerzo de todos los días.', ejemplo: 'Por ejemplo: paquetes de 500 g.'} },
+       huellas: { } }
+    } },
+                elegidos=${pueblos.?[clave == #root.pedido]},
+                p=${#lists.isEmpty(elegidos) ? null : elegidos[0]}">
+
+    <th:block th:if="${p == null}">
+      <h1 class="solo-lectores">Una entidad</h1>
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'No encontramos ese pueblo', 'Puede que el enlace esté incompleto. Buscalo en la lista de pueblos.',
+               'Volver a los pueblos', '/prototipo/donante-entidades')}"></section>
+    </th:block>
+
+    <th:block th:if="${p != null}">
     <section class="juego-tira juego-tira--pueblo" aria-labelledby="pueblo-h1">
       <a class="juego-volver enlace-fuerte" href="/prototipo/donante-entidades"
          th:href="@{/prototipo/donante-entidades}"><svg
          th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Volver
         a los pueblos</a>
       <div class="juego-tira-cartela">
-        <h1 id="pueblo-h1">Merendero Ejemplo Sur</h1>
-        <p class="juego-tira-frase">Un merendero de barrio en la zona sur. Da la merienda a 60
-          chicos de lunes a viernes y apoyo escolar los sábados.</p>
+        <h1 id="pueblo-h1" th:text="${p.nombre}">Merendero Ejemplo Sur</h1>
+        <p class="juego-tira-frase" th:text="${p.frase}">Un merendero de barrio en la zona sur.</p>
       </div>
       <dl class="juego-datos">
-        <div><dt>Recibe donaciones desde</dt><dd>marzo de 2024</dd></div>
-        <div><dt>Necesidades abiertas</dt><dd>3</dd></div>
-        <div><dt>Donaciones recibidas este año</dt><dd>41</dd></div>
+        <div><dt>Recibe donaciones desde</dt><dd th:text="${p.desde}">abril de 2026</dd></div>
+        <div><dt>Necesidades abiertas</dt><dd th:text="${#lists.size(p.necesidades)}">3</dd></div>
+        <div><dt>Donaciones recibidas este año</dt><dd th:text="${p.recibidas}">41</dd></div>
       </dl>
     </section>
 
     <section id="necesidades" class="juego-pedidos" aria-labelledby="necesidades-titulo">
       <h2 id="necesidades-titulo" class="juego-etiqueta">Lo que necesitan</h2>
       <ul class="juego-pedidos-lista" role="list">
-        <li class="juego-pedido">
-          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-vestimenta', 28)}"></svg>
+        <li class="juego-pedido" th:each="n : ${p.necesidades}" th:id="|pedido-${n.clave}|"
+            th:with="falta=${n.total - n.recibido}">
+          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${n.icono}, 28)}"></svg>
           <div class="juego-pedido-texto">
-            <h3>Ropa de abrigo</h3>
-            <p class="juego-pedido-motivo">Ropa y abrigo. Camperas y buzos para el invierno,
-              talles 8 a 14.</p>
-            <progress value="80" max="120" aria-hidden="true">80 de 120</progress>
-            <p class="juego-pedido-cuenta">Recibieron 80 de 120 prendas. <b>Faltan 40.</b></p>
+            <h3 th:text="${n.titulo}">Ropa de abrigo</h3>
+            <p class="juego-pedido-motivo" th:text="${n.motivo}">Ropa y abrigo.</p>
+            <progress th:value="${n.recibido}" th:max="${n.total}" aria-hidden="true"
+                      th:text="|${n.recibido} de ${n.total}|">80 de 120</progress>
+            <p class="juego-pedido-cuenta"><span
+                th:text="|Recibieron ${n.recibido} de ${n.total} ${n.unidad}.|">Recibieron 80 de 120
+                prendas.</span> <b th:text="|Faltan ${falta}.|">Faltan 40.</b></p>
           </div>
-          <form method="get" action="/prototipo/donante-entidades-detalle"
-                th:action="@{/prototipo/donante-entidades-detalle}">
-            <input type="hidden" name="necesidad" value="ropa">
-            <button type="submit">Donar para esta necesidad<span class="solo-lectores">: ropa de
-              abrigo</span></button>
-          </form>
-        </li>
-        <li class="juego-pedido">
-          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 28)}"></svg>
-          <div class="juego-pedido-texto">
-            <h3>Leche en polvo</h3>
-            <p class="juego-pedido-motivo">Alimentos. Para la merienda de todos los días.</p>
-            <progress value="12" max="30" aria-hidden="true">12 de 30</progress>
-            <p class="juego-pedido-cuenta">Recibieron 12 de 30 kg. <b>Faltan 18 kg.</b></p>
-          </div>
-          <form method="get" action="/prototipo/donante-entidades-detalle"
-                th:action="@{/prototipo/donante-entidades-detalle}">
-            <input type="hidden" name="necesidad" value="leche">
-            <button type="submit">Donar para esta necesidad<span class="solo-lectores">: leche en
-              polvo</span></button>
-          </form>
-        </li>
-        <li class="juego-pedido">
-          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-escolares', 28)}"></svg>
-          <div class="juego-pedido-texto">
-            <h3>Cuadernos</h3>
-            <p class="juego-pedido-motivo">Útiles escolares. Para el apoyo escolar de los
-              sábados.</p>
-            <progress value="10" max="50" aria-hidden="true">10 de 50</progress>
-            <p class="juego-pedido-cuenta">Recibieron 10 de 50 cuadernos. <b>Faltan 40.</b></p>
-          </div>
-          <form method="get" action="/prototipo/donante-entidades-detalle"
-                th:action="@{/prototipo/donante-entidades-detalle}">
-            <input type="hidden" name="necesidad" value="cuadernos">
-            <button type="submit">Donar para esta necesidad<span
-                    class="solo-lectores">: cuadernos</span></button>
+          <a th:unless="${n.clave == elegida}" class="juego-pedido-donar" role="button"
+             href="/prototipo/donante-entidades-detalle?necesidad=ropa#donar"
+             th:href="@{/prototipo/donante-entidades-detalle#donar(pueblo=${p.clave},necesidad=${n.clave})}">Donar
+            para esta necesidad<span class="solo-lectores" th:text="|: ${n.titulo}|">: ropa de
+              abrigo</span></a>
+
+          <!--/* El paso corto: qué y cuánto vas a llevar. Se envía con post; el prototipo vuelve
+                 a donante-entidades-anotada sin lo escrito. */-->
+          <form th:if="${n.clave == elegida}" id="donar" class="juego-paso" method="post"
+                action="/prototipo/donante-entidades-anotada"
+                th:action="@{/prototipo/donante-entidades-anotada}" aria-labelledby="donar-titulo">
+            <h4 id="donar-titulo">Contanos qué vas a llevar</h4>
+            <input type="hidden" name="pueblo" th:value="${p.clave}">
+            <input type="hidden" name="necesidad" th:value="${n.clave}">
+            <div class="campo">
+              <label for="donar-que">Qué vas a llevar</label>
+              <input id="donar-que" name="que" type="text" required autofocus
+                     aria-describedby="donar-que-ayuda">
+              <small id="donar-que-ayuda" th:text="${n.ejemplo}">Por ejemplo: dos camperas talle
+                10.</small>
+            </div>
+            <div class="campo">
+              <label for="donar-cuanto" th:text="|Cuánto (en ${n.unidad})|">Cuánto (en prendas)</label>
+              <input id="donar-cuanto" name="cantidad" type="number" inputmode="numeric" min="1"
+                     th:max="${falta}" required aria-describedby="donar-cuanto-ayuda">
+              <small id="donar-cuanto-ayuda" th:text="|Hasta ${falta}: es lo que falta.|">Hasta 40: es
+                lo que falta.</small>
+            </div>
+            <p class="juego-paso-acciones">
+              <button type="submit">Confirmar la donación</button>
+              <a class="enlace-fuerte" href="/prototipo/donante-entidades-detalle#necesidades"
+                 th:href="@{/prototipo/donante-entidades-detalle#necesidades(pueblo=${p.clave})}">Cancelar</a>
+            </p>
           </form>
         </li>
       </ul>
@@ -104,8 +162,8 @@
 
     <!--/* El plano del pueblo, como los planos de lleno y vacío: en cada manzana, lo edificado en
            tinta tenue, el patio en papel y las medianeras a intervalos desparejos (un trazo a rayas
-           a lo largo del borde); las calles son el papel. La plaza, punteada, con sus árboles, y el
-           merendero a pluma, con el sello de latón. */-->
+           a lo largo del borde); las calles son el papel. La plaza, punteada, con sus árboles, y la
+           entidad a pluma, con el sello de latón si una donación de Ana ya llegó. */-->
     <figure class="juego-plano">
       <svg viewBox="0 0 400 260" aria-hidden="true" focusable="false">
         <path class="juego-plano-edificado"
@@ -127,22 +185,29 @@
           <circle cx="205" cy="237" r="5"/>
         </g>
         <path class="juego-plano-merendero" d="M172 82V46l33-20 33 20v36ZM197 82V64h16v18M172 46h66"/>
-        <circle class="juego-mapa-sello" cx="246" cy="30" r="10"/>
+        <circle th:if="${p.sellado}" class="juego-mapa-sello" cx="246" cy="30" r="10"/>
       </svg>
-      <figcaption>El plano de Merendero Ejemplo Sur. El sello de latón marca que una donación
-        tuya ya llegó.</figcaption>
+      <figcaption th:text="${p.sellado} ? |El plano de ${p.nombre}. El sello de latón marca que una donación tuya ya llegó.| : |El plano de ${p.nombre}. Cuando llegue tu primera donación, lleva el sello de latón.|">El
+        plano de Merendero Ejemplo Sur. El sello de latón marca que una donación tuya ya llegó.</figcaption>
     </figure>
 
     <section class="juego-huella" aria-labelledby="huella-titulo">
       <h2 id="huella-titulo">Tu huella en este pueblo</h2>
-      <p><span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span>
-        Ropa de abrigo, 12 prendas. Llegó el 28 de septiembre.</p>
-      <a href="/prototipo/donante-donaciones-detalle"
-         th:href="@{/prototipo/donante-donaciones-detalle}" class="enlace-fuerte">Ver la
-        donación</a>
+      <p th:if="${#lists.isEmpty(p.huellas)}">Todavía no donaste acá. Elegí una necesidad y tu
+        primera donación sella este pueblo en tu mapa.</p>
+      <ul th:unless="${#lists.isEmpty(p.huellas)}" class="juego-huellas" role="list">
+        <li th:each="h : ${p.huellas}">
+          <p><span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[h.estado]})}">Entregada</span>
+            <span th:text="${h.texto}">Ropa de abrigo, 12 prendas. Llegó el 9 de octubre.</span></p>
+          <a href="/prototipo/donante-donaciones-detalle?donacion=ropa" th:href="@{${h.enlace}}"
+             class="enlace-fuerte">Ver la donación<span class="solo-lectores"
+             th:text="|: ${h.texto}|">: ropa de abrigo</span></a>
+        </li>
+      </ul>
     </section>
 
     <aside th:replace="~{prototipo/cozy-medieval/donante-cartas :: sobre}"></aside>
+    </th:block>
   </div>
 </th:block>
 </body>

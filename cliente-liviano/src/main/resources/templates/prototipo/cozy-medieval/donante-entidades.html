@@ -7,8 +7,10 @@
        una ficha por pueblo con su número, quiénes son, lo que Ana ya donó ahí, sus necesidades
        abiertas (cuánto recibieron y cuánto falta) y "Donar". El filtro funciona en la maqueta: la
        plantilla esconde los pueblos y las necesidades que no coinciden; "Higiene" no tiene
-       necesidades abiertas y muestra el estado vacío (?categoria=higiene). Todas las fichas llevan al
-       detalle de Merendero Ejemplo Sur, el único dibujado. Datos de ejemplo. Estilos: juego.css. */-->
+       necesidades abiertas y muestra el estado vacío (?categoria=higiene). Cada ficha lleva al
+       detalle de su pueblo (?pueblo=comedor, merendero, escuela u hogar). Arriba del título, el
+       nombre del menú como rótulo. Datos de ejemplo, los mismos del detalle; hoy es el jueves 15 de
+       octubre de 2026. Estilos: juego.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -34,6 +36,7 @@
     <section class="juego-tira juego-tira--filtro" aria-labelledby="pueblos-h1">
       <div class="juego-tira-cartela">
         <h1 id="pueblos-h1">Los pueblos que podés ayudar</h1>
+        <p class="juego-rotulo juego-seccion">Entidades</p>
         <p class="juego-tira-frase">Cada pueblo es una entidad: un comedor, un merendero, una
           escuela o un hogar. Elegí una necesidad abierta y doná.</p>
       </div>
@@ -67,6 +70,7 @@
       <div class="viaje-mapa juego-mapa">
         <svg viewBox="0 0 640 360" aria-hidden="true" focusable="false">
           <g th:if="${comedor}" class="juego-pueblo" transform="translate(110 200) scale(1.35)">
+            <circle class="juego-mapa-sello" cx="27" cy="-10" r="9"/>
             <path class="viaje-lugar" d="M-16 14V-2L0-16 16-2v16ZM-5 14V4h10v10"/>
             <text class="viaje-numero" y="-26">1</text>
           </g>
@@ -108,10 +112,13 @@
       <ol th:unless="${cuantos == 0}" class="juego-fichas" role="list">
         <li th:if="${comedor}">
           <article class="juego-ficha" aria-labelledby="ficha-comedor">
-            <span class="juego-ficha-numero" aria-hidden="true">1</span>
-            <h3 id="ficha-comedor"><a href="/prototipo/donante-entidades-detalle"
-                th:href="@{/prototipo/donante-entidades-detalle}">Comedor Barrio Ejemplo</a></h3>
+            <span class="juego-ficha-numero juego-ficha-numero--sellado" aria-hidden="true">1</span>
+            <h3 id="ficha-comedor"><a href="/prototipo/donante-entidades-detalle?pueblo=comedor"
+                th:href="@{/prototipo/donante-entidades-detalle(pueblo='comedor')}">Comedor Barrio Ejemplo</a></h3>
             <p class="juego-ficha-tipo">Comedor comunitario en la zona oeste</p>
+            <p class="juego-ficha-huella"><span
+               th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span>
+              Tus fideos secos llegaron el 5 de octubre.</p>
             <p class="juego-ficha-huella"><span
                th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">En camino</span>
               Tus lentejas secas van en camino.</p>
@@ -120,30 +127,39 @@
               <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
                 <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
                 <b>Lentejas secas</b>
-                <progress value="90" max="150" aria-hidden="true">90 de 150</progress>
-                <span>Faltan 60 kg de 150</span>
+                <progress value="10" max="40" aria-hidden="true">10 de 40</progress>
+                <span>Faltan 30 kg de 40</span>
               </li>
               <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
                 <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
-                <b>Aceite</b>
-                <progress value="20" max="40" aria-hidden="true">20 de 40</progress>
-                <span>Faltan 20 litros de 40</span>
+                <b>Leche en polvo</b>
+                <progress value="12" max="24" aria-hidden="true">12 de 24</progress>
+                <span>Faltan 12 latas de 24</span>
+              </li>
+              <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
+                <b>Aceite de girasol</b>
+                <progress value="0" max="20" aria-hidden="true">0 de 20</progress>
+                <span>Faltan 20 litros de 20</span>
               </li>
             </ul>
-            <a href="/prototipo/donante-entidades-detalle#necesidades"
-               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+            <a href="/prototipo/donante-entidades-detalle?pueblo=comedor#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades(pueblo='comedor')}"
                role="button" class="fantasma">Donar<span class="solo-lectores"> a Comedor Barrio Ejemplo</span></a>
           </article>
         </li>
         <li th:if="${merendero}">
           <article class="juego-ficha" aria-labelledby="ficha-merendero">
             <span class="juego-ficha-numero juego-ficha-numero--sellado" aria-hidden="true">2</span>
-            <h3 id="ficha-merendero"><a href="/prototipo/donante-entidades-detalle"
-                th:href="@{/prototipo/donante-entidades-detalle}">Merendero Ejemplo Sur</a></h3>
+            <h3 id="ficha-merendero"><a href="/prototipo/donante-entidades-detalle?pueblo=merendero"
+                th:href="@{/prototipo/donante-entidades-detalle(pueblo='merendero')}">Merendero Ejemplo Sur</a></h3>
             <p class="juego-ficha-tipo">Merendero en la zona sur</p>
             <p class="juego-ficha-huella"><span
                th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span>
-              Tu ropa de abrigo ya llegó.</p>
+              Tu ropa de abrigo llegó el 9 de octubre.</p>
+            <p class="juego-ficha-huella"><span
+               th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[0]})}">Pendiente</span>
+              Tu leche en polvo sale del depósito mañana.</p>
             <p class="juego-rotulo">Necesita</p>
             <ul class="juego-necesidades" role="list">
               <li th:if="${cat == '' or cat == 'ropa'}" class="juego-necesidad">
@@ -165,17 +181,20 @@
                 <span>Faltan 40 cuadernos de 50</span>
               </li>
             </ul>
-            <a href="/prototipo/donante-entidades-detalle#necesidades"
-               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+            <a href="/prototipo/donante-entidades-detalle?pueblo=merendero#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades(pueblo='merendero')}"
                role="button" class="fantasma">Donar<span class="solo-lectores"> a Merendero Ejemplo Sur</span></a>
           </article>
         </li>
         <li th:if="${escuela}">
           <article class="juego-ficha" aria-labelledby="ficha-escuela">
             <span class="juego-ficha-numero" aria-hidden="true">3</span>
-            <h3 id="ficha-escuela"><a href="/prototipo/donante-entidades-detalle"
-                th:href="@{/prototipo/donante-entidades-detalle}">Escuela Ejemplo 12</a></h3>
+            <h3 id="ficha-escuela"><a href="/prototipo/donante-entidades-detalle?pueblo=escuela"
+                th:href="@{/prototipo/donante-entidades-detalle(pueblo='escuela')}">Escuela Ejemplo 12</a></h3>
             <p class="juego-ficha-tipo">Escuela primaria en la zona centro</p>
+            <p class="juego-ficha-huella"><span
+               th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[3]})}">Con problema</span>
+              Tus útiles escolares no pudieron llegar: salen de nuevo el 17 de octubre.</p>
             <p class="juego-rotulo">Necesita</p>
             <ul class="juego-necesidades" role="list">
               <li th:if="${cat == '' or cat == 'escolares'}" class="juego-necesidad">
@@ -191,16 +210,16 @@
                 <span>Faltan 25 de 40</span>
               </li>
             </ul>
-            <a href="/prototipo/donante-entidades-detalle#necesidades"
-               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+            <a href="/prototipo/donante-entidades-detalle?pueblo=escuela#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades(pueblo='escuela')}"
                role="button" class="fantasma">Donar<span class="solo-lectores"> a Escuela Ejemplo 12</span></a>
           </article>
         </li>
         <li th:if="${hogar}">
           <article class="juego-ficha" aria-labelledby="ficha-hogar">
             <span class="juego-ficha-numero" aria-hidden="true">4</span>
-            <h3 id="ficha-hogar"><a href="/prototipo/donante-entidades-detalle"
-                th:href="@{/prototipo/donante-entidades-detalle}">Hogar Ejemplo Norte</a></h3>
+            <h3 id="ficha-hogar"><a href="/prototipo/donante-entidades-detalle?pueblo=hogar"
+                th:href="@{/prototipo/donante-entidades-detalle(pueblo='hogar')}">Hogar Ejemplo Norte</a></h3>
             <p class="juego-ficha-tipo">Hogar de día para personas mayores en la zona norte</p>
             <p class="juego-rotulo">Necesita</p>
             <ul class="juego-necesidades" role="list">
@@ -217,8 +236,8 @@
                 <span>Faltan 40 kg de 80</span>
               </li>
             </ul>
-            <a href="/prototipo/donante-entidades-detalle#necesidades"
-               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+            <a href="/prototipo/donante-entidades-detalle?pueblo=hogar#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades(pueblo='hogar')}"
                role="button" class="fantasma">Donar<span class="solo-lectores"> a Hogar Ejemplo Norte</span></a>
           </article>
         </li>

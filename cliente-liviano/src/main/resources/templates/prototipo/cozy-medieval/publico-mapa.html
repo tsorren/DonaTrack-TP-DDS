@@ -6,7 +6,10 @@
        actualización (RF-CL-07). El mapa y la lista salen de los mismos datos de ejemplo, escritos
        acá (pueblos). El filtro por categoría es un formulario get: ?categoria= recarga la página
        sin JavaScript; una categoría sin entregas muestra la tierra sin explorar (estado vacío).
-       Los caminos se curvan más cuantas más entregas llegan al mismo pueblo. Estilos: publico.css. */-->
+       Los caminos se curvan más cuantas más entregas llegan al mismo pueblo. Hoy es el jueves 15 de
+       octubre de 2026: todas las entregas son de este mes y ya pasaron. Con lugar, la columna del
+       mapa (el mapa y las salidas) queda fija mientras se recorre la lista; en el celular, las
+       salidas van al final, después de la lista. Estilos: publico.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -22,21 +25,21 @@
                 etiquetas=${ {todas: 'Todas', alimentos: 'Alimentos', vestimenta: 'Ropa y abrigo',
                               escolares: 'Útiles escolares', higiene: 'Higiene'} },
                 pueblos=${ {
-                  {nombre: 'Comedor Barrio Ejemplo', x: 172, y: 142, lado: 'end', entregas: {
-                    {que: 'Lentejas secas, 15 kg', cat: 'alimentos', fecha: '16 de octubre de 2026'},
-                    {que: 'Arroz, 20 kg', cat: 'alimentos', fecha: '9 de octubre de 2026'},
-                    {que: 'Ropa de abrigo, 12 prendas', cat: 'vestimenta', fecha: '3 de octubre de 2026'} }},
+                  {nombre: 'Comedor Barrio Ejemplo', x: 222, y: 142, lado: 'end', entregas: {
+                    {que: 'Arroz, 15 kg', cat: 'alimentos', fecha: '13 de octubre de 2026'},
+                    {que: 'Ropa de abrigo, 1 caja', cat: 'vestimenta', fecha: '8 de octubre de 2026'},
+                    {que: 'Fideos secos, 8 kg', cat: 'alimentos', fecha: '5 de octubre de 2026'} }},
                   {nombre: 'Merendero Ejemplo Sur', x: 304, y: 472, lado: 'start', entregas: {
-                    {que: 'Leche en polvo, 10 kg', cat: 'alimentos', fecha: '21 de octubre de 2026'},
-                    {que: 'Ropa de abrigo, 8 camperas', cat: 'vestimenta', fecha: '17 de octubre de 2026'} }},
+                    {que: 'Ropa de abrigo, 12 prendas', cat: 'vestimenta', fecha: '9 de octubre de 2026'},
+                    {que: 'Leche en polvo, 12 kg', cat: 'alimentos', fecha: '6 de octubre de 2026'} }},
                   {nombre: 'Escuela Ejemplo 12', x: 506, y: 150, lado: 'end', entregas: {
-                    {que: 'Mochilas, 12 unidades', cat: 'escolares', fecha: '24 de octubre de 2026'},
-                    {que: 'Útiles escolares, 30 cuadernos', cat: 'escolares', fecha: '14 de octubre de 2026'} }},
+                    {que: 'Útiles escolares, 30 cuadernos', cat: 'escolares', fecha: '14 de octubre de 2026'},
+                    {que: 'Mochilas, 12 unidades', cat: 'escolares', fecha: '2 de octubre de 2026'} }},
                   {nombre: 'Hogar Ejemplo Norte', x: 330, y: 70, lado: 'start', entregas: {
-                    {que: 'Fideos secos, 25 kg', cat: 'alimentos', fecha: '22 de octubre de 2026'},
-                    {que: 'Frazadas, 10 unidades', cat: 'vestimenta', fecha: '11 de octubre de 2026'} }},
+                    {que: 'Fideos secos, 25 kg', cat: 'alimentos', fecha: '12 de octubre de 2026'},
+                    {que: 'Frazadas, 10 unidades', cat: 'vestimenta', fecha: '7 de octubre de 2026'} }},
                   {nombre: 'Biblioteca Ejemplo Oeste', x: 84, y: 392, lado: 'start', entregas: {
-                    {que: 'Útiles escolares, 15 cartucheras', cat: 'escolares', fecha: '28 de octubre de 2026'} }}
+                    {que: 'Útiles escolares, 15 cartucheras', cat: 'escolares', fecha: '10 de octubre de 2026'} }}
                 } },
                 cuentas=${pueblos.![#vars.filtro == 'todas' ? entregas.size() : entregas.?[cat == #vars.filtro].size()]},
                 total=${#aggregates.sum(cuentas)},
@@ -48,7 +51,7 @@
         <p class="bajada">Cada pueblo es una entidad; cada camino de tinta, una entrega que la
           entidad confirmó en octubre de 2026.</p>
       </div>
-      <p class="nota-chica">Actualizado el 31 de octubre de 2026 a las 9:00.</p>
+      <p class="nota-chica">Actualizado el 15 de octubre, 14:30.</p>
       <form class="filtro" action="/prototipo/publico-mapa" method="get">
         <fieldset>
           <legend>Categoría</legend>
@@ -66,6 +69,7 @@
     </header>
 
     <div class="mapa-cuerpo">
+      <div class="mapa-columna">
       <!--/* El mapa: el marco de meridianos y los esquineros del mapa del viaje (app.css), con la
              tierra grabada; encima, el svg de los caminos, el depósito y los pueblos (aria-hidden:
              la lista de al lado dice lo mismo). */-->
@@ -112,6 +116,20 @@
           <li class="signo signo--entregada">Entregada: la entidad confirmó que llegó</li>
         </ul>
       </section>
+
+      <!--/* Las salidas: el mapa no es un callejón. */-->
+      <section class="mapa-salidas papel" aria-labelledby="salidas-titulo">
+        <h2 id="salidas-titulo">¿Querés sumar tu camino?</h2>
+        <div class="mapa-salidas-acciones">
+          <a href="/prototipo/publico-registro-donante" th:href="@{/prototipo/publico-registro-donante}"
+             role="button">Quiero donar</a>
+          <a href="/prototipo/publico-ingresar" th:href="@{/prototipo/publico-ingresar}" role="button"
+             class="fantasma">Ingresar</a>
+          <a href="/prototipo/publico-portada" th:href="@{/prototipo/publico-portada}"
+             class="enlace-fuerte">Volver a la portada</a>
+        </div>
+      </section>
+      </div>
 
       <section class="mapa-lista papel" aria-labelledby="lista-titulo">
         <h2 id="lista-titulo">Los pueblos del mapa</h2>

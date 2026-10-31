@@ -358,9 +358,42 @@ body.mesa > #contenido.container:has(> .publico) {
   gap: var(--espacio-5);
 }
 
-/* Las fichas del mes llenan la fila, sin columnas vacías en pantallas anchas. */
+/* Las cuatro fichas del mes: una columna en el celular, de a dos con lugar y las cuatro en fila
+   en pantallas anchas, sin una ficha sola en su renglón. */
 .destacadas .tarjetas {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 37.5em) {
+  .destacadas .tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 68.75em) {
+  .destacadas .tarjetas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* La ficha de la que va en camino: donde va a ir la foto, el hueco marcado en lápiz (el trazo de
+   lo que todavía no se recorrió) y, escrito adentro, cuándo llega. */
+.destacadas .tarjeta-hueco {
+  align-content: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3);
+  outline: var(--borde-marco) dashed var(--color-camino-por-recorrer);
+  outline-offset: calc(-1 * var(--espacio-3));
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+.tarjeta-hueco p {
+  max-width: 18ch;
+  margin: 0;
+  font-size: var(--tamano-chico);
+  font-style: italic;
+  line-height: 1.3;
 }
 
 .tira {
@@ -524,6 +557,35 @@ body.mesa > #contenido.container:has(> .publico) {
   gap: var(--espacio-5);
 }
 
+/* En el celular, la columna del mapa no arma caja: el mapa va arriba y las salidas, al final,
+   después de la lista. */
+.mapa-columna {
+  display: contents;
+}
+
+/* Las salidas: una nota de papel con lo que se puede hacer después de mirar el mapa; la pregunta
+   y los botones en un renglón si entran. */
+.mapa-salidas {
+  order: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-5);
+  padding: var(--espacio-5);
+}
+
+.mapa-salidas h2 {
+  flex: 1 1 12rem;
+  font-size: var(--tamano-titulo-3);
+}
+
+.mapa-salidas-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-4);
+}
+
 .mapa-hoja .mesa-mapa-cartela h2 {
   flex-basis: 100%;
   font-size: var(--tamano-titulo-2);
@@ -677,10 +739,22 @@ body.mesa > #contenido.container:has(> .publico) {
     grid-template-columns: minmax(0, 1.75fr) minmax(17rem, 1fr);
   }
 
-  /* El mapa acompaña a la lista mientras se recorre. */
-  .mapa-hoja {
+  /* La columna del mapa (el mapa y las salidas) acompaña a la lista mientras se recorre. */
+  .mapa-columna {
     position: sticky;
     top: var(--espacio-4);
+    display: grid;
+    gap: var(--espacio-4);
+  }
+
+  .mapa-salidas {
+    row-gap: var(--espacio-2);
+    padding: var(--espacio-4) var(--espacio-5);
+    rotate: -0.4deg;
+  }
+
+  .mapa-salidas h2 {
+    font-size: var(--tamano-titulo-4);
   }
 }
 
@@ -713,6 +787,20 @@ body.mesa > #contenido.container:has(> .publico) {
 }
 
 .libreta-hoja + .libreta-hoja {
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+/* La hoja que se ve antes pero se lee después (el h1 va primero en el HTML): pasa adelante, y el
+   filete entre las dos hojas queda donde se ve el cambio de hoja. */
+.libreta-hoja--antes {
+  order: -1;
+}
+
+.libreta-hoja + .libreta-hoja--antes {
+  border-block-start: 0;
+}
+
+.libreta > .libreta-hoja:has(+ .libreta-hoja--antes) {
   border-block-start: var(--borde-ancho) solid var(--color-filete);
 }
 
@@ -909,6 +997,17 @@ body.mesa > #contenido.container:has(> .publico) {
   .libreta-hoja:first-child:not(:last-child) {
     box-shadow: inset -14px 0 12px -14px var(--color-mesa-sombra);
   }
+
+  .libreta-hoja + .libreta-hoja--antes {
+    border-inline-start: 0;
+    box-shadow: inset -14px 0 12px -14px var(--color-mesa-sombra);
+  }
+
+  .libreta > .libreta-hoja:has(+ .libreta-hoja--antes) {
+    border-block-start: 0;
+    border-inline-start: var(--borde-ancho) solid var(--color-filete);
+    box-shadow: inset 14px 0 12px -14px var(--color-mesa-sombra);
+  }
 }
 
 /* ------------------------------------------------------------------------------------------
@@ -964,5 +1063,75 @@ body.mesa > #contenido.container:has(> .publico) {
 
   .mapa-cabecera .filtro {
     grid-column: 1 / -1;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Con colores forzados (alto contraste), el navegador pinta los fondos del color de la hoja y
+   borraría los dibujos pintados: los signos, la rosa, el paisaje, la casilla marcada y el mapa
+   grabado toman el color del texto sobre el de la hoja, y cada papel conserva su borde.
+   ------------------------------------------------------------------------------------------ */
+
+@media (forced-colors: active) {
+  .rosa,
+  .grabado-paisaje,
+  .signo::before,
+  .casilla span::before,
+  .encrucijada-caminos {
+    forced-color-adjust: none;
+  }
+
+  .rosa,
+  .grabado-paisaje,
+  .signo--pueblo::before,
+  .signo--camino::before {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .signo--tinta::before {
+    border-color: var(--color-forzado-texto);
+  }
+
+  /* ◉ entregada: el anillo de tinta con el centro de la hoja y el punto en el medio. */
+  .signo--entregada::before {
+    background-color: var(--color-forzado-texto);
+    border-color: var(--color-forzado-texto);
+    box-shadow: inset 0 0 0 3px var(--color-forzado-fondo);
+  }
+
+  .casilla span::before {
+    background-color: var(--color-forzado-fondo);
+    border-color: var(--color-forzado-texto);
+  }
+
+  .casilla input:checked + span::before {
+    background-color: var(--color-forzado-texto);
+    border-color: var(--color-forzado-texto);
+    box-shadow: inset 0 0 0 3px var(--color-forzado-fondo);
+  }
+
+  .encrucijada-caminos,
+  .mapa-caminos path {
+    stroke: var(--color-forzado-texto);
+  }
+
+  :is(.mapa-deposito, .mapa-casa, .mapa-sello),
+  .mapa-pueblo--sin .mapa-casa {
+    fill: var(--color-forzado-fondo);
+    stroke: var(--color-forzado-texto);
+  }
+
+  .mapa-deposito .mapa-bandera,
+  .mapa-sello-centro {
+    fill: var(--color-forzado-texto);
+  }
+
+  .mapa-rotulo {
+    fill: var(--color-forzado-texto);
+    stroke: var(--color-forzado-fondo);
+  }
+
+  :is(.papel, .libreta-hoja) {
+    border: var(--borde-ancho) solid;
   }
 }

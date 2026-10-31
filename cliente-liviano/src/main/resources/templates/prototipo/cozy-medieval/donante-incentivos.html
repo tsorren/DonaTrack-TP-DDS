@@ -8,7 +8,8 @@
        su texto). Al costado, el estuche de las insignias: la medalla grabada de la ganada y el lugar
        vacío de las otras, y el sobre que lleva a las cartas. Los rangos y las misiones son los de
        incentivos-service (MisionFactory): dos por rango y una sola en curso. Datos de ejemplo,
-       coherentes con la muestra del inicio: hoy es 15 de octubre de 2026. Estilos: juego.css. */-->
+       coherentes con la muestra del inicio: hoy es 15 de octubre de 2026. Arriba del título, el
+       nombre del menú como rótulo. Estilos: juego.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -24,6 +25,7 @@
     <section class="juego-tira juego-rango" aria-labelledby="cuaderno-h1">
       <div class="juego-tira-cartela">
         <h1 id="cuaderno-h1">Tu cuaderno de sellos</h1>
+        <p class="juego-rotulo juego-seccion">Incentivos</p>
         <p class="juego-tira-frase">Sos <b>Colaborador</b>. Un sello más y llegás a
           <b>Sostenedor</b>.</p>
       </div>

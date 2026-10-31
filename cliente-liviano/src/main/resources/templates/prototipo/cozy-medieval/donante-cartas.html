@@ -4,10 +4,13 @@
        cerrados, con la solapa y el botón de tinta (el de la carta de la cabecera), en la bandeja de
        nogal con su etiqueta; las leídas, cartas desplegadas en el legajo. Las dos se distinguen por la
        forma, por el texto ("Sin abrir" o "Leída") y por su sección, no solo por el color. Cada carta
-       lleva el signo del estado de su entrega (o el sello, si es una misión) y su título es el enlace a
-       la donación o al cuaderno de sellos: toda la carta se puede tocar. Los cuatro eventos de RF-08
-       (asignación, misión cumplida, ascenso y recepción) y los dos de la muestra del inicio; Ana
-       todavía no subió de rango. Hoy es 15 de octubre de 2026. El estado vacío es donante-cartas-vacio.
+       lleva el signo del estado de su entrega (o el sello, si es una misión) y su título es el enlace al
+       detalle de su donación (?donacion= con las claves de viaje-datos; sin el parámetro, las
+       lentejas) o al cuaderno de sellos: toda la carta se puede tocar. Los eventos de RF-08
+       (asignación, misión cumplida, ascenso y recepción) y los de la muestra del inicio; Ana todavía
+       no subió de rango. Las leídas, de la más nueva a la más vieja. Hoy es el jueves 15 de octubre
+       de 2026. Arriba del título, el nombre de la carta de la cabecera como rótulo. El estado vacío
+       es donante-cartas-vacio.
        Abajo, fuera del contenido, el fragmento sobre: el enlace a esta pantalla que llevan las otras
        pantallas del grupo. Estilos: juego.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -23,6 +26,7 @@
     <section class="juego-tira" aria-labelledby="cartas-h1">
       <div class="juego-tira-cartela">
         <h1 id="cartas-h1">Cartas del camino</h1>
+        <p class="juego-rotulo juego-seccion">Notificaciones</p>
         <p class="juego-tira-frase">Tenés <b>2 cartas sin abrir</b>. Cada una cuenta qué pasó con
           una donación tuya o con tus misiones.</p>
       </div>
@@ -57,8 +61,19 @@
     </section>
 
     <section class="juego-legajo" aria-labelledby="leidas-titulo">
-      <h2 id="leidas-titulo" class="juego-etiqueta">Leídas <span>(3)</span></h2>
+      <h2 id="leidas-titulo" class="juego-etiqueta">Leídas <span>(6)</span></h2>
       <ul class="juego-cartas" role="list">
+        <li>
+          <article class="juego-carta">
+            <p class="juego-carta-cabeza"><span class="juego-carta-estado">Leída</span><span
+                th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[0]})}">Pendiente</span></p>
+            <h3><a href="/prototipo/donante-donaciones-detalle?donacion=arroz"
+                   th:href="@{/prototipo/donante-donaciones-detalle(donacion='arroz')}">Recibimos tu
+              arroz en el depósito. Ahora espera una necesidad que le corresponda.</a></h3>
+            <p class="juego-carta-pie"><time datetime="2026-10-14T17:00">Ayer, 17:00</time>
+              <span>Arroz largo fino, 10 kg</span></p>
+          </article>
+        </li>
         <li>
           <article class="juego-carta">
             <p class="juego-carta-cabeza"><span class="juego-carta-estado">Leída</span><span
@@ -73,23 +88,46 @@
         <li>
           <article class="juego-carta">
             <p class="juego-carta-cabeza"><span class="juego-carta-estado">Leída</span><span
-                class="juego-carta-mision">Misión cumplida</span></p>
-            <h3><a href="/prototipo/donante-incentivos"
-                   th:href="@{/prototipo/donante-incentivos}">Cumpliste la misión Explorador y
-              ganaste su insignia.</a></h3>
-            <p class="juego-carta-pie"><time datetime="2026-10-01T18:20">1 de octubre</time>
-              <span>Tu cuaderno de sellos</span></p>
+                th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[3]})}">Con problema</span></p>
+            <h3><a href="/prototipo/donante-donaciones-detalle?donacion=utiles"
+                   th:href="@{/prototipo/donante-donaciones-detalle(donacion='utiles')}">El camión no
+              pudo llegar a Escuela Ejemplo 12: el camino estaba cortado. Sale de nuevo el 17 de
+              octubre.</a></h3>
+            <p class="juego-carta-pie"><time datetime="2026-10-11T16:10">11 de octubre</time>
+              <span>Útiles escolares, 2 cajas</span></p>
           </article>
         </li>
         <li>
           <article class="juego-carta">
             <p class="juego-carta-cabeza"><span class="juego-carta-estado">Leída</span><span
                 th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span></p>
-            <h3><a href="/prototipo/donante-donaciones-detalle"
-                   th:href="@{/prototipo/donante-donaciones-detalle}">Merendero Ejemplo Sur
-              recibió tu ropa de abrigo. Mirá la foto de la entrega.</a></h3>
-            <p class="juego-carta-pie"><time datetime="2026-09-28T16:45">28 de septiembre</time>
+            <h3><a href="/prototipo/donante-donaciones-detalle?donacion=ropa"
+                   th:href="@{/prototipo/donante-donaciones-detalle(donacion='ropa')}">Merendero Ejemplo
+              Sur recibió tu ropa de abrigo. Mirá la foto de la entrega.</a></h3>
+            <p class="juego-carta-pie"><time datetime="2026-10-09T18:05">9 de octubre</time>
               <span>Ropa de abrigo, 12 prendas</span></p>
+          </article>
+        </li>
+        <li>
+          <article class="juego-carta">
+            <p class="juego-carta-cabeza"><span class="juego-carta-estado">Leída</span><span
+                th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span></p>
+            <h3><a href="/prototipo/donante-donaciones-detalle?donacion=fideos"
+                   th:href="@{/prototipo/donante-donaciones-detalle(donacion='fideos')}">Comedor Barrio
+              Ejemplo recibió tus fideos. Mirá la foto de la entrega.</a></h3>
+            <p class="juego-carta-pie"><time datetime="2026-10-05T17:20">5 de octubre</time>
+              <span>Fideos secos, 8 kg</span></p>
+          </article>
+        </li>
+        <li>
+          <article class="juego-carta">
+            <p class="juego-carta-cabeza"><span class="juego-carta-estado">Leída</span><span
+                class="juego-carta-mision">Misión cumplida</span></p>
+            <h3><a href="/prototipo/donante-incentivos"
+                   th:href="@{/prototipo/donante-incentivos}">Cumpliste la misión Explorador y
+              ganaste su insignia.</a></h3>
+            <p class="juego-carta-pie"><time datetime="2026-10-01T18:20">1 de octubre</time>
+              <span>Tu cuaderno de sellos</span></p>
           </article>
         </li>
       </ul>

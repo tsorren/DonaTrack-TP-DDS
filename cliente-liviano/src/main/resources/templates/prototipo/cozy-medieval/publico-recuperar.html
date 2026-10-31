@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <!--/* Prototipo del flujo completo (iteración 3, grupo público): recuperar la contraseña (el desvío de
-       "¿Olvidaste tu contraseña?"). Una sola hoja de la libreta. El formulario (get) vuelve a esta
-       pantalla con ?enviado=si: entonces muestra el aviso, sin decir si el correo existe. */-->
+       "¿Olvidaste tu contraseña?"). Una sola hoja de la libreta. El formulario (post) lleva a
+       publico-recuperar-enviado, que reusa el fragmento hoja(enviado) con el aviso, sin decir si el
+       correo existe; el aviso toma el foco al cargar. El campo va escrito a mano, con el marcado y
+       las clases del fragmento campo, para llevar autocomplete y required. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -11,26 +13,28 @@
 <th:block th:fragment="contenido">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
-  <div class="publico" th:with="enviado=${param.enviado != null}">
+  <div class="publico" th:fragment="hoja(enviado)">
     <div class="libreta libreta--una">
       <section class="libreta-hoja" aria-labelledby="recuperar-titulo">
         <h1 id="recuperar-titulo">Recuperá tu contraseña</h1>
         <th:block th:unless="${enviado}">
           <p class="bajada">Escribí el correo de tu cuenta y te mandamos un enlace para crear una
             contraseña nueva.</p>
-          <form action="/prototipo/publico-recuperar" method="get">
-            <input type="hidden" name="enviado" value="si">
-            <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo electrónico', 'email', null, null, false)}"></div>
+          <form action="/prototipo/publico-recuperar-enviado"
+                th:action="@{/prototipo/publico-recuperar-enviado}" method="post">
+            <div class="campo">
+              <label for="correo">Correo electrónico</label>
+              <input id="correo" name="correo" type="email" autocomplete="email" required>
+            </div>
             <button type="submit">Enviarme el enlace</button>
           </form>
         </th:block>
-        <th:block th:if="${enviado}">
-          <div class="recuperar-enviado" role="status">
-            <div th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Si el correo está registrado, te mandamos un enlace. Revisá tu bandeja de entrada: vence en una hora.', 'exito')}"></div>
-          </div>
-        </th:block>
+        <div th:if="${enviado}" class="recuperar-enviado" role="status" tabindex="-1" autofocus>
+          <div th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Si el correo está registrado, te mandamos un enlace. Revisá tu bandeja de entrada: vence en una hora.', 'exito')}"></div>
+        </div>
         <p class="libreta-separador">¿Te acordaste?</p>
-        <a href="/prototipo/publico-ingresar" role="button" class="fantasma">Volver a ingresar</a>
+        <a href="/prototipo/publico-ingresar" th:href="@{/prototipo/publico-ingresar}" role="button"
+           class="fantasma">Volver a ingresar</a>
       </section>
     </div>
   </div>

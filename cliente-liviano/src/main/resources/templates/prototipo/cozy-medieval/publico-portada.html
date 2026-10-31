@@ -3,8 +3,10 @@
        un enlace, en el celular primero. Su audacia es la encrucijada (estructura-cozy-medieval.md):
        arriba, el título y Donar ahora; el paisaje grabado de identidad; abajo, tres caminos en
        lápiz que salen de la rosa de los vientos (soy donante, soy una entidad y el mapa de
-       entregadas). Sobre la mesa, debajo: las donaciones del mes (fragmento tarjeta con
-       ${entregas}) y lo que se logró, como la leyenda de un mapa. Estilos: prototipo/publico.css. */-->
+       entregadas). Sobre la mesa, debajo: lo que viajó en octubre, en fichas escritas acá con el
+       marcado del fragmento tarjeta (las entregadas, con la foto que subió la entidad pegada; la
+       que va en camino, con el hueco en lápiz donde va a ir su foto), y lo que se logró, como la
+       leyenda de un mapa. Hoy es el jueves 15 de octubre de 2026. Estilos: prototipo/publico.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -72,9 +74,62 @@
         <p>Las fotos las sube la entidad al recibir: son la prueba de que llegó.</p>
       </header>
       <div class="tarjetas">
-        <th:block th:each="entrega : ${entregas}">
-          <article th:replace="~{alternativas/cozy-medieval/fragmentos/tarjeta :: tarjeta(${entrega})}"></article>
-        </th:block>
+        <article class="tarjeta">
+          <img class="tarjeta-foto" src="/img/cozy-medieval/prototipo-publico-foto-utiles.svg"
+               th:src="@{/img/cozy-medieval/prototipo-publico-foto-utiles.svg}"
+               alt="Cuadernos y una caja de útiles sobre una mesa del aula" width="640" height="400"
+               loading="lazy">
+          <span class="insignia insignia--entregada"><span>Entregada</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Escuela Ejemplo 12</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-3"
+                th:href="@{/prototipo/publico-mapa#pueblo-3}">Útiles escolares, 30 cuadernos</a></h3>
+            <p class="tarjeta-fecha">Llegó ayer, 14 de octubre</p>
+          </div>
+        </article>
+        <article class="tarjeta">
+          <img class="tarjeta-foto" src="/img/cozy-medieval/prototipo-publico-foto-ropa.svg"
+               th:src="@{/img/cozy-medieval/prototipo-publico-foto-ropa.svg}"
+               alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640"
+               height="400" loading="lazy">
+          <span class="insignia insignia--entregada"><span>Entregada</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Merendero Ejemplo Sur</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-2"
+                th:href="@{/prototipo/publico-mapa#pueblo-2}">Ropa de abrigo, 12 prendas</a></h3>
+            <p class="tarjeta-fecha">Llegó el 9 de octubre</p>
+          </div>
+        </article>
+        <article class="tarjeta">
+          <img class="tarjeta-foto" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}"
+               alt="Cajas con los fideos apiladas junto a la puerta del comedor" width="640"
+               height="400" loading="lazy">
+          <span class="insignia insignia--entregada"><span>Entregada</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Comedor Barrio Ejemplo</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-1"
+                th:href="@{/prototipo/publico-mapa#pueblo-1}">Fideos secos, 8 kg</a></h3>
+            <p class="tarjeta-fecha">Llegó el 5 de octubre</p>
+          </div>
+        </article>
+        <!--/* La que va en camino: todavía no tiene foto. En su lugar, el hueco marcado en lápiz. */-->
+        <article class="tarjeta">
+          <div class="tarjeta-portada tarjeta-hueco">
+            <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 56)}"></svg>
+            <p>La foto llega cuando el comedor la reciba</p>
+          </div>
+          <span class="insignia insignia--en-camino"><span>En camino</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Comedor Barrio Ejemplo</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-1"
+                th:href="@{/prototipo/publico-mapa#pueblo-1}">Lentejas secas, 15 kg</a></h3>
+            <p class="tarjeta-fecha">Salió hoy a las 14:30</p>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -89,7 +144,7 @@
         <li class="signo signo--camino"><span><b>32</b> en camino ahora</span></li>
       </ul>
       <a href="/prototipo/publico-mapa" class="enlace-fuerte">Ver adónde llegaron</a>
-      <p class="nota-chica">Actualizado el 31 de octubre de 2026.</p>
+      <p class="nota-chica">Actualizado el 15 de octubre, 14:30.</p>
     </section>
   </div>
 </th:block>

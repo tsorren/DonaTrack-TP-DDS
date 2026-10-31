@@ -107,6 +107,18 @@
   line-height: 1.05;
 }
 
+/* El nombre del menú, chico, arriba del título propio: en el HTML va después del h1, que se lee
+   primero; la cartela lo pasa adelante. */
+.juego-tira-cartela {
+  display: flex;
+  flex-direction: column;
+}
+
+.juego-seccion {
+  order: -1;
+  margin-block-end: var(--espacio-2);
+}
+
 .juego-tira-frase {
   max-width: 46ch;
   margin-block-start: var(--espacio-3);
@@ -933,11 +945,10 @@
   font-style: italic;
 }
 
+/* La huella de Ana en el pueblo: el signo del estado arriba y, debajo, qué pasó. */
 .juego-ficha-huella {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 var(--espacio-2);
+  display: grid;
+  justify-items: start;
   font-size: var(--tamano-chico);
 }
 
@@ -1111,11 +1122,46 @@
   color: var(--color-titulo);
 }
 
-.juego-pedido form {
+.juego-pedido-donar {
   grid-column: 2;
+  justify-self: start;
 }
 
-.juego-pedido button {
+/* El paso corto: la necesidad elegida abre debajo su hoja de pedido, con la pestaña de latón al
+   costado; qué y cuánto vas a llevar, y confirmar. */
+.juego-paso {
+  display: grid;
+  grid-column: 2 / -1;
+  gap: var(--espacio-3);
+  margin-block-start: var(--espacio-2);
+  padding: var(--espacio-4);
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-inline-start: var(--borde-acento) solid var(--color-laton-texto);
+  border-radius: 2px;
+  box-shadow: var(--sombra-hundido);
+  scroll-margin-block-start: var(--espacio-6);
+}
+
+.juego .juego-paso h4 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-texto-grande);
+}
+
+.juego-paso .campo {
+  margin: 0;
+}
+
+.juego-paso-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+}
+
+.juego-paso button {
   width: auto;
   margin: 0;
 }
@@ -1131,7 +1177,7 @@
     align-self: start;
   }
 
-  .juego-pedido form {
+  .juego-pedido-donar {
     grid-column: 3;
   }
 }
@@ -1224,7 +1270,18 @@
   font-size: var(--tamano-chico);
 }
 
-/* El aviso de que la donación quedó anotada: la esquela del éxito, en verde con su texto. */
+.juego-huellas {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.juego-huellas li {
+  display: grid;
+  justify-items: start;
+}
+
+/* El aviso de que la donación quedó anotada: la esquela del éxito, en verde con su texto. Viene
+   escrito al cargar y toma el foco: el filete de foco va por fuera de la esquela. */
 .juego-aviso {
   display: grid;
   justify-items: start;
@@ -1242,6 +1299,36 @@
 
 .juego-aviso .enlace-fuerte {
   color: var(--color-exito-texto);
+}
+
+.juego-aviso:focus-visible {
+  outline-offset: var(--espacio-1);
+}
+
+/* La donación anotada: una sola columna angosta, la tira y el talón del envío. El talón es la
+   esquela del éxito con los datos del depósito en renglones y el corte punteado arriba. */
+.juego--anotada {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.juego-talon {
+  gap: var(--espacio-3);
+  padding-block-start: var(--espacio-5);
+  border-block-start: var(--borde-marco) dashed var(--color-exito-texto);
+}
+
+.juego-talon .juego-datos {
+  justify-self: stretch;
+}
+
+.juego-talon-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin-block-start: var(--espacio-2);
 }
 
 /* ─── Las grillas de cada pantalla ─────────────────────────────────────────────────────────── */
@@ -1365,16 +1452,11 @@
   .juego--detalle {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     grid-template-areas:
-      "aviso aviso"
       "tira plano"
       "pedidos huella"
       "pedidos sobre"
       "pedidos .";
-    grid-template-rows: auto auto auto auto 1fr;
-  }
-
-  .juego--detalle > .juego-aviso {
-    grid-area: aviso;
+    grid-template-rows: auto auto auto 1fr;
   }
 
   .juego--detalle > .juego-tira {
@@ -1427,20 +1509,94 @@
   }
 }
 
-/* Con colores forzados (alto contraste), los dibujos pintados toman el color del texto. */
+/* Con colores forzados (alto contraste), el navegador pinta los fondos del color de la hoja y
+   borraría los dibujos pintados: toman el color del texto sobre el de la hoja. Cada signo conserva
+   su forma: ● y ◆ llenos, ○ hueco, ◉ con el anillo; las barras, lo recibido en tinta. */
 @media (forced-colors: active) {
   .juego-sello-marca::before,
   .juego-sello-marca::after,
   .juego-medalla-disco::after,
   .juego-carta-mision::before,
   .juego-leyenda-sellado::before,
-  .juego-mision::before {
+  .juego-mision::before,
+  .juego-tramo--cumplida,
+  .juego-ficha-numero--sellado,
+  .juego progress,
+  .juego-plano svg {
     forced-color-adjust: none;
+  }
+
+  .juego-sello-marca::before,
+  .juego-sello-marca::after,
+  .juego-medalla-disco::after,
+  .juego-carta-mision::before,
+  .juego-tramo--cumplida {
     background-color: var(--color-forzado-texto);
   }
 
   .juego-sello--puesto .juego-sello-marca::before {
     background-color: var(--color-forzado-fondo);
+  }
+
+  .juego-mision::before {
+    background-color: var(--color-forzado-fondo);
+    border-color: var(--color-forzado-texto);
+  }
+
+  .juego-mision:is(.juego-mision--cumplida, .juego-mision--curso)::before {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .juego-leyenda-sellado::before,
+  .juego-ficha-numero--sellado {
+    background-color: var(--color-forzado-texto);
+    border-color: var(--color-forzado-texto);
+    box-shadow: inset 0 0 0 3px var(--color-forzado-fondo);
+    color: var(--color-forzado-fondo);
+  }
+
+  .juego progress {
+    background-color: var(--color-forzado-fondo);
+    border-color: var(--color-forzado-texto);
+  }
+
+  .juego progress::-webkit-progress-bar {
+    background-color: var(--color-forzado-fondo);
+  }
+
+  .juego progress::-webkit-progress-value {
+    background: var(--color-forzado-texto);
+  }
+
+  .juego progress::-moz-progress-bar {
+    background: var(--color-forzado-texto);
+  }
+
+  .juego-mapa-sello {
+    fill: var(--color-forzado-texto);
+    stroke: var(--color-forzado-texto);
+  }
+
+  .juego-plano svg {
+    background-color: var(--color-forzado-fondo);
+    border-color: var(--color-forzado-texto);
+  }
+
+  .juego-plano-edificado {
+    fill: var(--color-forzado-texto);
+  }
+
+  :is(.juego-plano-patio, .juego-plano-plaza circle, .juego-plano-merendero) {
+    fill: var(--color-forzado-fondo);
+  }
+
+  .juego-plano-medianeras {
+    stroke: var(--color-forzado-fondo);
+  }
+
+  :is(.juego-plano-plaza rect, .juego-plano-plaza circle, .juego-plano-plaza path,
+    .juego-plano-merendero) {
+    stroke: var(--color-forzado-texto);
   }
 
   .juego > *,

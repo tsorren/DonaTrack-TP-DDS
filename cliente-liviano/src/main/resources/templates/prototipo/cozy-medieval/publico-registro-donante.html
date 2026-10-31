@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <!--/* Prototipo del flujo completo (iteración 3, grupo público): el formulario corto de la persona
        donante, en la libreta de viaje (la hoja de adorno, como en ingresar). Tres datos y la
-       aceptación de las condiciones. Es un prototipo: el envío lleva al inicio de la persona
-       donante de ejemplo con method="get". Desvíos: ingresar y el camino de la entidad. */-->
+       aceptación de las condiciones, todos obligatorios. Es un prototipo: el envío (post) lleva al
+       inicio de la persona donante de ejemplo. Los campos van escritos a mano, con el marcado y las
+       clases del fragmento campo, para llevar autocomplete. Desvíos: ingresar y el camino de la
+       entidad. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -22,12 +24,27 @@
       <section class="libreta-hoja" aria-labelledby="donante-titulo">
         <h1 id="donante-titulo">Empezá tu viaje</h1>
         <p class="bajada">Creá tu cuenta de persona donante. Son tres datos.</p>
-        <form action="/prototipo/donante-inicio" method="get">
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('nombre', 'Tu nombre', 'text', 'Como querés que te saludemos.', null, false)}"></div>
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo electrónico', 'email', 'Para avisarte cada tramo del viaje. No lo compartimos.', null, false)}"></div>
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('contrasena', 'Contraseña', 'password', 'Al menos 8 caracteres, con una letra y un número.', null, false)}"></div>
+        <form action="/prototipo/donante-inicio" th:action="@{/prototipo/donante-inicio}" method="post">
+          <div class="campo">
+            <label for="nombre">Tu nombre</label>
+            <input id="nombre" name="nombre" type="text" autocomplete="given-name" required
+                   aria-describedby="nombre-ayuda">
+            <small id="nombre-ayuda">Como querés que te saludemos.</small>
+          </div>
+          <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" name="correo" type="email" autocomplete="email" required
+                   aria-describedby="correo-ayuda">
+            <small id="correo-ayuda">Para avisarte cada tramo del viaje. No lo compartimos.</small>
+          </div>
+          <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" autocomplete="new-password"
+                   minlength="8" required aria-describedby="contrasena-ayuda">
+            <small id="contrasena-ayuda">Al menos 8 caracteres, con una letra y un número.</small>
+          </div>
           <div class="libreta-fila">
-            <label class="casilla"><input type="checkbox" name="condiciones"><span>Acepto las
+            <label class="casilla"><input type="checkbox" name="condiciones" required><span>Acepto las
                 condiciones de uso y la política de privacidad</span></label>
           </div>
           <button type="submit">Crear mi cuenta</button>
