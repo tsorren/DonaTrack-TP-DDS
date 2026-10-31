@@ -78,12 +78,12 @@ a {
 }
 
 /* Sobre madera o cuero, el trazo es de latón. */
-:is(.mision, .catalogo-oscuro) .fantasma {
+.catalogo-oscuro .fantasma {
   border-color: var(--color-laton-brillante);
   color: var(--color-destacado-texto);
 }
 
-:is(.mision, .catalogo-oscuro) .fantasma:hover {
+.catalogo-oscuro .fantasma:hover {
   background-color: var(--color-destacado-hover);
   border-color: var(--color-laton-brillante);
   color: var(--color-destacado-texto);
@@ -1390,96 +1390,131 @@ nav.navegacion ul {
   }
 }
 
-/* Misión: el logro va en cuero oscuro con un sello de latón. */
+/* Misión: el cuaderno de sellos, una de las dos regiones con marco propio. Cada paso cumplido es
+   un sello de latón; el que falta, un sello en relieve y sin tinta, con lo que falta escrito
+   debajo. Los sellos reemplazan el dibujo de la barra de progreso, que sigue para los lectores
+   de pantalla. */
 .mision {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: var(--espacio-1);
-  background-color: var(--color-destacado-fondo-alto);
-  border: var(--borde-hoja) solid var(--color-laton);
-  color: var(--color-destacado-texto);
+  padding: 1.25rem 1.375rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-papel);
 }
 
-.mision > h3,
-.mision > .panel-bajada {
-  justify-self: end;
-  text-align: end;
+/* El cuaderno es de pergamino: el foco vuelve al anillo verde de la hoja. */
+.mision :focus-visible {
+  outline-color: var(--color-foco);
 }
 
-.mision > h3 {
-  color: var(--color-destacado-texto);
-}
-
-.mision .panel-bajada,
-.mision-pie {
-  color: var(--color-destacado-texto-suave);
-}
-
-.mision-sello-fila {
+.mision-encabezado {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: var(--espacio-3);
-  margin: 0.625rem 0 var(--espacio-4);
 }
 
-.mision-sello-fila p {
+.mision-encabezado p {
   display: grid;
   margin: 0;
-  color: var(--color-destacado-texto-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
-.mision-sello-fila b {
-  color: var(--color-destacado-texto);
-  font-family: var(--fuente-rotulos);
-  font-size: 1.1875rem;
-}
-
-.mision-sello {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 3.25rem;
-  height: 3.25rem;
-  background-color: var(--color-laton-brillante);
-  border: var(--borde-marco) solid var(--color-laton-texto);
-  border-radius: var(--radio-sello);
-  box-shadow: inset 0 0 0 3px var(--color-placa-brillo);
+.mision-nombre b {
   color: var(--color-titulo);
   font-family: var(--fuente-rotulos);
-  font-weight: 800;
+  font-size: var(--tamano-titulo-4);
 }
 
-.mision-barra {
-  display: block;
-  width: 100%;
-  height: 10px;
+/* La cuenta de pasos, como el folio de la hoja del cuaderno. */
+.mision-cuenta {
+  flex: none;
+  justify-items: end;
+}
+
+.mision-cuenta span:first-child {
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* La hoja del cuaderno: una casilla por paso, separadas por reglas finas, como en una credencial
+   de viaje. Los pasos que faltan son siempre los últimos: lo que falta se escribe al pie de la
+   última casilla. */
+.mision-cuaderno {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: calc(var(--medida-sello) + var(--espacio-5)) auto;
+  max-width: 30rem;
+  margin-block: var(--espacio-3) var(--espacio-4);
+  background-image:
+    linear-gradient(var(--color-filete-tenue), var(--color-filete-tenue)),
+    linear-gradient(var(--color-filete-tenue), var(--color-filete-tenue));
+  background-position: 33.333% 0, 66.667% 0;
+  background-repeat: no-repeat;
+  background-size: var(--borde-ancho) 100%;
+  border-block: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.mision-casilla {
+  position: relative;
+  grid-row: 1;
+}
+
+.mision-casilla::before,
+.mision-casilla::after {
+  content: "";
+  position: absolute;
+  top: var(--espacio-3);
+  left: 50%;
+  width: var(--medida-sello);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  mask: url("../../../img/cozy-medieval/sello-mision-relieve.svg") center / contain no-repeat;
+}
+
+/* En relieve y sin tinta: el trazo del sello, de 4:1 sobre el pergamino, y apenas corrida hacia
+   abajo la sombra del papel hundido. */
+.mision-casilla::before {
+  background-color: var(--color-relieve-sombra);
+  translate: calc(-50% + 1px) 2px;
+}
+
+.mision-casilla::after {
+  background-color: var(--color-relieve);
+}
+
+/* Sellado: la impresión de latón y su grabado en latón oscuro, que da 6:1 sobre el pergamino y
+   3,3:1 sobre el latón claro. */
+.mision-casilla--sellada::before {
+  background-color: var(--color-laton-brillante);
+  translate: -50% 0;
+  mask-image: url("../../../img/cozy-medieval/sello-mision-silueta.svg");
+}
+
+.mision-casilla--sellada::after {
+  background-color: var(--color-laton-texto);
+  mask-image: url("../../../img/cozy-medieval/sello-mision.svg");
+}
+
+.mision-falta {
+  grid-row: 2;
+  grid-column: -2;
   margin: 0;
-  overflow: hidden;
-  appearance: none;
-  background-color: var(--color-destacado-pista);
-  border: var(--borde-ancho) solid var(--color-laton);
-  border-radius: var(--radio-chico);
-}
-
-.mision-barra::-webkit-progress-bar {
-  background-color: var(--color-destacado-pista);
-}
-
-/* [value] le gana a la regla de Pico para progress[value]. */
-.mision-barra[value]::-webkit-progress-value {
-  background-color: var(--color-laton-brillante);
-}
-
-.mision-barra[value]::-moz-progress-bar {
-  background-color: var(--color-laton-brillante);
-}
-
-.mision-pie {
-  display: flex;
-  justify-content: space-between;
-  margin: var(--espacio-2) 0 0.875rem;
+  padding: 0 var(--espacio-1) var(--espacio-3);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
+  font-style: italic;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .mision [role="button"] {
@@ -1674,38 +1709,118 @@ dialog > article > footer button {
   font-style: italic;
 }
 
-/* Estado vacío: la rosa de los vientos marca dónde empezar. Los tres nodos de la ruta del
-   fragmento son de Glassmorphism y acá no se muestran. */
+/* Estado vacío: tierra sin explorar. Un trozo de mapa sin dibujar: el mensaje va en una isla en
+   blanco, con la costa punteada alrededor, y la rosa de los vientos, junto a la acción, marca por
+   dónde empezar. El trozo corta el agua en sus bordes. */
 .estado-vacio {
   display: grid;
-  justify-items: start;
-  gap: var(--espacio-2);
-  padding: var(--espacio-5) var(--espacio-2);
+  align-content: center;
+  padding: var(--espacio-3);
+  overflow: hidden;
+  background-color: var(--color-fondo);
+}
+
+.estado-vacio-isla {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-self: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  width: 100%;
+  max-width: 36rem;
+  padding: var(--espacio-5) 1.25rem;
+  isolation: isolate;
+}
+
+/* La costa se estira con la isla y queda entre el 1,5 y el 5 % adentro de su borde, siempre
+   dentro del relleno: el texto nunca la toca. Los trazos no se estiran. El agua sale de la isla:
+   svg le gana a la regla de Pico que recorta los svg. */
+svg.estado-vacio-costa {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.estado-vacio-costa path {
+  fill: none;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Variante A: el rayado de agua, las líneas que el grabador seguía alrededor de la costa: cada
+   línea es un trazo ancho de agua tapado por uno apenas más angosto de pergamino. Rodea la isla y
+   nunca pasa por debajo del texto. La variante B (solo la costa punteada) lo apaga con
+   .estado-vacio-agua { display: none; }. */
+.estado-vacio-agua path:nth-child(odd) {
+  stroke: var(--color-agua);
+}
+
+.estado-vacio-agua path:nth-child(even) {
+  stroke: var(--color-fondo);
+}
+
+/* La tierra sin dibujar: pergamino liso hasta la costa, que tapa el agua por dentro. */
+.estado-vacio-costa .estado-vacio-tierra {
+  fill: var(--color-fondo);
+  stroke: var(--color-fondo);
+}
+
+.estado-vacio-costa .estado-vacio-orilla {
+  stroke: var(--color-costa);
+  stroke-dasharray: 0 6;
+  stroke-linecap: round;
+  stroke-width: 2.5px;
 }
 
 .estado-vacio h3 {
+  flex-basis: 100%;
   margin: 0;
   color: var(--color-titulo);
   font-size: var(--tamano-titulo-4);
 }
 
 .estado-vacio p {
+  flex-basis: 100%;
   max-width: var(--medida-lectura);
-  margin: 0;
+  margin: 0 0 var(--espacio-2);
   color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
+/* La rosa de los vientos es la ruta chica del fragmento: un signo, en latón oscuro (6:1 sobre el
+   pergamino). Sus tres nodos son de Glassmorphism y acá no se muestran. */
 .ruta-chica {
-  width: var(--medida-rosa-chica);
+  flex: none;
+  width: var(--medida-rosa-vacio);
   aspect-ratio: 1;
-  background-color: var(--color-laton);
+  background-color: var(--color-laton-texto);
   mask: url("../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
 }
 
 .ruta-chica span {
   display: none;
 }
+
+/* Sin acción, la rosa queda última: no hay por dónde empezar y no se muestra. */
+.ruta-chica:last-child {
+  display: none;
+}
+
+/* Desde 600 px, más agua alrededor de la isla y más aire adentro. */
+@media (min-width: 37.5em) {
+  .estado-vacio {
+    padding: var(--espacio-5);
+  }
+
+  .estado-vacio-isla {
+    padding: 1.75rem var(--espacio-6);
+  }
+}
+
 
 /* Estado de una entrega: una anotación del mapa, con el signo del viaje y su texto. */
 /* Sin píldora: cambia la forma del signo, no solo el color. El texto va en cursiva, como los

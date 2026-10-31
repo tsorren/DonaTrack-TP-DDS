@@ -1,10 +1,29 @@
 <!--/* Estado vacío. Patrón: Material Empty states. Dice qué significa y invita a la acción posible.
-       La ruta chica (tres nodos, el último encendido) es la del prototipo v2.
+       En Cozy es tierra sin explorar: el mensaje va en una isla en blanco, con la costa punteada
+       alrededor y el rayado de agua por fuera (dibujo aria-hidden: la costa es una sola curva,
+       en % de la isla, que se repite en cada capa). La rosa de los vientos es la ruta chica,
+       junto a la acción; sin acción queda última y no se muestra. Sus tres nodos son de
+       Glassmorphism y acá no se muestran.
        accionTexto y accionRuta pueden ser null si no hay acción. */-->
 <section th:fragment="estado-vacio(titulo, texto, accionTexto, accionRuta)" class="estado-vacio">
-  <div class="ruta-chica" aria-hidden="true"><span></span><span></span><span></span></div>
-  <h3 th:text="${titulo}">Todavía no hay nada acá</h3>
-  <p th:text="${texto}">Qué significa y qué se puede hacer.</p>
-  <a th:if="${accionTexto}" href="#" th:href="@{${accionRuta}}" role="button"
-     th:text="${accionTexto}">Acción</a>
+  <div class="estado-vacio-isla">
+    <svg class="estado-vacio-costa" viewBox="0 0 100 100" preserveAspectRatio="none"
+         aria-hidden="true" focusable="false"
+         th:with="costa='m9 3.8c2.4-.9 5.8-1.7 10-1.6c4.2 .1 11.2 2.2 15 2.4c3.8 .2 4.2-.7 8-1.2c3.8-.5 10.2-1.6 15-1.6c4.8 0 10.3 .9 14 1.4c3.7 .5 4.7 1.6 8 1.5c3.3-.1 9-2.8 12-2.1c3 .7 4.6 2 5.8 6.4c1.2 4.4 1.2 12.5 1.2 20c0 7.5-1.3 17-1.3 25c0 8 2 16 1.2 23c-.8 7-3.1 15.5-5.9 19c-2.8 3.5-7 1.8-11 1.8c-4 0-9.5-1.8-13-1.7c-3.5 .1-4.2 2.3-8 2.2c-3.8-.1-10-2.5-15-2.7c-5-.2-10.3 1.3-15 1.7c-4.7 .4-9.3 1-13 .8c-3.7-.2-6.7-.8-9-2.3c-2.3-1.5-3.8-2.8-4.8-6.8c-1-4-1.1-10.3-1.1-17c0-6.7 1.3-15.3 1.3-23c0-7.7-1.6-16.1-1.4-23c.2-6.9 1.4-14.8 2.6-18.5c1.2-3.7 2-2.8 4.4-3.7z'">
+      <g class="estado-vacio-agua">
+        <path stroke-width="34" th:attr="d=${costa}"/>
+        <path stroke-width="32" th:attr="d=${costa}"/>
+        <path stroke-width="22" th:attr="d=${costa}"/>
+        <path stroke-width="20" th:attr="d=${costa}"/>
+        <path stroke-width="12" th:attr="d=${costa}"/>
+      </g>
+      <path class="estado-vacio-tierra" stroke-width="10" th:attr="d=${costa}"/>
+      <path class="estado-vacio-orilla" th:attr="d=${costa}"/>
+    </svg>
+    <h3 th:text="${titulo}">Todavía no hay nada acá</h3>
+    <p th:text="${texto}">Qué significa y qué se puede hacer.</p>
+    <div class="ruta-chica" aria-hidden="true"><span></span><span></span><span></span></div>
+    <a th:if="${accionTexto}" href="#" th:href="@{${accionRuta}}" role="button"
+       th:text="${accionTexto}">Acción</a>
+  </div>
 </section>
