@@ -2,6 +2,7 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,6 +11,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.necesidades.DestinoAsignacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import java.time.LocalDate;
@@ -42,30 +44,41 @@ class NecesidadRecurrenteTest {
 
   @Test
   void estaSatisfecha_cuandoNoAlcanzaObjetivo_deberiaSerFalse() {
-    necesidad.asignarDonacion(d40);
-
-    assertFalse(necesidad.estaSatisfecha());
-    assertEquals(40, necesidad.cantidadAcumulada());
+    // DTI-06: lo acumulado del período lo suma quien llama, sobre las donaciones asignadas
+    assertFalse(necesidad.estaSatisfechaCon(d40.getCantidad()));
+    assertEquals(60, necesidad.cantidadRestante(d40.getCantidad()));
   }
 
   @Test
   void estaSatisfecha_cuandoAlcanzaObjetivo_deberiaSerTrue() {
-    necesidad.asignarDonacion(d100);
+    assertTrue(necesidad.estaSatisfechaCon(d100.getCantidad()));
+  }
 
-    assertTrue(necesidad.estaSatisfecha());
+  @Test
+  void destinoDeAsignacion_incluyeElPeriodoActual() {
+    UUID entidadId = UUID.randomUUID();
+    necesidad.asociarAEntidad(entidadId);
+
+    DestinoAsignacion destino = necesidad.destinoDeAsignacion();
+
+    assertEquals(necesidad.getId(), destino.necesidadId());
+    assertEquals(necesidad.obtenerPeriodoActual().id(), destino.periodoId());
+    assertEquals(necesidad.periodoActualId(), destino.periodoId());
+    assertEquals(entidadId, destino.entidadBeneficiariaId());
   }
 
   @Test
   void generarNuevoPeriodo_deberiaComenzarConCantidadesEnCeroYGuardarElHistorico() {
-    necesidad.asignarDonacion(d100);
-    assertTrue(necesidad.estaSatisfecha());
-    assertEquals(100, necesidad.cantidadAcumulada());
+    UUID periodoAnterior = necesidad.periodoActualId();
+    assertTrue(necesidad.estaSatisfechaCon(d100.getCantidad()));
 
     necesidad.generarNuevoPeriodo();
 
-    assertFalse(necesidad.estaSatisfecha());
-    assertEquals(0, necesidad.cantidadAcumulada());
+    // Las donaciones quedaron con el id del período anterior: el nuevo arranca en cero
+    assertNotEquals(periodoAnterior, necesidad.periodoActualId());
+    assertFalse(necesidad.estaSatisfechaCon(0));
     assertEquals(2, necesidad.getPeriodos().size());
+    assertEquals(periodoAnterior, necesidad.getPeriodos().getFirst().id());
   }
 
   @Test
@@ -87,27 +100,27 @@ class NecesidadRecurrenteTest {
     NecesidadRecurrente sinPeriodo = necesidadSinPeriodoActual();
 
     BusinessStateException excepcion =
-        assertThrows(BusinessStateException.class, () -> sinPeriodo.asignarDonacion(d100));
+        assertThrows(BusinessStateException.class, sinPeriodo::destinoDeAsignacion);
 
     assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
 
   @Test
   void renovarPeriodoSiCorresponde_cuandoPeriodoAunEstaVigente_deberiaRetornarFalse() {
-    assertFalse(necesidad.renovarPeriodoSiCorresponde(TEST_DATE));
+    assertFalse(necesidad.renovarPeriodoSiCorresponde(TEST_DATE, 0));
     assertEquals(1, necesidad.getPeriodos().size());
   }
 
   @Test
   void renovarPeriodoSiCorresponde_cuandoPeriodoVencio_deberiaRetornarTrueYCrearNuevoPeriodo() {
     LocalDate fechaFutura = TEST_DATE.plusDays(10);
-    necesidad.asignarDonacion(d40);
+    UUID periodoAnterior = necesidad.periodoActualId();
 
-    assertTrue(necesidad.renovarPeriodoSiCorresponde(fechaFutura));
+    assertTrue(necesidad.renovarPeriodoSiCorresponde(fechaFutura, d40.getCantidad()));
 
     assertEquals(2, necesidad.getPeriodos().size());
-    assertEquals(0, necesidad.cantidadAcumulada());
-    assertFalse(necesidad.estaSatisfecha());
+    assertNotEquals(periodoAnterior, necesidad.periodoActualId());
+    assertFalse(necesidad.estaSatisfechaCon(0));
   }
 
   @Test
@@ -115,7 +128,7 @@ class NecesidadRecurrenteTest {
     NecesidadRecurrente sinPeriodo = necesidadSinPeriodoActual();
 
     LocalDate antes = LocalDate.now(ZoneId.systemDefault());
-    assertTrue(sinPeriodo.renovarPeriodoSiCorresponde(TEST_DATE));
+    assertTrue(sinPeriodo.renovarPeriodoSiCorresponde(TEST_DATE, 0));
     LocalDate despues = LocalDate.now(ZoneId.systemDefault());
 
     // El período inicial sigue en la lista (solo está oculto); el nuevo parte de hoy.

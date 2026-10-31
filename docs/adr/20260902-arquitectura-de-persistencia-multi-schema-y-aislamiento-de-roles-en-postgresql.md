@@ -1,6 +1,6 @@
 # Arquitectura de Persistencia Multi-Schema y Aislamiento de Roles en PostgreSQL
 
-- Status: proposed
+- Status: superseded by [20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql](./20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md)
 - Date: 2026-09-02
 - Deciders: Decisión Grupal
 - Tags: persistencia, postgresql, schemas, roles, seguridad, multi-tenant, arquitectura

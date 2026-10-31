@@ -1,16 +1,20 @@
 package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.controllers.IDonantesController;
-import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
+import grupo5.donaciones.dto.donantes.ArchivoDonantesSubido;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/donantes")
@@ -37,8 +42,9 @@ public class DonantesController implements IDonantesController {
   @Override
   @PostMapping
   public ResponseEntity<DonanteOutputDTO> crearDonante(@Valid @RequestBody DonanteInputDTO dto) {
-    DonanteOutputDTO nuevoDonante = donantesService.crearDonante(dto);
-    return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDonante);
+    ResultadoRegistro<DonanteOutputDTO> resultado = donantesService.crearDonante(dto);
+    HttpStatus status = resultado.creado() ? HttpStatus.CREATED : HttpStatus.OK;
+    return ResponseEntity.status(status).body(resultado.recurso());
   }
 
   @Override
@@ -64,11 +70,16 @@ public class DonantesController implements IDonantesController {
   }
 
   @Override
-  @PostMapping("/archivos")
+  @PostMapping(value = "/archivos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(
-      @Valid @RequestBody ArchivoInputDTO input) {
-    ArchivoOutputDTO responseBody = archivoDonantesService.cargarArchivoDonantes(input);
-    return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
+      @RequestParam("archivo") MultipartFile archivo) throws IOException {
+    try (InputStream contenido = archivo.getInputStream()) {
+      ArchivoOutputDTO responseBody =
+          archivoDonantesService.cargarArchivoDonantes(
+              new ArchivoDonantesSubido(
+                  archivo.getOriginalFilename(), archivo.getSize(), contenido));
+      return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
+    }
   }
 
   @Override

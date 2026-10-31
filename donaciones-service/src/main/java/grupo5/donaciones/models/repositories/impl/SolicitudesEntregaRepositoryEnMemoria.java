@@ -6,9 +6,11 @@ import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class SolicitudesEntregaRepositoryEnMemoria extends CrudRepositoryEnMemoria<SolicitudEntrega>
     implements ISolicitudesEntregaRepository {
 

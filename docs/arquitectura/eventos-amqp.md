@@ -110,7 +110,7 @@ Todo proveedor de logística informa el avance de una entrega publicando en `log
 | `X-Proveedor-Token` | Token propio del proveedor, acordado con Donaciones (`donatrack.logistica.proveedor.<id>.token-vuelta`) |
 | `__TypeId__` | El alias del evento, igual a su routing key (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`), **no** el nombre de la clase del emisor: Donaciones solo conoce esos alias y descarta con un error de conversión cualquier otro valor |
 
-`donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`. Es una protección mínima (DTI-14, ítem 7). Decisión y alternativas: ADR [20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md).
+`donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`; sin `logistica.token-vuelta` (variable `LOGISTICA_TOKEN_VUELTA`) Logística no arranca, para que la falta no pase inadvertida. Es una protección mínima (DTI-14, ítem 7). Decisión y alternativas: ADR [20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md).
 
 #### C. Clúster de Dead Letter Queues (Aislamiento de Fallas)
 
@@ -217,6 +217,72 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "fecha": "2026-09-11T16:00:00Z",
   "nombreNuevaCategoria": "Plata",
   "nombreViejaCategoria": "Bronce"
+}
+```
+
+#### Entrega Solicitada (`entrega.solicitada.<proveedorId>.v1`)
+```json
+{
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "personaBeneficiariaId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+  "destino": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "codigoPostal": "C1179AAQ",
+    "localidad": "CABA",
+    "provincia": "Buenos Aires",
+    "pais": "Argentina"
+  },
+  "pesoTotalKG": 10.5,
+  "volumenTotalM3": 0.25,
+  "fecha": "2026-09-15T14:30:00Z"
+}
+```
+
+> **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
+
+#### Ruta Asignada (`ruta.asignada`)
+```json
+{
+  "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "fechaAsignacion": "2026-09-16T08:00:00Z"
+}
+```
+
+#### Ruta Iniciada (`ruta.iniciada`)
+```json
+{
+  "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
+  "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "patenteCamion": "AB123CD",
+  "donacionesIndependientesIds": [
+    "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+  ],
+  "fechaInicio": "2026-09-16T09:15:00Z",
+  "urlMapa": "http://localhost:8080/seguimiento/7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d"
+}
+```
+
+#### Entrega Exitosa (`entrega.exitosa`)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "patenteCamion": "AB123CD",
+  "fechaEntrega": "2026-09-16T11:40:00Z"
+}
+```
+
+#### Entrega Fallida (`entrega.fallida`)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "justificacion": "Domicilio sin atención al momento de la visita",
+  "fechaFalla": "2026-09-16T11:40:00Z",
+  "replanificable": true
 }
 ```
 

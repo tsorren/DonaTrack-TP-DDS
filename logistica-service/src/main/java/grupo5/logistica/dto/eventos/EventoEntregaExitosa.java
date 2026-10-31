@@ -1,5 +1,6 @@
 package grupo5.logistica.dto.eventos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -12,4 +13,4 @@ public record EventoEntregaExitosa(
     UUID donacionIndependienteId,
     UUID camionId,
     String patenteCamion,
-    LocalDateTime fechaEntrega) {}
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") LocalDateTime fechaEntrega) {}

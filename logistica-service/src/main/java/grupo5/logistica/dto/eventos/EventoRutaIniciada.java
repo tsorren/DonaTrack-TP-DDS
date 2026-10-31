@@ -1,5 +1,6 @@
 package grupo5.logistica.dto.eventos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -11,5 +12,5 @@ public record EventoRutaIniciada(
     String patenteCamion,
     /* IDs de las donaciones independientes que forman parte de esta ruta. */
     List<UUID> donacionesIndependientesIds,
-    LocalDateTime fechaInicio,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") LocalDateTime fechaInicio,
     String urlMapa) {}

@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,13 +68,20 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final IDonantesRepository donantesRepository;
   private final IDonacionesEventPublisher donacionesEventPublisher;
   private final ILogisticaBroker logisticaBroker;
+  private final AcumuladosDeAsignacion acumulados;
 
   @Override
   public List<PropuestaDTO> ejecutarAsignacion() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
-    List<Necesidad> necesidades = necesidadRepository.findByEstaSatisfechaFalseActivaTrue();
+    // "Satisfecha" depende de lo asignado, que no guarda la necesidad (DTI-06)
+    List<Necesidad> necesidades =
+        necesidadRepository.findActivas().stream()
+            .filter(n -> !acumulados.estaSatisfecha(n))
+            .toList();
 
-    List<Propuesta> propuestas = gestorPropuestas.generarPropuestas(necesidades, donaciones);
+    List<Propuesta> propuestas =
+        gestorPropuestas.generarPropuestas(
+            necesidades, donaciones, acumulados.datosPara(necesidades));
     propuestas.forEach(propuestaRepository::save);
 
     EjecucionAsignacion ejecucion = new EjecucionAsignacion(propuestas.size());
@@ -86,13 +95,24 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     return propuestaRepository.findAll().stream().map(propuestaMapper::toDTO).toList();
   }
 
+  /**
+   * Aprobar una propuesta es una sola transacción: el listener síncrono de {@link
+   * PropuestaAprobada} se une a ella, así que las donaciones asignadas, el pedido al broker y el
+   * nuevo estado de la propuesta se confirman juntos o no se confirma ninguno. Los eventos AMQP
+   * salen recién después del commit.
+   */
   @Override
+  @Transactional
   public void actualizarEstado(UUID id, EstadoPropuesta estado) {
     Propuesta propuesta =
         propuestaRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
     switch (estado) {
       case APROBADA -> {
+        if (propuesta.getEstado() == EstadoPropuesta.PENDIENTE) {
+          // Si ya no está pendiente, aceptar() informa la transición inválida.
+          validarAprobable(propuesta);
+        }
         propuesta.aceptar("SISTEMA");
         propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
         propuesta.clearDomainEvents();
@@ -102,6 +122,43 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     }
 
     propuestaRepository.save(propuesta);
+  }
+
+  /**
+   * Una propuesta solo se aprueba si su necesidad sigue activa y ninguna de sus donaciones
+   * pertenece a la propia entidad beneficiaria (una jurídica no se auto-dona).
+   */
+  private void validarAprobable(Propuesta propuesta) {
+    UUID necesidadId = propuesta.getNecesidadQueSatisfaceId();
+    Necesidad necesidad =
+        necesidadRepository
+            .findById(necesidadId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(necesidadId));
+    if (!necesidad.isActiva()) {
+      throw new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA);
+    }
+
+    List<PosibleFragmentacion> fragmentaciones = propuesta.getPosiblesFragmentaciones();
+    if (fragmentaciones == null) {
+      return;
+    }
+    UUID entidadId = necesidad.getEntidadId();
+    boolean autoDonacion =
+        entidadId != null
+            && fragmentaciones.stream()
+                .anyMatch(f -> entidadId.equals(donanteDe(f.getDonacionOriginalId())));
+    if (autoDonacion) {
+      throw new BusinessStateException(ErrorCatalog.DONACION_A_SI_MISMO);
+    }
+  }
+
+  private UUID donanteDe(UUID donacionIndependienteId) {
+    return donacionRepository
+        .findById(donacionIndependienteId)
+        .flatMap(
+            independiente -> donacionesRepository.findById(independiente.getDonacionOriginalId()))
+        .map(Donacion::getDonanteId)
+        .orElse(null);
   }
 
   @Override
@@ -140,8 +197,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
       publicarDonacionAsignada(donacionAsignar, datosBeneficiario);
       solicitarEntregaALogistica(donacionAsignar, datosBeneficiario);
     }
-
-    necesidadRepository.save(necesidad);
+    // La necesidad no cambia: la asignación queda registrada en cada donación (DTI-06)
   }
 
   private record DatosBeneficiario(UUID personaBeneficiariaId, DestinoEventoDTO destino) {}
@@ -195,8 +251,9 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   /**
    * Le pide al broker que consiga un proveedor de logística para la donación. Logística ya no
    * escucha {@code donacion.asignada.v1}: recibe el pedido solo si el broker la eligió. El broker
-   * solo registra el pedido y lo deja en su outbox, no habla con la red; aun así, una falla acá no
-   * debe tumbar la aprobación ni las demás fragmentaciones.
+   * solo registra el pedido en su outbox, no habla con la red. Corre dentro de la transacción de la
+   * aprobación: si falla, la excepción se propaga y se revierte la aprobación completa (la donación
+   * no puede quedar asignada sin su pedido de entrega).
    */
   private void solicitarEntregaALogistica(
       DonacionIndependiente donacionAsignar, DatosBeneficiario datosBeneficiario) {
@@ -207,22 +264,14 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
           donacionAsignar.getId());
       return;
     }
-    try {
-      logisticaBroker.solicitarEntrega(
-          new DatosEntregaLogistica(
-              donacionAsignar.getId(),
-              datosBeneficiario.personaBeneficiariaId(),
-              datosBeneficiario.destino(),
-              donacionAsignar.getPesoTotal(),
-              donacionAsignar.getVolumenTotal(),
-              LocalDateTime.now(ZoneId.systemDefault())));
-    } catch (Exception e) {
-      log.error(
-          "No se pudo solicitar la entrega de la donación {} a logística: {}",
-          donacionAsignar.getId(),
-          e.getMessage(),
-          e);
-    }
+    logisticaBroker.solicitarEntrega(
+        new DatosEntregaLogistica(
+            donacionAsignar.getId(),
+            datosBeneficiario.personaBeneficiariaId(),
+            datosBeneficiario.destino(),
+            donacionAsignar.getPesoTotal(),
+            donacionAsignar.getVolumenTotal(),
+            LocalDateTime.now(ZoneId.systemDefault())));
   }
 
   private EventoDonacionAsignadaV1 construirEventoDonacionAsignada(

@@ -43,24 +43,24 @@ public class LogisticaEventPublisher {
       @Nullable ApplicationEventPublisher applicationEventPublisher,
       @Value("${logistica.instancia-id:donatrack}") String proveedorId,
       @Value("${logistica.token-vuelta:}") String token) {
+    // Sin token, Donaciones descarta en silencio todos los eventos de vuelta: mejor no arrancar
+    if (token == null || token.isBlank()) {
+      throw new IllegalStateException(
+          "Falta logistica.token-vuelta (variable LOGISTICA_TOKEN_VUELTA): sin él, Donaciones"
+              + " descarta los eventos que publique esta instancia ("
+              + proveedorId
+              + ")");
+    }
     this.rabbitTemplate = rabbitTemplate;
     this.applicationEventPublisher = applicationEventPublisher;
     this.proveedorId = proveedorId;
     this.token = token;
-    if (token == null || token.isBlank()) {
-      log.warn(
-          "[EVENTOS] logistica.token-vuelta no está configurado: Donaciones descartará los eventos"
-              + " que publique esta instancia ({})",
-          proveedorId);
-    }
   }
 
   private MessagePostProcessor identidad() {
     return mensaje -> {
       mensaje.getMessageProperties().setHeader(RabbitMQConfig.HEADER_PROVEEDOR_ID, proveedorId);
-      if (token != null && !token.isBlank()) {
-        mensaje.getMessageProperties().setHeader(RabbitMQConfig.HEADER_PROVEEDOR_TOKEN, token);
-      }
+      mensaje.getMessageProperties().setHeader(RabbitMQConfig.HEADER_PROVEEDOR_TOKEN, token);
       return mensaje;
     };
   }

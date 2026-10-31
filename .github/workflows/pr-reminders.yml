@@ -9,6 +9,7 @@ on:
 jobs:
   send-reminders:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       pull-requests: read
       contents: read

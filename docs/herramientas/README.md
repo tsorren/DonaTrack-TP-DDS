@@ -28,7 +28,7 @@ docs/herramientas/
   Permite exportar directamente a Markdown listo para incorporar a `docs/adr/`.
 * [**Hub de Entregas y Documentación (`hub/`)**](hub/):  
   Portal web accesible localmente (`index.html`) o mediante GitHub Pages que proporciona una interfaz visual moderna para:
-  - Visualizar los enunciados en PDF de las Entregas 1 a 4.
+  - Visualizar los PDFs de `docs/entregas/`: enunciados de las Entregas 1 a 4, enunciado completo del TP Anual 2026 y anexos.
   - Explorar diagramas de clases, paquetes y secuencias.
   - Enlazar directamente al visor interactivo de ADRs (Log4brains).
 

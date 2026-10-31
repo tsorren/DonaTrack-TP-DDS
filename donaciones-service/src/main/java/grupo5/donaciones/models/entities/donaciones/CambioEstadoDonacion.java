@@ -16,4 +16,12 @@ public class CambioEstadoDonacion {
     this.estadoNuevo = estadoNuevo;
     this.timestamp = LocalDateTime.now(ZoneId.systemDefault());
   }
+
+  /** Constructor de reconstitución para el adaptador JPA: conserva la fecha del cambio. */
+  public CambioEstadoDonacion(
+      EstadoDonacion estadoAnterior, EstadoDonacion estadoNuevo, LocalDateTime timestamp) {
+    this.estadoAnterior = estadoAnterior;
+    this.estadoNuevo = estadoNuevo;
+    this.timestamp = timestamp;
+  }
 }

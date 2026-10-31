@@ -3,6 +3,7 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,8 @@ import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
+import grupo5.donaciones.infrastructure.almacenamiento.StorageEnMemoria;
 import grupo5.donaciones.models.entities.donantes.Archivo;
 import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.personas.Humana;
@@ -18,12 +21,15 @@ import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.impl.ImportadorService;
 import grupo5.donaciones.services.impl.ValidadorPersonaDuplicada;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +41,7 @@ class ImportadorServiceTest {
 
   private IArchivoDonantesRepository archivoRepository;
   private CargadorDonantes lectorCSV;
+  private final StoragePort storage = new StorageEnMemoria();
   private PersonaMapper personaMapper;
   private MedioDeContactoMapper medioDeContactoMapper;
   private ValidadorPersonaDuplicada validadorDuplicados;
@@ -60,18 +67,20 @@ class ImportadorServiceTest {
             medioDeContactoMapper,
             validadorDuplicados,
             personaService,
-            donantesService);
+            donantesService,
+            storage,
+            AlmacenamientoFixtures.propiedades());
   }
 
   @Test
   void procesarImportacionAsincronica_conArchivoYFilasValidas_creaDonantesYFinaliza() {
     UUID archivoId = UUID.randomUUID();
-    Archivo archivo = new Archivo("/ruta/donantes.csv");
+    Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
 
     Map<String, String> fila =
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
-    when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
+    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(List.of(fila));
 
     when(validadorDuplicados.buscarDuplicado(any(Persona.class))).thenReturn(Optional.empty());
 
@@ -100,12 +109,12 @@ class ImportadorServiceTest {
   @Test
   void procesarImportacionAsincronica_conPersonaDuplicada_actualizaPersona() {
     UUID archivoId = UUID.randomUUID();
-    Archivo archivo = new Archivo("/ruta/donantes.csv");
+    Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
 
     Map<String, String> fila =
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
-    when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
+    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(List.of(fila));
 
     Humana personaExistente = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
 
@@ -115,21 +124,45 @@ class ImportadorServiceTest {
     service.procesarImportacionAsincronica(archivoId);
 
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
-    verify(personaService).actualizarPersona(any(UUID.class), any(PersonaInputDTO.class));
+    verify(personaService).actualizarParcial(any(UUID.class), any(PersonaInputDTO.class));
     verify(archivoRepository, times(2)).save(archivo);
   }
 
   @Test
   void procesarImportacionAsincronica_cuandoFallaLector_marcaComoError() {
     UUID archivoId = UUID.randomUUID();
-    Archivo archivo = new Archivo("/ruta/donantes.csv");
+    Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
-    when(lectorCSV.cargarDonantes(archivo.getPath()))
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
         .thenThrow(new RuntimeException("Error de I/O"));
 
     service.procesarImportacionAsincronica(archivoId);
 
     assertEquals(EstadoArchivo.ERROR, archivo.getEstado());
     verify(archivoRepository, times(2)).save(archivo);
+  }
+
+  @Test
+  void procesarImportacionAsincronica_sinElPadronEnElStorage_marcaComoErrorSinLeer() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = new Archivo(UUID.randomUUID() + ".csv");
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    assertEquals(EstadoArchivo.ERROR, archivo.getEstado());
+    verify(lectorCSV, never()).cargarDonantes(any(InputStream.class));
+  }
+
+  /** Un padrón guardado en el storage: el path del archivo es su clave. */
+  private Archivo nuevoArchivoEnStorage() {
+    String clave = UUID.randomUUID() + ".csv";
+    storage.guardar(
+        AlmacenamientoFixtures.BUCKET_PADRONES,
+        clave,
+        new ByteArrayInputStream(new byte[] {1}),
+        1,
+        "text/csv");
+    return new Archivo(clave);
   }
 }

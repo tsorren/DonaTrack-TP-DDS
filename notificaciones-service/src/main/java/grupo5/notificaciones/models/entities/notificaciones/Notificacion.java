@@ -32,6 +32,8 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   private String mensaje;
   private LocalDateTime fechaCreacion;
   private EstadoNotificacion estadoNotificacion;
+  private boolean leida;
+  private LocalDateTime fechaLectura;
 
   @Getter(AccessLevel.NONE)
   private List<CambioEstadoNotificacion> historialEstado;
@@ -46,11 +48,13 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     this.mensaje = mensaje;
     this.fechaCreacion = fechaCreacion != null ? fechaCreacion : LocalDateTime.now(ZONA_HORARIA);
     this.historialEstado = new ArrayList<>();
+    this.leida = false;
+    this.fechaLectura = null;
     this.actualizarEstado(
         EstadoNotificacion.PENDIENTE); // usa el método para que quede en el historial
   }
 
-  // constructor para NotificacionPersistenciaMapper
+  // Constructor retrocompatible para mappers o llamadas existentes
   public Notificacion(
       UUID id,
       UUID personaId,
@@ -58,6 +62,19 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
       LocalDateTime fechaCreacion,
       EstadoNotificacion estadoNotificacion,
       List<CambioEstadoNotificacion> historialEstado) {
+    this(id, personaId, mensaje, fechaCreacion, estadoNotificacion, historialEstado, false, null);
+  }
+
+  // Constructor completo de persistencia con los nuevos campos de lectura
+  public Notificacion(
+      UUID id,
+      UUID personaId,
+      String mensaje,
+      LocalDateTime fechaCreacion,
+      EstadoNotificacion estadoNotificacion,
+      List<CambioEstadoNotificacion> historialEstado,
+      boolean leida,
+      LocalDateTime fechaLectura) {
     this.id = id;
     this.personaId = personaId;
     this.mensaje = mensaje;
@@ -65,6 +82,8 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     this.estadoNotificacion = estadoNotificacion;
     this.historialEstado =
         historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
+    this.leida = leida;
+    this.fechaLectura = fechaLectura;
   }
 
   public List<CambioEstadoNotificacion> getHistorialEstado() {
@@ -130,5 +149,15 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   @Override
   public void anonimizar() {
     this.mensaje = Anonimizable.VALOR_STRING;
+  }
+
+  public void marcarComoLeida() {
+    this.leida = true;
+    this.fechaLectura = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  public void marcarComoNoLeida() {
+    this.leida = false;
+    this.fechaLectura = null;
   }
 }

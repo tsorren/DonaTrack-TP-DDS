@@ -1,16 +1,19 @@
 package grupo5.notificaciones.controllers;
 
+import grupo5.notificaciones.dto.ConteoNoLeidasDTO;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,7 +70,31 @@ public class NotificacionController implements INotificacionController {
 
   @Override
   @GetMapping({"/notificaciones/persona/{personaId}", "/api/notificaciones/persona/{personaId}"})
-  public ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(@PathVariable UUID personaId) {
-    return ResponseEntity.ok(service.obtenerPorPersona(personaId));
+  public ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(
+      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida) {
+    return ResponseEntity.ok(service.obtenerPorPersona(personaId, leida));
+  }
+
+  @Override
+  @GetMapping("/api/notificaciones/persona/{personaId}/no-leidas/conteo")
+  public ResponseEntity<ConteoNoLeidasDTO> contarNoLeidas(@PathVariable UUID personaId) {
+    long count = service.contarNoLeidas(personaId);
+    return ResponseEntity.ok(new ConteoNoLeidasDTO(count));
+  }
+
+  @Override
+  @PatchMapping("/api/notificaciones/{id}/leida")
+  public ResponseEntity<NotificacionDTO> marcarLeida(
+      @PathVariable UUID id, @RequestParam(required = false, defaultValue = "true") boolean leida) {
+    Optional<NotificacionDTO> resultado =
+        leida ? service.marcarComoLeida(id) : service.marcarComoNoLeida(id);
+    return resultado.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @Override
+  @PatchMapping("/api/notificaciones/persona/{personaId}/marcar-todas-leidas")
+  public ResponseEntity<Void> marcarTodasComoLeidas(@PathVariable UUID personaId) {
+    service.marcarTodasComoLeidas(personaId);
+    return ResponseEntity.noContent().build();
   }
 }

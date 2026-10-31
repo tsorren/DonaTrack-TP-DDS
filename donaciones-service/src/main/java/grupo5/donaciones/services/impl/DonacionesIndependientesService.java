@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
@@ -17,11 +19,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DonacionesIndependientesService implements IDonacionesIndependientesService {
+
+  private static final Logger log = LoggerFactory.getLogger(DonacionesIndependientesService.class);
 
   private final IDonacionesIndependientesRepository repositorio;
   private final IDonacionesRepository donacionesRepository;
@@ -126,12 +132,23 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   public void vencer() {
     repositorio.findEnDeposito().stream()
         .filter(DonacionIndependiente::estaVencida)
-        .forEach(
-            donacion -> {
-              donacion.vencer("SISTEMA");
-              repositorio.save(donacion);
-              donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
-              donacion.clearDomainEvents();
-            });
+        .forEach(this::vencerUna);
+  }
+
+  // Si otra operación (por ejemplo una asignación) guardó la donación a la vez, se saltea solo
+  // esa: la próxima corrida la reevalúa. No debe frenar el vencimiento de las demás.
+  private void vencerUna(DonacionIndependiente donacion) {
+    try {
+      donacion.vencer("SISTEMA");
+      repositorio.save(donacion);
+    } catch (BusinessStateException e) {
+      if (e.getError() != ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE) {
+        throw e;
+      }
+      log.warn("No se venció la donación {}: otro proceso la modificó a la vez", donacion.getId());
+      return;
+    }
+    donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+    donacion.clearDomainEvents();
   }
 }
