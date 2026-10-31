@@ -296,6 +296,13 @@
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
 
+  /* Estructura: la hoja */
+  /* Ancho máximo de la hoja de pergamino, en el área pública y en el armazón. Pico agranda la
+     letra base con la pantalla: en 1920 px son unos 1470 px. */
+  --medida-hoja: 70rem;
+  /* Columna de los títulos al margen, como las notas de un códice; es también su ancho mínimo. */
+  --medida-margen-titulo: 10rem;
+
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);
   --pico-border-radius: var(--radio-control);
