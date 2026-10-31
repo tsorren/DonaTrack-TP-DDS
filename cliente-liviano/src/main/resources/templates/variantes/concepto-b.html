@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!--/* Encastre, iteración 1, concepto B: Rompecabezas. La pantalla es un rompecabezas armado con lo
+       que hizo la persona: cada dato es una pieza de color con lengüetas que encastran en la de al
+       lado, lo que falta es un hueco con forma de pieza y las secciones son piezas de un riel que se
+       encastra en el tablero (columna en escritorio, tira arriba en el celular). Mismos datos y
+       acciones que alternativas/encastre/paginas/estilos-armazon.html. */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{alternativas/encastre/layout :: cabeza(~{::title})}">
+  <title>Muestra del área privada - DonaTrack</title>
+</head>
+<body class="cb">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="cb-cabecera">
+    <a class="cb-marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+      <span class="cb-marca-pieza" aria-hidden="true"><svg viewBox="0 0 100 100" focusable="false"><path
+            d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/></svg></span>
+      <span class="cb-marca-nombre">Dona<em>Track</em></span>
+    </a>
+    <div class="cb-cabecera-fin">
+      <a class="boton-icono cb-campana" href="/notificaciones" th:href="@{/notificaciones}"
+         aria-label="Notificaciones"><svg
+         th:replace="~{alternativas/encastre/fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
+      <details class="cuenta cb-cuenta">
+        <summary th:aria-label="|Cuenta de ${cuenta.nombre}|" th:text="${cuenta.inicial}">A</summary>
+        <div class="cuenta-menu">
+          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
+          <a href="/salir" th:href="@{/salir}">Salir</a>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <div class="cb-mesa">
+    <!--/* El riel: una pieza por sección. La actual está encastrada en el tablero: su lengüeta
+           entra en la primera pieza. */-->
+    <nav class="cb-riel" aria-label="Secciones">
+      <ul>
+        <li th:each="opcion : ${navegacion}">
+          <a href="#" th:href="@{${opcion.ruta}}" th:aria-current="${opcion.actual} ? 'page' : null"><span
+             class="cb-riel-icono"><svg th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${opcion.icono}, 20)}"></svg></span><span
+             class="cb-riel-texto" th:text="${opcion.texto}">Sección</span><span
+             class="cb-riel-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
+        </li>
+      </ul>
+    </nav>
+
+    <main id="contenido" class="cb-tablero" tabindex="-1">
+      <section class="cb-pieza cb-hola" aria-labelledby="hola-titulo">
+        <h1 class="cb-rotulo">Inicio</h1>
+        <h2 id="hola-titulo" class="cb-hola-titulo">Hola, <span>Ana</span></h2>
+        <p class="cb-hola-texto">Tu última donación ya salió del depósito y va camino a Comedor
+          Barrio Ejemplo.</p>
+        <div class="cb-acciones">
+          <a href="#recorrido-titulo" role="button" class="cb-boton">Ver seguimiento</a>
+          <a href="#tarjeta-titulo" role="button" class="cb-boton cb-boton--borde">Mis donaciones</a>
+        </div>
+        <div class="cb-armado">
+          <p class="cb-rotulo-suave">Lo que ya armaste</p>
+          <div class="cb-trio cb-mini" aria-hidden="true">
+            <span class="cb-ficha cb-ficha--lila"><b>7</b> donaciones</span>
+            <span class="cb-ficha cb-ficha--menta"><b>2</b> entidades ayudadas</span>
+            <span class="cb-ficha cb-ficha--rosa"><b>2</b> entregadas</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cb-pieza cb-mision" aria-labelledby="mision-titulo">
+        <div class="cb-mision-cabeza">
+          <h2 id="mision-titulo">Lo que te toca ahora</h2>
+          <p class="cb-mision-rango">Colaborador → Sostenedor</p>
+        </div>
+        <div class="cb-mision-nombre">
+          <span class="cb-mision-cuenta">2/3</span>
+          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        </div>
+        <!--/* Los meses de la misión: dos piezas puestas y el hueco del paso que falta. */-->
+        <div class="cb-meses cb-mini">
+          <span class="cb-mes" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 28)}"></svg></span>
+          <span class="cb-mes" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 28)}"></svg></span>
+          <p class="cb-hueco"><span>Falta 1 paso</span>
+            <svg class="cb-suelta" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path
+                 d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/></svg></p>
+        </div>
+        <progress class="cb-mision-barra" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <div class="cb-mision-pie">
+          <span class="cb-mision-por">66 %</span>
+          <a href="#insignia-titulo" role="button" class="cb-boton cb-boton--borde">Ver incentivos</a>
+        </div>
+      </section>
+
+      <a class="cb-pieza cb-realizadas" href="#" th:href="@{${realizadas.ruta}}">
+        <span class="cb-realizadas-etiqueta" th:text="${realizadas.etiqueta}">Donaciones realizadas</span>
+        <span class="cb-realizadas-valor" th:text="${realizadas.valor}">7</span>
+        <span class="cb-realizadas-cambio" th:if="${realizadas.cambio}"><b
+              th:text="${realizadas.cambio}">+3</b> <span th:text="${realizadas.cambioTexto}">respecto al mes pasado</span></span>
+        <svg class="cb-barras" aria-hidden="true" focusable="false" viewBox="0 0 142 84"
+             th:if="${realizadas.barras}"
+             th:attr="viewBox=|0 0 ${#lists.size(realizadas.barras) * 25 - 8} 84|">
+          <rect th:each="alto, vuelta : ${realizadas.barras}" th:classappend="${vuelta.last} ? 'actual'"
+                width="17" rx="4" x="0" y="0" height="84"
+                th:attr="x=${vuelta.index * 25},y=${84 - alto},height=${alto}"></rect>
+        </svg>
+      </a>
+
+      <article class="cb-pieza cb-entregadas" aria-labelledby="entregadas-titulo">
+        <div class="cb-entregadas-cabeza">
+          <span class="cb-moneda"><b>2</b></span>
+          <h2 id="entregadas-titulo">Ya llegaron</h2>
+        </div>
+        <div class="cb-tramos cb-mini" aria-hidden="true">
+          <span class="cb-tramo cb-tramo--entregadas"></span>
+          <span class="cb-tramo cb-tramo--camino"></span>
+          <span class="cb-tramo cb-tramo--proceso"></span>
+          <span class="cb-tramo cb-tramo--sin-entregar"></span>
+        </div>
+        <ul class="cb-leyenda">
+          <li class="cb-tramo--entregadas">2 entregadas</li>
+          <li class="cb-tramo--camino">1 en camino</li>
+          <li class="cb-tramo--proceso">3 en proceso</li>
+          <li class="cb-tramo--sin-entregar">1 sin entregar</li>
+        </ul>
+      </article>
+
+      <section class="cb-pieza cb-categoria" aria-labelledby="categoria-titulo">
+        <span class="cb-rotulo-suave" id="categoria-titulo">Tu categoría</span>
+        <span class="cb-categoria-nombre">Colaborador</span>
+        <span class="cb-categoria-proxima">Próxima: Sostenedor</span>
+      </section>
+
+      <section class="cb-pieza cb-recorrido" aria-labelledby="recorrido-titulo">
+        <div class="cb-recorrido-cabeza">
+          <div>
+            <h2 id="recorrido-titulo">Por dónde va tu donación</h2>
+            <p class="cb-bajada">Lentejas secas · 15 kg</p>
+          </div>
+          <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
+        </div>
+        <!--/* Un paso, una pieza: hechos puestos, el actual resaltado y lo que falta como hueco. */-->
+        <ol class="cb-pasos cb-mini" aria-label="Por dónde va tu donación">
+          <li th:each="paso, vuelta : ${pasos}" class="cb-paso"
+              th:classappend="|cb-paso--${paso.avance.tono}|"
+              th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+            <span class="cb-paso-numero" aria-hidden="true" th:text="${vuelta.count}">1</span>
+            <span class="cb-paso-texto"><span th:text="${paso.nombre}">Paso</span><small
+                  th:text="${paso.detalle}">Detalle</small></span>
+          </li>
+        </ol>
+        <a href="#tarjeta-titulo" class="cb-enlace">Ver el detalle</a>
+      </section>
+
+      <section class="cb-pieza cb-notas" aria-labelledby="notas-titulo">
+        <h2 id="notas-titulo">Lo último que pasó</h2>
+        <p class="cb-bajada">Avisos de tus donaciones, lo más nuevo primero</p>
+        <ul class="cb-mini">
+          <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+            <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+          <li><p>Tu donación quedó lista para entregar.</p>
+            <time datetime="2026-10-14T09:10">ayer</time></li>
+          <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+            <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>
