@@ -39,6 +39,10 @@ class InterfazFitnessTest {
   private static final Path JUEGOS = PLANTILLAS.resolve("alternativas");
 
   private static final Path ESTRUCTURAS_AB = PLANTILLAS.resolve("variantes");
+
+  /** El prototipo del flujo completo de Cozy (PrototipoController): no tiene gemelas. */
+  private static final Path PROTOTIPOS = PLANTILLAS.resolve("prototipo");
+
   private static final String ALTERNATIVAS = "alternativas";
 
   /** Tokens de uso: lo único que pueden referenciar pantallas y componentes. */
@@ -570,10 +574,16 @@ class InterfazFitnessTest {
     return COMENTARIO_HTML.matcher(leer(plantilla)).replaceAll("");
   }
 
-  /** Las plantillas de templates/ salvo los juegos de alternativas y las variantes A/B. */
+  /**
+   * Las plantillas de templates/ salvo los juegos de alternativas, las variantes y el prototipo.
+   */
   private static List<Path> plantillasDeGlassmorphism() {
     return archivos(PLANTILLAS, HTML).stream()
-        .filter(plantilla -> !plantilla.startsWith(JUEGOS) && !plantilla.startsWith(ESTRUCTURAS_AB))
+        .filter(
+            plantilla ->
+                !plantilla.startsWith(JUEGOS)
+                    && !plantilla.startsWith(ESTRUCTURAS_AB)
+                    && !plantilla.startsWith(PROTOTIPOS))
         .toList();
   }
 

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--/* Pantalla de prueba de PrototipoControllerTest: de nivel 3, bajo Mis donaciones. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<head><title>Prueba</title></head>
+<body>
+<main>
+  <p th:text="${cuenta.nombre}">Nombre</p>
+  <ul>
+    <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+        th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
+  </ul>
+</main>
+</body>
+</html>
