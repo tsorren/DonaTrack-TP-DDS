@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--/* Prototipo (iteración 3), entidad: el acta de recepción con errores de validación (la foto pesa
        más de 5 MB y falta el número de remito). La misma acta de entidad-seguimiento-confirmar
-       (fragmento acta): arriba de los campos, la lista de lo que falta, con un enlace a cada campo;
-       cada error, también junto a su campo. */-->
+       (fragmento acta, con el mismo ?entrega=): después del título y antes del tramo, "Revisá dos
+       cosas antes de confirmar", con foco al cargar y un enlace a cada campo; cada error, también
+       junto a su campo, y los bultos que la persona había escrito, de vuelta en el suyo. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -10,7 +11,8 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: acta(true)}"></th:block>
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: entrega(null,
+            ~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: acta(true)})}"></th:block>
 </th:block>
 </body>
 </html>

@@ -25,11 +25,6 @@
              elegidas=${donaciones.?[clave == #root.pedida]},
              d=${#lists.isEmpty(elegidas) ? null : elegidas[0]}">
   <div class="viaje-pagina viaje-detalle">
-    <a class="viaje-volver" href="/prototipo/donante-donaciones"
-       th:href="@{/prototipo/donante-donaciones}"><svg
-       th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Mis
-      donaciones</a>
-
     <th:block th:if="${d == null}">
       <h1 class="solo-lectores">Detalle de una donación</h1>
       <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
@@ -37,15 +32,11 @@
                'Volver a Mis donaciones', '/prototipo/donante-donaciones')}"></section>
     </th:block>
 
-    <th:block th:if="${d != null and d.estado == conProblema}">
-      <section th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('El camino se cortó',
-               ${d.cartas[0].texto}, 'advertencia', null)}"></section>
-    </th:block>
-
     <!--/* El mapa del viaje, en grande: la cartela, el mapa con su leyenda y la foto en su pueblo. */-->
     <section th:if="${d}" class="mesa-mapa detalle-mapa" aria-labelledby="detalle-titulo">
       <div class="mesa-mapa-cartela">
         <h1 id="detalle-titulo" th:text="${d.titulo}">Lentejas secas</h1>
+        <p class="viaje-rotulo" th:text="${seccion}">Mis donaciones</p>
         <p th:text="${d.destino == null ? d.cantidad + ', todavía sin destino' : d.cantidad + ' para ' + d.destino}">15
           kg para Comedor Barrio Ejemplo</p>
         <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${d.estado})}">Estado</span>
@@ -64,6 +55,17 @@
           cuando la entidad la recibe.</p>
       </div>
     </section>
+
+    <!--/* Después del h1 en el HTML y antes en pantalla (viaje.css): la vuelta a la sección y, si el
+           camino se cortó, el aviso. */-->
+    <a class="viaje-volver" href="/prototipo/donante-donaciones"
+       th:href="@{/prototipo/donante-donaciones}"><svg
+       th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Mis
+      donaciones</a>
+    <th:block th:if="${d != null and d.estado == conProblema}">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('El camino se cortó',
+               ${d.cartas[0].texto}, 'advertencia', null)}"></section>
+    </th:block>
 
     <!--/* La etiqueta del envío: los datos de la donación, en limpio. */-->
     <section th:if="${d}" class="etiqueta" aria-labelledby="etiqueta-titulo">

@@ -3,7 +3,8 @@
        los enlaces del flujo. Trae del catálogo el libro de cuentas tal cual (estilos.html), con la
        cifra del mes apuntando a Mis donaciones (realizadas, repetida acá con otra ruta: la cifra
        solo lee etiqueta, valor, cambio, cambioTexto y ruta). La nota, el mapa del viaje, la carta y
-       el cuaderno son los del catálogo con sus enlaces reales: Ver seguimiento, Mis donaciones, Ver
+       el cuaderno son los del catálogo con sus enlaces reales: Ver seguimiento (la principal),
+       Elegir a quién donar y Mis donaciones (en papel, para no competir con ella), Ver
        el detalle (las lentejas en camino), Ver todas las cartas y Ver incentivos. Estilos:
        app.css; no necesita hoja propia. Los títulos de los objetos son h3, como en la muestra,
        para que tomen sus mismos tamaños. */-->
@@ -22,6 +23,8 @@
       <div class="mesa-nota-acciones">
         <a href="/prototipo/donante-seguimiento" th:href="@{/prototipo/donante-seguimiento}"
            role="button">Ver seguimiento</a>
+        <a href="/prototipo/donante-entidades" th:href="@{/prototipo/donante-entidades}"
+           role="button" class="fantasma">Elegir a quién donar</a>
         <a href="/prototipo/donante-donaciones" th:href="@{/prototipo/donante-donaciones}"
            role="button" class="fantasma">Mis donaciones</a>
       </div>

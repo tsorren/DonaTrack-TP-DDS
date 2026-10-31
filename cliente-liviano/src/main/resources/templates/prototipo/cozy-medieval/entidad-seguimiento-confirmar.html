@@ -2,17 +2,27 @@
 <!--/* Prototipo (iteración 3), entidad: confirmar recepción, el acta de recepción (flujo piloto,
        RF-12). Un documento sobre la mesa: arriba, qué llega y su último tramo; en el medio, las
        pruebas (las fotos, al menos una) y lo que contaste (bultos y remito); al pie, donde iría la
-       firma, "Confirmar recepción". Es un formulario real: va a entidad-seguimiento-sellada con
-       sellar=1, la marca de que es la respuesta a confirmar (la tinta llega y sella una sola vez).
+       firma, "Confirmar recepción". ?entrega=<clave> elige una de las entregas que esperan
+       (lentejas, también sin nada, o ropa); una clave que no está en la lista muestra la tierra
+       sin explorar con la vuelta a Seguir entregas. Es un formulario real (POST, multipart por las
+       fotos, lo obligatorio con required): va a entidad-seguimiento-sellada-<clave>, la respuesta
+       a confirmar, donde la tinta llega y sella una sola vez.
        Fragmentos de esta plantilla:
+       - entrega(pedida, pantalla): las entregas que esperan confirmación, escritas una sola vez
+         para el acta y el acta sellada. pedida es la clave; null, la de ?entrega= (Thymeleaf no
+         deja leer los parámetros en una expresión de fragmento). Adentro de pantalla están e (la
+         pedida, o null si no existe) y otra (la que sigue esperando).
        - acta(conError): el acta entera; con conError, el estado con errores de
-         entidad-seguimiento-confirmar-error.
-       - tramo(sellado, recien): el dibujo del último tramo. Sin sellar, la tinta llega hasta tu
-         puerta (◆, ahora) y lo que falta va en lápiz hasta el hueco del sello; sellado, el tramo
-         en tinta y el sello de latón en el pueblo; recien, la tinta se mueve y el sello cae (lo
-         usa entidad-seguimiento-sellada). En el celular el dibujo muestra la punta del pueblo
+         entidad-seguimiento-confirmar-error: el resumen con foco, antes del tramo, y lo que la
+         persona escribió de vuelta en su campo.
+       - tramo(sellado, recien): el dibujo del último tramo de e. Sin sellar, la tinta llega hasta
+         tu puerta (◆, ahora) y lo que falta va en lápiz hasta el hueco del sello; sellado, el
+         tramo en tinta y el sello de latón en el pueblo; recien, la tinta se mueve y el sello cae
+         (lo usa entidad-seguimiento-sellada). En el celular el dibujo muestra la punta del pueblo
          (preserveAspectRatio slice); la lista de al lado dice lo mismo.
-       Los campos usan los fragmentos campo y carga-fotos. Estilos: prototipo/entidad.css. */-->
+       Los campos van escritos a mano con el marcado de los fragmentos campo y carga-fotos, que no
+       admiten required ni un valor cargado; el de fotos, además, sin capture: así el celular
+       ofrece la cámara y la galería. Estilos: prototipo/entidad.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -20,26 +30,61 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: acta(false)}"></th:block>
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: entrega(null,
+            ~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: acta(false)})}"></th:block>
+</th:block>
+
+<th:block th:fragment="entrega(pedida, pantalla)"
+    th:with="entregas=${ {
+      {clave: 'lentejas', nombre: 'lentejas secas', que: 'Lentejas secas · 15 kg', bultos: '3',
+       salio: 'Hoy, 14:30', llego: 'Hoy, 18:20', remito: '0001-00004521'},
+      {clave: 'ropa', nombre: 'ropa de abrigo', que: 'Ropa de abrigo · 2 cajas', bultos: '2',
+       salio: 'Ayer, 15:50', llego: 'Ayer, 17:10', remito: '0001-00004498'} } },
+             clave=${pedida ?: (param.entrega == null ? 'lentejas' : param.entrega[0])},
+             elegidas=${entregas.?[clave == #root.clave]},
+             e=${#lists.isEmpty(elegidas) ? null : elegidas[0]},
+             otra=${e == null ? null : entregas.?[clave != #root.clave][0]}">
+  <th:block th:replace="${pantalla}"></th:block>
 </th:block>
 
 <th:block th:fragment="acta(conError)">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/entidad.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/entidad.css}">
-  <form class="entidad-acta" action="/prototipo/entidad-seguimiento-sellada" method="get"
-        aria-labelledby="acta-titulo">
-    <a href="/prototipo/entidad-seguimiento" class="enlace-fuerte entidad-volver"><svg
-       th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Seguir
-      entregas</a>
+  <th:block th:if="${e == null}">
+    <h1 class="solo-lectores">Confirmar recepción</h1>
+    <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+             'No encontramos esa entrega', 'Puede que el enlace esté incompleto. Buscala en Seguir entregas.',
+             'Volver a Seguir entregas', '/prototipo/entidad-seguimiento')}"></section>
+  </th:block>
+
+  <form th:if="${e}" class="entidad-acta" action="/prototipo/entidad-seguimiento-sellada-lentejas"
+        th:action="@{|/prototipo/entidad-seguimiento-sellada-${e.clave}|}" method="post"
+        enctype="multipart/form-data" aria-labelledby="acta-titulo">
     <header class="entidad-acta-cabecera">
       <h1 id="acta-titulo">Acta de recepción</h1>
-      <p class="entidad-acta-que">Lentejas secas · 15 kg</p>
+      <p class="entidad-rotulo" th:text="${seccion}">Seguir entregas</p>
+      <p class="entidad-acta-que" th:text="${e.que}">Lentejas secas · 15 kg</p>
       <dl class="entidad-acta-datos">
         <div><dt>Para</dt><dd>Comedor Barrio Ejemplo</dd></div>
         <div><dt>Desde</dt><dd>Depósito Central</dd></div>
-        <div><dt>Bultos que salieron</dt><dd>3</dd></div>
+        <div><dt>Bultos que salieron</dt><dd th:text="${e.bultos}">3</dd></div>
       </dl>
     </header>
+
+    <!--/* Después del h1 en el HTML y antes en pantalla (entidad.css). */-->
+    <a href="/prototipo/entidad-seguimiento" class="enlace-fuerte entidad-volver"><svg
+       th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Seguir
+      entregas</a>
+
+    <!--/* Los errores, antes del bloque largo del tramo y con foco al cargar: el lector de pantalla
+           los lee primero; cada uno lleva a su campo, donde se repite. */-->
+    <div th:if="${conError}" class="entidad-acta-errores" role="alert" tabindex="-1" autofocus>
+      <h2>Revisá dos cosas antes de confirmar</h2>
+      <ul role="list">
+        <li><a href="#fotos">La foto pesa más de 5 MB</a></li>
+        <li><a href="#remito">Falta el número de remito</a></li>
+      </ul>
+    </div>
 
     <section class="entidad-acta-tramo" aria-labelledby="tramo-titulo">
       <h2 id="tramo-titulo">Su último tramo</h2>
@@ -47,31 +92,34 @@
     </section>
 
     <div class="entidad-acta-campos">
-      <div th:if="${conError}" class="entidad-acta-errores" role="alert">
-        <h2>Faltan dos cosas para confirmar</h2>
-        <ul role="list">
-          <li><a href="#fotos">La foto pesa más de 5 MB</a></li>
-          <li><a href="#remito">Falta el número de remito</a></li>
-        </ul>
-      </div>
-
       <section aria-labelledby="pruebas-titulo">
         <h2 id="pruebas-titulo">Las pruebas</h2>
-        <div th:replace="~{alternativas/cozy-medieval/fragmentos/carga-fotos :: carga-fotos('fotos',
-             'Fotos de lo que llegó',
-             ${conError ? null : 'Al menos una. JPG o PNG, hasta 5 MB cada una. Se usan para mostrar que la donación llegó.'},
-             ${conError ? 'La foto pesa más de 5 MB. Probá con una más liviana.' : null})}"></div>
+        <div class="campo carga-fotos">
+          <label for="fotos">Fotos de lo que llegó</label>
+          <input id="fotos" name="fotos" type="file" accept="image/*" multiple required
+                 aria-describedby="fotos-ayuda" th:aria-invalid="${conError} ? 'true' : null">
+          <small id="fotos-ayuda" th:classappend="${conError} ? 'campo-error'"
+                 th:text="${conError} ? 'La foto pesa más de 5 MB. Probá con una más liviana.' : 'Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB cada una. Se usan para mostrar que la donación llegó.'">Al
+            menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB cada una.</small>
+        </div>
       </section>
 
       <section aria-labelledby="cuenta-titulo">
         <h2 id="cuenta-titulo">Lo que recibiste</h2>
-        <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('bultos',
-             'Cantidad de bultos', 'number', 'Contá las cajas o bolsas que recibiste.', null, false)}"></div>
-        <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('remito',
-             'Número de remito', 'text',
-             ${conError ? null : 'Está arriba a la derecha del papel.'},
-             ${conError ? 'Falta el número de remito. Está arriba a la derecha del papel.' : null},
-             false)}"></div>
+        <div class="campo">
+          <label for="bultos">Cantidad de bultos</label>
+          <input id="bultos" name="bultos" type="number" min="1" required
+                 aria-describedby="bultos-ayuda" th:value="${conError} ? ${e.bultos} : null">
+          <small id="bultos-ayuda">Contá las cajas o bolsas que recibiste.</small>
+        </div>
+        <div class="campo">
+          <label for="remito">Número de remito</label>
+          <input id="remito" name="remito" type="text" required aria-describedby="remito-ayuda"
+                 th:aria-invalid="${conError} ? 'true' : null">
+          <small id="remito-ayuda" th:classappend="${conError} ? 'campo-error'"
+                 th:text="${conError} ? 'Falta el número de remito. Está arriba a la derecha del papel.' : 'Está arriba a la derecha del papel.'">Está
+            arriba a la derecha del papel.</small>
+        </div>
       </section>
     </div>
 
@@ -79,7 +127,6 @@
     <footer class="entidad-acta-firma">
       <p class="entidad-acta-linea">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de
         2026</p>
-      <input type="hidden" name="sellar" value="1">
       <button type="submit">Confirmar recepción</button>
       <p class="entidad-acta-nota">Al confirmar, la entrega queda como entregada y quien donó recibe
         el aviso.</p>
@@ -134,17 +181,19 @@
   <ol class="recorrido" role="list" aria-label="Su último tramo">
     <li class="recorrido-paso recorrido-paso--hecho">
       <span class="recorrido-nodo" aria-hidden="true">1</span>
-      <span class="recorrido-texto"><span>Salió del Depósito Central</span><small>Hoy, 14:30</small></span>
+      <span class="recorrido-texto"><span>Salió del Depósito Central</span><small
+          th:text="${e.salio}">Hoy, 14:30</small></span>
     </li>
     <li class="recorrido-paso" th:classappend="${sellado} ? 'recorrido-paso--hecho' : 'recorrido-paso--actual'"
         th:aria-current="${sellado} ? null : 'step'">
       <span class="recorrido-nodo" aria-hidden="true">2</span>
-      <span class="recorrido-texto"><span>Llegó a tu puerta</span><small>Hoy, 15:40</small></span>
+      <span class="recorrido-texto"><span>Llegó a tu puerta</span><small
+          th:text="${e.llego}">Hoy, 18:20</small></span>
     </li>
     <li class="recorrido-paso" th:classappend="${sellado} ? 'recorrido-paso--hecho' : 'recorrido-paso--pendiente'">
       <span class="recorrido-nodo" aria-hidden="true">3</span>
       <span class="recorrido-texto" th:if="${sellado}"><span>Recepción confirmada</span><small>Hoy,
-        16:05</small></span>
+        18:45</small></span>
       <span class="recorrido-texto" th:unless="${sellado}"><span>Tu confirmación</span><small>Falta:
         es este paso</small></span>
     </li>

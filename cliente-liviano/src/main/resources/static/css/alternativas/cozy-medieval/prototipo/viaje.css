@@ -45,6 +45,30 @@
   font-style: italic;
 }
 
+/* El nombre de la sección del menú, chico y grabado en latón, sobre el título: en el HTML va
+   después del h1 (el título se lee primero) y se ve arriba, en la cabecera y en la cartela. */
+.viaje-pagina .viaje-rotulo {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: var(--espacio-2);
+  order: -1;
+  margin: 0;
+  color: var(--color-laton-texto);
+  font-size: var(--tamano-mini);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.viaje-rotulo::before {
+  content: "";
+  flex: none;
+  width: 1.5rem;
+  border-block-start: var(--borde-ancho) solid currentcolor;
+}
+
 /* El filtro: dos renglones del registro y el botón, que bajan si no entran. */
 .viaje-filtro {
   display: flex;
@@ -334,7 +358,13 @@
   box-shadow: var(--sombra-objeto);
 }
 
+/* El h1 va primero en el HTML; la vuelta y el aviso del camino cortado se ven antes. */
+.viaje-detalle > .viaje-volver {
+  order: -2;
+}
+
 .viaje-detalle > .banner {
+  order: -1;
   margin: 0;
 }
 
@@ -351,9 +381,10 @@
   line-height: 1.05;
 }
 
-/* El viaje: el mapa a todo el ancho y, debajo, la leyenda y la foto, que sube hasta quedar pegada
-   debajo del pueblo de destino (el pueblo está al 89 % del ancho y al 61 % del alto del mapa, que
-   mide 16:9: 19 % del ancho por encima de su borde de abajo). Sin caja propia, .viaje deja de
+/* El viaje: el mapa a todo el ancho y, debajo, la leyenda y la foto. Si llegó, la foto sube hasta
+   quedar pegada debajo del pueblo de destino (el pueblo está al 89 % del ancho y al 61 % del alto
+   del mapa, que mide 16:9: 19 % del ancho por encima de su borde de abajo); el hueco de la que
+   falta queda debajo del mapa, sin pisarlo. Sin caja propia, .viaje deja de
    medirse: el tamaño de las letras del mapa lo decide este contenedor, como lo hace app.css. */
 .detalle-viaje {
   display: grid;
@@ -453,13 +484,15 @@
   color: var(--color-texto-suave);
 }
 
-/* Mientras viaja, el hueco en lápiz donde va a ir la foto, con lo que falta escrito. */
+/* Mientras viaja, el hueco en lápiz donde va a ir la foto, con lo que falta escrito: debajo del
+   mapa, sin subir sobre el dibujo (solo la foto que llegó se pega al pueblo). */
 .foto-pegada--hueco {
   display: grid;
   place-items: center;
   justify-self: end;
   width: min(100%, 15rem);
   aspect-ratio: 8 / 5;
+  margin: 0;
   padding: var(--espacio-3);
   background-color: var(--color-fondo-pagina);
   border: var(--borde-ruta) dashed var(--color-borde-control);
@@ -820,5 +853,44 @@
     grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
     align-items: start;
     column-gap: var(--espacio-6);
+  }
+}
+
+/* Con colores forzados (alto contraste) la hoja pinta los fondos y borra las sombras: los papeles,
+   las pestañas del fichero y la vuelta conservan su borde. app.css deja sin ajustar el dibujo del
+   mapa; las piezas propias del mapa grabado (el terreno, los pueblos, ○, el camión, ╳ y los
+   nombres) toman el color del texto, con el centro de los huecos en el de la hoja. */
+@media (forced-colors: active) {
+  .viaje-cabecera,
+  .guia > summary,
+  .ficha,
+  .viaje-volver,
+  .etiqueta,
+  .foto-pegada,
+  .hoja-ruta,
+  .viaje-etapas {
+    border: var(--borde-ancho) solid;
+  }
+
+  .seguimiento-mapa::before {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .seguimiento-pueblo .viaje-signo,
+  .seguimiento-falta,
+  .seguimiento-camion > circle:first-child {
+    fill: var(--color-forzado-fondo);
+    stroke: var(--color-forzado-texto);
+  }
+
+  .seguimiento-camion path,
+  .seguimiento-camion circle + path ~ circle,
+  .seguimiento-corte {
+    stroke: var(--color-forzado-texto);
+  }
+
+  .seguimiento-rotulo {
+    fill: var(--color-forzado-texto);
+    stroke: var(--color-forzado-fondo);
   }
 }

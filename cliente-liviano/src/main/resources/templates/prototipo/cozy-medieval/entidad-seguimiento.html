@@ -3,7 +3,8 @@
        etapa, de la que está en tu puerta a la que todavía no salió; las entregadas, plegadas. Cada
        grupo lleva su signo grande, su nombre y su cantidad; arriba, la leyenda dice cuántas hay en
        cada etapa y lleva a su grupo (las cifras como leyenda del mapa). Las que esperan tu
-       confirmación van primero, con los mismos talones del inicio. Estilos: prototipo/entidad.css. */-->
+       confirmación van primero, con los mismos talones del inicio (cada uno abre el acta de su
+       entrega). Sobre el título, el nombre del menú como rótulo. Estilos: prototipo/entidad.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -16,6 +17,7 @@
   <div class="entidad-ruta">
     <header class="entidad-ruta-titulo">
       <h1>Caminos a tu pueblo</h1>
+      <p class="entidad-rotulo" th:text="${seccion}">Seguir entregas</p>
       <p class="mesa-bajada">Seguí tus entregas, de la que está en tu puerta a la que todavía no
         salió.</p>
     </header>

@@ -1,38 +1,53 @@
 <!DOCTYPE html>
 <!--/* Prototipo (iteración 3), entidad: la respuesta a Confirmar recepción, el momento memorable. "La
        tinta llega y sella": el último tramo se entinta y el sello de latón cae sobre el pueblo, una
-       sola vez y solo en la respuesta al acta (sellar=1, que js/prototipo-entidad.js saca de la
-       dirección: al recargar, el acta se ve ya sellada). Con "reducir movimiento", sin sellar=1 o
-       sin JavaScript, se ve ya sellada. El aviso va en texto, en una región role="status"; el
-       JavaScript lo vuelve a escribir cuando cae el sello, para que se anuncie. El acta repite los
-       bultos y el remito que se cargaron (si no llegan, los del ejemplo). Después, la entrega que
-       todavía espera, con "Confirmar recepción". Estilos: prototipo/entidad.css. */-->
+       sola vez y solo en la respuesta al acta, que llega por POST a
+       entidad-seguimiento-sellada-<clave> (fragmento sellada con recien). Ahí
+       js/prototipo-entidad.js cambia la dirección por esta pantalla con ?entrega=<clave>, que
+       muestra el acta ya sellada: al recargar no vuelve a caer el sello. Con "reducir movimiento"
+       o sin JavaScript, se ve ya sellada. El título es llano; el acta y el sello, el dibujo. El
+       aviso va en texto, con foco al cargar, en una región role="status"; el JavaScript lo vuelve a
+       escribir cuando cae el sello, para que se anuncie. Después, la entrega que todavía espera,
+       con "Confirmar recepción". Datos: fragmento entrega de entidad-seguimiento-confirmar; una
+       clave que no está muestra la tierra sin explorar. Estilos: prototipo/entidad.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
   <title>Recepción confirmada - DonaTrack</title>
 </head>
 <body>
-<th:block th:fragment="contenido"
-          th:with="recien=${param.sellar != null},
-                   bultos=${param.bultos != null and !#strings.isEmpty(param.bultos[0]) ? param.bultos[0] : '3'},
-                   remito=${param.remito != null and !#strings.isEmpty(param.remito[0]) ? param.remito[0] : '0001-00004521'}">
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: entrega(null,
+            ~{prototipo/cozy-medieval/entidad-seguimiento-sellada :: sellada(false)})}"></th:block>
+</th:block>
+
+<th:block th:fragment="sellada(recien)">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/entidad.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/entidad.css}">
-  <div class="entidad-sellada">
+  <th:block th:if="${e == null}">
+    <h1 class="solo-lectores">Recepción confirmada</h1>
+    <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+             'No encontramos esa entrega', 'Puede que el enlace esté incompleto. Buscala en Seguir entregas.',
+             'Volver a Seguir entregas', '/prototipo/entidad-seguimiento')}"></section>
+  </th:block>
+
+  <div th:if="${e}" class="entidad-sellada">
     <section class="entidad-acta entidad-acta--sellada" aria-labelledby="sellada-titulo">
       <header class="entidad-acta-cabecera">
-        <h1 id="sellada-titulo">El acta quedó sellada</h1>
-        <p class="entidad-acta-que">Lentejas secas · 15 kg</p>
+        <h1 id="sellada-titulo">Recepción confirmada</h1>
+        <p class="entidad-rotulo" th:text="${seccion}">Seguir entregas</p>
+        <p class="entidad-acta-que" th:text="${e.que}">Lentejas secas · 15 kg</p>
       </header>
+      <!--/* Antes del dibujo en el HTML (se lee primero) y después en pantalla (entidad.css). */-->
+      <p id="acta-aviso" class="entidad-sellada-aviso" role="status" tabindex="-1" autofocus
+         th:data-quieta="${recien} ? @{/prototipo/entidad-seguimiento-sellada(entrega=${e.clave})} : null">El
+        acta quedó sellada. Gracias por avisar.</p>
       <div th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: tramo(true, ${recien})}"></div>
-      <p id="acta-aviso" class="entidad-sellada-aviso" role="status">Recepción confirmada. Gracias por
-        avisar.</p>
       <dl class="entidad-acta-datos">
-        <div><dt>Bultos</dt><dd th:text="${bultos}">3</dd></div>
-        <div><dt>Remito</dt><dd th:text="${remito}">0001-00004521</dd></div>
+        <div><dt>Bultos</dt><dd th:text="${e.bultos}">3</dd></div>
+        <div><dt>Remito</dt><dd th:text="${e.remito}">0001-00004521</dd></div>
         <div><dt>Recibió</dt><dd>Marta, por Comedor Barrio Ejemplo</dd></div>
-        <div><dt>Cuándo</dt><dd>15 de octubre de 2026, 16:05</dd></div>
+        <div><dt>Cuándo</dt><dd>15 de octubre de 2026, 18:45</dd></div>
       </dl>
       <p class="entidad-acta-nota">Las fotos quedaron en el acta y quien donó ya recibió el aviso de
         que su donación llegó.</p>
@@ -43,12 +58,16 @@
       <ul class="entidad-talones-lista" role="list">
         <li class="entidad-talon">
           <p class="entidad-talon-cabo"><span class="entidad-signo entidad-signo--hueco"
-             aria-hidden="true"></span>Llegó ayer, 17:10</p>
+             aria-hidden="true"></span><th:block th:text="|Llegó ${#strings.toLowerCase(otra.llego)}|">Llegó
+            ayer, 17:10</th:block></p>
           <div class="entidad-talon-cuerpo">
-            <h3>Ropa de abrigo · 2 cajas</h3>
-            <p>2 bultos, desde el Depósito Central</p>
-            <a href="/prototipo/entidad-seguimiento-confirmar" role="button">Confirmar recepción<span
-               class="solo-lectores">: ropa de abrigo</span></a>
+            <h3 th:text="${otra.que}">Ropa de abrigo · 2 cajas</h3>
+            <p th:text="|${otra.bultos} bultos, desde el Depósito Central|">2 bultos, desde el Depósito
+              Central</p>
+            <a href="/prototipo/entidad-seguimiento-confirmar?entrega=ropa"
+               th:href="@{/prototipo/entidad-seguimiento-confirmar(entrega=${otra.clave})}"
+               role="button">Confirmar recepción<span class="solo-lectores"
+               th:text="|: ${otra.nombre}|">: ropa de abrigo</span></a>
           </div>
         </li>
       </ul>

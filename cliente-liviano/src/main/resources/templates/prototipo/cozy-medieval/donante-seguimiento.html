@@ -27,8 +27,9 @@
     <section class="mesa-mapa seguimiento-hoja" aria-labelledby="seguimiento-titulo">
       <div class="mesa-mapa-cartela">
         <h1 id="seguimiento-titulo">Los caminos de tus donaciones</h1>
-        <p th:text="|${#lists.size(enCurso)} entregas en curso. Posiciones aproximadas, actualizadas hoy a las 16:25.|">3
-          entregas en curso. Posiciones aproximadas, actualizadas hoy a las 16:25.</p>
+        <p class="viaje-rotulo" th:text="${seccion}">Seguimiento</p>
+        <p th:text="|${#lists.size(enCurso)} entregas en curso. Posiciones aproximadas. Actualizado el 15 de octubre, 16:25.|">3
+          entregas en curso. Posiciones aproximadas. Actualizado el 15 de octubre, 16:25.</p>
       </div>
       <div class="viaje-mapa seguimiento-mapa">
         <svg viewBox="0 0 640 400" aria-hidden="true" focusable="false">

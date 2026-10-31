@@ -32,12 +32,14 @@
                {estado: entregada, titulo: 'Llegaron a destino', bajada: 'La entidad confirmó que las recibió.', plegado: true}
              } }">
   <div class="viaje-pagina">
-    <!--/* La cabecera: el título y el filtro, en una hoja de consulta. El filtro son dos renglones
-           del registro y el botón; los valores son los de la URL. */-->
+    <!--/* La cabecera: el título, con el nombre del menú como rótulo arriba, y el filtro, en una hoja
+           de consulta. El filtro son dos renglones del registro y el botón; los valores son los de
+           la URL. */-->
     <header class="viaje-cabecera">
-      <h1>Mis donaciones</h1>
-      <p class="viaje-bajada" th:text="${#lists.size(donaciones) + ' donaciones, cada una en la etapa de su viaje.'}">7
-        donaciones, cada una en la etapa de su viaje.</p>
+      <h1>El viaje de cada donación</h1>
+      <p class="viaje-rotulo" th:text="${seccion}">Mis donaciones</p>
+      <p class="viaje-bajada" th:text="${#lists.size(donaciones) + ' donaciones, cada una en su etapa.'}">7
+        donaciones, cada una en su etapa.</p>
     <form class="viaje-filtro" action="/prototipo/donante-donaciones"
           th:action="@{/prototipo/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
       <div class="viaje-filtro-campo">

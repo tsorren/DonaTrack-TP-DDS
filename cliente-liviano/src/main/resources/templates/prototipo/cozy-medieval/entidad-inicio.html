@@ -4,7 +4,10 @@
        "Confirmar recepción"), el mapa de tu pueblo con los caminos de las entregas que le llegan
        (la audacia) y la lista de lo que pediste. El fragmento mesa(vacio) lo usa también
        entidad-inicio-vacio: sin entregas por confirmar, los talones dejan lugar a la tierra sin
-       explorar y el mapa pierde sus dos caminos. Estilos: prototipo/entidad.css. */-->
+       explorar y el mapa pierde sus dos caminos. Arriba, el saludo con el nombre del menú como
+       rótulo. Cada "Confirmar recepción" abre el acta de su entrega (?entrega=<clave>). La hora de
+       las lentejas sigue el viaje que ve el donante: salieron a las 14:30, a las 16:25 iban por la
+       mitad y llegaron a las 18:20. Estilos: prototipo/entidad.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -18,8 +21,12 @@
 <th:block th:fragment="mesa(vacio)">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/entidad.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/entidad.css}">
-  <h1 class="solo-lectores">Inicio</h1>
   <div class="entidad-mesa entidad-mesa--inicio">
+    <header class="entidad-cabecera">
+      <h1>Hola, Marta</h1>
+      <p class="entidad-rotulo" th:text="${seccion}">Inicio</p>
+      <p class="mesa-bajada">Comedor Barrio Ejemplo · jueves 15 de octubre</p>
+    </header>
 
     <!--/* Los talones: cada entrega que llegó es un remito con su talón, separado por el troquel.
            El primero lleva la acción principal; los demás, la misma acción en papel. */-->
@@ -34,11 +41,11 @@
       <ul class="entidad-talones-lista" role="list">
         <li class="entidad-talon">
           <p class="entidad-talon-cabo"><span class="entidad-signo entidad-signo--hueco"
-             aria-hidden="true"></span>Llegó hoy, 15:40</p>
+             aria-hidden="true"></span>Llegó hoy, 18:20</p>
           <div class="entidad-talon-cuerpo">
             <h3>Lentejas secas · 15 kg</h3>
             <p>3 bultos, desde el Depósito Central</p>
-            <a href="/prototipo/entidad-seguimiento-confirmar" role="button">Confirmar recepción<span
+            <a href="/prototipo/entidad-seguimiento-confirmar?entrega=lentejas" role="button">Confirmar recepción<span
                class="solo-lectores">: lentejas secas</span></a>
           </div>
         </li>
@@ -48,7 +55,8 @@
           <div class="entidad-talon-cuerpo">
             <h3>Ropa de abrigo · 2 cajas</h3>
             <p>2 bultos, desde el Depósito Central</p>
-            <a href="/prototipo/entidad-seguimiento-confirmar" role="button" class="outline">Confirmar
+            <a href="/prototipo/entidad-seguimiento-confirmar?entrega=ropa" role="button"
+               class="outline">Confirmar
               recepción<span class="solo-lectores">: ropa de abrigo</span></a>
           </div>
         </li>
@@ -131,7 +139,7 @@
           <th:block th:unless="${vacio}">
             <li><span class="entidad-leyenda-numero" aria-hidden="true">1</span><span
                 class="entidad-signo entidad-signo--hueco" aria-hidden="true"></span><span><b>Lentejas
-                secas · 15 kg</b><small>Espera tu confirmación. Llegó hoy, 15:40.</small></span></li>
+                secas · 15 kg</b><small>Espera tu confirmación. Llegó hoy, 18:20.</small></span></li>
             <li><span class="entidad-leyenda-numero" aria-hidden="true">2</span><span
                 class="entidad-signo entidad-signo--hueco" aria-hidden="true"></span><span><b>Ropa de
                 abrigo · 2 cajas</b><small>Espera tu confirmación. Llegó ayer, 17:10.</small></span></li>
