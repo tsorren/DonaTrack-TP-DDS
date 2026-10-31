@@ -93,11 +93,11 @@ a {
   outline-color: var(--color-foco-sobre-oscuro);
 }
 
+/* Sin relleno a los costados: el texto queda alineado con el de la región. */
 .enlace-fuerte {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
-  padding-inline: var(--espacio-3);
   color: var(--color-enlace);
   font-size: var(--tamano-chico);
   font-weight: 700;
@@ -534,38 +534,59 @@ body > #contenido {
   gap: var(--espacio-3);
 }
 
-/* Títulos al margen: desde 1100 px, el encabezado de la región (título, bajada y estado) va en
-   una columna angosta a la izquierda, como las notas de un códice. El HTML no cambia de orden:
-   primero el título, después el cuerpo. */
-@media (min-width: 68.75em) {
-  .panel:has(> .panel-encabezado) {
-    display: flow-root;
-    padding-inline-start: calc(var(--medida-margen-titulo) + var(--espacio-6));
-  }
+/* El viaje: el título arriba, en grande, y en el renglón de abajo qué se donó y en qué estado
+   está, uno al lado del otro. Así el recorrido entra entero en la primera pantalla del celular. */
+.panel--viaje > .panel-encabezado {
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espacio-2) var(--espacio-3);
+  margin-block-end: var(--espacio-4);
+}
 
-  .panel > .panel-encabezado {
-    float: inline-start;
-    flex-direction: column;
-    width: var(--medida-margen-titulo);
-    margin-inline-start: calc(-1 * (var(--medida-margen-titulo) + var(--espacio-6)));
-    overflow-wrap: break-word;
-    hyphens: auto;
-    hyphenate-limit-chars: 10 4 4;
-  }
+.panel--viaje > .panel-encabezado > div {
+  display: contents;
+}
+
+.panel--viaje > .panel-encabezado h3 {
+  flex-basis: 100%;
+  font-size: var(--tamano-titulo-2);
+}
+
+.panel--viaje .panel-bajada {
+  margin: 0;
 }
 
 /* Inicio del donante (/estilos/armazon): la hoja del tablero. La audacia es el viaje en curso:
-   va enseguida del saludo, con el recorrido a lo ancho y la leyenda de las cifras debajo; después,
-   la misión y las notificaciones. El orden del HTML es el de lectura y las áreas lo siguen.
-   Toda la composición está en este grupo de reglas. El viaje a lo alto (recorrido vertical con la
-   leyenda al costado) es cambiar columnas y áreas y poner vertical el recorrido:
-     grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
-     grid-template-areas: "saludo saludo" "viaje leyenda" "mision mision" "notas notas"; */
+   va enseguida de un saludo corto y ocupa todo el ancho de la hoja, con su título arriba y más
+   aire que el resto. Después, la leyenda de las cifras, las notificaciones y, al final, la misión.
+   El orden del HTML es el de lectura y las áreas lo siguen: ninguna variante cambia el orden del
+   foco. Toda la composición está en este grupo de reglas.
+   Las dos variantes que se van a comparar:
+   - B, viaje a lo ancho (la de estas reglas): el recorrido horizontal a todo el ancho de la hoja y
+     la leyenda debajo.
+   - A, viaje a lo alto: el recorrido vertical, con la leyenda al costado. Se arma con este bloque,
+     dentro de @media (min-width: 53.75em):
+       .tablero {
+         grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+         grid-template-areas: "saludo saludo" "viaje leyenda" "notas notas" "mision mision";
+         align-items: start;
+       }
+       .tablero-leyenda .cifras { grid-template-columns: minmax(0, 1fr); }
+     Mientras el recorrido se oriente por el ancho de la pantalla y no por el de su lugar (hasta
+     unir el frente de signos), A necesita además estas reglas, que lo ponen vertical:
+       .tablero .recorrido { grid-auto-flow: row; gap: 0.875rem; padding-inline-start: 2px; }
+       .tablero .recorrido::before {
+         inset: 15px auto 15px 15px;
+         border-block-start: 0;
+         border-inline-start: var(--borde-ruta) dotted var(--color-ruta);
+       }
+       .tablero .recorrido-paso { flex-direction: row; gap: var(--espacio-3); text-align: start; }
+     En las dos, el título del viaje va arriba y el de las notificaciones, al margen. */
 .tablero {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "saludo" "viaje" "leyenda" "mision" "notas";
-  gap: var(--espacio-6);
+  grid-template-areas: "saludo" "viaje" "leyenda" "notas" "mision";
+  gap: var(--espacio-5);
 }
 
 .tablero > * {
@@ -584,23 +605,62 @@ body > #contenido {
   grid-area: leyenda;
 }
 
-.tablero > .tablero-mision {
-  grid-area: mision;
-}
-
 .tablero > .panel--notas {
   grid-area: notas;
 }
 
-/* Panel destacado: el saludo, con marco propio. El texto va en pergamino liso; en pantallas
-   anchas, a su lado, el mapa: la cuadrícula de meridianos, la rosa de los vientos y el camino de
-   tinta con sus pueblos. */
+.tablero > .tablero-mision {
+  grid-area: mision;
+}
+
+/* Desde 860 px, más aire entre regiones, y más todavía alrededor del viaje. */
+@media (min-width: 53.75em) {
+  .tablero {
+    gap: var(--espacio-6);
+  }
+
+  .tablero > .panel--viaje {
+    padding-block: var(--espacio-6) var(--espacio-2);
+  }
+}
+
+/* Títulos al margen: desde 1100 px, el encabezado de cada región de lectura (título y bajada) va
+   en una columna angosta a la izquierda, como las notas de un códice. El viaje no: es la audacia
+   y usa todo el ancho de la hoja. La misión, que trae su título en su marco, va en la columna del
+   cuerpo, con el margen libre. El HTML no cambia de orden: primero el título, después el cuerpo. */
+@media (min-width: 68.75em) {
+  .tablero > :is(.panel:not(.panel--viaje), .tablero-mision) {
+    padding-inline-start: calc(var(--medida-margen-titulo) + var(--espacio-6));
+  }
+
+  .tablero > .panel:not(.panel--viaje) {
+    display: flow-root;
+  }
+
+  .tablero > .tablero-mision > * {
+    max-width: var(--medida-lectura);
+  }
+
+  .tablero > .panel:not(.panel--viaje) > .panel-encabezado {
+    float: inline-start;
+    flex-direction: column;
+    width: var(--medida-margen-titulo);
+    margin-inline-start: calc(-1 * (var(--medida-margen-titulo) + var(--espacio-6)));
+    overflow-wrap: break-word;
+    hyphens: auto;
+    hyphenate-limit-chars: 10 4 4;
+  }
+}
+
+/* Panel destacado: el saludo, con marco propio. Es corto, para que el viaje en curso se vea
+   enseguida: la audacia de la hoja es el viaje, no el saludo. El texto va en pergamino liso; en
+   pantallas anchas, a su lado, el mapa: la cuadrícula de meridianos, la rosa de los vientos y el
+   camino de tinta con sus pueblos. */
 .destacado {
   position: relative;
   display: grid;
   gap: var(--espacio-5);
-  min-height: 13.125rem;
-  padding: var(--espacio-5) 1.25rem;
+  padding: var(--espacio-4);
   overflow: hidden;
   isolation: isolate;
   background-color: var(--color-fondo);
@@ -609,10 +669,10 @@ body > #contenido {
 }
 
 .destacado h3 {
-  margin: 0.875rem 0 var(--espacio-2);
+  margin: var(--espacio-1) 0 var(--espacio-2);
   color: var(--color-titulo);
-  font-size: var(--tamano-titulo-1);
-  line-height: 1.1;
+  font-size: var(--tamano-titulo-2);
+  line-height: 1.15;
 }
 
 .destacado p {
@@ -631,11 +691,16 @@ body > #contenido {
   letter-spacing: 0.04em;
 }
 
+/* Los dos botones entran en un renglón desde 360 px; si no entran, el segundo baja. */
 .destacado-acciones {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.625rem;
-  margin-top: 1.25rem;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-4);
+}
+
+.destacado-acciones > * {
+  padding-inline: var(--espacio-4);
 }
 
 /* El mapa aparece desde 1100 px; antes, el saludo es solo texto. Es un grabado callado: la audacia
@@ -644,11 +709,12 @@ body > #contenido {
 .destacado-red {
   display: none;
   position: relative;
-  min-height: 12.5rem;
+  min-height: 8rem;
 }
 
 /* La cuadrícula de meridianos va solo detrás del mapa, hasta el marco, que la recorta; la separa
-   del texto la línea de tinta del borde del mapa. */
+   del texto la línea de tinta del borde del mapa. Pico no repite los fondos de ningún elemento:
+   la cuadrícula lo pide. */
 .destacado-red::before {
   content: "";
   position: absolute;
@@ -658,6 +724,7 @@ body > #contenido {
   background-image:
     linear-gradient(var(--color-trama) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-trama) 1px, transparent 1px);
+  background-repeat: repeat;
   background-size: 3rem 3rem;
   border-inline-start: var(--borde-ancho) solid var(--color-filete);
 }
@@ -710,8 +777,8 @@ body > #contenido {
   left: 44.5%;
 }
 
-/* Las cartelas repetían las cifras, que en esta hoja son la leyenda. Quedan en el HTML, sin
-   mostrarse: el mapa es un dibujo y no entra en 1100 px con ellas. */
+/* Las cartelas repetían las cifras, que en esta hoja son la leyenda, y no entran en el mapa corto.
+   Quedan en el HTML, sin mostrarse, porque los textos son los mismos que en Glassmorphism. */
 .destacado-chip {
   display: none;
 }
@@ -1257,10 +1324,6 @@ body > #contenido {
   font-size: 1.125rem;
 }
 
-.banner h2::after {
-  content: none;
-}
-
 .banner p,
 .banner small {
   margin: 0;
@@ -1663,7 +1726,22 @@ dialog > article > footer button {
   margin-block-end: var(--espacio-3);
 }
 
-/* El título no cambia de lugar en el HTML: queda primero y flota hacia el margen. */
+/* La muestra apila sus piezas en el orden del HTML, con el mismo aire que el tablero. Adentro,
+   las regiones llevan el título arriba: el margen ya lo usa el título de la muestra. */
+.muestra-pantalla > * {
+  margin-block: 0;
+}
+
+.muestra-pantalla > * + * {
+  margin-block-start: var(--espacio-6);
+}
+
+.muestra-pantalla > h2 + * {
+  margin-block-start: var(--espacio-3);
+}
+
+/* El título no cambia de lugar en el HTML: queda primero y flota hacia el margen. El cuerpo
+   arranca a la altura del título. */
 @media (min-width: 68.75em) {
   :is(.catalogo, .muestra-pantalla) {
     display: flow-root;
@@ -1707,19 +1785,6 @@ dialog > article > footer button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--medida-tarjeta-minima)), 1fr));
   gap: var(--espacio-5);
-}
-
-/* La muestra apila sus piezas en el orden del HTML, con el mismo aire que el tablero. */
-.muestra-pantalla > * {
-  margin-block: 0;
-}
-
-.muestra-pantalla > * + * {
-  margin-block-start: var(--espacio-6);
-}
-
-.muestra-pantalla > h2 + * {
-  margin-block-start: var(--espacio-3);
 }
 
 .muestra-grilla {
@@ -1935,7 +2000,7 @@ dialog > article > footer button {
   }
 
   .destacado {
-    padding: 1.875rem 2.125rem;
+    padding: var(--espacio-5) var(--espacio-6);
   }
 
   .cifras {

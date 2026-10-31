@@ -2,8 +2,8 @@
 <!--/* Muestra del armazón de las pantallas privadas (/estilos/armazon): el inicio del donante,
        armado con piezas de /estilos dentro de layout-privado. Datos de ejemplo. La hoja va en el
        orden de lectura: el saludo; el viaje en curso, que es la audacia de la pantalla, con la
-       leyenda de las cifras; la misión y las notificaciones. La composición está en app.css
-       ("Inicio del donante"). */-->
+       leyenda de las cifras; las notificaciones, que cuentan lo último del viaje, y al final la
+       misión. La composición está en app.css ("Inicio del donante"). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -18,10 +18,10 @@
     <div class="tablero-leyenda">
       <div th:replace="~{alternativas/cozy-medieval/paginas/estilos :: div.cifras}"></div>
     </div>
+    <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.panel--notas}"></section>
     <div class="tablero-mision">
       <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.mision}"></section>
     </div>
-    <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.panel--notas}"></section>
   </div>
 </th:block>
 </body>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 12">
-  <!-- Filete de libro antiguo: un rombo, la línea y un punto al final. Dibujo propio de la
-       Alternativa Cozy / Medieval, de un solo color: app.css lo usa como máscara. -->
-  <path d="M6 1 11 6 6 11 1 6Z"/>
-  <path d="M15 6H152" stroke="#000" stroke-width="1"/>
-  <circle cx="156" cy="6" r="1.8"/>
-</svg>
