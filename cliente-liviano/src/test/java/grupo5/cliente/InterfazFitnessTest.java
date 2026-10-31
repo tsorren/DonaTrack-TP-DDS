@@ -279,7 +279,12 @@ class InterfazFitnessTest {
   void lasPlantillasDeUnaAlternativaUsanSoloLasSuyas() {
     List<String> fallas = new ArrayList<>();
     for (Path juego : juegosDeAlternativas()) {
-      Pattern ajena = Pattern.compile("~\\{(?!::)(?!" + Pattern.quote(prefijo(juego)) + ")");
+      // ~{x :: y} o la forma corta th:replace="x :: y"; no cuentan las expresiones ${…} ni ::y.
+      Pattern ajena =
+          Pattern.compile(
+              "(?:~\\{|th:(?:replace|insert)\\s*=\\s*\"(?![~$@#*]\\{))(?!::)(?!"
+                  + Pattern.quote(prefijo(juego))
+                  + ")");
       for (Path plantilla : archivos(juego, HTML)) {
         List<String> lineas = lineas(plantilla);
         for (int i = 0; i < lineas.size(); i++) {

@@ -287,8 +287,8 @@
   --medida-barra-superior: 4.25rem;
   --medida-columna-estado: 11.5rem;
 
-  /* Los mismos puntos de quiebre que Glassmorphism (600, 860 y 1100 px): las dos alternativas
-     comparten las plantillas. InterfazFitnessTest compara el literal. */
+  /* Los mismos puntos de quiebre que Glassmorphism (600, 860 y 1100 px), para comparar las dos
+     alternativas en los mismos anchos. InterfazFitnessTest compara el literal. */
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
