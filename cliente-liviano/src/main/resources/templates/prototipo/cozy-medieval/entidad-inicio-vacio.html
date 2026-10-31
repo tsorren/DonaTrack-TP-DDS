@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--/* Prototipo (iteración 3), entidad: el inicio sin entregas por confirmar. La misma mesa de
+       entidad-inicio (fragmento mesa), con la tierra sin explorar en el lugar de los talones. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-inicio :: mesa(true)}"></th:block>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!--/* Prototipo (iteración 3), entidad: seguir entregas. Un libro de ruta con las entregas por
+       etapa, de la que está en tu puerta a la que todavía no salió; las entregadas, plegadas. Cada
+       grupo lleva su signo grande, su nombre y su cantidad; arriba, la leyenda dice cuántas hay en
+       cada etapa y lleva a su grupo (las cifras como leyenda del mapa). Las que esperan tu
+       confirmación van primero, con los mismos talones del inicio. Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Seguir entregas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/entidad.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/entidad.css}">
+  <div class="entidad-ruta">
+    <header class="entidad-ruta-titulo">
+      <h1>Caminos a tu pueblo</h1>
+      <p class="mesa-bajada">Seguí tus entregas, de la que está en tu puerta a la que todavía no
+        salió.</p>
+    </header>
+
+    <nav class="entidad-ruta-leyenda" aria-label="Etapas">
+      <ul role="list">
+        <li><a href="#esperan"><span class="entidad-signo entidad-signo--hueco"
+               aria-hidden="true"></span>2 esperan tu confirmación</a></li>
+        <li><a href="#en-camino"><span class="entidad-signo entidad-signo--en-camino"
+               aria-hidden="true"></span>1 en camino</a></li>
+        <li><a href="#por-salir"><span class="entidad-signo entidad-signo--pendiente"
+               aria-hidden="true"></span>1 por salir</a></li>
+        <li><a href="#con-problema"><span class="entidad-signo entidad-signo--con-problema"
+               aria-hidden="true"></span>1 con problema</a></li>
+        <li><a href="#entregadas"><span class="entidad-signo entidad-signo--entregada"
+               aria-hidden="true"></span>4 entregadas</a></li>
+      </ul>
+    </nav>
+
+    <div class="entidad-ruta-libro">
+      <section id="esperan" class="entidad-grupo" aria-labelledby="esperan-titulo">
+        <div class="entidad-grupo-cabecera">
+          <span class="entidad-signo entidad-signo--hueco" aria-hidden="true"></span>
+          <h2 id="esperan-titulo">Esperan tu confirmación</h2>
+          <p>2 entregas</p>
+        </div>
+        <!--/* Los mismos talones del inicio. */-->
+        <ul th:replace="~{prototipo/cozy-medieval/entidad-inicio :: ul.entidad-talones-lista}"></ul>
+      </section>
+
+      <section id="en-camino" class="entidad-grupo" aria-labelledby="en-camino-titulo">
+        <div class="entidad-grupo-cabecera">
+          <span class="entidad-signo entidad-signo--en-camino" aria-hidden="true"></span>
+          <h2 id="en-camino-titulo">En camino</h2>
+          <p>1 entrega</p>
+        </div>
+        <ul class="entidad-renglones" role="list">
+          <li><b>Arroz · 20 kg</b><span>Salió del depósito hoy a las 9:15. Llega mañana.</span></li>
+        </ul>
+      </section>
+
+      <section id="por-salir" class="entidad-grupo" aria-labelledby="por-salir-titulo">
+        <div class="entidad-grupo-cabecera">
+          <span class="entidad-signo entidad-signo--pendiente" aria-hidden="true"></span>
+          <h2 id="por-salir-titulo">Por salir</h2>
+          <p>1 entrega</p>
+        </div>
+        <ul class="entidad-renglones" role="list">
+          <li><b>Leche en polvo · 12 latas</b><span>Asignada el 13 de octubre. Sale del depósito el
+            17 de octubre.</span></li>
+        </ul>
+      </section>
+
+      <section id="con-problema" class="entidad-grupo entidad-grupo--problema"
+               aria-labelledby="con-problema-titulo">
+        <div class="entidad-grupo-cabecera">
+          <span class="entidad-signo entidad-signo--con-problema" aria-hidden="true"></span>
+          <h2 id="con-problema-titulo">Con problema</h2>
+          <p>1 entrega</p>
+        </div>
+        <ul class="entidad-renglones" role="list">
+          <li><b>Aceite de girasol · 10 litros</b><span>El camión no pudo llegar el 14 de octubre.
+            Te avisamos la nueva fecha.</span></li>
+        </ul>
+      </section>
+
+      <details id="entregadas" class="entidad-grupo entidad-grupo--plegado">
+        <summary class="entidad-grupo-cabecera">
+          <span class="entidad-signo entidad-signo--entregada" aria-hidden="true"></span>
+          <span class="entidad-grupo-nombre">Entregadas</span>
+          <span class="entidad-grupo-cuenta">4 entregas</span>
+        </summary>
+        <ul class="entidad-renglones" role="list">
+          <li><b>Lentejas secas · 10 kg</b><span>Sellada el 10 de octubre</span></li>
+          <li><b>Ropa de abrigo · 1 caja</b><span>Sellada el 8 de octubre</span></li>
+          <li><b>Leche en polvo · 12 latas</b><span>Sellada el 6 de octubre</span></li>
+          <li><b>Arroz · 15 kg</b><span>Sellada el 2 de octubre</span></li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>
