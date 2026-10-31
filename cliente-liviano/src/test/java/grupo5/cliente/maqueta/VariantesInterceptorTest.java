@@ -50,6 +50,13 @@ class VariantesInterceptorTest {
   }
 
   @Test
+  void unaVarianteDeEstructuraReemplazaTambienUnaPantallaDelPrototipo() throws Exception {
+    mvc.perform(get("/prototipo/donante-donaciones-prueba").param("variante", "prueba-b"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("variantes/prueba-b"));
+  }
+
+  @Test
   void unNombreQueNoEsUnArchivoDeVarianteNoExiste() throws Exception {
     mvc.perform(get("/estilos").param("variante", "../app")).andExpect(status().isNotFound());
   }

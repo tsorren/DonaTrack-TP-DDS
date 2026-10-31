@@ -32,11 +32,13 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Comprobación visual (perfil Maven {@code visual}): por cada página de {@code paginas.txt}, en los
  * anchos de referencia, saca una captura y exige axe AA sin violaciones, controles de 48 × 48 px o
- * más y nada desbordado; en los anchos intermedios, solo que nada se desborde. Sin propiedades,
+ * más y nada desbordado; en los anchos intermedios, solo que nada se desborde. En el celular
+ * captura además la primera pantalla (360 × 640, {@code <página>-360x640.png}). Sin propiedades,
  * recorre Glassmorphism y cada alternativa de {@code static/css/alternativas/} y las compara. Con
  * {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada variante, sobre la
- * alternativa de {@code -Dverificacion.alternativa=<nombre>} si se indica. Resultado en {@code
- * target/capturas/}: PNG, index.html, comparacion.html y reporte.json.
+ * alternativa de {@code -Dverificacion.alternativa=<nombre>} si se indica. Con {@code
+ * -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de las de paginas.txt. Resultado en
+ * {@code target/capturas/}: PNG, index.html, comparacion.html y reporte.json.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -276,7 +278,7 @@ class VerificacionVisualTest {
         for (String ruta : paginas()) {
           for (int ancho : AnchosDeReferencia.REFERENCIA) {
             if (abrir(pagina, ruta, opcion, ancho, fallas)) {
-              String archivo = nombreDeCaptura(ruta, opcion, ancho);
+              String archivo = nombreDeCaptura(ruta, opcion, String.valueOf(ancho));
               pagina.evaluate(CARGAR_IMAGENES);
               pagina.screenshot(
                   new Page.ScreenshotOptions()
@@ -286,6 +288,9 @@ class VerificacionVisualTest {
               revisarAccesibilidad(pagina, ruta, variante, ancho, fallas);
               revisarToque(pagina, ruta, variante, ancho, fallas);
               revisarDesborde(pagina, ruta, variante, ancho, fallas);
+              if (ancho == AnchosDeReferencia.CELULAR) {
+                capturarPrimeraPantalla(pagina, ruta, opcion);
+              }
             }
           }
           for (int ancho : AnchosDeReferencia.INTERMEDIOS) {
@@ -367,10 +372,30 @@ class VerificacionVisualTest {
     }
   }
 
+  /** Lo que se ve en el celular sin desplazar, aparte de la página completa. */
+  private static void capturarPrimeraPantalla(Page pagina, String ruta, Opcion opcion) {
+    pagina.setViewportSize(AnchosDeReferencia.CELULAR, AnchosDeReferencia.ALTO_CELULAR);
+    pagina.evaluate("() => window.scrollTo(0, 0)");
+    String medida = AnchosDeReferencia.CELULAR + "x" + AnchosDeReferencia.ALTO_CELULAR;
+    pagina.screenshot(
+        new Page.ScreenshotOptions()
+            .setPath(CAPTURAS.resolve(nombreDeCaptura(ruta, opcion, medida))));
+  }
+
+  /**
+   * Las rutas de -Dverificacion.paginas=/a,/b o, sin la propiedad, las de paginas.txt. La barra
+   * inicial es opcional: Git Bash convierte "=/a" en una ruta de Windows.
+   */
   private static List<String> paginas() throws IOException {
-    return Files.readAllLines(PAGINAS, StandardCharsets.UTF_8).stream()
+    String pedidas = System.getProperty("verificacion.paginas", "").strip();
+    Stream<String> lineas =
+        pedidas.isEmpty()
+            ? Files.readAllLines(PAGINAS, StandardCharsets.UTF_8).stream()
+            : Arrays.stream(pedidas.split(","));
+    return lineas
         .map(String::strip)
         .filter(linea -> !linea.isEmpty() && !linea.startsWith("#"))
+        .map(ruta -> ruta.startsWith("/") ? ruta : "/" + ruta)
         .toList();
   }
 
@@ -404,9 +429,12 @@ class VerificacionVisualTest {
     return opciones;
   }
 
-  private static String nombreDeCaptura(String ruta, Opcion opcion, int ancho) {
+  /**
+   * {@code <ruta>[--<alternativa>][--<variante>]-<medida>.png}; la medida es el ancho o 360x640.
+   */
+  private static String nombreDeCaptura(String ruta, Opcion opcion, String medida) {
     String base = ruta.replaceAll("[^A-Za-z0-9]+", "-").replaceAll("^-|-$", "");
-    return (base.isEmpty() ? "inicio" : base) + opcion.sufijo() + "-" + ancho + ".png";
+    return (base.isEmpty() ? "inicio" : base) + opcion.sufijo() + "-" + medida + ".png";
   }
 
   /**

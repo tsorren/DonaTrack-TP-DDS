@@ -21,8 +21,9 @@ import org.springframework.web.servlet.ModelAndView;
  * vista {@code paginas/x} pasa a {@code alternativas/<nombre>/paginas/x} si existe; bitácora,
  * 2026-10-30). {@code ?variante=<tema>-a|b} (skill iteracion-ab) suma {@code
  * static/css/variantes/<variante>.css} a la página o la reemplaza por {@code
- * templates/variantes/<variante>.html}. Las dos se pueden combinar; una variante de estructura gana
- * sobre las plantillas de la alternativa.
+ * templates/variantes/<variante>.html}, también a una pantalla del prototipo ({@code
+ * /prototipo/<pantalla>}, para comparar conceptos de una corrida creativa). Las dos se pueden
+ * combinar; una variante de estructura gana sobre las plantillas de la alternativa.
  */
 class VariantesInterceptor implements HandlerInterceptor {
 
@@ -89,7 +90,8 @@ class VariantesInterceptor implements HandlerInterceptor {
     if (!(request.getAttribute(ATRIBUTO) instanceof Variante variante)) {
       return;
     }
-    if (variante.estructura() && pagina) {
+    boolean prototipo = vista != null && vista.startsWith("prototipo/");
+    if (variante.estructura() && (pagina || prototipo)) {
       modelAndView.setViewName("variantes/" + variante.nombre());
     }
     if (variante.estilo()) {
