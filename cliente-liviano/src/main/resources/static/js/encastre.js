@@ -21,4 +21,18 @@ document.querySelectorAll("nav.navegacion").forEach((riel) => {
   });
   lista.append(mas);
   riel.classList.add("navegacion--con-mas");
+
+  // "Más" se cierra con Escape (el foco vuelve a su pieza) y al tocar afuera.
+  const plegable = mas.querySelector("details");
+  mas.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape" && plegable.open) {
+      plegable.open = false;
+      plegable.querySelector("summary").focus();
+    }
+  });
+  document.addEventListener("click", (evento) => {
+    if (plegable.open && !mas.contains(evento.target)) {
+      plegable.open = false;
+    }
+  });
 });

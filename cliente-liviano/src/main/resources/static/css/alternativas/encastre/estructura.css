@@ -315,11 +315,19 @@
 /* El armazón privado: la mesa guarda el riel y el tablero. En el celular, el riel sale de la
    mesa y queda fijo abajo; la página deja lugar para que no tape el final. */
 .armazon {
-  padding-bottom: calc(var(--medida-riel-celular) + var(--espacio-4));
+  --medida-riel-alto: var(--medida-riel-celular);
+
+  padding-bottom: calc(var(--medida-riel-alto) + var(--espacio-4));
+}
+
+/* Sin JavaScript, con seis secciones o más la tira se parte en dos filas con todos los nombres a la
+   vista: la página deja lugar para las dos. Con JavaScript, "Más" la deja en una fila. */
+.armazon:has(nav.navegacion > ul > li:nth-child(6)):not(:has(.navegacion--con-mas)) {
+  --medida-riel-alto: calc(2 * var(--medida-riel-celular) - var(--medida-junta));
 }
 
 .armazon .avisos {
-  bottom: calc(var(--medida-riel-celular) + var(--espacio-3));
+  bottom: calc(var(--medida-riel-alto) + var(--espacio-3));
 }
 
 .tablero-zona {
@@ -401,7 +409,7 @@ nav.navegacion li {
   gap: var(--espacio-1);
   min-height: var(--medida-riel-pieza);
   margin: 0;
-  padding: var(--espacio-2) var(--espacio-1);
+  padding: var(--espacio-2) 0.125rem;
   background: var(--color-pieza-fondo);
   border: 0;
   border-radius: var(--radio-pieza);
@@ -535,6 +543,11 @@ nav.navegacion .navegacion-mas a::before {
 
 .armazon nav.navegacion--con-mas .navegacion-extra {
   display: none;
+}
+
+/* La última sección antes de "Más" es pieza de borde donde "Más" no se ve (tableta y columna). */
+.navegacion li:has(+ .navegacion-mas) a::after {
+  content: none;
 }
 
 .armazon nav.navegacion--con-mas .navegacion-mas {
@@ -750,19 +763,25 @@ nav.navegacion .navegacion-mas a::before {
 }
 
 /* El texto va en el cuerpo libre del hueco, a la derecha de la muesca donde entra la pieza de al
-   lado. */
+   lado (la muesca llega al 28 % del ancho), en dos renglones. Escala con el hueco. */
+.mision-hueco {
+  container-type: inline-size;
+}
+
 .mision-hueco > span {
   position: relative;
   grid-row: 2;
-  place-self: center;
-  margin-inline-start: 26%;
-  padding: var(--espacio-1);
+  align-self: center;
+  justify-self: stretch;
+  margin-inline-start: 30cqi;
+  padding-inline: 0.25em 0.5em;
   color: var(--color-mesa-texto);
   font-family: var(--fuente-juego);
-  font-size: var(--tamano-titulo-4);
+  font-size: clamp(var(--tamano-mini), 15cqi, var(--tamano-titulo-3));
   font-weight: 800;
   line-height: 1.05;
   text-align: center;
+  text-wrap: balance;
 }
 
 .mision-hueco--vacio .mision-forma {
@@ -1167,8 +1186,14 @@ nav.navegacion .navegacion-mas a::before {
   --color-pieza-fondo: var(--color-pieza-durazno);
 }
 
+/* En camino: pieza crema con el signo en naranja; el naranja entero queda para la misión. */
 .insignia--en-camino {
-  --color-pieza-fondo: var(--color-ahora);
+  --color-pieza-fondo: var(--color-pieza-crema);
+}
+
+.insignia--en-camino .insignia-signo {
+  background: var(--color-ahora);
+  color: var(--color-pieza-tinta);
 }
 
 .insignia--entregada {
@@ -1752,8 +1777,12 @@ nav.navegacion .navegacion-mas a::before {
     align-items: start;
   }
 
+  /* La columna sigue siendo mesa de tinta hasta el pie; la tira de piezas acompaña el scroll. */
   .armazon .navegacion {
-    align-self: stretch;
+    position: sticky;
+    top: var(--espacio-4);
+    z-index: 2;
+    align-self: start;
   }
 
   .catalogo .navegacion {
@@ -1835,12 +1864,19 @@ nav.navegacion .navegacion-mas a::before {
       "piezas"
       "barra"
       "pie";
-    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
     align-content: stretch;
+  }
+
+  /* Las piezas crecen con el ancho de la misión; el nombre, las piezas y la barra van juntos
+     abajo y el aire que sobra queda bajo el título, no como un hueco muerto entre ellos. */
+  .mision-nombre {
+    align-self: end;
   }
 
   .mision-piezas {
     width: 100%;
+    max-width: 44rem;
   }
 
   /* La categoría, una pieza baja bajo el saludo. */

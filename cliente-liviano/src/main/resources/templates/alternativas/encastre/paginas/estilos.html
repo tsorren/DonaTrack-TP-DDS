@@ -56,7 +56,8 @@
              de la misión: los hechos son piezas puestas; el que sigue, el hueco con forma de pieza
              y la pieza suelta que lo prueba; los demás que falten, huecos vacíos. La última es
              pieza de borde, sin lengüeta a la derecha. */-->
-      <section class="pieza mision" aria-labelledby="mision-titulo" th:with="hechos=2, total=3">
+      <section class="pieza mision pieza-ahora" aria-labelledby="mision-titulo"
+               th:with="hechos=2, total=3">
         <div class="mision-cabeza">
           <h3 id="mision-titulo">Lo que te toca ahora</h3>
           <p class="mision-rango">Colaborador → Sostenedor</p>
@@ -82,7 +83,10 @@
                   focusable="false"><use href="#encastre-pieza" th:href="${forma}"/></svg></span>
           </th:block>
         </div>
-        <progress class="mision-barra" value="66" max="100"
+        <!--/* La barra sale de hechos y total. "2/3", "66 %" y "Falta 1 paso" salen de las mismas
+               cifras, pero quedan literales porque la gemela los escribe así: pasan a th:text en
+               las dos gemelas cuando la misión sea un dato del modelo. */-->
+        <progress class="mision-barra" value="66" max="100" th:attr="value=${hechos * 100 / total}"
                   aria-label="Progreso de la misión">66 %</progress>
         <div class="mision-pie">
           <span class="mision-por">66 %</span>

@@ -261,7 +261,7 @@
   --radio-mesa: 1.5rem;
   --medida-mesa-maxima: 96rem;
   --medida-riel-celular: 4.75rem;
-  --tamano-riel-corto: 0.6875rem;
+  --tamano-riel-corto: 0.75rem;
 
   /* Encastre (iteración 2, estructura): la mesa de tinta sobre la que encastran las piezas, el
      hueco de lo que falta (tinta con borde de crema a trazos), el marcador de sol del saludo y las
