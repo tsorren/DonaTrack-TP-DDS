@@ -26,6 +26,50 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · sistema (Encastre) · Iteración 2: se conservan las dos zonas (estructura y componentes) y el naranja queda para una sola pieza, la de lo de ahora
+
+- **Decisión:** el sistema de Encastre junta las dos mitades del mismo juego: **estructura**
+  dibuja la mesa y el tablero (la misión como rompecabezas armado desde los datos, el riel de
+  piezas en tres formas: columna, tira arriba y tira fija abajo) y **componentes** dibuja cada
+  control y cada respuesta (botón como pieza con junta y pisada, aviso que encastra por su signo,
+  diálogo como hoja abajo en el celular, vacío con forma de hueco, tabla como bandeja de piezas).
+  El choque del naranja se resuelve así: la misión sigue naranja entera; el botón principal pasa
+  a tinta con texto crema cuando la pantalla ya tiene una pieza de "lo de ahora"
+  (`main:has(.pieza-ahora)`); la insignia "En camino" pasa a crema con el signo naranja. Otros
+  arreglos: el texto del hueco ya no se aprieta, "Más" se cierra con Escape y con un toque
+  afuera, sin JavaScript la tira del celular pasa a dos filas y la página deja lugar para las
+  dos, el rótulo corto sube a 0,75 rem, el esqueleto se apoya en una mesa velada y la lengüeta
+  del principal crece y lleva pisada.
+- **Alternativas:**
+  - **B, misión en crema con borde naranja:** vuelve al "todo pastel y nada se destaca" y apaga
+    la pieza más fuerte de la pantalla (3,40 contra 4,70 de la elegida).
+  - **C, dejar las cuatro manchas naranjas:** diluyen "lo de ahora", que es el mensaje (3,30).
+  - **D, principal siempre en tinta:** le saca su identidad al botón en todas las pantallas para
+    resolver un problema de una sola (3,60).
+  - **Tira del celular en una fila que se desliza sin JavaScript:** es el bloqueo de la
+    iteración 1 (la tira corta secciones sin aviso).
+  - **Barra, "2/3" y "Falta 1 paso" con `th:text` desde las cifras:** rompe la paridad con la
+    gemela y no se debilita el test; la barra toma el valor con `th:attr` y los textos quedan
+    literales hasta que la misión sea un dato del modelo.
+  - **Quedarse solo con estructura:** da 4,10 contra 3,85 de componentes, pero son mitades de un
+    mismo juego y no compiten; se conservan las dos.
+- **Por qué:** estructura llevó el rompecabezas al juego real sin achatarlo y componentes lo
+  completa en los controles; juntas, la pantalla tiene una sola pieza naranja que dice qué toca
+  ahora y el resto se lee como un material. Las tres críticas coincidieron en que estructura es
+  fuerte, que componentes no se podía juzgar hasta integrarla y que en el choque cede componentes.
+- **Costo:** quedan para la iteración 3 el riel con las siete secciones del admin como pantalla
+  real (se vio en el navegador, no en una ruta), "Seguimiento" que se ve justo en el celular con
+  el rótulo corto, los textos de la misión escritos a mano que pasan a `th:text` cuando sea un
+  dato del modelo, "Falta 1 mes" en lugar de "Falta 1 paso", el calendario del controller que
+  mezcla "mayo de 2026" con "octubre", la campana que lleva a `/notificaciones` (no existe) y el
+  párrafo del catálogo que no nombra a Encastre. **Reemplaza:** parte de la decisión de la
+  iteración 1 (concepto, corrida creativa desatendida): "un solo color fuerte para lo de ahora:
+  la misión, el paso actual y 'Ver seguimiento'"; ahora "Ver seguimiento" va en tinta y el
+  naranja queda en la misión y el paso actual.
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** [capturas del sistema](evidencia/encastre/sistema/) (360 y 1280 del catálogo y
+  del armazón, y 360 × 640 del armazón); [encargo](encargos/encastre.md).
+
 ### 2026-10-31 · concepto (Encastre) · Iteración 1: gana Rompecabezas (concepto-b), con la navegación de bolsillo de Bolsillo y un solo color fuerte para lo de ahora
 
 - **Decisión:** para el inicio del donante de Encastre gana **concepto-b, Rompecabezas**: un
