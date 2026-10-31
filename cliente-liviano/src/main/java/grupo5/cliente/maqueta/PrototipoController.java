@@ -2,6 +2,7 @@ package grupo5.cliente.maqueta;
 
 import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.OpcionNavegacion;
+import grupo5.cliente.web.EstilosController;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -16,10 +17,11 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * Prototipo navegable del flujo completo de la Alternativa Cozy / Medieval (bitácora, iteración 3):
  * {@code /prototipo/<pantalla>} muestra {@code templates/prototipo/cozy-medieval/<pantalla>.html},
- * con los datos de ejemplo escritos en la plantilla y la navegación de su rol (el prefijo del
- * nombre: publico, donante, entidad o admin). No son pantallas del sistema: no tienen gemela en
- * Glassmorphism; cada una se construye en las dos alternativas cuando se apruebe su flujo. Una
- * sección del menú que todavía no tiene plantilla muestra la tierra sin explorar.
+ * con los datos de ejemplo del catálogo ({@link EstilosController}) y los que escribe cada
+ * plantilla, y la navegación de su rol (el prefijo del nombre: publico, donante, entidad o admin).
+ * No son pantallas del sistema: no tienen gemela en Glassmorphism; cada una se construye en las dos
+ * alternativas cuando se apruebe su flujo. Una sección del menú que todavía no tiene plantilla
+ * muestra la tierra sin explorar.
  */
 @Controller
 @Profile("maqueta")
@@ -105,6 +107,7 @@ class PrototipoController {
     if (!dibujada && (actual == null || !actual.pantalla().equals(pantalla))) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
     }
+    EstilosController.datosDeEjemplo(model);
     model.addAttribute("alternativa", ALTERNATIVA);
     model.addAttribute("seccion", actual == null ? null : actual.texto());
     model.addAttribute(
