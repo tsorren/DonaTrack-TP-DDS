@@ -231,3 +231,10 @@ Textos:
   a un fragmento de Glassmorphism y sacar un fragmento del catálogo de Cozy hacen fallar 4 tests.
 - `[VERIFIED]` 2026-10-30: `mvn test -pl cliente-liviano -Pvisual` recorre Glassmorphism y
   `cozy-medieval` en `/estilos` y `/estilos/armazon`, sin hallazgos (`reporte.json` vacío).
+- `[VERIFIED]` 2026-10-31, con la voz propia (T4): `InterfazFitnessTest` (10 tests, con
+  `lasGemelasTienenLosMismosDatosYAcciones` y `laVozPropiaSoloCambiaTitulosYRotulos`) en verde sobre
+  el juego de Cozy rediseñado. Prueba de mutación sobre las plantillas finales: cambiar un título
+  declarado en la tabla pasa; fallan, cada una en su guardia, cambiar un dato ("15 kg" por "16 kg"),
+  mostrar otro dato del modelo en la cifra, cambiar el destino de "Ver seguimiento", renombrar ese
+  botón con una línea de voz, poner números en la voz, dejar una línea de voz sin uso y quitar
+  "Ver el detalle".

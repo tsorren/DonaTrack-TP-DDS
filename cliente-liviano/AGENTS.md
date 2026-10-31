@@ -51,6 +51,9 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `static/css/app.css` | Estilos de componentes y pantallas de Glassmorphism, solo con tokens de uso |
 | `static/css/alternativas/<nombre>/` | Los estilos de esa alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`) |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
+| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js`) |
+| `templates/prototipo/cozy-medieval/` | El prototipo navegable del flujo completo de Cozy (perfil `maqueta`, `/prototipo/<pantalla>`, `PrototipoController`); sus estilos, en `static/css/alternativas/cozy-medieval/prototipo/`. No son pantallas del sistema ni tienen gemela: cada una se construye en las dos alternativas cuando se apruebe su flujo |
+| `src/test/resources/voz/<alternativa>.txt` | La tabla de voz de cada alternativa: los títulos y rótulos que dice a su modo (los vigila `InterfazFitnessTest`) |
 
 ## Reglas de plantillas
 
