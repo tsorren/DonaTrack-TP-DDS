@@ -136,9 +136,8 @@ public class Imagenes {
   /**
    * Compara píxel a píxel los PNG de antes con los de después que se llaman igual; de cada uno
    * distinto, dice la caja donde cambió. Sale con 1 si alguno cambió o falta, o si no hay nada que
-   * comparar. Con una carpeta de
-   * ruido (otra corrida de la misma base), no cuenta lo que ya difiere entre antes y ruido: las
-   * animaciones que la captura no congela.
+   * comparar. Con una carpeta de ruido (otra corrida de la misma base), no cuenta lo que ya difiere
+   * entre antes y ruido: las animaciones que la captura no congela.
    */
   private static int comparar(String[] a) throws IOException {
     Path antes = Path.of(a[1]);
