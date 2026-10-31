@@ -676,20 +676,20 @@ a {
 }
 
 /* Una entrada de la leyenda: el signo del camino de tinta con lo que cuenta y, debajo, el número.
-   Toda la entrada es el enlace a sus entregas. */
+   Toda la entrada es el enlace a sus entregas; lo que cuenta va subrayado, como un enlace. */
 .cifra {
   display: grid;
-  grid-template-columns: var(--medida-signo) auto minmax(0, 1fr) auto;
+  grid-template-columns: var(--medida-signo) auto minmax(0, 1fr);
   grid-template-areas:
-    "signo etiqueta etiqueta ir"
-    ". valor chip chip"
-    ". grafico grafico grafico";
+    "signo etiqueta etiqueta"
+    ". valor chip";
   align-items: center;
   gap: var(--espacio-1) var(--espacio-3);
   color: var(--color-texto);
   text-decoration: none;
 }
 
+/* El signo es un tramo del camino de tinta, entero y sin punta: la tinta es una donación. */
 .cifra::before {
   content: "";
   grid-area: signo;
@@ -713,10 +713,12 @@ a {
 .cifra .cifra-etiqueta {
   grid-area: etiqueta;
   color: var(--color-titulo);
+  text-decoration: underline var(--borde-ancho) var(--color-filete);
+  text-underline-offset: 0.2em;
 }
 
 .cifra:hover .cifra-etiqueta {
-  text-decoration: underline;
+  text-decoration-color: var(--color-titulo);
 }
 
 .cifra-chip {
@@ -733,40 +735,6 @@ a {
   color: var(--color-titulo);
   font-style: normal;
   font-weight: 800;
-}
-
-.cifra-ir {
-  display: grid;
-  grid-area: ir;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: var(--borde-ancho) solid var(--color-borde-control);
-  border-radius: var(--radio-sello);
-  color: var(--color-titulo);
-}
-
-/* El gráfico de los meses, grabado en tinta: el mes actual, entintado. */
-.cifra-grafico {
-  display: block;
-  grid-area: grafico;
-  justify-self: start;
-  max-width: 100%;
-  height: 2.75rem;
-  margin-block-start: var(--espacio-3);
-  overflow: visible;
-}
-
-.cifra-grafico rect {
-  fill: var(--color-fondo);
-  stroke: var(--color-signo-tinta);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-  rx: 1px;
-}
-
-.cifra-grafico rect.actual {
-  fill: var(--color-signo-tinta);
 }
 
 /* Las entregadas: el sello de latón con su número, la tira del total y su leyenda, signo por
@@ -915,10 +883,12 @@ a {
 
 /* Recorrido: el camino de tinta de una entrega, entintado hasta la parada actual. */
 /* Vertical si el lugar es angosto; horizontal desde que la lista mide 37,5em, en cualquier
-   pantalla. Los signos de las paradas están con los del estado de una entrega. */
+   pantalla. Los signos de las paradas están con los del estado de una entrega. La lista mide su
+   propio ancho, así que ocupa todo el de su lugar aunque esté en una fila flexible. */
 .recorrido {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
   margin: var(--espacio-2) 0 var(--espacio-3);
   padding: 0;
   font-size: var(--tamano-chico);
@@ -981,17 +951,21 @@ a {
   border-inline-start: var(--borde-ruta) solid var(--color-signo-tinta);
 }
 
-/* Desde la parada actual, el camino que falta: en lápiz, sin entintar. */
+/* Desde la parada actual, el camino que falta: en lápiz, a trazos y sin entintar. Solo el lado
+   del camino: los otros tres quedan sin trazo. */
 :is(.recorrido-paso--actual, .recorrido-paso--pendiente)::before {
-  border-style: dotted;
-  border-color: var(--color-camino-por-recorrer);
+  border-inline-start-style: dashed;
+  border-inline-start-color: var(--color-camino-por-recorrer);
 }
 
 .recorrido-paso:last-child::before {
   content: none;
 }
 
-/* Horizontal: las paradas en fila, el signo arriba y el tramo hasta el centro de la siguiente. */
+/* Horizontal: las paradas en fila, el signo arriba y el tramo hasta el centro de la siguiente.
+   Los 37,5em son el quiebre chico (--medida-quiebre-chico), que una consulta no puede leer de un
+   token. Para dejarlo vertical en un lugar ancho, una variante le quita el contenedor a la lista
+   (container-type: normal). */
 @container (min-width: 37.5em) {
   .recorrido-paso {
     flex: 1 1 0;
@@ -1014,8 +988,8 @@ a {
   }
 
   :is(.recorrido-paso--actual, .recorrido-paso--pendiente)::before {
-    border-style: dotted;
-    border-color: var(--color-camino-por-recorrer);
+    border-block-start-style: dashed;
+    border-block-start-color: var(--color-camino-por-recorrer);
   }
 }
 
@@ -1450,6 +1424,42 @@ dialog > article > footer button {
   mask: url("../../../img/cozy-medieval/signo-con-problema.svg") center / contain no-repeat;
 }
 
+/* Con colores forzados, el navegador pinta los fondos del color de la hoja y los signos se
+   borrarían: van en el color del texto, con el centro de ○ y de ◉ en el de la hoja. */
+@media (forced-colors: active) {
+  :is(.insignia, .leyenda li)::before,
+  .cifra::before,
+  .recorrido-paso::after {
+    forced-color-adjust: none;
+  }
+
+  :is(.insignia--en-camino, .leyenda .segmento--camino)::before,
+  :is(.insignia--con-problema, .leyenda .segmento--sin-entregar)::before,
+  .cifra::before,
+  .recorrido-paso--hecho::after {
+    background-color: var(--color-forzado-texto);
+  }
+
+  :is(.insignia--pendiente, .leyenda .segmento--proceso)::before,
+  .recorrido-paso--pendiente::after {
+    background-color: var(--color-forzado-fondo);
+    border-color: var(--color-forzado-texto);
+  }
+
+  .recorrido-paso--actual::after {
+    background-color: var(--color-forzado-texto);
+    border-color: var(--color-forzado-texto);
+    box-shadow: none;
+  }
+
+  :is(.insignia--entregada, .leyenda .segmento--entregadas)::before,
+  .recorrido-paso--hecho:last-child::after {
+    background-color: var(--color-forzado-texto);
+    border-color: var(--color-forzado-texto);
+    box-shadow: inset 0 0 0 3px var(--color-forzado-fondo);
+  }
+}
+
 /* Tarjeta de una entrega: la foto va pegada a la hoja, con su borde de papel. */
 .tarjetas {
   display: grid;
@@ -1559,7 +1569,9 @@ dialog > article > footer button {
 
 /* Tabla: el libro de registro, con una regla de tinta entre filas y el doble filete arriba. */
 /* Sin franjas ni caja. En el celular, cada fila en dos renglones: arriba lo registrado y su
-   estado; abajo, el resto. Desde el quiebre chico, columnas. */
+   estado; abajo, el destino y la fecha. Cada renglón reparte su ancho por su cuenta: el estado y
+   la fecha ocupan lo justo y lo registrado y el destino se quedan con el resto. Desde el quiebre
+   chico, columnas. */
 .tabla {
   display: block;
   width: 100%;
@@ -1590,16 +1602,17 @@ dialog > article > footer button {
 }
 
 .tabla tr {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--espacio-1) var(--espacio-4);
+  column-gap: var(--espacio-3);
   padding: var(--espacio-3) 0;
   border-block-end: var(--borde-ancho) solid var(--color-filete);
 }
 
 .tabla :is(th, td) {
   display: block;
+  flex: none;
   padding: 0;
   background-color: transparent;
   border: 0;
@@ -1608,15 +1621,28 @@ dialog > article > footer button {
 }
 
 .tabla th[scope="row"] {
+  order: -3;
   color: var(--color-titulo);
-  font-size: var(--tamano-texto);
   font-weight: 700;
 }
 
-/* El estado sube al primer renglón, al lado de lo registrado. */
+/* Lo registrado y el destino toman el lugar que les deja su renglón. */
+.tabla tr > :is(th[scope="row"], td:first-of-type) {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* El estado sube al primer renglón, al margen de lo registrado. */
 .tabla tr > :last-child {
-  grid-row: 1;
-  grid-column: 2;
+  order: -2;
+}
+
+/* El salto al segundo renglón. */
+.tabla tr::before {
+  content: "";
+  flex-basis: 100%;
+  order: -1;
+  margin-block-start: var(--espacio-1);
 }
 
 /* El nombre de cada dato queda para los lectores de pantalla. */
@@ -1867,6 +1893,10 @@ dialog > article > footer button {
     display: table-row;
     padding: 0;
     border: 0;
+  }
+
+  .tabla tr::before {
+    content: none;
   }
 
   .tabla :is(th, td) {

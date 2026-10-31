@@ -313,6 +313,12 @@
   --medida-signo-alto: 1rem;
   --medida-signo-punto: 0.875rem;
   --medida-alfiler: 0.875rem;
+  /* Con colores forzados (el alto contraste del sistema), los signos pintados toman el color del
+     texto y el de la hoja que elige quien los mira. */
+  --p-sistema-texto: CanvasText;
+  --p-sistema-fondo: Canvas;
+  --color-forzado-texto: var(--p-sistema-texto);
+  --color-forzado-fondo: var(--p-sistema-fondo);
 
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);
