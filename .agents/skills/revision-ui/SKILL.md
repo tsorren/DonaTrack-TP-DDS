@@ -5,7 +5,8 @@ description: >-
   de flujo o pantallas construidas con los vectores U1–U9 (usabilidad, accesibilidad, responsive,
   identidad, textos, estados, arquitectura MVC, requerimientos y lenguaje llano) y emite un
   veredicto PASS o CHANGES_REQUIRED en modo SOURCE_READ_ONLY. Usar al cerrar un flujo o una
-  pantalla, antes de pedir la aprobación del usuario.
+  pantalla, antes de pedir la aprobación del usuario, o en modo panel de exploración para criticar
+  los conceptos de una corrida creativa sin diluir su audacia.
 ---
 
 # Skill: revision-ui — Revisión independiente de la interfaz
@@ -25,6 +26,10 @@ description: >-
   declara como `Mode: SELF_REVIEW`.
 - **Modo flujo:** revisa la ficha con U1, U5, U6, U8 y U9.
 - **Modo pantalla:** revisa los 9 vectores.
+- **Modo panel de exploración:** compara varias propuestas creativas (los conceptos de una
+  [`corrida-creativa`](../corrida-creativa/SKILL.md) o de una iteración A/B de estructura) con una
+  sola lente (arte, piso o flujo) y el
+  [encargo de crítica](../../../docs/interfaz/plantillas/encargo-critico.md). Sección 4.
 
 ## 2. Vectores
 
@@ -70,3 +75,16 @@ Findings:
 - Cada hallazgo cita su evidencia: `archivo:línea`, una captura o una línea del reporte.
 - Sin hallazgo, el vector dice `NONE_DETECTED`; no se rellena con texto.
 - `CHANGES_REQUIRED` si hay al menos un BLOCKING.
+
+## 4. Panel de exploración
+
+Mientras se explora, la revisión no elige lo seguro: **no diluye la audacia**.
+
+- Por propuesta: lo más fuerte, lo más flojo y los arreglos concretos que **conservan la idea**,
+  cada uno con `archivo:línea` o con la captura y la zona.
+- `BLOQUEA` solo lo que rompe el piso, la seguridad o la tarea. Un hallazgo que lleve a volver a lo
+  de antes no sirve.
+- Con más de una propuesta: el ranking, por qué, y qué tomar de las otras para combinar en la
+  ganadora.
+- No emite `PASS` ni `CHANGES_REQUIRED`: el veredicto de cierre sigue siendo el de los modos flujo
+  o pantalla, cuando la propuesta elegida ya está construida.

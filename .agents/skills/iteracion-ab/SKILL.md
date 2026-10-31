@@ -17,6 +17,11 @@ description: >-
 ## Reglas
 
 - **Un tema por iteración.** A y B difieren solo en ese tema; todo lo demás, igual.
+- **Con el tema `concepto`, de 2 a 4 conceptos** (`concepto-a`, `-b`, `-c`…), cada uno una variante
+  de estructura que **difiere en composición y navegación**, no solo en estilo. Se encargan con la
+  [plantilla del constructor](../../../docs/interfaz/plantillas/encargo-constructor.md) (nunca
+  "cambio mínimo") y se critican con el panel de exploración de `revision-ui`. Para hacerlo sin el
+  usuario, con iteraciones que escalan: [`corrida-creativa`](../corrida-creativa/SKILL.md).
 - Si hay boceto de E1 para la pantalla, puede ser una de las variantes (la de control). No es
   obligatorio.
 - Las dos variantes pasan el piso de la [dirección de arte](../../../docs/interfaz/direccion-de-arte.md)
@@ -36,8 +41,10 @@ description: >-
      `<tema>-b.css`. Solo redefinen tokens o reglas de `app.css`, nunca colores sueltos.
    - Cambios de estructura: `templates/variantes/<tema>-a.html` y `<tema>-b.html`.
      Una variante de estructura **reemplaza la página entera**, también cuando hay alternativa
-     (`?alternativa=`): gana sobre la plantilla propia de la alternativa. En `/estilos` el modelo
-     no trae `cuenta` ni `navegacion`, así que la variante no puede usar `layout-privado`.
+     (`?alternativa=`): gana sobre la plantilla propia de la alternativa. También reemplaza una
+     pantalla del prototipo (`/prototipo/<pantalla>?variante=…`), con el modelo de esa pantalla. En
+     `/estilos` el modelo no trae `cuenta` ni `navegacion`, así que la variante no puede usar
+     `layout-privado`.
    - **Preferir variantes solo de estilo** sobre el juego de plantillas de la alternativa: no se
      duplica HTML y las dos opciones salen de la misma estructura.
    - Se ven con `?variante=<tema>-a` o `?variante=<tema>-b`.
@@ -53,10 +60,12 @@ description: >-
 4. **Comprobar y capturar:**
 
    ```bash
-   mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b
+   mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b -Dverificacion.paginas=<ruta>
    ```
 
-   Deja capturas en 360, 1280 y 1920 px, el reporte de accesibilidad y
+   `-Dverificacion.paginas` acota la corrida a las rutas que se comparan (separadas por coma; sin
+   la barra inicial en Git Bash) sin tocar `paginas.txt`. Deja capturas en 360, 1280 y 1920 px, la
+   primera pantalla del celular (`-360x640.png`), el reporte de accesibilidad y
    `target/capturas/comparacion.html`: un visor para 1920 × 1080 con índice de secciones, dos
    variantes lado a lado, cambio de ancho y desplazamiento a la par. El primer comentario del CSS
    de cada variante es su descripción en el visor. Con más de dos opciones, se nombran
@@ -81,7 +90,8 @@ description: >-
      se lleva a la gemela, o se deja constancia de por qué no.
    - Borrar las dos variantes de `variantes/`.
    - Copiar las capturas de 360 y 1280 px de cada variante a `docs/interfaz/evidencia/<tema>/`
-     (menos de 400 KB cada una); las de otra alternativa, a
+     (menos de 400 KB cada una, con `java scripts/visual/Imagenes.java jpg`; ver
+     [`scripts/visual/README.md`](../../../scripts/visual/README.md)); las de otra alternativa, a
      `docs/interfaz/evidencia/<alternativa>/<tema>/`.
    - Escribir la entrada en la [bitácora](../../../docs/interfaz/bitacora.md): Decisión /
      Alternativas / Por qué / Costo / Quién decidió / Evidencia.

@@ -117,12 +117,13 @@ docs/
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
 │   ├── bocetos-e1.md · mapa-del-sitio.md  # Insumos: inventario de bocetos de E1 y mapa con niveles
-│   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad
+│   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad, libertad creativa y oficio
 │   ├── estructura-cozy-medieval.md        # Estructura y navegación de la Alternativa Cozy / Medieval
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
 │   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
 │   ├── identidad/                         # Un brief por alternativa: Glassmorphism y Cozy / Medieval
-│   └── plantillas/                        # Ficha de flujo, iteración A/B y brief de identidad
+│   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)
+│   └── plantillas/                        # Ficha de flujo, iteración A/B, brief de identidad y encargos creativos
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega

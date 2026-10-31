@@ -18,7 +18,9 @@ qué y cuándo algo está listo están en [`docs/interfaz/README.md`](../docs/in
 | Comparar dos variantes de un tema | `iteracion-ab` |
 | Diseñar un flujo (recorrido, estados, textos, usabilidad) | `ux-flujo` |
 | Construir vistas y componentes | `vista-ui` |
-| Revisión independiente | `revision-ui` |
+| Revisión independiente (y panel de exploración para criticar conceptos) | `revision-ui` |
+| Relevar con el usuario un diseño nuevo y creativo (referencias, mensaje, libertades, alcance) | `relevamiento-creativo` |
+| Diseñar desde cero sin el usuario, a partir de un encargo aprobado (workflow `.claude/workflows/corrida-creativa.js`) | `corrida-creativa` |
 
 Al hablar con el usuario o la diseñadora: una decisión por pregunta, como máximo 3 preguntas por
 ronda, opción recomendada, palabras simples y sin jerga técnica
@@ -124,8 +126,13 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 mvn spotless:check
 mvn clean test -pl cliente-liviano -am             # unitarios y reglas de tokens y catálogo
 mvn test -pl cliente-liviano -Pvisual              # capturas en 3 anchos, accesibilidad y toque
+mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=estilos/armazon   # solo esas rutas
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
 ```
+
+La verificación visual deja también la primera pantalla del celular (`-360x640.png`). Para pasar
+capturas a JPG de evidencia, comparar las de antes y después o armar la página de antes y después:
+[`scripts/visual/`](../scripts/visual/README.md).
 
 Una pantalla está lista cuando cumple el checklist de
 [`docs/interfaz/README.md`](../docs/interfaz/README.md#listo-para-entregar) y pasó `revision-ui`

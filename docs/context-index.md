@@ -72,7 +72,9 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | [`iteracion-ab`](../.agents/skills/iteracion-ab/SKILL.md) | Comparar dos variantes de un solo tema de diseño y dejar que el usuario elija. |
 | [`ux-flujo`](../.agents/skills/ux-flujo/SKILL.md) | Diseñar un flujo de pantallas antes del código: recorrido, estados, textos y heurísticas. |
 | [`vista-ui`](../.agents/skills/vista-ui/SKILL.md) | Construir vistas y componentes Thymeleaf + HTMX con estados, accesibilidad y comprobación visual. |
-| [`revision-ui`](../.agents/skills/revision-ui/SKILL.md) | Revisión independiente de flujos y pantallas (vectores U1–U9). |
+| [`revision-ui`](../.agents/skills/revision-ui/SKILL.md) | Revisión independiente de flujos y pantallas (vectores U1–U9) y panel de exploración para criticar conceptos. |
+| [`relevamiento-creativo`](../.agents/skills/relevamiento-creativo/SKILL.md) | Relevar con el usuario un encargo creativo (referencias, mensaje, libertades, alcance) antes de diseñar desde cero. |
+| [`corrida-creativa`](../.agents/skills/corrida-creativa/SKILL.md) | Diseñar desde cero sin el usuario a partir de un encargo aprobado; motor: workflow `.claude/workflows/corrida-creativa.js`. |
 
 > Las skills de interfaz tienen además un adaptador en `.claude/skills/<nombre>/SKILL.md` para que Claude Code las descubra; la versión canónica es la de `.agents/skills/`.
 

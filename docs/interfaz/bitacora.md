@@ -26,6 +26,35 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · proceso · Diseño creativo desde cero: relevamiento con el usuario y corrida desatendida
+
+- **Decisión:** la forma de trabajar que rehízo Cozy / Medieval queda como proceso. La skill
+  `relevamiento-creativo` le pregunta al usuario por sus referencias, el mensaje, las libertades y
+  hasta dónde llegar, y deja un encargo creativo aprobado en `encargos/`. La skill
+  `corrida-creativa` (con su workflow guardado) trabaja sola: iteraciones que escalan (concepto,
+  sistema y flujo), conceptos opuestos construidos en paralelo, críticos de arte, piso y flujo que
+  no diluyen la audacia, decisión con matriz, arreglos, evidencia, bitácora y un commit de control
+  por iteración, y al final la página de antes y después, la auditoría y el PR si el encargo lo
+  autoriza. La dirección de arte suma "Libertad creativa" y "Oficio"; las plantillas, los tres
+  encargos; la verificación visual, `-Dverificacion.paginas` y la primera pantalla del celular
+  (360 × 640); y `scripts/visual/` junta las herramientas de imagen.
+- **Alternativas:** extender solo `identidad-visual`, `iteracion-ab` y `revision-ui` (mezcla lo que
+  necesita al usuario con lo que no, en skills que ya son largas); un workflow con los encargos
+  adentro (esconde las reglas en un script y no sirve para trabajar a mano); skills genéricas en el
+  repositorio de harness desde el principio (pierden el piso automático y los tests, que viven en
+  este repo).
+- **Por qué:** el primer intento de Cozy salió tímido por encargos de "cambio mínimo", variantes del
+  mismo orden y críticas que sacaron lo llamativo; lo que funcionó fue el encargo creativo
+  explícito, la divergencia real y los guardarraíles automáticos. Escrito, se repite sin depender
+  de una sesión.
+- **Costo:** una corrida completa usa decenas de agentes (unos 38 con tres iteraciones y dos
+  conceptos). La iteración de flujo depende de `PrototipoController`, que hoy sirve solo a Cozy /
+  Medieval. Para comparar conceptos sobre una pantalla del prototipo, las variantes de estructura
+  ahora también la reemplazan (`?variante=` en `/prototipo/<pantalla>`).
+- **Quién decidió:** usuario (aprobó la propuesta, opción A, el 2026-10-31).
+- **Evidencia:** una corrida de prueba sobre la portada pública (una iteración, dos conceptos),
+  con su nota en la carpeta de notas de la sesión.
+
 ### 2026-10-31 · flujo (Cozy / Medieval) · Iteración 3: el flujo completo del sitio, como prototipo
 
 - **Decisión:** el flujo completo del sitio en Cozy queda diseñado como un prototipo navegable de 21
