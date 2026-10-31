@@ -92,8 +92,8 @@
     <section class="ent-tablero" aria-labelledby="tablero-titulo">
       <div class="ent-tablero-cabeza">
         <h2 id="tablero-titulo">Tu tablero</h2>
-        <p>Cada fila es algo que le hace falta al comedor: las piezas llenas ya llegaron, las de
-          trazo vienen en camino y los huecos de tinta son lo que todavía falta.</p>
+        <p>Cada fila es algo que le hace falta al comedor: las piezas con tilde ya llegaron, las
+          azules vienen en camino y los huecos a trazos son lo que todavía falta.</p>
       </div>
       <ul th:replace="~{prototipo/encastre/entidad-necesidades :: necesidades(null, ${vacio}, false, false)}"></ul>
       <a href="/prototipo/encastre/entidad-necesidades"
@@ -105,8 +105,8 @@
 
 <section th:fragment="despues" class="pieza ent-despues" aria-labelledby="despues-titulo"
          th:with="cola=${ {
-           {que: 'Arroz · 20 kg', cuando: 'Sale mañana, jueves 15, a las 9:00', quien: 'De Bruno · camión 1'},
-           {que: 'Leche en polvo · 12 latas', cuando: 'Sale el sábado 17 de octubre', quien: 'De Almacén Ejemplo'} } }">
+           {que: 'Arroz · 20 kg', cuando: 'Sale mañana, jueves 15, a las 8:00', quien: 'De Almacén Ejemplo · camión AD 789 GH'},
+           {que: 'Azúcar · 10 kg', cuando: 'Sale el sábado 17 de octubre', quien: 'De Bruno'} } }">
   <h2 id="despues-titulo">Lo que viene después</h2>
   <p class="bajada">De a una: cuando salga del depósito, pasa arriba.</p>
   <ol class="ent-cola piezas-chicas">
@@ -114,7 +114,7 @@
       <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[0]})}">Pendiente</span>
       <b th:text="${c.que}">Arroz · 20 kg</b>
       <span th:text="${c.cuando}">Sale mañana</span>
-      <small th:text="${c.quien}">De Bruno</small>
+      <small th:text="${c.quien}">De Almacén Ejemplo</small>
     </li>
   </ol>
   <a href="/prototipo/encastre/entidad-seguimiento"

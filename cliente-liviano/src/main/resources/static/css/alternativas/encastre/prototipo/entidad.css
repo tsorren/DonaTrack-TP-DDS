@@ -89,6 +89,15 @@
   margin-block: 0;
 }
 
+/* Con la barra pegada, el campo que toma el foco con Tab se acomoda arriba de ella y del riel: la
+   página deja abajo el alto del riel, el de la barra (su relleno y el botón) y un respiro. */
+html:has(.ent-pulgar) {
+  scroll-padding-bottom: calc(
+    var(--medida-riel-celular) + var(--espacio-2) + var(--espacio-3) + var(--medida-toque-minimo) +
+      var(--espacio-2) + var(--espacio-5)
+  );
+}
+
 .ent-pulgar--mesa {
   padding: var(--espacio-3) var(--espacio-2) var(--espacio-2);
   background: var(--color-mesa);
@@ -354,18 +363,19 @@
   stroke-width: 3;
 }
 
+/* El dibujo único del sitio: puesta, llena con tilde (crema; menta si recién llegó a la entidad);
+   viene, llena del azul de "en camino", sin trazos ni tilde; falta, el hueco a trazos. */
 .ent-ranura--llena .ent-ranura-forma {
   fill: var(--color-pieza-crema);
 }
 
-.ent-ranura--nueva .ent-ranura-forma,
-.ent-ranura--suelta .ent-ranura-forma {
-  fill: var(--color-pieza-sol);
+.ent-ranura--nueva .ent-ranura-forma {
+  fill: var(--color-pieza-menta);
 }
 
-.ent-ranura--viene .ent-ranura-forma {
-  fill: var(--color-junta-tenue);
-  stroke-dasharray: 5 4;
+.ent-ranura--viene .ent-ranura-forma,
+.ent-ranura--suelta .ent-ranura-forma {
+  fill: var(--color-tramo-en-camino);
 }
 
 .ent-ranura--hueco .ent-ranura-forma {
@@ -408,16 +418,11 @@
   list-style: none;
 }
 
-.ent-necesidad--1 {
-  --color-pieza-fondo: var(--color-pieza-menta);
-}
-
-.ent-necesidad--2 {
-  --color-pieza-fondo: var(--color-pieza-azul);
-}
-
+/* Las filas alternan durazno y gris, dos colores que no son etapa: el color de etapa queda para
+   las piezas de adentro (código de etapa), y una fila nunca se confunde con ellas. */
+.ent-necesidad--1,
 .ent-necesidad--3 {
-  --color-pieza-fondo: var(--color-pieza-lila);
+  --color-pieza-fondo: var(--color-pieza-gris);
 }
 
 .tablero .ent-necesidad h3 {
@@ -486,17 +491,23 @@
   border-radius: 0.25rem;
 }
 
-.ent-leyenda--llena::before {
+.ent-leyenda > .ent-leyenda--llena::before {
   background: var(--color-pieza-crema);
 }
 
-.ent-leyenda--viene::before {
-  background: var(--color-junta-tenue);
-  border-style: dashed;
+.ent-leyenda > .ent-leyenda--nueva::before {
+  background: var(--color-pieza-menta);
 }
 
-.ent-leyenda--hueco::before {
+.ent-leyenda > .ent-leyenda--viene::before {
+  background: var(--color-tramo-en-camino);
+}
+
+.ent-leyenda > .ent-leyenda--hueco::before {
   background: var(--color-hueco);
+  border-color: var(--color-hueco);
+  outline: var(--borde-junta) dashed var(--color-hueco-borde);
+  outline-offset: calc(-1 * var(--espacio-1));
 }
 
 /* Cambiar o dar de baja: plegado, una pieza crema que se abre. */
@@ -550,6 +561,11 @@
 
 .ent-pedir-form > :is(.ent-pedir-que, .ent-pedir-hasta, .ent-pulgar) {
   grid-column: 1 / -1;
+}
+
+/* En el pedido, el botón va justo después del último campo: pegado, lo taparía. */
+.ent-pedir-form > .ent-pulgar {
+  position: static;
 }
 
 .ent-pedir-form select {
@@ -797,13 +813,14 @@
   font-weight: 700;
 }
 
-/* Las chispas: piezas chicas que caen sobre la fila, en una franja arriba de ella. */
+/* Las chispas: piezas chicas que caen sobre la fila, en una franja arriba de ella, del mismo alto
+   que el dibujo: nada las tapa. Pico recorta todo svg (svg:not(:root)); acá no. */
 .ent-festejo-fila {
   position: relative;
-  padding-top: var(--espacio-6);
+  padding-top: var(--espacio-7);
 }
 
-.ent-chispas {
+.ent-festejo-fila > .ent-chispas {
   position: absolute;
   top: 0;
   left: 0;
@@ -1064,7 +1081,17 @@
 }
 
 .ent-franja .tramos rect {
-  stroke: var(--color-pieza-fondo);
+  stroke: var(--color-junta);
+  stroke-width: 2;
+}
+
+/* El código de etapa: por salir sigue en el depósito (lila); entregada, en la entidad (menta). */
+.ent-franja .tramo--proceso {
+  --color-tramo: var(--color-pieza-lila);
+}
+
+.ent-franja .tramo--entregadas {
+  --color-tramo: var(--color-pieza-menta);
 }
 
 .ent-filtros {
@@ -1104,9 +1131,10 @@
 .ent-filtros a[class*="tramo--"]::before {
   content: "";
   flex: none;
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.875rem;
+  height: 0.875rem;
   background: var(--color-tramo);
+  border: var(--borde-junta) solid var(--color-junta);
   border-radius: 50%;
 }
 
@@ -1223,16 +1251,39 @@
 /* Alto contraste: las piezas se dibujan con los colores del sistema y los signos se siguen
    viendo. */
 @media (forced-colors: active) {
+  /* Puesta, llena; viene, vacía con trazo continuo; falta, vacía a trazos. */
   .ent-ranura-forma,
   .ent-ranura--viene .ent-ranura-forma,
+  .ent-ranura--suelta .ent-ranura-forma,
   .ent-ranura--hueco .ent-ranura-forma {
     fill: Canvas;
     stroke: CanvasText;
+    stroke-dasharray: none;
+  }
+
+  .ent-ranura--hueco .ent-ranura-forma {
+    stroke-dasharray: 5 4;
   }
 
   .ent-ranura--llena .ent-ranura-forma,
   .ent-ranura--nueva .ent-ranura-forma {
     fill: CanvasText;
+  }
+
+  .ent-leyenda > .ent-leyenda--llena::before,
+  .ent-leyenda > .ent-leyenda--nueva::before {
+    background: CanvasText;
+  }
+
+  .ent-leyenda > .ent-leyenda--viene::before,
+  .ent-leyenda > .ent-leyenda--hueco::before {
+    background: Canvas;
+    border-color: CanvasText;
+    outline: none;
+  }
+
+  .ent-leyenda > .ent-leyenda--hueco::before {
+    border-style: dashed;
   }
 
   .ent-ranura > .icono {
@@ -1302,8 +1353,28 @@
     grid-area: cambiar;
   }
 
+  /* Las piezas crecen con el ancho del tablero, hasta un tope. */
   .ent-necesidad .ent-ranura {
     flex-basis: 2.75rem;
+    max-width: clamp(3.5rem, 6cqi, 6rem);
+  }
+}
+
+/* Con todo el ancho (el inicio en escritorio grande): la leyenda pasa a la derecha de la fila, en
+   columna, y la banda se llena de piezas y de lo que dicen. */
+@container (min-width: 62rem) {
+  .ent-necesidad {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 14rem);
+    grid-template-areas:
+      "nombre ranuras leyenda"
+      "cifra ranuras leyenda"
+      "fecha ranuras leyenda"
+      "cambiar cambiar cambiar";
+  }
+
+  .ent-necesidad > .ent-leyenda {
+    flex-direction: column;
+    font-size: var(--tamano-texto);
   }
 }
 
@@ -1322,6 +1393,10 @@
 
   .ent-pulgar {
     position: static;
+  }
+
+  html:has(.ent-pulgar) {
+    scroll-padding-bottom: 0;
   }
 
   .ent-pulgar--mesa {

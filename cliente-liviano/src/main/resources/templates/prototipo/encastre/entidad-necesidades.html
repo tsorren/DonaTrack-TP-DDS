@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--/* Prototipo de Encastre (iteración 3), entidad: Necesidades (RF-10: alta, edición y baja de las
        necesidades propias). El tablero de la entidad: cada necesidad es una fila de piezas que se
-       llena con las entregas que llegan (las llenas ya llegaron, las de trazo vienen en camino o por
-       salir, los huecos de tinta son lo que falta). Arriba, pedir una necesidad nueva; al publicarla,
+       llena con las entregas que llegan (las de tilde ya llegaron, en menta si recién; las azules
+       vienen en camino o por salir; los huecos a trazos son lo que falta). Arriba, pedir una necesidad nueva; al publicarla,
        entidad-necesidades-publicada muestra la fila nueva, entera en huecos.
        Fragmentos de esta plantilla (los usan las demás pantallas de la entidad):
        - pantalla(publicada): la pantalla entera; publicada suma el aviso y la fila nueva.
@@ -29,8 +29,8 @@
     <section class="pieza ent-cabeza" aria-labelledby="necesidades-titulo">
       <h1 id="necesidades-titulo">Tu tablero de necesidades</h1>
       <p class="rotulo-menu">Necesidades</p>
-      <p class="ent-cabeza-texto">Cada fila es algo que le hace falta al comedor. Las piezas llenas
-        ya llegaron; los huecos de tinta, lo que todavía falta.</p>
+      <p class="ent-cabeza-texto">Cada fila es algo que le hace falta al comedor. Las piezas con
+        tilde ya llegaron; las azules vienen en camino; los huecos a trazos, lo que todavía falta.</p>
     </section>
 
     <div th:if="${publicada}" class="ent-aviso" role="status" tabindex="-1" autofocus>
@@ -89,9 +89,11 @@
       {clave: 'legumbres', nombre: 'Legumbres secas', unidad: 'kg', total: 40, llegaron: 10,
        vienen: 15, hoy: 15, pieza: 5, hasta: '2026-10-31', fecha: 'Hasta el 31 de octubre', nueva: false},
       {clave: 'leche', nombre: 'Leche en polvo', unidad: 'latas', total: 24, llegaron: 12,
-       vienen: 12, hoy: 0, pieza: 4, hasta: '2026-10-25', fecha: 'Hasta el 25 de octubre', nueva: false},
+       vienen: 0, hoy: 0, pieza: 4, hasta: '2026-10-25', fecha: 'Hasta el 25 de octubre', nueva: false},
       {clave: 'arroz', nombre: 'Arroz', unidad: 'kg', total: 30, llegaron: 0,
        vienen: 20, hoy: 0, pieza: 5, hasta: '2026-11-06', fecha: 'Hasta el 6 de noviembre', nueva: false},
+      {clave: 'azucar', nombre: 'Azúcar', unidad: 'kg', total: 20, llegaron: 0,
+       vienen: 10, hoy: 0, pieza: 5, hasta: '2026-11-13', fecha: 'Hasta el 13 de noviembre', nueva: false},
       {clave: 'aceite', nombre: 'Aceite de girasol', unidad: 'litros', total: 20, llegaron: 0,
        vienen: 0, hoy: 0, pieza: 5, hasta: '2026-10-30', fecha: 'Hasta el 30 de octubre', nueva: true} } }">
   <li th:each="n, vuelta : ${necesidades}"
@@ -118,8 +120,11 @@
           th:if="${tipo == 'llena' or tipo == 'nueva'}"><svg
           th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 16)}"></svg></th:block></li>
     </ol>
-    <ul class="ent-leyenda">
-      <li class="ent-leyenda--llena" th:text="|Llegaron ${ll} ${n.unidad}|">Llegaron 10 kg</li>
+    <ul class="ent-leyenda" th:with="hoyLlego=${recibida ? n.hoy : 0}">
+      <li class="ent-leyenda--llena" th:if="${ll - hoyLlego > 0 or hoyLlego == 0}"
+          th:text="|Llegaron ${ll - hoyLlego} ${n.unidad}|">Llegaron 10 kg</li>
+      <li class="ent-leyenda--nueva" th:if="${hoyLlego > 0}"
+          th:text="|Recién llegaron ${hoyLlego} ${n.unidad}|">Recién llegaron 15 kg</li>
       <li class="ent-leyenda--viene" th:if="${vi > 0}" th:text="|Vienen ${vi} ${n.unidad}|">Vienen
         15 kg</li>
       <li class="ent-leyenda--hueco" th:if="${fa > 0}" th:text="|Faltan ${fa} ${n.unidad}|">Faltan

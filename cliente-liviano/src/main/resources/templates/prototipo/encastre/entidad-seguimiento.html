@@ -18,11 +18,11 @@
         th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
   <div class="tablero ent-pantalla ent-pantalla--seguimiento"
        th:with="entregas=${ {
-         {que: 'Lentejas secas · 15 kg', de: 'De Ana · camión 2', estado: 1, ahora: true,
+         {que: 'Lentejas secas · 15 kg', de: 'De Ana · camión AB 123 CD', estado: 1, ahora: true,
           cuando: 'Llega a eso de las 16:30. Va a unos 3 km de tu puerta.', x: 299, y: 97},
-         {que: 'Arroz · 20 kg', de: 'De Bruno · camión 1', estado: 0, ahora: false,
-          cuando: 'Sale del depósito mañana, jueves 15, a las 9:00.', x: 33, y: 264},
-         {que: 'Leche en polvo · 12 latas', de: 'De Almacén Ejemplo', estado: 0, ahora: false,
+         {que: 'Arroz · 20 kg', de: 'De Almacén Ejemplo · camión AD 789 GH', estado: 0, ahora: false,
+          cuando: 'Sale del depósito mañana, jueves 15, a las 8:00.', x: 33, y: 264},
+         {que: 'Azúcar · 10 kg', de: 'De Bruno', estado: 0, ahora: false,
           cuando: 'Sale el sábado 17 de octubre. Todavía sin camión.', x: 33, y: 264} } },
                hecho='M63 289V175H299V97', falta='M299 97V61H417V32'">
     <section class="pieza ent-cabeza" aria-labelledby="seguimiento-titulo">
@@ -30,7 +30,7 @@
       <p class="rotulo-menu">Seguir entregas</p>
       <p class="ent-cabeza-texto">Una en camino y dos por salir del depósito. Tu puerta se ve
         exacta; el camión, en una zona aproximada.</p>
-      <p class="ent-actualizado">Posición actualizada hoy, 16:05</p>
+      <p class="ent-actualizado">Posición actualizada hoy, 16:20</p>
     </section>
 
     <section class="ent-lista" aria-labelledby="lista-titulo">
@@ -87,7 +87,7 @@
       <ul class="ent-mapa-leyenda">
         <li class="ent-mapa-leyenda--puerta">Tu puerta: Calle Ejemplo 1234 (exacta)</li>
         <li class="ent-mapa-leyenda--deposito">Depósito Central: de ahí salen las tres</li>
-        <li class="ent-mapa-leyenda--camion">Camión 2 con las lentejas: zona aproximada</li>
+        <li class="ent-mapa-leyenda--camion">Camión AB 123 CD con las lentejas: zona aproximada</li>
       </ul>
     </section>
   </div>
