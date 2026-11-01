@@ -196,6 +196,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval (segunda versión: la mesa del cartógrafo) |
 | [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md) | El flujo completo del sitio en Cozy: recorrido por rol, pantallas y decisiones del prototipo navegable (`/prototipo/<pantalla>` en la maqueta) |
 | [identidad/referencias-cozy-medieval/](identidad/referencias-cozy-medieval/README.md) | Las 18 imágenes de referencia de Cozy que trajo el usuario, con qué se toma de cada una |
+| [identidad/brief-raices.md](identidad/brief-raices.md) y [identidad/referencias-raices/](identidad/referencias-raices/README.md) | Raíces, una tercera alternativa en exploración (raíces y semillas para empresas que donan): su brief en construcción y las referencias que trajo el usuario |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |

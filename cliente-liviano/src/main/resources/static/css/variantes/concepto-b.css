@@ -1,0 +1,161 @@
+/* B — El corte de suelo: arriba, poco (el título y el brote); abajo, en la tierra, todo lo que
+   sostiene una donación: sus cinco etapas como raíces (profundidad: qué hay detrás de una). */
+@import url("comun/raices.css");
+
+.superficie {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 0;
+  text-align: center;
+}
+
+.superficie .hero-bajada {
+  margin-inline: auto;
+}
+
+.superficie .acciones {
+  justify-content: center;
+}
+
+.brote {
+  display: block;
+  width: 4.5rem;
+  height: auto;
+  margin: 2.5rem auto 0;
+  fill: none;
+  stroke: var(--p-bosque);
+}
+
+.brote path {
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.brote .hoja {
+  fill: var(--p-salvia);
+}
+
+.suelo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-top: 3px solid var(--p-tinta);
+  background: var(--p-bosque-hondo);
+  color: var(--p-papel-sobre-oscuro);
+}
+
+.suelo .grano {
+  opacity: 0.35;
+  mix-blend-mode: soft-light;
+}
+
+.suelo-interior {
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.raices-dibujo {
+  stroke: var(--p-ocre-claro);
+}
+
+.raices-dibujo .vena {
+  stroke: var(--p-salvia);
+}
+
+.raices-dibujo .nodo {
+  fill: var(--p-ocre-claro);
+  stroke: var(--p-bosque-hondo);
+  stroke-width: 2;
+}
+
+.raices-dibujo .nodo--pendiente {
+  fill: var(--p-bosque-hondo);
+  stroke: var(--p-ocre-claro);
+  stroke-dasharray: 4 3;
+}
+
+.suelo h2 {
+  margin: 1.5rem 0 0.25rem;
+  color: var(--p-papel-sobre-oscuro);
+  font: italic 400 1.75rem/1.2 Alegreya, serif;
+}
+
+.ficha-meta {
+  margin: 0 0 1.5rem;
+}
+
+.suelo .numeral {
+  color: var(--p-ocre-claro);
+}
+
+.suelo .lamina b {
+  color: var(--p-papel-sobre-oscuro);
+}
+
+.suelo a {
+  color: var(--p-ocre-claro);
+}
+
+.suelo .pie-hero {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid currentcolor;
+}
+
+.suelo .cifras b {
+  color: var(--p-ocre-claro);
+}
+
+.suelo :focus-visible {
+  outline-color: var(--p-papel-sobre-oscuro);
+}
+
+@media (min-width: 37.5em) {
+  .superficie {
+    padding: 4.5rem 2rem 0;
+  }
+
+  .suelo-interior {
+    padding: 0 2rem 3rem;
+  }
+
+  .suelo .lamina {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 53.75em) {
+  /* Cada etapa cuelga de la punta de su raíz: cinco columnas debajo de los cinco nodos. */
+  .suelo .lamina {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    text-align: center;
+  }
+
+  .suelo .lamina li {
+    border-top: 0;
+    padding: 0 0.75rem;
+  }
+
+  .suelo .lamina li::before {
+    content: "";
+    justify-self: center;
+    width: 1px;
+    height: 1.5rem;
+    margin-bottom: 0.5rem;
+    background: currentcolor;
+  }
+
+  .suelo h2,
+  .ficha-meta {
+    text-align: center;
+  }
+
+  .suelo .pie-hero {
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+  }
+}

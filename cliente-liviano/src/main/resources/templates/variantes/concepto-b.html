@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!--/* Raíces (tercera alternativa, en exploración), concepto B del hero de la portada: el corte de
+       suelo (referencias 01, 05 y 06). Arriba, poco: el título, las acciones y un brote. Abajo, en
+       la tierra, lo que sostiene una donación: sus cinco etapas como raíces, cada una con su rótulo
+       de lámina (la lista dice todo lo que dice el dibujo). Página propia, sin el layout de Cozy:
+       la alternativa todavía no tiene juego de plantillas. Mismos datos y acciones que
+       prototipo/cozy-medieval/publico-portada; las etapas, las del recorrido de /estilos/armazon.
+       ponytail: el dibujo es fijo para el caso de ejemplo; si el concepto gana, se dibuja desde los
+       datos (dirección de arte, "Oficio"). Mensaje: el C del segundo A/B (bitácora). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DonaTrack: lo que donás echa raíces en tu comunidad</title>
+  <link rel="stylesheet" href="/css/variantes/concepto-b.css" th:href="@{/css/variantes/concepto-b.css}">
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="raices-cabecera">
+  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+</header>
+<main id="contenido" tabindex="-1">
+  <section class="hero" aria-labelledby="hero-titulo">
+    <svg class="grano" aria-hidden="true" focusable="false">
+      <filter id="grano" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+      </filter>
+      <rect width="100%" height="100%" filter="url(#grano)"/>
+    </svg>
+
+    <div class="superficie">
+      <h1 id="hero-titulo">Lo que donás echa raíces <em>en tu comunidad</em>.</h1>
+      <p class="hero-bajada">Cada donación llega a un comedor, una escuela o un merendero. DonaTrack te muestra a quién,
+        cuándo y cómo, con la foto de la entrega.</p>
+      <div class="acciones">
+        <a href="/prototipo/publico-registro-donante" class="boton boton--principal">Donar ahora</a>
+        <a href="/prototipo/publico-ingresar" class="boton boton--secundario">Ingresar</a>
+      </div>
+      <svg class="brote" viewBox="0 0 60 70" aria-hidden="true" focusable="false">
+        <path d="M30 70C30 52 30 40 30 28"/>
+        <path class="hoja" d="M30 38C18 36 10 26 12 15C24 17 30 27 30 38Z"/>
+        <path class="hoja" d="M30 31C40 27 48 17 46 6C36 8 30 18 30 31Z"/>
+      </svg>
+    </div>
+
+    <div class="suelo">
+      <svg class="grano" aria-hidden="true" focusable="false">
+        <rect width="100%" height="100%" filter="url(#grano)"/>
+      </svg>
+      <section class="suelo-interior" aria-labelledby="raices-titulo">
+        <svg class="dibujo raices-dibujo" viewBox="0 0 1200 300" aria-hidden="true" focusable="false">
+          <path class="tronco" d="M600 0C600 100 600 200 600 285"/>
+          <path class="rama" d="M600 30C560 120 380 160 360 285"/>
+          <path class="rama" d="M600 30C640 120 820 160 840 285"/>
+          <path class="rama" d="M600 10C480 60 140 120 120 285"/>
+          <path class="rama pendiente" d="M600 10C720 60 1060 120 1080 285"/>
+          <path class="vena" d="M472 144C440 160 420 170 380 170"/>
+          <path class="vena" d="M400 205C420 230 420 260 440 280"/>
+          <path class="vena" d="M728 144C760 160 780 170 820 170"/>
+          <path class="vena" d="M800 205C780 230 780 260 760 280"/>
+          <path class="vena" d="M322 104C290 130 260 140 220 140"/>
+          <path class="vena" d="M187 179C160 200 140 220 100 230"/>
+          <path class="vena" d="M600 120C575 150 560 180 530 200"/>
+          <path class="vena" d="M600 120C625 150 640 175 670 195"/>
+          <path class="vena" d="M600 190C625 215 640 240 665 255"/>
+          <circle class="semilla nodo" cx="600" cy="6" r="9"/>
+          <circle class="nodo" cx="120" cy="285" r="11"/>
+          <circle class="nodo" cx="360" cy="285" r="11"/>
+          <circle class="nodo" cx="600" cy="285" r="11"/>
+          <circle class="nodo" cx="840" cy="285" r="11"/>
+          <circle class="nodo nodo--pendiente" cx="1080" cy="285" r="11"/>
+        </svg>
+        <ol class="lamina" role="list">
+          <li><span class="numeral">01</span><b>Entró al depósito</b><span>12 de octubre</span></li>
+          <li><span class="numeral">02</span><b>Asignada a Comedor Barrio Ejemplo</b>
+            <span>13 de octubre</span></li>
+          <li><span class="numeral">03</span><b>Lista para entregar</b><span>14 de octubre</span></li>
+          <li><span class="numeral">04</span><b>En camino</b><span>Salió hoy a las 14:30</span></li>
+          <li><span class="numeral">05</span><b>Recibida, con la foto</b>
+            <span>Cuando el comedor la confirme</span></li>
+        </ol>
+        <!--/* El rótulo de la lámina va al pie, como en la ficha de campo (referencia 05). */-->
+        <div class="rotulo-ficha">
+          <h2 id="raices-titulo">Todo lo que pasa hasta que llega</h2>
+          <p class="ficha-meta">Lentejas secas, 15 kg, para Comedor Barrio Ejemplo</p>
+        </div>
+        <div class="pie-hero">
+          <ul class="cifras" role="list">
+            <li><b>1.284</b> donaciones entregadas</li>
+            <li><b>46</b> entidades en el mapa</li>
+            <li><b>32</b> en camino ahora</li>
+          </ul>
+          <p class="nota"><a href="/prototipo/publico-mapa">Ver el mapa de entregadas</a><br>
+            Actualizado el 15 de octubre, 14:30.</p>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+<footer class="raices-pie">
+  <small>DonaTrack, UTN-FRBA, Diseño de Sistemas 2026</small>
+</footer>
+</body>
+</html>

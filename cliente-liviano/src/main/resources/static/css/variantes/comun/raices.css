@@ -1,0 +1,249 @@
+/* Base común de los conceptos del hero de Raíces (tercera alternativa, en exploración): paleta
+   provisoria, letras, marca, botones, el grano de impresión de la referencia 01 y la lámina de
+   campo de la 05. La paleta y las letras se deciden después con su propio A/B; acá quedan fijas
+   para que A y B difieran solo en la idea. */
+
+@font-face {
+  font-family: Alegreya;
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../../fuentes/alegreya-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Alegreya;
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../../fuentes/alegreya-cursiva-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("../../../fuentes/dm-sans-latin.woff2") format("woff2");
+}
+
+:root {
+  --p-papel: #efece0;
+  --p-salvia: #a3b693;
+  --p-bosque: #1e3b2c;
+  --p-bosque-hondo: #16271d;
+  --p-tinta: #1d2420;
+  --p-tinta-suave: #474f49;
+  --p-raiz: #7a5434;
+  --p-ocre: #c8902e;
+  --p-ocre-claro: #e5bd6c;
+  --p-papel-sobre-oscuro: #ece8da;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--p-papel);
+  color: var(--p-tinta-suave);
+  font: 400 1.0625rem/1.6 "DM Sans", system-ui, sans-serif;
+}
+
+a {
+  color: var(--p-bosque);
+}
+
+:focus-visible {
+  outline: 3px solid var(--p-bosque);
+  outline-offset: 3px;
+}
+
+.saltar {
+  position: absolute;
+  left: -100vw;
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+.saltar:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 3;
+  background: var(--p-papel);
+  padding: 0.75rem 1rem;
+}
+
+.raices-cabecera,
+.raices-pie {
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  color: var(--p-tinta);
+  text-decoration: none;
+  font: 600 1.375rem/1 Alegreya, serif;
+}
+
+.marca em {
+  font-weight: 400;
+}
+
+.raices-pie small {
+  color: var(--p-tinta-suave);
+}
+
+/* El hero: una hoja de papel con el grano encima. */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.grano {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.hero h1 {
+  margin: 0 0 1.25rem;
+  color: var(--p-tinta);
+  font: 400 clamp(2.6rem, 7.5vw, 5.25rem) / 1 Alegreya, serif;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.hero h1 em {
+  color: var(--p-bosque);
+}
+
+.hero-bajada {
+  max-width: 34rem;
+  margin: 0 0 1.75rem;
+  font-size: 1.125rem;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--p-bosque);
+  border-radius: 3px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.boton--principal {
+  background: var(--p-bosque);
+  color: var(--p-papel);
+}
+
+.boton--principal:hover {
+  background: var(--p-bosque-hondo);
+}
+
+.boton--secundario:hover {
+  background: var(--p-salvia);
+}
+
+/* La lámina de campo: cada etapa o destino con su numeral y su línea guía. */
+.lamina {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lamina li {
+  display: grid;
+  gap: 0.15rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid currentcolor;
+}
+
+.numeral {
+  font: italic 400 1.25rem/1 Alegreya, serif;
+}
+
+.lamina b {
+  color: var(--p-tinta);
+  font-weight: 600;
+}
+
+.cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cifras b {
+  font: 600 1.5rem/1 Alegreya, serif;
+}
+
+.nota {
+  font-size: 0.875rem;
+}
+
+/* El dibujo: trazos que no engordan ni adelgazan al cambiar el ancho. */
+.dibujo {
+  display: block;
+  width: 100%;
+  height: auto;
+  fill: none;
+}
+
+.dibujo path {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+
+.dibujo .tronco {
+  stroke-width: 5;
+}
+
+.dibujo .rama {
+  stroke-width: 2.5;
+}
+
+.dibujo .vena {
+  stroke-width: 1;
+}
+
+.dibujo .pendiente {
+  stroke-dasharray: 6 6;
+}
+
+@media (min-width: 37.5em) {
+  .raices-cabecera,
+  .raices-pie {
+    padding: 1.25rem 2rem;
+  }
+}

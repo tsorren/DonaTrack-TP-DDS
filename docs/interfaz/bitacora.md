@@ -26,6 +26,54 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · microcopy:portada (Raíces) · "Lo que donás echa raíces en tu comunidad"
+
+- **Decisión:** el mensaje del hero es el C, "la comunidad que crece". Título: "Lo que donás echa
+  raíces en tu comunidad." Bajada: "Cada donación llega a un comedor, una escuela o un merendero.
+  DonaTrack te muestra a quién, cuándo y cómo, con la foto de la entrega." Rótulo de la tierra:
+  "Todo lo que pasa hasta que llega". Aplicado en `templates/variantes/concepto-b.html`.
+- **Alternativas:** A, "la prueba a la vista" ("Debajo de cada donación, todo a la vista"),
+  recomendada por el agente porque el título describe el dibujo y le habla a todos; B, "directo a
+  la empresa" ("Tu empresa dona. Acá se comprueba").
+- **Por qué:** el usuario prefirió la más cálida, la que pone en el centro a las personas que
+  reciben. La transparencia queda en el dibujo del suelo y en la bajada ("a quién, cuándo y cómo").
+- **Costo:** la transparencia ya no está en el título; "raíces en tu comunidad" está cerca del tono
+  "eco" que el usuario descartó, así que el resto de la página no suma imágenes verdes en los
+  textos (regla de voz del brief).
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/mensaje-portada/`.
+
+### 2026-10-31 · concepto (Raíces) · El hero de la portada es un corte de suelo
+
+- **Decisión:** el concepto rector de la Alternativa Raíces, una tercera alternativa en
+  exploración ([brief](identidad/brief-raices.md)), es el corte de suelo. Arriba, poco: el título,
+  las acciones y un brote. Abajo, en la tierra, las cinco etapas de una donación como raíces, cada
+  una con su rótulo de lámina. Queda como base de las próximas comparaciones
+  (`templates/variantes/concepto-b.html`).
+- **Alternativas:** A, la red que es mapa: un sol salvia del que sale una raíz que cruza la página,
+  con una punta por cada entidad adonde llegó lo donado en octubre.
+- **Por qué:** el público foco, la persona de responsabilidad social de una empresa, quiere poder
+  demostrar adónde fue su donación. B lo cuenta de un vistazo: lo que se ve es el resultado y
+  debajo está lo que lo prueba. A decía "llegamos a muchos" más que "podés comprobarlo".
+- **Costo:** el dibujo es fijo para el caso de ejemplo; en la alternativa real se dibuja desde los
+  datos. La paleta y las letras siguen provisorias. Antes de construir la alternativa hace falta un
+  ADR `proposed` para la tercera alternativa.
+- **Quién decidió:** usuario, con la recomendación del agente.
+- **Evidencia:** `evidencia/raices/concepto-portada/`.
+
+### 2026-10-31 · proceso (Raíces) · Una tercera alternativa, diseñada con el usuario por A/B
+
+- **Decisión:** la identidad de raíces y semillas para empresas que donan es una tercera
+  alternativa. Se diseña con el usuario, en comparaciones A/B que empiezan por el hero de la
+  portada, en lugar de una corrida creativa desatendida.
+- **Alternativas:** reemplazar a Cozy o a Glassmorphism; una corrida desatendida de tres
+  conceptos (relevamiento hecho hasta la ronda de la corrida).
+- **Por qué:** el usuario quiere tomar las decisiones de estilo y mensaje en cada paso; el hero
+  sirve después para orientar todo el sitio.
+- **Costo:** cada pantalla nueva se escribiría tres veces; el ADR de dos alternativas necesita un
+  sucesor.
+- **Quién decidió:** usuario.
+
 ### 2026-10-31 · proceso · Diseño creativo desde cero: relevamiento con el usuario y corrida desatendida
 
 - **Decisión:** la forma de trabajar que rehízo Cozy / Medieval queda como proceso. La skill
