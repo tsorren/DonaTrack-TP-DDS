@@ -92,9 +92,21 @@ un modo accesible". Hoy la paleta igual pasa AA, y el
 
 ## Estilo visual, forma y letra
 
-Abiertos: se deciden con sus A/B; el próximo es el estilo visual. Propuestos y **no aprobados** en
-la paleta: el sol detrás del brote, la línea entre horizontes y la grava. Letra provisoria:
-Alegreya en títulos y DM Sans en el texto.
+**Estilo (usuario, cuarto A/B): impreso editorial**, un afiche risográfico (referencias 01 y 02).
+Detalle en la [bitácora](../bitacora.md).
+
+| Pieza | Cómo es | Qué significa |
+|---|---|---|
+| Textura | Grano de impresión marcado sobre el papel, el sol y la tierra | Oficio: algo hecho a mano, no una plantilla |
+| Sol | Medio disco salvia claro que sale de la tierra detrás del brote | El resultado: lo que creció |
+| Tierra | La franja de las etapas con grava | Lo que sostiene la donación, con cuerpo |
+| Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
+| Numerales y cifras | Gigantes, en cursiva y color paja | El recorrido, como capítulos de un afiche |
+| Botones y bordes | Rectos, sin redondeo, con una sombra plana salvia corrida | Tinta plana, impreso |
+
+**Forma:** sale del estilo (rectos, sombra plana corrida); no hace falta un A/B propio salvo que
+el usuario lo pida. La línea entre horizontes no entró. **Letra:** sigue provisoria (Alegreya en
+títulos y DM Sans en el texto); es el próximo A/B.
 
 ## Libertades (usuario)
 

@@ -1,15 +1,19 @@
 /* B — El corte de suelo: arriba, poco (el título y el brote); abajo, en la tierra, todo lo que
-   sostiene una donación: sus cinco etapas como raíces (profundidad: qué hay detrás de una). */
+   sostiene una donación: sus cinco etapas como raíces (profundidad: qué hay detrás de una). Estilo
+   impreso editorial (referencias 01 y 02): el sol detrás del brote, grava en la franja del medio,
+   títulos grandes en cursiva y numerales gigantes. */
 @import url("comun/raices.css");
 
 .superficie {
-  max-width: 50rem;
+  position: relative;
+  max-width: 64rem;
   margin: 0 auto;
   padding: 2.5rem 1rem 0;
   text-align: center;
 }
 
 .superficie .hero-bajada {
+  max-width: 36rem;
   margin-inline: auto;
 }
 
@@ -19,9 +23,9 @@
 
 .brote {
   display: block;
-  width: 4.5rem;
+  width: 5.5rem;
   height: auto;
-  margin: 2.5rem auto 0;
+  margin: clamp(4rem, 11vw, 9rem) auto 0;
   fill: none;
   stroke: var(--p-tallo);
 }
@@ -35,19 +39,40 @@
   fill: var(--p-hoja);
 }
 
+/* El sol: medio disco que sale de la tierra detrás del brote (referencia 01). */
+.sol {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: -1;
+  width: clamp(14rem, 34vw, 28rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--p-acento-claro);
+  translate: -50% 50%;
+}
+
 .suelo {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-top: 3px solid var(--p-tinta);
-  background: var(--p-suelo-medio);
-  color: var(--p-texto-suelo);
+  border-top: 4px solid var(--p-tinta);
+  /* La grava: piedritas en la franja del medio, la de las etapas (las otras dos bandas la tapan). */
+  background-color: var(--p-suelo-medio);
+  background-image:
+    radial-gradient(circle at 20% 30%, var(--p-grava) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 70% 60%, var(--p-grava-honda) 0 3px, transparent 3.5px),
+    radial-gradient(circle at 45% 80%, var(--p-grava) 0 1.5px, transparent 2px);
+  background-size:
+    37px 29px,
+    53px 41px,
+    23px 31px;
 }
 
 /* El grano va encima de los tres horizontes, como en una impresión. */
 .suelo .grano {
   z-index: 1;
-  opacity: 0.35;
+  opacity: 0.6;
   mix-blend-mode: soft-light;
 }
 
@@ -87,17 +112,27 @@
 }
 
 .suelo h2 {
-  margin: 1.5rem 0 0.25rem;
+  margin: 2rem 0 0.25rem;
   color: var(--p-texto-suelo);
-  font: italic 400 1.75rem/1.2 Alegreya, serif;
+  font: italic 400 clamp(2rem, 4.5vw, 3.25rem) / 1.05 Alegreya, serif;
 }
 
 .ficha-meta {
   margin: 0 0 1.5rem;
 }
 
+/* Los numerales gigantes, editoriales (referencia 02): en el celular, al costado de su etapa. */
 .suelo .numeral {
+  grid-row: span 2;
   color: var(--p-destacado);
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  line-height: 0.9;
+}
+
+.suelo .lamina li {
+  grid-template-columns: 4.25rem 1fr;
+  column-gap: 0.75rem;
+  align-items: baseline;
 }
 
 .suelo .lamina b {
@@ -121,6 +156,7 @@
 
 .suelo .cifras b {
   color: var(--p-destacado);
+  font: italic 400 clamp(2.25rem, 4vw, 3.25rem) / 1 Alegreya, serif;
 }
 
 .suelo :focus-visible {
@@ -150,8 +186,14 @@
   }
 
   .suelo .lamina li {
+    grid-template-columns: none;
     border-top: 0;
     padding: 0 0.75rem;
+  }
+
+  .suelo .numeral {
+    grid-row: auto;
+    margin-bottom: 0.25rem;
   }
 
   .suelo .lamina li::before {

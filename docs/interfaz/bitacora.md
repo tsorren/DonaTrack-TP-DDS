@@ -26,6 +26,30 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · estilo (Raíces) · Impreso editorial: un afiche risográfico
+
+- **Decisión:** el estilo visual de Raíces es el impreso editorial (referencias 01 y 02): grano de
+  impresión marcado sobre el papel, el sol y la tierra; un medio sol salvia claro que sale de la
+  tierra detrás del brote; grava en la franja de las etapas; el título más grande, con "en tu
+  comunidad" corrida por una segunda tinta salvia; numerales y cifras gigantes en cursiva; botones
+  rectos con una sombra plana salvia corrida. Aplicado en `variantes/comun/raices.css` (grano,
+  título y botones) y en `variantes/concepto-b.css` y `templates/variantes/concepto-b.html` (sol,
+  grava y numerales). Suma el tema `estilo` al [catálogo](temas-ab.md).
+- **Alternativas:** A, lámina de campo (referencia 05), recomendada por el agente: un marco fino
+  que cruzaba el corte de suelo, cuadrícula tenue, "Ficha N.º 0412", una regla de días debajo de
+  las raíces y fechas y cifras en letra de máquina. Decía "registrado y comprobable". El usuario
+  había descartado antes Minimalista y Moderno.
+- **Por qué:** el usuario eligió la más cálida y memorable, la que tiene oficio y comunidad. Sigue
+  el gusto que ya había marcado por la textura de la referencia 01.
+- **Costo:** la transparencia ya no está en el estilo; queda en el dibujo del suelo, las fechas y
+  la bajada. Se acerca a Cozy (cálida) y al afiche "eco" de la referencia 02, así que la voz sigue
+  sin imágenes verdes y la letra tiene que separarla. La segunda tinta corrida se usa solo en el
+  título: repetida, parece un efecto barato. El sol y la grava, propuestos en la paleta, quedan
+  aprobados con este estilo; la línea entre horizontes no entró. Las dos variantes pasaron la
+  verificación AA. Sigue el A/B de la letra.
+- **Quién decidió:** usuario, contra la recomendación del agente (A).
+- **Evidencia:** `evidencia/raices/estilo-portada/`.
+
 ### 2026-10-31 · paleta (Raíces) · Bosque: la tierra en tres verdes de monte y raíces color paja
 
 - **Decisión:** la paleta de Raíces es Bosque, solo los colores. Arriba, papel crema (`#eeebde`),

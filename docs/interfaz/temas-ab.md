@@ -11,6 +11,7 @@ clara. Para sumar un tema, se agrega una fila.
 | `direccion-general` | Concepto, color, tipografía y forma juntos (dos mundos distintos) | Contenido y estructura | ¿Cuál expresa mejor el brief? ¿Cuál se recuerda? | `/estilos` y una pantalla de muestra |
 | `concepto` | La idea rectora de una alternativa: composición, navegación y voz juntas (de dos a cuatro mundos distintos, con la misma identidad; difieren en composición y navegación, no solo en estilo) | Datos, acciones y paleta | ¿Se recuerda? ¿Da para todo el sitio? ¿Pasa el piso con datos reales? | La pantalla ancla del encargo (por ejemplo, el inicio de una persona donante); también una pantalla del prototipo. Sin el usuario: skill `corrida-creativa` |
 | `paleta` | Valores base de color y su uso | Tipografía, forma, contenido | Carácter, armonía, estados distinguibles (siempre AA) | `/estilos` |
+| `estilo` | El lenguaje gráfico: textura, líneas, rótulos, ornamento y forma de botones y bordes | Paleta, tipografía, contenido y composición | ¿Cuál expresa mejor el brief? ¿El ornamento ayuda a leer los datos o compite con ellos? | La pantalla ancla (por ejemplo, el hero de la portada) |
 | `tipografia` | Familias y escala | Color, forma, contenido | Legibilidad en 360 px, carácter del título | `/estilos` + texto largo |
 | `forma` | Radios, bordes y sombras | Color, tipografía | Coherencia, sensación (amable o firme) | `/estilos` |
 | `densidad` | Espacios y tamaños | Todo lo demás | Cuánto entra sin agobiar; toque cómodo en celular | Una lista o tabla real |
