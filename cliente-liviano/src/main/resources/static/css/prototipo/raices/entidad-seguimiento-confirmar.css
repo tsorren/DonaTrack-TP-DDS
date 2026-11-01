@@ -163,6 +163,12 @@ main .etiqueta-titulo {
   margin: 0;
 }
 
+.obligatorios {
+  margin: 0;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
 .grupo {
   display: grid;
   gap: 1rem;

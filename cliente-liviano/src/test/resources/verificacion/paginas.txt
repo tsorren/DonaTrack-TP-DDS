@@ -45,5 +45,6 @@
 /prototipo/raices/entidad-seguimiento-confirmar?escenario=confirmada
 /prototipo/raices/entidad-seguimiento-confirmar-error
 /prototipo/raices/entidad-seguimiento-sellada
+/prototipo/raices/entidad-seguimiento-sellada-lentejas
 /prototipo/raices/entidad-seguimiento-sellada-ropa
 /prototipo/raices/entidad-seguimiento-problema?entrega=lentejas

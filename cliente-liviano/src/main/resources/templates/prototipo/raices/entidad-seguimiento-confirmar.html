@@ -163,6 +163,7 @@
               action="/prototipo/raices/entidad-seguimiento-sellada-lentejas"
               th:action="@{/prototipo/raices/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
               method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+          <p class="obligatorios">Los tres datos son obligatorios: las fotos, los bultos y el remito.</p>
           <fieldset class="grupo">
             <legend><h2>Las pruebas</h2></legend>
             <div class="campo campo--fotos" th:classappend="${conError} ? 'campo--error'">
