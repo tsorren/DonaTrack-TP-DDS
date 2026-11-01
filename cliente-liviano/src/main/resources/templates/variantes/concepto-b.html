@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <!--/* Raíces (tercera alternativa, en exploración), concepto B del hero de la portada: el corte de
-       suelo (referencias 01, 05 y 06). Arriba, poco: el título, las acciones y un brote. Abajo, en
-       la tierra, lo que sostiene una donación: sus cinco etapas como raíces, cada una con su rótulo
-       de lámina (la lista dice todo lo que dice el dibujo). Página propia, sin el layout de Cozy:
-       la alternativa todavía no tiene juego de plantillas. Mismos datos y acciones que
-       prototipo/cozy-medieval/publico-portada; las etapas, las del recorrido de /estilos/armazon.
+       suelo (referencias 01, 03, 05 y 06). Arriba, poco: el título, las acciones y un brote. Abajo,
+       en la tierra, a quién llega lo que se dona: una red radial que sale del brote hacia una
+       entidad de cada tipo (rondas de lenguaje visual, 2026-11-01); la lista dice todo lo que dice
+       el dibujo. Las etapas de una donación no van en la portada. Página propia, sin el layout de
+       Cozy: la alternativa todavía no tiene juego de plantillas. Cubre solo el hero de
+       prototipo/cozy-medieval/publico-portada: le faltan el camino de la entidad ("Sumar mi
+       entidad") y "Lo que viajó este mes" (brief-raices.md, "Pendientes de la portada").
        ponytail: el dibujo es fijo para el caso de ejemplo; si el concepto gana, se dibuja desde los
-       datos (dirección de arte, "Oficio"). Mensaje: el C del segundo A/B; paleta Bosque y estilo
-       impreso editorial, con el sol detrás del brote; letra Archivo, ancha de afiche
-       (bitácora). Textos según el tono común (docs/interfaz/tono-y-comunicacion.md): la bajada dice
-       qué se puede seguir, el botón es "Quiero donar" (el del donante en la portada de Cozy), las
-       etapas usan los nombres de los estados y lo pendiente se dice pendiente, y las cifras van
-       con período y fuente. */-->
+       datos (dirección de arte, "Oficio"). Textos según el tono común
+       (docs/interfaz/tono-y-comunicacion.md): la bajada dice qué se puede seguir, el botón es
+       "Quiero donar" y las cifras van con período y fuente. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
@@ -39,17 +38,21 @@
 
     <div class="superficie">
       <h1 id="hero-titulo">Lo que donás echa raíces <em>en tu comunidad</em>.</h1>
-      <p class="hero-bajada">Seguí cada donación desde que se registra hasta que la entidad confirma la entrega.
-        DonaTrack te muestra a quién se asignó, en qué estado está y la foto que sube la entidad al confirmar.</p>
+      <p class="hero-bajada">Seguí cada donación, tuya o de tu empresa, desde que se registra hasta que la
+        entidad confirma la entrega. DonaTrack te muestra a quién se asignó, en qué estado está y la foto
+        que sube la entidad al confirmar.</p>
       <div class="acciones">
-        <a href="/prototipo/publico-registro-donante" class="boton boton--principal">Quiero donar</a>
-        <a href="/prototipo/publico-ingresar" class="boton boton--secundario">Ingresar</a>
+        <a href="/prototipo/publico-registro-donante" th:href="@{/prototipo/publico-registro-donante}"
+           class="boton boton--principal">Quiero donar</a>
+        <a href="/prototipo/publico-ingresar" th:href="@{/prototipo/publico-ingresar}"
+           class="boton boton--secundario">Ingresar</a>
       </div>
       <span class="sol" aria-hidden="true"></span>
       <svg class="brote" viewBox="0 0 60 70" aria-hidden="true" focusable="false">
-        <path d="M30 70C30 52 30 40 30 28"/>
-        <path class="hoja" d="M30 38C18 36 10 26 12 15C24 17 30 27 30 38Z"/>
-        <path class="hoja" d="M30 31C40 27 48 17 46 6C36 8 30 18 30 31Z"/>
+        <path d="M30 70V28"/>
+        <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+        <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+        <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
       </svg>
     </div>
 
@@ -57,42 +60,50 @@
       <svg class="grano" aria-hidden="true" focusable="false">
         <rect width="100%" height="100%" filter="url(#grano)"/>
       </svg>
-      <section class="suelo-interior" aria-labelledby="raices-titulo">
-        <svg class="dibujo raices-dibujo" viewBox="0 0 1200 300" aria-hidden="true" focusable="false">
-          <path class="tronco" d="M600 0C600 100 600 200 600 285"/>
-          <path class="rama" d="M600 30C560 120 380 160 360 285"/>
-          <path class="rama" d="M600 30C640 120 820 160 840 285"/>
-          <path class="rama" d="M600 10C480 60 140 120 120 285"/>
-          <path class="rama pendiente" d="M600 10C720 60 1060 120 1080 285"/>
-          <path class="vena" d="M472 144C440 160 420 170 380 170"/>
-          <path class="vena" d="M400 205C420 230 420 260 440 280"/>
-          <path class="vena" d="M728 144C760 160 780 170 820 170"/>
-          <path class="vena" d="M800 205C780 230 780 260 760 280"/>
-          <path class="vena" d="M322 104C290 130 260 140 220 140"/>
-          <path class="vena" d="M187 179C160 200 140 220 100 230"/>
-          <path class="vena" d="M600 120C575 150 560 180 530 200"/>
-          <path class="vena" d="M600 120C625 150 640 175 670 195"/>
-          <path class="vena" d="M600 190C625 215 640 240 665 255"/>
-          <circle class="semilla nodo" cx="600" cy="6" r="9"/>
-          <circle class="nodo" cx="120" cy="285" r="11"/>
-          <circle class="nodo" cx="360" cy="285" r="11"/>
-          <circle class="nodo" cx="600" cy="285" r="11"/>
-          <circle class="nodo nodo--en-camino" cx="840" cy="285" r="11"/>
-          <circle class="nodo nodo--pendiente" cx="1080" cy="285" r="11"/>
-        </svg>
-        <ol class="lamina" role="list">
-          <li><span class="numeral">01</span><b>Registrada</b><span>12 de octubre</span></li>
-          <li><span class="numeral">02</span><b>Asignada a Comedor Barrio Ejemplo</b>
-            <span>13 de octubre</span></li>
-          <li><span class="numeral">03</span><b>Preparada para entregar</b><span>14 de octubre</span></li>
-          <li><span class="numeral">04</span><b>En camino</b><span>Salió hoy a las 14:30</span></li>
-          <li><span class="numeral">05</span><b>Falta confirmar la entrega</b>
-            <span>La confirma el comedor con la foto</span></li>
-        </ol>
+      <section class="suelo-interior" aria-labelledby="red-titulo">
+        <div class="horizonte-raices">
+          <svg class="dibujo red-dibujo" viewBox="0 0 1200 520" aria-hidden="true" focusable="false">
+            <path class="tronco" d="M600 0V40"/>
+            <path class="borde" pathLength="1" d="M600 40H320L120 240"/>
+            <path class="borde" pathLength="1" d="M600 40L520 120H400L320 200V340"/>
+            <path class="borde" pathLength="1" d="M600 40V120L480 240V400"/>
+            <path class="borde" pathLength="1" d="M600 40V120L720 240V400"/>
+            <path class="borde" pathLength="1" d="M600 40L680 120H800L880 200V340"/>
+            <path class="borde" pathLength="1" d="M600 40H880L1080 240"/>
+            <path class="ruta ruta--1" pathLength="1" d="M600 40H320L120 240"/>
+            <path class="ruta ruta--2" pathLength="1" d="M600 40L520 120H400L320 200V340"/>
+            <path class="ruta ruta--3" pathLength="1" d="M600 40V120L480 240V400"/>
+            <path class="ruta ruta--4" pathLength="1" d="M600 40V120L720 240V400"/>
+            <path class="ruta ruta--5" pathLength="1" d="M600 40L680 120H800L880 200V340"/>
+            <path class="ruta ruta--6" pathLength="1" d="M600 40H880L1080 240"/>
+            <circle class="cruce" cx="600" cy="40" r="11"/>
+            <circle class="cruce" cx="600" cy="120" r="7"/>
+            <g class="entidad-nodo entidad-nodo--1"><circle class="sombra" cx="123" cy="243" r="11"/><circle cx="120" cy="240" r="11"/></g>
+            <g class="entidad-nodo entidad-nodo--2"><circle class="sombra" cx="323" cy="343" r="11"/><circle cx="320" cy="340" r="11"/></g>
+            <g class="entidad-nodo entidad-nodo--3"><circle class="sombra" cx="483" cy="403" r="11"/><circle cx="480" cy="400" r="11"/></g>
+            <g class="entidad-nodo entidad-nodo--4"><circle class="sombra" cx="723" cy="403" r="11"/><circle cx="720" cy="400" r="11"/></g>
+            <g class="entidad-nodo entidad-nodo--5"><circle class="sombra" cx="883" cy="343" r="11"/><circle cx="880" cy="340" r="11"/></g>
+            <g class="entidad-nodo entidad-nodo--6"><circle class="sombra" cx="1083" cy="243" r="11"/><circle cx="1080" cy="240" r="11"/></g>
+          </svg>
+          <ul class="entidades" role="list">
+            <li class="entidad entidad--1"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+              <b>Comedor</b> <span>Barrio Ejemplo</span></a></li>
+            <li class="entidad entidad--2"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+              <b>Escuela</b> <span>Ejemplo N.º 12</span></a></li>
+            <li class="entidad entidad--3"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+              <b>Merendero</b> <span>Ejemplo Sur</span></a></li>
+            <li class="entidad entidad--4"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+              <b>Hogar</b> <span>Casa Ejemplo</span></a></li>
+            <li class="entidad entidad--5"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+              <b>Club</b> <span>Ejemplo Norte</span></a></li>
+            <li class="entidad entidad--6"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+              <b>Biblioteca</b> <span>Popular Ejemplo</span></a></li>
+          </ul>
+        </div>
         <!--/* El rótulo de la lámina va al pie, como en la ficha de campo (referencia 05). */-->
         <div class="rotulo-ficha">
-          <h2 id="raices-titulo">Todo lo que pasa hasta que llega</h2>
-          <p class="ficha-meta">Lentejas secas, 15 kg, para Comedor Barrio Ejemplo</p>
+          <h2 id="red-titulo">Quiénes reciben las donaciones</h2>
+          <p class="ficha-meta">Una entidad de cada tipo, entre las que están en el mapa.</p>
         </div>
         <div class="pie-hero">
           <ul class="cifras" role="list">
@@ -100,7 +111,7 @@
             <li><b>46</b> entidades en el mapa</li>
             <li><b>32</b> donaciones en camino ahora</li>
           </ul>
-          <p class="nota"><a href="/prototipo/publico-mapa">Ver el mapa de entregas confirmadas</a><br>
+          <p class="nota"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">Ver el mapa de entregas confirmadas</a><br>
             Las entregas confirmadas se cuentan desde marzo de 2026, con la confirmación de cada entidad.<br>
             Actualizado el 15 de octubre de 2026, 14:30.</p>
         </div>

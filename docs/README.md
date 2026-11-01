@@ -122,7 +122,7 @@ docs/
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
 │   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todas las alternativas
 │   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
-│   ├── identidad/                         # Un brief por alternativa: Glassmorphism y Cozy / Medieval
+│   ├── identidad/                         # Un brief por alternativa: Glassmorphism, Cozy / Medieval y Raíces (en exploración)
 │   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)
 │   └── plantillas/                        # Ficha de flujo, iteración A/B, brief de identidad y encargos creativos
 │

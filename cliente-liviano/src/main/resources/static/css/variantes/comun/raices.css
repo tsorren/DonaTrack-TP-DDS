@@ -1,7 +1,6 @@
 /* Base común del hero de Raíces (tercera alternativa, en exploración): paleta Bosque, estilo
    impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
-   en su A/B), marca, botones, el grano de impresión de la referencia 01 y los rótulos de
-   la lámina de campo de la 05. */
+   en su A/B), marca, botones, el grano de impresión de la referencia 01 y las cifras. */
 
 @font-face {
   font-family: Archivo;
@@ -42,13 +41,11 @@
   --p-suelo-hondo: #12241a;
   --p-texto-suelo: #ece9da;
   --p-raiz: #e6c27a;
-  --p-vena: #7f9d7c;
   --p-nodo: #e6c27a;
-  --p-nodo-en-camino: #f1ead2;
   --p-destacado: #e6c27a;
-  /* La grava de la franja del medio: venía con el estilo impreso editorial, pendiente de su A/B. */
-  --p-grava: #2f523d;
-  --p-grava-honda: #142a1d;
+  /* El semitono de la tierra (ronda de tierra, 2026-11-01): al pie de cada horizonte, puntos con el
+     color del horizonte de abajo; el último, un verde más hondo que la tierra. */
+  --p-semitono-fondo: #0c1912;
   /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). */
   --p-pendiente-fondo: #e2e0d2;
   --p-pendiente-texto: #4d4c40;
@@ -183,9 +180,10 @@ a {
   text-decoration: none;
 }
 
+/* Al apretar se hunde sobre su sombra, como un sello (ronda de formas, 2026-11-01). */
 .boton:active {
   box-shadow: none;
-  translate: 0.15rem 0.15rem;
+  translate: 0.3rem 0.3rem;
 }
 
 .boton--principal {
@@ -199,33 +197,6 @@ a {
 
 .boton--secundario:hover {
   background: var(--p-acento-claro);
-}
-
-/* La lámina de campo: cada etapa o destino con su numeral y su línea guía. */
-.lamina {
-  display: grid;
-  gap: 1.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.lamina li {
-  display: grid;
-  gap: 0.15rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid currentcolor;
-}
-
-.numeral {
-  font: 900 1.25rem/1 var(--p-letra-titulo);
-  font-stretch: 125%;
-  letter-spacing: -0.03em;
-}
-
-.lamina b {
-  color: var(--p-tinta);
-  font-weight: 600;
 }
 
 .cifras {
@@ -258,22 +229,6 @@ a {
 .dibujo path {
   vector-effect: non-scaling-stroke;
   stroke-linecap: round;
-}
-
-.dibujo .tronco {
-  stroke-width: 5;
-}
-
-.dibujo .rama {
-  stroke-width: 2.5;
-}
-
-.dibujo .vena {
-  stroke-width: 1;
-}
-
-.dibujo .pendiente {
-  stroke-dasharray: 6 6;
 }
 
 @media (min-width: 37.5em) {

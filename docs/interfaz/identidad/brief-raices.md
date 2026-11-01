@@ -50,9 +50,21 @@ impresión de la 01, la red que es mapa (03), la lámina de campo (05) y el cort
 
 ## Concepto rector (usuario, primer A/B)
 
-**El corte de suelo.** Arriba, poco: el título, las acciones y un brote. Abajo, en la tierra, lo que
-sostiene una donación: sus etapas como raíces, cada una con su rótulo de lámina (numeral, etapa y
-fecha). Responde "¿qué hay detrás de cada donación?". Ver la [bitácora](../bitacora.md).
+**El corte de suelo.** Arriba, poco: el título, las acciones y un brote. Abajo, en la tierra, a
+quién llega lo que se dona: las raíces son una red que sale del brote hacia una entidad
+beneficiaria de cada tipo (comedor, escuela, merendero, hogar, club y biblioteca), cada una con su
+tipo y su nombre. Responde "¿a quién llega lo que dono?". Ver la [bitácora](../bitacora.md).
+
+**Las etapas de una donación no van en la portada (usuario, 2026-11-01):** en el hero, las raíces
+son las entidades y no los estados. Las etapas quedan para la pantalla de una donación, con las
+formas de estado de la sección Color.
+
+**Pendientes de la portada (`revision-ui`, 2026-11-01):** la variante cubre solo el hero de la
+portada de Cozy. Le faltan el camino de la entidad ("Sumar mi entidad", que en Cozy está en el
+hero) y "Lo que viajó este mes", las fichas con la foto de lo entregado. Faltaban también en la
+versión anterior. Sin el primero, una entidad que llega a esta portada no tiene por dónde
+registrarse, y eso choca con "Fijos: los datos y las acciones" (Libertades). Se suman cuando el
+usuario decida cómo se dicen en Raíces.
 
 ## Voz
 
@@ -62,13 +74,21 @@ fecha). Responde "¿qué hay detrás de cada donación?". Ver la [bitácora](../
   entidad confirma la entrega. DonaTrack te muestra a quién se asignó, en qué estado está y la foto
   que sube la entidad al confirmar." Reemplaza la del segundo A/B ("Cada donación llega a un comedor, una escuela o un
   merendero…"), que prometía la llegada. El usuario decidió corregirla al adoptar el brief de tono;
-  la redacción es del agente.
+  la redacción es del agente. Desde el 2026-11-01 dice "Seguí cada donación, tuya o de tu empresa,
+  …", para que el hero le hable también a la empresa, el foco de esta alternativa (aviso de
+  `revision-ui`; redacción del agente).
+- **Rótulo de la tierra (2026-11-01):** "Quiénes reciben las donaciones", con la bajada "Una entidad
+  de cada tipo, entre las que están en el mapa." Reemplaza "Todo lo que pasa hasta que llega", que
+  afirmaba la llegada y se fue con las etapas.
 - **Botón principal (usuario, 2026-10-31):** "Quiero donar", el mismo texto que el botón del
   donante en la portada de Cozy. Reemplaza "Donar ahora" (urgencia artificial).
 - **Etapas y cifras:** con los nombres de los
   [estados](../tono-y-comunicacion.md#los-estados-de-una-donación) (registrada, asignada, preparada,
   en camino, entrega confirmada); lo pendiente se dice pendiente ("Falta confirmar la entrega").
   Las cifras son entregas confirmadas, con período y fuente.
+- **Tabla de voz:** se escribe junto con el juego de plantillas de Raíces
+  (`src/test/resources/voz/raices.txt`). `InterfazFitnessTest` solo lee las tablas de las
+  alternativas que tienen juego en `templates/alternativas/`, y Raíces todavía no lo tiene.
 - **Tono (usuario):** término medio entre "botánica medida" y "cálida y comunitaria", sin
   efectismo.
 - **Regla (propuesto):** como mucho una imagen de raíz o siembra por pantalla, en el título grande;
@@ -91,13 +111,21 @@ y valores en la [bitácora](../bitacora.md).
 |---|---|---|
 | Papel crema | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
 | Verde bosque | El título en cursiva y los botones | La organización que actúa |
-| Tres verdes de monte | La tierra en tres horizontes: raíces, etapas y cifras | Lo que sostiene la donación, cada vez más hondo |
+| Tres verdes de monte | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras | Lo que sostiene la donación, cada vez más hondo |
 | Paja | Las raíces, las etapas cumplidas y las cifras | El recorrido comprobado |
 | Salvia | El brote | El resultado: lo que creció |
 
 **Estados de una entrega** (siempre con texto y una forma, nunca solo con color): pendiente, gris
 tierra con círculo punteado; en camino, ámbar con medio círculo; entregada, verde con tilde; con
 problema, rojo óxido con "!".
+
+**Cómo se dibujan, en la tierra (usuario, ronda de formas, 2026-11-01): el sello.** Lo cumplido
+está impreso: un disco paja lleno con la segunda tinta (salvia) corrida detrás y el tilde calado.
+En camino, un círculo con su mitad izquierda en ámbar. Pendiente, un círculo punteado. Con
+problema, un disco óxido con "!" calado. El numeral de lo que todavía no pasó va hueco (solo
+contorno): lo que falta todavía no se imprimió. Se descartaron la marca de lámina (trazo fino, lo
+que falta apagado) y la etiqueta recta (cuadrados). Todavía no hay pantalla que lo use: las etapas
+salieron de la portada.
 
 **Prioridad (usuario):** el diseño gráfico antes que la accesibilidad; "en el futuro habilitaremos
 un modo accesible". Hoy la paleta igual pasa AA, y el
@@ -111,14 +139,26 @@ Detalle en la [bitácora](../bitacora.md).
 | Pieza | Cómo es | Qué significa |
 |---|---|---|
 | Textura | Grano de impresión marcado sobre el papel, el sol y la tierra | Oficio: algo hecho a mano, no una plantilla |
-| Sol | Medio disco salvia claro que sale de la tierra detrás del brote | El resultado: lo que creció |
-| Tierra | La franja de las etapas; la grava está en el código, pero **no aprobada** (pendiente de su A/B) | Abierto |
+| Sol | Medio disco salvia claro, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
+| Brote | Dos cotiledones planos y simétricos: uno verde bosque con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
+| Tierra | Tres horizontes; al pie de cada uno, una franja de **semitono**: puntos de imprenta con el color del horizonte de abajo, que crecen con lo hondo y con la pantalla (usuario, ronda de tierra, 2026-11-01). Nunca debajo de texto | Lo hondo, impreso; funde un horizonte en el otro sin línea |
+| Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
+| Entidades | Un sello paja con la segunda tinta corrida; debajo, tipo y nombre | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
 | Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra) | El recorrido, como capítulos de un afiche |
-| Botones y bordes | Rectos, sin redondeo, con una sombra plana salvia corrida | Tinta plana, impreso |
+| Botones y bordes | Rectos, sin redondeo, con una sombra plana salvia corrida; al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un sello |
 
-**Forma:** sale del estilo (rectos, sombra plana corrida); no hace falta un A/B propio salvo que
-el usuario lo pida. La línea entre horizontes no entró. **Grava:** pendiente de su A/B.
+**Forma:** sale del estilo (rectos, sombra plana corrida). La línea entre horizontes no entró; la
+grava tampoco (la reemplazó el semitono). En la ronda de ilustración se descartaron el grabado de
+lámina, el plano risográfico con raíces orgánicas, la orgánica simétrica, el abanico, la
+bifurcada y la fila de lámina (bitácora).
+
+**Movimiento (usuario, ronda de movimiento, 2026-11-01):** al entrar, una vez, la página se
+imprime (el sol aparece y la segunda tinta entra corrida y calza, 1 s) y la red se traza desde el
+brote hasta cada entidad (1 s más). Al pasar el mouse o el foco por una entidad, su línea queda
+llena y el resto se apaga. Sin movimiento con "reducir movimiento"; sin JavaScript (CSS). Se
+descartó el pulso de entrega (puntos que recorren las líneas): movimiento sin fin, que pide un
+botón de pausa.
 
 **Letra (usuario, quinto A/B): grotesca ancha de afiche.** Una sola familia, Archivo
 (Omnibus-Type, Buenos Aires); el carácter sale del ancho y del peso. Detalle en la

@@ -26,6 +26,85 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · movimiento (Raíces) · La página se imprime y la red se traza
+
+- **Decisión:** al entrar, una vez, la portada se imprime: el sol aparece y la segunda tinta entra
+  corrida y calza (1 s). Después la red se traza desde el brote hasta cada entidad (1 s). Al pasar
+  el mouse o el foco por una entidad, su línea queda llena y el resto se apaga. Todo en CSS, sin
+  JavaScript; con "reducir movimiento" no se mueve nada.
+- **Alternativas:** solo el trazado; solo la imprenta; un pulso de entrega (puntos que recorren las
+  líneas cada tanto); sin resaltado.
+- **Por qué:** la imprenta es lo más propio del estilo riso y el trazado cuenta el concepto (lo que
+  se dona llega a cada entidad). Las dos terminan solas. El pulso no termina nunca: WCAG 2.2.2 pide
+  un botón de pausa, distrae de la lectura y sugiere datos en vivo que la maqueta no tiene.
+- **Costo:** unos 2 s hasta ver la red completa. Con una conexión lenta, el corrimiento de la
+  imprenta puede leerse como un error de carga.
+- **Quién decidió:** usuario, sobre tres animaciones en vivo.
+- **Evidencia:** [`evidencia/raices/lenguaje-visual/`](evidencia/raices/lenguaje-visual/).
+
+### 2026-11-01 · ilustración (Raíces) · Las raíces son una red radial hacia las entidades
+
+- **Decisión:** en el hero, las raíces dejan de ser las etapas de una donación y pasan a ser las
+  entidades beneficiarias: una red radial que sale del brote, con líneas paja de borde verde oscuro,
+  codos a 45° y estaciones, en espejo, hacia una entidad de cada tipo (comedor, escuela,
+  merendero, hogar, club y biblioteca). Cada entidad es un sello con su tipo y su nombre; en el
+  celular, los rótulos van en lista debajo del dibujo. El brote son dos cotiledones planos con la
+  segunda tinta corrida; el sol, un medio disco plano. Las etapas salen de la portada y el rótulo
+  "Todo lo que pasa hasta que llega" se va con ellas: la tierra dice "Quiénes reciben las
+  donaciones".
+- **Alternativas:** el grabado de lámina, el plano risográfico, la red de mapa y la mezcla de las
+  dos últimas (primera ronda). Pedido del usuario: raíces hacia entidades y una versión orgánica
+  fiel a una raíz real. Después, la red y la orgánica en versión simétrica, y cuatro variantes más:
+  abanico, bifurcada, fila de lámina y red radial. Para las etapas: una sección debajo del hero o
+  una raíz con marcas. Para las entidades: las de más entregas o las más recientes, y solo el tipo
+  como rótulo.
+- **Por qué:** el usuario quiere que la raíz muestre a quién llega lo donado, con simetría y algo
+  placentero de ver. Eligió la red radial: une raíz y logística, el pedido original de esta
+  alternativa. Una entidad por tipo muestra la variedad de la comunidad.
+- **Costo:** la red es más fría que una raíz orgánica frente al título cálido. Con una entidad por
+  tipo, el grosor ya no compara volumen (las cifras quedan en el pie). Las etapas no tienen todavía
+  dónde verse. Los seis enlaces van al mismo mapa del prototipo. `revision-ui` marcó que la
+  variante, desde antes, cubre solo el hero: le faltan "Sumar mi entidad" y "Lo que viajó este
+  mes" (brief, "Pendientes de la portada").
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/raices/lenguaje-visual/`](evidencia/raices/lenguaje-visual/)
+  (`red-radial-*.jpg`).
+
+### 2026-11-01 · formas (Raíces) · Estados como sello y botón que se hunde
+
+- **Decisión:** los estados se dibujan como sello: lo cumplido, un disco paja lleno con la segunda
+  tinta corrida y el tilde calado; en camino, medio círculo ámbar; pendiente, círculo punteado;
+  con problema, disco óxido con "!". El numeral de lo que falta va hueco. Los botones siguen rectos
+  con sombra salvia corrida y, al apretarlos, se hunden sobre su sombra.
+- **Alternativas:** para los estados, la marca de lámina (trazo fino, lo que falta apagado) y la
+  etiqueta recta (cuadrados). Para los botones, el registro corrido (un contorno salvia que no
+  calza) y la etiqueta de lámina (esquina cortada y doble filete), vistos en tamaño real en
+  reposo, al apretar y con foco.
+- **Por qué:** el sello pone la audacia en los datos y se lee de un vistazo (lleno, comprobado;
+  hueco, falta). El botón que se hunde continúa el mismo gesto y deja limpio el foco. El registro
+  corrido sumaba tres marcos con el foco.
+- **Costo:** el numeral hueco de 18 px puede verse frágil en el celular; hay que probarlo cuando las
+  etapas tengan pantalla. Hoy ninguna pantalla de Raíces usa los estados.
+- **Quién decidió:** usuario.
+- **Evidencia:** sin capturas de los estados (no hay pantalla que los use); el botón, en
+  [`evidencia/raices/lenguaje-visual/`](evidencia/raices/lenguaje-visual/).
+
+### 2026-11-01 · tierra (Raíces) · Semitono en lugar de grava
+
+- **Decisión:** al pie de cada horizonte de la tierra, una franja de semitono: puntos de imprenta
+  con el color del horizonte de abajo, que crecen con lo hondo y con la pantalla (franja de 12 a
+  44 px, trama de 7 a 11 px). Nunca debajo de texto. La grava sale del código.
+- **Alternativas:** grano solo (tierra lisa) y la grava que estaba en el código; el semitono más
+  discreto (trama fija de 7 px), probado primero en la maqueta.
+- **Por qué:** es lo único que cumple "que sorprenda" sin poner ruido debajo de los datos, y une
+  los horizontes sin la línea descartada. El usuario lo pidió más marcado después de verlo en la
+  maqueta.
+- **Costo:** axe no mide el contraste sobre los puntos; por eso los puntos nunca van debajo de
+  texto.
+- **Quién decidió:** usuario, en lámina y después en la maqueta.
+- **Evidencia:** [`evidencia/raices/lenguaje-visual/`](evidencia/raices/lenguaje-visual/)
+  (`semitono-*.jpg`).
+
 ### 2026-10-31 · proceso · El brief de tono del equipo rige a todas las alternativas
 
 - **Decisión:** el *Brief de Tono y Comunicación v1.0* del equipo
