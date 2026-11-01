@@ -441,6 +441,11 @@
   background: repeating-linear-gradient(180deg, var(--p-raiz) 0 4px, transparent 4px 10px);
 }
 
+/* Sin datos no hay tronco: la etiqueta de tu entidad no cuelga de nada. */
+.herbario--sin-red .etiqueta--tuya::before {
+  content: none;
+}
+
 /* Con la red, el tronco sigue punteado desde la última fila hasta tu entidad. */
 .herbario:not(.herbario--sin-red) .etiqueta--tuya::before {
   top: calc(-1.5rem - 2.25rem - 2px);
@@ -935,14 +940,21 @@ dl.registro-datos > div::after {
     height: 50%;
   }
 
+  /* El punteado va de sello a sello: media fila arriba y media fila en la entrega en camino, que es
+     más baja. */
   .asiento:has(+ .asiento--en-camino)::before {
     top: 50%;
     left: calc(9rem + 1.25rem + 0.875rem - 2px);
-    height: 100%;
+    height: 50%;
   }
 
-  .asiento:first-child:has(+ .asiento--en-camino)::before {
-    height: 100%;
+  .asiento.asiento--en-camino::before {
+    content: "";
+    top: 0;
+    left: calc(9rem + 1.25rem + 0.875rem - 2px);
+    width: 4px;
+    height: 50%;
+    background: repeating-linear-gradient(180deg, var(--p-acento) 0 4px, transparent 4px 12px);
   }
 
   /* El tramo punteado sale del medio de su fila: el anterior llega hasta ahí, sin corte. */

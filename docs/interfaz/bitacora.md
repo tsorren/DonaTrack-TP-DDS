@@ -26,6 +26,24 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · portada (Raíces) · Tres arreglos de la revisión del pulido
+
+- **Decisión:** la revisión independiente del pulido dio PASS con avisos; el usuario pidió arreglar
+  tres.
+  - **El punteado del cuaderno** va de sello a sello en pantalla grande: media fila en la entrega
+    confirmada de arriba y media en la que va en camino. Antes pasaba 3 px por debajo del sello de
+    hoy.
+  - **Sin datos,** la etiqueta de tu entidad ya no cuelga de un punteado suelto.
+  - **Sin datos,** la bajada de "Lo que viajó este mes" no nombra el mes: dice solo que la entidad
+    sube la foto cuando confirma la entrega.
+- **Alternativas:** dejarlos como avisos.
+- **Por qué:** los dos punteados dibujaban una raíz que no llevaba a nada, y la bajada contradecía
+  el aviso de que no hay entregas.
+- **Costo:** quedan abiertos dos avisos: la franja de la lámina deja unos 155 px al texto en 360 px
+  y falta el enlace a los textos legales (en todo el cliente liviano, desde antes).
+- **Quién decidió:** usuario.
+- **Evidencia:** sin capturas propias; la verificación visual de la portada y sus tres estados pasó.
+
 ### 2026-11-01 · layout:portada (Raíces) · El cuaderno del mes: la foto a la vista
 
 - **Decisión:** cada entrega confirmada de "Lo que viajó este mes" muestra una miniatura de la foto

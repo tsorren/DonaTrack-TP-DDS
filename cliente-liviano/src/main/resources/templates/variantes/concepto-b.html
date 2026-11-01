@@ -266,7 +266,8 @@
     <div class="viajo-interior">
       <div class="viajo-cabeza">
         <h2 id="viajo-titulo">Lo que viajó <em>este mes</em></h2>
-        <p class="viajo-bajada">Las últimas entregas de octubre de 2026. La entidad sube la foto cuando confirma la entrega.</p>
+        <p class="viajo-bajada" th:if="${conDatos}">Las últimas entregas de octubre de 2026. La entidad sube la foto cuando confirma la entrega.</p>
+        <p class="viajo-bajada" th:unless="${conDatos}">La entidad sube la foto cuando confirma la entrega.</p>
       </div>
       <p class="aviso" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este mes. Cuando una
         entidad confirme una entrega, aparece acá con su foto.</p>
