@@ -301,32 +301,67 @@
   visibility: hidden;
 }
 
-/* En el celular, las etiquetas cuelgan de a dos, cada una de su raíz corta. */
+/* Sin lugar para la red, la espina en espejo (usuario, A/B del celular, 2026-11-01): un tronco baja
+   del brote por el centro y las etiquetas cuelgan de él de a dos, con una rama corta y su cruce. */
 .etiquetas {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 1rem 0.75rem;
-  margin: 0;
+  align-items: stretch;
+  gap: 1.25rem 2.5rem;
+  max-width: 40rem;
+  margin: 0 auto;
   padding: 0;
   list-style: none;
 }
 
 .etiqueta {
   position: relative;
-  padding-top: 1.5rem;
+  display: grid;
 }
 
-/* La raíz corta, del borde de arriba al ojal de la etiqueta. */
+/* La rama, del costado de la etiqueta al tronco, a la altura del ojal. */
 .etiqueta::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: 5px;
-  height: 2.1rem;
-  translate: -50% 0;
+  top: 0.95rem;
+  left: 100%;
+  width: 1.25rem;
+  height: 5px;
   background: var(--p-raiz);
+}
+
+.etiqueta:where(:nth-child(even))::before {
+  left: auto;
+  right: 100%;
+}
+
+/* El tronco, un tramo por fila; el primero llega hasta la línea de tierra, debajo del brote. */
+.etiqueta:where(:nth-child(odd):not(.etiqueta--tuya))::after {
+  content: "";
+  position: absolute;
+  top: -1.25rem;
+  bottom: 0;
+  left: calc(100% + 1.25rem - 2.5px);
+  width: 5px;
+  background: var(--p-raiz);
+}
+
+.etiqueta:where(:first-child)::after {
+  top: -2rem;
+}
+
+/* El cruce de cada fila, sobre el tronco. */
+.etiqueta:where(:nth-child(even))::after {
+  content: "";
+  position: absolute;
+  top: calc(0.95rem + 2.5px - 0.5625rem);
+  left: calc(-1.25rem - 0.5625rem);
+  width: 1.125rem;
+  height: 1.125rem;
+  box-sizing: border-box;
+  border: 2.5px solid var(--p-texto-suelo);
+  border-radius: 50%;
+  background: var(--p-suelo);
 }
 
 /* La etiqueta de herbario: papel con el ojal arriba y la segunda tinta corrida. */
@@ -403,9 +438,17 @@
 
 .etiqueta--tuya::before {
   top: -1.6rem;
+  left: 50%;
   height: 1.6rem;
   width: 3px;
+  translate: -50% 0;
   background: repeating-linear-gradient(180deg, var(--p-raiz) 0 4px, transparent 4px 10px);
+}
+
+/* Con la red, el tronco sigue punteado desde la última fila hasta tu entidad. */
+.herbario:not(.herbario--sin-red) .etiqueta--tuya::before {
+  top: calc(-1.5rem - 1.25rem - 2px);
+  height: calc(1.5rem + 1.25rem);
 }
 
 .etiqueta--tuya b {
@@ -841,10 +884,6 @@ dl.registro-datos > div::after {
     padding-inline: 2rem;
   }
 
-  .etiquetas {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .ficha-cuerpo {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     align-items: center;
@@ -991,6 +1030,8 @@ dl.registro-datos > div::after {
     inset: 0 2rem auto;
     aspect-ratio: 2;
     display: block;
+    max-width: none;
+    margin: 0;
   }
 
   .etiqueta {
@@ -1000,7 +1041,8 @@ dl.registro-datos > div::after {
     translate: -50% -0.85rem;
   }
 
-  .etiqueta::before {
+  .etiqueta::before,
+  .etiqueta::after {
     content: none;
   }
 

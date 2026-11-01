@@ -175,7 +175,7 @@ Detalle en la [bitácora](../bitacora.md).
 | Sol | Medio disco salvia claro, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
 | Brote | Dos cotiledones planos y simétricos: uno verde bosque con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
 | Tierra | Tres horizontes; al pie de cada uno, una franja de **semitono**: puntos de imprenta con el color del horizonte de abajo, que crecen con lo hondo y con la pantalla (usuario, ronda de tierra, 2026-11-01). Nunca debajo de texto | Lo hondo, impreso; funde un horizonte en el otro sin línea |
-| Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
+| Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida; debajo, tipo y nombre | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
 | Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra) | El recorrido, como capítulos de un afiche |

@@ -26,6 +26,23 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · layout:portada (Raíces) · En el celular, la espina en espejo
+
+- **Decisión:** debajo de 1100 px, donde la red no entra, un tronco baja del brote por el centro y
+  las etiquetas cuelgan de él de a dos, cada una con una rama corta hasta un cruce, como la red en
+  espejo de la pantalla grande. Al final, el tronco sigue punteado hasta tu entidad. Hasta 1100 px
+  quedan dos columnas (antes eran tres desde 600 px). La pantalla grande no cambia.
+- **Alternativas:** B, la línea al costado: el tronco dobla a la izquierda y cada entidad es una
+  estación, una debajo de la otra, con lo que pide a la derecha.
+- **Por qué:** antes las etiquetas colgaban sueltas, sin unirse al brote, y en el celular no se
+  veía lo que la red cuenta. A repite la forma de la red grande y es la más corta. B se leía como
+  lista, pero repetía la raíz al costado del cuaderno del mes, justo debajo.
+- **Costo:** las etiquetas son algo más angostas (la rama ocupa el centro); "Pide ropa de abrigo"
+  va en dos líneas.
+- **Quién decidió:** usuario (A/B del celular, primer paso del pulido de la portada).
+- **Evidencia:** [`evidencia/raices/portada-celular/`](evidencia/raices/portada-celular/) (A y B
+  lado a lado y cada una entera, en 360 px).
+
 ### 2026-11-01 · portada (Raíces) · Foto en ventana, estados de la portada y botón del mapa
 
 - **Decisión:** tres arreglos de la revisión independiente, elegidos por el usuario.
