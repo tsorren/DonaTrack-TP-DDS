@@ -26,6 +26,29 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · portada (Raíces) · Foto en ventana, estados de la portada y botón del mapa
+
+- **Decisión:** tres arreglos de la revisión independiente, elegidos por el usuario.
+  - **La foto:** "Ver la foto de la entrega" abre una ventana sobre la portada con la foto, qué se
+    entregó, la entidad, la fecha de la confirmación y "Cerrar". Es el popover del navegador: se
+    abre y se cierra sin JavaScript, también con Esc o tocando afuera.
+  - **Los estados:** las entidades, las cifras y las entregas del mes tienen estado vacío, de
+    error y de carga (`?escenario=vacio`, `error` y `lento`). Cada aviso ocupa el lugar de los datos
+    y dice qué pasa; el de error suma "Volver a cargar". Sin datos no hay red y la etiqueta de tu
+    entidad queda sola, con su botón.
+  - **El mapa:** "Ver el mapa de entregas confirmadas" pasa de enlace chico a un botón chico en
+    contorno, como el de la foto.
+- **Alternativas:** la foto en una pestaña nueva o en una pantalla propia; solo el estado vacío,
+  o vacío y error sin el de carga; el enlace del mapa más alto pero con aspecto de enlace.
+- **Por qué:** la ventana no saca a la persona de la portada y muestra la foto con lo que prueba.
+  Los estados siguen el tono común (qué pasa, qué se sabe y qué hacer). El botón cumple los 48 px
+  de toque y repite un control que ya está en la página.
+- **Costo:** en un navegador sin popover (anteriores a 2024) el botón de la foto no abre nada.
+  El estado de carga casi no se ve en una página que arma el servidor.
+- **Quién decidió:** usuario (una ronda de tres preguntas).
+- **Evidencia:** [`evidencia/raices/portada-segunda-iteracion/`](evidencia/raices/portada-segunda-iteracion/)
+  (los tres estados, en 360 px).
+
 ### 2026-11-01 · portada (Raíces) · Segunda iteración: la mezcla de la actual y la lámina de campo
 
 - **Decisión:** la portada de Raíces es D, una mezcla de la versión actual (A) y la lámina de

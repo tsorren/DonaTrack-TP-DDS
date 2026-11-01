@@ -471,14 +471,14 @@
   outline-offset: 5px;
 }
 
-.registro-datos div {
+dl.registro-datos > div {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
   padding: 0.6rem 0;
 }
 
-.registro-datos div + div {
+dl.registro-datos > div + div {
   border-top: 1px solid var(--p-suelo);
 }
 
@@ -486,7 +486,7 @@
   flex: 0 1 auto;
 }
 
-.registro-datos div::after {
+dl.registro-datos > div::after {
   content: "";
   flex: 1 1 1.5rem;
   order: 1;
@@ -686,7 +686,20 @@
   fill: var(--p-en-camino-sello);
 }
 
-.boton--foto {
+/* Los botones del sitio que son <button> toman la letra y el fondo de los enlaces con forma de
+   botón. */
+:where(button).boton {
+  background-color: transparent;
+  color: var(--p-acento);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* El botón chico en contorno: la foto, el mapa y "Volver a cargar". No compite con "Quiero
+   donar". */
+.boton--chico,
+.boton--aviso {
   justify-self: start;
   gap: 0.5rem;
   padding: 0.5rem 0.875rem;
@@ -697,20 +710,125 @@
   white-space: nowrap;
 }
 
-.boton--foto:hover {
+.boton--chico:hover,
+.boton--aviso:hover {
   background: var(--p-acento-claro);
 }
 
-.boton--foto:active {
+.boton--chico:active,
+.boton--aviso:active {
   translate: 0.2rem 0.2rem;
 }
 
-.boton--foto svg {
+/* En la tierra, el contorno es paja y la letra, papel. */
+.suelo .boton--chico,
+.suelo .boton--aviso {
+  margin-top: 1rem;
+  border-color: var(--p-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--p-suelo);
+  color: var(--p-texto-suelo);
+}
+
+.suelo .boton--chico:hover,
+.suelo .boton--aviso:hover {
+  background: var(--p-suelo);
+}
+
+.boton--chico svg {
   width: 1.125rem;
   height: auto;
   fill: none;
   stroke: currentcolor;
   stroke-width: 1.75;
+}
+
+/* --- Estados: vacío, cargando y error -------------------------------------------------------- */
+
+/* El aviso ocupa el lugar de los datos: qué pasa y, si hace falta, qué hacer. */
+.aviso {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  max-width: 40rem;
+  margin: 0;
+  padding: 1.25rem 0;
+  border-block: 1px solid var(--p-tinta);
+  color: var(--p-tinta);
+}
+
+.aviso p {
+  margin: 0;
+}
+
+.aviso--suelo .boton--aviso {
+  justify-self: center;
+}
+
+.aviso--suelo {
+  justify-items: center;
+  margin: 0 auto 1.5rem;
+  padding: 1.25rem 1rem;
+  border-color: var(--p-raiz);
+  color: var(--p-texto-suelo);
+  text-align: center;
+}
+
+.registro-datos > p,
+.registro-datos > div {
+  margin: 0;
+  padding: 1rem 0;
+}
+
+.registro-datos > div > p {
+  margin: 0;
+}
+
+/* --- La foto de la entrega, en una ventana sobre la página ------------------------------------- */
+
+/* Usa el popover del navegador: se abre y se cierra sin JavaScript, con Esc o tocando afuera. */
+.foto-ventana {
+  width: min(36rem, 100% - 2rem);
+  margin: auto;
+  padding: 1rem;
+  border: 1.5px solid var(--p-tinta);
+  outline: 1px solid var(--p-tinta);
+  outline-offset: -7px;
+  background: var(--p-papel);
+  box-shadow: 0.45rem 0.45rem 0 var(--p-hoja);
+  color: var(--p-tinta-suave);
+}
+
+.foto-ventana:popover-open {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+}
+
+.foto-ventana::backdrop {
+  background: var(--p-suelo-hondo);
+  opacity: 0.75;
+}
+
+.foto-ventana img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--p-tinta);
+}
+
+.foto-ventana p {
+  margin: 0;
+}
+
+.foto-titulo {
+  margin-top: 0.25rem;
+  color: var(--p-tinta);
+  font: 800 1.25rem/1.2 var(--p-letra-titulo);
+  font-stretch: 112%;
+}
+
+.foto-ventana .boton {
+  margin-top: 0.5rem;
 }
 
 /* --- Con más lugar ----------------------------------------------------------------------------- */
@@ -905,6 +1023,25 @@
   .etiqueta--tuya .boton {
     padding-inline: 0.75rem;
     font-size: 0.9375rem;
+  }
+
+  /* Sin datos no hay red: el aviso y la etiqueta de tu entidad, centrados, en el flujo. */
+  .herbario--sin-red {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+
+  .herbario--sin-red .etiquetas {
+    position: static;
+    aspect-ratio: auto;
+  }
+
+  .herbario--sin-red .etiqueta--tuya {
+    position: relative;
+    top: auto;
+    left: auto;
+    translate: none;
+    margin: 0 auto;
   }
 
   /* Al pasar o enfocar una etiqueta, su raíz queda llena y el resto se apaga. */

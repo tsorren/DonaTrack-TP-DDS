@@ -98,6 +98,14 @@ Ver la [bitácora](../bitacora.md).
   camino dice "Falta confirmar la entrega: la confirma el comedor con la foto.", la forma del tono
   común para lo pendiente. Redacción del agente; reemplazan los textos anteriores de esta sección
   donde difieren.
+- **Estados y foto de la portada (2026-11-01):** sin datos, "Todavía no hay entidades en el mapa.
+  La primera puede ser la tuya.", "Todavía no hay entregas confirmadas. Se cuentan cuando cada
+  entidad confirma lo que recibe." y "Todavía no hay entregas confirmadas este mes. Cuando una
+  entidad confirme una entrega, aparece acá con su foto.". Con error, "No pudimos cargar las
+  entidades (las cifras, las entregas del mes). Probá de nuevo en unos minutos." y el botón
+  "Volver a cargar". Cargando, "Cargando las entidades…" (las cifras, las entregas del mes). La
+  ventana de la foto dice "<entidad> confirmó la entrega el <fecha> y subió esta foto." y
+  "Cerrar". Redacción del agente.
 - **Rótulo de la tierra (2026-11-01):** "Quiénes reciben las donaciones", con la bajada "Una entidad
   de cada tipo, entre las que están en el mapa." Reemplaza "Todo lo que pasa hasta que llega", que
   afirmaba la llegada y se fue con las etapas.
