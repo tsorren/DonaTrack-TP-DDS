@@ -26,6 +26,24 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · proceso · La verificación visual mide el contraste que axe deja sin medir
+
+- **Decisión:** donde axe no puede calcular el contraste (por un pseudo-elemento, un degradado o
+  una imagen de fondo), `-Pvisual` lo mide con el color de fondo de los contenedores, sin ver lo que
+  pinta el pseudo-elemento, y falla por debajo de AA. No mide el texto que está sobre un degradado
+  lineal o sobre una imagen sin color opaco debajo.
+- **Alternativas:** fallar con cada caso que axe no midió (8.127 en las dos alternativas: todo en
+  rojo); solo listarlos en el reporte (la regresión de Raíces seguía pasando); cambiar el CSS para
+  que axe pueda medir (rehacer diseños aprobados).
+- **Por qué:** `ed3fe14c` dejó el texto del suelo de Raíces en 1,6:1 y `-Pvisual` pasó igual. Con la
+  medición nueva, ese caso falla en los tres anchos. Además encontró el título de "Ranking" de Cozy
+  directo sobre la madera (1,5:1): ahora va en una nota, como pide la regla de la mesa.
+- **Costo:** el texto sobre un degradado lineal o una foto sigue sin medirse automáticamente y queda
+  para la revisión a ojo. La medición tampoco ve el fondo que pinta un pseudo-elemento.
+- **Quién decidió:** usuario.
+- **Evidencia:** sin capturas; las cifras salen de las corridas de `-Pvisual` del 2026-10-31 (la
+  completa, con 0 fallas, y la de Raíces sin el color del suelo, con 30 fallas de contraste).
+
 ### 2026-10-31 · estilo (Raíces) · Impreso editorial: un afiche risográfico
 
 - **Decisión:** el estilo visual de Raíces es el impreso editorial (referencias 01 y 02): grano de

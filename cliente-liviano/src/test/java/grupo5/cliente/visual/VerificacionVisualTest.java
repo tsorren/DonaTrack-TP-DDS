@@ -3,6 +3,7 @@ package grupo5.cliente.visual;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.deque.html.axecore.playwright.AxeBuilder;
+import com.deque.html.axecore.results.AxeResults;
 import com.deque.html.axecore.results.CheckedNode;
 import com.deque.html.axecore.results.Rule;
 import com.microsoft.playwright.Browser;
@@ -65,6 +66,48 @@ class VerificacionVisualTest {
         .map(([control, caja]) => control.tagName.toLowerCase() + ' "'
           + (control.textContent || control.name || control.id).trim().slice(0, 40) + '" '
           + Math.round(caja.width) + 'x' + Math.round(caja.height))
+      """;
+
+  /**
+   * El contraste de un texto que axe deja sin medir (un pseudo-elemento, un degradado o una imagen
+   * en el fondo): el color del texto sobre los fondos de color de sus ancestros, compuestos con su
+   * transparencia. Si no llega a AA (4,5:1; 3:1 la letra grande) devuelve la razón y el mínimo como
+   * texto; si llega o no se puede medir, null. No se puede medir sin el nodo, con un degradado
+   * lineal (tapa el color de debajo) o con una imagen sin color opaco (no deja saber cuál es).
+   * ponytail: no ve el fondo que pinta un pseudo-elemento, una foto que tape un color claro ni la
+   * opacity de los contenedores; si hace falta, medir sobre la captura.
+   */
+  private static final String CONTRASTE_SIN_MEDIR =
+      """
+      selector => {
+        const rgba = valor => valor.startsWith('rgb') ? valor.match(/[\\d.]+/g).map(Number) : null;
+        const sobre = (arriba, abajo) =>
+          [0, 1, 2].map(i => arriba[i] * (arriba[3] ?? 1) + abajo[i] * (1 - (arriba[3] ?? 1)));
+        const luz = color => color.map(v => v / 255)
+          .map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+          .reduce((suma, v, i) => suma + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const texto = document.querySelector(selector);
+        if (!texto) return null;
+        const fondos = [];
+        for (let caja = texto; caja; caja = caja.parentElement) {
+          const estilo = getComputedStyle(caja);
+          const fondo = rgba(estilo.backgroundColor);
+          const opaco = fondo && (fondo[3] ?? 1) === 1;
+          if (!fondo || estilo.backgroundImage.includes('linear-gradient')
+              || (estilo.backgroundImage !== 'none' && !opaco)) return null;
+          fondos.unshift(fondo);
+          if (opaco) break;
+        }
+        const fondo = fondos.reduce((abajo, arriba) => sobre(arriba, abajo), [255, 255, 255]);
+        const estilo = getComputedStyle(texto);
+        const color = rgba(estilo.color);
+        if (!color) return null;
+        const [clara, oscura] = [luz(sobre(color, fondo)), luz(fondo)].sort((a, b) => b - a);
+        const razon = (clara + 0.05) / (oscura + 0.05);
+        const tamano = parseFloat(estilo.fontSize);
+        const minimo = tamano >= 24 || (tamano >= 18.66 && estilo.fontWeight >= 700) ? 3 : 4.5;
+        return razon < minimo ? razon.toFixed(2) + ':1, pide ' + minimo + ':1' : null;
+      }
       """;
 
   private static final String HAY_DESBORDE =
@@ -338,7 +381,19 @@ class VerificacionVisualTest {
 
   private static void revisarAccesibilidad(
       Page pagina, String ruta, String variante, int ancho, List<Falla> fallas) {
-    for (Rule regla : new AxeBuilder(pagina).withTags(NORMAS_AXE).analyze().getViolations()) {
+    AxeResults resultado = new AxeBuilder(pagina).withTags(NORMAS_AXE).analyze();
+    resultado.getIncomplete().stream()
+        .filter(regla -> "color-contrast".equals(regla.getId()))
+        .flatMap(regla -> regla.getNodes().stream())
+        .map(nodo -> ((List<?>) nodo.getTarget()).get(0).toString())
+        .forEach(
+            selector -> {
+              if (pagina.evaluate(CONTRASTE_SIN_MEDIR, selector) instanceof String razon) {
+                fallas.add(
+                    new Falla(ruta, variante, ancho, "contraste", razon + " en " + selector));
+              }
+            });
+    for (Rule regla : resultado.getViolations()) {
       for (CheckedNode nodo : regla.getNodes()) {
         fallas.add(
             new Falla(

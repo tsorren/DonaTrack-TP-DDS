@@ -131,6 +131,11 @@ mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=estilos/armazon   #
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
 ```
 
+Cuando axe no puede medir el contraste (por un pseudo-elemento, un degradado o una imagen de
+fondo), la verificación visual lo mide con el color de fondo de los contenedores, sin ver lo que
+pinta el pseudo-elemento, y falla por debajo de AA. El texto sobre un degradado lineal, o sobre una
+imagen sin color opaco debajo, no se puede medir así: queda para la revisión a ojo.
+
 La verificación visual deja también la primera pantalla del celular (`-360x640.png`). Para pasar
 capturas a JPG de evidencia, comparar las de antes y después o armar la página de antes y después:
 [`scripts/visual/`](../scripts/visual/README.md).

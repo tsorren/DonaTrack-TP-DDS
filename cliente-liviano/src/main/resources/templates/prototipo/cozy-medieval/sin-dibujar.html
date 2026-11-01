@@ -9,7 +9,10 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <h1 th:text="${seccion}">Sección</h1>
+  <!--/* El título va en una nota: ningún texto va directo sobre la madera (tokens.css). */-->
+  <div class="mesa-nota">
+    <h1 th:text="${seccion}">Sección</h1>
+  </div>
   <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
            'Esta parte del mapa todavía no está dibujada',
            'La pantalla llega con su flujo. Mientras tanto, volvé a tu inicio.',
