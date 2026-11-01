@@ -26,6 +26,23 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · layout:portada (Raíces) · El cuaderno del mes: la foto a la vista
+
+- **Decisión:** cada entrega confirmada de "Lo que viajó este mes" muestra una miniatura de la foto
+  que subió la entidad, dentro del botón y con la leyenda "Ver la foto de la entrega" debajo;
+  tocarla abre la ventana con la foto grande, como antes. Además se corrigió un corte de la raíz
+  en pantalla grande: entre la penúltima entrega confirmada y la que va a hoy faltaba el tramo de
+  arriba de la fila (en el celular no pasaba).
+- **Alternativas:** B, el botón chico en contorno de hoy, sin miniatura.
+- **Por qué:** la foto es la prueba de la entrega; a la vista, se ve sin buscarla, que es lo que
+  promete la alternativa ("lo que se ve es el resultado; debajo, todo lo que lo prueba"). Las
+  cifras no se compararon: el agente no encontró nada para corregir y el usuario no lo pidió.
+- **Costo:** el cuaderno queda más alto (unos 100 px en pantalla grande y 190 en el celular) y
+  carga tres imágenes chicas más.
+- **Quién decidió:** usuario (A/B del cuaderno, cuarto paso del pulido de la portada).
+- **Evidencia:** [`evidencia/raices/portada-cuaderno/`](evidencia/raices/portada-cuaderno/) (A y B
+  lado a lado en 1280 y 360 px, y cada una entera).
+
 ### 2026-11-01 · layout:portada (Raíces) · La lámina: una ilustración en tres franjas, el número una sola vez
 
 - **Decisión:** la lámina "Cómo funciona" es una sola ilustración partida en tres franjas pegadas,

@@ -80,7 +80,8 @@ sección, y le gana lugar a la lámina, que sigue a su derecha. La lámina es un
 tres franjas pegadas (el brote, la raíz que se abre y la punta que llega), cada una con su número
 impreso como sello sobre el borde izquierdo y su paso a la derecha: el número está una sola vez.
 En el celular, la red es una espina en espejo; cada entidad cuelga de un sello con el ícono de lo
-que pide. Ver la [bitácora](../bitacora.md).
+que pide. En el cuaderno del mes, cada entrega confirmada muestra la miniatura de su foto, que se
+abre grande al tocarla. Ver la [bitácora](../bitacora.md).
 
 ## Voz
 
