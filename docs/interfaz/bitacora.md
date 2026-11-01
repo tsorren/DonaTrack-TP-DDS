@@ -26,6 +26,45 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · layout:portada (Raíces) · La lámina: una ilustración en tres franjas, el número una sola vez
+
+- **Decisión:** la lámina "Cómo funciona" es una sola ilustración partida en tres franjas pegadas,
+  sin espacio entre ellas: el brote, la raíz que se abre y la punta que llega. Cada franja crece
+  con su paso, que va a la derecha, y lleva el número impreso como sello paja (con la segunda
+  tinta corrida) sobre su borde izquierdo. El número está una sola vez: se fueron las llamadas y
+  las guías del dibujo. El rótulo "Lámina 1" sube a 0,875 rem para leerse.
+- **Alternativas:** se recorrieron cuatro rondas.
+  1. Números de contorno más grandes contra números como sellos: el usuario eligió los sellos, pero
+     sin el número repetido en el dibujo y en la leyenda.
+  2. Guías que bajan como rieles hasta el número de cada paso, por la derecha o por la izquierda:
+     descartadas porque "no ayudan visualmente".
+  3. Tres viñetas separadas, un halo del color de cada sello en el dibujo entero, o números en los
+     dos lugares: el usuario pidió mezclar las viñetas con los números en los dos.
+  4. La mezcla con el número encima de la ilustración (elegida) o en su propia columna, a la
+     izquierda.
+- **Por qué:** cada franja muestra la parte del dibujo de la que habla su paso, así que no hacen
+  falta líneas ni números repetidos, y la ilustración sigue siendo una. El número encima deja más
+  ancho al texto en el celular. Los sellos hablan el mismo idioma que la red y el cuaderno del mes.
+- **Costo:** la franja recorta los costados del dibujo cuando el paso es alto (en el celular se
+  ven solo el tallo y las raíces del centro). El sello tapa un poco el borde izquierdo de cada
+  franja.
+- **Quién decidió:** usuario (cuatro rondas, parte del tercer paso del pulido de la portada).
+- **Evidencia:** [`evidencia/raices/portada-lamina/`](evidencia/raices/portada-lamina/) (una
+  comparación por ronda, numeradas del 1 al 4, y las dos versiones finales enteras).
+
+### 2026-11-01 · layout:portada (Raíces) · Arriba: el título grande, al lado de la lámina
+
+- **Decisión:** el título de la portada crece hasta 5,75 rem (antes 4,5) y manda, bien por encima
+  de "Quiénes reciben" (3,75 rem). En pantalla grande la columna del texto le gana lugar a la
+  lámina (1,1 a 0,9; antes 0,92 a 1,08), que sigue a la derecha.
+- **Alternativas:** B, el título de lado a lado como un afiche, con la bajada y la lámina debajo.
+- **Por qué:** el título apenas se distinguía de los títulos de sección y el usuario había pedido
+  más impacto de afiche. A lo logra sin bajar la lámina fuera de la primera pantalla.
+- **Costo:** la lámina queda más angosta; por eso se rehízo (entrada de arriba).
+- **Quién decidió:** usuario (A/B de arriba, tercer paso del pulido de la portada).
+- **Evidencia:** [`evidencia/raices/portada-arriba/`](evidencia/raices/portada-arriba/) (A y B lado
+  a lado en 1280 y 1920 px, y cada una entera).
+
 ### 2026-11-01 · layout:portada (Raíces) · Red y etiquetas: el sello en la punta
 
 - **Decisión:** cada raíz de la red termina en un sello paja con el ícono de lo que pide la entidad

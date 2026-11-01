@@ -75,6 +75,13 @@ un registro de campo con líneas guía y el mes en un cuaderno de entregas, una 
 hasta hoy. Reemplaza lo descripto arriba en la composición; las piezas siguen siendo las mismas.
 Ver la [bitácora](../bitacora.md).
 
+**Pulido de la portada (usuario, 2026-11-01):** el título manda, bien por encima de los títulos de
+sección, y le gana lugar a la lámina, que sigue a su derecha. La lámina es una sola ilustración en
+tres franjas pegadas (el brote, la raíz que se abre y la punta que llega), cada una con su número
+impreso como sello sobre el borde izquierdo y su paso a la derecha: el número está una sola vez.
+En el celular, la red es una espina en espejo; cada entidad cuelga de un sello con el ícono de lo
+que pide. Ver la [bitácora](../bitacora.md).
+
 ## Voz
 
 - **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Lo

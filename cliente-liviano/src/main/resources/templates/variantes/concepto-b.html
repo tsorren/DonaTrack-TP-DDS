@@ -2,7 +2,7 @@
 <!--/* Raíces (tercera alternativa, en exploración), la portada. Segunda iteración (2026-11-01): el
        usuario comparó A (el corte de suelo centrado), B (el afiche) y C (la lámina de campo) y eligió
        D, una mezcla de A y C diseñada en dos rondas. Arriba, el título de A con la lámina "Cómo
-       funciona" de C, que explica la metáfora con llamadas numeradas. Debajo, el rótulo y un brote
+       funciona" de C, que explica la metáfora en tres franjas numeradas. Debajo, el rótulo y un brote
        con su sol sobre la tierra: de él sale la red radial de A, que termina en etiquetas de herbario
        (tipo, nombre y lo que pide), con la etiqueta vacía de tu entidad al centro. Las cifras, un
        registro de campo con líneas guía; el mes, un cuaderno de entregas que baja hasta hoy. Página
@@ -51,52 +51,96 @@
         </div>
       </div>
 
-      <!--/* La lámina: el dibujo lleva llamadas numeradas y la leyenda dice lo mismo en texto. */-->
+      <!--/* La lámina: una ilustración en tres franjas pegadas, cada una con su número y su paso en texto. */-->
       <section class="ficha" aria-labelledby="ficha-titulo">
         <div class="ficha-cabeza">
           <h2 id="ficha-titulo">Cómo funciona</h2>
           <p>Lámina 1, el recorrido de una donación</p>
         </div>
-        <div class="ficha-cuerpo">
-          <svg class="ejemplar" viewBox="0 0 400 520" aria-hidden="true" focusable="false">
-            <path class="ejemplar-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
-            <rect class="ejemplar-suelo" x="0" y="170" width="400" height="350"/>
-            <g class="ejemplar-brote" transform="translate(140 30) scale(2)">
+        <!--/* Una sola ilustración en tres franjas pegadas (el brote, la raíz que se abre y la punta que llega), cada una con su paso al lado. */-->
+        <ol class="vinetas" role="list">
+          <li class="vineta">
+            <svg class="ejemplar cuadro" viewBox="110 20 180 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <path class="ejemplar-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+              <rect class="ejemplar-suelo" x="0" y="170" width="400" height="350"/>
+              <g class="ejemplar-brote" transform="translate(140 30) scale(2)">
               <path class="tallo" d="M30 70V28"/>
               <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
               <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
               <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
-            </g>
-            <path class="ejemplar-horizonte" d="M0 170H400"/>
-            <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
-            <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
-            <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
-            <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
-            <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
-            <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
-            <circle class="cruce" cx="200" cy="232" r="7"/>
-            <g class="punta"><circle class="punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
-            <g class="punta"><circle class="punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
-            <g class="punta"><circle class="punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
-            <g class="punta"><circle class="punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
-            <g class="punta"><circle class="punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
-            <!--/* Las llamadas de la lámina: 1 en el brote, 2 en la bifurcación, 3 en una punta. */-->
-            <path class="guia" d="M240 104L300 74H336"/>
-            <path class="guia guia--suelo" d="M207 232H336"/>
-            <path class="guia guia--suelo" d="M260 394L300 430H336"/>
-            <g class="llamada-dibujo"><circle cx="356" cy="74" r="18"/><text x="356" y="74">1</text></g>
-            <g class="llamada-dibujo llamada-dibujo--suelo"><circle cx="356" cy="232" r="18"/><text x="356" y="232">2</text></g>
-            <g class="llamada-dibujo llamada-dibujo--suelo"><circle cx="356" cy="430" r="18"/><text x="356" y="430">3</text></g>
-          </svg>
-          <ol class="leyenda" role="list">
-            <li><span class="llamada" aria-hidden="true">1</span>
-              <b>Registrás lo que donás.</b> Alimentos, ropa o muebles, a tu nombre o al de tu empresa.</li>
-            <li><span class="llamada" aria-hidden="true">2</span>
-              <b>Se asigna a una entidad.</b> Un comedor, una escuela o un hogar que lo pidió.</li>
-            <li><span class="llamada" aria-hidden="true">3</span>
-              <b>La entidad confirma la entrega.</b> Con la fecha y una foto de lo entregado.</li>
-          </ol>
-        </div>
+              </g>
+              <path class="ejemplar-horizonte" d="M0 170H400"/>
+              <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
+              <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+              <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+              <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
+              <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
+              <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
+              <circle class="cruce" cx="200" cy="232" r="7"/>
+              <g class="punta"><circle class="punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
+            </svg>
+            <span class="llamada" aria-hidden="true">1</span>
+            <p><b>Registrás lo que donás.</b> Alimentos, ropa o muebles, a tu nombre o al de tu empresa.</p>
+          </li>
+          <li class="vineta">
+            <svg class="ejemplar cuadro" viewBox="110 190 180 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <path class="ejemplar-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+              <rect class="ejemplar-suelo" x="0" y="170" width="400" height="350"/>
+              <g class="ejemplar-brote" transform="translate(140 30) scale(2)">
+              <path class="tallo" d="M30 70V28"/>
+              <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+              <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+              <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+              </g>
+              <path class="ejemplar-horizonte" d="M0 170H400"/>
+              <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
+              <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+              <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+              <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
+              <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
+              <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
+              <circle class="cruce" cx="200" cy="232" r="7"/>
+              <g class="punta"><circle class="punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
+            </svg>
+            <span class="llamada" aria-hidden="true">2</span>
+            <p><b>Se asigna a una entidad.</b> Un comedor, una escuela o un hogar que lo pidió.</p>
+          </li>
+          <li class="vineta">
+            <svg class="ejemplar cuadro" viewBox="110 350 180 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <path class="ejemplar-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+              <rect class="ejemplar-suelo" x="0" y="170" width="400" height="350"/>
+              <g class="ejemplar-brote" transform="translate(140 30) scale(2)">
+              <path class="tallo" d="M30 70V28"/>
+              <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+              <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+              <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+              </g>
+              <path class="ejemplar-horizonte" d="M0 170H400"/>
+              <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
+              <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+              <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+              <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
+              <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
+              <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
+              <circle class="cruce" cx="200" cy="232" r="7"/>
+              <g class="punta"><circle class="punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
+              <g class="punta"><circle class="punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
+            </svg>
+            <span class="llamada" aria-hidden="true">3</span>
+            <p><b>La entidad confirma la entrega.</b> Con la fecha y una foto de lo entregado.</p>
+          </li>
+        </ol>
       </section>
     </div>
   </section>

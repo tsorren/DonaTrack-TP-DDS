@@ -15,8 +15,10 @@
   padding: 1.5rem 1rem 3rem;
 }
 
+/* El título manda en la portada, bien por encima de los títulos de sección (usuario, A/B de arriba,
+   2026-11-01). */
 .portada h1 {
-  font-size: clamp(2.5rem, 5.8vw, 4.5rem);
+  font-size: clamp(2.5rem, 7vw, 5.75rem);
   font-stretch: 118%;
   line-height: 0.92;
 }
@@ -58,20 +60,56 @@
 
 .ficha-cabeza p {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
-.ficha-cuerpo {
+/* Una sola ilustración en tres franjas pegadas, el brote, la raíz que se abre y la punta que llega,
+   cada una con su paso a la derecha (usuario, mezcla de las viñetas y los números, 2026-11-01). */
+.vinetas {
+  margin: 0;
+  padding: 0 0 0 0.625rem;
+  list-style: none;
+}
+
+.vineta {
   display: grid;
-  gap: 1rem 1.25rem;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  column-gap: 1rem;
+  min-height: 7rem;
+  color: var(--p-tinta);
+  line-height: 1.45;
 }
 
-.ejemplar {
+.vineta p {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+  padding: 0.75rem 0;
+}
+
+.vineta b {
   display: block;
-  width: 100%;
-  max-width: 24rem;
-  height: auto;
-  margin: 0 auto;
+  font-stretch: 110%;
+}
+
+/* Cada franja ocupa todo el alto de su paso: el recorte se ensancha o se angosta, nunca deja hueco. */
+.cuadro {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  width: 7rem;
+  height: 100%;
+  border-inline: 1.5px solid var(--p-tinta);
+  background: var(--p-papel);
+}
+
+.vineta:first-child .cuadro {
+  border-top: 1.5px solid var(--p-tinta);
+}
+
+.vineta:last-child .cuadro {
+  border-bottom: 1.5px solid var(--p-tinta);
 }
 
 .ejemplar path {
@@ -131,63 +169,21 @@
   fill: var(--p-hoja);
 }
 
-.ejemplar .guia {
-  stroke: var(--p-tinta);
-  stroke-width: 1.5;
-}
-
-.ejemplar .guia--suelo {
-  stroke: var(--p-texto-suelo);
-}
-
-.llamada-dibujo circle {
-  fill: var(--p-papel);
-  stroke: var(--p-tinta);
-  stroke-width: 2;
-}
-
-.llamada-dibujo--suelo circle {
-  fill: var(--p-texto-suelo);
-}
-
-.llamada-dibujo text {
-  fill: var(--p-tinta);
-  font: 900 20px var(--p-letra-titulo);
-  font-stretch: 125%;
-  text-anchor: middle;
-  dominant-baseline: central;
-}
-
-/* La leyenda: el mismo número de la llamada, en un círculo, y el paso en texto. */
-.leyenda {
-  display: grid;
-  gap: 0.875rem;
-  margin: 0;
-  padding: 0 0.25rem;
-  list-style: none;
-}
-
-.leyenda li {
-  display: grid;
-  grid-template-columns: 2.25rem 1fr;
-  column-gap: 0.75rem;
-  color: var(--p-tinta);
-  line-height: 1.45;
-}
-
-.leyenda b {
-  display: block;
-  font-stretch: 110%;
-}
-
+/* El número, un sello paja con la segunda tinta corrida, sobre el borde izquierdo de su franja. */
 .llamada {
-  grid-row: span 2;
+  position: relative;
   display: grid;
+  grid-column: 1;
+  grid-row: 1;
   place-items: center;
+  align-self: center;
+  justify-self: start;
   width: 2.25rem;
   height: 2.25rem;
-  border: 2px solid var(--p-tinta);
+  margin-left: -0.625rem;
   border-radius: 50%;
+  background: var(--p-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--p-hoja);
   font: 900 1.125rem/1 var(--p-letra-titulo);
   font-stretch: 125%;
 }
@@ -883,11 +879,6 @@ dl.registro-datos > div::after {
   .viajo-interior {
     padding-inline: 2rem;
   }
-
-  .ficha-cuerpo {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    align-items: center;
-  }
 }
 
 @media (min-width: 53.75em) {
@@ -976,7 +967,7 @@ dl.registro-datos > div::after {
    suya; las pares cuelgan más hondo. La de tu entidad, al centro, debajo del tronco. */
 @media (min-width: 68.75em) {
   .portada-grilla {
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     align-items: center;
     gap: 3rem;
   }
@@ -1127,7 +1118,7 @@ dl.registro-datos > div::after {
 
   .portada-texto,
   .ejemplar-brote,
-  .leyenda {
+  .vineta p {
     animation: registro 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
   }
 
@@ -1148,8 +1139,7 @@ dl.registro-datos > div::after {
 
 
   .punta,
-  .llamada-dibujo,
-  .ejemplar .guia {
+  .llamada {
     animation: aparece 0.35s ease 1.7s both;
   }
 }
