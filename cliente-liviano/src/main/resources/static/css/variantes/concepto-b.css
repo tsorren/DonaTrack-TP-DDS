@@ -1,7 +1,7 @@
 /* B — El corte de suelo: arriba, poco (el título y el brote); abajo, en la tierra, todo lo que
    sostiene una donación: sus cinco etapas como raíces (profundidad: qué hay detrás de una). Estilo
-   impreso editorial (referencias 01 y 02): el sol detrás del brote, grava en la franja del medio,
-   títulos grandes en cursiva y numerales gigantes. */
+   impreso editorial (referencias 01 y 02): el sol detrás del brote, títulos grandes en cursiva y
+   numerales gigantes. La grava de la franja del medio no está aprobada: pendiente de su A/B. */
 @import url("comun/raices.css");
 
 .superficie {
@@ -57,7 +57,8 @@
   isolation: isolate;
   overflow: hidden;
   border-top: 4px solid var(--p-tinta);
-  /* La grava: piedritas en la franja del medio, la de las etapas (las otras dos bandas la tapan). */
+  /* La grava (pendiente de su A/B, no aprobada): piedritas en la franja del medio, la de las
+     etapas (las otras dos bandas la tapan). */
   background-color: var(--p-suelo-medio);
   background-image:
     radial-gradient(circle at 20% 30%, var(--p-grava) 0 2px, transparent 2.5px),

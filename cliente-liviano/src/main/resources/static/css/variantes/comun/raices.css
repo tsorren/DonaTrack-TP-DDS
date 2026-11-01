@@ -47,7 +47,7 @@
   --p-nodo: #e6c27a;
   --p-nodo-en-camino: #f1ead2;
   --p-destacado: #e6c27a;
-  /* La grava de la franja del medio (estilo impreso editorial). */
+  /* La grava de la franja del medio: venía con el estilo impreso editorial, pendiente de su A/B. */
   --p-grava: #2f523d;
   --p-grava-honda: #142a1d;
   /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). */

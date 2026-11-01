@@ -30,11 +30,13 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 - **Decisión:** el estilo visual de Raíces es el impreso editorial (referencias 01 y 02): grano de
   impresión marcado sobre el papel, el sol y la tierra; un medio sol salvia claro que sale de la
-  tierra detrás del brote; grava en la franja de las etapas; el título más grande, con "en tu
+  tierra detrás del brote; el título más grande, con "en tu
   comunidad" corrida por una segunda tinta salvia; numerales y cifras gigantes en cursiva; botones
   rectos con una sombra plana salvia corrida. Aplicado en `variantes/comun/raices.css` (grano,
-  título y botones) y en `variantes/concepto-b.css` y `templates/variantes/concepto-b.html` (sol,
-  grava y numerales). Suma el tema `estilo` al [catálogo](temas-ab.md).
+  título y botones) y en `variantes/concepto-b.css` y `templates/variantes/concepto-b.html` (sol
+  y numerales). La grava de la franja de las etapas venía con B y sigue en el código, pero **no**
+  está aprobada: el usuario pidió decidirla en su propio A/B. Suma el tema `estilo` al
+  [catálogo](temas-ab.md).
 - **Alternativas:** A, lámina de campo (referencia 05), recomendada por el agente: un marco fino
   que cruzaba el corte de suelo, cuadrícula tenue, "Ficha N.º 0412", una regla de días debajo de
   las raíces y fechas y cifras en letra de máquina. Decía "registrado y comprobable". El usuario
@@ -44,9 +46,9 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 - **Costo:** la transparencia ya no está en el estilo; queda en el dibujo del suelo, las fechas y
   la bajada. Se acerca a Cozy (cálida) y al afiche "eco" de la referencia 02, así que la voz sigue
   sin imágenes verdes y la letra tiene que separarla. La segunda tinta corrida se usa solo en el
-  título: repetida, parece un efecto barato. El sol y la grava, propuestos en la paleta, quedan
-  aprobados con este estilo; la línea entre horizontes no entró. Las dos variantes pasaron la
-  verificación AA. Sigue el A/B de la letra.
+  título: repetida, parece un efecto barato. El sol, propuesto en la paleta, queda aprobado con
+  este estilo; la grava queda pendiente de su A/B y la línea entre horizontes no entró. Las dos
+  variantes pasaron la verificación AA. Siguen el A/B de la grava y el de la letra.
 - **Quién decidió:** usuario, contra la recomendación del agente (A).
 - **Evidencia:** `evidencia/raices/estilo-portada/`.
 

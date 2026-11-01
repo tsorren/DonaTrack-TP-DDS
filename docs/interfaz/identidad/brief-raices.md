@@ -99,14 +99,14 @@ Detalle en la [bitácora](../bitacora.md).
 |---|---|---|
 | Textura | Grano de impresión marcado sobre el papel, el sol y la tierra | Oficio: algo hecho a mano, no una plantilla |
 | Sol | Medio disco salvia claro que sale de la tierra detrás del brote | El resultado: lo que creció |
-| Tierra | La franja de las etapas con grava | Lo que sostiene la donación, con cuerpo |
+| Tierra | La franja de las etapas; la grava está en el código, pero **no aprobada** (pendiente de su A/B) | Abierto |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
 | Numerales y cifras | Gigantes, en cursiva y color paja | El recorrido, como capítulos de un afiche |
 | Botones y bordes | Rectos, sin redondeo, con una sombra plana salvia corrida | Tinta plana, impreso |
 
 **Forma:** sale del estilo (rectos, sombra plana corrida); no hace falta un A/B propio salvo que
-el usuario lo pida. La línea entre horizontes no entró. **Letra:** sigue provisoria (Alegreya en
-títulos y DM Sans en el texto); es el próximo A/B.
+el usuario lo pida. La línea entre horizontes no entró. **Grava:** pendiente de su A/B. **Letra:** sigue provisoria (Alegreya en
+títulos y DM Sans en el texto); también pendiente de su A/B.
 
 ## Libertades (usuario)
 
