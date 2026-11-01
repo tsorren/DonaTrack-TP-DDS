@@ -1,0 +1,128 @@
+/* Tokens de Raíces (prototipo propio, ADR 20261101): valores base --p-* y tokens de uso. Antes,
+   base común del hero de Raíces (tercera alternativa, en exploración): paleta Bosque, estilo
+   impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
+   en su A/B), marca, botones, el grano de impresión de la referencia 01 y las cifras. */
+
+@font-face {
+  font-family: Archivo;
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("../../../fuentes/archivo-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Archivo;
+  font-style: italic;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("../../../fuentes/archivo-cursiva-latin.woff2") format("woff2");
+}
+
+:root {
+  /* Paleta Bosque (A/B de paleta, 2026-10-31): valores por función, no por tono. La tierra en tres
+     verdes de monte, raíces color paja y el verde bosque en títulos y botones. */
+  /* La letra (A/B de letra, 2026-10-31): Archivo (Omnibus-Type, Buenos Aires) en todo. Los
+     títulos, los numerales y las cifras, anchos y pesados como un afiche (referencia 02); el texto,
+     en ancho normal. El carácter sale del ancho y del peso. */
+  --p-letra-titulo: Archivo, system-ui, sans-serif;
+  --p-letra-texto: Archivo, system-ui, sans-serif;
+  --p-papel: #eeebde;
+  --p-tinta: #18211b;
+  --p-tinta-suave: #48524a;
+  --p-acento: #234a35;
+  --p-acento-hondo: #173325;
+  --p-acento-claro: #c4d3b3;
+  --p-tallo: #234a35;
+  --p-hoja: #9cb889;
+  --p-suelo: #2a4a37;
+  --p-suelo-medio: #1d3628;
+  --p-suelo-hondo: #12241a;
+  --p-texto-suelo: #ece9da;
+  --p-raiz: #e6c27a;
+  --p-nodo: #e6c27a;
+  --p-destacado: #e6c27a;
+  /* El semitono de la tierra (ronda de tierra, 2026-11-01): al pie de cada horizonte, puntos con el
+     color del horizonte de abajo; el último, un verde más hondo que la tierra. */
+  --p-semitono-fondo: #0c1912;
+  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). */
+  --p-pendiente-fondo: #e2e0d2;
+  --p-pendiente-texto: #4d4c40;
+  --p-en-camino-fondo: #f4e6b5;
+  --p-en-camino-texto: #6a4f05;
+  --p-en-camino-sello: #c8961e;
+  --p-entregada-fondo: #d7e6cd;
+  --p-entregada-texto: #2b5a35;
+  --p-problema-fondo: #f3d9d2;
+  --p-problema-texto: #93301f;
+}
+
+:root {
+  /* Tokens de uso (D20): las hojas de Raíces usan solo estos, uno por valor base. */
+  --fuente-titulo: var(--p-letra-titulo);
+  --fuente-texto: var(--p-letra-texto);
+  --color-papel: var(--p-papel);
+  --color-tinta: var(--p-tinta);
+  --color-tinta-suave: var(--p-tinta-suave);
+  --color-acento: var(--p-acento);
+  --color-acento-hondo: var(--p-acento-hondo);
+  --color-acento-claro: var(--p-acento-claro);
+  --color-tallo: var(--p-tallo);
+  --color-hoja: var(--p-hoja);
+  --color-suelo: var(--p-suelo);
+  --color-suelo-medio: var(--p-suelo-medio);
+  --color-suelo-hondo: var(--p-suelo-hondo);
+  --color-texto-suelo: var(--p-texto-suelo);
+  --color-raiz: var(--p-raiz);
+  --color-nodo: var(--p-nodo);
+  --color-destacado: var(--p-destacado);
+  --color-semitono-fondo: var(--p-semitono-fondo);
+  --color-pendiente-fondo: var(--p-pendiente-fondo);
+  --color-pendiente-texto: var(--p-pendiente-texto);
+  --color-en-camino-fondo: var(--p-en-camino-fondo);
+  --color-en-camino-texto: var(--p-en-camino-texto);
+  --color-en-camino-sello: var(--p-en-camino-sello);
+  --color-entregada-fondo: var(--p-entregada-fondo);
+  --color-entregada-texto: var(--p-entregada-texto);
+  --color-problema-fondo: var(--p-problema-fondo);
+  --color-problema-texto: var(--p-problema-texto);
+  /* Los que piden los pares de contraste AA, comunes a todas las alternativas. */
+  --color-fondo-pagina: var(--p-papel);
+  --color-fondo: var(--p-papel);
+  --color-superficie: var(--p-papel);
+  --color-texto: var(--p-tinta);
+  --color-texto-suave: var(--p-tinta-suave);
+  --color-titulo: var(--p-acento);
+  --color-enlace: var(--p-acento);
+  --color-texto-sobre-accion: var(--p-papel);
+  --color-accion-primaria: var(--p-acento);
+  --color-accion-primaria-activa: var(--p-acento-hondo);
+  --color-texto-sobre-secundaria: var(--p-tinta);
+  --color-accion-secundaria: var(--p-acento-claro);
+  --color-accion-secundaria-activa: var(--p-hoja);
+  --color-destacado-texto: var(--p-texto-suelo);
+  --color-destacado-texto-suave: var(--p-raiz);
+  --color-destacado-fondo: var(--p-suelo);
+  --color-destacado-fondo-alto: var(--p-suelo-medio);
+  --color-marca-brillante: var(--p-raiz);
+  --color-marca-alterna: var(--p-acento-hondo);
+  --color-marca: var(--p-acento);
+  --color-marca-texto: var(--p-acento);
+  --color-texto-sobre-error: var(--p-papel);
+  --color-error-texto: var(--p-problema-texto);
+  --color-error-fondo: var(--p-problema-fondo);
+  --color-exito-texto: var(--p-entregada-texto);
+  --color-exito-fondo: var(--p-entregada-fondo);
+  --color-info-texto: var(--p-pendiente-texto);
+  --color-info-fondo: var(--p-pendiente-fondo);
+  --color-advertencia-texto: var(--p-en-camino-texto);
+  --color-advertencia-fondo: var(--p-en-camino-fondo);
+  --color-borde-control: var(--p-tinta-suave);
+  --color-foco: var(--p-acento);
+  /* Los mismos puntos de quiebre que las otras alternativas. */
+  --medida-quiebre-chico: 37.5em;
+  --medida-quiebre-medio: 53.75em;
+  --medida-quiebre-ancho: 68.75em;
+}

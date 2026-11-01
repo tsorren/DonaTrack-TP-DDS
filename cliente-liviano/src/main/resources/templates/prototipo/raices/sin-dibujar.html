@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<!--/* Raíces: una pantalla del menú que todavía no está dibujada en su prototipo (decisión del
+       usuario, 2026-11-01). Dice qué falta y enlaza a la misma pantalla en Cozy; desde Cozy se vuelve
+       con Atrás. PrototipoController la muestra para toda pantalla de una sección del menú sin
+       plantilla, con la dirección de la de Cozy en ${enCozy}. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'privado', ~{::contenido})}">
+<head>
+  <title th:text="|${seccion} - DonaTrack|">Sección - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="sin-dibujar">
+    <p class="rotulo" th:text="${seccion}">Sección</p>
+    <h1>Esta pantalla todavía no está dibujada en Raíces.</h1>
+    <p>Mientras tanto, podés verla en la alternativa Cozy / Medieval.</p>
+    <a class="boton boton--secundario" href="/prototipo/donante-inicio" th:href="${enCozy}">Verla
+      en Cozy</a>
+  </div>
+</th:block>
+</body>
+</html>

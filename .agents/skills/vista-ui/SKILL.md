@@ -12,7 +12,8 @@ description: >-
 > **Ámbito:** `cliente-liviano/` (E6).
 > **Alineación:** [`cliente-liviano/AGENTS.md`](../../../cliente-liviano/AGENTS.md) (reglas
 > obligatorias), [`docs/interfaz/README.md`](../../../docs/interfaz/README.md) (cuándo está lista) y
-> [`direccion-de-arte.md`](../../../docs/interfaz/direccion-de-arte.md).
+> [`direccion-de-arte.md`](../../../docs/interfaz/direccion-de-arte.md). **Criterios de la cátedra:**
+> [`criterios-catedra-ux-ui.md`](../../../docs/interfaz/criterios-catedra-ux-ui.md) (patrones de interacción, largo de línea, color 60-30-10 y accesibilidad).
 
 ## 1. Precondiciones
 

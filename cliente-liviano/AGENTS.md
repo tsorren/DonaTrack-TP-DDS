@@ -54,8 +54,10 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `static/css/alternativas/<nombre>/` | Los estilos de esa alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`) |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
 | `templates/variantes/` | Las variantes de estructura: reemplazan la página entera (también una pantalla del prototipo) con `?variante=<nombre>`; se borran al decidir |
-| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js` de Cozy y `prototipo-entidad.js` del prototipo) |
+| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js` de Cozy, `prototipo-entidad.js` del prototipo y `raices-menu.js`, que pliega el menú del prototipo de Raíces) |
 | `templates/prototipo/cozy-medieval/` | El prototipo navegable del flujo completo de Cozy (perfil `maqueta`, `/prototipo/<pantalla>`, `PrototipoController`); sus estilos, en `static/css/alternativas/cozy-medieval/prototipo/`. No son pantallas del sistema ni tienen gemela: cada una se construye en las dos alternativas cuando se apruebe su flujo |
+| `templates/prototipo/raices/` | El prototipo propio de Raíces, la tercera alternativa en exploración, sin juego de plantillas ([ADR propuesto](../docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)): perfil `maqueta`, `/prototipo/raices/<pantalla>`, `PrototipoController`. Sin gemelas ni tabla de voz; con los mismos datos de ejemplo que la pantalla del mismo nombre de Cozy |
+| `static/css/prototipo/raices/` | Los estilos de Raíces: su `tokens.css` (valores base y tokens de uso, con las mismas reglas que los de las alternativas), su `app.css` y una hoja por pantalla. No van en `alternativas/`, porque ahí la regla de juego completo pediría sus plantillas |
 | `src/test/resources/voz/<alternativa>.txt` | La tabla de voz de cada alternativa: los títulos y rótulos que dice a su modo (los vigila `InterfazFitnessTest`) |
 
 ## Reglas de plantillas
@@ -107,6 +109,9 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
   (vigilados por test) y sus hojas de estilo: cada componente o pantalla nueva se escribe y se
   estiliza en cada una
   ([ADR propuesto](../docs/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
+  Raíces, la tercera en exploración, queda afuera de esa regla hasta que se elija: dibuja solo sus
+  pantallas de prototipo
+  ([ADR propuesto](../docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.
 - Fuentes con licencia OFL, servidas desde `static/fuentes/` junto con su licencia.

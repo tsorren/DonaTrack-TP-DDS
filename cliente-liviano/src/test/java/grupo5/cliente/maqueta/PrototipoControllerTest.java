@@ -16,7 +16,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** La pantalla de prueba está en src/test/resources/templates/prototipo/cozy-medieval/. */
+/**
+ * Las pantallas de prueba están en src/test/resources/templates/prototipo/cozy-medieval/ y
+ * prototipo/raices/.
+ */
 @WebMvcTest(PrototipoController.class)
 @Import(MaquetaConfig.class)
 @ActiveProfiles("maqueta")
@@ -71,6 +74,44 @@ class PrototipoControllerTest {
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl("/prototipo/donante-donaciones-prueba"));
     mvc.perform(post("/prototipo/donante-tesoro")).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void raicesTieneSuPrototipoConElMenuEnSuDireccion() throws Exception {
+    mvc.perform(get("/prototipo/raices/donante-donaciones-prueba"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices/donante-donaciones-prueba"))
+        .andExpect(model().attribute("alternativa", "raices"))
+        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/prototipo/raices/donante-donaciones\" aria-current=\"page\"")));
+  }
+
+  @Test
+  void enRaicesLoQueNoEstaDibujadoMuestraElAvisoOEnlazaACozy() throws Exception {
+    mvc.perform(get("/prototipo/raices/donante-donaciones-detalle?donacion=leche"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices/sin-dibujar"))
+        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(content().string(containsString("Empresa donante")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/prototipo/donante-donaciones-detalle?donacion=leche\"")));
+    mvc.perform(get("/prototipo/raices/donante-incentivos")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/raices/donante-tesoro")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/raices/sin-dibujar")).andExpect(status().isNotFound());
+    mvc.perform(post("/prototipo/raices/donante-tesoro")).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void unFormularioDeRaicesVuelveARaices() throws Exception {
+    mvc.perform(post("/prototipo/raices/donante-donaciones-prueba"))
+        .andExpect(redirectedUrl("/prototipo/raices/donante-donaciones-prueba"));
   }
 
   @Test

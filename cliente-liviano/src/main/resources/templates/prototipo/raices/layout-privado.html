@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--/* Estructura de las pantallas privadas de Raíces (prototipo propio, ADR 20261101): la marca, el
+       menú del rol y la cuenta en una sola cabecera; el contenido al lado. En el celular y la
+       tableta, el menú es una barra inferior; en pantalla grande, una columna que se puede plegar
+       (privado.css y js/raices-menu.js). No es un juego de plantillas: solo lo usa el prototipo.
+       Uso: <html th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
+       donde 'hoja' es el nombre de la hoja de la pantalla en css/prototipo/raices/. El modelo trae
+       navegacion (List<OpcionNavegacion>) y cuenta (CuentaVista). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:replace="${titulo}">DonaTrack</title>
+  <link rel="stylesheet" href="/css/prototipo/raices/privado.css"
+        th:href="@{/css/prototipo/raices/{hoja}.css(hoja=${hoja})}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+</head>
+<body class="raices-privado">
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="armazon">
+  <a class="marca" href="/prototipo/raices/publico-portada" th:href="@{/prototipo/raices/publico-portada}"
+     aria-label="DonaTrack, ir a la portada">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+  <!--/* Solo en pantalla grande y con JavaScript (js/raices-menu.js): pliega la columna del menú. */-->
+  <button class="armazon-plegar" type="button" aria-expanded="true" aria-controls="menu"
+          aria-label="Plegar el menú" hidden>
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  </button>
+  <nav id="menu" class="armazon-menu" aria-label="Secciones">
+    <ul role="list">
+      <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+          th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
+    </ul>
+  </nav>
+  <div class="armazon-cuenta">
+    <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+    <a href="/salir" th:href="@{/salir}">Salir</a>
+  </div>
+</header>
+<main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian. */-->
+<div id="avisos" class="avisos" aria-live="polite"></div>
+<script src="/js/raices-menu.js" th:src="@{/js/raices-menu.js}" defer></script>
+</body>
+</html>

@@ -5,9 +5,12 @@
 > [Cozy / Medieval](brief-cozy-medieval.md). Plantilla:
 > [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
 > dice "abierto"; lo que propone el agente dice "propuesto".
-> **Pendiente antes de construirla como alternativa:** un ADR `proposed` sucesor del de
-> [dos alternativas](../../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md),
-> porque esta sería la tercera (cada pantalla nueva se escribiría tres veces).
+> **Dónde vive (2026-11-01):** como prototipo propio, sin juego de plantillas hasta que el equipo la
+> elija (usuario). Sus pantallas en `templates/prototipo/raices/`, sus hojas en
+> `static/css/prototipo/raices/` y su dirección, `/prototipo/raices/<pantalla>` (propuesto)
+> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md),
+> que refina el de [dos alternativas](../../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
+> La portada se ve en `/prototipo/raices/publico-portada` (antes, la variante `concepto-b`).
 > **Tono común (2026-10-31):** la voz, el tono de cada pantalla, los estados y las cifras los fija
 > [tono y comunicación](../tono-y-comunicacion.md), que rige a todas las alternativas y prevalece
 > sobre este brief donde choquen. Su foco (la persona de responsabilidad social de una empresa) es
@@ -82,6 +85,27 @@ impreso como sello sobre el borde izquierdo y su paso a la derecha: el número e
 En el celular, la red es una espina en espejo; cada entidad cuelga de un sello con el ícono de lo
 que pide. En el cuaderno del mes, cada entrega confirmada muestra la miniatura de su foto, que se
 abre grande al tocarla. Ver la [bitácora](../bitacora.md).
+
+## Estructura privada (usuario, 2026-11-01)
+
+En pantalla grande, el menú va en una columna de papel a la izquierda, como el lomo de un herbario,
+con la cuenta al pie como su etiqueta; se ve abierta al entrar y se puede plegar a una tira angosta.
+La sección actual, impresa en verde bosque con la segunda tinta corrida. En el celular y la tableta,
+una barra de navegación inferior en la tierra, con la sección actual en paja. La usan todas las
+pantallas privadas del prototipo (`templates/prototipo/raices/layout-privado.html`). Ver la
+[bitácora](../bitacora.md).
+
+## Mapa de las entregas (usuario, 2026-11-01)
+
+En Seguir entregas, el estilo del mapa es la red de la portada: el brote del depósito al centro y
+una línea de subte por entrega, en espejo, con codos a 45°, hasta la estación de su entidad. Lo
+recorrido va impreso (paja con borde) y lo que falta, hueco, solo el contorno. El sello de estado
+es la estación donde está la entrega: el camión va dentro del sello "en camino". En el sistema, ese
+estilo va sobre MapLibre. Debajo del dibujo, una tarjeta por entrega con el mismo número (borde de
+tinta y sombra plana salvia); al pasar por una, su línea queda llena y el resto se apaga. Arriba,
+un registro de cifras por estado con doble filete. En cada tarjeta, la categoría en un cuadro salvia
+y las etapas en una barra de progreso de sellos: es la primera pantalla que usa los sellos de las
+etapas. Ver la [bitácora](../bitacora.md).
 
 ## Voz
 
@@ -165,8 +189,8 @@ está impreso: un disco paja lleno con la segunda tinta (salvia) corrida detrás
 En camino, un círculo con su mitad izquierda en ámbar. Pendiente, un círculo punteado. Con
 problema, un disco óxido con "!" calado. El numeral de lo que todavía no pasó va hueco (solo
 contorno): lo que falta todavía no se imprimió. Se descartaron la marca de lámina (trazo fino, lo
-que falta apagado) y la etiqueta recta (cuadrados). Todavía no hay pantalla que lo use: las etapas
-salieron de la portada.
+que falta apagado) y la etiqueta recta (cuadrados). Las etapas salieron de la portada; la primera pantalla que usa los sellos es Seguir
+entregas (2026-11-01).
 
 **Prioridad (usuario):** el diseño gráfico antes que la accesibilidad; "en el futuro habilitaremos
 un modo accesible". Hoy la paleta igual pasa AA, y el

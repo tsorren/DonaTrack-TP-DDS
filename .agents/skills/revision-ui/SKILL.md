@@ -14,7 +14,8 @@ description: >-
 > **Ámbito:** `docs/interfaz/flujos/` y `cliente-liviano/` (E6).
 > **Alineación:** [`docs/IA/review/evaluator.md`](../../../docs/IA/review/evaluator.md) (modos y
 > formato), [`cliente-liviano/AGENTS.md`](../../../cliente-liviano/AGENTS.md) y
-> [`docs/interfaz/README.md`](../../../docs/interfaz/README.md).
+> [`docs/interfaz/README.md`](../../../docs/interfaz/README.md). **Criterios de la cátedra:**
+> [`criterios-catedra-ux-ui.md`](../../../docs/interfaz/criterios-catedra-ux-ui.md) (las 10 heurísticas con su "cómo se consigue", los 7 factores y los patrones conocidos).
 
 ## 1. Modo
 

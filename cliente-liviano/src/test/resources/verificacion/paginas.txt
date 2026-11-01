@@ -26,3 +26,13 @@
 /prototipo/admin-donaciones
 /prototipo/admin-asignaciones
 /prototipo/admin-ranking
+# Prototipo propio de Raíces, la tercera alternativa en exploración (ADR 20261101).
+/prototipo/raices/publico-portada
+/prototipo/raices/publico-portada?escenario=vacio
+/prototipo/raices/publico-portada?escenario=error
+/prototipo/raices/publico-portada?escenario=lento
+/prototipo/raices/donante-seguimiento
+/prototipo/raices/donante-seguimiento?escenario=vacio
+/prototipo/raices/donante-seguimiento?escenario=error
+/prototipo/raices/donante-seguimiento?escenario=lento
+/prototipo/raices/donante-donaciones

@@ -26,6 +26,158 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · componente:etapas (Raíces) · Las etapas, una barra de progreso con la actual debajo
+
+- **Decisión:** en cada tarjeta de Seguir entregas, las cinco etapas de la donación van en una
+  barra de progreso (patrón: barra de progreso con pasos). Son cinco sellos en fila, unidos por una
+  línea: lo hecho, un disco paja con el tilde; la actual, el sello del estado de la entrega; lo que
+  falta, un círculo hueco. Debajo va solo la etapa actual, con su detalle. Las otras siguen en la
+  lista (`ol`, con `aria-current="step"` en la actual), ocultas a la vista, para el lector de
+  pantalla.
+- **Alternativas:** B, la lista de etapas, una por renglón, con nombre y fecha.
+- **Por qué:** el usuario eligió A. Las tarjetas quedan más cortas y el avance se ve de un vistazo;
+  el detalle completo está en la donación.
+- **Costo:** a la vista no están el nombre ni la fecha de las etapas que no son la actual. El tilde
+  de lo hecho va en tinta y no calado, para que se vea sobre el paja.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/raices/etapas/`](evidencia/raices/etapas/).
+
+### 2026-11-01 · microcopy y layout:donante-seguimiento (Raíces) · La pantalla se completa con cifras, categoría y etapas
+
+- **Decisión:** después de los A/B 2 y 3, el usuario vio la pantalla vacía y pidió rondas de
+  preguntas. Quedó así:
+  - debajo de la bajada, un registro de cifras por estado (en camino, con problema, pendientes) y,
+    aparte, las que esperan destino, con enlace a Mis donaciones;
+  - en cada tarjeta, la categoría con su pictograma y su nombre, y las etapas de la donación;
+  - la más avanzada primero (en camino, con problema y pendiente), también en la numeración del
+    dibujo;
+  - la entrega con problema, como una más;
+  - en el celular, el dibujo chico arriba.
+- **Alternativas:** sin cifras; tarjetas solo con el estado; un registro de novedades con la más
+  nueva arriba (descartado: cada tarjeta ya dice su última noticia y el historial va en el
+  detalle); la entrega con problema primero y con aviso; la más reciente primero; el dibujo plegado
+  en el celular.
+- **Por qué:** decisiones del usuario; cada una tenía una opción recomendada y la eligió, salvo la
+  categoría, que sumó a las etapas.
+- **Costo:** la pantalla es más larga; las cifras ocupan un bloque más en el celular. El ícono de
+  alimentos repite el de la portada en la plantilla (deuda chica: un fragmento de íconos de Raíces
+  cuando haya una tercera pantalla que los use).
+- **Quién decidió:** usuario.
+- **Evidencia:** la ficha [`flujos/raices-seguir-entregas.md`](flujos/raices-seguir-entregas.md).
+
+### 2026-11-01 · layout:donante-seguimiento (Raíces) · El dibujo arriba y una tarjeta por entrega debajo
+
+- **Decisión:** en Seguir entregas, en pantalla grande, el dibujo va arriba, con 48 rem de ancho,
+  para que los nombres de las entidades se lean. Debajo va la lista "Entrega por entrega", con una
+  tarjeta por entrega y el mismo número que en el dibujo (patrón: tarjetas, un tema por tarjeta):
+  borde de tinta y sombra plana salvia, como los botones. En el celular, lo mismo en una columna.
+  Al pasar el mouse o el foco por una entrega, su línea queda llena y el resto se apaga, como la red
+  de la portada.
+- **Alternativas:** A, el dibujo y la lista lado a lado (patrón: vista dividida de mapa y lista),
+  con el dibujo fijo en pantalla mientras se recorre la lista.
+- **Por qué:** el usuario eligió B. El dibujo grande se lee sin esfuerzo y las tres entregas quedan
+  a la par, en una fila.
+- **Costo:** en 1280 × 800 las tarjetas empiezan cerca del pie de la pantalla, y al bajar hasta
+  ellas el dibujo sale de la vista; el vínculo al pasar el mouse se aprovecha menos. RF-CL-06 pide
+  la lista "al lado" del mapa: acá va debajo, junto al dibujo, como ya iba en el celular. Con más
+  de tres entregas, las tarjetas pasan a una segunda fila.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/raices/lista-y-dibujo/`](evidencia/raices/lista-y-dibujo/).
+
+### 2026-11-01 · componente:mapa-entregas (Raíces) · Una red radial de subte, con el brote al centro
+
+- **Decisión:** en Seguir entregas, el dibujo de las entregas en curso es una red radial en espejo,
+  la misma figura que la red de la portada (patrón: diagrama de líneas de transporte). El brote del
+  depósito va al centro, con su estación. De ahí sale una línea de subte por entrega, con codos a
+  45°: una a cada lado y una hacia abajo. Cada línea termina en la estación de su entidad, con el
+  sello numerado y el nombre debajo. Lo recorrido va impreso, paja con borde; lo que falta va hueco,
+  solo con el contorno, porque todavía no se imprimió. El sello de estado es la estación donde está
+  la entrega: la pendiente, en la salida del depósito; la que va en camino, el camión dentro de su
+  sello, y la que tiene un problema, el sello óxido donde se cortó el camino.
+- **Alternativas:** en la primera vuelta, B, marcadores de mapa (patrón: seguimiento de un envío,
+  como el boceto de E1): raíces curvas, lo que falta punteado, un alfiler con el número en cada
+  entidad y el camión en un globo. Ganó A, líneas de subte desde el brote a la izquierda, y el
+  usuario pidió probar la planta centrada, con raíces simétricas como en la portada. En la segunda
+  vuelta, B fue la espina en espejo, la red de la portada en el celular: un tronco hacia abajo y una
+  rama por entrega, a un lado y al otro.
+- **Por qué:** el usuario eligió la red radial. Habla el mismo idioma que la portada (consistencia,
+  heurística 4), y "hueco" es la regla del brief para lo que todavía no pasó. Las raíces curvas se
+  habían descartado en la ronda de ilustración de la portada.
+- **Costo:** la red radial está pensada para 3 entregas, una por dirección; con más, se llena antes
+  que la espina. Solo vale para el dibujo de la maqueta: en el sistema, MapLibre sigue las calles
+  (D21) y conserva el estilo, con la línea con borde, el tramo hueco y las estaciones con sello. En
+  1280 px el dibujo ocupa unos 540 px y los nombres quedan chicos; queda para el A/B de la lista.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/raices/mapa-entregas/`](evidencia/raices/mapa-entregas/) (`vuelta1-*`
+  y `vuelta2-*`).
+
+### 2026-11-01 · layout:armazon-privado (Raíces) · Una columna a la izquierda que se puede plegar
+
+- **Decisión:** en las pantallas privadas de Raíces, en pantalla grande, el menú va en una columna
+  de papel a la izquierda (patrón: cajón de navegación fijo), con la cuenta al pie como la etiqueta
+  de un herbario. Se ve abierta al entrar y un botón la pliega a una tira angosta y la vuelve a
+  abrir; el navegador recuerda la elección. Sin JavaScript, la columna queda abierta. En el celular
+  y la tableta, una barra de navegación inferior fija, igual en las dos opciones.
+- **Alternativas:** B, una franja de tierra arriba con las secciones como pestañas (patrón: barra
+  superior con pestañas); en una primera vuelta, B en el celular era una grilla de dos por dos
+  arriba, que se descartó antes de mostrarla por no seguir un patrón conocido; arrancar plegada,
+  con un botón "Menú".
+- **Por qué:** el usuario eligió A y pidió que fuera desplegable. La columna queda donde se mira
+  primero (lectura en F) y crece mejor (el admin tiene 7 secciones); la barra inferior es el patrón
+  para 3 a 5 destinos al alcance del pulgar
+  ([criterios de la cátedra](criterios-catedra-ux-ui.md), secciones 3 a 5).
+- **Costo:** la columna resta 16 rem de ancho al contenido cuando está abierta; un script chico
+  (`js/raices-menu.js`) para plegarla.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/raices/estructura-privada/`](evidencia/raices/estructura-privada/).
+
+### 2026-11-01 · proceso · Los criterios de UX/UI de la cátedra guían el diseño y la revisión
+
+- **Decisión:** el material oficial de la cátedra, "Introducción al diseño UX/UI 2026", queda
+  resumido como criterios en [criterios-catedra-ux-ui.md](criterios-catedra-ux-ui.md) y enlazado
+  desde las skills `ux-flujo`, `iteracion-ab`, `vista-ui` y `revision-ui`. Cambia cómo trabajan los
+  agentes: patrón conocido primero (las variantes A/B comparan patrones conocidos), los 7 factores
+  de Morville en cada ficha, wireflow en la ficha, largo de línea de 50 a 75 caracteres, 60-30-10,
+  accesibilidad con nombre (POUR, WCAG, Ley 26.653) y una nota de qué probar con personas reales.
+- **Alternativas:** seguir solo con la dirección de arte y el catálogo de patrones del repo.
+- **Por qué:** pedido del usuario, para que los agentes trabajen de forma más profesional y alineada
+  con la cátedra.
+- **Costo:** un documento más que mantener; las fichas ya aprobadas no se revisaron con estos
+  criterios.
+- **Quién decidió:** usuario.
+
+### 2026-11-01 · flujo:seguir-entregas (Raíces) · La cuenta es una empresa y el mapa es un dibujo en la maqueta
+
+- **Decisión:** en "Seguir entregas" de Raíces, la cuenta de ejemplo es una empresa (Distribuidora
+  Ejemplo SA), con las donaciones de Ana en Cozy, y su menú no tiene Incentivos (RF-07). El menú
+  muestra las secciones del donante; las que Raíces no dibujó abren un aviso con enlace a Cozy. El
+  mapa del boceto (pág. 19) se representa en la maqueta con un dibujo SVG fijo: una raíz por entrega
+  desde el depósito, con el sello de su estado; en el sistema, ese estilo va sobre MapLibre (D21).
+- **Alternativas:** Ana, como en Cozy; un menú con solo lo que existe; un esquema que reemplace al
+  mapa también en el sistema (cambiaría la lectura de RF-09 y D21).
+- **Por qué:** Raíces habla a las empresas que donan; el menú completo muestra cómo será la
+  navegación; el dibujo sigue lo que hizo Cozy en su maqueta y no cambia lo que pide RF-09.
+- **Costo:** la cuenta no coincide con la de Cozy (las donaciones sí); el dibujo solo cubre las tres
+  entregas del ejemplo.
+- **Quién decidió:** usuario (la cuenta y el menú); agente, propuesto (el dibujo)
+  ([ficha](flujos/raices-seguir-entregas.md)).
+
+### 2026-11-01 · proceso (Raíces) · Raíces vive como prototipo propio hasta que se elija
+
+- **Decisión:** Raíces no arma todavía su juego de plantillas. Sus pantallas van en
+  `templates/prototipo/raices/`, sus hojas en `static/css/prototipo/raices/` (con dos niveles de
+  tokens, como las otras) y se ven en `/prototipo/raices/<pantalla>`. La portada se mudó ahí
+  desde la variante `concepto-b` y se ve igual (comparación píxel a píxel de sus 16 capturas). Si el equipo la elige, se arma su juego
+  completo; si la descarta, se borran sus carpetas.
+- **Alternativas:** el juego completo ya (copiar las 18 plantillas del catálogo antes de cualquier
+  pantalla); seguir como variantes A/B, que se borran al decidir.
+- **Por qué:** se puede seguir diseñando pantalla por pantalla sin escribir tres veces cosas que
+  nadie eligió todavía.
+- **Costo:** sin catálogo `/estilos` de Raíces; que sus datos de ejemplo coincidan con los de Cozy
+  lo vigila la revisión, no un test; mudar la portada.
+- **Quién decidió:** usuario (dónde vive); la dirección y los tokens, propuestos por el agente
+  ([ADR propuesto](../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+
 ### 2026-11-01 · portada (Raíces) · Tres arreglos de la revisión del pulido
 
 - **Decisión:** la revisión independiente del pulido dio PASS con avisos; el usuario pidió arreglar

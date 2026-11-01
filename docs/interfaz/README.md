@@ -55,6 +55,12 @@ mismos datos y acciones (un test compara los dos juegos y deja pasar solo los t�
 la tabla de voz de cada alternativa). Cozy tiene además su propia
 [estructura y navegación](estructura-cozy-medieval.md).
 
+**Raíces, la tercera, en exploración.** No tiene juego de plantillas: vive como prototipo propio
+(`templates/prototipo/raices/` y `static/css/prototipo/raices/`, en `/prototipo/raices/<pantalla>`)
+hasta que el equipo la elija
+([brief](identidad/brief-raices.md),
+[ADR propuesto](../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+
 **Diseño creativo desde cero, sin estar presente.** Cuando el usuario quiere algo nuevo y creativo
 (un rediseño, una pantalla o una alternativa), la skill `relevamiento-creativo` le pregunta por sus
 referencias, el mensaje, las libertades y hasta dónde llegar, y deja un
@@ -201,10 +207,11 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [bocetos-e1.md](bocetos-e1.md) | Inventario de los bocetos de E1 |
 | [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
+| [criterios-catedra-ux-ui.md](criterios-catedra-ux-ui.md) | Los criterios del material de UX/UI de la cátedra (2026): factores de la experiencia, patrones, arquitectura de la información, lenguaje visual, accesibilidad y las 10 heurísticas, como guía para diseñar y revisar |
 | [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval (segunda versión: la mesa del cartógrafo) |
 | [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md) | El flujo completo del sitio en Cozy: recorrido por rol, pantallas y decisiones del prototipo navegable (`/prototipo/<pantalla>` en la maqueta) |
 | [identidad/referencias-cozy-medieval/](identidad/referencias-cozy-medieval/README.md) | Las 18 imágenes de referencia de Cozy que trajo el usuario, con qué se toma de cada una |
-| [identidad/brief-raices.md](identidad/brief-raices.md) y [identidad/referencias-raices/](identidad/referencias-raices/README.md) | Raíces, una tercera alternativa en exploración (raíces y semillas para empresas que donan): su brief en construcción y las referencias que trajo el usuario. Su portada se ve en la maqueta en `/prototipo/publico-portada?variante=concepto-b` |
+| [identidad/brief-raices.md](identidad/brief-raices.md) y [identidad/referencias-raices/](identidad/referencias-raices/README.md) | Raíces, una tercera alternativa en exploración (raíces y semillas para empresas que donan): su brief en construcción y las referencias que trajo el usuario. Su portada se ve en la maqueta en `/prototipo/raices/publico-portada` |
 | [tono-y-comunicacion.md](tono-y-comunicacion.md) y [identidad/brief-tono-y-comunicacion-v1.0.pdf](identidad/brief-tono-y-comunicacion-v1.0.pdf) | Voz, tono por pantalla, estados, cifras, personas y el filtro de 7 preguntas, comunes a todas las alternativas; el PDF es el brief del equipo del que sale |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |

@@ -1,0 +1,300 @@
+/* Estructura de las pantallas privadas de Raíces (layout-privado.html): la cabecera con la marca,
+   el menú del rol y la cuenta, y el contenido. En el celular y la tableta, el menú es una barra de
+   navegación inferior: el patrón para 3 a 5 destinos de primer nivel, al alcance del pulgar
+   (criterios de la cátedra, sección 4). En pantalla grande, una columna de papel a la izquierda,
+   como el lomo de un herbario, con la cuenta al pie como su etiqueta; se puede plegar a una tira
+   angosta (A/B de la estructura privada, 2026-11-01: el usuario eligió la columna, desplegable y
+   abierta al entrar). También: el rótulo y el título de cada pantalla, y los avisos. */
+@import url("app.css");
+
+/* --- El celular y la tableta: la marca y la cuenta arriba; el menú, una barra fija abajo -------- */
+.raices-privado {
+  padding-bottom: 4.5rem;
+}
+
+.armazon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--color-tinta);
+}
+
+.armazon-menu {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 2;
+  background: var(--color-suelo);
+  border-top: 3px solid var(--color-tinta);
+}
+
+.armazon-menu ul {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.armazon-menu a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.75rem;
+  padding: 0.5rem 0.25rem;
+  color: var(--color-texto-suelo);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+}
+
+.armazon-menu a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+/* La sección actual se destaca (criterios de la cátedra: pestañas). */
+.armazon-menu a[aria-current="page"] {
+  background: var(--color-raiz);
+  color: var(--color-tinta);
+}
+
+.armazon-menu :focus-visible {
+  outline-color: var(--color-raiz);
+  outline-offset: -5px;
+}
+
+.armazon-menu a[aria-current="page"]:focus-visible {
+  outline-color: var(--color-tinta);
+}
+
+/* El botón que pliega la columna: solo en pantalla grande y con JavaScript (js/raices-menu.js). */
+.armazon-plegar {
+  display: none;
+}
+
+.armazon-cuenta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.armazon-cuenta p {
+  display: grid;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.armazon-cuenta b {
+  color: var(--color-tinta);
+}
+
+.armazon-cuenta small {
+  font-size: 0.875rem;
+}
+
+.armazon-cuenta a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0 0.5rem;
+  font-weight: 700;
+}
+
+main {
+  max-width: 82rem;
+  padding: 1.5rem 1rem 3rem;
+}
+
+main:focus {
+  outline: none;
+}
+
+.rotulo {
+  margin: 0 0 0.25rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+}
+
+main h1 {
+  margin: 0 0 0.5rem;
+  color: var(--color-tinta);
+  font: 800 clamp(2rem, 5vw, 3.5rem) / 1 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+main h2 {
+  color: var(--color-tinta);
+  font: 800 1.375rem/1.2 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+/* Un aviso en lugar del contenido: vacío o error, con su próximo paso. Largo de línea dentro de los
+   50 a 75 caracteres (criterios de la cátedra, sección 8). */
+.aviso {
+  max-width: 38rem;
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 2px solid var(--color-tinta);
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+}
+
+.aviso h2 {
+  margin-top: 0;
+}
+
+.aviso--error {
+  border-color: var(--color-problema-texto);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-problema-fondo);
+}
+
+.aviso--error h2 {
+  color: var(--color-problema-texto);
+}
+
+.aviso-codigo code {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sin-dibujar {
+  max-width: 38rem;
+}
+
+@media (min-width: 37.5em) {
+  .armazon {
+    padding: 0.75rem 2rem;
+  }
+
+  main {
+    padding: 2rem 2rem 4rem;
+  }
+}
+
+/* --- La pantalla grande: la columna a la izquierda, entera a la vista mientras se baja ---------- */
+@media (min-width: 68.75em) {
+  .raices-privado {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr);
+    padding-bottom: 0;
+  }
+
+  .armazon {
+    position: sticky;
+    top: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 2rem;
+    height: 100vh;
+    padding: 1.5rem 1.25rem;
+    border-bottom: 0;
+    border-right: 2px solid var(--color-tinta);
+  }
+
+  .armazon-menu {
+    position: static;
+    background: none;
+    border-top: 0;
+  }
+
+  .armazon-menu ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .armazon-menu a {
+    justify-content: flex-start;
+    min-height: 3rem;
+    padding: 0.5rem 1rem;
+    color: var(--color-tinta);
+    font-size: 1.0625rem;
+    font-stretch: 112%;
+    text-align: start;
+  }
+
+  .armazon-menu a[aria-current="page"] {
+    background: var(--color-acento);
+    color: var(--color-papel);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  }
+
+  .armazon-menu :focus-visible,
+  .armazon-menu a[aria-current="page"]:focus-visible {
+    outline-color: var(--color-acento);
+    outline-offset: 3px;
+  }
+
+  /* La cuenta al pie, como la etiqueta de un herbario. */
+  .armazon-cuenta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 2px dotted var(--color-tinta-suave);
+  }
+
+  .armazon-cuenta a {
+    padding: 0;
+  }
+
+  main,
+  .avisos {
+    grid-column: 2;
+  }
+
+  .armazon-plegar:not([hidden]) {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: 2px solid var(--color-tinta);
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    cursor: pointer;
+  }
+
+  .armazon-plegar svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  .armazon-plegar:hover {
+    background: var(--color-acento-claro);
+  }
+
+  /* Plegada: una tira con la marca y el botón; el contenido gana el ancho. */
+  [data-menu-plegado] {
+    grid-template-columns: 5rem minmax(0, 1fr);
+  }
+
+  [data-menu-plegado] .armazon {
+    align-items: center;
+    padding-inline: 0.5rem;
+  }
+
+  [data-menu-plegado] .marca span,
+  [data-menu-plegado] .armazon-menu,
+  [data-menu-plegado] .armazon-cuenta {
+    display: none;
+  }
+}

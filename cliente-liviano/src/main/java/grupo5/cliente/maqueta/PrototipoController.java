@@ -3,6 +3,7 @@ package grupo5.cliente.maqueta;
 import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.web.EstilosController;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -22,13 +23,14 @@ import org.springframework.web.server.ResponseStatusException;
  * plantilla, y la navegación de su rol (el prefijo del nombre: publico, donante, entidad o admin).
  * No son pantallas del sistema: no tienen gemela en Glassmorphism; cada una se construye en las dos
  * alternativas cuando se apruebe su flujo. Una sección del menú que todavía no tiene plantilla
- * muestra la tierra sin explorar.
+ * muestra la tierra sin explorar. Raíces, la tercera alternativa en exploración, tiene su propio
+ * prototipo, sin juego de plantillas (ADR 20261101): {@code /prototipo/raices/<pantalla>} muestra
+ * {@code templates/prototipo/raices/<pantalla>.html}, con su menú en la misma dirección.
  */
 @Controller
 @Profile("maqueta")
 class PrototipoController {
 
-  private static final String CARPETA = "prototipo/cozy-medieval/";
   private static final String NOMBRE = "(publico|donante|entidad|admin)(-[a-z]+)+";
   private static final String NO_EXISTE = "No existe esa pantalla";
 
@@ -36,7 +38,6 @@ class PrototipoController {
   private static final Map<String, String> FUERA_DEL_MENU = Map.of("perfil", "Mi perfil");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
-  private static final String ALTERNATIVA = "cozy-medieval";
   private static final String INICIO = "Inicio";
   private static final String ICONO_INICIO = "inicio";
   private static final String ICONO_DONACIONES = "donaciones";
@@ -84,6 +85,43 @@ class PrototipoController {
           "entidad", new CuentaVista("Marta", "Comedor Barrio Ejemplo"),
           "admin", new CuentaVista("Leo", "Administración"));
 
+  /**
+   * Un prototipo: dónde están sus plantillas, en qué dirección se ve, de qué alternativa es, y el
+   * menú y la cuenta de cada rol.
+   */
+  private record Prototipo(
+      String carpeta,
+      String direccion,
+      String alternativa,
+      Map<String, List<Seccion>> menus,
+      Map<String, CuentaVista> cuentas) {}
+
+  private static final Prototipo COZY =
+      new Prototipo("prototipo/cozy-medieval/", "/prototipo/", "cozy-medieval", MENUS, CUENTAS);
+
+  /**
+   * Raíces habla a las empresas que donan: su cuenta de ejemplo es una empresa, con las donaciones
+   * de Ana, y su menú no tiene Incentivos, que RF-07 oculta a la persona jurídica.
+   */
+  private static final Prototipo RAICES =
+      new Prototipo(
+          "prototipo/raices/",
+          "/prototipo/raices/",
+          "raices",
+          Map.of(
+              "donante",
+              MENUS.get("donante").stream()
+                  .filter(seccion -> !seccion.pantalla().equals("donante-incentivos"))
+                  .toList(),
+              "entidad",
+              MENUS.get("entidad"),
+              "admin",
+              MENUS.get("admin")),
+          Map.of(
+              "donante", new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
+              "entidad", CUENTAS.get("entidad"),
+              "admin", CUENTAS.get("admin")));
+
   private final ResourceLoader recursos;
 
   PrototipoController(ResourceLoader recursos) {
@@ -95,10 +133,20 @@ class PrototipoController {
    * donante-donaciones-detalle}): el menú marca esa sección.
    */
   @GetMapping("/prototipo/{pantalla}")
-  String pantalla(@PathVariable String pantalla, Model model) {
-    boolean dibujada = dibujada(pantalla);
+  String pantalla(@PathVariable String pantalla, Model model, HttpServletRequest request) {
+    return mostrar(COZY, pantalla, model, request);
+  }
+
+  @GetMapping("/prototipo/raices/{pantalla}")
+  String pantallaDeRaices(@PathVariable String pantalla, Model model, HttpServletRequest request) {
+    return mostrar(RAICES, pantalla, model, request);
+  }
+
+  private String mostrar(
+      Prototipo prototipo, String pantalla, Model model, HttpServletRequest request) {
+    boolean dibujada = dibujada(prototipo, pantalla);
     String rol = pantalla.split("-")[0];
-    List<Seccion> menu = MENUS.getOrDefault(rol, List.of());
+    List<Seccion> menu = prototipo.menus().getOrDefault(rol, List.of());
     Seccion actual =
         menu.stream()
             .filter(
@@ -107,14 +155,18 @@ class PrototipoController {
                         || pantalla.startsWith(seccion.pantalla() + "-"))
             .findFirst()
             .orElse(null);
-    boolean enElMenu = actual != null && actual.pantalla().equals(pantalla);
     String fueraDelMenu =
         pantalla.matches(NOMBRE) ? FUERA_DEL_MENU.get(pantalla.substring(rol.length() + 1)) : null;
-    if (!dibujada && !enElMenu && fueraDelMenu == null) {
+    boolean sinDibujar = actual != null || fueraDelMenu != null;
+    if (!dibujada && !(sinDibujar && existe(prototipo, SIN_DIBUJAR))) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     EstilosController.datosDeEjemplo(model);
-    model.addAttribute("alternativa", ALTERNATIVA);
+    model.addAttribute("alternativa", prototipo.alternativa());
+    String consulta = request.getQueryString();
+    // La misma pantalla en Cozy, para el aviso de Raíces sin dibujar.
+    model.addAttribute(
+        "enCozy", COZY.direccion() + pantalla + (consulta == null ? "" : "?" + consulta));
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
     model.addAttribute(
         "navegacion",
@@ -125,11 +177,11 @@ class PrototipoController {
                         seccion.texto(),
                         seccion.textoCorto(),
                         seccion.icono(),
-                        "/prototipo/" + seccion.pantalla(),
+                        prototipo.direccion() + seccion.pantalla(),
                         seccion.equals(actual)))
             .toList());
-    model.addAttribute("cuenta", CUENTAS.get(rol));
-    return CARPETA + (dibujada ? pantalla : SIN_DIBUJAR);
+    model.addAttribute("cuenta", prototipo.cuentas().get(rol));
+    return prototipo.carpeta() + (dibujada ? pantalla : SIN_DIBUJAR);
   }
 
   /**
@@ -138,15 +190,29 @@ class PrototipoController {
    */
   @PostMapping("/prototipo/{pantalla}")
   String enviar(@PathVariable String pantalla) {
-    if (!dibujada(pantalla)) {
+    return volver(COZY, pantalla);
+  }
+
+  @PostMapping("/prototipo/raices/{pantalla}")
+  String enviarEnRaices(@PathVariable String pantalla) {
+    return volver(RAICES, pantalla);
+  }
+
+  private String volver(Prototipo prototipo, String pantalla) {
+    if (!dibujada(prototipo, pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
-    return "redirect:/prototipo/" + pantalla;
+    return "redirect:" + prototipo.direccion() + pantalla;
   }
 
   /** La vista se arma solo con un nombre de rol, letras y guiones que existe como plantilla. */
-  private boolean dibujada(String pantalla) {
-    return pantalla.matches(NOMBRE)
-        && recursos.getResource("classpath:templates/" + CARPETA + pantalla + ".html").exists();
+  private boolean dibujada(Prototipo prototipo, String pantalla) {
+    return pantalla.matches(NOMBRE) && existe(prototipo, pantalla);
+  }
+
+  private boolean existe(Prototipo prototipo, String vista) {
+    return recursos
+        .getResource("classpath:templates/" + prototipo.carpeta() + vista + ".html")
+        .exists();
   }
 }

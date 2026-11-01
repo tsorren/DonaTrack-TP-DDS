@@ -13,10 +13,16 @@ description: >-
 > **Alineación:** [`docs/interfaz/README.md`](../../../docs/interfaz/README.md),
 > [`temas-ab.md`](../../../docs/interfaz/temas-ab.md) y
 > [`plantillas/iteracion-ab.md`](../../../docs/interfaz/plantillas/iteracion-ab.md).
+> **Criterios de la cátedra:** [`criterios-catedra-ux-ui.md`](../../../docs/interfaz/criterios-catedra-ux-ui.md).
 
 ## Reglas
 
 - **Un tema por iteración.** A y B difieren solo en ese tema; todo lo demás, igual.
+- **Patrones conocidos.** En navegación, controles e interacción, cada variante sigue un patrón de
+  los [criterios de la cátedra](../../../docs/interfaz/criterios-catedra-ux-ui.md) (secciones 4 y 5)
+  y lo nombra. No se compara un patrón conocido contra uno inventado. Si un patrón es el estándar
+  para el caso (por ejemplo, la barra inferior para 3 a 5 destinos en el celular), queda fijo y la
+  comparación va sobre lo que sí admite más de una buena respuesta.
 - **Con el tema `concepto`, de 2 a 4 conceptos** (`concepto-a`, `-b`, `-c`…), cada uno una variante
   de estructura que **difiere en composición y navegación**, no solo en estilo. Se encargan con la
   [plantilla del constructor](../../../docs/interfaz/plantillas/encargo-constructor.md) (nunca

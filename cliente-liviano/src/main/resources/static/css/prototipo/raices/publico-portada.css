@@ -2,7 +2,7 @@
    El título de A con la lámina "Cómo funciona" de C; debajo, el rótulo y un brote con su sol sobre
    la tierra, del que sale la red radial de A hasta las etiquetas de herbario, con la vacía de tu
    entidad al centro. Las cifras, un registro de campo; el mes, un cuaderno de entregas. */
-@import url("comun/raices.css");
+@import url("app.css");
 
 /* --- La portada y la lámina ------------------------------------------------------------------- */
 
@@ -24,7 +24,7 @@
 }
 
 .portada .hero-bajada {
-  color: var(--p-tinta);
+  color: var(--color-tinta);
   font-size: clamp(1.0625rem, 1.4vw, 1.2rem);
 }
 
@@ -33,11 +33,11 @@
   position: relative;
   margin: 0;
   padding: 1rem;
-  border: 1.5px solid var(--p-tinta);
-  outline: 1px solid var(--p-tinta);
+  border: 1.5px solid var(--color-tinta);
+  outline: 1px solid var(--color-tinta);
   outline-offset: -7px;
-  background: var(--p-papel);
-  box-shadow: 0.45rem 0.45rem 0 var(--p-hoja);
+  background: var(--color-papel);
+  box-shadow: 0.45rem 0.45rem 0 var(--color-hoja);
 }
 
 .ficha-cabeza {
@@ -48,13 +48,13 @@
   gap: 0.25rem 1rem;
   margin: 0 0 0.75rem;
   padding: 0.25rem 0.5rem 0.6rem;
-  border-bottom: 1px solid var(--p-tinta);
+  border-bottom: 1px solid var(--color-tinta);
 }
 
 .ficha h2 {
   margin: 0;
-  color: var(--p-tinta);
-  font: italic 800 1.5rem/1.1 var(--p-letra-titulo);
+  color: var(--color-tinta);
+  font: italic 800 1.5rem/1.1 var(--fuente-titulo);
   font-stretch: 115%;
 }
 
@@ -76,7 +76,7 @@
   grid-template-columns: 7rem minmax(0, 1fr);
   column-gap: 1rem;
   min-height: 7rem;
-  color: var(--p-tinta);
+  color: var(--color-tinta);
   line-height: 1.45;
 }
 
@@ -100,16 +100,16 @@
   grid-row: 1;
   width: 7rem;
   height: 100%;
-  border-inline: 1.5px solid var(--p-tinta);
-  background: var(--p-papel);
+  border-inline: 1.5px solid var(--color-tinta);
+  background: var(--color-papel);
 }
 
 .vineta:first-child .cuadro {
-  border-top: 1.5px solid var(--p-tinta);
+  border-top: 1.5px solid var(--color-tinta);
 }
 
 .vineta:last-child .cuadro {
-  border-bottom: 1.5px solid var(--p-tinta);
+  border-bottom: 1.5px solid var(--color-tinta);
 }
 
 .ejemplar path {
@@ -119,54 +119,54 @@
 }
 
 .ejemplar .ejemplar-sol {
-  fill: var(--p-acento-claro);
+  fill: var(--color-acento-claro);
 }
 
 .ejemplar-suelo {
-  fill: var(--p-suelo);
+  fill: var(--color-suelo);
 }
 
 .ejemplar .ejemplar-horizonte {
-  stroke: var(--p-tinta);
+  stroke: var(--color-tinta);
   stroke-width: 4;
 }
 
 .ejemplar-brote .tallo {
-  stroke: var(--p-tallo);
+  stroke: var(--color-tallo);
   stroke-width: 2.5;
 }
 
 .ejemplar-brote .hoja {
-  fill: var(--p-hoja);
+  fill: var(--color-hoja);
   stroke: none;
 }
 
 .ejemplar-brote .hoja--tinta {
-  fill: var(--p-tallo);
+  fill: var(--color-tallo);
 }
 
 .ejemplar .raiz {
-  stroke: var(--p-raiz);
+  stroke: var(--color-raiz);
   stroke-width: 6;
 }
 
 .ejemplar .raicilla {
-  stroke: var(--p-raiz);
+  stroke: var(--color-raiz);
   stroke-width: 2.5;
 }
 
 .ejemplar .cruce {
-  fill: var(--p-suelo);
-  stroke: var(--p-texto-suelo);
+  fill: var(--color-suelo);
+  stroke: var(--color-texto-suelo);
   stroke-width: 2.5;
 }
 
 .punta {
-  fill: var(--p-nodo);
+  fill: var(--color-nodo);
 }
 
 .punta .punta-tinta {
-  fill: var(--p-hoja);
+  fill: var(--color-hoja);
 }
 
 /* El número, un sello paja con la segunda tinta corrida, sobre el borde izquierdo de su franja. */
@@ -182,9 +182,9 @@
   height: 2.25rem;
   margin-left: -0.625rem;
   border-radius: 50%;
-  background: var(--p-raiz);
-  box-shadow: 0.15rem 0.15rem 0 var(--p-hoja);
-  font: 900 1.125rem/1 var(--p-letra-titulo);
+  background: var(--color-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+  font: 900 1.125rem/1 var(--fuente-titulo);
   font-stretch: 125%;
 }
 
@@ -212,7 +212,7 @@
   width: clamp(10rem, 22vw, 18rem);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--p-acento-claro);
+  background: var(--color-acento-claro);
   translate: -50% 50%;
 }
 
@@ -222,7 +222,7 @@
   height: auto;
   margin: 2rem auto 0;
   fill: none;
-  stroke: var(--p-tallo);
+  stroke: var(--color-tallo);
 }
 
 .brote path {
@@ -231,21 +231,21 @@
 }
 
 .brote .hoja {
-  fill: var(--p-hoja);
+  fill: var(--color-hoja);
   stroke: none;
 }
 
 .brote .hoja--tinta {
-  fill: var(--p-tallo);
+  fill: var(--color-tallo);
 }
 
 .suelo {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-top: 4px solid var(--p-tinta);
-  color: var(--p-texto-suelo);
-  background: var(--p-suelo);
+  border-top: 4px solid var(--color-tinta);
+  color: var(--color-texto-suelo);
+  background: var(--color-suelo);
 }
 
 .suelo .grano {
@@ -255,11 +255,11 @@
 }
 
 .suelo a {
-  color: var(--p-destacado);
+  color: var(--color-destacado);
 }
 
 .suelo :focus-visible {
-  outline-color: var(--p-texto-suelo);
+  outline-color: var(--color-texto-suelo);
 }
 
 .tierra-interior {
@@ -271,16 +271,16 @@
 
 .tierra h2 {
   margin: 0 0 0.5rem;
-  color: var(--p-tinta);
-  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--p-letra-titulo);
+  color: var(--color-tinta);
+  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--fuente-titulo);
   font-stretch: 118%;
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
 .tierra h2 em {
-  color: var(--p-acento);
-  text-shadow: 0.035em 0.03em 0 var(--p-hoja);
+  color: var(--color-acento);
+  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
 .tierra-bajada {
@@ -323,7 +323,7 @@
   left: 100%;
   width: 1.25rem;
   height: 5px;
-  background: var(--p-raiz);
+  background: var(--color-raiz);
 }
 
 .etiqueta:where(:nth-child(even))::before {
@@ -339,7 +339,7 @@
   bottom: 0;
   left: calc(100% + 1.25rem - 2.5px);
   width: 5px;
-  background: var(--p-raiz);
+  background: var(--color-raiz);
 }
 
 .etiqueta:where(:first-child)::after {
@@ -355,9 +355,9 @@
   width: 1.125rem;
   height: 1.125rem;
   box-sizing: border-box;
-  border: 2.5px solid var(--p-texto-suelo);
+  border: 2.5px solid var(--color-texto-suelo);
   border-radius: 50%;
-  background: var(--p-suelo);
+  background: var(--color-suelo);
 }
 
 /* La etiqueta de herbario: papel con la segunda tinta corrida, colgada de su sello. */
@@ -369,9 +369,9 @@
   align-content: start;
   min-height: 3rem;
   padding: 1.875rem 0.75rem 0.875rem;
-  color: var(--p-tinta);
-  background: var(--p-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--p-hoja);
+  color: var(--color-tinta);
+  background: var(--color-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
   text-align: center;
   text-decoration: none;
   line-height: 1.3;
@@ -386,12 +386,12 @@
   width: 2.75rem;
   height: 2.75rem;
   translate: -50% 0;
-  color: var(--p-suelo-hondo);
+  color: var(--color-suelo-hondo);
   fill: currentcolor;
 }
 
 .etiqueta b {
-  font: 800 1.125rem/1.15 var(--p-letra-titulo);
+  font: 800 1.125rem/1.15 var(--fuente-titulo);
   font-stretch: 115%;
 }
 
@@ -402,13 +402,13 @@
 .etiqueta .pide {
   margin-top: 0.35rem;
   padding-top: 0.35rem;
-  border-top: 1px solid var(--p-tinta-suave);
-  color: var(--p-acento);
+  border-top: 1px solid var(--color-tinta-suave);
+  color: var(--color-acento);
   font-weight: 700;
 }
 
 .etiqueta a:not(.boton):hover {
-  background: var(--p-acento-claro);
+  background: var(--color-acento-claro);
 }
 
 .etiqueta a:not(.boton):hover b {
@@ -427,7 +427,7 @@
   justify-items: center;
   gap: 0.25rem;
   padding: 1.25rem 1rem 1rem;
-  border: 2px dashed var(--p-raiz);
+  border: 2px dashed var(--color-raiz);
   margin-top: 1.5rem;
   text-align: center;
 }
@@ -438,7 +438,7 @@
   height: 1.6rem;
   width: 3px;
   translate: -50% 0;
-  background: repeating-linear-gradient(180deg, var(--p-raiz) 0 4px, transparent 4px 10px);
+  background: repeating-linear-gradient(180deg, var(--color-raiz) 0 4px, transparent 4px 10px);
 }
 
 /* Sin datos no hay tronco: la etiqueta de tu entidad no cuelga de nada. */
@@ -453,7 +453,7 @@
 }
 
 .etiqueta--tuya b {
-  font: 800 1.125rem/1.15 var(--p-letra-titulo);
+  font: 800 1.125rem/1.15 var(--fuente-titulo);
   font-stretch: 115%;
 }
 
@@ -467,19 +467,19 @@
 }
 
 .suelo .boton--suelo {
-  border-color: var(--p-raiz);
-  background: var(--p-raiz);
-  color: var(--p-suelo-hondo);
+  border-color: var(--color-raiz);
+  background: var(--color-raiz);
+  color: var(--color-suelo-hondo);
 }
 
 .suelo .boton--suelo:hover {
-  background: var(--p-texto-suelo);
+  background: var(--color-texto-suelo);
 }
 
 /* --- El registro de campo ---------------------------------------------------------------------- */
 
 .registro {
-  background: var(--p-suelo-hondo);
+  background: var(--color-suelo-hondo);
 }
 
 .registro-interior {
@@ -492,14 +492,14 @@
 
 .registro h2 {
   margin: 0 0 0.75rem;
-  color: var(--p-texto-suelo);
-  font: 800 clamp(1.75rem, 3.4vw, 2.75rem) / 1.05 var(--p-letra-titulo);
+  color: var(--color-texto-suelo);
+  font: 800 clamp(1.75rem, 3.4vw, 2.75rem) / 1.05 var(--fuente-titulo);
   font-stretch: 118%;
   letter-spacing: -0.02em;
 }
 
 .registro h2 em {
-  color: var(--p-raiz);
+  color: var(--color-raiz);
 }
 
 .registro .nota {
@@ -510,8 +510,8 @@
 .registro-datos {
   margin: 0;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--p-raiz);
-  outline: 1px solid var(--p-raiz);
+  border: 1px solid var(--color-raiz);
+  outline: 1px solid var(--color-raiz);
   outline-offset: 5px;
 }
 
@@ -523,7 +523,7 @@ dl.registro-datos > div {
 }
 
 dl.registro-datos > div + div {
-  border-top: 1px solid var(--p-suelo);
+  border-top: 1px solid var(--color-suelo);
 }
 
 .registro-datos dt {
@@ -534,14 +534,14 @@ dl.registro-datos > div::after {
   content: "";
   flex: 1 1 1.5rem;
   order: 1;
-  border-bottom: 2px dotted var(--p-raiz);
+  border-bottom: 2px dotted var(--color-raiz);
 }
 
 .registro-datos dd {
   order: 2;
   margin: 0;
-  color: var(--p-destacado);
-  font: 900 clamp(1.75rem, 3vw, 2.5rem) / 1 var(--p-letra-titulo);
+  color: var(--color-destacado);
+  font: 900 clamp(1.75rem, 3vw, 2.5rem) / 1 var(--fuente-titulo);
   font-stretch: 125%;
   letter-spacing: -0.03em;
 }
@@ -570,15 +570,15 @@ dl.registro-datos > div::after {
 
 .viajo h2 {
   margin: 0 0 0.5rem;
-  color: var(--p-tinta);
-  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--p-letra-titulo);
+  color: var(--color-tinta);
+  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--fuente-titulo);
   font-stretch: 118%;
   letter-spacing: -0.03em;
 }
 
 .viajo h2 em {
-  color: var(--p-acento);
-  text-shadow: 0.035em 0.03em 0 var(--p-hoja);
+  color: var(--color-acento);
+  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
 .viajo-bajada {
@@ -590,7 +590,7 @@ dl.registro-datos > div::after {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--p-tinta);
+  border-top: 1px solid var(--color-tinta);
 }
 
 .asiento {
@@ -601,7 +601,7 @@ dl.registro-datos > div::after {
   row-gap: 0.5rem;
   align-items: start;
   padding: 1.25rem 0;
-  border-bottom: 1px solid var(--p-tinta);
+  border-bottom: 1px solid var(--color-tinta);
 }
 
 /* El tramo de raíz de cada asiento; el último que llega a hoy, punteado. */
@@ -612,13 +612,13 @@ dl.registro-datos > div::after {
   left: calc(0.875rem - 3px);
   width: 6px;
   height: 100%;
-  background: var(--p-raiz);
+  background: var(--color-raiz);
 }
 
 .asiento:has(+ .asiento--en-camino)::before {
   left: calc(0.875rem - 2px);
   width: 4px;
-  background: repeating-linear-gradient(180deg, var(--p-acento) 0 4px, transparent 4px 12px);
+  background: repeating-linear-gradient(180deg, var(--color-acento) 0 4px, transparent 4px 12px);
 }
 
 .asiento:last-child::before {
@@ -638,14 +638,14 @@ dl.registro-datos > div::after {
   grid-row: 1;
   align-self: center;
   margin: 0;
-  color: var(--p-tinta);
+  color: var(--color-tinta);
   font-weight: 700;
   font-stretch: 110%;
 }
 
 .asiento-fecha b {
   margin-inline-end: 0.2em;
-  font: 900 1.5rem/1 var(--p-letra-titulo);
+  font: 900 1.5rem/1 var(--fuente-titulo);
   font-stretch: 125%;
 }
 
@@ -654,18 +654,18 @@ dl.registro-datos > div::after {
   display: block;
   width: 4rem;
   aspect-ratio: 1;
-  background: var(--p-acento-claro);
-  color: var(--p-acento);
+  background: var(--color-acento-claro);
+  color: var(--color-acento);
   fill: currentcolor;
 }
 
 .asiento-cuadro .tinta-corrida {
-  color: var(--p-hoja);
+  color: var(--color-hoja);
 }
 
 .asiento--en-camino .asiento-cuadro {
   background: none;
-  outline: 2px dashed var(--p-tinta-suave);
+  outline: 2px dashed var(--color-tinta-suave);
   outline-offset: -2px;
   fill: none;
   stroke: currentcolor;
@@ -681,19 +681,19 @@ dl.registro-datos > div::after {
 }
 
 .asiento h3 {
-  color: var(--p-tinta);
+  color: var(--color-tinta);
   font-size: 1.125rem;
   font-stretch: 110%;
   line-height: 1.3;
 }
 
 .asiento-estado {
-  color: var(--p-entregada-texto);
+  color: var(--color-entregada-texto);
   font-weight: 700;
 }
 
 .asiento--en-camino .asiento-estado {
-  color: var(--p-en-camino-texto);
+  color: var(--color-en-camino-texto);
 }
 
 .asiento .boton--foto,
@@ -727,34 +727,34 @@ dl.registro-datos > div::after {
 }
 
 .sello-tinta {
-  fill: var(--p-hoja);
+  fill: var(--color-hoja);
 }
 
 .sello-disco {
-  fill: var(--p-raiz);
+  fill: var(--color-raiz);
 }
 
 .sello-tilde {
   fill: none;
-  stroke: var(--p-tinta);
+  stroke: var(--color-tinta);
   stroke-width: 2;
 }
 
 .sello-contorno {
-  fill: var(--p-papel);
-  stroke: var(--p-en-camino-texto);
+  fill: var(--color-papel);
+  stroke: var(--color-en-camino-texto);
   stroke-width: 2;
 }
 
 .sello-medio {
-  fill: var(--p-en-camino-sello);
+  fill: var(--color-en-camino-sello);
 }
 
 /* Los botones del sitio que son <button> toman la letra y el fondo de los enlaces con forma de
    botón. */
 :where(button).boton {
   background-color: transparent;
-  color: var(--p-acento);
+  color: var(--color-acento);
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
@@ -768,15 +768,15 @@ dl.registro-datos > div::after {
   gap: 0.5rem;
   padding: 0.5rem 0.875rem;
   border-width: 1.5px;
-  box-shadow: 0.2rem 0.2rem 0 var(--p-hoja);
-  color: var(--p-acento);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  color: var(--color-acento);
   font-size: 0.875rem;
   white-space: nowrap;
 }
 
 .boton--chico:hover,
 .boton--aviso:hover {
-  background: var(--p-acento-claro);
+  background: var(--color-acento-claro);
 }
 
 .boton--chico:active,
@@ -788,14 +788,14 @@ dl.registro-datos > div::after {
 .suelo .boton--chico,
 .suelo .boton--aviso {
   margin-top: 1rem;
-  border-color: var(--p-raiz);
-  box-shadow: 0.2rem 0.2rem 0 var(--p-suelo);
-  color: var(--p-texto-suelo);
+  border-color: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
+  color: var(--color-texto-suelo);
 }
 
 .suelo .boton--chico:hover,
 .suelo .boton--aviso:hover {
-  background: var(--p-suelo);
+  background: var(--color-suelo);
 }
 
 .boton--chico svg {
@@ -816,8 +816,8 @@ dl.registro-datos > div::after {
   max-width: 40rem;
   margin: 0;
   padding: 1.25rem 0;
-  border-block: 1px solid var(--p-tinta);
-  color: var(--p-tinta);
+  border-block: 1px solid var(--color-tinta);
+  color: var(--color-tinta);
 }
 
 .aviso p {
@@ -832,8 +832,8 @@ dl.registro-datos > div::after {
   justify-items: center;
   margin: 0 auto 1.5rem;
   padding: 1.25rem 1rem;
-  border-color: var(--p-raiz);
-  color: var(--p-texto-suelo);
+  border-color: var(--color-raiz);
+  color: var(--color-texto-suelo);
   text-align: center;
 }
 
@@ -854,12 +854,12 @@ dl.registro-datos > div::after {
   width: min(36rem, 100% - 2rem);
   margin: auto;
   padding: 1rem;
-  border: 1.5px solid var(--p-tinta);
-  outline: 1px solid var(--p-tinta);
+  border: 1.5px solid var(--color-tinta);
+  outline: 1px solid var(--color-tinta);
   outline-offset: -7px;
-  background: var(--p-papel);
-  box-shadow: 0.45rem 0.45rem 0 var(--p-hoja);
-  color: var(--p-tinta-suave);
+  background: var(--color-papel);
+  box-shadow: 0.45rem 0.45rem 0 var(--color-hoja);
+  color: var(--color-tinta-suave);
 }
 
 .foto-ventana:popover-open {
@@ -869,7 +869,7 @@ dl.registro-datos > div::after {
 }
 
 .foto-ventana::backdrop {
-  background: var(--p-suelo-hondo);
+  background: var(--color-suelo-hondo);
   opacity: 0.75;
 }
 
@@ -877,7 +877,7 @@ dl.registro-datos > div::after {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--p-tinta);
+  border: 1px solid var(--color-tinta);
 }
 
 .foto-ventana p {
@@ -886,8 +886,8 @@ dl.registro-datos > div::after {
 
 .foto-titulo {
   margin-top: 0.25rem;
-  color: var(--p-tinta);
-  font: 800 1.25rem/1.2 var(--p-letra-titulo);
+  color: var(--color-tinta);
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
 }
 
@@ -954,7 +954,7 @@ dl.registro-datos > div::after {
     left: calc(9rem + 1.25rem + 0.875rem - 2px);
     width: 4px;
     height: 50%;
-    background: repeating-linear-gradient(180deg, var(--p-acento) 0 4px, transparent 4px 12px);
+    background: repeating-linear-gradient(180deg, var(--color-acento) 0 4px, transparent 4px 12px);
   }
 
   /* El tramo punteado sale del medio de su fila: el anterior llega hasta ahí, sin corte. */
@@ -1026,17 +1026,17 @@ dl.registro-datos > div::after {
   }
 
   .red-dibujo .tronco {
-    stroke: var(--p-raiz);
+    stroke: var(--color-raiz);
     stroke-width: 9;
   }
 
   .red-dibujo .borde {
-    stroke: var(--p-suelo-medio);
+    stroke: var(--color-suelo-medio);
     stroke-width: 9;
   }
 
   .red-dibujo .ruta {
-    stroke: var(--p-raiz);
+    stroke: var(--color-raiz);
     stroke-width: 5;
   }
 
@@ -1045,8 +1045,8 @@ dl.registro-datos > div::after {
   }
 
   .red-dibujo .cruce {
-    fill: var(--p-suelo);
-    stroke: var(--p-texto-suelo);
+    fill: var(--color-suelo);
+    stroke: var(--color-texto-suelo);
     stroke-width: 2.5;
   }
 
@@ -1100,7 +1100,7 @@ dl.registro-datos > div::after {
     width: 14.5rem;
     margin: 0;
     padding: 1.25rem 0.75rem 1rem;
-    background: var(--p-suelo);
+    background: var(--color-suelo);
     translate: -50% -0.85rem;
   }
 
