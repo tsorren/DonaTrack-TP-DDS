@@ -69,10 +69,32 @@ fecha). Responde "¿qué hay detrás de cada donación?". Ver la [bitácora](../
 Se insinúa (usuario): el crecimiento es el avance, dibujado con los datos; sin medallas. Para la
 empresa, hitos de lo acumulado.
 
-## Forma, color y letra
+## Color (usuario, tercer A/B)
 
-Abiertos: se deciden con sus A/B. Hoy, provisorios en el primer A/B: papel con grano, salvia,
-bosque, tierra oscura y ocre; Alegreya en títulos y DM Sans en el texto.
+**Bosque.** Lo que se ve es papel con grano; lo que sostiene la donación es tierra de monte. Detalle
+y valores en la [bitácora](../bitacora.md).
+
+| Color | Qué es en la pantalla | Qué significa |
+|---|---|---|
+| Papel crema | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
+| Verde bosque | El título en cursiva y los botones | La organización que actúa |
+| Tres verdes de monte | La tierra en tres horizontes: raíces, etapas y cifras | Lo que sostiene la donación, cada vez más hondo |
+| Paja | Las raíces, las etapas cumplidas y las cifras | El recorrido comprobado |
+| Salvia | El brote | El resultado: lo que creció |
+
+**Estados de una entrega** (siempre con texto y una forma, nunca solo con color): pendiente, gris
+tierra con círculo punteado; en camino, ámbar con medio círculo; entregada, verde con tilde; con
+problema, rojo óxido con "!".
+
+**Prioridad (usuario):** el diseño gráfico antes que la accesibilidad; "en el futuro habilitaremos
+un modo accesible". Hoy la paleta igual pasa AA, y el
+[piso de la dirección de arte](../direccion-de-arte.md#el-piso-no-se-negocia) sigue vigente.
+
+## Estilo visual, forma y letra
+
+Abiertos: se deciden con sus A/B; el próximo es el estilo visual. Propuestos y **no aprobados** en
+la paleta: el sol detrás del brote, la línea entre horizontes y la grava. Letra provisoria:
+Alegreya en títulos y DM Sans en el texto.
 
 ## Libertades (usuario)
 

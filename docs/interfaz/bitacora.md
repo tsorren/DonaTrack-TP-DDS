@@ -26,6 +26,39 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · paleta (Raíces) · Bosque: la tierra en tres verdes de monte y raíces color paja
+
+- **Decisión:** la paleta de Raíces es Bosque, solo los colores. Arriba, papel crema (`#eeebde`),
+  tinta (`#18211b`) y verde bosque (`#234a35`) en el título en cursiva y los botones. Abajo, la
+  tierra en tres horizontes verdes, cada vez más hondos (`#2a4a37`, `#1d3628` y `#12241a`): las
+  raíces arriba, las etapas en el medio y las cifras abajo. Las raíces, las etapas cumplidas y
+  las cifras van en color paja (`#e6c27a`); la etapa en camino, en crema (`#f1ead2`); el brote, en
+  salvia (`#9cb889`). Estados de una entrega, siempre con texto y una forma propia: pendiente en
+  gris tierra con círculo punteado, en camino en ámbar con medio círculo, entregada en verde con
+  tilde y con problema en rojo óxido con "!". Aplicada en `variantes/comun/raices.css`, con los
+  valores por función (`--p-suelo`, `--p-raiz`, `--p-acento`…) para que la base no dependa del
+  tono.
+- **Alternativas:** tres rondas. Ronda 1: Herbario (pino y liquen), Tierra colorada (arcilla y
+  ladrillo) y Cianotipo (azul de Prusia y ocre), recomendada por el agente. El usuario pidió
+  priorizar el diseño gráfico sobre la accesibilidad ("en el futuro habilitaremos un modo
+  accesible") y comparar el verde con un marrón. Ronda 2: Herbario, Humus (tierra marrón, verde
+  solo en lo que llegó), Musgo y humus (horizonte verde arriba, tierra marrón abajo) y Humus con
+  brote (tierra marrón con títulos y botones en verde), recomendada por el agente. Ronda 3, con más
+  ambición gráfica: Humus con brote contra Bosque, la heredera de la paleta provisoria. Las dos
+  tenían un sol detrás del brote, una línea de horizonte y grava en la franja del medio.
+- **Por qué:** el usuario eligió la de verdes, la más cercana a la original: botánica y de lámina
+  de campo, con la profundidad de los tres horizontes.
+- **Costo:** es la más cercana al tono "eco" que el brief descarta y, con el paja sobre el bosque,
+  a Cozy (bosque y latón); lo separan la forma, la letra y la voz, que siguen abiertas. El sol, la
+  línea de horizonte y la grava **no** se aprobaron (el usuario aprobó "únicamente la paleta") y se
+  sacaron; quedan para el A/B del estilo visual. Con la prioridad gráfica, las tres rondas igual
+  pasaron la verificación AA. Las capturas de la ronda 3 se perdieron con un `mvn clean`; de esa
+  ronda quedan la Humus con brote sin sol (ronda 2) y la elegida aplicada. De la ronda 2 quedan
+  Humus y Humus con brote: Herbario es la misma de la ronda 1 y Musgo y humus se sobrescribió.
+- **Quién decidió:** usuario, contra la recomendación del agente (Cianotipo y después Humus con
+  brote).
+- **Evidencia:** `evidencia/raices/paleta-portada/`.
+
 ### 2026-10-31 · microcopy:portada (Raíces) · "Lo que donás echa raíces en tu comunidad"
 
 - **Decisión:** el mensaje del hero es el C, "la comunidad que crece". Título: "Lo que donás echa

@@ -1,7 +1,6 @@
-/* Base común de los conceptos del hero de Raíces (tercera alternativa, en exploración): paleta
-   provisoria, letras, marca, botones, el grano de impresión de la referencia 01 y la lámina de
-   campo de la 05. La paleta y las letras se deciden después con su propio A/B; acá quedan fijas
-   para que A y B difieran solo en la idea. */
+/* Base común del hero de Raíces (tercera alternativa, en exploración): paleta Bosque (decidida en
+   su A/B), letras provisorias, marca, botones, el grano de impresión de la referencia 01 y la
+   lámina de campo de la 05. Las letras se deciden después con su propio A/B. */
 
 @font-face {
   font-family: Alegreya;
@@ -28,16 +27,34 @@
 }
 
 :root {
-  --p-papel: #efece0;
-  --p-salvia: #a3b693;
-  --p-bosque: #1e3b2c;
-  --p-bosque-hondo: #16271d;
-  --p-tinta: #1d2420;
-  --p-tinta-suave: #474f49;
-  --p-raiz: #7a5434;
-  --p-ocre: #c8902e;
-  --p-ocre-claro: #e5bd6c;
-  --p-papel-sobre-oscuro: #ece8da;
+  /* Paleta Bosque (A/B de paleta, 2026-10-31): valores por función, no por tono. La tierra en tres
+     verdes de monte, raíces color paja y el verde bosque en títulos y botones. */
+  --p-papel: #eeebde;
+  --p-tinta: #18211b;
+  --p-tinta-suave: #48524a;
+  --p-acento: #234a35;
+  --p-acento-hondo: #173325;
+  --p-acento-claro: #c4d3b3;
+  --p-tallo: #234a35;
+  --p-hoja: #9cb889;
+  --p-suelo: #2a4a37;
+  --p-suelo-medio: #1d3628;
+  --p-suelo-hondo: #12241a;
+  --p-texto-suelo: #ece9da;
+  --p-raiz: #e6c27a;
+  --p-vena: #7f9d7c;
+  --p-nodo: #e6c27a;
+  --p-nodo-en-camino: #f1ead2;
+  --p-destacado: #e6c27a;
+  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). */
+  --p-pendiente-fondo: #e2e0d2;
+  --p-pendiente-texto: #4d4c40;
+  --p-en-camino-fondo: #f4e6b5;
+  --p-en-camino-texto: #6a4f05;
+  --p-entregada-fondo: #d7e6cd;
+  --p-entregada-texto: #2b5a35;
+  --p-problema-fondo: #f3d9d2;
+  --p-problema-texto: #93301f;
 }
 
 *,
@@ -54,11 +71,11 @@ body {
 }
 
 a {
-  color: var(--p-bosque);
+  color: var(--p-acento);
 }
 
 :focus-visible {
-  outline: 3px solid var(--p-bosque);
+  outline: 3px solid var(--p-acento);
   outline-offset: 3px;
 }
 
@@ -130,7 +147,7 @@ a {
 }
 
 .hero h1 em {
-  color: var(--p-bosque);
+  color: var(--p-acento);
 }
 
 .hero-bajada {
@@ -151,23 +168,23 @@ a {
   justify-content: center;
   min-height: 3rem;
   padding: 0.75rem 1.5rem;
-  border: 2px solid var(--p-bosque);
+  border: 2px solid var(--p-acento);
   border-radius: 3px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .boton--principal {
-  background: var(--p-bosque);
+  background: var(--p-acento);
   color: var(--p-papel);
 }
 
 .boton--principal:hover {
-  background: var(--p-bosque-hondo);
+  background: var(--p-acento-hondo);
 }
 
 .boton--secundario:hover {
-  background: var(--p-salvia);
+  background: var(--p-acento-claro);
 }
 
 /* La lámina de campo: cada etapa o destino con su numeral y su línea guía. */

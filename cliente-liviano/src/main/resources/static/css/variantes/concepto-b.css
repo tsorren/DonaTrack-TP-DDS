@@ -23,7 +23,7 @@
   height: auto;
   margin: 2.5rem auto 0;
   fill: none;
-  stroke: var(--p-bosque);
+  stroke: var(--p-tallo);
 }
 
 .brote path {
@@ -32,7 +32,7 @@
 }
 
 .brote .hoja {
-  fill: var(--p-salvia);
+  fill: var(--p-hoja);
 }
 
 .suelo {
@@ -40,11 +40,13 @@
   isolation: isolate;
   overflow: hidden;
   border-top: 3px solid var(--p-tinta);
-  background: var(--p-bosque-hondo);
-  color: var(--p-papel-sobre-oscuro);
+  background: var(--p-suelo-medio);
+  color: var(--p-texto-suelo);
 }
 
+/* El grano va encima de los tres horizontes, como en una impresión. */
 .suelo .grano {
+  z-index: 1;
   opacity: 0.35;
   mix-blend-mode: soft-light;
 }
@@ -55,29 +57,38 @@
   padding: 0 1rem 2.5rem;
 }
 
+/* Los horizontes del suelo, de lado a lado: las raíces arriba, las etapas en el medio y las cifras
+   en lo hondo (.pie-hero). La sombra pinta la banda a todo el ancho y el recorte la deja en su alto. */
 .raices-dibujo {
-  stroke: var(--p-ocre-claro);
+  stroke: var(--p-raiz);
+  background: var(--p-suelo);
+  box-shadow: 0 0 0 100vmax var(--p-suelo);
+  clip-path: inset(0 -100vmax);
 }
 
 .raices-dibujo .vena {
-  stroke: var(--p-salvia);
+  stroke: var(--p-vena);
 }
 
 .raices-dibujo .nodo {
-  fill: var(--p-ocre-claro);
-  stroke: var(--p-bosque-hondo);
+  fill: var(--p-nodo);
+  stroke: var(--p-suelo);
   stroke-width: 2;
 }
 
+.raices-dibujo .nodo--en-camino {
+  fill: var(--p-nodo-en-camino);
+}
+
 .raices-dibujo .nodo--pendiente {
-  fill: var(--p-bosque-hondo);
-  stroke: var(--p-ocre-claro);
+  fill: var(--p-suelo);
+  stroke: var(--p-raiz);
   stroke-dasharray: 4 3;
 }
 
 .suelo h2 {
   margin: 1.5rem 0 0.25rem;
-  color: var(--p-papel-sobre-oscuro);
+  color: var(--p-texto-suelo);
   font: italic 400 1.75rem/1.2 Alegreya, serif;
 }
 
@@ -86,15 +97,15 @@
 }
 
 .suelo .numeral {
-  color: var(--p-ocre-claro);
+  color: var(--p-destacado);
 }
 
 .suelo .lamina b {
-  color: var(--p-papel-sobre-oscuro);
+  color: var(--p-texto-suelo);
 }
 
 .suelo a {
-  color: var(--p-ocre-claro);
+  color: var(--p-destacado);
 }
 
 .suelo .pie-hero {
@@ -103,14 +114,17 @@
   margin-top: 2.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid currentcolor;
+  background: var(--p-suelo-hondo);
+  box-shadow: 0 0 0 100vmax var(--p-suelo-hondo);
+  clip-path: inset(0 -100vmax -100vmax);
 }
 
 .suelo .cifras b {
-  color: var(--p-ocre-claro);
+  color: var(--p-destacado);
 }
 
 .suelo :focus-visible {
-  outline-color: var(--p-papel-sobre-oscuro);
+  outline-color: var(--p-texto-suelo);
 }
 
 @media (min-width: 37.5em) {
