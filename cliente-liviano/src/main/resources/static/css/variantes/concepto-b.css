@@ -57,6 +57,7 @@
   isolation: isolate;
   overflow: hidden;
   border-top: 4px solid var(--p-tinta);
+  color: var(--p-texto-suelo);
   /* La grava (pendiente de su A/B, no aprobada): piedritas en la franja del medio, la de las
      etapas (las otras dos bandas la tapan). */
   background-color: var(--p-suelo-medio);
