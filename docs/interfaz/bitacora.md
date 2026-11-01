@@ -26,6 +26,53 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · proceso · El brief de tono del equipo rige a todas las alternativas
+
+- **Decisión:** el *Brief de Tono y Comunicación v1.0* del equipo
+  ([PDF](identidad/brief-tono-y-comunicacion-v1.0.pdf)) pasa a ser regla común de la interfaz, en
+  [tono y comunicación](tono-y-comunicacion.md): audiencias por rol, tono por pantalla, nombres de
+  los estados (lo pendiente se dice pendiente), cifras con período y fuente, personas por su rol y
+  un filtro de 7 preguntas. Lo citan la dirección de arte, patrones y textos, el README, las
+  plantillas, las skills y `cliente-liviano/AGENTS.md`; `revision-ui` lo revisa en U5, que pasa a
+  llamarse "Textos y tono". Las alternativas siguen libres en metáfora, arte, paleta, letra y voz
+  de títulos y rótulos.
+- **Alternativas:** volcar el tono dentro de cada brief de alternativa, sin documento común; o
+  ajustar solo patrones y textos.
+- **Por qué:** el brief se escribió para que todas las exploraciones digan lo mismo aunque se vean
+  distinto. Un solo documento evita que cada alternativa invente su voz de base.
+- **Costo:** los briefs de Glassmorphism y Cozy / Medieval tienen frases y textos que chocan
+  ("números de impacto", tono festivo, "Tu impacto", "Tu huella", "Donar ahora" en la portada de
+  Cozy, cifras sin período). Por ahora solo llevan una nota con la lista; corregirlos queda para
+  después, a decisión del usuario. Reemplaza, como base de la voz, las tres líneas de "Voz y tono"
+  de patrones y textos y lo común de la sección Voz de cada brief (decididos por el usuario en las
+  rondas de identidad); la voz propia de títulos y rótulos de cada alternativa sigue igual.
+- **Quién decidió:** usuario.
+- **Evidencia:** [brief de tono v1.0](identidad/brief-tono-y-comunicacion-v1.0.pdf).
+
+### 2026-10-31 · textos (Raíces) · La portada adopta el tono común
+
+- **Decisión:** en la portada de Raíces (concepto B) el botón principal dice "Quiero donar" (el
+  mismo texto que el del donante en la portada de Cozy); la bajada pasa a "Seguí cada donación desde
+  que se registra hasta que la entidad confirma la entrega. DonaTrack te muestra a quién se asignó,
+  en qué estado está y la foto que sube la entidad al confirmar."; las etapas usan los nombres de
+  los estados (registrada, asignada, preparada para entregar, en camino) y la última, que todavía
+  no ocurrió, dice "Falta confirmar la entrega. La confirma el comedor con la foto"; las cifras son
+  "entregas confirmadas" y "donaciones en camino", con período, fuente y año. Reemplaza el botón
+  "Donar ahora" y la bajada "Cada donación llega a un comedor, una escuela o un merendero…", que
+  eligió el usuario en el segundo A/B de Raíces (mensaje). El título "Lo que donás echa raíces en
+  tu comunidad" y el rótulo "Todo lo que pasa hasta que llega" se mantienen; el rótulo afirma la
+  llegada y queda para revisar cuando Raíces tenga su tabla de voz.
+- **Alternativas:** "Sumate a la iniciativa" o "Donar" para el botón; dejar "Donar ahora"; ajustar
+  también el título.
+- **Por qué:** "ahora" es urgencia artificial; "cada donación llega" promete algo que la plataforma
+  no garantiza; "Recibida" se leía como cumplida estando pendiente; una cifra sin período se presta
+  a malas lecturas. La metáfora del título es libre y la bajada dice qué se puede comprobar.
+- **Costo:** la portada de Raíces deja de tener el mismo botón principal que la de Cozy ("Donar
+  ahora"), hasta que se revisen los textos de Cozy.
+- **Quién decidió:** usuario (el botón, mantener el título y corregir la bajada); la redacción de
+  la bajada, las etapas y las cifras es del agente, con el brief de tono.
+- **Evidencia:** [`evidencia/raices/tono-portada/`](evidencia/raices/tono-portada/).
+
 ### 2026-10-31 · tipografia (Raíces) · Grotesca ancha de afiche: Archivo en todo
 
 - **Decisión:** la letra de Raíces es Archivo (Omnibus-Type, Buenos Aires), una sola familia con

@@ -120,6 +120,7 @@ docs/
 │   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad, libertad creativa y oficio
 │   ├── estructura-cozy-medieval.md        # Estructura y navegación de la Alternativa Cozy / Medieval
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
+│   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todas las alternativas
 │   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
 │   ├── identidad/                         # Un brief por alternativa: Glassmorphism y Cozy / Medieval
 │   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)

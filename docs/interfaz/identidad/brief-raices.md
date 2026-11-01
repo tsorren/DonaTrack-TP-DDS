@@ -8,6 +8,10 @@
 > **Pendiente antes de construirla como alternativa:** un ADR `proposed` sucesor del de
 > [dos alternativas](../../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md),
 > porque esta sería la tercera (cada pantalla nueva se escribiría tres veces).
+> **Tono común (2026-10-31):** la voz, el tono de cada pantalla, los estados y las cifras los fija
+> [tono y comunicación](../tono-y-comunicacion.md), que rige a todas las alternativas y prevalece
+> sobre este brief donde choquen. Su foco (la persona de responsabilidad social de una empresa) es
+> una de las audiencias de ese documento.
 
 ## Para qué existe esta alternativa
 
@@ -52,10 +56,19 @@ fecha). Responde "¿qué hay detrás de cada donación?". Ver la [bitácora](../
 
 ## Voz
 
-- **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Bajada:
-  "Cada donación llega a un comedor, una escuela o un merendero. DonaTrack te muestra a quién,
-  cuándo y cómo, con la foto de la entrega." Lo cálido va en el título; la transparencia, en la
-  bajada y en el dibujo del suelo.
+- **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Lo
+  cálido va en el título; la transparencia, en la bajada y en el dibujo del suelo.
+- **Bajada (tono común, 2026-10-31):** "Seguí cada donación desde que se registra hasta que la
+  entidad confirma la entrega. DonaTrack te muestra a quién se asignó, en qué estado está y la foto
+  que sube la entidad al confirmar." Reemplaza la del segundo A/B ("Cada donación llega a un comedor, una escuela o un
+  merendero…"), que prometía la llegada. El usuario decidió corregirla al adoptar el brief de tono;
+  la redacción es del agente.
+- **Botón principal (usuario, 2026-10-31):** "Quiero donar", el mismo texto que el botón del
+  donante en la portada de Cozy. Reemplaza "Donar ahora" (urgencia artificial).
+- **Etapas y cifras:** con los nombres de los
+  [estados](../tono-y-comunicacion.md#los-estados-de-una-donación) (registrada, asignada, preparada,
+  en camino, entrega confirmada); lo pendiente se dice pendiente ("Falta confirmar la entrega").
+  Las cifras son entregas confirmadas, con período y fuente.
 - **Tono (usuario):** término medio entre "botánica medida" y "cálida y comunitaria", sin
   efectismo.
 - **Regla (propuesto):** como mucho una imagen de raíz o siembra por pantalla, en el título grande;

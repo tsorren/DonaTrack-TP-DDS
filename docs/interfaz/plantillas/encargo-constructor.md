@@ -119,7 +119,10 @@ reordenarlos, partirlos y darles otra forma; no podés sacar ni agregar.
 La alternativa habla a su modo **solo en títulos y rótulos**; datos, cifras y nombres de controles
 no cambian. Tabla de voz: `@VOZ@` (formato en el archivo; cada línea en uso). Reglas: lenguaje llano
 (el usuario es argentino: palabras de todos los días, sin jerga), el tono del encargo, un rótulo no
-lleva números y nunca va dentro de un control.
+lleva números y nunca va dentro de un control. Debajo de la voz rige el tono común
+(`docs/interfaz/tono-y-comunicacion.md`): los estados se dicen como son (lo pendiente, pendiente),
+las cifras van con período y fecha, sin urgencia, culpa ni promesas que no se pueden comprobar. Una
+metáfora que promete algo va acompañada de un texto que dice qué se puede comprobar.
 
 ## El piso (no se negocia; lo comprueba la verificación visual)
 

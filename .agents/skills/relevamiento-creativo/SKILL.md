@@ -21,8 +21,10 @@ description: >-
 
 ## 1. Antes de preguntar
 
-1. Leer las reglas para preguntar (README de interfaz), la dirección de arte y el brief de la
-   alternativa, si existe (`docs/interfaz/identidad/brief*.md`).
+1. Leer las reglas para preguntar (README de interfaz), la dirección de arte, el
+   [tono y comunicación](../../../docs/interfaz/tono-y-comunicacion.md) (común a todas las
+   alternativas: no se vuelve a preguntar) y el brief de la alternativa, si existe
+   (`docs/interfaz/identidad/brief*.md`).
 2. Sacar las capturas de lo actual, para mostrarlas y para el "qué no repetir" (las rutas sin la
    barra inicial, por Git Bash):
 
@@ -67,10 +69,12 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
    (Recomendada)" · "La navegación" · "La voz en títulos y rótulos" · "Movimiento e interacción
    encima de lo que ya funciona" (es JavaScript propio como mejora; la página sigue andando sin él).
    Datos, acciones, piso, stack y la otra alternativa no se preguntan: son fijos.
-2. "¿Cómo habla?" → dos o tres tonos con un título de muestra cada uno en el `preview` (la tabla
-   "Glassmorphism dice / esta dice").
+2. "¿Cómo habla en títulos y rótulos?" → dos o tres tonos con un título de muestra cada uno en el
+   `preview` (la tabla "Glassmorphism dice / esta dice"). Solo títulos y rótulos: el resto de la
+   voz es el tono común, y los títulos de muestra también lo pasan (sin prometer impacto).
 3. "¿Cuánto juego?" → "Se insinúa: misiones, sellos, rango (Recomendada)" · "Nada de juego" ·
-   "Bien presente".
+   "Bien presente". En cualquier caso, el juego celebra hechos confirmados y no presiona
+   ([tono común](../../../docs/interfaz/tono-y-comunicacion.md#juego-y-celebración)).
 
 **Ronda 4 — la corrida**
 

@@ -8,7 +8,10 @@
        ponytail: el dibujo es fijo para el caso de ejemplo; si el concepto gana, se dibuja desde los
        datos (dirección de arte, "Oficio"). Mensaje: el C del segundo A/B; paleta Bosque y estilo
        impreso editorial, con el sol detrás del brote; letra Archivo, ancha de afiche
-       (bitácora). */-->
+       (bitácora). Textos según el tono común (docs/interfaz/tono-y-comunicacion.md): la bajada dice
+       qué se puede seguir, el botón es "Quiero donar" (el del donante en la portada de Cozy), las
+       etapas usan los nombres de los estados y lo pendiente se dice pendiente, y las cifras van
+       con período y fuente. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
@@ -36,10 +39,10 @@
 
     <div class="superficie">
       <h1 id="hero-titulo">Lo que donás echa raíces <em>en tu comunidad</em>.</h1>
-      <p class="hero-bajada">Cada donación llega a un comedor, una escuela o un merendero. DonaTrack te muestra a quién,
-        cuándo y cómo, con la foto de la entrega.</p>
+      <p class="hero-bajada">Seguí cada donación desde que se registra hasta que la entidad confirma la entrega.
+        DonaTrack te muestra a quién se asignó, en qué estado está y la foto que sube la entidad al confirmar.</p>
       <div class="acciones">
-        <a href="/prototipo/publico-registro-donante" class="boton boton--principal">Donar ahora</a>
+        <a href="/prototipo/publico-registro-donante" class="boton boton--principal">Quiero donar</a>
         <a href="/prototipo/publico-ingresar" class="boton boton--secundario">Ingresar</a>
       </div>
       <span class="sol" aria-hidden="true"></span>
@@ -78,13 +81,13 @@
           <circle class="nodo nodo--pendiente" cx="1080" cy="285" r="11"/>
         </svg>
         <ol class="lamina" role="list">
-          <li><span class="numeral">01</span><b>Entró al depósito</b><span>12 de octubre</span></li>
+          <li><span class="numeral">01</span><b>Registrada</b><span>12 de octubre</span></li>
           <li><span class="numeral">02</span><b>Asignada a Comedor Barrio Ejemplo</b>
             <span>13 de octubre</span></li>
-          <li><span class="numeral">03</span><b>Lista para entregar</b><span>14 de octubre</span></li>
+          <li><span class="numeral">03</span><b>Preparada para entregar</b><span>14 de octubre</span></li>
           <li><span class="numeral">04</span><b>En camino</b><span>Salió hoy a las 14:30</span></li>
-          <li><span class="numeral">05</span><b>Recibida, con la foto</b>
-            <span>Cuando el comedor la confirme</span></li>
+          <li><span class="numeral">05</span><b>Falta confirmar la entrega</b>
+            <span>La confirma el comedor con la foto</span></li>
         </ol>
         <!--/* El rótulo de la lámina va al pie, como en la ficha de campo (referencia 05). */-->
         <div class="rotulo-ficha">
@@ -93,12 +96,13 @@
         </div>
         <div class="pie-hero">
           <ul class="cifras" role="list">
-            <li><b>1.284</b> donaciones entregadas</li>
+            <li><b>1.284</b> entregas confirmadas</li>
             <li><b>46</b> entidades en el mapa</li>
-            <li><b>32</b> en camino ahora</li>
+            <li><b>32</b> donaciones en camino ahora</li>
           </ul>
-          <p class="nota"><a href="/prototipo/publico-mapa">Ver el mapa de entregadas</a><br>
-            Actualizado el 15 de octubre, 14:30.</p>
+          <p class="nota"><a href="/prototipo/publico-mapa">Ver el mapa de entregas confirmadas</a><br>
+            Las entregas confirmadas se cuentan desde marzo de 2026, con la confirmación de cada entidad.<br>
+            Actualizado el 15 de octubre de 2026, 14:30.</p>
         </div>
       </section>
     </div>

@@ -1,7 +1,7 @@
 # Interfaz de DonaTrack — proceso de diseño
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-30 · cliente liviano de E6**
+> **Versión 2 · 2026-10-31 (suma el tono común) · cliente liviano de E6**
 
 Este es el punto de entrada para diseñar y construir la interfaz del cliente liviano. Lo usan las
 personas del equipo y los agentes de IA. Las reglas técnicas del módulo están en
@@ -29,7 +29,7 @@ flowchart LR
 
 | Paso | Qué entra | Qué sale | Skill |
 |---|---|---|---|
-| 1. Insumos | Prototipo v2 de la diseñadora (punto de partida, ver [brief](identidad/brief.md)), bocetos de E1, mapa del sitio, requerimientos de E6 | Contexto listo | — ([bocetos](bocetos-e1.md), [mapa](mapa-del-sitio.md)) |
+| 1. Insumos | Prototipo v2 de la diseñadora (punto de partida, ver [brief](identidad/brief.md)), bocetos de E1, mapa del sitio, requerimientos de E6 y el brief de tono del equipo | Contexto listo | — ([bocetos](bocetos-e1.md), [mapa](mapa-del-sitio.md), [tono](tono-y-comunicacion.md)) |
 | 2. Identidad visual | Respuestas del usuario en 2 o 3 rondas cortas | `identidad/brief.md` y la paleta, tipografía y forma en `tokens.css` | `identidad-visual` |
 | 3. Diseño del flujo | Un flujo (por ejemplo, confirmar recepción) | `flujos/<flujo>.md` con recorrido, estados, textos y revisión de usabilidad | `ux-flujo` |
 | 4. Pantallas | El flujo aprobado | Vistas y componentes en `cliente-liviano/` | `vista-ui` |
@@ -45,6 +45,10 @@ y rótulos, para comparar qué mensaje transmite cada una
 |---|---|---|---|---|
 | Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `templates/` y `static/css/tokens.css` y `app.css` | Por defecto |
 | Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `templates/alternativas/cozy-medieval/` y `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
+
+Las alternativas cambian la metáfora y la estética, no el mensaje: la voz, el tono de cada
+pantalla, los nombres de los estados y las cifras son comunes y están en
+[tono y comunicación](tono-y-comunicacion.md).
 
 Cada pantalla o componente nuevo se escribe y se estiliza dos veces, una por alternativa, con los
 mismos datos y acciones (un test compara los dos juegos y deja pasar solo los títulos y rótulos de
@@ -111,6 +115,7 @@ El proceso no debe cansar a quien decide. Reglas para el agente:
 - [ ] no tiene huecos ni "a definir";
 - [ ] recorre el camino feliz y los desvíos;
 - [ ] lista cada estado de cada pantalla con su texto;
+- [ ] sus textos pasan el [filtro de tono](tono-y-comunicacion.md#filtro-de-tono-7-preguntas);
 - [ ] pasó la revisión de usabilidad (las 10 heurísticas);
 - [ ] fue aprobada por el usuario.
 
@@ -119,6 +124,8 @@ El proceso no debe cansar a quien decide. Reglas para el agente:
 - [ ] usa solo los colores, tipografías y espacios con nombre de `tokens.css`, y se ve bien en
       las dos alternativas de identidad;
 - [ ] muestra todos sus estados (vacío, cargando, éxito, error, sin permiso) con el texto del flujo;
+- [ ] dice cada estado de una donación como es (lo pendiente, pendiente) y cada cifra con su
+      período, su fuente y su fecha de actualización ([tono](tono-y-comunicacion.md));
 - [ ] funciona sin JavaScript en lo esencial (ver, navegar y enviar formularios);
 - [ ] pasa la comprobación automática en los 3 anchos: accesibilidad AA sin errores, nada
       desbordado y controles de al menos 48×48 px;
@@ -173,6 +180,7 @@ Cada regla vive en un solo archivo. Para cambiar algo, se edita ese archivo y na
 | Sumar una alternativa de identidad | Creo su brief en `identidad/`, la carpeta `static/css/alternativas/<nombre>/` con su `tokens.css` y su `app.css`, el juego completo de plantillas en `templates/alternativas/<nombre>/` (una gemela por plantilla y fragmento; el test de reglas lo exige) y su tabla de voz en `src/test/resources/voz/<nombre>.txt`; la comprobación visual la recorre sola |
 | Cambiar los anchos de referencia | Edito la constante `AnchosDeReferencia` y la tabla de arriba |
 | Cambiar una regla de diseño | Edito [dirección de arte](direccion-de-arte.md) o [patrones y textos](patrones-y-microcopy.md) |
+| Cambiar la voz, el tono o los mensajes | Edito [tono y comunicación](tono-y-comunicacion.md), siempre a partir de una versión nueva del brief de tono del equipo (y guardo el PDF en `identidad/`) |
 | Sumar una skill | Creo `.agents/skills/<nombre>/SKILL.md` y su adaptador `.claude/skills/<nombre>/SKILL.md` (copiar uno existente y cambiar nombre y descripción); la agrego a `docs/context-index.md` |
 
 ## Glosario
@@ -197,6 +205,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md) | El flujo completo del sitio en Cozy: recorrido por rol, pantallas y decisiones del prototipo navegable (`/prototipo/<pantalla>` en la maqueta) |
 | [identidad/referencias-cozy-medieval/](identidad/referencias-cozy-medieval/README.md) | Las 18 imágenes de referencia de Cozy que trajo el usuario, con qué se toma de cada una |
 | [identidad/brief-raices.md](identidad/brief-raices.md) y [identidad/referencias-raices/](identidad/referencias-raices/README.md) | Raíces, una tercera alternativa en exploración (raíces y semillas para empresas que donan): su brief en construcción y las referencias que trajo el usuario |
+| [tono-y-comunicacion.md](tono-y-comunicacion.md) y [identidad/brief-tono-y-comunicacion-v1.0.pdf](identidad/brief-tono-y-comunicacion-v1.0.pdf) | Voz, tono por pantalla, estados, cifras, personas y el filtro de 7 preguntas, comunes a todas las alternativas; el PDF es el brief del equipo del que sale |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |

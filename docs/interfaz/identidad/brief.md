@@ -6,6 +6,12 @@
 > Resultado de la skill `identidad-visual` (3 rondas de preguntas). Plantilla:
 > [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
 > dice "abierto"; lo que propone el agente dice "propuesto".
+> **Tono común (2026-10-31):** la voz, el tono de cada pantalla, los estados y las cifras los fija
+> [tono y comunicación](../tono-y-comunicacion.md), que rige a todas las alternativas y prevalece
+> sobre este brief donde choquen. Choques pendientes de corregir, a decisión del usuario: "números
+> de impacto" (son resultados registrados, con período y fuente), el tono festivo en logros, metas y
+> misiones (celebra hechos confirmados, sin presionar), el rótulo "Tu impacto" y el fragmento de
+> cifra, que habla de impacto.
 
 ## Personalidad
 

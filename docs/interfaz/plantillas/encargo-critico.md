@@ -47,7 +47,10 @@ Revisá solo la tuya (llega en tu mensaje); lo demás lo miran otros.
 - **Flujo:** ¿se entiende qué hacer y cómo seguir? ¿El nombre del menú se ve? Salidas claras, sin
   callejones; estados (vacío, error, éxito); formularios (`method`, `required`, `autocomplete`);
   avisos que se anuncian; datos de ejemplo coherentes (un solo calendario); las 10 heurísticas de
-  `docs/interfaz/patrones-y-microcopy.md`.
+  `docs/interfaz/patrones-y-microcopy.md`; los textos contra el filtro de tono de
+  `docs/interfaz/tono-y-comunicacion.md` (un estado pendiente que se lee cumplido, una cifra sin
+  período, urgencia o culpa). La metáfora de la voz es libre: no la critiques por audaz, solo si
+  promete lo que no se puede comprobar.
 
 ## Gravedad
 

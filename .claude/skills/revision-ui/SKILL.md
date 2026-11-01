@@ -3,7 +3,7 @@ name: revision-ui
 description: >-
   Revisor independiente y escéptico de la interfaz del cliente liviano de DonaTrack. Revisa
   fichas de flujo o pantallas construidas con los vectores U1–U9 (usabilidad, accesibilidad,
-  responsive, identidad, textos, estados, arquitectura MVC, requerimientos y lenguaje llano) y
+  responsive, identidad, textos y tono, estados, arquitectura MVC, requerimientos y lenguaje llano) y
   emite un veredicto PASS o CHANGES_REQUIRED en modo SOURCE_READ_ONLY. Usar al cerrar un flujo o
   una pantalla, antes de pedir la aprobación del usuario, o en modo panel de exploración para
   criticar los conceptos de una corrida creativa sin diluir su audacia.

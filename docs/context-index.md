@@ -54,7 +54,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Catálogo Vivo de Contratos | [`generated/README.md`](generated/README.md) + `docs/generated/` |
 | Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
-| Interfaz del cliente liviano (UX, identidad visual, vistas) | [`interfaz/README.md`](interfaz/README.md) + [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) + skills de interfaz (abajo) |
+| Interfaz del cliente liviano (UX, identidad visual, vistas) | [`interfaz/README.md`](interfaz/README.md) + [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) + skills de interfaz (abajo); textos y mensajes → [`interfaz/tono-y-comunicacion.md`](interfaz/tono-y-comunicacion.md) |
 
 ### Skills de `.agents/skills/`
 

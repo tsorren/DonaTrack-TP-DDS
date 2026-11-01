@@ -22,6 +22,8 @@ description: >-
 - El boceto de E1: ubicarlo en [`bocetos-e1.md`](../../../docs/interfaz/bocetos-e1.md) y leer la
   página (cómo leer el PDF: README, "Cómo leer los bocetos de E1").
 - El lugar en el [mapa del sitio](../../../docs/interfaz/mapa-del-sitio.md).
+- El [tono y comunicación](../../../docs/interfaz/tono-y-comunicacion.md): a qué audiencia le habla
+  la pantalla, su tono, cómo se nombran los estados y las cifras.
 - Los contratos: `docs/arquitectura/contratos/openapi-*.yaml`.
 
 ## 2. Completar la ficha
@@ -32,6 +34,8 @@ Copiar la plantilla a `docs/interfaz/flujos/<flujo>.md` y completar sus 9 seccio
   tabla que en 360 px pasa a tarjetas), se cambia y el motivo va a la
   [bitácora](../../../docs/interfaz/bitacora.md).
 - **Cada pantalla tiene todos sus estados**, con su texto, siguiendo las reglas de textos.
+- **Los textos pasan el filtro de tono** (las 7 preguntas): lo pendiente se dice pendiente, las
+  cifras llevan período y fecha, sin urgencia ni culpa.
 - **Nada de reglas de negocio inventadas.** Si algo no está en los requerimientos ni en los
   contratos, va a "Preguntas abiertas".
 

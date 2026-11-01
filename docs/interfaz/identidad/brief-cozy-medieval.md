@@ -8,6 +8,12 @@
 > [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
 > dice "propuesto". La otra alternativa es la **Alternativa Glassmorphism**
 > ([brief](brief.md)).
+> **Tono común (2026-10-31):** la voz, el tono de cada pantalla, los estados y las cifras los fija
+> [tono y comunicación](../tono-y-comunicacion.md), que rige a todas las alternativas y prevalece
+> sobre este brief donde choquen; la aventura vive en los títulos y rótulos, no en los estados ni
+> en las cifras. Choques pendientes de corregir, a decisión del usuario: "Donar ahora" en la portada
+> del prototipo (urgencia), "Tu huella" en la tabla de voz (sugiere impacto), "Llegaron a destino"
+> y "llegue a su pueblo" (solo con la entrega confirmada) y las cifras de la portada sin período.
 
 ## Para qué existe esta alternativa
 

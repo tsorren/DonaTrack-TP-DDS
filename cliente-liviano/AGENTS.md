@@ -78,7 +78,10 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 - Texto siempre con `th:text`. `th:utext` nunca con datos que vienen de afuera.
 - Cada estado del flujo (vacío, cargando, éxito, error, sin permiso) tiene su representación. En el
   perfil `maqueta` se ve con `?escenario=<nombre>`.
-- Los textos salen de la ficha del flujo (`docs/interfaz/flujos/`), no se improvisan.
+- Los textos salen de la ficha del flujo (`docs/interfaz/flujos/`), no se improvisan, y siguen el
+  [tono común](../docs/interfaz/tono-y-comunicacion.md) de todas las alternativas: lo pendiente se
+  dice pendiente, las cifras van con período y fecha, sin urgencia ni culpa. La voz propia de una
+  alternativa cambia la forma de un título o un rótulo, no lo que significa.
 
 ## HTMX y mejora progresiva
 

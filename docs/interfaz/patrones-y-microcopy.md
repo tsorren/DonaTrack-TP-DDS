@@ -1,7 +1,7 @@
 # Patrones, estados y textos
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-30 · parte del [proceso de diseño](README.md)**
+> **Versión 2 · 2026-10-31 (remite al tono común) · parte del [proceso de diseño](README.md)**
 
 Cubre RNF-UI-01 a RNF-UI-06 de [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md).
 La cátedra pide **patrones** conocidos (Material Design, Human Interface Guidelines), no una
@@ -49,7 +49,11 @@ librería: cada componente del catálogo `/estilos` cita el patrón que sigue.
 
 ## Voz y tono
 
-- **Voseo**, como en los bocetos ("Sumate", "Podés"). Se confirma en la ronda de identidad.
+La voz, el tono de cada pantalla, los nombres de los estados, las cifras y cómo se habla de las
+personas están en [tono y comunicación](tono-y-comunicacion.md), común a todas las alternativas. En
+resumen:
+
+- **Voseo**, como en los bocetos ("Sumate", "Podés").
 - Cercano y concreto. Trata al usuario como alguien que hace algo valioso, sin exagerar.
 - Oraciones cortas. Mayúscula solo al inicio de la oración, no en cada palabra.
 
@@ -66,6 +70,12 @@ librería: cada componente del catálogo `/estilos` cita el patrón que sigue.
 8. Nada de signos de exclamación en los errores.
 9. Una ayuda (tooltip o texto chico) solo donde la duda es real, no en cada campo.
 10. Si se pide algo sensible (fotos, datos personales), se dice para qué se usa.
+11. Cada estado dice lo que pasó: lo pendiente se muestra pendiente, nunca con el nombre del estado
+    cumplido ([estados](tono-y-comunicacion.md#los-estados-de-una-donación)).
+12. Una cifra que se pueda malinterpretar lleva período y fuente, y dice cuándo se actualizó
+    ([cifras](tono-y-comunicacion.md#cifras-y-datos)).
+13. Sin urgencia artificial, culpa ni promesas que no se pueden comprobar
+    ([cómo no escribimos](tono-y-comunicacion.md#cómo-no-escribimos)).
 
 ## Ayudas por flujo crítico (RNF-UI-04)
 

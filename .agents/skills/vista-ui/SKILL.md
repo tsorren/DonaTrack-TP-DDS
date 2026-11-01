@@ -38,7 +38,9 @@ description: >-
    - Los datos, las acciones y los nombres de botones y enlaces son **los mismos** en las dos: un
      test (`InterfazFitnessTest`) falla si difieren. Cada alternativa puede decir a su modo los
      títulos y los rótulos, declarados en su tabla de voz (`src/test/resources/voz/<alt>.txt`).
-   - Los textos salen de la ficha del flujo.
+   - Los textos salen de la ficha del flujo y siguen el
+     [tono común](../../../docs/interfaz/tono-y-comunicacion.md). La voz de la alternativa cambia
+     títulos y rótulos; los estados, las cifras y los errores dicen lo mismo en las dos.
    - Formularios reales: `action` y `method` verdaderos. HTMX los mejora y lleva `hx-indicator`.
 5. **Componente nuevo.**
    - Fragmento parametrizado en `templates/fragmentos/` y su gemela, con el mismo nombre y los

@@ -3,7 +3,7 @@ name: revision-ui
 description: >-
   Revisor independiente y escéptico de la interfaz del cliente liviano de DonaTrack. Revisa fichas
   de flujo o pantallas construidas con los vectores U1–U9 (usabilidad, accesibilidad, responsive,
-  identidad, textos, estados, arquitectura MVC, requerimientos y lenguaje llano) y emite un
+  identidad, textos y tono, estados, arquitectura MVC, requerimientos y lenguaje llano) y emite un
   veredicto PASS o CHANGES_REQUIRED en modo SOURCE_READ_ONLY. Usar al cerrar un flujo o una
   pantalla, antes de pedir la aprobación del usuario, o en modo panel de exploración para criticar
   los conceptos de una corrida creativa sin diluir su audacia.
@@ -39,7 +39,7 @@ description: >-
 | U2 Accesibilidad | Reporte de axe en 3 anchos, foco visible y en orden, etiquetas, nombres accesibles, color con texto | Una violación AA o un control sin nombre |
 | U3 Anchos y toque | Capturas en 360, 1280 y 1920; desbordes; controles de 48×48 px | La acción principal no se ve o no se toca bien en 360 px |
 | U4 Identidad | Solo tokens de uso; coherencia con el brief; una audacia por pantalla; nada de "Lo que evitamos" | Colores sueltos, o una pantalla que podría ser de cualquier producto |
-| U5 Textos | Reglas de textos; acciones con verbo y resultado; errores que dicen cómo seguir | "Error" sin explicación, o botones "Aceptar" |
+| U5 Textos y tono | Reglas de textos; acciones con verbo y resultado; errores que dicen cómo seguir; el [tono común](../../../docs/interfaz/tono-y-comunicacion.md): tono del momento, estados como son, cifras con período y fecha, personas por su rol, el filtro de 7 preguntas | "Error" sin explicación, botones "Aceptar", un paso pendiente que se lee cumplido, una cifra sin período, urgencia o culpa |
 | U6 Estados y avisos | Todos los estados de la ficha; aviso adecuado; espera de más de 300 ms con indicador | Falta el estado vacío o el de error del servidor |
 | U7 Arquitectura | Controller sin lógica, sin dominio, sin `common-lib`; funciona sin JS; fragmento + `/estilos` | Un `hx-post` sin `action` real |
 | U8 Requerimientos | Criterio de aceptación del RF; navegación de 3 niveles o menos; desvíos del boceto anotados en la bitácora | Un criterio del RF que no se cumple |
@@ -57,7 +57,7 @@ U1 Usabilidad:        NONE_DETECTED | NOT_APPLICABLE | NOT_VERIFIED | <hallazgo 
 U2 Accesibilidad:     …
 U3 Anchos y toque:    …
 U4 Identidad:         …
-U5 Textos:            …
+U5 Textos y tono:     …
 U6 Estados y avisos:  …
 U7 Arquitectura:      …
 U8 Requerimientos:    …

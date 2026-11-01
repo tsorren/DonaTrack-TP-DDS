@@ -57,10 +57,14 @@ Además de "Lo que evitamos" de la dirección de arte:
 | Tipografía y paleta de la alternativa | | | |
 | JavaScript propio como mejora | | | |
 
-Fijo siempre, aunque la tabla diga otra cosa: los datos y las acciones, el piso, el stack y la otra
-alternativa ([Libertad creativa](../direccion-de-arte.md#libertad-creativa)).
+Fijo siempre, aunque la tabla diga otra cosa: los datos y las acciones, el piso, el stack, la otra
+alternativa ([Libertad creativa](../direccion-de-arte.md#libertad-creativa)) y el
+[tono común](../tono-y-comunicacion.md).
 
 ## 7. Voz
+
+La voz propia vive en títulos y rótulos. Estados, cifras, acciones y errores siguen el
+[tono común](../tono-y-comunicacion.md) y no se adornan.
 
 - **Tono:** una frase (por ejemplo, "aventura adulta, nunca infantil").
 - **Cómo dice algunos títulos y rótulos:**

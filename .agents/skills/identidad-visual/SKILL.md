@@ -16,8 +16,11 @@ description: >-
 
 ## 1. Antes de empezar
 
-1. Leer las reglas para preguntar (README, "Cómo se le pregunta al usuario"), la dirección de arte
-   y las pistas para la identidad de [`bocetos-e1.md`](../../../docs/interfaz/bocetos-e1.md).
+1. Leer las reglas para preguntar (README, "Cómo se le pregunta al usuario"), la dirección de arte,
+   las pistas para la identidad de [`bocetos-e1.md`](../../../docs/interfaz/bocetos-e1.md) y el
+   [tono y comunicación](../../../docs/interfaz/tono-y-comunicacion.md). El tono ya fija el trato,
+   la personalidad verbal, los estados y las cifras para todas las alternativas: no se preguntan.
+   La identidad visual decide la metáfora y la estética, y solo la voz propia de títulos y rótulos.
 2. Si ya existe `docs/interfaz/identidad/brief.md` y el pedido es un ajuste puntual ("probemos otro
    verde"), saltar al paso 4 con el tema que corresponda.
 
@@ -29,17 +32,17 @@ propone el agente. Las preguntas ya están redactadas; adaptar las opciones al c
 
 **Ronda 1 — personalidad**
 
-1. "¿Qué tres palabras deberían describir a DonaTrack?" → "Cercana, confiable, viva
+1. "¿Qué tres palabras deberían describir cómo se ve DonaTrack?" → "Cercana, confiable, viva
    (Recomendada)" · "Seria, transparente, eficiente" · "Alegre, comunitaria, cálida".
 2. "¿A qué no queremos parecernos?" → "A un banco o una app de trámites" · "A una ONG antigua" ·
    "A una startup más".
-3. "¿Qué tiene que lucirse más?" → "Las fotos de las entregas (Recomendada)" · "Los números de
-   impacto" · "Las personas y las entidades".
+3. "¿Qué tiene que lucirse más?" → "Las fotos de las entregas (Recomendada)" · "Los resultados
+   registrados (entregas confirmadas)" · "Las personas y las entidades".
 
-**Ronda 2 — voz y forma**
+**Ronda 2 — voz propia y forma**
 
-1. "¿Cómo le hablamos a la gente?" → "Con vos, cercano, como los bocetos: 'Sumate' (Recomendada)"
-   · "Con vos, más formal" · "Con usted".
+1. "¿Cómo dicen los títulos esta alternativa?" → dos o tres tonos con un título de muestra cada uno
+   en el `preview`; el trato (vos) y el resto de la voz vienen del tono común.
 2. "¿Qué sensación de formas preferís?" → "Suaves y amables" · "Firmes y precisas" · "Mezcla:
    suaves en botones, firmes en la estructura". Mostrar un `preview` con un botón y una tarjeta de
    cada tipo.

@@ -11,5 +11,7 @@ paths:
 - Skills del proceso: `identidad-visual`, `iteracion-ab`, `ux-flujo`, `vista-ui` y `revision-ui`.
   Para diseñar desde cero sin el usuario: `relevamiento-creativo` y después `corrida-creativa`.
 - Ninguna pantalla sin su flujo aprobado en `docs/interfaz/flujos/`.
+- Todo texto de pantalla sigue `docs/interfaz/tono-y-comunicacion.md`, común a todas las
+  alternativas: estados como son, cifras con período, sin urgencia ni culpa.
 - Al usuario o la diseñadora: una decisión por pregunta, como máximo 3 por ronda, opción
   recomendada y palabras simples.
