@@ -26,6 +26,29 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · tipografia (Raíces) · Grotesca ancha de afiche: Archivo en todo
+
+- **Decisión:** la letra de Raíces es Archivo (Omnibus-Type, Buenos Aires), una sola familia con
+  sus anchos. El título, los numerales, las cifras y la marca van anchos y pesados, como las letras
+  gigantes de la referencia 02. La parte cálida del título ("en tu comunidad") y "Todo lo que pasa
+  hasta que llega" van en su cursiva. El texto y los botones van en ancho normal o apenas ancho.
+  Reemplaza las provisorias: Alegreya era la letra de Cozy y DM Sans la de Glassmorphism. Está
+  aplicada en `variantes/comun/raices.css`, con dos variables, `--p-letra-titulo` y
+  `--p-letra-texto`, y en `variantes/concepto-b.css`. Tiene licencia OFL y se sirve desde
+  `static/fuentes/` junto a su licencia (`@fontsource-variable/archivo` 5.3.0, subconjunto
+  latino).
+- **Alternativas:** B, Clarendon de paquete de semillas: Besley en los títulos, los numerales y las
+  cifras, con su cursiva, y Archivo en el texto. Era más cálida y estaba más cerca de lo que ya
+  había. El usuario la eligió primero y después la cambió por A, antes de cerrar la decisión.
+- **Por qué:** A es la que más sorprende y la que mejor separa Raíces de las otras dos
+  alternativas: sin remates, no se confunde con Cozy; ancha y pesada, no se confunde con
+  Glassmorphism. Además, es la recomendada por el agente.
+- **Costo:** la calidez ya no está en la letra. Queda en el dibujo, los colores, el grano y la
+  segunda tinta corrida del título. Las cifras anchas ocupan más lugar, así que van con un pequeño
+  aire antes de su rótulo. Las dos variantes pasaron la verificación AA. Sigue el A/B de la grava.
+- **Quién decidió:** usuario, con la recomendación del agente (A), después de elegir primero B.
+- **Evidencia:** `evidencia/raices/tipografia-portada/`.
+
 ### 2026-10-31 · proceso · La verificación visual mide el contraste que axe deja sin medir
 
 - **Decisión:** donde axe no puede calcular el contraste (por un pseudo-elemento, un degradado o

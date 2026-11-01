@@ -1,7 +1,8 @@
 /* B — El corte de suelo: arriba, poco (el título y el brote); abajo, en la tierra, todo lo que
    sostiene una donación: sus cinco etapas como raíces (profundidad: qué hay detrás de una). Estilo
-   impreso editorial (referencias 01 y 02): el sol detrás del brote, títulos grandes en cursiva y
-   numerales gigantes. La grava de la franja del medio no está aprobada: pendiente de su A/B. */
+   impreso editorial (referencias 01 y 02): el sol detrás del brote, títulos grandes y numerales
+   gigantes, anchos y derechos como en un afiche. La grava de la franja del medio no está
+   aprobada: pendiente de su A/B. */
 @import url("comun/raices.css");
 
 .superficie {
@@ -116,7 +117,9 @@
 .suelo h2 {
   margin: 2rem 0 0.25rem;
   color: var(--p-texto-suelo);
-  font: italic 400 clamp(2rem, 4.5vw, 3.25rem) / 1.05 Alegreya, serif;
+  font: italic 700 clamp(2rem, 4.5vw, 3.25rem) / 1.05 var(--p-letra-titulo);
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
 }
 
 .ficha-meta {
@@ -158,7 +161,10 @@
 
 .suelo .cifras b {
   color: var(--p-destacado);
-  font: italic 400 clamp(2.25rem, 4vw, 3.25rem) / 1 Alegreya, serif;
+  font: 900 clamp(2.25rem, 4vw, 3.25rem) / 1 var(--p-letra-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+  margin-inline-end: 0.15em;
 }
 
 .suelo :focus-visible {

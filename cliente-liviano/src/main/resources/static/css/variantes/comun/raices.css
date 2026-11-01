@@ -1,35 +1,34 @@
-/* Base común del hero de Raíces (tercera alternativa, en exploración): paleta Bosque y estilo
-   impreso editorial, un afiche risográfico (los dos decididos en su A/B), letras provisorias,
-   marca, botones, el grano de impresión de la referencia 01 y los rótulos de la lámina de campo de
-   la 05. Las letras se deciden después con su propio A/B. */
+/* Base común del hero de Raíces (tercera alternativa, en exploración): paleta Bosque, estilo
+   impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
+   en su A/B), marca, botones, el grano de impresión de la referencia 01 y los rótulos de
+   la lámina de campo de la 05. */
 
 @font-face {
-  font-family: Alegreya;
+  font-family: Archivo;
   font-style: normal;
-  font-weight: 400 900;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
-  src: url("../../../fuentes/alegreya-latin.woff2") format("woff2");
+  src: url("../../../fuentes/archivo-latin.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: Alegreya;
+  font-family: Archivo;
   font-style: italic;
-  font-weight: 400 900;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
-  src: url("../../../fuentes/alegreya-cursiva-latin.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "DM Sans";
-  font-style: normal;
-  font-weight: 100 1000;
-  font-display: swap;
-  src: url("../../../fuentes/dm-sans-latin.woff2") format("woff2");
+  src: url("../../../fuentes/archivo-cursiva-latin.woff2") format("woff2");
 }
 
 :root {
   /* Paleta Bosque (A/B de paleta, 2026-10-31): valores por función, no por tono. La tierra en tres
      verdes de monte, raíces color paja y el verde bosque en títulos y botones. */
+  /* La letra (A/B de letra, 2026-10-31): Archivo (Omnibus-Type, Buenos Aires) en todo. Los
+     títulos, los numerales y las cifras, anchos y pesados como un afiche (referencia 02); el texto,
+     en ancho normal. El carácter sale del ancho y del peso. */
+  --p-letra-titulo: Archivo, system-ui, sans-serif;
+  --p-letra-texto: Archivo, system-ui, sans-serif;
   --p-papel: #eeebde;
   --p-tinta: #18211b;
   --p-tinta-suave: #48524a;
@@ -71,7 +70,7 @@ body {
   margin: 0;
   background: var(--p-papel);
   color: var(--p-tinta-suave);
-  font: 400 1.0625rem/1.6 "DM Sans", system-ui, sans-serif;
+  font: 400 1.0625rem/1.6 var(--p-letra-texto);
 }
 
 a {
@@ -113,7 +112,8 @@ a {
   min-height: 3rem;
   color: var(--p-tinta);
   text-decoration: none;
-  font: 600 1.375rem/1 Alegreya, serif;
+  font: 800 1.375rem/1 var(--p-letra-titulo);
+  font-stretch: 112%;
 }
 
 .marca em {
@@ -145,8 +145,9 @@ a {
 .hero h1 {
   margin: 0 0 1.25rem;
   color: var(--p-tinta);
-  font: 400 clamp(2.9rem, 9.5vw, 7.25rem) / 0.95 Alegreya, serif;
-  letter-spacing: -0.025em;
+  font: 800 clamp(2.5rem, 7.6vw, 6rem) / 0.92 var(--p-letra-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
@@ -177,7 +178,8 @@ a {
   border: 2px solid var(--p-acento);
   border-radius: 0;
   box-shadow: 0.3rem 0.3rem 0 var(--p-hoja);
-  font-weight: 600;
+  font-weight: 700;
+  font-stretch: 112%;
   text-decoration: none;
 }
 
@@ -216,7 +218,9 @@ a {
 }
 
 .numeral {
-  font: italic 400 1.25rem/1 Alegreya, serif;
+  font: 900 1.25rem/1 var(--p-letra-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
 }
 
 .lamina b {
@@ -234,7 +238,9 @@ a {
 }
 
 .cifras b {
-  font: 600 1.5rem/1 Alegreya, serif;
+  font: 900 1.5rem/1 var(--p-letra-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
 }
 
 .nota {

@@ -101,12 +101,20 @@ Detalle en la [bitácora](../bitacora.md).
 | Sol | Medio disco salvia claro que sale de la tierra detrás del brote | El resultado: lo que creció |
 | Tierra | La franja de las etapas; la grava está en el código, pero **no aprobada** (pendiente de su A/B) | Abierto |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
-| Numerales y cifras | Gigantes, en cursiva y color paja | El recorrido, como capítulos de un afiche |
+| Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra) | El recorrido, como capítulos de un afiche |
 | Botones y bordes | Rectos, sin redondeo, con una sombra plana salvia corrida | Tinta plana, impreso |
 
 **Forma:** sale del estilo (rectos, sombra plana corrida); no hace falta un A/B propio salvo que
-el usuario lo pida. La línea entre horizontes no entró. **Grava:** pendiente de su A/B. **Letra:** sigue provisoria (Alegreya en
-títulos y DM Sans en el texto); también pendiente de su A/B.
+el usuario lo pida. La línea entre horizontes no entró. **Grava:** pendiente de su A/B.
+
+**Letra (usuario, quinto A/B): grotesca ancha de afiche.** Una sola familia, Archivo
+(Omnibus-Type, Buenos Aires); el carácter sale del ancho y del peso. Detalle en la
+[bitácora](../bitacora.md).
+
+| Pieza | Cómo es | Qué significa |
+|---|---|---|
+| Título, numerales, cifras y marca | Anchos y pesados; la parte cálida del título, en cursiva | Las letras gigantes de un afiche (referencia 02): firme, se recuerda |
+| Texto, botones y datos | Ancho normal (los botones, apenas anchos) | Clara y neutra: deja hablar al título |
 
 ## Libertades (usuario)
 
