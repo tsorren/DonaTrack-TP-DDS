@@ -166,11 +166,11 @@ class PrototipoController {
     String consulta = request.getQueryString();
     // La misma pantalla en Cozy, para el aviso de Raíces sin dibujar; si Cozy tampoco la dibujó,
     // nada.
-    model.addAttribute(
-        "enCozy",
-        dibujada(COZY, pantalla)
-            ? COZY.direccion() + pantalla + (consulta == null ? "" : "?" + consulta)
-            : null);
+    String enCozy = null;
+    if (dibujada(COZY, pantalla)) {
+      enCozy = COZY.direccion() + pantalla + (consulta == null ? "" : "?" + consulta);
+    }
+    model.addAttribute("enCozy", enCozy);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
     model.addAttribute(
         "navegacion",

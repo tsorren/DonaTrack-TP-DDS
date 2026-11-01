@@ -1,6 +1,9 @@
 # Flujo: Confirmar recepción, en Raíces
 
 > **Estado:** aprobado · **Fecha:** 2026-11-01 · **Aprobó:** usuario (2026-11-01, al ver la pantalla construida)
+> Orden: el contenido lo decidió el usuario en una ronda de preguntas antes de construir; la
+> aprobación formal llegó después de los A/B, a pedido suyo ("primero los A/B"), como en Seguir
+> entregas.
 > Plantilla de la skill `ux-flujo`. Es la tercera pantalla de Raíces, la tercera alternativa en
 > exploración, y la primera de la entidad. Vive en su prototipo propio
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
