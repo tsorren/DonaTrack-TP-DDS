@@ -91,8 +91,13 @@ Ver la [bitácora](../bitacora.md).
   sube la entidad cuando confirma la entrega." La lámina dice "Cómo funciona" con tres pasos
   ("Registrás lo que donás.", "Se asigna a una entidad.", "La entidad confirma la entrega.").
   Cada etiqueta dice "Pide …" y la de tu entidad, "Pedí lo que necesitás y confirmá lo que
-  recibís.". Las cifras se llaman "Lo que está confirmado" y la bajada del mes es "Octubre de 2026.
-  La entidad sube la foto cuando confirma la entrega." Redacción del agente.
+  recibís.". El rótulo de la tierra suma la cifra: "entre las 46 que están en el mapa. Cada una pide
+  lo que necesita y confirma lo que recibe.". Las cifras se llaman "Lo que está confirmado" y la
+  bajada del mes es "Las últimas entregas de octubre de 2026. La entidad sube la foto cuando
+  confirma la entrega." (las cuatro entregas son una muestra, no el mes entero). La que va en
+  camino dice "Falta confirmar la entrega: la confirma el comedor con la foto.", la forma del tono
+  común para lo pendiente. Redacción del agente; reemplazan los textos anteriores de esta sección
+  donde difieren.
 - **Rótulo de la tierra (2026-11-01):** "Quiénes reciben las donaciones", con la bajada "Una entidad
   de cada tipo, entre las que están en el mapa." Reemplaza "Todo lo que pasa hasta que llega", que
   afirmaba la llegada y se fue con las etapas.

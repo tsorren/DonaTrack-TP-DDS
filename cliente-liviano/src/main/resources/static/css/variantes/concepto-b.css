@@ -864,7 +864,7 @@
   /* El tronco sale pegado a la línea de tierra; debajo del dibujo, lugar para tu entidad. */
   .herbario {
     padding-top: 0;
-    padding-bottom: 10rem;
+    padding-bottom: 12rem;
   }
 
   /* Cada etiqueta, colgada de la punta de su raíz: la posición sale del dibujo (1200 × 600). */
@@ -877,7 +877,7 @@
 
   .etiqueta {
     position: absolute;
-    width: 8.75rem;
+    width: 8.25rem;
     padding-top: 0;
     translate: -50% -0.85rem;
   }
@@ -895,8 +895,8 @@
 
   .etiqueta--tuya {
     left: 50%;
-    top: 86.667%;
-    width: 11rem;
+    top: 93.333%;
+    width: 10.5rem;
     margin: 0;
     padding: 1.25rem 0.75rem 1rem;
     background: var(--p-suelo);
