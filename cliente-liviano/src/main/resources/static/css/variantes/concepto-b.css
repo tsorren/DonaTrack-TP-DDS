@@ -307,7 +307,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
-  gap: 1.25rem 2.5rem;
+  gap: 2.25rem 2.5rem;
   max-width: 40rem;
   margin: 0 auto;
   padding: 0;
@@ -319,7 +319,7 @@
   display: grid;
 }
 
-/* La rama, del costado de la etiqueta al tronco, a la altura del ojal. */
+/* La rama, del costado de la etiqueta al tronco. */
 .etiqueta::before {
   content: "";
   position: absolute;
@@ -339,7 +339,7 @@
 .etiqueta:where(:nth-child(odd):not(.etiqueta--tuya))::after {
   content: "";
   position: absolute;
-  top: -1.25rem;
+  top: -2.25rem;
   bottom: 0;
   left: calc(100% + 1.25rem - 2.5px);
   width: 5px;
@@ -364,7 +364,7 @@
   background: var(--p-suelo);
 }
 
-/* La etiqueta de herbario: papel con el ojal arriba y la segunda tinta corrida. */
+/* La etiqueta de herbario: papel con la segunda tinta corrida, colgada de su sello. */
 .etiqueta a:not(.boton) {
   position: relative;
   display: grid;
@@ -372,7 +372,7 @@
   gap: 0.1rem;
   align-content: start;
   min-height: 3rem;
-  padding: 1.5rem 0.75rem 0.875rem;
+  padding: 1.875rem 0.75rem 0.875rem;
   color: var(--p-tinta);
   background: var(--p-papel);
   box-shadow: 0.3rem 0.3rem 0 var(--p-hoja);
@@ -381,17 +381,17 @@
   line-height: 1.3;
 }
 
-.etiqueta a:not(.boton)::before {
-  content: "";
+/* El sello en la punta (usuario, A/B de la red, 2026-11-01): un disco paja con el ícono de lo que
+   pide la entidad, el mismo del cuaderno del mes, y la segunda tinta corrida. */
+.etiqueta-sello {
   position: absolute;
-  top: 0.45rem;
+  top: -1.375rem;
   left: 50%;
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
   translate: -50% 0;
-  border: 2px solid var(--p-tinta-suave);
-  border-radius: 50%;
-  background: var(--p-suelo);
+  color: var(--p-suelo-hondo);
+  fill: currentcolor;
 }
 
 .etiqueta b {
@@ -447,8 +447,8 @@
 
 /* Con la red, el tronco sigue punteado desde la última fila hasta tu entidad. */
 .herbario:not(.herbario--sin-red) .etiqueta--tuya::before {
-  top: calc(-1.5rem - 1.25rem - 2px);
-  height: calc(1.5rem + 1.25rem);
+  top: calc(-1.5rem - 2.25rem - 2px);
+  height: calc(1.5rem + 2.25rem);
 }
 
 .etiqueta--tuya b {
@@ -1024,7 +1024,8 @@ dl.registro-datos > div::after {
     padding-bottom: 12rem;
   }
 
-  /* Cada etiqueta, colgada de la punta de su raíz: la posición sale del dibujo (1200 × 600). */
+  /* Cada etiqueta, con el centro de su sello en la punta de su raíz: la posición sale del dibujo
+     (1200 × 600). Crecen con el ancho hasta donde no se pisan. */
   .etiquetas {
     position: absolute;
     inset: 0 2rem auto;
@@ -1036,14 +1037,22 @@ dl.registro-datos > div::after {
 
   .etiqueta {
     position: absolute;
-    width: 8.25rem;
+    width: clamp(8.25rem, 12vw, 9.5rem);
     padding-top: 0;
-    translate: -50% -0.85rem;
+    translate: -50% 0;
   }
 
   .etiqueta::before,
   .etiqueta::after {
     content: none;
+  }
+
+  .etiqueta b {
+    font-size: clamp(1.125rem, 1.25vw, 1.25rem);
+  }
+
+  .etiqueta span {
+    font-size: clamp(0.875rem, 0.9vw, 0.9375rem);
   }
 
   .etiqueta--1 { left: 9.1667%; top: 33.333%; }
@@ -1056,15 +1065,18 @@ dl.registro-datos > div::after {
   .etiqueta--tuya {
     left: 50%;
     top: 93.333%;
-    width: 10.5rem;
+    width: 14.5rem;
     margin: 0;
     padding: 1.25rem 0.75rem 1rem;
     background: var(--p-suelo);
+    translate: -50% -0.85rem;
   }
 
+  /* El botón de tu entidad, en una sola línea. */
   .etiqueta--tuya .boton {
     padding-inline: 0.75rem;
     font-size: 0.9375rem;
+    white-space: nowrap;
   }
 
   /* Sin datos no hay red: el aviso y la etiqueta de tu entidad, centrados, en el flujo. */

@@ -102,7 +102,7 @@
   </section>
 
   <!--/* El rótulo va en papel, sobre el brote; de él baja la red radial de A hasta las etiquetas de
-         herbario de C. Las posiciones de las etiquetas salen del dibujo (viewBox de 1200 × 600); sin
+         herbario de C, cada una colgada de un sello con el ícono de lo que pide. Las posiciones de las etiquetas salen del dibujo (viewBox de 1200 × 600); sin
          lugar para la red, las etiquetas cuelgan de a dos de un tronco al centro, en espejo. */-->
   <section class="tierra" aria-labelledby="red-titulo">
     <div class="superficie">
@@ -154,16 +154,22 @@
         </div>
         <ul class="etiquetas" role="list">
           <li th:if="${conDatos}" class="etiqueta etiqueta--1"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
             <b>Comedor</b> <span>Barrio Ejemplo</span> <span class="pide">Pide alimentos</span></a></li>
           <li th:if="${conDatos}" class="etiqueta etiqueta--2"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
             <b>Escuela</b> <span>Ejemplo N.º 12</span> <span class="pide">Pide muebles</span></a></li>
           <li th:if="${conDatos}" class="etiqueta etiqueta--3"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
             <b>Merendero</b> <span>Ejemplo Sur</span> <span class="pide">Pide alimentos</span></a></li>
           <li th:if="${conDatos}" class="etiqueta etiqueta--5"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
             <b>Hogar</b> <span>Casa Ejemplo</span> <span class="pide">Pide ropa de abrigo</span></a></li>
           <li th:if="${conDatos}" class="etiqueta etiqueta--6"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
             <b>Club</b> <span>Ejemplo Norte</span> <span class="pide">Pide ropa</span></a></li>
           <li th:if="${conDatos}" class="etiqueta etiqueta--7"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
             <b>Biblioteca</b> <span>Popular Ejemplo</span> <span class="pide">Pide muebles</span></a></li>
           <!--/* La etiqueta vacía, al centro de la red cuando hay lugar: lo que todavía no se imprimió. */-->
           <li class="etiqueta etiqueta--tuya">

@@ -26,6 +26,26 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · layout:portada (Raíces) · Red y etiquetas: el sello en la punta
+
+- **Decisión:** cada raíz de la red termina en un sello paja con el ícono de lo que pide la entidad
+  (alimentos, ropa o muebles, los mismos del cuaderno del mes) y la segunda tinta corrida. La
+  etiqueta de herbario cuelga debajo, sin ojal. Vale en todos los anchos: en el celular, el sello
+  asoma sobre cada etiqueta de la espina. Además, en pantalla grande las etiquetas crecen con el
+  ancho hasta donde no se pisan (de 8,25 a 9,5 rem), con letra algo mayor, y "Sumar mi entidad" va
+  en una sola línea.
+- **Alternativas:** A, la etiqueta de hoy con su ojal, solo más grande (con los mismos arreglos de
+  tamaño y del botón).
+- **Por qué:** el ícono dice qué pide cada entidad antes de leer, une la red con el cuaderno del
+  mes y cumple lo que el brief ya decía de las entidades ("un sello paja con la segunda tinta
+  corrida"). Las etiquetas de 8,25 rem quedaban chicas en 1920 px y el botón se partía en dos
+  líneas.
+- **Costo:** seis sellos más en la tierra; en el celular, más aire entre filas para que el sello
+  no toque la etiqueta de arriba.
+- **Quién decidió:** usuario (A/B de la red, segundo paso del pulido de la portada).
+- **Evidencia:** [`evidencia/raices/portada-red/`](evidencia/raices/portada-red/) (A y B lado a
+  lado en 1280 y 360 px, y cada una entera).
+
 ### 2026-11-01 · layout:portada (Raíces) · En el celular, la espina en espejo
 
 - **Decisión:** debajo de 1100 px, donde la red no entra, un tronco baja del brote por el centro y
