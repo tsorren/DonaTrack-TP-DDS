@@ -66,6 +66,15 @@ línea del mes: las entregas cuelgan por fecha de una línea de subte que termin
 un cuadro salvia con el ícono de su categoría; la que va en camino, hueca; las confirmadas, un
 botón chico "Ver la foto de la entrega". Ver la [bitácora](../bitacora.md).
 
+**Segunda iteración de la portada (usuario, 2026-11-01):** el usuario comparó la portada de
+entonces con dos versiones nuevas (el afiche y la lámina de campo) y eligió una mezcla. Arriba, el
+título con una lámina "Cómo funciona": el brote y sus raíces con tres llamadas numeradas. En la
+tierra, el rótulo y un brote con su sol, del que sale la red radial. La red termina en etiquetas de
+herbario (tipo, nombre y lo que pide cada entidad), con "Tu entidad" al centro. Las cifras van en
+un registro de campo con líneas guía y el mes en un cuaderno de entregas, una fila por entrega
+hasta hoy. Reemplaza lo descripto arriba en la composición; las piezas siguen siendo las mismas.
+Ver la [bitácora](../bitacora.md).
+
 ## Voz
 
 - **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Lo
@@ -77,6 +86,13 @@ botón chico "Ver la foto de la entrega". Ver la [bitácora](../bitacora.md).
   la redacción es del agente. Desde el 2026-11-01 dice "Seguí cada donación, tuya o de tu empresa,
   …", para que el hero le hable también a la empresa, el foco de esta alternativa (aviso de
   `revision-ui`; redacción del agente).
+- **Portada, segunda iteración (2026-11-01):** la bajada del hero pasa a "Registrás lo que donás,
+  vos o tu empresa. DonaTrack te muestra a qué entidad se asignó, en qué estado está y la foto que
+  sube la entidad cuando confirma la entrega." La lámina dice "Cómo funciona" con tres pasos
+  ("Registrás lo que donás.", "Se asigna a una entidad.", "La entidad confirma la entrega.").
+  Cada etiqueta dice "Pide …" y la de tu entidad, "Pedí lo que necesitás y confirmá lo que
+  recibís.". Las cifras se llaman "Lo que está confirmado" y la bajada del mes es "Octubre de 2026.
+  La entidad sube la foto cuando confirma la entrega." Redacción del agente.
 - **Rótulo de la tierra (2026-11-01):** "Quiénes reciben las donaciones", con la bajada "Una entidad
   de cada tipo, entre las que están en el mapa." Reemplaza "Todo lo que pasa hasta que llega", que
   afirmaba la llegada y se fue con las etapas.

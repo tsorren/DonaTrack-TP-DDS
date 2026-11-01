@@ -1,34 +1,230 @@
-/* B — El corte de suelo: arriba, poco (el título y el brote); abajo, en la tierra, a quién llega lo
-   que se dona: una red radial que sale del brote hacia una entidad de cada tipo (rondas de lenguaje
-   visual, 2026-11-01). Estilo impreso editorial (referencias 01 y 02): el sol detrás del brote,
-   títulos grandes y cifras gigantes, anchos y derechos como en un afiche. La tierra, en semitono: al
-   pie de cada horizonte, puntos de imprenta que crecen con lo hondo. Al entrar, la página se
-   imprime (la segunda tinta entra corrida y calza) y después la red se traza desde el brote. */
+/* Portada de Raíces, segunda iteración (2026-11-01): D, la mezcla de A y C elegida por el usuario.
+   El título de A con la lámina "Cómo funciona" de C; debajo, el rótulo y un brote con su sol sobre
+   la tierra, del que sale la red radial de A hasta las etiquetas de herbario, con la vacía de tu
+   entidad al centro. Las cifras, un registro de campo; el mes, un cuaderno de entregas. */
 @import url("comun/raices.css");
 
+/* --- La portada y la lámina ------------------------------------------------------------------- */
+
+.portada-grilla {
+  position: relative;
+  display: grid;
+  gap: 2.5rem;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.portada h1 {
+  font-size: clamp(2.5rem, 5.8vw, 4.5rem);
+  font-stretch: 118%;
+  line-height: 0.92;
+}
+
+.portada .hero-bajada {
+  color: var(--p-tinta);
+  font-size: clamp(1.0625rem, 1.4vw, 1.2rem);
+}
+
+/* La lámina: papel con marco doble de línea fina, como la ficha de campo (referencia 05). */
+.ficha {
+  position: relative;
+  margin: 0;
+  padding: 1rem;
+  border: 1.5px solid var(--p-tinta);
+  outline: 1px solid var(--p-tinta);
+  outline-offset: -7px;
+  background: var(--p-papel);
+  box-shadow: 0.45rem 0.45rem 0 var(--p-hoja);
+}
+
+.ficha-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.75rem;
+  padding: 0.25rem 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--p-tinta);
+}
+
+.ficha h2 {
+  margin: 0;
+  color: var(--p-tinta);
+  font: italic 800 1.5rem/1.1 var(--p-letra-titulo);
+  font-stretch: 115%;
+}
+
+.ficha-cabeza p {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.ficha-cuerpo {
+  display: grid;
+  gap: 1rem 1.25rem;
+}
+
+.ejemplar {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  height: auto;
+  margin: 0 auto;
+}
+
+.ejemplar path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ejemplar .ejemplar-sol {
+  fill: var(--p-acento-claro);
+}
+
+.ejemplar-suelo {
+  fill: var(--p-suelo);
+}
+
+.ejemplar .ejemplar-horizonte {
+  stroke: var(--p-tinta);
+  stroke-width: 4;
+}
+
+.ejemplar-brote .tallo {
+  stroke: var(--p-tallo);
+  stroke-width: 2.5;
+}
+
+.ejemplar-brote .hoja {
+  fill: var(--p-hoja);
+  stroke: none;
+}
+
+.ejemplar-brote .hoja--tinta {
+  fill: var(--p-tallo);
+}
+
+.ejemplar .raiz {
+  stroke: var(--p-raiz);
+  stroke-width: 6;
+}
+
+.ejemplar .raicilla {
+  stroke: var(--p-raiz);
+  stroke-width: 2.5;
+}
+
+.ejemplar .cruce {
+  fill: var(--p-suelo);
+  stroke: var(--p-texto-suelo);
+  stroke-width: 2.5;
+}
+
+.punta {
+  fill: var(--p-nodo);
+}
+
+.punta .punta-tinta {
+  fill: var(--p-hoja);
+}
+
+.ejemplar .guia {
+  stroke: var(--p-tinta);
+  stroke-width: 1.5;
+}
+
+.ejemplar .guia--suelo {
+  stroke: var(--p-texto-suelo);
+}
+
+.llamada-dibujo circle {
+  fill: var(--p-papel);
+  stroke: var(--p-tinta);
+  stroke-width: 2;
+}
+
+.llamada-dibujo--suelo circle {
+  fill: var(--p-texto-suelo);
+}
+
+.llamada-dibujo text {
+  fill: var(--p-tinta);
+  font: 900 20px var(--p-letra-titulo);
+  font-stretch: 125%;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* La leyenda: el mismo número de la llamada, en un círculo, y el paso en texto. */
+.leyenda {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0 0.25rem;
+  list-style: none;
+}
+
+.leyenda li {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  column-gap: 0.75rem;
+  color: var(--p-tinta);
+  line-height: 1.45;
+}
+
+.leyenda b {
+  display: block;
+  font-stretch: 110%;
+}
+
+.llamada {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid var(--p-tinta);
+  border-radius: 50%;
+  font: 900 1.125rem/1 var(--p-letra-titulo);
+  font-stretch: 125%;
+}
+
+/* --- La tierra y el herbario -------------------------------------------------------------------- */
+
+/* El rótulo en papel, con el mismo grano que el hero, y debajo el brote con su sol sobre la línea
+   de tierra (de A). */
 .superficie {
   position: relative;
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: 2.5rem 1rem 0;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 1rem 1rem 0;
   text-align: center;
 }
 
-.superficie .hero-bajada {
-  max-width: 36rem;
-  margin-inline: auto;
+.superficie > :not(.grano, .sol) {
+  position: relative;
 }
 
-.superficie .acciones {
-  justify-content: center;
+.superficie .sol {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: -1;
+  width: clamp(10rem, 22vw, 18rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--p-acento-claro);
+  translate: -50% 50%;
 }
 
-/* El brote: dos cotiledones planos, el oscuro con la segunda tinta corrida detrás. */
 .brote {
   display: block;
-  width: 5.5rem;
+  width: 4.5rem;
   height: auto;
-  margin: clamp(4rem, 11vw, 9rem) auto 0;
+  margin: 2rem auto 0;
   fill: none;
   stroke: var(--p-tallo);
 }
@@ -47,376 +243,267 @@
   fill: var(--p-tallo);
 }
 
-/* El sol: medio disco que sale de la tierra detrás del brote (referencia 01). */
-.sol {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  z-index: -1;
-  width: clamp(14rem, 34vw, 28rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--p-acento-claro);
-  translate: -50% 50%;
-}
-
 .suelo {
-  --p-semitono-alto: clamp(0.75rem, 3.5vw, 2.75rem);
-
   position: relative;
   isolation: isolate;
   overflow: hidden;
   border-top: 4px solid var(--p-tinta);
   color: var(--p-texto-suelo);
-  background: var(--p-suelo-medio);
+  background: var(--p-suelo);
 }
 
-/* El semitono (referencia 01): una franja de puntos al pie de cada horizonte, con el color del de
-   abajo, que lo funde en el siguiente sin una línea. Los puntos crecen con lo hondo y van debajo de
-   las raíces y del texto, nunca encima. */
-.horizonte-raices::after,
-.pie-hero::before,
-.suelo::after {
-  content: "";
-  position: absolute;
-  left: -100vmax;
-  right: -100vmax;
-  /* La trama crece con la pantalla para que en escritorio se vea como en la lámina. */
-  --p-semitono-paso: clamp(7px, 0.75vw, 11px);
-
-  height: var(--p-semitono-alto);
-  background-image:
-    radial-gradient(var(--p-semitono-color) var(--p-semitono-punto), transparent calc(var(--p-semitono-punto) + 0.5px)),
-    radial-gradient(var(--p-semitono-color) var(--p-semitono-punto), transparent calc(var(--p-semitono-punto) + 0.5px));
-  background-size: var(--p-semitono-paso) var(--p-semitono-paso);
-  background-position:
-    0 0,
-    calc(var(--p-semitono-paso) / 2) calc(var(--p-semitono-paso) / 2);
-  pointer-events: none;
-}
-
-.horizonte-raices::after {
-  --p-semitono-color: var(--p-suelo-medio);
-  --p-semitono-punto: clamp(1.1px, 0.13vw, 1.8px);
-
-  bottom: 0;
-  z-index: -1;
-}
-
-.pie-hero::before {
-  --p-semitono-color: var(--p-suelo-hondo);
-  --p-semitono-punto: clamp(1.7px, 0.2vw, 2.7px);
-
-  bottom: 100%;
-}
-
-.suelo::after {
-  --p-semitono-color: var(--p-semitono-fondo);
-  --p-semitono-punto: clamp(2.4px, 0.28vw, 3.8px);
-
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-/* El grano va encima de los tres horizontes, como en una impresión. */
 .suelo .grano {
   z-index: 1;
   opacity: 0.6;
   mix-blend-mode: soft-light;
 }
 
-.suelo-interior {
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 0 1rem 2.5rem;
-}
-
-/* Los horizontes del suelo, de lado a lado: la red y sus entidades arriba, el rótulo en el medio y
-   las cifras en lo hondo (.pie-hero). La sombra pinta la banda a todo el ancho y el recorte la deja
-   en su alto; el contenedor aísla el semitono para que quede debajo del dibujo. */
-.horizonte-raices {
-  position: relative;
-  isolation: isolate;
-  background: var(--p-suelo);
-  box-shadow: 0 0 0 100vmax var(--p-suelo);
-  clip-path: inset(0 -100vmax);
-}
-
-/* La red radial: líneas de subte con borde verde oscuro, del brote a cada entidad, con codos a 45°. */
-.red-dibujo path {
-  stroke-linejoin: round;
-}
-
-.red-dibujo .tronco {
-  stroke: var(--p-raiz);
-  stroke-width: 9;
-}
-
-.red-dibujo .borde {
-  stroke: var(--p-suelo-medio);
-  stroke-width: 9;
-}
-
-.red-dibujo .ruta {
-  stroke: var(--p-raiz);
-  stroke-width: 5;
-}
-
-.red-dibujo .cruce {
-  fill: var(--p-suelo);
-  stroke: var(--p-texto-suelo);
-  stroke-width: 2.5;
-}
-
-/* Cada entidad, un sello: el disco paja con la segunda tinta corrida detrás. */
-.red-dibujo .entidad-nodo {
-  fill: var(--p-nodo);
-}
-
-.red-dibujo .entidad-nodo .sombra {
-  fill: var(--p-hoja);
-}
-
-/* En el celular el dibujo se achica a menos de un tercio: los sellos crecen para seguir viéndose. */
-.red-dibujo .entidad-nodo circle {
-  r: 24px;
-}
-
-/* El lugar de la entidad que todavía no está: una línea punteada que baja por el centro hasta un
-   sello hueco, lo que todavía no se imprimió (camino de la entidad, 2026-11-01). */
-.red-dibujo .ruta.ruta--pendiente {
-  stroke-dasharray: 2 14;
-}
-
-.red-dibujo .hueco {
-  r: 24px;
-  fill: var(--p-suelo);
-  stroke: var(--p-raiz);
-  stroke-width: 2.5;
-  stroke-dasharray: 3 4;
-  vector-effect: non-scaling-stroke;
-}
-
-/* Al pasar el mouse o el foco por una entidad, su línea queda llena y el resto se apaga. */
-.horizonte-raices:has(.entidad a:is(:hover, :focus-visible)) :is(.ruta, .entidad-nodo) {
-  opacity: 0.28;
-}
-
-.horizonte-raices:has(.entidad--1 a:is(:hover, :focus-visible)) :is(.ruta--1, .entidad-nodo--1),
-.horizonte-raices:has(.entidad--2 a:is(:hover, :focus-visible)) :is(.ruta--2, .entidad-nodo--2),
-.horizonte-raices:has(.entidad--3 a:is(:hover, :focus-visible)) :is(.ruta--3, .entidad-nodo--3),
-.horizonte-raices:has(.entidad--4 a:is(:hover, :focus-visible)) :is(.ruta--4, .entidad-nodo--4),
-.horizonte-raices:has(.entidad--5 a:is(:hover, :focus-visible)) :is(.ruta--5, .entidad-nodo--5),
-.horizonte-raices:has(.entidad--6 a:is(:hover, :focus-visible)) :is(.ruta--6, .entidad-nodo--6) {
-  opacity: 1;
-}
-
-/* Al enfocar "Sumar mi entidad", su línea se completa: el lugar se imprime. */
-.horizonte-raices:has(.entidad--7 a:is(:hover, :focus-visible)) .ruta--7 {
-  opacity: 1;
-  stroke-dasharray: none;
-}
-
-/* En el celular, las entidades van en lista debajo del dibujo, fuera del semitono. */
-.entidades {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.25rem 1rem;
-  margin: 0;
-  padding: 0.5rem 0 calc(var(--p-semitono-alto) + 0.75rem);
-  list-style: none;
-}
-
-.entidad a {
-  display: grid;
-  min-height: 3rem;
-  align-content: center;
-  color: var(--p-texto-suelo);
-  font-size: 0.875rem;
-  line-height: 1.3;
-  text-decoration: none;
-}
-
-.entidad a:hover b {
-  text-decoration: underline;
-}
-
-.entidad b {
-  font-weight: 700;
-  font-stretch: 110%;
-}
-
-/* En el celular, el lugar vacío va al final de la lista, a todo el ancho, con el borde punteado
-   del sello hueco. */
-.entidad--7 {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1rem;
-  margin-top: 0.5rem;
-  padding: 0.75rem;
-  border: 2px dashed var(--p-raiz);
-  color: var(--p-texto-suelo);
-}
-
-.suelo .entidad .boton--suelo {
-  display: inline-flex;
-  border-color: var(--p-raiz);
-  background: var(--p-raiz);
-  color: var(--p-suelo-hondo);
-  font-size: 1rem;
-}
-
-.suelo .entidad .boton--suelo:hover {
-  background: var(--p-texto-suelo);
-}
-
-.suelo h2 {
-  margin: 2rem 0 0.25rem;
-  color: var(--p-texto-suelo);
-  font: italic 700 clamp(2rem, 4.5vw, 3.25rem) / 1.05 var(--p-letra-titulo);
-  font-stretch: 112%;
-  letter-spacing: -0.02em;
-}
-
-.ficha-meta {
-  margin: 0 0 1.5rem;
-}
-
 .suelo a {
   color: var(--p-destacado);
-}
-
-.suelo .entidad a {
-  color: var(--p-texto-suelo);
-}
-
-/* La sombra corrida hacia abajo pinta lo hondo a todo el ancho sin subir, así el semitono de
-   arriba (::before) no queda recortado; los costados y el fondo los recorta .suelo. El margen
-   deja la franja de puntos fuera del renglón de arriba. */
-.suelo .pie-hero {
-  position: relative;
-  display: grid;
-  gap: 1rem;
-  margin-top: calc(var(--p-semitono-alto) + 0.75rem);
-  padding-top: 1.5rem;
-  border-top: 1px solid currentcolor;
-  background: var(--p-suelo-hondo);
-  box-shadow: 0 100vmax 0 100vmax var(--p-suelo-hondo);
-}
-
-.suelo .cifras b {
-  color: var(--p-destacado);
-  font: 900 clamp(2.25rem, 4vw, 3.25rem) / 1 var(--p-letra-titulo);
-  font-stretch: 125%;
-  letter-spacing: -0.03em;
-  margin-inline-end: 0.15em;
 }
 
 .suelo :focus-visible {
   outline-color: var(--p-texto-suelo);
 }
 
-@media (min-width: 37.5em) {
-  .superficie {
-    padding: 4.5rem 2rem 0;
-  }
-
-  .suelo-interior {
-    padding: 0 2rem 3rem;
-  }
-
-  .entidades {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.tierra-interior {
+  position: relative;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
 }
 
-@media (min-width: 53.75em) {
-  .red-dibujo .entidad-nodo circle {
-    r: 11px;
-  }
-
-  .red-dibujo .hueco {
-    r: 13px;
-  }
-
-  /* Debajo del dibujo, lugar para "Tu entidad" y su botón, fuera del semitono. */
-  .horizonte-raices {
-    padding-bottom: calc(var(--p-semitono-alto) + 7rem);
-  }
-
-  /* Cada rótulo, debajo de su sello: la posición sale del dibujo (viewBox de 1200 × 560). */
-  .entidades {
-    position: absolute;
-    inset: 0 0 auto;
-    aspect-ratio: 1200 / 560;
-    display: block;
-    padding: 0;
-  }
-
-  .entidad {
-    position: absolute;
-    translate: -50% 0;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .entidad--1 {
-    left: 10%;
-    top: 44.57%;
-  }
-
-  .entidad--2 {
-    left: 26.667%;
-    top: 62.5%;
-  }
-
-  .entidad--3 {
-    left: 40%;
-    top: 73.17%;
-  }
-
-  .entidad--4 {
-    left: 60%;
-    top: 73.17%;
-  }
-
-  .entidad--5 {
-    left: 73.333%;
-    top: 62.5%;
-  }
-
-  .entidad--6 {
-    left: 90%;
-    top: 44.57%;
-  }
-
-  .entidad--7 {
-    left: 50%;
-    top: 100%;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0.75rem 0 0;
-    border: 0;
-  }
-
-  .suelo h2,
-  .ficha-meta {
-    text-align: center;
-  }
-
-  .suelo .pie-hero {
-    grid-template-columns: 1fr auto;
-    align-items: baseline;
-  }
+.tierra h2 {
+  margin: 0 0 0.5rem;
+  color: var(--p-tinta);
+  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--p-letra-titulo);
+  font-stretch: 118%;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
-/* Lo que viajó este mes: la línea del mes, en papel otra vez, debajo de la tierra. Las entregas
-   cuelgan de una línea de subte por fecha y la última, la que va en camino, de un tramo punteado.
-   En el celular la línea baja a la izquierda; con lugar, corre de lado a lado. */
+.tierra h2 em {
+  color: var(--p-acento);
+  text-shadow: 0.035em 0.03em 0 var(--p-hoja);
+}
+
+.tierra-bajada {
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+/* Sin lugar para la red, el dibujo queda presente pero invisible: así el trazado ya terminó si la
+   ventana se agranda, en vez de empezar de nuevo. */
+.red-dibujo {
+  position: absolute;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+}
+
+/* En el celular, las etiquetas cuelgan de a dos, cada una de su raíz corta. */
+.etiquetas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etiqueta {
+  position: relative;
+  padding-top: 1.5rem;
+}
+
+/* La raíz corta, del borde de arriba al ojal de la etiqueta. */
+.etiqueta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5px;
+  height: 2.1rem;
+  translate: -50% 0;
+  background: var(--p-raiz);
+}
+
+/* La etiqueta de herbario: papel con el ojal arriba y la segunda tinta corrida. */
+.etiqueta a:not(.boton) {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  align-content: start;
+  min-height: 3rem;
+  padding: 1.5rem 0.75rem 0.875rem;
+  color: var(--p-tinta);
+  background: var(--p-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--p-hoja);
+  text-align: center;
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.etiqueta a:not(.boton)::before {
+  content: "";
+  position: absolute;
+  top: 0.45rem;
+  left: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+  translate: -50% 0;
+  border: 2px solid var(--p-tinta-suave);
+  border-radius: 50%;
+  background: var(--p-suelo);
+}
+
+.etiqueta b {
+  font: 800 1.125rem/1.15 var(--p-letra-titulo);
+  font-stretch: 115%;
+}
+
+.etiqueta span {
+  font-size: 0.875rem;
+}
+
+.etiqueta .pide {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--p-tinta-suave);
+  color: var(--p-acento);
+  font-weight: 700;
+}
+
+.etiqueta a:not(.boton):hover {
+  background: var(--p-acento-claro);
+}
+
+.etiqueta a:not(.boton):hover b {
+  text-decoration: underline;
+}
+
+.etiqueta a:not(.boton):active {
+  box-shadow: none;
+  translate: 0.3rem 0.3rem;
+}
+
+/* La etiqueta vacía: punteada y sin imprimir, con el botón para sumarse. */
+.etiqueta--tuya {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 1.25rem 1rem 1rem;
+  border: 2px dashed var(--p-raiz);
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.etiqueta--tuya::before {
+  top: -1.6rem;
+  height: 1.6rem;
+  width: 3px;
+  background: repeating-linear-gradient(180deg, var(--p-raiz) 0 4px, transparent 4px 10px);
+}
+
+.etiqueta--tuya b {
+  font: 800 1.125rem/1.15 var(--p-letra-titulo);
+  font-stretch: 115%;
+}
+
+.etiqueta--tuya span {
+  max-width: 16rem;
+  font-size: 0.875rem;
+}
+
+.etiqueta--tuya .boton {
+  margin-top: 0.5rem;
+}
+
+.suelo .boton--suelo {
+  border-color: var(--p-raiz);
+  background: var(--p-raiz);
+  color: var(--p-suelo-hondo);
+}
+
+.suelo .boton--suelo:hover {
+  background: var(--p-texto-suelo);
+}
+
+/* --- El registro de campo ---------------------------------------------------------------------- */
+
+.registro {
+  background: var(--p-suelo-hondo);
+}
+
+.registro-interior {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 3rem;
+}
+
+.registro h2 {
+  margin: 0 0 0.75rem;
+  color: var(--p-texto-suelo);
+  font: 800 clamp(1.75rem, 3.4vw, 2.75rem) / 1.05 var(--p-letra-titulo);
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+}
+
+.registro h2 em {
+  color: var(--p-raiz);
+}
+
+.registro .nota {
+  margin: 0;
+}
+
+/* Cada cifra con su línea guía punteada hasta el número, como las medidas de la lámina. */
+.registro-datos {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--p-raiz);
+  outline: 1px solid var(--p-raiz);
+  outline-offset: 5px;
+}
+
+.registro-datos div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+}
+
+.registro-datos div + div {
+  border-top: 1px solid var(--p-suelo);
+}
+
+.registro-datos dt {
+  flex: 0 1 auto;
+}
+
+.registro-datos div::after {
+  content: "";
+  flex: 1 1 1.5rem;
+  order: 1;
+  border-bottom: 2px dotted var(--p-raiz);
+}
+
+.registro-datos dd {
+  order: 2;
+  margin: 0;
+  color: var(--p-destacado);
+  font: 900 clamp(1.75rem, 3vw, 2.5rem) / 1 var(--p-letra-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+/* --- El cuaderno del mes ----------------------------------------------------------------------- */
+
 .viajo {
   position: relative;
   isolation: isolate;
@@ -438,78 +525,141 @@
 }
 
 .viajo h2 {
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.5rem;
   color: var(--p-tinta);
-  font: italic 800 clamp(2rem, 4.5vw, 3.25rem) / 1.05 var(--p-letra-titulo);
+  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--p-letra-titulo);
   font-stretch: 118%;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+}
+
+.viajo h2 em {
+  color: var(--p-acento);
+  text-shadow: 0.035em 0.03em 0 var(--p-hoja);
 }
 
 .viajo-bajada {
   margin: 0 0 2rem;
 }
 
-.linea-mes {
-  --p-linea-paso: 2rem;
-
-  display: grid;
-  gap: var(--p-linea-paso);
+/* En el celular: la raíz baja a la izquierda con el sello de cada entrega. */
+.cuaderno {
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--p-tinta);
 }
 
-/* En el celular: el cuadro a la izquierda y el texto al lado. */
-.parada {
+.asiento {
   position: relative;
   display: grid;
-  grid-template-columns: 5.5rem 1fr;
-  align-content: start;
-  column-gap: 1rem;
-  padding-left: 2.25rem;
+  grid-template-columns: 1.75rem 4rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  row-gap: 0.5rem;
+  align-items: start;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--p-tinta);
 }
 
-.parada > * {
-  grid-column: 2;
-  margin: 0;
-}
-
-.parada > .parada-cuadro {
-  grid-column: 1;
-  grid-row: 1 / span 6;
-}
-
-/* La línea: paja con borde verde oscuro, como las raíces, hasta la parada siguiente. */
-.parada::before {
+/* El tramo de raíz de cada asiento; el último que llega a hoy, punteado. */
+.asiento::before {
   content: "";
   position: absolute;
-  top: 11px;
-  left: 11px;
-  width: 9px;
-  height: calc(100% + var(--p-linea-paso));
-  translate: -50% 0;
-  border-inline: 2px solid var(--p-suelo-medio);
+  top: calc(1.25rem + 11px);
+  left: calc(0.875rem - 3px);
+  width: 6px;
+  height: 100%;
   background: var(--p-raiz);
 }
 
-.parada:has(+ .parada--en-camino)::before {
+.asiento:has(+ .asiento--en-camino)::before {
+  left: calc(0.875rem - 2px);
   width: 4px;
-  border: 0;
-  background: repeating-linear-gradient(180deg, var(--p-acento) 0 4px, transparent 4px 14px);
+  background: repeating-linear-gradient(180deg, var(--p-acento) 0 4px, transparent 4px 12px);
 }
 
-.parada:last-child::before {
+.asiento:last-child::before {
   content: none;
 }
 
-/* Sin lugar en la grilla: así se ubica respecto de la parada y no de una columna. */
-.parada > .parada-sello {
-  grid-column: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 22px;
-  height: 22px;
+.asiento-sello {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.asiento-fecha {
+  grid-column: 2 / -1;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+  color: var(--p-tinta);
+  font-weight: 700;
+  font-stretch: 110%;
+}
+
+.asiento-fecha b {
+  margin-inline-end: 0.2em;
+  font: 900 1.5rem/1 var(--p-letra-titulo);
+  font-stretch: 125%;
+}
+
+.asiento-cuadro {
+  grid-column: 2;
+  display: block;
+  width: 4rem;
+  aspect-ratio: 1;
+  background: var(--p-acento-claro);
+  color: var(--p-acento);
+  fill: currentcolor;
+}
+
+.asiento-cuadro .tinta-corrida {
+  color: var(--p-hoja);
+}
+
+.asiento--en-camino .asiento-cuadro {
+  background: none;
+  outline: 2px dashed var(--p-tinta-suave);
+  outline-offset: -2px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+}
+
+.asiento-texto {
+  grid-column: 3;
+}
+
+.asiento-texto > * {
+  margin: 0;
+}
+
+.asiento h3 {
+  color: var(--p-tinta);
+  font-size: 1.125rem;
+  font-stretch: 110%;
+  line-height: 1.3;
+}
+
+.asiento-estado {
+  color: var(--p-entregada-texto);
+  font-weight: 700;
+}
+
+.asiento--en-camino .asiento-estado {
+  color: var(--p-en-camino-texto);
+}
+
+.asiento .boton--foto,
+.asiento-pendiente {
+  grid-column: 2 / -1;
+  margin: 0;
+}
+
+.asiento-pendiente {
+  font-size: 0.9375rem;
 }
 
 .sello-tinta {
@@ -522,7 +672,7 @@
 
 .sello-tilde {
   fill: none;
-  stroke: var(--p-papel);
+  stroke: var(--p-tinta);
   stroke-width: 2;
 }
 
@@ -536,63 +686,15 @@
   fill: var(--p-en-camino-sello);
 }
 
-.parada-fecha {
-  color: var(--p-tinta);
-  font-weight: 700;
-  font-stretch: 110%;
-}
-
-/* El cuadro: fondo salvia (el color del sol) y el ícono de la categoría con la segunda tinta. */
-.parada-cuadro {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  background: var(--p-acento-claro);
-  color: var(--p-acento);
-  fill: currentcolor;
-}
-
-.parada-cuadro .tinta-corrida {
-  color: var(--p-hoja);
-}
-
-/* La que va en camino todavía no se imprimió: el cuadro y el ícono, solo el contorno. */
-.parada--en-camino .parada-cuadro {
-  background: none;
-  outline: 2px dashed var(--p-tinta-suave);
-  outline-offset: -2px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 2;
-}
-
-.parada h3 {
-  margin-top: 0.25rem;
-  color: var(--p-tinta);
-  font-size: 1.0625rem;
-  font-stretch: 108%;
-  line-height: 1.3;
-}
-
-.parada-estado {
-  color: var(--p-entregada-texto);
-  font-weight: 700;
-}
-
-.parada--en-camino .parada-estado {
-  color: var(--p-en-camino-texto);
-}
-
-/* El botón de la foto: chico y en contorno, para no competir con "Quiero donar". */
 .boton--foto {
   justify-self: start;
   gap: 0.5rem;
-  margin-top: 0.75rem;
   padding: 0.5rem 0.875rem;
   border-width: 1.5px;
   box-shadow: 0.2rem 0.2rem 0 var(--p-hoja);
   color: var(--p-acento);
   font-size: 0.875rem;
+  white-space: nowrap;
 }
 
 .boton--foto:hover {
@@ -611,103 +713,253 @@
   stroke-width: 1.75;
 }
 
+/* --- Con más lugar ----------------------------------------------------------------------------- */
+
 @media (min-width: 37.5em) {
+  .portada-grilla,
+  .tierra-interior,
+  .registro-interior,
   .viajo-interior {
-    padding: 4rem 2rem 4.5rem;
-  }
-}
-
-/* Con lugar, la línea corre de lado a lado: la fecha arriba, el sello en la línea y la parada
-   colgada de un hilo. */
-@media (min-width: 53.75em) {
-  .linea-mes {
-    --p-linea-paso: 1.5rem;
-
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding-inline: 2rem;
   }
 
-  .parada {
-    display: flex;
-    flex-direction: column;
+  .etiquetas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ficha-cuerpo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     align-items: center;
-    padding: 4.25rem 0 0;
-    text-align: center;
-  }
-
-  .parada > .parada-cuadro {
-    margin-bottom: 0.5rem;
-  }
-
-  .boton--foto {
-    align-self: center;
-  }
-
-  .parada > .parada-fecha {
-    position: absolute;
-    top: 0;
-    inset-inline: 0;
-  }
-
-  .parada::before {
-    top: 2.25rem;
-    left: 50%;
-    width: calc(100% + var(--p-linea-paso));
-    height: 9px;
-    translate: 0 -50%;
-    border-inline: 0;
-    border-block: 2px solid var(--p-suelo-medio);
-  }
-
-  .parada:has(+ .parada--en-camino)::before {
-    width: calc(100% + var(--p-linea-paso));
-    height: 4px;
-    background: repeating-linear-gradient(90deg, var(--p-acento) 0 4px, transparent 4px 14px);
-  }
-
-  .parada > .parada-sello {
-    top: 2.25rem;
-    left: 50%;
-    translate: -50% -50%;
-  }
-
-  .parada::after {
-    content: "";
-    position: absolute;
-    top: calc(2.25rem + 11px);
-    left: 50%;
-    height: calc(2rem - 11px);
-    border-left: 2px solid var(--p-tinta);
-  }
-
-  .parada--en-camino::after {
-    border-left-style: dashed;
   }
 }
 
-/* Al entrar, una vez: la página se imprime (el sol primero; después la segunda tinta entra corrida
-   y calza) y la red se traza desde el brote hasta cada entidad. Sin movimiento si la persona lo
-   pidió así. */
+@media (min-width: 53.75em) {
+  .portada-grilla {
+    padding-top: 2.5rem;
+    padding-bottom: 4rem;
+  }
+
+  .ficha {
+    max-width: 46rem;
+  }
+
+  .registro-interior {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: 3rem;
+  }
+
+  /* El cuaderno: fecha, raíz con sello, cuadro, la entrega y el botón, en una fila por entrega. */
+  .asiento {
+    grid-template-columns: 9rem 1.75rem 4.5rem minmax(0, 1fr) auto;
+    column-gap: 1.25rem;
+    align-items: center;
+  }
+
+  .asiento::before {
+    top: 0;
+    left: calc(9rem + 1.25rem + 0.875rem - 3px);
+    height: 100%;
+  }
+
+  .asiento:first-child::before {
+    top: 50%;
+    height: 50%;
+  }
+
+  .asiento:has(+ .asiento--en-camino)::before {
+    top: 50%;
+    left: calc(9rem + 1.25rem + 0.875rem - 2px);
+    height: 100%;
+  }
+
+  .asiento:first-child:has(+ .asiento--en-camino)::before {
+    height: 100%;
+  }
+
+  .asiento-fecha {
+    grid-column: 1;
+    text-align: right;
+  }
+
+  .asiento-fecha time {
+    display: grid;
+    justify-items: end;
+  }
+
+  .asiento-fecha b {
+    margin: 0;
+    font-size: 2.5rem;
+  }
+
+  .asiento-sello {
+    grid-column: 2;
+  }
+
+  .asiento-cuadro {
+    grid-column: 3;
+    grid-row: 1;
+    width: 4.5rem;
+  }
+
+  .asiento-texto {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .asiento .boton--foto,
+  .asiento-pendiente {
+    grid-column: 5;
+    grid-row: 1;
+    max-width: 16rem;
+  }
+}
+
+/* Con lugar para siete etiquetas: las raíces salen del centro y cada una termina en el ojal de la
+   suya; las pares cuelgan más hondo. La de tu entidad, al centro, debajo del tronco. */
+@media (min-width: 68.75em) {
+  .portada-grilla {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    align-items: center;
+    gap: 3rem;
+  }
+
+  /* La red radial de A: líneas de subte con borde, del brote a cada etiqueta, con codos a 45°. */
+  .red-dibujo {
+    position: static;
+    width: 100%;
+    height: auto;
+    visibility: visible;
+  }
+
+  .red-dibujo path {
+    stroke-linejoin: round;
+  }
+
+  .red-dibujo .tronco {
+    stroke: var(--p-raiz);
+    stroke-width: 9;
+  }
+
+  .red-dibujo .borde {
+    stroke: var(--p-suelo-medio);
+    stroke-width: 9;
+  }
+
+  .red-dibujo .ruta {
+    stroke: var(--p-raiz);
+    stroke-width: 5;
+  }
+
+  .red-dibujo .ruta--pendiente {
+    stroke-dasharray: 2 14;
+  }
+
+  .red-dibujo .cruce {
+    fill: var(--p-suelo);
+    stroke: var(--p-texto-suelo);
+    stroke-width: 2.5;
+  }
+
+  /* El tronco sale pegado a la línea de tierra; debajo del dibujo, lugar para tu entidad. */
+  .herbario {
+    padding-top: 0;
+    padding-bottom: 10rem;
+  }
+
+  /* Cada etiqueta, colgada de la punta de su raíz: la posición sale del dibujo (1200 × 600). */
+  .etiquetas {
+    position: absolute;
+    inset: 0 2rem auto;
+    aspect-ratio: 2;
+    display: block;
+  }
+
+  .etiqueta {
+    position: absolute;
+    width: 8.75rem;
+    padding-top: 0;
+    translate: -50% -0.85rem;
+  }
+
+  .etiqueta::before {
+    content: none;
+  }
+
+  .etiqueta--1 { left: 9.1667%; top: 33.333%; }
+  .etiqueta--2 { left: 25%; top: 50%; }
+  .etiqueta--3 { left: 39.1667%; top: 63.333%; }
+  .etiqueta--5 { left: 60.8333%; top: 63.333%; }
+  .etiqueta--6 { left: 75%; top: 50%; }
+  .etiqueta--7 { left: 90.8333%; top: 33.333%; }
+
+  .etiqueta--tuya {
+    left: 50%;
+    top: 86.667%;
+    width: 11rem;
+    margin: 0;
+    padding: 1.25rem 0.75rem 1rem;
+    background: var(--p-suelo);
+  }
+
+  .etiqueta--tuya .boton {
+    padding-inline: 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  /* Al pasar o enfocar una etiqueta, su raíz queda llena y el resto se apaga. */
+  .herbario:has(.etiqueta a:is(:hover, :focus-visible)) .ruta {
+    opacity: 0.28;
+  }
+
+  .herbario:has(.etiqueta--1 a:is(:hover, :focus-visible)) .raiz--1,
+  .herbario:has(.etiqueta--2 a:is(:hover, :focus-visible)) .raiz--2,
+  .herbario:has(.etiqueta--3 a:is(:hover, :focus-visible)) .raiz--3,
+  .herbario:has(.etiqueta--5 a:is(:hover, :focus-visible)) .raiz--5,
+  .herbario:has(.etiqueta--6 a:is(:hover, :focus-visible)) .raiz--6,
+  .herbario:has(.etiqueta--7 a:is(:hover, :focus-visible)) .raiz--7,
+  .herbario:has(.etiqueta--tuya a:is(:hover, :focus-visible)) .raiz--tuya {
+    opacity: 1;
+  }
+
+  .herbario:has(.etiqueta--tuya a:is(:hover, :focus-visible)) .raiz--tuya {
+    stroke-dasharray: none;
+  }
+}
+
+/* Al entrar, una vez: la lámina se imprime (el sol, después la segunda tinta corrida que calza) y
+   las raíces de la lámina y la red se trazan desde el brote. Sin movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
-  .red-dibujo :is(.ruta, .entidad-nodo) {
-    transition: opacity 0.2s;
+  .ejemplar-sol {
+    animation: aparece 0.4s ease both;
   }
 
-  .sol {
-    animation: aparece 0.3s ease both;
-  }
-
-  .superficie > :not(.sol) {
+  .portada-texto,
+  .ejemplar-brote,
+  .leyenda {
     animation: registro 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
   }
 
-  .red-dibujo :is(.ruta, .borde) {
+  .ejemplar :is(.raiz, .raicilla) {
     stroke-dasharray: 1;
-    animation: traza 1s cubic-bezier(0.3, 0.7, 0.2, 1) 1s both;
+    animation: traza 1s cubic-bezier(0.3, 0.7, 0.2, 1) 0.9s both;
   }
 
-  .red-dibujo :is(.entidad-nodo, .hueco),
-  .red-dibujo .ruta.ruta--pendiente {
-    animation: aparece 0.35s ease 1.8s both;
+  .red-dibujo .ruta {
+    transition: opacity 0.2s;
+  }
+
+  /* La red se traza desde el brote hasta cada etiqueta (ronda de movimiento de A). */
+  .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
+    stroke-dasharray: 1;
+    animation: traza 1s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s both;
+  }
+
+
+  .punta,
+  .llamada-dibujo,
+  .ejemplar .guia {
+    animation: aparece 0.35s ease 1.7s both;
   }
 }
 

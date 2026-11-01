@@ -26,6 +26,44 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · portada (Raíces) · Segunda iteración: la mezcla de la actual y la lámina de campo
+
+- **Decisión:** la portada de Raíces es D, una mezcla de la versión actual (A) y la lámina de
+  campo (C), diseñada con el usuario en dos rondas.
+  - **Arriba:** el título de A ("Lo que donás echa raíces en tu comunidad.") a la izquierda; a la
+    derecha, una lámina "Cómo funciona": el brote y sus raíces con tres llamadas numeradas, y su
+    leyenda en texto (registrás lo que donás, se asigna a una entidad, la entidad confirma la
+    entrega con fecha y foto).
+  - **En la tierra:** el rótulo "Quiénes reciben las donaciones" va en papel, sobre un brote con su
+    sol. Del brote sale la red radial de A, que termina en etiquetas de herbario: tipo, nombre y lo
+    que pide cada entidad. La etiqueta vacía de "Tu entidad" queda al centro.
+  - **Cifras:** un registro de campo, cada una con su nombre completo y una línea guía punteada
+    hasta el número.
+  - **El mes:** un cuaderno de entregas, una fila por entrega, que baja de la primera a hoy.
+  - **En el celular:** las etiquetas cuelgan de a dos, sin la red.
+- **Alternativas:** A, la actual (título centrado, red radial con sellos y nombres chicos, cifras
+  gigantes y la línea del mes de lado a lado). B, el afiche: el título gigante cruza un sol, con
+  pasos 01, 02 y 03 al lado; las entidades cuelgan de una línea de subte horizontal; las cifras
+  van en una frase y los días del mes son numerales gigantes. C, la lámina de campo, con el título
+  "Seguí tu donación hasta donde echa raíces" y siete etiquetas en fila colgadas de raíces curvas.
+- **Por qué:** el usuario pidió más impacto de afiche, un mensaje más claro y una red más
+  legible. No eligió ninguna de las tres y armó la mezcla en dos rondas: hero de C con el título
+  de A, red de A con etiquetas de C, y el registro y el cuaderno de C. La lámina explica qué se
+  puede comprobar detrás de la metáfora del título, como pide el tono común. Las etiquetas hacen
+  legible la red y muestran a la entidad haciendo algo (pide y confirma).
+- **Costo:**
+  - El hero deja de ser el afiche centrado con el sol grande; el brote y el sol bajan al rótulo de
+    la tierra.
+  - "Pide …" es un dato nuevo de cada entidad (sintético en la maqueta). Si la alternativa se
+    construye, sale de las necesidades que carga la entidad.
+  - Se fueron las franjas de semitono entre horizontes.
+  - Falta la revisión independiente (`revision-ui`) de la portada nueva.
+- **Quién decidió:** usuario, sobre capturas de las cuatro versiones en 360, 1280 y 1920 px (dos
+  rondas de preguntas para armar D).
+- **Evidencia:** [`evidencia/raices/portada-segunda-iteracion/`](evidencia/raices/portada-segunda-iteracion/)
+  (B, C y la final, en 360 y 1280 px). A, en
+  [`evidencia/raices/portada-entidad-y-mes/`](evidencia/raices/portada-entidad-y-mes/).
+
 ### 2026-11-01 · lo que viajó (Raíces) · La línea del mes, con un cuadro por categoría
 
 - **Decisión:** "Lo que viajó este mes" va debajo de la tierra, otra vez en papel. Las entregas
