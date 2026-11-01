@@ -105,8 +105,8 @@ El proceso no debe cansar a quien decide. Reglas para el agente:
 - Se diseña, se captura y se compara en estos tres anchos.
 - Los define una sola constante de los tests: `AnchosDeReferencia`, en
   `cliente-liviano/src/test/java/`. Esta tabla la explica.
-- Además, la comprobación automática revisa anchos intermedios (incluida una tableta) para que
-  nada se desborde. No genera capturas para el usuario.
+- Además, la comprobación automática revisa anchos intermedios (incluidos una tableta y el quiebre
+  ancho, 1100 px, donde el menú pasa a columna) para que nada se desborde. No genera capturas para el usuario.
 - En el celular, además de la página completa, captura la **primera pantalla (360 × 640)**: lo que
   se ve sin desplazar (`<página>-360x640.png`).
 - Las herramientas para trabajar con las capturas (JPG de evidencia, comparar, recortar, lado a

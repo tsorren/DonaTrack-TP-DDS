@@ -37,10 +37,11 @@
       <p class="seguimiento-bajada" th:if="${escenario == 'vacio'}">Ninguna entrega en curso.</p>
     </header>
 
-    <!--/* Cargando: primero el aviso, que se lee solo y se ve en el celular; después, el lugar de
-           cada parte, sin datos inventados. */-->
-    <p th:if="${escenario == 'lento'}" class="seguimiento-aviso" role="status">Cargando tus entregas
-      en curso…</p>
+    <!--/* Cargando: primero el aviso, que se ve en el celular; después, el lugar de cada parte, sin
+           datos inventados. Viene con la página, así que no es una región viva: un lector de
+           pantalla no anuncia lo que ya estaba al cargar. En el sistema, cuando la carga tarda, el
+           aviso se agrega a la región #avisos del layout, que sí lo anuncia. */-->
+    <p th:if="${escenario == 'lento'}" class="seguimiento-aviso">Cargando tus entregas en curso…</p>
     <div th:if="${escenario == 'lento'}" class="seguimiento-cuerpo" aria-busy="true">
       <div class="seguimiento-dibujo seguimiento-reserva"></div>
       <div class="seguimiento-lista seguimiento-reserva"></div>
@@ -164,12 +165,8 @@
         </svg>
       </figure>
 
-      <!--/* Los íconos de categoría: los pictogramas impresos del cuaderno de la portada (alimentos,
-             el mismo) y uno para útiles escolares. */-->
-      <svg class="iconos" aria-hidden="true" focusable="false">
-        <symbol id="cat-alimentos" viewBox="0 0 100 100"><path d="M26 50H74Q74 72 50 72Q26 72 26 50Z"/><path d="M22 46H78V51H22Z"/><path d="M42 40Q38 34 42 28M54 40Q50 34 54 28" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></symbol>
-        <symbol id="cat-escolares" viewBox="0 0 100 100"><path d="M30 76L34 60L64 30L74 40L44 70Z"/><path d="M68 26L72 22Q75 19 78 22L82 26Q85 29 82 32L78 36Z"/></symbol>
-      </svg>
+      <!--/* Los íconos de categoría: los pictogramas impresos del cuaderno de la portada. */-->
+      <svg th:replace="~{prototipo/raices/iconos :: categorias}"></svg>
 
       <!--/* La lista: lo mismo que el dibujo, con el mismo número (RF-CL-06). */-->
       <section class="seguimiento-lista" aria-labelledby="lista-titulo">
@@ -210,15 +207,10 @@
   </p>
   <p class="entrega-destino" th:text="|${d.cantidad} para ${d.destino}|">15 kg para Comedor Barrio
     Ejemplo</p>
-  <p class="entrega-estado">
-    <span class="estado" th:classappend="|estado--${d.estado.tono}|">
-      <th:block th:replace="~{:: sello(${d.estado.tono})}"></th:block>
-      <span th:text="${d.estado.texto}">En camino</span>
-    </span>
-    <span th:text="${d.nota}">Salió hoy a las 14:30</span>
-  </p>
   <!--/* Las etapas: lo hecho, un disco paja con el tilde calado; la actual, el sello del estado de
-         la entrega; lo que falta, un círculo hueco. */-->
+         la entrega; lo que falta, un círculo hueco. Sus nombres, solo para el lector de pantalla:
+         a la vista, debajo de la barra, el estado con su nota (decisión del usuario, 2026-11-01,
+         para no repetir el estado en la tarjeta). */-->
   <ol class="etapas" role="list" th:aria-label="|Etapas de ${d.titulo}|">
     <li th:each="p : ${d.pasos}" class="etapa" th:classappend="|etapa--${p.avance.tono()}|"
         th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
@@ -237,6 +229,13 @@
       <span class="etapa-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
     </li>
   </ol>
+  <p class="entrega-estado">
+    <span class="estado" th:classappend="|estado--${d.estado.tono}|">
+      <th:block th:replace="~{:: sello(${d.estado.tono})}"></th:block>
+      <span th:text="${d.estado.texto}">En camino</span>
+    </span>
+    <span th:text="${d.nota}">Salió hoy a las 14:30</span>
+  </p>
   <p class="entrega-noticia" th:text="${d['seguimiento']}">Posición aproximada.</p>
 </li>
 

@@ -14,8 +14,11 @@ final class AnchosDeReferencia {
   /** Celular, escritorio y pantalla grande: se diseña, se captura y se compara en estos. */
   static final List<Integer> REFERENCIA = List.of(CELULAR, 1280, 1920);
 
-  /** Solo para buscar desbordes, sin capturas. Incluye una tableta (768). */
-  static final List<Integer> INTERMEDIOS = List.of(414, 600, 768, 1024, 1440);
+  /**
+   * Solo para buscar desbordes, sin capturas. Incluye una tableta (768) y el quiebre ancho (1100),
+   * donde el menú pasa a columna y el contenido queda más angosto.
+   */
+  static final List<Integer> INTERMEDIOS = List.of(414, 600, 768, 1024, 1100, 1440);
 
   /** Alto de la ventana; las capturas son de la página completa. */
   static final int ALTO = 900;

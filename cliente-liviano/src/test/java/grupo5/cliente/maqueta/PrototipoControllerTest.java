@@ -109,6 +109,25 @@ class PrototipoControllerTest {
   }
 
   @Test
+  void elSeguimientoDeRaicesMuestraCadaEstado() throws Exception {
+    mvc.perform(get("/prototipo/raices/donante-seguimiento"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices/donante-seguimiento"))
+        .andExpect(model().attribute("seccion", "Seguimiento"))
+        .andExpect(content().string(containsString("3 entregas en curso")))
+        .andExpect(content().string(containsString("aria-current=\"step\"")))
+        .andExpect(content().string(containsString("aria-labelledby=\"lista-titulo\"")));
+    mvc.perform(get("/prototipo/raices/donante-seguimiento?escenario=vacio"))
+        .andExpect(
+            content().string(containsString("Ningún camión está en camino con tus donaciones")));
+    mvc.perform(get("/prototipo/raices/donante-seguimiento?escenario=error"))
+        .andExpect(content().string(containsString("role=\"alert\"")))
+        .andExpect(content().string(containsString("Volver a intentar")));
+    mvc.perform(get("/prototipo/raices/donante-seguimiento?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+  }
+
+  @Test
   void unFormularioDeRaicesVuelveARaices() throws Exception {
     mvc.perform(post("/prototipo/raices/donante-donaciones-prueba"))
         .andExpect(redirectedUrl("/prototipo/raices/donante-donaciones-prueba"));

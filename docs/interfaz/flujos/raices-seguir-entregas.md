@@ -103,10 +103,11 @@ pantalla grande:
   la donación más reciente primero. El número de cada entrega sigue ese orden, en la lista y en el
   dibujo.
 - **Cada tarjeta:** el número y el nombre, la categoría con su ícono y su nombre, la cantidad y la
-  entidad, el estado con su nota, las cinco etapas de la donación con su fecha (en depósito,
-  asignada, lista para entregar, en camino y entregada) y la última noticia. La entrega con
-  problema va en su lugar, como una más. Las etapas, en una barra de progreso con la actual
-  debajo (A/B 4).
+  entidad, las cinco etapas de la donación con su fecha (en depósito, asignada, lista para
+  entregar, en camino y entregada), el estado con su nota y la última noticia. La entrega con
+  problema va en su lugar, como una más. Las etapas, en una barra de progreso (A/B 4); debajo, un
+  solo renglón con el estado y su nota, que reemplaza al nombre de la etapa actual para no repetir
+  el estado (usuario, 2026-11-01).
 - **Lista y dibujo:** al pasar el mouse o el foco por una entrega de la lista, su línea en el dibujo
   queda llena y el resto se apaga, como la red de la portada.
 
@@ -194,7 +195,8 @@ Filtro de tono:
 - El estado de cada entrega es texto, con su forma (sello); el color solo acompaña.
 - Las cifras son una lista de definiciones (`dl`) con nombre; el número no va solo.
 - Las etapas son una lista ordenada (`ol`) con nombre; la etapa actual lleva
-  `aria-current="step"` y cada una dice su detalle en texto.
+  `aria-current="step"` y cada una dice su detalle en texto, oculto a la vista y leído por el
+  lector de pantalla.
 - Con "reducir movimiento", el dibujo aparece entero, sin trazado.
 
 ## 8. Revisión de usabilidad
@@ -269,6 +271,8 @@ Partes que se deciden con A/B, en este orden:
    por entrega debajo").
 4. Cómo se dibujan las etapas en la tarjeta. **Decidido (usuario, 2026-11-01):** una barra de
    progreso, con los cinco sellos en fila y debajo la etapa actual con su detalle (bitácora, "Las
-   etapas, una barra de progreso con la actual debajo").
+   etapas, una barra de progreso con la actual debajo"). Ajuste (usuario, 2026-11-01): debajo de
+   la barra, el estado con su nota en un solo renglón (bitácora, "Un solo renglón de estado en la
+   tarjeta").
 
 Preguntas abiertas: ninguna.

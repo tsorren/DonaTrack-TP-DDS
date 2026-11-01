@@ -109,7 +109,7 @@
 
 main {
   max-width: 82rem;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1rem 1rem 3rem;
 }
 
 main:focus {
@@ -142,18 +142,23 @@ main h2 {
 }
 
 /* Un aviso en lugar del contenido: vacío o error, con su próximo paso. Largo de línea dentro de los
-   50 a 75 caracteres (criterios de la cátedra, sección 8). */
+   50 a 75 caracteres (criterios de la cátedra, sección 8). En el celular, más apretado: el botón
+   del próximo paso entra en la primera pantalla (360 × 640), encima de la barra del menú. */
 .aviso {
   max-width: 38rem;
-  margin: 1.5rem 0;
-  padding: 1.25rem 1.5rem;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
   border: 2px solid var(--color-tinta);
   background: var(--color-papel);
   box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 .aviso h2 {
-  margin-top: 0;
+  margin: 0 0 0.5rem;
+}
+
+.aviso p {
+  margin: 0 0 0.75rem;
 }
 
 .aviso--error {
@@ -181,6 +186,19 @@ main h2 {
 
   main {
     padding: 2rem 2rem 4rem;
+  }
+
+  .aviso {
+    margin: 1.5rem 0;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .aviso h2 {
+    margin-bottom: 1rem;
+  }
+
+  .aviso p {
+    margin-bottom: 1rem;
   }
 }
 

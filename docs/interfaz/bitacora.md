@@ -26,6 +26,32 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · componente:etapas y layout:portada (Raíces) · Avisos de la revisión: un solo renglón de estado en la tarjeta y la lámina más angosta en el celular
+
+- **Decisión:** el usuario cerró los avisos de diseño que dejó la revisión.
+  - **Un solo renglón de estado en la tarjeta:** el estado con su nota baja y queda debajo de la
+    barra de etapas, en lugar del nombre de la etapa actual. Antes el estado se leía tres veces
+    (sello, renglón y etapa actual).
+  - **La lámina "Cómo funciona" en el celular:** la franja del dibujo pasa de 112 a 80 px y el
+    texto de cada paso gana 32 px. Desde 600 px de ancho, como antes.
+  - **El brote del estado vacío se queda:** en un celular de 640 px de alto, "Ver Mis donaciones"
+    queda debajo de la barra del menú y se llega bajando.
+- **Alternativas:** en la tarjeta, sacar solo la nota (se perdía "sale de nuevo el 17 de
+  octubre") o dejarla igual; en el vacío, sacar el brote en el celular; en la lámina, dejarla igual.
+- **Por qué:** la repetición del estado alargaba la tarjeta sin sumar nada. Con la franja angosta,
+  el paso se lee en renglones más largos. El brote es la firma de Raíces, y en celulares más altos
+  el botón entra.
+- **Costo:** el dibujo de la lámina se recorta un poco a los lados en el celular. El enlace a los
+  textos legales sigue pendiente: falta esa pantalla en todo el cliente liviano.
+- **Quién decidió:** usuario.
+- **Evidencia:** sin capturas propias; la verificación visual de las rutas de Raíces pasó sin
+  hallazgos, también en 1100 px.
+- **Además, sin decisión de diseño:** en el celular, el aviso de error es más apretado y "Volver a
+  intentar" entra en la primera pantalla. El aviso de carga ya no es una región viva, porque llega
+  con la página (en el sistema va a `#avisos`). Los pictogramas de categoría están una sola vez,
+  en `prototipo/raices/iconos.html`. `PrototipoControllerTest` prueba los cuatro estados de
+  Seguimiento. Los anchos intermedios suman 1100 px, el quiebre ancho.
+
 ### 2026-11-01 · componente:etapas (Raíces) · Las etapas, una barra de progreso con la actual debajo
 
 - **Decisión:** en cada tarjeta de Seguir entregas, las cinco etapas de la donación van en una

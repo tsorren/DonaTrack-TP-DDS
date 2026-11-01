@@ -360,14 +360,14 @@
 }
 
 /* Las etapas, una barra de progreso (A/B 4): los cinco sellos en fila, unidos por una línea, y
-   debajo solo la etapa actual con su detalle. Las otras siguen en la lista, ocultas a la vista,
-   para el lector de pantalla. */
+   debajo el estado de la entrega con su nota (un solo renglón, decisión del usuario, 2026-11-01).
+   Los nombres de las etapas siguen en la lista, ocultos a la vista, para el lector de pantalla. */
 .etapas {
   position: relative;
   display: flex;
   gap: 1.25rem;
-  margin: 0.75rem 0;
-  padding: 0 0 3.25rem;
+  margin: 0.75rem 0 0.5rem;
+  padding: 0;
   list-style: none;
   background: linear-gradient(var(--color-tinta-suave), var(--color-tinta-suave)) no-repeat 0.6875rem 0.625rem / 10.5rem 2px;
 }
@@ -376,30 +376,13 @@
   display: block;
 }
 
-.etapa:not(.etapa--actual) :is(.etapa-nombre, .etapa-detalle) {
+.etapa :is(.etapa-nombre, .etapa-detalle) {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-.etapa--actual :is(.etapa-nombre, .etapa-detalle) {
-  position: absolute;
-  left: 0;
-  white-space: nowrap;
-}
-
-.etapa--actual .etapa-nombre {
-  top: 1.875rem;
-  font-weight: 700;
-}
-
-.etapa--actual .etapa-detalle {
-  top: 3.25rem;
-  color: var(--color-tinta-suave);
-  font-size: 0.875rem;
 }
 
 .seguimiento-pie {
@@ -412,7 +395,9 @@
   height: 0;
 }
 
-/* Sin entregas en curso, el brote solo, chico, para que el aviso no ocupe toda la pantalla. */
+/* Sin entregas en curso, el brote solo, chico, para que el aviso no ocupe toda la pantalla. En el
+   celular de 640 px de alto, "Ver Mis donaciones" queda debajo de la barra y se llega bajando: el
+   usuario prefirió conservar el brote (2026-11-01). */
 .aviso-brote {
   max-width: 12rem;
 }
