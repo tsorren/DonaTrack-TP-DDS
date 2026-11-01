@@ -183,6 +183,21 @@
   r: 24px;
 }
 
+/* El lugar de la entidad que todavía no está: una línea punteada que baja por el centro hasta un
+   sello hueco, lo que todavía no se imprimió (camino de la entidad, 2026-11-01). */
+.red-dibujo .ruta.ruta--pendiente {
+  stroke-dasharray: 2 14;
+}
+
+.red-dibujo .hueco {
+  r: 24px;
+  fill: var(--p-suelo);
+  stroke: var(--p-raiz);
+  stroke-width: 2.5;
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
+}
+
 /* Al pasar el mouse o el foco por una entidad, su línea queda llena y el resto se apaga. */
 .horizonte-raices:has(.entidad a:is(:hover, :focus-visible)) :is(.ruta, .entidad-nodo) {
   opacity: 0.28;
@@ -195,6 +210,12 @@
 .horizonte-raices:has(.entidad--5 a:is(:hover, :focus-visible)) :is(.ruta--5, .entidad-nodo--5),
 .horizonte-raices:has(.entidad--6 a:is(:hover, :focus-visible)) :is(.ruta--6, .entidad-nodo--6) {
   opacity: 1;
+}
+
+/* Al enfocar "Sumar mi entidad", su línea se completa: el lugar se imprime. */
+.horizonte-raices:has(.entidad--7 a:is(:hover, :focus-visible)) .ruta--7 {
+  opacity: 1;
+  stroke-dasharray: none;
 }
 
 /* En el celular, las entidades van en lista debajo del dibujo, fuera del semitono. */
@@ -224,6 +245,32 @@
 .entidad b {
   font-weight: 700;
   font-stretch: 110%;
+}
+
+/* En el celular, el lugar vacío va al final de la lista, a todo el ancho, con el borde punteado
+   del sello hueco. */
+.entidad--7 {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border: 2px dashed var(--p-raiz);
+  color: var(--p-texto-suelo);
+}
+
+.suelo .entidad .boton--suelo {
+  display: inline-flex;
+  border-color: var(--p-raiz);
+  background: var(--p-raiz);
+  color: var(--p-suelo-hondo);
+  font-size: 1rem;
+}
+
+.suelo .entidad .boton--suelo:hover {
+  background: var(--p-texto-suelo);
 }
 
 .suelo h2 {
@@ -291,10 +338,20 @@
     r: 11px;
   }
 
-  /* Cada rótulo, debajo de su sello: la posición sale del dibujo (viewBox de 1200 × 520). */
+  .red-dibujo .hueco {
+    r: 13px;
+  }
+
+  /* Debajo del dibujo, lugar para "Tu entidad" y su botón, fuera del semitono. */
+  .horizonte-raices {
+    padding-bottom: calc(var(--p-semitono-alto) + 7rem);
+  }
+
+  /* Cada rótulo, debajo de su sello: la posición sale del dibujo (viewBox de 1200 × 560). */
   .entidades {
     position: absolute;
-    inset: 0;
+    inset: 0 0 auto;
+    aspect-ratio: 1200 / 560;
     display: block;
     padding: 0;
   }
@@ -308,32 +365,42 @@
 
   .entidad--1 {
     left: 10%;
-    top: 48%;
+    top: 44.57%;
   }
 
   .entidad--2 {
     left: 26.667%;
-    top: 67.3%;
+    top: 62.5%;
   }
 
   .entidad--3 {
     left: 40%;
-    top: 78.8%;
+    top: 73.17%;
   }
 
   .entidad--4 {
     left: 60%;
-    top: 78.8%;
+    top: 73.17%;
   }
 
   .entidad--5 {
     left: 73.333%;
-    top: 67.3%;
+    top: 62.5%;
   }
 
   .entidad--6 {
     left: 90%;
-    top: 48%;
+    top: 44.57%;
+  }
+
+  .entidad--7 {
+    left: 50%;
+    top: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.75rem 0 0;
+    border: 0;
   }
 
   .suelo h2,
@@ -344,6 +411,276 @@
   .suelo .pie-hero {
     grid-template-columns: 1fr auto;
     align-items: baseline;
+  }
+}
+
+/* Lo que viajó este mes: la línea del mes, en papel otra vez, debajo de la tierra. Las entregas
+   cuelgan de una línea de subte por fecha y la última, la que va en camino, de un tramo punteado.
+   En el celular la línea baja a la izquierda; con lugar, corre de lado a lado. */
+.viajo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.iconos {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.viajo-interior {
+  position: relative;
+  z-index: 1;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 3rem 1rem 3.5rem;
+}
+
+.viajo h2 {
+  margin: 0 0 0.25rem;
+  color: var(--p-tinta);
+  font: italic 800 clamp(2rem, 4.5vw, 3.25rem) / 1.05 var(--p-letra-titulo);
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+}
+
+.viajo-bajada {
+  margin: 0 0 2rem;
+}
+
+.linea-mes {
+  --p-linea-paso: 2rem;
+
+  display: grid;
+  gap: var(--p-linea-paso);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* En el celular: el cuadro a la izquierda y el texto al lado. */
+.parada {
+  position: relative;
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  align-content: start;
+  column-gap: 1rem;
+  padding-left: 2.25rem;
+}
+
+.parada > * {
+  grid-column: 2;
+  margin: 0;
+}
+
+.parada > .parada-cuadro {
+  grid-column: 1;
+  grid-row: 1 / span 6;
+}
+
+/* La línea: paja con borde verde oscuro, como las raíces, hasta la parada siguiente. */
+.parada::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 11px;
+  width: 9px;
+  height: calc(100% + var(--p-linea-paso));
+  translate: -50% 0;
+  border-inline: 2px solid var(--p-suelo-medio);
+  background: var(--p-raiz);
+}
+
+.parada:has(+ .parada--en-camino)::before {
+  width: 4px;
+  border: 0;
+  background: repeating-linear-gradient(180deg, var(--p-acento) 0 4px, transparent 4px 14px);
+}
+
+.parada:last-child::before {
+  content: none;
+}
+
+/* Sin lugar en la grilla: así se ubica respecto de la parada y no de una columna. */
+.parada > .parada-sello {
+  grid-column: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.sello-tinta {
+  fill: var(--p-hoja);
+}
+
+.sello-disco {
+  fill: var(--p-raiz);
+}
+
+.sello-tilde {
+  fill: none;
+  stroke: var(--p-papel);
+  stroke-width: 2;
+}
+
+.sello-contorno {
+  fill: var(--p-papel);
+  stroke: var(--p-en-camino-texto);
+  stroke-width: 2;
+}
+
+.sello-medio {
+  fill: var(--p-en-camino-sello);
+}
+
+.parada-fecha {
+  color: var(--p-tinta);
+  font-weight: 700;
+  font-stretch: 110%;
+}
+
+/* El cuadro: fondo salvia (el color del sol) y el ícono de la categoría con la segunda tinta. */
+.parada-cuadro {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--p-acento-claro);
+  color: var(--p-acento);
+  fill: currentcolor;
+}
+
+.parada-cuadro .tinta-corrida {
+  color: var(--p-hoja);
+}
+
+/* La que va en camino todavía no se imprimió: el cuadro y el ícono, solo el contorno. */
+.parada--en-camino .parada-cuadro {
+  background: none;
+  outline: 2px dashed var(--p-tinta-suave);
+  outline-offset: -2px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+}
+
+.parada h3 {
+  margin-top: 0.25rem;
+  color: var(--p-tinta);
+  font-size: 1.0625rem;
+  font-stretch: 108%;
+  line-height: 1.3;
+}
+
+.parada-estado {
+  color: var(--p-entregada-texto);
+  font-weight: 700;
+}
+
+.parada--en-camino .parada-estado {
+  color: var(--p-en-camino-texto);
+}
+
+/* El botón de la foto: chico y en contorno, para no competir con "Quiero donar". */
+.boton--foto {
+  justify-self: start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  border-width: 1.5px;
+  box-shadow: 0.2rem 0.2rem 0 var(--p-hoja);
+  color: var(--p-acento);
+  font-size: 0.875rem;
+}
+
+.boton--foto:hover {
+  background: var(--p-acento-claro);
+}
+
+.boton--foto:active {
+  translate: 0.2rem 0.2rem;
+}
+
+.boton--foto svg {
+  width: 1.125rem;
+  height: auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.75;
+}
+
+@media (min-width: 37.5em) {
+  .viajo-interior {
+    padding: 4rem 2rem 4.5rem;
+  }
+}
+
+/* Con lugar, la línea corre de lado a lado: la fecha arriba, el sello en la línea y la parada
+   colgada de un hilo. */
+@media (min-width: 53.75em) {
+  .linea-mes {
+    --p-linea-paso: 1.5rem;
+
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .parada {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4.25rem 0 0;
+    text-align: center;
+  }
+
+  .parada > .parada-cuadro {
+    margin-bottom: 0.5rem;
+  }
+
+  .boton--foto {
+    align-self: center;
+  }
+
+  .parada > .parada-fecha {
+    position: absolute;
+    top: 0;
+    inset-inline: 0;
+  }
+
+  .parada::before {
+    top: 2.25rem;
+    left: 50%;
+    width: calc(100% + var(--p-linea-paso));
+    height: 9px;
+    translate: 0 -50%;
+    border-inline: 0;
+    border-block: 2px solid var(--p-suelo-medio);
+  }
+
+  .parada:has(+ .parada--en-camino)::before {
+    width: calc(100% + var(--p-linea-paso));
+    height: 4px;
+    background: repeating-linear-gradient(90deg, var(--p-acento) 0 4px, transparent 4px 14px);
+  }
+
+  .parada > .parada-sello {
+    top: 2.25rem;
+    left: 50%;
+    translate: -50% -50%;
+  }
+
+  .parada::after {
+    content: "";
+    position: absolute;
+    top: calc(2.25rem + 11px);
+    left: 50%;
+    height: calc(2rem - 11px);
+    border-left: 2px solid var(--p-tinta);
+  }
+
+  .parada--en-camino::after {
+    border-left-style: dashed;
   }
 }
 
@@ -368,7 +705,8 @@
     animation: traza 1s cubic-bezier(0.3, 0.7, 0.2, 1) 1s both;
   }
 
-  .red-dibujo .entidad-nodo {
+  .red-dibujo :is(.entidad-nodo, .hueco),
+  .red-dibujo .ruta.ruta--pendiente {
     animation: aparece 0.35s ease 1.8s both;
   }
 }

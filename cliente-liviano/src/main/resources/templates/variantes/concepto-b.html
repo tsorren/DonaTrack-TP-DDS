@@ -3,10 +3,10 @@
        suelo (referencias 01, 03, 05 y 06). Arriba, poco: el título, las acciones y un brote. Abajo,
        en la tierra, a quién llega lo que se dona: una red radial que sale del brote hacia una
        entidad de cada tipo (rondas de lenguaje visual, 2026-11-01); la lista dice todo lo que dice
-       el dibujo. Las etapas de una donación no van en la portada. Página propia, sin el layout de
-       Cozy: la alternativa todavía no tiene juego de plantillas. Cubre solo el hero de
-       prototipo/cozy-medieval/publico-portada: le faltan el camino de la entidad ("Sumar mi
-       entidad") y "Lo que viajó este mes" (brief-raices.md, "Pendientes de la portada").
+       el dibujo. Las etapas de una donación no van en la portada. Al centro de la red, un lugar
+       vacío: el camino de la entidad ("Sumar mi entidad"). Debajo, en papel, "Lo que viajó este
+       mes": la línea del mes. Página propia, sin el layout de Cozy: la alternativa todavía no
+       tiene juego de plantillas.
        ponytail: el dibujo es fijo para el caso de ejemplo; si el concepto gana, se dibuja desde los
        datos (dirección de arte, "Oficio"). Textos según el tono común
        (docs/interfaz/tono-y-comunicacion.md): la bajada dice qué se puede seguir, el botón es
@@ -62,7 +62,7 @@
       </svg>
       <section class="suelo-interior" aria-labelledby="red-titulo">
         <div class="horizonte-raices">
-          <svg class="dibujo red-dibujo" viewBox="0 0 1200 520" aria-hidden="true" focusable="false">
+          <svg class="dibujo red-dibujo" viewBox="0 0 1200 560" aria-hidden="true" focusable="false">
             <path class="tronco" d="M600 0V40"/>
             <path class="borde" pathLength="1" d="M600 40H320L120 240"/>
             <path class="borde" pathLength="1" d="M600 40L520 120H400L320 200V340"/>
@@ -76,8 +76,10 @@
             <path class="ruta ruta--4" pathLength="1" d="M600 40V120L720 240V400"/>
             <path class="ruta ruta--5" pathLength="1" d="M600 40L680 120H800L880 200V340"/>
             <path class="ruta ruta--6" pathLength="1" d="M600 40H880L1080 240"/>
+            <path class="ruta ruta--7 ruta--pendiente" d="M600 120V540"/>
             <circle class="cruce" cx="600" cy="40" r="11"/>
             <circle class="cruce" cx="600" cy="120" r="7"/>
+            <circle class="hueco" cx="600" cy="540" r="13"/>
             <g class="entidad-nodo entidad-nodo--1"><circle class="sombra" cx="123" cy="243" r="11"/><circle cx="120" cy="240" r="11"/></g>
             <g class="entidad-nodo entidad-nodo--2"><circle class="sombra" cx="323" cy="343" r="11"/><circle cx="320" cy="340" r="11"/></g>
             <g class="entidad-nodo entidad-nodo--3"><circle class="sombra" cx="483" cy="403" r="11"/><circle cx="480" cy="400" r="11"/></g>
@@ -98,6 +100,11 @@
               <b>Club</b> <span>Ejemplo Norte</span></a></li>
             <li class="entidad entidad--6"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
               <b>Biblioteca</b> <span>Popular Ejemplo</span></a></li>
+            <!--/* El camino de la entidad (A/B, 2026-11-01): un lugar todavía vacío en la red, al centro,
+                   con el sello hueco de lo que no se imprimió. */-->
+            <li class="entidad entidad--7"><b>Tu entidad</b>
+              <a href="/prototipo/publico-registro-entidad" th:href="@{/prototipo/publico-registro-entidad}"
+                 class="boton boton--suelo">Sumar mi entidad</a></li>
           </ul>
         </div>
         <!--/* El rótulo de la lámina va al pie, como en la ficha de campo (referencia 05). */-->
@@ -116,6 +123,66 @@
             Actualizado el 15 de octubre de 2026, 14:30.</p>
         </div>
       </section>
+    </div>
+  </section>
+  <!--/* Lo que viajó este mes (A/B, 2026-11-01): la línea del mes. Las entregas cuelgan de una línea
+         de subte, por fecha, como la red de arriba; termina hoy, en la que va en camino. Cada una, un
+         cuadro salvia con el ícono de su categoría (las del catálogo: alimentos, ropa y muebles); la
+         que va en camino, hueca, porque todavía no se imprimió. La foto que sube la entidad es la
+         prueba: un botón la abre. */-->
+  <section class="viajo" aria-labelledby="viajo-titulo">
+    <svg class="grano" aria-hidden="true" focusable="false">
+      <rect width="100%" height="100%" filter="url(#grano)"/>
+    </svg>
+    <svg class="iconos" aria-hidden="true" focusable="false">
+      <symbol id="cat-alimentos" viewBox="0 0 100 100"><path d="M26 50H74Q74 72 50 72Q26 72 26 50Z"/><path d="M22 46H78V51H22Z"/><path d="M42 40Q38 34 42 28M54 40Q50 34 54 28" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></symbol>
+      <symbol id="cat-ropa" viewBox="0 0 100 100"><path d="M38 28L44 26Q50 32 56 26L62 28L76 38L70 48L64 44V74H36V44L30 48L24 38Z"/></symbol>
+      <symbol id="cat-muebles" viewBox="0 0 100 100"><path d="M36 20H64V42H59V46H68V54H66V78H60V54H40V78H34V54H32V46H41V42H36Z"/></symbol>
+    </svg>
+    <div class="viajo-interior">
+      <h2 id="viajo-titulo">Lo que viajó este mes</h2>
+      <p class="viajo-bajada">La entidad sube la foto cuando confirma la entrega. Octubre de 2026.</p>
+      <ol class="linea-mes" role="list">
+        <li class="parada">
+          <p class="parada-fecha"><time datetime="2026-10-05">5 de octubre</time></p>
+          <svg class="parada-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+          <svg class="parada-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Alimentos"><use class="tinta-corrida" href="#cat-alimentos" x="2" y="2" width="100" height="100"/><use href="#cat-alimentos" width="100" height="100"/></svg>
+          <h3 id="parada-1">Fideos secos, 8 kg</h3>
+          <p>Comedor Barrio Ejemplo</p>
+          <p class="parada-estado">Entrega confirmada</p>
+          <a href="/img/ejemplo-entrega.svg" th:href="@{/img/ejemplo-entrega.svg}" class="boton boton--foto" aria-describedby="parada-1">
+            <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><rect x="1" y="1" width="18" height="14"/><path d="M1 13l5-5 4 4 3-3 6 5"/></svg>Ver la foto de la entrega</a>
+        </li>
+        <li class="parada">
+          <p class="parada-fecha"><time datetime="2026-10-09">9 de octubre</time></p>
+          <svg class="parada-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+          <svg class="parada-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Ropa"><use class="tinta-corrida" href="#cat-ropa" x="2" y="2" width="100" height="100"/><use href="#cat-ropa" width="100" height="100"/></svg>
+          <h3 id="parada-2">Ropa de abrigo, 12 prendas</h3>
+          <p>Merendero Ejemplo Sur</p>
+          <p class="parada-estado">Entrega confirmada</p>
+          <a href="/img/cozy-medieval/prototipo-publico-foto-ropa.svg" th:href="@{/img/cozy-medieval/prototipo-publico-foto-ropa.svg}" class="boton boton--foto" aria-describedby="parada-2">
+            <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><rect x="1" y="1" width="18" height="14"/><path d="M1 13l5-5 4 4 3-3 6 5"/></svg>Ver la foto de la entrega</a>
+        </li>
+        <li class="parada">
+          <p class="parada-fecha"><time datetime="2026-10-14">14 de octubre</time></p>
+          <svg class="parada-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+          <svg class="parada-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Muebles"><use class="tinta-corrida" href="#cat-muebles" x="2" y="2" width="100" height="100"/><use href="#cat-muebles" width="100" height="100"/></svg>
+          <h3 id="parada-3">Sillas, 6 unidades</h3>
+          <p>Escuela Ejemplo N.º 12</p>
+          <p class="parada-estado">Entrega confirmada</p>
+          <a href="/img/raices/ejemplo-entrega-sillas.svg" th:href="@{/img/raices/ejemplo-entrega-sillas.svg}" class="boton boton--foto" aria-describedby="parada-3">
+            <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><rect x="1" y="1" width="18" height="14"/><path d="M1 13l5-5 4 4 3-3 6 5"/></svg>Ver la foto de la entrega</a>
+        </li>
+        <li class="parada parada--en-camino">
+          <p class="parada-fecha"><time datetime="2026-10-15">Hoy, 15 de octubre</time></p>
+          <svg class="parada-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></svg>
+          <svg class="parada-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Alimentos"><use href="#cat-alimentos" width="100" height="100"/></svg>
+          <h3>Lentejas secas, 15 kg</h3>
+          <p>Comedor Barrio Ejemplo</p>
+          <p class="parada-estado">En camino, salió a las 14:30</p>
+          <p>La foto llega cuando el comedor confirme la entrega.</p>
+        </li>
+      </ol>
     </div>
   </section>
 </main>

@@ -26,6 +26,45 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · lo que viajó (Raíces) · La línea del mes, con un cuadro por categoría
+
+- **Decisión:** "Lo que viajó este mes" va debajo de la tierra, otra vez en papel. Las entregas
+  del mes cuelgan de una línea de subte paja con borde verde oscuro, como la red de arriba, por
+  fecha, y la línea termina en "Hoy", con un tramo punteado hasta la donación que va en camino. Cada
+  entrega muestra un cuadro salvia claro (el color del sol) con un ícono mínimo y centrado de su
+  categoría, con la segunda tinta corrida. Las categorías son las del catálogo: alimentos, ropa y
+  muebles. La que va en camino se dibuja hueca, solo con el contorno. Las confirmadas llevan un
+  botón chico, en contorno, que dice "Ver la foto de la entrega". En el celular la línea baja por
+  la izquierda.
+- **Alternativas:** lámina de muestras (fotos con etiqueta de herbario); pliego en dos tintas (las
+  fotos en verde y paja, a color al pasar el mouse); la línea con fotos; la línea con
+  ilustraciones sueltas, sin cuadro; el cuadro con fondo verde bosque e ícono paja; el enlace de
+  texto a la foto.
+- **Por qué:** la línea repite el lenguaje de la red y se lee como un recorrido que termina hoy. Lo
+  que falta se ve hueco, como el sello de lo que todavía no se imprimió. El usuario prefirió
+  ícono a foto en la portada, en cuadro y con fondo. La foto es la prueba de la entrega y la bajada
+  del hero la promete, así que queda a un botón de distancia, sin competir con "Quiero donar".
+- **Costo:** la portada ya no muestra la foto. Hay un ícono por categoría y ninguno por
+  subcategoría. La foto de las sillas es una ilustración sintética nueva
+  (`img/raices/ejemplo-entrega-sillas.svg`).
+- **Quién decidió:** usuario, sobre láminas dibujadas en el chat (C entre tres; después, el cuadro
+  con fondo y el botón).
+- **Evidencia:** [`evidencia/raices/portada-entidad-y-mes/`](evidencia/raices/portada-entidad-y-mes/).
+
+### 2026-11-01 · camino de la entidad (Raíces) · Un lugar vacío al centro de la red
+
+- **Decisión:** "Sumar mi entidad" va dentro de la red de la tierra: una línea punteada baja por
+  el centro hasta un sello hueco, con el rótulo "Tu entidad" y el botón paja. Al pasar el mouse o
+  el foco por el botón, su línea se completa y las demás se apagan. En el celular va al final de la
+  lista de entidades, a todo el ancho, con borde punteado.
+- **Alternativas:** una línea de texto debajo de "Quiero donar" e "Ingresar"; una franja propia al
+  pie con los tres pasos de la entidad; las dos primeras juntas.
+- **Por qué:** la red ya responde "¿a quién llega lo que dono?". El lugar vacío le dice a la entidad
+  que puede ser la próxima, con el mismo lenguaje (lo hueco es lo que todavía no se imprimió).
+- **Costo:** queda debajo de la primera pantalla. La entidad que no baja no lo ve.
+- **Quién decidió:** usuario (la recomendada).
+- **Evidencia:** [`evidencia/raices/portada-entidad-y-mes/`](evidencia/raices/portada-entidad-y-mes/).
+
 ### 2026-11-01 · movimiento (Raíces) · La página se imprime y la red se traza
 
 - **Decisión:** al entrar, una vez, la portada se imprime: el sol aparece y la segunda tinta entra

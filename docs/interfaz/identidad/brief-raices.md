@@ -59,12 +59,12 @@ tipo y su nombre. Responde "¿a quién llega lo que dono?". Ver la [bitácora](.
 son las entidades y no los estados. Las etapas quedan para la pantalla de una donación, con las
 formas de estado de la sección Color.
 
-**Pendientes de la portada (`revision-ui`, 2026-11-01):** la variante cubre solo el hero de la
-portada de Cozy. Le faltan el camino de la entidad ("Sumar mi entidad", que en Cozy está en el
-hero) y "Lo que viajó este mes", las fichas con la foto de lo entregado. Faltaban también en la
-versión anterior. Sin el primero, una entidad que llega a esta portada no tiene por dónde
-registrarse, y eso choca con "Fijos: los datos y las acciones" (Libertades). Se suman cuando el
-usuario decida cómo se dicen en Raíces.
+**El camino de la entidad y "Lo que viajó este mes" (usuario, 2026-11-01):** eran los pendientes
+de la portada que marcó `revision-ui`. Al centro de la red, un lugar vacío: una línea punteada
+hasta un sello hueco, "Tu entidad" y el botón "Sumar mi entidad". Debajo de la tierra, en papel, la
+línea del mes: las entregas cuelgan por fecha de una línea de subte que termina hoy. Cada una lleva
+un cuadro salvia con el ícono de su categoría; la que va en camino, hueca; las confirmadas, un
+botón chico "Ver la foto de la entrega". Ver la [bitácora](../bitacora.md).
 
 ## Voz
 
@@ -82,6 +82,10 @@ usuario decida cómo se dicen en Raíces.
   afirmaba la llegada y se fue con las etapas.
 - **Botón principal (usuario, 2026-10-31):** "Quiero donar", el mismo texto que el botón del
   donante en la portada de Cozy. Reemplaza "Donar ahora" (urgencia artificial).
+- **Camino de la entidad y línea del mes (2026-11-01):** "Tu entidad" y "Sumar mi entidad" (el
+  mismo texto que en Cozy); "Lo que viajó este mes", con la bajada "La entidad sube la foto cuando
+  confirma la entrega. Octubre de 2026."; "Ver la foto de la entrega"; y, en la que va en camino,
+  "La foto llega cuando el comedor confirme la entrega." Redacción del agente.
 - **Etapas y cifras:** con los nombres de los
   [estados](../tono-y-comunicacion.md#los-estados-de-una-donación) (registrada, asignada, preparada,
   en camino, entrega confirmada); lo pendiente se dice pendiente ("Falta confirmar la entrega").
