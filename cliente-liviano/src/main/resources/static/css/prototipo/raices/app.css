@@ -119,6 +119,7 @@ a {
   border: 2px solid var(--color-acento);
   border-radius: 0;
   box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  font: inherit;
   font-weight: 700;
   font-stretch: 112%;
   text-decoration: none;

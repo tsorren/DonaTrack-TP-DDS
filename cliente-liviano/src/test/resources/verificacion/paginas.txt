@@ -36,3 +36,14 @@
 /prototipo/raices/donante-seguimiento?escenario=error
 /prototipo/raices/donante-seguimiento?escenario=lento
 /prototipo/raices/donante-donaciones
+/prototipo/raices/entidad-seguimiento-confirmar
+/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa
+/prototipo/raices/entidad-seguimiento-confirmar?escenario=vacio
+/prototipo/raices/entidad-seguimiento-confirmar?escenario=lento
+/prototipo/raices/entidad-seguimiento-confirmar?escenario=error
+/prototipo/raices/entidad-seguimiento-confirmar?escenario=sin-conexion
+/prototipo/raices/entidad-seguimiento-confirmar?escenario=confirmada
+/prototipo/raices/entidad-seguimiento-confirmar-error
+/prototipo/raices/entidad-seguimiento-sellada
+/prototipo/raices/entidad-seguimiento-sellada-ropa
+/prototipo/raices/entidad-seguimiento-problema?entrega=lentejas

@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -125,6 +126,61 @@ class PrototipoControllerTest {
         .andExpect(content().string(containsString("Volver a intentar")));
     mvc.perform(get("/prototipo/raices/donante-seguimiento?escenario=lento"))
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
+  }
+
+  @Test
+  void elActaDeRaicesMuestraCadaEstadoYConfirmaConUnFormularioReal() throws Exception {
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(
+            content().string(containsString("Lentejas secas, 15 kg. Llegó hoy a las 18:20.")))
+        .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "action=\"/prototipo/raices/entidad-seguimiento-sellada-lentejas\"")))
+        .andExpect(content().string(containsString("aria-current=\"step\"")))
+        .andExpect(content().string(containsString("name=\"fotos\"")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa"))
+        .andExpect(content().string(containsString("Donó</dt>")))
+        .andExpect(content().string(containsString("Una persona")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?entrega=pan"))
+        .andExpect(content().string(containsString("No encontramos esa entrega")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?escenario=confirmada"))
+        .andExpect(content().string(containsString("Ya confirmaste esta entrega")))
+        .andExpect(content().string(containsString("Esta entrega ya está <em>confirmada</em>")))
+        .andExpect(content().string(not(containsString("Van 10 kg recibidos."))));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("No sabemos si la confirmación llegó.")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar-error"))
+        .andExpect(content().string(containsString("Revisá dos cosas antes de confirmar")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+  }
+
+  @Test
+  void confirmarEnRaicesLlevaALaRaizCompletaYALaQueSigue() throws Exception {
+    mvc.perform(post("/prototipo/raices/entidad-seguimiento-sellada-lentejas"))
+        .andExpect(redirectedUrl("/prototipo/raices/entidad-seguimiento-sellada-lentejas"));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-sellada-lentejas"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("confirmada--recien")))
+        .andExpect(content().string(containsString("Te queda una en la puerta")))
+        .andExpect(content().string(containsString("entidad-seguimiento-confirmar?entrega=ropa")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-sellada-ropa"))
+        .andExpect(content().string(containsString("No te quedan entregas para confirmar.")))
+        .andExpect(content().string(not(containsString("Te queda una en la puerta"))))
+        .andExpect(content().string(containsString("15 de octubre, 18:50")));
+  }
+
+  @Test
+  void loQueTampocoDibujoCozyNoEnlazaACozy() throws Exception {
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-problema?entrega=lentejas"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices/sin-dibujar"))
+        .andExpect(model().attribute("enCozy", (Object) null))
+        .andExpect(content().string(containsString("Volver a la entrega")));
   }
 
   @Test

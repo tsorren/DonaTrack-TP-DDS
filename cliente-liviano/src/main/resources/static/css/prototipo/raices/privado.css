@@ -175,6 +175,16 @@ main h2 {
   font-weight: 700;
 }
 
+/* Lo que solo leen los lectores de pantalla. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .sin-dibujar {
   max-width: 38rem;
 }

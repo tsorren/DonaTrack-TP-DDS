@@ -26,6 +26,87 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · componente:cierre-ciclo (Raíces) · Recepción confirmada: la raíz completa llega a tu entidad
+
+- **Decisión:** al confirmar, arriba de la página, del brote del depósito sale la línea de subte de la
+  entrega y llega impresa hasta la estación de la entidad, con su tilde y su nombre. En la
+  respuesta al formulario la línea se traza una vez y el sello se imprime; con "reducir movimiento",
+  aparece completa.
+- **Alternativas:** B, un sello "Recibido" con la fecha y la hora estampado sobre la etiqueta, como
+  un comprobante, con la raíz solo en el último tramo.
+- **Por qué:** el usuario pidió que la persona sienta que se cerró un ciclo, y la raíz que llega lo
+  dice sin palabras.
+- **Costo:** el dibujo es fijo para el ejemplo; en el sistema se arma con los datos de la entrega.
+- **Quién decidió:** usuario (A, la recomendada).
+- **Evidencia:** `evidencia/raices/confirmar-cierre/` (a y b en 360 y 1280, y la comparación).
+
+### 2026-11-01 · componente:carga-fotos (Raíces) · Las fotos, en una zona de carga grande
+
+- **Decisión:** las fotos se eligen en un recuadro punteado, como un sello hueco, con la cámara al
+  centro (patrón: área para cargar archivos, la del boceto de E1). El campo es el nativo: la cámara
+  o la galería del celular, sin JavaScript, y en la computadora se puede soltar la foto.
+- **Alternativas:** A, el campo de archivos con su botón, compacto, como un campo más.
+- **Por qué:** la foto es la prueba que pide RF-12; se ve como el paso principal.
+- **Costo:** en el celular ocupa unos 100 px más.
+- **Quién decidió:** usuario (B, la recomendada).
+- **Evidencia:** `evidencia/raices/confirmar-fotos/`.
+
+### 2026-11-01 · layout:entidad-seguimiento-confirmar (Raíces) · El acta en dos columnas en pantalla grande
+
+- **Decisión:** en pantalla grande, la etiqueta de la entrega y el último tramo a la izquierda,
+  quietos mientras se baja, y el formulario a la derecha. En el celular, una columna.
+- **Alternativas:** A, una sola hoja angosta, igual que en el celular.
+- **Por qué:** mientras completa, la persona ve qué entrega confirma, y el botón entra casi en la
+  primera pantalla.
+- **Costo:** ninguno en el celular; en anchos intermedios, como en las otras pantallas, una columna.
+- **Quién decidió:** usuario (B, la recomendada).
+- **Evidencia:** `evidencia/raices/confirmar-composicion/`.
+
+### 2026-11-01 · flujo:confirmar-recepcion (Raíces) · Una entrega por vez, con su etiqueta, y la raíz que llega al confirmar
+
+- **Decisión:** la ficha de Confirmar recepción en Raíces
+  ([`raices-confirmar-recepcion.md`](flujos/raices-confirmar-recepcion.md)) se aparta del boceto de
+  E1 (página 28) en cuatro puntos y suma contenido.
+  - **Desvíos del boceto, del agente:**
+    - se confirma una entrega por vez, no varias juntas, como en Cozy;
+    - no tiene la casilla "Disclaimer legal": el texto dice qué pasa al confirmar y quién ve las
+      fotos;
+    - no tiene el mapa, que ya está en Seguir entregas; queda el último tramo como raíz;
+    - "Reportar problema" pasa a ser el enlace "Llegó con un problema".
+  - **Decisiones del usuario, en una ronda de preguntas:**
+    - la etiqueta de la entrega muestra el último tramo, la necesidad que cubre y quién donó;
+    - la pantalla dice quién ve las fotos;
+    - al confirmar, la raíz de la entrega se completa hasta la entidad, para que se sienta que se
+      cerró un ciclo.
+  - **Propuesto por el agente:** si dona una persona, la entidad no ve su nombre.
+- **Alternativas:**
+  - para un problema, solo confirmar (como Cozy) o dibujar ya el reporte;
+  - al terminar, un comprobante sobrio con el sello.
+- **Por qué:**
+  - confirmar varias juntas complica los errores, y la nota del boceto ya lo advertía;
+  - la casilla no decía qué se aceptaba;
+  - el mapa repetía Seguir entregas.
+  - La etiqueta ayuda a no confundir dos entregas que llegaron el mismo día.
+- **Costo:**
+  - el contrato no tiene la cantidad de bultos, el remito, la necesidad ni quién donó: queda como
+    pregunta para el equipo;
+  - la foto puede mostrarse en lo público (RF-01 y RF-02), y la pantalla lo dice.
+- **Quién decidió:** usuario (contenido y cierre) y agente (desvíos del boceto, propuestos).
+- **Evidencia:** la ficha. La revisión independiente en modo flujo pidió cambios en la ronda 1, con
+  seis hallazgos bloqueantes, y quedaron corregidos:
+  - el estado "Ya confirmaste esta entrega";
+  - el estado "sin conexión", separado del error del servidor;
+  - quién ve las fotos, dicho con su alcance real;
+  - los textos de los cinco errores de datos;
+  - las horas del éxito;
+  - el campo de bultos, ahora vacío.
+
+  La pantalla construida pasó `revision-ui` en modo pantalla en la ronda 3. La ronda 1 marcó dos
+  bloqueantes: en Recepción confirmada de ropa decía que quedaba una entrega y que no quedaba
+  ninguna, y la hora de confirmación no coincidía dentro de la pantalla. La ronda 2 marcó que la
+  raíz animada se cortaba en pantallas anchas. Los tres quedaron corregidos. El usuario aprobó la
+  ficha al ver la pantalla.
+
 ### 2026-11-01 · componente:etapas y layout:portada (Raíces) · Avisos de la revisión: un solo renglón de estado en la tarjeta y la lámina más angosta en el celular
 
 - **Decisión:** el usuario cerró los avisos de diseño que dejó la revisión.

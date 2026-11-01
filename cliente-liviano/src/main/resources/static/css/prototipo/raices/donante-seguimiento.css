@@ -1,6 +1,7 @@
 /* Seguimiento del donante en Raíces: el dibujo de las entregas en curso (una línea de subte por
    entrega desde el depósito, con el sello de su estado) y, debajo, la lista con el mismo número. */
 @import url("privado.css");
+@import url("sellos.css");
 
 /* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
 .seguimiento-bajada {
@@ -86,69 +87,6 @@
   border: 2px solid var(--color-tinta);
 }
 
-.dibujo-suelo {
-  fill: var(--color-suelo);
-}
-
-.dibujo-tierra {
-  stroke: var(--color-tinta);
-  stroke-width: 3;
-}
-
-.dibujo-tallo {
-  stroke: var(--color-tallo);
-  stroke-width: 4;
-}
-
-.dibujo .dibujo-hoja {
-  fill: var(--color-hoja);
-}
-
-/* En el celular el dibujo es chico: los nombres los dice la lista, con el mismo número. */
-.dibujo-rotulo {
-  display: none;
-  fill: var(--color-texto-suelo);
-  font: 700 15px var(--fuente-texto);
-  text-anchor: middle;
-}
-
-.dibujo-rotulo--papel {
-  fill: var(--color-tinta);
-  text-anchor: start;
-}
-
-/* Las líneas de subte de la red de la portada (A/B 2): lo recorrido, paja con borde; lo que falta,
-   hueco, el contorno paja con el suelo adentro: todavía no se imprimió. */
-.dibujo path {
-  stroke-linejoin: round;
-}
-
-.subte-borde {
-  stroke: var(--color-suelo-hondo);
-  stroke-width: 12;
-}
-
-.subte-linea {
-  stroke: var(--color-raiz);
-  stroke-width: 7;
-}
-
-.subte-hueco {
-  stroke: var(--color-raiz);
-  stroke-width: 8;
-}
-
-.subte-hueco-centro {
-  stroke: var(--color-suelo);
-  stroke-width: 4;
-}
-
-.subte-estacion {
-  fill: var(--color-suelo);
-  stroke: var(--color-texto-suelo);
-  stroke-width: 3;
-}
-
 .camion circle {
   fill: var(--color-papel);
   stroke: var(--color-tinta);
@@ -172,60 +110,6 @@
   fill: var(--color-tinta);
   font: 800 22px var(--fuente-titulo);
   text-anchor: middle;
-}
-
-/* --- Los sellos de estado (brief de Raíces, ronda de formas) ------------------------------------ */
-.sello-tinta {
-  fill: var(--color-hoja);
-}
-
-.sello-disco {
-  fill: var(--color-raiz);
-}
-
-.sello-contorno {
-  fill: var(--color-papel);
-  stroke: var(--color-en-camino-texto);
-  stroke-width: 2;
-}
-
-.sello-contorno--punteado {
-  stroke: var(--color-pendiente-texto);
-  stroke-dasharray: 3 3;
-}
-
-.sello-medio {
-  fill: var(--color-en-camino-sello);
-}
-
-.sello-problema {
-  fill: var(--color-problema-texto);
-}
-
-.sello-calado {
-  fill: none;
-  stroke: var(--color-papel);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-/* Lo hecho, un disco paja lleno con el tilde; lo que falta, un círculo hueco, sin imprimir. */
-.sello-hecho {
-  fill: var(--color-raiz);
-  stroke: var(--color-tinta);
-  stroke-width: 1.5;
-}
-
-.sello-calado--fino {
-  stroke: var(--color-tinta);
-  stroke-width: 2;
-  stroke-linejoin: round;
-}
-
-.sello-falta {
-  fill: var(--color-papel);
-  stroke: var(--color-tinta-suave);
-  stroke-width: 1.5;
 }
 
 /* Al pasar o enfocar una entrega de la lista, su línea queda llena y el resto se apaga, como la red
@@ -314,30 +198,6 @@
   margin: 0.25rem 0;
 }
 
-.estado {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-weight: 700;
-}
-
-.estado-sello {
-  width: 1.375rem;
-  height: 1.375rem;
-}
-
-.estado--pendiente {
-  color: var(--color-pendiente-texto);
-}
-
-.estado--en-camino {
-  color: var(--color-en-camino-texto);
-}
-
-.estado--con-problema {
-  color: var(--color-problema-texto);
-}
-
 .entrega-noticia {
   font-size: 0.9375rem;
 }
@@ -349,14 +209,6 @@
   gap: 0.5rem;
   margin-bottom: 0.25rem;
   font-weight: 700;
-}
-
-.categoria-icono {
-  width: 1.75rem;
-  height: 1.75rem;
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  fill: var(--color-tinta);
 }
 
 /* Las etapas, una barra de progreso (A/B 4): los cinco sellos en fila, unidos por una línea, y
@@ -389,12 +241,6 @@
   max-width: 36rem;
 }
 
-.iconos {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-
 /* Sin entregas en curso, el brote solo, chico, para que el aviso no ocupe toda la pantalla. En el
    celular de 640 px de alto, "Ver Mis donaciones" queda debajo de la barra y se llega bajando: el
    usuario prefirió conservar el brote (2026-11-01). */
@@ -406,12 +252,6 @@
 .seguimiento-reserva {
   min-height: 14rem;
   background: var(--color-pendiente-fondo);
-}
-
-@media (min-width: 37.5em) {
-  .dibujo-rotulo {
-    display: inline;
-  }
 }
 
 /* Desde la tableta, las cuatro cifras en una fila. */

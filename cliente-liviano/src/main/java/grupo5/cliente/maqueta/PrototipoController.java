@@ -164,9 +164,13 @@ class PrototipoController {
     EstilosController.datosDeEjemplo(model);
     model.addAttribute("alternativa", prototipo.alternativa());
     String consulta = request.getQueryString();
-    // La misma pantalla en Cozy, para el aviso de Raíces sin dibujar.
+    // La misma pantalla en Cozy, para el aviso de Raíces sin dibujar; si Cozy tampoco la dibujó,
+    // nada.
     model.addAttribute(
-        "enCozy", COZY.direccion() + pantalla + (consulta == null ? "" : "?" + consulta));
+        "enCozy",
+        dibujada(COZY, pantalla)
+            ? COZY.direccion() + pantalla + (consulta == null ? "" : "?" + consulta)
+            : null);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
     model.addAttribute(
         "navegacion",

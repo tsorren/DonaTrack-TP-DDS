@@ -139,7 +139,7 @@ En la maqueta, `?escenario=vacio`, `error` y `lento` (como la portada de Raíces
 |---|---|---|---|
 | Seguimiento | Con datos | Las cifras, el dibujo con las tres entregas en curso y la lista | Ver Textos |
 | Seguimiento | Vacío | El título; en lugar de las cifras, el dibujo y la lista, un aviso con el brote solo, sin raíces | "Ninguna entrega en curso." · "Ningún camión está en camino con tus donaciones" · "Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por dónde va el camión." · "Ver Mis donaciones" |
-| Seguimiento | Cargando | El título; el dibujo y la lista con su lugar reservado, sin datos inventados | "Cargando tus entregas en curso…" (se lee solo, `aria-live`) |
+| Seguimiento | Cargando | El título; el dibujo y la lista con su lugar reservado, sin datos inventados | "Cargando tus entregas en curso…" (en el sistema, en la región `#avisos`, que lo anuncia; en la maqueta llega con la página y no es región viva) |
 | Seguimiento | Éxito | No aplica: es una pantalla de consulta, sin acciones que cambien algo | — |
 | Seguimiento | Error de datos | No aplica: la pantalla no recibe datos del donante | — |
 | Seguimiento | Error del servidor | El título; el banner de error en lugar del dibujo y la lista | "No pudimos cargar tus entregas en curso." · "Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código de seguimiento (en la maqueta, `a1b2c3d4e5f6`, como en Cozy) · "Volver a intentar" |

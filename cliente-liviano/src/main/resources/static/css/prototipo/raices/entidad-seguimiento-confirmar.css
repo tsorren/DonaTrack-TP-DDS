@@ -1,0 +1,494 @@
+/* Confirmar recepción en Raíces: el acta de una entrega. La etiqueta (como una de herbario), el
+   último tramo (la raíz de la entrega, con la confirmación hueca) y el formulario, uno debajo del
+   otro; el celular es el dispositivo principal. */
+@import url("privado.css");
+@import url("sellos.css");
+
+.confirmar {
+  max-width: 44rem;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-stretch: 112%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-underline-offset: 0.25em;
+}
+
+.volver::before {
+  content: "← ";
+}
+
+main h1 em {
+  color: var(--color-acento);
+  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
+}
+
+.confirmar-bajada {
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.confirmar-aviso {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+.acta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.acta-entrega {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+/* --- La etiqueta de la entrega: doble filete y sombra plana salvia, como la lámina de la portada - */
+.etiqueta {
+  padding: 1rem 1.25rem;
+  border: 1.5px solid var(--color-tinta);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -7px;
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+}
+
+main .etiqueta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.25rem 0 0.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--color-tinta);
+  font-size: 1.125rem;
+}
+
+.etiqueta-titulo .categoria-icono {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.etiqueta dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.etiqueta dt {
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+}
+
+.etiqueta dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.etiqueta dd span + span {
+  font-weight: 400;
+}
+
+/* --- El último tramo: la raíz de la entrega, de arriba abajo -------------------------------------
+   Una línea de subte paja con borde une los sellos; hacia la confirmación que falta, la línea va
+   hueca: todavía no se imprimió (brief, mapa de las entregas). */
+.tramo-seccion h2 {
+  margin: 0 0 0.75rem;
+}
+
+.tramo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tramo-paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  padding-bottom: 1.25rem;
+}
+
+.tramo-paso:last-child {
+  padding-bottom: 0;
+}
+
+.tramo-paso .estado-sello {
+  grid-row: span 2;
+  position: relative;
+  z-index: 1;
+}
+
+.tramo-nombre {
+  font-weight: 700;
+}
+
+.tramo-detalle {
+  grid-column: 2;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.tramo-paso:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  bottom: -0.1rem;
+  left: 0.4375rem;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.tramo-paso:has(+ .tramo-paso--falta)::before {
+  border-style: dashed;
+  border-color: var(--color-tinta-suave);
+  background: var(--color-papel);
+}
+
+/* --- El formulario -------------------------------------------------------------------------------- */
+.acta-formulario {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0;
+}
+
+.grupo {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.grupo legend {
+  padding: 0;
+}
+
+.grupo legend h2 {
+  margin: 0 0 0.25rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.campo label {
+  font-weight: 700;
+}
+
+.campo small {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.campo input {
+  min-height: 3rem;
+  padding: 0.625rem 0.75rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: 0;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font: inherit;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.campo input[type="number"] {
+  max-width: 8rem;
+}
+
+/* El campo de fotos es el nativo (la cámara o la galería del celular, sin JavaScript); su botón,
+   como el botón secundario de Raíces. */
+.campo input[type="file"] {
+  padding: 0.5rem;
+  border-style: dashed;
+}
+
+.campo input[type="file"]::file-selector-button {
+  min-height: 2.75rem;
+  margin-right: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--color-acento);
+  border-radius: 0;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Las fotos, en una zona de carga grande (A/B 2, usuario, 2026-11-01; patrón: área para cargar
+   archivos, la del boceto de E1): un recuadro punteado, como un sello hueco, con la cámara al
+   centro. Tocar la cámara o el título abre la cámara o la galería; en la computadora se puede
+   soltar la foto sobre el campo. */
+.campo--fotos {
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem 1.25rem;
+  border: 2px dashed var(--color-tinta);
+  background: var(--color-pendiente-fondo);
+  text-align: center;
+}
+
+.campo--fotos label {
+  display: grid;
+  justify-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+}
+
+.campo--fotos .carga-icono {
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.campo--fotos label span {
+  font-size: 1.125rem;
+}
+
+.campo--fotos input[type="file"] {
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.campo--fotos:focus-within {
+  outline: 3px solid var(--color-acento);
+  outline-offset: 3px;
+}
+
+.campo--fotos.campo--error {
+  border-color: var(--color-problema-texto);
+}
+
+.campo--error input {
+  border-color: var(--color-problema-texto);
+}
+
+.campo-error {
+  margin: 0;
+  color: var(--color-problema-texto);
+  font-weight: 700;
+}
+
+.quien-ve {
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--color-hoja);
+  font-size: 0.9375rem;
+}
+
+.resumen ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.resumen a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-problema-texto);
+  font-weight: 700;
+}
+
+/* --- La firma: quién recibe, el botón, qué pasa al confirmar y el problema ------------------------ */
+.firma {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.firma p {
+  margin: 0;
+}
+
+.firma-quien {
+  font-style: italic;
+}
+
+.firma .boton[disabled] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.problema {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento);
+  text-underline-offset: 0.25em;
+}
+
+/* --- Recepción confirmada ---------------------------------------------------------------------- */
+.asentado,
+.siguiente {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.asentado h2,
+.siguiente h2 {
+  margin: 0;
+}
+
+.asentado dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.375rem 1rem;
+  margin: 0;
+}
+
+.asentado dl div {
+  display: contents;
+}
+
+.asentado dt {
+  color: var(--color-tinta-suave);
+}
+
+.asentado dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.asentado p,
+.siguiente p {
+  margin: 0;
+}
+
+.asentado-pedido {
+  font-weight: 700;
+}
+
+.siguiente {
+  justify-items: start;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--color-tinta);
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+}
+
+.siguiente-entrega {
+  display: flex;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.siguiente-entrega .categoria-icono {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.siguiente-que {
+  font-weight: 700;
+}
+
+.confirmada .acta-formulario {
+  /* En una columna, lo asentado y la entrega que sigue van antes que la etiqueta y el tramo: es lo
+     nuevo de esta pantalla. En pantalla grande, a la derecha, como en el acta. */
+  order: -1;
+  align-content: start;
+}
+
+.siguiente-ninguna {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* El cierre del ciclo (A/B 3, usuario, 2026-11-01): la raíz completa, grande, del brote del depósito
+   hasta la estación de tu entidad. */
+.ciclo-raiz {
+  margin: 0 0 2rem;
+  border: 2px solid var(--color-tinta);
+}
+
+/* La línea de la entrega escala con el dibujo: el trazado mide su largo en las unidades del dibujo
+   (pathLength), y con trazos que no escalan se cortaría antes de llegar en pantallas anchas. */
+.ciclo-raiz :is(.subte-borde, .subte-linea) {
+  vector-effect: none;
+}
+
+.ciclo-entidad .sello-calado--fino {
+  stroke-width: 3;
+}
+
+.ciclo-rotulo {
+  font-size: 17px;
+}
+
+/* La respuesta a confirmar: una vez, la raíz se traza hasta la entidad y su sello se imprime. Sin
+   movimiento si la persona lo pidió así. */
+@media (prefers-reduced-motion: no-preference) {
+  .confirmada--recien .ciclo-trazo {
+    stroke-dasharray: 1;
+    animation: ciclo-traza 1.2s cubic-bezier(0.3, 0.7, 0.2, 1) 0.2s both;
+  }
+
+  .confirmada--recien .ciclo-entidad {
+    animation: ciclo-imprime 0.4s ease-out 1.3s both;
+  }
+}
+
+@keyframes ciclo-traza {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ciclo-imprime {
+  from {
+    opacity: 0;
+    scale: 1.4;
+  }
+}
+
+/* En pantalla grande, dos columnas (A/B 1, usuario, 2026-11-01): a la izquierda, la etiqueta y el
+   último tramo, quietos mientras se baja; a la derecha, el formulario. */
+@media (min-width: 68.75em) {
+  .confirmar {
+    max-width: 68rem;
+  }
+
+  .acta {
+    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .acta-entrega {
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .acta-formulario {
+    max-width: 38rem;
+  }
+
+  .confirmada .acta-formulario {
+    order: 0;
+  }
+}

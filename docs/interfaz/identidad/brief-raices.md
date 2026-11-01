@@ -107,6 +107,16 @@ un registro de cifras por estado con doble filete. En cada tarjeta, la categorí
 y las etapas en una barra de progreso de sellos: es la primera pantalla que usa los sellos de las
 etapas. Ver la [bitácora](../bitacora.md).
 
+## Confirmar recepción (usuario, 2026-11-01)
+
+La primera pantalla de la entidad. El acta de una entrega lleva una etiqueta de herbario (doble
+filete y sombra plana salvia) con la categoría, los bultos, el pedido que cubre y quién donó, y el
+último tramo como raíz vertical: lo cumplido con el sello impreso y la confirmación hueca, unida por
+una línea paja que va hueca hacia lo que falta. En pantalla grande, la etiqueta y el tramo a la
+izquierda y el formulario a la derecha. Las fotos se eligen en una zona de carga punteada con la
+cámara al centro. Al confirmar, la raíz completa llega impresa del brote del depósito a la
+estación de la entidad: se cierra el ciclo. Ver la [bitácora](../bitacora.md).
+
 ## Voz
 
 - **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Lo
