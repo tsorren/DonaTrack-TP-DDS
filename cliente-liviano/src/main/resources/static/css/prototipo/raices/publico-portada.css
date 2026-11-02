@@ -1,7 +1,7 @@
 /* Portada de Raíces, segunda iteración (2026-11-01): D, la mezcla de A y C elegida por el usuario.
    El título de A con la lámina "Cómo funciona" de C; debajo, el rótulo y un brote con su sol sobre
    la tierra, del que sale la red radial de A hasta las etiquetas de herbario, con la vacía de tu
-   entidad al centro. Las cifras, un registro de campo; el mes, un cuaderno de entregas. */
+   entidad al centro. Las cifras, frutos colgados de una rama; el mes, un cuaderno de entregas. */
 @import url("app.css");
 
 /* --- La portada y la lámina ------------------------------------------------------------------- */
@@ -542,7 +542,7 @@
   background: var(--color-texto-suelo);
 }
 
-/* --- El registro de campo ---------------------------------------------------------------------- */
+/* --- Lo que está confirmado, la rama de frutos ------------------------------------------------ */
 
 .registro {
   background: var(--color-suelo-hondo);
@@ -572,7 +572,7 @@
   margin: 0;
 }
 
-/* Cada cifra con su línea guía punteada hasta el número, como las medidas de la lámina. */
+/* Sin datos (vacío, cargando o error), el aviso en un marco doble color paja. */
 .registro-datos {
   margin: 0;
   padding: 0.5rem 1rem;
@@ -582,35 +582,98 @@
   outline-offset: 5px;
 }
 
-dl.registro-datos > div {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding: 0.6rem 0;
+/* La rama de frutos (A/B de cifras, 2026-11-02, C; no confundir con .cosecha, la cuenta de la
+   planta): los frutos cuelgan de una rama color paja, cada uno de su tamaño y su color, con el
+   número adentro y una etiqueta de papel. Mandarina, como los frutos de la planta, las entregas
+   confirmadas; paja, las entidades; verde, todavía creciendo, las que van en camino. En el celular,
+   la rama baja por el costado y los frutos salen de ella. */
+dl.registro-datos {
+  display: grid;
+  gap: 1.75rem;
+  margin-left: 0.5rem;
+  padding: 0.5rem 0 0.5rem 2.25rem;
+  border: 0;
+  border-left: 0.4rem solid var(--color-raiz);
+  border-radius: 0;
+  outline: 0;
 }
 
-dl.registro-datos > div + div {
-  border-top: 1px solid var(--color-suelo);
+dl.registro-datos > div {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0;
+}
+
+/* El cabo, de la rama al fruto. */
+dl.registro-datos > div::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -2.25rem;
+  width: 2.25rem;
+  border-bottom: 0.25rem solid var(--color-raiz);
 }
 
 .registro-datos dt {
-  flex: 0 1 auto;
-}
-
-dl.registro-datos > div::after {
-  content: "";
-  flex: 1 1 1.5rem;
-  order: 1;
-  border-bottom: 2px dotted var(--color-raiz);
+  order: 2;
+  justify-self: start;
+  padding: 0.45rem 0.7rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
+  color: var(--color-tinta);
+  font-size: 0.95rem;
+  line-height: 1.3;
 }
 
 .registro-datos dd {
-  order: 2;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  order: 1;
+  place-items: center;
+  width: 7.5rem;
+  aspect-ratio: 1;
   margin: 0;
-  color: var(--color-destacado);
-  font: 900 clamp(1.75rem, 3vw, 2.5rem) / 1 var(--fuente-titulo);
-  font-stretch: 125%;
+  border-radius: 50%;
+  background: var(--color-fruto);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
+  color: var(--color-tinta);
+  font: 900 1.9rem / 1 var(--fuente-titulo);
+  font-stretch: 110%;
   letter-spacing: -0.03em;
+}
+
+dl.registro-datos > div:nth-child(2) dd {
+  width: 6rem;
+  background: var(--color-raiz);
+  font-size: 1.75rem;
+}
+
+dl.registro-datos > div:nth-child(3) dd {
+  width: 5.25rem;
+  background: var(--color-hoja);
+  font-size: 1.6rem;
+}
+
+/* La hoja de cada fruto. */
+.registro-datos dd::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  right: 0.75rem;
+  width: 1.75rem;
+  height: 0.95rem;
+  border-radius: 0 100%;
+  background: var(--color-hoja);
+  rotate: -18deg;
+}
+
+dl.registro-datos > div:nth-child(3) dd::before {
+  background: var(--color-raiz);
 }
 
 /* --- El cuaderno del mes ----------------------------------------------------------------------- */
@@ -995,10 +1058,94 @@ dl.registro-datos > div::after {
     max-width: 46rem;
   }
 
+  /* La cabeza arriba, con el botón a la derecha; la rama cruza de lado a lado y los frutos cuelgan a
+     distinta altura, cada cabo tan largo como el aire de arriba de su fruto. */
   .registro-interior {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-    align-items: center;
-    gap: 3rem;
+    gap: 1rem;
+  }
+
+  .registro-cabeza {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 2rem;
+  }
+
+  .registro-cabeza > * {
+    grid-column: 1;
+  }
+
+  .registro-cabeza .boton--mapa {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+  }
+
+  dl.registro-datos {
+    grid-template-columns: 1.3fr 1fr 1fr;
+    align-items: start;
+    gap: 2rem;
+    margin: 1rem 0 0;
+    padding: 0 2rem;
+    border-top: 0.45rem solid var(--color-raiz);
+    border-left: 0;
+    border-radius: var(--radio-boton);
+  }
+
+  dl.registro-datos > div {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding-top: 1.75rem;
+    text-align: center;
+  }
+
+  dl.registro-datos > div:nth-child(2) {
+    padding-top: 3.5rem;
+  }
+
+  dl.registro-datos > div:nth-child(3) {
+    padding-top: 2.25rem;
+  }
+
+  dl.registro-datos > div::after {
+    content: none;
+  }
+
+  .registro-datos dd::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 0.25rem;
+    height: 1.75rem;
+    background: var(--color-raiz);
+    translate: -50% 0;
+  }
+
+  dl.registro-datos > div:nth-child(2) dd::after {
+    height: 3.5rem;
+  }
+
+  dl.registro-datos > div:nth-child(3) dd::after {
+    height: 2.25rem;
+  }
+
+  .registro-datos dt {
+    justify-self: center;
+  }
+
+  .registro-datos dd {
+    width: 12rem;
+    font-size: 3rem;
+  }
+
+  dl.registro-datos > div:nth-child(2) dd {
+    width: 9rem;
+    font-size: 2.5rem;
+  }
+
+  dl.registro-datos > div:nth-child(3) dd {
+    width: 8rem;
+    font-size: 2.25rem;
   }
 
   /* El cuaderno: fecha, raíz con sello, cuadro, la entrega y el botón, en una fila por entrega. */

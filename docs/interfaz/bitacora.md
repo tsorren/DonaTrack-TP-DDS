@@ -26,6 +26,29 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · componente:cifras (Raíces) · "Lo que está confirmado": una cosecha colgada de una rama
+
+- **Decisión:** C, la rama. En la portada, las tres cifras de "Lo que está confirmado" cuelgan de
+  una rama color paja, cada una dentro de un fruto de su tamaño y su color: mandarina, la más grande,
+  las entregas confirmadas desde marzo; paja, las entidades en el mapa; verde, las donaciones en
+  camino. Cada fruto lleva la segunda tinta corrida, como los de la planta, una hoja salvia y, debajo, una
+  etiqueta de papel con el rótulo, derecha. En la computadora, la rama cruza de lado a lado y los
+  frutos cuelgan a distinta altura; en el celular, la rama baja por el costado. Sin datos (vacío,
+  cargando o error), el aviso sigue en el marco doble. Reemplaza el registro de campo con líneas
+  guía.
+- **Alternativas:** tres, con la paleta Oliva: A, segura, el mismo registro con cada línea guía
+  terminando en un fruto mandarina con el número adentro; B, media, tres frutos mandarina grandes
+  en fila, sin marco, con el rótulo debajo; y C, audaz, la rama. La recomendada fue C. El usuario
+  eligió C, con las etiquetas derechas en lugar de inclinadas.
+- **Por qué:** C es la que tiene más impacto y color, y los colores dicen algo: en la planta de
+  arriba, el mandarina es una entrega confirmada, así que las que van en camino quedan verdes,
+  todavía creciendo. A y B pintaban de mandarina también las 32 en camino.
+- **Costo:** las tres cifras ya no se leen en una columna alineada; el tamaño de cada fruto es
+  fijo (no proporcional al número) y con cifras de más dígitos habría que achicar la letra.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/cifras/`: las tres en 1280 y 360 px (`tres-*`) y C aplicada en
+  la portada (`aplicada-*`).
+
 ### 2026-11-02 · bordes (Raíces) · Esquina suave en el papel y en los botones
 
 - **Decisión:** B, esquina suave. Las láminas, las etiquetas, las tarjetas, las cifras, los

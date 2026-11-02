@@ -74,7 +74,7 @@ entonces con dos versiones nuevas (el afiche y la lámina de campo) y eligió un
 título con una lámina "Cómo funciona": el brote y sus raíces con tres llamadas numeradas. En la
 tierra, el rótulo y un brote con su sol, del que sale la red radial. La red termina en etiquetas de
 herbario (tipo, nombre y lo que pide cada entidad), con "Tu entidad" al centro. Las cifras van en
-un registro de campo con líneas guía y el mes en un cuaderno de entregas, una fila por entrega
+una cosecha (frutos que cuelgan de una rama, cada uno con su número) y el mes en un cuaderno de entregas, una fila por entrega
 hasta hoy. Reemplaza lo descripto arriba en la composición; las piezas siguen siendo las mismas.
 Ver la [bitácora](../bitacora.md).
 
@@ -202,9 +202,9 @@ y alternativas en la [bitácora](../bitacora.md).
 | Papel crema | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
 | Verde oliva | El título en cursiva y los botones | La organización que actúa |
 | Tres verdes oliva | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras | Lo que sostiene la donación, cada vez más hondo |
-| Paja | Las raíces, las etapas cumplidas y las cifras | El recorrido comprobado |
-| Salvia | El brote y el sol | El resultado: lo que creció |
-| Mandarina | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado) | Lo confirmado este mes |
+| Paja | Las raíces, las etapas cumplidas y la rama de la que cuelgan las cifras de la portada; en esa rama, el fruto de las entidades | El recorrido comprobado |
+| Salvia | El brote y el sol; en la rama de las cifras, el fruto de lo que va en camino | El resultado: lo que creció; en el fruto, lo que todavía está creciendo |
+| Mandarina | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado), y el fruto más grande de la rama de las cifras | Lo confirmado (en la planta, este mes; en la rama, desde marzo) |
 
 **Estados de una entrega** (siempre con texto y una forma, nunca solo con color): pendiente, gris
 tierra con círculo punteado; en camino, ámbar con medio círculo; entregada, verde con tilde; con
@@ -237,7 +237,7 @@ Detalle en la [bitácora](../bitacora.md).
 | Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
-| Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra) | El recorrido, como capítulos de un afiche |
+| Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra). En "Lo que está confirmado" de la portada, en tinta dentro de frutos que cuelgan de una rama paja, cada uno de su tamaño y su color, con una etiqueta de papel (A/B de cifras, 2026-11-02) | El recorrido, como capítulos de un afiche; en la rama, la cosecha |
 | Botones y bordes | Esquina suave: el papel (láminas, etiquetas y tarjetas) y los botones apenas redondeados, con una sombra plana salvia corrida (usuario, A/B de bordes, 2026-11-02; antes, rectos); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
 
 **Forma:** sale del estilo (esquina suave, sombra plana corrida). La línea entre horizontes no entró; la
