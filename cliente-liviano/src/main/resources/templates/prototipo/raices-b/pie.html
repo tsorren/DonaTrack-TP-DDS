@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<!--/* El pie de todas las páginas de Raíces (ficha docs/interfaz/flujos/raices-legales.md; usuario,
-       2026-11-02: un pie corto en todas, también en las privadas): términos y privacidad, contacto y
-       la firma del proyecto. No es una pantalla: su nombre no empieza con un rol, así que
+<!--/* Raíces B: la terminal, el pie de todas las páginas (ficha docs/interfaz/flujos/raices-legales.md;
+       usuario, 2026-11-02: un pie corto en todas, también en las privadas). La punta de abajo de la
+       línea: la línea llega y termina en la estación terminal; debajo, términos y privacidad,
+       contacto y la firma del proyecto. No es una pantalla: su nombre no empieza con un rol, así que
        PrototipoController no la muestra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer class="raices-pie" th:fragment="pie">
-  <nav aria-label="Legales y contacto">
-    <ul role="list">
-      <li><a href="/prototipo/raices-b/publico-legales"
-             th:href="@{/prototipo/raices-b/publico-legales}">Términos y privacidad</a></li>
-      <li><a href="/prototipo/raices-b/publico-contacto"
-             th:href="@{/prototipo/raices-b/publico-contacto}">Contacto</a></li>
-    </ul>
-  </nav>
-  <small>DonaTrack, UTN-FRBA, Diseño de Sistemas 2026</small>
+<footer class="terminal tierra-impresa" th:fragment="pie">
+  <div class="terminal-interior franja">
+    <nav aria-label="Legales y contacto">
+      <ul role="list">
+        <li><a href="/prototipo/raices-b/publico-legales"
+               th:href="@{/prototipo/raices-b/publico-legales}">Términos y privacidad</a></li>
+        <li><a href="/prototipo/raices-b/publico-contacto"
+               th:href="@{/prototipo/raices-b/publico-contacto}">Contacto</a></li>
+      </ul>
+    </nav>
+    <small>DonaTrack, UTN-FRBA, Diseño de Sistemas 2026</small>
+  </div>
 </footer>
 </body>
 </html>

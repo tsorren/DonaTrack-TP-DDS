@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -31,7 +32,8 @@ import org.springframework.web.server.ResponseStatusException;
  * prototipo, sin juego de plantillas (ADR 20261101): {@code /prototipo/raices/<pantalla>} muestra
  * {@code templates/prototipo/raices/<pantalla>.html}, con su menú en la misma dirección. El sitio B
  * de la corrida A/B de Raíces es el mismo prototipo con otras plantillas: {@code
- * /prototipo/raices-b/<pantalla>} y {@code templates/prototipo/raices-b/}.
+ * /prototipo/raices-b/<pantalla>} y {@code templates/prototipo/raices-b/}, que suma un menú público
+ * (su línea pública).
  */
 @Controller
 @Profile("maqueta")
@@ -134,8 +136,31 @@ class PrototipoController {
 
   private static final Prototipo RAICES = deRaices("raices");
 
-  /** El sitio B de la corrida A/B de Raíces: mismas cuentas y menús, sus propias plantillas. */
-  private static final Prototipo RAICES_B = deRaices("raices-b");
+  private static final String PUBLICO = "publico";
+
+  /**
+   * El sitio B de la corrida A/B de Raíces: mismas cuentas y menús, sus propias plantillas y,
+   * además, la línea pública (sistema de B: la navegación es una línea de subte con una estación
+   * por destino). Lo público sin plantilla no muestra "sin dibujar": no existe.
+   */
+  private static final Prototipo RAICES_B = conLineaPublica(deRaices("raices-b"));
+
+  private static Prototipo conLineaPublica(Prototipo prototipo) {
+    Map<String, List<Seccion>> menus = new HashMap<>(prototipo.menus());
+    menus.put(
+        PUBLICO,
+        List.of(
+            new Seccion("Entregas confirmadas", "Entregas", ICONO_DONACIONES, "publico-donaciones"),
+            new Seccion("Mapa", "mapa", "publico-mapa"),
+            new Seccion("Entidades", "entidades", "publico-entidades"),
+            new Seccion("Crear una cuenta", "Crear cuenta", ICONO_INICIO, "publico-registro")));
+    return new Prototipo(
+        prototipo.carpeta(),
+        prototipo.direccion(),
+        prototipo.alternativa(),
+        Map.copyOf(menus),
+        prototipo.cuentas());
+  }
 
   private final ResourceLoader recursos;
 
@@ -177,7 +202,7 @@ class PrototipoController {
             .orElse(null);
     String fueraDelMenu =
         pantalla.matches(NOMBRE) ? FUERA_DEL_MENU.get(pantalla.substring(rol.length() + 1)) : null;
-    boolean sinDibujar = actual != null || fueraDelMenu != null;
+    boolean sinDibujar = !PUBLICO.equals(rol) && (actual != null || fueraDelMenu != null);
     if (!dibujada && !(sinDibujar && existe(prototipo, SIN_DIBUJAR))) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
@@ -205,7 +230,9 @@ class PrototipoController {
                         seccion.equals(actual)))
             .toList());
     model.addAttribute("cuenta", prototipo.cuentas().get(rol));
-    model.addAttribute("perfil", menu.isEmpty() ? null : prototipo.direccion() + rol + "-perfil");
+    model.addAttribute(
+        "perfil",
+        menu.isEmpty() || PUBLICO.equals(rol) ? null : prototipo.direccion() + rol + "-perfil");
     return prototipo.carpeta() + (dibujada ? pantalla : SIN_DIBUJAR);
   }
 

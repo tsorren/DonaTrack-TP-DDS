@@ -401,6 +401,33 @@ class PrototipoControllerTest {
   }
 
   @Test
+  void enRaicesBLaNavegacionEsUnaLineaPublicaYOtraPorRol() throws Exception {
+    mvc.perform(get("/prototipo/raices-b/publico-portada"))
+        .andExpect(model().attribute("perfil", (Object) null))
+        .andExpect(
+            content().string(containsString("href=\"/prototipo/raices-b/publico-donaciones\"")))
+        .andExpect(content().string(containsString("href=\"/prototipo/raices-b/publico-mapa\"")))
+        .andExpect(
+            content().string(containsString("href=\"/prototipo/raices-b/publico-entidades\"")))
+        .andExpect(
+            content().string(containsString("href=\"/prototipo/raices-b/publico-registro\"")));
+    // Lo público sin plantilla no existe: no cae en "sin dibujar", que es privada.
+    mvc.perform(get("/prototipo/raices-b/publico-perfil")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/raices/publico-perfil")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/raices-b/donante-seguimiento"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/prototipo/raices-b/donante-seguimiento\" aria-current=\"page\"")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/prototipo/raices-b/donante-notificaciones\"")));
+    mvc.perform(get("/prototipo/raices-b/admin-inicio"))
+        .andExpect(content().string(not(containsString("-notificaciones\""))));
+  }
+
+  @Test
   void loQueEnlazaElLayoutPrivadoLlevaAlPrototipo() throws Exception {
     mvc.perform(get("/salir")).andExpect(redirectedUrl("/prototipo/publico-portada"));
     mvc.perform(get("/notificaciones")).andExpect(redirectedUrl("/prototipo/donante-cartas"));

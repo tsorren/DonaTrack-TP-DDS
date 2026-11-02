@@ -1,13 +1,15 @@
-/* Las páginas públicas de Raíces que no son la portada (layout-publico.html): Contacto y Términos y
-   privacidad. Toman de privado.css el rótulo, el título y los avisos, y de formularios.css los
-   campos; el contenido va centrado y de ancho de lectura (criterios de la cátedra, sección 8). */
+/* Las páginas públicas de Raíces B que no son la portada (layout-publico.html): Contacto y Términos
+   y privacidad. Toman de privado.css el rótulo (la estación con su ramal), el título y los avisos, y
+   de formularios.css los campos; el contenido va en la franja y de ancho de lectura (criterios de
+   la cátedra, sección 8). Una pantalla pública nueva puede importar esta hoja como base. */
 @import url("privado.css");
 @import url("sellos.css");
 @import url("formularios.css");
 
 .raices-publico main {
-  max-width: 75rem;
+  max-width: var(--medida-franja);
   margin: 0 auto;
+  padding-inline: var(--medida-margen);
 }
 
 .lectura {
