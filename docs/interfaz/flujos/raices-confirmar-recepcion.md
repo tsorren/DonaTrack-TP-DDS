@@ -263,7 +263,7 @@ sección 2):
 |---|---|
 | Útil | Confirma la entrega con las pruebas que pide RF-12, en una sola pantalla |
 | Usable | Tres campos nativos, en el orden en que la persona los tiene a mano |
-| Deseable | La raíz de la entrega que se completa al confirmar, con los sellos y la paleta Bosque |
+| Deseable | La raíz de la entrega que se completa al confirmar, con los sellos y la paleta de Raíces |
 | Valioso | La entidad ve qué pedido avanza; quien donó recibe la prueba |
 | Ubicable | Desde Seguir entregas, Inicio y la confirmación anterior; la sección del menú se destaca |
 | Accesible | Campos con nombre y ayuda, errores enlazados, tramo en lista; WCAG AA y Ley 26.653 |

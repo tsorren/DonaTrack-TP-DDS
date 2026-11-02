@@ -86,11 +86,17 @@ En el celular, la red es una espina en espejo; cada entidad cuelga de un sello c
 que pide. En el cuaderno del mes, cada entrega confirmada muestra la miniatura de su foto, que se
 abre grande al tocarla. Ver la [bitácora](../bitacora.md).
 
+**Los frutos (usuario, A/B de frutos, 2026-11-02):** en la portada, el brote de la superficie crece
+a una planta que da frutos con los datos. Cada fruto impreso es una entrega confirmada del mes y el
+hueco, la que va en camino; al lado, una etiqueta repite la cuenta en texto. El usuario pidió
+reusar en otras pantallas la idea de los frutos grandes con cifras adentro (la variante D, "raíz y
+copa"), con el título "Lo que está confirmado". Ver la [bitácora](../bitacora.md).
+
 ## Estructura privada (usuario, 2026-11-01)
 
 En pantalla grande, el menú va en una columna de papel a la izquierda, como el lomo de un herbario,
 con la cuenta al pie como su etiqueta; se ve abierta al entrar y se puede plegar a una tira angosta.
-La sección actual, impresa en verde bosque con la segunda tinta corrida. En el celular y la tableta,
+La sección actual, impresa en verde oliva con la segunda tinta corrida. En el celular y la tableta,
 una barra de navegación inferior en la tierra, con la sección actual en paja. La usan todas las
 pantallas privadas del prototipo (`templates/prototipo/raices/layout-privado.html`). Ver la
 [bitácora](../bitacora.md).
@@ -185,18 +191,20 @@ arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitá
 Se insinúa (usuario): el crecimiento es el avance, dibujado con los datos; sin medallas. Para la
 empresa, hitos de lo acumulado.
 
-## Color (usuario, tercer A/B)
+## Color (usuario, tercer A/B; paleta Oliva desde el 2026-11-02)
 
-**Bosque.** Lo que se ve es papel con grano; lo que sostiene la donación es tierra de monte. Detalle
-y valores en la [bitácora](../bitacora.md).
+**Oliva** (antes, Bosque). Lo que se ve es papel con grano; lo que sostiene la donación es tierra de
+monte, en verdes oliva: más cálida y menos oscura que Bosque, con frutos mandarina. Detalle, valores
+y alternativas en la [bitácora](../bitacora.md).
 
 | Color | Qué es en la pantalla | Qué significa |
 |---|---|---|
 | Papel crema | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
-| Verde bosque | El título en cursiva y los botones | La organización que actúa |
-| Tres verdes de monte | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras | Lo que sostiene la donación, cada vez más hondo |
+| Verde oliva | El título en cursiva y los botones | La organización que actúa |
+| Tres verdes oliva | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras | Lo que sostiene la donación, cada vez más hondo |
 | Paja | Las raíces, las etapas cumplidas y las cifras | El recorrido comprobado |
-| Salvia | El brote | El resultado: lo que creció |
+| Salvia | El brote y el sol | El resultado: lo que creció |
+| Mandarina | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado) | Lo confirmado este mes |
 
 **Estados de una entrega** (siempre con texto y una forma, nunca solo con color): pendiente, gris
 tierra con círculo punteado; en camino, ámbar con medio círculo; entregada, verde con tilde; con
@@ -223,7 +231,8 @@ Detalle en la [bitácora](../bitacora.md).
 |---|---|---|
 | Textura | Grano de impresión marcado sobre el papel, el sol y la tierra | Oficio: algo hecho a mano, no una plantilla |
 | Sol | Medio disco salvia claro, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
-| Brote | Dos cotiledones planos y simétricos: uno verde bosque con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
+| Brote | Dos cotiledones planos y simétricos: uno verde oliva con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
+| Planta y frutos | En la portada, el brote crecido: tallo y ramas en verde oliva y un fruto mandarina por entrega confirmada del mes, un disco con su segunda tinta corrida y una hoja; lo que va en camino, un fruto hueco punteado en la segunda tinta (A/B de frutos y de paleta, 2026-11-02) | El resultado, contado con los datos |
 | Tierra | Tres horizontes; al pie de cada uno, una franja de **semitono**: puntos de imprenta con el color del horizonte de abajo, que crecen con lo hondo y con la pantalla (usuario, ronda de tierra, 2026-11-01). Nunca debajo de texto | Lo hondo, impreso; funde un horizonte en el otro sin línea |
 | Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |

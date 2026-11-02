@@ -4,7 +4,9 @@
        D, una mezcla de A y C diseñada en dos rondas. Arriba, el título de A con la lámina "Cómo
        funciona" de C, que explica la metáfora en tres franjas numeradas. Debajo, el rótulo y un brote
        con su sol sobre la tierra: de él sale la red radial de A, que termina en etiquetas de herbario
-       (tipo, nombre y lo que pide), con la etiqueta vacía de tu entidad al centro. Las cifras, un
+       (tipo, nombre y lo que pide), con la etiqueta vacía de tu entidad al centro. Desde el A/B de
+       frutos (2026-11-02, C), el brote es una planta que da frutos con los datos: uno impreso por
+       entrega confirmada del mes y uno hueco por la que va en camino, con la cuenta en texto al lado. Las cifras, un
        registro de campo con líneas guía; el mes, un cuaderno de entregas que baja hasta hoy. Página
        propia, sin el layout de Cozy: Raíces es un prototipo propio, sin juego de plantillas
        (ADR 20261101; antes, la variante concepto-b).
@@ -16,6 +18,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DonaTrack: lo que donás echa raíces en tu comunidad</title>
   <link rel="stylesheet" href="/css/prototipo/raices/publico-portada.css" th:href="@{/css/prototipo/raices/publico-portada.css}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
 </head>
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -160,12 +164,29 @@
       <p class="tierra-bajada" th:unless="${conDatos}">Comedores, escuelas, hogares y otras entidades de la
         comunidad. Cada una pide lo que necesita y confirma lo que recibe.</p>
       <span class="sol" aria-hidden="true"></span>
-      <svg class="brote" viewBox="0 0 60 70" aria-hidden="true" focusable="false">
-        <path d="M30 70V28"/>
-        <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
-        <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
-        <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
-      </svg>
+      <div class="planta">
+        <svg class="planta-dibujo" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
+          <path class="tallo" d="M100 170V50"/>
+          <path class="rama" d="M100 132C84 126 68 112 60 96"/>
+          <path class="rama" d="M100 108C116 102 132 90 140 78"/>
+          <path class="rama" d="M100 78C90 70 80 60 75 50"/>
+          <path class="rama" d="M100 56C106 48 114 42 120 38"/>
+          <g transform="translate(70 112)">
+            <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+            <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+            <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+          </g>
+          <g th:if="${conDatos}">
+            <g class="fruto"><circle class="fruto-tinta" cx="58" cy="87" r="13"/><circle class="fruto-disco" cx="55" cy="84" r="13"/><path class="fruto-hoja" d="M57 71C60 64 66 62 71 63C68 69 63 72 57 71Z"/></g>
+            <g class="fruto"><circle class="fruto-tinta" cx="147" cy="72" r="13"/><circle class="fruto-disco" cx="144" cy="69" r="13"/><path class="fruto-hoja" d="M146 56C149 49 155 47 160 48C157 54 152 57 146 56Z"/></g>
+            <g class="fruto"><circle class="fruto-tinta" cx="72" cy="42" r="13"/><circle class="fruto-disco" cx="69" cy="39" r="13"/><path class="fruto-hoja" d="M71 26C74 19 80 17 85 18C82 24 77 27 71 26Z"/></g>
+            <circle class="fruto-hueco" cx="131" cy="27" r="12"/>
+          </g>
+        </svg>
+        <p class="cosecha" th:if="${conDatos}"><b>Octubre de 2026</b> 3 entregas confirmadas y 1 en camino</p>
+        <p class="cosecha" th:if="${estado == 'vacio'}"><b>Octubre de 2026</b> Todavía no hay entregas confirmadas
+          este mes.</p>
+      </div>
     </div>
     <div class="suelo">
       <svg class="grano" aria-hidden="true" focusable="false">

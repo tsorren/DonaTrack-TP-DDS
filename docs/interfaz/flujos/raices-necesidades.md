@@ -348,7 +348,7 @@ sección 2):
 |---|---|
 | Útil | Publica, cambia y da de baja (RF-10) y muestra cómo va cada pedido y qué viene, en una sola pantalla |
 | Usable | Lo plegado se recorre de un vistazo; las acciones están dentro de cada pedido |
-| Deseable | Las etiquetas de herbario, los sellos y la paleta Bosque; los períodos en barras que se llenan |
+| Deseable | Las etiquetas de herbario, los sellos y la paleta de Raíces; los períodos en barras que se llenan |
 | Valioso | La entidad ve qué llegó y quién donó, y confirma lo que espera en la puerta desde acá |
 | Ubicable | Desde el menú, Inicio y `?necesidad=`; la sección del menú se destaca |
 | Accesible | Resumen completo en cada `summary`, estados en texto y no solo color, errores enlazados; WCAG AA y Ley 26.653 |

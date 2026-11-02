@@ -26,6 +26,62 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · paleta (Raíces) · Oliva: la tierra en verdes oliva y los frutos mandarina
+
+- **Decisión:** G, Oliva y mandarina. Reemplaza a Bosque, con los mismos valores por función. La
+  tierra pasa a tres verdes oliva (`#56633a`, `#4a562e` y `#343d20`), el verde de títulos y botones
+  a oliva (`#3d5a2a`) y el papel a un crema más tibio (`#f2ebd7`). Las raíces siguen en paja, un
+  poco más clara (`#f3d68c`). Al aplicarla, la tierra se oscureció un poco (de `#5c6a3a`, el valor
+  de la G) y la paja se aclaró, para que el texto paja sobre la tierra pase el contraste AA de los
+  tokens (4,57:1). Los frutos son mandarina (`#e8822a`), con su segunda tinta (`#96460b`), que también
+  dibuja el contorno punteado del fruto que va en camino. Los estados de una entrega no cambian.
+- **Alternativas:** dos vueltas en la portada. En la primera, cinco: A, Bosque al sol (los mismos
+  verdes, más claros); B, Huerta (tierra de humus marrón y frutos naranja); C, Oliva y mora; D, Riso
+  (tierra verde azulada, raíces girasol y frutos rosa flúor que tiñen la cursiva de los títulos, con
+  las tintas de un afiche risográfico); y E, Tierra colorada (la tierra roja de Misiones y frutos
+  violeta). Al usuario le gustó la tierra oliva de C y le llamó la atención E, pero no los frutos de
+  ninguna de las dos. En la segunda, cinco sobre la tierra oliva: F, tomate; G, mandarina; H, perfil
+  de suelo (la franja de las cifras en tierra colorada); I, membrillo (raíces hueso); y J, pomelo
+  (con la cursiva de los títulos teñida). Al final, G contra H con frutos mandarina, en las pantallas
+  de Raíces. La recomendada fue H.
+- **Por qué:** el usuario eligió G. Una sola tierra se lee como un sistema. El naranja es casi el
+  opuesto del oliva, así que el fruto resalta, y queda lejos del rojo de "con problema". Además, no
+  cambia nada fuera de la portada. H sumaba un sexto color y teñía de rojo el borde de las líneas
+  del mapa de Seguir entregas.
+- **Costo:** la franja de las cifras sigue oscura (un oliva casi negro). El disco del fruto queda
+  por debajo de 3:1 sobre el papel, pero lo dibuja su segunda tinta y la cuenta está en texto al
+  lado. Por eso el fruto hueco pasa a la segunda tinta. Hay que mirar en Seguir entregas que el
+  mandarina no se confunda con el ámbar de "en camino": hoy los frutos están solo en la portada. Las
+  otras tres pantallas heredan la paleta sin cambios de estructura.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/paleta-oliva/`: las dos vueltas en 1280 px, G y H en la portada
+  en 360 y 1280 px, y Seguir entregas con G y H. Referencia de las tintas de la D: tintas
+  Sunflower y Fluorescent Pink en
+  [EverythingRiso 2024, SAIC](https://sites.saic.edu/servicebureau/wp-content/uploads/sites/20/2025/03/EverythingRiso_2024.pdf).
+
+### 2026-11-02 · imagen:frutos (Raíces) · En la portada, la planta da frutos con los datos
+
+- **Decisión:** C. El brote de la superficie crece a una planta. Cada fruto impreso es una entrega
+  confirmada del mes y el hueco, la que va en camino. Al lado, una etiqueta repite la cuenta
+  ("Octubre de 2026 · 3 entregas confirmadas y 1 en camino"). El resto de la portada no cambia.
+  Los frutos traen dos valores base nuevos (`--p-fruto` y `--p-fruto-hondo`, su segunda tinta),
+  provisorios hasta el A/B de paleta.
+- **Alternativas:** primero, cinco papeles para los frutos en láminas: A, solo color; B, el fruto
+  como sello de lo cumplido; C, la planta que da frutos; D, raíz y copa (las cifras dentro de
+  frutos grandes, colgadas de un árbol cuyo tronco baja a las raíces); y E, el corte de un fruto
+  (gajos como tipos de entidad). El usuario pidió C y D mejor dibujadas, y se armaron sobre la
+  portada real. La recomendada fue D.
+- **Por qué:** el usuario se quedó con C para la portada. Pidió reusar en otras partes del diseño
+  la idea de D: frutos grandes con cifras que impactan. Queda como patrón para las cifras de otras
+  pantallas, por ejemplo lo acumulado de una empresa. Si se usa, va con el título "Lo que está
+  confirmado" y no "dio fruto", porque solo contamos entregas confirmadas.
+- **Costo:** con la regla de "una imagen de raíz o siembra por pantalla", la portada ya tiene la
+  suya. Si el mes no tiene entregas, la planta queda sin frutos y la etiqueta dice "Todavía no hay
+  entregas confirmadas este mes." (el texto del cuaderno vacío). Si las cifras dan error o tardan,
+  queda la planta sola, porque el aviso ya está en el cuaderno.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/frutos-portada/` (C y D en 360 y 1280 px).
+
 ### 2026-11-01 · componente:periodos (Raíces) · Los períodos: una barra por período
 
 - **Decisión:** en el detalle de una necesidad que se repite, la historia de los períodos es una

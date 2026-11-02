@@ -221,7 +221,7 @@ sección 2):
 |---|---|
 | Útil | Cada parte responde dónde está cada entrega; lo que ya llegó o espera destino va a Mis donaciones |
 | Usable | Una lista con enlaces y estados con texto; nada que aprender |
-| Deseable | El dibujo de raíces y los sellos de Raíces, con la paleta Bosque |
+| Deseable | El dibujo de raíces y los sellos de Raíces, con la paleta de Raíces |
 | Valioso | La empresa puede mostrar a quién llega cada donación y en qué estado está |
 | Ubicable | Seguimiento es un destino del menú en todas las pantallas; la sección actual se destaca |
 | Accesible | La lista es la alternativa al dibujo; los estados llevan forma y texto; WCAG AA y Ley 26.653 |
