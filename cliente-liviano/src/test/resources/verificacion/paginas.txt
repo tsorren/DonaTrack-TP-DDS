@@ -53,6 +53,7 @@
 /prototipo/raices/entidad-necesidades?escenario=error
 /prototipo/raices/entidad-necesidades?escenario=lento
 /prototipo/raices/entidad-necesidades?necesidad=pan
+/prototipo/raices/entidad-necesidades?escenario=no-existe
 /prototipo/raices/entidad-necesidades?escenario=conflicto
 /prototipo/raices/entidad-necesidades?escenario=cambiar-datos
 /prototipo/raices/entidad-necesidades?escenario=error-cambiar
