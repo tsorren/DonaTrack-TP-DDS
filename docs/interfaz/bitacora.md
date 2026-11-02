@@ -33,8 +33,11 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   tienen las esquinas mordidas hacia adentro, como un boleto o una etiqueta de herbario troquelada.
   Los botones tienen las esquinas en bisel, como una etiqueta de precio. Se conservan el marco
   doble de línea fina y la sombra plana salvia. Queda en `tokens.css` como radios con su forma de
-  esquina (`--radio-lamina*`, `--radio-boton*`). El botón es común: las otras pantallas de Raíces
-  ya lo toman; sus tarjetas siguen rectas hasta su revisión.
+  esquina (`--radio-lamina*`, `--radio-boton*`). Al ver la aplicada, el usuario pidió el troquel en
+  todas las pantallas: en Seguir entregas, Confirmar recepción, Recepción confirmada y Necesidades,
+  las cifras, los dibujos, las tarjetas, la zona de fotos y los avisos van troquelados; el botón de
+  elegir fotos, el de plegar el menú y la página actual del menú, en bisel. Los campos de texto y
+  las barras de avance quedan rectos.
 - **Alternativas:** cinco en la portada: A, segura, rectos como hasta ahora (esquina viva, marco
   doble y sombra salvia); B, media, esquina suave (todo igual, con las esquinas apenas
   redondeadas); C, media, botones como semillas (el papel recto y los botones en píldora); D,
@@ -46,12 +49,11 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   parecieran de una aplicación; E pesaba tanto que competía con el contenido, contra la textura
   suave recién elegida.
 - **Costo:** la forma de esquina la dibujan Chrome y Edge; en Firefox y Safari las esquinas salen
-  redondeadas, como en B. Hasta revisar Seguir entregas, Confirmar recepción y Necesidades, sus
-  botones van en bisel y sus tarjetas rectas.
+  redondeadas, como en B.
 - **Quién decidió:** usuario.
 - **Evidencia:** `evidencia/raices/bordes/`: las cinco en la portada, de cerca (botones, una
   etiqueta y la esquina de la lámina) y en la primera pantalla del celular (`cinco-*`); y la
-  aplicada en la portada en 360 y 1280 px (`aplicada-*`).
+  aplicada en la portada en 360 y 1280 px y en las otras cuatro pantallas (`aplicada-*`).
 
 ### 2026-11-02 · textura (Raíces) · Risografía suave, solo en el fondo
 

@@ -149,6 +149,8 @@ main h2 {
   margin: 1rem 0;
   padding: 1rem 1.25rem;
   border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  corner-shape: var(--radio-lamina-forma);
   background: var(--color-papel);
   box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
@@ -265,6 +267,8 @@ main h2 {
     background: var(--color-acento);
     color: var(--color-papel);
     box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+    border-radius: var(--radio-boton-chico);
+    corner-shape: var(--radio-boton-forma);
   }
 
   .armazon-menu :focus-visible,
@@ -299,6 +303,8 @@ main h2 {
     height: 3rem;
     padding: 0;
     border: 2px solid var(--color-tinta);
+    border-radius: var(--radio-boton-chico);
+    corner-shape: var(--radio-boton-forma);
     background: var(--color-papel);
     color: var(--color-tinta);
     cursor: pointer;

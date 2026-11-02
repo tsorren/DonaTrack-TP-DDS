@@ -52,6 +52,8 @@
 .etiqueta {
   padding: 1rem 1.25rem;
   border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  corner-shape: var(--radio-lamina-forma);
   outline: 1px solid var(--color-tinta);
   outline-offset: -7px;
   background: var(--color-papel);
@@ -187,7 +189,8 @@ main .etiqueta-titulo {
   margin-right: 0.75rem;
   padding: 0.5rem 1rem;
   border: 2px solid var(--color-acento);
-  border-radius: 0;
+  border-radius: var(--radio-boton-chico);
+  corner-shape: var(--radio-boton-forma);
   background: var(--color-acento-claro);
   color: var(--color-tinta);
   font: inherit;
@@ -204,6 +207,8 @@ main .etiqueta-titulo {
   gap: 0.5rem;
   padding: 1.5rem 1rem 1.25rem;
   border: 2px dashed var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  corner-shape: var(--radio-lamina-forma);
   background: var(--color-pendiente-fondo);
   text-align: center;
 }
@@ -326,6 +331,8 @@ main .etiqueta-titulo {
   justify-items: start;
   padding: 1rem 1.25rem;
   border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  corner-shape: var(--radio-lamina-forma);
   background: var(--color-papel);
   box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
@@ -363,6 +370,8 @@ main .etiqueta-titulo {
 .ciclo-raiz {
   margin: 0 0 2rem;
   border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  corner-shape: var(--radio-lamina-forma);
   /* La tierra, bajo la línea de tierra del dibujo (y = 70 de un alto de 210). */
   background: linear-gradient(transparent calc(70 / 210 * 100%), var(--color-suelo) 0);
 }
