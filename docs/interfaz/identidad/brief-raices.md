@@ -203,7 +203,7 @@ y alternativas en la [bitácora](../bitacora.md).
 | Verde oliva | El título en cursiva y los botones | La organización que actúa |
 | Tres verdes oliva | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras | Lo que sostiene la donación, cada vez más hondo |
 | Paja | Las raíces, las etapas cumplidas y la rama de la que cuelgan las cifras de la portada; en esa rama, el fruto de las entidades | El recorrido comprobado |
-| Salvia | El brote y el sol; en la rama de las cifras, el fruto de lo que va en camino | El resultado: lo que creció; en el fruto, lo que todavía está creciendo |
+| Salvia | El brote y el sol; en la rama de las cifras, el fruto de lo que va en camino, sin la segunda tinta corrida y con el contorno punteado, como el fruto hueco de la planta | El resultado: lo que creció; en el fruto, lo que todavía está creciendo |
 | Mandarina | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado), y el fruto más grande de la rama de las cifras | Lo confirmado (en la planta, este mes; en la rama, desde marzo) |
 
 **Estados de una entrega** (siempre con texto y una forma, nunca solo con color): pendiente, gris

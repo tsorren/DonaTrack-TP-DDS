@@ -39,15 +39,19 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 - **Alternativas:** tres, con la paleta Oliva: A, segura, el mismo registro con cada línea guía
   terminando en un fruto mandarina con el número adentro; B, media, tres frutos mandarina grandes
   en fila, sin marco, con el rótulo debajo; y C, audaz, la rama. La recomendada fue C. El usuario
-  eligió C, con las etiquetas derechas en lugar de inclinadas.
+  eligió C, con las etiquetas derechas en lugar de inclinadas. Después, por un aviso de la revisión
+  ("en camino" se dibujaba hueco en la planta y lleno en la rama), el usuario eligió que el fruto
+  verde de la rama pierda la segunda tinta corrida y lleve el contorno punteado en esa tinta, como
+  el fruto hueco de la planta (descartadas: el fruto hueco del todo y dejarlo como estaba).
 - **Por qué:** C es la que tiene más impacto y color, y los colores dicen algo: en la planta de
   arriba, el mandarina es una entrega confirmada, así que las que van en camino quedan verdes,
   todavía creciendo. A y B pintaban de mandarina también las 32 en camino.
 - **Costo:** las tres cifras ya no se leen en una columna alineada; el tamaño de cada fruto es
   fijo (no proporcional al número) y con cifras de más dígitos habría que achicar la letra.
 - **Quién decidió:** usuario.
-- **Evidencia:** `evidencia/raices/cifras/`: las tres en 1280 y 360 px (`tres-*`) y C aplicada en
-  la portada (`aplicada-*`).
+- **Evidencia:** `evidencia/raices/cifras/`: las tres en 1280 y 360 px (`tres-*`), C aplicada en
+  la portada (`aplicada-*`) y la planta junto a la rama con el fruto en camino punteado
+  (`en-camino-planta-y-rama.jpg`).
 
 ### 2026-11-02 · bordes (Raíces) · Esquina suave en el papel y en los botones
 

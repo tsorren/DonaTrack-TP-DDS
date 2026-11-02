@@ -653,9 +653,13 @@ dl.registro-datos > div:nth-child(2) dd {
   font-size: 1.75rem;
 }
 
+/* Lo que va en camino todavía no se imprimió, como el fruto hueco de la planta: el disco verde sin
+   la segunda tinta corrida, con el contorno punteado en esa tinta. */
 dl.registro-datos > div:nth-child(3) dd {
   width: 5.25rem;
+  border: 0.2rem dashed var(--color-fruto-hondo);
   background: var(--color-hoja);
+  box-shadow: none;
   font-size: 1.6rem;
 }
 
