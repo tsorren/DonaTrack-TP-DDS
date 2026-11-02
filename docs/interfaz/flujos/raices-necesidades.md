@@ -408,6 +408,10 @@ Preguntas abiertas, para el equipo (no cambian el prototipo):
   contrato).
 - El DTO no lleva la versión: el 409 de "otra persona la cambió" solo salta si las dos guardan al
   mismo tiempo, no si una abrió el formulario hace minutos. ¿Se suma la versión al DTO?
+- El contrato acepta cualquier largo de período (`Period.between` de las dos fechas) y cualquier
+  fecha de inicio; la pantalla ofrece solo "Cada semana" y "Cada mes", desde hoy (agente,
+  propuesto, como el boceto). ¿Hacen falta otros largos (por ejemplo, cada quince días) o elegir
+  cuándo empieza?
 - Si se cambia la cantidad de una que se repite, ¿vale para el período en curso o desde el próximo?
   La pantalla no lo dice hasta saberlo.
 - Si se da de baja una necesidad con entregas en camino, ¿qué pasa con ellas? La confirmación no lo

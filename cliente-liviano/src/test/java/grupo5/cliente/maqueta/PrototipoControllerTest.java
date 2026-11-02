@@ -212,6 +212,10 @@ class PrototipoControllerTest {
   void cadaAccionDeNecesidadesEnRaicesLlevaASuAviso() throws Exception {
     mvc.perform(post("/prototipo/raices/entidad-necesidades-baja"))
         .andExpect(redirectedUrl("/prototipo/raices/entidad-necesidades-baja"));
+    mvc.perform(post("/prototipo/raices/entidad-necesidades-publicada"))
+        .andExpect(redirectedUrl("/prototipo/raices/entidad-necesidades-publicada"));
+    mvc.perform(post("/prototipo/raices/entidad-necesidades-cambiada"))
+        .andExpect(redirectedUrl("/prototipo/raices/entidad-necesidades-cambiada"));
     mvc.perform(get("/prototipo/raices/entidad-necesidades-baja"))
         .andExpect(content().string(containsString("Diste de baja Aceite de girasol.")))
         .andExpect(content().string(containsString("Cumplidas y terminadas (4)")));

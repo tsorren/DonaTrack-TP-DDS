@@ -37,7 +37,9 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 - **Costo:** se aparta del lenguaje de raíces y estaciones de las otras pantallas; los sellos de
   período salieron de la plantilla.
 - **Quién decidió:** usuario (B).
-- **Evidencia:** `evidencia/raices/necesidades-periodos/`.
+- **Evidencia:** `evidencia/raices/necesidades-periodos/`. La comparación aislada de los períodos
+  es `ab-1280.jpg`; las páginas enteras (`a-*` y `b-*`) se capturaron con la lista todavía en
+  filas, así que `a-*` es la misma imagen que la A de la lista.
 
 ### 2026-11-01 · layout:entidad-necesidades (Raíces) · La lista: una etiqueta de herbario por pedido
 
@@ -99,6 +101,11 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
   La ronda 2 dio PASS, con avisos menores aplicados: la baja dice si quedan entregas asignadas, el
   error de datos al cambiar lleva su resumen y cada escenario de la maqueta dice qué estado muestra.
+
+  La pantalla construida pasó `revision-ui` en modo pantalla en la ronda 2. La ronda 1 marcó dos
+  bloqueantes: el aviso del estado vacío quedaba debajo del formulario abierto, y el diálogo de baja
+  decía "todavía no llegó" de entregas que ya estaban en la puerta. Los dos quedaron corregidos. El
+  usuario aprobó la ficha al ver la pantalla. La auditoría de cierre dio PASS.
 
 ### 2026-11-01 · componente:cierre-ciclo (Raíces) · Recepción confirmada: la raíz completa llega a tu entidad
 
