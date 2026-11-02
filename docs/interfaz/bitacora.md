@@ -26,6 +26,80 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-01 · componente:periodos (Raíces) · Los períodos: una barra por período
+
+- **Decisión:** en el detalle de una necesidad que se repite, la historia de los períodos es una
+  barra que se llena por período, con el nombre a la izquierda y lo que llegó y el estado escritos
+  debajo; la del período en curso, punteada, porque todavía no cerró.
+- **Alternativas:** A, una raíz con una estación por período, como el último tramo de Confirmar
+  recepción, con el sello lleno, a medias, hueco o punteado (la recomendada).
+- **Por qué:** los largos de las barras se comparan de un vistazo: se ve qué mes llegó menos.
+- **Costo:** se aparta del lenguaje de raíces y estaciones de las otras pantallas; los sellos de
+  período salieron de la plantilla.
+- **Quién decidió:** usuario (B).
+- **Evidencia:** `evidencia/raices/necesidades-periodos/`.
+
+### 2026-11-01 · layout:entidad-necesidades (Raíces) · La lista: una etiqueta de herbario por pedido
+
+- **Decisión:** cada pedido vigente es una etiqueta de herbario, con doble filete y sombra salvia,
+  como las de la portada. Desde la tableta van en dos columnas y la abierta ocupa el ancho entero;
+  en pantalla grande, la abierta alinea su resumen en columnas y pone los períodos al lado de las
+  partes. "Publicar otra necesidad" queda plegado arriba de la lista, como en Cozy.
+- **Alternativas:**
+  - A, un libro de registro: una fila por pedido a todo el ancho, con las columnas alineadas, como
+    la tabla de Cozy y el boceto (la recomendada);
+  - para publicar, una columna fija al costado, que no se dibujó.
+- **Por qué:** las etiquetas tienen el carácter de Raíces y repiten la pieza de la portada. Publicar
+  se hace pocas veces, y la columna le quitaría ancho a la lista.
+- **Costo:** comparar las cifras de dos pedidos cuesta más que en una columna alineada.
+- **Quién decidió:** usuario (B para la lista; plegado arriba, la recomendada, para publicar).
+- **Evidencia:** `evidencia/raices/necesidades-lista/`.
+
+### 2026-11-01 · flujo:necesidades (Raíces) · Los pedidos vigentes con su detalle desplegado, su historia y lo que llega
+
+- **Decisión:** la ficha de Necesidades de la entidad en Raíces
+  ([`raices-necesidades.md`](flujos/raices-necesidades.md)) se aparta del boceto de E1 (páginas 26
+  y 29 a 31) y del mapa del sitio, y suma contenido.
+  - **Decisiones del usuario, en dos rondas de preguntas:**
+    - las que se repiten muestran su historia de períodos, con cuánto llegó en cada uno;
+    - el detalle se despliega en la misma lista, como el boceto, y no en una página propia de nivel
+      3, como dice el mapa del sitio;
+    - el detalle suma las entregas para ese pedido, quién donó y el motivo;
+    - las cumplidas y terminadas se ven aparte, plegadas.
+  - **Desvíos del boceto, del agente:**
+    - la columna "Estado" sale de la fila: la lista es de las vigentes y las otras van aparte;
+    - los períodos dicen su estado en texto ("Llegó todo", "Llegó una parte", "No llegó nada"),
+      cuánto llegó y sus fechas, sin rojo y sin leyenda aparte;
+    - el botón "+" pasa a "Publicar otra necesidad";
+    - "Recurrencia" pasa a "¿Se repite?", y la fecha solo se pide si es una sola vez.
+  - **Del requerimiento y del contrato:** editar y dar de baja (RF-10, que Cozy no tiene); qué
+    hace falta, de la lista del catálogo; el motivo, en la descripción obligatoria.
+- **Alternativas:**
+  - una página propia por necesidad;
+  - solo decir que se repite, sin la historia;
+  - mostrar solo las vigentes, como Cozy.
+- **Por qué:**
+  - desplegado, no se pierde de vista el resto de los pedidos;
+  - el color solo no alcanza, como anota el boceto, y el rojo de "no llegó nada" culpa;
+  - las fechas al pasar el mouse no existen en el celular;
+  - "cada semana" y una fecha a un mes se contradicen, y el contrato saca el período de las fechas.
+- **Costo:** el contrato no tiene la unidad, la fecha límite de las de una sola vez, la historia
+  con lo recibido, las entregas por necesidad, quién donó, las terminadas ni la versión para el
+  conflicto: quedan como preguntas para el equipo.
+- **Quién decidió:** usuario (contenido, detalle y terminadas) y agente (desvíos del boceto y
+  formulario según el contrato, propuestos).
+- **Evidencia:** la ficha. La revisión independiente en modo flujo pidió cambios en la ronda 1, con
+  cuatro hallazgos bloqueantes, y quedaron corregidos:
+  - faltaban los estados de error y de espera al cambiar y al dar de baja, y el del pedido que ya
+    no está vigente;
+  - el registro contaba la entrega con un problema como "en camino";
+  - "¿Se repite?" y "Hasta cuándo" se contradecían, y la fecha de las de una sola vez no estaba en
+    el contrato;
+  - esta entrada faltaba.
+
+  La ronda 2 dio PASS, con avisos menores aplicados: la baja dice si quedan entregas asignadas, el
+  error de datos al cambiar lleva su resumen y cada escenario de la maqueta dice qué estado muestra.
+
 ### 2026-11-01 · componente:cierre-ciclo (Raíces) · Recepción confirmada: la raíz completa llega a tu entidad
 
 - **Decisión:** al confirmar, arriba de la página, del brote del depósito sale la línea de subte de la

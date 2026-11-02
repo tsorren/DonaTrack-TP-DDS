@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Necesidades: la lista con Lentejas secas abierta y el aviso de los cambios con el foco (docs/interfaz/flujos/raices-necesidades.md). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'entidad-necesidades', ~{::contenido})}">
+<head>
+  <title>Cambios guardados - Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices/entidad-necesidades :: hoja('cambiada')}"></th:block>
+</th:block>
+</body>
+</html>

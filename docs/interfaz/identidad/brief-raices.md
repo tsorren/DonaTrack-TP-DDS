@@ -117,6 +117,14 @@ izquierda y el formulario a la derecha. Las fotos se eligen en una zona de carga
 cámara al centro. Al confirmar, la raíz completa llega impresa del brote del depósito a la
 estación de la entidad: se cierra el ciclo. Ver la [bitácora](../bitacora.md).
 
+## Necesidades (usuario, 2026-11-01)
+
+La segunda pantalla de la entidad. Cada pedido vigente es una etiqueta de herbario, como las de la
+portada, en dos columnas desde la tableta; al abrirla ocupa el ancho entero y despliega por qué hace
+falta, las entregas para ese pedido, quién donó y, si se repite, una barra por período con lo que
+llegó y el estado escrito (la del período en curso, punteada). "Publicar otra necesidad" va plegado
+arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitácora](../bitacora.md).
+
 ## Voz
 
 - **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Lo

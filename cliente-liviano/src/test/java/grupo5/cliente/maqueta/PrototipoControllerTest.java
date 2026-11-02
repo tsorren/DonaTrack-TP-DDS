@@ -175,6 +175,54 @@ class PrototipoControllerTest {
   }
 
   @Test
+  void lasNecesidadesDeRaicesMuestranCadaEstadoYSusAcciones() throws Exception {
+    mvc.perform(get("/prototipo/raices/entidad-necesidades"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Necesidades"))
+        .andExpect(content().string(containsString("10 de 40 kg recibidos")))
+        .andExpect(content().string(containsString("Llegó una parte")))
+        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(content().string(containsString("popover")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("action=\"/prototipo/raices/entidad-necesidades-publicada\"")))
+        .andExpect(content().string(containsString("Cumplidas y terminadas (3)")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?escenario=vacio"))
+        .andExpect(content().string(containsString("No tenés necesidades vigentes.")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar tus necesidades.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=pan"))
+        .andExpect(content().string(containsString("No encontramos esa necesidad.")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?escenario=conflicto"))
+        .andExpect(
+            content().string(containsString("Otra persona de tu entidad cambió este pedido")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?escenario=entidad-inactiva"))
+        .andExpect(content().string(containsString("Tu entidad no está activa")))
+        .andExpect(content().string(not(containsString("Publicar necesidad"))));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades-publicar-error"))
+        .andExpect(content().string(containsString("Revisá dos cosas antes de publicar")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+  }
+
+  @Test
+  void cadaAccionDeNecesidadesEnRaicesLlevaASuAviso() throws Exception {
+    mvc.perform(post("/prototipo/raices/entidad-necesidades-baja"))
+        .andExpect(redirectedUrl("/prototipo/raices/entidad-necesidades-baja"));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades-baja"))
+        .andExpect(content().string(containsString("Diste de baja Aceite de girasol.")))
+        .andExpect(content().string(containsString("Cumplidas y terminadas (4)")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades-publicada"))
+        .andExpect(content().string(containsString("Publicamos tu necesidad.")))
+        .andExpect(content().string(containsString("pedido--nuevo")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades-cambiada"))
+        .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")));
+  }
+
+  @Test
   void loQueTampocoDibujoCozyNoEnlazaACozy() throws Exception {
     mvc.perform(get("/prototipo/raices/entidad-seguimiento-problema?entrega=lentejas"))
         .andExpect(status().isOk())

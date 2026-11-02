@@ -3,6 +3,7 @@
    otro; el celular es el dispositivo principal. */
 @import url("privado.css");
 @import url("sellos.css");
+@import url("formularios.css");
 
 .confirmar {
   max-width: 44rem;
@@ -23,11 +24,6 @@
 
 .volver::before {
   content: "← ";
-}
-
-main h1 em {
-  color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
 .confirmar-bajada {
@@ -163,12 +159,6 @@ main .etiqueta-titulo {
   margin: 0;
 }
 
-.obligatorios {
-  margin: 0;
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
-}
-
 .grupo {
   display: grid;
   gap: 1rem;
@@ -183,36 +173,6 @@ main .etiqueta-titulo {
 
 .grupo legend h2 {
   margin: 0 0 0.25rem;
-}
-
-.campo {
-  display: grid;
-  gap: 0.375rem;
-}
-
-.campo label {
-  font-weight: 700;
-}
-
-.campo small {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
-}
-
-.campo input {
-  min-height: 3rem;
-  padding: 0.625rem 0.75rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: 0;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-  font: inherit;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.campo input[type="number"] {
-  max-width: 8rem;
 }
 
 /* El campo de fotos es el nativo (la cámara o la galería del celular, sin JavaScript); su botón,
@@ -284,34 +244,11 @@ main .etiqueta-titulo {
   border-color: var(--color-problema-texto);
 }
 
-.campo--error input {
-  border-color: var(--color-problema-texto);
-}
-
-.campo-error {
-  margin: 0;
-  color: var(--color-problema-texto);
-  font-weight: 700;
-}
-
 .quien-ve {
   margin: 0;
   padding-left: 0.75rem;
   border-left: 3px solid var(--color-hoja);
   font-size: 0.9375rem;
-}
-
-.resumen ul {
-  margin: 0;
-  padding-left: 1.25rem;
-}
-
-.resumen a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 3rem;
-  color: var(--color-problema-texto);
-  font-weight: 700;
 }
 
 /* --- La firma: quién recibe, el botón, qué pasa al confirmar y el problema ------------------------ */
