@@ -1,0 +1,290 @@
+/* Inicio de la entidad en Raíces (ficha raices-entidad-navegable, 4.1), ordenado por lo que hay que
+   hacer. La audacia: lo que espera en la puerta va en la tierra, el umbral de la entidad, con un acta
+   de papel por entrega. Lo que viene, en una raíz de sellos hueca (todavía no llegó), como el último
+   tramo de Confirmar recepción; los pedidos, con la regla de tinta de Necesidades; y lo recibido en
+   el mes, un fruto de la rama de la portada. */
+@import url("entidad-comun.css");
+
+.inicio {
+  max-width: 82rem;
+}
+
+.inicio-cargando {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+.inicio-partes {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.inicio-partes h2 {
+  margin: 0 0 0.5rem;
+}
+
+.inicio-partes section > p {
+  margin: 0 0 1rem;
+}
+
+/* --- En tu puerta: la tierra, con las actas de papel encima ------------------------------------- */
+.puerta {
+  padding: 1.25rem 1rem 1.5rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+main .puerta h2 {
+  color: var(--color-texto-suelo);
+  font-size: clamp(1.625rem, 3vw, 2.25rem);
+  font-stretch: 122%;
+  letter-spacing: -0.02em;
+}
+
+/* La línea de tierra: el filete paja bajo el título, como la superficie del corte de suelo. */
+.puerta h2::after {
+  content: "";
+  display: block;
+  width: 4rem;
+  margin-top: 0.5rem;
+  border-bottom: 0.3rem solid var(--color-raiz);
+}
+
+.puerta .puerta-bajada {
+  margin: 0 0 1.25rem;
+  font-weight: 700;
+}
+
+.puerta-lista {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.puerta .hueco {
+  border-color: var(--color-texto-suelo);
+}
+
+/* --- Lo que viene: una raíz hueca de sello a sello, que todavía no se imprimió ------------------- */
+.viene-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.viene-paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  padding-bottom: 1.125rem;
+}
+
+.viene-paso .estado-sello {
+  position: relative;
+  z-index: 1;
+  grid-row: span 2;
+}
+
+.viene-paso b {
+  color: var(--color-tinta);
+}
+
+.viene-detalle {
+  grid-column: 2;
+}
+
+.viene-paso:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  bottom: -0.1rem;
+  left: 0.4375rem;
+  width: 0.5rem;
+  border: 1.5px dashed var(--color-tinta-suave);
+  background: var(--color-papel);
+}
+
+/* --- Tus pedidos: un renglón por pedido, con su regla de tinta ----------------------------------- */
+.pedidos-renglones {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-tinta);
+}
+
+.pedidos-renglones li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.25rem 0.875rem;
+  align-items: start;
+  padding: 0.75rem 0;
+  border-bottom: 1px dotted var(--color-tinta-suave);
+}
+
+.pedidos-renglones .categoria-icono {
+  grid-row: span 2;
+  width: 2rem;
+  height: 2rem;
+}
+
+.renglon-que {
+  display: grid;
+}
+
+.renglon-que b {
+  color: var(--color-tinta);
+}
+
+.renglon-que small {
+  font-size: 0.9375rem;
+}
+
+.renglon-va {
+  display: grid;
+  grid-column: 2;
+  gap: 0.25rem;
+  font-weight: 700;
+}
+
+/* La regla de tinta que se llena, la de Necesidades: decorativa, el texto dice lo mismo. */
+.pedidos-inicio progress {
+  appearance: none;
+  display: block;
+  width: 100%;
+  max-width: 12rem;
+  height: 0.625rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 0;
+  background: var(--color-papel);
+  color: var(--color-raiz);
+}
+
+.pedidos-inicio progress::-webkit-progress-bar {
+  background: var(--color-papel);
+}
+
+.pedidos-inicio progress::-webkit-progress-value {
+  background: var(--color-raiz);
+}
+
+.pedidos-inicio progress::-moz-progress-bar {
+  background: var(--color-raiz);
+}
+
+/* --- Lo recibido en el mes: un fruto que cuelga de la rama paja, con la cifra adentro ------------ */
+.recibido-rama {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 1.75rem;
+  padding: 1.75rem 0 0 1rem;
+  border-top: 0.45rem solid var(--color-raiz);
+  border-radius: var(--radio-boton);
+}
+
+.recibido-fruto {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 7rem;
+  aspect-ratio: 1;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--color-fruto);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
+  color: var(--color-tinta);
+  font: 900 2.5rem / 1 var(--fuente-titulo);
+  font-stretch: 112%;
+  letter-spacing: -0.03em;
+}
+
+/* El cabo, de la rama al fruto, y su hoja. */
+.recibido-fruto::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 0.25rem;
+  height: 1.75rem;
+  background: var(--color-raiz);
+  translate: -50% 0;
+}
+
+.recibido-fruto::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 0.95rem;
+  border-radius: 0 100%;
+  background: var(--color-hoja);
+  rotate: -18deg;
+}
+
+.recibido-texto {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.recibido-texto p {
+  margin: 0;
+}
+
+@media (min-width: 53.75em) {
+  .puerta {
+    padding: 1.75rem 2rem 2rem;
+  }
+
+  .puerta-lista {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* En pantalla grande: la puerta a todo el ancho, primero; debajo, lo que viene y lo recibido a la
+   izquierda, y los pedidos a la derecha. */
+@media (min-width: 68.75em) {
+  .inicio-partes {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-areas:
+      "puerta puerta"
+      "viene pedidos"
+      "recibido pedidos";
+    gap: 2.5rem 3.5rem;
+  }
+
+  .puerta {
+    grid-area: puerta;
+  }
+
+  .viene {
+    grid-area: viene;
+  }
+
+  .pedidos-inicio {
+    grid-area: pedidos;
+  }
+
+  .recibido {
+    grid-area: recibido;
+  }
+
+  .pedidos-renglones li {
+    grid-template-columns: 2rem minmax(0, 1fr) 11rem;
+  }
+
+  .renglon-va {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}

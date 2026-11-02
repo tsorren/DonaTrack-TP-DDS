@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--/* Raíces, piezas de las pantallas de la entidad que dibuja la corrida A/B (Inicio, Donaciones
+       recibidas y Notificaciones), según su ficha (docs/interfaz/flujos/raices-entidad-navegable.md).
+       No es una pantalla: su nombre no empieza con un rol, así que PrototipoController no la muestra.
+       Fragmentos:
+       - datos(cuerpo): las 11 donaciones asignadas al Comedor Barrio Ejemplo (una sola fuente para
+         Inicio y Donaciones recibidas, sección 6 de la ficha) y sus grupos por estado; inserta cuerpo
+         con esas variables. ?escenario=vacio las vacía; sin-puerta saca las que esperan en la puerta y
+         sin-resultados, la del aceite (para el filtro sin resultados).
+       - sello(tono): el sello de estado de sellos.css (puerta, recibida, camino, salir, problema).
+       - novedades(cuantas): el acceso a Notificaciones, con cuántas hay sin leer.
+       - error(titulo, texto, recargar): el aviso de error del servidor, con el código para escribir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/* grupo: puerta (espera tu confirmación), problema, camino, salir (por salir) o recibida. Quien
+       ocultó su nombre figura con su categoría del ranking (Donante Sostenedor). */-->
+<th:block th:fragment="datos(cuerpo)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             todas=${ {
+      {clave: 'lentejas', nombre: 'Lentejas secas', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '15 kg', dono: 'Distribuidora Ejemplo SA', pedido: 'lentejas', pedidoNombre: 'lentejas secas',
+       grupo: 'puerta', paso: 'Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.',
+       llego: 'Llegó hoy, 18:20, desde el Depósito Central.'},
+      {clave: 'ropa', nombre: 'Ropa de abrigo', categoria: 'cat-ropa', categoriaNombre: 'Ropa',
+       cuanto: '10 unidades', dono: 'Donante Sostenedor', pedido: 'ropa', pedidoNombre: 'ropa de abrigo',
+       grupo: 'puerta', paso: 'Llegó a tu puerta ayer a las 17:10. Espera tu confirmación.',
+       llego: 'Llegó ayer, 17:10, desde el Depósito Central.'},
+      {clave: 'aceite', nombre: 'Aceite de girasol', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '10 litros', dono: 'Almacén Ejemplo SRL', pedido: 'aceite', pedidoNombre: 'aceite de girasol',
+       grupo: 'problema', paso: 'El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.',
+       breve: 'te avisamos la nueva fecha'},
+      {clave: 'arroz', nombre: 'Arroz', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '20 kg', dono: 'Almacén Ejemplo SRL', pedido: 'arroz', pedidoNombre: 'arroz',
+       grupo: 'camino', paso: 'Salió del depósito hoy a las 9:15. Llega mañana.', breve: 'llega mañana'},
+      {clave: 'leche', nombre: 'Leche en polvo', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '12 unidades', dono: 'Lácteos Ejemplo SA', pedido: 'leche', pedidoNombre: 'leche en polvo',
+       grupo: 'salir', paso: 'Asignada el 13 de octubre. Sale del depósito el 17 de octubre.',
+       breve: 'sale el 17 de octubre'},
+      {clave: 'r10', nombre: 'Lentejas secas', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '10 kg', dono: 'Almacén Ejemplo SRL', pedido: 'lentejas', pedidoNombre: 'lentejas secas',
+       grupo: 'recibida', dia: '10', fecha: '2026-10-10', paso: 'Confirmaste la recepción el 10 de octubre.'},
+      {clave: 'r9', nombre: 'Arroz', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '5 kg', dono: 'Martina Ruiz', pedido: 'arroz', pedidoNombre: 'arroz',
+       grupo: 'recibida', dia: '9', fecha: '2026-10-09', paso: 'Confirmaste la recepción el 9 de octubre.'},
+      {clave: 'r8', nombre: 'Ropa de abrigo', categoria: 'cat-ropa', categoriaNombre: 'Ropa',
+       cuanto: '5 unidades', dono: 'Donante Sostenedor', pedido: 'ropa', pedidoNombre: 'ropa de abrigo',
+       grupo: 'recibida', dia: '8', fecha: '2026-10-08', paso: 'Confirmaste la recepción el 8 de octubre.'},
+      {clave: 'r6', nombre: 'Leche en polvo', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '12 unidades', dono: 'Lácteos Ejemplo SA', pedido: 'leche', pedidoNombre: 'leche en polvo',
+       grupo: 'recibida', dia: '6', fecha: '2026-10-06', paso: 'Confirmaste la recepción el 6 de octubre.'},
+      {clave: 'r5', nombre: 'Fideos secos', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '8 kg', dono: 'Distribuidora Ejemplo SA', pedido: null, pedidoNombre: null,
+       grupo: 'recibida', dia: '5', fecha: '2026-10-05', paso: 'Confirmaste la recepción el 5 de octubre.'},
+      {clave: 'r2', nombre: 'Arroz', categoria: 'cat-alimentos', categoriaNombre: 'Alimentos',
+       cuanto: '10 kg', dono: 'Almacén Ejemplo SRL', pedido: 'arroz', pedidoNombre: 'arroz',
+       grupo: 'recibida', dia: '2', fecha: '2026-10-02', paso: 'Confirmaste la recepción el 2 de octubre.'} } },
+             asignadas=${escenario == 'vacio' ? {} : todas.?[(grupo != 'puerta' or #root.escenario != 'sin-puerta') and (clave != 'aceite' or #root.escenario != 'sin-resultados')]},
+             grupos=${ {
+      {clave: 'puerta', valor: 'en-tu-puerta', nombre: 'Esperan tu confirmación', estado: 'Espera tu confirmación'},
+      {clave: 'problema', valor: 'con-problema', nombre: 'Con problema', estado: 'Con problema'},
+      {clave: 'camino', valor: 'en-camino', nombre: 'En camino', estado: 'En camino'},
+      {clave: 'salir', valor: 'por-salir', nombre: 'Por salir', estado: 'Por salir'},
+      {clave: 'recibida', valor: 'recibidas', nombre: 'Recibidas en octubre', estado: 'Recepción confirmada'} } }">
+  <svg th:replace="~{prototipo/raices/iconos :: categorias}"></svg>
+  <th:block th:replace="${cuerpo}"></th:block>
+</th:block>
+
+<!--/* Los sellos de sellos.css, uno por estado: en la puerta, el disco paja (lo que llegó, impreso);
+       recibida, el mismo con el tilde calado; en camino, la mitad ámbar; por salir, el punteado; con
+       problema, el disco óxido con "!". Decorativos: el estado va siempre en texto al lado. */-->
+<svg th:fragment="sello(tono)" th:switch="${tono}" class="estado-sello" viewBox="0 0 22 22"
+     aria-hidden="true" focusable="false">
+  <g th:case="'puerta'"><circle class="sello-hecho" cx="11" cy="11" r="9"/></g>
+  <g th:case="'recibida'"><circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/></g>
+  <g th:case="'camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
+  <circle th:case="'salir'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
+  <g th:case="*"><circle class="sello-problema" cx="11" cy="11" r="9"/><path class="sello-calado" d="M11 6V12.5M11 15.5V16"/></g>
+</svg>
+
+<!--/* El acceso a Notificaciones: no es una sección del menú (ficha, sección 2); va en la cabecera de
+       cada pantalla de la entidad que dibuja este grupo. Sin rojo ni signo de exclamación: es un dato. */-->
+<a th:fragment="novedades(cuantas)" class="novedades" href="/prototipo/raices/entidad-notificaciones"
+   th:href="@{/prototipo/raices/entidad-notificaciones}">
+  <span class="novedades-cuenta" th:text="${cuantas}">3</span>
+  <span th:text="${cuantas == 1} ? 'novedad sin leer' : 'novedades sin leer'">novedades sin leer</span>
+</a>
+
+<!--/* El error del servidor al cargar: qué pasó, que no cambió nada, volver a cargar y el código. */-->
+<section th:fragment="error(titulo, texto, recargar)" class="aviso aviso--error" role="alert"
+         aria-labelledby="error-titulo">
+  <h2 id="error-titulo" th:text="${titulo}">No pudimos cargar tu inicio.</h2>
+  <p><th:block th:text="${texto}">Es un problema nuestro: no cambió nada en tus entregas ni en tus
+    pedidos. Probá de nuevo en unos minutos; si sigue,</th:block> <a href="/prototipo/raices/publico-contacto?codigo=a1b2c3d4e5f6"
+       th:href="@{/prototipo/raices/publico-contacto(codigo='a1b2c3d4e5f6',volver=${recargar})}">escribinos
+      con este código</a>.</p>
+  <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+  <a class="boton boton--secundario" href="/prototipo/raices/entidad-inicio" th:href="${recargar}">Volver
+    a cargar</a>
+</section>
+
+</body>
+</html>
