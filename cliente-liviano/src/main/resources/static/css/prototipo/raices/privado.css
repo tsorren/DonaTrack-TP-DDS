@@ -240,6 +240,11 @@ main h2 {
     border-top: 0;
   }
 
+  /* La columna es papel: sin la tierra impresa de la barra. */
+  .armazon-menu::before {
+    content: none;
+  }
+
   .armazon-menu ul {
     display: flex;
     flex-direction: column;

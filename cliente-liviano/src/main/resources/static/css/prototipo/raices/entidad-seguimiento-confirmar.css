@@ -363,6 +363,8 @@ main .etiqueta-titulo {
 .ciclo-raiz {
   margin: 0 0 2rem;
   border: 2px solid var(--color-tinta);
+  /* La tierra, bajo la línea de tierra del dibujo (y = 70 de un alto de 210). */
+  background: linear-gradient(transparent calc(70 / 210 * 100%), var(--color-suelo) 0);
 }
 
 /* La línea de la entrega escala con el dibujo: el trazado mide su largo en las unidades del dibujo

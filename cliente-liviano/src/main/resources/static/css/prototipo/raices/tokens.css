@@ -49,9 +49,6 @@
      mandarina; con su segunda tinta, que también dibuja el contorno del que va en camino. */
   --p-fruto: #e8822a;
   --p-fruto-hondo: #96460b;
-  /* El semitono de la tierra (ronda de tierra, 2026-11-01): al pie de cada horizonte, puntos con el
-     color del horizonte de abajo; el último, un oliva más hondo que la tierra. */
-  --p-semitono-fondo: #232913;
   /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). */
   --p-pendiente-fondo: #e2e0d2;
   --p-pendiente-texto: #4d4c40;
@@ -85,7 +82,6 @@
   --color-destacado: var(--p-destacado);
   --color-fruto: var(--p-fruto);
   --color-fruto-hondo: var(--p-fruto-hondo);
-  --color-semitono-fondo: var(--p-semitono-fondo);
   --color-pendiente-fondo: var(--p-pendiente-fondo);
   --color-pendiente-texto: var(--p-pendiente-texto);
   --color-en-camino-fondo: var(--p-en-camino-fondo);

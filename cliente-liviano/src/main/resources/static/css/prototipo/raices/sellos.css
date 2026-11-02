@@ -4,9 +4,8 @@
    recepción. */
 
 /* --- El dibujo -------------------------------------------------------------------------------- */
-.dibujo-suelo {
-  fill: var(--color-suelo);
-}
+/* La tierra no es parte del dibujo: la pinta el fondo de su marco, bajo la línea de tierra, para
+   que la textura impresa quede detrás de las raíces (app.css, .tierra-impresa). */
 
 .dibujo-tierra {
   stroke: var(--color-tinta);

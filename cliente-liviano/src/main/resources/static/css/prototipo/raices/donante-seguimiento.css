@@ -87,6 +87,11 @@
   border: 2px solid var(--color-tinta);
 }
 
+/* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 380). */
+figure.seguimiento-dibujo {
+  background: linear-gradient(transparent calc(80 / 380 * 100%), var(--color-suelo) 0);
+}
+
 .camion circle {
   fill: var(--color-papel);
   stroke: var(--color-tinta);

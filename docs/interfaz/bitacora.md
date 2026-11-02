@@ -26,6 +26,40 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · textura (Raíces) · Risografía suave, solo en el fondo
+
+- **Decisión:** B, risografía, más suave y solo en el fondo. El papel de todas las páginas lleva un
+  polvo fino de tinta. En los planos de tierra (la tierra y las cifras de la portada, los mapas de
+  Seguir entregas y de Recepción confirmada, y la barra del menú en el celular), el papel se asoma
+  en puntitos entre la tinta. Las dos texturas van detrás del contenido. Tarjetas, botones, el sol
+  y los dibujos quedan lisos. Reemplaza al grano de las cuatro franjas de la portada, que iba encima
+  del contenido. En los mapas, la tierra deja de ser un rectángulo del dibujo y la pinta el fondo
+  del marco, para que la textura quede debajo de las raíces. El token del semitono, que ya no usaba
+  nada, sale de `tokens.css`. Al ver la aplicada, el usuario pidió que los botones tampoco tengan
+  la textura: los de contorno, que eran transparentes, toman el fondo liso de su plano (papel,
+  tierra o el verde hondo de las cifras).
+- **Alternativas:** dos vueltas. En la primera, cinco en la portada: A, segura, el grano de hoy
+  parejo, sumado al registro de cifras; B, media, risografía (polvo de tinta en el papel y el papel
+  que se asoma en la tierra y el sol); C, media, semitono (papel liso, el sol en puntos y la tierra
+  que se oscurece con puntos); D, audaz, linograbado (el sol en anillos tallados y la tierra con
+  marcas de gubia); y E, audaz, serigrafía sobre papel reciclado (fibras y manchas de tinta
+  despareja). En la segunda, el usuario pidió B, con apenas menos polvo, y C en todo el sitio. Al
+  llevar C a los mapas, sus puntos caían encima de las raíces y las hacían parecer punteadas, que en
+  Raíces quiere decir "en camino": se pasaron detrás antes de mostrarla. La recomendada fue B.
+- **Por qué:** el usuario eligió B, "más suave y solo aplicada a elementos de fondo para evitar
+  molestar la vista". Es el afiche risográfico del estilo elegido y la única que lleva la textura a
+  todas las pantallas, no solo a donde hay tierra. D tenía más carácter, pero sus rayas competían con
+  la red de raíces. E, de lejos, parecía sucia más que impresa.
+- **Costo:** sobre el papel de fondo, el polvo baja un poco el contraste del texto suelto. La
+  verificación pasa AA en las 5 rutas de Raíces. El sol queda liso. En los mapas, la altura de la
+  tierra se repite en la hoja de cada pantalla (la línea de tierra del dibujo, en `calc`): si el
+  dibujo cambia, hay que cambiarla.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/textura/`: la primera vuelta de cerca y en la portada, y cada
+  variante en 360 px (`ronda1-*`); B contra C de cerca, en Seguir entregas y en Necesidades
+  (`ronda2-*`); y la aplicada de cerca, en las cuatro pantallas, en el celular y la portada en 360 y
+  1280 px (`aplicada-*`); los botones de contorno, lisos (`aplicada-botones.jpg`).
+
 ### 2026-11-02 · paleta (Raíces) · Oliva: la tierra en verdes oliva y los frutos mandarina
 
 - **Decisión:** G, Oliva y mandarina. Reemplaza a Bosque, con los mismos valores por función. La

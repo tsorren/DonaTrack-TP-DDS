@@ -229,11 +229,11 @@ Detalle en la [bitácora](../bitacora.md).
 
 | Pieza | Cómo es | Qué significa |
 |---|---|---|
-| Textura | Grano de impresión marcado sobre el papel, el sol y la tierra | Oficio: algo hecho a mano, no una plantilla |
+| Textura | Risografía suave, solo en el fondo: un polvo fino de tinta sobre el papel de todas las páginas y, en los planos de tierra, el papel que se asoma en puntitos; tarjetas, botones, el sol y los dibujos, lisos (usuario, A/B de textura, 2026-11-02) | Oficio: algo hecho a mano, no una plantilla |
 | Sol | Medio disco salvia claro, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
 | Brote | Dos cotiledones planos y simétricos: uno verde oliva con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
 | Planta y frutos | En la portada, el brote crecido: tallo y ramas en verde oliva y un fruto mandarina por entrega confirmada del mes, un disco con su segunda tinta corrida y una hoja; lo que va en camino, un fruto hueco punteado en la segunda tinta (A/B de frutos y de paleta, 2026-11-02) | El resultado, contado con los datos |
-| Tierra | Tres horizontes; al pie de cada uno, una franja de **semitono**: puntos de imprenta con el color del horizonte de abajo, que crecen con lo hondo y con la pantalla (usuario, ronda de tierra, 2026-11-01). Nunca debajo de texto | Lo hondo, impreso; funde un horizonte en el otro sin línea |
+| Tierra | Tres horizontes en verdes oliva, con la textura de la tierra. El semitono al pie de cada horizonte (ronda de tierra, 2026-11-01) quedó afuera: ya no estaba dibujado y en el A/B de textura (2026-11-02) el usuario eligió la risografía | Lo hondo, impreso |
 | Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
@@ -241,7 +241,7 @@ Detalle en la [bitácora](../bitacora.md).
 | Botones y bordes | Rectos, sin redondeo, con una sombra plana salvia corrida; al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un sello |
 
 **Forma:** sale del estilo (rectos, sombra plana corrida). La línea entre horizontes no entró; la
-grava tampoco (la reemplazó el semitono). En la ronda de ilustración se descartaron el grabado de
+grava tampoco (la reemplazó el semitono, que después salió con el A/B de textura). En la ronda de ilustración se descartaron el grabado de
 lámina, el plano risográfico con raíces orgánicas, la orgánica simétrica, el abanico, la
 bifurcada y la fila de lámina (bitácora).
 
