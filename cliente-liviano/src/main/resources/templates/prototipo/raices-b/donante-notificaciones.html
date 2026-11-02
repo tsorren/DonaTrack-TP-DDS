@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Notificaciones del donante (RF-08), según su ficha
+       (docs/interfaz/flujos/raices-donante-navegable.md). La composición de B: el horario de una
+       estación. Cada aviso es una estación de una línea que baja, con la hora a su izquierda; lo sin
+       leer, impreso en paja y con "Sin leer"; lo leído, hueco y con "Leída". Cada aviso dice el estado
+       actual de su donación (sello y texto) y enlaza a su detalle. Las cartas son las de viaje-datos;
+       el orden de los avisos (de la más nueva a la más vieja) se escribe una vez acá, porque
+       viaje-datos las guarda por donación. "Marcar todas como leídas" es un formulario post real que
+       va a donante-notificaciones-leidas. Estados de la maqueta: ?escenario=vacio, error y lento.
+       Fragmentos:
+       - hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas.
+       - aviso(n, leida): un aviso, con n = {d: clave de la donación, c: número de carta}. Lo usa
+         también el inicio. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'donante-notificaciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices-b/donante-notificaciones :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(leidas)">
+  <th:block th:replace="~{prototipo/cozy-medieval/viaje-datos :: viaje(~{::pantalla})}"></th:block>
+</th:block>
+
+<!--/* ponytail: el orden de los avisos, fijo para el ejemplo; en el sistema llega ordenado de
+       GET /api/notificaciones/persona/{personaId}. */-->
+<th:block th:fragment="pantalla"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             nuevas=${ { {d: 'lentejas', c: 0}, {d: 'arroz', c: 0}, {d: 'leche', c: 0}, {d: 'lentejas', c: 1} } },
+             viejas=${ { {d: 'lentejas', c: 2}, {d: 'leche', c: 1}, {d: 'lentejas', c: 3}, {d: 'utiles', c: 0},
+                         {d: 'utiles', c: 1}, {d: 'ropa', c: 0}, {d: 'ropa', c: 1}, {d: 'utiles', c: 2},
+                         {d: 'zapatillas', c: 0}, {d: 'fideos', c: 0}, {d: 'fideos', c: 1}, {d: 'ropa', c: 2},
+                         {d: 'fideos', c: 2} } },
+             sinLeer=${leidas ? {} : nuevas},
+             yaLeidas=${leidas ? nuevas : viejas}">
+  <div class="avisos-pantalla">
+    <p class="rotulo">Notificaciones</p>
+    <h1>Noticias de <em>tus donaciones</em></h1>
+
+    <p th:if="${leidas}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus>Listo: marcaste todas
+      como leídas.</p>
+
+    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
+      <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la entidad
+        confirme la entrega.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices-b/donante-donaciones"
+         th:href="@{/prototipo/raices-b/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{prototipo/raices-b/donante-donaciones :: error('No pudimos cargar tus notificaciones.', '/prototipo/raices-b/donante-notificaciones')}"></section>
+    </th:block>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando">Cargando tus notificaciones…</p>
+      <div class="avisos-grupos" aria-busy="true">
+        <div class="reserva"></div>
+        <div class="reserva"></div>
+      </div>
+    </th:block>
+
+    <th:block th:if="${escenario == ''}">
+      <div class="avisos-cabecera">
+        <p class="bajada" th:text="${leidas ? 'No tenés notificaciones sin leer.'
+            : #lists.size(sinLeer) + ' sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.'}">4 sin
+          leer. Cada aviso cuenta qué pasó con una donación de tu empresa.</p>
+        <form th:unless="${leidas}" action="/prototipo/raices-b/donante-notificaciones-leidas"
+              th:action="@{/prototipo/raices-b/donante-notificaciones-leidas}" method="post">
+          <button class="boton boton--secundario" type="submit">Marcar todas como leídas</button>
+        </form>
+      </div>
+
+      <div class="avisos-grupos">
+        <section th:unless="${leidas}" class="avisos-grupo avisos-grupo--nuevas" aria-labelledby="sin-leer-titulo">
+          <h2 id="sin-leer-titulo" th:text="|Sin leer (${#lists.size(sinLeer)})|">Sin leer (4)</h2>
+          <ol class="horario" role="list">
+            <th:block th:each="n : ${sinLeer}">
+              <li th:replace="~{prototipo/raices-b/donante-notificaciones :: aviso(${n}, false)}"></li>
+            </th:block>
+          </ol>
+        </section>
+        <section class="avisos-grupo" aria-labelledby="leidas-titulo">
+          <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(yaLeidas) + (leidas ? #lists.size(viejas) : 0)})|">Leídas (13)</h2>
+          <ol class="horario horario--leido" role="list">
+            <th:block th:each="n : ${yaLeidas}">
+              <li th:replace="~{prototipo/raices-b/donante-notificaciones :: aviso(${n}, true)}"></li>
+            </th:block>
+            <th:block th:if="${leidas}" th:each="n : ${viejas}">
+              <li th:replace="~{prototipo/raices-b/donante-notificaciones :: aviso(${n}, true)}"></li>
+            </th:block>
+          </ol>
+        </section>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+
+<!--/* Un aviso: la hora, si está leído o no (texto y forma), el texto con enlace al detalle de su
+       donación, y la donación con el sello de su estado actual. Hoy es el 15 de octubre: lo del 14
+       dice "Ayer". */-->
+<li th:fragment="aviso(n, leida)" class="horario-fila avisos-fila"
+    th:classappend="${leida} ? 'avisos-fila--leida' : 'avisos-fila--nueva'"
+    th:with="d=${donaciones.^[clave == #vars.n.d]}, carta=${d.cartas[n.c]}">
+  <time th:replace="~{prototipo/raices-b/donante-notificaciones :: cuando(${carta})}"></time>
+  <p class="avisos-marca" th:text="${leida} ? 'Leída' : 'Sin leer'">Sin leer</p>
+  <p class="horario-texto avisos-texto"><a href="/prototipo/raices-b/donante-donaciones-detalle"
+     th:href="@{/prototipo/raices-b/donante-donaciones-detalle(donacion=${d.clave})}"
+     th:text="${#strings.replace(carta.texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">El camión salió a
+    entregar tus lentejas a Comedor Barrio Ejemplo.</a></p>
+  <p class="avisos-donacion">
+    <span class="estado" th:classappend="|estado--${d.estado.tono}|"><th:block
+          th:replace="~{prototipo/raices-b/donante-donaciones :: sello(${d.estado.tono})}"></th:block><span
+          th:text="${d.estado.texto}">En camino</span></span>
+    <span th:text="|${d.titulo}, ${d.cantidad}|">Lentejas secas, 15 kg</span>
+  </p>
+</li>
+
+<!--/* La fecha y la hora de una carta, como en un horario: el día arriba y la hora grande. Hoy es el
+       15 de octubre: lo del 14 dice "Ayer". */-->
+<time th:fragment="cuando(carta)" class="horario-hora" th:datetime="${carta.fecha}"
+      th:with="dia=${#strings.substringBefore(carta.cuando, ', ')}">
+  <span class="horario-dia" th:text="${#strings.startsWith(carta.fecha, '2026-10-15') ? 'Hoy'
+        : (#strings.startsWith(carta.fecha, '2026-10-14') ? 'Ayer' : dia)}">Hoy</span><span
+        class="solo-lectores">,</span>
+  <span class="horario-reloj" th:text="${#strings.substringAfter(carta.cuando, ', ')}">14:30</span>
+</time>
+</body>
+</html>

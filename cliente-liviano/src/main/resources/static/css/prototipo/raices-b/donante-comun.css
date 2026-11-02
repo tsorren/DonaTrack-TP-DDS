@@ -1,0 +1,270 @@
+/* Raíces B, lo que comparten las pantallas del donante (inicio, Mis donaciones, el detalle,
+   Entidades y Notificaciones): el trayecto (las cinco etapas de una donación en chico, como una
+   línea de subte con sus estaciones), el color de "Entregada", la bajada, el aviso de carga y el
+   lugar reservado mientras carga. Cada hoja de pantalla del donante importa esta. */
+@import url("privado.css");
+@import url("sellos.css");
+
+.estado--entregada {
+  color: var(--color-entregada-texto);
+}
+
+/* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
+.bajada {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.cargando {
+  margin: 1rem 0;
+  font-weight: 700;
+}
+
+/* El lugar de lo que todavía no llegó: papel gris, sin datos inventados. */
+.reserva {
+  min-height: 6rem;
+  border: 2px dashed var(--color-tinta-suave);
+  border-radius: var(--radio-lamina);
+  background: var(--color-pendiente-fondo);
+}
+
+/* Un enlace suelto (fuera de un párrafo): 48 px de alto. */
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+/* --- El trayecto ------------------------------------------------------------------------------
+   Cada parada es un trecho de línea que llega y su estación. Lo hecho, impreso en paja; la actual,
+   más grande y con el sello de su estado; lo que falta, hueco, con el trecho punteado. Si llegó, la
+   última estación es el fruto mandarina de lo confirmado. */
+.trayecto {
+  --medida-parada: 1rem;
+
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 2rem;
+}
+
+.trayecto-parada {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.trayecto-parada::before {
+  content: "";
+  flex: 1;
+  min-width: 0.5rem;
+  height: calc(var(--medida-grosor) + 6px);
+  border-block: var(--borde-linea);
+  background: var(--color-raiz);
+}
+
+.trayecto-parada::after {
+  content: "";
+  flex: none;
+  width: var(--medida-parada);
+  height: var(--medida-parada);
+  margin-inline: -2px;
+  border: var(--borde-linea);
+  border-radius: 50%;
+  background: var(--color-raiz);
+}
+
+.trayecto-parada--pendiente::before {
+  height: 0;
+  border-top: 3px dashed var(--color-tinta-suave);
+  border-bottom: 0;
+  background: none;
+}
+
+.trayecto-parada--pendiente::after {
+  border-style: dashed;
+  border-color: var(--color-tinta-suave);
+  background: var(--color-papel);
+}
+
+.trayecto-parada--actual::after {
+  width: calc(var(--medida-parada) * 1.6);
+  height: calc(var(--medida-parada) * 1.6);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+}
+
+.trayecto--pendiente .trayecto-parada--actual::after {
+  border-style: dashed;
+  border-color: var(--color-pendiente-texto);
+  background: var(--color-papel);
+  box-shadow: none;
+}
+
+.trayecto--en-camino .trayecto-parada--actual::after {
+  border-color: var(--color-en-camino-texto);
+  background: linear-gradient(90deg, var(--color-en-camino-sello) 50%, var(--color-papel) 0);
+}
+
+.trayecto--con-problema .trayecto-parada--actual::after {
+  border-color: var(--color-problema-texto);
+  background: var(--color-problema-texto);
+}
+
+.trayecto--entregada .trayecto-parada:last-child::after {
+  width: calc(var(--medida-parada) * 1.8);
+  height: calc(var(--medida-parada) * 1.8);
+  background: var(--color-fruto);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-fruto-hondo);
+}
+
+/* --- El horario ---------------------------------------------------------------------------------
+   Las noticias por fecha, como el horario de una estación: una línea que baja, una estación por
+   aviso y la hora a su izquierda (en el celular, arriba del texto). */
+.horario {
+  --medida-horario: 0.75rem;
+
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.horario::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  left: calc(var(--medida-horario) - var(--medida-grosor) / 2 - 3px);
+  width: calc(var(--medida-grosor) + 6px);
+  border-inline: var(--borde-linea);
+  background: var(--color-raiz);
+}
+
+.horario-fila {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 0.125rem;
+  padding-left: calc(var(--medida-horario) * 2 + 1rem);
+}
+
+.horario-fila::before {
+  content: "";
+  position: absolute;
+  top: 0.1rem;
+  left: calc(var(--medida-horario) - 0.75rem);
+  width: 1.5rem;
+  height: 1.5rem;
+  border: var(--borde-linea);
+  border-radius: 50%;
+  background: var(--color-papel);
+}
+
+.horario-hora {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.5rem;
+  color: var(--color-tinta);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.horario-reloj {
+  font: 900 1.25rem/1.1 var(--fuente-titulo);
+  font-stretch: 125%;
+}
+
+.horario-texto {
+  margin: 0;
+}
+
+/* Un aviso en el horario (Notificaciones y el inicio). Lo sin leer, la estación impresa y la marca
+   llena; lo leído, la estación hueca y punteada y la marca en contorno: texto y forma. */
+.avisos-fila--nueva::before {
+  background: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+}
+
+.avisos-fila--leida::before {
+  border-style: dashed;
+}
+
+.avisos-fila--leida .horario-hora {
+  color: var(--color-tinta-suave);
+}
+
+.avisos-marca {
+  justify-self: start;
+  margin: 0.125rem 0;
+  padding: 0 0.5rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--color-tinta);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.avisos-fila--nueva .avisos-marca {
+  background: var(--color-raiz);
+}
+
+.avisos-fila--leida .avisos-marca {
+  border-style: dashed;
+  border-color: var(--color-tinta-suave);
+  color: var(--color-tinta-suave);
+  font-weight: 700;
+}
+
+.avisos-texto {
+  max-width: 40rem;
+}
+
+.avisos-texto a {
+  color: var(--color-tinta);
+  font-weight: 700;
+  text-decoration-color: var(--color-acento);
+  text-underline-offset: 0.2em;
+}
+
+.avisos-texto a:hover {
+  color: var(--color-acento);
+}
+
+.avisos-donacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 37.5em) {
+  .horario {
+    --medida-horario: 10.5rem;
+  }
+
+  .horario-fila {
+    grid-template-columns: 9rem 3rem minmax(0, 1fr);
+    padding-left: 0;
+  }
+
+  .horario-hora {
+    grid-row: 1 / span 4;
+    flex-direction: column;
+    align-items: flex-end;
+    align-self: start;
+    text-align: right;
+  }
+
+  .horario-fila > :not(.horario-hora) {
+    grid-column: 3;
+  }
+}

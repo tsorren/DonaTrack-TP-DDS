@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--/* Raíces B, el inicio del donante (nivel 1), según su ficha (docs/interfaz/flujos/raices-donante-navegable.md).
+       La composición de B: la espina. La línea que baja de la cabecera al rótulo sigue por toda la
+       página hasta la terminal del pie, y cada parte es una estación sobre ella: lo que está
+       confirmado, lo que está en curso, la que se demoró, las últimas noticias (cada aviso, una
+       estación de la misma línea) y los accesos. El juego se insinúa con los datos (brief de Raíces):
+       de la espina sale la línea de la empresa, una estación por donación de la primera a la última,
+       y lo confirmado es un fruto mandarina; la primera entrega confirmada se nombra al lado. Todo
+       sale de viaje-datos (las mismas donaciones de Mis donaciones y Seguimiento). Estados de la
+       maqueta: ?escenario=vacio, error y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'donante-inicio', ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/viaje-datos :: viaje(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             entregadas=${donaciones.?[estado.tono == 'entregada']},
+             primera=${donaciones.$[estado.tono == 'entregada']},
+             enCurso=${donaciones.?[destino != null and estado.tono != 'entregada']},
+             sinDestino=${donaciones.?[destino == null]},
+             demorada=${donaciones.^[estado.tono == 'con-problema']},
+             noticias=${ { {d: 'lentejas', c: 0}, {d: 'arroz', c: 0}, {d: 'leche', c: 0} } }">
+  <div class="inicio">
+    <p class="rotulo" th:text="${seccion}">Inicio</p>
+    <div class="inicio-espina">
+      <h1>Hola, <em th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</em></h1>
+      <p class="bajada">Gracias por donar. Acá ves qué donó tu empresa, dónde está cada donación y qué ya
+        confirmaron las entidades.</p>
+
+      <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+        <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
+        <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso hasta
+          que la entidad confirme la entrega.</p>
+        <a class="boton boton--secundario" href="/prototipo/raices-b/donante-entidades"
+           th:href="@{/prototipo/raices-b/donante-entidades}">Conocer las entidades</a>
+      </section>
+
+      <th:block th:if="${escenario == 'error'}">
+        <section th:replace="~{prototipo/raices-b/donante-donaciones :: error('No pudimos cargar tu inicio.', '/prototipo/raices-b/donante-inicio')}"></section>
+      </th:block>
+
+      <th:block th:if="${escenario == 'lento'}">
+        <p class="cargando">Cargando tu inicio…</p>
+        <div class="inicio-reserva" aria-busy="true">
+          <div class="reserva"></div><div class="reserva"></div><div class="reserva"></div>
+        </div>
+      </th:block>
+
+      <th:block th:if="${escenario == ''}">
+        <svg th:replace="~{prototipo/raices-b/iconos :: categorias}"></svg>
+
+        <!--/* Lo que está confirmado: el resultado (entregas y entidades que confirmaron) y, aparte y
+               más chica, la actividad (donaciones registradas). */-->
+        <section class="inicio-parte" aria-labelledby="confirmado-titulo">
+          <h2 id="confirmado-titulo" class="parada-titulo">Lo que está confirmado</h2>
+          <dl class="inicio-cifras" aria-labelledby="confirmado-titulo">
+            <div class="inicio-cifra">
+              <dt th:text="${#lists.size(entregadas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'}">entregas
+                confirmadas</dt>
+              <dd th:text="${#lists.size(entregadas)}">2</dd>
+            </div>
+            <div class="inicio-cifra" th:with="confirmaron=${#sets.size(#sets.toSet(entregadas.![destino]))}">
+              <dt th:text="${confirmaron == 1 ? 'entidad confirmó lo que recibió' : 'entidades confirmaron lo que recibieron'}">entidades
+                confirmaron lo que recibieron</dt>
+              <dd th:text="${confirmaron}">2</dd>
+            </div>
+            <div class="inicio-cifra inicio-cifra--actividad">
+              <dt>donaciones registradas</dt>
+              <dd th:text="${#lists.size(donaciones)}">7</dd>
+            </div>
+          </dl>
+          <p class="nota">Desde el 1 de octubre de 2026, según las confirmaciones de las entidades. Actualizado hoy,
+            15 de octubre, 16:25.</p>
+
+          <!--/* El hito: la línea de la empresa, de la primera donación a la última. Cada estación, el
+                 estado de una donación; lo confirmado, un fruto. Dibujo: el texto de al lado lo dice. */-->
+          <div class="inicio-hito">
+            <ol class="inicio-linea" role="list" aria-hidden="true">
+              <li th:each="i : ${#numbers.sequence(#lists.size(donaciones) - 1, 0, -1)}"
+                  th:with="d=${donaciones[i]}" class="inicio-estacion"
+                  th:classappend="|inicio-estacion--${d.estado.tono}${d.clave == primera?.clave ? ' inicio-estacion--primera' : ''}|">
+                <span class="inicio-punto"></span><small th:text="${d.numero}">1</small>
+              </li>
+            </ol>
+            <p th:if="${primera != null}" class="inicio-hito-texto"
+               th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
+              entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
+          </div>
+        </section>
+
+        <!--/* En curso: los mismos números que Seguimiento; aparte, las que esperan destino. */-->
+        <section class="inicio-parte" aria-labelledby="curso-titulo">
+          <h2 id="curso-titulo" class="parada-titulo">En curso</h2>
+          <div class="inicio-curso">
+            <p th:with="camino=${#lists.size(enCurso.?[estado.tono == 'en-camino'])},
+                        problema=${#lists.size(enCurso.?[estado.tono == 'con-problema'])},
+                        pendientes=${#lists.size(enCurso.?[estado.tono == 'pendiente'])}">
+              <span class="inicio-curso-texto"
+                    th:text="|${#lists.size(enCurso)} entregas en curso: ${camino} en camino, ${problema} con problema y ${pendientes} pendiente.|">3
+                entregas en curso: 1 en camino, 1 con problema y 1 pendiente.</span>
+              <a href="/prototipo/raices-b/donante-seguimiento" th:href="@{/prototipo/raices-b/donante-seguimiento}">Ver
+                seguimiento</a>
+            </p>
+            <p>
+              <span class="inicio-curso-texto"
+                    th:text="|${#lists.size(sinDestino)} donaciones esperan destino en el depósito.|">2 donaciones
+                esperan destino en el depósito.</span>
+              <a href="/prototipo/raices-b/donante-donaciones" th:href="@{/prototipo/raices-b/donante-donaciones}">Ver
+                Mis donaciones</a>
+            </p>
+          </div>
+        </section>
+
+        <!--/* La que se demoró: qué pasó y el próximo paso, sin alarma. */-->
+        <section th:if="${demorada != null}" class="inicio-parte" aria-labelledby="demora-titulo"
+                 th:with="para=${#strings.replace(demorada.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
+          <h2 id="demora-titulo" class="parada-titulo">La que se demoró</h2>
+          <div class="inicio-demora">
+            <th:block th:replace="~{prototipo/raices-b/donante-donaciones :: sello('con-problema')}"></th:block>
+            <p>
+              <span th:text="|${demorada.titulo} no pudo llegar a ${para}: ${#strings.unCapitalize(#strings.substringBefore(demorada.seguimiento, ' Última'))} Sale de nuevo el ${#strings.substringAfter(demorada.nota, 'sale de nuevo el ')}.|">Útiles
+                escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo el 17 de
+                octubre.</span>
+              <a href="/prototipo/raices-b/donante-donaciones-detalle?donacion=utiles"
+                 th:href="@{/prototipo/raices-b/donante-donaciones-detalle(donacion=${demorada.clave})}">Ver el
+                detalle<span class="solo-lectores" th:text="| de ${demorada.titulo}|"> de Útiles escolares</span></a>
+            </p>
+          </div>
+        </section>
+
+        <!--/* Las últimas noticias: cada aviso es una estación de la misma espina. */-->
+        <section class="inicio-parte" aria-labelledby="noticias-titulo">
+          <h2 id="noticias-titulo" class="parada-titulo">Últimas noticias</h2>
+          <ol class="horario" role="list">
+            <th:block th:each="n : ${noticias}">
+              <li th:replace="~{prototipo/raices-b/donante-notificaciones :: aviso(${n}, false)}"></li>
+            </th:block>
+          </ol>
+          <a class="enlace inicio-todas" href="/prototipo/raices-b/donante-notificaciones"
+             th:href="@{/prototipo/raices-b/donante-notificaciones}">Ver todas las notificaciones (4 sin leer)</a>
+        </section>
+
+        <section class="inicio-parte inicio-parte--accesos" aria-labelledby="accesos-titulo">
+          <h2 id="accesos-titulo" class="solo-lectores">Accesos</h2>
+          <div class="acciones">
+            <a class="boton boton--principal" href="/prototipo/raices-b/donante-donaciones"
+               th:href="@{/prototipo/raices-b/donante-donaciones}">Ver Mis donaciones</a>
+            <a class="boton boton--secundario" href="/prototipo/raices-b/donante-entidades"
+               th:href="@{/prototipo/raices-b/donante-entidades}">Conocer las entidades</a>
+          </div>
+        </section>
+      </th:block>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

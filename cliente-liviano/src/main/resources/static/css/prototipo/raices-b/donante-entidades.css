@@ -1,0 +1,278 @@
+/* Raíces B, Entidades del donante: la red en la tierra, como "Quiénes reciben las donaciones" de la
+   portada. Una franja de tierra de borde a borde; una línea baja por ella con una estación por
+   entidad (el sello con el pictograma de lo que pide), su cartel al lado y, al final de la fila, en
+   papel, lo que pide. Debajo, en papel, "Cómo llega tu donación" como un ramal. */
+@import url("donante-comun.css");
+@import url("formularios.css");
+
+.entidades-buscar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 0 0 1rem;
+}
+
+.entidades-buscar .campo {
+  flex: 1 1 14rem;
+  max-width: 24rem;
+}
+
+.entidades-cuenta {
+  min-height: 1.6em;
+  margin: 0 0 1.5rem;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* --- La tierra, de borde a borde --------------------------------------------------------------- */
+.entidades-tierra {
+  margin: 0 0 2rem;
+  padding-block: 3rem;
+  background: var(--color-suelo);
+  box-shadow: 0 0 0 100vmax var(--color-suelo);
+  clip-path: inset(0 -100vmax);
+  color: var(--color-texto-suelo);
+}
+
+.entidades-tierra :focus-visible {
+  outline-color: var(--color-raiz);
+}
+
+.entidades-red {
+  position: relative;
+  display: grid;
+  gap: 3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entidades-red::before {
+  content: "";
+  position: absolute;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  left: calc(var(--medida-eje) - var(--medida-grosor) / 2 - 3px);
+  width: calc(var(--medida-grosor) + 6px);
+  border-inline: var(--borde-linea);
+  background: var(--color-raiz);
+}
+
+.entidades-estacion {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  padding-left: var(--medida-sangria);
+}
+
+.entidades-sello {
+  position: absolute;
+  top: 0;
+  left: calc(var(--medida-eje) - 1.25rem);
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: var(--borde-linea);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo-hondo);
+}
+
+.entidades-sello svg {
+  width: 72%;
+  height: 72%;
+  fill: var(--color-tinta);
+}
+
+.entidades-cartel h3 {
+  margin: 0.25rem 0 0.25rem;
+  color: var(--color-texto-suelo);
+  font: 800 1.5rem/1.15 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.entidades-tipo {
+  margin: 0 0 0.75rem;
+  color: var(--color-raiz);
+  font-weight: 700;
+}
+
+.entidades-donaste {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entidades-donaste li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.entidades-donaste .estado-sello {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+/* En la tierra, lo pendiente es solo el contorno punteado, en el color del texto. */
+.entidades-donaste .sello-contorno--punteado {
+  fill: none;
+  stroke: var(--color-texto-suelo);
+}
+
+/* Lo que pide: en papel, al final de la fila. */
+.entidades-pide {
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-suelo-hondo);
+  color: var(--color-tinta-suave);
+}
+
+.entidades-pide h4 {
+  margin: 0 0 0.75rem;
+  color: var(--color-tinta);
+  font-size: 1rem;
+  font-weight: 800;
+  font-stretch: 112%;
+}
+
+.entidades-pide :focus-visible {
+  outline-color: var(--color-acento);
+}
+
+.entidades-nada {
+  margin: 0;
+}
+
+.entidades-pedidos {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entidades-pedido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.entidades-pedido b {
+  flex-basis: 100%;
+  color: var(--color-tinta);
+  font-size: 1rem;
+}
+
+/* La barra: lo recibido, impreso en paja sobre el papel gris de lo que falta. */
+.entidades-pedido progress {
+  flex-basis: 100%;
+  height: 0.875rem;
+  margin-top: 0.25rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-pendiente-fondo);
+  appearance: none;
+  overflow: hidden;
+}
+
+.entidades-pedido progress::-webkit-progress-bar {
+  background: var(--color-pendiente-fondo);
+}
+
+.entidades-pedido progress::-webkit-progress-value {
+  background: var(--color-raiz);
+  box-shadow: inset -2px 0 0 var(--color-tinta);
+}
+
+.entidades-pedido progress::-moz-progress-bar {
+  background: var(--color-raiz);
+}
+
+/* Más de tres pedidos: el resto, plegado, sin JavaScript. */
+.entidades-mas summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  margin-top: 0.25rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+  list-style: none;
+}
+
+.entidades-mas summary::-webkit-details-marker {
+  display: none;
+}
+
+.entidades-mas[open] .entidades-mas-ver,
+.entidades-mas:not([open]) .entidades-mas-menos {
+  display: none;
+}
+
+.entidades-mas .entidades-pedidos {
+  margin-top: 0.5rem;
+}
+
+.entidades-reserva {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.entidades-paginas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1.5rem;
+  margin: 0 0 3rem;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* --- Cómo llega tu donación -------------------------------------------------------------------- */
+.entidades-como {
+  padding-top: 2rem;
+  border-top: 2px solid var(--color-tinta);
+}
+
+.entidades-como h2 {
+  margin: 0 0 1.5rem;
+}
+
+.entidades-como .ramal-texto {
+  max-width: 22rem;
+  margin: 0;
+  padding-top: 0.25rem;
+}
+
+.entidades-deposito {
+  display: grid;
+  margin: 2rem 0 1.5rem;
+}
+
+.entidades-deposito b {
+  color: var(--color-tinta);
+}
+
+@media (min-width: 53.75em) {
+  .entidades-estacion {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    align-items: start;
+    gap: 2.5rem;
+  }
+
+  .entidades-pide {
+    padding: 1.25rem 1.5rem;
+  }
+}
