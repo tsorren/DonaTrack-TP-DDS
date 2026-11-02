@@ -139,7 +139,9 @@ body::before {
   min-height: 3rem;
   padding: 0.75rem 1.5rem;
   border: 2px solid var(--color-acento);
-  border-radius: 0;
+  /* Esquinas en bisel (A/B de bordes, 2026-11-02: D, troquel). */
+  border-radius: var(--radio-boton);
+  corner-shape: var(--radio-boton-forma);
   box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
   /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */
   background: var(--color-papel);

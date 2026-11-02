@@ -26,6 +26,33 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · bordes (Raíces) · Troquel: esquinas mordidas en el papel y en bisel en los botones
+
+- **Decisión:** D, troquel. Las láminas y las etiquetas de la portada (Cómo funciona, la cuenta del
+  mes, las etiquetas de herbario, "Tu entidad", el registro de cifras y la ventana de la foto)
+  tienen las esquinas mordidas hacia adentro, como un boleto o una etiqueta de herbario troquelada.
+  Los botones tienen las esquinas en bisel, como una etiqueta de precio. Se conservan el marco
+  doble de línea fina y la sombra plana salvia. Queda en `tokens.css` como radios con su forma de
+  esquina (`--radio-lamina*`, `--radio-boton*`). El botón es común: las otras pantallas de Raíces
+  ya lo toman; sus tarjetas siguen rectas hasta su revisión.
+- **Alternativas:** cinco en la portada: A, segura, rectos como hasta ahora (esquina viva, marco
+  doble y sombra salvia); B, media, esquina suave (todo igual, con las esquinas apenas
+  redondeadas); C, media, botones como semillas (el papel recto y los botones en píldora); D,
+  audaz, troquel; y E, audaz, afiche grueso (un solo marco de tinta grueso y la sombra en tinta,
+  más larga). La recomendada fue D.
+- **Por qué:** el usuario eligió D, la recomendada. Es la que más se recuerda y la que más dice
+  "impreso": el papel parece cortado con troquel, como las etiquetas del herbario de la red, sin
+  perder el marco doble ni la sombra ya elegidos. B se veía genérica; C hacía que los botones
+  parecieran de una aplicación; E pesaba tanto que competía con el contenido, contra la textura
+  suave recién elegida.
+- **Costo:** la forma de esquina la dibujan Chrome y Edge; en Firefox y Safari las esquinas salen
+  redondeadas, como en B. Hasta revisar Seguir entregas, Confirmar recepción y Necesidades, sus
+  botones van en bisel y sus tarjetas rectas.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/bordes/`: las cinco en la portada, de cerca (botones, una
+  etiqueta y la esquina de la lámina) y en la primera pantalla del celular (`cinco-*`); y la
+  aplicada en la portada en 360 y 1280 px (`aplicada-*`).
+
 ### 2026-11-02 · textura (Raíces) · Risografía suave, solo en el fondo
 
 - **Decisión:** B, risografía, más suave y solo en el fondo. El papel de todas las páginas lleva un
