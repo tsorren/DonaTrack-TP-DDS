@@ -138,6 +138,15 @@
             <p><b>La entidad confirma la entrega.</b> Con la fecha y una foto de lo entregado.</p>
           </li>
         </ol>
+        <!--/* La pausa del viento en ciclo (WCAG 2.2.2, review de Sofía, 2026-11-02): una casilla con forma
+               de botón, sin JavaScript. Frena las hojas y los frutos de toda la portada. Con "reducir
+               movimiento" no hay viento y no se muestra. */-->
+        <p class="pausa">
+          <label class="boton boton--chico pausa-boton">
+            <input class="pausa-casilla" id="pausar-movimiento" type="checkbox">
+            Pausar el movimiento
+          </label>
+        </p>
       </section>
     </div>
   </section>
@@ -181,18 +190,18 @@
       <div class="tierra-interior herbario" th:classappend="${conDatos} ? '' : 'herbario--sin-red'">
         <svg th:if="${conDatos}" class="dibujo red-dibujo" viewBox="0 0 1200 600" aria-hidden="true" focusable="false">
           <path class="tronco" d="M600 0V40"/>
-          <path class="borde" pathLength="1" d="M600 40H270L110 200"/>
-          <path class="borde" pathLength="1" d="M600 40L520 120H400L300 220V300"/>
-          <path class="borde" pathLength="1" d="M600 40V120L470 250V380"/>
-          <path class="borde" pathLength="1" d="M600 40V120L730 250V380"/>
-          <path class="borde" pathLength="1" d="M600 40L680 120H800L900 220V300"/>
-          <path class="borde" pathLength="1" d="M600 40H930L1090 200"/>
-          <path class="ruta raiz--1" pathLength="1" d="M600 40H270L110 200"/>
-          <path class="ruta raiz--2" pathLength="1" d="M600 40L520 120H400L300 220V300"/>
-          <path class="ruta raiz--3" pathLength="1" d="M600 40V120L470 250V380"/>
-          <path class="ruta raiz--5" pathLength="1" d="M600 40V120L730 250V380"/>
-          <path class="ruta raiz--6" pathLength="1" d="M600 40L680 120H800L900 220V300"/>
-          <path class="ruta raiz--7" pathLength="1" d="M600 40H930L1090 200"/>
+          <path class="borde" pathLength="1" d="M600 40H298Q270 40 250 60L110 200"/>
+          <path class="borde" pathLength="1" d="M600 40L540 100Q520 120 492 120H428Q400 120 380 140L320 200Q300 220 300 248V300"/>
+          <path class="borde" pathLength="1" d="M600 40V92Q600 120 580 140L490 230Q470 250 470 278V380"/>
+          <path class="borde" pathLength="1" d="M600 40V92Q600 120 620 140L710 230Q730 250 730 278V380"/>
+          <path class="borde" pathLength="1" d="M600 40L660 100Q680 120 708 120H772Q800 120 820 140L880 200Q900 220 900 248V300"/>
+          <path class="borde" pathLength="1" d="M600 40H902Q930 40 950 60L1090 200"/>
+          <path class="ruta raiz--1" pathLength="1" d="M600 40H298Q270 40 250 60L110 200"/>
+          <path class="ruta raiz--2" pathLength="1" d="M600 40L540 100Q520 120 492 120H428Q400 120 380 140L320 200Q300 220 300 248V300"/>
+          <path class="ruta raiz--3" pathLength="1" d="M600 40V92Q600 120 580 140L490 230Q470 250 470 278V380"/>
+          <path class="ruta raiz--5" pathLength="1" d="M600 40V92Q600 120 620 140L710 230Q730 250 730 278V380"/>
+          <path class="ruta raiz--6" pathLength="1" d="M600 40L660 100Q680 120 708 120H772Q800 120 820 140L880 200Q900 220 900 248V300"/>
+          <path class="ruta raiz--7" pathLength="1" d="M600 40H902Q930 40 950 60L1090 200"/>
           <path class="ruta ruta--pendiente raiz--tuya" d="M600 120V560"/>
           <circle class="cruce" cx="600" cy="40" r="11"/>
           <circle class="cruce" cx="600" cy="120" r="7"/>

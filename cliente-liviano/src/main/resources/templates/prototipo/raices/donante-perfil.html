@@ -22,7 +22,7 @@
              guardado=${!enviado ? '' : (param.mostrar != null ? 'visible' : 'oculto')},
              oculto=${guardado == 'oculto' or (guardado == '' and escenario == 'oculto')},
              nombre=${cuenta.nombre},
-             anonimo='Una empresa que prefiere no mostrar su nombre'">
+             anonimo='Empresa donante · Sostenedor'">
   <div class="perfil">
     <p class="rotulo">Mi perfil</p>
     <h1 th:text="${nombre}">Distribuidora Ejemplo SA</h1>
@@ -30,7 +30,7 @@
 
     <p th:if="${guardado == 'oculto'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
        th:text="|Listo. Las entidades ya no ven tu nombre: ven «${anonimo}».|">Listo. Las entidades ya no
-      ven tu nombre: ven «Una empresa que prefiere no mostrar su nombre».</p>
+      ven tu nombre: ven «Empresa donante · Sostenedor».</p>
     <p th:if="${guardado == 'visible'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
        th:text="|Listo. Las entidades ven tu nombre: «${nombre}».|">Listo. Las entidades ven tu nombre:
       «Distribuidora Ejemplo SA».</p>
@@ -58,10 +58,10 @@
         <label><input type="radio" name="mostrar" value="si" th:checked="${!oculto}">
           <span>Mostrar mi nombre <small th:text="|Donó: ${nombre}|">Donó: Distribuidora Ejemplo SA</small></span></label>
         <label><input type="radio" name="mostrar" value="no" th:checked="${oculto}">
-          <span>No mostrarlo <small th:text="|Donó: ${anonimo}|">Donó: Una empresa que prefiere no mostrar
-            su nombre</small></span></label>
-        <p id="nombre-nota" class="nota">Vale para todas tus donaciones, también las que ya llegaron. Los
-          avisos que la entidad ya recibió no cambian.</p>
+          <span>No mostrarlo <small th:text="|Donó: ${anonimo}|">Donó: Empresa donante · Sostenedor</small></span></label>
+        <p id="nombre-nota" class="nota">Sin tu nombre, la entidad ve tu categoría como donante. Vale
+          para todas tus donaciones, también las que ya llegaron. Los avisos que la entidad ya recibió
+          no cambian.</p>
       </fieldset>
       <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
               th:text="${escenario == 'lento'} ? 'Guardando…' : 'Guardar mi elección'">Guardar mi

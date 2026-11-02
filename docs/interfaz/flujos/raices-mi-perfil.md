@@ -1,6 +1,9 @@
 # Flujo: Mi perfil del donante (mínimo), en Raíces
 
 > **Estado:** aprobado · **Fecha:** 2026-11-02 · **Aprobó:** usuario (2026-11-02), al ver las pantallas dibujadas
+> **Ajustada:** 2026-11-02, con la review de Sofía Deane: con el nombre oculto, la entidad ve la
+> categoría del ranking, y se puede ocultar también en una sola donación (bitácora, "La review de la
+> diseñadora, decidida").
 > Plantilla de la skill `ux-flujo`. Pantalla nueva del prototipo propio de Raíces
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
 > `/prototipo/raices/donante-perfil`, que hasta hoy abría "todavía no está dibujada". Es un perfil
@@ -54,11 +57,12 @@ Desvíos: no guardar (se va con el menú y no cambia nada), error del servidor y
 │ │ (•) Mostrar mi nombre                       │ │
 │ │     Donó: Distribuidora Ejemplo SA          │ │
 │ │ ( ) No mostrarlo                            │ │
-│ │     Donó: Una empresa que prefiere no       │ │
-│ │     mostrar su nombre                       │ │
-│ │ Vale para todas tus donaciones, también     │ │
-│ │ las que ya llegaron. Los avisos que la      │ │
-│ │ entidad ya recibió no cambian.              │ │
+│ │     Donó: Empresa donante · Sostenedor      │ │
+│ │ Sin tu nombre, la entidad ve tu categoría   │ │
+│ │ como donante. Vale para todas tus           │ │
+│ │ donaciones, también las que ya llegaron.    │ │
+│ │ Los avisos que la entidad ya recibió no     │ │
+│ │ cambian.                                    │ │
 │ │ [Guardar mi elección]                       │ │
 │ └─────────────────────────────────────────────┘ │
 │                                                 │
@@ -81,7 +85,7 @@ interruptor que guarda solo).
 | Mi perfil | Con datos | Lo elegido marcado | — |
 | Mi perfil | Oculto (`?escenario=oculto`) | "No mostrarlo" marcado | — |
 | Mi perfil | Guardando (`?escenario=lento`) | El botón dice "Guardando…" y queda desactivado | "Guardando…" |
-| Guardado (`donante-perfil-guardado`) | Éxito, al ocultarlo | Aviso arriba, con "No mostrarlo" marcado | "Listo. Las entidades ya no ven tu nombre: ven «Una empresa que prefiere no mostrar su nombre»." (una persona: «Una persona que prefiere no mostrar su nombre») |
+| Guardado (`donante-perfil-guardado`) | Éxito, al ocultarlo | Aviso arriba, con "No mostrarlo" marcado | "Listo. Las entidades ya no ven tu nombre: ven «Empresa donante · Sostenedor»." (una persona: «Donante Sostenedor»; la categoría es la del ranking de Incentivos) |
 | Guardado (`donante-perfil-guardado?mostrar=si`) | Éxito, al mostrarlo | Aviso arriba, con "Mostrar mi nombre" marcado | "Listo. Las entidades ven tu nombre: «Distribuidora Ejemplo SA»." |
 | Mi perfil | Error del servidor (`?escenario=error`) | Aviso arriba | "No pudimos guardar tu elección. Es un problema nuestro: sigue como estaba. Probá de nuevo en unos minutos; si sigue, escribinos con este código." + código y enlace a Contacto |
 | Mi perfil | Sin conexión (`?escenario=sin-conexion`) | Aviso arriba | "Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó elegido." |
@@ -95,12 +99,12 @@ interruptor que guarda solo).
 | Grupo | "Cómo te ven las entidades" | `fieldset` + `legend` |
 | Bajada del grupo | "Cuando una entidad recibe lo que donaste, ve quién donó." | |
 | Opciones | "Mostrar mi nombre" · "No mostrarlo" | Con su ejemplo debajo |
-| Nota | "Vale para todas tus donaciones, también las que ya llegaron. Los avisos que la entidad ya recibió no cambian." | Sale del ADR: el nombre se calcula al leer |
+| Nota | "Sin tu nombre, la entidad ve tu categoría como donante. Vale para todas tus donaciones, también las que ya llegaron. Los avisos que la entidad ya recibió no cambian." | Sale del ADR: el nombre se calcula al leer |
 | Acción principal | "Guardar mi elección" | |
 | Legales | "Aceptaste la versión 1 el 1 de noviembre de 2026." · "Leer los términos y la política de privacidad" | La constancia, a la vista; la versión 1 rige desde ese día |
 
-Persona en vez de empresa: "Una persona que prefiere no mostrar su nombre", el mismo texto que ve
-la entidad en Confirmar recepción y en Necesidades.
+Persona en vez de empresa: "Donante Sostenedor" (con su categoría), el mismo texto que ve la
+entidad en Confirmar recepción y en Necesidades.
 
 ## 7. Accesibilidad
 
@@ -138,6 +142,18 @@ Decisiones tomadas:
   (usuario, 2026-11-02).
 - Dos opciones con su ejemplo y un botón Guardar (usuario, 2026-11-02).
 - Vale también para las donaciones pasadas (agente, del ADR).
+- Por defecto, el nombre se ve. Sofía votó ocultarlo por defecto; el usuario mantuvo visibles la
+  empresa y la persona (review de Sofía, 2026-11-02).
+- Con el nombre oculto, la entidad ve la categoría del donante en el ranking de Incentivos:
+  "Donante Sostenedor" o "Empresa donante · Sostenedor" (usuario, 2026-11-02, a propuesta de
+  Sofía; antes, "Una persona que prefiere no mostrar su nombre").
+- **Esta vez, sin mi nombre:** al registrar una donación, una casilla la oculta aunque el perfil
+  muestre el nombre. Solo oculta: no muestra lo que el perfil oculta. Se dibuja con la pantalla de
+  registrar una donación, que Raíces todavía no tiene (usuario, 2026-11-02).
+- Sofía pidió los legales también en los ajustes: Mi perfil ya muestra la constancia y el enlace,
+  y queda así (usuario, 2026-11-02).
+- Si la categoría no llega (Incentivos no responde o el donante no tiene una), la entidad ve «Un
+  donante» o «Una empresa donante», y la pantalla no falla (usuario, 2026-11-02, por la revisión).
 
 Preguntas abiertas, para el equipo (no cambian el prototipo):
 

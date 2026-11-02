@@ -3,6 +3,9 @@
 > **Estado:** aprobado · **Fecha:** 2026-11-01 · **Aprobó:** usuario (2026-11-01, al ver la pantalla construida)
 > Orden: el contenido lo decidió el usuario en dos rondas de preguntas antes de redactar la ficha
 > (2026-11-01); la aprobación llega al ver la pantalla dibujada, como en las anteriores.
+> **Ajustada:** 2026-11-02, con la review de Sofía Deane (resumen sin el total repetido, detalle en
+> datos y gráfico, cartel del cambio de cantidad y categoría del ranking con el nombre oculto;
+> bitácora, "La review de la diseñadora, decidida").
 > Plantilla de la skill `ux-flujo`. Es la cuarta pantalla de Raíces, la tercera alternativa en
 > exploración, y la segunda de la entidad. Vive en su prototipo propio
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
@@ -117,16 +120,15 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
 │ [ + Publicar otra necesidad ]│
 │ ┌──────────────────────────┐ │
 │ │ ▣ Aceite de girasol      │ │  una necesidad, plegada
-│ │ 20 litros · hasta el 20  │ │
-│ │ de octubre (faltan 5     │ │
-│ │ días)                    │ │
-│ │ Todavía no llegó nada    │ │
+│ │ Hasta el 20 de octubre   │ │
+│ │ (faltan 5 días)          │ │
+│ │ 0 de 20 litros recibidos │ │
 │ │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ │ │
 │ └──────────────────────────┘ │
 │ ▸ Leche en polvo …           │  plegada, en su orden
 │ ┌──────────────────────────┐ │
 │ │ ▣ Lentejas secas    ⟳ mes│ │  desplegada
-│ │ 40 kg por mes · octubre  │ │
+│ │ Octubre, hasta el 31     │ │
 │ │ 10 de 40 kg recibidos    │ │
 │ │ ███▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ │ │
 │ │ Por qué: para el almuerzo│ │
@@ -170,21 +172,33 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
   ve siempre, no obligatorio y con la ayuda "Solo si es una sola vez" (sin JavaScript no se puede
   ocultar según la opción elegida); el servidor la exige solo si es una sola vez. Publicar la suma a la
   lista con un aviso.
-- **Cada necesidad, plegada:** el pictograma de su categoría (los del cuaderno de la portada), qué
-  hace falta, cuánto y hasta cuándo (con los días que faltan), si se repite, y cómo va: lo recibido
-  en texto y una regla que se llena. Es el resumen que sirve para recorrer la lista sin abrir nada.
+- **Plegada (el resumen):** el pictograma de su categoría (los del cuaderno de la portada), qué
+  hace falta y si se repite; hasta cuándo ("Octubre, hasta el 31",
+  con cuántos días faltan), y cuánto llegó de cuánto, con su barra ("10 de 40 kg recibidos"; "0 de
+  20 litros recibidos" si no llegó nada). Cuánto pide va una sola vez, en la barra (review de
+  Sofía, 2026-11-02; antes, "40 kg por mes · octubre" arriba, repetido en la barra).
 - **Desplegada (el detalle):**
+  - **Cartel del cambio de cantidad** (solo si se cambió en el período en curso, y hasta que
+    termina): "Cambiada hoy" en el resumen y, arriba del detalle, "Hoy pasó de 40 a 45 kg por mes.
+    Vale desde octubre: lo que ya llegó cuenta." Los días siguientes, con la fecha: "Cambiada el
+    15/10" y "El 15 de octubre pasó de 40 a 45 kg por mes. Vale desde octubre: lo que ya llegó
+    cuenta." Lo ve quien administra la necesidad (review de Sofía, 2026-11-02).
   - **Por qué hace falta:** el motivo (la descripción).
   - **Entregas para este pedido:** las entregas asignadas que todavía no se confirmaron, cada una
     en su estado (en tu puerta, en camino, por salir, con un problema) y con su próximo paso; las
     que esperan en la puerta, con el botón "Confirmar recepción". Al pie, "Ver en Seguir entregas".
   - **Quién donó:** lo recibido, por quien donó, con cuánto y cuándo. Se ve el nombre de la
-    empresa o la persona; si lo ocultó en su perfil, "Una persona que prefiere no mostrar su
-    nombre" (o "Una empresa…", si es una empresa) (usuario, 2026-11-02; antes, "Una persona").
+    empresa o la persona; si lo ocultó en su perfil, su categoría en el ranking: "Donante
+    Sostenedor" (o "Empresa donante · Sostenedor") (review de Sofía, 2026-11-02; antes, "Una
+    persona que prefiere no mostrar su nombre" y, al principio, "Una persona"). Si la categoría no
+    llega, "Un donante" (o "Una empresa donante"); se ve con `?escenario=sin-categoria`.
   - **Cada período** (solo las que se repiten): la historia, del período en curso hacia atrás, cada
     uno con sus fechas, lo que llegó y el estado en texto: "Llegó todo", "Llegó una parte", "No
     llegó nada" y "En curso". Una barra que se llena acompaña cada uno, punteada la del período en
-    curso; nunca va sola.
+    curso; nunca va sola. A la vista, los cuatro últimos; los anteriores, en "Ver los anteriores"
+    (plegado). En pantalla grande, las barras suben de abajo arriba, una al lado de la otra, a la
+    derecha de las partes, como un gráfico: el más viejo a la izquierda y el período en curso al
+    final, con la base común (review de Sofía y su revisión, 2026-11-02).
   - **Acciones:** "Cambiar cantidad o motivo" (un formulario plegado con lo que deja cambiar el
     contrato) y "Dar de baja" (con su confirmación).
 - **Cumplidas y terminadas:** plegada al pie, con cuántas hay. Cada una dice cómo terminó y cuándo:
@@ -239,7 +253,8 @@ como en Cozy, y el de cambiar se ve con `?escenario=cambiar-datos`; cada acción
 | Publicar | Sin conexión | Con JavaScript, un aviso arriba; sin él, la página de error del navegador | "No sabemos si se publicó." · "Se cortó la conexión mientras se enviaba. Revisá la señal y mirá la lista antes de publicarla de nuevo." |
 | Detalle | Con datos | Por qué, las entregas para este pedido, quién donó, los períodos (si se repite) y las acciones | Ver Textos |
 | Detalle | Vacíos parciales | Sin entregas pendientes o sin nada recibido: la parte dice que no hay, no desaparece | "No hay entregas pendientes para este pedido." · "Todavía no llegó nada." |
-| Cambiar | Éxito | La lista con la necesidad abierta y el aviso con foco | "Guardamos los cambios de Lentejas secas." |
+| Detalle | Sin categoría | Quien donó ocultó su nombre y la categoría no llegó (`?escenario=sin-categoria`) | "Un donante · 5 unidades · 8 de octubre" (o "Una empresa donante") |
+| Cambiar | Éxito | La lista con la necesidad abierta y el aviso con foco; en la necesidad, la marca y el cartel del cambio | "Guardamos los cambios de Lentejas secas." · "Cambiada hoy" · "Hoy pasó de 40 a 45 kg por mes. Vale desde octubre: lo que ya llegó cuenta." · "10 de 45 kg recibidos" |
 | Cambiar | Error de datos | El formulario abierto, con el resumen arriba (con foco) y el error al lado del campo; lo escrito sigue | Resumen: "Revisá una cosa antes de guardar" (o "dos cosas"), con el enlace "Falta cuánto". Por campo: "Escribí cuánto, en kg. Por ejemplo: 40." (la unidad de esa necesidad) · "Contá en pocas palabras por qué hace falta." |
 | Cambiar | Error del servidor | Un aviso arriba del formulario, que sigue abierto con lo escrito | "No pudimos guardar los cambios." · "Es un problema nuestro: el pedido sigue como estaba. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código · "Revisar y guardar de nuevo" (lleva al primer campo) |
 | Cambiar | Conflicto | La necesidad como quedó, el formulario abierto con lo que escribiste y un aviso arriba | "Otra persona de tu entidad cambió este pedido mientras lo editabas." · "Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo." (en la maqueta; en el sistema, lo que cambió) |
@@ -266,12 +281,12 @@ donó, las terminadas) es de ejemplo, sintético.
 | Bajada | "Tus pedidos vigentes. Los ven los donantes y el catálogo público, sin tus datos de contacto." | Dice quién los ve (RF-22, D26) |
 | Registro | "Al 15 de octubre de 2026" · "5 necesidades vigentes" · "2 entregas esperan tu confirmación" · "2 en camino o por salir" · "1 con un problema" | Cifras con fecha. "2 entregas esperan…" enlaza a Confirmar recepción de las lentejas; "1 con un problema", al aceite (`?necesidad=aceite`) |
 | Publicar | "Publicar otra necesidad" · campos: "Qué hace falta" (una lista agrupada por categoría: Alimentos, Ropa, Muebles; ayuda: "Si no está en la lista, elegí la más parecida y contalo en por qué hace falta.") · "Cuánto" (número; ayuda: "En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto en cada período."; la lista dice la unidad de cada opción: "Fideos secos (kg)", "Aceite de girasol (litros)", "Ropa de abrigo (unidades)") · "¿Se repite?" ("Una sola vez", "Cada semana", "Cada quincena", "Cada mes"; ayuda: "Si se repite, el primer período empieza hoy y se renueva solo cada semana, cada quincena (15 días) o cada mes.") · "Hasta cuándo" ("Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.") · "Por qué hace falta" ("Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a viernes.") · botón "Publicar necesidad" | Los de Cozy, con la lista del catálogo en lugar del texto libre, más "¿Se repite?" y el motivo. Arriba: "Todos los datos son obligatorios; la fecha, solo si es una sola vez." |
-| Aceite de girasol | "20 litros · hasta el 20 de octubre" · "faltan 5 días" · "Una sola vez" · "Todavía no llegó nada" · por qué: "Para cocinar el almuerzo." · entregas: "10 litros · El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha." · quién donó: "Todavía no llegó nada." | |
-| Leche en polvo | "24 unidades · hasta el 25 de octubre" · "faltan 10 días" · "Una sola vez" · "12 de 24 unidades recibidas" · por qué: "Para la merienda de los más chicos." · entregas: "12 unidades · Sale del depósito el 17 de octubre." · quién donó: "Lácteos Ejemplo SA · 12 unidades · 6 de octubre" | |
-| Lentejas secas | "40 kg por mes · octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "10 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "15 kg · Llegaron a tu puerta hoy a las 18:20 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Distribuidora Ejemplo SA · 10 kg · 10 de octubre" · períodos: "Octubre · del 1 al 31 · 10 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 22 de 40 kg · Llegó una parte" · "Julio · 0 de 40 kg · No llegó nada" · "Desde julio de 2026" | Abierta en la maqueta, de partida: tiene todas las partes |
-| Arroz | "40 kg por mes · octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "15 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "20 kg · Salió del depósito hoy a las 9:15. Llega mañana." · quién donó: "Distribuidora Ejemplo SA · 10 kg · 2 de octubre" · "Martina Ruiz · 5 kg · 9 de octubre" · períodos: "Octubre · 15 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 31 de 40 kg · Llegó una parte" · "Desde agosto de 2026" | |
-| Ropa de abrigo | "30 unidades · hasta el 15 de noviembre" · "falta un mes" · "Una sola vez" · "5 de 30 unidades recibidas" · por qué: "Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre." · entregas: "10 unidades · Llegaron a tu puerta ayer a las 17:10 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Una persona que prefiere no mostrar su nombre · 5 unidades · 8 de octubre" | |
-| Fideos secos | "30 kg · hasta el 30 de octubre" · "faltan 15 días" · "Una sola vez" · "Todavía no llegó nada" · por qué: "Para la cena de los viernes." · entregas: "No hay entregas pendientes para este pedido." · quién donó: "Todavía no llegó nada." · la marca "Nueva" | La que se publica en la maqueta: aparece en `entidad-necesidades-publicada`, abierta; sus datos precargan el formulario en el error de datos, el del servidor y sin conexión |
+| Aceite de girasol | "Hasta el 20 de octubre" · "faltan 5 días" · "Una sola vez" · "0 de 20 litros recibidos" · por qué: "Para cocinar el almuerzo." · entregas: "10 litros · El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha." · quién donó: "Todavía no llegó nada." | |
+| Leche en polvo | "Hasta el 25 de octubre" · "faltan 10 días" · "Una sola vez" · "12 de 24 unidades recibidas" · por qué: "Para la merienda de los más chicos." · entregas: "12 unidades · Sale del depósito el 17 de octubre." · quién donó: "Lácteos Ejemplo SA · 12 unidades · 6 de octubre" | |
+| Lentejas secas | "Octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "10 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "15 kg · Llegaron a tu puerta hoy a las 18:20 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Distribuidora Ejemplo SA · 10 kg · 10 de octubre" · períodos: "Octubre · del 1 al 31 · 10 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 22 de 40 kg · Llegó una parte" · "Julio · 0 de 40 kg · No llegó nada" · "Ver los anteriores" (plegado): "Junio · 40 de 40 kg · Llegó todo" · "Desde junio de 2026" | Abierta en la maqueta, de partida: tiene todas las partes |
+| Arroz | "Octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "15 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "20 kg · Salió del depósito hoy a las 9:15. Llega mañana." · quién donó: "Distribuidora Ejemplo SA · 10 kg · 2 de octubre" · "Martina Ruiz · 5 kg · 9 de octubre" · períodos: "Octubre · 15 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 31 de 40 kg · Llegó una parte" · "Desde agosto de 2026" | |
+| Ropa de abrigo | "Hasta el 15 de noviembre" · "falta un mes" · "Una sola vez" · "5 de 30 unidades recibidas" · por qué: "Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre." · entregas: "10 unidades · Llegaron a tu puerta ayer a las 17:10 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Donante Sostenedor · 5 unidades · 8 de octubre" | |
+| Fideos secos | "Hasta el 30 de octubre" · "faltan 15 días" · "Una sola vez" · "0 de 30 kg recibidos" · por qué: "Para la cena de los viernes." · entregas: "No hay entregas pendientes para este pedido." · quién donó: "Todavía no llegó nada." · la marca "Nueva" | La que se publica en la maqueta: aparece en `entidad-necesidades-publicada`, abierta; sus datos precargan el formulario en el error de datos, el del servidor y sin conexión |
 | Orden | De la fecha más cercana a la más lejana | Lo que vence antes, arriba; sin marcarlo como urgente |
 | Cada período | "Llegó todo" · "Llegó una parte" · "No llegó nada" · "En curso" | El estado en palabras; la barra que se llena lo acompaña (punteada, la del período en curso). Un período que es el mes completo se nombra por el mes; uno semanal, con sus fechas ("del 6 al 12 de octubre") |
 | Partes del detalle | "Por qué hace falta" · "Entregas para este pedido" · "Quién donó" · "Cada mes" (o "Cada semana") | El nombre de la parte de los períodos dice cada cuánto se repite |
@@ -314,7 +329,9 @@ Filtro de tono:
 - La regla de cómo va es decorativa (`aria-hidden`): el texto dice lo mismo.
 - Los períodos son una lista ordenada (`ol`) con nombre; el período en curso lleva
   `aria-current="true"`. La barra de cada uno es decorativa (`aria-hidden`): el texto dice cuánto
-  llegó y el estado.
+  llegó y el estado. En pantalla grande el gráfico se ve del más viejo al actual, pero el lector de
+  pantalla los lee en el orden de la lista, del actual hacia atrás; como cada uno dice su nombre, el
+  sentido no se pierde.
 - Cada campo con su `label` y su ayuda en `aria-describedby`; los obligatorios, `required` y
   marcados en texto. "¿Se repite?" es un grupo de opciones (`fieldset` con `legend`).
 - El error de datos: el resumen con `role="alert"` recibe el foco y enlaza a cada campo; cada campo
@@ -391,6 +408,11 @@ Partes que se deciden con A/B, en este orden:
 3. El lugar de "Publicar otra necesidad" en pantalla grande. **Decidido (usuario, 2026-11-01):**
    plegado arriba de la lista, como Cozy, sin dibujar la columna al costado (la recomendada:
    publicar se hace pocas veces y la columna le quita ancho a la lista).
+4. El detalle desplegado en pantalla grande. **Decidido (usuario, 2026-11-02, review de Sofía):**
+   datos y gráfico: a la izquierda, "Por qué hace falta" y "Quién donó" lado a lado y las entregas
+   debajo; a la derecha, los períodos como barras que suben. Sin períodos, las tres partes en fila
+   (B, la recomendada, contra tres columnas con una ficha por mes debajo; bitácora, "El detalle,
+   datos y gráfico").
 
 Preguntas abiertas que el grupo respondió y el usuario decidió (2026-11-02, artifact de
 preguntas abiertas; bitácora, "Las preguntas abiertas de Raíces, decididas"). El backend va en el
@@ -408,11 +430,13 @@ el de la [baja con entregas en curso](../../adr/20261102-baja-de-una-necesidad-c
 - **Versión:** se suma al DTO, para el aviso de "otra persona la cambió".
 - **Largos de período:** cada semana, cada quincena (15 días) o cada mes, desde hoy.
 - **Cambio de cantidad en una que se repite:** vale para el período en curso; si ya llegó más que
-  lo nuevo, ese período queda cumplido. La ayuda de "Cuánto" lo dice.
+  lo nuevo, ese período queda cumplido. La ayuda de "Cuánto" lo dice. Desde la review de Sofía
+  (2026-11-02), un cartel lo cuenta hasta que termina el período (Sofía votó que valga desde el
+  próximo; el usuario mantuvo el período en curso).
 - **Baja con entregas en camino:** según si salió. Lo que salió llega igual; lo que no, vuelve al
   depósito y se asigna a otra entidad. El diálogo de la baja lo dice por entrega.
 - **Quién donó:** el nombre se ve, sea empresa o persona, salvo que lo haya ocultado en
-  [Mi perfil](raices-mi-perfil.md).
+  [Mi perfil](raices-mi-perfil.md) o en esa donación; entonces, su categoría en el ranking.
 - **"Escribinos con este código":** lleva a [Contacto](raices-contacto.md), con el código ya
   escrito.
 - El motivo sigue en la descripción del contrato, que es obligatoria.

@@ -104,7 +104,7 @@ pantallas privadas del prototipo (`templates/prototipo/raices/layout-privado.htm
 ## Mapa de las entregas (usuario, 2026-11-01)
 
 En Seguir entregas, el estilo del mapa es la red de la portada: el brote del depósito al centro y
-una línea de subte por entrega, en espejo, con codos a 45°, hasta la estación de su entidad. Lo
+una línea de subte por entrega, en espejo, con codos a 45° redondeados (review de Sofía, 2026-11-02), hasta la estación de su entidad. Lo
 recorrido va impreso (paja con borde) y lo que falta, hueco, solo el contorno. El sello de estado
 es la estación donde está la entrega: el camión va dentro del sello "en camino". En el sistema, ese
 estilo va sobre MapLibre. Debajo del dibujo, una tarjeta por entrega con el mismo número (borde de
@@ -116,10 +116,11 @@ etapas. Ver la [bitácora](../bitacora.md).
 ## Confirmar recepción (usuario, 2026-11-01)
 
 La primera pantalla de la entidad. El acta de una entrega lleva una etiqueta de herbario (doble
-filete y sombra plana salvia) con la categoría, los bultos, el pedido que cubre y quién donó, y el
+filete y sombra plana salvia) con la categoría, cuánto llegó, el pedido que cubre y quién donó, y el
 último tramo como raíz vertical: lo cumplido con el sello impreso y la confirmación hueca, unida por
-una línea paja que va hueca hacia lo que falta. En pantalla grande, la etiqueta y el tramo a la
-izquierda y el formulario a la derecha. Las fotos se eligen en una zona de carga punteada con la
+una línea paja que va hueca hacia lo que falta. En pantalla grande, dos filas de dos columnas:
+arriba, la etiqueta y el tramo; abajo, las pruebas y lo que recibiste (review de Sofía, 2026-11-02;
+antes, la etiqueta y el tramo a la izquierda y el formulario a la derecha). Las fotos se eligen en una zona de carga punteada con la
 cámara al centro. Al confirmar, la raíz completa llega impresa del brote del depósito a la
 estación de la entidad: se cierra el ciclo. Ver la [bitácora](../bitacora.md).
 
@@ -128,7 +129,10 @@ estación de la entidad: se cierra el ciclo. Ver la [bitácora](../bitacora.md).
 La segunda pantalla de la entidad. Cada pedido vigente es una etiqueta de herbario, como las de la
 portada, en dos columnas desde la tableta; al abrirla ocupa el ancho entero y despliega por qué hace
 falta, las entregas para ese pedido, quién donó y, si se repite, una barra por período con lo que
-llegó y el estado escrito (la del período en curso, punteada). "Publicar otra necesidad" va plegado
+llegó y el estado escrito (la del período en curso, punteada). En pantalla grande, el detalle va en
+datos y gráfico: las partes a la izquierda y las barras de los períodos subiendo a la derecha; el
+resumen plegado dice hasta cuándo, y cuánto de cuánto solo en la barra (review de Sofía,
+2026-11-02). "Publicar otra necesidad" va plegado
 arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitácora](../bitacora.md).
 
 ## Voz
@@ -234,7 +238,7 @@ Detalle en la [bitácora](../bitacora.md).
 | Brote | Dos cotiledones planos y simétricos: uno verde oliva con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
 | Planta y frutos | En la portada, el brote crecido: tallo y ramas en verde oliva y un fruto mandarina por entrega confirmada del mes, un disco con su segunda tinta corrida y una hoja; lo que va en camino, un fruto hueco punteado en la segunda tinta (A/B de frutos y de paleta, 2026-11-02) | El resultado, contado con los datos |
 | Tierra | Tres horizontes en verdes oliva, con la textura de la tierra. El semitono al pie de cada horizonte (ronda de tierra, 2026-11-01) quedó afuera: ya no estaba dibujado y en el A/B de textura (2026-11-02) el usuario eligió la risografía | Lo hondo, impreso |
-| Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
+| Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° redondeados (review de Sofía, 2026-11-02) y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
 | Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra). En "Lo que está confirmado" de la portada, en tinta dentro de frutos que cuelgan de una rama paja, cada uno de su tamaño y su color, con una etiqueta de papel (A/B de cifras, 2026-11-02) | El recorrido, como capítulos de un afiche; en la rama, la cosecha |
@@ -250,7 +254,11 @@ imprime (el sol aparece y la segunda tinta entra corrida y calza, 1 s) y la red 
 brote hasta cada entidad (1 s más). Al pasar el mouse o el foco por una entidad, su línea queda
 llena y el resto se apaga. Sin movimiento con "reducir movimiento"; sin JavaScript (CSS). Se
 descartó el pulso de entrega (puntos que recorren las líneas): movimiento sin fin, que pide un
-botón de pausa.
+botón de pausa. **Viento (usuario, review de Sofía, 2026-11-02):** después del trazado, las hojas
+del brote y de la planta y los frutos se mecen unos 3 s y quedan quietos unos 20, en ciclo (el
+usuario eligió el ciclo contra una sola ráfaga, la recomendada). Las entregas de "Lo que viajó este
+mes" aparecen de a una al bajar (línea de tiempo de scroll; sin ella, quietas). Un botón "Pausar el
+movimiento", bajo la lámina, frena el viento (WCAG 2.2.2).
 
 **Letra (usuario, quinto A/B): grotesca ancha de afiche.** Una sola familia, Archivo
 (Omnibus-Type, Buenos Aires); el carácter sale del ancho y del peso. Detalle en la

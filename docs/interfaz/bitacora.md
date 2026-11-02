@@ -26,6 +26,110 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · proceso (Raíces) · La review de la diseñadora, decidida
+
+- **Decisión:** Sofía Deane, la diseñadora del grupo, respondió tarde el artifact. Vio la versión
+  del 1 de noviembre (paleta Bosque, bordes rectos). El usuario decidió cada nota, de a un tema:
+  - **Cambio de cantidad (12):** sigue valiendo desde el período en curso, y la necesidad muestra
+    un cartel a quien la administra: "Cambiada hoy" en el resumen y, en el detalle, "Hoy pasó de
+    40 a 45 kg por mes. Vale desde octubre: lo que ya llegó cuenta."
+  - **Nombre oculto (16):** por defecto se ven los dos, empresa y persona. Con el nombre oculto, la
+    entidad ve la categoría del ranking de Incentivos: "Donante Sostenedor" o "Empresa donante ·
+    Sostenedor". Reemplaza "Una persona que prefiere no mostrar su nombre".
+  - **Anónimo por donación (15):** se suma "Esta vez, sin mi nombre" al registrar una donación.
+    Queda escrito en la ficha de Mi perfil y en el ADR, sin pantalla: Raíces no tiene todavía la de
+    registrar una donación.
+  - **Contacto (17):** ya cumplía el pedido: el formulario no muestra ninguna dirección de correo.
+  - **Legales (18):** sin cambios: en el pie, al registrarse y en la constancia que ya muestra
+    Mi perfil ("Aceptaste la versión 1…"). La portada no suma un menú.
+  - **Diseño (1 a 4):** cuatro A/B, en las entradas siguientes. Los bordes redondeados que pedía ya
+    estaban (esquina suave).
+- **Alternativas:** para la 12, valer desde el próximo período con cartel (el voto de Sofía) o
+  quedar sin cartel. Para la 16, empresa visible y persona oculta (la recomendada), las dos ocultas,
+  o los textos «Una persona que dona» y «Un donante». Para la 18, un menú corto en la portada
+  (la recomendada; la pregunta ofrecía además un apartado en Mi perfil, que ya existía).
+- **Por qué:** el usuario mantuvo sus decisiones de la mañana en la 12 y la 16, y tomó de Sofía el
+  cartel y el nombre más cálido. Eligió el nivel del ranking contra la recomendada porque es lo que
+  propuso Sofía y ya existe en Incentivos.
+- **Costo:** la categoría sale de otro servicio (Incentivos) y suma una llamada al armar la pantalla
+  (ADR del nombre visible y DTI-32). Si no llega, la entidad ve "Un donante" o "Una empresa
+  donante" (usuario, por la revisión). Quedan para el grupo dos dudas: una categoría poco común
+  puede dejar adivinar quién donó, y las empresas no ven sus incentivos (RF-07). El cartel pide
+  `ultimoCambio` en el contrato (DTI-30).
+- **Quién decidió:** usuario (2026-11-02), con la review de Sofía Deane.
+- **Evidencia:** fichas de Necesidades, Confirmar recepción, Seguir entregas y Mi perfil;
+  `evidencia/raices/review-sofia/`.
+
+### 2026-11-02 · layout:necesidades (Raíces) · El detalle, datos y gráfico; el resumen sin el total repetido
+
+- **Decisión:** B. En la computadora, el detalle abierto pone a la izquierda "Por qué hace falta" y
+  "Quién donó" lado a lado, con las entregas debajo; a la derecha, los períodos como barras que suben
+  de abajo arriba, con el nombre y lo que llegó debajo. Sin períodos, las tres partes van una al
+  lado de la otra, como antes. El resumen de cada tarjeta dice solo hasta cuándo ("Octubre, hasta
+  el 31"): cuánto pide va una sola vez, en la barra ("10 de 40 kg recibidos"; "0 de 20 litros
+  recibidos" si no llegó nada).
+- **Alternativas:** A, tres columnas y una ficha por mes debajo, a todo el ancho.
+- **Por qué:** Sofía pidió aprovechar el espacio y que no parezca una lista. B se lee como datos y
+  gráfico y deja la tarjeta abierta más baja. El total aparecía dos veces en cada tarjeta plegada.
+- **Costo:** los textos debajo de cada barra quedan en dos o tres renglones. Por la revisión, el
+  usuario eligió (las recomendadas) mostrar los cuatro últimos períodos, del más viejo a la izquierda
+  al período en curso a la derecha, con la base común y "Ver los anteriores" plegado; la columna
+  del gráfico se ensanchó para que "Septiembre" entre. Las barras verticales (`writing-mode` sobre
+  `progress`) se comprobaron solo en Chromium.
+- **Quién decidió:** usuario (2026-11-02), la recomendada, a pedido de Sofía.
+- **Evidencia:** `evidencia/raices/review-sofia/necesidades-detalle-ab.jpg` (el A/B, antes de los
+  ajustes de la revisión), `necesidades-detalle-final.jpg` (como quedó) y
+  `necesidades-detalle-360.jpg` (en el celular, las dos son iguales).
+
+### 2026-11-02 · layout:confirmar-recepcion (Raíces) · El acta en dos filas de dos columnas
+
+- **Decisión:** A. En la computadora, arriba, la etiqueta de la entrega y "El último tramo" lado a
+  lado; abajo, "Las pruebas" a la izquierda y "Lo que recibiste" con la firma y el botón a la
+  derecha. El botón de las fotos queda centrado en su zona. Recepción confirmada sigue en dos
+  columnas, con la etiqueta fija a la izquierda.
+- **Alternativas:** B, como estaba: la etiqueta y el tramo a la izquierda, fijos al bajar, y el
+  formulario a la derecha.
+- **Por qué:** Sofía pidió las dos piezas en columnas para achicar el scroll. A ordena la página
+  (primero qué llegó, después qué hacer) y acerca el botón Confirmar.
+- **Costo:** la página casi no se acorta (de 1214 a 1185 px a 1280 × 900): el alto lo pone el
+  formulario. La etiqueta deja de quedar a la vista mientras se completa el formulario. El texto del
+  botón de archivos ("Choose Files") lo pone el navegador según su idioma.
+- **Quién decidió:** usuario (2026-11-02), la recomendada, a pedido de Sofía.
+- **Evidencia:** `evidencia/raices/review-sofia/confirmar-dos-filas-ab.jpg` y
+  `confirmar-dos-filas-360.jpg`.
+
+### 2026-11-02 · estilo (Raíces) · Las líneas de subte, con los codos redondeados
+
+- **Decisión:** A. Las líneas del mapa de Seguir entregas conservan los recorridos y los codos a
+  45°, redondeados. El usuario pidió lo mismo en la red de la portada ("Quiénes reciben las
+  donaciones") y se llevó también a la raíz de Recepción confirmada, para que las tres hablen igual.
+- **Alternativas:** B, raíces curvas, sin codos.
+- **Por qué:** Sofía pidió formas menos rígidas, con un punto intermedio. A sigue leyéndose como un
+  recorrido con estaciones, sin la frialdad del ángulo, y cambia poco lo ya aprobado.
+- **Costo:** ninguno visible; los trazados son un poco más largos de escribir.
+- **Quién decidió:** usuario (2026-11-02), la recomendada en las dos preguntas.
+- **Evidencia:** `evidencia/raices/review-sofia/lineas-mapa-ab.jpg`, `lineas-mapa-a-360.jpg` y
+  `lineas-mapa-b-360.jpg`.
+
+### 2026-11-02 · movimiento (Raíces) · Viento en ciclo en la portada y las entregas del mes de a una
+
+- **Decisión:** A. Después de trazarse las raíces, las hojas del brote y de la planta y los frutos
+  se mecen unos 3 segundos y quedan quietos unos 20, una y otra vez. Las tarjetas de "Lo que viajó
+  este mes" aparecen de a una al bajar. Con "reducir movimiento", todo queda quieto; sin línea de
+  tiempo de scroll (Firefox), las tarjetas se ven quietas.
+- **Alternativas:** B, una sola ráfaga al entrar (la recomendada); sin viento, como estaba; las
+  tarjetas quietas.
+- **Por qué:** Sofía propuso las dos formas del viento y las tarjetas de a una para que la portada
+  no quede rígida. El usuario prefirió que la portada se sienta viva cada vez que se la mira.
+- **Costo:** el movimiento vuelve aunque nadie lo busque y compite con la lectura de la parte de
+  arriba. Como se repite sin fin, WCAG 2.2.2 pide una forma de pausarlo: `revision-ui` lo marcó y
+  el usuario eligió un botón "Pausar el movimiento" bajo la lámina "Cómo funciona" (la recomendada,
+  contra una sola ráfaga o pocas repeticiones). Es una casilla con forma de botón, sin JavaScript;
+  con "reducir movimiento" no se muestra. En Firefox y Safari, el giro de las hojas no se comprobó.
+- **Quién decidió:** usuario (2026-11-02), contra la recomendada en el viento.
+- **Evidencia:** el movimiento no se ve en una captura; se ve en la maqueta, en
+  `/prototipo/raices/publico-portada`.
+
 ### 2026-11-02 · proceso (Raíces) · Las preguntas abiertas de Raíces, decididas
 
 - **Decisión:** las 18 preguntas abiertas de las fichas de Raíces se mandaron al grupo en un

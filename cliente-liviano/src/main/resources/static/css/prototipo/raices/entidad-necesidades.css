@@ -282,6 +282,15 @@
   gap: 1.25rem;
 }
 
+/* El cartel del cambio de cantidad: una nota con filete de acento, a todo el ancho del detalle. */
+.cambio {
+  grid-column: 1 / -1;
+  margin: 0.75rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--color-acento);
+  font-weight: 700;
+}
+
 .parte h3 {
   margin: 0.75rem 0 0.375rem;
   color: var(--color-acento);
@@ -370,6 +379,19 @@
   grid-column: 2;
   color: var(--color-tinta-suave);
   font-size: 0.9375rem;
+}
+
+/* Los períodos anteriores a los cuatro de la vista, plegados debajo. */
+.periodos-anteriores {
+  margin-top: 0.5rem;
+}
+
+.periodos-anteriores > summary {
+  cursor: pointer;
+}
+
+.periodos-anteriores .periodos {
+  margin-top: 0.5rem;
 }
 
 .periodos-desde {
@@ -533,10 +555,22 @@
     margin-top: 0.5rem;
   }
 
+  /* Datos y gráfico (A/B de la review de Sofía, 2026-11-02): a la izquierda, por qué hace falta y
+     quién donó lado a lado, y las entregas debajo; a la derecha, los períodos como barras que suben. */
   .pedido-detalle {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     column-gap: 3rem;
     padding: 0.5rem 1.5rem 1.5rem;
+  }
+
+  .pedido-partes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .pedido-partes > .parte:nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .pedido-acciones {
@@ -547,6 +581,67 @@
   .pedido-detalle:not(:has(.parte--periodos)) .pedido-partes {
     grid-column: 1 / -1;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: 2rem;
+  }
+
+  .pedido-detalle:not(:has(.parte--periodos)) .pedido-partes > .parte:nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  /* Cada período, una barra vertical que se llena de abajo arriba, con el nombre y lo que llegó
+     debajo. Como en un gráfico, el tiempo avanza hacia la derecha: el más viejo a la izquierda y el
+     período en curso al final (la lista, en el código, va del actual hacia atrás). Las barras
+     comparten la base: miden lo mismo y van arriba de su columna. Los anteriores, plegados, siguen
+     en lista. El orden invierte los cuatro primeros: es el corte de la plantilla (vuelta.index < 4). */
+  .periodos:not(.periodos--lista) {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.625rem;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(1) {
+    order: 4;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(2) {
+    order: 3;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(3) {
+    order: 2;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(4) {
+    order: 1;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .necesidades .periodos:not(.periodos--lista) progress {
+    grid-column: 1;
+    grid-row: 1;
+    width: 1.75rem;
+    height: 8rem;
+    writing-mode: vertical-lr;
+    direction: rtl;
+  }
+
+  .periodos:not(.periodos--lista) .periodo-nombre {
+    grid-row: 2;
+  }
+
+  .periodos:not(.periodos--lista) .periodo-nombre b {
+    font-size: 0.9375rem;
+  }
+
+  .periodos:not(.periodos--lista) .periodo-cuanto {
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 0.875rem;
   }
 }

@@ -5,7 +5,9 @@
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
 > `/prototipo/raices/publico-legales`, y el pie que la enlaza desde todas las páginas. Sale de la
 > pregunta 18 del artifact de preguntas abiertas: enlace en el pie y aceptación al registrarse, con
-> constancia (usuario, 2026-11-02).
+> constancia (usuario, 2026-11-02). Sofía Deane pidió sumarlos al menú de la portada y a los
+> ajustes; el usuario los dejó como estaban: en el pie, al registrarse y en la constancia de Mi perfil
+> (review de Sofía, 2026-11-02).
 
 ## 1. Para quién y para qué
 
@@ -68,7 +70,8 @@ Sin desvíos de error: la página no pide datos.
 ```
 
 Secciones: qué es DonaTrack; tu cuenta (qué aceptás al registrarte); qué se ve de lo que donás (el
-nombre de quien dona, visible salvo que lo oculte en Mi perfil); fotos de las entregas (las sube la
+nombre de quien dona, visible salvo que lo oculte en Mi perfil o en una donación; oculto, la
+entidad ve su categoría en el ranking); fotos de las entregas (las sube la
 entidad; pueden mostrarse en la portada y en el mapa con la ubicación aproximada; el remito no se
 publica); tus datos (Ley 25.326: pedir verlos, corregirlos o borrarlos); contacto.
 

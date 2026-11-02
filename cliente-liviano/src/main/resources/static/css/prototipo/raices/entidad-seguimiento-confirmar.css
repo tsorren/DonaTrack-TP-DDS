@@ -231,8 +231,10 @@ main .etiqueta-titulo {
   font-size: 1.125rem;
 }
 
+/* Tan ancho como su botón y su texto, para quedar centrado en la zona (review de Sofía, 2026-11-02). */
 .campo--fotos input[type="file"] {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   border: 0;
   background: transparent;
 }
@@ -424,7 +426,8 @@ main .etiqueta-titulo {
 }
 
 /* En pantalla grande, dos columnas (A/B 1, usuario, 2026-11-01): a la izquierda, la etiqueta y el
-   último tramo, quietos mientras se baja; a la derecha, el formulario. */
+   último tramo, quietos mientras se baja; a la derecha, el formulario. Desde la review de Sofía
+   (2026-11-02), solo en Recepción confirmada: el acta por completar va en dos filas (abajo). */
 @media (min-width: 68.75em) {
   .confirmar {
     max-width: 68rem;
@@ -447,5 +450,39 @@ main .etiqueta-titulo {
 
   .confirmada .acta-formulario {
     order: 0;
+  }
+
+  /* El acta por completar, en dos filas de dos columnas (A/B de la review de Sofía, 2026-11-02):
+     arriba, la etiqueta y el último tramo lado a lado; abajo, las pruebas a la izquierda y lo que
+     recibiste con la firma a la derecha. Recepción confirmada sigue en las dos columnas de arriba. */
+  .acta:has(> form.acta-formulario) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .acta:has(> form.acta-formulario) > .acta-entrega {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3rem;
+  }
+
+  form.acta-formulario {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 3rem;
+    align-items: start;
+  }
+
+  form.acta-formulario > .obligatorios {
+    grid-column: 1 / -1;
+  }
+
+  form.acta-formulario > .grupo:first-of-type {
+    grid-column: 1;
+    grid-row: span 2;
+  }
+
+  form.acta-formulario > :is(.grupo:last-of-type, .firma) {
+    grid-column: 2;
   }
 }

@@ -99,7 +99,7 @@
     <div th:if="${escenario == ''}" class="seguimiento-cuerpo">
       <!--/* El dibujo, fijo para las tres entregas en curso del ejemplo (A/B 2, red radial en espejo,
              como la de la portada): el brote, al centro; de la estación del depósito salen las líneas
-             de subte con codos a 45°, una a cada lado y una hacia abajo, hasta la estación de su
+             de subte con codos a 45° redondeados (A/B de las líneas, review de Sofía, 2026-11-02), una a cada lado y una hacia abajo, hasta la estación de su
              entidad, numeradas de izquierda a derecha en el orden de la lista. Lo recorrido, impreso
              (paja con borde); lo que falta, hueco: todavía no se imprimió. El sello de estado es la
              estación donde está la entrega: 1 lentejas (en camino, el camión), 2 útiles (con
@@ -120,8 +120,8 @@
           <g class="linea linea--1">
             <path class="subte-hueco" d="M110 251V300"/>
             <path class="subte-hueco-centro" d="M110 251V300"/>
-            <path class="subte-borde" d="M360 110H190L110 190V215"/>
-            <path class="subte-linea" d="M360 110H190L110 190V215"/>
+            <path class="subte-borde" d="M360 110H214Q190 110 173 127L127 173Q110 190 110 214V215"/>
+            <path class="subte-linea" d="M360 110H214Q190 110 173 127L127 173Q110 190 110 214V215"/>
             <g class="camion" transform="translate(110 233)">
               <circle r="18"/>
               <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
@@ -151,8 +151,8 @@
           </g>
           <!--/* 3, Leche en polvo: pendiente, toda hueca; espera en la salida del depósito. */-->
           <g class="linea linea--3">
-            <path class="subte-hueco" d="M360 110H530L610 190V300"/>
-            <path class="subte-hueco-centro" d="M360 110H530L610 190V300"/>
+            <path class="subte-hueco" d="M360 110H506Q530 110 547 127L593 173Q610 190 610 214V300"/>
+            <path class="subte-hueco-centro" d="M360 110H506Q530 110 547 127L593 173Q610 190 610 214V300"/>
             <g transform="translate(450 110)">
               <circle class="sello-contorno sello-contorno--punteado" r="12"/>
             </g>

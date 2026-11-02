@@ -1,6 +1,8 @@
 # Flujo: Seguir entregas del donante, en Raíces
 
 > **Estado:** aprobado · **Fecha:** 2026-11-01 · **Aprobó:** usuario (2026-11-01)
+> **Ajustada:** 2026-11-02, con la review de Sofía Deane: los codos de las líneas, redondeados
+> (bitácora, "Las líneas de subte, con los codos redondeados").
 > Plantilla de la skill `ux-flujo`. Es la segunda pantalla de Raíces, la tercera alternativa en
 > exploración, y la primera privada. Vive en su prototipo propio
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
@@ -263,7 +265,9 @@ Partes que se deciden con A/B, en este orden:
    al centro y sale una línea de subte por entrega, con codos a 45°. Lo recorrido va impreso y lo
    que falta, hueco. El sello de estado es la estación donde está la entrega, y cada entidad, una
    estación con su número y su nombre debajo (bitácora, "Una red radial de subte, con el brote al
-   centro").
+   centro"). **Ajustado (usuario, 2026-11-02, review de Sofía):** los codos a 45°, redondeados,
+   también en la red de la portada y en la raíz de Recepción confirmada (A, la recomendada, contra
+   raíces curvas sin codos).
 3. La lista y su relación con el dibujo. **Decidido (usuario, 2026-11-01):** en pantalla grande,
    el dibujo arriba, más grande y con los nombres legibles, y debajo una tarjeta por entrega, con
    el mismo número (patrón: tarjetas). En el celular, lo mismo en una columna. Al pasar o enfocar

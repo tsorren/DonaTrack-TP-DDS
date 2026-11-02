@@ -20,6 +20,7 @@
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'publicada', 'publicar-error',
          'cambiada' o 'baja'.
        - publicar(conError): el formulario para publicar, plegado arriba de la lista.
+       - periodo(p, max): un período de la historia, con su barra.
        - sello(tono): el sello de una entrega. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'entidad-necesidades', ~{::contenido})}">
@@ -41,14 +42,14 @@
              sinAceite=${accion == 'baja' or escenario == 'ya-no-vigente'},
              todas=${ {
       {clave: 'aceite', nombre: 'Aceite de girasol', categoria: 'cat-alimentos', unidad: 'litros',
-       cuanto: '20 litros · hasta el 20 de octubre', faltan: 'faltan 5 días', repite: 'Una sola vez',
-       recibido: 'Todavía no llegó nada', valor: 0, max: 20, motivo: 'Para cocinar el almuerzo.',
+       plazo: 'Hasta el 20 de octubre', faltan: 'faltan 5 días', repite: 'Una sola vez',
+       recibido: '0 de 20 litros recibidos', valor: 0, max: 20, motivo: 'Para cocinar el almuerzo.',
        puerta: 0, camino: 0, problema: 1,
        entregas: { {cuanto: '10 litros', tono: 'con-problema',
                     texto: 'El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.'} },
        donaron: {}, periodos: {}},
       {clave: 'leche', nombre: 'Leche en polvo', categoria: 'cat-alimentos', unidad: 'unidades',
-       cuanto: '24 unidades · hasta el 25 de octubre', faltan: 'faltan 10 días', repite: 'Una sola vez',
+       plazo: 'Hasta el 25 de octubre', faltan: 'faltan 10 días', repite: 'Una sola vez',
        recibido: '12 de 24 unidades recibidas', valor: 12, max: 24,
        motivo: 'Para la merienda de los más chicos.', puerta: 0, camino: 1, problema: 0,
        entregas: { {cuanto: '12 unidades', tono: 'pendiente',
@@ -56,24 +57,28 @@
        donaron: { {quien: 'Lácteos Ejemplo SA', cuanto: '12 unidades', cuando: '6 de octubre'} },
        periodos: {}},
       {clave: 'fideos', nombre: 'Fideos secos', categoria: 'cat-alimentos', unidad: 'kg',
-       cuanto: '30 kg · hasta el 30 de octubre', faltan: 'faltan 15 días', repite: 'Una sola vez',
-       recibido: 'Todavía no llegó nada', valor: 0, max: 30,
+       plazo: 'Hasta el 30 de octubre', faltan: 'faltan 15 días', repite: 'Una sola vez',
+       recibido: '0 de 30 kg recibidos', valor: 0, max: 30,
        motivo: 'Para la cena de los viernes.', puerta: 0, camino: 0, problema: 0,
        entregas: {}, donaron: {}, periodos: {}},
       {clave: 'lentejas', nombre: 'Lentejas secas', categoria: 'cat-alimentos', unidad: 'kg',
-       cuanto: '40 kg por mes · octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
-       recibido: '10 de 40 kg recibidos', valor: 10, max: 40,
+       plazo: 'Octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
+       recibido: (accion == 'cambiada' ? '10 de 45 kg recibidos' : '10 de 40 kg recibidos'), valor: 10,
+       max: (accion == 'cambiada' ? 45 : 40),
+       cambio: (accion == 'cambiada' ? 'Hoy pasó de 40 a 45 kg por mes. Vale desde octubre: lo que ya llegó cuenta.' : null),
+       cambiada: (accion == 'cambiada' ? 'Cambiada hoy' : null),
        motivo: 'Para el almuerzo de lunes a viernes.', puerta: 1, camino: 0, problema: 0,
        entregas: { {cuanto: '15 kg', tono: 'puerta', confirmar: 'lentejas',
                     texto: 'Llegaron a tu puerta hoy a las 18:20 y esperan tu confirmación.'} },
        donaron: { {quien: 'Distribuidora Ejemplo SA', cuanto: '10 kg', cuando: '10 de octubre'} },
-       desde: 'Desde julio de 2026',
-       periodos: { {nombre: 'Octubre', fechas: 'del 1 al 31', recibido: '10 de 40 kg', tono: 'curso', estado: 'En curso', valor: 10},
-                   {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40},
-                   {nombre: 'Agosto', recibido: '22 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 22},
-                   {nombre: 'Julio', recibido: '0 de 40 kg', tono: 'nada', estado: 'No llegó nada', valor: 0} }},
+       desde: 'Desde junio de 2026',
+       periodos: { {nombre: 'Octubre', fechas: 'del 1 al 31', recibido: (accion == 'cambiada' ? '10 de 45 kg' : '10 de 40 kg'), tono: 'curso', estado: 'En curso', valor: 10},
+                   {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40, max: 40},
+                   {nombre: 'Agosto', recibido: '22 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 22, max: 40},
+                   {nombre: 'Julio', recibido: '0 de 40 kg', tono: 'nada', estado: 'No llegó nada', valor: 0, max: 40},
+                   {nombre: 'Junio', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40, max: 40} }},
       {clave: 'arroz', nombre: 'Arroz', categoria: 'cat-alimentos', unidad: 'kg',
-       cuanto: '40 kg por mes · octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
+       plazo: 'Octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
        recibido: '15 de 40 kg recibidos', valor: 15, max: 40,
        motivo: 'Para el almuerzo de lunes a viernes.', puerta: 0, camino: 1, problema: 0,
        entregas: { {cuanto: '20 kg', tono: 'en-camino',
@@ -82,16 +87,16 @@
                   {quien: 'Martina Ruiz', cuanto: '5 kg', cuando: '9 de octubre'} },
        desde: 'Desde agosto de 2026',
        periodos: { {nombre: 'Octubre', fechas: 'del 1 al 31', recibido: '15 de 40 kg', tono: 'curso', estado: 'En curso', valor: 15},
-                   {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40},
+                   {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40, max: 40},
                    {nombre: 'Agosto', recibido: '31 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 31} }},
       {clave: 'ropa', nombre: 'Ropa de abrigo', categoria: 'cat-ropa', unidad: 'unidades',
-       cuanto: '30 unidades · hasta el 15 de noviembre', faltan: 'falta un mes', repite: 'Una sola vez',
+       plazo: 'Hasta el 15 de noviembre', faltan: 'falta un mes', repite: 'Una sola vez',
        recibido: '5 de 30 unidades recibidas', valor: 5, max: 30,
        motivo: 'Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre.',
        puerta: 1, camino: 0, problema: 0,
        entregas: { {cuanto: '10 unidades', tono: 'puerta', confirmar: 'ropa',
                     texto: 'Llegaron a tu puerta ayer a las 17:10 y esperan tu confirmación.'} },
-       donaron: { {quien: null, cuanto: '5 unidades', cuando: '8 de octubre'} },
+       donaron: { {quien: null, categoriaDonante: 'Sostenedor', cuanto: '5 unidades', cuando: '8 de octubre'} },
        periodos: {}} } },
              vigentes=${escenario == 'vacio' ? {} : todas.?[(clave != 'fideos' or #root.mostrarNueva) and (clave != 'aceite' or !#root.sinAceite)]},
              pedida=${param.necesidad != null ? param.necesidad[0] : (mostrarNueva ? 'fideos' : (escenario == 'error-baja' ? 'aceite' : 'lentejas'))},
@@ -210,19 +215,26 @@
               <span class="pedido-que">
                 <b th:text="${n.nombre}">Lentejas secas</b>
                 <span th:if="${mostrarNueva and n.clave == 'fideos'}" class="pedido-marca">Nueva</span>
+                <span th:if="${n['cambiada']}" class="pedido-marca" th:text="${n.cambiada}">Cambiada hoy</span>
                 <span class="pedido-repite" th:text="${n.repite}">Cada mes</span>
               </span>
-              <span class="pedido-cuanto"><span
-                  th:text="${escenario == 'conflicto' and n.clave == pedida} ? '45 kg por mes · octubre, hasta el 31' : ${n.cuanto}">40 kg por mes · octubre, hasta el
-                31</span> <small th:text="|(${n.faltan})|">(faltan 16 días)</small></span>
-              <span class="pedido-va">
-                <span th:text="${n.recibido}">10 de 40 kg recibidos</span>
-                <progress th:value="${n.valor}" th:max="${n.max}" value="10" max="40"
+              <!--/* Cuánto pide va una sola vez, en la barra («10 de 40 kg»); acá, solo hasta cuándo
+                     (review de Sofía, 2026-11-02). */-->
+              <span class="pedido-cuanto"><span th:text="${n.plazo}">Octubre, hasta el 31</span>
+                <small th:text="|(${n.faltan})|">(faltan 16 días)</small></span>
+              <span class="pedido-va"
+                    th:with="otra=${escenario == 'conflicto' and n.clave == pedida}">
+                <span th:text="${otra} ? '10 de 45 kg recibidos' : ${n.recibido}">10 de 40 kg recibidos</span>
+                <progress th:value="${n.valor}" th:max="${otra} ? 45 : ${n.max}" value="10" max="40"
                           aria-hidden="true"></progress>
               </span>
             </summary>
 
             <div class="pedido-detalle">
+              <!--/* El cartel del cambio de cantidad, para quienes administran la necesidad, hasta que
+                     termina el período en curso (review de Sofía, 2026-11-02). */-->
+              <p th:if="${n['cambio']}" class="cambio" th:text="${n.cambio}">Hoy pasó de 40 a 45 kg por
+                mes. Vale desde octubre: lo que ya llegó cuenta.</p>
               <div class="pedido-partes">
                 <section class="parte" th:aria-labelledby="|${n.clave}-porque|">
                   <h3 th:id="|${n.clave}-porque|">Por qué hace falta</h3>
@@ -252,8 +264,12 @@
                   <h3 th:id="|${n.clave}-donaron|">Quién donó</h3>
                   <p th:if="${#lists.isEmpty(n.donaron)}">Todavía no llegó nada.</p>
                   <ul th:unless="${#lists.isEmpty(n.donaron)}" class="donaron" role="list">
+                    <!--/* Con el nombre oculto, la categoría del ranking; si no llega
+                           (?escenario=sin-categoria), «Un donante» o «Una empresa donante». */-->
                     <li th:each="d : ${n.donaron}"
-                        th:text="|${d.quien ?: (d['tipo'] == 'empresa' ? 'Una empresa que prefiere no mostrar su nombre' : 'Una persona que prefiere no mostrar su nombre')} · ${d.cuanto} · ${d.cuando}|">Distribuidora
+                        th:with="cat=${escenario == 'sin-categoria' ? null : d['categoriaDonante']},
+                                 empresa=${d['tipo'] == 'empresa'}"
+                        th:text="|${d.quien ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)} · ${d.cuanto} · ${d.cuando}|">Distribuidora
                       Ejemplo SA · 10 kg · 10 de octubre</li>
                   </ul>
                 </section>
@@ -265,18 +281,23 @@
               <section th:unless="${#lists.isEmpty(n.periodos)}" class="parte parte--periodos"
                        th:aria-labelledby="|${n.clave}-periodos|">
                 <h3 th:id="|${n.clave}-periodos|" th:text="${n.repite}">Cada mes</h3>
+                <!--/* A la vista, los cuatro últimos; los anteriores, plegados (review de Sofía,
+                       2026-11-02: con más barras, los nombres no entran en el gráfico). El 4 se
+                       repite en el orden del gráfico de entidad-necesidades.css (nth-child 1 a 4). */-->
                 <ol class="periodos" role="list" th:aria-label="|Períodos de ${n.nombre}|">
-                  <li th:each="p : ${n.periodos}" class="periodo"
-                      th:classappend="|periodo--${p.tono}|"
-                      th:aria-current="${p.tono == 'curso'} ? 'true' : null">
-                    <span class="periodo-nombre"><b th:text="${p.nombre}">Octubre</b>
-                      <span th:if="${p['fechas']}" th:text="${p.fechas}">del 1 al 31</span></span>
-                    <span class="periodo-cuanto" th:text="|${p.recibido} · ${p.estado}|">10 de 40 kg ·
-                      En curso</span>
-                    <progress th:value="${p.valor}" th:max="${n.max}" value="10" max="40"
-                              aria-hidden="true"></progress>
-                  </li>
+                  <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index < 4}">
+                    <li th:replace="~{:: periodo(${p}, ${p['max'] ?: n.max})}"></li>
+                  </th:block>
                 </ol>
+                <details th:if="${#lists.size(n.periodos) > 4}" class="periodos-anteriores">
+                  <summary class="enlace">Ver los anteriores</summary>
+                  <ol class="periodos periodos--lista" role="list"
+                      th:aria-label="|Períodos anteriores de ${n.nombre}|">
+                    <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index >= 4}">
+                      <li th:replace="~{:: periodo(${p}, ${p['max'] ?: n.max})}"></li>
+                    </th:block>
+                  </ol>
+                </details>
                 <p class="periodos-desde" th:text="${n.desde}">Desde julio de 2026</p>
               </section>
 
@@ -327,7 +348,7 @@
                           en kg. Por ejemplo: 40.</p>
                         <input th:id="|${n.clave}-cuanto|" name="cuanto" type="number" min="1"
                                inputmode="numeric" required
-                               th:value="${conError} ? '' : (${escenario == 'conflicto' and n.clave == pedida} ? '50' : ${#strings.substringBefore(n.cuanto, ' ')})"
+                               th:value="${conError} ? '' : (${escenario == 'conflicto' and n.clave == pedida} ? '50' : ${n.max})"
                                th:attr="aria-describedby=${conError} ? |${n.clave}-cuanto-error ${n.clave}-cuanto-ayuda| : |${n.clave}-cuanto-ayuda|,aria-invalid=${conError} ? 'true' : null">
                       </div>
                     </th:block>
@@ -505,6 +526,16 @@
     <button class="boton boton--principal" type="submit">Publicar necesidad</button>
   </form>
 </details>
+
+<!--/* Un período: su nombre (y sus fechas), lo que llegó con el estado en palabras y la barra, que
+       es decorativa. max es el objetivo de ese período. */-->
+<li th:fragment="periodo(p, max)" class="periodo" th:classappend="|periodo--${p.tono}|"
+    th:aria-current="${p.tono == 'curso'} ? 'true' : null">
+  <span class="periodo-nombre"><b th:text="${p.nombre}">Octubre</b>
+    <span th:if="${p['fechas']}" th:text="${p.fechas}">del 1 al 31</span></span>
+  <span class="periodo-cuanto" th:text="|${p.recibido} · ${p.estado}|">10 de 40 kg · En curso</span>
+  <progress th:value="${p.valor}" th:max="${max}" value="10" max="40" aria-hidden="true"></progress>
+</li>
 
 <!--/* El sello de una entrega (en tu puerta, en camino, por salir, con un problema): decorativo, el
        texto dice lo mismo. */-->

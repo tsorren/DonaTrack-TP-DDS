@@ -145,7 +145,7 @@ class PrototipoControllerTest {
         .andExpect(content().string(containsString("name=\"fotos\"")));
     mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa"))
         .andExpect(content().string(containsString("Donó</dt>")))
-        .andExpect(content().string(containsString("Una persona")));
+        .andExpect(content().string(containsString("Donante Sostenedor")));
     mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?entrega=pan"))
         .andExpect(content().string(containsString("No encontramos esa entrega")));
     mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?escenario=confirmada"))
@@ -223,7 +223,10 @@ class PrototipoControllerTest {
         .andExpect(content().string(containsString("Publicamos tu necesidad.")))
         .andExpect(content().string(containsString("pedido--nuevo")));
     mvc.perform(get("/prototipo/raices/entidad-necesidades-cambiada"))
-        .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")));
+        .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")))
+        .andExpect(content().string(containsString("Cambiada hoy")))
+        .andExpect(content().string(containsString("Hoy pasó de 40 a 45 kg por mes.")))
+        .andExpect(content().string(containsString("10 de 45 kg recibidos")));
   }
 
   @Test
@@ -238,8 +241,19 @@ class PrototipoControllerTest {
     mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=leche"))
         .andExpect(content().string(containsString("1 entrega todavía no salió")));
     mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=ropa"))
-        .andExpect(
-            content().string(containsString("Una persona que prefiere no mostrar su nombre")));
+        .andExpect(content().string(containsString("Donante Sostenedor · 5 unidades")))
+        .andExpect(content().string(containsString("Ver los anteriores")))
+        .andExpect(content().string(containsString("0 de 20 litros recibidos")))
+        .andExpect(content().string(containsString("Hasta el 20 de octubre")))
+        .andExpect(content().string(not(containsString("20 litros · hasta"))))
+        .andExpect(content().string(containsString("Desde junio de 2026")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=ropa&escenario=sin-categoria"))
+        .andExpect(content().string(containsString("Un donante · 5 unidades")))
+        .andExpect(content().string(not(containsString("null"))));
+    mvc.perform(
+            get(
+                "/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa&escenario=sin-categoria"))
+        .andExpect(content().string(containsString("Un donante")));
     mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa"))
         .andExpect(content().string(containsString("Ropa · 10 unidades")))
         .andExpect(content().string(not(containsString("bultos"))));
@@ -308,15 +322,22 @@ class PrototipoControllerTest {
     mvc.perform(post("/prototipo/raices/donante-perfil-guardado").param("mostrar", "no"))
         .andExpect(redirectedUrl("/prototipo/raices/donante-perfil-guardado"));
     mvc.perform(get("/prototipo/raices/donante-perfil-guardado"))
-        .andExpect(content().string(containsString("Las entidades ya no ven tu nombre")));
+        .andExpect(content().string(containsString("Las entidades ya no ven tu nombre")))
+        .andExpect(content().string(containsString("ven «Empresa donante · Sostenedor»")))
+        .andExpect(content().string(containsString("la entidad ve tu categoría como donante")));
     mvc.perform(get("/prototipo/raices/donante-perfil-guardado?mostrar=si"))
         .andExpect(content().string(containsString("Las entidades ven tu nombre")));
     mvc.perform(get("/prototipo/raices/publico-legales"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Versión 1, vigente desde")))
-        .andExpect(content().string(containsString("texto de ejemplo")));
+        .andExpect(content().string(containsString("texto de ejemplo")))
+        .andExpect(content().string(containsString("o solo en una donación al registrarla")))
+        .andExpect(content().string(containsString("«Donante Sostenedor»")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-sellada-ropa?escenario=sin-categoria"))
+        .andExpect(content().string(containsString("Un donante")));
     mvc.perform(get("/prototipo/raices/publico-portada"))
-        .andExpect(content().string(containsString("href=\"/prototipo/raices/publico-legales\"")));
+        .andExpect(content().string(containsString("href=\"/prototipo/raices/publico-legales\"")))
+        .andExpect(content().string(containsString("id=\"pausar-movimiento\"")));
   }
 
   @Test

@@ -52,8 +52,8 @@
           <path class="dibujo-tallo" d="M80 70V38"/>
           <path class="dibujo-hoja" d="M80 52C66 52 58 42 58 32C72 32 80 42 80 52ZM80 44C92 44 102 36 102 26C88 26 80 34 80 44Z"/>
           <text class="dibujo-rotulo dibujo-rotulo--papel" x="112" y="60">Depósito Central</text>
-          <path class="subte-borde" pathLength="1" d="M80 72V110L120 150H600"/>
-          <path class="subte-linea ciclo-trazo" pathLength="1" d="M80 72V110L120 150H600"/>
+          <path class="subte-borde" pathLength="1" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
+          <path class="subte-linea ciclo-trazo" pathLength="1" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
           <g transform="translate(260 150)"><circle class="sello-hecho" r="10"/><path class="sello-calado sello-calado--fino" d="M-4 0.5L-1 3.5L4.5 -3"/></g>
           <g transform="translate(430 150)"><circle class="sello-hecho" r="10"/><path class="sello-calado sello-calado--fino" d="M-4 0.5L-1 3.5L4.5 -3"/></g>
           <g class="ciclo-entidad" transform="translate(620 150)">
@@ -82,7 +82,9 @@
               </div>
               <div>
                 <dt>Donó</dt>
-                <dd th:text="${e.dono ?: (e['donoTipo'] == 'empresa' ? 'Una empresa que prefiere no mostrar su nombre' : 'Una persona que prefiere no mostrar su nombre')}">Distribuidora Ejemplo SA</dd>
+                <dd th:with="cat=${escenario == 'sin-categoria' ? null : e['donoCategoria']},
+                            empresa=${e['donoTipo'] == 'empresa'}"
+                    th:text="${e.dono ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)}">Distribuidora Ejemplo SA</dd>
               </div>
               <div>
                 <dt>Desde</dt>

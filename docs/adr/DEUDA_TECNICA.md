@@ -469,7 +469,7 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 2. **`version`** en la salida y en el `PUT` (`409` si no coincide).
 3. **`fechaLimite`** obligatoria en las extraordinarias. **Incompatible.**
 4. **`periodicidad`** (`SEMANAL`, `QUINCENAL`, `MENSUAL`) obligatoria en las recurrentes; `fechaFin` deprecado como entrada. **Incompatible.**
-5. **Cambio de cantidad** en el período en curso, que queda cumplido si lo recibido ya alcanza.
+5. **Cambio de cantidad** en el período en curso, que queda cumplido si lo recibido ya alcanza, y `ultimoCambio` (`cantidadAnterior`, `fecha`) en la salida mientras dure ese período, para el cartel de la entidad (review de Sofía, 2026-11-02).
 6. **`GET /api/necesidades/{id}/periodos`** (objetivo, asignado, recibido y resultado) y `GET /donaciones-independientes?necesidadId=`.
 7. **`unidad`** en la subcategoría (hereda la de la categoría) y de solo lectura en la necesidad.
 
@@ -512,6 +512,8 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`.
 3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Incompatible.**
 4. **Texto de los legales:** lo escribe el equipo.
+5. **`mostrarNombre` en la donación** (opcional; solo oculta) para "Esta vez, sin mi nombre" al registrarla (review de Sofía, 2026-11-02).
+6. **Categoría del ranking** con el nombre oculto (en el prototipo, dato fijo de la maqueta; `cliente-liviano` no tiene todavía un cliente de Incentivos): el cliente liviano la pide a Incentivos (`GET /api/incentivos/donantes/{donanteId}`, `DonantePerfilDTO.categoria`) con el `donanteId`, que `QuienDonoDTO` suma también con el nombre oculto; el cliente liviano lo usa en el servidor y a la entidad le muestra solo la categoría, nunca el id. Falta decidir con qué credencial lo pide el cliente liviano (`[INFERRED]` el perfil de incentivos es del propio donante, no de la entidad).
 
 Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de-usuarios.md): ocultar el nombre no reemplaza la anonimización.
 

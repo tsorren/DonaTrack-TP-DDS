@@ -4,6 +4,9 @@
 > Orden: el contenido lo decidió el usuario en una ronda de preguntas antes de construir; la
 > aprobación formal llegó después de los A/B, a pedido suyo ("primero los A/B"), como en Seguir
 > entregas.
+> **Ajustada:** 2026-11-02, con la review de Sofía Deane (el acta en dos filas de dos columnas, el
+> botón de las fotos centrado y la categoría del ranking con el nombre oculto; bitácora, "La review
+> de la diseñadora, decidida").
 > Plantilla de la skill `ux-flujo`. Es la tercera pantalla de Raíces, la tercera alternativa en
 > exploración, y la primera de la entidad. Vive en su prototipo propio
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
@@ -123,8 +126,10 @@ celular, el dispositivo principal:
 - **La etiqueta de la entrega:** la categoría con su pictograma (el del cuaderno de la portada),
   cuánto salió, en la unidad del catálogo, la necesidad que cubre con cuánto va recibido, y quién donó
   (decisiones del usuario, 2026-11-01). El nombre se ve, sea empresa o persona; si quien donó lo
-  ocultó en su perfil: "Donó: Una persona que prefiere no mostrar su nombre" (o "Una empresa…", si es una empresa) (usuario, 2026-11-02;
-  antes, "Donó: Una persona").
+  ocultó en su perfil o en esa donación, su categoría en el ranking: "Donó: Donante Sostenedor" (o
+  "Empresa donante · Sostenedor") (review de Sofía, 2026-11-02; antes, "Una persona que prefiere no
+  mostrar su nombre" y, al principio, "Donó: Una persona"). Si la categoría no llega, "Donó: Un
+  donante" (o "Una empresa donante"); se ve con `?escenario=sin-categoria`.
 - **El último tramo:** la raíz de esta entrega, de arriba abajo: los dos pasos cumplidos con el
   sello impreso y el de la confirmación hueco, porque todavía no pasó. Es la imagen de raíz de la
   pantalla.
@@ -137,8 +142,10 @@ celular, el dispositivo principal:
   estación de tu entidad, con su sello y la hora. Debajo, lo que quedó asentado (remito, quién y
   cuándo), cómo va la necesidad ("25 de 40 kg recibidos") y que le avisamos a quien donó. Después, la otra entrega que espera en la puerta, si hay, y las salidas.
 
-En pantalla grande, dos columnas: la etiqueta y el último tramo a la izquierda, quietos mientras se
-baja, y el formulario a la derecha (A/B 1).
+En pantalla grande, el acta va en dos filas de dos columnas: arriba, la etiqueta y el último tramo
+lado a lado; abajo, las pruebas a la izquierda y lo que recibiste con el pie a la derecha (review
+de Sofía, 2026-11-02; antes, A/B 1: la etiqueta y el tramo a la izquierda, quietos mientras se
+baja). Recepción confirmada sigue en dos columnas. El botón de las fotos va centrado en su zona.
 
 Qué cambia respecto del boceto de E1, y por qué:
 
@@ -168,6 +175,7 @@ En la maqueta, `?entrega=lentejas` (de partida) o `ropa`, y `?escenario=lento`, 
 | Acta | Cargando | Al enviar: el botón dice "Confirmando…" y no se puede volver a tocar; arriba, un aviso | "Subiendo las fotos y confirmando la entrega…" (en el sistema, en la región `#avisos`) |
 | Acta | Éxito | La pantalla Recepción confirmada | Ver Textos |
 | Acta | Error de datos | El acta con un resumen arriba (con foco), un enlace a cada campo y el error al lado del campo; lo escrito sigue. En la maqueta, dos errores: la foto pesada y el remito | Resumen: "Revisá dos cosas antes de confirmar" (o "una cosa", "tres cosas"). Por campo: "Falta al menos una foto de lo que llegó." · "lentejas-1.jpg pesa más de 5 MB. Probá con una más liviana." · "lentejas-1.pdf no es una foto. Elegí una JPG o PNG." · "Falta el número de remito." (la ayuda "Está arriba a la derecha del papel." sigue a la vista, debajo del rótulo) Junto a las fotos, siempre: "Por seguridad, el navegador no guarda las fotos: volvé a elegirlas." |
+| Acta | Sin categoría | Quien donó ocultó su nombre y la categoría no llegó (`?escenario=sin-categoria`): la etiqueta como siempre | "Donó: Un donante" (o "Una empresa donante") |
 | Acta | Error del servidor | Un aviso de error arriba del formulario, que sigue como estaba | "No pudimos confirmar la entrega." · "Es un problema nuestro: la entrega sigue esperando tu confirmación y quien donó no recibió ningún aviso. Volvé a elegir las fotos y probá de nuevo en unos minutos; si sigue, escribinos con este código." ("escribinos con este código" lleva a Contacto con el código ya escrito) · el código (`a1b2c3d4e5f6`) · "Volver a intentar" |
 | Acta | Sin conexión | Con JavaScript, un aviso arriba del formulario; sin JavaScript, la página de error del navegador | "No sabemos si la confirmación llegó." · "Se cortó la conexión mientras se enviaba. Revisá la señal y fijate en Seguir entregas si ya aparece confirmada antes de repetirla." · "Ir a Seguir entregas" |
 | Acta | Sin permiso | Igual que Vacío: no se dice de quién es la entrega | — |
@@ -187,7 +195,7 @@ publicadas de Cozy (lentejas: 10 de 40 kg; ropa: 5 de 30 unidades, en la unidad 
 | Rótulo y vuelta | "Seguir entregas" (enlace) | El nombre del menú; la vuelta, arriba |
 | Título | "Confirmá lo que *llegó*" | La entidad hace (tono). La parte en cursiva, con la segunda tinta, como los títulos de Raíces |
 | Bajada | "Lentejas secas, 15 kg. Llegó hoy a las 18:20." | Qué entrega y cuándo llegó: no equivocarse de entrega |
-| Etiqueta | "Alimentos · 15 kg" · "Para tu pedido": "Lentejas secas, 40 kg, hasta el 31 de octubre. Van 10 kg recibidos." · "Donó": "Distribuidora Ejemplo SA" · "Desde": "Depósito Central" | Ropa: "Ropa · 10 unidades" · "Ropa de abrigo, 30 unidades, hasta el 15 de noviembre. Van 5 unidades recibidas." · "Donó": "Una persona que prefiere no mostrar su nombre". En el estado ya confirmada, sin la cifra recibida, que ya cambió |
+| Etiqueta | "Alimentos · 15 kg" · "Para tu pedido": "Lentejas secas, 40 kg, hasta el 31 de octubre. Van 10 kg recibidos." · "Donó": "Distribuidora Ejemplo SA" · "Desde": "Depósito Central" | Ropa: "Ropa · 10 unidades" · "Ropa de abrigo, 30 unidades, hasta el 15 de noviembre. Van 5 unidades recibidas." · "Donó": "Donante Sostenedor" (sin categoría: "Un donante"). En el estado ya confirmada, sin la cifra recibida, que ya cambió |
 | El último tramo | "Salió del Depósito Central" · "Hoy, 14:30" · "Llegó a tu puerta" · "Hoy, 18:20" · "Tu confirmación" · "Falta: es este paso" | Los de Cozy; lo pendiente se dice pendiente |
 | Las pruebas | "Fotos de lo que llegó" · ayuda: "Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB cada una. Mostrá lo que llegó; no hace falta que salga nadie." | La ayuda de Cozy más la guía de fotos del tono común |
 | Quién ve tus fotos | "Distribuidora Ejemplo SA va a ver tus fotos y la fecha de hoy. Una foto puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada. El remito no se publica." | Ropa: "Quien donó va a ver tus fotos…", igual. Dice para qué se usa la foto (usuario, 2026-11-01; RF-01, RF-02 y RNF-PRIV-01) |
@@ -295,6 +303,9 @@ Partes que se deciden con A/B, en este orden:
 1. La composición del acta en pantalla grande. **Decidido (usuario, 2026-11-01):** dos columnas:
    la etiqueta y el último tramo a la izquierda, quietos mientras se baja, y el formulario a la
    derecha; en el celular, una columna (bitácora, "El acta en dos columnas en pantalla grande").
+   **Cambiado (usuario, 2026-11-02, review de Sofía):** en Confirmar recepción, dos filas de dos
+   columnas (A, la recomendada, contra dejarlo como estaba; bitácora, "El acta en dos filas de dos
+   columnas"). Recepción confirmada no cambia.
 2. Cómo se eligen las fotos. **Decidido (usuario, 2026-11-01):** una zona de carga grande, un
    recuadro punteado con la cámara al centro, con el campo nativo (bitácora, "Las fotos, en una
    zona de carga grande").
@@ -310,7 +321,8 @@ preguntas abiertas; bitácora, "Las preguntas abiertas de Raíces, decididas"):
   unidad del catálogo ([ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md),
   `proposed`; [DTI-29](../../adr/DEUDA_TECNICA.md#dti-29)).
 - La entidad ve el nombre de quien donó, sea empresa o persona, salvo que lo haya ocultado en su
-  perfil: "Donó: Una persona que prefiere no mostrar su nombre" (o "Una empresa…") ([ADR del nombre visible](../../adr/20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md),
+  perfil o en esa donación: entonces, su categoría en el ranking, "Donó: Donante Sostenedor" (o
+  "Empresa donante · Sostenedor") ([ADR del nombre visible](../../adr/20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md),
   `proposed`; [Mi perfil](raices-mi-perfil.md)).
 - Si la entrega llegó incompleta o dañada, se confirma igual y se reporta. `NO_RECIBIDA` sigue
   siendo "no llegó". La nota del botón lo dice; la pantalla del reporte se diseña aparte.

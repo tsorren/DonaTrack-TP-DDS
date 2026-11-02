@@ -9,6 +9,9 @@
 > el usuario el 2026-11-02. La ficha que las planteó es
 > [Necesidades de la entidad](../../interfaz/flujos/raices-necesidades.md), RF-10. Deuda asociada:
 > [DTI-30](../DEUDA_TECNICA.md#dti-30). No se toca código en esta tarea.
+>
+> **Ajuste del 2026-11-02 (review de Sofía Deane, la diseñadora del grupo):** el cambio de cantidad
+> (punto 5) suma un aviso para quienes administran la necesidad. La regla no cambia.
 
 ## Contexto y Problema
 
@@ -137,7 +140,11 @@ por el usuario el 2026-11-02.
    devolviendo como fin del período en curso.
 5. **Cambio de cantidad (12).** `PUT` con otra `cantidadNecesitada`, en una recurrente, cambia
    también el objetivo del período en curso. Si lo recibido en ese período ya alcanza el nuevo
-   objetivo, el período queda cumplido. Los períodos cerrados no cambian.
+   objetivo, el período queda cumplido. Los períodos cerrados no cambian. Mientras dure el período
+   en curso, la salida de `NecesidadDTO` devuelve `ultimoCambio` (`cantidadAnterior` y `fecha`), y
+   la pantalla de la entidad muestra el cartel "Hoy pasó de 40 a 45 kg por mes. Vale desde octubre:
+   lo que ya llegó cuenta." Sofía votó que valga desde el próximo período, con el cartel; el
+   usuario mantuvo el período en curso y sumó el cartel (2026-11-02).
 6. **Historia (8).** `GET /api/necesidades/{id}/periodos` devuelve, por período: inicio, fin,
    objetivo, asignado, recibido y resultado (`EN_CURSO`, `CUMPLIDO`, `INCOMPLETO`).
    `GET /donaciones-independientes` acepta `necesidadId` para listar las donaciones que la cubren,
