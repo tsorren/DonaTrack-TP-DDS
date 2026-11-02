@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Registro de entidad con el error de datos (falta qué es y la calle), como lo devolvería el
+       servidor: el resumen arriba recibe el foco y enlaza a cada campo; lo escrito sigue, salvo la
+       contraseña. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Revisá la solicitud - Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices-b/publico-registro-entidad :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

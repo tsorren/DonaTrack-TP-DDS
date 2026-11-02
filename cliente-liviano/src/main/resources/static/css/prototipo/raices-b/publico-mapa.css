@@ -1,0 +1,203 @@
+/* Raíces B, Mapa: el plano de la red, colgado en la tierra honda. Los barrios, manchas de suelo con su
+   nombre; la línea, paja con borde de tinta, une las estaciones (una por entidad, del tamaño de sus
+   entregas). Al lado (con lugar) o debajo, la lista: un ramal con una estación por entidad, la
+   misma cantidad en su sello; la estación tocada en el plano se marca en la lista (:target). */
+@import url("publico-recorrido.css");
+
+.mapa-cuerpo {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.mapa-plano {
+  margin-bottom: 0;
+  padding-block: 1rem;
+}
+
+.mapa-cargando {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.mapa-dibujo {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--fuente-titulo);
+}
+
+.mapa-barrio {
+  fill: var(--color-suelo);
+  stroke: var(--color-suelo-medio);
+  stroke-width: 2;
+}
+
+.mapa-barrio-nombre {
+  fill: var(--color-texto-suelo);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.mapa-tramo-borde,
+.mapa-tramo {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.mapa-tramo-borde {
+  stroke: var(--color-tinta);
+  stroke-width: 16;
+}
+
+.mapa-tramo {
+  stroke: var(--color-raiz);
+  stroke-width: 9;
+}
+
+.mapa-estacion-disco {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 4;
+}
+
+.mapa-estacion:hover .mapa-estacion-disco {
+  fill: var(--color-raiz);
+}
+
+/* El lugar que se toca: más grande que el disco, sin pintar (48 px también en el celular). */
+.mapa-estacion-toque {
+  fill: transparent;
+}
+
+.mapa-estacion-cantidad {
+  fill: var(--color-tinta);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.mapa-estacion-nombre {
+  fill: var(--color-raiz);
+  font-size: 28px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: var(--color-suelo-hondo);
+  stroke-width: 6;
+  stroke-linejoin: round;
+}
+
+.mapa-estacion-barrio {
+  fill: var(--color-texto-suelo);
+  font-size: 22px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--color-suelo-hondo);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+.mapa-lista h2 {
+  margin: 0 0 1.25rem;
+}
+
+.ramal.mapa-entidades {
+  --medida-sello: 2.25rem;
+  --medida-ramal-hueco: 1.75rem;
+}
+
+.mapa-entidades .ramal-sello {
+  font-size: 1rem;
+}
+
+.mapa-entidad {
+  scroll-margin-top: 1rem;
+}
+
+.mapa-entidad h3 {
+  margin: 0;
+  padding-top: 0.25rem;
+  color: var(--color-tinta);
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.mapa-entidad-datos {
+  margin: 0.15rem 0 0.75rem;
+  color: var(--color-acento);
+  font-weight: 700;
+}
+
+/* La estación tocada en el plano: la ficha, impresa en salvia. */
+.mapa-entidad:target .ramal-texto {
+  margin: -0.5rem -0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-acento-claro);
+}
+
+.mapa-entregas {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mapa-entregas li {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px dotted var(--color-hoja);
+}
+
+.mapa-entregas li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.mapa-entregas p {
+  margin: 0;
+}
+
+.mapa-entregas b {
+  color: var(--color-tinta);
+}
+
+.mapa-cuerpo > .aviso {
+  margin: 0;
+}
+
+/* En el celular el plano se achica a la mitad: los rótulos van más grandes; con lugar, a su medida. */
+@media (min-width: 53.75em) {
+  .mapa-barrio-nombre {
+    font-size: 18px;
+  }
+
+  .mapa-estacion-cantidad {
+    font-size: 20px;
+  }
+
+  .mapa-estacion-nombre {
+    font-size: 22px;
+  }
+
+  .mapa-estacion-barrio {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 68.75em) {
+  .mapa-cuerpo {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .mapa-plano {
+    position: sticky;
+    top: 1rem;
+    margin-top: 0;
+  }
+}

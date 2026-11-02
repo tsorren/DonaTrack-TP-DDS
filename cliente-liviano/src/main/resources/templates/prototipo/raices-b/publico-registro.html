@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Crear una cuenta (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.5). La
+       composición de B: una estación de combinación. La línea se abre en dos ramales, uno por forma
+       de sumarse, y cada uno termina en su tarjeta: qué podés hacer, qué te pedimos y el botón. En
+       el celular bajan una debajo de la otra; con lugar, el ramal corre de izquierda a derecha y las
+       dos tarjetas cuelgan de él (las dos tarjetas del boceto, pág. 5). Sin datos que carguen. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <p class="rotulo">Crear una cuenta</p>
+  <h1>¿Cómo querés <em>sumarte?</em></h1>
+  <p class="lectura-bajada">Según lo que elijas, te pedimos datos distintos.</p>
+
+  <ol class="ramal registro-combinacion" role="list">
+    <li class="ramal-estacion">
+      <span class="ramal-sello" aria-hidden="true"></span>
+      <section class="ramal-texto registro-tarjeta" aria-labelledby="donar-titulo">
+        <h2 id="donar-titulo">Quiero donar, yo o mi empresa</h2>
+        <p>Registrás lo que donás y lo seguís hasta que la entidad confirma la entrega.</p>
+        <p>Ves a qué entidad se asignó, en qué estado está y la foto de la entrega.</p>
+        <p class="registro-pedimos">Te pedimos tu correo, una contraseña y tu nombre o el de tu empresa.</p>
+        <a class="boton boton--principal" href="/prototipo/raices-b/publico-registro-donante"
+           th:href="@{/prototipo/raices-b/publico-registro-donante}">Crear mi cuenta de donante</a>
+      </section>
+    </li>
+    <li class="ramal-estacion">
+      <span class="ramal-sello" aria-hidden="true"></span>
+      <section class="ramal-texto registro-tarjeta" aria-labelledby="entidad-titulo">
+        <h2 id="entidad-titulo">Represento a una entidad</h2>
+        <p>Publicás lo que le hace falta a tu entidad y confirmás cada entrega con una foto.</p>
+        <p class="registro-pedimos">Te pedimos los datos de la entidad, una dirección de entrega y quién la
+          representa. El equipo de DonaTrack la revisa antes de sumarla.</p>
+        <a class="boton boton--principal" href="/prototipo/raices-b/publico-registro-entidad"
+           th:href="@{/prototipo/raices-b/publico-registro-entidad}">Sumar mi entidad</a>
+      </section>
+    </li>
+  </ol>
+
+  <p class="publico-salidas"><a href="/prototipo/raices-b/publico-ingresar"
+     th:href="@{/prototipo/raices-b/publico-ingresar}">¿Ya tenés cuenta? Ingresar</a></p>
+</th:block>
+</body>
+</html>

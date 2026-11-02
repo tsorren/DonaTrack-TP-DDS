@@ -1,0 +1,345 @@
+/* Raíces B, las piezas del recorrido público "entrar" (ficha docs/interfaz/flujos/raices-publico-
+   navegable.md), que comparten Entregas confirmadas, Mapa, Entidades, Ingresar y los registros. Cada
+   hoja de esas pantallas importa esta. Mismo sistema que el resto de B (sistema-b.md): la línea.
+   - El cambio de vía: un filtro o una elección (período, categoría, quién dona) es un tramo corto de
+     línea con una estación por opción; la elegida, impresa y con aria-current, como en la vía.
+   - El ramal vertical: un ramal que baja también con lugar (listas largas, como un horario).
+   - El tablero: la tierra honda de la cabecera, como el tablero de una estación.
+   - La cifra del período, la foto de la entrega en su ventana, el lugar de lo que carga y las
+     salidas. */
+@import url("publico-paginas.css");
+
+/* --- El cambio de vía ------------------------------------------------------------------------- */
+.publico-cambio {
+  --medida-cambio: 1.25rem;
+
+  margin: 1.5rem 0 0.5rem;
+}
+
+.publico-cambio-titulo {
+  margin: 0;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* Las estaciones se reparten la fila (como en la vía) y el nombre largo se parte en dos renglones;
+   solo si ni así entran, la línea sigue en otra fila. */
+.publico-cambio ol {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.25rem;
+  max-width: 36rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Con dos estaciones, un tramo corto. */
+.publico-cambio ol:has(> li:nth-child(2):last-child) {
+  max-width: 30rem;
+}
+
+.publico-cambio li {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: min-content;
+}
+
+/* El trecho de línea de cada estación, de borde a borde; la primera y la última, desde su sello. */
+.publico-cambio li::before {
+  content: "";
+  position: absolute;
+  top: calc(0.5rem + var(--medida-cambio) / 2 - var(--medida-grosor) / 2 - 3px);
+  left: 0;
+  right: 0;
+  height: calc(var(--medida-grosor) + 6px);
+  border-block: var(--borde-linea);
+  background: var(--color-raiz);
+}
+
+.publico-cambio li:first-child::before {
+  left: 50%;
+}
+
+.publico-cambio li:last-child::before {
+  right: 50%;
+}
+
+.publico-cambio li:only-child::before {
+  content: none;
+}
+
+.publico-cambio a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 3rem;
+  flex: 1;
+  min-height: 3rem;
+  padding: 0.5rem 0.375rem 0.25rem;
+  color: var(--color-tinta);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+}
+
+.publico-cambio-sello {
+  width: var(--medida-cambio);
+  height: var(--medida-cambio);
+  border: var(--borde-linea);
+  border-radius: 50%;
+  background: var(--color-papel);
+}
+
+.publico-cambio a:hover span:last-child {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.publico-cambio a[aria-current="page"] {
+  color: var(--color-acento);
+}
+
+.publico-cambio a[aria-current="page"] .publico-cambio-sello {
+  background: var(--color-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+  scale: 1.3;
+}
+
+.publico-cambio a[aria-current="page"] span:last-child {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+/* --- La cifra del período ---------------------------------------------------------------------- */
+.publico-cifra {
+  max-width: 44rem;
+  margin: 1rem 0 0;
+  color: var(--color-tinta);
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.publico-cifra b {
+  font: 900 2.25rem/1 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+.publico-cifra + .nota {
+  margin: 0.25rem 0 0;
+}
+
+/* --- El ramal vertical: baja en todos los anchos ------------------------------------------------ */
+/* Cada estación tira su trecho hasta la siguiente (de sello a sello), así la línea empieza y termina
+   en una estación; el trecho que llega a una estación hueca va punteado. Variables por lista:
+   --medida-ramal-hueco (el espacio entre estaciones) y --medida-ramal-arriba (cuánto baja el sello
+   desde el borde de su estación). */
+.ramal.publico-vertical {
+  --medida-ramal-hueco: 1.5rem;
+  --medida-ramal-arriba: 0rem;
+
+  grid-auto-flow: row;
+  gap: var(--medida-ramal-hueco);
+  padding: 0 0 0 calc(var(--medida-ramal-eje) * 2 + 0.5rem);
+}
+
+.ramal.publico-vertical::before,
+.publico-vertical .ramal-estacion--hueca::before {
+  content: none;
+}
+
+.publico-vertical .ramal-sello {
+  top: var(--medida-ramal-arriba);
+  left: calc(
+    var(--medida-ramal-eje) - var(--medida-sello) / 2 - var(--medida-ramal-eje) * 2 - 0.5rem
+  );
+}
+
+.publico-vertical > .ramal-estacion:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--medida-ramal-arriba) + var(--medida-sello) / 2);
+  left: calc(
+    var(--medida-ramal-eje) - var(--medida-grosor) / 2 - 3px - var(--medida-ramal-eje) * 2 - 0.5rem
+  );
+  width: calc(var(--medida-grosor) + 6px);
+  height: calc(100% + var(--medida-ramal-hueco));
+  border-inline: var(--borde-linea);
+  background: var(--color-raiz);
+}
+
+.publico-vertical > .ramal-estacion:has(+ .ramal-estacion--hueca)::after {
+  border-inline: 0;
+  background:
+    radial-gradient(circle, var(--color-raiz) 3px, transparent 3.5px) center top / 100% 0.75rem
+      repeat-y,
+    var(--color-ramal-fondo);
+}
+
+/* Al entrar, una vez, cada trecho se traza hacia abajo (sin movimiento con "reducir movimiento"). */
+@media (prefers-reduced-motion: no-preference) {
+  .publico-vertical > .ramal-estacion::after {
+    animation: traza 0.9s ease-out both;
+  }
+}
+
+/* --- El tablero: la tierra honda, como el tablero de una estación ------------------------------ */
+.publico-tablero {
+  --color-ramal-fondo: var(--color-suelo-hondo);
+
+  margin: 1.5rem calc(-1 * var(--medida-margen)) 0;
+  padding: 1.5rem var(--medida-margen) 2rem;
+  background: var(--color-suelo-hondo);
+  color: var(--color-texto-suelo);
+}
+
+.publico-tablero :focus-visible {
+  outline-color: var(--color-raiz);
+}
+
+.publico-tablero a {
+  color: var(--color-raiz);
+}
+
+/* --- La foto de la entrega: la miniatura con su rótulo; se abre grande (popover, sin JavaScript) - */
+.publico-foto {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
+  color: var(--color-acento);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.publico-foto img {
+  flex: none;
+  width: 4.5rem;
+  height: auto;
+  border-radius: calc(var(--radio-lamina) / 2);
+}
+
+.publico-foto:hover {
+  background: var(--color-acento-claro);
+}
+
+.publico-foto:active {
+  box-shadow: none;
+  translate: 0.25rem 0.25rem;
+}
+
+.publico-foto-ventana {
+  width: min(36rem, 100% - 2rem);
+  margin: auto;
+  padding: 1rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.45rem 0.45rem 0 var(--color-hoja);
+  color: var(--color-tinta-suave);
+}
+
+.publico-foto-ventana:popover-open {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+}
+
+.publico-foto-ventana::backdrop {
+  background: var(--color-suelo-hondo);
+  opacity: 0.75;
+}
+
+.publico-foto-ventana img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-tinta);
+}
+
+.publico-foto-ventana p {
+  margin: 0;
+}
+
+.publico-foto-ventana .publico-foto-titulo {
+  color: var(--color-tinta);
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+/* --- Lo que carga: el lugar de cada fila, sin datos inventados --------------------------------- */
+.publico-cargando {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.publico-cargando li {
+  height: 4.5rem;
+  border: 2px dashed currentColor;
+  border-radius: var(--radio-lamina);
+  opacity: 0.45;
+}
+
+/* --- La contraseña con "Mostrar" (raices-b-mostrar.js, solo con JavaScript) -------------------- */
+.campo-clave {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.campo-clave input {
+  flex: 1;
+  width: 0;
+}
+
+/* --- Las salidas del final: la línea llega a su última estación -------------------------------- */
+.publico-salidas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin: 2rem 0 0;
+}
+
+.publico-salidas a:not(.boton) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+@media (min-width: 37.5em) {
+  .publico-cambio a {
+    padding-inline: 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  .publico-cifra b {
+    font-size: 2.75rem;
+  }
+
+  .publico-tablero {
+    margin-inline: 0;
+    padding: 2rem 2rem 2.5rem;
+    border-radius: var(--radio-lamina);
+    box-shadow: 0.5rem 0.5rem 0 var(--color-hoja);
+  }
+}

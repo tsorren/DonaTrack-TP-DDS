@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Solicitud enviada (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.7): el sello
+       "Solicitud recibida", qué pasa ahora y el mismo ramal de "Cómo sigue", con el paso 1 hecho y el
+       2 como actual. Sin plazo de revisión: no hay uno acordado. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Solicitud recibida - Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <p class="rotulo">Crear una cuenta</p>
+  <div class="registro-recibida" role="status">
+    <p class="registro-sello"><svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <circle class="sello-hecho" cx="36" cy="36" r="32"/><path class="registro-sello-tilde" d="M22 37l9 9 19-21"/></svg>
+      <span>Solicitud recibida</span></p>
+    <h1>Recibimos la solicitud <em>de tu entidad</em></h1>
+  </div>
+  <p class="lectura lectura-bajada">El equipo de DonaTrack la revisa antes de sumarla. Te escribimos al correo que
+    dejaste cuando esté aprobada; desde ese día podés ingresar y publicar lo que le hace falta a tu entidad.</p>
+
+  <th:block th:replace="~{prototipo/raices-b/publico-registro-entidad :: como-sigue(2)}"></th:block>
+
+  <p class="publico-salidas">
+    <a class="boton boton--principal" href="/prototipo/raices-b/publico-entidades"
+       th:href="@{/prototipo/raices-b/publico-entidades}">Ver las entidades y lo que piden</a>
+    <a class="boton boton--secundario" href="/prototipo/raices-b/publico-portada"
+       th:href="@{/prototipo/raices-b/publico-portada}">Ir a la portada</a>
+  </p>
+</th:block>
+</body>
+</html>

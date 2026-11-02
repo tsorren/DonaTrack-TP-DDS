@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Entidades (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.3). La composición
+       de B: la red de la portada, entera. Un ramal baja con una estación por entidad (el pictograma
+       de lo que pide) y cada entidad es el cartel de un vagón: qué es, su nombre y su barrio, y
+       pedido por pedido, lo que falta al final de la fila, unido por puntos. Al final, la estación
+       hueca: tu entidad. Buscar (?q=) es un formulario get; la categoría (?categoria=), un cambio de
+       vía que conserva la búsqueda. Más de 3 pedidos: los demás, plegados (details, sin JavaScript).
+       Estados: ?q=comedor, ?categoria=alimentos, ?q=biblioteca&categoria=alimentos (sin
+       resultados), ?q=zzz, ?escenario=vacio, lento y error.
+       ponytail: datos fijos del caso de ejemplo (sección 6.3 de la ficha); en el sistema, del modelo
+       (HB-08, HB-15, HB-18). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
+<head>
+  <title>Entidades y lo que piden - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
+             q=${param.q != null ? #strings.trim(param.q[0]) : ''},
+             categoria=${param.categoria != null and {'alimentos','ropa','muebles','escolares'}.contains(param.categoria[0]) ? param.categoria[0] : 'todo'},
+             conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'},
+             nombres=${ {todo:'Todo', alimentos:'Alimentos', ropa:'Ropa', muebles:'Muebles', escolares:'Útiles escolares'} },
+             minusculas=${ {alimentos:'alimentos', ropa:'ropa', muebles:'muebles', escolares:'útiles escolares'} },
+             entidades=${ {
+               {id:'comedor', tipo:'Comedor', nombre:'Comedor Barrio Ejemplo', barrio:'Barrio Ejemplo', icono:'alimentos', mapa:true, pedidos:{
+                 {que:'Lentejas secas', cat:'alimentos', falta:'Faltan 30 de 40 kg este mes', cuando:'Se repite cada mes', porque:'para el almuerzo de lunes a viernes.'},
+                 {que:'Arroz', cat:'alimentos', falta:'Faltan 25 de 40 kg este mes', cuando:'Se repite cada mes', porque:'para el almuerzo de lunes a viernes.'},
+                 {que:'Aceite de girasol', cat:'alimentos', falta:'Faltan 20 litros', cuando:'Hasta el 20 de octubre', porque:'para cocinar el almuerzo.'},
+                 {que:'Leche en polvo', cat:'alimentos', falta:'Faltan 12 de 24 unidades', cuando:'Hasta el 25 de octubre', porque:'para la merienda de los más chicos.'},
+                 {que:'Ropa de abrigo', cat:'ropa', falta:'Faltan 25 de 30 unidades', cuando:'Hasta el 15 de noviembre', porque:'para las familias del barrio que perdieron ropa en el temporal del 3 de octubre.'}}},
+               {id:'escuela', tipo:'Escuela', nombre:'Escuela Ejemplo N.º 12', barrio:'Centro Ejemplo', icono:'muebles', mapa:true, pedidos:{
+                 {que:'Sillas', cat:'muebles', falta:'Faltan 14 de 20 unidades', cuando:'Hasta el 30 de noviembre', porque:'para el aula nueva de primer grado.'},
+                 {que:'Útiles escolares', cat:'escolares', falta:'Faltan 4 cajas', cuando:'Hasta el 30 de noviembre', porque:'para los chicos de primer grado.'}}},
+               {id:'merendero', tipo:'Merendero', nombre:'Merendero Ejemplo Sur', barrio:'Ejemplo Sur', icono:'alimentos', mapa:true, pedidos:{
+                 {que:'Galletitas', cat:'alimentos', falta:'Faltan 10 de 20 kg este mes', cuando:'Se repite cada mes', porque:'para la merienda de la tarde.'},
+                 {que:'Leche en polvo', cat:'alimentos', falta:'Faltan 20 unidades', cuando:'Hasta el 31 de octubre', porque:'para la merienda de la tarde.'}}},
+               {id:'hogar', tipo:'Hogar', nombre:'Hogar Casa Ejemplo', barrio:'Parque Ejemplo', icono:'ropa', mapa:true, pedidos:{
+                 {que:'Frazadas', cat:'ropa', falta:'Faltan 10 de 20 unidades', cuando:'Hasta el 15 de noviembre', porque:'para las camas del hogar.'}}},
+               {id:'club', tipo:'Club', nombre:'Club Ejemplo Norte', barrio:'Ejemplo Norte', icono:'ropa', mapa:false, pedidos:{
+                 {que:'Camisetas deportivas', cat:'ropa', falta:'Faltan 15 unidades', cuando:'Hasta el 30 de noviembre', porque:'para el equipo infantil de fútbol.'}}},
+               {id:'biblioteca', tipo:'Biblioteca', nombre:'Biblioteca Popular Ejemplo', barrio:'Villa Ejemplo', icono:'muebles', mapa:true, pedidos:{
+                 {que:'Sillas', cat:'muebles', falta:'Faltan 4 de 8 unidades', cuando:'Hasta el 31 de diciembre', porque:'para la sala de lectura infantil.'}}}
+             } }">
+  <th:block th:with="visibles=${entidades.?[(#root.q == '' or #strings.containsIgnoreCase(#this['nombre'], #root.q)) and (#root.categoria == 'todo' or !#this['pedidos'].?[#this['cat'] == #root.categoria].isEmpty())]},
+                     filtrado=${q != '' or categoria != 'todo'},
+                     ninguna=${conDatos and visibles.isEmpty()}">
+  <svg th:replace="~{prototipo/raices-b/iconos :: categorias}"></svg>
+  <p class="rotulo">Entidades</p>
+  <h1>Lo que piden <em>las entidades</em></h1>
+  <p class="lectura lectura-bajada">Comedores, escuelas, hogares y otras entidades de la comunidad publican lo
+    que les hace falta. Lo que donás se asigna a una entidad que lo pidió.</p>
+
+  <th:block th:unless="${estado == 'vacio'}">
+    <form class="entidades-buscar" role="search" action="/prototipo/raices-b/publico-entidades"
+          th:action="@{/prototipo/raices-b/publico-entidades}" method="get">
+      <div class="campo">
+        <label for="q">Buscar por nombre</label>
+        <small id="q-ayuda">Por ejemplo: comedor.</small>
+        <div class="entidades-buscar-fila">
+          <input id="q" name="q" type="search" aria-describedby="q-ayuda" th:value="${q}">
+          <input type="hidden" name="categoria" th:if="${categoria != 'todo'}" th:value="${categoria}">
+          <button class="boton boton--secundario" type="submit">Buscar</button>
+        </div>
+      </div>
+    </form>
+
+    <nav class="publico-cambio" aria-labelledby="filtro-titulo">
+      <p class="publico-cambio-titulo" id="filtro-titulo">Qué piden</p>
+      <ol role="list">
+        <li th:each="opcion : ${ {'todo','alimentos','ropa','muebles','escolares'} }">
+          <a href="/prototipo/raices-b/publico-entidades"
+             th:href="@{/prototipo/raices-b/publico-entidades(q=${q != '' ? q : null},categoria=${opcion != 'todo' ? opcion : null})}"
+             th:aria-current="${opcion == categoria} ? 'page' : null">
+            <span class="publico-cambio-sello" aria-hidden="true"></span><span th:text="${nombres.get(opcion)}">Todo</span></a>
+        </li>
+      </ol>
+    </nav>
+  </th:block>
+
+  <p class="publico-cifra" aria-live="polite" th:if="${conDatos and !ninguna}"
+     th:with="n=${visibles.size()}, una=${visibles.size() == 1}">
+    <th:block th:unless="${filtrado}"><b>6</b> entidades con pedidos vigentes, de las 46 que están en
+      DonaTrack. Al 15 de octubre de 2026.</th:block>
+    <th:block th:if="${filtrado}"><b th:text="${n}">2</b>
+      <th:block th:text="${una ? 'entidad' : 'entidades'}">entidades</th:block><th:block
+        th:if="${q != ''}" th:text="${' con «' + q + '» en el nombre'}"></th:block><th:block
+        th:if="${categoria != 'todo'}" th:text="${(una ? ' pide ' : ' piden ') + minusculas.get(categoria)}"> piden alimentos</th:block>.</th:block>
+  </p>
+
+  <section class="aviso" th:if="${ninguna}" aria-labelledby="ninguna-titulo">
+    <th:block th:if="${q != '' and categoria != 'todo'}">
+      <h2 id="ninguna-titulo" th:text="${'Ninguna entidad con «' + q + '» en el nombre pide ' + minusculas.get(categoria) + ' ahora.'}">Ninguna entidad con «biblioteca» en el nombre pide alimentos ahora.</h2>
+      <p>Probá con otra categoría o con otra parte del nombre.</p>
+    </th:block>
+    <th:block th:if="${q == '' and categoria != 'todo'}">
+      <h2 id="ninguna-titulo" th:text="${'Ninguna entidad pide ' + minusculas.get(categoria) + ' ahora.'}">Ninguna entidad pide alimentos ahora.</h2>
+      <p>Cuando una lo publique, aparece acá.</p>
+    </th:block>
+    <th:block th:if="${q != '' and categoria == 'todo'}">
+      <h2 id="ninguna-titulo" th:text="${'No encontramos entidades con «' + q + '» en el nombre.'}">No encontramos entidades.</h2>
+      <p>Probá con otra parte del nombre o sacá el filtro.</p>
+    </th:block>
+    <a class="boton boton--secundario" href="/prototipo/raices-b/publico-entidades"
+       th:href="@{/prototipo/raices-b/publico-entidades}">Ver todas</a>
+  </section>
+
+  <section class="aviso" th:if="${estado == 'vacio'}" aria-labelledby="vacio-titulo">
+    <h2 id="vacio-titulo">Ninguna entidad tiene pedidos vigentes ahora.</h2>
+    <p>Cuando una publique lo que le hace falta, aparece acá.</p>
+    <a class="boton boton--secundario" href="/prototipo/raices-b/publico-registro-entidad"
+       th:href="@{/prototipo/raices-b/publico-registro-entidad}">Sumar mi entidad</a>
+  </section>
+
+  <section class="aviso aviso--error" th:if="${estado == 'error'}" role="alert" aria-labelledby="error-titulo">
+    <h2 id="error-titulo">No pudimos cargar las entidades.</h2>
+    <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+      <a href="/prototipo/raices-b/publico-contacto"
+         th:href="@{/prototipo/raices-b/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices-b/publico-entidades')}">escribinos</a>
+      con este código.</p>
+    <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+    <a class="boton boton--secundario" href="/prototipo/raices-b/publico-entidades"
+       th:href="@{/prototipo/raices-b/publico-entidades}">Volver a cargar</a>
+  </section>
+
+  <th:block th:if="${estado == 'lento'}">
+    <p class="entidades-cargando" role="status">Cargando las entidades…</p>
+    <ul class="publico-cargando" aria-hidden="true"><li></li><li></li><li></li></ul>
+  </th:block>
+
+  <!--/* La red: una estación por entidad; cada una, el cartel de su vagón. */-->
+  <ol class="ramal publico-vertical entidades-red" role="list" th:if="${conDatos and !ninguna}">
+    <li class="ramal-estacion entidades-entidad" th:each="e : ${visibles}"
+        th:with="pedidos=${categoria == 'todo' ? e.pedidos : e.pedidos.?[#this['cat'] == #root.categoria]}">
+      <span class="ramal-sello" aria-hidden="true"><svg viewBox="0 0 100 100"><use th:href="${'#cat-' + e.icono}" href="#cat-alimentos"/></svg></span>
+      <div class="ramal-texto entidades-vagon">
+        <div class="entidades-cabeza">
+          <h2 class="entidades-nombre" th:id="${'entidad-' + e.id}"><span class="entidades-tipo" th:text="${e.tipo}">Comedor</span>
+            <th:block th:text="${e.nombre}">Comedor Barrio Ejemplo</th:block></h2>
+          <p class="entidades-barrio" th:text="${e.barrio}">Barrio Ejemplo</p>
+          <p class="entidades-mapa" th:if="${e.mapa}"><a href="/prototipo/raices-b/publico-mapa"
+             th:href="@{'/prototipo/raices-b/publico-mapa#entidad-' + ${e.id}}">Ver sus entregas en el mapa</a></p>
+        </div>
+        <div class="entidades-lista">
+          <ul class="entidades-pedidos" role="list" th:aria-labelledby="${'entidad-' + e.id}">
+            <li th:each="p, i : ${pedidos}" th:if="${i.count <= 3}"
+                th:insert="~{prototipo/raices-b/publico-entidades :: pedido(${p})}"></li>
+          </ul>
+          <details class="entidades-mas" th:if="${pedidos.size() > 3}">
+            <summary><span class="entidades-mas-ver" th:text="${'Ver los ' + pedidos.size() + ' pedidos'}">Ver los 5 pedidos</span><span class="entidades-mas-menos">Ver menos</span></summary>
+            <ul class="entidades-pedidos" role="list">
+              <li th:each="p, i : ${pedidos}" th:if="${i.count > 3}" th:insert="~{prototipo/raices-b/publico-entidades :: pedido(${p})}"></li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </li>
+    <li class="ramal-estacion ramal-estacion--hueca entidades-tuya">
+      <span class="ramal-sello" aria-hidden="true"></span>
+      <div class="ramal-texto">
+        <p><b>¿Representás a una entidad?</b></p>
+        <a class="boton boton--secundario" href="/prototipo/raices-b/publico-registro-entidad"
+           th:href="@{/prototipo/raices-b/publico-registro-entidad}">Sumar mi entidad</a>
+      </div>
+    </li>
+  </ol>
+
+  <p class="publico-salidas">
+    <a class="boton boton--principal" href="/prototipo/raices-b/publico-registro-donante"
+       th:href="@{/prototipo/raices-b/publico-registro-donante}">Quiero donar</a>
+    <a href="/prototipo/raices-b/publico-ingresar" th:href="@{/prototipo/raices-b/publico-ingresar}">¿Ya tenés cuenta? Ingresar</a>
+  </p>
+  </th:block>
+</th:block>
+
+<!--/* Un pedido: lo que falta al final de la fila, unido por puntos; abajo, hasta cuándo y por qué. */-->
+<th:block th:fragment="pedido(p)">
+  <p class="entidades-pedido"><b th:text="${p.que}">Lentejas secas</b> <span class="entidades-falta" th:text="${p.falta}">Faltan 30 de 40 kg este mes</span></p>
+  <p class="entidades-pedido-nota"><th:block th:text="${p.cuando}">Se repite cada mes</th:block>. Por qué:
+    <th:block th:text="${p.porque}">para el almuerzo de lunes a viernes.</th:block></p>
+</th:block>
+</body>
+</html>

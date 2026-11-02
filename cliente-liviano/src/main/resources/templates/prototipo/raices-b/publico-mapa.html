@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Mapa (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.2). La composición de B:
+       el plano de la red, colgado en la tierra honda como el plano de una estación. Cada entidad que
+       confirmó entregas es una estación en su barrio (más grande cuantas más entregas) y la línea
+       las une en el orden de la lista; tocar una estación lleva a su ficha en la lista, que es la
+       alternativa completa (RF-CL-06) y el detalle del punto (RF-02: fecha, categoría y foto). El
+       dibujo sale de los datos: las estaciones y los tramos se dibujan con th:each desde la misma
+       lista, filtrada por ?categoria=. Estados: ?categoria=alimentos|ropa|muebles|escolares (sin
+       resultados), ?escenario=vacio, lento y error.
+       ponytail: datos fijos del caso de ejemplo (sección 6.3 de la ficha), con una posición en el
+       plano por barrio; en el sistema, MapLibre con el barrio aproximado (HB-07, D24). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-mapa', ~{::contenido})}">
+<head>
+  <title>Mapa de entregas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
+             categoria=${param.categoria != null and {'alimentos','ropa','muebles','escolares'}.contains(param.categoria[0]) ? param.categoria[0] : 'todas'},
+             conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'},
+             nombres=${ {todas:'Todas', alimentos:'Alimentos', ropa:'Ropa', muebles:'Muebles', escolares:'Útiles escolares'} },
+             cifras=${ {todas:'10 entregas confirmadas en 5 entidades', alimentos:'5 entregas de alimentos en 1 entidad', ropa:'3 entregas de ropa en 3 entidades', muebles:'2 entregas de muebles en 2 entidades'} },
+             entidades=${ {
+               {id:'comedor', nombre:'Comedor Barrio Ejemplo', corto:'Comedor', barrio:'Barrio Ejemplo', x:120, y:250, entregas:{
+                 {que:'Lentejas secas, 10 kg', cat:'alimentos', dia:'10 de octubre', iso:'2026-10-10', foto:'/img/ejemplo-entrega.svg', alt:'Cajas con la donación junto a la puerta del comedor'},
+                 {que:'Arroz, 5 kg', cat:'alimentos', dia:'9 de octubre', iso:'2026-10-09', foto:'/img/ejemplo-entrega.svg', alt:'Cajas con la donación junto a la puerta del comedor'},
+                 {que:'Ropa de abrigo, 5 unidades', cat:'ropa', dia:'8 de octubre', iso:'2026-10-08', foto:'/img/raices/ejemplo-entrega-ropa.svg', alt:'Bolsas con ropa de abrigo junto a la puerta del comedor'},
+                 {que:'Leche en polvo, 12 unidades', cat:'alimentos', dia:'6 de octubre', iso:'2026-10-06', foto:'/img/ejemplo-entrega.svg', alt:'Cajas con la donación junto a la puerta del comedor'},
+                 {que:'Fideos secos, 8 kg', cat:'alimentos', dia:'5 de octubre', iso:'2026-10-05', foto:'/img/ejemplo-entrega.svg', alt:'Cajas con la donación junto a la puerta del comedor'},
+                 {que:'Arroz, 10 kg', cat:'alimentos', dia:'2 de octubre', iso:'2026-10-02', foto:'/img/ejemplo-entrega.svg', alt:'Cajas con la donación junto a la puerta del comedor'}}},
+               {id:'escuela', nombre:'Escuela Ejemplo N.º 12', corto:'Escuela', barrio:'Centro Ejemplo', x:260, y:120, entregas:{
+                 {que:'Sillas, 6 unidades', cat:'muebles', dia:'14 de octubre', iso:'2026-10-14', foto:'/img/raices/ejemplo-entrega-sillas.svg', alt:'Sillas apiladas en un aula'}}},
+               {id:'merendero', nombre:'Merendero Ejemplo Sur', corto:'Merendero', barrio:'Ejemplo Sur', x:340, y:270, entregas:{
+                 {que:'Ropa de abrigo, 12 prendas', cat:'ropa', dia:'9 de octubre', iso:'2026-10-09', foto:'/img/raices/ejemplo-entrega-ropa.svg', alt:'Bolsas con ropa de abrigo junto a la puerta del merendero'}}},
+               {id:'hogar', nombre:'Hogar Casa Ejemplo', corto:'Hogar', barrio:'Parque Ejemplo', x:470, y:200, entregas:{
+                 {que:'Frazadas, 10 unidades', cat:'ropa', dia:'7 de octubre', iso:'2026-10-07', foto:'/img/raices/ejemplo-entrega-ropa.svg', alt:'Bolsas con frazadas junto a la puerta del hogar'}}},
+               {id:'biblioteca', nombre:'Biblioteca Popular Ejemplo', corto:'Biblioteca', barrio:'Villa Ejemplo', x:560, y:80, entregas:{
+                 {que:'Sillas, 4 unidades', cat:'muebles', dia:'22 de septiembre', iso:'2026-09-22', foto:'/img/raices/ejemplo-entrega-sillas.svg', alt:'Sillas apiladas en la sala de lectura'}}}
+             } }">
+  <th:block th:with="visibles=${!conDatos ? {} : (categoria == 'todas' ? entidades : entidades.?[!(#this['entregas'].?[#this['cat'] == #root.categoria].isEmpty())])}">
+  <svg th:replace="~{prototipo/raices-b/iconos :: categorias}"></svg>
+  <p class="rotulo">Mapa</p>
+  <h1>Adónde llegaron <em>las donaciones</em></h1>
+  <p class="lectura lectura-bajada">Cada punto es una entidad que confirmó entregas en el último mes. La
+    ubicación es aproximada: mostramos el barrio, nunca la dirección.</p>
+
+  <nav class="publico-cambio" aria-labelledby="filtro-titulo" th:if="${estado != 'vacio'}">
+    <p class="publico-cambio-titulo" id="filtro-titulo">Qué se donó</p>
+    <ol role="list">
+      <li th:each="opcion : ${ {'todas','alimentos','ropa','muebles','escolares'} }">
+        <a href="/prototipo/raices-b/publico-mapa"
+           th:href="${opcion == 'todas'} ? @{/prototipo/raices-b/publico-mapa} : @{/prototipo/raices-b/publico-mapa(categoria=${opcion})}"
+           th:aria-current="${opcion == categoria} ? 'page' : null">
+          <span class="publico-cambio-sello" aria-hidden="true"></span><span th:text="${nombres.get(opcion)}">Todas</span></a>
+      </li>
+    </ol>
+  </nav>
+
+  <th:block th:if="${conDatos and !visibles.isEmpty()}">
+    <p class="publico-cifra" aria-live="polite"><b th:text="${#strings.substringBefore(cifras.get(categoria), ' ')}">10</b>
+      <th:block th:text="${#strings.substringAfter(cifras.get(categoria), ' ') + ', del 16 de septiembre al 15 de octubre de 2026.'}">entregas
+        confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026.</th:block></p>
+    <p class="nota">Actualizado el 15 de octubre de 2026, 14:30.</p>
+  </th:block>
+
+  <section class="aviso aviso--error" th:if="${estado == 'error'}" role="alert" aria-labelledby="error-titulo">
+    <h2 id="error-titulo">No pudimos cargar el mapa de entregas.</h2>
+    <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+      <a href="/prototipo/raices-b/publico-contacto"
+         th:href="@{/prototipo/raices-b/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices-b/publico-mapa')}">escribinos</a>
+      con este código.</p>
+    <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+    <a class="boton boton--secundario" href="/prototipo/raices-b/publico-mapa"
+       th:href="@{/prototipo/raices-b/publico-mapa}">Volver a cargar</a>
+  </section>
+
+  <div class="mapa-cuerpo" th:unless="${estado == 'error'}">
+    <!--/* El plano: los barrios de la ciudad siempre; las estaciones y la línea, solo las visibles. */-->
+    <div class="publico-tablero mapa-plano">
+      <p class="mapa-cargando" th:if="${estado == 'lento'}" role="status">Cargando el mapa de entregas…</p>
+      <svg class="mapa-dibujo" viewBox="0 0 640 360" aria-hidden="true" focusable="false">
+        <!--/* Los barrios: una mancha de suelo por barrio; el nombre, adentro si no tiene estación. */-->
+        <g th:each="e : ${entidades}">
+          <circle class="mapa-barrio" th:attr="cx=${e.x},cy=${e.y}" r="62"/>
+          <text th:if="${!visibles.contains(e)}" class="mapa-barrio-nombre" th:attr="x=${e.x},y=${e.y + 6}"
+                text-anchor="middle" th:text="${e.barrio}">Barrio</text>
+        </g>
+        <!--/* La línea: de cada estación a la siguiente, primero en horizontal y después en vertical. */-->
+        <g th:each="e, i : ${visibles}" th:if="${i.index > 0}"
+           th:with="a=${visibles[i.index - 1]}">
+          <path class="mapa-tramo-borde" th:attr="d=${'M' + a.x + ' ' + a.y + ' H' + e.x + ' V' + e.y}" d="M0 0"/>
+          <path class="mapa-tramo" th:attr="d=${'M' + a.x + ' ' + a.y + ' H' + e.x + ' V' + e.y}" d="M0 0"/>
+        </g>
+        <!--/* Las estaciones: el rótulo va del lado por donde no llega la línea (llega en vertical). */-->
+        <a th:each="e, i : ${visibles}" th:href="${'#entidad-' + e.id}" href="#" tabindex="-1" class="mapa-estacion"
+           th:with="n=${categoria == 'todas' ? e.entregas.size() : e.entregas.?[#this['cat'] == #root.categoria].size()},
+                    r=${16 + n * 2},
+                    abajo=${i.index > 0 and visibles[i.index - 1].y < e.y}">
+          <circle class="mapa-estacion-toque" th:attr="cx=${e.x},cy=${e.y}" r="50"/>
+          <circle class="mapa-estacion-disco" th:attr="cx=${e.x},cy=${e.y},r=${r}" r="16"/>
+          <text class="mapa-estacion-cantidad" th:attr="x=${e.x},y=${e.y + 6}" text-anchor="middle" th:text="${n}">1</text>
+          <text class="mapa-estacion-nombre" th:attr="x=${e.x},y=${abajo ? e.y + r + 30 : e.y - r - 36}"
+                text-anchor="middle" th:text="${e.corto}">Comedor</text>
+          <text class="mapa-estacion-barrio" th:attr="x=${e.x},y=${abajo ? e.y + r + 56 : e.y - r - 10}"
+                text-anchor="middle" th:text="${e.barrio}">Barrio Ejemplo</text>
+        </a>
+      </svg>
+    </div>
+
+    <section class="aviso" th:if="${conDatos and visibles.isEmpty()}" aria-labelledby="sin-titulo">
+      <h2 id="sin-titulo">Todavía no hay entregas de útiles escolares en el último mes.</h2>
+      <p>Cuando una entidad confirme una entrega de esta categoría, aparece en el mapa.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices-b/publico-mapa"
+         th:href="@{/prototipo/raices-b/publico-mapa}">Ver todas las categorías</a>
+    </section>
+    <section class="aviso" th:if="${estado == 'vacio'}" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
+      <p>Se cuentan cuando cada entidad confirma lo que recibe.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices-b/publico-entidades"
+         th:href="@{/prototipo/raices-b/publico-entidades}">Ver las entidades y lo que piden</a>
+    </section>
+    <ul class="publico-cargando mapa-lista-cargando" th:if="${estado == 'lento'}" aria-hidden="true"><li></li><li></li><li></li></ul>
+
+    <!--/* La lista: entidad por entidad, en el orden del plano, con cada entrega y su foto. */-->
+    <section class="mapa-lista" th:unless="${visibles.isEmpty()}" aria-labelledby="lista-titulo">
+      <h2 id="lista-titulo">Entidad por entidad</h2>
+      <ol class="ramal publico-vertical mapa-entidades" role="list">
+        <li class="ramal-estacion mapa-entidad" th:each="e, i : ${visibles}" th:id="${'entidad-' + e.id}"
+            th:with="propias=${categoria == 'todas' ? e.entregas : e.entregas.?[#this['cat'] == #root.categoria]}">
+          <span class="ramal-sello" aria-hidden="true" th:text="${propias.size()}">6</span>
+          <div class="ramal-texto">
+            <h3 th:text="${e.nombre}">Comedor Barrio Ejemplo</h3>
+            <p class="mapa-entidad-datos"><th:block th:text="${e.barrio}">Barrio Ejemplo</th:block> ·
+              <th:block th:text="${propias.size() == 1 ? '1 entrega confirmada' : propias.size() + ' entregas confirmadas'}">6 entregas confirmadas</th:block></p>
+            <ul class="mapa-entregas" role="list">
+              <li th:each="x, j : ${propias}" th:with="clave=${e.id + '-' + j.count}">
+                <p><b th:id="${'entrega-' + clave}" th:text="${x.que}">Lentejas secas, 10 kg</b> ·
+                  <th:block th:text="${nombres.get(x.cat)}">Alimentos</th:block> ·
+                  <time th:datetime="${x.iso}" th:text="${x.dia}">10 de octubre</time></p>
+                <button type="button" class="publico-foto"
+                        th:attr="popovertarget=${'foto-' + clave},aria-describedby=${'entrega-' + clave}">
+                  <img src="/img/ejemplo-entrega.svg" th:src="@{${x.foto}}" alt="" width="320" height="200"><span>Ver la foto de la entrega</span></button>
+                <div class="publico-foto-ventana" popover role="dialog" th:id="${'foto-' + clave}"
+                     th:attr="aria-labelledby=${'foto-' + clave + '-titulo'}">
+                  <img src="/img/ejemplo-entrega.svg" th:src="@{${x.foto}}" th:alt="${x.alt}" alt="" width="640" height="400">
+                  <p class="publico-foto-titulo" th:id="${'foto-' + clave + '-titulo'}" th:text="${x.que}">Lentejas secas, 10 kg</p>
+                  <p><th:block th:text="${e.nombre}">Comedor Barrio Ejemplo</th:block> confirmó la entrega el
+                    <time th:datetime="${x.iso}" th:text="${x.dia + ' de 2026'}">10 de octubre de 2026</time> y subió esta foto.</p>
+                  <button type="button" class="boton boton--secundario"
+                          th:attr="popovertarget=${'foto-' + clave}" popovertargetaction="hide">Cerrar</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <p class="publico-salidas">
+    <a class="boton boton--principal" href="/prototipo/raices-b/publico-registro-donante"
+       th:href="@{/prototipo/raices-b/publico-registro-donante}">Quiero donar</a>
+    <a href="/prototipo/raices-b/publico-donaciones" th:href="@{/prototipo/raices-b/publico-donaciones}">Ver las fotos de cada entrega</a>
+    <a href="/prototipo/raices-b/publico-entidades" th:href="@{/prototipo/raices-b/publico-entidades}">Ver las entidades y lo que piden</a>
+  </p>
+  </th:block>
+</th:block>
+</body>
+</html>
