@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Entidades (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.3). Las
+       etiquetas de herbario de la portada, tal cual (el sello con el ícono de lo que pide, el tipo,
+       el nombre y lo que pide), colgadas de la espina en espejo del celular de la portada: un tronco
+       paja en la tierra y las entidades de a una a cada lado, cada una con su rama y su cruce. Más de
+       3 pedidos: los demás, plegados. Sin datos de contacto ni dirección (RF-22, D24) y sin un botón
+       por entidad: la asignación la decide DonaTrack (RF-17). Estados: ?q= (búsqueda),
+       ?categoria=, los dos juntos (?q=biblioteca&categoria=alimentos, sin resultados),
+       ?escenario=vacio, lento y error. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices/datos-publicos :: datos(~{::pantalla})}"></th:block>
+</th:block>
+
+<!--/* q es lo que escribió la persona: se compara como texto, nunca entra en una expresión. */-->
+<th:block th:fragment="pantalla"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             q=${param.q != null ? #strings.trim(param.q[0]) : ''},
+             elegida=${categoria == '' ? null : categorias.^[clave == '__${categoria}__']},
+             porCategoria=${categoria == '' ? entidades : entidades.?[!pedidos.?[cat == '__${categoria}__'].isEmpty()]},
+             visibles=${q == '' ? porCategoria : porCategoria.?[#strings.containsIgnoreCase(nombre, #root.q)]},
+             n=${#lists.size(visibles)}">
+  <svg th:replace="~{prototipo/raices/iconos :: categorias}"></svg>
+  <div class="publica entidades">
+    <header class="publica-cabeza">
+      <p class="rotulo">Entidades</p>
+      <h1>Lo que piden <em>las entidades</em></h1>
+      <p class="lectura-bajada">Comedores, escuelas, hogares y otras entidades de la comunidad publican lo
+        que les hace falta. Lo que donás se asigna a una entidad que lo pidió.</p>
+    </header>
+
+    <div th:if="${escenario == ''}" class="publica-barra">
+      <form class="filtro filtro--buscar" action="/prototipo/raices/publico-entidades"
+            th:action="@{/prototipo/raices/publico-entidades}" method="get" role="search" data-al-cambiar>
+        <div class="campo filtro-buscar">
+          <label for="q">Buscar por nombre</label>
+          <small id="q-ayuda">Por ejemplo: comedor.</small>
+          <div class="filtro-buscar-fila">
+            <input id="q" name="q" type="search" aria-describedby="q-ayuda" th:value="${q}">
+            <button class="boton boton--secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <fieldset th:replace="~{prototipo/raices/datos-publicos :: filtroCategorias('Qué piden', 'Todo')}"></fieldset>
+        <button class="boton boton--secundario" type="submit" data-sin-js>Filtrar</button>
+      </form>
+      <div th:if="${n > 0}" class="cifra-fruto" aria-live="polite">
+        <p th:if="${q == '' and elegida == null}"><b class="fruto" th:text="${n}">6</b>
+          <span>entidades con pedidos vigentes, de las 46 que están en DonaTrack. Al 15 de octubre de 2026.</span></p>
+        <p th:if="${q == '' and elegida != null}"><b class="fruto" th:text="${n}">2</b>
+          <span th:text="|${n == 1 ? 'entidad pide' : 'entidades piden'} ${elegida.enFrase}.|">entidades piden
+            alimentos.</span></p>
+        <p th:if="${q != ''}"><b class="fruto" th:text="${n}">1</b>
+          <span th:text="|${n == 1 ? 'entidad' : 'entidades'} con «${q}» en el nombre${elegida == null ? '' : (n == 1 ? ' pide ' : ' piden ') + elegida.enFrase}.|">entidad
+            con «comedor» en el nombre.</span></p>
+      </div>
+    </div>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{prototipo/raices/datos-publicos :: avisoError('No pudimos cargar las entidades.',
+          'Es un problema nuestro. Probá de nuevo en unos minutos;', '/prototipo/raices/publico-entidades', true)}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Ninguna entidad tiene pedidos vigentes ahora.</h2>
+      <p>Cuando una publique lo que le hace falta, aparece acá.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices/publico-registro-entidad"
+         th:href="@{/prototipo/raices/publico-registro-entidad}">Sumar mi entidad</a>
+    </section>
+
+    <!--/* Sin resultados: qué no se encontró y cómo volver a ver todas. */-->
+    <section th:if="${escenario == '' and n == 0}" class="aviso" aria-labelledby="sin-titulo">
+      <th:block th:if="${q != '' and elegida != null}">
+        <h2 id="sin-titulo" th:text="|Ninguna entidad con «${q}» en el nombre pide ${elegida.enFrase} ahora.|">Ninguna
+          entidad con «biblioteca» en el nombre pide alimentos ahora.</h2>
+        <p>Probá con otra categoría o con otra parte del nombre.</p>
+      </th:block>
+      <th:block th:if="${q != '' and elegida == null}">
+        <h2 id="sin-titulo" th:text="|No encontramos entidades con «${q}» en el nombre.|">No encontramos
+          entidades con «texto» en el nombre.</h2>
+        <p>Probá con otra parte del nombre o sacá el filtro.</p>
+      </th:block>
+      <th:block th:if="${q == '' and elegida != null}">
+        <h2 id="sin-titulo" th:text="|Ninguna entidad pide ${elegida.enFrase} ahora.|">Ninguna entidad pide
+          útiles escolares ahora.</h2>
+        <p>Cuando una lo publique, aparece acá.</p>
+      </th:block>
+      <a class="boton boton--secundario" href="/prototipo/raices/publico-entidades"
+         th:href="@{/prototipo/raices/publico-entidades}">Ver todas</a>
+    </section>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="aviso">Cargando las entidades…</p>
+      <div class="herbario tierra-impresa" aria-busy="true">
+        <ul class="herbario-lista" role="list">
+          <li th:each="i : ${#numbers.sequence(1, 4)}" class="etiqueta-entidad reserva"></li>
+        </ul>
+      </div>
+    </th:block>
+
+    <!--/* El herbario: un tronco paja en la tierra; cada entidad cuelga de su rama. */-->
+    <div th:if="${escenario == '' and n > 0}" class="herbario tierra-impresa">
+      <ul class="herbario-lista" role="list">
+        <li th:each="e : ${visibles}" class="etiqueta-entidad"
+            th:with="pedidos=${categoria == '' ? e.pedidos : e.pedidos.?[cat == '__${categoria}__']},
+                     total=${#lists.size(pedidos)}">
+          <article th:attr="aria-labelledby=${'entidad-' + e.clave}">
+            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle
+                class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use
+                href="#cat-alimentos" th:href="${'#cat-' + (categoria == '' ? e.cat : categoria)}" x="4" y="4"
+                width="34" height="34"/></svg>
+            <p class="etiqueta-tipo" th:text="${e.tipo}">Comedor</p>
+            <h2 th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>
+            <p class="etiqueta-barrio" th:text="${e.barrio}">Barrio Ejemplo</p>
+            <h3 class="etiqueta-pide">Pide</h3>
+            <ul class="pedidos" role="list">
+              <li th:each="p : ${pedidos}" th:if="${pStat.count <= 3}"
+><th:block th:replace="~{:: pedido(${p})}"></th:block></li>
+            </ul>
+            <details th:if="${total > 3}" class="pedidos-mas">
+              <summary><span class="pedidos-ver" th:text="|Ver los ${total} pedidos|">Ver los 5 pedidos</span><span
+                  class="pedidos-menos">Ver menos</span></summary>
+              <ul class="pedidos" role="list">
+                <li th:each="p : ${pedidos}" th:if="${pStat.count > 3}"><th:block th:replace="~{:: pedido(${p})}"></th:block></li>
+              </ul>
+            </details>
+            <a th:if="${e.numero != null}" class="boton boton--chico" href="/prototipo/raices/publico-mapa#entidad-comedor"
+               th:href="@{/prototipo/raices/publico-mapa} + '#entidad-' + ${e.clave}"
+               th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
+          </article>
+        </li>
+      </ul>
+    </div>
+
+    <div th:if="${escenario != 'error' and escenario != 'lento'}" class="salidas">
+      <a class="boton boton--principal" href="/prototipo/raices/publico-registro-donante"
+         th:href="@{/prototipo/raices/publico-registro-donante}">Quiero donar</a>
+      <p>¿Ya tenés cuenta? <a href="/prototipo/raices/publico-ingresar"
+         th:href="@{/prototipo/raices/publico-ingresar}">Ingresar</a></p>
+      <p>¿Representás a una entidad? <a href="/prototipo/raices/publico-registro-entidad"
+         th:href="@{/prototipo/raices/publico-registro-entidad}">Sumar mi entidad</a></p>
+    </div>
+  </div>
+</th:block>
+
+<!--/* Un pedido: qué, cuánto falta, hasta cuándo o si se repite, y por qué. Lo pendiente, pendiente:
+       "faltan", no "recibió". */-->
+<th:block th:fragment="pedido(p)">
+  <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
+      href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
+  <p><b th:text="${p.que}">Lentejas secas</b> · <th:block th:text="${p.falta}">Faltan 30 de 40 kg este
+    mes</th:block> · <th:block th:text="${p.cuando}">Se repite cada mes</th:block></p>
+  <p class="pedido-porque" th:text="|Por qué: ${p.porque}|">Por qué: para el almuerzo de lunes a viernes.</p>
+</th:block>
+</body>
+</html>

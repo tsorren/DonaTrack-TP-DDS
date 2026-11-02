@@ -1,0 +1,161 @@
+/* Raíces, sitio A: Mapa (publico-mapa.html). El estilo del mapa de Seguir entregas: el papel arriba,
+   la tierra debajo de la línea de tierra, las líneas de subte impresas del depósito a cada estación
+   y un fruto mandarina por entrega confirmada. Al lado (debajo, en el celular), la lista con el
+   mismo número; al pasar, enfocar o llegar a una entidad, su línea queda llena y las demás se
+   apagan. */
+@import url("publico-listas.css");
+
+.mapa-cuerpo {
+  display: grid;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.mapa-dibujo {
+  margin: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  overflow: hidden;
+}
+
+/* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 590). */
+figure.mapa-dibujo {
+  background: linear-gradient(transparent calc(80 / 590 * 100%), var(--color-suelo) 0);
+}
+
+figure.mapa-dibujo.reserva {
+  aspect-ratio: 800 / 590;
+  min-height: 0;
+  border-color: var(--color-pendiente-fondo);
+  background: var(--color-pendiente-fondo);
+}
+
+.estacion-numero {
+  fill: var(--color-tinta);
+  font: 800 24px var(--fuente-titulo);
+  text-anchor: middle;
+}
+
+.estacion-sello .estacion-numero {
+  font-size: 20px;
+}
+
+.mapa-dibujo .dibujo-rotulo {
+  font-size: 19px;
+}
+
+.mapa-fruto {
+  fill: var(--color-fruto);
+  stroke: var(--color-fruto-hondo);
+  stroke-width: 2;
+}
+
+/* Al pasar, enfocar o llegar a una entidad de la lista, las demás estaciones se apagan.
+   ponytail: una regla por número de estación, hasta 6; en el sistema, MapLibre. */
+.mapa-cuerpo:has(.estacion-ficha:is(:hover, :focus-within, :target)) .estacion {
+  opacity: 0.3;
+}
+
+.mapa-cuerpo:has(.estacion-ficha--1:is(:hover, :focus-within, :target)) .estacion--1,
+.mapa-cuerpo:has(.estacion-ficha--2:is(:hover, :focus-within, :target)) .estacion--2,
+.mapa-cuerpo:has(.estacion-ficha--3:is(:hover, :focus-within, :target)) .estacion--3,
+.mapa-cuerpo:has(.estacion-ficha--4:is(:hover, :focus-within, :target)) .estacion--4,
+.mapa-cuerpo:has(.estacion-ficha--5:is(:hover, :focus-within, :target)) .estacion--5,
+.mapa-cuerpo:has(.estacion-ficha--6:is(:hover, :focus-within, :target)) .estacion--6 {
+  opacity: 1;
+}
+
+/* --- La lista ---------------------------------------------------------------------------------- */
+
+.mapa-lista h2 {
+  margin: 0 0 1rem;
+}
+
+.estaciones {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.estacion-ficha {
+  padding: 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-hoja);
+  outline: 1.5px solid var(--color-tinta);
+  scroll-margin-top: 1rem;
+}
+
+.estacion-ficha:target {
+  outline: 3px solid var(--color-acento);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-raiz);
+}
+
+.estacion-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.estacion-cabeza h3 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 800 1.1875rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.estacion-cabeza p {
+  margin: 0;
+}
+
+.estacion-sello {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.estacion-entregas {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--color-tinta-suave);
+  list-style: none;
+}
+
+.estacion-entregas > li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.25rem 0.75rem;
+}
+
+.estacion-entregas p {
+  margin: 0;
+  color: var(--color-tinta);
+}
+
+.estacion-entregas .boton {
+  grid-column: 2;
+}
+
+@media (min-width: 68.75em) {
+  .mapa-cuerpo {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .mapa-dibujo {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .estacion {
+    transition: opacity 0.2s;
+  }
+}

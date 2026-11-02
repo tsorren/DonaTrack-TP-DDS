@@ -1,0 +1,149 @@
+/* Raíces, sitio A: la navegación pública (navegacion-publica.html), en todas las públicas y en la
+   portada. Va después de la hoja de la pantalla, que ya trae los tokens. Es el mismo menú de las
+   privadas (privado.css): en el celular y la tableta, una barra fija abajo, en la tierra, con la
+   sección actual en paja; en pantalla grande, en la cabecera, impresa en verde oliva con la
+   segunda tinta corrida. Ingresar y Crear una cuenta van aparte, a la derecha: el segundo, como
+   el botón principal. */
+
+/* La barra no tapa el pie. */
+body {
+  padding-bottom: 4.5rem;
+}
+
+.publica-menu {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 2;
+  background: var(--color-suelo);
+  border-top: 3px solid var(--color-tinta);
+}
+
+.publica-menu ul {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.publica-menu a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.75rem;
+  padding: 0.5rem 0.125rem;
+  color: var(--color-texto-suelo);
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-stretch: 90%;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+}
+
+.publica-menu a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.publica-menu a[aria-current="page"] {
+  background: var(--color-raiz);
+  color: var(--color-tinta);
+}
+
+.publica-menu :focus-visible {
+  outline-color: var(--color-raiz);
+  outline-offset: -5px;
+}
+
+.publica-menu a[aria-current="page"]:focus-visible {
+  outline-color: var(--color-tinta);
+}
+
+/* En la barra, el nombre corto: el resto lo leen los lectores de pantalla. */
+.publica-menu-largo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (min-width: 53.75em) {
+  body {
+    padding-bottom: 0;
+  }
+
+  .raices-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 2rem;
+  }
+
+  .publica-menu {
+    position: static;
+    flex: 1;
+    background: none;
+    border-top: 0;
+  }
+
+  /* En la cabecera es papel: sin la tierra impresa de la barra. */
+  .publica-menu::before {
+    content: none;
+  }
+
+  .publica-menu ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .publica-menu a {
+    min-height: 3rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radio-boton);
+    color: var(--color-tinta);
+    font-size: 1rem;
+    font-stretch: 112%;
+  }
+
+  .publica-menu-largo {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .publica-menu a[aria-current="page"] {
+    background: var(--color-acento);
+    color: var(--color-papel);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  }
+
+  .publica-menu :focus-visible,
+  .publica-menu a[aria-current="page"]:focus-visible {
+    outline-color: var(--color-acento);
+    outline-offset: 3px;
+  }
+
+  /* Ingresar y Crear una cuenta, aparte, a la derecha. */
+  .publica-menu-cuenta:not(.publica-menu-crear) {
+    margin-left: auto;
+  }
+
+  .publica-menu-crear a {
+    border: 2px solid var(--color-acento);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  }
+
+  .publica-menu-crear a:not([aria-current="page"]):hover {
+    background: var(--color-acento-claro);
+    text-decoration: none;
+  }
+}

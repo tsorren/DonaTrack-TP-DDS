@@ -18,6 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DonaTrack: lo que donás echa raíces en tu comunidad</title>
   <link rel="stylesheet" href="/css/prototipo/raices/publico-portada.css" th:href="@{/css/prototipo/raices/publico-portada.css}">
+  <link rel="stylesheet" href="/css/prototipo/raices/publico-navegacion.css" th:href="@{/css/prototipo/raices/publico-navegacion.css}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
 </head>
@@ -28,6 +29,8 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
+  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás públicas. */-->
+  <nav th:replace="~{prototipo/raices/navegacion-publica :: navegacion('')}"></nav>
 </header>
 <!--/* Los estados de la maqueta (?escenario=vacio, error o lento) se ven en las tres partes con datos:
        las entidades, las cifras y las entregas del mes. Sin parámetro, hay datos. */-->
@@ -161,6 +164,8 @@
         Cada una pide lo que necesita y confirma lo que recibe.</p>
       <p class="tierra-bajada" th:unless="${conDatos}">Comedores, escuelas, hogares y otras entidades de la
         comunidad. Cada una pide lo que necesita y confirma lo que recibe.</p>
+      <p class="tierra-bajada"><a href="/prototipo/raices/publico-entidades"
+         th:href="@{/prototipo/raices/publico-entidades}">Ver todas las entidades y lo que piden</a></p>
       <span class="sol" aria-hidden="true"></span>
       <div class="planta">
         <svg class="planta-dibujo" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
@@ -354,6 +359,8 @@
           <p class="asiento-pendiente">Falta confirmar la entrega: la confirma el comedor con la foto.</p>
         </li>
       </ol>
+      <p class="viajo-bajada"><a href="/prototipo/raices/publico-donaciones"
+         th:href="@{/prototipo/raices/publico-donaciones}">Ver todas las entregas confirmadas</a></p>
     </div>
   </section>
 </main>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Crear una cuenta (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.5).
+       Las dos tarjetas del boceto, con las piezas de la portada: la del donante, una lámina impresa
+       con el brote; la de la entidad, la etiqueta vacía de "Tu entidad", punteada y sin imprimir,
+       con su sello hueco. No carga datos: no tiene estados. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="publica cuenta">
+    <header class="publica-cabeza">
+      <p class="rotulo">Crear una cuenta</p>
+      <h1>¿Cómo querés <em>sumarte</em>?</h1>
+      <p class="lectura-bajada">Según lo que elijas, te pedimos datos distintos.</p>
+    </header>
+
+    <ul class="opciones-cuenta" role="list">
+      <li class="opcion-cuenta">
+        <section aria-labelledby="donar-titulo">
+          <svg class="opcion-dibujo" viewBox="0 0 60 64" aria-hidden="true" focusable="false">
+            <path class="opcion-sol" d="M6 64A24 24 0 0 1 54 64Z"/>
+            <path class="opcion-tallo" d="M30 64V28"/>
+            <path class="opcion-hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+            <path class="opcion-hoja opcion-hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+            <path class="opcion-hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+          </svg>
+          <h2 id="donar-titulo">Quiero donar, yo o mi empresa</h2>
+          <p>Registrás lo que donás y lo seguís hasta que la entidad confirma la entrega.</p>
+          <p>Ves a qué entidad se asignó, en qué estado está y la foto de la entrega.</p>
+          <p class="opcion-pedimos">Te pedimos tu correo, una contraseña y tu nombre o el de tu empresa.</p>
+          <a class="boton boton--principal" href="/prototipo/raices/publico-registro-donante"
+             th:href="@{/prototipo/raices/publico-registro-donante}">Crear mi cuenta de donante</a>
+        </section>
+      </li>
+      <li class="opcion-cuenta opcion-cuenta--entidad">
+        <section aria-labelledby="entidad-titulo">
+          <svg class="opcion-dibujo" viewBox="0 0 60 64" aria-hidden="true" focusable="false">
+            <path class="opcion-raiz" d="M30 0V30"/>
+            <circle class="opcion-hueco" cx="30" cy="44" r="16"/>
+          </svg>
+          <h2 id="entidad-titulo">Represento a una entidad</h2>
+          <p>Publicás lo que le hace falta a tu entidad y confirmás cada entrega con una foto.</p>
+          <p class="opcion-pedimos">Te pedimos los datos de la entidad, una dirección de entrega y quién la
+            representa. El equipo de DonaTrack la revisa antes de sumarla.</p>
+          <a class="boton boton--secundario" href="/prototipo/raices/publico-registro-entidad"
+             th:href="@{/prototipo/raices/publico-registro-entidad}">Sumar mi entidad</a>
+        </section>
+      </li>
+    </ul>
+
+    <p class="cuenta-salida">¿Ya tenés cuenta? <a href="/prototipo/raices/publico-ingresar"
+       th:href="@{/prototipo/raices/publico-ingresar}">Ingresar</a></p>
+  </div>
+</th:block>
+</body>
+</html>

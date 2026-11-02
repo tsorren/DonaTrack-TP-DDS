@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Registro de donante con el error de datos, como lo devolvería el servidor: el
+       resumen arriba recibe el foco y enlaza a cada campo; lo escrito sigue, salvo la contraseña. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Revisá tus datos - Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices/publico-registro-donante :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

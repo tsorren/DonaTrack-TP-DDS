@@ -1,0 +1,113 @@
+/* Raíces, sitio A: Ingresar (publico-ingresar.html). El formulario en su lámina y, al lado (abajo, en
+   el celular), las cuentas de ejemplo de la maqueta: etiquetas de herbario en la tierra, con el sello
+   de cada rol, dentro de un marco punteado, porque no son del sistema. */
+@import url("publico-registro.css");
+
+.cuenta--ingresar {
+  align-items: start;
+}
+
+.cuenta-principal {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.cuenta-principal .aviso {
+  margin: 0;
+}
+
+/* "o", entre los dos modos de ingresar. */
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  color: var(--color-tinta-suave);
+}
+
+.separador::before,
+.separador::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--color-tinta-suave);
+}
+
+.ejemplos {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.75rem 1.5rem;
+  border-radius: var(--radio-lamina);
+  outline: 2px dashed var(--color-raiz);
+  outline-offset: -0.625rem;
+  background: var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+.ejemplos h2 {
+  margin: 0;
+  color: var(--color-texto-suelo);
+}
+
+.ejemplos p {
+  margin: 0;
+}
+
+.ejemplos-lista {
+  display: grid;
+  gap: 1rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ejemplos-lista a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  color: var(--color-tinta);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ejemplos-lista a:hover {
+  background: var(--color-acento-claro);
+}
+
+.ejemplos-lista a:active {
+  box-shadow: none;
+  translate: 0.3rem 0.3rem;
+}
+
+.ejemplos :focus-visible {
+  outline-color: var(--color-raiz);
+}
+
+/* El sello de cada rol: un disco paja con su inicial. */
+.ejemplo-inicial {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+  font: 900 1rem/1 var(--fuente-titulo);
+  font-stretch: 120%;
+}
+
+@media (min-width: 53.75em) {
+  .cuenta--ingresar {
+    grid-template-columns: minmax(0, 38rem) minmax(0, 24rem);
+    gap: 3rem;
+  }
+
+  .ejemplos {
+    margin-top: 9rem;
+  }
+}
