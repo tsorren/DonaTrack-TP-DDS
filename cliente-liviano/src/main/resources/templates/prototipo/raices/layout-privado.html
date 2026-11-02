@@ -5,7 +5,8 @@
        (privado.css y js/raices-menu.js). No es un juego de plantillas: solo lo usa el prototipo.
        Uso: <html th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
        donde 'hoja' es el nombre de la hoja de la pantalla en css/prototipo/raices/. El modelo trae
-       navegacion (List<OpcionNavegacion>) y cuenta (CuentaVista). */-->
+       navegacion (List<OpcionNavegacion>), cuenta (CuentaVista) y perfil (la dirección de Mi perfil
+       del rol). Al final, el pie de todas las páginas (pie.html). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
 <head>
   <meta charset="utf-8">
@@ -39,10 +40,13 @@
   </nav>
   <div class="armazon-cuenta">
     <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+    <a th:if="${perfil}" href="/prototipo/raices/donante-perfil" th:href="${perfil}"
+       th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
     <a href="/salir" th:href="@{/salir}">Salir</a>
   </div>
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<footer th:replace="~{prototipo/raices/pie :: pie}"></footer>
 <!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian. */-->
 <div id="avisos" class="avisos" aria-live="polite"></div>
 <script src="/js/raices-menu.js" th:src="@{/js/raices-menu.js}" defer></script>

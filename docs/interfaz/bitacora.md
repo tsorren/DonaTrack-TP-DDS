@@ -26,6 +26,39 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · proceso (Raíces) · Las preguntas abiertas de Raíces, decididas
+
+- **Decisión:** las 18 preguntas abiertas de las fichas de Raíces se mandaron al grupo en un
+  artifact (2026-11-01). Respondieron Nico, Anush y Camila, y el usuario decidió cada tema en
+  cuatro rondas, con los votos a la vista. En el front:
+  - **Necesidades:** la cantidad va en la unidad de la subcategoría del catálogo. La lista la dice
+    entre paréntesis y "Cuánto" es un número, así que "latas" y "cajas" pasan a "unidades". Se
+    suma "Cada quincena" (15 días). La fecha límite se conserva. Al cambiar la cantidad, la ayuda
+    dice que vale desde el período en curso. El diálogo de la baja dice qué pasa con cada entrega,
+    según si salió.
+  - **Nombre de quien donó:** se ve, sea empresa o persona; si lo ocultó en su perfil, "Una
+    persona que prefiere no mostrar su nombre". Reemplaza "Donó: Una persona".
+  - **Confirmar recepción:** sin la cantidad de bultos. La etiqueta dice cuánto llegó, y la nota
+    del botón dice que lo incompleto o dañado se confirma igual y se reporta.
+  - **Pantallas nuevas:** Contacto, Mi perfil (mínimo) y Términos y privacidad, con un pie corto
+    en todas las páginas, también en las privadas. Cada "escribinos con este código" lleva a
+    Contacto con el código ya escrito.
+- **Alternativas:** las del artifact, con sus votos (tabla en el handoff de Raíces). Para el campo
+  de bultos: sumarlo al contrato junto al remito, o dejarlo solo en pantalla. Para Mi perfil: un
+  interruptor que guarda solo. Para el contacto: solo con sesión. Para el pie privado: los enlaces
+  en el menú de la cuenta.
+- **Por qué:** cada pantalla deja de mostrar datos que el contrato no tiene, o los marca como
+  pendientes de backend en su ADR. El usuario fue contra lo más votado en dos temas: la fecha límite
+  (el grupo pidió sacarla) y la baja (el grupo se dividió).
+- **Costo:** el backend queda en cuatro ADR `proposed` y en las DTI-29 a DTI-33, sin tocar
+  servicios. El texto de los legales es de ejemplo. El registro de Raíces, con su casilla de
+  aceptación, queda descrito en la ficha de Legales hasta que se dibuje.
+- **Quién decidió:** usuario (2026-11-02), con las respuestas del grupo. La forma de cada pantalla
+  nueva se aprueba al verla dibujada.
+- **Evidencia:** fichas `raices-necesidades.md`, `raices-confirmar-recepcion.md`,
+  `raices-contacto.md`, `raices-mi-perfil.md` y `raices-legales.md`; ADRs en `docs/adr/`
+  (20261102-…).
+
 ### 2026-11-02 · componente:cifras (Raíces) · "Lo que está confirmado": una cosecha colgada de una rama
 
 - **Decisión:** C, la rama. En la portada, las tres cifras de "Lo que está confirmado" cuelgan de

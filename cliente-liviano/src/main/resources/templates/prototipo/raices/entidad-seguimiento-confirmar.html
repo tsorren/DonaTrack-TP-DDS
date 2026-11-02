@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <!--/* Raíces, Confirmar recepción de la entidad (RF-12), según su ficha de flujo
        (docs/interfaz/flujos/raices-confirmar-recepcion.md). Arriba, qué entrega es y cuándo llegó; la
-       etiqueta de la entrega (categoría, bultos, el pedido que cubre y quién donó); el último tramo,
-       la raíz de esta entrega, con la confirmación hueca porque todavía no pasó; y el formulario:
-       las fotos (al menos una), quién las ve, los bultos y el remito. Los mismos datos, campos y
-       acciones que la pantalla de Cozy (prototipo/cozy-medieval/entidad-seguimiento-confirmar.html).
+       etiqueta de la entrega (categoría, cantidad, el pedido que cubre y quién donó); el último
+       tramo, la raíz de esta entrega, con la confirmación hueca porque todavía no pasó; y el
+       formulario: las fotos (al menos una), quién las ve y el remito. Los mismos datos y acciones que
+       la pantalla de Cozy (prototipo/cozy-medieval/entidad-seguimiento-confirmar.html), sin los
+       bultos: el contrato suma solo el remito (usuario, 2026-11-02; ADR 20261102 del contrato de
+       entregas).
        ?entrega=lentejas (de partida) o ropa; una clave que no está, o ?escenario=vacio, muestra "No
        encontramos esa entrega". ?escenario=lento (enviando), error (del servidor), sin-conexion y
        confirmada (ya confirmada). Es un formulario real (POST, multipart por las fotos, lo
@@ -28,22 +30,25 @@
 </th:block>
 
 <!--/* Los datos de Cozy y, además, lo que suma Raíces: la categoría, el pedido que cubre (de las
-       necesidades publicadas de Cozy) y quién donó; si dona una persona, sin su nombre. */-->
+       necesidades publicadas de Cozy) y quién donó. El nombre se ve, sea empresa o persona, salvo
+       que quien donó lo haya ocultado en su perfil (dono null; donoTipo 'empresa' o, si falta, persona;
+       usuario, 2026-11-02). Las cantidades,
+       en la unidad de la subcategoría del catálogo: kg, litros o unidades. */-->
 <th:block th:fragment="entrega(pedida, pantalla)"
     th:with="entregas=${ {
-      {clave: 'lentejas', nombre: 'lentejas secas', titulo: 'Lentejas secas, 15 kg', bultos: '3',
+      {clave: 'lentejas', nombre: 'lentejas secas', titulo: 'Lentejas secas, 15 kg', cantidad: '15 kg',
        salio: 'Hoy, 14:30', llego: 'Hoy, 18:20', llegoFrase: 'Llegó hoy a las 18:20.',
        llegaron: 'Llegaron hoy a las 18:20.',
        remito: '0001-00004521', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos',
        pedido: 'Lentejas secas, 40 kg, hasta el 31 de octubre.', recibido: 'Van 10 kg recibidos.',
        pedidoDespues: 'Tu pedido de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre.',
        dono: 'Distribuidora Ejemplo SA', foto: 'lentejas-1', confirmo: '18:45'},
-      {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo, 2 cajas', bultos: '2',
+      {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo, 10 unidades', cantidad: '10 unidades',
        salio: 'Ayer, 15:50', llego: 'Ayer, 17:10', llegoFrase: 'Llegó ayer a las 17:10.',
        llegaron: 'Llegó ayer a las 17:10.',
        remito: '0001-00004498', categoria: 'cat-ropa', categoriaTexto: 'Ropa',
-       pedido: 'Ropa de abrigo, 6 cajas, hasta el 15 de noviembre.', recibido: 'Va 1 caja recibida.',
-       pedidoDespues: 'Tu pedido de ropa de abrigo: 3 de 6 cajas recibidas, hasta el 15 de noviembre.',
+       pedido: 'Ropa de abrigo, 30 unidades, hasta el 15 de noviembre.', recibido: 'Van 5 unidades recibidas.',
+       pedidoDespues: 'Tu pedido de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre.',
        dono: null, foto: 'ropa-1', confirmo: '18:50'} } },
              escenario=${param.escenario != null ? param.escenario[0] : ''},
              clave=${pedida ?: (param.entrega == null ? 'lentejas' : param.entrega[0])},
@@ -91,7 +96,9 @@
         <h2 id="error-titulo">No pudimos confirmar la entrega.</h2>
         <p>Es un problema nuestro: la entrega sigue esperando tu confirmación y quien donó no recibió
           ningún aviso. Volvé a elegir las fotos y probá de nuevo en unos minutos; si sigue,
-          escribinos con este código.</p>
+          <a href="/prototipo/raices/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/prototipo/raices/publico-contacto(codigo='a1b2c3d4e5f6',volver=|/prototipo/raices/entidad-seguimiento-confirmar?entrega=${e.clave}|)}">escribinos
+          con este código</a>.</p>
         <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
         <a class="boton boton--secundario" href="#fotos">Volver a intentar</a>
       </section>
@@ -117,7 +124,7 @@
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
               </svg>
-              <span th:text="|${e.categoriaTexto} · ${e.bultos} bultos|">Alimentos · 3 bultos</span>
+              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
             </h2>
             <dl>
               <div>
@@ -128,7 +135,7 @@
               </div>
               <div>
                 <dt>Donó</dt>
-                <dd th:text="${e.dono ?: 'Una persona'}">Distribuidora Ejemplo SA</dd>
+                <dd th:text="${e.dono ?: (e['donoTipo'] == 'empresa' ? 'Una empresa que prefiere no mostrar su nombre' : 'Una persona que prefiere no mostrar su nombre')}">Distribuidora Ejemplo SA</dd>
               </div>
               <div>
                 <dt>Desde</dt>
@@ -163,7 +170,7 @@
               action="/prototipo/raices/entidad-seguimiento-sellada-lentejas"
               th:action="@{/prototipo/raices/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
               method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-          <p class="obligatorios">Los tres datos son obligatorios: las fotos, los bultos y el remito.</p>
+          <p class="obligatorios">Los dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">
             <legend><h2>Las pruebas</h2></legend>
             <div class="campo campo--fotos" th:classappend="${conError} ? 'campo--error'">
@@ -187,12 +194,6 @@
 
           <fieldset class="grupo">
             <legend><h2>Lo que recibiste</h2></legend>
-            <div class="campo">
-              <label for="bultos">Cantidad de bultos</label>
-              <small id="bultos-ayuda">Contá las cajas o bolsas que recibiste.</small>
-              <input id="bultos" name="bultos" type="number" min="1" required inputmode="numeric"
-                     aria-describedby="bultos-ayuda" th:value="${conError} ? ${e.bultos} : null">
-            </div>
             <div class="campo" th:classappend="${conError} ? 'campo--error'">
               <label for="remito">Número de remito</label>
               <small id="remito-ayuda">Está arriba a la derecha del papel.</small>
@@ -208,7 +209,8 @@
                     th:disabled="${escenario == 'lento'}"
                     th:text="${escenario == 'lento'} ? 'Confirmando…' : 'Confirmar recepción'">Confirmar
               recepción</button>
-            <p class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.</p>
+            <p class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.
+              Si llegó incompleta o dañada, confirmala igual y contanos qué pasó.</p>
             <a class="problema" href="/prototipo/raices/entidad-seguimiento-problema?entrega=lentejas"
                th:href="@{/prototipo/raices/entidad-seguimiento-problema(entrega=${e.clave})}">Llegó con
               un problema</a>

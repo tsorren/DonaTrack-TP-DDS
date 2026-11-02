@@ -105,6 +105,7 @@
   min-height: 3rem;
   padding: 0 0.5rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 main {
@@ -221,7 +222,9 @@ main h2 {
     padding-bottom: 0;
   }
 
+  /* La columna ocupa todas las filas (contenido, pie y avisos): su filete llega hasta el final. */
   .armazon {
+    grid-row: 1 / span 3;
     position: sticky;
     top: 0;
     flex-direction: column;
@@ -290,8 +293,14 @@ main h2 {
   }
 
   main,
+  .raices-pie,
   .avisos {
     grid-column: 2;
+  }
+
+  .raices-privado .raices-pie {
+    max-width: 82rem;
+    margin: 0;
   }
 
   .armazon-plegar:not([hidden]) {

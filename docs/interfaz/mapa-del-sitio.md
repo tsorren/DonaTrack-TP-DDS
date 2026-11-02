@@ -19,6 +19,7 @@ flowchart LR
     L --> LD[Landing donante]
     L --> LB[Landing beneficiario]
     L --> LG[Legales y privacidad]
+    L --> CO[Contacto]
     L --> IS[Iniciar sesión]
     L --> RE[Registrarse: elegir]
     RE --> RD[Registro de donante]
@@ -68,6 +69,7 @@ flowchart LR
 | Nosotros | Público | 2 | RF-01 | pág. 3 | E1 |
 | Landing donante / beneficiario | Público | 2 | RF-01 | — | E1 (sin boceto) |
 | Legales y privacidad | Público | 2 | RF-01 | pie de página | E6 |
+| Contacto | Público | 2 | RF-01 (HB-21) | pie de página y avisos de error | E6 (Raíces, 2026-11-02) |
 | Iniciar sesión | Público | 2 | RF-04 | pág. 4 | E1 |
 | Registrarse: elegir | Público | 2 | RF-03 | pág. 5 | E1 |
 | Registro de donante / entidad | Público | 3 | RF-03 | pág. 11 (entidad) | E1 |

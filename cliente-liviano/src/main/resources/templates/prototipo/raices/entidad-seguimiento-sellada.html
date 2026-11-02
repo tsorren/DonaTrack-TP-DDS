@@ -73,7 +73,7 @@
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
               </svg>
-              <span th:text="|${e.categoriaTexto} · ${e.bultos} bultos|">Alimentos · 3 bultos</span>
+              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
             </h2>
             <dl>
               <div>
@@ -82,7 +82,7 @@
               </div>
               <div>
                 <dt>Donó</dt>
-                <dd th:text="${e.dono ?: 'Una persona'}">Distribuidora Ejemplo SA</dd>
+                <dd th:text="${e.dono ?: (e['donoTipo'] == 'empresa' ? 'Una empresa que prefiere no mostrar su nombre' : 'Una persona que prefiere no mostrar su nombre')}">Distribuidora Ejemplo SA</dd>
               </div>
               <div>
                 <dt>Desde</dt>
@@ -102,7 +102,6 @@
           <section class="asentado" aria-labelledby="asentado-titulo">
             <h2 id="asentado-titulo">Lo que quedó asentado</h2>
             <dl>
-              <div><dt>Bultos</dt><dd th:text="${e.bultos}">3</dd></div>
               <div><dt>Remito</dt><dd th:text="${e.remito}">0001-00004521</dd></div>
               <div><dt>Recibió</dt><dd>Marta, por Comedor Barrio Ejemplo</dd></div>
               <div><dt>Cuándo</dt><dd th:text="|15 de octubre de 2026, ${e.confirmo}|">15
@@ -121,9 +120,9 @@
                 <use href="#cat-ropa" th:href="|#${otra.categoria}|"/>
               </svg>
               <div>
-                <p class="siguiente-que" th:text="${otra.titulo}">Ropa de abrigo, 2 cajas</p>
-                <p th:text="|${otra.llegoFrase} ${otra.bultos} bultos, desde el Depósito Central.|">Llegó
-                  ayer a las 17:10. 2 bultos, desde el Depósito Central.</p>
+                <p class="siguiente-que" th:text="${otra.titulo}">Ropa de abrigo, 10 unidades</p>
+                <p th:text="|${otra.llegoFrase} Desde el Depósito Central.|">Llegó ayer a las 17:10.
+                  Desde el Depósito Central.</p>
               </div>
             </div>
             <a class="boton boton--principal" href="/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa"

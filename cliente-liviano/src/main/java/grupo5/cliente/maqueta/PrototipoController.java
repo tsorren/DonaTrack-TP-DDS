@@ -4,6 +4,9 @@ import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.web.EstilosController;
 import jakarta.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -14,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -34,7 +38,10 @@ class PrototipoController {
   private static final String NOMBRE = "(publico|donante|entidad|admin)(-[a-z]+)+";
   private static final String NO_EXISTE = "No existe esa pantalla";
 
-  /** Pantallas que el layout privado enlaza fuera del menú y todavía no están dibujadas. */
+  /**
+   * Pantallas que el layout privado enlaza fuera del menú; si el prototipo no las dibujó, muestran
+   * la página de sin dibujar.
+   */
   private static final Map<String, String> FUERA_DEL_MENU = Map.of("perfil", "Mi perfil");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
@@ -185,6 +192,7 @@ class PrototipoController {
                         seccion.equals(actual)))
             .toList());
     model.addAttribute("cuenta", prototipo.cuentas().get(rol));
+    model.addAttribute("perfil", menu.isEmpty() ? null : prototipo.direccion() + rol + "-perfil");
     return prototipo.carpeta() + (dibujada ? pantalla : SIN_DIBUJAR);
   }
 
@@ -197,9 +205,28 @@ class PrototipoController {
     return volver(COZY, pantalla);
   }
 
+  /**
+   * En Raíces se conservan al redirigir dos datos que no son lo escrito: a qué pantalla volver
+   * después ({@code ?volver=}, en Contacto, solo si es una pantalla de Raíces) y la elección de Mi
+   * perfil ({@code mostrar=si}), para que el aviso diga lo que se eligió.
+   */
   @PostMapping("/prototipo/raices/{pantalla}")
-  String enviarEnRaices(@PathVariable String pantalla) {
-    return volver(RAICES, pantalla);
+  String enviarEnRaices(
+      @PathVariable String pantalla,
+      @RequestParam(required = false) String volver,
+      @RequestParam(required = false) String mostrar) {
+    List<String> consulta = new ArrayList<>();
+    if (volver != null
+        && volver.startsWith(RAICES.direccion())
+        && !volver.contains("//")
+        && !volver.contains("..")) {
+      consulta.add("volver=" + URLEncoder.encode(volver, StandardCharsets.UTF_8));
+    }
+    if ("si".equals(mostrar)) {
+      consulta.add("mostrar=si");
+    }
+    String destino = volver(RAICES, pantalla);
+    return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);
   }
 
   private String volver(Prototipo prototipo, String pantalla) {

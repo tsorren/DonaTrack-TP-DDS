@@ -433,3 +433,102 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 
 1. **Riesgo:** un PR puede romper la accesibilidad, el toque o el responsive sin que el CI lo note.
 2. **Costo de saldarla:** el job baja unos 200 MB de driver más Chromium; con caché, es una vez por versión de Playwright.
+
+---
+
+## DTI-29 — El contrato de entregas no tiene remito ni reporte de problemas, y la donación no devuelve su necesidad
+<a id="dti-29"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `CambioEstadoEntregaRequestDTO` no acepta remito ni reporte; `EntregaResponseDTO` no los devuelve; `DonacionIndependienteResponseDTO` no devuelve `necesidadId`. El prototipo de Raíces ya pide el remito al confirmar |
+| Target | `logistica-service` (`Entrega`, DTOs de entregas, `entrega.exitosa`) · `donaciones-service` (`DonacionIndependienteResponseDTO`) · `openapi-logistica.yaml`, `openapi-donaciones.yaml` y `schemas/evento-entrega-exitosa.schema.json` |
+| Cuándo se saldará | Cuando `cliente-liviano` consuma Logística para Confirmar recepción (RF-12). Pide antes HB-13 (pertenencia) |
+
+1. **Remito.** `numeroRemito` en la confirmación (`ENTREGADA`) y en `EntregaResponseDTO`; fuera de las respuestas públicas y de los eventos.
+2. **Reporte.** `reporte` opcional en la confirmación (`motivo`, `detalle`, `cantidadRecibida`), guardado en la entrega y como campo opcional de `entrega.exitosa`. Falta decidir qué hace Donaciones con una cantidad recibida menor (por ejemplo, cuánto cuenta para el período).
+3. **`necesidadId`** como campo opcional de `DonacionIndependienteResponseDTO`.
+4. **Pantalla "Llegó con un problema":** sin diseñar (`sin-dibujar` en el prototipo).
+
+---
+
+## DTI-30 — La necesidad no expone estado, versión, unidad, fecha límite ni historia de períodos
+<a id="dti-30"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato](./donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `NecesidadDTO` (`id, tipo, idEntidad, idSubcategoria, cantidadNecesitada, descripcion, estaSatisfecha, fechaInicio, fechaFin`); `GET /api/necesidades` sin filtro por estado y con las dadas de baja; período de cualquier largo; el cambio de cantidad vale desde el próximo período. El prototipo de Raíces ya muestra lo decidido |
+| Target | `donaciones-service` (`NecesidadDTO`, `NecesidadesService`, `NecesidadRecurrente`, `Subcategoria`, consulta de lo recibido) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
+| Cuándo se saldará | Cuando `cliente-liviano` consuma Donaciones para Necesidades (RF-10). Los dos cambios incompatibles se coordinan con `integration-tests` y Postman |
+
+1. **`estado`** calculado (`VIGENTE`, `CUMPLIDA`, `TERMINADA`, `DADA_DE_BAJA`) y filtro `?estado=`; corregir "Listar necesidades activas" en la OpenAPI.
+2. **`version`** en la salida y en el `PUT` (`409` si no coincide).
+3. **`fechaLimite`** obligatoria en las extraordinarias. **Incompatible.**
+4. **`periodicidad`** (`SEMANAL`, `QUINCENAL`, `MENSUAL`) obligatoria en las recurrentes; `fechaFin` deprecado como entrada. **Incompatible.**
+5. **Cambio de cantidad** en el período en curso, que queda cumplido si lo recibido ya alcanza.
+6. **`GET /api/necesidades/{id}/periodos`** (objetivo, asignado, recibido y resultado) y `GET /donaciones-independientes?necesidadId=`.
+7. **`unidad`** en la subcategoría (hereda la de la categoría) y de solo lectura en la necesidad.
+
+Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-service/20260609-gestion-de-necesidades-y-periodos.md).
+
+---
+
+## DTI-31 — Dar de baja una necesidad no cancela sus entregas que todavía no salieron
+<a id="dti-31"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-baja-de-una-necesidad-con-entregas-en-curso](./20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |
+| ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `NecesidadesService.eliminar` solo llama a `desactivar()`; Logística no tiene cancelación (`EstadoEntrega` sin `CANCELADA`); la asignación por `PATCH` no consulta si la necesidad sigue activa |
+| Target | `donaciones-service` (baja, broker, procesador de eventos de vuelta) · `logistica-service` (`Entrega.cancelar`, listener del comando, salida de la ruta) · `schemas/` (comando `entrega.cancelada.<proveedorId>.v1` y evento `entrega.cancelada`) |
+| Cuándo se saldará | Antes de habilitar la baja de necesidades en el cliente con datos reales |
+
+1. **Comando** `entrega.cancelada.<proveedorId>.v1` por el outbox del broker, y marca de "cancelación pedida" en la donación.
+2. **`Entrega.cancelar`** solo desde `PENDIENTE`, estado `CANCELADA`, salida de la ruta sin iniciar y evento firmado `entrega.cancelada`. **Incompatible** (valor nuevo del enum).
+3. **Vuelta** a `EN_DEPOSITO` sin destino al recibir el evento.
+4. **Guarda `NECESIDAD_INACTIVA`** en la asignación por `PATCH`.
+5. **Proveedores HTTP** sin cancelación: la entrega sigue y se loguea.
+
+---
+
+## DTI-32 — No hay preferencia para ocultar el nombre del donante ni constancia de los legales
+<a id="dti-32"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-nombre-visible-del-donante-y-constancia-de-los-legales](./20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `Donante` sin preferencia; `DonanteResumenDTO` devuelve la persona entera (documento, dirección, contactos); sin términos ni constancia de aceptación. El prototipo de Raíces ya muestra el nombre, la opción en Mi perfil, los legales en el pie y la casilla en la ficha |
+| Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `POST /api/personas`, `GET /api/personas/me`) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
+| Cuándo se saldará | Con el registro y el perfil reales (RF-03, RI-AUTH-02, HB-11) |
+
+1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias.
+2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`.
+3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Incompatible.**
+4. **Texto de los legales:** lo escribe el equipo.
+
+Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de-usuarios.md): ocultar el nombre no reemplaza la anonimización.
+
+---
+
+## DTI-33 — El formulario de contacto no tiene endpoint ni bandeja
+<a id="dti-33"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | Sin ADR propio. Si el contacto termina en un servicio nuevo o en un canal nuevo entre servicios, lo pide (AGENTS.md §9.1) |
+| Decision status | `proposed` |
+| Decidido por | Usuario (2026-11-02, pregunta 17 del artifact de Raíces): formulario dentro de DonaTrack |
+| Implementation status | `[OBSERVED] deferred` — ningún servicio tiene mensajes de contacto. El prototipo de Raíces tiene la pantalla de Contacto, y los avisos de error enlazan a ella con el código del error |
+| Target | Por decidir: `notificaciones-service` (ya tiene una bandeja de notificaciones) o `donaciones-service` |
+| Cuándo se saldará | Antes de publicar el sitio. Hasta entonces, la pantalla es maqueta |
+
+1. **Dueño.** Decidir qué servicio recibe el mensaje (`POST /api/contacto`: tema, mensaje, código de error opcional, y correo si no hay sesión) y dónde lo lee el administrador.
+2. **Abuso y repetidos.** Límite de envíos por persona o dirección, porque el formulario es público; y detectar el mismo mensaje enviado dos veces (la pantalla sin conexión pide mandarlo de nuevo).
+3. **Respuesta.** Por correo, desde Notificaciones, con el número del mensaje.

@@ -227,6 +227,99 @@ class PrototipoControllerTest {
   }
 
   @Test
+  void lasNecesidadesDeRaicesSiguenLoDecididoConElGrupo() throws Exception {
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=arroz"))
+        .andExpect(content().string(containsString("Cada quincena")))
+        .andExpect(content().string(containsString("Fideos secos (kg)")))
+        .andExpect(content().string(containsString("Cuánto, en kg")))
+        .andExpect(content().string(containsString("Vale desde este período, octubre")))
+        .andExpect(content().string(containsString("1 entrega ya salió del depósito")))
+        .andExpect(content().string(containsString("Martina Ruiz · 5 kg")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=leche"))
+        .andExpect(content().string(containsString("1 entrega todavía no salió")));
+    mvc.perform(get("/prototipo/raices/entidad-necesidades?necesidad=ropa"))
+        .andExpect(
+            content().string(containsString("Una persona que prefiere no mostrar su nombre")));
+    mvc.perform(get("/prototipo/raices/entidad-seguimiento-confirmar?entrega=ropa"))
+        .andExpect(content().string(containsString("Ropa · 10 unidades")))
+        .andExpect(content().string(not(containsString("bultos"))));
+  }
+
+  @Test
+  void elContactoDeRaicesLlegaConElCodigoYVuelveASuPantalla() throws Exception {
+    mvc.perform(
+            get("/prototipo/raices/publico-contacto")
+                .param("codigo", "a1b2c3d4e5f6")
+                .param("volver", "/prototipo/raices/entidad-necesidades"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("value=\"a1b2c3d4e5f6\"")))
+        .andExpect(content().string(containsString("name=\"correo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "action=\"/prototipo/raices/publico-contacto-enviado?volver=/prototipo/raices/entidad-necesidades\"")))
+        .andExpect(content().string(containsString("Términos y privacidad")));
+    mvc.perform(get("/prototipo/raices/publico-contacto?escenario=con-sesion"))
+        .andExpect(content().string(containsString("el correo de tu cuenta")))
+        .andExpect(content().string(not(containsString("name=\"correo\""))));
+    mvc.perform(get("/prototipo/raices/publico-contacto-error"))
+        .andExpect(content().string(containsString("Revisá dos cosas antes de enviar")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+    mvc.perform(
+            post("/prototipo/raices/publico-contacto-enviado")
+                .param("volver", "/prototipo/raices/entidad-necesidades")
+                .param("mensaje", "x"))
+        .andExpect(
+            redirectedUrl(
+                "/prototipo/raices/publico-contacto-enviado?volver=%2Fprototipo%2Fraices%2Fentidad-necesidades"));
+    mvc.perform(
+            post("/prototipo/raices/publico-contacto-enviado").param("volver", "https://otro.test"))
+        .andExpect(redirectedUrl("/prototipo/raices/publico-contacto-enviado"));
+    mvc.perform(
+            post("/prototipo/raices/publico-contacto-enviado")
+                .param("volver", "/prototipo/raices/../x"))
+        .andExpect(redirectedUrl("/prototipo/raices/publico-contacto-enviado"));
+    mvc.perform(
+            get("/prototipo/raices/publico-contacto-enviado")
+                .param("volver", "/prototipo/raices/entidad-necesidades"))
+        .andExpect(content().string(containsString("Volver a Necesidades")));
+    mvc.perform(
+            get("/prototipo/raices/publico-contacto-enviado").param("volver", "https://otro.test"))
+        .andExpect(content().string(containsString("Ir a la portada")))
+        .andExpect(content().string(not(containsString("otro.test"))));
+  }
+
+  @Test
+  void miPerfilEnRaicesEligeSiSeVeElNombreYMuestraLosLegales() throws Exception {
+    mvc.perform(get("/prototipo/raices/donante-perfil"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Mi perfil"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/prototipo/raices/donante-perfil\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("Donó: Distribuidora Ejemplo SA")))
+        .andExpect(content().string(containsString("Guardar mi elección")))
+        .andExpect(content().string(containsString("Aceptaste la versión 1")));
+    mvc.perform(post("/prototipo/raices/donante-perfil-guardado").param("mostrar", "si"))
+        .andExpect(redirectedUrl("/prototipo/raices/donante-perfil-guardado?mostrar=si"));
+    mvc.perform(post("/prototipo/raices/donante-perfil-guardado").param("mostrar", "no"))
+        .andExpect(redirectedUrl("/prototipo/raices/donante-perfil-guardado"));
+    mvc.perform(get("/prototipo/raices/donante-perfil-guardado"))
+        .andExpect(content().string(containsString("Las entidades ya no ven tu nombre")));
+    mvc.perform(get("/prototipo/raices/donante-perfil-guardado?mostrar=si"))
+        .andExpect(content().string(containsString("Las entidades ven tu nombre")));
+    mvc.perform(get("/prototipo/raices/publico-legales"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Versión 1, vigente desde")))
+        .andExpect(content().string(containsString("texto de ejemplo")));
+    mvc.perform(get("/prototipo/raices/publico-portada"))
+        .andExpect(content().string(containsString("href=\"/prototipo/raices/publico-legales\"")));
+  }
+
+  @Test
   void loQueTampocoDibujoCozyNoEnlazaACozy() throws Exception {
     mvc.perform(get("/prototipo/raices/entidad-seguimiento-problema?entrega=lentejas"))
         .andExpect(status().isOk())

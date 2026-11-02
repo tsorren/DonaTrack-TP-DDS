@@ -91,7 +91,8 @@ Desvíos considerados:
   como siempre, con un aviso "No encontramos esa necesidad" (HB-13; no se dice de quién es).
 - **Entidad dada de baja:** si se sabe al cargar la página, el aviso va en lugar del formulario de
   publicar, antes de escribir nada; si llega recién al enviar (409), arriba del formulario. "Tu
-  entidad no está activa, así que no puede publicar necesidades. Escribinos para revisarlo." (ver
+  entidad no está activa, así que no puede publicar necesidades. Escribinos para revisarlo." (con
+  el enlace a Contacto; ver
   Preguntas abiertas: el canal de contacto).
 
 ## 4. Pantallas
@@ -163,7 +164,7 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
   separadas como en el registro de Seguir entregas.
 - **Publicar otra necesidad:** un formulario plegado, como en Cozy, con los datos que pide el
   contrato: qué hace falta (de la lista del catálogo, agrupada por categoría), cuánto (con la
-  unidad), si se repite (una sola vez, cada semana o cada mes), hasta cuándo (solo si es una sola
+  unidad), si se repite (una sola vez, cada semana, cada quincena o cada mes), hasta cuándo (solo si es una sola
   vez) y por qué hace falta (la descripción, obligatoria). Si se repite, la fecha no se pide: el
   primer período dura una semana o un mes desde hoy y la pantalla lo dice. El campo de la fecha se
   ve siempre, no obligatorio y con la ayuda "Solo si es una sola vez" (sin JavaScript no se puede
@@ -177,8 +178,9 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
   - **Entregas para este pedido:** las entregas asignadas que todavía no se confirmaron, cada una
     en su estado (en tu puerta, en camino, por salir, con un problema) y con su próximo paso; las
     que esperan en la puerta, con el botón "Confirmar recepción". Al pie, "Ver en Seguir entregas".
-  - **Quién donó:** lo recibido, por quien donó, con cuánto y cuándo. Si dona una persona, no va su
-    nombre: "Una persona" (como en Confirmar recepción).
+  - **Quién donó:** lo recibido, por quien donó, con cuánto y cuándo. Se ve el nombre de la
+    empresa o la persona; si lo ocultó en su perfil, "Una persona que prefiere no mostrar su
+    nombre" (o "Una empresa…", si es una empresa) (usuario, 2026-11-02; antes, "Una persona").
   - **Cada período** (solo las que se repiten): la historia, del período en curso hacia atrás, cada
     uno con sus fechas, lo que llegó y el estado en texto: "Llegó todo", "Llegó una parte", "No
     llegó nada" y "En curso". Una barra que se llena acompaña cada uno, punteada la del período en
@@ -201,7 +203,7 @@ Qué cambia respecto del boceto de E1, y por qué:
 - **Cada período dice cuánto llegó,** no solo su color, y sus fechas a la vista (el boceto las
   muestra al pasar el mouse, que no existe en el celular).
 - **El botón "+" pasa a "Publicar otra necesidad",** con texto, como Cozy.
-- **"Recurrencia" pasa a "¿Se repite?",** con "Una sola vez", "Cada semana" y "Cada mes", y la
+- **"Recurrencia" pasa a "¿Se repite?",** con "Una sola vez", "Cada semana", "Cada quincena" y "Cada mes", y la
   fecha solo para la que es una sola vez: el contrato saca el largo del período de las fechas y dos
   respuestas que se contradicen ("cada semana" y una fecha a un mes) no deberían poder darse.
 - **Se suman** lo que viene en camino, quién donó y el motivo en el detalle (usuario, 2026-11-01), y
@@ -231,22 +233,22 @@ como en Cozy, y el de cambiar se ve con `?escenario=cambiar-datos`; cada acción
 | Lista | Sin permiso | `?necesidad=` de otra entidad o que no existe: la lista como siempre y arriba, un aviso | "No encontramos esa necesidad." · "Puede que el enlace esté incompleto o que ya no esté vigente. Fijate en la lista o en Cumplidas y terminadas." |
 | Publicar | Cargando | El botón dice "Publicando…" y no se puede volver a tocar | "Publicando tu necesidad…" (en la región `#avisos`) |
 | Publicar | Éxito | La lista con la nueva necesidad en su lugar (por fecha), abierta y marcada como nueva, y el aviso con foco | "Publicamos tu necesidad. Ya la ven los donantes y el catálogo público." |
-| Publicar | Error de datos | El formulario abierto, con el resumen arriba (con foco) y el error al lado de cada campo; lo escrito sigue. En la maqueta, dos errores: cuánto y la fecha | Resumen: "Revisá dos cosas antes de publicar" (o "una cosa", "tres cosas"), con un enlace a cada campo: "Falta cuánto" · "La fecha es anterior a hoy". Por campo: "Elegí qué hace falta." · "Escribí cuánto, con la unidad. Por ejemplo: 40 kg o 6 cajas." · "Elegí si se repite o es una sola vez." · "Si es una sola vez, elegí hasta cuándo, desde hoy, 15 de octubre, en adelante." · "Contá en pocas palabras por qué hace falta." |
+| Publicar | Error de datos | El formulario abierto, con el resumen arriba (con foco) y el error al lado de cada campo; lo escrito sigue. En la maqueta, dos errores: cuánto y la fecha | Resumen: "Revisá dos cosas antes de publicar" (o "una cosa", "tres cosas"), con un enlace a cada campo: "Falta cuánto" · "La fecha es anterior a hoy". Por campo: "Elegí qué hace falta." · "Escribí cuánto, con números. Por ejemplo: 30." · "Elegí si se repite o es una sola vez." · "Si es una sola vez, elegí hasta cuándo, desde hoy, 15 de octubre, en adelante." · "Contá en pocas palabras por qué hace falta." |
 | Publicar | Error del servidor | Un aviso arriba del formulario, que sigue abierto como estaba | "No pudimos publicar tu necesidad." · "Es un problema nuestro: no se guardó nada y los donantes no la ven todavía. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código · "Revisar y publicar de nuevo" (lleva al primer campo) |
-| Publicar | Entidad dada de baja | Si se sabe al cargar, el aviso en lugar del formulario; si llega al enviar (409), arriba del formulario | "Tu entidad no está activa, así que no puede publicar necesidades." · "Escribinos para revisarlo." |
+| Publicar | Entidad dada de baja | Si se sabe al cargar, el aviso en lugar del formulario; si llega al enviar (409), arriba del formulario | "Tu entidad no está activa, así que no puede publicar necesidades." · "Escribinos para revisarlo." ("Escribinos" lleva a Contacto) |
 | Publicar | Sin conexión | Con JavaScript, un aviso arriba; sin él, la página de error del navegador | "No sabemos si se publicó." · "Se cortó la conexión mientras se enviaba. Revisá la señal y mirá la lista antes de publicarla de nuevo." |
 | Detalle | Con datos | Por qué, las entregas para este pedido, quién donó, los períodos (si se repite) y las acciones | Ver Textos |
 | Detalle | Vacíos parciales | Sin entregas pendientes o sin nada recibido: la parte dice que no hay, no desaparece | "No hay entregas pendientes para este pedido." · "Todavía no llegó nada." |
 | Cambiar | Éxito | La lista con la necesidad abierta y el aviso con foco | "Guardamos los cambios de Lentejas secas." |
-| Cambiar | Error de datos | El formulario abierto, con el resumen arriba (con foco) y el error al lado del campo; lo escrito sigue | Resumen: "Revisá una cosa antes de guardar" (o "dos cosas"), con el enlace "Falta cuánto". Por campo: "Escribí cuánto, con la unidad. Por ejemplo: 40 kg." · "Contá en pocas palabras por qué hace falta." |
+| Cambiar | Error de datos | El formulario abierto, con el resumen arriba (con foco) y el error al lado del campo; lo escrito sigue | Resumen: "Revisá una cosa antes de guardar" (o "dos cosas"), con el enlace "Falta cuánto". Por campo: "Escribí cuánto, en kg. Por ejemplo: 40." (la unidad de esa necesidad) · "Contá en pocas palabras por qué hace falta." |
 | Cambiar | Error del servidor | Un aviso arriba del formulario, que sigue abierto con lo escrito | "No pudimos guardar los cambios." · "Es un problema nuestro: el pedido sigue como estaba. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código · "Revisar y guardar de nuevo" (lleva al primer campo) |
 | Cambiar | Conflicto | La necesidad como quedó, el formulario abierto con lo que escribiste y un aviso arriba | "Otra persona de tu entidad cambió este pedido mientras lo editabas." · "Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo." (en la maqueta; en el sistema, lo que cambió) |
 | Cambiar | Cargando | El botón dice "Guardando…" y no se puede volver a tocar | "Guardando los cambios…" |
 | Cambiar | Sin conexión | Con JavaScript, un aviso arriba; sin él, la página de error del navegador | "No sabemos si se guardaron los cambios." · "Se cortó la conexión mientras se enviaban. Revisá la señal y abrí el pedido antes de guardarlos de nuevo." |
 | Cambiar, baja | Ya no está vigente (404) | La lista sin ese pedido y un aviso arriba con el enlace a las terminadas | "Aceite de girasol ya no está vigente." · "Puede que otra persona de tu entidad lo haya dado de baja o que haya terminado. Fijate en Cumplidas y terminadas." |
-| Baja | Confirmación | El diálogo de confirmación, con foco en "No, dejarla" | "¿Dar de baja Aceite de girasol?" · "Deja de verse para los donantes y en el catálogo público. Lo que ya recibiste queda asentado." · si tiene una entrega en la puerta: "Tiene 1 entrega en tu puerta que espera tu confirmación: confirmala antes de darla de baja."; si tiene una que no llegó: "Tiene 1 entrega asignada que todavía no llegó: mirala en Seguir entregas antes de darla de baja." (con el enlace) · "Dar de baja" · "No, dejarla" |
+| Baja | Confirmación | El diálogo de confirmación, con foco en "No, dejarla" | "¿Dar de baja Aceite de girasol?" · "Deja de verse para los donantes y en el catálogo público. Lo que ya recibiste queda asentado." · si tiene una entrega en la puerta: "Tiene 1 entrega en tu puerta que espera tu confirmación: confirmala antes de darla de baja."; según si salió (usuario, 2026-11-02): "1 entrega ya salió del depósito: llega igual y queda asentado lo que recibas." · "1 entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la necesite." · si una entrega no pudo llegar (el camión volvió con ella): "1 entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la necesite." (y sus plurales) · "Dar de baja" · "No, dejarla" |
 | Baja | Cargando | El botón del diálogo dice "Dando de baja…" y no se puede volver a tocar | "Dando de baja tu necesidad…" |
-| Baja | Éxito | La lista sin ella, el aviso con foco; pasa a Cumplidas y terminadas, que cuenta una más | "Diste de baja Aceite de girasol. Ya no la ven los donantes." · en las terminadas: "Aceite de girasol · 20 litros · La diste de baja hoy, sin nada recibido." (con "ya no está vigente", "Se dio de baja hoy, sin nada recibido.") |
+| Baja | Éxito | La lista sin ella, el aviso con foco; pasa a Cumplidas y terminadas, que cuenta una más | "Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no pudo llegar vuelve al depósito para otra entidad." (la última frase, solo si tenía una entrega que no llegó) · en las terminadas: "Aceite de girasol · 20 litros · La diste de baja hoy, sin nada recibido." (con "ya no está vigente", "Se dio de baja hoy, sin nada recibido.") |
 | Baja | Error del servidor | El aviso arriba y la necesidad abierta, que sigue vigente; se reintenta con su "Dar de baja" | "No pudimos dar de baja tu necesidad." · "Es un problema nuestro: sigue publicada. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código |
 | Baja | Sin conexión | Con JavaScript, un aviso arriba; sin él, la página de error del navegador | "No sabemos si se dio de baja." · "Se cortó la conexión mientras se enviaba. Revisá la señal y mirá si sigue en la lista antes de repetirlo." |
 | Cualquiera | Deshabilitado | No aplica: ningún botón espera un paso previo | — |
@@ -263,18 +265,18 @@ donó, las terminadas) es de ejemplo, sintético.
 | Título | "Lo que *hace falta*" | El de Cozy. La parte en cursiva, con la segunda tinta |
 | Bajada | "Tus pedidos vigentes. Los ven los donantes y el catálogo público, sin tus datos de contacto." | Dice quién los ve (RF-22, D26) |
 | Registro | "Al 15 de octubre de 2026" · "5 necesidades vigentes" · "2 entregas esperan tu confirmación" · "2 en camino o por salir" · "1 con un problema" | Cifras con fecha. "2 entregas esperan…" enlaza a Confirmar recepción de las lentejas; "1 con un problema", al aceite (`?necesidad=aceite`) |
-| Publicar | "Publicar otra necesidad" · campos: "Qué hace falta" (una lista agrupada por categoría: Alimentos, Ropa, Muebles; ayuda: "Si no está en la lista, elegí la más parecida y contalo en por qué hace falta.") · "Cuánto" ("Con la unidad: 40 kg, 6 cajas, 24 latas. Si se repite, cuánto en cada período.") · "¿Se repite?" ("Una sola vez", "Cada semana", "Cada mes"; ayuda: "Si se repite, el primer período empieza hoy y se renueva solo cada semana o cada mes.") · "Hasta cuándo" ("Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.") · "Por qué hace falta" ("Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a viernes.") · botón "Publicar necesidad" | Los de Cozy, con la lista del catálogo en lugar del texto libre, más "¿Se repite?" y el motivo. Arriba: "Todos los datos son obligatorios; la fecha, solo si es una sola vez." |
+| Publicar | "Publicar otra necesidad" · campos: "Qué hace falta" (una lista agrupada por categoría: Alimentos, Ropa, Muebles; ayuda: "Si no está en la lista, elegí la más parecida y contalo en por qué hace falta.") · "Cuánto" (número; ayuda: "En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto en cada período."; la lista dice la unidad de cada opción: "Fideos secos (kg)", "Aceite de girasol (litros)", "Ropa de abrigo (unidades)") · "¿Se repite?" ("Una sola vez", "Cada semana", "Cada quincena", "Cada mes"; ayuda: "Si se repite, el primer período empieza hoy y se renueva solo cada semana, cada quincena (15 días) o cada mes.") · "Hasta cuándo" ("Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.") · "Por qué hace falta" ("Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a viernes.") · botón "Publicar necesidad" | Los de Cozy, con la lista del catálogo en lugar del texto libre, más "¿Se repite?" y el motivo. Arriba: "Todos los datos son obligatorios; la fecha, solo si es una sola vez." |
 | Aceite de girasol | "20 litros · hasta el 20 de octubre" · "faltan 5 días" · "Una sola vez" · "Todavía no llegó nada" · por qué: "Para cocinar el almuerzo." · entregas: "10 litros · El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha." · quién donó: "Todavía no llegó nada." | |
-| Leche en polvo | "24 latas · hasta el 25 de octubre" · "faltan 10 días" · "Una sola vez" · "12 de 24 latas recibidas" · por qué: "Para la merienda de los más chicos." · entregas: "12 latas · Sale del depósito el 17 de octubre." · quién donó: "Lácteos Ejemplo SA · 12 latas · 6 de octubre" | |
+| Leche en polvo | "24 unidades · hasta el 25 de octubre" · "faltan 10 días" · "Una sola vez" · "12 de 24 unidades recibidas" · por qué: "Para la merienda de los más chicos." · entregas: "12 unidades · Sale del depósito el 17 de octubre." · quién donó: "Lácteos Ejemplo SA · 12 unidades · 6 de octubre" | |
 | Lentejas secas | "40 kg por mes · octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "10 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "15 kg · Llegaron a tu puerta hoy a las 18:20 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Distribuidora Ejemplo SA · 10 kg · 10 de octubre" · períodos: "Octubre · del 1 al 31 · 10 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 22 de 40 kg · Llegó una parte" · "Julio · 0 de 40 kg · No llegó nada" · "Desde julio de 2026" | Abierta en la maqueta, de partida: tiene todas las partes |
-| Arroz | "40 kg por mes · octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "15 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "20 kg · Salió del depósito hoy a las 9:15. Llega mañana." · quién donó: "Distribuidora Ejemplo SA · 15 kg · 2 de octubre" · períodos: "Octubre · 15 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 31 de 40 kg · Llegó una parte" · "Desde agosto de 2026" | |
-| Ropa de abrigo | "6 cajas · hasta el 15 de noviembre" · "falta un mes" · "Una sola vez" · "1 de 6 cajas recibidas" · por qué: "Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre." · entregas: "2 cajas · Llegaron a tu puerta ayer a las 17:10 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Una persona · 1 caja · 8 de octubre" | |
+| Arroz | "40 kg por mes · octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "15 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "20 kg · Salió del depósito hoy a las 9:15. Llega mañana." · quién donó: "Distribuidora Ejemplo SA · 10 kg · 2 de octubre" · "Martina Ruiz · 5 kg · 9 de octubre" · períodos: "Octubre · 15 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 31 de 40 kg · Llegó una parte" · "Desde agosto de 2026" | |
+| Ropa de abrigo | "30 unidades · hasta el 15 de noviembre" · "falta un mes" · "Una sola vez" · "5 de 30 unidades recibidas" · por qué: "Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre." · entregas: "10 unidades · Llegaron a tu puerta ayer a las 17:10 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Una persona que prefiere no mostrar su nombre · 5 unidades · 8 de octubre" | |
 | Fideos secos | "30 kg · hasta el 30 de octubre" · "faltan 15 días" · "Una sola vez" · "Todavía no llegó nada" · por qué: "Para la cena de los viernes." · entregas: "No hay entregas pendientes para este pedido." · quién donó: "Todavía no llegó nada." · la marca "Nueva" | La que se publica en la maqueta: aparece en `entidad-necesidades-publicada`, abierta; sus datos precargan el formulario en el error de datos, el del servidor y sin conexión |
 | Orden | De la fecha más cercana a la más lejana | Lo que vence antes, arriba; sin marcarlo como urgente |
 | Cada período | "Llegó todo" · "Llegó una parte" · "No llegó nada" · "En curso" | El estado en palabras; la barra que se llena lo acompaña (punteada, la del período en curso). Un período que es el mes completo se nombra por el mes; uno semanal, con sus fechas ("del 6 al 12 de octubre") |
 | Partes del detalle | "Por qué hace falta" · "Entregas para este pedido" · "Quién donó" · "Cada mes" (o "Cada semana") | El nombre de la parte de los períodos dice cada cuánto se repite |
 | Acciones del detalle | "Ver en Seguir entregas" · "Cambiar cantidad o motivo" · "Dar de baja" | |
-| Cambiar | "Cuánto" (ayuda: "Con la unidad: 40 kg, 6 cajas, 24 latas.") · "Por qué hace falta" (ayuda: "Lo ven los donantes.") · "Guardar cambios" · con conflicto, "Cuánto" trae lo que escribiste (en la maqueta, 50 kg) · ayuda del formulario: "Qué hace falta y si se repite no se pueden cambiar: si cambiaron, dala de baja y publicá otra." | Lo que deja cambiar el contrato (cantidad y descripción) |
+| Cambiar | "Cuánto, en kg" (la unidad de esa necesidad; número; ayuda en una que se repite: "Vale desde este período, octubre: si ya llegó más que lo nuevo, este período queda cumplido."; en una de una sola vez: "Si ya llegó más que lo nuevo, el pedido queda cumplido.") · "Por qué hace falta" (ayuda: "Lo ven los donantes.") · "Guardar cambios" · con conflicto, "Cuánto" trae lo que escribiste (en la maqueta, 50) · ayuda del formulario: "Qué hace falta y si se repite no se pueden cambiar: si cambiaron, dala de baja y publicá otra." | Lo que deja cambiar el contrato (cantidad y descripción) |
 | Cumplidas y terminadas | "Cumplidas y terminadas (3)" · "Útiles escolares · 30 kits · Cumplida el 28 de septiembre: llegaron los 30." · "Pañales · 10 paquetes · Terminó el 10 de octubre con 6 de 10 recibidos." · "Frazadas · 20 frazadas · La diste de baja el 1 de octubre, con 8 recibidas." | Cómo terminó, en palabras, con fecha y cifra; sin juzgar |
 | Códigos de error | "Código: a1b2c3d4e5f6" | En cada error del servidor |
 | Cuenta | Marta · Comedor Barrio Ejemplo | La de Cozy |
@@ -375,7 +377,7 @@ Decisiones tomadas:
   de la revisión de la ficha).
 - La baja pide confirmación, como pide el catálogo para lo irreversible.
 - Sin rojo en los períodos: "No llegó nada" va con la barra vacía (agente, propuesto, por tono).
-- Si dona una persona, no va su nombre (como en Confirmar recepción).
+- ~~Si dona una persona, no va su nombre~~: reemplazado el 2026-11-02 (ver abajo).
 
 Partes que se deciden con A/B, en este orden:
 
@@ -390,30 +392,29 @@ Partes que se deciden con A/B, en este orden:
    plegado arriba de la lista, como Cozy, sin dibujar la columna al costado (la recomendada:
    publicar se hace pocas veces y la columna le quita ancho a la lista).
 
-Preguntas abiertas, para el equipo (no cambian el prototipo):
+Preguntas abiertas que el grupo respondió y el usuario decidió (2026-11-02, artifact de
+preguntas abiertas; bitácora, "Las preguntas abiertas de Raíces, decididas"). El backend va en el
+[ADR del ciclo de vida de la necesidad](../../adr/donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md),
+el de la [baja con entregas en curso](../../adr/20261102-baja-de-una-necesidad-con-entregas-en-curso.md)
+(los dos `proposed`) y en [DTI-30](../../adr/DEUDA_TECNICA.md#dti-30) y [DTI-31](../../adr/DEUDA_TECNICA.md#dti-31):
 
-- La unidad de la cantidad ("kg", "cajas") no está en el contrato: ¿sale de la subcategoría o se
-  suma un campo?
-- Una necesidad de una sola vez no guarda fecha de fin (empieza hoy y queda abierta hasta que se
-  cumple o se da de baja). La ficha, como Cozy, pide "hasta cuándo", muestra los días que faltan y
-  ordena por esa fecha. ¿Se suma la fecha al contrato o se saca de la pantalla?
-- El contrato no devuelve la historia de los períodos con lo recibido en cada uno, las entregas por
-  necesidad ni quién donó; "satisfecha" cuenta lo asignado, no lo recibido. ¿Se suman (un hueco
-  nuevo, como HB-xx) o salen de otra llamada?
-- La OpenAPI dice que `GET /api/necesidades` lista solo las activas, pero el código hoy devuelve
-  todas, también las dadas de baja, y el DTO no dice cuáles están activas. ¿Cómo se piden las
-  cumplidas, terminadas y dadas de baja, y cómo se distinguen?
-- El motivo va en la descripción del contrato, que es obligatoria (agente, del contrato). Cozy pide
-  qué hace falta como texto libre; Raíces, de la lista del catálogo (la subcategoría que pide el
-  contrato).
-- El DTO no lleva la versión: el 409 de "otra persona la cambió" solo salta si las dos guardan al
-  mismo tiempo, no si una abrió el formulario hace minutos. ¿Se suma la versión al DTO?
-- El contrato acepta cualquier largo de período (`Period.between` de las dos fechas) y cualquier
-  fecha de inicio; la pantalla ofrece solo "Cada semana" y "Cada mes", desde hoy (agente,
-  propuesto, como el boceto). ¿Hacen falta otros largos (por ejemplo, cada quince días) o elegir
-  cuándo empieza?
-- Si se cambia la cantidad de una que se repite, ¿vale para el período en curso o desde el próximo?
-  La pantalla no lo dice hasta saberlo.
-- Si se da de baja una necesidad con entregas en camino, ¿qué pasa con ellas? La confirmación no lo
-  dice hasta saberlo.
-- "Escribinos con este código" no dice dónde (la misma pregunta de Confirmar recepción).
+- **Unidad:** sale de la subcategoría del catálogo (kg, litros, unidades o metros). La lista la
+  muestra entre paréntesis y "Cuánto" es un número. Por eso "latas" y "cajas" pasan a "unidades".
+- **Fecha límite:** campo obligatorio en el contrato para las de una sola vez, contra el voto del
+  grupo. La pantalla la conserva.
+- **Historia de los períodos y entregas por necesidad:** otra llamada. Lo recibido cuenta lo
+  entregado; "satisfecha" deja de ser la cifra de la pantalla.
+- **Cumplidas, terminadas y dadas de baja:** un estado en el DTO y un filtro por estado.
+- **Versión:** se suma al DTO, para el aviso de "otra persona la cambió".
+- **Largos de período:** cada semana, cada quincena (15 días) o cada mes, desde hoy.
+- **Cambio de cantidad en una que se repite:** vale para el período en curso; si ya llegó más que
+  lo nuevo, ese período queda cumplido. La ayuda de "Cuánto" lo dice.
+- **Baja con entregas en camino:** según si salió. Lo que salió llega igual; lo que no, vuelve al
+  depósito y se asigna a otra entidad. El diálogo de la baja lo dice por entrega.
+- **Quién donó:** el nombre se ve, sea empresa o persona, salvo que lo haya ocultado en
+  [Mi perfil](raices-mi-perfil.md).
+- **"Escribinos con este código":** lleva a [Contacto](raices-contacto.md), con el código ya
+  escrito.
+- El motivo sigue en la descripción del contrato, que es obligatoria.
+
+Preguntas abiertas, para el equipo (no cambian el prototipo): ninguna.

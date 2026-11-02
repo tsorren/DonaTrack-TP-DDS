@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--/* Estructura de las páginas públicas de Raíces que no son la portada (Contacto y Términos y
+       privacidad): la cabecera con la marca, el contenido de ancho de lectura y el pie. La portada
+       tiene la suya, por su lámina a todo el ancho. No es un juego de plantillas: solo lo usa el
+       prototipo (ADR 20261101).
+       Uso: <html th:replace="~{prototipo/raices/layout-publico :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
+       donde 'hoja' es el nombre de la hoja de la pantalla en css/prototipo/raices/. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:replace="${titulo}">DonaTrack</title>
+  <link rel="stylesheet" href="/css/prototipo/raices/publico-paginas.css"
+        th:href="@{/css/prototipo/raices/{hoja}.css(hoja=${hoja})}">
+</head>
+<body class="raices-publico">
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="raices-cabecera">
+  <a class="marca" href="/prototipo/raices/publico-portada" th:href="@{/prototipo/raices/publico-portada}"
+     aria-label="DonaTrack, ir a la portada">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+</header>
+<main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<footer th:replace="~{prototipo/raices/pie :: pie}"></footer>
+</body>
+</html>

@@ -5,7 +5,11 @@
        abierto, su detalle: por qué hace falta, las entregas para ese pedido, quién donó, la historia
        de los períodos en barras (si se repite) y las acciones (cambiar y dar de baja, con su confirmación en un
        diálogo del navegador, sin JavaScript); al pie, las cumplidas y terminadas. Los datos de
-       partida son los de Cozy (prototipo/cozy-medieval/entidad-necesidades.html).
+       partida son los de Cozy (prototipo/cozy-medieval/entidad-necesidades.html), con las
+       decisiones del 2026-11-02 (usuario): la cantidad en la unidad de la subcategoría del catálogo,
+       se repite cada semana, quincena o mes, el cambio de cantidad vale para el período en curso, la
+       baja dice qué pasa con cada entrega según si salió, y el nombre de quien donó se ve salvo que
+       lo haya ocultado.
        ?necesidad=<clave> abre ese pedido (de partida, lentejas); una clave que no está, o
        ?escenario=no-existe, muestra "No encontramos esa necesidad". ?escenario=vacio, lento, error,
        error-publicar, error-cambiar, error-baja, sin-conexion, conflicto, cambiar-datos,
@@ -28,34 +32,35 @@
 </th:block>
 
 <!--/* Los pedidos de Cozy, en orden de fecha, con lo que suma Raíces: si se repite y su historia, el
-       motivo, las entregas de Seguir entregas y Confirmar recepción, y quién donó (si dona una
-       persona, sin su nombre). Fideos secos es la que se publica en entidad-necesidades-publicada. */-->
+       motivo, las entregas de Seguir entregas y Confirmar recepción, y quién donó (quien null: lo
+       ocultó en su perfil). unidad es la de la subcategoría. Fideos secos es la que se publica en
+       entidad-necesidades-publicada. */-->
 <th:block th:fragment="hoja(accion)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              mostrarNueva=${accion == 'publicada'},
              sinAceite=${accion == 'baja' or escenario == 'ya-no-vigente'},
              todas=${ {
-      {clave: 'aceite', nombre: 'Aceite de girasol', categoria: 'cat-alimentos',
+      {clave: 'aceite', nombre: 'Aceite de girasol', categoria: 'cat-alimentos', unidad: 'litros',
        cuanto: '20 litros · hasta el 20 de octubre', faltan: 'faltan 5 días', repite: 'Una sola vez',
        recibido: 'Todavía no llegó nada', valor: 0, max: 20, motivo: 'Para cocinar el almuerzo.',
        puerta: 0, camino: 0, problema: 1,
        entregas: { {cuanto: '10 litros', tono: 'con-problema',
                     texto: 'El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.'} },
        donaron: {}, periodos: {}},
-      {clave: 'leche', nombre: 'Leche en polvo', categoria: 'cat-alimentos',
-       cuanto: '24 latas · hasta el 25 de octubre', faltan: 'faltan 10 días', repite: 'Una sola vez',
-       recibido: '12 de 24 latas recibidas', valor: 12, max: 24,
+      {clave: 'leche', nombre: 'Leche en polvo', categoria: 'cat-alimentos', unidad: 'unidades',
+       cuanto: '24 unidades · hasta el 25 de octubre', faltan: 'faltan 10 días', repite: 'Una sola vez',
+       recibido: '12 de 24 unidades recibidas', valor: 12, max: 24,
        motivo: 'Para la merienda de los más chicos.', puerta: 0, camino: 1, problema: 0,
-       entregas: { {cuanto: '12 latas', tono: 'pendiente',
+       entregas: { {cuanto: '12 unidades', tono: 'pendiente',
                     texto: 'Sale del depósito el 17 de octubre.'} },
-       donaron: { {quien: 'Lácteos Ejemplo SA', cuanto: '12 latas', cuando: '6 de octubre'} },
+       donaron: { {quien: 'Lácteos Ejemplo SA', cuanto: '12 unidades', cuando: '6 de octubre'} },
        periodos: {}},
-      {clave: 'fideos', nombre: 'Fideos secos', categoria: 'cat-alimentos',
+      {clave: 'fideos', nombre: 'Fideos secos', categoria: 'cat-alimentos', unidad: 'kg',
        cuanto: '30 kg · hasta el 30 de octubre', faltan: 'faltan 15 días', repite: 'Una sola vez',
        recibido: 'Todavía no llegó nada', valor: 0, max: 30,
        motivo: 'Para la cena de los viernes.', puerta: 0, camino: 0, problema: 0,
        entregas: {}, donaron: {}, periodos: {}},
-      {clave: 'lentejas', nombre: 'Lentejas secas', categoria: 'cat-alimentos',
+      {clave: 'lentejas', nombre: 'Lentejas secas', categoria: 'cat-alimentos', unidad: 'kg',
        cuanto: '40 kg por mes · octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
        recibido: '10 de 40 kg recibidos', valor: 10, max: 40,
        motivo: 'Para el almuerzo de lunes a viernes.', puerta: 1, camino: 0, problema: 0,
@@ -67,25 +72,26 @@
                    {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40},
                    {nombre: 'Agosto', recibido: '22 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 22},
                    {nombre: 'Julio', recibido: '0 de 40 kg', tono: 'nada', estado: 'No llegó nada', valor: 0} }},
-      {clave: 'arroz', nombre: 'Arroz', categoria: 'cat-alimentos',
+      {clave: 'arroz', nombre: 'Arroz', categoria: 'cat-alimentos', unidad: 'kg',
        cuanto: '40 kg por mes · octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
        recibido: '15 de 40 kg recibidos', valor: 15, max: 40,
        motivo: 'Para el almuerzo de lunes a viernes.', puerta: 0, camino: 1, problema: 0,
        entregas: { {cuanto: '20 kg', tono: 'en-camino',
                     texto: 'Salió del depósito hoy a las 9:15. Llega mañana.'} },
-       donaron: { {quien: 'Distribuidora Ejemplo SA', cuanto: '15 kg', cuando: '2 de octubre'} },
+       donaron: { {quien: 'Distribuidora Ejemplo SA', cuanto: '10 kg', cuando: '2 de octubre'},
+                  {quien: 'Martina Ruiz', cuanto: '5 kg', cuando: '9 de octubre'} },
        desde: 'Desde agosto de 2026',
        periodos: { {nombre: 'Octubre', fechas: 'del 1 al 31', recibido: '15 de 40 kg', tono: 'curso', estado: 'En curso', valor: 15},
                    {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40},
                    {nombre: 'Agosto', recibido: '31 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 31} }},
-      {clave: 'ropa', nombre: 'Ropa de abrigo', categoria: 'cat-ropa',
-       cuanto: '6 cajas · hasta el 15 de noviembre', faltan: 'falta un mes', repite: 'Una sola vez',
-       recibido: '1 de 6 cajas recibidas', valor: 1, max: 6,
+      {clave: 'ropa', nombre: 'Ropa de abrigo', categoria: 'cat-ropa', unidad: 'unidades',
+       cuanto: '30 unidades · hasta el 15 de noviembre', faltan: 'falta un mes', repite: 'Una sola vez',
+       recibido: '5 de 30 unidades recibidas', valor: 5, max: 30,
        motivo: 'Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre.',
        puerta: 1, camino: 0, problema: 0,
-       entregas: { {cuanto: '2 cajas', tono: 'puerta', confirmar: 'ropa',
+       entregas: { {cuanto: '10 unidades', tono: 'puerta', confirmar: 'ropa',
                     texto: 'Llegaron a tu puerta ayer a las 17:10 y esperan tu confirmación.'} },
-       donaron: { {quien: null, cuanto: '1 caja', cuando: '8 de octubre'} },
+       donaron: { {quien: null, cuanto: '5 unidades', cuando: '8 de octubre'} },
        periodos: {}} } },
              vigentes=${escenario == 'vacio' ? {} : todas.?[(clave != 'fideos' or #root.mostrarNueva) and (clave != 'aceite' or !#root.sinAceite)]},
              pedida=${param.necesidad != null ? param.necesidad[0] : (mostrarNueva ? 'fideos' : (escenario == 'error-baja' ? 'aceite' : 'lentejas'))},
@@ -106,7 +112,8 @@
     <p th:if="${accion == 'cambiada'}" class="aviso aviso--hecho" role="status" tabindex="-1"
        autofocus>Guardamos los cambios de Lentejas secas.</p>
     <p th:if="${accion == 'baja'}" class="aviso aviso--hecho" role="status" tabindex="-1"
-       autofocus>Diste de baja Aceite de girasol. Ya no la ven los donantes.</p>
+       autofocus>Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no
+      pudo llegar vuelve al depósito para otra entidad.</p>
     <section th:if="${noExiste}" class="aviso" role="alert" aria-labelledby="noexiste-titulo">
       <h2 id="noexiste-titulo">No encontramos esa necesidad.</h2>
       <p>Puede que el enlace esté incompleto o que ya no esté vigente. Fijate en la lista o en
@@ -121,8 +128,9 @@
     <section th:if="${escenario == 'error-baja'}" class="aviso aviso--error" role="alert"
              aria-labelledby="errorbaja-titulo">
       <h2 id="errorbaja-titulo">No pudimos dar de baja tu necesidad.</h2>
-      <p>Es un problema nuestro: sigue publicada. Probá de nuevo en unos minutos; si sigue, escribinos
-        con este código.</p>
+      <p>Es un problema nuestro: sigue publicada. Probá de nuevo en unos minutos; si sigue, <a href="/prototipo/raices/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/prototipo/raices/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices/entidad-necesidades')}">escribinos
+          con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
     </section>
     <p th:if="${escenario == 'lento'}" class="necesidades-aviso" role="status">Cargando tus necesidades…</p>
@@ -131,7 +139,9 @@
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos cargar tus necesidades.</h2>
       <p>Es un problema nuestro: no cambió nada en tus pedidos. Probá de nuevo en unos minutos; si
-        sigue, escribinos con este código.</p>
+        sigue, <a href="/prototipo/raices/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/prototipo/raices/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices/entidad-necesidades')}">escribinos
+          con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
       <a class="boton boton--secundario" href="/prototipo/raices/entidad-necesidades"
          th:href="@{/prototipo/raices/entidad-necesidades}">Volver a cargar</a>
@@ -177,7 +187,9 @@
            formulario. */-->
     <section th:if="${escenario == 'entidad-inactiva'}" class="aviso" aria-labelledby="inactiva-titulo">
       <h2 id="inactiva-titulo">Tu entidad no está activa, así que no puede publicar necesidades.</h2>
-      <p>Escribinos para revisarlo.</p>
+      <p><a href="/prototipo/raices/publico-contacto"
+         th:href="@{/prototipo/raices/publico-contacto(volver='/prototipo/raices/entidad-necesidades')}">Escribinos</a>
+        para revisarlo.</p>
     </section>
     <th:block th:unless="${escenario == 'entidad-inactiva'}">
       <th:block th:replace="~{:: publicar(${accion == 'publicar-error'})}"></th:block>
@@ -241,7 +253,7 @@
                   <p th:if="${#lists.isEmpty(n.donaron)}">Todavía no llegó nada.</p>
                   <ul th:unless="${#lists.isEmpty(n.donaron)}" class="donaron" role="list">
                     <li th:each="d : ${n.donaron}"
-                        th:text="|${d.quien ?: 'Una persona'} · ${d.cuanto} · ${d.cuando}|">Distribuidora
+                        th:text="|${d.quien ?: (d['tipo'] == 'empresa' ? 'Una empresa que prefiere no mostrar su nombre' : 'Una persona que prefiere no mostrar su nombre')} · ${d.cuanto} · ${d.cuando}|">Distribuidora
                       Ejemplo SA · 10 kg · 10 de octubre</li>
                   </ul>
                 </section>
@@ -273,7 +285,9 @@
                          class="aviso aviso--error" role="alert" aria-labelledby="errorcambio-titulo">
                   <h3 id="errorcambio-titulo">No pudimos guardar los cambios.</h3>
                   <p>Es un problema nuestro: el pedido sigue como estaba. Probá de nuevo en unos
-                    minutos; si sigue, escribinos con este código.</p>
+                    minutos; si sigue, <a href="/prototipo/raices/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/prototipo/raices/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices/entidad-necesidades')}">escribinos
+          con este código</a>.</p>
                   <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
                   <a class="boton boton--secundario" th:href="|#${n.clave}-cuanto|"
                      href="#lentejas-cuanto">Revisar y guardar de nuevo</a>
@@ -302,12 +316,18 @@
                       dala de baja y publicá otra.</p>
                     <th:block th:with="conError=${escenario == 'cambiar-datos' and n.clave == pedida}">
                       <div class="campo" th:classappend="${conError} ? 'campo--error'">
-                        <label th:for="|${n.clave}-cuanto|" for="lentejas-cuanto">Cuánto</label>
-                        <small th:id="|${n.clave}-cuanto-ayuda|">Con la unidad: 40 kg, 6 cajas, 24 latas.</small>
-                        <p th:if="${conError}" th:id="|${n.clave}-cuanto-error|" class="campo-error">Escribí
-                          cuánto, con la unidad. Por ejemplo: 40 kg.</p>
-                        <input th:id="|${n.clave}-cuanto|" name="cuanto" type="text" required
-                               th:value="${conError} ? '' : (${escenario == 'conflicto' and n.clave == pedida} ? '50 kg' : ${#strings.substringBefore(n.cuanto, ' · ').replace(' por mes', '')})"
+                        <label th:for="|${n.clave}-cuanto|" for="lentejas-cuanto"
+                               th:text="|Cuánto, en ${n.unidad}|">Cuánto, en kg</label>
+                        <small th:id="|${n.clave}-cuanto-ayuda|"
+                               th:text="${n.repite == 'Una sola vez'} ? 'Si ya llegó más que lo nuevo, el pedido queda cumplido.' : |Vale desde este período, ${#strings.toLowerCase(n.periodos[0].nombre)}: si ya llegó más que lo nuevo, este período queda cumplido.|">Vale
+                          desde este período, octubre: si ya llegó más que lo nuevo, este período queda
+                          cumplido.</small>
+                        <p th:if="${conError}" th:id="|${n.clave}-cuanto-error|" class="campo-error"
+                           th:text="|Escribí cuánto, en ${n.unidad}. Por ejemplo: 40.|">Escribí cuánto,
+                          en kg. Por ejemplo: 40.</p>
+                        <input th:id="|${n.clave}-cuanto|" name="cuanto" type="number" min="1"
+                               inputmode="numeric" required
+                               th:value="${conError} ? '' : (${escenario == 'conflicto' and n.clave == pedida} ? '50' : ${#strings.substringBefore(n.cuanto, ' ')})"
                                th:attr="aria-describedby=${conError} ? |${n.clave}-cuanto-error ${n.clave}-cuanto-ayuda| : |${n.clave}-cuanto-ayuda|,aria-invalid=${conError} ? 'true' : null">
                       </div>
                     </th:block>
@@ -334,10 +354,23 @@
                     asentado.</p>
                   <p th:if="${n.puerta == 1}">Tiene 1 entrega en tu puerta que espera tu confirmación:
                     confirmala antes de darla de baja.</p>
-                  <p th:if="${n.puerta == 0 and #lists.size(n.entregas) == 1}">Tiene 1 entrega asignada
-                    que todavía no llegó: mirala en <a href="/prototipo/raices/entidad-seguimiento"
-                    th:href="@{/prototipo/raices/entidad-seguimiento}">Seguir entregas</a> antes de darla
-                    de baja.</p>
+                  <!--/* Según si salió (usuario, 2026-11-02): lo que salió llega igual; lo que no,
+                         vuelve al depósito y se asigna a otra entidad. */-->
+                  <th:block th:with="salieron=${#lists.size(n.entregas.?[tono == 'en-camino'])},
+                                     noSalieron=${#lists.size(n.entregas.?[tono == 'pendiente'])},
+                                     noLlegaron=${#lists.size(n.entregas.?[tono == 'con-problema'])}">
+                    <p th:if="${salieron > 0}"
+                       th:text="${salieron == 1} ? '1 entrega ya salió del depósito: llega igual y queda asentado lo que recibas.' : |${salieron} entregas ya salieron del depósito: llegan igual y queda asentado lo que recibas.|">1
+                      entrega ya salió del depósito: llega igual y queda asentado lo que recibas.</p>
+                    <p th:if="${noSalieron > 0}"
+                       th:text="${noSalieron == 1} ? '1 entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noSalieron} entregas todavía no salieron: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
+                      entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la
+                      necesite.</p>
+                    <p th:if="${noLlegaron > 0}"
+                       th:text="${noLlegaron == 1} ? '1 entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noLlegaron} entregas no pudieron llegar: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
+                      entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la
+                      necesite.</p>
+                  </th:block>
                   <div class="acciones">
                     <button type="button" class="boton boton--secundario" autofocus
                             th:popovertarget="|baja-${n.clave}|" popovertarget="baja-lentejas"
@@ -364,9 +397,9 @@
         <li th:if="${sinAceite}"><b>Aceite de girasol · 20 litros</b> <span
             th:text="${accion == 'baja'} ? 'La diste de baja hoy, sin nada recibido.' : 'Se dio de baja hoy, sin nada recibido.'">La
           diste de baja hoy, sin nada recibido.</span></li>
-        <li><b>Útiles escolares · 30 kits</b> Cumplida el 28 de septiembre: llegaron los 30.</li>
-        <li><b>Pañales · 10 paquetes</b> Terminó el 10 de octubre con 6 de 10 recibidos.</li>
-        <li><b>Frazadas · 20 frazadas</b> La diste de baja el 1 de octubre, con 8 recibidas.</li>
+        <li><b>Útiles escolares · 30 unidades</b> Cumplida el 28 de septiembre: llegaron las 30.</li>
+        <li><b>Pañales · 10 unidades</b> Terminó el 10 de octubre con 6 de 10 recibidas.</li>
+        <li><b>Frazadas · 20 unidades</b> La diste de baja el 1 de octubre, con 8 recibidas.</li>
       </ul>
     </details>
   </div>
@@ -395,7 +428,9 @@
              aria-labelledby="errorpub-titulo">
       <h2 id="errorpub-titulo">No pudimos publicar tu necesidad.</h2>
       <p>Es un problema nuestro: no se guardó nada y los donantes no la ven todavía. Probá de nuevo en
-        unos minutos; si sigue, escribinos con este código.</p>
+        unos minutos; si sigue, <a href="/prototipo/raices/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/prototipo/raices/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices/entidad-necesidades')}">escribinos
+          con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
       <a class="boton boton--secundario" href="#que">Revisar y publicar de nuevo</a>
     </section>
@@ -414,39 +449,41 @@
       <select id="que" name="que" required aria-describedby="que-ayuda">
         <option value="">Elegí una</option>
         <optgroup label="Alimentos">
-          <option th:selected="${conError or escrito}">Fideos secos</option>
-          <option>Lentejas secas</option>
-          <option>Arroz</option>
-          <option>Leche en polvo</option>
-          <option>Aceite de girasol</option>
+          <option th:selected="${conError or escrito}">Fideos secos (kg)</option>
+          <option>Lentejas secas (kg)</option>
+          <option>Arroz (kg)</option>
+          <option>Leche en polvo (unidades)</option>
+          <option>Aceite de girasol (litros)</option>
         </optgroup>
         <optgroup label="Ropa">
-          <option>Ropa de abrigo</option>
-          <option>Calzado</option>
-          <option>Ropa de cama</option>
+          <option>Ropa de abrigo (unidades)</option>
+          <option>Calzado (unidades)</option>
+          <option>Ropa de cama (unidades)</option>
         </optgroup>
         <optgroup label="Muebles">
-          <option>Camas</option>
-          <option>Mesas y sillas</option>
+          <option>Camas (unidades)</option>
+          <option>Mesas y sillas (unidades)</option>
         </optgroup>
       </select>
     </div>
     <div class="campo" th:classappend="${conError} ? 'campo--error'">
       <label for="cuanto">Cuánto</label>
-      <small id="cuanto-ayuda">Con la unidad: 40 kg, 6 cajas, 24 latas. Si se repite, cuánto en cada
-        período.</small>
-      <p th:if="${conError}" id="cuanto-error" class="campo-error">Escribí cuánto, con la unidad. Por
-        ejemplo: 40 kg o 6 cajas.</p>
-      <input id="cuanto" name="cuanto" type="text" required th:value="${escrito} ? '30 kg' : null"
+      <small id="cuanto-ayuda">En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto
+        en cada período.</small>
+      <p th:if="${conError}" id="cuanto-error" class="campo-error">Escribí cuánto, con números. Por
+        ejemplo: 30.</p>
+      <input id="cuanto" name="cuanto" type="number" min="1" inputmode="numeric" required
+             th:value="${escrito} ? '30' : null"
              th:attr="aria-describedby=${conError} ? 'cuanto-error cuanto-ayuda' : 'cuanto-ayuda',aria-invalid=${conError} ? 'true' : null">
     </div>
     <fieldset class="campo opciones" aria-describedby="repite-ayuda">
       <legend>¿Se repite?</legend>
       <small id="repite-ayuda">Si se repite, el primer período empieza hoy y se renueva solo cada
-        semana o cada mes.</small>
+        semana, cada quincena (15 días) o cada mes.</small>
       <label><input type="radio" name="repite" value="una" required
                     th:checked="${conError or escrito}"> Una sola vez</label>
       <label><input type="radio" name="repite" value="semana"> Cada semana</label>
+      <label><input type="radio" name="repite" value="quincena"> Cada quincena</label>
       <label><input type="radio" name="repite" value="mes"> Cada mes</label>
     </fieldset>
     <div class="campo" th:classappend="${conError} ? 'campo--error'">
