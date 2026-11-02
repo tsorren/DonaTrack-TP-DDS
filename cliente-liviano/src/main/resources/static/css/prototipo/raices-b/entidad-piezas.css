@@ -1,0 +1,195 @@
+/* Raíces B, las piezas del grupo entidad (y del inicio del admin), corrida A/B, 2026-11-02.
+   - El inicio de cada rol sigue la espina (sistema de B): la línea baja del rótulo, pasa por cada
+     parte (una parada, con su estación en el título) y llega hasta la terminal del pie. La parte
+     que pide hacer algo va en tierra, como "Quiénes reciben" en la portada.
+   - Las listas largas en orden (las donaciones por estado, las novedades) son ramales que bajan
+     en todos los anchos (.ramal--baja): un ramal acostado de 11 donaciones no entra.
+   - El cartel del vagón: una fila con el nombre, puntos y, al final, lo que importa. */
+@import url("privado.css");
+@import url("sellos.css");
+
+/* --- La espina del inicio ----------------------------------------------------------------------
+   main ya es la franja: la parada no suma su margen, la línea va en el eje, bajo el rótulo. */
+main:has(> .inicio) {
+  padding-bottom: 0;
+}
+
+.inicio > .rotulo {
+  margin-bottom: 0;
+}
+
+.inicio .parada-interior {
+  padding: 2.5rem 0 1rem var(--medida-sangria);
+}
+
+.inicio .parada-interior::before {
+  left: calc(var(--medida-eje) - var(--medida-grosor) / 2 - 3px);
+}
+
+/* La primera parada toma la línea justo debajo de la estación del rótulo. */
+.inicio .parada:first-of-type .parada-interior {
+  padding-top: 0.25rem;
+}
+
+.inicio .parada:first-of-type .parada-interior::before {
+  top: calc(var(--medida-estacion) / 2 - 0.75rem);
+}
+
+.inicio .parada:last-child .parada-interior {
+  padding-bottom: 4rem;
+}
+
+.inicio .parada-titulo {
+  margin: 0 0 0.5rem;
+}
+
+.inicio-bajada {
+  max-width: 38rem;
+  margin: 0 0 1rem;
+}
+
+/* La parte que pide hacer algo, en tierra de borde a borde, sin cambiar el ancho de la franja: la
+   sombra pinta los costados sin desbordar la página. Tierra lisa, sin el grano impreso: el grano
+   es un pseudo-elemento y, llevado a los costados, ensancharía la página; solo en la franja,
+   dejaría un corte a la vista en pantallas anchas. */
+.parada--tierra {
+  background: var(--color-suelo);
+  box-shadow: 0 0 0 100vmax var(--color-suelo);
+  clip-path: inset(0 -100vmax);
+  color: var(--color-texto-suelo);
+}
+
+.parada--tierra .parada-titulo {
+  color: var(--color-raiz);
+}
+
+.parada--tierra a:not(.boton) {
+  color: var(--color-texto-suelo);
+}
+
+.parada--tierra :focus-visible {
+  outline-color: var(--color-raiz);
+}
+
+/* Las salidas de una parte: enlaces de texto con lugar para el dedo. */
+.salidas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.salidas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+/* Mientras carga: el lugar de cada parte, hueco, sin datos inventados. */
+.hueco {
+  height: 6rem;
+  max-width: 38rem;
+  border: 2px dashed var(--color-tinta-suave);
+  border-radius: var(--radio-lamina);
+}
+
+.cargando {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+/* --- El cartel del vagón: nombre, puntos y lo que importa al final de la fila --------------- */
+.cartel {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 52rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartel > :is(li, div) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-hoja);
+}
+
+.cartel :is(dt, dd) {
+  margin: 0;
+}
+
+.cartel-nombre {
+  color: var(--color-tinta);
+  font-weight: 800;
+  font-stretch: 112%;
+}
+
+.cartel-fin {
+  flex-basis: 100%;
+}
+
+@media (min-width: 37.5em) {
+  .cartel > :is(li, div) {
+    flex-wrap: nowrap;
+    border-bottom: 0;
+  }
+
+  /* Los puntos llevan el ojo del nombre a lo que importa, como en la portada. */
+  .cartel > :is(li, div)::after {
+    content: "";
+    order: 1;
+    flex: 1;
+    min-width: 2rem;
+    border-bottom: 2px dotted var(--color-tinta-suave);
+  }
+
+  .cartel-fin {
+    order: 2;
+    flex: none;
+    text-align: right;
+  }
+}
+
+/* --- El ramal que baja en todos los anchos --------------------------------------------------- */
+.ramal--baja {
+  --medida-ramal-eje: var(--medida-eje);
+}
+
+@media (min-width: 53.75em) {
+  .ramal--baja {
+    grid-auto-columns: auto;
+    grid-auto-flow: row;
+    padding: 0 0 0 calc(var(--medida-ramal-eje) * 2 + 0.5rem);
+  }
+
+  .ramal--baja::before {
+    top: calc(var(--medida-sello) / 2);
+    bottom: 0.5rem;
+    left: calc(var(--medida-ramal-eje) - var(--medida-grosor) / 2 - 3px);
+    right: auto;
+    width: calc(var(--medida-grosor) + 6px);
+    height: auto;
+    border-block: 0;
+    border-inline: var(--borde-linea);
+  }
+
+  .ramal--baja .ramal-sello {
+    top: 0;
+    left: calc(
+      var(--medida-ramal-eje) - var(--medida-sello) / 2 - var(--medida-ramal-eje) * 2 - 0.5rem
+    );
+  }
+}
+
+/* El sello de estado junto a su texto (en tu puerta, en camino, por salir, con un problema). */
+.estado--puerta,
+.estado--hecho {
+  color: var(--color-entregada-texto);
+}

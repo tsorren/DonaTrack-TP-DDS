@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Donaciones recibidas de la entidad (RF-11; ficha raices-entidad-navegable.md, 4.2): todo
+       lo asignado, agrupado y filtrable por estado. El filtro es una línea: cada estado es una
+       estación que se elige (un formulario GET con ?estado=, sin JavaScript). Los grupos cuelgan de
+       un ramal que baja, con la cantidad en el sello de cada estación; cada donación es un cartel
+       de vagón: qué es, quién donó y el pedido que cubre, y al final su estado y su próximo paso.
+       ?estado=todas, en-tu-puerta, en-camino, por-salir, con-problema o recibidas (uno desconocido
+       muestra todas). ?escenario=vacio, lento, error y sin-resultados (filtro sin resultados).
+       Fragmento sello(tono): el sello de estado (puerta, en-camino, pendiente, problema, hecho) que
+       usan también el inicio y las notificaciones. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'entidad-recibidas', ~{::contenido})}">
+<head>
+  <title>Donaciones recibidas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             pedido=${param.estado != null ? param.estado[0] : 'todas'},
+             filtro=${#lists.contains({'en-tu-puerta', 'en-camino', 'por-salir', 'con-problema', 'recibidas'}, pedido) ? pedido : 'todas'},
+             grupos=${ {
+               {clave: 'en-tu-puerta', nombre: 'Esperan tu confirmación', tono: 'puerta', estado: 'En tu puerta', items: {
+                 {clave: 'lentejas', que: 'Lentejas secas', nombre: 'lentejas secas', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '15 kg',
+                  dono: 'Distribuidora Ejemplo SA', pedido: 'lentejas', paso: 'Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.'},
+                 {clave: 'ropa', que: 'Ropa de abrigo', nombre: 'ropa de abrigo', cat: 'cat-ropa', catTexto: 'Ropa', cuanto: '10 unidades',
+                  dono: 'Donante Sostenedor', pedido: 'ropa', paso: 'Llegó a tu puerta ayer a las 17:10. Espera tu confirmación.'} }},
+               {clave: 'con-problema', nombre: 'Con problema', tono: 'problema', estado: 'Con problema', items: {
+                 {clave: 'aceite', que: 'Aceite de girasol', nombre: 'aceite de girasol', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '10 litros',
+                  dono: 'Almacén Ejemplo SRL', pedido: 'aceite', paso: 'El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.'} }},
+               {clave: 'en-camino', nombre: 'En camino', tono: 'en-camino', estado: 'En camino', items: {
+                 {clave: 'arroz', que: 'Arroz', nombre: 'arroz', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '20 kg',
+                  dono: 'Almacén Ejemplo SRL', pedido: 'arroz', paso: 'Salió del depósito hoy a las 9:15. Llega mañana.'} }},
+               {clave: 'por-salir', nombre: 'Por salir', tono: 'pendiente', estado: 'Por salir', items: {
+                 {clave: 'leche', que: 'Leche en polvo', nombre: 'leche en polvo', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '12 unidades',
+                  dono: 'Lácteos Ejemplo SA', pedido: 'leche', paso: 'Asignada el 13 de octubre. Sale del depósito el 17 de octubre.'} }},
+               {clave: 'recibidas', nombre: 'Recibidas en octubre', tono: 'hecho', estado: 'Recibida', items: {
+                 {que: 'Lentejas secas', nombre: 'lentejas secas', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '10 kg',
+                  dono: 'Almacén Ejemplo SRL', pedido: 'lentejas', paso: 'Confirmaste la recepción el 10 de octubre.'},
+                 {que: 'Arroz', nombre: 'arroz', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '5 kg',
+                  dono: 'Martina Ruiz', pedido: 'arroz', paso: 'Confirmaste la recepción el 9 de octubre.'},
+                 {que: 'Ropa de abrigo', nombre: 'ropa de abrigo', cat: 'cat-ropa', catTexto: 'Ropa', cuanto: '5 unidades',
+                  dono: 'Donante Sostenedor', pedido: 'ropa', paso: 'Confirmaste la recepción el 8 de octubre.'},
+                 {que: 'Leche en polvo', nombre: 'leche en polvo', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '12 unidades',
+                  dono: 'Lácteos Ejemplo SA', pedido: 'leche', paso: 'Confirmaste la recepción el 6 de octubre.'},
+                 {que: 'Fideos secos', nombre: 'fideos secos', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '8 kg',
+                  dono: 'Distribuidora Ejemplo SA', pedido: null, paso: 'Confirmaste la recepción el 5 de octubre.'},
+                 {que: 'Arroz', nombre: 'arroz', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '10 kg',
+                  dono: 'Almacén Ejemplo SRL', pedido: 'arroz', paso: 'Confirmaste la recepción el 2 de octubre.'} }} } },
+             conLista=${escenario != 'vacio' and escenario != 'lento' and escenario != 'error' and escenario != 'sin-resultados'}">
+  <svg th:replace="~{prototipo/raices-b/iconos :: categorias}"></svg>
+  <div class="recibidas">
+    <header>
+      <p class="rotulo" th:text="${seccion}">Donaciones recibidas</p>
+      <h1>Lo asignado a tu <em>entidad</em></h1>
+      <p class="recibidas-bajada">Las donaciones asignadas al Comedor Barrio Ejemplo, de la que está
+        en tu puerta a la que ya recibiste. Al 15 de octubre de 2026, 18:30.</p>
+    </header>
+
+    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no se asignaron donaciones a tu entidad.</h2>
+      <p>Se asignan a lo que pedís: publicá tus necesidades y aparecen acá cuando se asigne una.</p>
+      <a class="boton boton--principal" href="/prototipo/raices-b/entidad-necesidades"
+         th:href="@{/prototipo/raices-b/entidad-necesidades}">Ver tus necesidades</a>
+    </section>
+
+    <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar tus donaciones.</h2>
+      <p>Es un problema nuestro: no cambió nada en tus entregas. Probá de nuevo en unos minutos; si
+        sigue, escribinos con este código.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton boton--principal" href="/prototipo/raices-b/entidad-recibidas"
+         th:href="@{/prototipo/raices-b/entidad-recibidas}">Volver a cargar</a>
+    </section>
+
+    <!--/* El filtro: una línea de estaciones, una por estado, con su cantidad. Con JavaScript podría
+           filtrar al elegir; el botón queda para sin JavaScript. */-->
+    <form th:unless="${escenario == 'vacio' or escenario == 'error'}" class="filtro"
+          action="/prototipo/raices-b/entidad-recibidas" th:action="@{/prototipo/raices-b/entidad-recibidas}"
+          method="get">
+      <fieldset>
+        <legend>Estado</legend>
+        <div class="filtro-linea">
+          <label class="filtro-estacion">
+            <input type="radio" name="estado" value="todas" th:checked="${filtro == 'todas'}">
+            <span>Todas (11)</span>
+          </label>
+          <label th:each="g : ${grupos}" class="filtro-estacion">
+            <input type="radio" name="estado" value="en-camino" th:value="${g.clave}"
+                   th:checked="${filtro == g.clave}">
+            <span th:text="|${g.nombre} (${#lists.size(g.items)})|">En camino (1)</span>
+          </label>
+        </div>
+      </fieldset>
+      <button class="boton boton--secundario boton--chico" type="submit">Filtrar</button>
+    </form>
+
+    <p th:if="${escenario == 'lento'}" class="recibidas-aviso" role="status">Cargando tus donaciones…</p>
+    <div th:if="${escenario == 'lento'}" class="recibidas-hueco"></div>
+
+    <section th:if="${escenario == 'sin-resultados'}" class="aviso" aria-labelledby="sinres-titulo">
+      <h2 id="sinres-titulo">No hay donaciones en ese estado.</h2>
+      <p>Probá con otro estado o mirá todas.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices-b/entidad-recibidas"
+         th:href="@{/prototipo/raices-b/entidad-recibidas}">Ver todas</a>
+    </section>
+
+    <th:block th:if="${conLista}">
+      <!--/* Con un filtro puesto: cuál está puesto y la vuelta a todas; el foco va acá. */-->
+      <p th:each="g : ${grupos}" th:if="${g.clave == filtro}" class="mostrando" tabindex="-1"
+         autofocus role="status">
+        <span th:text="|Mostrando: ${g.nombre} (${#lists.size(g.items)}).|">Mostrando: En camino (1).</span>
+        <a href="/prototipo/raices-b/entidad-recibidas" th:href="@{/prototipo/raices-b/entidad-recibidas}">Ver todas</a>
+      </p>
+
+      <ol class="ramal ramal--baja grupos" role="list">
+        <li th:each="g : ${grupos}" th:if="${filtro == 'todas' or filtro == g.clave}"
+            class="ramal-estacion" th:classappend="${g.clave == 'recibidas'} ? 'grupo--recibidas'">
+          <span class="ramal-sello" aria-hidden="true" th:text="${#lists.size(g.items)}">2</span>
+          <section class="ramal-texto" th:aria-labelledby="|grupo-${g.clave}|">
+            <h2 th:id="|grupo-${g.clave}|" th:text="|${g.nombre} (${#lists.size(g.items)})|">Esperan tu
+              confirmación (2)</h2>
+            <article th:each="d : ${g.items}" class="donacion">
+              <div class="donacion-que">
+                <h3>
+                  <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                    <use href="#cat-alimentos" th:href="|#${d.cat}|"/>
+                  </svg>
+                  <span th:text="${d.que}">Lentejas secas</span>
+                </h3>
+                <p th:text="|${d.catTexto} · ${d.cuanto}|">Alimentos · 15 kg</p>
+              </div>
+              <div class="donacion-quien">
+                <p th:text="|Donó ${d.dono}|">Donó Distribuidora Ejemplo SA</p>
+                <p th:if="${d.pedido}"><a href="/prototipo/raices-b/entidad-necesidades?necesidad=lentejas"
+                   th:href="@{/prototipo/raices-b/entidad-necesidades(necesidad=${d.pedido})}"
+                   th:text="|Para tu pedido de ${d.nombre}|">Para tu pedido de lentejas secas</a></p>
+              </div>
+              <div class="donacion-estado">
+                <p class="estado" th:classappend="|estado--${g.tono == 'pendiente' ? 'pendiente' : (g.tono == 'problema' ? 'con-problema' : g.tono)}|">
+                  <svg th:replace="~{prototipo/raices-b/entidad-recibidas :: sello(${g.tono})}"></svg><span th:text="${g.estado}">En tu puerta</span></p>
+                <p th:text="${d.paso}">Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.</p>
+              </div>
+              <a th:if="${g.clave == 'en-tu-puerta'}" class="boton boton--principal donacion-accion"
+                 href="/prototipo/raices-b/entidad-seguimiento-confirmar?entrega=lentejas"
+                 th:href="@{/prototipo/raices-b/entidad-seguimiento-confirmar(entrega=${d.clave})}"
+                 th:aria-label="|Confirmar recepción: ${d.nombre}|">Confirmar recepción</a>
+              <a th:if="${g.clave == 'con-problema'}" class="boton boton--secundario donacion-accion"
+                 href="/prototipo/raices-b/entidad-necesidades?necesidad=aceite"
+                 th:href="@{/prototipo/raices-b/entidad-necesidades(necesidad=${d.pedido})}"
+                 th:aria-label="|Ver tu pedido: ${d.nombre}|">Ver tu pedido</a>
+            </article>
+          </section>
+        </li>
+      </ol>
+    </th:block>
+  </div>
+</th:block>
+
+<!--/* El sello de una entrega: decorativo, el texto dice lo mismo. Las formas son las de Necesidades
+       y Confirmar recepción; "hecho" es el disco paja con el tilde calado. */-->
+<svg th:fragment="sello(tono)" th:switch="${tono}" class="estado-sello" viewBox="0 0 22 22"
+     aria-hidden="true" focusable="false">
+  <g th:case="'puerta'"><circle class="sello-hecho" cx="11" cy="11" r="9"/></g>
+  <circle th:case="'pendiente'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
+  <g th:case="'en-camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
+  <g th:case="'hecho'"><circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/></g>
+  <g th:case="*"><circle class="sello-problema" cx="11" cy="11" r="9"/><path class="sello-calado" d="M11 6V12.5M11 15.5V16"/></g>
+</svg>
+</body>
+</html>

@@ -1,0 +1,254 @@
+/* Raíces B, Donaciones recibidas de la entidad: el filtro como una línea de estaciones y los grupos
+   en un ramal que baja (entidad-piezas.css), con la cantidad impresa en cada sello; lo recibido,
+   en un fruto mandarina, como las entregas confirmadas de la portada. Cada donación, un cartel de
+   vagón: en el celular, uno debajo del otro; con lugar, en una fila. */
+@import url("entidad-piezas.css");
+
+.recibidas-bajada {
+  max-width: 40rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+/* --- El filtro: una línea con una estación por estado ---------------------------------------- */
+.filtro {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+  max-width: 60rem;
+  margin: 0 0 2rem;
+}
+
+.filtro fieldset {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filtro legend {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  color: var(--color-tinta);
+  font-weight: 800;
+  font-stretch: 112%;
+}
+
+.filtro-linea {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.75rem, 1fr));
+  row-gap: 0.5rem;
+}
+
+/* Cada estado es una estación: el radio nativo, transparente, cubre toda la estación (se toca
+   en todo su lugar y funciona con el teclado); el sello de arriba dice si está elegida. */
+.filtro-estacion {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 3rem;
+  padding: 0 0.25rem 0.5rem;
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* El trecho de línea de cada estación, de borde a borde, por el centro del sello. */
+.filtro-estacion::before {
+  content: "";
+  position: absolute;
+  inset: calc(0.75rem - var(--medida-grosor) / 2 - 3px) 0 auto;
+  height: calc(var(--medida-grosor) + 6px);
+  border-block: var(--borde-linea);
+  background: var(--color-raiz);
+}
+
+.filtro-estacion:first-child::before {
+  left: 50%;
+}
+
+.filtro-estacion:last-child::before {
+  right: 50%;
+}
+
+/* El sello de la estación: hueco; la elegida, impresa. */
+.filtro-estacion::after {
+  content: "";
+  position: relative;
+  order: -1;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: var(--borde-linea);
+  border-radius: 50%;
+  background: var(--color-papel);
+}
+
+.filtro-estacion:has(:checked) {
+  color: var(--color-tinta);
+}
+
+.filtro-estacion:has(:checked)::after {
+  background: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  scale: 1.25;
+}
+
+.filtro-estacion:has(:checked) span {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.filtro-estacion:has(:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.filtro-estacion input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.recibidas-aviso {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+.recibidas-hueco {
+  height: 12rem;
+  max-width: 60rem;
+  border: 2px dashed var(--color-tinta-suave);
+  border-radius: var(--radio-lamina);
+}
+
+/* Con un filtro puesto: cuál y la vuelta a todas. */
+.mostrando {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1rem;
+  margin: 0 0 1.5rem;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.mostrando a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  text-underline-offset: 0.25em;
+}
+
+.mostrando:focus {
+  outline: none;
+}
+
+/* --- Los grupos: un ramal que baja, con la cantidad impresa en cada sello -------------------- */
+.grupos {
+  --medida-sello: 2.75rem;
+
+  gap: 2.5rem;
+  max-width: 64rem;
+  padding-bottom: 4rem;
+}
+
+/* El ramal de los grupos sigue hasta la terminal del pie: la línea de la entidad termina ahí. */
+main:has(.grupos) {
+  padding-bottom: 0;
+}
+
+.grupos::before {
+  bottom: 0;
+}
+
+.grupos .ramal-sello {
+  font-size: 1.375rem;
+}
+
+.grupos h2 {
+  margin: 0.4rem 0 0.75rem;
+}
+
+/* Lo recibido es un fruto: la entrega confirmada. */
+.grupo--recibidas .ramal-sello {
+  background: var(--color-fruto);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-fruto-hondo);
+}
+
+/* --- Cada donación: el cartel del vagón ------------------------------------------------------ */
+.donacion {
+  display: grid;
+  gap: 0.25rem 1.5rem;
+  padding: 1rem 0;
+  border-top: 2px solid var(--color-tinta);
+}
+
+.donacion:last-child {
+  border-bottom: 2px solid var(--color-tinta);
+}
+
+.donacion + .donacion {
+  border-top: 1px dashed var(--color-tinta-suave);
+}
+
+.donacion p {
+  margin: 0;
+}
+
+.donacion h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem;
+  color: var(--color-tinta);
+  font-size: 1.125rem;
+  font-stretch: 112%;
+  line-height: 1.25;
+}
+
+.donacion h3 .categoria-icono {
+  flex: none;
+}
+
+.donacion-quien a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  text-underline-offset: 0.25em;
+}
+
+.donacion-estado .estado {
+  margin-bottom: 0.15rem;
+}
+
+.donacion-accion {
+  justify-self: start;
+  margin-top: 0.5rem;
+}
+
+/* Las recibidas no piden nada: más juntas. */
+.grupo--recibidas .donacion {
+  padding-block: 0.75rem;
+}
+
+@media (min-width: 53.75em) {
+  .donacion {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1.5fr) 12rem;
+    align-items: start;
+  }
+
+  .donacion-accion {
+    justify-self: end;
+    margin-top: 0;
+  }
+}

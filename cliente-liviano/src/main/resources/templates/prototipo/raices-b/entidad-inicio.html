@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!--/* Raíces B, el inicio de la entidad (ficha docs/interfaz/flujos/raices-entidad-navegable.md, 4.1).
+       Sigue la espina de B: la línea baja del rótulo y cada parte es una parada, en el orden de lo
+       que hay que hacer. "En tu puerta" va en tierra, de borde a borde: cada entrega es un boleto
+       con la hora en que llegó y su botón. "Lo que viene" es un ramal que sale de la línea, con el
+       pictograma de cada categoría; la que se mueve, impresa, y las que todavía no, huecas. "Lo
+       recibido" es un fruto, como las entregas confirmadas de la portada.
+       ?escenario=vacio (entidad recién aprobada), sin-puerta (nada para confirmar), lento y error.
+       Datos de maqueta de la ficha: jueves 15 de octubre de 2026, 18:30. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'entidad-inicio', ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${escenario != 'vacio' and escenario != 'lento' and escenario != 'error'},
+             puerta=${escenario == 'sin-puerta' ? {} : {
+               {clave: 'lentejas', nombre: 'lentejas secas', titulo: 'Lentejas secas · 15 kg', cuando: 'Hoy',
+                hora: '18:20', categoria: 'cat-alimentos',
+                texto: 'Llegó hoy, 18:20, desde el Depósito Central. Para tu pedido de lentejas secas.'},
+               {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo · 10 unidades', cuando: 'Ayer',
+                hora: '17:10', categoria: 'cat-ropa',
+                texto: 'Llegó ayer, 17:10, desde el Depósito Central. Para tu pedido de ropa de abrigo.'} }}">
+  <svg th:replace="~{prototipo/raices-b/iconos :: categorias}"></svg>
+  <div class="inicio">
+    <p class="rotulo" th:text="${seccion}">Inicio</p>
+
+    <section class="parada" aria-labelledby="saludo">
+      <div class="parada-interior">
+        <h1 id="saludo">Hola, <em th:text="${cuenta.nombre}">Marta</em></h1>
+        <p class="inicio-bajada">Comedor Barrio Ejemplo · jueves 15 de octubre de 2026</p>
+        <a th:if="${conDatos}" class="novedades" href="/prototipo/raices-b/entidad-notificaciones"
+           th:href="@{/prototipo/raices-b/entidad-notificaciones}"><b>3</b> novedades sin leer</a>
+        <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tu inicio…</p>
+
+        <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+          <h2 id="vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
+          <p>Empezá por publicar lo que necesita tu entidad: lo ven los donantes y el catálogo
+            público. Cuando se te asigne una donación, aparece acá.</p>
+          <a class="boton boton--principal" href="/prototipo/raices-b/entidad-necesidades"
+             th:href="@{/prototipo/raices-b/entidad-necesidades}">Publicar una necesidad</a>
+        </section>
+
+        <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+                 aria-labelledby="error-titulo">
+          <h2 id="error-titulo">No pudimos cargar tu inicio.</h2>
+          <p>Es un problema nuestro: no cambió nada en tus entregas ni en tus pedidos. Probá de nuevo
+            en unos minutos; si sigue, escribinos con este código.</p>
+          <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+          <div class="acciones">
+            <a class="boton boton--principal" href="/prototipo/raices-b/entidad-inicio"
+               th:href="@{/prototipo/raices-b/entidad-inicio}">Volver a cargar</a>
+            <a class="boton boton--secundario"
+               href="/prototipo/raices-b/publico-contacto?codigo=a1b2c3d4e5f6"
+               th:href="@{/prototipo/raices-b/publico-contacto(codigo='a1b2c3d4e5f6',volver='/prototipo/raices-b/entidad-inicio')}">Escribinos</a>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!--/* Cargando: el lugar de cada parte, con su título y sin datos. */-->
+    <th:block th:if="${escenario == 'lento'}">
+      <section th:each="parte : ${ {'En tu puerta', 'Lo que viene', 'Tus pedidos', 'Lo recibido en octubre'} }"
+               class="parada" th:aria-label="${parte}">
+        <div class="parada-interior">
+          <h2 class="parada-titulo" th:text="${parte}">En tu puerta</h2>
+          <div class="hueco"></div>
+        </div>
+      </section>
+    </th:block>
+
+    <th:block th:if="${conDatos}">
+      <!--/* Lo primero que hay que hacer: el atajo "Entregas sin verificar" del boceto. */-->
+      <section class="parada parada--tierra" aria-labelledby="puerta-titulo">
+        <div class="parada-interior">
+          <h2 id="puerta-titulo" class="parada-titulo">En tu puerta</h2>
+          <th:block th:if="${#lists.isEmpty(puerta)}">
+            <p class="inicio-bajada"><b>No tenés entregas para confirmar.</b> Cuando una entrega llegue a tu
+              puerta, aparece acá para que confirmes la recepción.</p>
+          </th:block>
+          <th:block th:unless="${#lists.isEmpty(puerta)}">
+            <p class="inicio-bajada" th:text="|${#lists.size(puerta)} entregas esperan tu confirmación.|">2
+              entregas esperan tu confirmación.</p>
+            <ul class="boletos" role="list">
+              <li th:each="b : ${puerta}" class="boleto">
+                <p class="boleto-hora"><span th:text="${b.cuando}">Hoy</span><b th:text="${b.hora}">18:20</b></p>
+                <div class="boleto-texto">
+                  <h3>
+                    <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                      <use href="#cat-alimentos" th:href="|#${b.categoria}|"/>
+                    </svg>
+                    <span th:text="${b.titulo}">Lentejas secas · 15 kg</span>
+                  </h3>
+                  <p th:text="${b.texto}">Llegó hoy, 18:20, desde el Depósito Central. Para tu pedido de
+                    lentejas secas.</p>
+                  <a class="boton boton--principal"
+                     href="/prototipo/raices-b/entidad-seguimiento-confirmar?entrega=lentejas"
+                     th:href="@{/prototipo/raices-b/entidad-seguimiento-confirmar(entrega=${b.clave})}"
+                     th:aria-label="|Confirmar recepción: ${b.nombre}|">Confirmar recepción</a>
+                </div>
+              </li>
+            </ul>
+          </th:block>
+        </div>
+      </section>
+
+      <section class="parada" aria-labelledby="viene-titulo">
+        <div class="parada-interior">
+          <h2 id="viene-titulo" class="parada-titulo">Lo que viene</h2>
+          <p class="inicio-bajada">3 entregas asignadas que todavía no llegaron.</p>
+          <ol class="ramal viene" role="list">
+            <li class="ramal-estacion">
+              <span class="ramal-sello" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#cat-alimentos"/></svg></span>
+              <div class="ramal-texto">
+                <h3>Arroz <span>· 20 kg</span></h3>
+                <p class="estado estado--en-camino"><svg th:replace="~{prototipo/raices-b/entidad-recibidas :: sello('en-camino')}"></svg>En camino</p>
+                <p>Llega mañana.</p>
+              </div>
+            </li>
+            <li class="ramal-estacion ramal-estacion--hueca">
+              <span class="ramal-sello" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#cat-alimentos"/></svg></span>
+              <div class="ramal-texto">
+                <h3>Leche en polvo <span>· 12 unidades</span></h3>
+                <p class="estado estado--pendiente"><svg th:replace="~{prototipo/raices-b/entidad-recibidas :: sello('pendiente')}"></svg>Por salir</p>
+                <p>Sale el 17 de octubre.</p>
+              </div>
+            </li>
+            <li class="ramal-estacion ramal-estacion--hueca">
+              <span class="ramal-sello" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#cat-alimentos"/></svg></span>
+              <div class="ramal-texto">
+                <h3>Aceite de girasol <span>· 10 litros</span></h3>
+                <p class="estado estado--con-problema"><svg th:replace="~{prototipo/raices-b/entidad-recibidas :: sello('problema')}"></svg>Con problema</p>
+                <p>Te avisamos la nueva fecha.</p>
+              </div>
+            </li>
+          </ol>
+          <ul class="salidas" role="list">
+            <li><a href="/prototipo/raices-b/entidad-recibidas"
+                   th:href="@{/prototipo/raices-b/entidad-recibidas}">Ver todas en Donaciones recibidas</a></li>
+            <li><a href="/prototipo/raices-b/entidad-seguimiento"
+                   th:href="@{/prototipo/raices-b/entidad-seguimiento}">Seguir entregas</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="parada" aria-labelledby="pedidos-titulo">
+        <div class="parada-interior">
+          <h2 id="pedidos-titulo" class="parada-titulo">Tus pedidos</h2>
+          <p class="inicio-bajada">5 necesidades vigentes.</p>
+          <ul class="cartel" role="list">
+            <li th:each="p : ${ {
+                  {nombre: 'Aceite de girasol', cuanto: '0 de 20 litros', plazo: 'hasta el 20 de octubre'},
+                  {nombre: 'Leche en polvo', cuanto: '12 de 24 unidades', plazo: 'hasta el 25 de octubre'},
+                  {nombre: 'Lentejas secas', cuanto: '10 de 40 kg', plazo: 'octubre, hasta el 31'},
+                  {nombre: 'Arroz', cuanto: '15 de 40 kg', plazo: 'octubre, hasta el 31'},
+                  {nombre: 'Ropa de abrigo', cuanto: '5 de 30 unidades', plazo: 'hasta el 15 de noviembre'} } }">
+              <span class="cartel-nombre" th:text="${p.nombre}">Aceite de girasol</span>
+              <span class="cartel-fin"><b th:text="${p.cuanto}">0 de 20 litros</b> · <span
+                    th:text="${p.plazo}">hasta el 20 de octubre</span></span>
+            </li>
+          </ul>
+          <ul class="salidas" role="list">
+            <li><a href="/prototipo/raices-b/entidad-necesidades"
+                   th:href="@{/prototipo/raices-b/entidad-necesidades}">Ver tus necesidades</a></li>
+            <li><a href="/prototipo/raices-b/entidad-necesidades"
+                   th:href="@{/prototipo/raices-b/entidad-necesidades}">Publicar otra necesidad</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="parada" aria-labelledby="recibido-titulo">
+        <div class="parada-interior">
+          <h2 id="recibido-titulo" class="parada-titulo">Lo recibido en octubre</h2>
+          <div class="recibido">
+            <p class="recibido-fruto" aria-hidden="true">6</p>
+            <div>
+              <p class="inicio-bajada"><b>6 donaciones recibidas</b>, confirmadas por tu entidad. Al 15
+                de octubre, 18:30.</p>
+              <a class="boton boton--secundario" href="/prototipo/raices-b/entidad-recibidas?estado=recibidas"
+                 th:href="@{/prototipo/raices-b/entidad-recibidas(estado='recibidas')}">Ver las recibidas</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

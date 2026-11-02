@@ -35,8 +35,10 @@
 
     <th:block th:if="${e}">
       <header class="confirmar-cabecera">
-        <a class="volver" href="/prototipo/raices-b/entidad-seguimiento"
-           th:href="@{/prototipo/raices-b/entidad-seguimiento}">Seguir entregas</a>
+        <!--/* El nombre del menú es la estación de la que cuelga el título (sistema de B) y, a la
+               vez, la vuelta a Seguir entregas. */-->
+        <p class="rotulo"><a class="volver" href="/prototipo/raices-b/entidad-seguimiento"
+           th:href="@{/prototipo/raices-b/entidad-seguimiento}">Seguir entregas</a></p>
         <h1>Recepción <em>confirmada</em></h1>
         <p class="confirmar-bajada" role="status"
            th:text="|Confirmaste la recepción de ${e.titulo}, hoy a las ${e.confirmo}. ${e.llegaron}|">Confirmaste

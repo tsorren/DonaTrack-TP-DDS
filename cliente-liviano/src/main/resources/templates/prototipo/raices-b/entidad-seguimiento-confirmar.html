@@ -75,8 +75,10 @@
 
     <th:block th:if="${e}">
       <header class="confirmar-cabecera">
-        <a class="volver" href="/prototipo/raices-b/entidad-seguimiento"
-           th:href="@{/prototipo/raices-b/entidad-seguimiento}">Seguir entregas</a>
+        <!--/* El nombre del menú es la estación de la que cuelga el título (sistema de B) y, a la
+               vez, la vuelta a Seguir entregas. */-->
+        <p class="rotulo"><a class="volver" href="/prototipo/raices-b/entidad-seguimiento"
+           th:href="@{/prototipo/raices-b/entidad-seguimiento}">Seguir entregas</a></p>
         <h1 th:if="${escenario == 'confirmada'}">Esta entrega ya está <em>confirmada</em></h1>
         <h1 th:unless="${escenario == 'confirmada'}">Confirmá lo que <em>llegó</em></h1>
         <p class="confirmar-bajada" th:text="|${e.titulo}. ${e.llegoFrase}|">Lentejas secas, 15 kg.

@@ -26,6 +26,16 @@
   content: "← ";
 }
 
+/* Dentro del rótulo (sistema de B): la letra del rótulo y el lugar para el dedo sin mover la
+   estación. */
+.rotulo .volver {
+  gap: 0.35rem;
+  margin-block: -0.75rem;
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 .confirmar-bajada {
   margin: 0 0 1.5rem;
   font-size: 1.125rem;
