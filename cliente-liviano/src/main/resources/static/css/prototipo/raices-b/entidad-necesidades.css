@@ -1,0 +1,647 @@
+/* Necesidades de la entidad en Raíces: el registro de cifras, "Publicar otra necesidad" plegado y la
+   lista de los pedidos vigentes, una etiqueta de herbario por pedido que se despliega en su detalle
+   (A/B 1, usuario, 2026-11-01); la historia de cada pedido que se repite, una barra por período (A/B
+   2, usuario, 2026-11-01). */
+@import url("privado.css");
+@import url("sellos.css");
+@import url("formularios.css");
+
+.necesidades {
+  max-width: 64rem;
+}
+
+.necesidades-bajada {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.necesidades-aviso {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+/* --- El registro de cifras: doble filete, como el de Seguir entregas ------------------------------ */
+.cifras {
+  display: block;
+  max-width: 48rem;
+  margin: 0 0 1.5rem;
+}
+
+.cifras-titulo {
+  margin: 0 0 0.75rem;
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cifras dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 6px;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: 5px;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.cifra:nth-child(n + 3) {
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.cifra:nth-child(even) {
+  border-left: 1px dotted var(--color-tinta-suave);
+}
+
+.cifra dt {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cifra dt a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-enlace);
+}
+
+.cifra dd {
+  margin: 0;
+  color: var(--color-acento);
+  font: 900 2.25rem / 1 var(--fuente-titulo);
+  font-stretch: 125%;
+}
+
+/* --- Lo plegable: el triángulo propio de Raíces en lugar del del navegador ----------------------- */
+.necesidades summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.necesidades summary::-webkit-details-marker {
+  display: none;
+}
+
+/* --- Publicar y cambiar: el botón abre el formulario debajo -------------------------------------- */
+.publicar {
+  margin: 0 0 2rem;
+}
+
+.publicar > summary::before,
+.cambiar > summary::before {
+  content: "+";
+  margin-right: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.publicar[open] > summary::before,
+.cambiar[open] > summary::before {
+  content: "−";
+}
+
+.boton--chico {
+  min-height: 3rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.9375rem;
+}
+
+.boton--quitar {
+  border-color: var(--color-problema-texto);
+  background: var(--color-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+  cursor: pointer;
+}
+
+.boton--quitar:hover {
+  background: var(--color-problema-fondo);
+}
+
+.boton--secundario {
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  cursor: pointer;
+}
+
+/* --- La lista: una etiqueta de herbario por pedido, con doble filete y sombra salvia, como las de la
+   portada; en pantalla grande, en dos columnas, y la abierta ocupa el ancho entero. --------------- */
+.pedidos h2 {
+  margin: 0 0 0.75rem;
+}
+
+.pedidos-lista {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pedido {
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -7px;
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+}
+
+.pedido-resumen {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) 1.5rem;
+  gap: 0.375rem 0.875rem;
+  align-items: start;
+  padding: 1.125rem 1.25rem;
+}
+
+.pedido-resumen:hover {
+  background: var(--color-pendiente-fondo);
+}
+
+.pedido-resumen .categoria-icono {
+  grid-row: span 3;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* El triángulo, al final de la primera línea: apunta abajo cerrado y arriba abierto. */
+.pedido-resumen::after {
+  content: "";
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-top: 0.375rem;
+  border-right: 2.5px solid var(--color-tinta);
+  border-bottom: 2.5px solid var(--color-tinta);
+  rotate: 45deg;
+}
+
+.pedido[open] > .pedido-resumen::after {
+  margin-top: 0.75rem;
+  rotate: 225deg;
+}
+
+.pedido-que,
+.pedido-cuanto,
+.pedido-va {
+  grid-column: 2;
+}
+
+.pedido-que {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+
+.pedido-que b {
+  font: 800 1.1875rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.pedido-repite {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.pedido-marca {
+  padding: 0 0.375rem;
+  border: 1.5px solid var(--color-acento);
+  color: var(--color-acento);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pedido-cuanto small {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.pedido-va {
+  display: grid;
+  gap: 0.375rem;
+  font-weight: 700;
+}
+
+/* La regla de tinta que se llena: decorativa, el texto dice lo mismo. */
+.necesidades progress {
+  appearance: none;
+  display: block;
+  width: 100%;
+  max-width: 16rem;
+  height: 0.625rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 0;
+  background: var(--color-papel);
+  color: var(--color-raiz);
+}
+
+.necesidades progress::-webkit-progress-bar {
+  background: var(--color-papel);
+}
+
+.necesidades progress::-webkit-progress-value {
+  background: var(--color-raiz);
+}
+
+.necesidades progress::-moz-progress-bar {
+  background: var(--color-raiz);
+}
+
+.pedido--nuevo > .pedido-resumen {
+  background: var(--color-acento-claro);
+}
+
+/* --- El detalle ------------------------------------------------------------------------------- */
+.pedido-detalle {
+  display: grid;
+  gap: 1.5rem;
+  padding: 0.5rem 1rem 1.25rem;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.pedido-partes {
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* El cartel del cambio de cantidad: una nota con filete de acento, a todo el ancho del detalle. */
+.cambio {
+  grid-column: 1 / -1;
+  margin: 0.75rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--color-acento);
+  font-weight: 700;
+}
+
+.parte h3 {
+  margin: 0.75rem 0 0.375rem;
+  color: var(--color-acento);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.parte p,
+.parte ul {
+  margin: 0;
+}
+
+.entregas,
+.donaron {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.entregas li {
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+  align-items: start;
+}
+
+.entregas .boton {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-enlace);
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+/* La historia de los períodos, del que está en curso al primero: una barra que se llena por período,
+   con el nombre a la izquierda y lo que llegó y el estado escritos debajo; la del período en curso,
+   punteada, porque todavía no cerró. */
+.periodos {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.periodo {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+  column-gap: 1rem;
+  row-gap: 0.25rem;
+  align-items: center;
+}
+
+.periodo-nombre {
+  display: grid;
+  grid-row: span 2;
+}
+
+.periodo-nombre span {
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+}
+
+.necesidades .periodo progress {
+  grid-column: 2;
+  grid-row: 1;
+  max-width: none;
+  height: 1rem;
+}
+
+.periodo--curso progress {
+  border-style: dashed;
+}
+
+.periodo-cuanto {
+  grid-column: 2;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+/* Los períodos anteriores a los cuatro de la vista, plegados debajo. */
+.periodos-anteriores {
+  margin-top: 0.5rem;
+}
+
+.periodos-anteriores > summary {
+  cursor: pointer;
+}
+
+.periodos-anteriores .periodos {
+  margin-top: 0.5rem;
+}
+
+.periodos-desde {
+  margin: 0;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+/* --- Las acciones del pedido: cambiar (abre su formulario) y dar de baja (abre su diálogo) -------- */
+.pedido-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.pedido-acciones > .aviso,
+.cambiar[open] {
+  flex-basis: 100%;
+}
+
+.pedido-acciones > .aviso {
+  margin: 0;
+}
+
+.pedido-acciones .aviso h3 {
+  margin: 0 0 0.5rem;
+  font: 800 1.125rem/1.2 var(--fuente-titulo);
+}
+
+/* El diálogo de la baja usa el popover del navegador: se abre y se cierra sin JavaScript, con Esc o
+   tocando afuera (como la foto de la portada). */
+.baja {
+  width: min(32rem, 100% - 2rem);
+  margin: auto;
+  padding: 1.25rem;
+  border: 1.5px solid var(--color-problema-texto);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-problema-texto);
+  outline-offset: -7px;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+}
+
+.baja:popover-open {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.baja::backdrop {
+  background: var(--color-suelo-hondo);
+  opacity: 0.75;
+}
+
+.baja h3 {
+  margin: 0;
+  font: 800 1.375rem/1.2 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.baja p {
+  margin: 0;
+}
+
+.baja form {
+  margin: 0;
+}
+
+/* --- Las cumplidas y terminadas, plegadas al pie ----------------------------------------------- */
+.terminadas {
+  margin-top: 2rem;
+}
+
+.terminadas > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3rem;
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.terminadas > summary::before {
+  content: "▸";
+}
+
+.terminadas[open] > summary::before {
+  content: "▾";
+}
+
+.terminadas ul {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 44rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.terminadas li {
+  padding: 0.5rem 0;
+  border-bottom: 1px dotted var(--color-tinta-suave);
+}
+
+.terminadas b {
+  display: block;
+}
+
+@media (min-width: 37.5em) {
+  .cifras dl {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cifra:nth-child(n) {
+    border-top: 0;
+    border-left: 1px dotted var(--color-tinta-suave);
+  }
+
+  .cifra:first-child {
+    border-left: 0;
+  }
+}
+
+/* Desde la tableta, las etiquetas en dos columnas; la abierta, a todo el ancho. */
+@media (min-width: 53.75em) {
+  .pedidos-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .pedidos-lista > li:has(.pedido[open]) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* En pantalla grande, la etiqueta abierta alinea su resumen en columnas (qué, cuánto y hasta cuándo,
+   cómo va) y pone la historia de los períodos al lado de las partes. */
+@media (min-width: 68.75em) {
+  .pedido[open] > .pedido-resumen {
+    grid-template-columns: 2.25rem minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1fr) 1.5rem;
+    align-items: center;
+  }
+
+  .pedido[open] > .pedido-resumen .categoria-icono {
+    grid-row: auto;
+  }
+
+  .pedido[open] :is(.pedido-que, .pedido-cuanto, .pedido-va) {
+    grid-column: auto;
+  }
+
+  .pedido[open] .pedido-que {
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .pedido[open] > .pedido-resumen::after {
+    grid-column: 5;
+    margin-top: 0.5rem;
+  }
+
+  /* Datos y gráfico (A/B de la review de Sofía, 2026-11-02): a la izquierda, por qué hace falta y
+     quién donó lado a lado, y las entregas debajo; a la derecha, los períodos como barras que suben. */
+  .pedido-detalle {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    column-gap: 3rem;
+    padding: 0.5rem 1.5rem 1.5rem;
+  }
+
+  .pedido-partes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .pedido-partes > .parte:nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .pedido-acciones {
+    grid-column: 1 / -1;
+  }
+
+  /* Sin períodos, las tres partes van una al lado de la otra. */
+  .pedido-detalle:not(:has(.parte--periodos)) .pedido-partes {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pedido-detalle:not(:has(.parte--periodos)) .pedido-partes > .parte:nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  /* Cada período, una barra vertical que se llena de abajo arriba, con el nombre y lo que llegó
+     debajo. Como en un gráfico, el tiempo avanza hacia la derecha: el más viejo a la izquierda y el
+     período en curso al final (la lista, en el código, va del actual hacia atrás). Las barras
+     comparten la base: miden lo mismo y van arriba de su columna. Los anteriores, plegados, siguen
+     en lista. El orden invierte los cuatro primeros: es el corte de la plantilla (vuelta.index < 4). */
+  .periodos:not(.periodos--lista) {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.625rem;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(1) {
+    order: 4;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(2) {
+    order: 3;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(3) {
+    order: 2;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo:nth-child(4) {
+    order: 1;
+  }
+
+  .periodos:not(.periodos--lista) > .periodo {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .necesidades .periodos:not(.periodos--lista) progress {
+    grid-column: 1;
+    grid-row: 1;
+    width: 1.75rem;
+    height: 8rem;
+    writing-mode: vertical-lr;
+    direction: rtl;
+  }
+
+  .periodos:not(.periodos--lista) .periodo-nombre {
+    grid-row: 2;
+  }
+
+  .periodos:not(.periodos--lista) .periodo-nombre b {
+    font-size: 0.9375rem;
+  }
+
+  .periodos:not(.periodos--lista) .periodo-cuanto {
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 0.875rem;
+  }
+}

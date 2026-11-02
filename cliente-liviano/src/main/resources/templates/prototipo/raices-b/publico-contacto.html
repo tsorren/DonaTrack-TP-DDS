@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--/* Raíces, Contacto, según su ficha de flujo (docs/interfaz/flujos/raices-contacto.md): un
+       formulario dentro de DonaTrack que puede usar cualquiera (usuario, 2026-11-02). Sin sesión
+       pide el correo; con sesión (?escenario=con-sesion) usa el de la cuenta. ?codigo= llega desde
+       el enlace "escribinos" de un aviso de error, con el código ya escrito y el tema "Algo del sitio
+       no anduvo"; ?volver= es la pantalla de origen, a la que vuelve la página de enviado (solo
+       pantallas de /prototipo/raices-b/). ?escenario=lento (enviando), error (del servidor) y
+       sin-conexion. Es un formulario real (POST) que va a publico-contacto-enviado; el error de
+       datos es publico-contacto-error.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+<head>
+  <title>Contacto - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices-b/publico-contacto :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             codigo=${param.codigo != null ? param.codigo[0] : (conError ? 'a1b2c3d4e5f6' : '')},
+             volver=${param.volver != null and #strings.startsWith(param.volver[0], '/prototipo/raices-b/') and !#strings.contains(param.volver[0], '//') and !#strings.contains(param.volver[0], '..') ? param.volver[0] : null},
+             conSesion=${escenario == 'con-sesion'},
+             escrito=${conError or escenario == 'error' or escenario == 'sin-conexion'}">
+  <div class="contacto lectura">
+    <p class="rotulo">Contacto</p>
+    <h1>Escribinos</h1>
+    <p class="lectura-bajada">Contanos qué pasó y te respondemos por correo.</p>
+
+    <form action="/prototipo/raices-b/publico-contacto-enviado"
+          th:action="@{/prototipo/raices-b/publico-contacto-enviado(volver=${volver})}" method="post"
+          class="formulario" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <section th:if="${conError}" class="aviso aviso--error resumen" role="alert" tabindex="-1"
+               autofocus aria-labelledby="resumen-titulo">
+        <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
+        <ul>
+          <li><a href="#mensaje">Falta contarnos qué pasó</a></li>
+          <li><a href="#correo">El correo no parece completo: falta la @</a></li>
+        </ul>
+      </section>
+      <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+               aria-labelledby="error-titulo">
+        <h2 id="error-titulo">No pudimos enviar tu mensaje.</h2>
+        <p>Es un problema nuestro: tu mensaje sigue acá. Probá de nuevo en unos minutos.</p>
+        <p class="aviso-codigo">Código: <code>f6e5d4c3b2a1</code></p>
+        <a class="boton boton--secundario" href="#enviar">Volver a intentar</a>
+      </section>
+      <section th:if="${escenario == 'sin-conexion'}" class="aviso aviso--error" role="alert"
+               aria-labelledby="red-titulo">
+        <h2 id="red-titulo">No sabemos si tu mensaje llegó.</h2>
+        <p>Se cortó la conexión mientras se enviaba. Si no viste el número de tu mensaje, no sabemos
+          si llegó: mandalo de nuevo.</p>
+      </section>
+
+      <p class="obligatorios">Todos los datos son obligatorios, salvo el código.</p>
+      <div class="campo">
+        <label for="tema">Sobre qué es</label>
+        <select id="tema" name="tema" required>
+          <option value="">Elegí uno</option>
+          <option>Una entrega</option>
+          <option>Una donación</option>
+          <option>Una necesidad de mi entidad</option>
+          <option>Mi cuenta</option>
+          <option th:selected="${codigo != '' or escrito}">Algo del sitio no anduvo</option>
+          <option>Otra cosa</option>
+        </select>
+      </div>
+      <div class="campo" th:classappend="${conError} ? 'campo--error'">
+        <label for="mensaje">Contanos qué pasó</label>
+        <small id="mensaje-ayuda">Si pasó en una entrega o una donación, decinos cuál.</small>
+        <p th:if="${conError}" id="mensaje-error" class="campo-error">Falta contarnos qué pasó.</p>
+        <textarea id="mensaje" name="mensaje" rows="5" required
+                  th:attr="aria-describedby=${conError} ? 'mensaje-error mensaje-ayuda' : 'mensaje-ayuda',aria-invalid=${conError} ? 'true' : null"
+                  th:text="${escrito and !conError} ? 'Quise dar de baja el aceite y me dio un error.' : null"></textarea>
+      </div>
+      <div class="campo">
+        <label for="codigo">Código del error</label>
+        <small id="codigo-ayuda">Opcional. Está en el aviso de error, debajo del mensaje.</small>
+        <input id="codigo" name="codigo" type="text" autocomplete="off" aria-describedby="codigo-ayuda"
+               th:value="${codigo}">
+      </div>
+      <p th:if="${conSesion}" class="contacto-cuenta">Te respondemos a
+        <b>contacto@distribuidora-ejemplo.test</b>, el correo de tu cuenta.</p>
+      <div th:unless="${conSesion}" class="campo" th:classappend="${conError} ? 'campo--error'">
+        <label for="correo">Tu correo</label>
+        <small id="correo-ayuda">Para responderte. No lo usamos para otra cosa.</small>
+        <p th:if="${conError}" id="correo-error" class="campo-error">El correo no parece completo: falta
+          la @.</p>
+        <input id="correo" name="correo" type="email" required autocomplete="email"
+               th:value="${conError} ? 'marta.comedor-ejemplo.test' : (${escrito} ? 'marta@comedor-ejemplo.test' : null)"
+               th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
+      </div>
+      <button id="enviar" class="boton boton--principal" type="submit"
+              th:disabled="${escenario == 'lento'}"
+              th:text="${escenario == 'lento'} ? 'Enviando…' : 'Enviar mensaje'">Enviar mensaje</button>
+    </form>
+  </div>
+</th:block>
+</body>
+</html>

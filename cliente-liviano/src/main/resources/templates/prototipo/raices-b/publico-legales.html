@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--/* Raíces, Términos y privacidad (docs/interfaz/flujos/raices-legales.md): una sola página con
+       índice, enlazada desde el pie de todas las páginas y desde Mi perfil (usuario, 2026-11-02). El
+       texto es de ejemplo y lo dice: el final lo escribe el equipo. Sin estados: es texto fijo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+<head>
+  <title>Términos y privacidad - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="legales lectura">
+    <p class="rotulo">Legales</p>
+    <h1>Términos y privacidad</h1>
+    <p class="legales-version">Versión 1, vigente desde el 1 de noviembre de 2026.</p>
+    <p class="aviso">Este es un texto de ejemplo del prototipo. El texto final lo escribe el equipo.</p>
+
+    <nav class="legales-indice" aria-labelledby="indice-titulo">
+      <h2 id="indice-titulo">En esta página</h2>
+      <ul>
+        <li><a href="#que-es">Qué es DonaTrack</a></li>
+        <li><a href="#cuenta">Tu cuenta</a></li>
+        <li><a href="#lo-que-donas">Qué se ve de lo que donás</a></li>
+        <li><a href="#fotos">Fotos de las entregas</a></li>
+        <li><a href="#datos">Tus datos</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+
+    <section id="que-es" aria-labelledby="que-es-titulo">
+      <h2 id="que-es-titulo">Qué es DonaTrack</h2>
+      <p>DonaTrack registra lo que donan personas y empresas, lo asigna a entidades que lo necesitan y
+        muestra el recorrido de cada entrega hasta que la entidad confirma que llegó.</p>
+    </section>
+    <section id="cuenta" aria-labelledby="cuenta-titulo">
+      <h2 id="cuenta-titulo">Tu cuenta</h2>
+      <p>Al registrarte aceptás estos términos y esta política de privacidad. Guardamos qué versión
+        aceptaste y cuándo. Si cambian, te pedimos aceptar la nueva la próxima vez que entres.</p>
+    </section>
+    <section id="lo-que-donas" aria-labelledby="lo-que-donas-titulo">
+      <h2 id="lo-que-donas-titulo">Qué se ve de lo que donás</h2>
+      <p>La entidad que recibe una donación ve quién la donó: el nombre de la empresa o de la persona.
+        Podés ocultarlo cuando quieras en Mi perfil, o solo en una donación al registrarla; entonces
+        ve tu categoría en el ranking, como «Empresa donante · Sostenedor» o «Donante Sostenedor».
+        Nunca ve tu documento, tu
+        dirección ni tus datos de contacto.</p>
+    </section>
+    <section id="fotos" aria-labelledby="fotos-titulo">
+      <h2 id="fotos-titulo">Fotos de las entregas</h2>
+      <p>La entidad sube fotos de lo que recibió al confirmar la entrega. Quien donó las ve. Una foto
+        puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada.
+        El número de remito no se publica.</p>
+    </section>
+    <section id="datos" aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo">Tus datos</h2>
+      <p>Podés pedir ver, corregir o borrar tus datos personales, como prevé la Ley 25.326 de
+        Protección de los Datos Personales. Si los borrás, lo que donaste queda registrado sin tu
+        nombre.</p>
+    </section>
+    <section id="contacto" aria-labelledby="contacto-titulo">
+      <h2 id="contacto-titulo">Contacto</h2>
+      <p>Para cualquier pedido sobre estos términos o tus datos,
+        <a href="/prototipo/raices-b/publico-contacto" th:href="@{/prototipo/raices-b/publico-contacto}">escribinos</a>.</p>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

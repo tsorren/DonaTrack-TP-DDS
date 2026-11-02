@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces: la respuesta al formulario del acta de esta entrega (el controller vuelve a la pantalla
+       del action sin lo escrito). Recepción confirmada con la raíz que se traza una vez. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'entidad-seguimiento-confirmar', ~{::contenido})}">
+<head>
+  <title>Recepción confirmada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices-b/entidad-seguimiento-confirmar :: entrega('lentejas',
+            ~{prototipo/raices-b/entidad-seguimiento-sellada :: sellada(true)})}"></th:block>
+</th:block>
+</body>
+</html>

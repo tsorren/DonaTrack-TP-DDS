@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Las pantallas de prueba están en src/test/resources/templates/prototipo/cozy-medieval/ y
- * prototipo/raices/.
+ * prototipo/raices/ y prototipo/raices-b/.
  */
 @WebMvcTest(PrototipoController.class)
 @Import(MaquetaConfig.class)
@@ -353,6 +353,51 @@ class PrototipoControllerTest {
   void unFormularioDeRaicesVuelveARaices() throws Exception {
     mvc.perform(post("/prototipo/raices/donante-donaciones-prueba"))
         .andExpect(redirectedUrl("/prototipo/raices/donante-donaciones-prueba"));
+  }
+
+  @Test
+  void laPortadaDeRaicesEnlazaSoloARaices() throws Exception {
+    mvc.perform(get("/prototipo/raices/publico-portada"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("href=\"/prototipo/raices/publico-ingresar\"")))
+        .andExpect(content().string(containsString("href=\"/prototipo/raices/publico-mapa\"")))
+        .andExpect(
+            content().string(containsString("href=\"/prototipo/raices/publico-registro-donante\"")))
+        .andExpect(
+            content().string(containsString("href=\"/prototipo/raices/publico-registro-entidad\"")))
+        .andExpect(content().string(not(containsString("href=\"/prototipo/publico-"))));
+  }
+
+  @Test
+  void raicesBTieneSuPortadaYEnlazaSoloASuSitio() throws Exception {
+    mvc.perform(get("/prototipo/raices-b/publico-portada"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices-b/publico-portada"))
+        .andExpect(model().attribute("alternativa", "raices-b"))
+        .andExpect(content().string(containsString("href=\"/css/prototipo/raices-b/")))
+        .andExpect(
+            content().string(containsString("href=\"/prototipo/raices-b/publico-ingresar\"")))
+        .andExpect(content().string(containsString("href=\"/prototipo/raices-b/publico-legales\"")))
+        .andExpect(content().string(not(containsString("href=\"/prototipo/raices/"))))
+        .andExpect(content().string(not(containsString("href=\"/prototipo/publico-"))));
+  }
+
+  @Test
+  void enRaicesBLoNoDibujadoYLosFormulariosSeQuedanEnSuSitio() throws Exception {
+    mvc.perform(get("/prototipo/raices-b/admin-donantes"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices-b/sin-dibujar"))
+        .andExpect(model().attribute("seccion", "Donantes"));
+    mvc.perform(get("/prototipo/raices-b/donante-incentivos")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/raices-b/sin-dibujar")).andExpect(status().isNotFound());
+    mvc.perform(post("/prototipo/raices-b/publico-portada").param("volver", "/prototipo/raices/x"))
+        .andExpect(redirectedUrl("/prototipo/raices-b/publico-portada"));
+    mvc.perform(
+            post("/prototipo/raices-b/publico-portada").param("volver", "/prototipo/raices-b/x"))
+        .andExpect(
+            redirectedUrl(
+                "/prototipo/raices-b/publico-portada?volver=%2Fprototipo%2Fraices-b%2Fx"));
+    mvc.perform(post("/prototipo/raices-b/donante-tesoro")).andExpect(status().isNotFound());
   }
 
   @Test

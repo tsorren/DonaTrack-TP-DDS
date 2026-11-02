@@ -42,7 +42,7 @@
     <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
     <a th:if="${perfil}" href="/prototipo/raices/donante-perfil" th:href="${perfil}"
        th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
-    <a href="/salir" th:href="@{/salir}">Salir</a>
+    <a href="/prototipo/raices/publico-portada" th:href="@{/prototipo/raices/publico-portada}">Salir</a>
   </div>
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>

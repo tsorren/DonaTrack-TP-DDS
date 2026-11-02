@@ -24,7 +24,7 @@
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="raices-cabecera">
-  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+  <a class="marca" href="/prototipo/raices/publico-portada" th:href="@{/prototipo/raices/publico-portada}" aria-label="DonaTrack, ir al inicio">
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
@@ -41,9 +41,9 @@
         <p class="hero-bajada">Registrás lo que donás, vos o tu empresa. DonaTrack te muestra a qué entidad se
           asignó, en qué estado está y la foto que sube la entidad cuando confirma la entrega.</p>
         <div class="acciones">
-          <a href="/prototipo/publico-registro-donante" th:href="@{/prototipo/publico-registro-donante}"
+          <a href="/prototipo/raices/publico-registro-donante" th:href="@{/prototipo/raices/publico-registro-donante}"
              class="boton boton--principal">Quiero donar</a>
-          <a href="/prototipo/publico-ingresar" th:href="@{/prototipo/publico-ingresar}"
+          <a href="/prototipo/raices/publico-ingresar" th:href="@{/prototipo/raices/publico-ingresar}"
              class="boton boton--secundario">Ingresar</a>
         </div>
       </div>
@@ -214,28 +214,28 @@
           <a href="" class="boton boton--aviso">Volver a cargar</a>
         </div>
         <ul class="etiquetas" role="list">
-          <li th:if="${conDatos}" class="etiqueta etiqueta--1"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+          <li th:if="${conDatos}" class="etiqueta etiqueta--1"><a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}">
             <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
             <b>Comedor</b> <span>Barrio Ejemplo</span> <span class="pide">Pide alimentos</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--2"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+          <li th:if="${conDatos}" class="etiqueta etiqueta--2"><a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}">
             <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
             <b>Escuela</b> <span>Ejemplo N.º 12</span> <span class="pide">Pide muebles</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--3"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+          <li th:if="${conDatos}" class="etiqueta etiqueta--3"><a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}">
             <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
             <b>Merendero</b> <span>Ejemplo Sur</span> <span class="pide">Pide alimentos</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--5"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+          <li th:if="${conDatos}" class="etiqueta etiqueta--5"><a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}">
             <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
             <b>Hogar</b> <span>Casa Ejemplo</span> <span class="pide">Pide ropa de abrigo</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--6"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+          <li th:if="${conDatos}" class="etiqueta etiqueta--6"><a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}">
             <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
             <b>Club</b> <span>Ejemplo Norte</span> <span class="pide">Pide ropa</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--7"><a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}">
+          <li th:if="${conDatos}" class="etiqueta etiqueta--7"><a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}">
             <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
             <b>Biblioteca</b> <span>Popular Ejemplo</span> <span class="pide">Pide muebles</span></a></li>
           <!--/* La etiqueta vacía, al centro de la red cuando hay lugar: lo que todavía no se imprimió. */-->
           <li class="etiqueta etiqueta--tuya">
             <b>Tu entidad</b> <span>Pedí lo que necesitás y confirmá lo que recibís.</span>
-            <a href="/prototipo/publico-registro-entidad" th:href="@{/prototipo/publico-registro-entidad}"
+            <a href="/prototipo/raices/publico-registro-entidad" th:href="@{/prototipo/raices/publico-registro-entidad}"
                class="boton boton--suelo">Sumar mi entidad</a></li>
         </ul>
       </div>
@@ -247,7 +247,7 @@
             <p class="nota">Se cuenta con la confirmación de cada entidad.<th:block th:if="${conDatos}"> Actualizado
               el 15 de octubre de 2026, 14:30.</th:block></p>
             <!--/* Un botón chico en contorno, como el de la foto: el enlace en línea era chico para el dedo. */-->
-            <a href="/prototipo/publico-mapa" th:href="@{/prototipo/publico-mapa}" class="boton boton--chico boton--mapa">
+            <a href="/prototipo/raices/publico-mapa" th:href="@{/prototipo/raices/publico-mapa}" class="boton boton--chico boton--mapa">
               <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><path d="M1 3l6-2 6 2 6-2v12l-6 2-6-2-6 2Z"/><path d="M7 1v12M13 3v12"/></svg>Ver el mapa de entregas confirmadas</a>
           </div>
           <div class="registro-datos" th:unless="${conDatos}">

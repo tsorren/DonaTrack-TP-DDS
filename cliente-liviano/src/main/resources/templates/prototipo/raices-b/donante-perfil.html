@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--/* Raíces, Mi perfil del donante, mínimo (docs/interfaz/flujos/raices-mi-perfil.md): si las entidades
+       ven el nombre de quien donó (usuario, 2026-11-02: visible, con opción de ocultarlo desde el
+       perfil), con dos opciones, cada una con cómo la ve la entidad, y un botón; y la constancia de
+       los términos aceptados. ?escenario=oculto (No mostrarlo elegido), lento (guardando), error (del
+       servidor) y sin-conexion. Es un formulario real (POST) que va a donante-perfil-guardado.
+       Fragmentos:
+       - hoja(enviado): la pantalla entera; enviado es true en donante-perfil-guardado, que muestra el
+         aviso de "No mostrarlo" o, con ?mostrar=si, el de "Mostrar mi nombre". */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'donante-perfil', ~{::contenido})}">
+<head>
+  <title>Mi perfil - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices-b/donante-perfil :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(enviado)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             guardado=${!enviado ? '' : (param.mostrar != null ? 'visible' : 'oculto')},
+             oculto=${guardado == 'oculto' or (guardado == '' and escenario == 'oculto')},
+             nombre=${cuenta.nombre},
+             anonimo='Empresa donante · Sostenedor'">
+  <div class="perfil">
+    <p class="rotulo">Mi perfil</p>
+    <h1 th:text="${nombre}">Distribuidora Ejemplo SA</h1>
+    <p class="perfil-cuenta">Empresa donante · contacto@distribuidora-ejemplo.test</p>
+
+    <p th:if="${guardado == 'oculto'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
+       th:text="|Listo. Las entidades ya no ven tu nombre: ven «${anonimo}».|">Listo. Las entidades ya no
+      ven tu nombre: ven «Empresa donante · Sostenedor».</p>
+    <p th:if="${guardado == 'visible'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
+       th:text="|Listo. Las entidades ven tu nombre: «${nombre}».|">Listo. Las entidades ven tu nombre:
+      «Distribuidora Ejemplo SA».</p>
+    <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos guardar tu elección.</h2>
+      <p>Es un problema nuestro: sigue como estaba. Probá de nuevo en unos minutos; si sigue,
+        <a href="/prototipo/raices-b/publico-contacto?codigo=b2c3d4e5f6a1"
+           th:href="@{/prototipo/raices-b/publico-contacto(codigo='b2c3d4e5f6a1',volver='/prototipo/raices-b/donante-perfil')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>b2c3d4e5f6a1</code></p>
+    </section>
+    <section th:if="${escenario == 'sin-conexion'}" class="aviso aviso--error" role="alert"
+             aria-labelledby="red-titulo">
+      <h2 id="red-titulo">No sabemos si se guardó.</h2>
+      <p>Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó elegido.</p>
+    </section>
+
+    <form action="/prototipo/raices-b/donante-perfil-guardado"
+          th:action="@{/prototipo/raices-b/donante-perfil-guardado}" method="post" class="formulario"
+          th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <fieldset class="opciones" aria-describedby="nombre-ayuda nombre-nota">
+        <legend><h2>Cómo te ven las entidades</h2></legend>
+        <p id="nombre-ayuda">Cuando una entidad recibe lo que donaste, ve quién donó.</p>
+        <label><input type="radio" name="mostrar" value="si" th:checked="${!oculto}">
+          <span>Mostrar mi nombre <small th:text="|Donó: ${nombre}|">Donó: Distribuidora Ejemplo SA</small></span></label>
+        <label><input type="radio" name="mostrar" value="no" th:checked="${oculto}">
+          <span>No mostrarlo <small th:text="|Donó: ${anonimo}|">Donó: Empresa donante · Sostenedor</small></span></label>
+        <p id="nombre-nota" class="nota">Sin tu nombre, la entidad ve tu categoría como donante. Vale
+          para todas tus donaciones, también las que ya llegaron. Los avisos que la entidad ya recibió
+          no cambian.</p>
+      </fieldset>
+      <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
+              th:text="${escenario == 'lento'} ? 'Guardando…' : 'Guardar mi elección'">Guardar mi
+        elección</button>
+    </form>
+
+    <section class="perfil-legales" aria-labelledby="legales-titulo">
+      <h2 id="legales-titulo">Términos y privacidad</h2>
+      <p>Aceptaste la versión 1 el 1 de noviembre de 2026.</p>
+      <a href="/prototipo/raices-b/publico-legales" th:href="@{/prototipo/raices-b/publico-legales}">Leer los
+        términos y la política de privacidad</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

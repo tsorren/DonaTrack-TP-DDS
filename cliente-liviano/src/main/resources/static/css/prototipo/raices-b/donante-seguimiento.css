@@ -1,0 +1,306 @@
+/* Seguimiento del donante en Raíces: el dibujo de las entregas en curso (una línea de subte por
+   entrega desde el depósito, con el sello de su estado) y, debajo, la lista con el mismo número. */
+@import url("privado.css");
+@import url("sellos.css");
+
+/* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
+.seguimiento-bajada {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.seguimiento-cuerpo {
+  display: grid;
+  gap: 2rem;
+}
+
+/* --- Las cifras por estado: un registro de campo con doble filete ------------------------------ */
+.cifras {
+  max-width: 48rem;
+  margin: 0 0 2rem;
+}
+
+.cifras-titulo {
+  margin: 0 0 0.75rem;
+  color: var(--color-tinta);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cifras dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 6px;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: 5px;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.cifra:nth-child(n + 3) {
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.cifra:nth-child(even) {
+  border-left: 1px dotted var(--color-tinta-suave);
+}
+
+.cifra dt {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.cifra dt a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-enlace);
+}
+
+.cifra dd {
+  margin: 0;
+  color: var(--color-acento);
+  font: 900 2.5rem / 1 var(--fuente-titulo);
+  font-stretch: 125%;
+}
+
+/* Las que esperan destino van aparte: todavía no están en curso. */
+.cifra--aparte {
+  background: var(--color-pendiente-fondo);
+}
+
+/* --- El dibujo --------------------------------------------------------------------------------- */
+.seguimiento-dibujo {
+  margin: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+}
+
+/* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 380). */
+figure.seguimiento-dibujo {
+  background: linear-gradient(transparent calc(80 / 380 * 100%), var(--color-suelo) 0);
+}
+
+.camion circle {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+}
+
+.camion path {
+  fill: none;
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* El camión va dentro de su sello: el círculo con la mitad izquierda en ámbar. */
+.camion .sello-medio {
+  fill: var(--color-en-camino-sello);
+  stroke: none;
+}
+
+.nodo-numero {
+  fill: var(--color-tinta);
+  font: 800 22px var(--fuente-titulo);
+  text-anchor: middle;
+}
+
+/* Al pasar o enfocar una entrega de la lista, su línea queda llena y el resto se apaga, como la red
+   de la portada (brief, ronda de movimiento). El dibujo acompaña: la lista dice todo. */
+.linea {
+  transition: opacity 0.2s;
+}
+
+.seguimiento-cuerpo:has(.entrega:is(:hover, :focus-within)) .linea {
+  opacity: 0.28;
+}
+
+.seguimiento-cuerpo:has(.entrega:nth-child(1):is(:hover, :focus-within)) .linea--1,
+.seguimiento-cuerpo:has(.entrega:nth-child(2):is(:hover, :focus-within)) .linea--2,
+.seguimiento-cuerpo:has(.entrega:nth-child(3):is(:hover, :focus-within)) .linea--3 {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linea {
+    transition: none;
+  }
+}
+
+/* --- La lista ----------------------------------------------------------------------------------- */
+.seguimiento-lista h2 {
+  margin: 0 0 1rem;
+}
+
+.entregas {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.entrega {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  column-gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px dotted var(--color-tinta-suave);
+}
+
+.entrega > :not(.entrega-numero) {
+  grid-column: 2;
+}
+
+.entrega-numero {
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  color: var(--color-tinta);
+  font: 800 1.25rem/1 var(--fuente-titulo);
+}
+
+.entrega h3 {
+  margin: 0.25rem 0;
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.entrega h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-tinta);
+  text-underline-offset: 0.25em;
+}
+
+.entrega p {
+  margin: 0;
+}
+
+.entrega-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0.25rem 0;
+}
+
+.entrega-noticia {
+  font-size: 0.9375rem;
+}
+
+/* La categoría: el pictograma impreso en un cuadro salvia, como en el cuaderno de la portada. */
+.entrega-categoria {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+/* Las etapas, una barra de progreso (A/B 4): los cinco sellos en fila, unidos por una línea, y
+   debajo el estado de la entrega con su nota (un solo renglón, decisión del usuario, 2026-11-01).
+   Los nombres de las etapas siguen en la lista, ocultos a la vista, para el lector de pantalla. */
+.etapas {
+  position: relative;
+  display: flex;
+  gap: 1.25rem;
+  margin: 0.75rem 0 0.5rem;
+  padding: 0;
+  list-style: none;
+  background: linear-gradient(var(--color-tinta-suave), var(--color-tinta-suave)) no-repeat 0.6875rem 0.625rem / 10.5rem 2px;
+}
+
+.etapa .estado-sello {
+  display: block;
+}
+
+.etapa :is(.etapa-nombre, .etapa-detalle) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.seguimiento-pie {
+  max-width: 36rem;
+}
+
+/* Sin entregas en curso, el brote solo, chico, para que el aviso no ocupe toda la pantalla. En el
+   celular de 640 px de alto, "Ver Mis donaciones" queda debajo de la barra y se llega bajando: el
+   usuario prefirió conservar el brote (2026-11-01). */
+.aviso-brote {
+  max-width: 12rem;
+}
+
+/* --- Cargando: el lugar de cada parte, sin datos ------------------------------------------------ */
+.seguimiento-reserva {
+  min-height: 14rem;
+  background: var(--color-pendiente-fondo);
+}
+
+/* Desde la tableta, las cuatro cifras en una fila. */
+@media (min-width: 53.75em) {
+  .cifras dl {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cifra:nth-child(n) {
+    border-top: 0;
+    border-left: 1px dotted var(--color-tinta-suave);
+  }
+
+  .cifra:first-child {
+    border-left: 0;
+  }
+}
+
+/* En pantalla grande, el dibujo arriba, con los nombres legibles, y una tarjeta por entrega debajo,
+   con el mismo número (A/B 3; patrón: tarjetas, un tema por tarjeta). */
+@media (min-width: 68.75em) {
+  .seguimiento-cuerpo {
+    gap: 2.5rem;
+  }
+
+  .seguimiento-dibujo {
+    max-width: 48rem;
+  }
+
+  .entregas {
+    /* Tres por fila mientras entren: la barra de etapas no se achica (18.5 rem, lo mínimo de una
+       tarjeta); en anchos intermedios, con el menú abierto, pasan a dos. */
+    grid-template-columns: repeat(auto-fit, minmax(18.5rem, 1fr));
+    gap: 1.5rem;
+  }
+
+  .entrega {
+    align-content: start;
+    padding: 1.25rem;
+    border: 2px solid var(--color-tinta);
+    border-radius: var(--radio-lamina);
+    box-shadow: 0.375rem 0.375rem 0 var(--color-hoja);
+    background: var(--color-papel);
+  }
+}

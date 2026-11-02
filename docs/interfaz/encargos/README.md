@@ -14,4 +14,4 @@ uno nuevo y la bitácora dice cuál reemplaza.
 
 | Encargo | Alternativa | Estado |
 |---|---|---|
-| (todavía ninguno) | | |
+| [raices-ab-navegable](raices-ab-navegable.md) | Raíces (sitios A y B navegables) | Aprobado el 2026-11-02 |

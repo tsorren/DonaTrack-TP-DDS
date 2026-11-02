@@ -29,7 +29,9 @@ import org.springframework.web.server.ResponseStatusException;
  * alternativas cuando se apruebe su flujo. Una sección del menú que todavía no tiene plantilla
  * muestra la tierra sin explorar. Raíces, la tercera alternativa en exploración, tiene su propio
  * prototipo, sin juego de plantillas (ADR 20261101): {@code /prototipo/raices/<pantalla>} muestra
- * {@code templates/prototipo/raices/<pantalla>.html}, con su menú en la misma dirección.
+ * {@code templates/prototipo/raices/<pantalla>.html}, con su menú en la misma dirección. El sitio B
+ * de la corrida A/B de Raíces es el mismo prototipo con otras plantillas: {@code
+ * /prototipo/raices-b/<pantalla>} y {@code templates/prototipo/raices-b/}.
  */
 @Controller
 @Profile("maqueta")
@@ -110,24 +112,30 @@ class PrototipoController {
    * Raíces habla a las empresas que donan: su cuenta de ejemplo es una empresa, con las donaciones
    * de Ana, y su menú no tiene Incentivos, que RF-07 oculta a la persona jurídica.
    */
-  private static final Prototipo RAICES =
-      new Prototipo(
-          "prototipo/raices/",
-          "/prototipo/raices/",
-          "raices",
-          Map.of(
-              "donante",
-              MENUS.get("donante").stream()
-                  .filter(seccion -> !seccion.pantalla().equals("donante-incentivos"))
-                  .toList(),
-              "entidad",
-              MENUS.get("entidad"),
-              "admin",
-              MENUS.get("admin")),
-          Map.of(
-              "donante", new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
-              "entidad", CUENTAS.get("entidad"),
-              "admin", CUENTAS.get("admin")));
+  private static Prototipo deRaices(String carpeta) {
+    return new Prototipo(
+        "prototipo/" + carpeta + "/",
+        "/prototipo/" + carpeta + "/",
+        carpeta,
+        Map.of(
+            "donante",
+            MENUS.get("donante").stream()
+                .filter(seccion -> !seccion.pantalla().equals("donante-incentivos"))
+                .toList(),
+            "entidad",
+            MENUS.get("entidad"),
+            "admin",
+            MENUS.get("admin")),
+        Map.of(
+            "donante", new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
+            "entidad", CUENTAS.get("entidad"),
+            "admin", CUENTAS.get("admin")));
+  }
+
+  private static final Prototipo RAICES = deRaices("raices");
+
+  /** El sitio B de la corrida A/B de Raíces: mismas cuentas y menús, sus propias plantillas. */
+  private static final Prototipo RAICES_B = deRaices("raices-b");
 
   private final ResourceLoader recursos;
 
@@ -147,6 +155,11 @@ class PrototipoController {
   @GetMapping("/prototipo/raices/{pantalla}")
   String pantallaDeRaices(@PathVariable String pantalla, Model model, HttpServletRequest request) {
     return mostrar(RAICES, pantalla, model, request);
+  }
+
+  @GetMapping("/prototipo/raices-b/{pantalla}")
+  String pantallaDeRaicesB(@PathVariable String pantalla, Model model, HttpServletRequest request) {
+    return mostrar(RAICES_B, pantalla, model, request);
   }
 
   private String mostrar(
@@ -215,9 +228,22 @@ class PrototipoController {
       @PathVariable String pantalla,
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar) {
+    return enviarConDatos(RAICES, pantalla, volver, mostrar);
+  }
+
+  @PostMapping("/prototipo/raices-b/{pantalla}")
+  String enviarEnRaicesB(
+      @PathVariable String pantalla,
+      @RequestParam(required = false) String volver,
+      @RequestParam(required = false) String mostrar) {
+    return enviarConDatos(RAICES_B, pantalla, volver, mostrar);
+  }
+
+  private String enviarConDatos(
+      Prototipo prototipo, String pantalla, String volver, String mostrar) {
     List<String> consulta = new ArrayList<>();
     if (volver != null
-        && volver.startsWith(RAICES.direccion())
+        && volver.startsWith(prototipo.direccion())
         && !volver.contains("//")
         && !volver.contains("..")) {
       consulta.add("volver=" + URLEncoder.encode(volver, StandardCharsets.UTF_8));
@@ -225,7 +251,7 @@ class PrototipoController {
     if ("si".equals(mostrar)) {
       consulta.add("mostrar=si");
     }
-    String destino = volver(RAICES, pantalla);
+    String destino = volver(prototipo, pantalla);
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);
   }
 
