@@ -108,6 +108,60 @@
   white-space: nowrap;
 }
 
+/* El acceso a Notificaciones del donante: en el celular, la carta sola con la cantidad sin leer en
+   un sello paja; en la columna, con su nombre, debajo del menú. */
+.armazon-avisos {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  margin-left: auto;
+  color: var(--color-tinta);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.armazon-avisos svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.armazon-avisos-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.armazon-avisos-cuenta {
+  position: absolute;
+  top: 0.125rem;
+  right: -0.125rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding: 0 0.25rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.125rem 0.125rem 0 var(--color-hoja);
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
+.armazon-avisos[aria-current="page"] {
+  color: var(--color-acento);
+}
+
 main {
   max-width: 82rem;
   padding: 1rem 1rem 3rem;
@@ -276,6 +330,44 @@ main h2 {
   .armazon-menu a[aria-current="page"]:focus-visible {
     outline-color: var(--color-acento);
     outline-offset: 3px;
+  }
+
+  /* Notificaciones, debajo del menú y separada por un filete: no es una sección. */
+  .armazon-avisos {
+    justify-content: flex-start;
+    margin: -1.25rem 0 0;
+    padding: 0.75rem 1rem 0.5rem;
+    border-top: 2px dotted var(--color-tinta-suave);
+    font-size: 1.0625rem;
+    font-stretch: 112%;
+  }
+
+  .armazon-avisos-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .armazon-avisos-cuenta {
+    position: static;
+  }
+
+  .armazon-avisos:hover .armazon-avisos-texto {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+
+  [data-menu-plegado] .armazon-avisos {
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  [data-menu-plegado] .armazon-avisos-texto {
+    display: none;
   }
 
   /* La cuenta al pie, como la etiqueta de un herbario. */

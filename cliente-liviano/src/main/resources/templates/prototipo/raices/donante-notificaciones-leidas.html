@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces A, Notificaciones después de "Marcar todas como leídas": el aviso arriba, que toma el
+       foco, y un solo grupo, todas leídas, sin el botón. El acceso del layout ya no muestra la
+       cantidad sin leer. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'donante-notificaciones', ~{::contenido})}">
+<head>
+  <title>Listo - Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices/donante-notificaciones :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

@@ -38,6 +38,22 @@
           th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
     </ul>
   </nav>
+  <!--/* El acceso fijo a Notificaciones del donante (ficha raices-donante-navegable.md, sección 2):
+         no es una sección del menú; va en todas sus pantallas, con la cantidad sin leer. En la
+         maqueta son 4, y ninguna después de marcarlas como leídas. Un agregado: no mueve nada. */-->
+  <a th:if="${perfil != null and #strings.endsWith(perfil, '/donante-perfil')}"
+     th:with="pantalla=${#execInfo.processedTemplateName},
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : 4}"
+     class="armazon-avisos" href="/prototipo/raices/donante-notificaciones"
+     th:href="@{/prototipo/raices/donante-notificaciones}"
+     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
+     th:aria-current="${#strings.contains(pantalla, 'donante-notificaciones')} ? 'page' : null">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path d="M3 6h18v12H3z"/><path d="M3 6l9 7 9-7"/>
+    </svg>
+    <span class="armazon-avisos-texto">Notificaciones</span>
+    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
+  </a>
   <div class="armazon-cuenta">
     <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
     <a th:if="${perfil}" href="/prototipo/raices/donante-perfil" th:href="${perfil}"

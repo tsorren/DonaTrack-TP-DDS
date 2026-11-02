@@ -1,0 +1,76 @@
+/* Notificaciones del donante en Raíces A: el cuaderno de noticias (donante-comun.css), en dos
+   grupos, sin leer y leídas. Las sin leer, en una lámina de papel con la sombra salvia: es lo que
+   hay que mirar; las leídas, sueltas sobre el papel. En pantalla grande, los dos grupos lado a lado. */
+@import url("donante-comun.css");
+
+.notificaciones {
+  max-width: 76rem;
+}
+
+.notificaciones-cabecera {
+  margin-bottom: 1.5rem;
+}
+
+.notificaciones-cabecera .aviso {
+  margin: 0 0 1rem;
+}
+
+.notificaciones-cabecera .bajada {
+  margin-bottom: 1rem;
+}
+
+.marcar {
+  margin: 0;
+}
+
+.marcar .boton {
+  cursor: pointer;
+}
+
+.notificaciones-grupos {
+  display: grid;
+  gap: 2rem;
+}
+
+.grupo-avisos h2 {
+  margin: 0 0 1rem;
+}
+
+.grupo-avisos--sin-leer {
+  padding: 1.25rem 1.25rem 0.5rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+}
+
+@media (min-width: 68.75em) {
+  .notificaciones-cabecera {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 2rem;
+  }
+
+  .notificaciones-cabecera > :not(.marcar) {
+    grid-column: 1;
+  }
+
+  .marcar {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 0.75rem;
+  }
+
+  .notificaciones-grupos {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 2.5rem;
+  }
+
+  /* Lo sin leer queda a la vista mientras se bajan las leídas. */
+  .grupo-avisos--sin-leer {
+    position: sticky;
+    top: 1.5rem;
+  }
+}

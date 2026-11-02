@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--/* Raíces A, Notificaciones del donante (RF-08), según la ficha
+       docs/interfaz/flujos/raices-donante-navegable.md. Las noticias cuelgan de la raíz por fecha, la
+       más nueva arriba, como el cuaderno del mes de la portada: la estación de cada una, impresa si
+       está sin leer y hueca si ya se leyó, con "Sin leer" o "Leída" en texto. Cada una lleva el sello
+       del estado actual de su donación y enlaza a su detalle. "Marcar todas como leídas" es un
+       formulario post real que va a donante-notificaciones-leidas (el patrón de Mi perfil).
+       ?escenario=vacio, error y lento.
+       Fragmento hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices/layout-privado :: pagina(~{::title}, 'donante-notificaciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices/donante-notificaciones :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(leidas)">
+  <th:block th:replace="~{prototipo/raices/datos-donante :: donante(~{prototipo/raices/donante-notificaciones :: cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="sinLeerAhora=${leidas ? 0 : sinLeer}, conDatos=${escenario == ''}">
+  <div class="notificaciones">
+    <header class="notificaciones-cabecera">
+      <div>
+        <p class="rotulo">Notificaciones</p>
+        <h1>Noticias de <em>tus donaciones</em></h1>
+      </div>
+      <p th:if="${leidas}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
+         th:text="'Listo: marcaste todas como leídas.'">Listo: marcaste todas como leídas.</p>
+      <p th:if="${conDatos}" class="bajada"
+         th:text="${leidas} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.|">4
+        sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.</p>
+      <form th:if="${conDatos and sinLeerAhora > 0}" class="marcar"
+            action="/prototipo/raices/donante-notificaciones-leidas"
+            th:action="@{/prototipo/raices/donante-notificaciones-leidas}" method="post">
+        <button class="boton boton--secundario" type="submit">Marcar todas como leídas</button>
+      </form>
+    </header>
+
+    <section th:if="${escenario == 'vacio'}" class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
+      <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la
+        entidad confirme la entrega.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices/donante-donaciones"
+         th:href="@{/prototipo/raices/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{prototipo/raices/datos-donante :: error('No pudimos cargar tus notificaciones.', '/prototipo/raices/donante-notificaciones')}"></section>
+    </th:block>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando">Cargando tus notificaciones…</p>
+      <div class="notificaciones-grupos" aria-busy="true">
+        <div class="reserva"></div>
+        <div class="reserva reserva--alta"></div>
+      </div>
+    </th:block>
+
+    <div th:if="${conDatos}" class="notificaciones-grupos">
+      <section th:if="${sinLeerAhora > 0}" class="grupo-avisos grupo-avisos--sin-leer"
+               aria-labelledby="sin-leer-titulo">
+        <h2 id="sin-leer-titulo" th:text="|Sin leer (${sinLeerAhora})|">Sin leer (4)</h2>
+        <ol class="noticias" role="list">
+          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < sinLeerAhora}">
+            <li th:replace="~{prototipo/raices/datos-donante :: aviso(${a}, true)}"></li>
+          </th:block>
+        </ol>
+      </section>
+      <section class="grupo-avisos" aria-labelledby="leidas-titulo">
+        <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(avisos) - sinLeerAhora})|">Leídas (13)</h2>
+        <ol class="noticias" role="list">
+          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index >= sinLeerAhora}">
+            <li th:replace="~{prototipo/raices/datos-donante :: aviso(${a}, false)}"></li>
+          </th:block>
+        </ol>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

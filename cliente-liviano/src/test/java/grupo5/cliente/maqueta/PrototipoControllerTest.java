@@ -93,16 +93,16 @@ class PrototipoControllerTest {
 
   @Test
   void enRaicesLoQueNoEstaDibujadoMuestraElAvisoOEnlazaACozy() throws Exception {
-    mvc.perform(get("/prototipo/raices/donante-donaciones-detalle?donacion=leche"))
+    mvc.perform(get("/prototipo/raices/donante-entidades-detalle?entidad=comedor"))
         .andExpect(status().isOk())
         .andExpect(view().name("prototipo/raices/sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Entidades"))
         .andExpect(content().string(containsString("Empresa donante")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "href=\"/prototipo/donante-donaciones-detalle?donacion=leche\"")));
+                        "href=\"/prototipo/donante-entidades-detalle?entidad=comedor\"")));
     mvc.perform(get("/prototipo/raices/donante-incentivos")).andExpect(status().isNotFound());
     mvc.perform(get("/prototipo/raices/donante-tesoro")).andExpect(status().isNotFound());
     mvc.perform(get("/prototipo/raices/sin-dibujar")).andExpect(status().isNotFound());
@@ -126,6 +126,36 @@ class PrototipoControllerTest {
         .andExpect(content().string(containsString("Volver a intentar")));
     mvc.perform(get("/prototipo/raices/donante-seguimiento?escenario=lento"))
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
+  }
+
+  @Test
+  void elDonanteDeRaicesRecorreSuInicioSusDonacionesEntidadesYNotificaciones() throws Exception {
+    mvc.perform(get("/prototipo/raices/donante-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/raices/donante-inicio"))
+        .andExpect(content().string(containsString("Primera entrega confirmada: fideos secos")))
+        .andExpect(content().string(containsString("aria-label=\"Notificaciones, 4 sin leer\"")));
+    mvc.perform(get("/prototipo/raices/donante-inicio?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/prototipo/raices/donante-donaciones?estado=pendiente&categoria=alimentos"))
+        .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
+    mvc.perform(get("/prototipo/raices/donante-donaciones?estado=otro"))
+        .andExpect(content().string(containsString("7 donaciones, de la más reciente")));
+    mvc.perform(get("/prototipo/raices/donante-donaciones-detalle?donacion=ropa"))
+        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")));
+    mvc.perform(get("/prototipo/raices/donante-donaciones-detalle?donacion=pan"))
+        .andExpect(content().string(containsString("No encontramos esa donación.")));
+    mvc.perform(get("/prototipo/raices/donante-entidades?nombre=zzz"))
+        .andExpect(content().string(containsString("Ninguna entidad activa se llama así.")));
+    mvc.perform(get("/prototipo/raices/donante-entidades?escenario=error"))
+        .andExpect(content().string(containsString("role=\"alert\"")))
+        .andExpect(content().string(containsString("Cómo llega tu donación")));
+    mvc.perform(post("/prototipo/raices/donante-notificaciones-leidas"))
+        .andExpect(redirectedUrl("/prototipo/raices/donante-notificaciones-leidas"));
+    mvc.perform(get("/prototipo/raices/donante-notificaciones-leidas"))
+        .andExpect(content().string(containsString("Listo: marcaste todas como leídas.")))
+        .andExpect(content().string(containsString("aria-label=\"Notificaciones\"")));
   }
 
   @Test
