@@ -36,7 +36,6 @@
   margin: 6px;
   border: 1px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  corner-shape: var(--radio-lamina-forma);
   outline: 1px solid var(--color-tinta);
   outline-offset: 5px;
 }
@@ -88,7 +87,6 @@
   margin: 0;
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  corner-shape: var(--radio-lamina-forma);
 }
 
 /* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 380). */
@@ -302,7 +300,6 @@ figure.seguimiento-dibujo {
     padding: 1.25rem;
     border: 2px solid var(--color-tinta);
     border-radius: var(--radio-lamina);
-    corner-shape: var(--radio-lamina-forma);
     box-shadow: 0.375rem 0.375rem 0 var(--color-hoja);
     background: var(--color-papel);
   }

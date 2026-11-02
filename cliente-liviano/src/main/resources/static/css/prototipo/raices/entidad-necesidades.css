@@ -48,7 +48,6 @@
   margin: 6px;
   border: 1px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  corner-shape: var(--radio-lamina-forma);
   outline: 1px solid var(--color-tinta);
   outline-offset: 5px;
 }
@@ -127,7 +126,6 @@
   padding: 1.25rem;
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  corner-shape: var(--radio-lamina-forma);
   background: var(--color-papel);
 }
 
@@ -238,7 +236,6 @@
 .pedido {
   border: 1.5px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  corner-shape: var(--radio-lamina-forma);
   outline: 1px solid var(--color-tinta);
   outline-offset: -7px;
   background: var(--color-papel);
@@ -496,7 +493,6 @@
   padding: 1.25rem;
   border: 1.5px solid var(--color-problema-texto);
   border-radius: var(--radio-lamina);
-  corner-shape: var(--radio-lamina-forma);
   outline: 1px solid var(--color-problema-texto);
   outline-offset: -7px;
   background: var(--color-papel);

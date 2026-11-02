@@ -124,16 +124,11 @@
   --color-advertencia-fondo: var(--p-en-camino-fondo);
   --color-borde-control: var(--p-tinta-suave);
   --color-foco: var(--p-acento);
-  /* Los bordes (A/B de bordes, 2026-11-02: D, troquel). El papel (láminas y etiquetas) tiene las
-     esquinas mordidas hacia adentro, como un boleto o una etiqueta de herbario troquelada; los
-     botones, en bisel, como una etiqueta de precio. Cada radio va con su forma de esquina: en un
-     navegador que no conoce la forma, la esquina queda redonda. */
-  --radio-lamina: 1rem;
-  --radio-lamina-chica: 0.625rem;
-  --radio-lamina-forma: scoop;
-  --radio-boton: 0.625rem;
-  --radio-boton-chico: 0.5rem;
-  --radio-boton-forma: bevel;
+  /* Los bordes (A/B de bordes, 2026-11-02: B, esquina suave). El papel (láminas, etiquetas y
+     tarjetas) y los botones con las esquinas apenas redondeadas, como un papel grueso o un canto
+     gastado; el marco doble y la sombra plana salvia, como antes. */
+  --radio-lamina: 0.75rem;
+  --radio-boton: 0.5rem;
   /* Los mismos puntos de quiebre que las otras alternativas. */
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;

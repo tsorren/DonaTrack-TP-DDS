@@ -238,9 +238,9 @@ Detalle en la [bitácora](../bitacora.md).
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
 | Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra) | El recorrido, como capítulos de un afiche |
-| Botones y bordes | Troquel: el papel (láminas y etiquetas) con las esquinas mordidas hacia adentro y los botones en bisel, con una sombra plana salvia corrida (usuario, A/B de bordes, 2026-11-02; antes, rectos); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un boleto o una etiqueta troquelada |
+| Botones y bordes | Esquina suave: el papel (láminas, etiquetas y tarjetas) y los botones apenas redondeados, con una sombra plana salvia corrida (usuario, A/B de bordes, 2026-11-02; antes, rectos); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
 
-**Forma:** sale del estilo (troquel, sombra plana corrida). La línea entre horizontes no entró; la
+**Forma:** sale del estilo (esquina suave, sombra plana corrida). La línea entre horizontes no entró; la
 grava tampoco (la reemplazó el semitono, que después salió con el A/B de textura). En la ronda de ilustración se descartaron el grabado de
 lámina, el plano risográfico con raíces orgánicas, la orgánica simétrica, el abanico, la
 bifurcada y la fila de lámina (bitácora).
