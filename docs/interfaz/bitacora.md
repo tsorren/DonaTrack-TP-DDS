@@ -41,8 +41,9 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   2026-11-01, decisión del usuario): sale el botón de plegar y `js/raices-menu.js`. Las seis
   pantallas aprobadas cambian en su cabecera y su pie, que ya no son iguales píxel a píxel a las
   de antes. Contacto y Términos cambian solo la cabecera y el pie: siguen sin la navegación
-  pública, que nunca tuvieron (exclusión de `layout-publico.html`). El sitio B sigue en
-  `/prototipo/raices-b/` hasta que el usuario decida borrarlo.
+  pública, que nunca tuvieron (exclusión de `layout-publico.html`). El sitio B se borró
+  (usuario, 2026-11-03: plantillas, hojas, su `Prototipo` en el controller, sus rutas de
+  verificación y sus tests); su evidencia queda en `evidencia/raices/ab-navegable/b/`.
 - **Quién decidió:** el usuario (la tableta y la textura, en una ronda de dos preguntas).
 - **Evidencia:** `docs/interfaz/evidencia/raices/cabecera-de-b/` (1280 y primera pantalla del
   celular de cuatro pantallas); la tableta, por la verificación visual de las 146 rutas de A, que

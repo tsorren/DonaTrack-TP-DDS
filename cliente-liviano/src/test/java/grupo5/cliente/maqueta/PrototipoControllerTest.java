@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Las pantallas de prueba están en src/test/resources/templates/prototipo/cozy-medieval/ y
- * prototipo/raices/ y prototipo/raices-b/.
+ * prototipo/raices/.
  */
 @WebMvcTest(PrototipoController.class)
 @Import(MaquetaConfig.class)
@@ -116,6 +116,7 @@ class PrototipoControllerTest {
     mvc.perform(get("/prototipo/raices/donante-incentivos")).andExpect(status().isNotFound());
     mvc.perform(get("/prototipo/raices/donante-tesoro")).andExpect(status().isNotFound());
     mvc.perform(get("/prototipo/raices/sin-dibujar")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/raices/publico-perfil")).andExpect(status().isNotFound());
     mvc.perform(post("/prototipo/raices/donante-tesoro")).andExpect(status().isNotFound());
   }
 
@@ -408,77 +409,16 @@ class PrototipoControllerTest {
         .andExpect(content().string(not(containsString("href=\"/prototipo/publico-"))));
   }
 
-  @Test
-  void raicesBTieneSuPortadaYEnlazaSoloASuSitio() throws Exception {
-    mvc.perform(get("/prototipo/raices-b/publico-portada"))
-        .andExpect(status().isOk())
-        .andExpect(view().name("prototipo/raices-b/publico-portada"))
-        .andExpect(model().attribute("alternativa", "raices-b"))
-        .andExpect(content().string(containsString("href=\"/css/prototipo/raices-b/")))
-        .andExpect(
-            content().string(containsString("href=\"/prototipo/raices-b/publico-ingresar\"")))
-        .andExpect(content().string(containsString("href=\"/prototipo/raices-b/publico-legales\"")))
-        .andExpect(content().string(not(containsString("href=\"/prototipo/raices/"))))
-        .andExpect(content().string(not(containsString("href=\"/prototipo/publico-"))));
-  }
-
-  @Test
-  void enRaicesBLoNoDibujadoYLosFormulariosSeQuedanEnSuSitio() throws Exception {
-    mvc.perform(get("/prototipo/raices-b/admin-donantes"))
-        .andExpect(status().isOk())
-        .andExpect(view().name("prototipo/raices-b/sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Donantes"));
-    mvc.perform(get("/prototipo/raices-b/donante-incentivos")).andExpect(status().isNotFound());
-    mvc.perform(get("/prototipo/raices-b/sin-dibujar")).andExpect(status().isNotFound());
-    mvc.perform(post("/prototipo/raices-b/publico-portada").param("volver", "/prototipo/raices/x"))
-        .andExpect(redirectedUrl("/prototipo/raices-b/publico-portada"));
-    mvc.perform(
-            post("/prototipo/raices-b/publico-portada").param("volver", "/prototipo/raices-b/x"))
-        .andExpect(
-            redirectedUrl(
-                "/prototipo/raices-b/publico-portada?volver=%2Fprototipo%2Fraices-b%2Fx"));
-    mvc.perform(post("/prototipo/raices-b/donante-tesoro")).andExpect(status().isNotFound());
-  }
-
-  @Test
-  void enRaicesBLaNavegacionEsUnaLineaPublicaYOtraPorRol() throws Exception {
-    mvc.perform(get("/prototipo/raices-b/publico-portada"))
-        .andExpect(model().attribute("perfil", (Object) null))
-        .andExpect(
-            content().string(containsString("href=\"/prototipo/raices-b/publico-donaciones\"")))
-        .andExpect(content().string(containsString("href=\"/prototipo/raices-b/publico-mapa\"")))
-        .andExpect(
-            content().string(containsString("href=\"/prototipo/raices-b/publico-entidades\"")))
-        .andExpect(
-            content().string(containsString("href=\"/prototipo/raices-b/publico-registro\"")));
-    // Lo público sin plantilla no existe: no cae en "sin dibujar", que es privada.
-    mvc.perform(get("/prototipo/raices-b/publico-perfil")).andExpect(status().isNotFound());
-    mvc.perform(get("/prototipo/raices/publico-perfil")).andExpect(status().isNotFound());
-    mvc.perform(get("/prototipo/raices-b/donante-seguimiento"))
-        .andExpect(
-            content()
-                .string(
-                    containsString(
-                        "href=\"/prototipo/raices-b/donante-seguimiento\" aria-current=\"page\"")))
-        .andExpect(
-            content()
-                .string(containsString("href=\"/prototipo/raices-b/donante-notificaciones\"")));
-    mvc.perform(get("/prototipo/raices-b/admin-inicio"))
-        .andExpect(content().string(not(containsString("-notificaciones\""))));
-  }
-
   /** Recuperar la contraseña: el aviso no revela cuentas ni promete un plazo (RNF-AUTH-10, D8). */
   @Test
-  void enLosDosSitiosDeRaicesRecuperarLaContrasenaAvisaSinRevelarCuentas() throws Exception {
-    for (String sitio : List.of("raices", "raices-b")) {
-      String enviado = PROTOTIPO + sitio + "/publico-recuperar-enviado";
-      mvc.perform(post(enviado)).andExpect(redirectedUrl(enviado));
-      mvc.perform(get(enviado))
-          .andExpect(status().isOk())
-          .andExpect(
-              content().string(containsString("Si hay una cuenta con ese correo, te mandamos")))
-          .andExpect(content().string(not(containsString("vence en"))));
-    }
+  void enRaicesRecuperarLaContrasenaAvisaSinRevelarCuentas() throws Exception {
+    String enviado = PROTOTIPO + "raices/publico-recuperar-enviado";
+    mvc.perform(post(enviado)).andExpect(redirectedUrl(enviado));
+    mvc.perform(get(enviado))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Si hay una cuenta con ese correo, te mandamos")))
+        .andExpect(content().string(not(containsString("vence en"))));
   }
 
   /** El sitio A no toca las siete pantallas aprobadas antes de la corrida A/B (encargo, §1). */
@@ -513,7 +453,7 @@ class PrototipoControllerTest {
     mvc.perform(get("/perfil")).andExpect(redirectedUrl("/prototipo/donante-perfil"));
   }
 
-  /** Las pantallas que los dos sitios de Raíces dibujan de verdad (no caen en "sin dibujar"). */
+  /** Las pantallas que Raíces dibuja de verdad (no caen en "sin dibujar"). */
   private static final List<String> DIBUJADAS_EN_RAICES =
       List.of(
           "publico-portada",
@@ -549,18 +489,8 @@ class PrototipoControllerTest {
   }
 
   @Test
-  void enRaicesBEstanDibujadasLasPantallasDeLosTresRecorridos() throws Exception {
-    exigirDibujadas("raices-b");
-  }
-
-  @Test
   void ningunEnlaceDeRaicesAEstaRoto() throws Exception {
     recorrerEnAnchura("raices");
-  }
-
-  @Test
-  void ningunEnlaceDeRaicesBEstaRoto() throws Exception {
-    recorrerEnAnchura("raices-b");
   }
 
   private void exigirDibujadas(String sitio) throws Exception {

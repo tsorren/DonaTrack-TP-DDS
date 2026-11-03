@@ -2,8 +2,8 @@
 
 > **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
 > preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
-> Plantilla de la skill `ux-flujo`. Ficha compartida por los dos sitios de la corrida A/B de Raíces:
-> A en `/prototipo/raices/<pantalla>` y B en `/prototipo/raices-b/<pantalla>`
+> Plantilla de la skill `ux-flujo`. Ficha escrita para los dos sitios de la corrida A/B de Raíces:
+> quedó A, en `/prototipo/raices/<pantalla>` (B se borró al elegir A, 2026-11-03)
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
 > Fija para quién es, el recorrido, los estados, los textos, los datos y los enlaces de salida.
 > **No fija la composición ni la navegación visual:** eso lo decide cada sitio.
@@ -467,7 +467,7 @@ cantidades y unidades.
 
 El botón "Ingresar" y "Continuar con Google" envían el formulario (`post`) a `donante-inicio`; el
 registro de donante, también; el de entidad, a `publico-registro-entidad-enviada`. Las direcciones
-llevan el prefijo de cada sitio (`/prototipo/raices/` o `/prototipo/raices-b/`).
+llevan el prefijo del sitio (`/prototipo/raices/`).
 
 ### 6.4 Filtro de tono
 

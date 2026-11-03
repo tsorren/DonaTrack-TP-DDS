@@ -6,7 +6,7 @@
 > [donante](raices-donante-navegable.md) y [entidad](raices-entidad-navegable.md). Cada ficha copia
 > los de sus pantallas; esta lista los junta y suma los que solo se ven en un sitio.
 
-Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde salir. Cada línea: rol · pantalla · qué falta · por qué. Sin DTI ni ADR nuevos. Orden: Público, Donante, Entidad, Admin; dentro de cada rol, por pantalla. Las marcas "sitio A" y "sitio B" dicen en cuál se ve el dato; sin marca, en los dos.
+Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde salir. Cada línea: rol · pantalla · qué falta · por qué. Sin DTI ni ADR nuevos. Orden: Público, Donante, Entidad, Admin; dentro de cada rol, por pantalla. Las marcas "sitio A" y "sitio B" dicen en cuál se ve el dato; sin marca, en los dos. El sitio B se borró al elegir A (2026-11-03): sus líneas quedan como historia.
 
 ## Público
 

@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -30,10 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
  * alternativas cuando se apruebe su flujo. Una sección del menú que todavía no tiene plantilla
  * muestra la tierra sin explorar. Raíces, la tercera alternativa en exploración, tiene su propio
  * prototipo, sin juego de plantillas (ADR 20261101): {@code /prototipo/raices/<pantalla>} muestra
- * {@code templates/prototipo/raices/<pantalla>.html}, con su menú en la misma dirección. El sitio B
- * de la corrida A/B de Raíces es el mismo prototipo con otras plantillas: {@code
- * /prototipo/raices-b/<pantalla>} y {@code templates/prototipo/raices-b/}, que suma un menú público
- * (su línea pública).
+ * {@code templates/prototipo/raices/<pantalla>.html}, con su menú en la misma dirección.
  */
 @Controller
 @Profile("maqueta")
@@ -114,53 +110,26 @@ class PrototipoController {
    * Raíces habla a las empresas que donan: su cuenta de ejemplo es una empresa, con las donaciones
    * de Ana, y su menú no tiene Incentivos, que RF-07 oculta a la persona jurídica.
    */
-  private static Prototipo deRaices(String carpeta) {
-    return new Prototipo(
-        "prototipo/" + carpeta + "/",
-        "/prototipo/" + carpeta + "/",
-        carpeta,
-        Map.of(
-            "donante",
-            MENUS.get("donante").stream()
-                .filter(seccion -> !seccion.pantalla().equals("donante-incentivos"))
-                .toList(),
-            "entidad",
-            MENUS.get("entidad"),
-            "admin",
-            MENUS.get("admin")),
-        Map.of(
-            "donante", new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
-            "entidad", CUENTAS.get("entidad"),
-            "admin", CUENTAS.get("admin")));
-  }
-
-  private static final Prototipo RAICES = deRaices("raices");
+  private static final Prototipo RAICES =
+      new Prototipo(
+          "prototipo/raices/",
+          "/prototipo/raices/",
+          "raices",
+          Map.of(
+              "donante",
+              MENUS.get("donante").stream()
+                  .filter(seccion -> !seccion.pantalla().equals("donante-incentivos"))
+                  .toList(),
+              "entidad",
+              MENUS.get("entidad"),
+              "admin",
+              MENUS.get("admin")),
+          Map.of(
+              "donante", new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
+              "entidad", CUENTAS.get("entidad"),
+              "admin", CUENTAS.get("admin")));
 
   private static final String PUBLICO = "publico";
-
-  /**
-   * El sitio B de la corrida A/B de Raíces: mismas cuentas y menús, sus propias plantillas y,
-   * además, la línea pública (sistema de B: la navegación es una línea de subte con una estación
-   * por destino). Lo público sin plantilla no muestra "sin dibujar": no existe.
-   */
-  private static final Prototipo RAICES_B = conLineaPublica(deRaices("raices-b"));
-
-  private static Prototipo conLineaPublica(Prototipo prototipo) {
-    Map<String, List<Seccion>> menus = new HashMap<>(prototipo.menus());
-    menus.put(
-        PUBLICO,
-        List.of(
-            new Seccion("Entregas confirmadas", "Entregas", ICONO_DONACIONES, "publico-donaciones"),
-            new Seccion("Mapa", "mapa", "publico-mapa"),
-            new Seccion("Entidades", "entidades", "publico-entidades"),
-            new Seccion("Crear una cuenta", "Crear cuenta", ICONO_INICIO, "publico-registro")));
-    return new Prototipo(
-        prototipo.carpeta(),
-        prototipo.direccion(),
-        prototipo.alternativa(),
-        Map.copyOf(menus),
-        prototipo.cuentas());
-  }
 
   private final ResourceLoader recursos;
 
@@ -180,11 +149,6 @@ class PrototipoController {
   @GetMapping("/prototipo/raices/{pantalla}")
   String pantallaDeRaices(@PathVariable String pantalla, Model model, HttpServletRequest request) {
     return mostrar(RAICES, pantalla, model, request);
-  }
-
-  @GetMapping("/prototipo/raices-b/{pantalla}")
-  String pantallaDeRaicesB(@PathVariable String pantalla, Model model, HttpServletRequest request) {
-    return mostrar(RAICES_B, pantalla, model, request);
   }
 
   private String mostrar(
@@ -256,14 +220,6 @@ class PrototipoController {
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar) {
     return enviarConDatos(RAICES, pantalla, volver, mostrar);
-  }
-
-  @PostMapping("/prototipo/raices-b/{pantalla}")
-  String enviarEnRaicesB(
-      @PathVariable String pantalla,
-      @RequestParam(required = false) String volver,
-      @RequestParam(required = false) String mostrar) {
-    return enviarConDatos(RAICES_B, pantalla, volver, mostrar);
   }
 
   private String enviarConDatos(

@@ -99,15 +99,18 @@ flowchart LR
 
 ## Raíces, sitios A y B (corrida del 2026-11-02)
 
-Raíces dibuja el recorrido de los tres roles en dos sitios navegables de la maqueta, con los mismos
-datos de ejemplo: **A** (`/prototipo/raices/<pantalla>`, extiende las piezas actuales) y **B**
-(`/prototipo/raices-b/<pantalla>`, otra navegación y composición con el mismo ADN). Las dibuja
+Raíces dibuja el recorrido de los tres roles en un sitio navegable de la maqueta:
+**A** (`/prototipo/raices/<pantalla>`, extiende las piezas actuales), elegido por el usuario el
+2026-11-03. El sitio B de la corrida (otra navegación y composición con el mismo ADN) se borró; su
+evidencia queda en `evidencia/raices/ab-navegable/b/`. Las dibuja
 con su ficha de flujo en [`flujos/raices-publico-navegable.md`](flujos/raices-publico-navegable.md),
 [`raices-donante-navegable.md`](flujos/raices-donante-navegable.md) y
 [`raices-entidad-navegable.md`](flujos/raices-entidad-navegable.md), aprobadas al elegir el
 sitio A (usuario, 2026-11-03). Lo que falta de backend está en la ficha de cada recorrido.
 
-| Pantalla del mapa | En A | En B |
+La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes de borrarlo.
+
+| Pantalla del mapa | En A | En B (histórico) |
 |---|---|---|
 | Landing, Donaciones realizadas, Mapa de entregadas, Entidades y necesidades | Dibujadas | Dibujadas, con la línea pública de navegación |
 | Contacto, Legales y privacidad | Dibujadas | Dibujadas |
