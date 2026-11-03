@@ -111,16 +111,3 @@
     margin-top: 9rem;
   }
 }
-
-/* Recuperar la contraseña se abre en la alternativa Cozy: el aviso va en su propio renglón, debajo
-   del enlace, y dentro de él (los lectores lo leen con el nombre del enlace). */
-.enlace-campo,
-.aviso .boton {
-  flex-wrap: wrap;
-}
-
-.enlace-campo small,
-.aviso .boton small {
-  flex-basis: 100%;
-  font-weight: 400;
-}

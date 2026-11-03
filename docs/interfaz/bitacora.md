@@ -32,14 +32,19 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   la maqueta, con los recorridos público ("entrar"), del donante ("donar y seguir") y de la entidad
   ("recibir"), más el inicio del admin con su menú, sin enlaces muertos:
   - **A** (`/prototipo/raices/`): fiel a lo aprobado. Extiende las piezas actuales (layouts,
-    sellos, formularios, etiquetas de herbario) sin tocar las siete pantallas ya aprobadas. 16
-    pantallas nuevas.
+    sellos, formularios, etiquetas de herbario) sin rediseñar las siete pantallas ya aprobadas.
+    Para que se pueda llegar a las nuevas, sí cambia lo que las rodea: el layout privado suma el
+    acceso fijo a Notificaciones; el público y la portada, la navegación pública, y la portada,
+    dos enlaces "Ver todas…" (a Entregas confirmadas y a Entidades). Las capturas de esas siete
+    difieren de las de antes solo en eso. 18 pantallas nuevas (las 16 del plan y Recuperar la
+    contraseña con su aviso, para que Ingresar no salga a Cozy).
   - **B** (`/prototipo/raices-b/`): audaz, con el mismo ADN (paleta Oliva, risografía, raíces).
     Otra navegación (una línea pública de subte y otra por rol) y otra composición; rehace
     también las siete aprobadas y suma la lista de Seguir entregas de la entidad y la
     recuperación de la contraseña.
   - Lo que lo prueba: un test de `PrototipoControllerTest` que, desde las portadas y los inicios
-    de cada rol, sigue en anchura todos los enlaces de cada sitio y exige 200, y que las 23
+    de cada rol, sigue en anchura los enlaces de cada sitio, exige 200 y que ninguno salga a
+    otra alternativa (salvo "sin dibujar", que ofrece la misma pantalla en Cozy), y que las 23
     pantallas de los tres recorridos tienen plantilla propia en los dos. Lo que el backend todavía
     no da quedó con datos sintéticos y en una lista aparte, sin DTI ni ADR nuevos.
 - **Alternativas:** correr dos veces la corrida creativa guardada (elige un ganador por

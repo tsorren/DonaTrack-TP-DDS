@@ -112,7 +112,7 @@ elegir A o B. Lo que falta de backend está en la ficha de cada recorrido.
 | Landing, Donaciones realizadas, Mapa de entregadas, Entidades y necesidades | Dibujadas | Dibujadas, con la línea pública de navegación |
 | Contacto, Legales y privacidad | Dibujadas | Dibujadas |
 | Iniciar sesión, Registrarse: elegir, Registro de donante / entidad | Dibujadas | Dibujadas |
-| Recuperar contraseña | Se abre la de Cozy, con aviso | Dibujada, con su aviso de enviado |
+| Recuperar contraseña | Dibujada, con su aviso de enviado | Dibujada, con su aviso de enviado |
 | Inicio, Mis donaciones → detalle, Beneficiarios (Entidades), Notificaciones, Mi perfil, Seguir entregas del donante | Dibujadas | Dibujadas |
 | Misiones e insignias (Incentivos) | No está: RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
 | Inicio de la entidad, Necesidades, Donaciones recibidas, Notificaciones, Confirmar recepción | Dibujadas | Dibujadas |

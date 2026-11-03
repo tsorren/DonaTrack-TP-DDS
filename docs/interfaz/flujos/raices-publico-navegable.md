@@ -69,7 +69,7 @@ flowchart TD
   ingresar -->|datos correctos| inicioRol([Inicio del rol: donante, entidad o admin])
   ingresar -->|no coinciden| ingresarError[Ingresar, con el error]
   ingresarError --> ingresar
-  ingresar -->|¿Olvidaste tu contraseña?| recuperar([Recuperar contraseña, en Cozy])
+  ingresar -->|¿Olvidaste tu contraseña?| recuperar([Recuperar contraseña])
   regDonante -->|datos completos| inicioDonante([Inicio del donante])
   regDonante -->|falta algo| regDonanteError[Registro de donante, con lo que falta]
   regEntidad -->|datos completos| enviada[Solicitud enviada]
@@ -100,8 +100,9 @@ Desvíos considerados:
 - **Sin permiso:** no aplica; todo es público.
 
 **En la maqueta:** "Ingresar" lleva al inicio de cada rol con su cuenta de ejemplo (sección 6.3).
-"¿Olvidaste tu contraseña?" lleva a la de Cozy (`/prototipo/publico-recuperar`), que tiene su
-propio regreso: lo público sin dibujar no tiene página de "sin dibujar" (ver Decisiones).
+"¿Olvidaste tu contraseña?" lleva a Recuperar la contraseña de cada sitio
+(`publico-recuperar`, con su aviso en `publico-recuperar-enviado`): lo público sin dibujar no tiene
+página de "sin dibujar", así que el paso se dibuja (ver Decisiones).
 
 ## 4. Pantallas
 
@@ -489,7 +490,7 @@ llevan el prefijo de cada sitio (`/prototipo/raices/` o `/prototipo/raices-b/`).
 | 6 | Reconocer antes que recordar | Cada tarjeta de Crear una cuenta dice qué se pide; el aviso del nombre visible está junto a la casilla; la lista del mapa repite todo lo del dibujo | — |
 | 7 | Flexibilidad | Quien ya tiene cuenta ingresa desde cualquier pública; "Continuar con Google"; filtros y búsqueda para quien busca algo puntual | — |
 | 8 | Diseño minimalista | Una pregunta por pantalla (qué llegó, adónde, quién pide, entrar, sumarse); el registro de donante pide cuatro datos y la casilla | El registro de entidad sigue siendo largo (diez datos), aunque en tres grupos |
-| 9 | Recuperarse de errores | Cada error dice qué pasó y qué hacer; el de ingresar ofrece pedir una contraseña nueva; el del servidor, un código para escribir | Recuperar contraseña todavía es la de Cozy |
+| 9 | Recuperarse de errores | Cada error dice qué pasó y qué hacer; el de ingresar ofrece pedir una contraseña nueva; el del servidor, un código para escribir | — |
 | 10 | Ayuda | Ayudas cortas en cada campo dudoso; "Cómo sigue" en el registro de entidad | — |
 
 Los 7 factores de la experiencia ([criterios de la cátedra](../criterios-catedra-ux-ui.md),
@@ -530,8 +531,10 @@ Decisiones tomadas (agente, propuestas; se aprueban con la ficha al elegir A o B
   perfil.
 - **En la maqueta, Ingresar lleva al inicio de cada rol** con su cuenta de ejemplo; el formulario y
   Google, al del donante.
-- **"¿Olvidaste tu contraseña?" lleva a la de Cozy:** el controlador no muestra "sin dibujar" para
-  lo público, y Cozy tiene la pantalla con su regreso. Así no hay enlaces muertos.
+- **"¿Olvidaste tu contraseña?" lleva a Recuperar la contraseña de cada sitio:** el controlador no
+  muestra "sin dibujar" para lo público y el recorrido no sale a Cozy, así que A y B dibujan el
+  paso (un correo y el aviso que no dice si hay cuenta). Así no hay enlaces muertos ni salidas a
+  Cozy (arreglo de la crítica en B y de la pre-auditoría en A, 2026-11-02).
 - **Los estados de carga van con `?escenario=`; los resultados de un envío, en su pantalla** (como
   la portada y Contacto).
 

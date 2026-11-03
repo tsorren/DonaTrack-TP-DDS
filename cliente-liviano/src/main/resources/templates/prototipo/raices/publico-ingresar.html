@@ -4,7 +4,7 @@
        maqueta como etiquetas de herbario colgadas en la tierra, como las entidades de la portada, en
        un marco punteado: lo que no es del sistema. Ingresar y "Continuar con Google" envían (POST) al
        inicio del donante; cada cuenta de ejemplo lleva al inicio de su rol. "¿Olvidaste tu
-       contraseña?" lleva a la de Cozy (ficha, Decisiones). Estados: ?escenario=lento, error,
+       contraseña?" lleva a publico-recuperar del sitio (arreglo de la pre-auditoría). Estados: ?escenario=lento, error,
        sin-conexion, bloqueado, pendiente y sesion-vencida; el error de datos es
        publico-ingresar-error.
        Fragmentos:
@@ -36,8 +36,8 @@
         <h2 id="ingreso-error-titulo">No pudimos ingresar.</h2>
         <p id="ingreso-error-texto">El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí
           una contraseña nueva.</p>
-        <a class="boton boton--secundario" href="/prototipo/publico-recuperar"
-           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva <small>(se abre en la alternativa Cozy)</small></a>
+        <a class="boton boton--secundario" href="/prototipo/raices/publico-recuperar"
+           th:href="@{/prototipo/raices/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
       <th:block th:if="${escenario == 'error'}">
         <section th:replace="~{prototipo/raices/datos-publicos :: avisoError('No pudimos ingresar en este momento.',
@@ -53,8 +53,8 @@
         <h2 id="pausa-titulo">Pausamos los intentos de ingreso.</h2>
         <p>Hubo varios intentos con datos que no coinciden. Por seguridad, probá de nuevo en unos minutos o
           pedí una contraseña nueva.</p>
-        <a class="boton boton--secundario" href="/prototipo/publico-recuperar"
-           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva <small>(se abre en la alternativa Cozy)</small></a>
+        <a class="boton boton--secundario" href="/prototipo/raices/publico-recuperar"
+           th:href="@{/prototipo/raices/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
       <section th:if="${escenario == 'pendiente'}" class="aviso" role="status" aria-labelledby="revision-titulo">
         <h2 id="revision-titulo">Tu entidad todavía está en revisión.</h2>
@@ -88,8 +88,8 @@
             <button class="boton boton--secundario" type="button" data-mostrar aria-controls="clave"
                     aria-pressed="false" hidden>Mostrar</button>
           </div>
-          <a class="enlace-campo" href="/prototipo/publico-recuperar"
-             th:href="@{/prototipo/publico-recuperar}">¿Olvidaste tu contraseña? <small>(se abre en la alternativa Cozy)</small></a>
+          <a class="enlace-campo" href="/prototipo/raices/publico-recuperar"
+             th:href="@{/prototipo/raices/publico-recuperar}">¿Olvidaste tu contraseña?</a>
         </div>
         <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
                 th:text="${escenario == 'lento'} ? 'Ingresando…' : 'Ingresar'">Ingresar</button>

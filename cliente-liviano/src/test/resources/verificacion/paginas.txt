@@ -112,6 +112,8 @@
 /prototipo/raices/publico-ingresar?escenario=pendiente
 /prototipo/raices/publico-ingresar?escenario=sesion-vencida
 /prototipo/raices/publico-ingresar-error
+/prototipo/raices/publico-recuperar
+/prototipo/raices/publico-recuperar-enviado
 /prototipo/raices/publico-registro
 /prototipo/raices/publico-registro-donante
 /prototipo/raices/publico-registro-donante?tipo=persona
@@ -257,6 +259,8 @@
 /prototipo/raices-b/publico-ingresar?escenario=pendiente
 /prototipo/raices-b/publico-ingresar?escenario=sesion-vencida
 /prototipo/raices-b/publico-ingresar-error
+/prototipo/raices-b/publico-recuperar
+/prototipo/raices-b/publico-recuperar-enviado
 /prototipo/raices-b/publico-registro
 /prototipo/raices-b/publico-registro-donante
 /prototipo/raices-b/publico-registro-donante?tipo=persona

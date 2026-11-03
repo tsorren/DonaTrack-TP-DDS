@@ -502,6 +502,7 @@ class PrototipoControllerTest {
           "admin-inicio");
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");
+  private static final String PROTOTIPO = "/prototipo/";
 
   @Test
   void enRaicesAEstanDibujadasLasPantallasDeLosTresRecorridos() throws Exception {
@@ -533,10 +534,11 @@ class PrototipoControllerTest {
 
   /**
    * Desde las portadas de cada rol sigue, en anchura, cada enlace que queda dentro del sitio: todos
-   * responden 200. El enlace roto se arregla en la plantilla, no acá.
+   * responden 200 y, salvo en "sin dibujar", ninguno sale a otra alternativa. El enlace roto se
+   * arregla en la plantilla, no acá.
    */
   private void recorrerEnAnchura(String sitio) throws Exception {
-    String prefijo = "/prototipo/" + sitio + "/";
+    String prefijo = PROTOTIPO + sitio + "/";
     Deque<String> pendientes = new ArrayDeque<>();
     Set<String> vistos = new LinkedHashSet<>();
     for (String inicio :
@@ -548,6 +550,8 @@ class PrototipoControllerTest {
       String direccion = pendientes.poll();
       MvcResult resultado =
           mvc.perform(get(URI.create(direccion))).andExpect(status().isOk()).andReturn();
+      String vista = resultado.getModelAndView().getViewName();
+      boolean enUnRecorrido = !("prototipo/" + sitio + "/sin-dibujar").equals(vista);
       Matcher enlace = ENLACE.matcher(resultado.getResponse().getContentAsString());
       while (enlace.find()) {
         String destino = enlace.group(1).replace("&amp;", "&");
@@ -555,6 +559,11 @@ class PrototipoControllerTest {
         if (ancla >= 0) {
           destino = destino.substring(0, ancla);
         }
+        // Desde los recorridos, ningún enlace sale a otra alternativa: solo "sin dibujar" ofrece
+        // ver la pantalla en Cozy (decisión del usuario, 2026-11-01).
+        assertTrue(
+            !enUnRecorrido || !destino.startsWith(PROTOTIPO) || destino.startsWith(prefijo),
+            direccion + " enlaza fuera de " + sitio + ": " + destino);
         if (destino.startsWith(prefijo) && vistos.add(destino)) {
           pendientes.add(destino);
         }
