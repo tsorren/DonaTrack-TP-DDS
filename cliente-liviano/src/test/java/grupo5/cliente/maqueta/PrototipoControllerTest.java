@@ -467,6 +467,45 @@ class PrototipoControllerTest {
         .andExpect(content().string(not(containsString("-notificaciones\""))));
   }
 
+  /** Recuperar la contraseña: el aviso no revela cuentas ni promete un plazo (RNF-AUTH-10, D8). */
+  @Test
+  void enLosDosSitiosDeRaicesRecuperarLaContrasenaAvisaSinRevelarCuentas() throws Exception {
+    for (String sitio : List.of("raices", "raices-b")) {
+      String enviado = PROTOTIPO + sitio + "/publico-recuperar-enviado";
+      mvc.perform(post(enviado)).andExpect(redirectedUrl(enviado));
+      mvc.perform(get(enviado))
+          .andExpect(status().isOk())
+          .andExpect(
+              content().string(containsString("Si hay una cuenta con ese correo, te mandamos")))
+          .andExpect(content().string(not(containsString("vence en"))));
+    }
+  }
+
+  /** El sitio A no toca las siete pantallas aprobadas antes de la corrida A/B (encargo, §1). */
+  @Test
+  void enRaicesALasPantallasAprobadasNoSumanNavegacion() throws Exception {
+    for (String pantalla :
+        List.of(
+            "donante-perfil",
+            "donante-seguimiento",
+            "entidad-necesidades",
+            "entidad-seguimiento-confirmar")) {
+      mvc.perform(get("/prototipo/raices/" + pantalla))
+          .andExpect(status().isOk())
+          .andExpect(content().string(not(containsString("armazon-avisos"))));
+    }
+    for (String pantalla : List.of("publico-contacto", "publico-legales")) {
+      mvc.perform(get("/prototipo/raices/" + pantalla))
+          .andExpect(status().isOk())
+          .andExpect(content().string(not(containsString("publica-menu"))))
+          .andExpect(content().string(not(containsString("raices-publico.js"))));
+    }
+    mvc.perform(get("/prototipo/raices/donante-donaciones"))
+        .andExpect(content().string(containsString("armazon-avisos")));
+    mvc.perform(get("/prototipo/raices/publico-mapa"))
+        .andExpect(content().string(containsString("publica-menu")));
+  }
+
   @Test
   void loQueEnlazaElLayoutPrivadoLlevaAlPrototipo() throws Exception {
     mvc.perform(get("/salir")).andExpect(redirectedUrl("/prototipo/publico-portada"));

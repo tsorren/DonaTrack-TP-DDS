@@ -39,10 +39,11 @@ donante-inicio
 - El menú del donante es el de `PrototipoController.deRaices`: Inicio, Mis donaciones, Entidades y
   Seguimiento. Incentivos no está (RF-07).
 - Notificaciones no es una sección del menú (como en Cozy, donde va en la carta). Se llega desde el
-  inicio ("Ver todas las notificaciones") y desde un acceso fijo en todas las pantallas del donante,
-  con la cantidad sin leer. Dónde va ese acceso lo decide cada sitio. Hoy `layout-privado` no lo
-  tiene: si A lo suma al layout, cambia también las pantallas aprobadas; tiene que quedar como un
-  agregado, sin mover nada de lo que ya estaba.
+  inicio ("Ver todas las notificaciones") y desde un acceso fijo en las pantallas del donante,
+  con la cantidad sin leer. Dónde va ese acceso lo decide cada sitio. A lo suma a `layout-privado`
+  como un agregado, salvo en las dos pantallas aprobadas (Seguimiento y Mi perfil), que A no toca
+  (encargo, sección 1): ahí se llega a Notificaciones por el menú (Inicio). B, que puede rehacer
+  las aprobadas, lo lleva en todas.
 - Mi perfil y Salir siguen en la cuenta, como hoy. Salir lleva a `publico-portada`.
 - Nada queda a más de 3 niveles (RNF-UI-02).
 
@@ -433,7 +434,7 @@ sección 2):
 | Usable | Listas con enlaces, filtros de opciones cerradas y estados con texto; nada que aprender |
 | Deseable | La identidad de Raíces (paleta Oliva, risografía, sellos) y un hito de lo acumulado dibujado con los datos |
 | Valioso | La foto y la fecha de confirmación de cada entrega son la prueba que la empresa muestra |
-| Ubicable | Cuatro secciones en el menú, Notificaciones a un toque desde todas las pantallas y nada a más de 3 niveles |
+| Ubicable | Cuatro secciones en el menú, Notificaciones a un toque desde las pantallas (en A, salvo Seguimiento y Mi perfil, aprobadas: desde Inicio) y nada a más de 3 niveles |
 | Accesible | Estados con forma y texto, listas como alternativa a todo dibujo, foco ordenado; WCAG AA y Ley 26.653 |
 | Creíble | Cada cifra con período, fuente y fecha; lo pendiente se dice pendiente; la entrega con problema se muestra tal cual |
 
@@ -477,7 +478,7 @@ Preguntas abiertas para el usuario (al elegir A o B):
 ## Huecos de backend
 
 Datos que la maqueta inventa porque el backend no los da hoy. Van también a la lista de la
-corrida (`huecos-backend.md`, fuera del repo), sin DTI ni ADR nuevos.
+corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), sin DTI ni ADR nuevos.
 
 | Pantalla | Dato que falta | Por qué |
 |---|---|---|

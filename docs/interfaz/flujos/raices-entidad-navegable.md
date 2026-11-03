@@ -36,7 +36,7 @@ Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-
 | `entidad-recibidas` | 2 | Menú ("Donaciones recibidas") e Inicio |
 | `entidad-seguimiento` | 2 | Menú. **Sin dibujar** en esta corrida: cae en `sin-dibujar`, con el enlace a Cozy |
 | `entidad-seguimiento-confirmar` (aprobada) | 3 | Desde Inicio, Donaciones recibidas, Necesidades y Notificaciones, con `?entrega=lentejas` o `ropa` |
-| `entidad-notificaciones` | 2 | Desde todas las pantallas privadas de la entidad (dónde va el acceso lo decide cada sitio; no es una sección del menú, como en Cozy) y desde Inicio |
+| `entidad-notificaciones` | 2 | Desde las pantallas privadas de la entidad (dónde va el acceso lo decide cada sitio; no es una sección del menú, como en Cozy; en A no va en las aprobadas, Necesidades y Confirmar recepción) y desde Inicio |
 | `entidad-perfil` | 2 | El enlace "Mi perfil" de la estructura privada. Sin dibujar para la entidad |
 
 Rol Admin: `admin-inicio` (nivel 1), desde `publico-ingresar` con la cuenta de ejemplo del admin.
@@ -234,7 +234,7 @@ Hoy esperan tu decisión 3 entidades y 2 propuestas de asignación.
 
 Lo que espera tu decisión
   Entidades · 3 piden sumarse
-    Hogar Ejemplo Norte · Biblioteca Popular Ejemplo · Comedor Ejemplo Oeste
+    Hogar Ejemplo Norte · Merendero Ejemplo Este · Comedor Ejemplo Oeste
     La más antigua llegó el 9 de octubre. A una le falta la constancia de domicilio.
     [Revisar entidades]
   Donaciones · 4 vencen en los próximos 7 días
@@ -246,7 +246,7 @@ Lo que espera tu decisión
     [Revisar propuestas]
 
 Cómo está todo (al 15 de octubre de 2026, 18:30)
-  Donaciones: 3 en el depósito · 4 asignadas · 1 en camino · 42 entregas confirmadas en octubre
+  Donaciones: 3 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre
   La red: 46 entidades activas · 86 donantes · 1 camión en ruta · 3 camiones libres
   Ver donaciones · Ver camiones
 ```
@@ -351,8 +351,10 @@ Notificaciones (3 sin leer, 3 leídas), de la más nueva a la más vieja:
 | Llegó a tu puerta | 10 de octubre, 11:05 | "Lentejas secas, 10 kg, llegó a tu puerta." · "Confirmaste la recepción el 10 de octubre." | "Ver la donación" (`entidad-recibidas?estado=recibidas`) | Sí |
 
 Admin: los de Cozy (`cozy-medieval/admin-inicio.html`), con "latas" pasadas a "unidades" (la
-unidad sale del catálogo, como en Necesidades) y las entidades activas igualadas a la portada de
-Raíces (46). Ver el esquema 4.4.
+unidad sale del catálogo, como en Necesidades), las entidades activas igualadas a la portada de
+Raíces (46) y las entregas confirmadas de octubre igualadas a las de la ficha pública (9 entre el 1
+y el 15 de octubre). Las tres entidades que piden sumarse no son ninguna de las activas de las
+otras fichas. Ver el esquema 4.4.
 
 ### Textos propios
 
@@ -380,7 +382,7 @@ Raíces (46). Ver el esquema 4.4.
 | Rótulo (admin-inicio) | Inicio | — |
 | Saludo | "Hola, Leo" · "Jueves 15 de octubre de 2026" · "Hoy esperan tu decisión 3 entidades y 2 propuestas de asignación. 4 donaciones vencen en los próximos 7 días." | Estado y próximo paso; sin urgencia: el vencimiento es un dato con fecha |
 | Lo que espera | Título "Lo que espera tu decisión" · "3 entidades piden sumarse" · "4 donaciones vencen en los próximos 7 días" · "2 propuestas de asignación" · con sus detalles del esquema · "Revisar entidades" · "Ver las que vencen" · "Revisar propuestas" | — |
-| Cifras | Título "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." · "3 en el depósito" · "4 asignadas" · "1 en camino" · "42 entregas confirmadas en octubre" · "46 entidades activas" · "86 donantes" · "1 camión en ruta" · "3 camiones libres" · "Ver donaciones" · "Ver camiones" | Actividad y resultado registrado, con período; sin comparar entidades |
+| Cifras | Título "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." · "3 en el depósito" · "4 asignadas" · "1 en camino" · "9 entregas confirmadas en octubre" · "46 entidades activas" · "86 donantes" · "1 camión en ruta" · "3 camiones libres" · "Ver donaciones" · "Ver camiones" | Actividad y resultado registrado, con período; sin comparar entidades |
 
 Ayudas por flujo crítico: ninguna de estas pantallas es un flujo crítico (no envían datos, salvo
 marcar como leídas). La ayuda es la bajada de cada una, que dice qué muestra y hasta cuándo.
@@ -390,7 +392,7 @@ Filtro de tono:
 - Lo pendiente se dice pendiente: "Espera tu confirmación", "Por salir", "Llega mañana"; nunca
   "entregada" antes de la confirmación de la entidad.
 - La entrega con problema dice qué pasó, cuándo y el próximo paso, sin "lamentablemente".
-- Las cifras llevan período y fecha ("6 donaciones recibidas … Al 15 de octubre, 18:30"; "42
+- Las cifras llevan período y fecha ("6 donaciones recibidas … Al 15 de octubre, 18:30"; "9
   entregas confirmadas en octubre"). Lo recibido es un resultado registrado, no impacto.
 - La entidad hace: confirma, pide, revisa. Nada de "beneficiarios" ni de carencias.
 - Palabras que no van (brief de Raíces): "eco", "huella verde", "florecer", "regá", "cosechá" y
@@ -457,8 +459,9 @@ Decisiones tomadas (agente, en la corrida A/B; se aprueban al elegir A o B):
 - La recepción de RF-13 se muestra como "Llegó a tu puerta" (el evento `EventoDonacionRecibidaDTO`),
   con el botón para confirmar mientras espera. La bandeja suma "en camino" y "con problema", que
   el contrato ya trae para la entidad.
-- Notificaciones no es una sección del menú (como en Cozy); se llega desde todas las pantallas
-  privadas y desde Inicio. Dónde va el acceso lo decide cada sitio.
+- Notificaciones no es una sección del menú (como en Cozy); se llega desde las pantallas
+  privadas y desde Inicio. Dónde va el acceso lo decide cada sitio. En A no va en las dos
+  aprobadas (Necesidades y Confirmar recepción), que A no toca; ahí se llega por el menú (Inicio).
 - El admin solo tiene inicio, con los datos de Cozy; sus secciones caen en `sin-dibujar`.
 - Datos nuevos de maqueta: Almacén Ejemplo SRL como donante sintético de cuatro entregas (arroz en
   camino, aceite con problema, y lentejas y arroz recibidos), y la donación de fideos del 5 de
@@ -470,7 +473,7 @@ Preguntas abiertas: ninguna para la corrida. La que queda para el equipo va en l
 
 ### Huecos de backend
 
-También en la lista de la corrida (`huecos-backend.md`). Sin DTI ni ADR nuevos.
+También en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)). Sin DTI ni ADR nuevos.
 
 - Entidad · `entidad-recibidas` · las donaciones asignadas a una entidad, con filtro por estado y
   rango de fechas · `GET /donaciones-independientes` no filtra por entidad asignada (HB-04).
@@ -488,3 +491,7 @@ También en la lista de la corrida (`huecos-backend.md`). Sin DTI ni ADR nuevos.
   aprobación (HB-12).
 - Admin · `admin-inicio` · las donaciones que vencen en los próximos días · `GET
   /donaciones-independientes` filtra por estado, subcategoría y donante, no por vencimiento.
+- Admin · `admin-inicio` · las cifras de "Cómo está todo" (donaciones en depósito, asignadas y en
+  camino, entregas confirmadas del mes, donantes, camiones en ruta y libres) · no hay un resumen
+  agregado; contarlas obliga a traer las listas enteras de Donaciones, Logística y Usuarios en cada
+  carga.

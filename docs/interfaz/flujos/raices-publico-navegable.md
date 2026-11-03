@@ -8,7 +8,8 @@
 > Fija para quién es, el recorrido, los estados, los textos, los datos y los enlaces de salida.
 > **No fija la composición ni la navegación visual:** eso lo decide cada sitio.
 > Pantallas nuevas: `publico-donaciones`, `publico-mapa`, `publico-entidades`, `publico-ingresar`,
-> `publico-registro`, `publico-registro-donante` y `publico-registro-entidad`. Ya aprobadas y
+> `publico-registro`, `publico-registro-donante`, `publico-registro-entidad` y `publico-recuperar`
+> (con `publico-recuperar-enviado`). Ya aprobadas y
 > relacionadas: `publico-portada`, `publico-contacto` (con `-enviado` y `-error`) y
 > `publico-legales` ([contacto](raices-contacto.md), [legales](raices-legales.md)).
 
@@ -21,17 +22,18 @@
 | Qué quiere lograr | "Ver qué llegó y adónde, saber quiénes piden y qué, y entrar o crear mi cuenta para donar o para sumar mi entidad" |
 | Dispositivo principal | Ambos; la computadora primero para la empresa, el celular para la entidad |
 | Requerimientos | RF-01 (destacadas del último mes con su foto, registro y login, legales). RF-02 (mapa de entregadas, detalle por marcador con fecha, categoría y foto; ubicación aproximada, D24). RF-03 (registro: el donante queda operativo al completar el perfil; la entidad, pendiente de aprobación). RF-04 (login de los tres roles; credenciales inválidas, error genérico). RF-22 (entidades activas con necesidades vigentes, sin datos de contacto). RF-AUTH-02 (Continuar con Google), RF-AUTH-05/06, RF-AUTH-13 (recuperar). RNF-AUTH-07 (bloqueo tras varios intentos) y RNF-AUTH-10 (respuestas que no revelan cuentas). RF-CL-06 (lista junto al mapa), RF-CL-07 (cuándo se actualizó). RNF-PRIV-01/03 |
-| Datos que usa | Ninguno existe para lo público todavía: HB-01 (destacadas), HB-02 (contadores), HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `EstilosController.datosDeEjemplo`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida (`huecos-backend.md`) |
+| Datos que usa | Ninguno existe para lo público todavía: HB-01 (destacadas), HB-02 (contadores), HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `EstilosController.datosDeEjemplo`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
 | Boceto de E1 | Pág. 2 (Donaciones realizadas: mapa coloreado, galería en mosaico, "Unirse a la comunidad"), pág. 23 (mapas por región, detalle de una donación), pág. 4 (Iniciar sesión), pág. 5 (Registrarse: dos tarjetas) y pág. 11 (Registro de entidad). Entidades y necesidades no tiene boceto (D26) |
 
 ## 2. Dónde está en el sitio
 
 Todo es público (sin sesión). Nivel 1: la portada. Nivel 2: Entregas confirmadas, Mapa,
-Entidades, Ingresar y Crear una cuenta. Nivel 3: Registro de donante y Registro de entidad
-([mapa del sitio](../mapa-del-sitio.md), filas de Público). Nada queda a más de 3 niveles.
+Entidades, Ingresar y Crear una cuenta. Nivel 3: Registro de donante, Registro de entidad y
+Recuperar la contraseña (desde Ingresar) ([mapa del sitio](../mapa-del-sitio.md), filas de Público). Nada queda a más de 3 niveles.
 
 **Destinos de la navegación pública** (los mismos en todas las públicas, también en la portada;
-cómo se ven lo decide cada sitio):
+cómo se ven lo decide cada sitio; en A, Contacto y Términos y privacidad, que son aprobadas y A no
+toca, siguen sin ella: se vuelve por la marca a la portada):
 
 | Destino | Pantalla | Nota |
 |---|---|---|
@@ -69,7 +71,10 @@ flowchart TD
   ingresar -->|datos correctos| inicioRol([Inicio del rol: donante, entidad o admin])
   ingresar -->|no coinciden| ingresarError[Ingresar, con el error]
   ingresarError --> ingresar
-  ingresar -->|¿Olvidaste tu contraseña?| recuperar([Recuperar contraseña])
+  ingresar -->|¿Olvidaste tu contraseña?| recuperar[Recuperar contraseña]
+  ingresarError -->|Pedir una contraseña nueva| recuperar
+  recuperar -->|correo escrito| recuperarEnviado[Aviso: si hay cuenta, te mandamos un enlace]
+  recuperarEnviado -->|Volver a Ingresar| ingresar
   regDonante -->|datos completos| inicioDonante([Inicio del donante])
   regDonante -->|falta algo| regDonanteError[Registro de donante, con lo que falta]
   regEntidad -->|datos completos| enviada[Solicitud enviada]
@@ -88,7 +93,7 @@ Desvíos considerados:
 - **Sin datos todavía:** Entregas confirmadas, Mapa y Entidades tienen su estado vacío
   (`?escenario=vacio`).
 - **Error del servidor o sin conexión:** al cargar (Entregas confirmadas, Mapa, Entidades) y al
-  enviar (Ingresar y los registros). Lo escrito sigue en el formulario, salvo la contraseña.
+  enviar (Ingresar, los registros y Recuperar la contraseña). Lo escrito sigue en el formulario, salvo la contraseña.
 - **Error de datos:** Ingresar dice "no coinciden" sin decir cuál de los dos datos falló (RF-04,
   RNF-AUTH-10); los registros, un resumen arriba con un enlace a cada campo.
 - **Demasiados intentos** (RNF-AUTH-07): Ingresar dice que se pausaron los intentos por unos
@@ -248,6 +253,24 @@ Respecto del boceto (pág. 11): en tres grupos con título, como pedía la nota 
 partirlo en secciones claras"). Un solo representante, el que crea la cuenta; el rubro pasa a "Qué
 es", una lista corta. El país no se pregunta: es Argentina.
 
+### 4.8 Recuperar la contraseña (`publico-recuperar`)
+
+```text
+Rótulo · Título · Bajada
+Correo electrónico [        ]   (ayuda del navegador si falta o no es un correo)
+[Mandame el enlace]
+¿Te acordaste? Volver a Ingresar
+── después de enviar (publico-recuperar-enviado) ──
+Aviso: Si hay una cuenta con ese correo, te mandamos un enlace. · Revisá tu bandeja… · [Volver a Ingresar]
+```
+
+Se llega desde Ingresar ("¿Olvidaste tu contraseña?" y "Pedir una contraseña nueva", en el error
+de datos y en el de demasiados intentos). Los mismos datos que la de Cozy: un correo y el enlace
+(RF-AUTH-13: enlace de un solo uso con vencimiento; el mecanismo de envío y el plazo dependen de
+D8, pendiente). El aviso de después es neutro: dice lo mismo haya o no una cuenta con ese correo
+(RNF-AUTH-10). Es un formulario real (POST); el aviso es su propia pantalla, como en Contacto. Sin
+boceto.
+
 ## 5. Estados
 
 Los estados de la maqueta van en la misma pantalla con `?escenario=` (como la portada); los
@@ -294,6 +317,11 @@ resultados de un envío, en su propia pantalla (como Contacto).
 | Registro de entidad | Error de datos (`publico-registro-entidad-error`) | Resumen arriba con el foco y enlaces; cada campo con su error | "Revisá dos cosas antes de enviar" · "Elegí qué es tu entidad" · "Falta la calle de la dirección de entrega" |
 | Registro de entidad | Error del servidor (`?escenario=error`) | Aviso arriba; lo escrito sigue, salvo la contraseña | "No pudimos enviar la solicitud." · "Es un problema nuestro: lo que escribiste sigue acá, salvo la contraseña. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código |
 | Solicitud enviada | Éxito | El sello, qué pasa ahora y "Cómo sigue" con el paso 2 actual | Ver Textos |
+| Recuperar la contraseña | Inicial | El campo de correo vacío y el botón | Ver Textos |
+| Recuperar la contraseña | Enviando | En A, con JavaScript, el botón dice "Enviando…" y queda desactivado; B no carga JavaScript en lo público y no lo muestra | "Enviando…" |
+| Recuperar la contraseña | Aviso enviado (`publico-recuperar-enviado`) | El aviso en lugar del formulario, con el foco; el mismo haya o no cuenta (RNF-AUTH-10) | "Si hay una cuenta con ese correo, te mandamos un enlace." · "Revisá tu bandeja de entrada: el enlace sirve una sola vez y por tiempo limitado." · "Volver a Ingresar" |
+| Recuperar la contraseña | Error de datos | El aviso del navegador en el campo (`required` y `type="email"`), antes de enviar; no hay otro error de datos, porque el aviso no dice si el correo tiene cuenta | El del navegador |
+| Recuperar la contraseña | Error del servidor | Aviso arriba; el correo sigue escrito. Se describe, no se dibuja en la maqueta | "No pudimos mandar el enlace en este momento." · "Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código |
 
 Errores de un campo que el navegador ya evita: `required`, `type="email"` y `minlength` muestran
 su aviso propio antes de enviar; las pantallas `-error` muestran el error que vuelve del servidor.
@@ -336,6 +364,11 @@ y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comun
 | | Enlaces | "¿Olvidaste tu contraseña?" · "¿Primera vez? Crear una cuenta" | |
 | | Acciones | "Ingresar" · "o" · "Continuar con Google" | |
 | | Cuentas de ejemplo | "Cuentas de ejemplo" · "Es un prototipo: no se guarda nada. Entrá con una cuenta de ejemplo." · "Distribuidora Ejemplo SA, empresa donante" · "Comedor Barrio Ejemplo, entidad" · "Administración" | Solo en la maqueta |
+| Recuperar la contraseña | Rótulo y título | "Ingresar" · "Pedí una contraseña nueva" | El rótulo es la sección: se llega desde Ingresar |
+| | Bajada | "Escribí el correo de tu cuenta y te mandamos un enlace para crear una contraseña nueva." | |
+| | Campo y acción | "Correo electrónico" · "Mandame el enlace" | Verbo y resultado |
+| | Salida | "¿Te acordaste? Volver a Ingresar" | |
+| | Aviso enviado | "Si hay una cuenta con ese correo, te mandamos un enlace." · "Revisá tu bandeja de entrada: el enlace sirve una sola vez y por tiempo limitado." · "Volver a Ingresar" | No revela cuentas (RNF-AUTH-10) y no da por hecho un envío que puede no haber pasado |
 | Crear una cuenta | Rótulo y título | "Crear una cuenta" · "¿Cómo querés sumarte?" | |
 | | Bajada | "Según lo que elijas, te pedimos datos distintos." | |
 | | Donante | "Quiero donar, yo o mi empresa" · "Registrás lo que donás y lo seguís hasta que la entidad confirma la entrega." · "Ves a qué entidad se asignó, en qué estado está y la foto de la entrega." · "Te pedimos tu correo, una contraseña y tu nombre o el de tu empresa." · "Crear mi cuenta de donante" | Los pasos de la lámina de la portada |
@@ -502,7 +535,7 @@ sección 2):
 | Usable | Formularios cortos, en grupos, con etiquetas visibles; listas con filtros que andan sin JavaScript |
 | Deseable | La identidad de Raíces (papel, tierra, sellos, la raíz en un título) con la libertad de cada sitio |
 | Valioso | La empresa ve pruebas (fotos y fechas) antes de registrarse; la entidad ve que su pedido cuenta |
-| Ubicable | Los mismos seis destinos en todas las públicas, también en la portada; nada a más de 3 niveles |
+| Ubicable | Los mismos seis destinos en todas las públicas, también en la portada (en A, salvo Contacto y Términos, aprobadas: la marca lleva a la portada); nada a más de 3 niveles |
 | Accesible | Lista junto al mapa, textos alternativos, errores enlazados, AA, Ley 26.653 |
 | Creíble | Cada cifra con período y fuente; lo confirmado, con la foto de la entidad; la ubicación, aproximada y dicho; nada de quién donó en público |
 
@@ -551,14 +584,14 @@ Preguntas abiertas (no frenan la maqueta; la ficha usa la opción indicada):
 2. **¿Cuánto tarda la revisión de una entidad?** No hay plazo acordado; los textos no prometen uno.
 3. **Correo ya registrado al crear una cuenta:** decir que existe ayuda, pero revela cuentas
    (RNF-AUTH-10 lo pide para login y recuperación). La maqueta no lo dibuja.
+4. **¿Cuánto dura el enlace para una contraseña nueva?** Depende de D8 (pendiente); RF-AUTH-13
+   sugiere 30 minutos. Los textos no dan un plazo: dicen "por tiempo limitado".
 
 Hallazgos, sin corregir en esta ficha:
 
 - La portada dice "Octubre de 2026 · 3 entregas confirmadas y 1 en camino" en la planta, pero la
   [ficha de Necesidades](raices-necesidades.md) ya registra más entregas recibidas en octubre (y
   esta ficha las muestra). La planta habla de "este mes" sin decir que es una muestra.
-- La cabecera de la portada no tiene la navegación pública: sin ella no se llega a Entregas
-  confirmadas ni a Entidades (sección 2).
 - En el catálogo de `/estilos`, en `viaje-datos` y en Seguimiento del donante (aprobada), la escuela
   se llama "Escuela Ejemplo 12"; en la portada de Raíces, "Escuela Ejemplo N.º 12". Las tres fichas
   de la corrida usan "Escuela Ejemplo N.º 12"; lo demás se iguala al integrar.
@@ -566,13 +599,15 @@ Hallazgos, sin corregir en esta ficha:
 ## Huecos de backend
 
 Datos que la maqueta inventa porque el backend no los da hoy. Son los de la lista de la corrida
-(`huecos-backend.md`, fuera del repo), copiados acá. Sin DTI ni ADR nuevos.
+([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), copiados acá. Sin DTI ni ADR nuevos.
 
 - Público · publico-donaciones · entregas confirmadas con foto de la última semana o el último mes, con DTO público sin el donante (HB-01) y foto legible en público (hoy las fotos son privadas con URL firmada, RNF-PRIV-03) · RF-01 no tiene endpoint; la maqueta usa 10 entregas sintéticas.
 - Público · publico-donaciones, publico-mapa · fecha de la última actualización de los datos públicos · toda cifra dice cuándo se actualizó (tono, RF-CL-07); ningún endpoint la da; la maqueta dice "15 de octubre de 2026, 14:30".
 - Público · publico-mapa · entregas confirmadas del período con barrio o coordenadas aproximadas, categoría, fecha y foto, filtrables por categoría (HB-07) · RF-02 y D24; la maqueta dibuja un mapa fijo con su lista.
 - Público · publico-entidades · entidades activas con pedidos vigentes, barrio aproximado y "qué es", sin contacto, con búsqueda por nombre y filtro por categoría (HB-08, HB-15, HB-18) · RF-22; el "rubro" de JuridicaInputDTO es texto libre y el filtro y el ícono necesitan una lista fija (comedor, merendero, escuela, hogar, club, biblioteca, otra).
 - Público · publico-entidades · total de entidades activas ("de las 46 que están en DonaTrack") (HB-02) · la misma cifra de la portada.
+- Público · publico-entidades · si cada entidad confirmó entregas en el período, para enlazar "Ver sus entregas en el mapa" (el club no) · el listado de entidades no lo trae; obligaría a cruzarlo con las entregas del mapa (HB-07) · sitio B.
 - Público · publico-ingresar · inicio de sesión con correo y contraseña y con Google (IdP, RF-04, D1 pendiente), bloqueo por intentos (RNF-AUTH-07) y el estado "entidad pendiente de aprobación" (HB-12) · la maqueta entra con tres cuentas de ejemplo.
+- Público · publico-recuperar · pedido de enlace de un solo uso con vencimiento y respuesta neutra (RF-AUTH-13, RNF-AUTH-10) · no hay mecanismo de envío (D8 pendiente) ni IdP (D1); la maqueta va al aviso sin mandar nada.
 - Público · publico-registro-donante · alta en el IdP y completar perfil (RI-AUTH-02, HB-11), constancia de los legales (HB-20) y quién ingresa por una empresa (D30 pendiente) · la maqueta pide el nombre de quien usa la cuenta y lleva al inicio del donante.
 - Público · publico-registro-entidad · alta de la jurídica con dirección y un representante, en estado pendiente, y su aprobación (HB-12, RF-21) · RF-03; la maqueta lleva a la solicitud enviada.

@@ -29,9 +29,8 @@
 
       <section th:if="${enviado}" class="aviso" role="status" tabindex="-1" autofocus
                aria-labelledby="enviado-titulo">
-        <h2 id="enviado-titulo">Te mandamos un enlace.</h2>
-        <p>Te escribimos si hay una cuenta con ese correo. Revisá tu bandeja de entrada: el enlace vence
-          en una hora.</p>
+        <h2 id="enviado-titulo">Si hay una cuenta con ese correo, te mandamos un enlace.</h2>
+        <p>Revisá tu bandeja de entrada: el enlace sirve una sola vez y por tiempo limitado.</p>
         <a class="boton boton--secundario" href="/prototipo/raices/publico-ingresar"
            th:href="@{/prototipo/raices/publico-ingresar}">Volver a Ingresar</a>
       </section>

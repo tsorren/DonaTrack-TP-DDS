@@ -33,10 +33,13 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   ("recibir"), más el inicio del admin con su menú, sin enlaces muertos:
   - **A** (`/prototipo/raices/`): fiel a lo aprobado. Extiende las piezas actuales (layouts,
     sellos, formularios, etiquetas de herbario) sin rediseñar las siete pantallas ya aprobadas.
-    Para que se pueda llegar a las nuevas, sí cambia lo que las rodea: el layout privado suma el
-    acceso fijo a Notificaciones; el público y la portada, la navegación pública, y la portada,
-    dos enlaces "Ver todas…" (a Entregas confirmadas y a Entidades). Las capturas de esas siete
-    difieren de las de antes solo en eso. 18 pantallas nuevas (las 16 del plan y Recuperar la
+    Para que se pueda llegar a las nuevas desde el ancla, solo cambia la portada: suma la
+    navegación pública, dos enlaces "Ver todas…" (a Entregas confirmadas y a Entidades) y sus
+    enlaces van a Raíces en vez de a Cozy. El acceso fijo a Notificaciones del layout privado y
+    la navegación del layout público van solo en las pantallas nuevas: en las otras seis
+    aprobadas no aparecen, y sus capturas son iguales a las de antes, píxel a píxel (arreglo de
+    la auditoría, ronda 1). Lo único que cambia en ellas sin verse es el destino de "Salir",
+    que va a la portada de Raíces y no a la de Cozy. 18 pantallas nuevas (las 16 del plan y Recuperar la
     contraseña con su aviso, para que Ingresar no salga a Cozy).
   - **B** (`/prototipo/raices-b/`): audaz, con el mismo ADN (paleta Oliva, risografía, raíces).
     Otra navegación (una línea pública de subte y otra por rol) y otra composición; rehace
@@ -63,11 +66,16 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   `raices-b`, con su `Prototipo` propio en el controller, sus plantillas y sus hojas
   (`templates/prototipo/raices-b/`, `static/css/prototipo/raices-b/`); al elegir un sitio se
   borra el otro. Misiones queda fuera (RF-07 la oculta a la empresa) y el resto del admin, sin
-  dibujar. Los huecos de backend están en las fichas.
+  dibujar. Los huecos de backend están en las fichas y juntos en
+  [flujos/raices-ab-huecos-backend.md](flujos/raices-ab-huecos-backend.md).
 - **Quién decidió:** corrida desatendida; el usuario elige A o B y aprueba las fichas.
 - **Evidencia:** `evidencia/raices/ab-navegable/a/` y `b/` (360 y 1280 px de cada pantalla nueva
-  y la primera pantalla del celular de cada portada); página de antes y después en la carpeta de
-  la corrida, fuera del repo.
+  y la primera pantalla del celular de cada portada; en `b/`, también las siete aprobadas que B
+  rehízo); página de antes y después en la carpeta de la corrida, fuera del repo.
+- **Revisión:** `revision-ui` independiente: PASS en A y en B (modo pantalla) y en las tres fichas
+  (modo flujo, tras arreglar seis hallazgos bloqueantes de la ficha pública y la de la entidad).
+  Veredictos, arreglos y avisos que quedan:
+  [evidencia/raices/ab-navegable/revision-ui.md](evidencia/raices/ab-navegable/revision-ui.md).
 
 ### 2026-11-02 · proceso (Raíces) · La review de la diseñadora, decidida
 
