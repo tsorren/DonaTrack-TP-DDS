@@ -46,7 +46,7 @@
           </div>
         </div>
         <fieldset th:replace="~{prototipo/raices/datos-publicos :: filtroCategorias('Qué piden', 'Todo')}"></fieldset>
-        <button class="boton boton--secundario" type="submit" data-sin-js>Filtrar</button>
+        <button class="boton boton--secundario" type="submit">Filtrar</button>
       </form>
       <div th:if="${n > 0}" class="cifra-fruto" aria-live="polite">
         <p th:if="${q == '' and elegida == null}"><b class="fruto" th:text="${n}">6</b>

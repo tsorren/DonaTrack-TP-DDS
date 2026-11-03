@@ -38,16 +38,19 @@
           th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
     </ul>
   </nav>
-  <!--/* El acceso fijo a Notificaciones del donante (ficha raices-donante-navegable.md, sección 2):
-         no es una sección del menú; va en todas sus pantallas, con la cantidad sin leer. En la
-         maqueta son 4, y ninguna después de marcarlas como leídas. Un agregado: no mueve nada. */-->
-  <a th:if="${perfil != null and #strings.endsWith(perfil, '/donante-perfil')}"
+  <!--/* El acceso fijo a Notificaciones del donante y de la entidad (fichas raices-donante-navegable.md
+         y raices-entidad-navegable.md, sección 2): no es una sección del menú; va en todas las
+         pantallas del rol, con la cantidad sin leer. En la maqueta son 4 del donante y 3 de la
+         entidad, y ninguna en la pantalla de después de marcarlas como leídas (al volver a otra
+         pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada. */-->
+  <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
      th:with="pantalla=${#execInfo.processedTemplateName},
-              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : 4}"
+              avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
      class="armazon-avisos" href="/prototipo/raices/donante-notificaciones"
-     th:href="@{/prototipo/raices/donante-notificaciones}"
+     th:href="${avisos}"
      th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
-     th:aria-current="${#strings.contains(pantalla, 'donante-notificaciones')} ? 'page' : null">
+     th:aria-current="${#strings.contains(pantalla, #strings.substringAfter(avisos, '/prototipo/'))} ? 'page' : null">
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
       <path d="M3 6h18v12H3z"/><path d="M3 6l9 7 9-7"/>
     </svg>

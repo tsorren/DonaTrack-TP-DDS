@@ -121,6 +121,8 @@
       <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
               th:text="${escenario == 'lento'} ? 'Creando tu cuenta…' : 'Crear mi cuenta'">Crear mi cuenta</button>
       <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Creando tu cuenta…</p>
+      <p th:if="${persona}" class="nota">En la maqueta, después de crear la cuenta seguís con la cuenta de
+        ejemplo de una empresa.</p>
     </form>
 
     <div class="cuenta-salidas">

@@ -37,7 +37,7 @@
         <p id="ingreso-error-texto">El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí
           una contraseña nueva.</p>
         <a class="boton boton--secundario" href="/prototipo/publico-recuperar"
-           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva</a>
+           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva <small>(se abre en la alternativa Cozy)</small></a>
       </section>
       <th:block th:if="${escenario == 'error'}">
         <section th:replace="~{prototipo/raices/datos-publicos :: avisoError('No pudimos ingresar en este momento.',
@@ -54,7 +54,7 @@
         <p>Hubo varios intentos con datos que no coinciden. Por seguridad, probá de nuevo en unos minutos o
           pedí una contraseña nueva.</p>
         <a class="boton boton--secundario" href="/prototipo/publico-recuperar"
-           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva</a>
+           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva <small>(se abre en la alternativa Cozy)</small></a>
       </section>
       <section th:if="${escenario == 'pendiente'}" class="aviso" role="status" aria-labelledby="revision-titulo">
         <h2 id="revision-titulo">Tu entidad todavía está en revisión.</h2>
@@ -89,7 +89,7 @@
                     aria-pressed="false" hidden>Mostrar</button>
           </div>
           <a class="enlace-campo" href="/prototipo/publico-recuperar"
-             th:href="@{/prototipo/publico-recuperar}">¿Olvidaste tu contraseña?</a>
+             th:href="@{/prototipo/publico-recuperar}">¿Olvidaste tu contraseña? <small>(se abre en la alternativa Cozy)</small></a>
         </div>
         <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
                 th:text="${escenario == 'lento'} ? 'Ingresando…' : 'Ingresar'">Ingresar</button>

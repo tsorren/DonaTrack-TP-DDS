@@ -16,6 +16,9 @@ body {
   z-index: 2;
   background: var(--color-suelo);
   border-top: 3px solid var(--color-tinta);
+  /* Una franja de papel sobre la línea de tinta: separa la barra de un bloque del mismo verde
+     (las cuentas de ejemplo de Ingresar) cuando pasa por encima. */
+  box-shadow: 0 -0.375rem 0 var(--color-papel);
 }
 
 .publica-menu ul {
@@ -88,6 +91,7 @@ body {
     flex: 1;
     background: none;
     border-top: 0;
+    box-shadow: none;
   }
 
   /* En la cabecera es papel: sin la tierra impresa de la barra. */

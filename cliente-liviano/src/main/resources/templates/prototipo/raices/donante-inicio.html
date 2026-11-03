@@ -109,10 +109,10 @@
         </div>
       </section>
 
-      <!--/* La que se demoró: qué pasó y la nueva salida, sin alarma. */-->
+      <!--/* Una entrega con problema: qué pasó y la nueva salida, sin alarma. */-->
       <section th:each="d : ${tienenProblema}" class="lamina demora" aria-labelledby="demora-titulo"
                th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
-        <h2 id="demora-titulo">La que se demoró</h2>
+        <h2 id="demora-titulo">Una entrega con problema</h2>
         <p class="demora-texto">
           <th:block th:replace="~{prototipo/raices/datos-donante :: sello(${d.estado.tono})}"></th:block>
           <span th:text="|${d.titulo} no pudo llegar a ${destino}: el camino estaba cortado. Sale de nuevo el 17 de octubre.|">Útiles

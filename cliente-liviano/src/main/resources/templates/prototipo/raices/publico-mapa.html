@@ -39,7 +39,7 @@
       <form class="filtro" action="/prototipo/raices/publico-mapa" th:action="@{/prototipo/raices/publico-mapa}"
             method="get" data-al-cambiar>
         <fieldset th:replace="~{prototipo/raices/datos-publicos :: filtroCategorias('Qué se donó', 'Todas')}"></fieldset>
-        <button class="boton boton--secundario" type="submit" data-sin-js>Filtrar</button>
+        <button class="boton boton--secundario" type="submit">Filtrar</button>
       </form>
       <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
         <p><b class="fruto" th:text="${#lists.size(filtradas)}">10</b>

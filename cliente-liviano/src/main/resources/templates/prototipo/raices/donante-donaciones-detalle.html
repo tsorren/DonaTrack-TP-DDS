@@ -52,7 +52,7 @@
               hoy a las 14:30</span>
           </p>
           <a th:if="${enCurso}" class="boton boton--principal" href="/prototipo/raices/donante-seguimiento"
-             th:href="@{/prototipo/raices/donante-seguimiento}">Ver dónde está</a>
+             th:href="@{/prototipo/raices/donante-seguimiento(donacion=${d.clave})}">Ver dónde está</a>
         </th:block>
       </header>
 
