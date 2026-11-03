@@ -1,7 +1,7 @@
 # Flujo: Donar y seguir, el recorrido del donante en Raíces
 
-> **Estado:** pendiente de aprobación del usuario: se aprueba al elegir A o B (corrida A/B del
-> 2026-11-02) · **Fecha:** 2026-11-02 · **Aprobó:** —
+> **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
+> preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
 > Plantilla de la skill `ux-flujo`. Ficha compartida por los dos sitios de la corrida A/B de
 > Raíces: A en `/prototipo/raices/<pantalla>` y B en `/prototipo/raices-b/<pantalla>`
 > ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
@@ -444,7 +444,7 @@ ayuda, y si encuentra en menos de un minuto la foto de una entrega para mostrarl
 
 ## 9. Decisiones y preguntas
 
-Decisiones tomadas (agente, propuestas; se aprueban al elegir A o B):
+Decisiones tomadas (agente, propuestas; aprobadas al elegir el sitio A, 2026-11-03):
 
 - Ingresar con la cuenta de ejemplo de la empresa lleva a `donante-inicio` (plan de la corrida).
 - Misiones e incentivos quedan fuera: la cuenta es una empresa (RF-07).
@@ -469,7 +469,7 @@ Para la integración (no se resuelven acá):
 - La portada dice "Registrás lo que donás" y RF-15 dice que la registra el admin en el depósito.
   Esta ficha dice "Ahí la registran". Si el grupo decide otra cosa, cambia "Cómo llega tu donación".
 
-Preguntas abiertas para el usuario (al elegir A o B):
+Preguntas abiertas para el usuario (siguen abiertas después de elegir el sitio A, 2026-11-03):
 
 1. "¿La empresa puede elegir a qué entidad o necesidad va lo que dona?" → "No: la elige el admin
    con los algoritmos (RF-17); Entidades solo informa (Recomendada)" · "Sí: un 'Donar' por necesidad,

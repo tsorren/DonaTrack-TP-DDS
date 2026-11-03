@@ -1,8 +1,8 @@
 /* Raíces, sitio A: la navegación pública (navegacion-publica.html), en todas las públicas y en la
    portada. Va después de la hoja de la pantalla, que ya trae los tokens. Es el mismo menú de las
-   privadas (privado.css): en el celular y la tableta, una barra fija abajo, en la tierra, con la
-   sección actual en paja; en pantalla grande, en la cabecera, impresa en verde oliva con la
-   segunda tinta corrida. Ingresar y Crear una cuenta van aparte, a la derecha: el segundo, como
+   privadas (privado.css): en el celular, una barra fija abajo, en la tierra, con la sección actual
+   en paja; desde la tableta, en la cabecera de tierra honda, con la sección actual en paja
+   (usuario, 2026-11-03). Ingresar y Crear una cuenta van aparte, a la derecha: el segundo, como
    el botón principal. */
 
 /* La barra no tapa el pie. */
@@ -74,7 +74,7 @@ body {
   white-space: nowrap;
 }
 
-@media (min-width: 53.75em) {
+@media (min-width: 37.5em) {
   body {
     padding-bottom: 0;
   }
@@ -94,7 +94,7 @@ body {
     box-shadow: none;
   }
 
-  /* En la cabecera es papel: sin la tierra impresa de la barra. */
+  /* En la cabecera, sin la tierra impresa de la barra: la franja ya es tierra. */
   .publica-menu::before {
     content: none;
   }
@@ -110,7 +110,7 @@ body {
     min-height: 3rem;
     padding: 0.5rem 0.875rem;
     border-radius: var(--radio-boton);
-    color: var(--color-tinta);
+    color: var(--color-texto-suelo);
     font-size: 1rem;
     font-stretch: 112%;
   }
@@ -125,14 +125,12 @@ body {
   }
 
   .publica-menu a[aria-current="page"] {
-    background: var(--color-acento);
-    color: var(--color-papel);
-    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+    box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
   }
 
   .publica-menu :focus-visible,
   .publica-menu a[aria-current="page"]:focus-visible {
-    outline-color: var(--color-acento);
+    outline-color: var(--color-raiz);
     outline-offset: 3px;
   }
 
@@ -142,12 +140,13 @@ body {
   }
 
   .publica-menu-crear a {
-    border: 2px solid var(--color-acento);
-    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+    border: 2px solid var(--color-raiz);
+    box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
   }
 
   .publica-menu-crear a:not([aria-current="page"]):hover {
-    background: var(--color-acento-claro);
+    background: var(--color-raiz);
+    color: var(--color-tinta);
     text-decoration: none;
   }
 }

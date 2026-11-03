@@ -1,7 +1,7 @@
 # Flujo: La entidad recibe, y el inicio del admin, en Raíces navegable
 
-> **Estado:** pendiente de aprobación del usuario: se aprueba al elegir A o B (corrida A/B del
-> 2026-11-02) · **Fecha:** 2026-11-02 · **Aprobó:** —
+> **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
+> preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
 > Plantilla de la skill `ux-flujo`. Ficha compartida por los dos sitios de la corrida A/B de Raíces:
 > A en `/prototipo/raices/<pantalla>` y B en `/prototipo/raices-b/<pantalla>`
 > ([ADR propuesto de Raíces](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
@@ -451,7 +451,7 @@ esté en el menú.
 
 ## 9. Decisiones y preguntas
 
-Decisiones tomadas (agente, en la corrida A/B; se aprueban al elegir A o B):
+Decisiones tomadas (agente, en la corrida A/B; aprobadas al elegir el sitio A, 2026-11-03):
 
 - "Donaciones recibidas" es la lista de RF-11: todo lo asignado, agrupado y filtrable por estado,
   con las recibidas del mes al final. El nombre del menú no cambia; el título dice el alcance.

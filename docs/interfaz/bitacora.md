@@ -26,6 +26,28 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-03 · estructura (Raíces) · Sitio A elegido, con la cabecera, el menú y el pie de B
+
+- **Decisión:** el usuario eligió el sitio A de la corrida A/B y tomó tres cosas de B: la cabecera
+  y el pie en verde oscuro (tierra honda) a todo el ancho, en todas las páginas; el menú horizontal
+  en la cabecera desde la tableta (abajo solo en el celular), en las privadas y en las públicas;
+  y la textura a la mitad, en el papel y en la tierra. La marca va en un cartel de papel sobre la
+  tierra, como en B. Con la elección, las tres fichas `raices-*-navegable.md` quedan aprobadas.
+- **Alternativas:** el menú abajo también en la tableta (descartado: cambia de lugar a mitad de
+  tamaño); la textura a la mitad solo en el papel, o casi imperceptible.
+- **Por qué:** el usuario prefiere A, con la cabecera de B; la tableta y la textura, las
+  recomendadas.
+- **Costo:** reemplaza la columna plegable de pantalla grande (A/B de la estructura privada,
+  2026-11-01, decisión del usuario): sale el botón de plegar y `js/raices-menu.js`. Las seis
+  pantallas aprobadas cambian en su cabecera y su pie, que ya no son iguales píxel a píxel a las
+  de antes. Contacto y Términos cambian solo la cabecera y el pie: siguen sin la navegación
+  pública, que nunca tuvieron (exclusión de `layout-publico.html`). El sitio B sigue en
+  `/prototipo/raices-b/` hasta que el usuario decida borrarlo.
+- **Quién decidió:** el usuario (la tableta y la textura, en una ronda de dos preguntas).
+- **Evidencia:** `docs/interfaz/evidencia/raices/cabecera-de-b/` (1280 y primera pantalla del
+  celular de cuatro pantallas); la tableta, por la verificación visual de las 146 rutas de A, que
+  mide desbordes en los anchos intermedios, con `reporte.json` vacío.
+
 ### 2026-11-02 · flujo (Raíces) · Corrida A/B: dos sitios navegables
 
 - **Decisión:** una corrida desatendida dejó la tercera alternativa como dos sitios navegables de

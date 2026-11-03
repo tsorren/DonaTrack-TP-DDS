@@ -104,8 +104,8 @@ datos de ejemplo: **A** (`/prototipo/raices/<pantalla>`, extiende las piezas act
 (`/prototipo/raices-b/<pantalla>`, otra navegación y composición con el mismo ADN). Las dibuja
 con su ficha de flujo en [`flujos/raices-publico-navegable.md`](flujos/raices-publico-navegable.md),
 [`raices-donante-navegable.md`](flujos/raices-donante-navegable.md) y
-[`raices-entidad-navegable.md`](flujos/raices-entidad-navegable.md), pendientes de aprobación al
-elegir A o B. Lo que falta de backend está en la ficha de cada recorrido.
+[`raices-entidad-navegable.md`](flujos/raices-entidad-navegable.md), aprobadas al elegir el
+sitio A (usuario, 2026-11-03). Lo que falta de backend está en la ficha de cada recorrido.
 
 | Pantalla del mapa | En A | En B |
 |---|---|---|

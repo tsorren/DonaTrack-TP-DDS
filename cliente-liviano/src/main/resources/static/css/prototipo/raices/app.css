@@ -47,11 +47,37 @@ a {
   padding: 1rem;
 }
 
+/* La cabecera y el pie, franjas de tierra honda a todo el ancho (usuario, 2026-11-03: tomado del
+   sitio B de la corrida A/B). La sombra y el recorte estiran el fondo sin estirar el contenido. */
+.raices-cabecera,
+.raices-pie,
+.armazon {
+  background: var(--color-suelo-hondo);
+  color: var(--color-texto-suelo);
+}
+
+.raices-cabecera,
+.raices-pie {
+  box-shadow: 0 0 0 100vmax var(--color-suelo-hondo);
+  clip-path: inset(0 -100vmax);
+}
+
+.raices-cabecera :focus-visible,
+.raices-pie :focus-visible,
+.armazon :focus-visible {
+  outline-color: var(--color-raiz);
+}
+
+/* La marca, un cartel de papel sobre la tierra (como en B). */
 .marca {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
   min-height: 3rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.6rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
   color: var(--color-tinta);
   text-decoration: none;
   font: 800 1.375rem/1 var(--fuente-titulo);
@@ -84,21 +110,23 @@ a {
   display: inline-flex;
   align-items: center;
   min-height: 3rem;
+  color: var(--color-raiz);
   font-weight: 700;
 }
 
 .raices-pie small {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suelo);
 }
 
-/* La textura impresa (A/B de textura, 2026-11-02: B, risografía, más suave y solo en el fondo).
-   El papel de todas las páginas lleva un polvo fino de tinta, detrás de todo el contenido. */
+/* La textura impresa (A/B de textura, 2026-11-02: B, risografía, más suave y solo en el fondo;
+   usuario, 2026-11-03: la mitad, en el papel y en la tierra). El papel de todas las páginas lleva
+   un polvo fino de tinta, detrás de todo el contenido. */
 body::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.12;
+  opacity: 0.06;
   background: var(--color-tinta);
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -5 0 0 0 2.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")
     0 0 / 200px 200px;
@@ -117,7 +145,7 @@ body::before {
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.14;
+  opacity: 0.07;
   background: var(--color-texto-suelo);
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -6 0 0 0 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")
     0 0 / 260px 260px;

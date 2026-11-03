@@ -65,7 +65,9 @@ Desvíos considerados:
 ## 4. Pantallas
 
 Una sola pantalla, con la estructura privada de Raíces (menú del donante y cuenta). Esquema en
-pantalla grande:
+pantalla grande (histórico: desde el 2026-11-03 el menú y la cuenta van en la cabecera verde
+oscuro, arriba, y el contenido ocupa todo el ancho; ver la nota "Reemplazado" en la sección de
+A/B):
 
 ```text
 ┌──────────────┬───────────────────────────────────────────────────────────┐
@@ -114,7 +116,8 @@ pantalla grande:
   queda llena y el resto se apaga, como la red de la portada.
 
 En el celular y la tableta: la marca y la cuenta arriba, el título, el dibujo más chico y la lista
-debajo; el menú, en una barra de navegación inferior fija. Es el patrón para 3 a 5 destinos de
+debajo; el menú, en una barra de navegación inferior fija en el celular y en la cabecera desde la
+tableta (usuario, 2026-11-03). Es el patrón para 3 a 5 destinos de
 primer nivel y queda al alcance del pulgar
 ([criterios de la cátedra](../criterios-catedra-ux-ui.md), secciones 4 y 5), así que no se
 compara. El dibujo es una ayuda; la lista dice todo. En el celular, el dibujo queda chico, con los
@@ -187,8 +190,7 @@ Filtro de tono:
 
 - Zonas: el enlace para saltar al contenido, la navegación del donante (`nav` con nombre), el
   contenido (`main`) con un `h1` y la lista con su `h2`.
-- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú (en pantalla grande,
-  con JavaScript), el menú, "Salir", "Esperan destino" en las cifras, cada entrega de la lista (su
+- Orden del foco: saltar al contenido, la marca, el menú, "Salir", "Esperan destino" en las cifras, cada entrega de la lista (su
   enlace al detalle) y "Ver Mis donaciones". El dibujo no recibe foco.
 - El dibujo es `aria-hidden`; la lista es la alternativa completa (RF-CL-06), con el mismo número
   que el dibujo.
@@ -259,7 +261,9 @@ Partes que se deciden con A/B, en este orden:
 
 1. La estructura privada de Raíces en pantalla grande. **Decidido (usuario, 2026-11-01):** una
    columna a la izquierda, abierta al entrar, que se puede plegar; en el celular, la barra inferior
-   (bitácora, "Una columna a la izquierda que se puede plegar").
+   (bitácora, "Una columna a la izquierda que se puede plegar"). **Reemplazado (usuario,
+   2026-11-03):** el menú va horizontal en la cabecera verde oscuro desde la tableta; abajo, solo
+   en el celular (bitácora, "Sitio A elegido, con la cabecera, el menú y el pie de B").
 2. El dibujo de las entregas: cómo se ven la raíz de cada entrega, su sello y el camión.
    **Decidido (usuario, 2026-11-01):** una red radial en espejo, como la de la portada. El brote va
    al centro y sale una línea de subte por entrega, con codos a 45°. Lo recorrido va impreso y lo
