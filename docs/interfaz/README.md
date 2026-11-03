@@ -60,6 +60,12 @@ la tabla de voz de cada alternativa). Cozy tiene además su propia
 hasta que el equipo la elija
 ([brief](identidad/brief-raices.md),
 [ADR propuesto](../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+Desde el 2026-11-02 tiene dos sitios navegables para elegir entre ellos: **A**
+(`/prototipo/raices/<pantalla>`) y **B** (`/prototipo/raices-b/<pantalla>`, en
+`templates/prototipo/raices-b/` y `static/css/prototipo/raices-b/`), con el recorrido público, el
+del donante y el de la entidad, más el inicio del admin
+([mapa del sitio](mapa-del-sitio.md#raíces-sitios-a-y-b-corrida-del-2026-11-02), evidencia en
+`evidencia/raices/ab-navegable/a/` y `b/`).
 
 **Diseño creativo desde cero, sin estar presente.** Cuando el usuario quiere algo nuevo y creativo
 (un rediseño, una pantalla o una alternativa), la skill `relevamiento-creativo` le pregunta por sus
@@ -205,7 +211,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | Archivo | Para qué |
 |---|---|
 | [bocetos-e1.md](bocetos-e1.md) | Inventario de los bocetos de E1 |
-| [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles |
+| [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles, y qué pantallas dibuja cada sitio de Raíces (A y B) |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
 | [criterios-catedra-ux-ui.md](criterios-catedra-ux-ui.md) | Los criterios del material de UX/UI de la cátedra (2026): factores de la experiencia, patrones, arquitectura de la información, lenguaje visual, accesibilidad y las 10 heurísticas, como guía para diseñar y revisar |
 | [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval (segunda versión: la mesa del cartógrafo) |

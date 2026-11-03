@@ -26,6 +26,44 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-11-02 · flujo (Raíces) · Corrida A/B: dos sitios navegables
+
+- **Decisión:** una corrida desatendida dejó la tercera alternativa como dos sitios navegables de
+  la maqueta, con los recorridos público ("entrar"), del donante ("donar y seguir") y de la entidad
+  ("recibir"), más el inicio del admin con su menú, sin enlaces muertos:
+  - **A** (`/prototipo/raices/`): fiel a lo aprobado. Extiende las piezas actuales (layouts,
+    sellos, formularios, etiquetas de herbario) sin tocar las siete pantallas ya aprobadas. 16
+    pantallas nuevas.
+  - **B** (`/prototipo/raices-b/`): audaz, con el mismo ADN (paleta Oliva, risografía, raíces).
+    Otra navegación (una línea pública de subte y otra por rol) y otra composición; rehace
+    también las siete aprobadas y suma la lista de Seguir entregas de la entidad y la
+    recuperación de la contraseña.
+  - Lo que lo prueba: un test de `PrototipoControllerTest` que, desde las portadas y los inicios
+    de cada rol, sigue en anchura todos los enlaces de cada sitio y exige 200, y que las 23
+    pantallas de los tres recorridos tienen plantilla propia en los dos. Lo que el backend todavía
+    no da quedó con datos sintéticos y en una lista aparte, sin DTI ni ADR nuevos.
+- **Alternativas:** correr dos veces la corrida creativa guardada (elige un ganador por
+  iteración y su flujo se bloquea fuera de Cozy), hacerlo a mano con agentes sueltos, o un solo
+  sitio con `?variante=` (cambia el estilo, no la estructura ni la navegación).
+- **Por qué:** el usuario pidió "aprende del diseño actual de Raíces y plantea una corrida
+  desatendida A/B que implemente las demás pantallas de forma navegable". Para comparar de
+  verdad, B tiene que poder cambiar la estructura y la navegación, y A, mostrar lo que sale de
+  seguir el sistema sin arriesgar nada. Como las 16 pantallas nuevas no tenían flujo aprobado, la
+  corrida escribió tres fichas compartidas por A y B
+  ([público](flujos/raices-publico-navegable.md), [donante](flujos/raices-donante-navegable.md)
+  y [entidad](flujos/raices-entidad-navegable.md)), que quedan pendientes de aprobación hasta
+  que el usuario elija.
+- **Costo:** No reemplaza nada: A y B conviven con las siete pantallas aprobadas de Raíces y con
+  Cozy y Glassmorphism, que no cambian (comparación píxel a píxel sin diferencias). B vive en
+  `raices-b`, con su `Prototipo` propio en el controller, sus plantillas y sus hojas
+  (`templates/prototipo/raices-b/`, `static/css/prototipo/raices-b/`); al elegir un sitio se
+  borra el otro. Misiones queda fuera (RF-07 la oculta a la empresa) y el resto del admin, sin
+  dibujar. Los huecos de backend están en las fichas.
+- **Quién decidió:** corrida desatendida; el usuario elige A o B y aprueba las fichas.
+- **Evidencia:** `evidencia/raices/ab-navegable/a/` y `b/` (360 y 1280 px de cada pantalla nueva
+  y la primera pantalla del celular de cada portada); página de antes y después en la carpeta de
+  la corrida, fuera del repo.
+
 ### 2026-11-02 · proceso (Raíces) · La review de la diseñadora, decidida
 
 - **Decisión:** Sofía Deane, la diseñadora del grupo, respondió tarde el artifact. Vio la versión

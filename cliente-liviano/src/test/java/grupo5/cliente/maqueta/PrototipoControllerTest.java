@@ -2,6 +2,7 @@ package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -10,12 +11,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import java.net.URI;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Las pantallas de prueba están en src/test/resources/templates/prototipo/cozy-medieval/ y
@@ -462,5 +472,94 @@ class PrototipoControllerTest {
     mvc.perform(get("/salir")).andExpect(redirectedUrl("/prototipo/publico-portada"));
     mvc.perform(get("/notificaciones")).andExpect(redirectedUrl("/prototipo/donante-cartas"));
     mvc.perform(get("/perfil")).andExpect(redirectedUrl("/prototipo/donante-perfil"));
+  }
+
+  /** Las pantallas que los dos sitios de Raíces dibujan de verdad (no caen en "sin dibujar"). */
+  private static final List<String> DIBUJADAS_EN_RAICES =
+      List.of(
+          "publico-portada",
+          "publico-donaciones",
+          "publico-mapa",
+          "publico-entidades",
+          "publico-ingresar",
+          "publico-registro",
+          "publico-registro-donante",
+          "publico-registro-entidad",
+          "publico-contacto",
+          "publico-legales",
+          "donante-inicio",
+          "donante-donaciones",
+          "donante-donaciones-detalle",
+          "donante-entidades",
+          "donante-notificaciones",
+          "donante-seguimiento",
+          "donante-perfil",
+          "entidad-inicio",
+          "entidad-recibidas",
+          "entidad-notificaciones",
+          "entidad-necesidades",
+          "entidad-seguimiento-confirmar",
+          "admin-inicio");
+
+  private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");
+
+  @Test
+  void enRaicesAEstanDibujadasLasPantallasDeLosTresRecorridos() throws Exception {
+    exigirDibujadas("raices");
+  }
+
+  @Test
+  void enRaicesBEstanDibujadasLasPantallasDeLosTresRecorridos() throws Exception {
+    exigirDibujadas("raices-b");
+  }
+
+  @Test
+  void ningunEnlaceDeRaicesAEstaRoto() throws Exception {
+    recorrerEnAnchura("raices");
+  }
+
+  @Test
+  void ningunEnlaceDeRaicesBEstaRoto() throws Exception {
+    recorrerEnAnchura("raices-b");
+  }
+
+  private void exigirDibujadas(String sitio) throws Exception {
+    for (String pantalla : DIBUJADAS_EN_RAICES) {
+      mvc.perform(get("/prototipo/" + sitio + "/" + pantalla))
+          .andExpect(status().isOk())
+          .andExpect(view().name("prototipo/" + sitio + "/" + pantalla));
+    }
+  }
+
+  /**
+   * Desde las portadas de cada rol sigue, en anchura, cada enlace que queda dentro del sitio: todos
+   * responden 200. El enlace roto se arregla en la plantilla, no acá.
+   */
+  private void recorrerEnAnchura(String sitio) throws Exception {
+    String prefijo = "/prototipo/" + sitio + "/";
+    Deque<String> pendientes = new ArrayDeque<>();
+    Set<String> vistos = new LinkedHashSet<>();
+    for (String inicio :
+        List.of("publico-portada", "donante-inicio", "entidad-inicio", "admin-inicio")) {
+      pendientes.add(prefijo + inicio);
+      vistos.add(prefijo + inicio);
+    }
+    while (!pendientes.isEmpty()) {
+      String direccion = pendientes.poll();
+      MvcResult resultado =
+          mvc.perform(get(URI.create(direccion))).andExpect(status().isOk()).andReturn();
+      Matcher enlace = ENLACE.matcher(resultado.getResponse().getContentAsString());
+      while (enlace.find()) {
+        String destino = enlace.group(1).replace("&amp;", "&");
+        int ancla = destino.indexOf('#');
+        if (ancla >= 0) {
+          destino = destino.substring(0, ancla);
+        }
+        if (destino.startsWith(prefijo) && vistos.add(destino)) {
+          pendientes.add(destino);
+        }
+      }
+    }
+    assertTrue(vistos.size() > 40, "el recorrido de " + sitio + " llegó a pocas pantallas");
   }
 }

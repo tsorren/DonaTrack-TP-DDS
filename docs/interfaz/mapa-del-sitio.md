@@ -97,6 +97,32 @@ flowchart LR
 | Ranking | Admin | 2 | RF-19 | — | E6 |
 | Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
 
+## Raíces, sitios A y B (corrida del 2026-11-02)
+
+Raíces dibuja el recorrido de los tres roles en dos sitios navegables de la maqueta, con los mismos
+datos de ejemplo: **A** (`/prototipo/raices/<pantalla>`, extiende las piezas actuales) y **B**
+(`/prototipo/raices-b/<pantalla>`, otra navegación y composición con el mismo ADN). Las dibuja
+con su ficha de flujo en [`flujos/raices-publico-navegable.md`](flujos/raices-publico-navegable.md),
+[`raices-donante-navegable.md`](flujos/raices-donante-navegable.md) y
+[`raices-entidad-navegable.md`](flujos/raices-entidad-navegable.md), pendientes de aprobación al
+elegir A o B. Lo que falta de backend está en la ficha de cada recorrido.
+
+| Pantalla del mapa | En A | En B |
+|---|---|---|
+| Landing, Donaciones realizadas, Mapa de entregadas, Entidades y necesidades | Dibujadas | Dibujadas, con la línea pública de navegación |
+| Contacto, Legales y privacidad | Dibujadas | Dibujadas |
+| Iniciar sesión, Registrarse: elegir, Registro de donante / entidad | Dibujadas | Dibujadas |
+| Recuperar contraseña | Se abre la de Cozy, con aviso | Dibujada, con su aviso de enviado |
+| Inicio, Mis donaciones → detalle, Beneficiarios (Entidades), Notificaciones, Mi perfil, Seguir entregas del donante | Dibujadas | Dibujadas |
+| Misiones e insignias (Incentivos) | No está: RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
+| Inicio de la entidad, Necesidades, Donaciones recibidas, Notificaciones, Confirmar recepción | Dibujadas | Dibujadas |
+| Seguir entregas de la entidad (lista) | Sin dibujar | Dibujada |
+| Inicio del admin | Dibujada, con el menú | Dibujada, con el menú |
+| Resto del admin (Donantes, Entidades, Donaciones, Asignaciones, Camiones, Ranking) | Sin dibujar | Sin dibujar |
+
+Lo público que no tiene plantilla no existe (la página de "sin dibujar" es privada); lo privado
+que no tiene plantilla muestra "sin dibujar".
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,
