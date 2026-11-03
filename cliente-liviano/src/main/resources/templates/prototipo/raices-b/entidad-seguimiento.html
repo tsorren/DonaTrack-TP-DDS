@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Seguir entregas de la entidad (RF-12): una estación más de la línea, para que el
+       recorrido "recibir" no termine en una pantalla sin dibujar (arreglo de la crítica, 2026-11-02;
+       la ficha raices-entidad-navegable.md la dejaba como hueco). Un ramal que baja con lo que viene
+       a tu puerta, en el orden en que llega: primero lo que ya está en tu puerta, cada entrega con
+       su sello hueco (falta tu confirmación) y su "Confirmar recepción"; después lo que tuvo un
+       problema y lo que está en camino, y el último trecho punteado porque todavía no llegó. Los
+       mismos datos que Donaciones recibidas (entidad-recibidas.html) en esos estados; lo ya recibido
+       queda allá. ?escenario=vacio (nada por llegar) y error. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-privado :: pagina(~{::title}, 'entidad-seguimiento', ~{::contenido})}">
+<head>
+  <title>Seguir entregas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             entregas=${ {
+               {clave: 'lentejas', que: 'Lentejas secas', nombre: 'lentejas secas', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '15 kg',
+                dono: 'Distribuidora Ejemplo SA', tono: 'puerta', estado: 'En tu puerta', paso: 'Llegó hoy a las 18:20. Falta tu confirmación.'},
+               {clave: 'ropa', que: 'Ropa de abrigo', nombre: 'ropa de abrigo', cat: 'cat-ropa', catTexto: 'Ropa', cuanto: '10 unidades',
+                dono: 'Donante Sostenedor', tono: 'puerta', estado: 'En tu puerta', paso: 'Llegó ayer a las 17:10. Falta tu confirmación.'},
+               {clave: 'aceite', que: 'Aceite de girasol', nombre: 'aceite de girasol', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '10 litros',
+                dono: 'Almacén Ejemplo SRL', tono: 'problema', estado: 'Con problema', paso: 'El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.'},
+               {clave: 'arroz', que: 'Arroz', nombre: 'arroz', cat: 'cat-alimentos', catTexto: 'Alimentos', cuanto: '20 kg',
+                dono: 'Almacén Ejemplo SRL', tono: 'en-camino', estado: 'En camino', paso: 'Salió del depósito hoy a las 9:15. Llega mañana.'} } }">
+  <svg th:replace="~{prototipo/raices-b/iconos :: categorias}"></svg>
+  <div class="recibidas seguir">
+    <header>
+      <p class="rotulo" th:text="${seccion}">Seguir entregas</p>
+      <h1>Lo que viene a tu <em>puerta</em></h1>
+      <p class="recibidas-bajada">Las entregas que están llegando al Comedor Barrio Ejemplo. Al 15 de
+        octubre de 2026, 18:30.</p>
+    </header>
+
+    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">No hay entregas en camino a tu entidad.</h2>
+      <p>Cuando se asigne una donación a tu pedido, la vas a ver acá hasta que confirmes que llegó.</p>
+      <a class="boton boton--secundario" href="/prototipo/raices-b/entidad-recibidas"
+         th:href="@{/prototipo/raices-b/entidad-recibidas}">Ver Donaciones recibidas</a>
+    </section>
+
+    <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar tus entregas.</h2>
+      <p>Es un problema nuestro: no cambió nada en tus entregas. Probá de nuevo en unos minutos; si
+        sigue, escribinos con este código.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton boton--principal" href="/prototipo/raices-b/entidad-seguimiento"
+         th:href="@{/prototipo/raices-b/entidad-seguimiento}">Volver a cargar</a>
+    </section>
+
+    <th:block th:if="${escenario != 'vacio' and escenario != 'error'}">
+      <ol class="ramal ramal--baja grupos seguir-ramal" role="list">
+        <li th:each="d : ${entregas}" class="ramal-estacion">
+          <span class="ramal-sello" aria-hidden="true"
+                th:classappend="|seguir-sello--${d.tono}|"></span>
+          <article class="ramal-texto donacion" th:aria-labelledby="|entrega-${d.clave}|">
+            <div class="donacion-que">
+              <h2 th:id="|entrega-${d.clave}|">
+                <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                  <use href="#cat-alimentos" th:href="|#${d.cat}|"/>
+                </svg>
+                <span th:text="${d.que}">Lentejas secas</span>
+              </h2>
+              <p th:text="|${d.catTexto} · ${d.cuanto} · Donó ${d.dono}|">Alimentos · 15 kg · Donó
+                Distribuidora Ejemplo SA</p>
+            </div>
+            <div class="donacion-estado">
+              <p class="estado" th:classappend="|estado--${d.tono == 'problema' ? 'con-problema' : d.tono}|">
+                <svg th:replace="~{prototipo/raices-b/entidad-recibidas :: sello(${d.tono})}"></svg><span th:text="${d.estado}">En tu puerta</span></p>
+              <p th:text="${d.paso}">Llegó hoy a las 18:20. Falta tu confirmación.</p>
+            </div>
+            <a th:if="${d.tono == 'puerta'}" class="boton boton--principal donacion-accion"
+               href="/prototipo/raices-b/entidad-seguimiento-confirmar?entrega=lentejas"
+               th:href="@{/prototipo/raices-b/entidad-seguimiento-confirmar(entrega=${d.clave})}"
+               th:aria-label="|Confirmar recepción: ${d.nombre}|">Confirmar recepción</a>
+          </article>
+        </li>
+      </ol>
+      <p class="seguir-salida"><a href="/prototipo/raices-b/entidad-recibidas"
+         th:href="@{/prototipo/raices-b/entidad-recibidas}">Ver todo lo asignado en Donaciones
+        recibidas</a></p>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

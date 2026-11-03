@@ -13,12 +13,7 @@
 <th:block th:fragment="contenido">
   <div class="sin-dibujar">
     <p class="rotulo" th:text="${seccion}">Sección</p>
-    <h1>Esta pantalla todavía no está dibujada en Raíces.</h1>
-    <th:block th:if="${enCozy}">
-      <p>Mientras tanto, podés verla en la alternativa Cozy / Medieval.</p>
-      <a class="boton boton--secundario" href="#" th:href="${enCozy}">Verla
-        en Cozy</a>
-    </th:block>
+    <h1>Esta pantalla todavía no está dibujada en este sitio.</h1>
     <th:block th:unless="${enCozy}">
       <p>Tampoco está dibujada en la alternativa Cozy / Medieval.</p>
       <a th:if="${seccion == 'Seguir entregas' and param.entrega != null}" class="boton boton--secundario"
@@ -26,6 +21,13 @@
          th:href="@{/prototipo/raices-b/entidad-seguimiento-confirmar(entrega=${param.entrega[0]})}">
         Volver a la entrega</a>
     </th:block>
+    <!--/* En B, primero la vuelta al inicio del rol (la primera estación de su línea); salir a Cozy
+           queda como segunda opción (arreglo de la crítica, 2026-11-02). */-->
+    <p class="acciones" th:if="${navegacion != null and !#lists.isEmpty(navegacion)}">
+      <a class="boton boton--secundario" href="#" th:href="${navegacion[0].ruta}">Volver al inicio</a>
+      <a th:if="${enCozy}" class="boton boton--secundario" href="#" th:href="${enCozy}">Verla en
+        la alternativa Cozy</a>
+    </p>
   </div>
 </th:block>
 </body>

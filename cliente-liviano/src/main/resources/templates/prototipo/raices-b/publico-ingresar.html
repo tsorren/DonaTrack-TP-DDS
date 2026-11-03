@@ -5,8 +5,8 @@
        terminales: el inicio de cada rol. En la cabecera, Ingresar queda marcado (la hoja se llama
        publico-ingresar). El formulario (post) y "Continuar con Google" llevan al inicio del donante.
        Estados: ?escenario=lento, error, sin-conexion, bloqueado, pendiente y sesion-vencida; el error
-       de datos es publico-ingresar-error. "¿Olvidaste tu contraseña?" lleva a la de Cozy (decisión de
-       la ficha: lo público sin dibujar no tiene "sin dibujar").
+       de datos es publico-ingresar-error. "¿Olvidaste tu contraseña?" lleva a publico-recuperar de B (arreglo de
+       la crítica, 2026-11-02: no sale del sitio).
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -35,8 +35,8 @@
                autofocus aria-labelledby="ingresar-error-titulo">
         <h2 id="ingresar-error-titulo">No pudimos ingresar.</h2>
         <p>El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí una contraseña nueva.</p>
-        <a class="boton boton--secundario" href="/prototipo/publico-recuperar"
-           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva</a>
+        <a class="boton boton--secundario" href="/prototipo/raices-b/publico-recuperar"
+           th:href="@{/prototipo/raices-b/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
       <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert" aria-labelledby="servidor-titulo">
         <h2 id="servidor-titulo">No pudimos ingresar en este momento.</h2>
@@ -54,8 +54,8 @@
         <h2 id="pausa-titulo">Pausamos los intentos de ingreso.</h2>
         <p>Hubo varios intentos con datos que no coinciden. Por seguridad, probá de nuevo en unos minutos o
           pedí una contraseña nueva.</p>
-        <a class="boton boton--secundario" href="/prototipo/publico-recuperar"
-           th:href="@{/prototipo/publico-recuperar}">Pedir una contraseña nueva</a>
+        <a class="boton boton--secundario" href="/prototipo/raices-b/publico-recuperar"
+           th:href="@{/prototipo/raices-b/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
       <section th:if="${escenario == 'pendiente'}" class="aviso" role="status" aria-labelledby="revision-titulo">
         <h2 id="revision-titulo">Tu entidad todavía está en revisión.</h2>
@@ -88,8 +88,8 @@
             <input id="clave" name="clave" type="password" required autocomplete="current-password" data-mostrar
                    th:attr="aria-describedby=${conError} ? 'ingresar-error' : null,aria-invalid=${conError} ? 'true' : null">
           </div>
-          <a class="ingresar-olvido" href="/prototipo/publico-recuperar"
-             th:href="@{/prototipo/publico-recuperar}">¿Olvidaste tu contraseña?</a>
+          <a class="ingresar-olvido" href="/prototipo/raices-b/publico-recuperar"
+             th:href="@{/prototipo/raices-b/publico-recuperar}">¿Olvidaste tu contraseña?</a>
         </div>
         <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}">
           <th:block th:text="${escenario == 'lento'} ? 'Ingresando…' : 'Ingresar'">Ingresar</th:block></button>

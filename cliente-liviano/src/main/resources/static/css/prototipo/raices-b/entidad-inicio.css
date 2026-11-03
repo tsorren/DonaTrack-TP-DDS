@@ -170,6 +170,12 @@
     margin-top: 1.5rem;
   }
 
+  /* El ramal termina en la última estación, que todavía no pasó: después de ella no sigue una
+     línea llena (lo pendiente y el último trecho van punteados). Tres estaciones, tres columnas. */
+  .parada .viene::before {
+    right: calc((100% - 3rem) / 3 - var(--medida-sello));
+  }
+
   .recibido-fruto {
     width: 8rem;
     height: 8rem;

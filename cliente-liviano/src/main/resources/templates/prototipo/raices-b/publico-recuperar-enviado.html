@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--/* Raíces B, Recuperar la contraseña, enviado: la misma pantalla con el aviso en lugar del
+       formulario (publico-recuperar :: hoja(true)). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{prototipo/raices-b/layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Te mandamos un enlace - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/raices-b/publico-recuperar :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

@@ -235,6 +235,7 @@ body::before {
    la de abajo, nunca se desborda. Uso: prototipo/raices-b/via.html. */
 .via {
   position: relative;
+  isolation: isolate;
 }
 
 /* El codo: la línea entra por la altura de la espina y baja hasta el contenido, donde la toman el
@@ -255,11 +256,15 @@ body::before {
   --medida-entrada: calc(var(--medida-eje) + var(--medida-grosor) / 2 + 3px + 0.25rem);
 
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(4.25rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
   row-gap: 0.25rem;
   margin: 0;
   padding: 0 0 0 var(--medida-entrada);
   list-style: none;
+  /* Cada fila sale del codo (via::after), como un ramal: el trecho de cada estación llega por
+     detrás hasta el eje y se corta ahí. Así, si las estaciones no entran en una fila, la segunda
+     no queda suelta. */
+  clip-path: inset(-1rem -1rem -1rem calc(var(--medida-eje) - var(--medida-grosor) / 2 - 3px));
 }
 
 .via li {
@@ -267,18 +272,16 @@ body::before {
   display: flex;
 }
 
-/* El ramal de línea de cada estación, de borde a borde; la primera y la última, desde su sello. */
+/* El ramal de línea de cada estación: llega por detrás de las anteriores hasta el codo (el corte
+   está en .via ol) y la última termina en su sello. */
 .via li::before {
   content: "";
   position: absolute;
-  inset: calc(0.75rem + var(--medida-estacion) / 2 - var(--medida-grosor) / 2 - 3px) 0 auto;
+  inset: calc(0.75rem + var(--medida-estacion) / 2 - var(--medida-grosor) / 2 - 3px) 0 auto -100vw;
+  z-index: -1;
   height: calc(var(--medida-grosor) + 6px);
   border-block: var(--borde-linea);
   background: var(--color-raiz);
-}
-
-.via li:first-child::before {
-  left: calc(var(--medida-eje) - var(--medida-entrada) - var(--medida-grosor) / 2 - 3px);
 }
 
 .via li:last-child::before {
@@ -293,7 +296,7 @@ body::before {
   align-items: center;
   gap: 0.4rem;
   min-height: 3rem;
-  padding: 0.75rem 0.125rem 0.5rem;
+  padding: 0.75rem 0.25rem 0.5rem;
   color: var(--color-texto-suelo);
   font-size: 0.8125rem;
   font-weight: 700;

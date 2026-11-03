@@ -88,6 +88,13 @@
                 <span class="inicio-punto"></span><small th:text="${d.numero}">1</small>
               </li>
             </ol>
+            <!--/* La clave de la línea, para quien la ve: el color no carga solo el significado (arreglo
+                   de la crítica, 2026-11-02). Los lectores tienen las cifras y el texto. */-->
+            <p class="inicio-leyenda" aria-hidden="true">Cada estación, una donación:
+              <span class="inicio-estacion--entregada"><span class="inicio-punto"></span>confirmada</span>
+              <span class="inicio-estacion--con-problema"><span class="inicio-punto"></span>con problema</span>
+              <span class="inicio-estacion--en-camino"><span class="inicio-punto"></span>en camino</span>
+              <span class="inicio-estacion--pendiente"><span class="inicio-punto"></span>pendiente</span></p>
             <p th:if="${primera != null}" class="inicio-hito-texto"
                th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
               entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
@@ -102,14 +109,14 @@
                         problema=${#lists.size(enCurso.?[estado.tono == 'con-problema'])},
                         pendientes=${#lists.size(enCurso.?[estado.tono == 'pendiente'])}">
               <span class="inicio-curso-texto"
-                    th:text="|${#lists.size(enCurso)} entregas en curso: ${camino} en camino, ${problema} con problema y ${pendientes} pendiente.|">3
+                    th:text="|${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso: ${camino} en camino, ${problema} con problema y ${pendientes} ${pendientes == 1 ? 'pendiente' : 'pendientes'}.|">3
                 entregas en curso: 1 en camino, 1 con problema y 1 pendiente.</span>
               <a href="/prototipo/raices-b/donante-seguimiento" th:href="@{/prototipo/raices-b/donante-seguimiento}">Ver
                 seguimiento</a>
             </p>
             <p>
               <span class="inicio-curso-texto"
-                    th:text="|${#lists.size(sinDestino)} donaciones esperan destino en el depósito.|">2 donaciones
+                    th:text="|${#lists.size(sinDestino)} ${#lists.size(sinDestino) == 1 ? 'donación espera' : 'donaciones esperan'} destino en el depósito.|">2 donaciones
                 esperan destino en el depósito.</span>
               <a href="/prototipo/raices-b/donante-donaciones" th:href="@{/prototipo/raices-b/donante-donaciones}">Ver
                 Mis donaciones</a>

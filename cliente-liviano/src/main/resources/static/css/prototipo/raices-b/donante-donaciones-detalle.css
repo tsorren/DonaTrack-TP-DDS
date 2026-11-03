@@ -134,10 +134,14 @@
   scale: 1.1;
 }
 
+/* El nombre de la actual, impreso como la estación de la vía (paja con la segunda tinta salvia),
+   sin subrayado: el subrayado queda para lo que se toca. */
 .detalle-etapa--actual .ramal-texto b {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.25em;
+  padding: 0 0.3rem;
+  background: var(--color-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+  color: var(--color-tinta);
+  box-decoration-break: clone;
 }
 
 .detalle-ramal--pendiente .detalle-etapa--actual .ramal-sello {

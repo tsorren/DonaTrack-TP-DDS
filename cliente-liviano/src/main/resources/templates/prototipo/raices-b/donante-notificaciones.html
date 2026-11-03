@@ -100,8 +100,9 @@
 </th:block>
 
 <!--/* Un aviso: la hora, si está leído o no (texto y forma), el texto con enlace al detalle de su
-       donación, y la donación con el sello de su estado actual. Hoy es el 15 de octubre: lo del 14
-       dice "Ayer". */-->
+       donación, y la donación con el sello de su estado actual, con "Hoy:" adelante para que no se
+       lea como el estado del aviso (arreglo de la crítica, 2026-11-02). Hoy es el 15 de octubre: lo
+       del 14 dice "Ayer". */-->
 <li th:fragment="aviso(n, leida)" class="horario-fila avisos-fila"
     th:classappend="${leida} ? 'avisos-fila--leida' : 'avisos-fila--nueva'"
     th:with="d=${donaciones.^[clave == #vars.n.d]}, carta=${d.cartas[n.c]}">
@@ -114,7 +115,7 @@
   <p class="avisos-donacion">
     <span class="estado" th:classappend="|estado--${d.estado.tono}|"><th:block
           th:replace="~{prototipo/raices-b/donante-donaciones :: sello(${d.estado.tono})}"></th:block><span
-          th:text="${d.estado.texto}">En camino</span></span>
+          th:text="|Hoy: ${d.estado.texto}|">Hoy: En camino</span></span>
     <span th:text="|${d.titulo}, ${d.cantidad}|">Lentejas secas, 15 kg</span>
   </p>
 </li>

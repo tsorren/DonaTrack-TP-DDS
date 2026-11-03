@@ -66,7 +66,7 @@
   <section class="parada parada--tierra tierra-impresa" aria-labelledby="red-titulo">
     <div class="parada-interior franja">
       <h2 id="red-titulo" class="parada-titulo">Quiénes reciben <em>las donaciones</em></h2>
-      <p class="parada-bajada" th:if="${conDatos}">Una entidad de cada tipo, entre las 46 que están en el mapa.
+      <p class="parada-bajada" th:if="${conDatos}">Una entidad de cada tipo, entre las 46 que están en DonaTrack.
         Cada una pide lo que necesita y confirma lo que recibe.</p>
       <p class="parada-bajada" th:unless="${conDatos}">Comedores, escuelas, hogares y otras entidades de la
         comunidad. Cada una pide lo que necesita y confirma lo que recibe.</p>
@@ -77,7 +77,7 @@
       <p class="aviso aviso--tierra" th:if="${estado == 'lento'}" role="status">Cargando las entidades…</p>
       <div class="aviso aviso--tierra" th:if="${estado == 'error'}" role="alert">
         <p>No pudimos cargar las entidades. Probá de nuevo en unos minutos.</p>
-        <a href="" class="boton boton--chico">Volver a cargar</a>
+        <a href="/prototipo/raices-b/publico-portada" th:href="@{/prototipo/raices-b/publico-portada}" class="boton boton--chico">Volver a cargar</a>
       </div>
       <ol class="ramal ramal--red" role="list">
         <li th:if="${conDatos}" class="ramal-estacion">
@@ -129,12 +129,12 @@
         <p th:if="${estado == 'lento'}" role="status">Cargando las cifras…</p>
         <div th:if="${estado == 'error'}" role="alert">
           <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
-          <a href="" class="boton boton--chico">Volver a cargar</a>
+          <a href="/prototipo/raices-b/publico-portada" th:href="@{/prototipo/raices-b/publico-portada}" class="boton boton--chico">Volver a cargar</a>
         </div>
       </div>
       <dl class="frutos" th:if="${conDatos}">
-        <div class="fruto fruto--mandarina"><dt>Entregas confirmadas desde marzo de 2026</dt><dd>1.284</dd></div>
-        <div class="fruto fruto--paja"><dt>Entidades en el mapa</dt><dd>46</dd></div>
+        <div class="fruto fruto--mandarina"><dt>Entregas confirmadas desde marzo de 2026</dt><dd>64</dd></div>
+        <div class="fruto fruto--paja"><dt>Entidades en DonaTrack</dt><dd>46</dd></div>
         <div class="fruto fruto--hueco"><dt>Donaciones en camino ahora</dt><dd>32</dd></div>
       </dl>
       <a href="/prototipo/raices-b/publico-mapa" th:href="@{/prototipo/raices-b/publico-mapa}"
@@ -157,7 +157,7 @@
       <p class="aviso" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
       <div class="aviso" th:if="${estado == 'error'}" role="alert">
         <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
-        <a href="" class="boton boton--chico">Volver a cargar</a>
+        <a href="/prototipo/raices-b/publico-portada" th:href="@{/prototipo/raices-b/publico-portada}" class="boton boton--chico">Volver a cargar</a>
       </div>
       <ol class="ramal ramal--entregas" role="list" th:if="${conDatos}">
         <li class="ramal-estacion">

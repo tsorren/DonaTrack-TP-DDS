@@ -179,6 +179,17 @@ figure.seguimiento-dibujo {
   font: 800 1.25rem/1 var(--fuente-titulo);
 }
 
+/* Al llegar desde el detalle ("Ver dónde está", #entrega-<clave>): la estación de esa donación,
+   marcada con el anillo de combinación, y su título con aire arriba. */
+.entrega h3:target {
+  scroll-margin-top: 1.5rem;
+}
+
+.entrega:has(> h3:target) .entrega-numero {
+  outline: 3px solid var(--color-tinta);
+  outline-offset: 3px;
+}
+
 .entrega h3 {
   margin: 0.25rem 0;
   font: 800 1.25rem/1.2 var(--fuente-titulo);

@@ -197,7 +197,7 @@
        estado con su nota, las cinco etapas con su detalle y la última noticia. */-->
 <li th:fragment="entrega(d, numero)" class="entrega" th:classappend="|entrega--${d.estado.tono}|">
   <span class="entrega-numero" aria-hidden="true" th:text="${numero}">1</span>
-  <h3><a href="/prototipo/raices-b/donante-donaciones-detalle"
+  <h3 th:id="|entrega-${d.clave}|"><a href="/prototipo/raices-b/donante-donaciones-detalle"
          th:href="@{/prototipo/raices-b/donante-donaciones-detalle(donacion=${d.clave})}"
          th:text="${d.titulo}">Lentejas secas</a></h3>
   <p class="entrega-categoria">

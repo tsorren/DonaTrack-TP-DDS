@@ -157,6 +157,31 @@
   outline-offset: 3px;
 }
 
+/* La clave de la línea: un punto chico de cada estado y su nombre. */
+.inicio-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  max-width: 40rem;
+  margin: 0.5rem 0 0;
+  color: var(--color-tinta);
+  font-size: 0.875rem;
+}
+
+.inicio-leyenda > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.inicio-leyenda .inicio-punto {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  box-shadow: none;
+}
+
 .inicio-hito-texto {
   max-width: 36rem;
   margin: 0.75rem 0 0;

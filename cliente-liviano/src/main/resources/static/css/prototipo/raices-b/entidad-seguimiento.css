@@ -1,0 +1,66 @@
+/* Raíces B, Seguir entregas de la entidad: lo que viene a tu puerta en un ramal que baja (las
+   piezas de Donaciones recibidas). En tu puerta, el sello hueco con borde lleno: llegó y falta tu
+   confirmación; con problema, el sello rojo; en camino, el sello punteado y el último trecho
+   punteado, porque todavía no llegó. */
+@import url("entidad-recibidas.css");
+
+.seguir-sello--puerta {
+  background: var(--color-papel);
+  box-shadow: none;
+}
+
+.seguir-sello--problema {
+  background: var(--color-problema-texto);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-problema-fondo);
+}
+
+/* En camino: todavía no llegó; el sello punteado y, desde él, el último trecho punteado hasta el
+   final del ramal. */
+.seguir-sello--en-camino {
+  border-style: dashed;
+  background: var(--color-papel);
+  box-shadow: none;
+}
+
+.seguir-ramal .ramal-estacion:last-child::after {
+  content: "";
+  position: absolute;
+  top: var(--medida-sello);
+  bottom: -4rem;
+  left: calc(
+    var(--medida-ramal-eje) - var(--medida-grosor) / 2 - 3px - var(--medida-ramal-eje) * 2 - 0.5rem
+  );
+  width: calc(var(--medida-grosor) + 6px);
+  background:
+    radial-gradient(circle, var(--color-raiz) 3px, transparent 3.5px) center top / 100% 0.75rem
+      repeat-y,
+    var(--color-papel);
+}
+
+.seguir .donacion h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+}
+
+.seguir .donacion,
+.seguir .donacion + .donacion {
+  border-top: 2px solid var(--color-tinta);
+  border-bottom: 0;
+}
+
+.seguir-salida a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+@media (min-width: 53.75em) {
+  .seguir .donacion {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.5fr) 12rem;
+  }
+}

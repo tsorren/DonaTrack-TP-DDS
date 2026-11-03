@@ -72,8 +72,8 @@
                  ? 'Entrega confirmada el ' + #strings.substringAfter(d.nota, 'Llegó el ') + ', con foto de la entidad'
                  : d.nota}">Salió hoy a las 14:30</span>
         </p>
-        <a th:if="${enCurso}" class="boton boton--principal" href="/prototipo/raices-b/donante-seguimiento"
-           th:href="@{/prototipo/raices-b/donante-seguimiento}">Ver dónde está</a>
+        <a th:if="${enCurso}" class="boton boton--principal" href="/prototipo/raices-b/donante-seguimiento#entrega-lentejas"
+           th:href="@{/prototipo/raices-b/donante-seguimiento} + '#entrega-' + ${d.clave}">Ver dónde está</a>
       </header>
 
       <!--/* Solo con problema: qué pasó, la última noticia y la nueva salida, sin alarma. */-->
