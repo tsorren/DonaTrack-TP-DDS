@@ -352,9 +352,6 @@ main .etiqueta-titulo {
 }
 
 .confirmada .acta-formulario {
-  /* En una columna, lo asentado y la entrega que sigue van antes que la etiqueta y el tramo: es lo
-     nuevo de esta pantalla. En pantalla grande, a la derecha, como en el acta. */
-  order: -1;
   align-content: start;
 }
 
@@ -377,14 +374,11 @@ main .etiqueta-titulo {
   background: linear-gradient(transparent calc(70 / 210 * 100%), var(--color-suelo) 0);
 }
 
-/* La línea de la entrega escala con el dibujo: el trazado mide su largo en las unidades del dibujo
-   (pathLength), y con trazos que no escalan se cortaría antes de llegar en pantallas anchas. */
+/* La línea de la entrega tiene el mismo grosor que las de Seguir entregas en cualquier ancho
+   (usuario, 2026-11-03): no escala con el dibujo, así que el trazado se revela de izquierda a
+   derecha en vez de medir su largo. */
 .ciclo-raiz .dibujo {
   overflow: visible;
-}
-
-.ciclo-raiz :is(.subte-borde, .subte-linea) {
-  vector-effect: none;
 }
 
 .ciclo-entidad .sello-calado--fino {
@@ -399,7 +393,6 @@ main .etiqueta-titulo {
    movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .confirmada--recien .ciclo-trazo {
-    stroke-dasharray: 1;
     animation: ciclo-traza 1.2s cubic-bezier(0.3, 0.7, 0.2, 1) 0.2s both;
   }
 
@@ -408,13 +401,14 @@ main .etiqueta-titulo {
   }
 }
 
+/* El recorte se pasa 40 px de la caja del trazo para no comerse su punta redonda. */
 @keyframes ciclo-traza {
   from {
-    stroke-dashoffset: 1;
+    clip-path: inset(-40px 100% -40px -40px);
   }
 
   to {
-    stroke-dashoffset: 0;
+    clip-path: inset(-40px);
   }
 }
 
@@ -448,8 +442,15 @@ main .etiqueta-titulo {
     max-width: 38rem;
   }
 
-  .confirmada .acta-formulario {
-    order: 0;
+  /* Recepción confirmada (usuario, 2026-11-03): lo asentado a la izquierda y la etiqueta con el
+     tramo a la derecha, para que se lea en el mismo orden en que se ve. */
+  .confirmada .acta {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+  }
+
+  .confirmada .acta-entrega {
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 
   /* El acta por completar, en dos filas de dos columnas (A/B de la review de Sofía, 2026-11-02):

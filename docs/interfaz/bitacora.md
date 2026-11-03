@@ -27,6 +27,26 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-03 · layout:recepcion-confirmada (Raíces) · Lo nuevo primero y la raíz con su grosor
+
+- **Decisión:** dos arreglos en Recepción confirmada.
+  - **El orden:** lo asentado y la entrega que sigue van primero también en el código, no solo en
+    pantalla; después, la etiqueta, el último tramo y los botones al final. En pantalla grande,
+    lo asentado pasa a la izquierda y la etiqueta con el tramo, a la derecha.
+  - **El grosor:** la raíz grande tiene el mismo grosor que las líneas de Seguir entregas en
+    cualquier ancho. El trazado al confirmar se revela de izquierda a derecha.
+- **Alternativas:** para el orden, el del acta (la etiqueta y el tramo primero, lo asentado más
+  abajo en el celular). Para el grosor, que crezca con tope, o dejarlo como estaba.
+- **Por qué:** en el celular se veía primero lo asentado, pero el lector de pantalla y el teclado
+  empezaban por la etiqueta, que estaba antes en el código (WCAG 1.3.2 y 2.4.3). La raíz engordaba
+  con la pantalla (unos 3 px en el celular y 17 en la computadora) y no hablaba igual que las otras
+  líneas de subte.
+- **Costo:** en pantalla grande, Recepción confirmada ya no tiene la etiqueta a la izquierda como
+  el acta de Confirmar recepción. El enlace a los textos legales, que figuraba pendiente, ya estaba
+  resuelto: el pie de todas las páginas lleva "Términos y privacidad".
+- **Quién decidió:** usuario (las dos, con la opción recomendada).
+- **Evidencia:** `evidencia/raices/recepcion-confirmada/`.
+
 ### 2026-11-03 · proceso · Una sola identidad: Raíces es el sitio y se retiran Glassmorphism y Cozy / Medieval
 
 - **Decisión:** el cliente liviano queda con una sola identidad, Raíces, servida en `/` (la portada)

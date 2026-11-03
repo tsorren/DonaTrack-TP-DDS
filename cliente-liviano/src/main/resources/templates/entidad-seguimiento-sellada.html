@@ -51,8 +51,8 @@
           <path class="dibujo-tallo" d="M80 70V38"/>
           <path class="dibujo-hoja" d="M80 52C66 52 58 42 58 32C72 32 80 42 80 52ZM80 44C92 44 102 36 102 26C88 26 80 34 80 44Z"/>
           <text class="dibujo-rotulo dibujo-rotulo--papel" x="112" y="60">Depósito Central</text>
-          <path class="subte-borde" pathLength="1" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
-          <path class="subte-linea ciclo-trazo" pathLength="1" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
+          <path class="subte-borde" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
+          <path class="subte-linea ciclo-trazo" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
           <g transform="translate(260 150)"><circle class="sello-hecho" r="10"/><path class="sello-calado sello-calado--fino" d="M-4 0.5L-1 3.5L4.5 -3"/></g>
           <g transform="translate(430 150)"><circle class="sello-hecho" r="10"/><path class="sello-calado sello-calado--fino" d="M-4 0.5L-1 3.5L4.5 -3"/></g>
           <g class="ciclo-entidad" transform="translate(620 150)">
@@ -65,40 +65,10 @@
         </svg>
       </figure>
 
+      <!--/* Lo nuevo primero, en el código y en pantalla (usuario, 2026-11-03): lo asentado y la
+             entrega que sigue, después la etiqueta y el tramo, y al final los botones. En pantalla
+             grande, la etiqueta pasa a la columna de la derecha. */-->
       <div class="acta">
-        <div class="acta-entrega">
-          <section class="etiqueta" aria-labelledby="etiqueta-titulo">
-            <h2 id="etiqueta-titulo" class="etiqueta-titulo">
-              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
-              </svg>
-              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
-            </h2>
-            <dl>
-              <div>
-                <dt>Para tu pedido</dt>
-                <dd th:text="${e.pedido}">Lentejas secas, 40 kg, hasta el 31 de octubre.</dd>
-              </div>
-              <div>
-                <dt>Donó</dt>
-                <dd th:with="cat=${escenario == 'sin-categoria' ? null : e['donoCategoria']},
-                            empresa=${e['donoTipo'] == 'empresa'}"
-                    th:text="${e.dono ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)}">Distribuidora Ejemplo SA</dd>
-              </div>
-              <div>
-                <dt>Desde</dt>
-                <dd>Depósito Central</dd>
-              </div>
-            </dl>
-          </section>
-          <svg th:replace="~{iconos :: categorias}"></svg>
-
-          <section class="tramo-seccion" aria-labelledby="tramo-titulo">
-            <h2 id="tramo-titulo">El último tramo</h2>
-            <ol th:replace="~{entidad-seguimiento-confirmar :: tramo(true)}"></ol>
-          </section>
-        </div>
-
         <div class="acta-formulario">
           <section class="asentado" aria-labelledby="asentado-titulo">
             <h2 id="asentado-titulo">Lo que quedó asentado</h2>
@@ -132,13 +102,46 @@
           </section>
           <p th:unless="${e.clave == 'lentejas'}" class="siguiente-ninguna">
             No te quedan entregas para confirmar.</p>
+        </div>
 
-          <div class="acciones">
-            <a class="boton boton--secundario" href="/entidad-inicio"
-               th:href="@{/entidad-inicio}">Volver al inicio</a>
-            <a class="boton boton--secundario" href="/entidad-seguimiento"
-               th:href="@{/entidad-seguimiento}">Seguir entregas</a>
-          </div>
+        <div class="acta-entrega">
+          <section class="etiqueta" aria-labelledby="etiqueta-titulo">
+            <h2 id="etiqueta-titulo" class="etiqueta-titulo">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
+              </svg>
+              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
+            </h2>
+            <dl>
+              <div>
+                <dt>Para tu pedido</dt>
+                <dd th:text="${e.pedido}">Lentejas secas, 40 kg, hasta el 31 de octubre.</dd>
+              </div>
+              <div>
+                <dt>Donó</dt>
+                <dd th:with="cat=${escenario == 'sin-categoria' ? null : e['donoCategoria']},
+                            empresa=${e['donoTipo'] == 'empresa'}"
+                    th:text="${e.dono ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)}">Distribuidora Ejemplo SA</dd>
+              </div>
+              <div>
+                <dt>Desde</dt>
+                <dd>Depósito Central</dd>
+              </div>
+            </dl>
+          </section>
+          <svg th:replace="~{iconos :: categorias}"></svg>
+
+          <section class="tramo-seccion" aria-labelledby="tramo-titulo">
+            <h2 id="tramo-titulo">El último tramo</h2>
+            <ol th:replace="~{entidad-seguimiento-confirmar :: tramo(true)}"></ol>
+          </section>
+        </div>
+
+        <div class="acciones">
+          <a class="boton boton--secundario" href="/entidad-inicio"
+             th:href="@{/entidad-inicio}">Volver al inicio</a>
+          <a class="boton boton--secundario" href="/entidad-seguimiento"
+             th:href="@{/entidad-seguimiento}">Seguir entregas</a>
         </div>
       </div>
     </th:block>

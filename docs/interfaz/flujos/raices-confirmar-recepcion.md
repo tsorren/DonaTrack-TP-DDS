@@ -6,7 +6,9 @@
 > entregas.
 > **Ajustada:** 2026-11-02, con la review de Sofía Deane (el acta en dos filas de dos columnas, el
 > botón de las fotos centrado y la categoría del ranking con el nombre oculto; bitácora, "La review
-> de la diseñadora, decidida").
+> de la diseñadora, decidida"). 2026-11-03: Recepción confirmada se lee en el orden en que se ve y
+> la raíz grande tiene el grosor de las otras líneas (bitácora, "Lo nuevo primero y la raíz con su
+> grosor").
 > Plantilla de la skill `ux-flujo`. Es la tercera pantalla de Raíces y la primera de la entidad, en el sitio
 > ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/entidad-seguimiento-confirmar`. Mantiene los datos, los campos y las acciones del primer
@@ -138,12 +140,16 @@ celular, el dispositivo principal:
 - **El pie:** quién firma y cuándo, el botón, qué pasa al confirmar y el enlace al problema.
 - **Recepción confirmada:** la misma raíz, ahora completa: la línea llega impresa hasta la
   estación de tu entidad, con su sello y la hora. Debajo, lo que quedó asentado (remito, quién y
-  cuándo), cómo va la necesidad ("25 de 40 kg recibidos") y que le avisamos a quien donó. Después, la otra entrega que espera en la puerta, si hay, y las salidas.
+  cuándo), cómo va la necesidad ("25 de 40 kg recibidos") y que le avisamos a quien donó. Después, la otra entrega que espera en la puerta, si hay, la etiqueta con el último tramo y las salidas.
 
 En pantalla grande, el acta va en dos filas de dos columnas: arriba, la etiqueta y el último tramo
 lado a lado; abajo, las pruebas a la izquierda y lo que recibiste con el pie a la derecha (review
 de Sofía, 2026-11-02; antes, A/B 1: la etiqueta y el tramo a la izquierda, quietos mientras se
-baja). Recepción confirmada sigue en dos columnas. El botón de las fotos va centrado en su zona.
+baja). Recepción confirmada sigue en dos columnas, pero al revés (usuario, 2026-11-03): lo
+asentado y la entrega que sigue a la izquierda, y la etiqueta con el último tramo a la derecha. En
+el celular y en el código van en el mismo orden: lo asentado, la que sigue, la etiqueta, el tramo
+y los botones al final, para que el lector de pantalla y el teclado recorran lo mismo que se ve.
+El botón de las fotos va centrado en su zona.
 
 Qué cambia respecto del boceto de E1, y por qué:
 
@@ -205,7 +211,7 @@ publicadas del primer prototipo (lentejas: 10 de 40 kg; ropa: 5 de 30 unidades, 
 | Qué pasa al confirmar | "Al confirmar, la entrega queda como entregada y quien donó recibe el aviso." | El del primer prototipo |
 | Problema | "Llegó con un problema" (enlace) | Usuario, 2026-11-01 |
 | Confirmada: título | "Recepción *confirmada*" | |
-| Confirmada: bajada | "Confirmaste la recepción de Lentejas secas, 15 kg, hoy a las 18:45. Llegaron hoy a las 18:20." | Ropa: "… Ropa de abrigo, 10 unidades, hoy a las 18:50. Llegó ayer a las 17:10." El hecho, con sus dos horas; sin el efecto social (tono). En el celular, lo asentado y la siguiente van antes que la etiqueta |
+| Confirmada: bajada | "Confirmaste la recepción de Lentejas secas, 15 kg, hoy a las 18:45. Llegaron hoy a las 18:20." | Ropa: "… Ropa de abrigo, 10 unidades, hoy a las 18:50. Llegó ayer a las 17:10." El hecho, con sus dos horas; sin el efecto social (tono). Lo asentado y la siguiente van antes que la etiqueta, en pantalla y en el código |
 | Confirmada: lo asentado | "Remito" 0001-00004521 · "Recibió" Marta, por Comedor Barrio Ejemplo · "Cuándo" 15 de octubre de 2026, 18:45 | Los del primer prototipo |
 | Confirmada: la necesidad | "Tu pedido de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre." | Ropa: "Tu pedido de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre." Cifra con período |
 | Confirmada: quien donó | "Le avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha." | Ropa: "Le avisamos a quien donó, con tus fotos y la fecha." No afirma que ya lo leyó (HB-09) |
@@ -310,6 +316,9 @@ Partes que se deciden con A/B, en este orden:
 3. Cómo se cierra el ciclo en Recepción confirmada. **Decidido (usuario, 2026-11-01):** la raíz
    completa, grande, arriba: del brote del depósito a la estación de tu entidad, que se traza una
    vez al confirmar (bitácora, "Recepción confirmada: la raíz completa llega a tu entidad").
+   **Ajustado (usuario, 2026-11-03):** la línea tiene el mismo grosor que las de Seguir entregas
+   en cualquier ancho (antes engordaba con la pantalla: unos 3 px en el celular y 17 en la
+   computadora) y se traza revelándose de izquierda a derecha.
 
 Preguntas abiertas que el grupo respondió y el usuario decidió (2026-11-02, artifact de
 preguntas abiertas; bitácora, "Las preguntas abiertas de Raíces, decididas"):
