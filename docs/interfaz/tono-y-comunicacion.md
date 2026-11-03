@@ -7,13 +7,12 @@
 > equipo saca una versión nueva del brief, se actualiza este archivo y nada más. Lo marcado
 > *(extensión)* no está en el brief: lo agrega este documento para llevarlo a las pantallas.
 
-Rige a **todas las alternativas de identidad** (Glassmorphism, Cozy / Medieval y Raíces). Cada una
-elige su metáfora, su arte, su paleta, su letra y su estilo; el significado que transmite es el
-mismo.
+Rige a **todo el sitio**, con cualquier identidad visual: la identidad elige su metáfora, su arte,
+su paleta, su letra y su estilo; el significado que transmite es el mismo.
 
 ## Qué fija y qué deja libre
 
-| Fija (igual en todas) | Libre (lo elige cada alternativa) |
+| Fija (igual con cualquier identidad) | Libre (lo elige la identidad) |
 |---|---|
 | Propósito, audiencias y promesa | La metáfora visual (camino, mapa, raíces…) |
 | Personalidad verbal, voz y tono por contexto | La dirección de arte, la paleta y la letra |
@@ -134,14 +133,12 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
 El brief no habla del juego; esta regla aplica a él sus principios ("sin presionar", "no
 comparamos sin criterios claros", "no somos triunfalistas"). El juego (insignias, metas, misiones) celebra **hechos confirmados**: una entrega confirmada, una
 meta cumplida. No presiona ("te faltan 2, no aflojes"), no compara personas sin criterio y no
-convierte la donación en una competencia. Cada alternativa decide cuánto juego muestra.
+convierte la donación en una competencia. La identidad decide cuánto juego muestra.
 
-## La voz propia de cada alternativa
+## La voz propia de la identidad
 
-Cada alternativa puede decir a su modo los títulos y los rótulos (su tabla de voz,
-[`cliente-liviano/AGENTS.md`](../../cliente-liviano/AGENTS.md#reglas-de-plantillas)). La metáfora va
-ahí. **Estados, cifras, acciones y errores no se adornan:** dicen lo mismo, con las mismas palabras
-claras, en todas las alternativas. Una metáfora que promete algo ("echa raíces", "llega a destino")
+La identidad puede decir a su modo los títulos y los rótulos. La metáfora va ahí. **Estados, cifras, acciones y errores no se adornan:** dicen lo mismo, con las mismas palabras
+claras, con cualquier identidad. Una metáfora que promete algo ("echa raíces", "llega a destino")
 va acompañada de un texto que dice qué se puede comprobar.
 
 ## Llamados a la acción de referencia

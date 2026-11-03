@@ -42,7 +42,7 @@ description: >-
 | U4 Identidad | Solo tokens de uso; coherencia con el brief; una audacia por pantalla; nada de "Lo que evitamos" | Colores sueltos, o una pantalla que podría ser de cualquier producto |
 | U5 Textos y tono | Reglas de textos; acciones con verbo y resultado; errores que dicen cómo seguir; el [tono común](../../../docs/interfaz/tono-y-comunicacion.md): tono del momento, estados como son, cifras con período y fecha, personas por su rol, el filtro de 7 preguntas | "Error" sin explicación, botones "Aceptar", un paso pendiente que se lee cumplido, una cifra sin período, urgencia o culpa |
 | U6 Estados y avisos | Todos los estados de la ficha; aviso adecuado; espera de más de 300 ms con indicador | Falta el estado vacío o el de error del servidor |
-| U7 Arquitectura | Controller sin lógica, sin dominio, sin `common-lib`; funciona sin JS; fragmento + `/estilos` | Un `hx-post` sin `action` real |
+| U7 Arquitectura | Controller sin lógica, sin dominio, sin `common-lib`; funciona sin JS; piezas compartidas reutilizadas | Un `hx-post` sin `action` real |
 | U8 Requerimientos | Criterio de aceptación del RF; navegación de 3 niveles o menos; desvíos del boceto anotados en la bitácora | Un criterio del RF que no se cumple |
 | U9 Lenguaje llano | Lo que ve el usuario del proceso (preguntas, resúmenes, A/B): una decisión por pregunta, 3 o menos por ronda, sin jerga | Una pregunta con dos decisiones o con jerga técnica |
 

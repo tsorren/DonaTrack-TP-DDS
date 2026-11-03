@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<!--/* Una pantalla del menú que todavía no está dibujada (decisión del usuario, 2026-11-01): dice
+       qué falta. SitioController la muestra para toda pantalla de una sección del menú sin
+       plantilla. "Llegó con un problema" de la entidad vuelve a su entrega con ?entrega=. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'privado', ~{::contenido})}">
+<head>
+  <title th:text="|${seccion} - DonaTrack|">Sección - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="sin-dibujar">
+    <p class="rotulo" th:text="${seccion}">Sección</p>
+    <h1>Esta pantalla todavía no está dibujada.</h1>
+    <a th:if="${seccion == 'Seguir entregas' and param.entrega != null}" class="boton boton--secundario"
+       href="/entidad-seguimiento-confirmar?entrega=lentejas"
+       th:href="@{/entidad-seguimiento-confirmar(entrega=${param.entrega[0]})}">
+      Volver a la entrega</a>
+  </div>
+</th:block>
+</body>
+</html>

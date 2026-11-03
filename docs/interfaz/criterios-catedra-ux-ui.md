@@ -103,8 +103,8 @@ arquitectura de la información (82). Sus 8 principios (84–106):
 - **Sistema de diseño:** normas, componentes y patrones reutilizables para diseñar a escala (118).
   **Atomic Design** lo ordena en átomos (botón, ícono), moléculas (campo con su etiqueta y su
   botón), organismos (encabezado), plantillas y páginas con contenido real (120–133). En DonaTrack:
-  tokens y fragmentos son átomos y moléculas; `layout` y `layout-privado`, organismos y plantillas;
-  el catálogo `/estilos` muestra el sistema.
+  los tokens y las piezas compartidas (`iconos`, `pie`, `navegacion-publica`) son átomos y
+  moléculas; `layout-publico` y `layout-privado`, organismos y plantillas.
 
 ## 8. Lenguaje visual
 

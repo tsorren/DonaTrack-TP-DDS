@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /** Perfil {@code maqueta}: datos de ejemplo, escenarios y variantes A/B para diseñar. */
@@ -23,16 +22,5 @@ class MaquetaConfig implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(
         new VariantesInterceptor(ResourcePatternUtils.getResourcePatternResolver(recursos)));
-  }
-
-  @Override
-  public void addViewControllers(ViewControllerRegistry registry) {
-    // ponytail: el inicio lleva al catálogo hasta que exista la primera pantalla real.
-    registry.addRedirectViewController("/", "/estilos");
-    // Lo que el layout privado enlaza fuera del menú lleva al prototipo del flujo de Cozy,
-    // hasta que existan esas pantallas (PrototipoController).
-    registry.addRedirectViewController("/notificaciones", "/prototipo/donante-cartas");
-    registry.addRedirectViewController("/perfil", "/prototipo/donante-perfil");
-    registry.addRedirectViewController("/salir", "/prototipo/publico-portada");
   }
 }

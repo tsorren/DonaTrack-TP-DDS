@@ -3,8 +3,8 @@
 > **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
 > preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
 > Plantilla de la skill `ux-flujo`. Ficha escrita para los dos sitios de la corrida A/B de Raíces:
-> quedó A, en `/prototipo/raices/<pantalla>` (B se borró al elegir A, 2026-11-03)
-> ([ADR propuesto de Raíces](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+> quedó A, en `/<pantalla>` (B se borró al elegir A, 2026-11-03)
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 > Fija para quién es, el recorrido, los estados, los textos, los datos y las salidas. **No fija la
 > composición ni la navegación visual:** eso lo decide cada sitio. Las dos pantallas de la entidad
 > ya aprobadas ([Necesidades](raices-necesidades.md) y
@@ -34,15 +34,14 @@ Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-
 | `entidad-inicio` | 1 | Desde `publico-ingresar` (la maqueta entra con la cuenta de ejemplo de la entidad) y desde el menú |
 | `entidad-necesidades` (aprobada) | 2 | Menú e Inicio |
 | `entidad-recibidas` | 2 | Menú ("Donaciones recibidas") e Inicio |
-| `entidad-seguimiento` | 2 | Menú. **Sin dibujar** en esta corrida: cae en `sin-dibujar`, con el enlace a Cozy |
+| `entidad-seguimiento` | 2 | Menú. **Sin dibujar** en esta corrida: cae en `sin-dibujar` |
 | `entidad-seguimiento-confirmar` (aprobada) | 3 | Desde Inicio, Donaciones recibidas, Necesidades y Notificaciones, con `?entrega=lentejas` o `ropa` |
-| `entidad-notificaciones` | 2 | Desde las pantallas privadas de la entidad (dónde va el acceso lo decide cada sitio; no es una sección del menú, como en Cozy; en A no va en las aprobadas, Necesidades y Confirmar recepción) y desde Inicio |
+| `entidad-notificaciones` | 2 | Desde las pantallas privadas de la entidad (dónde va el acceso lo decide cada sitio; no es una sección del menú, como en el primer prototipo; en A no va en las aprobadas, Necesidades y Confirmar recepción) y desde Inicio |
 | `entidad-perfil` | 2 | El enlace "Mi perfil" de la estructura privada. Sin dibujar para la entidad |
 
 Rol Admin: `admin-inicio` (nivel 1), desde `publico-ingresar` con la cuenta de ejemplo del admin.
 Sus secciones (Donantes, Entidades, Donaciones, Asignar donaciones, Camiones y Ranking) caen en
-`sin-dibujar`; las que Cozy dibujó (`admin-entidades`, `admin-donaciones`, `admin-asignaciones`)
-llevan su enlace a Cozy.
+`sin-dibujar`.
 
 "Salir", en las dos, lleva a `publico-portada`.
 
@@ -77,9 +76,9 @@ Recorrido del admin (solo su inicio):
 ```mermaid
 flowchart TD
   ingresar([publico-ingresar, cuenta del admin]) --> inicio[admin-inicio]
-  inicio -->|Revisar entidades| ent[admin-entidades: sin dibujar, enlace a Cozy]
-  inicio -->|Ver las que vencen| don[admin-donaciones?vence=pronto: sin dibujar, enlace a Cozy]
-  inicio -->|Revisar propuestas| asig[admin-asignaciones: sin dibujar, enlace a Cozy]
+  inicio -->|Revisar entidades| ent[admin-entidades: sin dibujar]
+  inicio -->|Ver las que vencen| don[admin-donaciones?vence=pronto: sin dibujar]
+  inicio -->|Revisar propuestas| asig[admin-asignaciones: sin dibujar]
   inicio -->|Ver camiones| cam[admin-camiones: sin dibujar]
   inicio -->|no cargó| error[No pudimos cargar tu inicio]
   error -->|Volver a cargar| inicio
@@ -110,7 +109,7 @@ Desvíos considerados:
 
 Esquemas de contenido, no de composición: dicen qué partes hay y en qué orden de importancia. La
 disposición, el dibujo y la navegación los elige cada sitio, con la identidad de Raíces
-([brief](../identidad/brief-raices.md)): como mucho una imagen de raíz por pantalla, en el título;
+([brief](../identidad/brief.md)): como mucho una imagen de raíz por pantalla, en el título;
 nunca en botones, datos ni errores.
 
 ### 4.1 `entidad-inicio`
@@ -251,7 +250,7 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
   Ver donaciones · Ver camiones
 ```
 
-- Sin audacia de más: es la mesa de trabajo de quien decide (la de Cozy, sobria). Las cifras van
+- Sin audacia de más: es la mesa de trabajo de quien decide (la del primer prototipo, sobria). Las cifras van
   sin gráficos y con su fecha.
 - Cada bloque de decisión lleva a su lista: `admin-entidades`, `admin-donaciones?vence=pronto` y
   `admin-asignaciones`; las cifras, a `admin-donaciones` y `admin-camiones`. Todas caen en
@@ -306,7 +305,7 @@ a las 18:20 ([Confirmar recepción](raices-confirmar-recepcion.md)). Las lenteja
 misma entrega en dos momentos: salen del depósito a las 14:30, el donante las ve en camino a las
 16:25 y la entidad las tiene en la puerta a las 18:30. Sintéticos,
 coherentes con [Necesidades](raices-necesidades.md), [Confirmar recepción](raices-confirmar-recepcion.md)
-y la portada de Raíces. `EstilosController.datosDeEjemplo` no trae datos de la entidad ni del admin
+y la portada de Raíces. `SitioController` no trae datos de la entidad ni del admin
 (sus entregas son de mayo y del catálogo): las plantillas escriben estos, como hacen las aprobadas.
 
 Donaciones asignadas al Comedor Barrio Ejemplo (11):
@@ -329,7 +328,7 @@ Las cifras cierran con Necesidades: lentejas 10 de 40 kg, arroz 15 de 40 kg, rop
 unidades, leche 12 de 24 unidades, aceite 0 de 20 litros. Los fideos del 5 de octubre no cubren
 ningún pedido vigente (el de fideos secos se publica en la maqueta de Necesidades): la tarjeta no
 lleva la línea del pedido. **Coherencia con el grupo donante:** lo que donó Distribuidora Ejemplo SA
-sale de una sola fuente, `prototipo/cozy-medieval/viaje-datos.html` (la de Seguimiento y Mis
+sale de una sola fuente, `viaje-datos.html` (la de Seguimiento y Mis
 donaciones). Al Comedor Barrio Ejemplo le llegan dos de sus donaciones: las lentejas de 15 kg (en la
 puerta) y los fideos de 8 kg (recibidos el 5 de octubre, su "primera entrega confirmada" en el
 inicio del donante). Las demás de esta tabla son de otros donantes.
@@ -350,7 +349,7 @@ Notificaciones (3 sin leer, 3 leídas), de la más nueva a la más vieja:
 | Asignada | 13 de octubre, 10:05 | "Se asignó a tu pedido de leche en polvo una donación de 12 unidades. Sale del depósito el 17 de octubre." | "Ver la donación" (`entidad-recibidas?estado=por-salir`) | Sí |
 | Llegó a tu puerta | 10 de octubre, 11:05 | "Lentejas secas, 10 kg, llegó a tu puerta." · "Confirmaste la recepción el 10 de octubre." | "Ver la donación" (`entidad-recibidas?estado=recibidas`) | Sí |
 
-Admin: los de Cozy (`cozy-medieval/admin-inicio.html`), con "latas" pasadas a "unidades" (la
+Admin: los del primer prototipo del inicio del admin, con "latas" pasadas a "unidades" (la
 unidad sale del catálogo, como en Necesidades), las entidades activas igualadas a la portada de
 Raíces (46) y las entregas confirmadas de octubre igualadas a las de la ficha pública (9 entre el 1
 y el 15 de octubre). Las tres entidades que piden sumarse no son ninguna de las activas de las
@@ -363,7 +362,7 @@ otras fichas. Ver el esquema 4.4.
 | Rótulo (entidad-inicio) | Inicio | El nombre del menú |
 | Saludo | "Hola, Marta" · "Comedor Barrio Ejemplo · jueves 15 de octubre de 2026" | La cuenta de ejemplo del controlador |
 | Novedades | "3 novedades sin leer" (enlace a Notificaciones) | Sin rojo ni signo de exclamación: es un dato |
-| En tu puerta | Título "En tu puerta" · "2 entregas esperan tu confirmación." · por entrega: "Lentejas secas · 15 kg" · "Llegó hoy, 18:20, desde el Depósito Central. Para tu pedido de lentejas secas." · "Confirmar recepción" (nombre accesible: "Confirmar recepción: lentejas secas") | El texto de Cozy y de Confirmar recepción |
+| En tu puerta | Título "En tu puerta" · "2 entregas esperan tu confirmación." · por entrega: "Lentejas secas · 15 kg" · "Llegó hoy, 18:20, desde el Depósito Central. Para tu pedido de lentejas secas." · "Confirmar recepción" (nombre accesible: "Confirmar recepción: lentejas secas") | El texto del primer prototipo y de Confirmar recepción |
 | Lo que viene | Título "Lo que viene" · "3 entregas asignadas que todavía no llegaron." · una línea por entrega con su sello y su próximo paso · "Ver todas en Donaciones recibidas" · "Seguir entregas" | "Lo que viene", no "lo que llega": la del aceite no pudo llegar |
 | Tus pedidos | Título "Tus pedidos" · "5 necesidades vigentes." · un renglón por pedido · "Ver tus necesidades" · "Publicar otra necesidad" (a `entidad-necesidades`) | Cifras con período ("octubre, hasta el 31") |
 | Lo recibido | Título "Lo recibido en octubre" · "6 donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30." · "Ver las recibidas" (a `entidad-recibidas?estado=recibidas`) | Resultado registrado, con período y fuente; no dice nada del efecto |
@@ -459,10 +458,10 @@ Decisiones tomadas (agente, en la corrida A/B; aprobadas al elegir el sitio A, 2
 - La recepción de RF-13 se muestra como "Llegó a tu puerta" (el evento `EventoDonacionRecibidaDTO`),
   con el botón para confirmar mientras espera. La bandeja suma "en camino" y "con problema", que
   el contrato ya trae para la entidad.
-- Notificaciones no es una sección del menú (como en Cozy); se llega desde las pantallas
+- Notificaciones no es una sección del menú (como en el primer prototipo); se llega desde las pantallas
   privadas y desde Inicio. Dónde va el acceso lo decide cada sitio. En A no va en las dos
   aprobadas (Necesidades y Confirmar recepción), que A no toca; ahí se llega por el menú (Inicio).
-- El admin solo tiene inicio, con los datos de Cozy; sus secciones caen en `sin-dibujar`.
+- El admin solo tiene inicio, con los datos del primer prototipo; sus secciones caen en `sin-dibujar`.
 - Datos nuevos de maqueta: Almacén Ejemplo SRL como donante sintético de cuatro entregas (arroz en
   camino, aceite con problema, y lentejas y arroz recibidos), y la donación de fideos del 5 de
   octubre (de Distribuidora Ejemplo SA, la de la portada) sin pedido vigente.

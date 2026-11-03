@@ -427,9 +427,9 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 | ADR | [20261030-verificacion-visual-con-playwright-y-axe](./cliente-liviano/20261030-verificacion-visual-con-playwright-y-axe.md) |
 | ADR complementario | [20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas](./cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `VerificacionVisualTest` (axe AA, toque de 48 px, desbordes y capturas) corre solo con `mvn test -pl cliente-liviano -Pvisual`. El CI (`main.yml`, job `build-and-test`) corre `mvn clean verify -pl cliente-liviano -am` sin el perfil, así que no la ejecuta. En el CI corre `InterfazFitnessTest` (tokens, colores, quiebres, catálogo y contraste) |
+| Implementation status | `[OBSERVED] deferred` — `VerificacionVisualTest` (axe AA, toque de 48 px, desbordes y capturas) corre solo con `mvn test -pl cliente-liviano -Pvisual`. El CI (`main.yml`, job `build-and-test`) corre `mvn clean verify -pl cliente-liviano -am` sin el perfil, así que no la ejecuta. En el CI corre `InterfazFitnessTest` (tokens, colores, quiebres y contraste) |
 | Target | `.github/workflows/main.yml` (un job o paso con `-Pvisual` y caché de los navegadores de Playwright) · `cliente-liviano/pom.xml` |
-| Cuándo se saldará | Antes del cierre de E6, cuando haya pantallas reales además del catálogo `/estilos`. Hasta entonces, cada flujo la corre a mano (skill `vista-ui`) |
+| Cuándo se saldará | Antes del cierre de E6. Hasta entonces, cada flujo la corre a mano (skill `vista-ui`) |
 
 1. **Riesgo:** un PR puede romper la accesibilidad, el toque o el responsive sin que el CI lo note.
 2. **Costo de saldarla:** el job baja unos 200 MB de driver más Chromium; con caché, es una vez por versión de Playwright.

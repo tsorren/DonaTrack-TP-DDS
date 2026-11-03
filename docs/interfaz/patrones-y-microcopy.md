@@ -5,7 +5,7 @@
 
 Cubre RNF-UI-01 a RNF-UI-06 de [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md).
 La cátedra pide **patrones** conocidos (Material Design, Human Interface Guidelines), no una
-librería: cada componente del catálogo `/estilos` cita el patrón que sigue.
+librería: cada componente cita, en su ficha de flujo, el patrón que sigue.
 
 ## Componentes y su patrón
 
@@ -50,7 +50,7 @@ librería: cada componente del catálogo `/estilos` cita el patrón que sigue.
 ## Voz y tono
 
 La voz, el tono de cada pantalla, los nombres de los estados, las cifras y cómo se habla de las
-personas están en [tono y comunicación](tono-y-comunicacion.md), común a todas las alternativas. En
+personas están en [tono y comunicación](tono-y-comunicacion.md), común a todo el sitio. En
 resumen:
 
 - **Voseo**, como en los bocetos ("Sumate", "Podés").

@@ -3,8 +3,8 @@
 > **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
 > preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
 > Plantilla de la skill `ux-flujo`. Ficha escrita para los dos sitios de la corrida A/B de Raíces:
-> quedó A, en `/prototipo/raices/<pantalla>` (B se borró al elegir A, 2026-11-03)
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+> quedó A, en `/<pantalla>` (B se borró al elegir A, 2026-11-03)
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 > Fija para quién es, el recorrido, los estados, los textos, los datos y los enlaces de salida.
 > **No fija la composición ni la navegación visual:** eso lo decide cada sitio.
 > Pantallas nuevas: `publico-donaciones`, `publico-mapa`, `publico-entidades`, `publico-ingresar`,
@@ -22,7 +22,7 @@
 | Qué quiere lograr | "Ver qué llegó y adónde, saber quiénes piden y qué, y entrar o crear mi cuenta para donar o para sumar mi entidad" |
 | Dispositivo principal | Ambos; la computadora primero para la empresa, el celular para la entidad |
 | Requerimientos | RF-01 (destacadas del último mes con su foto, registro y login, legales). RF-02 (mapa de entregadas, detalle por marcador con fecha, categoría y foto; ubicación aproximada, D24). RF-03 (registro: el donante queda operativo al completar el perfil; la entidad, pendiente de aprobación). RF-04 (login de los tres roles; credenciales inválidas, error genérico). RF-22 (entidades activas con necesidades vigentes, sin datos de contacto). RF-AUTH-02 (Continuar con Google), RF-AUTH-05/06, RF-AUTH-13 (recuperar). RNF-AUTH-07 (bloqueo tras varios intentos) y RNF-AUTH-10 (respuestas que no revelan cuentas). RF-CL-06 (lista junto al mapa), RF-CL-07 (cuándo se actualizó). RNF-PRIV-01/03 |
-| Datos que usa | Ninguno existe para lo público todavía: HB-01 (destacadas), HB-02 (contadores), HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `EstilosController.datosDeEjemplo`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
+| Datos que usa | Ninguno existe para lo público todavía: HB-01 (destacadas), HB-02 (contadores), HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `SitioController`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
 | Boceto de E1 | Pág. 2 (Donaciones realizadas: mapa coloreado, galería en mosaico, "Unirse a la comunidad"), pág. 23 (mapas por región, detalle de una donación), pág. 4 (Iniciar sesión), pág. 5 (Registrarse: dos tarjetas) y pág. 11 (Registro de entidad). Entidades y necesidades no tiene boceto (D26) |
 
 ## 2. Dónde está en el sitio
@@ -112,7 +112,7 @@ página de "sin dibujar", así que el paso se dibuja (ver Decisiones).
 ## 4. Pantallas
 
 Cada esquema dice **qué hay y en qué orden de importancia**, no dónde va. La composición, la
-imagen de raíz del título (como mucho una por pantalla, [brief](../identidad/brief-raices.md#voz))
+imagen de raíz del título (como mucho una por pantalla, [brief](../identidad/brief.md#voz))
 y cómo se dibujan el mapa y los filtros los decide cada sitio.
 
 ### 4.1 Entregas confirmadas (`publico-donaciones`)
@@ -265,7 +265,7 @@ Aviso: Si hay una cuenta con ese correo, te mandamos un enlace. · Revisá tu ba
 ```
 
 Se llega desde Ingresar ("¿Olvidaste tu contraseña?" y "Pedir una contraseña nueva", en el error
-de datos y en el de demasiados intentos). Los mismos datos que la de Cozy: un correo y el enlace
+de datos y en el de demasiados intentos). Los mismos datos que la del primer prototipo: un correo y el enlace
 (RF-AUTH-13: enlace de un solo uso con vencimiento; el mecanismo de envío y el plazo dependen de
 D8, pendiente). El aviso de después es neutro: dice lo mismo haya o no una cuenta con ese correo
 (RNF-AUTH-10). Es un formulario real (POST); el aviso es su propia pantalla, como en Contacto. Sin
@@ -329,7 +329,7 @@ su aviso propio antes de enviar; las pantallas `-error` muestran el error que vu
 ## 6. Textos
 
 Los títulos llevan una parte en cursiva (la marca la decide cada sitio). Estados, cifras, acciones
-y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comunicacion.md#la-voz-propia-de-cada-alternativa)).
+y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comunicacion.md#la-voz-propia-de-la-identidad)).
 
 ### 6.1 Por pantalla
 
@@ -457,7 +457,7 @@ Necesidades](raices-necesidades.md), sin el de fideos (lo publica la maqueta de 
 ([ficha del donante](raices-donante-navegable.md)) muestra los mismos pedidos, con las mismas
 cantidades y unidades.
 
-**Cuentas de ejemplo** (Ingresar, de `PrototipoController`):
+**Cuentas de ejemplo** (Ingresar, de `SitioController`):
 
 | Enlace | Lleva a | Cuenta |
 |---|---|---|
@@ -467,7 +467,7 @@ cantidades y unidades.
 
 El botón "Ingresar" y "Continuar con Google" envían el formulario (`post`) a `donante-inicio`; el
 registro de donante, también; el de entidad, a `publico-registro-entidad-enviada`. Las direcciones
-llevan el prefijo del sitio (`/prototipo/raices/`).
+llevan el prefijo del sitio (`/`).
 
 ### 6.4 Filtro de tono
 
@@ -565,9 +565,9 @@ Decisiones tomadas (agente, propuestas; aprobadas con la ficha al elegir el siti
 - **En la maqueta, Ingresar lleva al inicio de cada rol** con su cuenta de ejemplo; el formulario y
   Google, al del donante.
 - **"¿Olvidaste tu contraseña?" lleva a Recuperar la contraseña de cada sitio:** el controlador no
-  muestra "sin dibujar" para lo público y el recorrido no sale a Cozy, así que A y B dibujan el
-  paso (un correo y el aviso que no dice si hay cuenta). Así no hay enlaces muertos ni salidas a
-  Cozy (arreglo de la crítica en B y de la pre-auditoría en A, 2026-11-02).
+  muestra "sin dibujar" para lo público y el recorrido no sale del sitio, así que A y B dibujan el
+  paso (un correo y el aviso que no dice si hay cuenta). Así no hay enlaces muertos ni salidas fuera
+  del sitio (arreglo de la crítica en B y de la pre-auditoría en A, 2026-11-02).
 - **Los estados de carga van con `?escenario=`; los resultados de un envío, en su pantalla** (como
   la portada y Contacto).
 
@@ -592,7 +592,7 @@ Hallazgos, sin corregir en esta ficha:
 - La portada dice "Octubre de 2026 · 3 entregas confirmadas y 1 en camino" en la planta, pero la
   [ficha de Necesidades](raices-necesidades.md) ya registra más entregas recibidas en octubre (y
   esta ficha las muestra). La planta habla de "este mes" sin decir que es una muestra.
-- En el catálogo de `/estilos`, en `viaje-datos` y en Seguimiento del donante (aprobada), la escuela
+- En `viaje-datos` y en Seguimiento del donante (aprobada), la escuela
   se llama "Escuela Ejemplo 12"; en la portada de Raíces, "Escuela Ejemplo N.º 12". Las tres fichas
   de la corrida usan "Escuela Ejemplo N.º 12"; lo demás se iguala al integrar.
 

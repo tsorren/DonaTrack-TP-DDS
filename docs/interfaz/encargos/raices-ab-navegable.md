@@ -10,7 +10,7 @@
 ## 1. Qué se diseña
 
 - **Alternativa:** `raices` (existente, con su brief en
-  [`identidad/brief-raices.md`](../identidad/brief-raices.md)). Se arman dos sitios navegables de la
+  [`identidad/brief-raices.md`](../identidad/brief.md)). Se arman dos sitios navegables de la
   misma alternativa: **A** en `/prototipo/raices/` y **B** en `/prototipo/raices-b/`.
 - **Punto de partida:** rediseño de lo que hay. Las siete pantallas aprobadas de Raíces (portada,
   Seguimiento, Necesidades, Confirmar recepción, Contacto, Legales y Mi perfil) son el punto de
@@ -57,10 +57,10 @@
 
 ## 4. Referencias
 
-Carpeta: [`docs/interfaz/identidad/referencias-raices/`](../identidad/referencias-raices/README.md),
+Carpeta: [`docs/interfaz/identidad/referencias-raices/`](../identidad/referencias/README.md),
 con su README. Son de terceros: se toma el estilo, no se copia nada, y no entran al sitio ni al
 entregable. Además, las pantallas actuales de Raíces (listadas en la sección 1) son la referencia
-interna de oficio, y el [brief de Raíces](../identidad/brief-raices.md) fija el ADN.
+interna de oficio, y el [brief de Raíces](../identidad/brief.md) fija el ADN.
 
 | Referencia | Qué se toma | Qué no |
 |---|---|---|

@@ -3,8 +3,8 @@
 > **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
 > preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
 > Plantilla de la skill `ux-flujo`. Ficha escrita para los dos sitios de la corrida A/B de
-> Raíces; quedó A, en `/prototipo/raices/<pantalla>` (B se borró al elegir A, 2026-11-03)
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+> Raíces; quedó A, en `/<pantalla>` (B se borró al elegir A, 2026-11-03)
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 > Fija para quién es, el recorrido, los estados, los textos, los datos y las salidas. **No fija la
 > composición ni la navegación visual:** eso lo decide cada sitio.
 > Pantallas nuevas: `donante-inicio`, `donante-donaciones`, `donante-donaciones-detalle`,
@@ -21,7 +21,7 @@
 | Qué quiere lograr | "Ver de un vistazo qué donó mi empresa, en qué estado está cada donación, qué está confirmado y a quién le llegó" |
 | Dispositivo principal | Ambos; la computadora primero |
 | Requerimientos | RF-05 (sus donaciones, con filtro por estado y categoría). RF-06 (entidades activas, paginadas, con búsqueda por nombre). RF-07 (sin Incentivos: la cuenta es una empresa). RF-08 (notificaciones de asignación y recepción; las de misión y ascenso no aplican a una empresa). RF-09 (seguimiento, ya aprobado). RF-CL-07 (lo que cambia dice cuándo se actualizó). RF-CL-08 (errores con código para soporte) |
-| Datos que usa | `GET /donaciones-independientes?estado&subcategoriaId&donanteId` (RF-05), `GET /api/entidades` y `GET /api/necesidades` (RF-06), `GET /api/notificaciones/persona/{personaId}` y `PATCH .../marcar-todas-leidas` (RF-08), `GET /api/entregas/seguimiento/donaciones/{id}` (detalle). Huecos: HB-03, HB-08, HB-09, HB-15, HB-16, HB-18, HB-20 y los de la [lista de la corrida](#huecos-de-backend). En la maqueta, las siete donaciones de `prototipo/cozy-medieval/viaje-datos.html` (las mismas de Seguimiento), los estados de `EstilosController.datosDeEjemplo` (`estados`, `pasos`) y `?escenario=` (los valores de `Escenario`) |
+| Datos que usa | `GET /donaciones-independientes?estado&subcategoriaId&donanteId` (RF-05), `GET /api/entidades` y `GET /api/necesidades` (RF-06), `GET /api/notificaciones/persona/{personaId}` y `PATCH .../marcar-todas-leidas` (RF-08), `GET /api/entregas/seguimiento/donaciones/{id}` (detalle). Huecos: HB-03, HB-08, HB-09, HB-15, HB-16, HB-18, HB-20 y los de la [lista de la corrida](#huecos-de-backend). En la maqueta, las siete donaciones de `templates/viaje-datos.html` (las mismas de Seguimiento), los estados de `SitioController` (`estados`, `pasos`) y `?escenario=` (los valores de `Escenario`) |
 | Boceto de E1 | Págs. 15 (inicio), 16 (mis donaciones), 17 (beneficiarios) y 6 (notificaciones) |
 
 ## 2. Dónde está en el sitio
@@ -36,9 +36,9 @@ donante-inicio
  └─ (cuenta) ───────► donante-perfil (2, aprobada)
 ```
 
-- El menú del donante es el de `PrototipoController.deRaices`: Inicio, Mis donaciones, Entidades y
+- El menú del donante es el de `SitioController`: Inicio, Mis donaciones, Entidades y
   Seguimiento. Incentivos no está (RF-07).
-- Notificaciones no es una sección del menú (como en Cozy, donde va en la carta). Se llega desde el
+- Notificaciones no es una sección del menú (como en el primer prototipo, donde va en la carta). Se llega desde el
   inicio ("Ver todas las notificaciones") y desde un acceso fijo en las pantallas del donante,
   con la cantidad sin leer. Dónde va ese acceso lo decide cada sitio. A lo suma a `layout-privado`
   como un agregado, salvo en las dos pantallas aprobadas (Seguimiento y Mi perfil), que A no toca
@@ -148,7 +148,7 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
 ### donante-donaciones-detalle (nivel 3)
 
 `?donacion=<clave>`, con las claves de `viaje-datos`: `arroz`, `leche`, `lentejas`, `utiles`,
-`zapatillas`, `ropa` y `fideos`. Sin parámetro, `lentejas` (la que va en camino), como en Cozy. El
+`zapatillas`, `ropa` y `fideos`. Sin parámetro, `lentejas` (la que va en camino), como en el primer prototipo. El
 menú marca Mis donaciones.
 
 ```text
@@ -166,8 +166,8 @@ menú marca Mis donaciones.
 
 - "Figura como" dice qué nombre ve la entidad (HB-20) y enlaza a Mi perfil, donde se cambia
   ([ficha de Mi perfil](raices-mi-perfil.md)).
-- Qué cambia respecto del boceto: E1 no dibujó el detalle (pág. 16 solo tiene la columna). Toma de
-  Cozy los mismos datos y suma la foto como prueba de lo confirmado, el foco de Raíces.
+- Qué cambia respecto del boceto: E1 no dibujó el detalle (pág. 16 solo tiene la columna). Toma del
+  primer prototipo los mismos datos y suma la foto como prueba de lo confirmado, el foco de Raíces.
 
 ### donante-entidades (nivel 2)
 
@@ -268,7 +268,7 @@ su puerta (llegaron a las 18:20): es la misma entrega, más tarde. Los nombres, 
 etapas y noticias de las donaciones salen de `viaje-datos`, la única fuente de lo que donó la
 empresa (la ficha de la entidad toma de ahí lo que le llega de Distribuidora Ejemplo SA); acá van
 los propios de cada pantalla. Dos textos de `viaje-datos` se muestran distinto, porque el archivo
-lo comparte Cozy y no se toca: la categoría `cat-vestimenta` se muestra "Ropa" (como en las fichas
+venía del primer prototipo y no se toca: la categoría `cat-vestimenta` se muestra "Ropa" (como en las fichas
 pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela Ejemplo N.º 12"
 (como en la portada). Las plantillas nuevas del donante lo escriben así.
 
@@ -338,7 +338,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Sin necesidades | "Hoy no pide nada." | — |
 | Paginado | "Página siguiente" · "Página anterior" | Nombre accesible: "Páginas de entidades" |
 | Cómo donar: título | Cómo llega tu donación | — |
-| Cómo donar | "Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una entidad. Desde que la registran, ves cada paso en Mis donaciones." · "Depósito Central Ejemplo · Calle Ejemplo 1234, Ciudad Ejemplo · Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h" · "Ver Mis donaciones" | RF-15 y RF-17. Los datos del depósito, sintéticos (los de Cozy) |
+| Cómo donar | "Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una entidad. Desde que la registran, ves cada paso en Mis donaciones." · "Depósito Central Ejemplo · Calle Ejemplo 1234, Ciudad Ejemplo · Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h" · "Ver Mis donaciones" | RF-15 y RF-17. Los datos del depósito, sintéticos (los del primer prototipo) |
 
 Entidades de la maqueta (página 1). **Lo que pide cada una sale de una sola tabla:** la de
 "Entidades con pedidos vigentes" de la [ficha pública](raices-publico-navegable.md#63-datos-de-maqueta),
@@ -395,7 +395,7 @@ Filtro de tono:
 - La sección actual del menú lleva `aria-current="page"`; en el detalle, Mis donaciones.
 - Orden del foco: saltar al contenido, la marca, el menú, el acceso a Notificaciones, la cuenta
   (Mi perfil, Salir), y después el contenido en el orden de lectura. En el detalle, "Volver a Mis
-  donaciones" va antes del título en el código, como en Cozy.
+  donaciones" va antes del título en el código, como en el primer prototipo.
 - Cifras: lista de definiciones (`dl`) con nombre ("Lo que está confirmado"); ningún número va
   solo. Si un sitio las dibuja, el dibujo es `aria-hidden` y el texto dice lo mismo.
 - Estados: siempre texto y forma (el sello); el color solo acompaña. "Sin leer" y "Leída", en texto.
@@ -463,7 +463,7 @@ Decisiones tomadas (agente, propuestas; aprobadas al elegir el sitio A, 2026-11-
 Para la integración (no se resuelven acá):
 
 - Nombre de la escuela: las tres fichas de la corrida usan "Escuela Ejemplo N.º 12", el de la
-  portada. `viaje-datos` y Seguimiento (aprobada, compartida con Cozy) siguen diciendo "Escuela
+  portada. `viaje-datos` y Seguimiento (aprobada) siguen diciendo "Escuela
   Ejemplo 12": se igualan al integrar. Lo mismo con la categoría "Vestimenta" de `viaje-datos`,
   que las pantallas nuevas muestran "Ropa".
 - La portada dice "Registrás lo que donás" y RF-15 dice que la registra el admin en el depósito.
@@ -473,7 +473,7 @@ Preguntas abiertas para el usuario (siguen abiertas después de elegir el sitio 
 
 1. "¿La empresa puede elegir a qué entidad o necesidad va lo que dona?" → "No: la elige el admin
    con los algoritmos (RF-17); Entidades solo informa (Recomendada)" · "Sí: un 'Donar' por necesidad,
-   como en Cozy (pide un requerimiento y un hueco nuevos)".
+   como en el primer prototipo (pide un requerimiento y un hueco nuevos)".
 
 ## Huecos de backend
 

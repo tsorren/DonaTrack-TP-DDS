@@ -1,9 +1,9 @@
 # Flujo: Términos y privacidad, y el pie del sitio, en Raíces
 
 > **Estado:** aprobado · **Fecha:** 2026-11-02 · **Aprobó:** usuario (2026-11-02), al ver las pantallas dibujadas
-> Plantilla de la skill `ux-flujo`. Pantalla nueva del prototipo propio de Raíces
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
-> `/prototipo/raices/publico-legales`, y el pie que la enlaza desde todas las páginas. Sale de la
+> Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> `/publico-legales`, y el pie que la enlaza desde todas las páginas. Sale de la
 > pregunta 18 del artifact de preguntas abiertas: enlace en el pie y aceptación al registrarse, con
 > constancia (usuario, 2026-11-02). Sofía Deane pidió sumarlos al menú de la portada y a los
 > ajustes; el usuario los dejó como estaban: en el pie, al registrarse y en la constancia de Mi perfil
@@ -30,8 +30,7 @@ todas las páginas de Raíces y desde Mi perfil.
 públicas, una línea con "Términos y privacidad · Contacto" y la firma del proyecto. En las privadas,
 la misma línea al final del contenido; en el celular, encima de la barra del menú.
 
-**La casilla del registro.** Raíces todavía no dibuja el registro (enlaza al de Cozy). Cuando lo
-dibuje, el paso "Completar perfil" (RI-AUTH-02) lleva, antes del botón, una casilla obligatoria:
+**La casilla del registro.** Cuando se dibuje el registro, el paso "Completar perfil" (RI-AUTH-02) lleva, antes del botón, una casilla obligatoria:
 "Leí y acepto los términos y la política de privacidad (versión 1)", con los dos enlaces. Para un
 donante, encima de la casilla: "Las entidades que reciben lo que donás ven tu nombre. Podés
 ocultarlo cuando quieras en Mi perfil." (lo pide el ADR del nombre visible). Sin marcarla, el

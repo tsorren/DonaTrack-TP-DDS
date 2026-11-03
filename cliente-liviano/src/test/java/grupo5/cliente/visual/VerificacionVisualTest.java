@@ -36,13 +36,12 @@ import tools.jackson.databind.json.JsonMapper;
  * anchos de referencia, saca una captura y exige axe AA sin violaciones, controles de 48 × 48 px o
  * más y nada desbordado; en los anchos intermedios, solo que nada se desborde. En el celular
  * captura además la primera pantalla (360 × 640, {@code <página>-360x640.png}). Sin propiedades,
- * recorre Glassmorphism y cada alternativa de {@code static/css/alternativas/} y las compara. Con
- * {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada variante, sobre la
- * alternativa de {@code -Dverificacion.alternativa=<nombre>} si se indica. Con {@code
- * -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de las de paginas.txt. Resultado en
- * {@code target/capturas/}: PNG, index.html, comparacion.html y reporte.json. Las capturas congelan
- * las animaciones de la página, no las que van dentro de una imagen (el spinner de Pico): para
- * comparar dos corridas, {@code scripts/visual/Imagenes.java comparar} con carpeta de ruido.
+ * recorre el sitio. Con {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada
+ * variante y las compara. Con {@code -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de
+ * las de paginas.txt. Resultado en {@code target/capturas/}: PNG, index.html, comparacion.html y
+ * reporte.json. Las capturas congelan las animaciones de la página, no las que van dentro de una
+ * imagen (el spinner de Pico): para comparar dos corridas, {@code scripts/visual/Imagenes.java
+ * comparar} con carpeta de ruido.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -126,9 +125,8 @@ class VerificacionVisualTest {
 
   private static final Path CSS = Path.of("src/main/resources/static/css");
   private static final Path VARIANTES_CSS = CSS.resolve("variantes");
-  private static final Path ALTERNATIVAS_CSS = CSS.resolve("alternativas");
   private static final Pattern COMENTARIO = Pattern.compile("/\\*(.*?)\\*/", Pattern.DOTALL);
-  private static final String GLASSMORPHISM = "glassmorphism";
+  private static final String SITIO = "sitio";
 
   /**
    * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
@@ -272,33 +270,19 @@ class VerificacionVisualTest {
       }))
       """;
 
-  /**
-   * Lo que se captura en cada pasada: una alternativa de identidad (vacía: Glassmorphism) y una
-   * variante A/B (vacía: ninguna).
-   */
-  private record Opcion(String alternativa, String variante) {
+  /** Lo que se captura en cada pasada: el sitio o una variante A/B (vacía: ninguna). */
+  private record Opcion(String variante) {
 
     String nombre() {
-      if (!variante.isEmpty()) {
-        return variante;
-      }
-      return alternativa.isEmpty() ? GLASSMORPHISM : alternativa;
+      return variante.isEmpty() ? SITIO : variante;
     }
 
     String consulta() {
-      List<String> parametros = new ArrayList<>();
-      if (!alternativa.isEmpty()) {
-        parametros.add("alternativa=" + alternativa);
-      }
-      if (!variante.isEmpty()) {
-        parametros.add("variante=" + variante);
-      }
-      return String.join("&", parametros);
+      return variante.isEmpty() ? "" : "variante=" + variante;
     }
 
     String sufijo() {
-      return (alternativa.isEmpty() ? "" : "--" + alternativa)
-          + (variante.isEmpty() ? "" : "--" + variante);
+      return variante.isEmpty() ? "" : "--" + variante;
     }
   }
 
@@ -459,39 +443,20 @@ class VerificacionVisualTest {
         .toList();
   }
 
-  /**
-   * Con variantes, una pasada por variante sobre la alternativa pedida. Sin variantes, una pasada
-   * por alternativa: Glassmorphism y las de static/css/alternativas/, o solo la pedida.
-   */
-  private static List<Opcion> opciones() throws IOException {
-    String alternativa = System.getProperty("verificacion.alternativa", "").strip();
+  /** Con variantes, una pasada por variante; sin variantes, una pasada por el sitio. */
+  private static List<Opcion> opciones() {
     List<String> variantes =
         Arrays.stream(System.getProperty("verificacion.variantes", "").split(","))
             .map(String::strip)
             .filter(v -> !v.isEmpty())
             .toList();
     if (!variantes.isEmpty()) {
-      return variantes.stream().map(variante -> new Opcion(alternativa, variante)).toList();
+      return variantes.stream().map(Opcion::new).toList();
     }
-    if (!alternativa.isEmpty()) {
-      return List.of(new Opcion(alternativa, ""));
-    }
-    List<Opcion> opciones = new ArrayList<>(List.of(new Opcion("", "")));
-    if (Files.isDirectory(ALTERNATIVAS_CSS)) {
-      try (Stream<Path> carpetas = Files.list(ALTERNATIVAS_CSS)) {
-        carpetas
-            .filter(carpeta -> Files.exists(carpeta.resolve("tokens.css")))
-            .map(carpeta -> carpeta.getFileName().toString())
-            .sorted()
-            .forEach(nombre -> opciones.add(new Opcion(nombre, "")));
-      }
-    }
-    return opciones;
+    return List.of(new Opcion(""));
   }
 
-  /**
-   * {@code <ruta>[--<alternativa>][--<variante>]-<medida>.png}; la medida es el ancho o 360x640.
-   */
+  /** {@code <ruta>[--<variante>]-<medida>.png}; la medida es el ancho o 360x640. */
   private static String nombreDeCaptura(String ruta, Opcion opcion, String medida) {
     String base = ruta.replaceAll("[^A-Za-z0-9]+", "-").replaceAll("^-|-$", "");
     return (base.isEmpty() ? "inicio" : base) + opcion.sufijo() + "-" + medida + ".png";
@@ -535,16 +500,10 @@ class VerificacionVisualTest {
         : "Capturas: " + nombres.get(0);
   }
 
-  /**
-   * Primer comentario del CSS de la variante o, sin variante, del tokens.css de la alternativa, en
-   * una línea; vacío para Glassmorphism o si no hay.
-   */
+  /** Primer comentario del CSS de la variante, en una línea; vacío sin variante o si no hay. */
   private static String descripcion(Opcion opcion) throws IOException {
-    Path css =
-        opcion.variante().isEmpty()
-            ? ALTERNATIVAS_CSS.resolve(opcion.alternativa()).resolve("tokens.css")
-            : VARIANTES_CSS.resolve(opcion.variante() + ".css");
-    if ((opcion.alternativa().isEmpty() && opcion.variante().isEmpty()) || !Files.exists(css)) {
+    Path css = VARIANTES_CSS.resolve(opcion.variante() + ".css");
+    if (opcion.variante().isEmpty() || !Files.exists(css)) {
       return "";
     }
     Matcher comentario = COMENTARIO.matcher(Files.readString(css, StandardCharsets.UTF_8));

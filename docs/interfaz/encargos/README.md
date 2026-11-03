@@ -12,6 +12,6 @@ sin el usuario a partir de él.
 Un encargo es un registro: no se edita después de aprobado. Si el usuario cambia de idea, se arma
 uno nuevo y la bitácora dice cuál reemplaza.
 
-| Encargo | Alternativa | Estado |
+| Encargo | Qué diseñó | Estado |
 |---|---|---|
 | [raices-ab-navegable](raices-ab-navegable.md) | Raíces (sitios A y B navegables) | Aprobado el 2026-11-02; cumplido: el usuario eligió A y B se borró (2026-11-03) |

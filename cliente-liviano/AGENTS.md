@@ -43,47 +43,32 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. |
 | `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
 | `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos |
-| `grupo5.cliente.maqueta` | Adaptadores con datos de ejemplo (perfil `maqueta`) y sus escenarios |
-| `templates/layout.html` | Estructura de las pantallas públicas: encabezado, contenido, pie y región de avisos |
-| `templates/layout-privado.html` | Estructura de las pantallas privadas: barra lateral (barra inferior en el celular), campana, cuenta y región de avisos |
-| `templates/fragmentos/` | Un componente = un fragmento parametrizado |
-| `templates/paginas/` | Una vista por pantalla |
-| `templates/alternativas/<nombre>/` | El juego completo de plantillas de otra alternativa (hoy, `cozy-medieval`): su `layout.html`, `layout-privado.html`, `fragmentos/` y `paginas/`, con la misma estructura de carpetas que `templates/`. En la maqueta, `?alternativa=<nombre>` lo elige |
-| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre de la Alternativa Glassmorphism, la que se ve por defecto |
-| `static/css/app.css` | Estilos de componentes y pantallas de Glassmorphism, solo con tokens de uso |
-| `static/css/alternativas/<nombre>/` | Los estilos de esa alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`) |
+| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/` es la portada; `/<pantalla>` muestra `templates/<pantalla>.html`, y una sección del menú sin plantilla, `sin-dibujar`), los escenarios y las variantes A/B |
+| `templates/<pantalla>.html` | Una plantilla por pantalla. El nombre empieza con el rol (`publico-`, `donante-`, `entidad-`, `admin-`) y, en el nivel 3, con el de su sección (`donante-donaciones-detalle`) |
+| `templates/layout-privado.html` y `layout-publico.html` | Estructura de las pantallas privadas y de las públicas (la portada tiene la suya) |
+| `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar` |
+| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre |
+| `static/css/app.css`, `privado.css` y `<pantalla>.css` | Estilos comunes, los de las pantallas privadas y una hoja por pantalla, solo con tokens de uso |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
-| `templates/variantes/` | Las variantes de estructura: reemplazan la página entera (también una pantalla del prototipo) con `?variante=<nombre>`; se borran al decidir |
-| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js` de Cozy, `prototipo-entidad.js` del prototipo y `raices-publico.js`, las mejoras de las públicas de Raíces) |
-| `templates/prototipo/cozy-medieval/` | El prototipo navegable del flujo completo de Cozy (perfil `maqueta`, `/prototipo/<pantalla>`, `PrototipoController`); sus estilos, en `static/css/alternativas/cozy-medieval/prototipo/`. No son pantallas del sistema ni tienen gemela: cada una se construye en las dos alternativas cuando se apruebe su flujo |
-| `templates/prototipo/raices/` | El prototipo propio de Raíces, la tercera alternativa en exploración, sin juego de plantillas ([ADR propuesto](../docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)): perfil `maqueta`, `/prototipo/raices/<pantalla>`, `PrototipoController`. Sin gemelas ni tabla de voz; con los mismos datos de ejemplo que la pantalla del mismo nombre de Cozy |
-| `static/css/prototipo/raices/` | Los estilos de Raíces: su `tokens.css` (valores base y tokens de uso, con las mismas reglas que los de las alternativas), su `app.css` y una hoja por pantalla. No van en `alternativas/`, porque ahí la regla de juego completo pediría sus plantillas |
-| `src/test/resources/voz/<alternativa>.txt` | La tabla de voz de cada alternativa: los títulos y rótulos que dice a su modo (los vigila `InterfazFitnessTest`) |
+| `templates/variantes/` | Las variantes de estructura: reemplazan la pantalla entera con `?variante=<nombre>`; se borran al decidir |
+| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `publico.js`, las mejoras de las páginas públicas) |
+
+Una sola identidad visual ([ADR propuesto](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio (skills
+`relevamiento-creativo` y `corrida-creativa`).
 
 ## Reglas de plantillas
 
-- Cada componente es un fragmento en `templates/fragmentos/<componente>.html`. Figura en `/estilos`
-  con todos sus estados y el patrón que sigue ([catálogo de patrones](../docs/interfaz/patrones-y-microcopy.md)).
-  Un test falla si falta.
-- **Cada alternativa tiene su propio juego de plantillas.** Toda plantilla y todo fragmento de
-  `templates/` tiene su gemela, con el mismo nombre, en `templates/alternativas/<nombre>/` (y al
-  revés). Una pantalla o un componente nuevo se crea en los dos lugares. Las dos muestran los
-  mismos datos y las mismas acciones, con los mismos nombres de botones y enlaces: un test compara
-  cada par. Cada alternativa puede decir a su modo los títulos y los rótulos (sin números y nunca en
-  un control), declarados en su tabla de voz, `src/test/resources/voz/<alternativa>.txt`. En el
-  catálogo `/estilos` también entra la descripción de un componente que esa alternativa dibuja de
-  otro modo (en Cozy, la navegación son cajones y no una barra).
-- El catálogo `/estilos` de cada alternativa
-  (`templates/alternativas/<nombre>/paginas/estilos.html`) muestra todos los fragmentos de esa
-  alternativa. Un test falla si falta.
+- Una pieza que usan varias pantallas va en una plantilla compartida de `templates/` (sin rol en el
+  nombre) como fragmento parametrizado; no se copia.
 - HTML semántico: `header`, `nav`, `main`, `footer`, `button`, `label`, `table` con `th scope`.
 - Texto siempre con `th:text`. `th:utext` nunca con datos que vienen de afuera.
 - Cada estado del flujo (vacío, cargando, éxito, error, sin permiso) tiene su representación. En el
   perfil `maqueta` se ve con `?escenario=<nombre>`.
 - Los textos salen de la ficha del flujo (`docs/interfaz/flujos/`), no se improvisan, y siguen el
-  [tono común](../docs/interfaz/tono-y-comunicacion.md) de todas las alternativas: lo pendiente se
-  dice pendiente, las cifras van con período y fecha, sin urgencia ni culpa. La voz propia de una
-  alternativa cambia la forma de un título o un rótulo, no lo que significa.
+  [tono común](../docs/interfaz/tono-y-comunicacion.md): lo pendiente se dice pendiente, las cifras
+  van con período y fecha, sin urgencia ni culpa. La voz propia de la identidad cambia la forma de
+  un título o un rótulo, no lo que significa.
 
 ## HTMX y mejora progresiva
 
@@ -102,16 +87,9 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 - Pantallas y componentes usan **solo tokens de uso** (`--color-*`, `--fuente-*`, `--tamano-*`,
   `--espacio-*`, `--radio-*`, `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*` y `--medida-*`).
-- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de un
+- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de
   `tokens.css`.
-- Fuera de los `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
-- Hay dos alternativas de identidad, cada una con sus plantillas, los mismos datos y acciones
-  (vigilados por test) y sus hojas de estilo: cada componente o pantalla nueva se escribe y se
-  estiliza en cada una
-  ([ADR propuesto](../docs/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
-  Raíces, la tercera en exploración, queda afuera de esa regla hasta que se elija: dibuja solo sus
-  pantallas de prototipo
-  ([ADR propuesto](../docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)).
+- Fuera de `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.
 - Fuentes con licencia OFL, servidas desde `static/fuentes/` junto con su licencia.
@@ -133,9 +111,10 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 ```bash
 mvn spotless:check
-mvn clean test -pl cliente-liviano -am             # unitarios y reglas de tokens y catálogo
+mvn clean test -pl cliente-liviano -am             # unitarios y reglas de tokens y contraste
 mvn test -pl cliente-liviano -Pvisual              # capturas en 3 anchos, accesibilidad y toque
-mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=estilos/armazon   # solo esas rutas
+mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=donante-inicio   # solo esas rutas
+mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b   # una pasada por variante A/B
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
 ```
 

@@ -9,12 +9,15 @@
 
 ## 1. Qué se diseña
 
-- **Alternativa:** `<nombre>` (existente) o `<nombre>` (nueva, con su brief en `identidad/`).
+- **Propuesta:** `<nombre>`, en su propia rama (la rama es la propuesta; se decide con el merge).
+  Si es una identidad nueva, su brief reemplaza a `identidad/brief.md` en esa rama.
 - **Punto de partida:** rediseño de lo que hay | desde cero.
-- **Pantalla ancla:** la ruta de la iteración de concepto, por ejemplo `/estilos/armazon` (el
-  inicio de una persona donante) o `/prototipo/publico-portada`.
-- **Hasta dónde llega:** concepto (una pantalla) | sistema (navegación, pantallas y componentes) |
-  flujo completo (el prototipo navegable).
+- **Pantalla ancla:** la ruta de la iteración de concepto, por ejemplo `/donante-inicio` (el
+  inicio de una persona donante) o `/publico-portada`.
+- **Hasta dónde llega:** concepto (una pantalla) | sistema (layouts, navegación y hojas del sitio) |
+  flujo completo (las pantallas del recorrido).
+- **Fuera de alcance:** las pantallas que la corrida no toca (la corrida comprueba que sus
+  capturas no cambien), o "ninguna".
 - **Lo que NO hay que repetir:** las capturas de lo actual (rutas) y, en una frase, por qué no
   sirve.
 
@@ -31,7 +34,7 @@
 
 ## 4. Referencias
 
-Carpeta: `docs/interfaz/identidad/referencias-<nombre>/`, con su README (qué se toma de cada una).
+Carpeta: `docs/interfaz/identidad/referencias/`, con su README (qué se toma de cada una).
 Son de terceros: se toma el estilo, no se copia nada, y no entran al sitio ni al entregable.
 
 | Referencia | Qué se toma | Qué no |
@@ -54,11 +57,11 @@ Además de "Lo que evitamos" de la dirección de arte:
 | Navegación | | | |
 | Materiales, dibujos propios y movimiento | | | |
 | Voz en títulos y rótulos | | | |
-| Tipografía y paleta de la alternativa | | | |
+| Tipografía y paleta del sitio | | | |
 | JavaScript propio como mejora | | | |
 
-Fijo siempre, aunque la tabla diga otra cosa: los datos y las acciones, el piso, el stack, la otra
-alternativa ([Libertad creativa](../direccion-de-arte.md#libertad-creativa)) y el
+Fijo siempre, aunque la tabla diga otra cosa: los datos y las acciones, el piso, el stack, las
+pantallas fuera de alcance ([Libertad creativa](../direccion-de-arte.md#libertad-creativa)) y el
 [tono común](../tono-y-comunicacion.md).
 
 ## 7. Voz
@@ -66,10 +69,10 @@ alternativa ([Libertad creativa](../direccion-de-arte.md#libertad-creativa)) y e
 La voz propia vive en títulos y rótulos. Estados, cifras, acciones y errores siguen el
 [tono común](../tono-y-comunicacion.md) y no se adornan.
 
-- **Tono:** una frase (por ejemplo, "aventura adulta, nunca infantil").
+- **Tono:** una frase (por ejemplo, "cercana y concreta, nunca solemne").
 - **Cómo dice algunos títulos y rótulos:**
 
-  | Glassmorphism dice | Esta alternativa dice |
+  | Hoy dice | La propuesta dice |
   |---|---|
   | | |
 
@@ -86,7 +89,7 @@ La voz propia vive en títulos y rótulos. Estados, cifras, acciones y errores s
 |---|---|
 | Iteraciones | 1 (concepto) · 2 (concepto y sistema) · 3 (concepto, sistema y flujo) |
 | Conceptos en la iteración 1 | de 2 a 4 (recomendado: 3) |
-| Rama | `E6_<nombre>` (con PR hacia `ENTREGA_6`, el CI exige el prefijo) |
+| Rama | `E6_<nombre>`, propia de la propuesta (con PR hacia `ENTREGA_6`, el CI exige el prefijo) |
 | Al terminar | PR en borrador hacia `<rama base>` · solo la rama, sin push |
 | Presupuesto | lo propone el agente (agentes, tokens y tiempo, con la corrida de prueba como medida) y se aprueba con el encargo; si se acaba el uso, se retoma desde la última nota de traspaso |
 | Modelo de la sesión | Opus (los roles de la corrida declaran el suyo en la skill) |

@@ -97,11 +97,10 @@ flowchart LR
 | Ranking | Admin | 2 | RF-19 | — | E6 |
 | Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
 
-## Raíces, sitios A y B (corrida del 2026-11-02)
+## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
 
-Raíces dibuja el recorrido de los tres roles en un sitio navegable de la maqueta:
-**A** (`/prototipo/raices/<pantalla>`, extiende las piezas actuales), elegido por el usuario el
-2026-11-03. El sitio B de la corrida (otra navegación y composición con el mismo ADN) se borró; su
+El sitio dibuja el recorrido de los tres roles en la maqueta (`/<pantalla>`): es el sitio
+**A** de la corrida, elegido por el usuario el 2026-11-03. El sitio B de la corrida (otra navegación y composición con el mismo ADN) se borró; su
 evidencia queda en `evidencia/raices/ab-navegable/b/`. Las dibuja
 con su ficha de flujo en [`flujos/raices-publico-navegable.md`](flujos/raices-publico-navegable.md),
 [`raices-donante-navegable.md`](flujos/raices-donante-navegable.md) y

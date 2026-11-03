@@ -44,12 +44,12 @@ const lista = { type: 'array', items: texto }
 const PREPARACION = {
   type: 'object',
   properties: {
-    ok: si, motivo: texto, alternativa: texto, nombre: texto, ancla: texto,
+    ok: si, motivo: texto, nombre: texto, clave: texto, ancla: texto,
     iteraciones: { type: 'integer' }, conceptos: { type: 'integer' }, pr: si,
-    rama: texto, ramaBase: texto, base: texto, brief: texto, voz: texto,
+    rama: texto, ramaBase: texto, base: texto, brief: texto,
     referencias: texto, intocables: texto, antes: texto, ruido: texto, baseline: texto,
   },
-  required: ['ok', 'motivo', 'alternativa', 'nombre', 'ancla', 'iteraciones', 'conceptos', 'pr', 'rama', 'ramaBase', 'base', 'intocables', 'antes', 'ruido', 'baseline'],
+  required: ['ok', 'motivo', 'nombre', 'clave', 'ancla', 'iteraciones', 'conceptos', 'pr', 'rama', 'ramaBase', 'base', 'intocables', 'antes', 'ruido', 'baseline'],
 }
 const PLAN = {
   type: 'object',
@@ -142,23 +142,27 @@ const prep = await agent(`${COMUN}
 Sos quien prepara una corrida creativa desatendida (skill ${SKILL}; leela). Encargo creativo: ${A.encargo}.
 
 1. Leé el encargo entero. Tiene que decir "aprobado por el usuario" y no tener "a definir". Si no, devolvé ok=false con el motivo.
-2. Sacá del encargo: la alternativa (nombre de carpeta, por ejemplo cozy-medieval) y su nombre visible, la pantalla ancla (la ruta SIN la barra inicial, por ejemplo prototipo/publico-portada), la cantidad de iteraciones, de conceptos, si autoriza PR, la rama base del PR, el brief, la tabla de voz (cliente-liviano/src/test/resources/voz/<alternativa>.txt) y la carpeta de referencias.${A.iteraciones ? ` Iteraciones: usá ${A.iteraciones} (pisa el encargo).` : ''}${A.conceptos ? ` Conceptos: usá ${A.conceptos} (pisa el encargo).` : ''}${A.pr !== undefined ? ` PR: ${A.pr ? 'sí' : 'no'} (pisa el encargo).` : ''}
-3. Si la alternativa no existe (static/css/alternativas/<alternativa>/tokens.css), creala: el brief en docs/interfaz/identidad/ (si el encargo no lo trae), static/css/alternativas/<alternativa>/tokens.css y app.css propios, el juego completo de plantillas copiado de templates/ a templates/alternativas/<alternativa>/ (cada layout, fragmento y página, con sus referencias cambiadas a ~{alternativas/<alternativa>/...}; InterfazFitnessTest exige el juego entero) y la tabla de voz cliente-liviano/src/test/resources/voz/<alternativa>.txt (vacía si todavía no dice nada a su modo). Corré mvn test -pl cliente-liviano -Dtest=InterfazFitnessTest y comiteá "E6: <nombre>, alternativa nueva (preparación)". Si el test no pasa, devolvé ok=false con el motivo.
-4. git status --porcelain tiene que estar vacío (si no, ok=false). Anotá la rama actual y el SHA de HEAD como base.${A.inicio > 1 ? ` Esta corrida retoma desde la iteración ${A.inicio}: leé ${A.carpeta}/traspaso-iteracion-${A.inicio - 1}.md y comprobá que HEAD es el SHA que dice.` : ''}
+2. Sacá del encargo: el nombre de la propuesta y su clave (minúsculas y guiones, para carpetas y archivos), la pantalla ancla (la ruta SIN la barra inicial, por ejemplo publico-portada), la cantidad de iteraciones, de conceptos, si autoriza PR, la rama base del PR, el brief, la carpeta de referencias y las pantallas fuera de alcance.${A.iteraciones ? ` Iteraciones: usá ${A.iteraciones} (pisa el encargo).` : ''}${A.conceptos ? ` Conceptos: usá ${A.conceptos} (pisa el encargo).` : ''}${A.pr !== undefined ? ` PR: ${A.pr ? 'sí' : 'no'} (pisa el encargo).` : ''}
+3. La corrida trabaja sobre el sitio en su propia rama: la rama es la propuesta y el usuario decide con el merge. No se crea ninguna copia del sitio.
+4. git status --porcelain tiene que estar vacío (si no, ok=false). Si la rama actual es la rama base del PR, creá la de la propuesta con git switch -c E6_<clave>. Anotá la rama y el SHA de HEAD como base.${A.inicio > 1 ? ` Esta corrida retoma desde la iteración ${A.inicio}: leé ${A.carpeta}/traspaso-iteracion-${A.inicio - 1}.md y comprobá que HEAD es el SHA que dice.` : ''}
 5. Baseline: mvn test -pl cliente-liviano (en segundo plano si tarda). Si falla, ok=false con el detalle (la corrida no arranca en rojo).
-6. Capturas de antes: mkdir -p ${A.carpeta}/antes ${A.carpeta}/ruido y corré dos veces la verificación visual sin alternativa (recorre todas las identidades) sobre las páginas reales y la ancla:
-   mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=estilos,estilos/armazon,<ancla>
+6. Capturas de antes: mkdir -p ${A.carpeta}/antes ${A.carpeta}/ruido y corré dos veces la verificación visual del sitio entero (sin propiedades recorre paginas.txt; la ancla tiene que estar ahí):
+   mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false
    Después de la primera, copiá cliente-liviano/target/capturas/*.png a ${A.carpeta}/antes/; después de la segunda, a ${A.carpeta}/ruido/ (mide lo que se mueve aunque nada cambie).
-7. intocables: un glob (sintaxis de Java) de las capturas de las páginas reales de las identidades que NO se diseñan, para scripts/visual/Imagenes.java comparar. Si se diseña una alternativa, Glassmorphism es "{estilos,estilos-armazon}-[0-9]*.png" (sus capturas no llevan "--"). Si hay otras alternativas que no se diseñan, sumalas con su sufijo --<nombre>.
+7. intocables: un glob (sintaxis de Java) de las capturas de las pantallas fuera de alcance del encargo, para scripts/visual/Imagenes.java comparar. El nombre de la captura es la ruta con cada signo cambiado por "-" y la medida, sin "--" (por ejemplo, "{publico-legales,publico-contacto}-[0-9]*.png"). Si el encargo no deja ninguna fuera de alcance, vacío.
 
 Devolvé los datos con el formato pedido (antes = la carpeta de las capturas de antes; ruido = la de la segunda corrida; baseline = GREEN o RED).`, { label: 'preparar', phase: 'Preparar', schema: PREPARACION, ...MECANICO })
 
 if (!prep) return terminar('Detenida en Preparar: el agente no respondió.')
 if (!prep.ok) return terminar(`No arrancó: ${prep.motivo}`)
-Object.assign(resultado, { rama: prep.rama, base: prep.base, alternativa: prep.alternativa })
+Object.assign(resultado, { rama: prep.rama, base: prep.base, nombre: prep.nombre })
 log(`Encargo listo: ${prep.nombre}, ancla ${prep.ancla}, ${prep.iteraciones} iteraciones, ${prep.conceptos} conceptos, PR ${prep.pr ? 'sí' : 'no'}.`)
 
-const DATOS = `Datos de la corrida: alternativa ${prep.alternativa} (${prep.nombre}); encargo ${A.encargo}; ancla ${prep.ancla}; brief ${prep.brief || '(ver encargo)'}; voz ${prep.voz || '(ver encargo)'}; referencias ${prep.referencias || '(ver encargo)'}; capturas de antes en ${prep.antes}; glob de lo que no se diseña: ${prep.intocables}.`
+const DATOS = `Datos de la corrida: propuesta ${prep.nombre} (clave ${prep.clave}, rama ${prep.rama}); encargo ${A.encargo}; ancla ${prep.ancla}; brief ${prep.brief || '(ver encargo)'}; referencias ${prep.referencias || '(ver encargo)'}; capturas del sitio de antes en ${prep.antes}; glob de las pantallas fuera de alcance: ${prep.intocables || '(ninguna)'}.`
+const VISUAL = '-Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false'
+const COMPARAR = prep.intocables
+  ? `y las pantallas fuera de alcance sin cambios: otra corrida visual del sitio entero (mvn test -pl cliente-liviano -Pvisual ${VISUAL}, sin propiedades) y después java scripts/visual/Imagenes.java comparar ${prep.antes} cliente-liviano/target/capturas "${prep.intocables}" ${prep.ruido} (tiene que decir SIN CAMBIOS; la carpeta de ruido descuenta lo que se mueve solo)`
+  : '(el encargo no deja pantallas fuera de alcance: no hay comparación)'
 
 let base = prep.base
 const desde = Math.max(1, A.inicio || 1)
@@ -180,9 +184,9 @@ Base: ${base}.
 1. mkdir -p ${dir}.
 2. Elegí las partes:
    - concepto: ${prep.conceptos} conceptos de la ancla, OPUESTOS en composición y navegación (no solo en estilo), cada uno con un nombre corto y su idea en una frase. Nombres de variante concepto-a, concepto-b, … (archivos templates/variantes/concepto-<letra>.html y static/css/variantes/concepto-<letra>.css). Un concepto tímido pierde: elegí ideas que alguien recuerde.
-   - sistema: de 2 a ${TOPE_POR_PASO} zonas de propiedad con archivos disjuntos (por ejemplo, "estructura": layouts, navegación y la ancla; "componentes": fragmentos y catálogo).
-   - flujo: un grupo de pantallas por rol (publico, donante, entidad, admin), según docs/interfaz/mapa-del-sitio.md. Si PrototipoController no sirve a esta alternativa (mirá su CARPETA), devolvé bloqueo con el motivo y no hagas nada más.
-3. Solo en sistema: si hace falta, un commit de preparación en este worktree (la hoja de cada zona, vacía, enlazada después de app.css en los layouts de la alternativa; la tabla de voz si falta): "E6: ${prep.nombre}, iteración ${n}, preparación". La base nueva es ese SHA.
+   - sistema: de 2 a ${TOPE_POR_PASO} zonas de propiedad con archivos disjuntos sobre el sitio (por ejemplo, "estructura": los layouts, tokens.css, app.css, privado.css y la ancla; "pantallas": las hojas static/css/<pantalla>.css del resto del alcance). Nunca las pantallas fuera de alcance.
+   - flujo: un grupo de pantallas por rol (publico, donante, entidad, admin), según docs/interfaz/mapa-del-sitio.md: cada pantalla en templates/<pantalla>.html con su hoja static/css/<pantalla>.css (las sirve SitioController). Nunca las pantallas fuera de alcance.
+3. Solo en sistema: si hace falta, un commit de preparación en este worktree (la hoja de cada zona, vacía, enlazada después de app.css en los layouts): "E6: ${prep.nombre}, iteración ${n}, preparación". La base nueva es ese SHA.
 4. Llená la plantilla del constructor en ${dir}/encargo-constructor.md: reemplazá cada @MARCA@ según la sección "Marcas" de la plantilla (@ARREGLOS@ = ${dir}/arreglos.md; @RUTAS@ = las rutas a comprobar separadas por coma y SIN barra inicial; @VARIANTES@ = -Dverificacion.variantes=<tu variante> en concepto o vacío; @COMMIT@ = "E6: ${prep.nombre}, iteración ${n}, <parte>"), borrá las secciones de "Qué se construye" que no son de esta iteración (dejá también "Arreglos") y dejala autocontenida.
 5. Llená la plantilla del crítico en ${dir}/encargo-critico.md, también según su sección "Marcas" (@CAPTURAS@ = ${dir}/capturas/, @REPORTE@ = ${dir}/capturas/reporte.json, @PROPUESTAS@ = las partes con su idea, @CODIGO@ = los archivos de cada parte, @ANTES@ = las capturas de ${prep.antes} de la ancla).
 
@@ -220,9 +224,9 @@ Devolvé la rama y el SHA de tu commit y el resto de los campos.`, { label: `${e
   const integracion = await agent(`${COMUN}
 
 Sos el integrador de la iteración ${n} (${tipo}). En este worktree (la rama de la corrida, en ${base}):
-1. git cherry-pick de cada commit, en este orden: ${entregas.map((e) => `${e.parte} = ${e.sha}`).join('; ')}. Si un conflicto es de agregados en un archivo compartido (la tabla de voz, el final de tokens.css), quedate con los dos lados. Si es otra cosa, git cherry-pick --abort de ese y anotalo en fallidas con el motivo.
+1. git cherry-pick de cada commit, en este orden: ${entregas.map((e) => `${e.parte} = ${e.sha}`).join('; ')}. Si un conflicto es de agregados en un archivo compartido (el final de tokens.css), quedate con los dos lados. Si es otra cosa, git cherry-pick --abort de ese y anotalo en fallidas con el motivo.
 2. mvn test -pl cliente-liviano -Dtest=InterfazFitnessTest.
-3. Verificación conjunta: mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.alternativa=${prep.alternativa} -Dverificacion.paginas=${plan.rutas}${plan.variantes.length ? ` -Dverificacion.variantes=${plan.variantes.join(',')}` : ''}
+3. Verificación conjunta: mvn test -pl cliente-liviano -Pvisual ${VISUAL} -Dverificacion.paginas=${plan.rutas}${plan.variantes.length ? ` -Dverificacion.variantes=${plan.variantes.join(',')}` : ''}
 4. mkdir -p ${dir}/capturas y copiá ahí cliente-liviano/target/capturas/ (PNG, reporte.json, index.html y comparacion.html si está).
 No arregles nada: solo integrá y medí. Devolvé el SHA de HEAD, las partes integradas y fallidas, si reporte.json dio [] y si el test de reglas pasó.`, { label: `${etiqueta} · integrar`, phase: 'Integrar', schema: INTEGRACION, ...MECANICO })
 
@@ -272,9 +276,9 @@ Primero: git reset --hard ${base} (este worktree es tuyo). Comprobá como dice e
 Sos quien cierra la iteración ${n} de ${hasta} (${tipo}) de una corrida creativa (skill ${SKILL}, sección 3, paso 7). ${DATOS}
 En este worktree (rama de la corrida, en ${base}):
 1. git cherry-pick de los arreglos: ${arregladas.length ? arregladas.map((e) => `${e.parte} = ${e.sha}`).join('; ') : 'no hay'}. Si un arreglo ya está aplicado, seguí.
-2. Gates: mvn test -pl cliente-liviano (todo verde); la verificación visual de la iteración (-Dverificacion.alternativa=${prep.alternativa} -Dverificacion.paginas=${plan.rutas}${plan.variantes.length ? ` -Dverificacion.variantes=${plan.variantes.join(',')}` : ''}) con reporte.json en []; copiá esas capturas finales a ${dir}/final/ antes de seguir (la corrida siguiente limpia la carpeta); y lo que no se diseña sin cambios: otra corrida visual sin alternativa con -Dverificacion.paginas=estilos,estilos/armazon y después java scripts/visual/Imagenes.java comparar ${prep.antes} cliente-liviano/target/capturas "${prep.intocables}" ${prep.ruido} (tiene que decir SIN CAMBIOS; la carpeta de ruido descuenta lo que se mueve solo). Si un gate falla, arreglá la causa con el cambio más chico que conserve la idea; si no podés, devolvé ok=false con el motivo y no comitees.
-3. Evidencia: java scripts/visual/Imagenes.java jpg (400 KB o menos) a docs/interfaz/evidencia/${prep.alternativa}/<tema>/ (tema: ${tipo === 'concepto' ? `concepto-<ancla>` : tipo === 'sistema' ? 'sistema' : 'flujo-completo'}, o el que ya use la bitácora). En concepto: las cuatro capturas (360, 1280, 1920 y 360x640) de cada concepto y del antes; en sistema y flujo: 360 y 1280 de cada ruta y la 360x640 de la ancla.
-4. ${tipo === 'flujo' ? `Ficha del flujo: escribí o actualizá docs/interfaz/flujo-completo-${prep.alternativa}.md con lo que mandaron los constructores:\n${fichas || '(no mandaron bloques)'}\n   y sumala a la tabla "Archivos de esta carpeta" de docs/interfaz/README.md y a docs/ESTADO_DOCUMENTACION.md si no está.\n4b. ` : ''}Bitácora (docs/interfaz/bitacora.md, arriba de todo en "Decisiones"): "### <fecha de hoy, con date +%F> · ${tipo} (${prep.nombre}) · Iteración ${n}: <decisión en una línea>", con Decisión, Alternativas (lo descartado), Por qué (de ${dir}/decision.md), Costo (incluí "Reemplaza: …" con la decisión anterior que reemplaza y quién la había tomado, o "No reemplaza nada"), Quién decidió: "corrida creativa desatendida; el usuario decide con el merge" y Evidencia.
+2. Gates: mvn test -pl cliente-liviano (todo verde); la verificación visual de la iteración (${VISUAL} -Dverificacion.paginas=${plan.rutas}${plan.variantes.length ? ` -Dverificacion.variantes=${plan.variantes.join(',')}` : ''}) con reporte.json en []; copiá esas capturas finales a ${dir}/final/ antes de seguir (la corrida siguiente limpia la carpeta); ${COMPARAR}. Si un gate falla, arreglá la causa con el cambio más chico que conserve la idea; si no podés, devolvé ok=false con el motivo y no comitees.
+3. Evidencia: java scripts/visual/Imagenes.java jpg (400 KB o menos) a docs/interfaz/evidencia/<tema>/ (tema: ${prep.clave}-${tipo === 'concepto' ? 'concepto-<ancla>' : tipo}, o el que ya use la bitácora). En concepto: las cuatro capturas (360, 1280, 1920 y 360x640) de cada concepto y del antes; en sistema y flujo: 360 y 1280 de cada ruta y la 360x640 de la ancla.
+4. ${tipo === 'flujo' ? `Ficha del flujo: escribí o actualizá docs/interfaz/flujos/${prep.clave}.md con lo que mandaron los constructores:\n${fichas || '(no mandaron bloques)'}\n   y sumala a la tabla "Archivos de esta carpeta" de docs/interfaz/README.md y a docs/ESTADO_DOCUMENTACION.md si no está.\n4b. ` : ''}Bitácora (docs/interfaz/bitacora.md, arriba de todo en "Decisiones"): "### <fecha de hoy, con date +%F> · ${tipo} (${prep.nombre}) · Iteración ${n}: <decisión en una línea>", con Decisión, Alternativas (lo descartado), Por qué (de ${dir}/decision.md), Costo (incluí "Reemplaza: …" con la decisión anterior que reemplaza y quién la había tomado, o "No reemplaza nada"), Quién decidió: "corrida creativa desatendida; el usuario decide con el merge" y Evidencia.
 5. Commit de control: "E6: ${prep.nombre}, iteración ${n}, ${tipo}".
 6. Nota de traspaso en ${A.carpeta}/traspaso-iteracion-${n}.md: el SHA, qué se decidió, qué archivos cambiaron, dónde están las capturas, los gates con su resultado, qué quedó sin hacer y cómo retomar (args.inicio = ${n + 1}).
 Devolvé ok, el motivo (o "todo en verde"), el SHA, la carpeta de la evidencia y la ruta de la nota.`, { label: `${etiqueta} · cerrar`, phase: 'Cerrar iteración', schema: CIERRE_ITERACION, ...MECANICO })
@@ -290,8 +294,8 @@ Devolvé ok, el motivo (o "todo en verde"), el SHA, la carpeta de la evidencia y
 phase('Cierre')
 const fin = await agent(`${COMUN}
 
-Sos quien cierra la corrida creativa (skill ${SKILL}, sección 4). ${DATOS} Iteraciones hechas: ${JSON.stringify(resultado.iteraciones)}.${resultado.pendiente ? ` Quedó sin hacer: ${resultado.pendiente}; decilo en la página, en la autorrevisión y en la bitácora.` : ''} Las capturas de cada iteración están en ${A.carpeta}/iteracion-<n>/capturas/ y /final/; las de antes, en ${prep.antes}.
-1. Página de antes y después: escribí un guion en ${A.carpeta}/resumen/guion.txt (formato en scripts/visual/README.md): el pedido del usuario textual, y por iteración qué se hizo y por qué, con las capturas de antes y de después de la ancla (1280 y 360x640) y las de los conceptos. Corré java scripts/visual/Imagenes.java resumen ${A.carpeta}/resumen/guion.txt ${A.carpeta}/resumen-antes-despues.html. No entra al repo, y no se la mandás al usuario: se la manda la sesión que lanzó la corrida.
+Sos quien cierra la corrida creativa (skill ${SKILL}, sección 4). ${DATOS} Iteraciones hechas: ${JSON.stringify(resultado.iteraciones)}.${resultado.pendiente ? ` Quedó sin hacer: ${resultado.pendiente}; decilo en la página, en la autorrevisión y en la bitácora.` : ''} Las capturas de cada iteración están en ${A.carpeta}/iteracion-<n>/capturas/ y /final/; las del sitio de antes (la rama base), en ${prep.antes}.
+1. Página de antes y después: sacá las capturas del sitio en la rama de la corrida (rm -rf cliente-liviano/target/capturas; mvn test -pl cliente-liviano -Pvisual ${VISUAL} -Dverificacion.paginas=${prep.ancla}) y copialas a ${A.carpeta}/despues/: se comparan con las de antes por el mismo nombre de archivo, sin "--". Escribí un guion en ${A.carpeta}/resumen/guion.txt (formato en scripts/visual/README.md): el pedido del usuario textual, y por iteración qué se hizo y por qué, con las capturas de antes y de después de la ancla (1280 y 360x640) y las de los conceptos. Corré java scripts/visual/Imagenes.java resumen ${A.carpeta}/resumen/guion.txt ${A.carpeta}/resumen-antes-despues.html. No entra al repo, y no se la mandás al usuario: se la manda la sesión que lanzó la corrida.
 2. Documentación: docs/interfaz/README.md (tabla "Archivos de esta carpeta") y docs/ESTADO_DOCUMENTACION.md con lo nuevo que dejó la corrida (evidencia, fichas); si nada cambió, decilo. node scripts/agent-check.js tiene que dar 0 FAIL.
 3. Autorrevisión en ${A.carpeta}/autorrevision.md: una fila por criterio del "Criterio de salida" de la skill y del encargo: criterio · CUMPLE / NO CUMPLE / NO APLICA · archivo:línea o comando.
 4. Si cambiaste algo en el repo, comiteá "E6: ${prep.nombre}, cierre de la corrida creativa".
@@ -303,7 +307,7 @@ Object.assign(resultado, { sha: fin.sha, resumen: fin.resumen, autorrevision: fi
 // ── Auditoría ────────────────────────────────────────────────────────────────────────────────
 if (A.auditoria !== false) {
   phase('Auditoría')
-  const alcance = `Plan aprobado: el encargo ${A.encargo} y la skill ${SKILL}. Criterios: el "Criterio de salida" de la skill, la sección 6 (libertades y límites) del encargo, la dirección de arte (piso, "Libertad creativa" y "Oficio") y cliente-liviano/AGENTS.md. Alcance: git diff ${prep.base}..HEAD (archivos: ${fin.archivos}). Autorrevisión del implementador: ${fin.autorrevision}. Capturas: ${A.carpeta}/iteracion-*/final/. Glob de lo que no se diseña: ${prep.intocables} (antes en ${prep.antes}). Nivel: STANDARD.`
+  const alcance = `Plan aprobado: el encargo ${A.encargo} y la skill ${SKILL}. Criterios: el "Criterio de salida" de la skill, la sección 6 (libertades y límites) del encargo, la dirección de arte (piso, "Libertad creativa" y "Oficio") y cliente-liviano/AGENTS.md. Alcance: git diff ${prep.base}..HEAD (archivos: ${fin.archivos}). Autorrevisión del implementador: ${fin.autorrevision}. Capturas: ${A.carpeta}/iteracion-*/final/. Glob de las pantallas fuera de alcance: ${prep.intocables || '(ninguna)'} (antes en ${prep.antes}). Nivel: STANDARD.`
 
   const REFRESCAR = `Si cambiás plantillas o estilos, después de comprobar: copiá las capturas nuevas sobre las de la carpeta final/ de la última iteración, volvé a sacar los JPG de evidencia que correspondan (java scripts/visual/Imagenes.java jpg) y volvé a correr java scripts/visual/Imagenes.java resumen ${A.carpeta}/resumen/guion.txt ${A.carpeta}/resumen-antes-despues.html, para que la página y la evidencia muestren lo comiteado. Sumá al final de ${fin.autorrevision} qué cambiaste y los gates que corriste.`
 

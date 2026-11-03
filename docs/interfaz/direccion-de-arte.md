@@ -75,17 +75,17 @@ Antes de mostrar una propuesta, el agente mira sus capturas en los 3 anchos y se
 
 ## Libertad creativa
 
-Cuando el usuario pide algo nuevo y creativo (un concepto, un rediseño o una alternativa desde
+Cuando el usuario pide algo nuevo y creativo (un concepto, un rediseño o una identidad desde
 cero), la libertad es real. Lo que es libre y lo que no:
 
 | Libre | Fijo |
 |---|---|
-| La composición de cada pantalla: qué va dónde, con qué forma y tamaño | Los datos y las acciones: los mismos, con el mismo nombre y el mismo destino (un test compara las gemelas) |
+| La composición de cada pantalla: qué va dónde, con qué forma y tamaño | Los datos y las acciones: los mismos, con el mismo nombre y el mismo destino |
 | La navegación: barra, cajones, índice, pestañas o lo que pida el concepto | El piso de arriba |
 | Los materiales, los dibujos propios y el movimiento que explica algo | El stack: Thymeleaf, HTMX, Pico tematizado y tokens; JavaScript solo como mejora |
-| La voz en títulos y rótulos, declarada en la tabla de voz | La otra alternativa: no se toca |
+| La voz en títulos y rótulos | Las pantallas que el encargo deja fuera: no se tocan |
 | La metáfora y el mundo visual | El mensaje y el [tono común](tono-y-comunicacion.md): estados, cifras, acciones y errores dicen lo mismo en todas |
-| La tipografía y la paleta de la alternativa, con contraste AA | Lo que el usuario fijó en el encargo creativo |
+| La tipografía y la paleta, con contraste AA | Lo que el usuario fijó en el encargo creativo |
 
 Reglas para encargar trabajo creativo, a una persona o a un agente (las plantillas de
 [`plantillas/`](plantillas/) ya las traen: `encargo-creativo`, `encargo-constructor` y
@@ -105,8 +105,8 @@ Reglas para encargar trabajo creativo, a una persona o a un agente (las plantill
 
 ## Oficio
 
-Reglas que salieron del rediseño de Cozy / Medieval (bitácora, 2026-10-31) y valen para cualquier
-alternativa:
+Reglas que salieron de las corridas creativas (bitácora, 2026-10-31) y valen para cualquier
+diseño:
 
 - **Un solo recurso material por objeto.** Una pieza es de madera, de papel o de metal; dos
   materiales en el mismo objeto compiten.
@@ -136,9 +136,8 @@ alternativa:
     `--movimiento-`, `--capa-` y `--medida-`. Por ejemplo, `--color-accion-primaria` o
     `--medida-toque-minimo`.
 - Las variables `--pico-*` se asignan solo en `tokens.css`, a partir de los usos.
-- Cada alternativa de identidad (Glassmorphism y Cozy / Medieval) tiene su propio `tokens.css`, su
-  propio `app.css` y su propio juego de plantillas, con estas mismas reglas
-  ([ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
+- El sitio tiene una sola identidad, con un `tokens.css` y un `app.css`
+  ([ADR propuesto](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 - Los puntos de quiebre se declaran una vez en `tokens.css` como `--medida-quiebre-*`. Las media
   queries usan solo esos valores.
 - Si una dirección elegida pide dejar Pico, eso es otra decisión de arquitectura: requiere un ADR

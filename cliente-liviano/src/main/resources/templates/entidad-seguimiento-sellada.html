@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!--/* Raíces, Recepción confirmada (RF-12): la respuesta a confirmar el acta, según su ficha de flujo
+       (docs/interfaz/flujos/raices-confirmar-recepcion.md). La persona tiene que sentir que se cerró
+       un ciclo (usuario, 2026-11-01): la raíz de la entrega llega impresa hasta su entidad. Debajo,
+       lo que quedó asentado, cómo va el pedido, el aviso a quien donó y la entrega que sigue en la
+       puerta.
+       Esta dirección muestra lo asentado sin movimiento (?entrega=lentejas o ropa; desde "Ver lo que
+       quedó asentado"); entidad-seguimiento-sellada-<clave>, la respuesta al formulario, la muestra
+       con la raíz que se traza una vez.
+       Fragmento sellada(recien): adentro están e y otra, del fragmento entrega del acta. En el
+       ejemplo se confirma primero lentejas: después queda ropa en la puerta; después de ropa, ninguna. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento-confirmar', ~{::contenido})}">
+<head>
+  <title>Recepción confirmada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-seguimiento-confirmar :: entrega(null,
+            ~{entidad-seguimiento-sellada :: sellada(false)})}"></th:block>
+</th:block>
+
+<th:block th:fragment="sellada(recien)">
+  <div class="confirmar confirmada" th:classappend="${recien} ? 'confirmada--recien'">
+    <th:block th:if="${e == null}">
+      <h1>Recepción confirmada</h1>
+      <section class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+        <h2 id="vacio-titulo">No encontramos esa entrega</h2>
+        <p>Puede que el enlace esté incompleto. Buscala en Seguir entregas.</p>
+        <a class="boton boton--secundario" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Volver a Seguir entregas</a>
+      </section>
+    </th:block>
+
+    <th:block th:if="${e}">
+      <header class="confirmar-cabecera">
+        <a class="volver" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Seguir entregas</a>
+        <h1>Recepción <em>confirmada</em></h1>
+        <p class="confirmar-bajada" role="status"
+           th:text="|Confirmaste la recepción de ${e.titulo}, hoy a las ${e.confirmo}. ${e.llegaron}|">Confirmaste
+          la recepción de Lentejas secas, 15 kg, hoy a las 18:45. Llegaron hoy a las 18:20.</p>
+      </header>
+
+      <!--/* La raíz completa, grande (A/B 3, usuario, 2026-11-01). Del brote del depósito sale la línea de subte de esta
+             entrega y llega impresa hasta la estación de tu entidad, con su sello y la hora. Es
+             decorativa: el último tramo, en lista, dice lo mismo. */-->
+      <figure class="ciclo-raiz tierra-impresa" aria-hidden="true">
+        <svg class="dibujo" viewBox="0 0 720 210" aria-hidden="true" focusable="false">
+          <path class="dibujo-tierra" d="M-40 70H760"/>
+          <path class="dibujo-tallo" d="M80 70V38"/>
+          <path class="dibujo-hoja" d="M80 52C66 52 58 42 58 32C72 32 80 42 80 52ZM80 44C92 44 102 36 102 26C88 26 80 34 80 44Z"/>
+          <text class="dibujo-rotulo dibujo-rotulo--papel" x="112" y="60">Depósito Central</text>
+          <path class="subte-borde" pathLength="1" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
+          <path class="subte-linea ciclo-trazo" pathLength="1" d="M80 72V86Q80 110 97 127L103 133Q120 150 144 150H600"/>
+          <g transform="translate(260 150)"><circle class="sello-hecho" r="10"/><path class="sello-calado sello-calado--fino" d="M-4 0.5L-1 3.5L4.5 -3"/></g>
+          <g transform="translate(430 150)"><circle class="sello-hecho" r="10"/><path class="sello-calado sello-calado--fino" d="M-4 0.5L-1 3.5L4.5 -3"/></g>
+          <g class="ciclo-entidad" transform="translate(620 150)">
+            <circle class="sello-tinta" cx="4" cy="4" r="26"/><circle class="sello-disco" r="26"/>
+            <path class="sello-calado sello-calado--fino ciclo-tilde" d="M-10 1L-3 8L11 -7"/>
+          </g>
+          <text class="dibujo-rotulo" x="260" y="190">Salió</text>
+          <text class="dibujo-rotulo" x="430" y="190">Llegó</text>
+          <text class="dibujo-rotulo ciclo-rotulo" x="620" y="200">Comedor Barrio Ejemplo</text>
+        </svg>
+      </figure>
+
+      <div class="acta">
+        <div class="acta-entrega">
+          <section class="etiqueta" aria-labelledby="etiqueta-titulo">
+            <h2 id="etiqueta-titulo" class="etiqueta-titulo">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
+              </svg>
+              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
+            </h2>
+            <dl>
+              <div>
+                <dt>Para tu pedido</dt>
+                <dd th:text="${e.pedido}">Lentejas secas, 40 kg, hasta el 31 de octubre.</dd>
+              </div>
+              <div>
+                <dt>Donó</dt>
+                <dd th:with="cat=${escenario == 'sin-categoria' ? null : e['donoCategoria']},
+                            empresa=${e['donoTipo'] == 'empresa'}"
+                    th:text="${e.dono ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)}">Distribuidora Ejemplo SA</dd>
+              </div>
+              <div>
+                <dt>Desde</dt>
+                <dd>Depósito Central</dd>
+              </div>
+            </dl>
+          </section>
+          <svg th:replace="~{iconos :: categorias}"></svg>
+
+          <section class="tramo-seccion" aria-labelledby="tramo-titulo">
+            <h2 id="tramo-titulo">El último tramo</h2>
+            <ol th:replace="~{entidad-seguimiento-confirmar :: tramo(true)}"></ol>
+          </section>
+        </div>
+
+        <div class="acta-formulario">
+          <section class="asentado" aria-labelledby="asentado-titulo">
+            <h2 id="asentado-titulo">Lo que quedó asentado</h2>
+            <dl>
+              <div><dt>Remito</dt><dd th:text="${e.remito}">0001-00004521</dd></div>
+              <div><dt>Recibió</dt><dd>Marta, por Comedor Barrio Ejemplo</dd></div>
+              <div><dt>Cuándo</dt><dd th:text="|15 de octubre de 2026, ${e.confirmo}|">15
+                de octubre de 2026, 18:45</dd></div>
+            </dl>
+            <p class="asentado-pedido" th:text="${e.pedidoDespues}">Tu pedido de lentejas secas: 25 de
+              40 kg recibidos, hasta el 31 de octubre.</p>
+            <p class="quien-ve" th:text="|Le avisamos a ${e.dono ?: 'quien donó'}, con tus fotos y la fecha.|">Le
+              avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha.</p>
+          </section>
+
+          <section th:if="${e.clave == 'lentejas'}" class="siguiente" aria-labelledby="siguiente-titulo">
+            <h2 id="siguiente-titulo">Te queda una en la puerta</h2>
+            <div class="siguiente-entrega">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-ropa" th:href="|#${otra.categoria}|"/>
+              </svg>
+              <div>
+                <p class="siguiente-que" th:text="${otra.titulo}">Ropa de abrigo, 10 unidades</p>
+                <p th:text="|${otra.llegoFrase} Desde el Depósito Central.|">Llegó ayer a las 17:10.
+                  Desde el Depósito Central.</p>
+              </div>
+            </div>
+            <a class="boton boton--principal" href="/entidad-seguimiento-confirmar?entrega=ropa"
+               th:href="@{/entidad-seguimiento-confirmar(entrega=${otra.clave})}">Confirmar
+              recepción<span class="solo-lectores" th:text="|: ${otra.nombre}|">: ropa de abrigo</span></a>
+          </section>
+          <p th:unless="${e.clave == 'lentejas'}" class="siguiente-ninguna">
+            No te quedan entregas para confirmar.</p>
+
+          <div class="acciones">
+            <a class="boton boton--secundario" href="/entidad-inicio"
+               th:href="@{/entidad-inicio}">Volver al inicio</a>
+            <a class="boton boton--secundario" href="/entidad-seguimiento"
+               th:href="@{/entidad-seguimiento}">Seguir entregas</a>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

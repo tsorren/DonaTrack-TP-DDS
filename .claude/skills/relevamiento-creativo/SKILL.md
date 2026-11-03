@@ -2,7 +2,7 @@
 name: relevamiento-creativo
 description: >-
   Releva con el usuario un encargo creativo para diseñar desde cero en el cliente liviano de
-  DonaTrack (un rediseño, una pantalla nueva o una alternativa de identidad): imágenes de
+  DonaTrack (un rediseño, una pantalla nueva o una identidad nueva): imágenes de
   referencia, mensaje, público, emoción, intensidad, libertades y límites, voz, juego, alcance y
   cantidad de iteraciones. Guarda las referencias con su README y deja un encargo creativo
   autocontenido y aprobado, listo para la skill corrida-creativa. Usar cuando el usuario quiere

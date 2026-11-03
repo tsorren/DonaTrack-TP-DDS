@@ -3,11 +3,9 @@
 > **Estado:** aprobado · **Fecha:** 2026-11-01 · **Aprobó:** usuario (2026-11-01)
 > **Ajustada:** 2026-11-02, con la review de Sofía Deane: los codos de las líneas, redondeados
 > (bitácora, "Las líneas de subte, con los codos redondeados").
-> Plantilla de la skill `ux-flujo`. Es la segunda pantalla de Raíces, la tercera alternativa en
-> exploración, y la primera privada. Vive en su prototipo propio
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
-> `/prototipo/raices/donante-seguimiento`. Su par en Cozy es
-> `templates/prototipo/cozy-medieval/donante-seguimiento.html`, con los mismos datos.
+> Plantilla de la skill `ux-flujo`. Es la segunda pantalla de Raíces y la primera privada, en el sitio
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> `/donante-seguimiento`. Mantiene los datos del primer prototipo de esta pantalla.
 
 ## 1. Para quién y para qué
 
@@ -18,7 +16,7 @@
 | Qué quiere lograr | "Ver dónde está cada entrega que todavía no llegó, cuándo se actualizó y qué pasa con la que se demoró" |
 | Dispositivo principal | Ambos; la computadora primero |
 | Requerimientos | RF-09 (mapa de sus entregas activas, con camión, posición y última actualización; solo las suyas). RF-CL-06 (al lado del dibujo, una lista con los mismos datos). RF-CL-07 (toda posición dice cuándo se actualizó) |
-| Datos que usa | `GET /api/entregas/seguimiento/donaciones/{id}`, por donación. Huecos: HB-16 (todas las entregas activas de un donante en una llamada), HB-05 y HB-06 (posición del camión, siempre aproximada para el donante, RNF-PRIV-01/02). En la maqueta, los datos de ejemplo de `prototipo/cozy-medieval/viaje-datos.html`, los mismos de Cozy |
+| Datos que usa | `GET /api/entregas/seguimiento/donaciones/{id}`, por donación. Huecos: HB-16 (todas las entregas activas de un donante en una llamada), HB-05 y HB-06 (posición del camión, siempre aproximada para el donante, RNF-PRIV-01/02). En la maqueta, los datos de ejemplo de `templates/viaje-datos.html` |
 | Boceto de E1 | Página 19: un mapa con el recorrido punteado y marcadores |
 
 ## 2. Dónde está en el sitio
@@ -31,8 +29,8 @@ Raíces todavía no tiene las otras pantallas del donante. El menú muestra toda
 tiene una empresa: Inicio, Mis donaciones, Entidades y Seguimiento. Incentivos no está: RF-07 lo
 muestra solo al donante humano y lo oculta a la persona jurídica. Las secciones que faltan, y el
 detalle de una entrega, abren una página corta de Raíces, con su menú, que dice que esa pantalla
-todavía no está dibujada y enlaza a la de Cozy; desde Cozy se vuelve con Atrás (decisión del
-usuario, 2026-11-01).
+todavía no está dibujada (decisión del usuario, 2026-11-01; desde 2026-11-03, sin enlace a otra
+identidad).
 
 ## 3. Recorrido
 
@@ -127,7 +125,7 @@ Qué cambia respecto del boceto de E1, y por qué:
 
 - **En la maqueta, un dibujo; en el sistema, el mapa.** RF-09 pide un mapa y D21 eligió MapLibre
   para las pantallas con mapa. El boceto muestra un mapa geográfico con el recorrido punteado. En
-  el prototipo de Raíces, como en el de Cozy, el mapa se representa con un dibujo SVG fijo de las
+  el prototipo de Raíces, como en el primer prototipo, el mapa se representa con un dibujo SVG fijo de las
   tres entregas del ejemplo: muestra cómo se verá el estilo propio del mapa de Raíces (cada
   recorrido, una raíz desde el depósito hasta su entidad, con el sello de su estado y el camión en
   su posición aproximada, RNF-PRIV-01/02 y HB-06). En el sistema, ese estilo se aplica a MapLibre,
@@ -147,14 +145,14 @@ En la maqueta, `?escenario=vacio`, `error` y `lento` (como la portada de Raíces
 | Seguimiento | Cargando | El título; el dibujo y la lista con su lugar reservado, sin datos inventados | "Cargando tus entregas en curso…" (en el sistema, en la región `#avisos`, que lo anuncia; en la maqueta llega con la página y no es región viva) |
 | Seguimiento | Éxito | No aplica: es una pantalla de consulta, sin acciones que cambien algo | — |
 | Seguimiento | Error de datos | No aplica: la pantalla no recibe datos del donante | — |
-| Seguimiento | Error del servidor | El título; el banner de error en lugar del dibujo y la lista | "No pudimos cargar tus entregas en curso." · "Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código de seguimiento (en la maqueta, `a1b2c3d4e5f6`, como en Cozy) · "Volver a intentar" |
+| Seguimiento | Error del servidor | El título; el banner de error en lugar del dibujo y la lista | "No pudimos cargar tus entregas en curso." · "Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · el código de seguimiento (en la maqueta, `a1b2c3d4e5f6`, como en el primer prototipo) · "Volver a intentar" |
 | Seguimiento | Sin permiso | No se dibuja en la maqueta (ver Desvíos) | "Esta pantalla es para quienes donan." · "Ir a tu inicio" |
 | Seguimiento | Deshabilitado | No aplica: la pantalla no tiene controles que esperen un paso previo | — |
-| Pantalla sin dibujar | — | El título de la sección, el aviso y el enlace a la de Cozy | "Esta pantalla todavía no está dibujada en Raíces." · "Mientras tanto, podés verla en la alternativa Cozy / Medieval." · "Verla en Cozy" |
+| Pantalla sin dibujar | — | El título de la sección y el aviso | "Esta pantalla todavía no está dibujada." |
 
 ## 6. Textos
 
-Los de las entregas salen de los datos de ejemplo, los mismos que Cozy. Los propios de esta
+Los de las entregas salen de los datos de ejemplo, los mismos que el primer prototipo. Los propios de esta
 pantalla:
 
 | Elemento | Texto | Nota |
@@ -163,15 +161,15 @@ pantalla:
 | Título | Tus entregas en curso | Sin imagen de raíz: la regla de Raíces deja como mucho una por pantalla, en el título grande, y acá el dibujo ya la tiene |
 | Bajada | "Gracias por donar. 3 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25." | Reconoce el aporte (tono del seguimiento del donante) y da la cifra con su fecha; "hoy" queda atado a una fecha, porque las notas de las entregas dicen "hoy"; "aproximadas" dice el límite del dato (RNF-PRIV) |
 | Cifras | "En camino" · "Con problema" · "Pendientes" · "Esperan destino" (enlace a Mis donaciones), cada una con su número | Nombre accesible del registro: "Tus donaciones, por estado". La fecha de corte es la de la bajada, justo arriba. Cada estado lleva su sello, como en la lista |
-| Título de la lista | Entrega por entrega | Cozy dice "La hoja de ruta" |
+| Título de la lista | Entrega por entrega | El primer prototipo decía "La hoja de ruta" |
 | Categoría | El nombre de la categoría ("Alimentos", "Útiles escolares") con su ícono | El ícono, el mismo pictograma impreso del cuaderno de la portada; el nombre lo dice en texto |
-| Etapas | "En depósito" · "Asignada" · "Lista para entregar" · "En camino" · "Entregada", cada una con su detalle ("13 de octubre", "Pendiente", "11 de octubre: no pudo llegar", "Nueva salida: 17 de octubre") | Del dato (`pasos`), los mismos que el detalle de Cozy. Nombre accesible: "Etapas de <nombre>" |
+| Etapas | "En depósito" · "Asignada" · "Lista para entregar" · "En camino" · "Entregada", cada una con su detalle ("13 de octubre", "Pendiente", "11 de octubre: no pudo llegar", "Nueva salida: 17 de octubre") | Del dato (`pasos`), los mismos que el detalle del primer prototipo. Nombre accesible: "Etapas de <nombre>" |
 | Cada entrega | Nombre (enlace al detalle) · categoría · "6 kg para Merendero Ejemplo Sur" · estado + nota · etapas · última noticia | Del dato: "Asignada, espera el camión" y "Sale del depósito el 16 de octubre."; "Salió hoy a las 14:30" y "El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 16:25."; "No pudo llegar; sale de nuevo el 17 de octubre" y "El camino estaba cortado. Última noticia: 11 de octubre, 16:10." |
 | Estados (sello y texto) | Pendiente · En camino · Con problema | Los de `EstadoEntrega`, siempre con texto y una forma, nunca solo con color. En el dibujo, el número de la entrega junto al sello |
-| Pie de la lista | "Arroz largo fino y Zapatillas todavía esperan destino: aparecen acá cuando se les asigne una entidad. Las que ya llegaron, con la foto de la entidad, están en Mis donaciones." | Cozy dice "aparecen en el mapa"; la foto dice qué respalda una entrega llegada |
-| Enlace del pie | Ver Mis donaciones | El mismo de Cozy |
+| Pie de la lista | "Arroz largo fino y Zapatillas todavía esperan destino: aparecen acá cuando se les asigne una entidad. Las que ya llegaron, con la foto de la entidad, están en Mis donaciones." | el primer prototipo dice "aparecen en el mapa"; la foto dice qué respalda una entrega llegada |
+| Enlace del pie | Ver Mis donaciones | El mismo del primer prototipo |
 | En el dibujo | Depósito · el nombre de cada entidad | El dibujo es decorativo para el lector de pantalla (`aria-hidden`): la lista dice lo mismo |
-| Cuenta | Distribuidora Ejemplo SA · Empresa donante | Empresa sintética (decisión del usuario, 2026-11-01). Las donaciones son las de Ana en Cozy |
+| Cuenta | Distribuidora Ejemplo SA · Empresa donante | Empresa sintética (decisión del usuario, 2026-11-01). Las donaciones son las de Ana en el primer prototipo |
 
 Ayudas por flujo crítico: no es un flujo crítico (no envía nada); la ayuda es la bajada, que dice
 qué es aproximado y cuándo se actualizó.
@@ -210,7 +208,7 @@ Filtro de tono:
 | 1 | Visibilidad del estado | Cada entrega con su estado, su nota y su última noticia; arriba, cuándo se actualizó todo | El simulador de posición todavía no existe (HB-05). "Actualizadas…" cambia al recargar la página: si se refresca sola depende de D22 (pendiente) |
 | 2 | Lenguaje del usuario | Entrega, depósito, en camino, espera destino; sin códigos de seguimiento | — |
 | 3 | Control y libertad | Solo consulta; menú y Atrás siempre disponibles | — |
-| 4 | Consistencia | Los mismos estados, datos y enlaces que la pantalla de Cozy; el sello de estado de la portada de Raíces | Raíces no tiene catálogo `/estilos`: el sello se compara a ojo con el de la portada |
+| 4 | Consistencia | Los mismos estados, datos y enlaces que la pantalla del primer prototipo; el sello de estado de la portada de Raíces | No hay catálogo de componentes: el sello se compara a ojo con el de la portada |
 | 5 | Prevención de errores | No hay acciones que cambien algo | — |
 | 6 | Reconocer antes que recordar | El mismo número en el dibujo y en la lista; el nombre de la entidad en los dos | Con muchas entregas en curso el mapa se llena; en el sistema lo arma MapLibre con los datos y la lista sigue completa. El dibujo de la maqueta solo cubre las tres del ejemplo |
 | 7 | Flexibilidad | Quien quiere el detalle entra desde la lista; quien quiere el panorama mira el dibujo | — |
@@ -241,8 +239,8 @@ Decisiones tomadas:
 
 - La cuenta de ejemplo es una empresa, Distribuidora Ejemplo SA, con las donaciones de Ana
   (usuario, 2026-11-01).
-- El menú muestra todas las secciones del donante; las que Raíces no dibujó abren un aviso con
-  enlace a Cozy (usuario, 2026-11-01).
+- El menú muestra todas las secciones del donante; las que Raíces no dibujó abren un aviso
+  (usuario, 2026-11-01).
 - En la maqueta, un dibujo SVG que representa el estilo del mapa de Raíces (una raíz por entrega);
   en el sistema, ese estilo sobre MapLibre (D21). Agente, propuesto; bitácora 2026-11-01.
 - Sin Incentivos en el menú de la empresa (RF-07).

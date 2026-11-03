@@ -6,13 +6,10 @@
 > **Ajustada:** 2026-11-02, con la review de Sofía Deane (resumen sin el total repetido, detalle en
 > datos y gráfico, cartel del cambio de cantidad y categoría del ranking con el nombre oculto;
 > bitácora, "La review de la diseñadora, decidida").
-> Plantilla de la skill `ux-flujo`. Es la cuarta pantalla de Raíces, la tercera alternativa en
-> exploración, y la segunda de la entidad. Vive en su prototipo propio
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
-> `/prototipo/raices/entidad-necesidades`. Su par en Cozy es
-> `templates/prototipo/cozy-medieval/entidad-necesidades.html`, con los mismos datos de partida;
-> Raíces le suma lo que pide RF-10 y Cozy no tiene (editar y dar de baja) y el contenido que eligió
-> el usuario.
+> Plantilla de la skill `ux-flujo`. Es la cuarta pantalla de Raíces y la segunda de la entidad, en el sitio
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> `/entidad-necesidades`. Parte de los datos del primer prototipo de esta pantalla y le suma lo
+> que pide RF-10 (editar y dar de baja) y el contenido que eligió el usuario.
 
 ## 1. Para quién y para qué
 
@@ -23,7 +20,7 @@
 | Qué quiere lograr | "Pedir lo que nos hace falta, ver cuánto llegó y qué viene en camino, y cambiarlo cuando cambia" |
 | Dispositivo principal | Los dos: la computadora para publicar y revisar; el celular para mirar cómo va |
 | Requerimientos | RF-10 (alta, edición y baja de necesidades propias; no ve ni edita las de otras entidades). RF-22 y D26 (las necesidades vigentes se ven en el catálogo público, sin datos de contacto). RF-12 y RF-14 (las entregas que llegan y las que vienen en camino). RNF-UI-04 a 06 (ayudas, éxito y error en cada acción, `hx-indicator`). RF-CL-04 (CSRF). RNF-CL-02 (sin JavaScript, igual funciona) |
-| Datos que usa | `GET /api/necesidades?entidadId=` (las activas), `POST /api/necesidades` (409 si la entidad está dada de baja), `PUT /api/necesidades/{id}` (400 datos inválidos, 404, 409 si otra persona la guardó antes: bloqueo optimista), `DELETE /api/necesidades/{id}` (204, 404). El modelo (`NecesidadDTO`): tipo (recurrente o extraordinaria), subcategoría (de la lista del catálogo), cantidad, descripción (obligatoria), si está satisfecha, inicio y fin. En una recurrente, el largo del período sale de las dos fechas (`Period.between`) y se renueva solo; una extraordinaria empieza hoy y no guarda fecha de fin. Lo editable es la cantidad y la descripción. "Satisfecha" cuenta lo **asignado**, no lo recibido: lo recibido de la pantalla no sale de ese campo. **No están en el contrato:** la unidad de la cantidad, la fecha límite de una extraordinaria, la historia de cada período con lo que llegó, las entregas por necesidad, quién donó, las necesidades cumplidas o terminadas y la versión para detectar que otra persona la cambió (ver Preguntas abiertas). Huecos: HB-13 (solo las propias), HB-16 (las entregas de la entidad en una llamada). En la maqueta, los datos de ejemplo de la pantalla de Cozy |
+| Datos que usa | `GET /api/necesidades?entidadId=` (las activas), `POST /api/necesidades` (409 si la entidad está dada de baja), `PUT /api/necesidades/{id}` (400 datos inválidos, 404, 409 si otra persona la guardó antes: bloqueo optimista), `DELETE /api/necesidades/{id}` (204, 404). El modelo (`NecesidadDTO`): tipo (recurrente o extraordinaria), subcategoría (de la lista del catálogo), cantidad, descripción (obligatoria), si está satisfecha, inicio y fin. En una recurrente, el largo del período sale de las dos fechas (`Period.between`) y se renueva solo; una extraordinaria empieza hoy y no guarda fecha de fin. Lo editable es la cantidad y la descripción. "Satisfecha" cuenta lo **asignado**, no lo recibido: lo recibido de la pantalla no sale de ese campo. **No están en el contrato:** la unidad de la cantidad, la fecha límite de una extraordinaria, la historia de cada período con lo que llegó, las entregas por necesidad, quién donó, las necesidades cumplidas o terminadas y la versión para detectar que otra persona la cambió (ver Preguntas abiertas). Huecos: HB-13 (solo las propias), HB-16 (las entregas de la entidad en una llamada). En la maqueta, los datos de ejemplo de la pantalla del primer prototipo |
 | Boceto de E1 | Página 26: tabla Necesidad / Recurrencia / Motivo / Estado / Detalle y un botón "+". Páginas 29 y 30: el detalle se despliega en la misma fila con una línea de tiempo de períodos de colores (rojo, amarillo, verde) y el período actual hueco; cada período muestra sus fechas. Página 31: la leyenda de los colores |
 
 ## 2. Dónde está en el sitio
@@ -35,7 +32,7 @@ esa necesidad (para enlazarla desde otras pantallas, como "Para tu pedido" de Co
 recepción; en la maqueta, el id es un nombre corto: `lentejas`, `ropa`).
 
 Las otras pantallas de la entidad que faltan en Raíces (Inicio y Donaciones recibidas) siguen
-abriendo la página sin dibujar, con el enlace a Cozy. Seguir entregas de la entidad tampoco está
+abriendo la página sin dibujar. Seguir entregas de la entidad tampoco está
 dibujada en Raíces: "Ver en Seguir entregas" lleva a esa página.
 
 ## 3. Recorrido
@@ -164,7 +161,7 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
   necesidades vigentes hay, cuántas entregas esperan la confirmación (con el enlace a la primera),
   cuántas vienen en camino o por salir y cuántas tienen un problema (con el enlace a su pedido),
   separadas como en el registro de Seguir entregas.
-- **Publicar otra necesidad:** un formulario plegado, como en Cozy, con los datos que pide el
+- **Publicar otra necesidad:** un formulario plegado, como en el primer prototipo, con los datos que pide el
   contrato: qué hace falta (de la lista del catálogo, agrupada por categoría), cuánto (con la
   unidad), si se repite (una sola vez, cada semana, cada quincena o cada mes), hasta cuándo (solo si es una sola
   vez) y por qué hace falta (la descripción, obligatoria). Si se repite, la fecha no se pide: el
@@ -216,7 +213,7 @@ Qué cambia respecto del boceto de E1, y por qué:
   culpa (tono). La leyenda de la página 31 ya no hace falta: cada período dice lo suyo.
 - **Cada período dice cuánto llegó,** no solo su color, y sus fechas a la vista (el boceto las
   muestra al pasar el mouse, que no existe en el celular).
-- **El botón "+" pasa a "Publicar otra necesidad",** con texto, como Cozy.
+- **El botón "+" pasa a "Publicar otra necesidad",** con texto, como el primer prototipo.
 - **"Recurrencia" pasa a "¿Se repite?",** con "Una sola vez", "Cada semana", "Cada quincena" y "Cada mes", y la
   fecha solo para la que es una sola vez: el contrato saca el largo del período de las fechas y dos
   respuestas que se contradicen ("cada semana" y una fecha a un mes) no deberían poder darse.
@@ -233,7 +230,7 @@ En la maqueta: `?necesidad=lentejas` (u otra) abre esa necesidad; `?escenario=va
 describe, no se dibuja) y `no-existe`. `error-cambiar` y `error-baja` son los del servidor;
 `sin-conexion` muestra el de publicar (los de cambiar y dar de baja tienen el mismo aviso, con su
 texto). El error de datos al publicar es su propia pantalla, `entidad-necesidades-publicar-error`,
-como en Cozy, y el de cambiar se ve con `?escenario=cambiar-datos`; cada acción lleva a
+como en el primer prototipo, y el de cambiar se ve con `?escenario=cambiar-datos`; cada acción lleva a
 `entidad-necesidades-publicada`, `-cambiada` o `-baja`. Los estados de envío ("Publicando…",
 "Guardando…", "Dando de baja…") se describen y no se dibujan: son el botón deshabilitado con
 `hx-indicator`, como en Confirmar recepción.
@@ -270,17 +267,17 @@ como en Cozy, y el de cambiar se ve con `?escenario=cambiar-datos`; cada acción
 
 ## 6. Textos
 
-Los datos de partida salen de las necesidades de Cozy (al 15 de octubre de 2026) y de las entregas de
+Los datos de partida salen de las necesidades del primer prototipo (al 15 de octubre de 2026) y de las entregas de
 su Seguir entregas y su Confirmar recepción. Lo nuevo (si se repite, los períodos, el motivo, quién
 donó, las terminadas) es de ejemplo, sintético.
 
 | Elemento | Texto | Nota |
 |---|---|---|
 | Rótulo | "Necesidades" | El nombre del menú |
-| Título | "Lo que *hace falta*" | El de Cozy. La parte en cursiva, con la segunda tinta |
+| Título | "Lo que *hace falta*" | El del primer prototipo. La parte en cursiva, con la segunda tinta |
 | Bajada | "Tus pedidos vigentes. Los ven los donantes y el catálogo público, sin tus datos de contacto." | Dice quién los ve (RF-22, D26) |
 | Registro | "Al 15 de octubre de 2026" · "5 necesidades vigentes" · "2 entregas esperan tu confirmación" · "2 en camino o por salir" · "1 con un problema" | Cifras con fecha. "2 entregas esperan…" enlaza a Confirmar recepción de las lentejas; "1 con un problema", al aceite (`?necesidad=aceite`) |
-| Publicar | "Publicar otra necesidad" · campos: "Qué hace falta" (una lista agrupada por categoría: Alimentos, Ropa, Muebles; ayuda: "Si no está en la lista, elegí la más parecida y contalo en por qué hace falta.") · "Cuánto" (número; ayuda: "En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto en cada período."; la lista dice la unidad de cada opción: "Fideos secos (kg)", "Aceite de girasol (litros)", "Ropa de abrigo (unidades)") · "¿Se repite?" ("Una sola vez", "Cada semana", "Cada quincena", "Cada mes"; ayuda: "Si se repite, el primer período empieza hoy y se renueva solo cada semana, cada quincena (15 días) o cada mes.") · "Hasta cuándo" ("Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.") · "Por qué hace falta" ("Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a viernes.") · botón "Publicar necesidad" | Los de Cozy, con la lista del catálogo en lugar del texto libre, más "¿Se repite?" y el motivo. Arriba: "Todos los datos son obligatorios; la fecha, solo si es una sola vez." |
+| Publicar | "Publicar otra necesidad" · campos: "Qué hace falta" (una lista agrupada por categoría: Alimentos, Ropa, Muebles; ayuda: "Si no está en la lista, elegí la más parecida y contalo en por qué hace falta.") · "Cuánto" (número; ayuda: "En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto en cada período."; la lista dice la unidad de cada opción: "Fideos secos (kg)", "Aceite de girasol (litros)", "Ropa de abrigo (unidades)") · "¿Se repite?" ("Una sola vez", "Cada semana", "Cada quincena", "Cada mes"; ayuda: "Si se repite, el primer período empieza hoy y se renueva solo cada semana, cada quincena (15 días) o cada mes.") · "Hasta cuándo" ("Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.") · "Por qué hace falta" ("Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a viernes.") · botón "Publicar necesidad" | Los del primer prototipo, con la lista del catálogo en lugar del texto libre, más "¿Se repite?" y el motivo. Arriba: "Todos los datos son obligatorios; la fecha, solo si es una sola vez." |
 | Aceite de girasol | "Hasta el 20 de octubre" · "faltan 5 días" · "Una sola vez" · "0 de 20 litros recibidos" · por qué: "Para cocinar el almuerzo." · entregas: "10 litros · El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha." · quién donó: "Todavía no llegó nada." | |
 | Leche en polvo | "Hasta el 25 de octubre" · "faltan 10 días" · "Una sola vez" · "12 de 24 unidades recibidas" · por qué: "Para la merienda de los más chicos." · entregas: "12 unidades · Sale del depósito el 17 de octubre." · quién donó: "Lácteos Ejemplo SA · 12 unidades · 6 de octubre" | |
 | Lentejas secas | "Octubre, hasta el 31" · "faltan 16 días" · "Cada mes" · "10 de 40 kg recibidos" · por qué: "Para el almuerzo de lunes a viernes." · entregas: "15 kg · Llegaron a tu puerta hoy a las 18:20 y esperan tu confirmación." + "Confirmar recepción" · quién donó: "Distribuidora Ejemplo SA · 10 kg · 10 de octubre" · períodos: "Octubre · del 1 al 31 · 10 de 40 kg · En curso" · "Septiembre · 40 de 40 kg · Llegó todo" · "Agosto · 22 de 40 kg · Llegó una parte" · "Julio · 0 de 40 kg · No llegó nada" · "Ver los anteriores" (plegado): "Junio · 40 de 40 kg · Llegó todo" · "Desde junio de 2026" | Abierta en la maqueta, de partida: tiene todas las partes |
@@ -294,7 +291,7 @@ donó, las terminadas) es de ejemplo, sintético.
 | Cambiar | "Cuánto, en kg" (la unidad de esa necesidad; número; ayuda en una que se repite: "Vale desde este período, octubre: si ya llegó más que lo nuevo, este período queda cumplido."; en una de una sola vez: "Si ya llegó más que lo nuevo, el pedido queda cumplido.") · "Por qué hace falta" (ayuda: "Lo ven los donantes.") · "Guardar cambios" · con conflicto, "Cuánto" trae lo que escribiste (en la maqueta, 50) · ayuda del formulario: "Qué hace falta y si se repite no se pueden cambiar: si cambiaron, dala de baja y publicá otra." | Lo que deja cambiar el contrato (cantidad y descripción) |
 | Cumplidas y terminadas | "Cumplidas y terminadas (3)" · "Útiles escolares · 30 kits · Cumplida el 28 de septiembre: llegaron los 30." · "Pañales · 10 paquetes · Terminó el 10 de octubre con 6 de 10 recibidos." · "Frazadas · 20 frazadas · La diste de baja el 1 de octubre, con 8 recibidas." | Cómo terminó, en palabras, con fecha y cifra; sin juzgar |
 | Códigos de error | "Código: a1b2c3d4e5f6" | En cada error del servidor |
-| Cuenta | Marta · Comedor Barrio Ejemplo | La de Cozy |
+| Cuenta | Marta · Comedor Barrio Ejemplo | La del primer prototipo |
 
 Ayudas por flujo crítico (RNF-UI-04, registrar necesidades):
 
@@ -352,11 +349,11 @@ Filtro de tono:
 | 1 | Visibilidad del estado | Cada necesidad dice cómo va con cifra y período; el registro dice qué espera confirmación y qué viene; cada período, cómo le fue; al enviar, "Publicando…" | Lo que viene en camino depende de HB-16 |
 | 2 | Lenguaje del usuario | Pedido, cuánto, hasta cuándo, se repite, llegó; sin "recurrente", "extraordinaria" ni "satisfecha" | — |
 | 3 | Control y libertad | Formularios plegados que se cierran sin guardar; la baja pide confirmación con "No, dejarla" | La baja no se deshace desde acá (el contrato no lo permite): hay que publicarla de nuevo |
-| 4 | Consistencia | Los textos y campos de Cozy; el registro, los sellos y las etiquetas de las otras pantallas de Raíces; los pictogramas del cuaderno de la portada | — |
+| 4 | Consistencia | Los textos y campos del primer prototipo; el registro, los sellos y las etiquetas de las otras pantallas de Raíces; los pictogramas del cuaderno de la portada | — |
 | 5 | Prevención de errores | La unidad y la fecha con ejemplo; la fecha no deja elegir antes de hoy; la baja pide confirmación; el cambio dice qué no se puede cambiar | — |
 | 6 | Reconocer antes que recordar | El resumen plegado dice todo lo necesario; lo que espera confirmación tiene su botón ahí mismo | — |
 | 7 | Flexibilidad | `?necesidad=` abre una directa desde otras pantallas; desde el celular o la computadora | — |
-| 8 | Diseño minimalista | Lo plegado muestra lo esencial; el detalle, solo al abrir; las terminadas, aparte y cerradas | El detalle suma cuatro partes que Cozy no tiene: se prueba que no abrume |
+| 8 | Diseño minimalista | Lo plegado muestra lo esencial; el detalle, solo al abrir; las terminadas, aparte y cerradas | El detalle suma cuatro partes que el primer prototipo no tiene: se prueba que no abrume |
 | 9 | Recuperarse de errores | El resumen con enlaces; lo escrito se conserva; el conflicto muestra cómo quedó y guarda lo escrito | — |
 | 10 | Ayuda | Ayuda en cada campo; el vacío explica para qué sirve publicar | — |
 
@@ -381,7 +378,7 @@ cambiar la cantidad de un pedido que se repite.
 
 Decisiones tomadas:
 
-- Los datos de partida y los textos de Cozy; los mismos nombres de pantalla.
+- Los datos de partida y los textos del primer prototipo; los mismos nombres de pantalla.
 - Rondas de preguntas (usuario, 2026-11-01):
   - las que se repiten muestran su historia de períodos, con cuánto llegó y el estado en texto;
   - el detalle se despliega en la misma lista;
@@ -406,7 +403,7 @@ Partes que se deciden con A/B, en este orden:
    período, con lo que llegó y el estado escritos debajo; la del período en curso, punteada (B,
    contra la raíz con estaciones, la recomendada; bitácora, "Los períodos: una barra por período").
 3. El lugar de "Publicar otra necesidad" en pantalla grande. **Decidido (usuario, 2026-11-01):**
-   plegado arriba de la lista, como Cozy, sin dibujar la columna al costado (la recomendada:
+   plegado arriba de la lista, como el primer prototipo, sin dibujar la columna al costado (la recomendada:
    publicar se hace pocas veces y la columna le quita ancho a la lista).
 4. El detalle desplegado en pantalla grande. **Decidido (usuario, 2026-11-02, review de Sofía):**
    datos y gráfico: a la izquierda, "Por qué hace falta" y "Quién donó" lado a lado y las entregas

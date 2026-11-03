@@ -1,9 +1,9 @@
 # Flujo: Contacto, en Raíces
 
 > **Estado:** aprobado · **Fecha:** 2026-11-02 · **Aprobó:** usuario (2026-11-02), al ver las pantallas dibujadas
-> Plantilla de la skill `ux-flujo`. Pantalla nueva del prototipo propio de Raíces
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
-> `/prototipo/raices/publico-contacto`. Cozy no la tiene. Sale de la pregunta 17 del artifact de
+> Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> `/publico-contacto`. Sale de la pregunta 17 del artifact de
 > preguntas abiertas: el grupo empató y el usuario eligió un formulario dentro de DonaTrack
 > (2026-11-02).
 
@@ -46,7 +46,7 @@ flowchart TD
 Desvíos: irse sin enviar (Atrás del navegador o el menú), error de datos, error del servidor y sin
 conexión. No hay "sin permiso": la pantalla es pública. El enlace de cada aviso de error lleva la
 pantalla de origen (`?volver=`); al enviar, el botón de salida vuelve a ella. Si se entró por el
-pie, lleva a la portada. Solo se aceptan pantallas de `/prototipo/raices/`: otra dirección lleva a
+pie, lleva a la portada. Solo se aceptan pantallas de `/`: otra dirección lleva a
 la portada, para que el enlace no pueda mandar a otro sitio.
 
 ## 4. Pantallas

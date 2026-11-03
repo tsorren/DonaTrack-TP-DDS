@@ -7,12 +7,10 @@
 > **Ajustada:** 2026-11-02, con la review de Sofía Deane (el acta en dos filas de dos columnas, el
 > botón de las fotos centrado y la categoría del ranking con el nombre oculto; bitácora, "La review
 > de la diseñadora, decidida").
-> Plantilla de la skill `ux-flujo`. Es la tercera pantalla de Raíces, la tercera alternativa en
-> exploración, y la primera de la entidad. Vive en su prototipo propio
-> ([ADR propuesto](../../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md)):
-> `/prototipo/raices/entidad-seguimiento-confirmar`. Su par en Cozy es
-> `templates/prototipo/cozy-medieval/entidad-seguimiento-confirmar.html`, con los mismos datos,
-> los mismos campos y las mismas acciones.
+> Plantilla de la skill `ux-flujo`. Es la tercera pantalla de Raíces y la primera de la entidad, en el sitio
+> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> `/entidad-seguimiento-confirmar`. Mantiene los datos, los campos y las acciones del primer
+> prototipo de esta pantalla.
 
 ## 1. Para quién y para qué
 
@@ -23,7 +21,7 @@
 | Qué quiere lograr | "Dejar asentado que la entrega llegó, con la foto, rápido y sin equivocarme de entrega" |
 | Dispositivo principal | Celular primero; también la computadora |
 | Requerimientos | RF-12 (confirmar recepción exige al menos una foto válida, D27; la entrega pasa a `ENTREGADA`). RF-08 (quien donó recibe la notificación de recepción) y RF-13 (la recepción también aparece en la bandeja de la entidad). RF-01 y RF-02 (la foto de una entrega confirmada puede mostrarse en la portada y en el mapa público, con ubicación aproximada). RF-14 (solo las entregas que la entidad debe recibir). RNF-PRIV-03 y 04 (fotos privadas y sin EXIF). RNF-UI-04 a 06 (ayudas del flujo crítico, éxito y error en cada acción, `hx-indicator`). RF-CL-04 (CSRF). RNF-CL-02 (sin JavaScript, igual funciona) |
-| Datos que usa | `PATCH /api/entregas/{id}/estado` con `estado: ENTREGADA`, `actor` y `fotosRecepcion` (al menos una; 400 si falta la foto o la transición no vale; 404 si no existe). Huecos: HB-10 (subir la foto: `POST /api/entregas/{id}/fotos` multipart, hacia MinIO), HB-09 (la notificación de recepción), HB-13 (que solo la entidad destinataria confirme) y HB-16 (las entregas activas de una entidad en una llamada). El remito, la necesidad que cubre y quién donó **no están en el contrato**: el remito se suma al contrato de entregas y la necesidad y quién donó los pide el cliente a Donaciones (HB-17, [ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md), 2026-11-02). Los bultos salieron de la pantalla. En la maqueta, los datos de ejemplo de la pantalla de Cozy |
+| Datos que usa | `PATCH /api/entregas/{id}/estado` con `estado: ENTREGADA`, `actor` y `fotosRecepcion` (al menos una; 400 si falta la foto o la transición no vale; 404 si no existe). Huecos: HB-10 (subir la foto: `POST /api/entregas/{id}/fotos` multipart, hacia MinIO), HB-09 (la notificación de recepción), HB-13 (que solo la entidad destinataria confirme) y HB-16 (las entregas activas de una entidad en una llamada). El remito, la necesidad que cubre y quién donó **no están en el contrato**: el remito se suma al contrato de entregas y la necesidad y quién donó los pide el cliente a Donaciones (HB-17, [ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md), 2026-11-02). Los bultos salieron de la pantalla. En la maqueta, los datos de ejemplo de la pantalla del primer prototipo |
 | Boceto de E1 | Página 28: "Entregas a confirmar", con fecha, hora, código y contenido; una zona para soltar archivos ("Adjuntar al menos 1 imagen"), la casilla "Disclaimer legal", "Reportar problema" y "Confirmar Entregas" |
 
 ## 2. Dónde está en el sitio
@@ -35,9 +33,9 @@ Seguir entregas, y desde el aviso de "Te queda una en la puerta" al terminar otr
 
 Raíces todavía no tiene las otras pantallas de la entidad. El menú muestra sus cuatro secciones
 (Inicio, Necesidades, Donaciones recibidas y Seguir entregas); las que faltan abren la página corta
-de Raíces que dice que todavía no está dibujada y enlaza a la de Cozy (decisión del usuario,
-2026-11-01, la misma de Seguir entregas). "Llegó con un problema" abre esa misma página, pero sin
-enlace a Cozy, porque Cozy tampoco la tiene.
+que dice que todavía no está dibujada (decisión del usuario, 2026-11-01, la misma de Seguir
+entregas; desde 2026-11-03, sin enlace a otra identidad). "Llegó con un problema" abre esa misma
+página, con la vuelta a la entrega.
 
 ## 3. Recorrido
 
@@ -135,7 +133,7 @@ celular, el dispositivo principal:
   pantalla.
 - **Las pruebas:** las fotos primero, que es lo que pide RF-12; debajo, quién las ve: quien donó
   y, quizás, el mapa público.
-- **Lo que recibiste:** el número de remito, el mismo campo de Cozy. Los bultos no se piden: la
+- **Lo que recibiste:** el número de remito, el mismo campo del primer prototipo. Los bultos no se piden: la
   etiqueta ya dice cuánto llegó (usuario, 2026-11-02).
 - **El pie:** quién firma y cuándo, el botón, qué pasa al confirmar y el enlace al problema.
 - **Recepción confirmada:** la misma raíz, ahora completa: la línea llega impresa hasta la
@@ -150,7 +148,7 @@ baja). Recepción confirmada sigue en dos columnas. El botón de las fotos va ce
 Qué cambia respecto del boceto de E1, y por qué:
 
 - **Una entrega por vez,** no "Confirmar Entregas" juntas: cada una tiene sus fotos y su remito, y
-  un error en una no traba las otras (la nota del boceto lo advierte). Es lo mismo que hace Cozy.
+  un error en una no traba las otras (la nota del boceto lo advierte). Es lo mismo que hace el primer prototipo.
 - **Sin la casilla "Disclaimer legal":** el boceto no dice qué acepta. En su lugar, el texto dice
   qué pasa al confirmar y quién ve las fotos. Si hace falta un texto legal, se suma con los
   legales del sitio.
@@ -164,8 +162,8 @@ Qué cambia respecto del boceto de E1, y por qué:
 
 En la maqueta, `?entrega=lentejas` (de partida) o `ropa`, y `?escenario=lento`, `error`,
 `sin-conexion`, `confirmada` y `vacio` (como las otras pantallas de Raíces). El error de datos es su propia pantalla,
-`entidad-seguimiento-confirmar-error`, como en Cozy. Cada confirmación lleva a
-`entidad-seguimiento-sellada-lentejas` o `-ropa`, los mismos nombres de Cozy.
+`entidad-seguimiento-confirmar-error`, como en el primer prototipo. Cada confirmación lleva a
+`entidad-seguimiento-sellada-lentejas` o `-ropa`, los mismos nombres del primer prototipo.
 
 | Pantalla | Estado | Qué se ve | Texto |
 |---|---|---|---|
@@ -183,12 +181,12 @@ En la maqueta, `?entrega=lentejas` (de partida) o `ropa`, y `?escenario=lento`, 
 | Recepción confirmada | Con datos | La raíz completa, lo asentado, la necesidad, el aviso a quien donó y la siguiente entrega | Ver Textos |
 | Recepción confirmada | Vacío | No queda otra entrega en la puerta: en lugar de la siguiente, una línea | "No te quedan entregas para confirmar." |
 | Recepción confirmada | Cargando, error | No aplica: es la respuesta de la confirmación | — |
-| Llegó con un problema | — | La página sin dibujar, sin enlace a Cozy, con la vuelta a la entrega | "Esta pantalla todavía no está dibujada en Raíces." · "Volver a la entrega" |
+| Llegó con un problema | — | La página sin dibujar, con la vuelta a la entrega | "Esta pantalla todavía no está dibujada." · "Volver a la entrega" |
 
 ## 6. Textos
 
-Los de la entrega salen de los datos de ejemplo de Cozy; la necesidad, de las necesidades
-publicadas de Cozy (lentejas: 10 de 40 kg; ropa: 5 de 30 unidades, en la unidad del catálogo). Los propios de esta pantalla:
+Los de la entrega salen de los datos de ejemplo del primer prototipo; la necesidad, de las necesidades
+publicadas del primer prototipo (lentejas: 10 de 40 kg; ropa: 5 de 30 unidades, en la unidad del catálogo). Los propios de esta pantalla:
 
 | Elemento | Texto | Nota |
 |---|---|---|
@@ -196,24 +194,24 @@ publicadas de Cozy (lentejas: 10 de 40 kg; ropa: 5 de 30 unidades, en la unidad 
 | Título | "Confirmá lo que *llegó*" | La entidad hace (tono). La parte en cursiva, con la segunda tinta, como los títulos de Raíces |
 | Bajada | "Lentejas secas, 15 kg. Llegó hoy a las 18:20." | Qué entrega y cuándo llegó: no equivocarse de entrega |
 | Etiqueta | "Alimentos · 15 kg" · "Para tu pedido": "Lentejas secas, 40 kg, hasta el 31 de octubre. Van 10 kg recibidos." · "Donó": "Distribuidora Ejemplo SA" · "Desde": "Depósito Central" | Ropa: "Ropa · 10 unidades" · "Ropa de abrigo, 30 unidades, hasta el 15 de noviembre. Van 5 unidades recibidas." · "Donó": "Donante Sostenedor" (sin categoría: "Un donante"). En el estado ya confirmada, sin la cifra recibida, que ya cambió |
-| El último tramo | "Salió del Depósito Central" · "Hoy, 14:30" · "Llegó a tu puerta" · "Hoy, 18:20" · "Tu confirmación" · "Falta: es este paso" | Los de Cozy; lo pendiente se dice pendiente |
-| Las pruebas | "Fotos de lo que llegó" · ayuda: "Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB cada una. Mostrá lo que llegó; no hace falta que salga nadie." | La ayuda de Cozy más la guía de fotos del tono común |
+| El último tramo | "Salió del Depósito Central" · "Hoy, 14:30" · "Llegó a tu puerta" · "Hoy, 18:20" · "Tu confirmación" · "Falta: es este paso" | Los del primer prototipo; lo pendiente se dice pendiente |
+| Las pruebas | "Fotos de lo que llegó" · ayuda: "Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB cada una. Mostrá lo que llegó; no hace falta que salga nadie." | La ayuda del primer prototipo más la guía de fotos del tono común |
 | Quién ve tus fotos | "Distribuidora Ejemplo SA va a ver tus fotos y la fecha de hoy. Una foto puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada. El remito no se publica." | Ropa: "Quien donó va a ver tus fotos…", igual. Dice para qué se usa la foto (usuario, 2026-11-01; RF-01, RF-02 y RNF-PRIV-01) |
 | Obligatorios | "Los dos datos son obligatorios: las fotos y el remito." | Arriba del formulario: marca en texto lo obligatorio |
-| Lo que recibiste | "Número de remito" · "Está arriba a la derecha del papel." | Los de Cozy, sin los bultos (usuario, 2026-11-02) |
+| Lo que recibiste | "Número de remito" · "Está arriba a la derecha del papel." | Los del primer prototipo, sin los bultos (usuario, 2026-11-02) |
 | Nota del botón | "Al confirmar, la entrega queda como entregada y quien donó recibe el aviso. Si llegó incompleta o dañada, confirmala igual y contanos qué pasó." | "Confirma y reporta" (usuario, 2026-11-02) |
-| Firma | "Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026" | El de Cozy |
-| Acción principal | "Confirmar recepción" · mientras envía, "Confirmando…" | El de Cozy |
-| Qué pasa al confirmar | "Al confirmar, la entrega queda como entregada y quien donó recibe el aviso." | El de Cozy |
+| Firma | "Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026" | El del primer prototipo |
+| Acción principal | "Confirmar recepción" · mientras envía, "Confirmando…" | El del primer prototipo |
+| Qué pasa al confirmar | "Al confirmar, la entrega queda como entregada y quien donó recibe el aviso." | El del primer prototipo |
 | Problema | "Llegó con un problema" (enlace) | Usuario, 2026-11-01 |
 | Confirmada: título | "Recepción *confirmada*" | |
 | Confirmada: bajada | "Confirmaste la recepción de Lentejas secas, 15 kg, hoy a las 18:45. Llegaron hoy a las 18:20." | Ropa: "… Ropa de abrigo, 10 unidades, hoy a las 18:50. Llegó ayer a las 17:10." El hecho, con sus dos horas; sin el efecto social (tono). En el celular, lo asentado y la siguiente van antes que la etiqueta |
-| Confirmada: lo asentado | "Remito" 0001-00004521 · "Recibió" Marta, por Comedor Barrio Ejemplo · "Cuándo" 15 de octubre de 2026, 18:45 | Los de Cozy |
+| Confirmada: lo asentado | "Remito" 0001-00004521 · "Recibió" Marta, por Comedor Barrio Ejemplo · "Cuándo" 15 de octubre de 2026, 18:45 | Los del primer prototipo |
 | Confirmada: la necesidad | "Tu pedido de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre." | Ropa: "Tu pedido de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre." Cifra con período |
 | Confirmada: quien donó | "Le avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha." | Ropa: "Le avisamos a quien donó, con tus fotos y la fecha." No afirma que ya lo leyó (HB-09) |
-| Confirmada: la siguiente | "Te queda una en la puerta" · "Ropa de abrigo, 10 unidades" · "Llegó ayer a las 17:10. Desde el Depósito Central." · "Confirmar recepción" | Los de Cozy. Sin ninguna: "No te quedan entregas para confirmar." |
-| Confirmada: salidas | "Volver al inicio" · "Seguir entregas" | Los de Cozy |
-| Cuenta | Marta · Comedor Barrio Ejemplo | La de Cozy |
+| Confirmada: la siguiente | "Te queda una en la puerta" · "Ropa de abrigo, 10 unidades" · "Llegó ayer a las 17:10. Desde el Depósito Central." · "Confirmar recepción" | Los del primer prototipo. Sin ninguna: "No te quedan entregas para confirmar." |
+| Confirmada: salidas | "Volver al inicio" · "Seguir entregas" | Los del primer prototipo |
+| Cuenta | Marta · Comedor Barrio Ejemplo | La del primer prototipo |
 
 Ayudas por flujo crítico (RNF-UI-04, confirmar recepción): qué foto sirve (al menos una, el tamaño
 y el formato), dónde está el remito, qué pasa al confirmar, quién ve las fotos y que se confirma
@@ -257,11 +255,11 @@ Filtro de tono:
 | 1 | Visibilidad del estado | El último tramo dice qué pasó y qué falta; al enviar, "Confirmando…"; al terminar, la raíz completa y la hora | El progreso de subida de cada foto depende de HB-10 |
 | 2 | Lenguaje del usuario | Remito, entrega, tu pedido; sin estados técnicos (`ENTREGADA`) | — |
 | 3 | Control y libertad | Nada se guarda hasta confirmar; "Seguir entregas" y Atrás siempre | Una confirmación no se deshace desde acá (el contrato no lo permite) |
-| 4 | Consistencia | Los mismos campos, textos y acciones de Cozy; los sellos de Seguir entregas | — |
+| 4 | Consistencia | Los mismos campos, textos y acciones del primer prototipo; los sellos de Seguir entregas | — |
 | 5 | Prevención de errores | La bajada nombra la entrega y la hora; una entrega por vez; el botón no envía dos veces y una segunda confirmación dice "Ya confirmaste esta entrega". Sin diálogo antes de confirmar, aunque el catálogo lo pide para lo irreversible: el acta misma es el paso de revisión (la persona eligió las fotos y escribió el remito, y el texto dice qué pasa al confirmar), y un diálogo suma un toque en la puerta con el celular en la mano (agente, propuesto) | Si en la prueba con personas aparecen confirmaciones por error, se suma el diálogo |
 | 6 | Reconocer antes que recordar | La etiqueta muestra qué es, para qué pedido y de quién; la ayuda dice dónde está el remito | — |
 | 7 | Flexibilidad | Cámara o galería; desde el celular en la puerta o después desde la computadora | — |
-| 8 | Diseño minimalista | Tres campos y un botón; la etiqueta solo con lo que ayuda a no equivocarse | La etiqueta suma tres datos que Cozy no tiene: se prueba que no demore la confirmación |
+| 8 | Diseño minimalista | Tres campos y un botón; la etiqueta solo con lo que ayuda a no equivocarse | La etiqueta suma tres datos que el primer prototipo no tiene: se prueba que no demore la confirmación |
 | 9 | Recuperarse de errores | El resumen con enlaces, lo escrito se conserva, se avisa que hay que volver a elegir las fotos; el error del servidor dice que nada cambió | — |
 | 10 | Ayuda | Ayudas en cada campo y qué ve quien donó | — |
 
@@ -286,8 +284,8 @@ foto sin ayuda, y si la etiqueta le ayuda a no confundir dos entregas que llegar
 
 Decisiones tomadas:
 
-- Una entrega por vez, como Cozy (ver qué cambia respecto del boceto).
-- Los mismos campos, textos y acciones que Cozy; los mismos nombres de pantalla.
+- Una entrega por vez, como el primer prototipo (ver qué cambia respecto del boceto).
+- Los mismos campos, textos y acciones que el primer prototipo; los mismos nombres de pantalla.
 - Rondas de preguntas (usuario, 2026-11-01):
   - "Llegó con un problema", un enlace debajo del botón; el reporte se diseña aparte;
   - la etiqueta muestra el último tramo, la necesidad que cubre y quién donó, y la pantalla dice qué

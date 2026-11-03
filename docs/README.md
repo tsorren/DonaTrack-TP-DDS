@@ -118,11 +118,12 @@ docs/
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
 │   ├── bocetos-e1.md · mapa-del-sitio.md  # Insumos: inventario de bocetos de E1 y mapa con niveles
 │   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad, libertad creativa y oficio
-│   ├── estructura-cozy-medieval.md        # Estructura y navegación de la Alternativa Cozy / Medieval
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
-│   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todas las alternativas
+│   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todo el sitio
 │   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
-│   ├── identidad/                         # Un brief por alternativa: Glassmorphism, Cozy / Medieval y Raíces (en exploración)
+│   ├── identidad/                         # El brief de la identidad del sitio (Raíces) y sus referencias
+│   ├── flujos/ · evidencia/               # Fichas de flujo aprobadas y capturas de las decisiones
+│   ├── historico/                         # Identidades retiradas el 2026-11-03; no es guía para diseñar
 │   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)
 │   └── plantillas/                        # Ficha de flujo, iteración A/B, brief de identidad y encargos creativos
 │

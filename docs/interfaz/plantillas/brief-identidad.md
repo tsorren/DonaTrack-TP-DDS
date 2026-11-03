@@ -27,10 +27,10 @@
 ## Voz
 
 El trato (vos), la personalidad verbal, el tono de cada pantalla, los estados y las cifras ya están
-fijados para todas las alternativas en [tono y comunicación](../tono-y-comunicacion.md). Este brief
-declara solo la voz propia de la alternativa en títulos y rótulos.
+fijados para el sitio en [tono y comunicación](../tono-y-comunicacion.md). Este brief declara solo
+la voz propia de la identidad en títulos y rótulos.
 
-- **Tono propio de títulos y rótulos:** una frase (por ejemplo, "aventura adulta, nunca infantil")
+- **Tono propio de títulos y rótulos:** una frase (por ejemplo, "cercana y concreta, nunca solemne")
 - **Ejemplo de título con esa voz:**
 - **Palabras que no van (además de las del tono común):**
 

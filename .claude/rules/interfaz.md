@@ -13,7 +13,7 @@ paths:
 - Ninguna pantalla sin su flujo aprobado en `docs/interfaz/flujos/`.
 - Criterios de la cátedra para diseñar y revisar: `docs/interfaz/criterios-catedra-ux-ui.md`
   (patrones conocidos, 7 factores, arquitectura de la información y las 10 heurísticas).
-- Todo texto de pantalla sigue `docs/interfaz/tono-y-comunicacion.md`, común a todas las
-  alternativas: estados como son, cifras con período, sin urgencia ni culpa.
+- Todo texto de pantalla sigue `docs/interfaz/tono-y-comunicacion.md`, común a todo el
+  sitio: estados como son, cifras con período, sin urgencia ni culpa.
 - Al usuario o la diseñadora: una decisión por pregunta, como máximo 3 por ronda, opción
   recomendada y palabras simples.

@@ -8,8 +8,9 @@ entregable para la cátedra. Las comparaciones A/B agregan sus capturas en `evid
 
 Desde el 2026-10-30 hay dos alternativas de identidad. Las decisiones anteriores a la entrada
 "Dos alternativas de identidad" son de la **Alternativa Glassmorphism**. Las de la **Alternativa
-Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
-`evidencia/cozy-medieval/`.
+Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema. Desde el 2026-11-03 el sitio tiene una sola
+identidad, Raíces; los documentos y la evidencia de las otras dos están en el
+[archivo histórico](historico/README.md), que no es guía para diseñar.
 
 ## Formato
 
@@ -25,6 +26,24 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 ```
 
 ## Decisiones
+
+### 2026-11-03 · proceso · Una sola identidad: Raíces es el sitio y se retiran Glassmorphism y Cozy / Medieval
+
+- **Decisión:** el cliente liviano queda con una sola identidad, Raíces, servida en `/` (la portada)
+  y `/<pantalla>`. Se borran las plantillas, hojas, imágenes, scripts y fuentes de Glassmorphism y
+  de Cozy, el catálogo `/estilos` y `?alternativa=` con sus reglas (gemelas, tabla de voz, juego
+  completo). Sus documentos pasan al [archivo histórico](historico/README.md). Las skills, el
+  workflow `corrida-creativa` y las plantillas de encargo no usan ninguna identidad como ejemplo.
+  Una identidad o un rediseño nuevo se propone en su propia rama, sobre el sitio.
+- **Alternativas:** dejar a Raíces en `/prototipo/raices/` con `/` redirigiendo ahí; dejar el
+  mecanismo de alternativas vacío; borrar los documentos viejos o dejarlos donde estaban.
+- **Por qué:** el grupo eligió Raíces y es la única con el recorrido de los tres roles; una pantalla
+  se escribe una vez; los ejemplos de las identidades viejas no condicionan los diseños que vengan
+  (pedido del usuario).
+- **Costo:** comparar dos identidades lado a lado pide dos ramas. Los enlaces de los dos ADR
+  anteriores a los documentos movidos quedan rotos (los ADR no se editan).
+- **Quién decidió:** usuario.
+- **Evidencia:** [ADR propuesto](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md).
 
 ### 2026-11-03 · estructura (Raíces) · Sitio A elegido, con la cabecera, el menú y el pie de B
 
@@ -1179,7 +1198,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 ### 2026-10-31 · concepto (Raíces) · El hero de la portada es un corte de suelo
 
 - **Decisión:** el concepto rector de la Alternativa Raíces, una tercera alternativa en
-  exploración ([brief](identidad/brief-raices.md)), es el corte de suelo. Arriba, poco: el título,
+  exploración ([brief](identidad/brief.md)), es el corte de suelo. Arriba, poco: el título,
   las acciones y un brote. Abajo, en la tierra, las cinco etapas de una donación como raíces, cada
   una con su rótulo de lámina. Queda como base de las próximas comparaciones
   (`templates/variantes/concepto-b.html`).
@@ -1251,7 +1270,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   donación con la foto pegada al pueblo, el mapa de seguimiento, el cuaderno de sellos, las
   entidades y las cartas del donante; el pueblo de la entidad, el acta de recepción y "la tinta llega
   y sella"; y la mesa de trabajo del admin, con entidades por aprobar, donaciones por vencer y
-  asignaciones. La ficha está en [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md).
+  asignaciones. La ficha está en [flujo-completo-cozy-medieval.md](historico/cozy-medieval/flujo-completo.md).
   En la maqueta se recorre en `/prototipo/<pantalla>`, empezando por `/prototipo/publico-portada`.
   Reglas que salen del prototipo: un solo calendario de ejemplo; el nombre del menú siempre a la
   vista (en el admin, como título; en los demás, como rótulo sobre el título propio); el lápiz para
@@ -1444,7 +1463,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ### 2026-10-30 · estructura (Cozy / Medieval) · La estructura base, aplicada en el catálogo y el armazón
 
-- **Decisión:** la [directiva de estructura](estructura-cozy-medieval.md) queda aplicada en
+- **Decisión:** la [directiva de estructura](historico/cozy-medieval/estructura.md) queda aplicada en
   `/estilos` y `/estilos/armazon`, sobre el juego de plantillas propio de Cozy. Ese juego ya está
   en el código: la copia está en `templates/alternativas/cozy-medieval/`, `?alternativa=` la elige,
   y cuatro tests vigilan que cada plantilla tenga su gemela, que los textos sean iguales, que Cozy
@@ -1487,7 +1506,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ### 2026-10-30 · estructura (Cozy / Medieval) · Cada pantalla es una hoja del atlas
 
-- **Decisión:** [directiva de estructura y navegación](estructura-cozy-medieval.md), con 24
+- **Decisión:** [directiva de estructura y navegación](historico/cozy-medieval/estructura.md), con 24
   decisiones en 8 rondas. Entre ellas: una hoja con regiones y títulos al margen, en lugar de
   tarjetas iguales; barra de lomo de cuero con la pestaña unida a la hoja; alfiler sobre el camino
   en el celular; carta de la posta en lugar de la campana; estados como signos de mapa; tablas como
@@ -1522,7 +1541,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 - **Por qué:** el usuario prefirió darle a Cozy libertad total de estructura sin depender de las
   piezas de Glassmorphism.
 - **Costo:** cada pantalla y cada componente se escriben dos veces (HTML y estilos) y los textos se
-  duplican. Cambia una regla del [brief](identidad/brief-cozy-medieval.md) ("lo propio de Cozy va
+  duplican. Cambia una regla del [brief](historico/cozy-medieval/brief.md) ("lo propio de Cozy va
   solo en sus hojas de estilo") y el
   [ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md),
   que se actualiza con la implementación.
@@ -1589,7 +1608,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ### 2026-10-30 · identidad (Cozy / Medieval) · Brief aprobado
 
-- **Decisión:** [brief de la Alternativa Cozy / Medieval](identidad/brief-cozy-medieval.md):
+- **Decisión:** [brief de la Alternativa Cozy / Medieval](historico/cozy-medieval/brief.md):
   medieval de juego de rol para adultos, en todo el sitio; idea rectora "el mapa del viaje", con
   la aldea que se ayuda como segunda capa; contenido claro con la barra lateral oscura; pergamino
   y tinta, verde bosque, latón y madera tallada; íconos de grabado en tinta; los mismos textos que
@@ -1825,7 +1844,7 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ### 2026-10-30 · identidad · Brief aprobado
 
-- **Decisión:** [brief de identidad](identidad/brief.md): cercana, confiable y viva con un toque
+- **Decisión:** [brief de identidad](historico/glassmorphism/brief.md): cercana, confiable y viva con un toque
   alegre; números de impacto como protagonistas; voseo cercano; formas mixtas.
 - **Alternativas:** las opciones de las tres rondas de preguntas.
 - **Por qué:** respuestas del usuario.

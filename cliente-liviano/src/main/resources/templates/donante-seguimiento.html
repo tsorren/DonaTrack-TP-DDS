@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!--/* Raíces, Seguimiento del donante (RF-09), según su ficha de flujo
+       (docs/interfaz/flujos/raices-seguir-entregas.md). Arriba, cuántas entregas van en curso y cuándo
+       se actualizó, y las cifras por estado. El dibujo representa el estilo del mapa de Raíces (en el
+       sistema, sobre MapLibre, D21): del depósito, un brote al centro de la tierra, sale una línea de
+       subte por entrega hasta su entidad, con el sello de su estado y el camión en su posición
+       aproximada; es fijo para las tres entregas del ejemplo. Debajo, la lista dice lo mismo con el
+       mismo número (RF-CL-06), la más avanzada primero: en camino, con problema y pendiente. Los
+       datos son los de viaje-datos.html. Estados de la maqueta:
+       ?escenario=vacio, error y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-seguimiento', ~{::contenido})}">
+<head>
+  <title>Seguimiento - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{viaje-datos :: viaje(~{::pantalla})}"></th:block>
+</th:block>
+
+<!--/* El orden de la lista y del dibujo: la más avanzada primero (en camino, con problema y
+       pendiente); dentro del mismo estado, la donación más reciente primero, como vienen los datos. */-->
+<th:block th:fragment="pantalla"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
+             vanEnCamino=${enCurso.?[estado.tono == 'en-camino']},
+             tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
+             esperanSalir=${enCurso.?[estado.tono == 'pendiente']},
+             sinDestino=${donaciones.?[destino == null].![titulo]}">
+  <div class="seguimiento">
+    <header class="seguimiento-cabecera">
+      <p class="rotulo" th:text="${seccion}">Seguimiento</p>
+      <h1>Tus entregas en curso</h1>
+      <p class="seguimiento-bajada" th:if="${escenario == ''}"
+         th:text="|Gracias por donar. ${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.|">Gracias
+        por donar. 3 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.</p>
+      <p class="seguimiento-bajada" th:if="${escenario == 'vacio'}">Ninguna entrega en curso.</p>
+    </header>
+
+    <!--/* Cargando: primero el aviso, que se ve en el celular; después, el lugar de cada parte, sin
+           datos inventados. Viene con la página, así que no es una región viva: un lector de
+           pantalla no anuncia lo que ya estaba al cargar. En el sistema, cuando la carga tarda, el
+           aviso se agrega a la región #avisos del layout, que sí lo anuncia. */-->
+    <p th:if="${escenario == 'lento'}" class="seguimiento-aviso">Cargando tus entregas en curso…</p>
+    <div th:if="${escenario == 'lento'}" class="seguimiento-cuerpo" aria-busy="true">
+      <div class="seguimiento-dibujo seguimiento-reserva"></div>
+      <div class="seguimiento-lista seguimiento-reserva"></div>
+    </div>
+
+    <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar tus entregas en curso.</h2>
+      <p>Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos
+        minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/donante-seguimiento')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton boton--secundario" href="/donante-seguimiento"
+         th:href="@{/donante-seguimiento}">Volver a intentar</a>
+    </section>
+
+    <section th:if="${escenario == 'vacio'}" class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+      <svg class="dibujo aviso-brote" viewBox="0 0 120 90" aria-hidden="true" focusable="false">
+        <path class="dibujo-tierra" d="M0 60H120"/>
+        <path class="dibujo-tallo" d="M60 60V30"/>
+        <path class="dibujo-hoja" d="M60 40C48 40 42 32 42 24C54 24 60 32 60 40ZM60 34C70 34 78 28 78 20C66 20 60 26 60 34Z"/>
+      </svg>
+      <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
+      <p>Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por
+        dónde va el camión.</p>
+      <a class="boton boton--secundario" href="/donante-donaciones"
+         th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+
+    <!--/* Las cifras por estado, un registro como el de la portada; aparte, las que esperan destino. */-->
+    <section th:if="${escenario == ''}" class="cifras" aria-labelledby="cifras-titulo">
+      <h2 id="cifras-titulo" class="cifras-titulo">Tus donaciones, por estado</h2>
+      <dl>
+        <div class="cifra">
+          <dt><span class="estado estado--en-camino"><th:block th:replace="~{:: sello('en-camino')}"></th:block>En camino</span></dt>
+          <dd th:text="${#lists.size(vanEnCamino)}">1</dd>
+        </div>
+        <div class="cifra">
+          <dt><span class="estado estado--con-problema"><th:block th:replace="~{:: sello('con-problema')}"></th:block>Con problema</span></dt>
+          <dd th:text="${#lists.size(tienenProblema)}">1</dd>
+        </div>
+        <div class="cifra">
+          <dt><span class="estado estado--pendiente"><th:block th:replace="~{:: sello('pendiente')}"></th:block>Pendientes</span></dt>
+          <dd th:text="${#lists.size(esperanSalir)}">1</dd>
+        </div>
+        <div class="cifra cifra--aparte">
+          <dt><a href="/donante-donaciones"
+                 th:href="@{/donante-donaciones}">Esperan destino</a></dt>
+          <dd th:text="${#lists.size(sinDestino)}">2</dd>
+        </div>
+      </dl>
+    </section>
+
+    <div th:if="${escenario == ''}" class="seguimiento-cuerpo">
+      <!--/* El dibujo, fijo para las tres entregas en curso del ejemplo (A/B 2, red radial en espejo,
+             como la de la portada): el brote, al centro; de la estación del depósito salen las líneas
+             de subte con codos a 45° redondeados (A/B de las líneas, review de Sofía, 2026-11-02), una a cada lado y una hacia abajo, hasta la estación de su
+             entidad, numeradas de izquierda a derecha en el orden de la lista. Lo recorrido, impreso
+             (paja con borde); lo que falta, hueco: todavía no se imprimió. El sello de estado es la
+             estación donde está la entrega: 1 lentejas (en camino, el camión), 2 útiles (con
+             problema, donde se cortó) y 3 leche (pendiente, en el depósito). */-->
+      <figure class="seguimiento-dibujo tierra-impresa" aria-hidden="true">
+        <svg class="dibujo" viewBox="0 0 720 380" aria-hidden="true" focusable="false">
+          <path class="dibujo-tierra" d="M0 80H720"/>
+          <path class="dibujo-tallo" d="M360 80V44"/>
+          <path class="dibujo-hoja" d="M360 58C346 58 338 48 338 38C352 38 360 48 360 58ZM360 50C372 50 382 42 382 32C368 32 360 40 360 50Z"/>
+          <text class="dibujo-rotulo dibujo-rotulo--papel" x="392" y="70">Depósito</text>
+          <path class="subte-borde" d="M360 82V110"/>
+          <path class="subte-linea" d="M360 82V110"/>
+
+          <!--/* Cada entrega, en su grupo: la línea, su sello de estado y la estación de su entidad,
+                 con el número y, debajo, el nombre. Al pasar o enfocar una entrega de la lista, su
+                 grupo queda lleno y el resto se apaga. */-->
+          <!--/* 1, Lentejas secas: en camino, impresa hasta el camión y hueca lo que falta. */-->
+          <g class="linea linea--1">
+            <path class="subte-hueco" d="M110 251V300"/>
+            <path class="subte-hueco-centro" d="M110 251V300"/>
+            <path class="subte-borde" d="M360 110H214Q190 110 173 127L127 173Q110 190 110 214V215"/>
+            <path class="subte-linea" d="M360 110H214Q190 110 173 127L127 173Q110 190 110 214V215"/>
+            <g class="camion" transform="translate(110 233)">
+              <circle r="18"/>
+              <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
+              <path class="camion-icono" transform="translate(-12 -12)" d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/>
+            </g>
+            <g class="nodo" transform="translate(110 318)">
+              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+              <text class="nodo-numero" y="7">1</text>
+            </g>
+            <text class="dibujo-rotulo" x="110" y="364">Comedor Barrio Ejemplo</text>
+          </g>
+          <!--/* 2, Útiles escolares: con problema, impresa hasta donde se cortó y hueca después. */-->
+          <g class="linea linea--2">
+            <path class="subte-hueco" d="M360 213V300"/>
+            <path class="subte-hueco-centro" d="M360 213V300"/>
+            <path class="subte-borde" d="M360 110V185"/>
+            <path class="subte-linea" d="M360 110V185"/>
+            <g transform="translate(360 199)">
+              <circle class="sello-problema" r="13"/>
+              <path class="sello-calado" d="M0 -6V2M0 6V6.5"/>
+            </g>
+            <g class="nodo" transform="translate(360 318)">
+              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+              <text class="nodo-numero" y="7">2</text>
+            </g>
+            <text class="dibujo-rotulo" x="360" y="364">Escuela Ejemplo 12</text>
+          </g>
+          <!--/* 3, Leche en polvo: pendiente, toda hueca; espera en la salida del depósito. */-->
+          <g class="linea linea--3">
+            <path class="subte-hueco" d="M360 110H506Q530 110 547 127L593 173Q610 190 610 214V300"/>
+            <path class="subte-hueco-centro" d="M360 110H506Q530 110 547 127L593 173Q610 190 610 214V300"/>
+            <g transform="translate(450 110)">
+              <circle class="sello-contorno sello-contorno--punteado" r="12"/>
+            </g>
+            <g class="nodo" transform="translate(610 318)">
+              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+              <text class="nodo-numero" y="7">3</text>
+            </g>
+            <text class="dibujo-rotulo" x="610" y="364">Merendero Ejemplo Sur</text>
+          </g>
+          <circle class="subte-estacion" cx="360" cy="110" r="9"/>
+        </svg>
+      </figure>
+
+      <!--/* Los íconos de categoría: los pictogramas impresos del cuaderno de la portada. */-->
+      <svg th:replace="~{iconos :: categorias}"></svg>
+
+      <!--/* La lista: lo mismo que el dibujo, con el mismo número (RF-CL-06). */-->
+      <section class="seguimiento-lista" aria-labelledby="lista-titulo">
+        <h2 id="lista-titulo">Entrega por entrega</h2>
+        <ol class="entregas" role="list">
+          <th:block th:each="d, vuelta : ${vanEnCamino}">
+            <li th:replace="~{:: entrega(${d}, ${vuelta.count})}"></li>
+          </th:block>
+          <th:block th:each="d, vuelta : ${tienenProblema}">
+            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count})}"></li>
+          </th:block>
+          <th:block th:each="d, vuelta : ${esperanSalir}">
+            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count})}"></li>
+          </th:block>
+        </ol>
+        <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
+           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía esperan destino: aparecen acá cuando se les asigne una entidad. Las que ya llegaron, con la foto de la entidad, están en Mis donaciones.|">Arroz
+          largo fino y Zapatillas todavía esperan destino.</p>
+        <a class="boton boton--secundario" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+      </section>
+    </div>
+  </div>
+</th:block>
+
+<!--/* Una entrega de la lista: número, nombre (enlace al detalle), categoría, cantidad y entidad,
+       estado con su nota, las cinco etapas con su detalle y la última noticia. */-->
+<li th:fragment="entrega(d, numero)" class="entrega" th:classappend="|entrega--${d.estado.tono}|">
+  <span class="entrega-numero" aria-hidden="true" th:text="${numero}">1</span>
+  <h3><a href="/donante-donaciones-detalle"
+         th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+         th:text="${d.titulo}">Lentejas secas</a></h3>
+  <p class="entrega-categoria">
+    <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>
+    </svg>
+    <span th:text="${d.categoriaTexto}">Alimentos</span>
+  </p>
+  <p class="entrega-destino" th:text="|${d.cantidad} para ${d.destino}|">15 kg para Comedor Barrio
+    Ejemplo</p>
+  <!--/* Las etapas: lo hecho, un disco paja con el tilde calado; la actual, el sello del estado de
+         la entrega; lo que falta, un círculo hueco. Sus nombres, solo para el lector de pantalla:
+         a la vista, debajo de la barra, el estado con su nota (decisión del usuario, 2026-11-01,
+         para no repetir el estado en la tarjeta). */-->
+  <ol class="etapas" role="list" th:aria-label="|Etapas de ${d.titulo}|">
+    <li th:each="p : ${d.pasos}" class="etapa" th:classappend="|etapa--${p.avance.tono()}|"
+        th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
+      <svg th:if="${p.avance.tono() == 'hecho'}" class="estado-sello" viewBox="0 0 22 22"
+           aria-hidden="true" focusable="false">
+        <circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/>
+      </svg>
+      <th:block th:if="${p.avance.tono() == 'actual'}">
+        <th:block th:replace="~{:: sello(${d.estado.tono})}"></th:block>
+      </th:block>
+      <svg th:if="${p.avance.tono() == 'pendiente'}" class="estado-sello" viewBox="0 0 22 22"
+           aria-hidden="true" focusable="false">
+        <circle class="sello-falta" cx="11" cy="11" r="8"/>
+      </svg>
+      <span class="etapa-nombre" th:text="${p.nombre}">En camino</span>
+      <span class="etapa-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
+    </li>
+  </ol>
+  <p class="entrega-estado">
+    <span class="estado" th:classappend="|estado--${d.estado.tono}|">
+      <th:block th:replace="~{:: sello(${d.estado.tono})}"></th:block>
+      <span th:text="${d.estado.texto}">En camino</span>
+    </span>
+    <span th:text="${d.nota}">Salió hoy a las 14:30</span>
+  </p>
+  <p class="entrega-noticia" th:text="${d['seguimiento']}">Posición aproximada.</p>
+</li>
+
+<!--/* El sello de un estado (brief de Raíces, ronda de formas): pendiente, un círculo punteado; en
+       camino, la mitad izquierda en ámbar; con problema, un disco óxido con "!" calado. */-->
+<svg th:fragment="sello(tono)" th:switch="${tono}" class="estado-sello" viewBox="0 0 22 22"
+     aria-hidden="true" focusable="false">
+  <circle th:case="'pendiente'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
+  <g th:case="'en-camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
+  <g th:case="*"><circle class="sello-problema" cx="11" cy="11" r="9"/><path class="sello-calado" d="M11 6V12.5M11 15.5V16"/></g>
+</svg>
+</body>
+</html>
