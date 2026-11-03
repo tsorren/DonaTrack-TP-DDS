@@ -3,6 +3,7 @@
 > **Estado:** aprobado · **Fecha:** 2026-11-01 · **Aprobó:** usuario (2026-11-01)
 > **Ajustada:** 2026-11-02, con la review de Sofía Deane: los codos de las líneas, redondeados
 > (bitácora, "Las líneas de subte, con los codos redondeados").
+> 2026-11-03, pulido: las cifras como leyenda del dibujo y el acceso a Notificaciones en la cabecera.
 > Plantilla de la skill `ux-flujo`. Es la segunda pantalla de Raíces y la primera privada, en el sitio
 > ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/donante-seguimiento`. Mantiene los datos del primer prototipo de esta pantalla.
@@ -274,7 +275,9 @@ Partes que se deciden con A/B, en este orden:
    el dibujo arriba, más grande y con los nombres legibles, y debajo una tarjeta por entrega, con
    el mismo número (patrón: tarjetas). En el celular, lo mismo en una columna. Al pasar o enfocar
    una entrega, su línea queda llena y el resto se apaga (bitácora, "El dibujo arriba y una tarjeta
-   por entrega debajo").
+   por entrega debajo"). **Ajustado (usuario, 2026-11-03, pulido):** en pantalla grande, las
+   cifras por estado pasan a la derecha del dibujo, en una columna, como su leyenda (bitácora,
+   "Pulido del sitio del donante, pantalla por pantalla").
 4. Cómo se dibujan las etapas en la tarjeta. **Decidido (usuario, 2026-11-01):** una barra de
    progreso, con los cinco sellos en fila y debajo la etapa actual con su detalle (bitácora, "Las
    etapas, una barra de progreso con la actual debajo"). Ajuste (usuario, 2026-11-01): debajo de

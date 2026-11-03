@@ -27,6 +27,34 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-03 · layout:donante (Raíces) · Pulido del sitio del donante, pantalla por pantalla
+
+- **Decisión:** primer grupo del pulido visual (sitio del donante). Hay tres arreglos directos y tres A/B.
+  - **Arreglos:** en el detalle de una donación, "Los datos" va justo debajo de la foto (antes
+    esperaba a que terminara la raíz). El acceso a Notificaciones va en todas las pantallas
+    privadas, también en Mi perfil, Seguimiento, Necesidades y Confirmar recepción. En el inicio
+    sale el botón "Ver Mis donaciones" del final, porque ya estaba en "Esperan destino".
+  - **Notificaciones, C:** en pantalla grande, las sin leer van en una franja de tierra a todo el
+    ancho, una tarjeta por aviso colgada de una raíz horizontal. Las leídas van debajo, como un
+    libro de registro: una fila por aviso con fecha, qué pasó y estado.
+  - **Inicio, B:** en la franja "Lo que está confirmado", el hito pasa a la izquierda, debajo de la
+    actividad. La rama sigue a la derecha.
+  - **Seguimiento, B:** en pantalla grande, las cifras por estado van a la derecha del dibujo, en
+    una columna, como su leyenda. Las tarjetas siguen debajo.
+- **Alternativas:** cada A/B tuvo tres variantes (segura, media y audaz) más la versión de hoy.
+  - Notificaciones: A, una columna angosta; B, la lámina arriba y el registro debajo.
+  - Inicio: A, tres columnas; C, un tendedero de lado a lado.
+  - Seguimiento: A, la lista al lado del mapa; C, el mapa a todo el ancho.
+- **Por qué:** en las tres pantallas quedaba un lado vacío en 1280 px: la columna izquierda en
+  Notificaciones y en la franja del inicio, y el tercio derecho en Seguimiento. En Notificaciones,
+  la franja repite el lenguaje del inicio y la página queda la más corta. En el inicio y en
+  Seguimiento se eligió el cambio más chico que llena el hueco.
+- **Costo:** en Notificaciones, las sin leer ya no quedan fijas al bajar. En el inicio, el hito ya
+  no cuelga de la rama desde la tableta. En el celular, nada cambia.
+- **Quién decidió:** usuario (las tres variantes y los arreglos, 2026-11-03).
+- **Evidencia:** [`evidencia/raices/pulido-donante/`](evidencia/raices/pulido-donante/). Las capturas `antes-*`
+  son de antes del pulido y las que llevan `--` en el nombre, de las variantes.
+
 ### 2026-11-03 · layout:recepcion-confirmada (Raíces) · Lo nuevo primero y la raíz con su grosor
 
 - **Decisión:** dos arreglos en Recepción confirmada.

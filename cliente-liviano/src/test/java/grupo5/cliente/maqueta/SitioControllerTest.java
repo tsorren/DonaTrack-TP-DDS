@@ -396,9 +396,13 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("vence en"))));
   }
 
-  /** El sitio A no toca las siete pantallas aprobadas antes de la corrida A/B (encargo, §1). */
+  /**
+   * El acceso a Notificaciones va en todas las privadas del donante y la entidad, también las
+   * aprobadas antes de la corrida A/B (pulido, 2026-11-03); Contacto y Legales siguen sin el menú
+   * público (encargo, §1).
+   */
   @Test
-  void aLasPantallasAprobadasNoSumanNavegacion() throws Exception {
+  void elAccesoANotificacionesVaEnTodasLasPrivadas() throws Exception {
     for (String pantalla :
         List.of(
             "donante-perfil",
@@ -407,7 +411,7 @@ class SitioControllerTest {
             "entidad-seguimiento-confirmar")) {
       mvc.perform(get("/" + pantalla))
           .andExpect(status().isOk())
-          .andExpect(content().string(not(containsString("armazon-avisos"))));
+          .andExpect(content().string(containsString("armazon-avisos")));
     }
     for (String pantalla : List.of("publico-contacto", "publico-legales")) {
       mvc.perform(get("/" + pantalla))

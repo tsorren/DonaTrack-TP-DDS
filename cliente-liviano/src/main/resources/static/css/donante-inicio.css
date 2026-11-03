@@ -211,17 +211,18 @@ main .confirmado h2 {
   margin: 0 0 1rem;
 }
 
-/* Desde la tableta, el hito y la actividad al lado de la rama. */
+/* Desde la tableta, la rama a la derecha; a la izquierda, la cabeza, la actividad y el hito, como
+   nota al pie (variante B del pulido, 2026-11-03: llena el hueco de la izquierda). */
 @media (min-width: 53.75em) {
   .confirmado {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "cabeza rama"
       "actividad rama"
-      ". hito";
-    grid-template-rows: auto 1fr auto;
+      "hito rama";
+    grid-template-rows: auto auto 1fr;
     align-items: start;
-    column-gap: 3rem;
+    gap: 1.25rem 3rem;
     padding: 2rem 2.25rem 2.25rem;
   }
 
@@ -235,6 +236,11 @@ main .confirmado h2 {
 
   .hito {
     grid-area: hito;
+    align-self: end;
+  }
+
+  .hito::before {
+    content: none;
   }
 
   .actividad {

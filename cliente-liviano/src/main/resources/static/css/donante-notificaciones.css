@@ -1,6 +1,8 @@
-/* Notificaciones del donante en Raíces A: el cuaderno de noticias (donante-comun.css), en dos
+/* Notificaciones del donante en Raíces: el cuaderno de noticias (donante-comun.css), en dos
    grupos, sin leer y leídas. Las sin leer, en una lámina de papel con la sombra salvia: es lo que
-   hay que mirar; las leídas, sueltas sobre el papel. En pantalla grande, los dos grupos lado a lado. */
+   hay que mirar. En pantalla grande (variante C del pulido, 2026-11-03), las sin leer van en una
+   franja de tierra a todo el ancho, como "Lo que está confirmado" del inicio, cada una en una
+   tarjeta colgada de una raíz horizontal; las leídas, debajo, como un libro de registro. */
 @import url("donante-comun.css");
 
 .notificaciones {
@@ -43,7 +45,17 @@
   box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
+/* La textura de tierra (app.css), solo cuando la lámina pasa a ser franja. */
+.grupo-avisos--sin-leer.tierra-impresa::before {
+  display: none;
+}
+
 @media (min-width: 68.75em) {
+  .grupo-avisos--sin-leer.tierra-impresa::before {
+    display: block;
+    border-radius: inherit;
+  }
+
   .notificaciones-cabecera {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -62,15 +74,110 @@
     margin-bottom: 0.75rem;
   }
 
-  .notificaciones-grupos {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-    gap: 2.5rem;
+  /* Las sin leer: la franja de tierra con sus tarjetas. */
+  .grupo-avisos--sin-leer {
+    padding: 1.75rem 2rem 2rem;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-destacado-fondo);
+    color: var(--color-destacado-texto);
   }
 
-  /* Lo sin leer queda a la vista mientras se bajan las leídas. */
-  .grupo-avisos--sin-leer {
-    position: sticky;
-    top: 1.5rem;
+  .grupo-avisos--sin-leer h2 {
+    color: var(--color-destacado-texto);
+  }
+
+  .grupo-avisos--sin-leer .noticias {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 2rem 0 0;
+  }
+
+  .grupo-avisos--sin-leer .noticias::before {
+    top: 0.75rem;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: 0.5rem;
+  }
+
+  .grupo-avisos--sin-leer .noticia {
+    align-content: start;
+    padding: 1rem;
+    border: 2px solid var(--color-tinta);
+    border-radius: var(--radio-lamina);
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  }
+
+  .grupo-avisos--sin-leer .noticia::before {
+    top: -1.6875rem;
+    left: calc(50% - 0.6875rem);
+  }
+
+  .grupo-avisos--sin-leer .noticia-donacion {
+    flex: 1 1 100%;
+  }
+
+  .grupo-avisos--sin-leer .noticia-donacion::before {
+    content: none;
+  }
+}
+
+/* Las leídas, desde la tableta: un libro de registro, una fila por aviso (cuándo, qué pasó, estado
+   y donación). La marca "Leída" queda solo para el lector: ya la dice el título del grupo. */
+@media (min-width: 53.75em) {
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticias {
+    gap: 0;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia {
+    display: grid;
+    grid-template-columns: 10.5rem minmax(0, 1fr) 15rem;
+    grid-template-areas:
+      "cuando texto estado"
+      "cuando texto donacion";
+    align-items: center;
+    column-gap: 1.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dotted var(--color-tinta-suave);
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia::before {
+    top: 1rem;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-marca {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-cuando {
+    grid-area: cuando;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-texto {
+    grid-area: texto;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-estado {
+    grid-area: estado;
+    align-self: end;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-donacion {
+    grid-area: donacion;
+    align-self: start;
+  }
+
+  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-donacion::before {
+    content: none;
   }
 }

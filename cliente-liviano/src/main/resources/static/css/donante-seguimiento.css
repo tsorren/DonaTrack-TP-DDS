@@ -278,7 +278,9 @@ figure.seguimiento-dibujo {
 }
 
 /* En pantalla grande, el dibujo arriba, con los nombres legibles, y una tarjeta por entrega debajo,
-   con el mismo número (A/B 3; patrón: tarjetas, un tema por tarjeta). */
+   con el mismo número (A/B 3; patrón: tarjetas, un tema por tarjeta). Con datos, las cifras por
+   estado van a la derecha del dibujo, en una columna, como su leyenda (variante B del pulido,
+   2026-11-03: llena el lado vacío). */
 @media (min-width: 68.75em) {
   .seguimiento-cuerpo {
     gap: 2.5rem;
@@ -286,6 +288,55 @@ figure.seguimiento-dibujo {
 
   .seguimiento-dibujo {
     max-width: 48rem;
+  }
+
+  .seguimiento:has(> .cifras) {
+    display: grid;
+    grid-template-columns: minmax(0, 48rem) minmax(0, 1fr);
+    grid-template-areas:
+      "cabecera cabecera"
+      "dibujo cifras"
+      "lista lista";
+    align-items: start;
+    gap: 0 2.5rem;
+  }
+
+  .seguimiento:has(> .cifras) .seguimiento-cuerpo {
+    display: contents;
+  }
+
+  .seguimiento-cabecera {
+    grid-area: cabecera;
+  }
+
+  .cifras {
+    grid-area: cifras;
+    max-width: 18rem;
+    margin: 0;
+  }
+
+  .seguimiento:has(> .cifras) .seguimiento-dibujo {
+    grid-area: dibujo;
+  }
+
+  .seguimiento:has(> .cifras) .seguimiento-lista {
+    grid-area: lista;
+    margin-top: 2.5rem;
+  }
+
+  .cifras dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cifra:nth-child(n) {
+    flex-direction: row;
+    align-items: center;
+    border-top: 1px dotted var(--color-tinta-suave);
+    border-left: 0;
+  }
+
+  .cifra:first-child {
+    border-top: 0;
   }
 
   .entregas {

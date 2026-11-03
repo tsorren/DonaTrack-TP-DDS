@@ -36,7 +36,7 @@ Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-
 | `entidad-recibidas` | 2 | Menú ("Donaciones recibidas") e Inicio |
 | `entidad-seguimiento` | 2 | Menú. **Sin dibujar** en esta corrida: cae en `sin-dibujar` |
 | `entidad-seguimiento-confirmar` (aprobada) | 3 | Desde Inicio, Donaciones recibidas, Necesidades y Notificaciones, con `?entrega=lentejas` o `ropa` |
-| `entidad-notificaciones` | 2 | Desde las pantallas privadas de la entidad (dónde va el acceso lo decide cada sitio; no es una sección del menú, como en el primer prototipo; en A no va en las aprobadas, Necesidades y Confirmar recepción) y desde Inicio |
+| `entidad-notificaciones` | 2 | Desde las pantallas privadas de la entidad (un acceso fijo en la cabecera de todas, también Necesidades y Confirmar recepción desde el pulido del 2026-11-03; no es una sección del menú, como en el primer prototipo) y desde Inicio |
 | `entidad-perfil` | 2 | El enlace "Mi perfil" de la estructura privada. Sin dibujar para la entidad |
 
 Rol Admin: `admin-inicio` (nivel 1), desde `publico-ingresar` con la cuenta de ejemplo del admin.
@@ -459,8 +459,8 @@ Decisiones tomadas (agente, en la corrida A/B; aprobadas al elegir el sitio A, 2
   con el botón para confirmar mientras espera. La bandeja suma "en camino" y "con problema", que
   el contrato ya trae para la entidad.
 - Notificaciones no es una sección del menú (como en el primer prototipo); se llega desde las pantallas
-  privadas y desde Inicio. Dónde va el acceso lo decide cada sitio. En A no va en las dos
-  aprobadas (Necesidades y Confirmar recepción), que A no toca; ahí se llega por el menú (Inicio).
+  privadas y desde Inicio. La corrida A/B lo dejó fuera de las dos aprobadas (Necesidades y
+  Confirmar recepción); el pulido del 2026-11-03 lo suma también ahí.
 - El admin solo tiene inicio, con los datos del primer prototipo; sus secciones caen en `sin-dibujar`.
 - Datos nuevos de maqueta: Almacén Ejemplo SRL como donante sintético de cuatro entregas (arroz en
   camino, aceite con problema, y lentejas y arroz recibidos), y la donación de fideos del 5 de

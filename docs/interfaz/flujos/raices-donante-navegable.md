@@ -40,10 +40,8 @@ donante-inicio
   Seguimiento. Incentivos no está (RF-07).
 - Notificaciones no es una sección del menú (como en el primer prototipo, donde va en la carta). Se llega desde el
   inicio ("Ver todas las notificaciones") y desde un acceso fijo en las pantallas del donante,
-  con la cantidad sin leer. Dónde va ese acceso lo decide cada sitio. A lo suma a `layout-privado`
-  como un agregado, salvo en las dos pantallas aprobadas (Seguimiento y Mi perfil), que A no toca
-  (encargo, sección 1): ahí se llega a Notificaciones por el menú (Inicio). B, que puede rehacer
-  las aprobadas, lo lleva en todas.
+  con la cantidad sin leer. Va en `layout-privado`, en todas las pantallas del donante: la corrida A/B
+  lo había dejado fuera de Seguimiento y Mi perfil, y el pulido del 2026-11-03 lo suma también ahí.
 - Mi perfil y Salir siguen en la cuenta, como hoy. Salir lleva a `publico-portada`.
 - Nada queda a más de 3 niveles (RNF-UI-02).
 
@@ -110,7 +108,7 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
                           2 esperan destino → Mis donaciones
 [La que se demoró]        Útiles escolares: qué pasó y la nueva salida → detalle
 [Últimas noticias]        las 3 más nuevas → Ver todas las notificaciones (4 sin leer)
-[Accesos]                 Ver Mis donaciones · Conocer las entidades
+[Accesos]                 Conocer las entidades
 ```
 
 - **Lo que está confirmado** usa el mismo nombre que las cifras de la portada. Separa resultado
@@ -290,7 +288,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Noticias: título | Últimas noticias | — |
 | Noticias | Las tres más nuevas de la lista de Notificaciones, con su fecha | "Hoy, 14:30", "Ayer, 17:00", "Ayer, 12:15", cada una con `datetime` |
 | Noticias: enlace | "Ver todas las notificaciones (4 sin leer)" | — |
-| Accesos | "Ver Mis donaciones" · "Conocer las entidades" | "Ver seguimiento" ya está en En curso |
+| Accesos | "Conocer las entidades" | "Ver seguimiento" está en En curso y "Ver Mis donaciones", en Esperan destino: no se repiten (pulido, 2026-11-03) |
 
 ### donante-donaciones
 
@@ -434,7 +432,7 @@ sección 2):
 | Usable | Listas con enlaces, filtros de opciones cerradas y estados con texto; nada que aprender |
 | Deseable | La identidad de Raíces (paleta Oliva, risografía, sellos) y un hito de lo acumulado dibujado con los datos |
 | Valioso | La foto y la fecha de confirmación de cada entrega son la prueba que la empresa muestra |
-| Ubicable | Cuatro secciones en el menú, Notificaciones a un toque desde las pantallas (en A, salvo Seguimiento y Mi perfil, aprobadas: desde Inicio) y nada a más de 3 niveles |
+| Ubicable | Cuatro secciones en el menú, Notificaciones a un toque desde todas las pantallas y nada a más de 3 niveles |
 | Accesible | Estados con forma y texto, listas como alternativa a todo dibujo, foco ordenado; WCAG AA y Ley 26.653 |
 | Creíble | Cada cifra con período, fuente y fecha; lo pendiente se dice pendiente; la entrega con problema se muestra tal cual |
 

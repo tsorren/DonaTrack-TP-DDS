@@ -222,12 +222,15 @@ main .etiqueta-datos h2 {
 }
 
 /* Desde la tableta, dos columnas: la raíz y las noticias a la izquierda, la prueba y los datos a la
-   derecha. */
+   derecha. Los datos ocupan dos filas para quedar justo debajo de la foto, sin esperar a que
+   termine la raíz. */
 @media (min-width: 53.75em) {
   .detalle-cuerpo {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
     grid-template-areas:
       "etapas foto"
+      "etapas datos"
       "noticias datos";
     align-items: start;
     gap: 2.5rem 3rem;

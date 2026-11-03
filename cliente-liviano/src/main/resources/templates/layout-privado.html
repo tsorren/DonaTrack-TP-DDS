@@ -36,11 +36,9 @@
          pantallas del rol, con la cantidad sin leer. En la maqueta son 4 del donante y 3 de la
          entidad, y ninguna en la pantalla de después de marcarlas como leídas (al volver a otra
          pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
-         No va en las cuatro privadas aprobadas antes de la corrida A/B (Mi perfil, Seguimiento,
-         Necesidades y Confirmar recepción, por su hoja): el sitio A no las toca (encargo
-         raices-ab-navegable.md, sección 1). */-->
-  <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))
-             and !#lists.contains({'donante-perfil', 'donante-seguimiento', 'entidad-necesidades', 'entidad-seguimiento-confirmar'}, hoja)}"
+         Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
+         recepción, que la corrida A/B había dejado sin tocar. */-->
+  <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
      th:with="pantalla=${#execInfo.processedTemplateName},
               avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
               sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
