@@ -48,7 +48,9 @@ a {
 }
 
 /* La cabecera y el pie, franjas de tierra honda a todo el ancho (usuario, 2026-11-03: tomado del
-   sitio B de la corrida A/B). La sombra y el recorte estiran el fondo sin estirar el contenido. */
+   sitio B de la corrida A/B). El borde de imagen estira el fondo a los lados sin estirar el
+   contenido ni recortarlo: un recorte escondería la barra fija del menú en el celular, que va
+   dentro de la cabecera. */
 .raices-cabecera,
 .raices-pie,
 .armazon {
@@ -58,8 +60,7 @@ a {
 
 .raices-cabecera,
 .raices-pie {
-  box-shadow: 0 0 0 100vmax var(--color-suelo-hondo);
-  clip-path: inset(0 -100vmax);
+  border-image: conic-gradient(var(--color-suelo-hondo) 0 0) fill 0 / / 0 100vmax;
 }
 
 .raices-cabecera :focus-visible,

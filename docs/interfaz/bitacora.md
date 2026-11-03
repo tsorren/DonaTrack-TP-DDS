@@ -27,6 +27,24 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-03 · layout:portada (Raíces) · Pulido de la portada: el menú del celular y el rótulo del mes
+
+- **Decisión:** segundo grupo del pulido visual (la portada). Hay un arreglo directo y un A/B.
+  - **Arreglo:** en el celular, la barra del menú no se veía en la portada ni en las públicas que
+    la llevan. La cabecera recortaba su fondo para estirarlo a todo el ancho, y el recorte también
+    escondía la barra fija, que va dentro. Ahora el fondo se estira con un borde de imagen, que no
+    recorta. Vale también para el pie.
+  - **Rótulo "Octubre de 2026", A:** queda como está, suelto junto a la planta.
+- **Alternativas:** B, la etiqueta atada con un hilo al fruto en camino; C, un cartel clavado en
+  la tierra.
+- **Por qué:** el rótulo ya se lee como la cuenta de la planta y sin trazos de más la franja queda
+  limpia.
+- **Costo:** el rótulo no señala a qué planta se refiere. Las capturas de pantalla completa no
+  muestran lo que va fijo, así que la verificación visual no detectaba la barra escondida.
+- **Quién decidió:** usuario (2026-11-03).
+- **Evidencia:** [`evidencia/raices/pulido-portada/`](evidencia/raices/pulido-portada/), láminas del
+  A/B en 1280 y 360 px.
+
 ### 2026-11-03 · layout:donante (Raíces) · Pulido del sitio del donante, pantalla por pantalla
 
 - **Decisión:** primer grupo del pulido visual (sitio del donante). Hay tres arreglos directos y tres A/B.
