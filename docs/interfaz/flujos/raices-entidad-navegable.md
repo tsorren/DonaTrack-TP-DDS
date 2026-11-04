@@ -41,7 +41,11 @@ Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-
 
 Rol Admin: `admin-inicio` (nivel 1), desde `publico-ingresar` con la cuenta de ejemplo del admin.
 Sus secciones (Donantes, Entidades, Donaciones, Asignar donaciones, Camiones y Ranking) caen en
-`sin-dibujar`.
+`sin-dibujar`. Su menú tiene 7 secciones (pulido del 2026-11-03, usuario): en el celular, la barra
+muestra Inicio, Donantes, Entidades, Donaciones y "+ Más", que abre una hoja desde abajo con las
+7 en filas, Cerrar arriba y la página oscurecida detrás (anda sin JavaScript); "Más" queda marcado
+si la sección actual es una de las 3 que no entran. Desde la tableta, el menú va entero en una fila
+propia de la cabecera.
 
 "Salir", en las dos, lleva a `publico-portada`.
 

@@ -32,8 +32,9 @@ Entidades, Ingresar y Crear una cuenta. Nivel 3: Registro de donante, Registro d
 Recuperar la contraseña (desde Ingresar) ([mapa del sitio](../mapa-del-sitio.md), filas de Público). Nada queda a más de 3 niveles.
 
 **Destinos de la navegación pública** (los mismos en todas las públicas, también en la portada;
-cómo se ven lo decide cada sitio; en A, Contacto y Términos y privacidad, que son aprobadas y A no
-toca, siguen sin ella: se vuelve por la marca a la portada):
+cómo se ven lo decide cada sitio). Contacto y Términos y privacidad la llevan sin sección marcada
+desde el pulido del 2026-11-03 (usuario): antes no la tenían y, en el celular, la marca era la
+única salida.
 
 | Destino | Pantalla | Nota |
 |---|---|---|

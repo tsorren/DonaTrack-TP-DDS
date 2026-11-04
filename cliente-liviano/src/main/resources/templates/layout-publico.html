@@ -9,8 +9,8 @@
        (navegacion-publica.html) marca la sección de la hoja: cada sección tiene la suya, con su
        nombre (publico-donaciones, publico-mapa, publico-entidades, publico-ingresar y
        publico-registro, que usan también los dos registros). Contacto y Términos (publico-paginas)
-       son pantallas aprobadas antes de la corrida A/B y el sitio A no las toca (encargo
-       raices-ab-navegable.md, sección 1): no llevan la navegación pública, ni su hoja ni su script. */-->
+       la llevan sin sección marcada desde el pulido del 2026-11-03 (usuario): antes, en el celular,
+       la marca era la única salida. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
 <head>
   <meta charset="utf-8">
@@ -18,7 +18,7 @@
   <title th:replace="${titulo}">DonaTrack</title>
   <link rel="stylesheet" href="/css/publico-paginas.css"
         th:href="@{/css/{hoja}.css(hoja=${hoja})}">
-  <link th:if="${hoja != 'publico-paginas'}" rel="stylesheet" href="/css/publico-navegacion.css"
+  <link rel="stylesheet" href="/css/publico-navegacion.css"
         th:href="@{/css/publico-navegacion.css}">
 </head>
 <body class="raices-publico">
@@ -29,10 +29,10 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <th:block th:if="${hoja != 'publico-paginas'}"><nav th:replace="~{navegacion-publica :: navegacion(${hoja})}"></nav></th:block>
+  <nav th:replace="~{navegacion-publica :: navegacion(${hoja})}"></nav>
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>
-<script th:if="${hoja != 'publico-paginas'}" src="/js/publico.js" th:src="@{/js/publico.js}" defer></script>
+<script src="/js/publico.js" th:src="@{/js/publico.js}" defer></script>
 </body>
 </html>

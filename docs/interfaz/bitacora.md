@@ -27,6 +27,36 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-03 · layout:publico y admin (Raíces) · Pulido de las públicas y del admin: el menú de 7 secciones y Contacto con menú
+
+- **Decisión:** cuarto grupo del pulido visual (páginas públicas e inicio del admin).
+  - **Menú del admin en el celular, F:** las 7 secciones se pisaban en la barra. Ahora la barra
+    muestra 4 y "+ Más", que abre una hoja desde abajo con las 7 en filas, Cerrar arriba y la
+    página oscurecida detrás. Es una ventana del navegador (popover): anda sin JavaScript y se
+    cierra con Esc o tocando afuera. "Más" queda marcado si la sección actual no entra en la barra.
+  - **Menú del admin en pantalla grande:** va entero en una fila propia de la cabecera. Antes se
+    partía al lado de la cuenta y dejaba un hueco.
+  - **Contacto y Términos y privacidad** llevan el menú público, sin sección marcada. Se cambia la
+    prueba que exigía lo contrario (de la auditoría de la corrida A/B).
+  - Las demás públicas, sin cambios.
+- **Alternativas:** para el menú del admin, primero A (dos filas de 4), B (la barra se desliza de
+  costado) y C (el menú arriba, en la cabecera). El usuario descartó A y C y propuso D: un botón
+  "+ Más" con un menú a pantalla completa de filas. Después pidió variantes de D con buenas
+  prácticas: E (pantalla completa con Cerrar arriba), F (hoja desde abajo) y G (baldosas de tierra
+  con solo las 3 que faltan).
+- **Por qué:** con más de 5 secciones, la práctica común es mostrar 4 y poner el resto detrás de
+  "Más"; la barra que se desliza esconde secciones sin avisar (UX Planet, SAP Fiori iOS). La hoja
+  desde abajo queda al alcance del pulgar y se entiende como algo encima de la página. Una ventana
+  así lleva Cerrar visible y con nombre, Esc y el foco de vuelta al botón (guías de hojas de OVO y
+  react-native-ama).
+- **Costo:** 3 secciones quedan a un toque más. Con muchas más secciones, la hoja pediría
+  desplazarse. La ventana del navegador no bloquea el resto de la página para el lector de
+  pantalla (no es modal).
+- **Quién decidió:** usuario (D propia, F entre E, F y G, y el menú en Contacto y Términos,
+  2026-11-03).
+- **Evidencia:** [`evidencia/raices/pulido-publicas/`](evidencia/raices/pulido-publicas/), láminas
+  del primer A/B (A, B y C), de B contra D y de E, F y G.
+
 ### 2026-11-03 · layout:entidad (Raíces) · Pulido del sitio de la entidad: Notificaciones y el menú en un renglón
 
 - **Decisión:** tercer grupo del pulido visual (sitio de la entidad), con dos arreglos directos.

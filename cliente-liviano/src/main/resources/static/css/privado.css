@@ -72,6 +72,132 @@
   outline-color: var(--color-tinta);
 }
 
+/* Con más de 5 secciones (la administración): la barra muestra las 4 primeras y "Más", que abre
+   todas en una hoja desde abajo, una fila por sección (layout-privado.html). */
+.armazon-menu ul:has(.armazon-mas) > li:nth-child(n + 5):not(.armazon-mas) {
+  display: none;
+}
+
+.armazon-mas > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 3.75rem;
+  margin: 0;
+  padding: 0.5rem 0.25rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--color-texto-suelo);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.armazon-mas > button span {
+  font-size: 1.375rem;
+  line-height: 1;
+}
+
+/* Una hoja que sube desde abajo, al alcance del pulgar, con la página oscurecida detrás (A/B del
+   panel de "Más", F, usuario, 2026-11-03). */
+.menu-completo {
+  inset: auto 0 0;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  max-height: 85vh;
+  margin: 0;
+  padding: 1.5rem 1rem 2rem;
+  border: 0;
+  border-top: 3px solid var(--color-tinta);
+  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+}
+
+.menu-completo::backdrop {
+  background: var(--color-tinta);
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-completo:popover-open {
+    animation: hoja-sube 0.2s ease-out;
+  }
+}
+
+@keyframes hoja-sube {
+  from {
+    translate: 0 100%;
+  }
+}
+
+.menu-completo:popover-open {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* "Más" va marcado cuando la sección actual es una de las que no entran en la barra. */
+.armazon-mas:has(.menu-completo li:nth-child(n + 5) a[aria-current="page"]) > button {
+  background: var(--color-raiz);
+  color: var(--color-tinta);
+}
+
+/* Cerrar arriba, a la vista (pulido, 2026-11-03, buenas prácticas de ventanas). */
+.menu-completo-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.menu-completo-titulo {
+  margin: 0;
+  font: 800 1.5rem / 1.2 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.armazon-menu .menu-completo ul {
+  display: grid;
+  grid-auto-flow: row;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--color-tinta);
+}
+
+.armazon-menu .menu-completo a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 3.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-tinta);
+  color: var(--color-tinta);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: none;
+}
+
+.armazon-menu .menu-completo a[aria-current="page"] {
+  background: var(--color-raiz);
+}
+
+.armazon-menu .menu-completo :focus-visible {
+  outline-color: var(--color-tinta);
+  outline-offset: -4px;
+}
+
+.menu-completo .boton {
+  cursor: pointer;
+}
+
 .armazon-cuenta {
   display: flex;
   align-items: center;
@@ -319,6 +445,14 @@ main h2 {
   .armazon-menu a[aria-current="page"]:focus-visible {
     outline-color: var(--color-raiz);
   }
+
+  .armazon-menu ul:has(.armazon-mas) > li:nth-child(n + 5):not(.armazon-mas) {
+    display: list-item;
+  }
+
+  .armazon-mas {
+    display: none;
+  }
 }
 
 /* --- La pantalla grande: marca, menú, Notificaciones y cuenta en una sola fila ----------------- */
@@ -343,6 +477,17 @@ main h2 {
   .armazon-menu ul:not(:has(li:nth-child(6))) a {
     padding-inline: 0.5rem;
     white-space: nowrap;
+  }
+
+  /* Con más (las 7 de la administración), el menú en su propia fila, como en la tableta: partido
+     al lado de la cuenta dejaba un hueco. */
+  .armazon:has(.armazon-menu li:nth-child(6)) {
+    flex-wrap: wrap;
+  }
+
+  .armazon-menu:has(li:nth-child(6)) {
+    order: 1;
+    flex-basis: 100%;
   }
 
   .armazon-avisos {

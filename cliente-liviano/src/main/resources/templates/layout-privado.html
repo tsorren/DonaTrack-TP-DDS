@@ -29,6 +29,25 @@
     <ul role="list">
       <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
           th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
+      <!--/* Con más de 5 secciones (la administración), en el celular la barra muestra las 4 primeras y
+             "Más", que abre todas en una hoja desde abajo, una fila por sección (pulido, 2026-11-03,
+             alternativa del usuario; A/B del panel, F). Es una ventana del navegador (popover): anda sin
+             JavaScript. Desde la tableta, "Más" no se ve: el menú entra entero en la cabecera. */-->
+      <li th:if="${#lists.size(navegacion) > 5}" class="armazon-mas">
+        <button type="button" popovertarget="menu-completo"><span aria-hidden="true">+</span>
+          Más</button>
+        <div id="menu-completo" class="menu-completo" popover>
+          <div class="menu-completo-cabecera">
+            <p class="menu-completo-titulo">Secciones</p>
+            <button class="boton boton--secundario" type="button" popovertarget="menu-completo"
+                    popovertargetaction="hide">Cerrar</button>
+          </div>
+          <ul role="list">
+            <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+                th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
+          </ul>
+        </div>
+      </li>
     </ul>
   </nav>
   <!--/* El acceso fijo a Notificaciones del donante y de la entidad (fichas raices-donante-navegable.md

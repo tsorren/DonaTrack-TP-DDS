@@ -398,8 +398,8 @@ class SitioControllerTest {
 
   /**
    * El acceso a Notificaciones va en todas las privadas del donante y la entidad, también las
-   * aprobadas antes de la corrida A/B (pulido, 2026-11-03); Contacto y Legales siguen sin el menú
-   * público (encargo, §1).
+   * aprobadas antes de la corrida A/B (pulido, 2026-11-03). Contacto y Legales llevan el menú
+   * público, sin sección marcada (pulido, 2026-11-03, usuario).
    */
   @Test
   void elAccesoANotificacionesVaEnTodasLasPrivadas() throws Exception {
@@ -416,12 +416,21 @@ class SitioControllerTest {
     for (String pantalla : List.of("publico-contacto", "publico-legales")) {
       mvc.perform(get("/" + pantalla))
           .andExpect(status().isOk())
-          .andExpect(content().string(not(containsString("publica-menu"))))
-          .andExpect(content().string(not(containsString("publico.js"))));
+          .andExpect(content().string(containsString("publica-menu")))
+          .andExpect(content().string(not(containsString("aria-current=\"page\""))));
     }
     mvc.perform(get("/donante-donaciones"))
         .andExpect(content().string(containsString("armazon-avisos")));
     mvc.perform(get("/publico-mapa")).andExpect(content().string(containsString("publica-menu")));
+  }
+
+  /** Solo el menú de más de 5 secciones (la administración) lleva "Más" en el celular. */
+  @Test
+  void soloLaAdministracionLlevaElMenuCompleto() throws Exception {
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(content().string(containsString("popovertarget=\"menu-completo\"")));
+    mvc.perform(get("/donante-inicio"))
+        .andExpect(content().string(not(containsString("menu-completo"))));
   }
 
   /** Las pantallas dibujadas de verdad (no caen en "sin dibujar"). */
