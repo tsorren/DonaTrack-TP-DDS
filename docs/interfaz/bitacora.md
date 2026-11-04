@@ -27,6 +27,27 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-03 · layout:entidad (Raíces) · Pulido del sitio de la entidad: Notificaciones y el menú en un renglón
+
+- **Decisión:** tercer grupo del pulido visual (sitio de la entidad), con dos arreglos directos.
+  - **Notificaciones:** se lleva la variante C que el usuario eligió para el donante. En pantalla
+    grande, las sin leer van en una franja de tierra, una tarjeta por novedad colgada de una raíz
+    horizontal (la cinta paja de "sin leer" pasa a ser el tramo que cuelga). Las leídas siguen en
+    filas, debajo, y la bandeja pasa de 60 a 76 rem. "Marcar todas como leídas" va a la derecha
+    del título. En el celular, nada cambia.
+  - **Menú de la cabecera:** en pantalla grande, un menú de hasta 5 secciones (donante y entidad)
+    va en un solo renglón y sin partir sus etiquetas. Antes, a 1280 px, "Seguir entregas" de la
+    entidad bajaba a un segundo renglón y dejaba un hueco a su lado. Se achica la cuenta.
+- **Alternativas:** para Notificaciones, ninguna nueva: la decisión del donante vale para las dos.
+  Para el menú, partirlo en dos filas a todo el ancho, como en la tableta (más alto, sin hueco).
+- **Por qué:** la bandeja de la entidad dejaba vacío el tercio derecho, como la del donante antes
+  del pulido, y las dos pantallas hacen lo mismo.
+- **Costo:** el menú de la administración (7 secciones) sigue partiéndose en dos renglones: queda
+  para su grupo. En la entidad, el nombre de la cuenta ocupa tres renglones a 1280 px.
+- **Quién decidió:** usuario (Notificaciones C, en el grupo del donante); el agente aplicó los dos
+  arreglos.
+- **Evidencia:** [`evidencia/raices/pulido-entidad/`](evidencia/raices/pulido-entidad/).
+
 ### 2026-11-03 · layout:portada (Raíces) · Pulido de la portada: el menú del celular y el rótulo del mes
 
 - **Decisión:** segundo grupo del pulido visual (la portada). Hay un arreglo directo y un A/B.

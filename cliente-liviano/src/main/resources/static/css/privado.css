@@ -325,11 +325,24 @@ main h2 {
 @media (min-width: 68.75em) {
   .armazon {
     flex-wrap: nowrap;
+    column-gap: 1rem;
   }
 
   .armazon-menu {
     order: 0;
     flex: 1 1 auto;
+  }
+
+  /* El menú en un solo renglón: si se parte, la segunda fila deja un hueco a su lado (pulido,
+     2026-11-03: "Seguir entregas" de la entidad bajaba a 1280 px). Se achica la cuenta. Solo con
+     hasta 5 secciones (donante y entidad): las 7 de la administración no entran en una fila. */
+  .armazon-menu ul:not(:has(li:nth-child(6))) {
+    flex-wrap: nowrap;
+  }
+
+  .armazon-menu ul:not(:has(li:nth-child(6))) a {
+    padding-inline: 0.5rem;
+    white-space: nowrap;
   }
 
   .armazon-avisos {
