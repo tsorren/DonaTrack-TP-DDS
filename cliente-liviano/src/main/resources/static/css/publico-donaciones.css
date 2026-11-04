@@ -24,7 +24,7 @@
   outline: 1.5px solid var(--color-tinta);
 }
 
-.lamina.reserva {
+.lamina.esqueleto {
   min-height: 22rem;
   outline: 0;
   box-shadow: none;

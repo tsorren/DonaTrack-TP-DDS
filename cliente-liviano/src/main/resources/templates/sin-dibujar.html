@@ -12,7 +12,7 @@
   <div class="sin-dibujar">
     <p class="rotulo" th:text="${seccion}">Sección</p>
     <h1>Esta pantalla todavía no está dibujada.</h1>
-    <a th:if="${seccion == 'Seguir entregas' and param.entrega != null}" class="boton boton--secundario"
+    <a th:if="${seccion == 'Seguir entregas' and param.entrega != null}" class="boton" data-tono="secundario"
        href="/entidad-seguimiento-confirmar?entrega=lentejas"
        th:href="@{/entidad-seguimiento-confirmar(entrega=${param.entrega[0]})}">
       Volver a la entrega</a>

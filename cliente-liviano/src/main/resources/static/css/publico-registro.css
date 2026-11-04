@@ -163,7 +163,7 @@
   outline-offset: 2px;
 }
 
-.campo--error .casilla::before {
+.campo[data-estado="error"] .casilla::before {
   border-color: var(--color-problema-texto);
 }
 

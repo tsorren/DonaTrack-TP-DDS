@@ -14,47 +14,6 @@ main h1 em {
   font-size: 0.9375rem;
 }
 
-.campo {
-  display: grid;
-  gap: 0.375rem;
-}
-
-.campo label {
-  font-weight: 700;
-}
-
-.campo small {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
-}
-
-/* Los radios no: van en su grupo de opciones, con su propio tamaño. */
-.campo :is(input:not([type="radio"]), select, textarea) {
-  min-height: 3rem;
-  padding: 0.625rem 0.75rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: 0;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-  font: inherit;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.campo input[type="number"] {
-  max-width: 8rem;
-}
-
-.campo--error :is(input:not([type="radio"]), select, textarea) {
-  border-color: var(--color-problema-texto);
-}
-
-.campo-error {
-  margin: 0;
-  color: var(--color-problema-texto);
-  font-weight: 700;
-}
-
 .resumen ul {
   margin: 0;
   padding-left: 1.25rem;
@@ -65,12 +24,6 @@ main h1 em {
   align-items: center;
   min-height: 3rem;
   color: var(--color-problema-texto);
-  font-weight: 700;
-}
-
-/* El aviso de una acción hecha: el mismo papel que los demás, con el filete verde. */
-.aviso--hecho {
-  border-color: var(--color-acento);
   font-weight: 700;
 }
 
@@ -85,7 +38,7 @@ main h1 em {
   background: var(--color-papel);
 }
 
-.formulario .aviso {
+.formulario :is(.banner, .aviso-breve) {
   margin: 0;
   box-shadow: none;
 }
@@ -93,10 +46,6 @@ main h1 em {
 .formulario .nota {
   margin: 0;
   color: var(--color-tinta-suave);
-}
-
-.campo textarea {
-  resize: vertical;
 }
 
 .opciones {

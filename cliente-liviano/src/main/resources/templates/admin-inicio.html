@@ -26,16 +26,16 @@
         asignación. 4 donaciones vencen en los próximos 7 días.</p>
     </header>
 
-    <p th:if="${escenario == 'lento'}" class="mesa-cargando" role="status">Cargando tu inicio…</p>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tu inicio…</p>
 
-    <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert" aria-labelledby="error-titulo">
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert" aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos cargar tu inicio.</h2>
       <p>Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-inicio')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton boton--secundario" href="/admin-inicio"
+      <a class="boton" data-tono="secundario" href="/admin-inicio"
          th:href="@{/admin-inicio}">Volver a cargar</a>
     </section>
 
@@ -43,7 +43,7 @@
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="decisiones-titulo">Lo que espera tu decisión</h2>
       <div th:if="${escenario == 'lento'}" class="hueco"></div>
-      <div th:if="${escenario == 'vacio'}" class="aviso">
+      <div th:if="${escenario == 'vacio'}" class="vacio">
         <p><b>Hoy no hay nada que espere tu decisión.</b></p>
         <p>Ninguna entidad pide sumarse, ninguna donación vence en los próximos 7 días y no hay propuestas de
           asignación.</p>
@@ -57,13 +57,13 @@
             <li>Comedor Ejemplo Oeste</li>
           </ul>
           <p>La más antigua llegó el 9 de octubre. A una le falta la constancia de domicilio.</p>
-          <a class="boton boton--principal" href="/admin-entidades"
+          <a class="boton" data-tono="principal" href="/admin-entidades"
              th:href="@{/admin-entidades}">Revisar entidades</a>
         </section>
         <section class="decision" aria-labelledby="decision-vencen">
           <h3 id="decision-vencen">Donaciones <span>4 vencen en los próximos 7 días</span></h3>
           <p>La primera, Leche en polvo, vence el 17 de octubre, en 2 días.</p>
-          <a class="boton boton--principal" href="/admin-donaciones?vence=pronto"
+          <a class="boton" data-tono="principal" href="/admin-donaciones?vence=pronto"
              th:href="@{/admin-donaciones(vence='pronto')}">Ver las que vencen</a>
         </section>
         <section class="decision" aria-labelledby="decision-propuestas">
@@ -72,7 +72,7 @@
             <li>Leche en polvo, 10 unidades, para Merendero Ejemplo Sur.</li>
             <li>Arroz, 25 kg, para Comedor Barrio Ejemplo.</li>
           </ul>
-          <a class="boton boton--principal" href="/admin-asignaciones"
+          <a class="boton" data-tono="principal" href="/admin-asignaciones"
              th:href="@{/admin-asignaciones}">Revisar propuestas</a>
         </section>
       </div>

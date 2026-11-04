@@ -40,7 +40,7 @@
           <label class="filtro-opcion"><input type="radio" name="periodo" value="mes"
                  th:checked="${!semana}"><span>Último mes</span></label>
         </fieldset>
-        <button class="boton boton--secundario" type="submit">Ver</button>
+        <button class="boton" data-tono="secundario" type="submit">Ver</button>
       </form>
       <!--/* La cifra del período, en un fruto. */-->
       <div class="cifra-fruto" aria-live="polite">
@@ -53,19 +53,19 @@
       </div>
     </div>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
       <p>Se cuentan cuando cada entidad confirma lo que recibe, con su foto.</p>
-      <a class="boton boton--secundario" href="/publico-entidades"
+      <a class="boton" data-tono="secundario" href="/publico-entidades"
          th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
     </section>
 
     <!--/* Cargando: el aviso y el lugar de cada entrega, sin datos inventados. Viene con la página:
            en el sistema, el aviso va a una región viva. */-->
     <th:block th:if="${escenario == 'lento'}">
-      <p class="aviso">Cargando las entregas confirmadas…</p>
+      <p class="banner">Cargando las entregas confirmadas…</p>
       <ul class="laminas" role="list" aria-busy="true">
-        <li th:each="i : ${#numbers.sequence(1, 6)}" class="lamina reserva"></li>
+        <li th:each="i : ${#numbers.sequence(1, 6)}" class="esqueleto lamina"></li>
       </ul>
     </th:block>
 
@@ -95,16 +95,16 @@
           <p class="lamina-fecha">Entrega confirmada el <time th:datetime="${e.fecha}"
              th:text="|${e.dia} de 2026|">14 de octubre de 2026</time></p>
         </div>
-        <button type="button" class="boton boton--chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
+        <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
           la foto de la entrega</button>
         <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${e})}"></div>
       </li>
     </ol>
 
     <div th:if="${conDatos}" class="salidas">
-      <a class="boton boton--secundario" href="/publico-mapa"
+      <a class="boton" data-tono="secundario" href="/publico-mapa"
          th:href="@{/publico-mapa}">Ver dónde llegaron, en el mapa</a>
-      <a class="boton boton--principal" href="/publico-registro-donante"
+      <a class="boton" data-tono="principal" href="/publico-registro-donante"
          th:href="@{/publico-registro-donante}">Quiero donar</a>
     </div>
   </div>

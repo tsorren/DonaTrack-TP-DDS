@@ -98,7 +98,7 @@
          se cierra sin JavaScript, con Esc o tocando afuera), con el texto de la portada.
        - filtroCategorias(leyenda, todas): las categorías de ?categoria=, como opciones con su
          ícono; va dentro de un formulario get [data-al-cambiar]. */-->
-<section th:fragment="avisoError(titulo, texto, volver, recargar)" class="aviso aviso--error" role="alert"
+<section th:fragment="avisoError(titulo, texto, volver, recargar)" class="banner" data-estado="error" role="alert"
          aria-labelledby="error-titulo">
   <h2 id="error-titulo" th:text="${titulo}">No pudimos cargar las entregas confirmadas.</h2>
   <p><th:block th:text="${texto}">Es un problema nuestro. Probá de nuevo en unos minutos;</th:block> si sigue,
@@ -106,21 +106,21 @@
        th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=${volver})}">escribinos</a>
     con este código.</p>
   <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-  <a th:if="${recargar}" class="boton boton--secundario" href="/publico-donaciones"
+  <a th:if="${recargar}" class="boton" data-tono="secundario" href="/publico-donaciones"
      th:href="${volver}">Volver a cargar</a>
 </section>
 
-<div th:fragment="fotoVentana(id, e)" class="foto-ventana" th:id="${id}" popover role="dialog"
+<dialog th:fragment="fotoVentana(id, e)" class="dialogo" th:id="${id}" popover
      th:attr="aria-labelledby=${id + '-titulo'}">
   <img src="/img/ejemplo-entrega.svg" th:src="@{${e.foto}}" th:alt="${e.alt}" width="640" height="400"
        loading="lazy">
-  <p class="foto-titulo" th:id="${id + '-titulo'}" th:text="${e.que}">Sillas, 6 unidades</p>
+  <p class="dialogo-titulo" th:id="${id + '-titulo'}" th:text="${e.que}">Sillas, 6 unidades</p>
   <p><th:block th:text="${e.entidad}">Escuela Ejemplo N.º 12</th:block> confirmó la entrega el
     <time th:datetime="${e.fecha}" th:text="|${e.dia} de 2026|">14 de
       octubre de 2026</time> y subió esta foto.</p>
-  <button type="button" class="boton boton--secundario" th:attr="popovertarget=${id}"
+  <button type="button" class="boton" data-tono="secundario" th:attr="popovertarget=${id}"
           popovertargetaction="hide">Cerrar</button>
-</div>
+</dialog>
 
 <fieldset th:fragment="filtroCategorias(leyenda, todas)" class="filtro-opciones">
   <legend th:text="${leyenda}">Qué se donó</legend>

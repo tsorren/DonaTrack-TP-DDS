@@ -14,11 +14,6 @@
   margin: 0.75rem 0 0;
 }
 
-.bandeja-cargando {
-  margin: 1rem 0;
-  font-weight: 700;
-}
-
 .cuaderno-novedades {
   margin: 0 0 2.5rem;
 }
@@ -101,12 +96,6 @@
   align-items: center;
   min-height: 3rem;
   font-weight: 700;
-}
-
-.novedad .boton--chico {
-  min-height: 3rem;
-  padding: 0.5rem 0.875rem;
-  font-size: 0.9375rem;
 }
 
 /* En pantalla grande: la hora al margen, la novedad en el medio y a dónde ir a la derecha. */

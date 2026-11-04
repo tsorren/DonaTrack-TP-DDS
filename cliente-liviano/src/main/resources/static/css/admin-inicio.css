@@ -23,11 +23,6 @@
   font-weight: 700;
 }
 
-.mesa-cargando {
-  margin: 0 0 1rem;
-  font-weight: 700;
-}
-
 .decisiones,
 .todo {
   margin: 0 0 2.5rem;
@@ -109,7 +104,7 @@ main .decision h3 {
   margin-top: auto;
 }
 
-.decisiones .aviso {
+.decisiones .vacio {
   margin: 0;
 }
 

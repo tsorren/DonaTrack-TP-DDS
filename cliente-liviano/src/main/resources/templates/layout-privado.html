@@ -42,7 +42,7 @@
           <div class="menu-completo-cabecera">
             <!--/* "Todas las secciones": el menú ya se llama "Secciones" (pulido de Nico, 2026-11-04). */-->
             <p id="menu-completo-titulo" class="menu-completo-titulo">Todas las secciones</p>
-            <button class="boton boton--secundario" type="button" popovertarget="menu-completo"
+            <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
                     popovertargetaction="hide">Cerrar</button>
           </div>
           <!--/* Al abrirse, el foco entra a la hoja, en la primera sección (autofocus de la ventana). */-->
@@ -85,7 +85,9 @@
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>
-<!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian. */-->
-<div id="avisos" class="avisos" aria-live="polite"></div>
+<!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian, y la cola de Alpine
+       (avisos, static/js/interfaz.js) deja ver tres a la vez y los quita a los 6 segundos. */-->
+<div id="avisos" class="avisos" aria-live="polite" x-data="avisos" x-on:click="cerrar"
+     x-on:mouseenter="pausar" x-on:mouseleave="seguir" x-on:focusin="pausar" x-on:focusout="seguir"></div>
 </body>
 </html>

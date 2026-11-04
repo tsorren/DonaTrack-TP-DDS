@@ -24,10 +24,10 @@
   <div class="confirmar confirmada" th:classappend="${recien} ? 'confirmada--recien'">
     <th:block th:if="${e == null}">
       <h1>Recepción confirmada</h1>
-      <section class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+      <section class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo">No encontramos esa entrega</h2>
         <p>Puede que el enlace esté incompleto. Buscala en Seguir entregas.</p>
-        <a class="boton boton--secundario" href="/entidad-seguimiento"
+        <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Volver a Seguir entregas</a>
       </section>
     </th:block>
@@ -96,7 +96,7 @@
                   Desde el Depósito Central.</p>
               </div>
             </div>
-            <a class="boton boton--principal" href="/entidad-seguimiento-confirmar?entrega=ropa"
+            <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=ropa"
                th:href="@{/entidad-seguimiento-confirmar(entrega=${otra.clave})}">Confirmar
               recepción<span class="solo-lectores" th:text="|: ${otra.nombre}|">: ropa de abrigo</span></a>
           </section>
@@ -138,9 +138,9 @@
         </div>
 
         <div class="acciones">
-          <a class="boton boton--secundario" href="/entidad-inicio"
+          <a class="boton" data-tono="secundario" href="/entidad-inicio"
              th:href="@{/entidad-inicio}">Volver al inicio</a>
-          <a class="boton boton--secundario" href="/entidad-seguimiento"
+          <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
              th:href="@{/entidad-seguimiento}">Seguir entregas</a>
         </div>
       </div>

@@ -34,6 +34,9 @@
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>
+<!--/* La región de los avisos breves, igual que en layout-privado. */-->
+<div id="avisos" class="avisos" aria-live="polite" x-data="avisos" x-on:click="cerrar"
+     x-on:mouseenter="pausar" x-on:mouseleave="seguir" x-on:focusin="pausar" x-on:focusout="seguir"></div>
 <script src="/js/publico.js" th:src="@{/js/publico.js}" defer></script>
 </body>
 </html>

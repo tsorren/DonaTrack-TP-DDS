@@ -53,7 +53,7 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `static/css/composicion.css`, `utilidades.css`, `movimiento.css` y `componentes/<componente>.css` | Capas CUBE (D33) y primitivas de movimiento (D32), registradas en el [catálogo](../docs/interfaz/componentes.md). Creadas con la fase 0 del backlog; `app.css` las carga cada una en su capa |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
 | `templates/variantes/` | Las variantes de estructura: reemplazan la pantalla entera con `?variante=<nombre>`; se borran al decidir |
-| `static/js/` | JavaScript propio y los `Alpine.data()`, solo como mejora sobre lo que ya funciona sin él: `interfaz.js` (los componentes de Alpine, sin ninguno todavía) y `publico.js` (las mejoras de las páginas públicas) |
+| `static/js/` | JavaScript propio y los `Alpine.data()`, solo como mejora sobre lo que ya funciona sin él: `interfaz.js` (los componentes de Alpine: `avisos` y `avisoDeMuestra`) y `publico.js` (las mejoras de las páginas públicas) |
 
 Una sola identidad visual ([ADR aceptado](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio (skills
@@ -95,7 +95,11 @@ Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio
 - Prohibido en Alpine: `fetch` o `XMLHttpRequest`, armar listas con datos del negocio, `x-html`,
   y guardar tokens o datos personales en `localStorage`.
 - `x-data` va fuera del bloque que HTMX reemplaza. `x-cloak` solo en lo que no es esencial.
-- Diálogos con `<dialog>` nativo (`showModal()`), sin plugins de foco.
+- Diálogos con `<dialog class="dialogo" popover>` nativo, que se abre con `popovertarget` y funciona sin
+  JavaScript, sin plugins de foco; `showModal()` solo para un diálogo que no sea esencial y necesite el
+  fondo inerte.
+- Avisos: la región `#avisos` de los layouts lleva `x-data="avisos"`, la cola de Alpine (3 a la vez, 6 s).
+  El texto de cada aviso lo trae el servidor; Alpine no lo arma.
 
 ## Reglas de estilos
 

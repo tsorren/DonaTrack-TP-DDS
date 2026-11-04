@@ -66,18 +66,18 @@
       <form th:if="${conDatos and !#lists.isEmpty(sinLeer)}" class="marcar"
             action="/entidad-notificaciones-leidas"
             th:action="@{/entidad-notificaciones-leidas}" method="post">
-        <button class="boton boton--secundario" type="submit">Marcar todas como leídas</button>
+        <button class="boton" data-tono="secundario" type="submit">Marcar todas como leídas</button>
       </form>
     </header>
 
     <!--/* El éxito, con el foco; en el sistema, en la región aria-live del layout. */-->
-    <section th:if="${accion == 'leidas'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
+    <section th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
              aria-labelledby="leidas-titulo">
       <h2 id="leidas-titulo">Marcaste las 3 como leídas.</h2>
       <p>Las entregas que esperan en tu puerta siguen esperando tu confirmación.</p>
     </section>
 
-    <p th:if="${escenario == 'lento'}" class="bandeja-cargando" role="status">Cargando tus novedades…</p>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus novedades…</p>
     <div th:if="${escenario == 'lento'}" class="hueco" aria-busy="true"></div>
 
     <th:block th:if="${escenario == 'error'}">
@@ -86,7 +86,7 @@
                '/entidad-notificaciones')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés novedades.</h2>
       <p>Te avisamos acá cuando se asigne una donación a tu entidad, cuando salga hacia vos, si tiene un
         problema y cuando llegue a tu puerta.</p>
@@ -119,15 +119,15 @@
 <li th:fragment="novedad(n, leida)" class="novedad" th:classappend="${leida} ? 'novedad--leida' : 'novedad--sin-leer'">
   <p class="novedad-cuando"><b th:text="${n.dia}">Hoy</b> <time th:datetime="${n.fecha}" datetime="2026-10-15T18:20"
       th:text="${n.hora}">18:20</time></p>
-  <svg th:replace="~{piezas-entidad :: sello(${n.tono})}"></svg>
+  <svg th:replace="~{componentes/sello :: sello(${n.tono})}"></svg>
   <div class="novedad-texto">
-    <p class="estado novedad-tipo" th:classappend="|estado--${n.tono == 'recibida' ? 'puerta' : n.tono}|"
+    <p class="estado novedad-tipo" th:data-estado="${n.tono == 'recibida' ? 'puerta' : n.tono}"
        th:text="${n.tipo}">Llegó a tu puerta</p>
     <p th:text="${n.texto}">Lentejas secas, 15 kg, llegó a tu puerta. Confirmá la recepción con una foto.</p>
-    <p th:if="${n['confirmo']}" class="estado estado--recibida" th:text="${n.confirmo}">Confirmaste la recepción
+    <p th:if="${n['confirmo']}" class="estado" data-estado="recibida" th:text="${n.confirmo}">Confirmaste la recepción
       el 10 de octubre.</p>
   </div>
-  <a th:if="${n.principal}" class="boton boton--principal boton--chico" href="#" th:href="${n.destino}">Confirmar
+  <a th:if="${n.principal}" class="boton" data-tono="principal" data-tamano="chico" href="#" th:href="${n.destino}">Confirmar
     recepción<span class="solo-lectores" th:text="|: ${n.que}|">: lentejas secas</span></a>
   <a th:unless="${n.principal}" class="novedad-enlace" href="#" th:href="${n.destino}"><th:block
       th:text="${n.enlace}">Ver la donación</th:block><span class="solo-lectores" th:text="|: ${n.que}|">: arroz</span></a>

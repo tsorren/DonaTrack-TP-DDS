@@ -337,42 +337,17 @@ main h1 {
   text-wrap: balance;
 }
 
-main h2 {
-  color: var(--color-tinta);
-  font: 800 1.375rem/1.2 var(--fuente-titulo);
-  font-stretch: 118%;
+/* El título de sección es la base: va en la capa `pico` para que los componentes (el título del banner
+   de error) le ganen sin pelear por especificidad. */
+@layer pico {
+  main h2 {
+    color: var(--color-tinta);
+    font: 800 1.375rem/1.2 var(--fuente-titulo);
+    font-stretch: 118%;
+  }
 }
 
-/* Un aviso en lugar del contenido: vacío o error, con su próximo paso. Largo de línea dentro de los
-   50 a 75 caracteres (criterios de la cátedra, sección 8). En el celular, más apretado: el botón
-   del próximo paso entra en la primera pantalla (360 × 640), encima de la barra del menú. */
-.aviso {
-  max-width: 38rem;
-  margin: 1rem 0;
-  padding: 1rem 1.25rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
-}
-
-.aviso h2 {
-  margin: 0 0 0.5rem;
-}
-
-.aviso p {
-  margin: 0 0 0.75rem;
-}
-
-.aviso--error {
-  border-color: var(--color-problema-texto);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-problema-fondo);
-}
-
-.aviso--error h2 {
-  color: var(--color-problema-texto);
-}
-
+/* El código de seguimiento de un banner de error (el papel del banner está en componentes/aviso.css). */
 .aviso-codigo code {
   font-size: 1rem;
   font-weight: 700;
@@ -401,18 +376,6 @@ main h2 {
     padding: 2rem 2rem 4rem;
   }
 
-  .aviso {
-    margin: 1.5rem 0;
-    padding: 1.25rem 1.5rem;
-  }
-
-  .aviso h2 {
-    margin-bottom: 1rem;
-  }
-
-  .aviso p {
-    margin-bottom: 1rem;
-  }
 }
 
 /* --- Desde la tableta: el menú, horizontal en la cabecera ------------------------------------- */

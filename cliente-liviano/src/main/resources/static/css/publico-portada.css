@@ -870,68 +870,18 @@ dl.registro-datos > div:nth-child(3) dd::before {
   object-fit: cover;
 }
 
-.sello-tinta {
-  fill: var(--color-hoja);
-}
-
-.sello-disco {
-  fill: var(--color-raiz);
-}
-
-.sello-tilde {
-  fill: none;
-  stroke: var(--color-tinta);
-  stroke-width: 2;
-}
-
-.sello-contorno {
-  fill: var(--color-papel);
-  stroke: var(--color-en-camino-texto);
-  stroke-width: 2;
-}
-
-.sello-medio {
-  fill: var(--color-en-camino-sello);
-}
-
-/* Los botones del sitio que son <button> toman la letra y el fondo de los enlaces con forma de
-   botón. */
+/* Los botones del sitio que son <button> toman el color de los enlaces con forma de botón. */
 :where(button).boton {
-  background-color: var(--color-papel);
   color: var(--color-acento);
-  font-family: inherit;
-  font-size: inherit;
-  cursor: pointer;
 }
 
-/* El botón chico en contorno: la foto, el mapa y "Volver a cargar". No compite con "Quiero
-   donar". */
-.boton--chico,
-.boton--aviso {
-  justify-self: start;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  border-width: 1.5px;
-  border-radius: var(--radio-boton);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
-  color: var(--color-acento);
-  font-size: 0.875rem;
+/* El botón chico no se parte en dos renglones. */
+.boton[data-tamano="chico"] {
   white-space: nowrap;
 }
 
-.boton--chico:hover,
-.boton--aviso:hover {
-  background: var(--color-acento-claro);
-}
-
-.boton--chico:active,
-.boton--aviso:active {
-  translate: 0.2rem 0.2rem;
-}
-
 /* En la tierra, el contorno es paja y la letra, papel; el fondo, liso, del color de su plano. */
-.suelo .boton--chico,
-.suelo .boton--aviso {
+.suelo .boton[data-tamano="chico"] {
   margin-top: 1rem;
   border-color: var(--color-raiz);
   box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
@@ -939,22 +889,12 @@ dl.registro-datos > div:nth-child(3) dd::before {
   color: var(--color-texto-suelo);
 }
 
-.registro .boton--chico,
-.registro .boton--aviso {
+.registro .boton[data-tamano="chico"] {
   background: var(--color-suelo-hondo);
 }
 
-.suelo .boton--chico:hover,
-.suelo .boton--aviso:hover {
+.suelo .boton[data-tamano="chico"]:hover {
   background: var(--color-suelo);
-}
-
-.boton--chico svg {
-  width: 1.125rem;
-  height: auto;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1.75;
 }
 
 /* --- Estados: vacío, cargando y error -------------------------------------------------------- */
@@ -975,7 +915,7 @@ dl.registro-datos > div:nth-child(3) dd::before {
   margin: 0;
 }
 
-.aviso--suelo .boton--aviso {
+.aviso--suelo .boton[data-tamano="chico"] {
   justify-self: center;
 }
 

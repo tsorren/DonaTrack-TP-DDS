@@ -33,7 +33,7 @@
     <form action="/publico-contacto-enviado"
           th:action="@{/publico-contacto-enviado(volver=${volver})}" method="post"
           class="formulario" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <section th:if="${conError}" class="aviso aviso--error resumen" role="alert" tabindex="-1"
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
         <ul>
@@ -41,14 +41,14 @@
           <li><a href="#correo">El correo no parece completo: falta la @</a></li>
         </ul>
       </section>
-      <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="error-titulo">
         <h2 id="error-titulo">No pudimos enviar tu mensaje.</h2>
         <p>Es un problema nuestro: tu mensaje sigue acá. Probá de nuevo en unos minutos.</p>
         <p class="aviso-codigo">Código: <code>f6e5d4c3b2a1</code></p>
-        <a class="boton boton--secundario" href="#enviar">Volver a intentar</a>
+        <a class="boton" data-tono="secundario" href="#enviar">Volver a intentar</a>
       </section>
-      <section th:if="${escenario == 'sin-conexion'}" class="aviso aviso--error" role="alert"
+      <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="red-titulo">
         <h2 id="red-titulo">No sabemos si tu mensaje llegó.</h2>
         <p>Se cortó la conexión mientras se enviaba. Si no viste el número de tu mensaje, no sabemos
@@ -68,7 +68,7 @@
           <option>Otra cosa</option>
         </select>
       </div>
-      <div class="campo" th:classappend="${conError} ? 'campo--error'">
+      <div class="campo" th:data-estado="${conError} ? 'error'">
         <label for="mensaje">Contanos qué pasó</label>
         <small id="mensaje-ayuda">Si pasó en una entrega o una donación, decinos cuál.</small>
         <p th:if="${conError}" id="mensaje-error" class="campo-error">Falta contarnos qué pasó.</p>
@@ -84,7 +84,7 @@
       </div>
       <p th:if="${conSesion}" class="contacto-cuenta">Te respondemos a
         <b>contacto@distribuidora-ejemplo.test</b>, el correo de tu cuenta.</p>
-      <div th:unless="${conSesion}" class="campo" th:classappend="${conError} ? 'campo--error'">
+      <div th:unless="${conSesion}" class="campo" th:data-estado="${conError} ? 'error'">
         <label for="correo">Tu correo</label>
         <small id="correo-ayuda">Para responderte. No lo usamos para otra cosa.</small>
         <p th:if="${conError}" id="correo-error" class="campo-error">El correo no parece completo: falta
@@ -93,7 +93,7 @@
                th:value="${conError} ? 'marta.comedor-ejemplo.test' : (${escrito} ? 'marta@comedor-ejemplo.test' : null)"
                th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
       </div>
-      <button id="enviar" class="boton boton--principal" type="submit"
+      <button id="enviar" class="boton" data-tono="principal" type="submit"
               th:disabled="${escenario == 'lento'}"
               th:text="${escenario == 'lento'} ? 'Enviando…' : 'Enviar mensaje'">Enviar mensaje</button>
     </form>

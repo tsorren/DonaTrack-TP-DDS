@@ -1,0 +1,93 @@
+/* Bloque diálogo (D33, B2-05): una ventana que pide confirmar algo o muestra algo grande (la foto
+   de una entrega). Es un `<dialog class="dialogo" popover>`: se abre y se cierra sin JavaScript con
+   `popovertarget`, con Esc o tocando afuera, el navegador lleva el foco adentro y lo devuelve al
+   botón, y queda en la capa de arriba. Se carga en la capa `bloques` desde app.css. Entra y sale con
+   un fundido (`@starting-style`, `--movimiento-transicion-dialogo`). Las variantes van por atributo:
+   `data-tono="quitar"` (confirmar algo irreversible; más angosto). Catálogo: docs/interfaz/componentes.md. */
+.dialogo {
+  width: min(36rem, 100% - 2rem);
+  margin: auto;
+  padding: 1rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -7px;
+  background: var(--color-papel);
+  box-shadow: 0.45rem 0.45rem 0 var(--color-hoja);
+  color: var(--color-tinta-suave);
+  opacity: 0;
+  transition: var(--movimiento-transicion-dialogo);
+}
+
+.dialogo:popover-open {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  opacity: 1;
+}
+
+/* Cómo arranca al abrirse. */
+@starting-style {
+  .dialogo:popover-open {
+    opacity: 0;
+  }
+}
+
+.dialogo::backdrop {
+  background: var(--color-suelo-hondo);
+  opacity: 0;
+  transition: var(--movimiento-transicion-dialogo);
+}
+
+.dialogo:popover-open::backdrop {
+  opacity: 0.75;
+}
+
+@starting-style {
+  .dialogo:popover-open::backdrop {
+    opacity: 0;
+  }
+}
+
+.dialogo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-tinta);
+}
+
+.dialogo p {
+  margin: 0;
+}
+
+.dialogo-titulo {
+  margin: 0.25rem 0 0;
+  color: var(--color-tinta);
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+/* Confirmar algo irreversible: el borde del color del problema y los botones al pie. */
+.dialogo[data-tono="quitar"] {
+  width: min(32rem, 100% - 2rem);
+  padding: 1.25rem;
+  border-color: var(--color-problema-texto);
+  outline-color: var(--color-problema-texto);
+  box-shadow: none;
+  color: var(--color-tinta);
+}
+
+.dialogo[data-tono="quitar"]:popover-open {
+  justify-items: stretch;
+  gap: 0.75rem;
+}
+
+.dialogo[data-tono="quitar"] .dialogo-titulo {
+  margin: 0;
+  font-size: 1.375rem;
+  font-stretch: 118%;
+}
+
+.dialogo form {
+  margin: 0;
+}

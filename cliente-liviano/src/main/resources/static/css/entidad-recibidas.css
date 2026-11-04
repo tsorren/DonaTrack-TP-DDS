@@ -9,11 +9,6 @@
   max-width: 82rem;
 }
 
-.recibidas-cargando {
-  margin: 1rem 0;
-  font-weight: 700;
-}
-
 /* --- El filtro: la línea y sus estaciones ------------------------------------------------------ */
 .filtro {
   display: grid;

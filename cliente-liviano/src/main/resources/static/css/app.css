@@ -12,6 +12,12 @@
 @import url("utilidades.css") layer(utilidades);
 @import url("movimiento.css") layer(utilidades);
 @import url("componentes/muestra.css") layer(bloques);
+@import url("componentes/boton.css") layer(bloques);
+@import url("componentes/campo.css") layer(bloques);
+@import url("componentes/sello.css") layer(bloques);
+@import url("componentes/aviso.css") layer(bloques);
+@import url("componentes/carga.css") layer(bloques);
+@import url("componentes/dialogo.css") layer(bloques);
 
 *,
 *::before,
@@ -27,8 +33,12 @@ body {
   font: 400 1.0625rem/1.6 var(--fuente-texto);
 }
 
-a {
-  color: var(--color-acento);
+/* El color de los enlaces es la base: va en la capa `pico` para que los componentes (el botón con forma
+   de enlace) le ganen sin pelear por especificidad. */
+@layer pico {
+  a {
+    color: var(--color-acento);
+  }
 }
 
 :focus-visible {
@@ -196,43 +206,6 @@ body::before {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-}
-
-.boton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 3rem;
-  padding: 0.75rem 1.5rem;
-  border: 2px solid var(--color-acento);
-  /* Esquina suave (A/B de bordes, 2026-11-02: B). */
-  border-radius: var(--radio-boton);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
-  /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */
-  background: var(--color-papel);
-  font: inherit;
-  font-weight: 700;
-  font-stretch: 112%;
-  text-decoration: none;
-}
-
-/* Al apretar se hunde sobre su sombra, como un sello (ronda de formas, 2026-11-01). */
-.boton:active {
-  box-shadow: none;
-  translate: 0.3rem 0.3rem;
-}
-
-.boton--principal {
-  background: var(--color-acento);
-  color: var(--color-papel);
-}
-
-.boton--principal:hover {
-  background: var(--color-acento-hondo);
-}
-
-.boton--secundario:hover {
-  background: var(--color-acento-claro);
 }
 
 .cifras {

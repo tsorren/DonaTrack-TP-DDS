@@ -63,10 +63,10 @@
     <!--/* Sin entrega: no existe o es de otra entidad; no se dice de quién es (HB-13). */-->
     <th:block th:if="${e == null}">
       <h1>Confirmar recepción</h1>
-      <section class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+      <section class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo">No encontramos esa entrega</h2>
         <p>Puede que el enlace esté incompleto. Buscala en Seguir entregas.</p>
-        <a class="boton boton--secundario" href="/entidad-seguimiento"
+        <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Volver a Seguir entregas</a>
       </section>
     </th:block>
@@ -82,7 +82,7 @@
       </header>
 
       <!--/* Error de datos: el resumen arriba, con el foco, y un enlace a cada campo. */-->
-      <section th:if="${conError}" class="aviso aviso--error resumen" role="alert" tabindex="-1"
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                aria-labelledby="resumen-titulo" autofocus>
         <h2 id="resumen-titulo">Revisá dos cosas antes de confirmar</h2>
         <ul>
@@ -91,7 +91,7 @@
           <li><a href="#remito">Falta el número de remito</a></li>
         </ul>
       </section>
-      <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="error-titulo">
         <h2 id="error-titulo">No pudimos confirmar la entrega.</h2>
         <p>Es un problema nuestro: la entrega sigue esperando tu confirmación y quien donó no recibió
@@ -100,19 +100,19 @@
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=|/entidad-seguimiento-confirmar?entrega=${e.clave}|)}">escribinos
           con este código</a>.</p>
         <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-        <a class="boton boton--secundario" href="#fotos">Volver a intentar</a>
+        <a class="boton" data-tono="secundario" href="#fotos">Volver a intentar</a>
       </section>
-      <section th:if="${escenario == 'sin-conexion'}" class="aviso aviso--error" role="alert"
+      <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="red-titulo">
         <h2 id="red-titulo">No sabemos si la confirmación llegó.</h2>
         <p>Se cortó la conexión mientras se enviaba. Revisá la señal y fijate en Seguir entregas si ya
           aparece confirmada antes de repetirla.</p>
-        <a class="boton boton--secundario" href="/entidad-seguimiento"
+        <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Ir a Seguir entregas</a>
       </section>
       <!--/* Enviando: en el sistema, el aviso va a la región #avisos del layout, que lo anuncia, y el
              botón lleva hx-indicator; en la maqueta llega con la página. */-->
-      <p th:if="${escenario == 'lento'}" class="confirmar-aviso">Subiendo las fotos y confirmando la
+      <p th:if="${escenario == 'lento'}" class="cargando">Subiendo las fotos y confirmando la
         entrega…</p>
 
       <div class="acta">
@@ -154,16 +154,16 @@
         </div>
 
         <!--/* Ya confirmada: en lugar del formulario, quién y cuándo, y lo asentado. */-->
-        <section th:if="${escenario == 'confirmada'}" class="acta-formulario aviso"
+        <section th:if="${escenario == 'confirmada'}" class="banner acta-formulario"
                  aria-labelledby="ya-titulo">
           <h2 id="ya-titulo">Ya confirmaste esta entrega</h2>
           <p th:text="|La confirmó Marta el 15 de octubre de 2026 a las ${e.confirmo}.|">La confirmó
             Marta el 15 de octubre de 2026 a las 18:45.</p>
           <div class="acciones">
-            <a class="boton boton--principal" href="/entidad-seguimiento-sellada?entrega=lentejas"
+            <a class="boton" data-tono="principal" href="/entidad-seguimiento-sellada?entrega=lentejas"
                th:href="@{/entidad-seguimiento-sellada(entrega=${e.clave})}">Ver lo
               que quedó asentado</a>
-            <a class="boton boton--secundario" href="/entidad-seguimiento"
+            <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
                th:href="@{/entidad-seguimiento}">Volver a Seguir entregas</a>
           </div>
         </section>
@@ -175,7 +175,7 @@
           <p class="obligatorios">Los dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">
             <legend><h2>Las pruebas</h2></legend>
-            <div class="campo campo--fotos" th:classappend="${conError} ? 'campo--error'">
+            <div class="campo campo--fotos" th:data-estado="${conError} ? 'error'">
               <label for="fotos">
                 <svg class="carga-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
                   <path d="M6 16H14L18 10H30L34 16H42V38H6Z"/><circle cx="24" cy="26" r="7"/>
@@ -196,7 +196,7 @@
 
           <fieldset class="grupo">
             <legend><h2>Lo que recibiste</h2></legend>
-            <div class="campo" th:classappend="${conError} ? 'campo--error'">
+            <div class="campo" th:data-estado="${conError} ? 'error'">
               <label for="remito">Número de remito</label>
               <small id="remito-ayuda">Está arriba a la derecha del papel.</small>
               <p th:if="${conError}" id="remito-error" class="campo-error">Falta el número de remito.</p>
@@ -207,7 +207,7 @@
 
           <div class="firma">
             <p class="firma-quien">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
-            <button class="boton boton--principal" type="submit"
+            <button class="boton" data-tono="principal" type="submit"
                     th:disabled="${escenario == 'lento'}"
                     th:text="${escenario == 'lento'} ? 'Confirmando…' : 'Confirmar recepción'">Confirmar
               recepción</button>
@@ -229,31 +229,23 @@
 <ol th:fragment="tramo(confirmada)" class="tramo" role="list"
     th:aria-label="|Último tramo de ${e.nombre}|">
   <li class="tramo-paso tramo-paso--hecho">
-    <svg class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
-      <circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/>
-    </svg>
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
     <span class="tramo-nombre">Salió del Depósito Central</span>
     <span class="tramo-detalle" th:text="${e.salio}">Hoy, 14:30</span>
   </li>
   <li class="tramo-paso tramo-paso--hecho">
-    <svg class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
-      <circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/>
-    </svg>
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
     <span class="tramo-nombre">Llegó a tu puerta</span>
     <span class="tramo-detalle" th:text="${e.llego}">Hoy, 18:20</span>
   </li>
   <li th:if="${confirmada}" class="tramo-paso tramo-paso--hecho tramo-paso--entidad">
-    <svg class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
-      <circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/>
-    </svg>
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
     <span class="tramo-nombre">Recepción confirmada</span>
     <span class="tramo-detalle" th:text="|15 de octubre, ${e.confirmo}|">15 de octubre, 18:45</span>
   </li>
   <li th:unless="${confirmada}" class="tramo-paso tramo-paso--falta tramo-paso--entidad"
       aria-current="step">
-    <svg class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
-      <circle class="sello-falta" cx="11" cy="11" r="8"/>
-    </svg>
+    <th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block>
     <span class="tramo-nombre">Tu confirmación</span>
     <span class="tramo-detalle">Falta: es este paso</span>
   </li>

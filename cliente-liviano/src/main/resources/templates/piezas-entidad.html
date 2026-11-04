@@ -7,7 +7,6 @@
          Inicio y Donaciones recibidas, sección 6 de la ficha) y sus grupos por estado; inserta cuerpo
          con esas variables. ?escenario=vacio las vacía; sin-puerta saca las que esperan en la puerta y
          sin-resultados, la del aceite (para el filtro sin resultados).
-       - sello(tono): el sello de estado de sellos.css (puerta, recibida, camino, salir, problema).
        - novedades(cuantas): el acceso a Notificaciones, con cuántas hay sin leer.
        - error(titulo, texto, recargar): el aviso de error del servidor, con el código para escribir. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
@@ -66,18 +65,6 @@
   <th:block th:replace="${cuerpo}"></th:block>
 </th:block>
 
-<!--/* Los sellos de sellos.css, uno por estado: en la puerta, el disco paja (lo que llegó, impreso);
-       recibida, el mismo con el tilde calado; en camino, la mitad ámbar; por salir, el punteado; con
-       problema, el disco óxido con "!". Decorativos: el estado va siempre en texto al lado. */-->
-<svg th:fragment="sello(tono)" th:switch="${tono}" class="estado-sello" viewBox="0 0 22 22"
-     aria-hidden="true" focusable="false">
-  <g th:case="'puerta'"><circle class="sello-hecho" cx="11" cy="11" r="9"/></g>
-  <g th:case="'recibida'"><circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/></g>
-  <g th:case="'camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
-  <circle th:case="'salir'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
-  <g th:case="*"><circle class="sello-problema" cx="11" cy="11" r="9"/><path class="sello-calado" d="M11 6V12.5M11 15.5V16"/></g>
-</svg>
-
 <!--/* El acceso a Notificaciones: no es una sección del menú (ficha, sección 2); va en la cabecera de
        cada pantalla de la entidad que dibuja este grupo. Sin rojo ni signo de exclamación: es un dato. */-->
 <a th:fragment="novedades(cuantas)" class="novedades" href="/entidad-notificaciones"
@@ -87,7 +74,7 @@
 </a>
 
 <!--/* El error del servidor al cargar: qué pasó, que no cambió nada, volver a cargar y el código. */-->
-<section th:fragment="error(titulo, texto, recargar)" class="aviso aviso--error" role="alert"
+<section th:fragment="error(titulo, texto, recargar)" class="banner" data-estado="error" role="alert"
          aria-labelledby="error-titulo">
   <h2 id="error-titulo" th:text="${titulo}">No pudimos cargar tu inicio.</h2>
   <p><th:block th:text="${texto}">Es un problema nuestro: no cambió nada en tus entregas ni en tus
@@ -95,7 +82,7 @@
        th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=${recargar})}">escribinos
       con este código</a>.</p>
   <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-  <a class="boton boton--secundario" href="/entidad-inicio" th:href="${recargar}">Volver
+  <a class="boton" data-tono="secundario" href="/entidad-inicio" th:href="${recargar}">Volver
     a cargar</a>
 </section>
 

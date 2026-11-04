@@ -38,9 +38,9 @@
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando">Cargando tu inicio…</p>
       <div class="inicio-cuerpo" aria-busy="true">
-        <div class="reserva reserva--alta inicio-ancho"></div>
-        <div class="reserva"></div>
-        <div class="reserva"></div>
+        <div class="esqueleto inicio-ancho" data-forma="punteado" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
       </div>
     </th:block>
 
@@ -48,7 +48,7 @@
       <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <svg class="dibujo aviso-brote" viewBox="0 0 120 90" aria-hidden="true" focusable="false">
         <path class="dibujo-tierra" d="M0 60H120"/>
         <path class="dibujo-tallo" d="M60 60V30"/>
@@ -57,7 +57,7 @@
       <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
       <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
         hasta que la entidad confirme la entrega.</p>
-      <a class="boton boton--secundario" href="/donante-entidades"
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
          th:href="@{/donante-entidades}">Conocer las entidades</a>
     </section>
 
@@ -95,11 +95,11 @@
         <p th:text="|${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso: ${vanEnCamino} en camino, ${#lists.size(tienenProblema)} con problema y ${esperanSalir} ${esperanSalir == 1 ? 'pendiente' : 'pendientes'}.|">3
           entregas en curso: 1 en camino, 1 con problema y 1 pendiente.</p>
         <ul class="sellos-curso" role="list" aria-hidden="true">
-          <li class="estado estado--en-camino"><th:block th:replace="~{datos-donante :: sello('en-camino')}"></th:block><b th:text="${vanEnCamino}">1</b></li>
-          <li class="estado estado--con-problema"><th:block th:replace="~{datos-donante :: sello('con-problema')}"></th:block><b th:text="${#lists.size(tienenProblema)}">1</b></li>
-          <li class="estado estado--pendiente"><th:block th:replace="~{datos-donante :: sello('pendiente')}"></th:block><b th:text="${esperanSalir}">1</b></li>
+          <li class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block><b th:text="${vanEnCamino}">1</b></li>
+          <li class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><b th:text="${#lists.size(tienenProblema)}">1</b></li>
+          <li class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block><b th:text="${esperanSalir}">1</b></li>
         </ul>
-        <a class="boton boton--secundario" href="/donante-seguimiento"
+        <a class="boton" data-tono="secundario" href="/donante-seguimiento"
            th:href="@{/donante-seguimiento}">Ver seguimiento</a>
         <div class="en-curso-destino">
           <p th:text="|${sinDestino} ${sinDestino == 1 ? 'donación espera' : 'donaciones esperan'} destino en el depósito.|">2
@@ -114,7 +114,7 @@
                th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
         <h2 id="demora-titulo">Una entrega con problema</h2>
         <p class="demora-texto">
-          <th:block th:replace="~{datos-donante :: sello(${d.estado.tono})}"></th:block>
+          <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
           <span th:text="|${d.titulo} no pudo llegar a ${destino}: el camino estaba cortado. Sale de nuevo el 17 de octubre.|">Útiles
             escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo el
             17 de octubre.</span>
@@ -138,7 +138,7 @@
       </section>
 
       <div class="acciones inicio-ancho">
-        <a class="boton boton--secundario" href="/donante-entidades"
+        <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Conocer las entidades</a>
       </div>
     </div>

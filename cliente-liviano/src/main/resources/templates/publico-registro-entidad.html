@@ -34,7 +34,7 @@
     <form class="formulario" action="/publico-registro-entidad-enviada"
           th:action="@{/publico-registro-entidad-enviada}" method="post"
           data-enviando="Enviando la solicitud…" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <section th:if="${conError}" class="aviso aviso--error resumen" role="alert" tabindex="-1" autofocus
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1" autofocus
                aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
         <ul>
@@ -57,7 +57,7 @@
           <input id="entidad" name="entidad" type="text" required autocomplete="organization"
                  aria-describedby="entidad-ayuda" th:value="${escrito} ? 'Merendero Ejemplo Oeste' : null">
         </div>
-        <div class="campo" th:classappend="${conError} ? 'campo--error'">
+        <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="que-es">Qué es</label>
           <small id="que-es-ayuda">Lo ven los donantes junto al nombre.</small>
           <p th:if="${conError}" id="que-es-error" class="campo-error">Elegí qué es tu entidad.</p>
@@ -90,7 +90,7 @@
         <small id="direccion-ayuda">Acá llegan las entregas. En público mostramos solo el barrio, nunca la
           dirección.</small>
         <div class="campos-par">
-          <div class="campo" th:classappend="${conError} ? 'campo--error'">
+          <div class="campo" th:data-estado="${conError} ? 'error'">
             <label for="calle">Calle</label>
             <p th:if="${conError}" id="calle-error" class="campo-error">Falta la calle.</p>
             <input id="calle" name="calle" type="text" required autocomplete="address-line1"
@@ -136,7 +136,7 @@
           <div class="clave-fila">
             <input id="clave" name="clave" type="password" required minlength="8" autocomplete="new-password"
                    aria-describedby="clave-ayuda">
-            <button class="boton boton--secundario" type="button" data-mostrar aria-controls="clave"
+            <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
                     aria-pressed="false" hidden>Mostrar</button>
           </div>
         </div>
@@ -149,7 +149,7 @@
            th:href="@{/publico-legales}">Leer los términos y la política de privacidad</a></p>
       </div>
 
-      <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
+      <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
               th:text="${escenario == 'lento'} ? 'Enviando la solicitud…' : 'Enviar la solicitud'">Enviar la
         solicitud</button>
       <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Enviando la solicitud…</p>

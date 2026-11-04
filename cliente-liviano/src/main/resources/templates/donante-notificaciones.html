@@ -29,7 +29,7 @@
         <p class="rotulo">Notificaciones</p>
         <h1>Noticias de <em>tus donaciones</em></h1>
       </div>
-      <p th:if="${leidas}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
+      <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
          th:text="'Listo: marcaste todas como leídas.'">Listo: marcaste todas como leídas.</p>
       <p th:if="${conDatos}" class="bajada"
          th:text="${leidas} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.|">4
@@ -37,15 +37,15 @@
       <form th:if="${conDatos and sinLeerAhora > 0}" class="marcar"
             action="/donante-notificaciones-leidas"
             th:action="@{/donante-notificaciones-leidas}" method="post">
-        <button class="boton boton--secundario" type="submit">Marcar todas como leídas</button>
+        <button class="boton" data-tono="secundario" type="submit">Marcar todas como leídas</button>
       </form>
     </header>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
       <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la
         entidad confirme la entrega.</p>
-      <a class="boton boton--secundario" href="/donante-donaciones"
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
          th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
     </section>
 
@@ -56,8 +56,8 @@
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando">Cargando tus notificaciones…</p>
       <div class="notificaciones-grupos" aria-busy="true">
-        <div class="reserva"></div>
-        <div class="reserva reserva--alta"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
       </div>
     </th:block>
 

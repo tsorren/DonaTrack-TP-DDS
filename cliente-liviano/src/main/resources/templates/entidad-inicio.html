@@ -39,7 +39,7 @@
       </th:block>
     </header>
 
-    <p th:if="${escenario == 'lento'}" class="inicio-cargando" role="status">Cargando tu inicio…</p>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tu inicio…</p>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{piezas-entidad :: error('No pudimos cargar tu inicio.',
@@ -48,11 +48,11 @@
     </th:block>
 
     <!--/* Recién aprobada: un aviso con un solo paso en lugar de las partes. */-->
-    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
       <p>Empezá por publicar lo que necesita tu entidad: lo ven los donantes y el catálogo público.
         Cuando se te asigne una donación, aparece acá.</p>
-      <a class="boton boton--principal" href="/entidad-necesidades"
+      <a class="boton" data-tono="principal" href="/entidad-necesidades"
          th:href="@{/entidad-necesidades}">Publicar una necesidad</a>
     </section>
 
@@ -80,12 +80,12 @@
                   <span th:text="|${d.nombre} · ${d.cuanto}|">Lentejas secas · 15 kg</span>
                 </h3>
                 <p class="estado acta-estado">
-                  <svg th:replace="~{piezas-entidad :: sello('puerta')}"></svg>
+                  <svg th:replace="~{componentes/sello :: sello('puerta')}"></svg>
                   Espera tu confirmación
                 </p>
                 <p class="acta-texto" th:text="|${d.llego} Para tu pedido de ${d.pedidoNombre}.|">Llegó hoy,
                   18:20, desde el Depósito Central. Para tu pedido de lentejas secas.</p>
-                <a class="boton boton--principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+                <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
                    th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
                   recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
               </li>
@@ -109,9 +109,9 @@
                 <li th:each="d : ${lista.?[grupo == #root.g]}" class="viene-paso"
                     th:classappend="|viene-paso--${d.grupo}|"
                     th:with="estado=${grupos.?[clave == #root.d.grupo][0]}">
-                  <svg th:replace="~{piezas-entidad :: sello(${d.grupo})}"></svg>
+                  <svg th:replace="~{componentes/sello :: sello(${d.grupo})}"></svg>
                   <b th:text="|${d.nombre}, ${d.cuanto}|">Arroz, 20 kg</b>
-                  <span class="viene-detalle"><span class="estado" th:classappend="|estado--${d.grupo}|"
+                  <span class="viene-detalle"><span class="estado" th:data-estado="${d.grupo}"
                         th:text="${estado.estado}">En camino</span>, <th:block th:text="${d.breve}">llega
                     mañana</th:block></span>
                 </li>
@@ -163,7 +163,7 @@
           <div class="recibido-texto">
             <p th:text="|${#lists.size(recibidas)} donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30.|">6
               donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30.</p>
-            <a class="boton boton--secundario" href="/entidad-recibidas?estado=recibidas"
+            <a class="boton" data-tono="secundario" href="/entidad-recibidas?estado=recibidas"
                th:href="@{/entidad-recibidas(estado='recibidas')}">Ver las recibidas</a>
           </div>
         </div>

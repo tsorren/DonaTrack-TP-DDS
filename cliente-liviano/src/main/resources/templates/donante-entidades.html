@@ -60,7 +60,7 @@
       <section th:replace="~{datos-donante :: error('No pudimos cargar las entidades.', '/donante-entidades')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Por ahora no hay entidades activas.</h2>
       <p>Cuando una entidad se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
@@ -72,7 +72,7 @@
         <label for="nombre">Buscar por nombre</label>
         <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}">
       </div>
-      <button class="boton boton--principal" type="submit">Buscar</button>
+      <button class="boton" data-tono="principal" type="submit">Buscar</button>
       <a th:if="${busca != ''}" class="filtro-sacar" href="/donante-entidades"
          th:href="@{/donante-entidades}">Ver todas</a>
     </form>
@@ -80,8 +80,8 @@
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando">Cargando las entidades…</p>
       <div class="ejemplares-reserva" aria-busy="true">
-        <div class="reserva reserva--alta"></div>
-        <div class="reserva reserva--alta"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
       </div>
     </th:block>
 
@@ -92,17 +92,17 @@
                  : (${dibujada} ? '46 entidades activas. Página 1 de 8.' : |46 entidades activas. Página ${pagina} de 8.|)">46
         entidades activas. Página 1 de 8.</p>
 
-      <section th:if="${busca != '' and lista.isEmpty()}" class="aviso aviso--vacio"
+      <section th:if="${busca != '' and lista.isEmpty()}" class="vacio"
                aria-labelledby="sin-resultados">
         <h2 id="sin-resultados">Probá con otra parte del nombre.</h2>
-        <a class="boton boton--secundario" href="/donante-entidades"
+        <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
       </section>
 
-      <section th:if="${busca == '' and !dibujada}" class="aviso aviso--vacio"
+      <section th:if="${busca == '' and !dibujada}" class="vacio"
                aria-labelledby="no-dibujada">
         <h2 id="no-dibujada">En la maqueta solo está dibujada la primera página.</h2>
-        <a class="boton boton--secundario" href="/donante-entidades"
+        <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Volver a la página 1</a>
       </section>
 
@@ -121,8 +121,8 @@
             <h3>Lo que ya donó tu empresa</h3>
             <ul role="list">
               <li th:each="y : ${e.ya}" th:with="d=${donaciones.^[clave == #root.y.clave]}"
-                  class="estado" th:classappend="|estado--${d.estado.tono}|">
-                <th:block th:replace="~{datos-donante :: sello(${d.estado.tono})}"></th:block>
+                  class="estado" th:data-estado="${d.estado.tono}">
+                <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
                 <span th:text="${y.texto}">Tus fideos secos: entrega confirmada el 5 de octubre.</span>
               </li>
             </ul>
@@ -149,9 +149,9 @@
       </ul>
 
       <nav th:if="${busca == ''}" class="paginas" aria-label="Páginas de entidades">
-        <a th:if="${!dibujada}" class="boton boton--secundario" href="/donante-entidades"
+        <a th:if="${!dibujada}" class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades(pagina=${pagina - 1})}">Página anterior</a>
-        <a th:if="${pagina < 8}" class="boton boton--secundario" href="/donante-entidades?pagina=2"
+        <a th:if="${pagina < 8}" class="boton" data-tono="secundario" href="/donante-entidades?pagina=2"
            th:href="@{/donante-entidades(pagina=${pagina + 1})}">Página siguiente</a>
       </nav>
     </th:block>
@@ -164,7 +164,7 @@
       <p class="deposito"><b>Depósito Central Ejemplo</b>
         <span>Calle Ejemplo 1234, Ciudad Ejemplo</span>
         <span>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</span></p>
-      <a class="boton boton--secundario" href="/donante-donaciones"
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
          th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
     </section>
   </div>

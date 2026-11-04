@@ -81,7 +81,7 @@
   background: var(--color-suelo);
 }
 
-.etiqueta-entidad.reserva {
+.etiqueta-entidad.esqueleto {
   min-height: 14rem;
 }
 
@@ -212,7 +212,7 @@
   display: none;
 }
 
-.etiqueta-entidad .boton--chico {
+.etiqueta-entidad .boton[data-tamano="chico"] {
   margin-top: 0.75rem;
 }
 

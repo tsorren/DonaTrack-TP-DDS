@@ -1,0 +1,26 @@
+/* Bloque de carga (D33, B2-09): el indicador de carga (`.cargando`, un texto que dice qué se está
+   trayendo) y el esqueleto (`.esqueleto`, el lugar de una parte que espera). Se carga en la capa
+   `bloques` desde app.css. El estado vacío (`.vacio`) comparte el papel del aviso y vive en
+   aviso.css. Las variantes van por atributo: `data-forma="punteado"` y `data-tamano="alto"` en el
+   esqueleto. Catálogo: docs/interfaz/componentes.md. */
+
+/* El texto de lo que carga. Va con role="status" o dentro de una región con aria-busy="true". */
+.cargando {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+/* El lugar de una parte que espera: papel gris tierra, sin datos inventados. */
+.esqueleto {
+  min-height: 9rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-pendiente-fondo);
+}
+
+.esqueleto[data-forma="punteado"] {
+  border: 2px dashed var(--color-tinta-suave);
+}
+
+.esqueleto[data-tamano="alto"] {
+  min-height: 14rem;
+}

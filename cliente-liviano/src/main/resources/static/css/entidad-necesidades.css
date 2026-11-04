@@ -16,11 +16,6 @@
   font-size: 1.125rem;
 }
 
-.necesidades-aviso {
-  margin: 0 0 1rem;
-  font-weight: 700;
-}
-
 /* --- El registro de cifras: doble filete, como el de Seguir entregas ------------------------------ */
 .cifras {
   display: block;
@@ -112,28 +107,8 @@
   content: "−";
 }
 
-.boton--chico {
-  min-height: 3rem;
-  padding: 0.5rem 0.875rem;
-  font-size: 0.9375rem;
-}
-
-.boton--quitar {
-  border-color: var(--color-problema-texto);
-  background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-problema-fondo);
-  color: var(--color-problema-texto);
-  cursor: pointer;
-}
-
-.boton--quitar:hover {
-  background: var(--color-problema-fondo);
-}
-
-.boton--secundario {
-  background: var(--color-papel);
+.boton[data-tono="secundario"] {
   color: var(--color-tinta);
-  cursor: pointer;
 }
 
 /* --- La lista: una etiqueta de herbario por pedido, con doble filete y sombra salvia, como las de la
@@ -410,56 +385,18 @@
   border-top: 1px dotted var(--color-tinta-suave);
 }
 
-.pedido-acciones > .aviso,
+.pedido-acciones > .banner,
 .cambiar[open] {
   flex-basis: 100%;
 }
 
-.pedido-acciones > .aviso {
+.pedido-acciones > .banner {
   margin: 0;
 }
 
-.pedido-acciones .aviso h3 {
+.pedido-acciones .banner h3 {
   margin: 0 0 0.5rem;
   font: 800 1.125rem/1.2 var(--fuente-titulo);
-}
-
-/* El diálogo de la baja usa el popover del navegador: se abre y se cierra sin JavaScript, con Esc o
-   tocando afuera (como la foto de la portada). */
-.baja {
-  width: min(32rem, 100% - 2rem);
-  margin: auto;
-  padding: 1.25rem;
-  border: 1.5px solid var(--color-problema-texto);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-problema-texto);
-  outline-offset: -7px;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-}
-
-.baja:popover-open {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.baja::backdrop {
-  background: var(--color-suelo-hondo);
-  opacity: 0.75;
-}
-
-.baja h3 {
-  margin: 0;
-  font: 800 1.375rem/1.2 var(--fuente-titulo);
-  font-stretch: 118%;
-}
-
-.baja p {
-  margin: 0;
-}
-
-.baja form {
-  margin: 0;
 }
 
 /* --- Las cumplidas y terminadas, plegadas al pie ----------------------------------------------- */

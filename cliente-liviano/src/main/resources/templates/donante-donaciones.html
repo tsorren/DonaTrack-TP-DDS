@@ -31,11 +31,11 @@
       <h1>Lo que donó <em>tu empresa</em></h1>
     </header>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso aviso--vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Tu empresa todavía no tiene donaciones registradas.</h2>
       <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
         con su estado.</p>
-      <a class="boton boton--secundario" href="/donante-entidades"
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
          th:href="@{/donante-entidades}">Conocer las entidades</a>
     </section>
 
@@ -65,7 +65,7 @@
             <option value="escolares" th:selected="${fCategoria == 'escolares'}">Útiles escolares</option>
           </select>
         </div>
-        <button class="boton boton--principal" type="submit">Filtrar</button>
+        <button class="boton" data-tono="principal" type="submit">Filtrar</button>
         <a th:if="${filtrado}" class="filtro-sacar" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Sacar los filtros</a>
       </form>
@@ -73,7 +73,7 @@
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando">Cargando tus donaciones…</p>
-      <div class="reserva reserva--alta" aria-busy="true"></div>
+      <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
     </th:block>
 
     <th:block th:if="${escenario == ''}">
@@ -83,11 +83,11 @@
            : |${#lists.size(lista)} donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.|">7
         donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.</p>
 
-      <section th:if="${filtrado and lista.isEmpty()}" class="aviso aviso--vacio" role="status"
+      <section th:if="${filtrado and lista.isEmpty()}" class="vacio" role="status"
                aria-labelledby="sin-resultados">
         <h2 id="sin-resultados">No hay donaciones con esos filtros.</h2>
         <p>Probá con otro estado o con otra categoría.</p>
-        <a class="boton boton--secundario" href="/donante-donaciones"
+        <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Sacar los filtros</a>
       </section>
 
@@ -125,8 +125,8 @@
             </p>
             <p class="asiento-donada" th:text="|Donada el ${d.donada}|">Donada el 14 de octubre de 2026</p>
             <p class="asiento-estado">
-              <span class="estado" th:classappend="|estado--${d.estado.tono}|">
-                <th:block th:replace="~{datos-donante :: sello(${d.estado.tono})}"></th:block>
+              <span class="estado" th:data-estado="${d.estado.tono}">
+                <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
                 <span th:text="${d.estado.texto}">Pendiente</span>
               </span>
               <span class="asiento-nota"
@@ -139,7 +139,7 @@
 
       <div class="donaciones-pie">
         <p>Las que están en curso también se ven en Seguimiento, con dónde va el camión.</p>
-        <a class="boton boton--secundario" href="/donante-seguimiento"
+        <a class="boton" data-tono="secundario" href="/donante-seguimiento"
            th:href="@{/donante-seguimiento}">Ver seguimiento</a>
       </div>
     </th:block>

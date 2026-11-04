@@ -36,6 +36,7 @@
     --movimiento-animacion-viento: mov-viento var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
     --movimiento-animacion-viento-fruto: mov-viento-fruto var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
     --movimiento-transicion-atenua: opacity var(--movimiento-duracion-corta);
+    --movimiento-transicion-dialogo: opacity var(--movimiento-duracion-media) var(--movimiento-curva-salida), overlay var(--movimiento-duracion-media) allow-discrete, display var(--movimiento-duracion-media) allow-discrete;
   }
 
   [data-movimiento] {

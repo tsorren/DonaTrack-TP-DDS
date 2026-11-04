@@ -23,7 +23,7 @@ figure.mapa-dibujo {
   background: linear-gradient(transparent calc(80 / 590 * 100%), var(--color-suelo) 0);
 }
 
-figure.mapa-dibujo.reserva {
+figure.mapa-dibujo.esqueleto {
   aspect-ratio: 800 / 590;
   min-height: 0;
   border-color: var(--color-pendiente-fondo);

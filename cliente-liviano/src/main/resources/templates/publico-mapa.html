@@ -39,7 +39,7 @@
       <form class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
             method="get" data-al-cambiar>
         <fieldset th:replace="~{datos-publicos :: filtroCategorias('Qué se donó', 'Todas')}"></fieldset>
-        <button class="boton boton--secundario" type="submit">Filtrar</button>
+        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
       </form>
       <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
         <p><b class="fruto" th:text="${#lists.size(filtradas)}">10</b>
@@ -53,14 +53,14 @@
       <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar el mapa de entregas.',
           'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-mapa', true)}"></section>
     </th:block>
-    <p th:if="${escenario == 'lento'}" class="aviso">Cargando el mapa de entregas…</p>
+    <p th:if="${escenario == 'lento'}" class="banner">Cargando el mapa de entregas…</p>
 
     <div th:unless="${escenario == 'error'}" class="mapa-cuerpo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <!--/* El dibujo, fijo en su forma y con los datos de cada entidad: de la estación del depósito
              (400, 130) baja la línea, dobla a 45° hacia el lado de la entidad y vuelve a bajar hasta
              su estación. ponytail: las entidades no van justo debajo del depósito (x ≠ 400) ni más
              arriba que su codo; en el sistema dibuja MapLibre. */-->
-      <figure class="mapa-dibujo tierra-impresa" th:classappend="${escenario == 'lento'} ? 'reserva'" aria-hidden="true">
+      <figure class="mapa-dibujo tierra-impresa" th:classappend="${escenario == 'lento'} ? 'esqueleto'" aria-hidden="true">
         <svg th:unless="${escenario == 'lento'}" class="dibujo" viewBox="0 0 800 590" aria-hidden="true" focusable="false">
           <path class="dibujo-tierra" d="M0 80H800"/>
           <path class="dibujo-tallo" d="M400 80V44"/>
@@ -111,7 +111,7 @@
                     href="#cat-alimentos" th:href="${'#cat-' + f.cat}"/></svg>
                 <p th:id="${id + '-que'}" th:text="|${f.que} · ${categorias.^[clave == '__${f.cat}__'].texto} · ${f.dia}|">Lentejas
                   secas, 10 kg · Alimentos · 10 de octubre</p>
-                <button type="button" class="boton boton--chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
+                <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
                   la foto de la entrega</button>
                 <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${f})}"></div>
               </li>
@@ -121,30 +121,30 @@
         </ol>
       </section>
 
-      <div th:if="${escenario == 'lento'}" class="mapa-lista reserva"></div>
+      <div th:if="${escenario == 'lento'}" class="esqueleto mapa-lista"></div>
 
-      <section th:if="${escenario == '' and filtradas.isEmpty()}" class="aviso" aria-labelledby="vacio-titulo">
+      <section th:if="${escenario == '' and filtradas.isEmpty()}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo" th:text="|Todavía no hay entregas de ${elegida.enFrase} en el último mes.|">Todavía no
           hay entregas de útiles escolares en el último mes.</h2>
         <p>Cuando una entidad confirme una entrega de esta categoría, aparece en el mapa.</p>
-        <a class="boton boton--secundario" href="/publico-mapa"
+        <a class="boton" data-tono="secundario" href="/publico-mapa"
            th:href="@{/publico-mapa}">Ver todas las categorías</a>
       </section>
 
-      <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+      <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
         <p>Se cuentan cuando cada entidad confirma lo que recibe.</p>
-        <a class="boton boton--secundario" href="/publico-entidades"
+        <a class="boton" data-tono="secundario" href="/publico-entidades"
            th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
       </section>
     </div>
 
     <div th:if="${hay}" class="salidas">
-      <a class="boton boton--secundario" href="/publico-donaciones"
+      <a class="boton" data-tono="secundario" href="/publico-donaciones"
          th:href="@{/publico-donaciones}">Ver las fotos de cada entrega</a>
-      <a class="boton boton--secundario" href="/publico-entidades"
+      <a class="boton" data-tono="secundario" href="/publico-entidades"
          th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
-      <a class="boton boton--principal" href="/publico-registro-donante"
+      <a class="boton" data-tono="principal" href="/publico-registro-donante"
          th:href="@{/publico-registro-donante}">Quiero donar</a>
     </div>
   </div>

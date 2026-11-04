@@ -42,11 +42,11 @@
           <small id="q-ayuda">Por ejemplo: comedor.</small>
           <div class="filtro-buscar-fila">
             <input id="q" name="q" type="search" aria-describedby="q-ayuda" th:value="${q}">
-            <button class="boton boton--secundario" type="submit">Buscar</button>
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
           </div>
         </div>
         <fieldset th:replace="~{datos-publicos :: filtroCategorias('Qué piden', 'Todo')}"></fieldset>
-        <button class="boton boton--secundario" type="submit">Filtrar</button>
+        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
       </form>
       <div th:if="${n > 0}" class="cifra-fruto" aria-live="polite">
         <p th:if="${q == '' and elegida == null}"><b class="fruto" th:text="${n}">6</b>
@@ -65,15 +65,15 @@
           'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-entidades', true)}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Ninguna entidad tiene pedidos vigentes ahora.</h2>
       <p>Cuando una publique lo que le hace falta, aparece acá.</p>
-      <a class="boton boton--secundario" href="/publico-registro-entidad"
+      <a class="boton" data-tono="secundario" href="/publico-registro-entidad"
          th:href="@{/publico-registro-entidad}">Sumar mi entidad</a>
     </section>
 
     <!--/* Sin resultados: qué no se encontró y cómo volver a ver todas. */-->
-    <section th:if="${escenario == '' and n == 0}" class="aviso" aria-labelledby="sin-titulo">
+    <section th:if="${escenario == '' and n == 0}" class="vacio" aria-labelledby="sin-titulo">
       <th:block th:if="${q != '' and elegida != null}">
         <h2 id="sin-titulo" th:text="|Ninguna entidad con «${q}» en el nombre pide ${elegida.enFrase} ahora.|">Ninguna
           entidad con «biblioteca» en el nombre pide alimentos ahora.</h2>
@@ -89,15 +89,15 @@
           útiles escolares ahora.</h2>
         <p>Cuando una lo publique, aparece acá.</p>
       </th:block>
-      <a class="boton boton--secundario" href="/publico-entidades"
+      <a class="boton" data-tono="secundario" href="/publico-entidades"
          th:href="@{/publico-entidades}">Ver todas</a>
     </section>
 
     <th:block th:if="${escenario == 'lento'}">
-      <p class="aviso">Cargando las entidades…</p>
+      <p class="banner">Cargando las entidades…</p>
       <div class="herbario tierra-impresa" aria-busy="true">
         <ul class="herbario-lista" role="list">
-          <li th:each="i : ${#numbers.sequence(1, 4)}" class="etiqueta-entidad reserva"></li>
+          <li th:each="i : ${#numbers.sequence(1, 4)}" class="esqueleto etiqueta-entidad"></li>
         </ul>
       </div>
     </th:block>
@@ -128,7 +128,7 @@
                 <li th:each="p : ${pedidos}" th:if="${pStat.count > 3}"><th:block th:replace="~{:: pedido(${p})}"></th:block></li>
               </ul>
             </details>
-            <a th:if="${e.numero != null}" class="boton boton--chico" href="/publico-mapa#entidad-comedor"
+            <a th:if="${e.numero != null}" class="boton" data-tamano="chico" href="/publico-mapa#entidad-comedor"
                th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
                th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
           </article>
@@ -137,7 +137,7 @@
     </div>
 
     <div th:if="${escenario != 'error' and escenario != 'lento'}" class="salidas">
-      <a class="boton boton--principal" href="/publico-registro-donante"
+      <a class="boton" data-tono="principal" href="/publico-registro-donante"
          th:href="@{/publico-registro-donante}">Quiero donar</a>
       <p>¿Ya tenés cuenta? <a href="/publico-ingresar"
          th:href="@{/publico-ingresar}">Ingresar</a></p>

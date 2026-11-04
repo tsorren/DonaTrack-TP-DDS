@@ -1,0 +1,99 @@
+/* Bloque botón (D33, B2-01): el botón y el enlace con forma de botón (`<button class="boton">`,
+   `<a class="boton">`). Se carga en la capa `bloques` desde app.css. Las variantes van por atributo,
+   después de la base y en el mismo bloque: `data-tono` ("principal", "secundario", "quitar") y
+   `data-tamano` ("chico"). Catálogo: docs/interfaz/componentes.md. */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--color-acento);
+  /* Esquina suave (A/B de bordes, 2026-11-02: B). */
+  border-radius: var(--radio-boton);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */
+  background: var(--color-papel);
+  font: inherit;
+  font-weight: 700;
+  font-stretch: 112%;
+  text-decoration: none;
+}
+
+.boton[hidden] {
+  display: none;
+}
+
+/* Los `<button>` se tocan con la mano. */
+:where(button).boton {
+  cursor: pointer;
+}
+
+.boton[data-tono="principal"] {
+  background: var(--color-acento);
+  color: var(--color-papel);
+}
+
+.boton[data-tono="principal"]:hover {
+  background: var(--color-acento-hondo);
+}
+
+.boton[data-tono="secundario"]:hover {
+  background: var(--color-acento-claro);
+}
+
+/* Quitar o dar de baja: el contorno y la sombra, en el color del problema. */
+.boton[data-tono="quitar"] {
+  border-color: var(--color-problema-texto);
+  background: var(--color-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}
+
+.boton[data-tono="quitar"]:hover {
+  background: var(--color-problema-fondo);
+}
+
+/* Chico: más bajo, en contorno, para no competir con la acción principal (la foto, el mapa, "Volver a
+   cargar"). Con el tono principal es el botón lleno, solo más angosto ("Confirmar recepción" en una
+   fila de la lista). */
+.boton[data-tamano="chico"] {
+  padding: 0.5rem 0.875rem;
+}
+
+.boton[data-tamano="chico"]:not([data-tono="principal"]) {
+  justify-self: start;
+  gap: 0.5rem;
+  border-width: 1.5px;
+  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  color: var(--color-acento);
+  font-size: 0.875rem;
+}
+
+.boton[data-tamano="chico"]:not([data-tono="principal"]):hover {
+  background: var(--color-acento-claro);
+}
+
+.boton[data-tamano="chico"][data-tono="principal"] {
+  font-size: 0.9375rem;
+}
+
+.boton[data-tamano="chico"] svg {
+  width: 1.125rem;
+  height: auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.75;
+}
+
+/* Al apretar se hunde sobre su sombra, como un sello (ronda de formas, 2026-11-01). Va al final para
+   ganarle a la sombra de cada variante. */
+.boton:active,
+.boton[data-tamano="chico"]:not([data-tono="principal"]):active {
+  box-shadow: none;
+  translate: 0.3rem 0.3rem;
+}
+
+.boton[data-tamano="chico"]:not([data-tono="principal"]):active {
+  translate: 0.2rem 0.2rem;
+}

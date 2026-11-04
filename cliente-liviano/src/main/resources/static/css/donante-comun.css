@@ -16,23 +16,6 @@ main h1 em {
   text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
-.cargando {
-  margin: 0 0 1rem;
-  font-weight: 700;
-}
-
-/* El lugar de una parte que espera: papel sin imprimir, con el contorno punteado. */
-.reserva {
-  min-height: 9rem;
-  border: 2px dashed var(--color-tinta-suave);
-  border-radius: var(--radio-lamina);
-  background: var(--color-pendiente-fondo);
-}
-
-.reserva--alta {
-  min-height: 14rem;
-}
-
 /* El papel de una parte: borde de tinta y sombra plana salvia, esquina suave. */
 .lamina {
   padding: 1.25rem;
@@ -62,10 +45,6 @@ main h1 em {
 .volver::before {
   content: "← ";
   white-space: pre;
-}
-
-.estado--entregada {
-  color: var(--color-entregada-texto);
 }
 
 /* El brote del aviso vacío, chico en el celular: el próximo paso entra cerca de la primera

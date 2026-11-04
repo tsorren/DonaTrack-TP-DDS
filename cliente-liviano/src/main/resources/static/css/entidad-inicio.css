@@ -9,11 +9,6 @@
   max-width: 82rem;
 }
 
-.inicio-cargando {
-  margin: 0 0 1rem;
-  font-weight: 700;
-}
-
 .inicio-partes {
   display: grid;
   gap: 2.5rem;

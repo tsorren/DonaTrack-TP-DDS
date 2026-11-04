@@ -20,8 +20,7 @@
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'publicada', 'publicar-error',
          'cambiada' o 'baja'.
        - publicar(conError): el formulario para publicar, plegado arriba de la lista.
-       - periodo(p, max): un período de la historia, con su barra.
-       - sello(tono): el sello de una entrega. */-->
+       - periodo(p, max): un período de la historia, con su barra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-necesidades', ~{::contenido})}">
 <head>
@@ -112,25 +111,25 @@
     </header>
 
     <!--/* Los avisos de cada acción, con el foco (decisión de la ficha: el éxito toma el foco). */-->
-    <p th:if="${accion == 'publicada'}" class="aviso aviso--hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'publicada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Publicamos tu necesidad. Ya la ven los donantes y el catálogo público.</p>
-    <p th:if="${accion == 'cambiada'}" class="aviso aviso--hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'cambiada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Guardamos los cambios de Lentejas secas.</p>
-    <p th:if="${accion == 'baja'}" class="aviso aviso--hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'baja'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no
       pudo llegar vuelve al depósito para otra entidad.</p>
-    <section th:if="${noExiste}" class="aviso" role="alert" aria-labelledby="noexiste-titulo">
+    <section th:if="${noExiste}" class="banner" role="alert" aria-labelledby="noexiste-titulo">
       <h2 id="noexiste-titulo">No encontramos esa necesidad.</h2>
       <p>Puede que el enlace esté incompleto o que ya no esté vigente. Fijate en la lista o en
         Cumplidas y terminadas.</p>
     </section>
-    <section th:if="${escenario == 'ya-no-vigente'}" class="aviso" role="alert"
+    <section th:if="${escenario == 'ya-no-vigente'}" class="banner" role="alert"
              aria-labelledby="novigente-titulo">
       <h2 id="novigente-titulo">Aceite de girasol ya no está vigente.</h2>
       <p>Puede que otra persona de tu entidad lo haya dado de baja o que haya terminado. Fijate en
         <a href="#terminadas">Cumplidas y terminadas</a>.</p>
     </section>
-    <section th:if="${escenario == 'error-baja'}" class="aviso aviso--error" role="alert"
+    <section th:if="${escenario == 'error-baja'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="errorbaja-titulo">
       <h2 id="errorbaja-titulo">No pudimos dar de baja tu necesidad.</h2>
       <p>Es un problema nuestro: sigue publicada. Probá de nuevo en unos minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
@@ -138,9 +137,9 @@
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
     </section>
-    <p th:if="${escenario == 'lento'}" class="necesidades-aviso" role="status">Cargando tus necesidades…</p>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus necesidades…</p>
 
-    <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos cargar tus necesidades.</h2>
       <p>Es un problema nuestro: no cambió nada en tus pedidos. Probá de nuevo en unos minutos; si
@@ -148,7 +147,7 @@
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton boton--secundario" href="/entidad-necesidades"
+      <a class="boton" data-tono="secundario" href="/entidad-necesidades"
          th:href="@{/entidad-necesidades}">Volver a cargar</a>
     </section>
 
@@ -183,14 +182,14 @@
     </section>
 
     <!--/* Sin pedidos vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
-    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">No tenés necesidades vigentes.</h2>
       <p>Publicá lo que le hace falta a tu entidad: lo ven los donantes y el catálogo público.</p>
     </section>
 
     <!--/* Publicar: si la entidad no está activa (se sabe al cargar), el aviso va en lugar del
            formulario. */-->
-    <section th:if="${escenario == 'entidad-inactiva'}" class="aviso" aria-labelledby="inactiva-titulo">
+    <section th:if="${escenario == 'entidad-inactiva'}" class="banner" aria-labelledby="inactiva-titulo">
       <h2 id="inactiva-titulo">Tu entidad no está activa, así que no puede publicar necesidades.</h2>
       <p><a href="/publico-contacto"
          th:href="@{/publico-contacto(volver='/entidad-necesidades')}">Escribinos</a>
@@ -247,10 +246,10 @@
                     pedido.</p>
                   <ul th:unless="${#lists.isEmpty(n.entregas)}" class="entregas" role="list">
                     <li th:each="en : ${n.entregas}">
-                      <th:block th:replace="~{:: sello(${en.tono})}"></th:block>
+                      <th:block th:replace="~{componentes/sello :: sello(${en.tono})}"></th:block>
                       <span><b th:text="${en.cuanto}">15 kg</b> <span th:text="${en.texto}">Llegaron a
                         tu puerta hoy a las 18:20 y esperan tu confirmación.</span></span>
-                      <a th:if="${en['confirmar']}" class="boton boton--principal boton--chico"
+                      <a th:if="${en['confirmar']}" class="boton" data-tono="principal" data-tamano="chico"
                          href="/entidad-seguimiento-confirmar?entrega=lentejas"
                          th:href="@{/entidad-seguimiento-confirmar(entrega=${en.confirmar})}">Confirmar
                         recepción</a>
@@ -303,24 +302,24 @@
 
               <div class="pedido-acciones">
                 <section th:if="${escenario == 'error-cambiar' and n.clave == pedida}"
-                         class="aviso aviso--error" role="alert" aria-labelledby="errorcambio-titulo">
+                         class="banner" data-estado="error" role="alert" aria-labelledby="errorcambio-titulo">
                   <h3 id="errorcambio-titulo">No pudimos guardar los cambios.</h3>
                   <p>Es un problema nuestro: el pedido sigue como estaba. Probá de nuevo en unos
                     minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
           con este código</a>.</p>
                   <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-                  <a class="boton boton--secundario" th:href="|#${n.clave}-cuanto|"
+                  <a class="boton" data-tono="secundario" th:href="|#${n.clave}-cuanto|"
                      href="#lentejas-cuanto">Revisar y guardar de nuevo</a>
                 </section>
-                <section th:if="${escenario == 'conflicto' and n.clave == pedida}" class="aviso"
+                <section th:if="${escenario == 'conflicto' and n.clave == pedida}" class="banner"
                          role="alert" aria-labelledby="conflicto-titulo">
                   <h3 id="conflicto-titulo">Otra persona de tu entidad cambió este pedido mientras lo
                     editabas.</h3>
                   <p>Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo.</p>
                 </section>
                 <section th:if="${escenario == 'cambiar-datos' and n.clave == pedida}"
-                         class="aviso aviso--error resumen" role="alert" tabindex="-1" autofocus
+                         class="banner resumen" data-estado="error" role="alert" tabindex="-1" autofocus
                          aria-labelledby="cambiardatos-titulo">
                   <h3 id="cambiardatos-titulo">Revisá una cosa antes de guardar</h3>
                   <ul>
@@ -329,14 +328,14 @@
                 </section>
 
                 <details class="cambiar" th:open="${cambiando and n.clave == pedida}">
-                  <summary class="boton boton--secundario">Cambiar cantidad o motivo</summary>
+                  <summary class="boton" data-tono="secundario">Cambiar cantidad o motivo</summary>
                   <form action="/entidad-necesidades-cambiada"
                         th:action="@{/entidad-necesidades-cambiada}" method="post"
                         class="formulario">
                     <p class="nota">Qué hace falta y si se repite no se pueden cambiar: si cambiaron,
                       dala de baja y publicá otra.</p>
                     <th:block th:with="conError=${escenario == 'cambiar-datos' and n.clave == pedida}">
-                      <div class="campo" th:classappend="${conError} ? 'campo--error'">
+                      <div class="campo" th:data-estado="${conError} ? 'error'">
                         <label th:for="|${n.clave}-cuanto|" for="lentejas-cuanto"
                                th:text="|Cuánto, en ${n.unidad}|">Cuánto, en kg</label>
                         <small th:id="|${n.clave}-cuanto-ayuda|"
@@ -359,17 +358,17 @@
                                 th:attr="aria-describedby=|${n.clave}-motivo-ayuda|"
                                 th:text="${n.motivo}">Para el almuerzo de lunes a viernes.</textarea>
                     </div>
-                    <button class="boton boton--principal" type="submit">Guardar cambios</button>
+                    <button class="boton" data-tono="principal" type="submit">Guardar cambios</button>
                   </form>
                 </details>
 
                 <!--/* La confirmación de la baja, en un diálogo del navegador (popover): se abre y se
                        cierra sin JavaScript, con Esc o tocando afuera; el foco entra en "No, dejarla". */-->
-                <button type="button" class="boton boton--quitar" th:popovertarget="|baja-${n.clave}|"
+                <button type="button" class="boton" data-tono="quitar" th:popovertarget="|baja-${n.clave}|"
                         popovertarget="baja-lentejas">Dar de baja</button>
-                <dialog class="baja" th:id="|baja-${n.clave}|" id="baja-lentejas" popover
+                <dialog class="dialogo" data-tono="quitar" th:id="|baja-${n.clave}|" id="baja-lentejas" popover
                         th:aria-labelledby="|baja-${n.clave}-titulo|">
-                  <h3 th:id="|baja-${n.clave}-titulo|" th:text="|¿Dar de baja ${n.nombre}?|">¿Dar de
+                  <h3 class="dialogo-titulo" th:id="|baja-${n.clave}-titulo|" th:text="|¿Dar de baja ${n.nombre}?|">¿Dar de
                     baja Lentejas secas?</h3>
                   <p>Deja de verse para los donantes y en el catálogo público. Lo que ya recibiste queda
                     asentado.</p>
@@ -393,12 +392,12 @@
                       necesite.</p>
                   </th:block>
                   <div class="acciones">
-                    <button type="button" class="boton boton--secundario" autofocus
+                    <button type="button" class="boton" data-tono="secundario" autofocus
                             th:popovertarget="|baja-${n.clave}|" popovertarget="baja-lentejas"
                             popovertargetaction="hide">No, dejarla</button>
                     <form action="/entidad-necesidades-baja"
                           th:action="@{/entidad-necesidades-baja}" method="post">
-                      <button class="boton boton--quitar" type="submit">Dar de baja</button>
+                      <button class="boton" data-tono="quitar" type="submit">Dar de baja</button>
                     </form>
                   </div>
                 </dialog>
@@ -431,13 +430,13 @@
 <details th:fragment="publicar(conError)" id="publicar" class="publicar"
          th:with="escrito=${escenario == 'error-publicar' or escenario == 'sin-conexion'}"
          th:open="${conError or escrito or escenario == 'vacio'}">
-  <summary class="boton boton--secundario"
+  <summary class="boton" data-tono="secundario"
            th:text="${escenario == 'vacio'} ? 'Publicar una necesidad' : 'Publicar otra necesidad'">Publicar
     otra necesidad</summary>
   <form action="/entidad-necesidades-publicada"
         th:action="@{/entidad-necesidades-publicada}" method="post"
         class="formulario">
-    <section th:if="${conError}" class="aviso aviso--error resumen" role="alert" tabindex="-1"
+    <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
              autofocus aria-labelledby="resumen-titulo">
       <h2 id="resumen-titulo">Revisá dos cosas antes de publicar</h2>
       <ul>
@@ -445,7 +444,7 @@
         <li><a href="#hasta">La fecha es anterior a hoy</a></li>
       </ul>
     </section>
-    <section th:if="${escenario == 'error-publicar'}" class="aviso aviso--error" role="alert"
+    <section th:if="${escenario == 'error-publicar'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="errorpub-titulo">
       <h2 id="errorpub-titulo">No pudimos publicar tu necesidad.</h2>
       <p>Es un problema nuestro: no se guardó nada y los donantes no la ven todavía. Probá de nuevo en
@@ -453,9 +452,9 @@
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton boton--secundario" href="#que">Revisar y publicar de nuevo</a>
+      <a class="boton" data-tono="secundario" href="#que">Revisar y publicar de nuevo</a>
     </section>
-    <section th:if="${escenario == 'sin-conexion'}" class="aviso aviso--error" role="alert"
+    <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="red-titulo">
       <h2 id="red-titulo">No sabemos si se publicó.</h2>
       <p>Se cortó la conexión mientras se enviaba. Revisá la señal y mirá la lista antes de
@@ -487,7 +486,7 @@
         </optgroup>
       </select>
     </div>
-    <div class="campo" th:classappend="${conError} ? 'campo--error'">
+    <div class="campo" th:data-estado="${conError} ? 'error'">
       <label for="cuanto">Cuánto</label>
       <small id="cuanto-ayuda">En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto
         en cada período.</small>
@@ -507,7 +506,7 @@
       <label><input type="radio" name="repite" value="quincena"> Cada quincena</label>
       <label><input type="radio" name="repite" value="mes"> Cada mes</label>
     </fieldset>
-    <div class="campo" th:classappend="${conError} ? 'campo--error'">
+    <div class="campo" th:data-estado="${conError} ? 'error'">
       <label for="hasta">Hasta cuándo</label>
       <small id="hasta-ayuda">Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.</small>
       <p th:if="${conError}" id="hasta-error" class="campo-error">Si es una sola vez, elegí hasta
@@ -523,7 +522,7 @@
       <textarea id="motivo" name="motivo" rows="2" required aria-describedby="motivo-ayuda"
                 th:text="${conError or escrito} ? 'Para la cena de los viernes.' : null"></textarea>
     </div>
-    <button class="boton boton--principal" type="submit">Publicar necesidad</button>
+    <button class="boton" data-tono="principal" type="submit">Publicar necesidad</button>
   </form>
 </details>
 
@@ -537,14 +536,5 @@
   <progress th:value="${p.valor}" th:max="${max}" value="10" max="40" aria-hidden="true"></progress>
 </li>
 
-<!--/* El sello de una entrega (en tu puerta, en camino, por salir, con un problema): decorativo, el
-       texto dice lo mismo. */-->
-<svg th:fragment="sello(tono)" th:switch="${tono}" class="estado-sello" viewBox="0 0 22 22"
-     aria-hidden="true" focusable="false">
-  <g th:case="'puerta'"><circle class="sello-hecho" cx="11" cy="11" r="9"/></g>
-  <circle th:case="'pendiente'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
-  <g th:case="'en-camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
-  <g th:case="*"><circle class="sello-problema" cx="11" cy="11" r="9"/><path class="sello-calado" d="M11 6V12.5M11 15.5V16"/></g>
-</svg>
 </body>
 </html>

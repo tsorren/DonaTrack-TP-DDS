@@ -392,6 +392,59 @@ class VerificacionVisualTest {
     assertThat(fallas).as("Detalle en %s", VIDEOS.resolve("reporte.json")).isEmpty();
   }
 
+  /**
+   * La cola de avisos (B2-04, Alpine): de cuatro avisos en la región se ven tres, al cerrar uno
+   * aparece el cuarto, y los que quedan se van solos pasados unos segundos.
+   */
+  @Test
+  void laColaDeAvisosMuestraTresALaVezYLosQuita() {
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      pagina.navigate("http://localhost:" + puerto + "/estilos");
+      pagina.waitForFunction(
+          "() => window.Alpine && document.getElementById('avisos')._x_dataStack");
+      for (int i = 0; i < 4; i++) {
+        pagina.getByText("Mostrar un aviso en la región").click();
+      }
+      assertThat(pagina.locator("#avisos .aviso-breve").count()).isEqualTo(4);
+      assertThat(pagina.locator("#avisos .aviso-breve:not([hidden])").count()).isEqualTo(3);
+      pagina.locator("#avisos .aviso-cerrar").first().click();
+      pagina.mouse().move(0, 0);
+      pagina.waitForFunction(
+          "() => document.querySelectorAll('#avisos .aviso-breve').length === 3"
+              + " && document.querySelectorAll('#avisos .aviso-breve:not([hidden])').length === 3");
+      pagina.waitForFunction(
+          "() => document.querySelectorAll('#avisos .aviso-breve').length === 0",
+          null,
+          new Page.WaitForFunctionOptions().setTimeout(15_000));
+    }
+  }
+
+  /**
+   * El diálogo (B2-05) se abre con su botón sin JavaScript propio, lleva el foco y se cierra con
+   * Esc.
+   */
+  @Test
+  void elDialogoSeAbreConSuBotonYSeCierraConEscape() {
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      pagina.navigate("http://localhost:" + puerto + "/estilos");
+      String abierto =
+          "() => document.getElementById('dialogo-de-muestra').matches(':popover-open')";
+      assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+      pagina.locator("[popovertarget='dialogo-de-muestra']:not([popovertargetaction])").click();
+      assertThat(pagina.evaluate(abierto)).isEqualTo(true);
+      assertThat(
+              pagina.evaluate(
+                  "() => document.getElementById('dialogo-de-muestra').contains(document.activeElement)"))
+          .isEqualTo(true);
+      pagina.keyboard().press("Escape");
+      assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+    }
+  }
+
   /** Abre la pantalla en un contexto con video, espera y deja el .webm con el nombre de la ruta. */
   private String grabar(Browser navegador, String ruta, Opcion opcion) {
     String archivo = nombreDeCaptura(ruta, opcion, "movimiento").replace(".png", ".webm");

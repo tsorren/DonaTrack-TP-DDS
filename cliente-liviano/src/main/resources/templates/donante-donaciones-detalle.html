@@ -32,7 +32,7 @@
       <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
       <h1>No encontramos esa donación.</h1>
       <p class="bajada">Puede que el enlace esté incompleto. Buscala en Mis donaciones.</p>
-      <a class="boton boton--secundario" href="/donante-donaciones"
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
          th:href="@{/donante-donaciones}">Volver a Mis donaciones</a>
     </th:block>
 
@@ -44,14 +44,14 @@
           <p class="bajada" th:text="${destino == null} ? |${d.cantidad}, todavía sin destino| : |${d.cantidad} para ${destino}|">15
             kg para Comedor Barrio Ejemplo</p>
           <p class="detalle-estado">
-            <span class="estado" th:classappend="|estado--${d.estado.tono}|">
-              <th:block th:replace="~{datos-donante :: sello(${d.estado.tono})}"></th:block>
+            <span class="estado" th:data-estado="${d.estado.tono}">
+              <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
               <span th:text="${d.estado.texto}">En camino</span>
             </span>
             <span th:text="${d.estado.tono == 'entregada'} ? |Entrega confirmada el ${llego}, con foto de la entidad| : ${d.nota}">Salió
               hoy a las 14:30</span>
           </p>
-          <a th:if="${enCurso}" class="boton boton--principal" href="/donante-seguimiento"
+          <a th:if="${enCurso}" class="boton" data-tono="principal" href="/donante-seguimiento"
              th:href="@{/donante-seguimiento(donacion=${d.clave})}">Ver dónde está</a>
         </th:block>
       </header>
@@ -63,9 +63,9 @@
       <th:block th:if="${escenario == 'lento'}">
         <p class="cargando">Cargando la donación…</p>
         <div class="detalle-cuerpo" aria-busy="true">
-          <div class="reserva reserva--alta"></div>
-          <div class="reserva reserva--alta"></div>
-          <div class="reserva"></div>
+          <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+          <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+          <div class="esqueleto" data-forma="punteado"></div>
         </div>
       </th:block>
 
@@ -88,17 +88,11 @@
               <li th:each="p : ${d.pasos}" class="raiz-paso"
                   th:classappend="|raiz-paso--${p.avance.tono()}|"
                   th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
-                <svg th:if="${p.avance.tono() == 'hecho'}" class="estado-sello" viewBox="0 0 22 22"
-                     aria-hidden="true" focusable="false">
-                  <circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/>
-                </svg>
+                <th:block th:if="${p.avance.tono() == 'hecho'}"><th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block></th:block>
                 <th:block th:if="${p.avance.tono() == 'actual'}">
-                  <th:block th:replace="~{datos-donante :: sello(${d.estado.tono})}"></th:block>
+                  <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
                 </th:block>
-                <svg th:if="${p.avance.tono() == 'pendiente'}" class="estado-sello" viewBox="0 0 22 22"
-                     aria-hidden="true" focusable="false">
-                  <circle class="sello-falta" cx="11" cy="11" r="8"/>
-                </svg>
+                <th:block th:if="${p.avance.tono() == 'pendiente'}"><th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block></th:block>
                 <span class="raiz-nombre" th:text="${p.nombre}">En camino</span>
                 <span class="raiz-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
               </li>

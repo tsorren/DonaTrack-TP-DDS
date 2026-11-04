@@ -1,0 +1,122 @@
+/* Bloque aviso (D33, B2-04): el aviso breve (toast), el banner y el estado vacío comparten el mismo
+   papel (la lámina con el filete y la sombra plana). Se carga en la capa `bloques` desde app.css.
+   Las variantes van por atributo, en este bloque y después de la base: `data-estado="hecho"` en el
+   aviso breve y `data-estado="error"` en el banner. La región `.avisos` y la cola de avisos
+   (`Alpine.data("avisos")`, static/js/interfaz.js) llevan los avisos breves que trae HTMX.
+   Catálogo: docs/interfaz/componentes.md. */
+
+/* --- El papel de un aviso ---------------------------------------------------------------------- */
+/* Largo de línea dentro de los 50 a 75 caracteres (criterios de la cátedra, sección 8). En el
+   celular, más apretado: el botón del próximo paso entra en la primera pantalla (360 × 640), encima
+   de la barra del menú. */
+:is(.banner, .vacio, .aviso-breve) {
+  max-width: 38rem;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+}
+
+:is(.banner, .vacio, .aviso-breve) h2 {
+  margin: 0 0 0.5rem;
+}
+
+:is(.banner, .vacio, .aviso-breve) p {
+  margin: 0 0 0.75rem;
+}
+
+@media (min-width: 37.5em) {
+  :is(.banner, .vacio, .aviso-breve) {
+    margin: 1.5rem 0;
+    padding: 1.25rem 1.5rem;
+  }
+
+  :is(.banner, .vacio, .aviso-breve) h2 {
+    margin-bottom: 1rem;
+  }
+
+  :is(.banner, .vacio, .aviso-breve) p {
+    margin-bottom: 1rem;
+  }
+}
+
+/* --- Banner: algo que afecta a toda la pantalla ------------------------------------------------ */
+.banner[data-estado="error"] {
+  border-color: var(--color-problema-texto);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-problema-fondo);
+}
+
+.banner[data-estado="error"] h2 {
+  color: var(--color-problema-texto);
+}
+
+/* --- Aviso breve: una acción que salió bien ---------------------------------------------------- */
+.aviso-breve[data-estado="hecho"] {
+  border-color: var(--color-acento);
+  font-weight: 700;
+}
+
+.aviso-breve[hidden] {
+  display: none;
+}
+
+/* Con su botón de cerrar (los que trae HTMX a la región): el botón va en la esquina. */
+.aviso-breve:has(> .aviso-cerrar) {
+  position: relative;
+  padding-inline-end: 3.5rem;
+}
+
+.aviso-cerrar {
+  position: absolute;
+  inset: 0.25rem 0.25rem auto auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-tinta);
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* --- La región de los avisos breves ------------------------------------------------------------ */
+/* Fija abajo y centrada; en el celular, encima de la barra del menú. Vacía no ocupa nada. */
+.avisos {
+  position: fixed;
+  inset: auto 0 5.5rem;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding-inline: 1rem;
+  pointer-events: none;
+}
+
+.avisos > * {
+  pointer-events: auto;
+}
+
+.avisos > .aviso-breve {
+  width: min(100%, 32rem);
+  margin: 0;
+  animation: var(--movimiento-animacion-aparece);
+}
+
+/* La cola saca el aviso con un fundido (data-saliendo) y después lo quita. */
+.avisos > .aviso-breve[data-saliendo] {
+  opacity: 0;
+  transition: var(--movimiento-transicion-atenua);
+}
+
+@media (min-width: 37.5em) {
+  .avisos {
+    bottom: 1.5rem;
+  }
+}

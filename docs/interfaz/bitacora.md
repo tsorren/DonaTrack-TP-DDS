@@ -27,6 +27,91 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Fase 2, tanda 2 del backlog: aviso breve y banner con su cola, diálogo, estado vacío, carga y esqueleto
+
+- **Decisión:** se implementan B2-04, B2-05 y B2-09. El papel del aviso (la lámina con filete y sombra
+  plana) vivía en `privado.css` como `.aviso` y servía para cuatro cosas; se separó en `.aviso-breve`
+  (una acción que salió bien, `data-estado="hecho"`), `.banner` (afecta a la pantalla,
+  `data-estado="error"`) y `.vacio`, con la regla común en `componentes/aviso.css`. `.cargando` y
+  `.esqueleto` (`data-forma="punteado"`, `data-tamano="alto"`) están en `componentes/carga.css` y `.dialogo`
+  en `componentes/dialogo.css`, con la transición `--movimiento-transicion-dialogo` y `@starting-style`.
+  La región `#avisos` de los layouts privado y público lleva la cola de Alpine (`avisos`: 3 a la vez, 6 s,
+  pausa con el puntero o el foco; el texto lo trae el servidor). Se migraron 77 usos en 33 plantillas; el
+  tope de clases de un solo uso baja de 197 a 189 y las heredadas, de 500 a 487.
+- **Alternativas:** `showModal()` desde Alpine para el diálogo (descartada: sin JavaScript no abre, y
+  confirmar una baja es esencial; con `popover` se pierde el fondo inerte y el foco atrapado); un solo
+  `.aviso` con tres variantes (descartada: son tres componentes del patrón, con rol y comportamiento
+  distintos); migrar la portada (descartada: su estado sin datos es un marco de filete, otro aspecto;
+  queda para B3-01); unificar los «Cargando…» públicos con `.cargando` (descartada: hoy son una lámina y
+  pasarían a un texto en negrita); armar los avisos en JavaScript (prohibido por D31).
+- **Por qué:** el aspecto sale de un solo lugar, el nombre dice qué es cada cosa y la cola cumple lo que
+  pide la pauta (aviso en región `aria-live`, no se va antes de 5 s, no se va con el puntero o el foco encima).
+  Los textos «Cargando…» públicos pasaron a `.banner` y los de la entidad y el donante a `.cargando` para no
+  cambiar lo que se ve.
+- **Costo:** quedan como heredadas de una sola pantalla `aviso` y `aviso--suelo` (portada), `foto-ventana` y
+  `foto-titulo` (portada), `aviso-brote`, `aviso-acciones`, `aviso--nombre`, `aviso-codigo`, `hueco`,
+  `seguimiento-reserva` y `seguimiento-aviso` (este último nunca tuvo estilo). `main h2` pasó a la capa
+  `pico`: sin eso su color le ganaba al título del banner de error (otra vez, una regla sin capa le gana a
+  una con capa). El diálogo de la foto (portada aparte) y el de la baja comparten base y se distinguen por
+  `data-tono="quitar"`.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: hacer B2-04, B2-05 y B2-09 en esta tanda. El agente decidió
+  y queda para que el usuario confirme: los nombres (`.aviso-breve`, `.banner`, `.vacio`, `.cargando`,
+  `.esqueleto`, `.dialogo`) y los atributos `data-estado`, `data-forma` y `data-tamano`; `popover` y no
+  `showModal()`; los 6 s y las 3 visibles de la cola; la región también en el layout público; el cambio de
+  `AGENTS.md` del módulo sobre diálogos y avisos; los «Cargando…» públicos como `.banner`; y
+  la portada fuera. **Cambio visual por confirmar:** en «Noticias de tus donaciones» del donante, el aviso
+  «Listo: marcaste todas como leídas» ahora va en negrita, como el mismo aviso en las demás pantallas:
+  esa hoja nunca cargaba `formularios.css`, que era donde estaba la negrita (4 capturas).
+- **Confirmación:** usuario (tsorren), 2026-11-04: confirmó todo lo anterior, incluido el cambio visual de la
+  negrita en «Noticias de tus donaciones» y, de la tanda 1, el cambio de Entidades del donante y sus decisiones.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. `-Pvisual`
+  (55 pruebas verdes, con los dos tests nuevos de la cola y del diálogo) con una corrida de ruido como base,
+  las dos sobre el código sin tocar: 579 de 588 capturas iguales; `/estilos` (3) cambió por el contenido
+  nuevo; la portada en 1920 px (2) difiere 16 px en la barra fija, como entre dos corridas del mismo código;
+  y las 4 de `donante-notificaciones-leidas` por la negrita de arriba. Abiertos a mano, en un navegador sin
+  cabeza (1280 y 360 px): la cola con 4 avisos (se ven 3), el diálogo de la baja y el de la foto con su
+  fondo, y el hover del botón de cerrar. Los diálogos y la región no salen en las capturas de página porque
+  `-Pvisual` no los abre.
+
+### 2026-11-04 · stack · Fase 2, tanda 1 del backlog: botón, campo y sello de estado
+
+- **Decisión:** se implementan B2-01, B2-02 y B2-03. Cada uno tiene su hoja en `componentes/` (capa
+  `bloques`): `boton.css`, `campo.css` y `sello.css`, y su entrada en `componentes.md` y en `/estilos`.
+  Las variantes pasan de clases a atributos: `data-tono="principal|secundario|quitar"` y
+  `data-tamano="chico"` en el botón, `data-estado="error"` en el campo y `data-estado="…"` en el renglón
+  `.estado`. El sello es un solo fragmento, `componentes/sello :: sello(estado)`, que reemplaza cuatro
+  copias con vocabularios distintos y siete SVG en línea (`hecho` y `falta` son estados del fragmento).
+  El tope de clases de un solo uso baja de 211 a 197.
+- **Alternativas:** conservar las clases `boton--principal` y similares como excepciones (descartada: el
+  ADR pide variantes por atributo); un fragmento por botón y por campo (descartada: son elementos
+  nativos con atributos que cambian en cada uso, como `aria-describedby`, y un fragmento con slots
+  habría tocado 117 botones y 67 campos sin ganar nada); unificar el botón chico en los tres aspectos
+  que tenía (descartada: cambiaba lo que se ve en Necesidades y Notificaciones de la entidad).
+- **Por qué:** el aspecto sale de un solo lugar y las plantillas dicen qué es cada cosa. Por esa misma
+  regla de no cambiar lo que se ve, `data-tamano="chico"` sin tono es el botón en contorno de las
+  páginas públicas, y con `data-tono="principal"` es el botón lleno de las dos pantallas privadas.
+- **Costo:** quedan fuera de los componentes, como clases heredadas de una sola pantalla,
+  `boton--foto`, `--mapa`, `--google`, `--suelo`, `pausa-boton`, `campo--fotos` y `campo--corto`, y el color
+  de los `<button>` de la portada y de `publico-listas.css`. En las pantallas privadas un botón
+  secundario conserva el texto negro por defecto del navegador, mientras que en las públicas es verde:
+  una diferencia que ya existía y que no se tocó (hallazgo para la fase 3).
+- **Quién decidió:** usuario (tsorren), 2026-11-04: hacer B2-01 a B2-03 en esta tanda. El agente decidió y
+  queda para que el usuario confirme: los nombres de los atributos (`data-tono`, `data-tamano` y
+  `data-estado`, que comparte el nombre `data-tono` con la utilidad de color del texto, sin
+  mezclar valores); que botón y campo no tengan fragmento; que las variantes vivan en la hoja del bloque y
+  no en la capa `excepciones`; `cursor: pointer` para todo `<button class="boton">`, que antes solo tenían
+  algunas pantallas; que `.boton[hidden]` oculte el botón en todas las pantallas, no solo en las públicas; y mover `a { color }` de `app.css` a la capa `pico` (la de base), porque sin capa le ganaba a cualquier componente.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34.
+  `-Pvisual` (53 pruebas verdes) con una corrida de ruido como base: sin cambios en 575 de 588 capturas;
+  las de `/estilos` (3) cambiaron por el contenido nuevo; las de la portada (2) difieren 15 y 16 px, como
+  entre dos corridas del mismo código; y hay **un cambio visual por confirmar**: en Entidades del
+  donante (8 capturas en 360 px) el campo "Buscar por nombre" ya no se mete debajo del botón "Buscar".
+  Pasaba porque esa pantalla nunca cargaba `formularios.css` y el campo no tenía `max-width`; con el
+  componente cargado en todas las pantallas el campo respeta su columna. Es una corrección de un
+  defecto, pero cambia lo que se ve: queda para que el usuario la confirme. En la verificación apareció
+  y se corrigió otro efecto de las capas: `a { color }` (sin capa) le ganaba al texto de los botones
+  principales, que quedaba del color de su fondo; ahora esa regla vive en la capa `pico`.
+
 ### 2026-11-04 · stack · Fase 1 del backlog de componentes: el movimiento suelto, a `movimiento.css`
 
 - **Decisión:** se implementan B1-01 a B1-05. Los 13 `@keyframes` de siete hojas de pantalla pasan a

@@ -75,17 +75,47 @@
 Prioridad por uso: primero los que comparten varias pantallas. El patrón de cada uno está en
 [patrones y microcopy](patrones-y-microcopy.md#componentes-y-su-patrón).
 
+> Tanda 1 (B2-01 a B2-03), 2026-11-04. Corte acordado con el usuario: botón, campo y sello primero
+> (estilo puro, los más compartidos); las otras tandas son B2-04, B2-05 y B2-09 (avisos, diálogo y
+> vacíos), B2-06 a B2-08 (navegación, tarjeta y tabla) y B2-10 a B2-13 (fotos, pestañas, entidad y
+> mapa). Notas de lo hecho: las variantes pasaron a atributos (`data-tono`, `data-tamano`,
+> `data-estado`) y las plantillas ya no usan `boton--principal`, `--secundario`, `--chico`, `--quitar` ni `--aviso`, `campo--error` ni `estado--*`; botón y campo
+> no tienen fragmento (son elementos nativos: el contrato es el HTML del catálogo) y el sello sí
+> (`componentes/sello`, que reemplaza cuatro copias con vocabularios distintos y siete SVG en línea).
+> Quedan como clases heredadas los ganchos de una sola pantalla (`boton--foto`, `--mapa`, `--google`,
+> `--suelo`, `pausa-boton`, `campo--fotos`, `campo--corto`) y `:where(button).boton` con el color de los
+> enlaces en la portada y en `publico-listas.css`: en las pantallas privadas, un `<button class="boton">`
+> secundario conserva el texto negro por defecto del navegador, y unificarlo sería un cambio visual
+> (hallazgo para la fase 3, no corregido). Del resto de `formularios.css` (`.formulario`, `.opciones`,
+> `.resumen`, `.obligatorios`, `.aviso--hecho`) no se migró nada: no era parte del ítem.
+
+> Tanda 2 (B2-04, B2-05 y B2-09), 2026-11-04. Notas de lo hecho: el papel del aviso (la lámina con el
+> filete y la sombra plana) vivía en `privado.css` como `.aviso` y servía para cuatro cosas distintas; se
+> separó en `.aviso-breve` (una acción que salió bien, `data-estado="hecho"`), `.banner` (algo que afecta a
+> la pantalla, `data-estado="error"`) y `.vacio`, que comparten la regla de `componentes/aviso.css`.
+> `.cargando` (el texto) y `.esqueleto` (el lugar de la parte que espera; `data-forma="punteado"` y
+> `data-tamano="alto"`) están en `componentes/carga.css`, y `.dialogo` en `componentes/dialogo.css`.
+> La región `#avisos` de los layouts privado y público lleva la cola de Alpine (`avisos`: 3 a la vez, 6 s,
+> pausa con el puntero o el foco). El diálogo se abre con `popover`, sin JavaScript, y no con
+> `showModal()`: una baja tiene que poder confirmarse sin JavaScript. Quedan fuera, como clases heredadas
+> de una sola pantalla: en la portada, `aviso`, `aviso--suelo`, `foto-ventana` y `foto-titulo` (otro
+> aspecto; B3-01), el esqueleto `hueco` de la entidad (sin fondo y más bajo) y `seguimiento-reserva` y
+> `seguimiento-aviso` de Seguir entregas del donante (este último nunca tuvo estilo; unificarlo con
+> `.cargando` lo pondría en negrita). Los textos «Cargando…» de las páginas públicas, que hoy son una
+> lámina, pasaron a `.banner` para no cambiar lo que se ve (hallazgo para la fase 3: son indicadores de
+> carga y quizá deberían ser `.cargando`).
+
 | ID | Componente | Origen hoy | Pantallas que lo usan | Estado |
 |---|---|---|---|---|
-| B2-01 | Botón | `app.css`, `formularios.css` | Todas | Pendiente |
-| B2-02 | Campo de formulario | `formularios.css`, `publico-registro.css` | Registro, ingreso, perfil, necesidades, confirmar | Pendiente |
-| B2-03 | Sello de estado | `sellos.css` | Privadas | Pendiente |
-| B2-04 | Aviso (toast) y banner, con la cola en Alpine | `app.css`, `privado.css` | Todas las acciones | Pendiente |
-| B2-05 | Diálogo (`<dialog>` + `@starting-style`) | Foto de la entrega en la portada, bajas | Portada, necesidades | Pendiente |
+| B2-01 | Botón | `app.css`, `formularios.css` | Todas | Hecho (2026-11-04) |
+| B2-02 | Campo de formulario | `formularios.css`, `publico-registro.css` | Registro, ingreso, perfil, necesidades, confirmar | Hecho (2026-11-04) |
+| B2-03 | Sello de estado | `sellos.css` | Privadas | Hecho (2026-11-04) |
+| B2-04 | Aviso (toast) y banner, con la cola en Alpine | `app.css`, `privado.css` | Todas las acciones | Hecho (2026-11-04) |
+| B2-05 | Diálogo (`<dialog>` + `@starting-style`) | Foto de la entrega en la portada, bajas | Portada, necesidades | Hecho (2026-11-04) |
 | B2-06 | Navegación por rol y barra pública | `privado.css`, `publico-navegacion.css` | Todas | Pendiente |
 | B2-07 | Tarjeta | `donante-comun.css`, `entidad-comun.css`, `publico-listas.css` | Listas y seguimiento | Pendiente |
 | B2-08 | Tabla o lista adaptable | `publico-listas.css`, `entidad-recibidas.css` | Listados | Pendiente |
-| B2-09 | Estado vacío, esqueleto e indicador de carga | Varias hojas | Todas las listas | Pendiente |
+| B2-09 | Estado vacío, esqueleto e indicador de carga | Varias hojas | Todas las listas | Hecho (2026-11-04) |
 | B2-10 | Carga de fotos con vista previa (Alpine) | `entidad-seguimiento-confirmar.css` | Confirmar recepción | Pendiente |
 | B2-11 | Pestañas (Alpine) | `donante-perfil.css` | Mi perfil | Pendiente |
 | B2-12 | Piezas de la entidad | `piezas-entidad.html`, `entidad-comun.css` | Sitio de la entidad | Pendiente |
@@ -112,3 +142,5 @@ tamaño:
 | 2026-11-04 | — (línea de base) | 212 | — |
 | 2026-11-04 | B0-01 a B0-10 (fase 0 completa) | 211 (el cerco mide sin comentarios, textos ni urls: 211; los 212 de la línea de base incluían una palabra de un comentario) | 2e7ace16 (rama `E6_raices`) |
 | 2026-11-04 | B1-01 a B1-05 (fase 1 completa) | 211 (medido después del cambio; la fase no toca selectores) | c0884659 (rama `E6_raices`) |
+| 2026-11-04 | B2-01 a B2-03 (tanda 1 de la fase 2: botón, campo y sello) | 197 (medido después del cambio; era 211) | Sin commit (rama `E6_raices`) |
+| 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | Sin commit (rama `E6_raices`) |

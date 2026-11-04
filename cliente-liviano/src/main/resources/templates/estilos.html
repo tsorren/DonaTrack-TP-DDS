@@ -124,7 +124,7 @@
         escribe <code>@keyframes</code>, duraciones ni curvas. Con «reducir movimiento» no existen y el elemento
         no se anima.</p>
       <p data-tono="suave">Cada nombre de la lista lleva el prefijo <code>--movimiento-animacion-</code>, salvo
-        <code>--movimiento-transicion-atenua</code> y los dos <code>@keyframes</code> del final.</p>
+        <code>--movimiento-transicion-atenua</code>, <code>--movimiento-transicion-dialogo</code> y los dos <code>@keyframes</code> del final.</p>
       <ul class="pila" data-espacio="2">
         <li><code>aparece</code>: se muestra con un fundido. Sin espera.</li>
         <li><code>aparece-cierre</code>: fundido al final de una coreografía. Espera de cierre.</li>
@@ -138,9 +138,132 @@
         <li><code>hoja-sube</code>: una hoja (el menú completo) sube desde abajo. Sin espera.</li>
         <li><code>viento</code> y <code>viento-fruto</code>: las hojas y los frutos se mecen en ciclo, sin fin. Espera de ambiente.</li>
         <li><code>--movimiento-transicion-atenua</code>: la opacidad cambia con suavidad al pasar o enfocar.</li>
+        <li><code>--movimiento-transicion-dialogo</code>: la opacidad, el fondo y el <code>display</code> de un diálogo cambian al abrirse y cerrarse (con <code>@starting-style</code>).</li>
         <li><code>mov-crece-alto</code>: el tronco crece de arriba; va con <code>animation-timeline</code>.</li>
         <li><code>mov-asiento</code>: un asiento aparece subiendo al bajar; va con <code>animation-timeline</code>.</li>
       </ul>
+    </section>
+
+    <section class="pila" data-espacio="3" aria-labelledby="componentes">
+      <h2 id="componentes">Componentes</h2>
+      <p data-tono="suave">Cada uno con su hoja en <code>static/css/componentes/</code>. Las variantes van por atributo.</p>
+      <div class="grilla">
+        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón. data-tono: principal (una por pantalla), secundario o quitar. data-tamano=&quot;chico&quot;: más bajo, para acciones dentro de una lista.', ~{::demo-boton})}">
+          <th:block th:fragment="demo-boton">
+            <div class="racimo">
+              <button type="button" class="boton" data-tono="principal">Principal</button>
+              <button type="button" class="boton" data-tono="secundario">Secundario</button>
+              <button type="button" class="boton" data-tono="quitar">Quitar</button>
+              <button type="button" class="boton" data-tamano="chico">Chico</button>
+              <button type="button" class="boton" data-tono="principal" data-tamano="chico">Chico principal</button>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.campo', 'Un campo de formulario: etiqueta visible arriba, control nativo, ayuda debajo (small) y, si falla, el error al lado (.campo-error) con data-estado=&quot;error&quot;.', ~{::demo-campo})}">
+          <th:block th:fragment="demo-campo">
+            <div class="pila" data-espacio="3">
+              <div class="campo">
+                <label for="muestra-nombre">Nombre <small>(como figura en el cartel)</small></label>
+                <input id="muestra-nombre" type="text" value="Distribuidora Ejemplo">
+              </div>
+              <div class="campo" data-estado="error">
+                <label for="muestra-correo">Correo electrónico</label>
+                <input id="muestra-correo" type="email" value="contacto@ejemplo" aria-invalid="true" aria-describedby="muestra-correo-error">
+                <p id="muestra-correo-error" class="campo-error">Falta el dominio, por ejemplo @ejemplo.test.</p>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.estado', 'El renglón de un estado: el sello y su palabra (.estado-sello). data-estado: pendiente, en-camino, entregada, con-problema; en la entidad, puerta, camino, salir, recibida o problema. El color solo acompaña.', ~{::demo-estado})}">
+          <th:block th:fragment="demo-estado">
+            <div class="pila" data-espacio="2">
+              <span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendiente</span>
+              <span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span>
+              <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block>Entregada</span>
+              <span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span>
+              <span class="estado" data-estado="puerta"><th:block th:replace="~{componentes/sello :: sello('puerta')}"></th:block>En tu puerta</span>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('componentes/sello :: sello(estado)', 'El dibujo del sello, solo. Además de los de arriba: hecho (etapa cumplida) y falta (etapa que todavía no se imprimió). A la derecha, las piezas sueltas (sello-tinta, sello-disco y sello-tilde) con las que las pantallas arman un sello propio. Decorativo: el estado se dice siempre en palabras.', ~{::demo-sello})}">
+          <th:block th:fragment="demo-sello">
+            <div class="racimo">
+              <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
+              <th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block>
+              <svg class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="8.5"/><circle class="sello-disco" cx="10.5" cy="10.5" r="8.5"/><path class="sello-tilde" d="M6.5 10.5L9.5 13.5L14.5 8"/></svg>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.aviso-breve y .avisos', 'Un aviso breve (toast) que confirma una acción que salió bien. data-estado=&quot;hecho&quot;. Con la página viene en el flujo, a la vista; los que trae HTMX van a la región .avisos del layout (aria-live=&quot;polite&quot;), donde una cola de Alpine deja ver tres a la vez, los quita a los 6 segundos (no se van mientras el puntero o el foco están encima) y los cierra con .aviso-cerrar (data-cerrar).', ~{::demo-aviso-breve})}">
+          <th:block th:fragment="demo-aviso-breve">
+            <div class="pila" data-espacio="3">
+              <p class="aviso-breve" data-estado="hecho" role="status">Listo. Guardamos los datos de tu cuenta.</p>
+              <div>
+                <button type="button" class="boton" data-tono="secundario" x-data="avisoDeMuestra"
+                        x-on:click="agregar">Mostrar un aviso en la región</button>
+              </div>
+              <template id="aviso-de-muestra">
+                <p class="aviso-breve" data-estado="hecho">Listo. Este aviso se va solo.<button
+                    type="button" class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></p>
+              </template>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.banner', 'Algo que afecta a toda la pantalla, en lugar del contenido o encima: un error del servidor, la falta de conexión, una cuenta en revisión. Título, texto y el próximo paso. data-estado=&quot;error&quot; para un problema (role=&quot;alert&quot; solo si es urgente); .aviso-codigo lleva el código de seguimiento.', ~{::demo-banner})}">
+          <th:block th:fragment="demo-banner">
+            <div class="pila" data-espacio="3">
+              <section class="banner" aria-labelledby="muestra-banner-titulo">
+                <h2 id="muestra-banner-titulo">Tu sesión se cerró.</h2>
+                <p>Pasó un tiempo sin actividad. Ingresá de nuevo y seguís donde estabas.</p>
+              </section>
+              <section class="banner" data-estado="error" role="alert" aria-labelledby="muestra-banner-error">
+                <h2 id="muestra-banner-error">No pudimos cargar tus entregas.</h2>
+                <p>Probá de nuevo en un rato. Si sigue igual, escribinos con este código.</p>
+                <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+              </section>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué significa e invita a la acción posible. Mismo papel que el banner. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón.', ~{::demo-vacio})}">
+          <th:block th:fragment="demo-vacio">
+            <section class="vacio" aria-labelledby="muestra-vacio-titulo">
+              <h2 id="muestra-vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
+              <p>Empezá por publicar lo que necesita tu entidad. Cuando se te asigne una donación, aparece acá.</p>
+              <a class="boton" data-tono="principal" href="#vacio">Publicar una necesidad</a>
+            </section>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;); .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;. data-forma=&quot;punteado&quot; le pone contorno; data-tamano=&quot;alto&quot;, más altura.', ~{::demo-carga})}">
+          <th:block th:fragment="demo-carga">
+            <div class="pila" data-espacio="3">
+              <p class="cargando" role="status">Cargando tus donaciones…</p>
+              <div class="grilla" aria-busy="true">
+                <div class="esqueleto"></div>
+                <div class="esqueleto" data-forma="punteado"></div>
+                <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.dialogo', 'Una ventana para confirmar algo irreversible o ver algo grande. Es un dialog con popover: se abre con popovertarget y se cierra con Esc, tocando afuera o con su botón, sin JavaScript. El foco entra y vuelve al botón. data-tono=&quot;quitar&quot; para dar de baja; .dialogo-titulo es el título.', ~{::demo-dialogo})}">
+          <th:block th:fragment="demo-dialogo">
+            <div class="racimo">
+              <button type="button" class="boton" data-tono="quitar" popovertarget="dialogo-de-muestra">Dar de baja</button>
+              <dialog class="dialogo" data-tono="quitar" id="dialogo-de-muestra" popover
+                      aria-labelledby="dialogo-de-muestra-titulo">
+                <h3 class="dialogo-titulo" id="dialogo-de-muestra-titulo">¿Dar de baja Lentejas secas?</h3>
+                <p>Deja de verse para los donantes y en el catálogo público. Lo que ya recibiste queda asentado.</p>
+                <div class="racimo">
+                  <button type="button" class="boton" data-tono="secundario" autofocus
+                          popovertarget="dialogo-de-muestra" popovertargetaction="hide">No, dejarla</button>
+                  <button type="button" class="boton" data-tono="quitar"
+                          popovertarget="dialogo-de-muestra" popovertargetaction="hide">Dar de baja</button>
+                </div>
+              </dialog>
+            </div>
+          </th:block>
+        </div>
+      </div>
     </section>
   </div>
 </th:block>

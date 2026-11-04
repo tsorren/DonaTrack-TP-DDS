@@ -46,9 +46,9 @@
           asignó, en qué estado está y la foto que sube la entidad cuando confirma la entrega.</p>
         <div class="acciones">
           <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}"
-             class="boton boton--principal">Quiero donar</a>
+             class="boton" data-tono="principal">Quiero donar</a>
           <a href="/publico-ingresar" th:href="@{/publico-ingresar}"
-             class="boton boton--secundario">Ingresar</a>
+             class="boton" data-tono="secundario">Ingresar</a>
         </div>
       </div>
 
@@ -146,7 +146,7 @@
                de botón, sin JavaScript. Frena las hojas y los frutos de toda la portada. Con "reducir
                movimiento" no hay viento y no se muestra. */-->
         <p class="pausa">
-          <label class="boton boton--chico pausa-boton">
+          <label class="boton pausa-boton" data-tamano="chico">
             <input class="pausa-casilla" id="pausar-movimiento" type="checkbox">
             Pausar el movimiento
           </label>
@@ -224,7 +224,7 @@
         <p class="aviso aviso--suelo" th:if="${estado == 'lento'}" role="status">Cargando las entidades…</p>
         <div class="aviso aviso--suelo" th:if="${estado == 'error'}" role="alert">
           <p>No pudimos cargar las entidades. Probá de nuevo en unos minutos.</p>
-          <a href="" class="boton boton--aviso">Volver a cargar</a>
+          <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
         </div>
         <ul class="etiquetas" role="list">
           <li th:if="${conDatos}" class="etiqueta etiqueta--1"><a href="/publico-mapa" th:href="@{/publico-mapa}">
@@ -264,7 +264,7 @@
             <p class="nota">Se cuenta con la confirmación de cada entidad.<th:block th:if="${conDatos}"> Actualizado
               el 15 de octubre de 2026, 14:30.</th:block></p>
             <!--/* Un botón chico en contorno, como el de la foto: el enlace en línea era chico para el dedo. */-->
-            <a href="/publico-mapa" th:href="@{/publico-mapa}" class="boton boton--chico boton--mapa">
+            <a href="/publico-mapa" th:href="@{/publico-mapa}" class="boton boton--mapa" data-tamano="chico">
               <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><path d="M1 3l6-2 6 2 6-2v12l-6 2-6-2-6 2Z"/><path d="M7 1v12M13 3v12"/></svg>Ver el mapa de entregas confirmadas</a>
           </div>
           <div class="registro-datos" th:unless="${conDatos}">
@@ -273,7 +273,7 @@
             <p th:if="${estado == 'lento'}" role="status">Cargando las cifras…</p>
             <div th:if="${estado == 'error'}" role="alert">
               <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
-              <a href="" class="boton boton--aviso">Volver a cargar</a>
+              <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
             </div>
           </div>
           <dl class="registro-datos" th:if="${conDatos}">
@@ -302,7 +302,7 @@
       <p class="aviso" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
       <div class="aviso" th:if="${estado == 'error'}" role="alert">
         <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
-        <a href="" class="boton boton--aviso">Volver a cargar</a>
+        <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
       </div>
       <ol class="cuaderno" role="list" th:if="${conDatos}">
         <li class="asiento">
@@ -314,13 +314,13 @@
             <p>Comedor Barrio Ejemplo</p>
             <p class="asiento-estado">Entrega confirmada</p>
           </div>
-          <button type="button" class="boton boton--chico boton--foto" popovertarget="foto-1" aria-describedby="asiento-1">
+          <button type="button" class="boton boton--foto" data-tamano="chico" popovertarget="foto-1" aria-describedby="asiento-1">
             <img class="miniatura" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
           <div class="foto-ventana" id="foto-1" popover role="dialog" aria-labelledby="foto-1-titulo">
             <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="Cajas con la donación junto a la puerta del comedor" width="640" height="400">
             <p class="foto-titulo" id="foto-1-titulo">Fideos secos, 8 kg</p>
             <p>Comedor Barrio Ejemplo confirmó la entrega el <time datetime="2026-10-05">5 de octubre de 2026</time> y subió esta foto.</p>
-            <button type="button" class="boton boton--secundario" popovertarget="foto-1" popovertargetaction="hide">Cerrar</button>
+            <button type="button" class="boton" data-tono="secundario" popovertarget="foto-1" popovertargetaction="hide">Cerrar</button>
           </div>
         </li>
         <li class="asiento">
@@ -332,13 +332,13 @@
             <p>Merendero Ejemplo Sur</p>
             <p class="asiento-estado">Entrega confirmada</p>
           </div>
-          <button type="button" class="boton boton--chico boton--foto" popovertarget="foto-2" aria-describedby="asiento-2">
+          <button type="button" class="boton boton--foto" data-tamano="chico" popovertarget="foto-2" aria-describedby="asiento-2">
             <img class="miniatura" src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
           <div class="foto-ventana" id="foto-2" popover role="dialog" aria-labelledby="foto-2-titulo">
             <img src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640" height="400">
             <p class="foto-titulo" id="foto-2-titulo">Ropa de abrigo, 12 prendas</p>
             <p>Merendero Ejemplo Sur confirmó la entrega el <time datetime="2026-10-09">9 de octubre de 2026</time> y subió esta foto.</p>
-            <button type="button" class="boton boton--secundario" popovertarget="foto-2" popovertargetaction="hide">Cerrar</button>
+            <button type="button" class="boton" data-tono="secundario" popovertarget="foto-2" popovertargetaction="hide">Cerrar</button>
           </div>
         </li>
         <li class="asiento">
@@ -350,13 +350,13 @@
             <p>Escuela Ejemplo N.º 12</p>
             <p class="asiento-estado">Entrega confirmada</p>
           </div>
-          <button type="button" class="boton boton--chico boton--foto" popovertarget="foto-3" aria-describedby="asiento-3">
+          <button type="button" class="boton boton--foto" data-tamano="chico" popovertarget="foto-3" aria-describedby="asiento-3">
             <img class="miniatura" src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
           <div class="foto-ventana" id="foto-3" popover role="dialog" aria-labelledby="foto-3-titulo">
             <img src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="Sillas apiladas en un aula" width="640" height="400">
             <p class="foto-titulo" id="foto-3-titulo">Sillas, 6 unidades</p>
             <p>Escuela Ejemplo N.º 12 confirmó la entrega el <time datetime="2026-10-14">14 de octubre de 2026</time> y subió esta foto.</p>
-            <button type="button" class="boton boton--secundario" popovertarget="foto-3" popovertargetaction="hide">Cerrar</button>
+            <button type="button" class="boton" data-tono="secundario" popovertarget="foto-3" popovertargetaction="hide">Cerrar</button>
           </div>
         </li>
         <li class="asiento asiento--en-camino">

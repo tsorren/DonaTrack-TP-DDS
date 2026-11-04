@@ -31,11 +31,6 @@
   font-size: 1.125rem;
 }
 
-.confirmar-aviso {
-  margin: 0 0 1rem;
-  font-weight: 700;
-}
-
 .acta {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -244,7 +239,7 @@ main .etiqueta-titulo {
   outline-offset: 3px;
 }
 
-.campo--fotos.campo--error {
+.campo--fotos[data-estado="error"] {
   border-color: var(--color-problema-texto);
 }
 

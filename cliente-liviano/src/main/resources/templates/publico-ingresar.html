@@ -31,71 +31,71 @@
         <p class="lectura-bajada">Para seguir tus donaciones o las entregas de tu entidad.</p>
       </header>
 
-      <section th:if="${conError}" id="ingreso-error" class="aviso aviso--error" role="alert" tabindex="-1"
+      <section th:if="${conError}" id="ingreso-error" class="banner" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="ingreso-error-titulo">
         <h2 id="ingreso-error-titulo">No pudimos ingresar.</h2>
         <p id="ingreso-error-texto">El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí
           una contraseña nueva.</p>
-        <a class="boton boton--secundario" href="/publico-recuperar"
+        <a class="boton" data-tono="secundario" href="/publico-recuperar"
            th:href="@{/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
       <th:block th:if="${escenario == 'error'}">
         <section th:replace="~{datos-publicos :: avisoError('No pudimos ingresar en este momento.',
             'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-ingresar', false)}"></section>
       </th:block>
-      <section th:if="${escenario == 'sin-conexion'}" class="aviso aviso--error" role="alert"
+      <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="red-titulo">
         <h2 id="red-titulo">Se cortó la conexión.</h2>
         <p>Revisá la señal y probá de nuevo.</p>
       </section>
-      <section th:if="${escenario == 'bloqueado'}" class="aviso aviso--error" role="alert"
+      <section th:if="${escenario == 'bloqueado'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="pausa-titulo">
         <h2 id="pausa-titulo">Pausamos los intentos de ingreso.</h2>
         <p>Hubo varios intentos con datos que no coinciden. Por seguridad, probá de nuevo en unos minutos o
           pedí una contraseña nueva.</p>
-        <a class="boton boton--secundario" href="/publico-recuperar"
+        <a class="boton" data-tono="secundario" href="/publico-recuperar"
            th:href="@{/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
-      <section th:if="${escenario == 'pendiente'}" class="aviso" role="status" aria-labelledby="revision-titulo">
+      <section th:if="${escenario == 'pendiente'}" class="banner" role="status" aria-labelledby="revision-titulo">
         <h2 id="revision-titulo">Tu entidad todavía está en revisión.</h2>
         <p>El equipo de DonaTrack revisa cada entidad antes de sumarla. Te escribimos al correo de contacto
           cuando esté aprobada; desde ese día podés ingresar.</p>
         <div class="aviso-acciones">
-          <a class="boton boton--secundario" href="/publico-contacto"
+          <a class="boton" data-tono="secundario" href="/publico-contacto"
              th:href="@{/publico-contacto(volver='/publico-ingresar')}">Escribinos</a>
-          <a class="boton boton--secundario" href="/publico-portada"
+          <a class="boton" data-tono="secundario" href="/publico-portada"
              th:href="@{/publico-portada}">Ir a la portada</a>
         </div>
       </section>
-      <section th:if="${escenario == 'sesion-vencida'}" class="aviso" role="status" aria-labelledby="sesion-titulo">
+      <section th:if="${escenario == 'sesion-vencida'}" class="banner" role="status" aria-labelledby="sesion-titulo">
         <h2 id="sesion-titulo">Tu sesión se cerró.</h2>
         <p>Pasó un tiempo sin actividad. Ingresá de nuevo y seguís donde estabas.</p>
       </section>
 
       <form class="formulario" action="/donante-inicio" th:action="@{/donante-inicio}"
             method="post" data-enviando="Ingresando…" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-        <div class="campo" th:classappend="${conError} ? 'campo--error'">
+        <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="correo">Correo electrónico</label>
           <input id="correo" name="correo" type="email" required autocomplete="email"
                  th:value="${escrito} ? 'contacto@distribuidora-ejemplo.test' : null"
                  th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null">
         </div>
-        <div class="campo" th:classappend="${conError} ? 'campo--error'">
+        <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="clave">Contraseña</label>
           <div class="clave-fila">
             <input id="clave" name="clave" type="password" required autocomplete="current-password"
                    th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null">
-            <button class="boton boton--secundario" type="button" data-mostrar aria-controls="clave"
+            <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
                     aria-pressed="false" hidden>Mostrar</button>
           </div>
           <a class="enlace-campo" href="/publico-recuperar"
              th:href="@{/publico-recuperar}">¿Olvidaste tu contraseña?</a>
         </div>
-        <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
+        <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
                 th:text="${escenario == 'lento'} ? 'Ingresando…' : 'Ingresar'">Ingresar</button>
         <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Ingresando…</p>
         <p class="separador" aria-hidden="true"><span>o</span></p>
-        <button class="boton boton--secundario boton--google" type="submit" formnovalidate>Continuar con
+        <button class="boton boton--google" data-tono="secundario" type="submit" formnovalidate>Continuar con
           Google</button>
         <p class="cuenta-salida">¿Primera vez? <a href="/publico-registro"
            th:href="@{/publico-registro}">Crear una cuenta</a></p>

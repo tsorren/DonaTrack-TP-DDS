@@ -50,10 +50,10 @@
                '/entidad-recibidas')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="aviso" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no se asignaron donaciones a tu entidad.</h2>
       <p>Se asignan a lo que pedís: publicá tus necesidades y aparecen acá cuando se asigne una.</p>
-      <a class="boton boton--principal" href="/entidad-necesidades"
+      <a class="boton" data-tono="principal" href="/entidad-necesidades"
          th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
     </section>
 
@@ -70,10 +70,10 @@
             (11)</span>
         </label>
       </fieldset>
-      <button class="boton boton--secundario" type="submit">Filtrar</button>
+      <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
     </form>
 
-    <p th:if="${escenario == 'lento'}" class="recibidas-cargando" role="status">Cargando tus donaciones…</p>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus donaciones…</p>
     <div th:if="${escenario == 'lento'}" class="hueco" aria-busy="true"></div>
 
     <th:block th:if="${conDatos}">
@@ -83,11 +83,11 @@
           En camino (1).</span>
         <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver todas</a>
       </p>
-      <section th:if="${filtrada and #lists.isEmpty(asignadas.?[grupo == #root.filtro.grupo])}" class="aviso"
+      <section th:if="${filtrada and #lists.isEmpty(asignadas.?[grupo == #root.filtro.grupo])}" class="vacio"
                aria-labelledby="sinres-titulo" tabindex="-1" autofocus>
         <h2 id="sinres-titulo">No hay donaciones en ese estado.</h2>
         <p>Probá con otro estado o mirá todas.</p>
-        <a class="boton boton--secundario" href="/entidad-recibidas"
+        <a class="boton" data-tono="secundario" href="/entidad-recibidas"
            th:href="@{/entidad-recibidas}">Ver todas</a>
       </section>
 
@@ -115,16 +115,16 @@
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
                    th:text="|Para tu pedido de ${d.pedidoNombre}|">Para tu pedido de lentejas secas</a></p>
                 <p class="acta-paso">
-                  <span class="estado" th:classappend="|estado--${d.grupo}|">
-                    <svg th:replace="~{piezas-entidad :: sello(${d.grupo})}"></svg>
+                  <span class="estado" th:data-estado="${d.grupo}">
+                    <svg th:replace="~{componentes/sello :: sello(${d.grupo})}"></svg>
                     <th:block th:text="${g.estado}">Espera tu confirmación</th:block></span>
                   <span th:text="${d.paso}">Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.</span>
                 </p>
-                <a th:if="${d.grupo == 'puerta'}" class="boton boton--principal"
+                <a th:if="${d.grupo == 'puerta'}" class="boton" data-tono="principal"
                    href="/entidad-seguimiento-confirmar?entrega=lentejas"
                    th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
                   recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
-                <a th:if="${d.grupo == 'problema'}" class="boton boton--secundario"
+                <a th:if="${d.grupo == 'problema'}" class="boton" data-tono="secundario"
                    href="/entidad-necesidades?necesidad=aceite"
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu pedido</a>
               </article>
@@ -138,7 +138,7 @@
               <article class="asiento" th:aria-labelledby="|don-${d.clave}|">
                 <p class="asiento-fecha"><time datetime="2026-10-10" th:datetime="${d.fecha}"><b
                     th:text="${d.dia}">10</b> de octubre</time></p>
-                <svg th:replace="~{piezas-entidad :: sello('recibida')}"></svg>
+                <svg th:replace="~{componentes/sello :: sello('recibida')}"></svg>
                 <div class="asiento-texto">
                   <h3 th:id="|don-${d.clave}|" th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 10 kg</h3>
                   <p><th:block th:text="|${d.categoriaNombre} · Donó ${d.dono}|">Alimentos · Donó Almacén Ejemplo
@@ -146,7 +146,7 @@
                       href="/entidad-necesidades?necesidad=lentejas"
                       th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
                       th:text="|Para tu pedido de ${d.pedidoNombre}|">Para tu pedido de lentejas secas</a></th:block></p>
-                  <p class="estado estado--recibida" th:text="${d.paso}">Confirmaste la recepción el 10 de
+                  <p class="estado" data-estado="recibida" th:text="${d.paso}">Confirmaste la recepción el 10 de
                     octubre.</p>
                 </div>
               </article>

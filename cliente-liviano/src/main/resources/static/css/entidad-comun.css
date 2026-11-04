@@ -46,27 +46,6 @@
   font-stretch: 118%;
 }
 
-/* --- El estado en texto, al lado de su sello: el color solo acompaña --------------------------- */
-.estado--puerta {
-  color: var(--color-tinta);
-}
-
-.estado--camino {
-  color: var(--color-en-camino-texto);
-}
-
-.estado--salir {
-  color: var(--color-pendiente-texto);
-}
-
-.estado--problema {
-  color: var(--color-problema-texto);
-}
-
-.estado--recibida {
-  color: var(--color-entregada-texto);
-}
-
 /* --- El acta de una entrega: la etiqueta de herbario (doble filete y sombra plana salvia) -------- */
 .acta {
   display: grid;
