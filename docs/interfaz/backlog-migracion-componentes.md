@@ -187,4 +187,4 @@ tamaño:
 | 2026-11-04 | B2-01 a B2-03 (tanda 1 de la fase 2: botón, campo y sello) | 197 (medido después del cambio; era 211) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
 | 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
 | 2026-11-04 | B2-06, B2-07 y B2-08 (tanda 3 de la fase 2: navegación, tarjeta y lista adaptable) | 186 (medido después del cambio; era 189) | 392f6239 (rama `E6_raices`) |
-| 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | pendiente (rama `E6_raices`) |
+| 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | 9343fbb4 (rama `E6_raices`) |
