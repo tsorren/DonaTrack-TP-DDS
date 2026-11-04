@@ -534,3 +534,18 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 1. **Dueño.** Decidir qué servicio recibe el mensaje (`POST /api/contacto`: tema, mensaje, código de error opcional, y correo si no hay sesión) y dónde lo lee el administrador.
 2. **Abuso y repetidos.** Límite de envíos por persona o dirección, porque el formulario es público; y detectar el mismo mensaje enviado dos veces (la pantalla sin conexión pide mandarlo de nuevo).
 3. **Respuesta.** Por correo, desde Notificaciones, con el número del mensaje.
+
+## DTI-34 — El cliente liviano no tiene catálogo, tokens de movimiento ni cerco de componentes
+<a id="dti-34"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [Interacción, movimiento y componentes del cliente liviano](cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md) |
+| Decision status | `proposed` |
+| Decidido por | tsorren (2026-11-04): Alpine CSP, CSS nativo, sistema de movimiento, capa CUBE con cerco y migración incremental con backlog obligatorio |
+| Implementation status | `[OBSERVED] deferred`: sin catálogo `/estilos` (RF-CL-05 incumplido desde el ADR de una sola identidad); 0 tokens `--movimiento-*` aunque `cliente-liviano/AGENTS.md` los lista; 13 `@keyframes` y 28 duraciones literales en hojas de pantalla; 212 clases de un solo uso; Alpine sin incorporar |
+| Target | `cliente-liviano` |
+| Cuándo se saldará | Fase 0 del [backlog de migración](../interfaz/backlog-migracion-componentes.md) antes de cerrar E6; fases 1 a 3, incrementales, revisadas al cerrar cada entrega |
+
+1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
+2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.

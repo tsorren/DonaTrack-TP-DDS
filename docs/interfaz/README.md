@@ -197,6 +197,8 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [historico/](historico/README.md) | Las identidades retiradas el 2026-11-03. No es guía para diseñar |
 | [tono-y-comunicacion.md](tono-y-comunicacion.md) y [identidad/brief-tono-y-comunicacion-v1.0.pdf](identidad/brief-tono-y-comunicacion-v1.0.pdf) | Voz, tono por pantalla, estados, cifras, personas y el filtro de 7 preguntas, comunes a todo el sitio; el PDF es el brief del equipo del que sale |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
+| [componentes.md](componentes.md) | Catálogo de capas CUBE y componentes: lo primero que se lee antes de construir o revisar una pantalla |
+| [backlog-migracion-componentes.md](backlog-migracion-componentes.md) | Backlog obligatorio de migración a componentes y capas CUBE, con la línea de base y el tope de clases de un solo uso |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |
 | [plantillas/](plantillas/) | Ficha de flujo, iteración A/B, brief de identidad y los tres encargos de una corrida creativa (el creativo, el del constructor y el del crítico) |

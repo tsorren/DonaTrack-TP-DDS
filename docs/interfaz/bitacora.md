@@ -27,6 +27,23 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Alpine CSP, CSS nativo con sistema de movimiento y capa CUBE con cerco
+
+- **Decisión:** Alpine.js con el build CSP para el estado que no sale del navegador (HTMX sigue
+  hablando con el servidor); "anda sin JavaScript" solo en lo esencial; `@layer`, View Transitions,
+  `@starting-style`, `@container` y `popover` como mejora; tokens y primitivas de movimiento; capa
+  CUBE propia (composición, utilidades, componentes con slots, excepciones) con un cerco en los tests
+  y en las skills, y migración incremental con backlog obligatorio.
+- **Alternativas:** Alpine estándar, Petite-Vue o seguir con JavaScript propio; GSAP o Motion;
+  Tailwind v4 (diferido después de E6), Spring ViewComponent o seguir con una hoja por pantalla.
+- **Por qué:** todo lo diseña y lo construye Claude Code. Un vocabulario cerrado de piezas y de
+  movimiento hace que los agentes compongan en lugar de inventar, y las plantillas que dicen qué es
+  cada cosa abaratan los rediseños. Sin build y sin salir del motor de plantillas que pide el enunciado.
+- **Costo:** catálogo y cerco por construir antes de cerrar E6; conviven hojas por pantalla y capas
+  CUBE mientras dure la migración.
+- **Quién decidió:** usuario (tsorren), 2026-11-04.
+- **Evidencia:** [ADR](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md) (`proposed`), [backlog](backlog-migracion-componentes.md) y DTI-34.
+
 ### 2026-11-04 · movimiento:red (Raíces) · La portada: la escena queda quieta y las raíces llegan de a una
 
 - **Decisión:** en la computadora, al llegar a "Quiénes reciben", la escena entera (de la planta con
