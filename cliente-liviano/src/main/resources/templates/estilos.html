@@ -233,7 +233,7 @@
             </section>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;); .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;. data-forma=&quot;punteado&quot; le pone contorno; data-tamano=&quot;alto&quot;, más altura.', ~{::demo-carga})}">
+        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;); .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;. data-forma=&quot;punteado&quot; le pone contorno y data-forma=&quot;hueco&quot;, contorno sin papel adentro (el de la entidad); data-tamano=&quot;alto&quot; da más altura y data-tamano=&quot;bajo&quot;, menos.', ~{::demo-carga})}">
           <th:block th:fragment="demo-carga">
             <div class="pila" data-espacio="3">
               <p class="cargando" role="status">Cargando tus donaciones…</p>
@@ -241,6 +241,7 @@
                 <div class="esqueleto"></div>
                 <div class="esqueleto" data-forma="punteado"></div>
                 <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+                <div class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
               </div>
             </div>
           </th:block>
@@ -339,6 +340,112 @@
               <li class="tarjeta" data-filete="doble"><b>Ropa de abrigo</b><br>10 unidades · En camino</li>
               <li class="tarjeta" data-filete="doble"><b>Fideos secos</b><br>8 kg · Pendiente</li>
             </ul>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.subida', 'La zona para subir fotos: un campo con el control nativo de archivos (la cámara o la galería del celular; sin JavaScript anda igual y manda lo elegido) y, con JavaScript, la vista previa de cada imagen con su nombre y un botón Quitar. data-estado=&quot;error&quot; pone el recuadro en el color del problema. Probala: elegí una imagen.', ~{::demo-subida})}">
+          <th:block th:fragment="demo-subida">
+            <div class="campo subida" x-data="subidaFotos">
+              <label for="muestra-fotos">
+                <svg class="subida-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                  <path d="M6 16H14L18 10H30L34 16H42V38H6Z"/><circle cx="24" cy="26" r="7"/>
+                </svg>
+                <span>Fotos de lo que llegó</span>
+              </label>
+              <small id="muestra-fotos-ayuda">Al menos una. JPG o PNG, hasta 5 MB cada una.</small>
+              <input id="muestra-fotos" type="file" accept="image/*" multiple aria-describedby="muestra-fotos-ayuda"
+                     x-ref="entrada" x-on:change="elegir">
+              <span class="subida-aviso" role="status" x-text="resumen"></span>
+              <p class="subida-resumen" hidden x-bind:hidden="sinFotos" x-text="resumen"></p>
+              <ul class="subida-previas" role="list" hidden x-bind:hidden="sinFotos">
+                <template x-for="foto in fotos" x-bind:key="foto.id">
+                  <li class="subida-previa" x-bind:data-id="foto.id">
+                    <img x-bind:src="foto.url" x-bind:alt="foto.alt" width="112" height="112">
+                    <small class="subida-nombre" x-text="foto.nombre"></small>
+                    <button type="button" class="boton" data-tamano="chico" x-bind:aria-label="foto.quitar"
+                            x-on:click="quitar">Quitar</button>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.pestanas', 'Varias secciones de una misma pantalla, de a una por vez, como pestañas de carpeta. Sin JavaScript cada pestaña es un enlace a su sección; con JavaScript se cambia sin recargar y se recorre con las flechas, Inicio y Fin. Cada pestaña lleva el id y el href de su panel (.pestanas-panel).', ~{::demo-pestanas})}">
+          <th:block th:fragment="demo-pestanas">
+            <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
+              <nav class="pestanas-lista" aria-label="Secciones de la muestra" x-on:keydown="teclear">
+                <a class="pestana" id="pestana-muestra-uno" href="#muestra-panel-uno" x-on:click="elegir">Primera</a>
+                <a class="pestana" id="pestana-muestra-dos" href="#muestra-panel-dos" x-on:click="elegir">Segunda</a>
+                <a class="pestana" id="pestana-muestra-tres" href="#muestra-panel-tres" x-on:click="elegir">Tercera</a>
+              </nav>
+              <div class="pestanas-panel" id="muestra-panel-uno">
+                <article class="tarjeta">
+                  <p>El contenido de la primera pestaña.</p>
+                </article>
+              </div>
+              <div class="pestanas-panel" id="muestra-panel-dos">
+                <article class="tarjeta">
+                  <p>El contenido de la segunda pestaña.</p>
+                </article>
+              </div>
+              <div class="pestanas-panel" id="muestra-panel-tres">
+                <article class="tarjeta">
+                  <p>El contenido de la tercera pestaña.</p>
+                </article>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.cabecera-entidad y .novedades', 'La cabecera de una pantalla de la entidad: el rótulo, el título, la bajada y el acceso a las novedades (piezas-entidad :: novedades(cuantas)): un dato, sin alarma (.novedades-cuenta es el disco con la cuenta). El acceso va debajo en el celular y a la derecha en pantalla grande.', ~{::demo-cabecera})}">
+          <th:block th:fragment="demo-cabecera">
+            <header class="cabecera-entidad">
+              <p class="rotulo">Inicio</p>
+              <h2>Comedor Barrio Ejemplo</h2>
+              <p>Lo que llega, lo que pediste y lo que falta confirmar.</p>
+              <a th:replace="~{piezas-entidad :: novedades(3)}"></a>
+            </header>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.mapa-cuerpo', 'Un mapa y, al lado (debajo, en el celular), la lista con los mismos datos, entidad por entidad (RF-CL-06). El dibujo es de la pantalla y va oculto a los lectores de pantalla; la lista dice todo. Al pasar, enfocar o llegar a una ficha, su estación queda llena y las demás se apagan (hasta 6; en el dibujo estacion--1, estacion--2, estacion--3, estacion--4, estacion--5, estacion--6 y en la lista estacion-ficha--1, estacion-ficha--2, estacion-ficha--3, estacion-ficha--4, estacion-ficha--5, estacion-ficha--6; acá, 1 y 2).', ~{::demo-mapa})}">
+          <th:block th:fragment="demo-mapa">
+            <div class="mapa-cuerpo">
+              <figure class="mapa-dibujo" aria-hidden="true">
+                <svg viewBox="0 0 800 300" focusable="false" width="100%">
+                  <path d="M0 80H800" stroke="currentColor" fill="none"/>
+                  <g class="estacion estacion--1"><circle cx="250" cy="200" r="22" class="sello-disco"/></g>
+                  <g class="estacion estacion--2"><circle cx="550" cy="200" r="22" class="sello-disco"/></g>
+                </svg>
+              </figure>
+              <section class="mapa-lista" aria-labelledby="muestra-mapa-titulo">
+                <h3 id="muestra-mapa-titulo">Entidad por entidad</h3>
+                <ol class="estaciones" role="list">
+                  <li class="estacion-ficha estacion-ficha--1" id="muestra-entidad-1" tabindex="-1">
+                    <header class="estacion-cabeza">
+                      <svg class="estacion-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/></svg>
+                      <div>
+                        <h4>Comedor Barrio Ejemplo</h4>
+                        <p>Barrio Ejemplo · 2 entregas confirmadas</p>
+                      </div>
+                    </header>
+                    <ul class="estacion-entregas" role="list">
+                      <li><p>Lentejas secas, 10 kg · Alimentos · 10 de octubre</p></li>
+                      <li><p>Arroz, 5 kg · Alimentos · 9 de octubre</p></li>
+                    </ul>
+                  </li>
+                  <li class="estacion-ficha estacion-ficha--2" id="muestra-entidad-2" tabindex="-1">
+                    <header class="estacion-cabeza">
+                      <svg class="estacion-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/></svg>
+                      <div>
+                        <h4>Merendero Ejemplo</h4>
+                        <p>Villa Ejemplo · 1 entrega confirmada</p>
+                      </div>
+                    </header>
+                    <ul class="estacion-entregas" role="list">
+                      <li><p>Ropa de abrigo, 5 unidades · Ropa · 8 de octubre</p></li>
+                    </ul>
+                  </li>
+                </ol>
+              </section>
+            </div>
           </th:block>
         </div>
       </div>

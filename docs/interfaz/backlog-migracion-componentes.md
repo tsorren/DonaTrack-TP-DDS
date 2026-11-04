@@ -124,6 +124,28 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 > confirma. Las demás láminas de una sola pantalla (`.confirmado`, `.puerta`, `.grupo-avisos--sin-leer`,
 > `.estacion-ficha` y `.etiqueta-entidad`) no son iguales a ninguna variante y se quedan.
 
+> Tanda 4 (B2-10 a B2-13), 2026-11-04. Notas de lo hecho: **B2-10, la zona de subida de fotos** (`.subida`,
+> `componentes/subida.css`) es el campo de fotos de Confirmar recepción (`.campo--fotos`) hecho bloque, con el
+> control nativo de archivos adentro (lo esencial: sin JavaScript manda lo elegido) y la vista previa de
+> Alpine (`subidaFotos`): miniatura, nombre y «Quitar» por foto, un anuncio de cuántas hay y el foco de
+> vuelta al control; los archivos quedan fuera del estado reactivo. **B2-11, las pestañas** (`.pestanas`,
+> `componentes/pestanas.css`) son las del perfil del donante (`perfil-pestanas`, `perfil-panel`): sin
+> JavaScript siguen siendo enlaces con `:target`; con JavaScript, Alpine (`pestanas`) agrega los roles de
+> pestañas, las flechas, Inicio y Fin, y cambia de panel sin recargar, dejando `#sección` en la dirección.
+> Para eso cada formulario del perfil quedó dentro de un `div.pestanas-panel` con el `id` de la sección.
+> **B2-12, las piezas de la entidad:** `.novedades` (el acceso a Notificaciones) y `.cabecera-entidad`
+> pasaron de `entidad-comun.css` a sus bloques, y el `.hueco` de la entidad (que la tanda 2 dejó heredado)
+> es ahora un esqueleto: `.esqueleto` con `data-forma="hueco"` (punteado sin papel) y `data-tamano="bajo"`.
+> `.acta` (el cuerpo de la etiqueta de herbario, que en Confirmar recepción es además la grilla de la página
+> con el mismo nombre) y `.salidas` (las páginas públicas tienen las suyas con el mismo nombre y otra
+> disposición) siguen en su hoja. **B2-13, el mapa con su lista** (`.mapa-cuerpo`, `componentes/mapa.css`):
+> el marco del dibujo, las dos columnas, la lista de fichas y el resalte cruzado pasaron al bloque; el dibujo
+> de la pantalla (`.estacion-numero`, `.mapa-fruto`, el rótulo y el esqueleto del mapa) quedó en
+> `publico-mapa.css`, porque compite con reglas sin capa de `sellos.css` y `publico-listas.css`: una regla
+> sin capa le gana a una con capa. La ficha de cada entidad no usa `.tarjeta`: su sombra mide 0,35 rem y la de
+> la tarjeta, 0,4 rem. Se propone un ítem nuevo, B2-14, para las piezas con línea de tiempo (el cuaderno de
+> entregas recibidas, `asiento`; las noticias y el libro de donaciones), que ya estaba anunciado en la tanda 3.
+
 | ID | Componente | Origen hoy | Pantallas que lo usan | Estado |
 |---|---|---|---|---|
 | B2-01 | Botón | `app.css`, `formularios.css` | Todas | Hecho (2026-11-04) |
@@ -135,10 +157,11 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 | B2-07 | Tarjeta | `donante-comun.css`, `entidad-comun.css`, `publico-donaciones.css` y otras 5 hojas | Listas y seguimiento | Hecho (2026-11-04) |
 | B2-08 | Tabla o lista adaptable | `publico-donaciones.css`, `entidad-recibidas.css`, `donante-entidades.css` | Listados | Hecho (2026-11-04); la tabla no: el sitio no tiene ninguna |
 | B2-09 | Estado vacío, esqueleto e indicador de carga | Varias hojas | Todas las listas | Hecho (2026-11-04) |
-| B2-10 | Carga de fotos con vista previa (Alpine) | `entidad-seguimiento-confirmar.css` | Confirmar recepción | Pendiente |
-| B2-11 | Pestañas (Alpine) | `donante-perfil.css` | Mi perfil | Pendiente |
-| B2-12 | Piezas de la entidad | `piezas-entidad.html`, `entidad-comun.css` | Sitio de la entidad | Pendiente |
-| B2-13 | Mapa con su lista (RF-CL-06) | `publico-mapa.css` | Mapa público, seguimiento | Pendiente |
+| B2-10 | Carga de fotos con vista previa (Alpine) | `entidad-seguimiento-confirmar.css` | Confirmar recepción | Hecho (2026-11-04) |
+| B2-11 | Pestañas (Alpine) | `donante-perfil.css` | Mi perfil | Hecho (2026-11-04) |
+| B2-12 | Piezas de la entidad | `piezas-entidad.html`, `entidad-comun.css` | Sitio de la entidad | Hecho (2026-11-04); `acta` y `salidas` no: comparten nombre con otro uso |
+| B2-13 | Mapa con su lista (RF-CL-06) | `publico-mapa.css` | Mapa público, seguimiento | Hecho (2026-11-04); el dibujo queda en la hoja de la pantalla |
+| B2-14 | Cuaderno con línea de tiempo (`asiento`, `noticias`, `libro`) | `entidad-recibidas.css`, `entidad-notificaciones.css`, `donante-notificaciones.css`, `donante-donaciones.css` | Entregas recibidas, Notificaciones, Mis donaciones | Propuesto (2026-11-04) |
 
 ## Fase 3 — Hojas de pantalla reducidas a disposición
 
@@ -164,3 +187,4 @@ tamaño:
 | 2026-11-04 | B2-01 a B2-03 (tanda 1 de la fase 2: botón, campo y sello) | 197 (medido después del cambio; era 211) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
 | 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
 | 2026-11-04 | B2-06, B2-07 y B2-08 (tanda 3 de la fase 2: navegación, tarjeta y lista adaptable) | 186 (medido después del cambio; era 189) | 392f6239 (rama `E6_raices`) |
+| 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | pendiente (rama `E6_raices`) |

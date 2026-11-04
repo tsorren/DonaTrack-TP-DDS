@@ -61,7 +61,7 @@
              de cada entrega en su etiqueta de papel. */-->
       <section class="puerta tierra-impresa" aria-labelledby="puerta-titulo">
         <h2 id="puerta-titulo">En tu puerta</h2>
-        <div th:if="${escenario == 'lento'}" class="hueco hueco--suelo"></div>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
           <p th:if="${#lists.isEmpty(puerta)}" class="puerta-bajada">No tenés entregas para
             confirmar.<br>Cuando una entrega llegue a tu puerta, aparece acá para que confirmes la
@@ -97,7 +97,7 @@
       <!--/* Lo que viene: una raíz de sellos, de lo que está más cerca de llegar a lo que no pudo. */-->
       <section class="viene" aria-labelledby="viene-titulo">
         <h2 id="viene-titulo">Lo que viene</h2>
-        <div th:if="${escenario == 'lento'}" class="hueco"></div>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}"
             th:with="lista=${asignadas.?[grupo == 'camino' or grupo == 'salir' or grupo == 'problema']}">
           <p th:if="${#lists.isEmpty(lista)}">No hay entregas asignadas en camino.</p>
@@ -130,7 +130,7 @@
       <!--/* Los pedidos vigentes de Necesidades, con cuánto llegó de cuánto en su regla de tinta. */-->
       <section class="pedidos-inicio" aria-labelledby="pedidos-titulo">
         <h2 id="pedidos-titulo">Tus pedidos</h2>
-        <div th:if="${escenario == 'lento'}" class="hueco"></div>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
           <p th:text="|${#lists.size(pedidos)} necesidades vigentes.|">5 necesidades vigentes.</p>
           <ul class="pedidos-renglones" role="list">
@@ -157,7 +157,7 @@
              cifra adentro y su período y fecha al lado. Es un resultado registrado, no un efecto. */-->
       <section class="recibido" aria-labelledby="recibido-titulo">
         <h2 id="recibido-titulo">Lo recibido en octubre</h2>
-        <div th:if="${escenario == 'lento'}" class="hueco"></div>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <div th:if="${conDatos}" class="recibido-rama">
           <p class="recibido-fruto" aria-hidden="true" th:text="${#lists.size(recibidas)}">6</p>
           <div class="recibido-texto">

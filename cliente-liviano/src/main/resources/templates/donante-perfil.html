@@ -54,17 +54,20 @@
       <p>Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó elegido.</p>
     </section>
 
-    <!--/* Las secciones como pestañas de la misma pantalla (A/B layout:perfil, 2026-11-04, usuario): cada
-           pestaña es un enlace a su sección, sin JavaScript; se ve una por vez (la primera al entrar) y al
-           guardar vuelve a la misma. */-->
-    <nav class="perfil-pestanas" aria-label="Secciones de tu perfil">
-      <a href="#como-te-ven">Cómo te ven</a>
-      <a href="#datos">Datos de la cuenta</a>
-      <a href="#como-te-avisamos">Avisos</a>
+    <!--/* Las secciones como pestañas de la misma pantalla (A/B layout:perfil, 2026-11-04, usuario; bloque
+           .pestanas, B2-11): cada pestaña es un enlace a su sección, sin JavaScript; se ve una por vez (la
+           primera al entrar) y al guardar vuelve a la misma. Con JavaScript, Alpine (pestanas) suma los
+           roles, las flechas y el cambio sin recargar. */-->
+    <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
+    <nav class="pestanas-lista" aria-label="Secciones de tu perfil" x-on:keydown="teclear">
+      <a class="pestana" id="pestana-como-te-ven" href="#como-te-ven" x-on:click="elegir">Cómo te ven</a>
+      <a class="pestana" id="pestana-datos" href="#datos" x-on:click="elegir">Datos de la cuenta</a>
+      <a class="pestana" id="pestana-como-te-avisamos" href="#como-te-avisamos" x-on:click="elegir">Avisos</a>
     </nav>
 
-    <form id="como-te-ven" action="/donante-perfil-guardado"
-          th:action="@{/donante-perfil-guardado}" method="post" class="formulario perfil-panel"
+    <div class="pestanas-panel" id="como-te-ven">
+    <form action="/donante-perfil-guardado"
+          th:action="@{/donante-perfil-guardado}" method="post" class="formulario"
           th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <fieldset class="opciones" aria-describedby="nombre-ayuda nombre-nota">
         <legend><h2>Cómo te ven las entidades</h2></legend>
@@ -81,13 +84,15 @@
               th:text="${escenario == 'lento'} ? 'Guardando…' : 'Guardar mi elección'">Guardar mi
         elección</button>
     </form>
+    </div>
 
     <!--/* Los datos de la cuenta y los avisos (nota de Nico, 2026-11-04: "faltan más campos"): los de la
            persona jurídica y sus medios de contacto en donaciones-service (JuridicaInputDTO,
            MedioDeContactoInputDTO). ponytail: maqueta con datos de ejemplo; guardar no cambia nada
            hasta que haya backend (RI-AUTH-02, HB-11; docs/interfaz/flujos/raices-ab-huecos-backend.md). */-->
-    <form id="datos" action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#datos(seccion='datos')}"
-          method="post" class="formulario perfil-seccion perfil-panel" aria-labelledby="datos-titulo">
+    <div class="pestanas-panel" id="datos">
+    <form action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#datos(seccion='datos')}"
+          method="post" class="formulario perfil-seccion" aria-labelledby="datos-titulo">
       <h2 id="datos-titulo">Datos de tu cuenta</h2>
       <p class="obligatorios">Todos los datos son obligatorios, salvo los que dicen «opcional».</p>
       <div class="campo">
@@ -155,9 +160,11 @@
       </fieldset>
       <button class="boton" data-tono="principal" type="submit">Guardar los datos</button>
     </form>
+    </div>
 
-    <form id="como-te-avisamos" action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#como-te-avisamos(seccion='avisos')}"
-          method="post" class="formulario perfil-seccion perfil-panel" aria-labelledby="avisos-titulo">
+    <div class="pestanas-panel" id="como-te-avisamos">
+    <form action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#como-te-avisamos(seccion='avisos')}"
+          method="post" class="formulario perfil-seccion" aria-labelledby="avisos-titulo">
       <h2 id="avisos-titulo">Cómo te avisamos</h2>
       <p>Te avisamos cuando tu donación se asigna a una entidad, cuando sale y cuando la entidad
         confirma la entrega con la foto. Los avisos también quedan en
@@ -195,6 +202,8 @@
       </fieldset>
       <button class="boton" data-tono="principal" type="submit">Guardar los avisos</button>
     </form>
+    </div>
+    </div>
 
     <section class="perfil-legales" aria-labelledby="legales-titulo">
       <h2 id="legales-titulo">Términos y privacidad</h2>

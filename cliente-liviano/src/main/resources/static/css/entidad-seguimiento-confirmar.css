@@ -165,77 +165,8 @@ main .etiqueta-titulo {
   margin: 0 0 0.25rem;
 }
 
-/* El campo de fotos es el nativo (la cámara o la galería del celular, sin JavaScript); su botón,
-   como el botón secundario de Raíces. */
-.campo input[type="file"] {
-  padding: 0.5rem;
-  border-style: dashed;
-}
-
-.campo input[type="file"]::file-selector-button {
-  min-height: 2.75rem;
-  margin-right: 0.75rem;
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--color-acento);
-  border-radius: var(--radio-boton);
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* Las fotos, en una zona de carga grande (A/B 2, usuario, 2026-11-01; patrón: área para cargar
-   archivos, la del boceto de E1): un recuadro punteado, como un sello hueco, con la cámara al
-   centro. Tocar la cámara o el título abre la cámara o la galería; en la computadora se puede
-   soltar la foto sobre el campo. */
-.campo--fotos {
-  justify-items: center;
-  gap: 0.5rem;
-  padding: 1.5rem 1rem 1.25rem;
-  border: 2px dashed var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-pendiente-fondo);
-  text-align: center;
-}
-
-.campo--fotos label {
-  display: grid;
-  justify-items: center;
-  gap: 0.375rem;
-  cursor: pointer;
-}
-
-.campo--fotos .carga-icono {
-  display: block;
-  width: 3.5rem;
-  height: 3.5rem;
-  fill: var(--color-raiz);
-  stroke: var(--color-tinta);
-  stroke-width: 2;
-  stroke-linejoin: round;
-}
-
-.campo--fotos label span {
-  font-size: 1.125rem;
-}
-
-/* Tan ancho como su botón y su texto, para quedar centrado en la zona (review de Sofía, 2026-11-02). */
-.campo--fotos input[type="file"] {
-  width: auto;
-  max-width: 100%;
-  border: 0;
-  background: transparent;
-}
-
-.campo--fotos:focus-within {
-  outline: 3px solid var(--color-acento);
-  outline-offset: 3px;
-}
-
-.campo--fotos[data-estado="error"] {
-  border-color: var(--color-problema-texto);
-}
+/* La zona de subida de las fotos (el campo, su cámara y la vista previa) es el bloque `.subida`
+   (componentes/subida.css). */
 
 .quien-ve {
   margin: 0;

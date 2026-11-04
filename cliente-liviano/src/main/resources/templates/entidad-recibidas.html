@@ -74,7 +74,7 @@
     </form>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus donaciones…</p>
-    <div th:if="${escenario == 'lento'}" class="hueco" aria-busy="true"></div>
+    <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo" aria-busy="true"></div>
 
     <th:block th:if="${conDatos}">
       <!--/* Con un filtro puesto: cuál es y "Ver todas". */-->

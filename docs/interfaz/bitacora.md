@@ -27,6 +27,82 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Fase 2, tanda 4 del backlog: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista
+
+- **Decisión:** se implementan B2-10 a B2-13. **Subida de fotos:** `.subida` (`componentes/subida.css`) es el campo
+  de fotos de Confirmar recepción: una zona punteada con el control nativo de archivos adentro (lo esencial:
+  sin JavaScript manda lo elegido) y, con Alpine (`subidaFotos`), la vista previa de cada imagen (miniatura,
+  nombre y «Quitar»), un anuncio con la cuenta (`role="status"`) y el foco de vuelta al control; los
+  archivos quedan fuera del estado reactivo y «Quitar» rearma el control con `DataTransfer`. **Pestañas:**
+  `.pestanas` (`componentes/pestanas.css`), las del perfil del donante. Sin JavaScript siguen siendo enlaces
+  con `:target` (un solo aspecto, elegido por lugar hasta 6 pestañas); con JavaScript (`pestanas`) la raíz
+  lleva `data-interactivo`, se agregan los roles `tablist`, `tab` y `tabpanel`, se recorre con ← → Inicio Fin
+  y la pestaña queda en la dirección. Cada formulario del perfil quedó dentro de un `div.pestanas-panel`
+  con el `id` de la sección. **Piezas de la entidad:** `.novedades` (`componentes/novedades.css`) y
+  `.cabecera-entidad` (`componentes/cabecera-entidad.css`) pasaron de `entidad-comun.css` a sus bloques, y el
+  `.hueco` de la entidad es ahora `.esqueleto` con `data-forma="hueco"` y `data-tamano="bajo"` (8 usos en 4
+  plantillas). **Mapa con su lista:** `.mapa-cuerpo` (`componentes/mapa.css`) trae el marco del dibujo, las
+  dos columnas, la lista de fichas y el resalte cruzado; el dibujo de la pantalla (`.estacion-numero`,
+  `.mapa-fruto`, el rótulo y el esqueleto del mapa) queda en `publico-mapa.css`. El tope de clases de un solo
+  uso baja de 186 a 172 y las heredadas, de 478 a 459 (19 menos: 6 sin uso, 12 ya en la capa CUBE y `avisos`,
+  que la tanda 2 dejó en las dos listas). Se agrega B2-14 (el cuaderno con línea de tiempo) como propuesto y
+  un ADR sucesor `proposed` para dos frases de D31 y D33.
+- **Alternativas:** una sola hoja `entidad.css` para las piezas de la entidad (descartada: son tres piezas sin
+  relación entre sí; un bloque por hoja es la convención); pestañas con roles fijos en el HTML (descartada: sin
+  flechas serían una promesa falsa, así que los roles los pone Alpine solo si hay JavaScript); pestañas sin
+  `:target` y todos los paneles apilados sin JavaScript (descartada: cambiaba lo que se ve sin JavaScript);
+  `role="tabpanel"` en el propio formulario (descartada: `form` no admite ese rol, así que se agregó el
+  contenedor); un `<template x-for>` o `<ul>` servido por el servidor para la vista previa (descartada: la
+  lista son archivos de la persona, que el servidor no conoce); `.tarjeta` para la ficha de la entidad del
+  mapa (descartada: su sombra mide 0,35 rem y la de la tarjeta, 0,4 rem); mover el dibujo del mapa a la
+  capa de bloques (descartada: compite con `.dibujo-rotulo` de `sellos.css` y con el `.esqueleto` de las
+  páginas públicas, y una regla sin capa le gana a una con capa); migrar `.salidas` y `.acta` (descartada: las
+  páginas públicas tienen su `.salidas` con otra disposición, y `acta` es también la grilla de Confirmar
+  recepción).
+- **Por qué:** el campo de fotos, las pestañas, el acceso a novedades, la cabecera y el mapa con su lista eran
+  piezas completas dentro de hojas de pantalla; D31 pide para Alpine justamente la vista previa de fotos y las
+  pestañas, y el reparto «HTMX habla con el servidor, Alpine con lo que no sale del navegador» se cumple: nada
+  de esto pide nada al servidor. Las pestañas con `:target` seguían funcionando sin JavaScript pero no
+  se podían recorrer con teclado, que es lo que pide el patrón de pestañas.
+- **Costo:** `acta` y `salidas` siguen en `entidad-comun.css`; el dibujo del mapa, en `publico-mapa.css`; la
+  barra de pestañas del perfil elige la marcada por lugar y admite hasta 6 (como el resalte del mapa); en los
+  escenarios con error de Confirmar recepción, el control de fotos recibe el color de borde del error con ancho
+  0 (no se ve; el cálculo cambia por la capa); la vista previa muestra solo imágenes (el resto se manda igual y
+  el servidor lo valida); la ficha del mapa no usa la tarjeta. Hallazgo del test de comportamiento: dentro de un
+  manejador de Alpine, `this.$el` es el elemento que lleva la directiva y no la raíz del componente (arreglado
+  guardando la raíz al iniciar; queda anotado en el código).
+- **Quién decidió:** usuario (tsorren), 2026-11-04: hacer B2-10 a B2-13 en esta tanda; confirmó los nombres y
+  las decisiones de la tanda 3 (navegación, tarjeta, lista, `data-zona`, `data-filete`, `--espacio-relleno`,
+  `--medida-columna`, las 10 piezas migradas a la tarjeta, no construir la tabla y mover `.tierra-impresa` y
+  `:focus-visible` de capa); agregar B2-14 al backlog; y el ADR sucesor `proposed` para D31. El agente decidió y
+  queda para que el usuario confirme: los nombres (`.subida` y sus piezas, `.pestanas`, `.pestana`,
+  `.pestanas-panel`, `data-interactivo`, `.novedades`, `.cabecera-entidad`, `data-forma="hueco"`,
+  `data-tamano="bajo"`, `Alpine.data("subidaFotos")` y `Alpine.data("pestanas")`); el `div.pestanas-panel` alrededor
+  de cada formulario; los roles de pestañas agregados por Alpine; que `acta` y `salidas` queden; y dejar el dibujo
+  del mapa en su hoja. **Cambios visuales por confirmar:** ninguno. **Cambio de comportamiento por confirmar:** con
+  JavaScript, elegir una pestaña del perfil ya no mueve la página hasta el panel (antes era un enlace a un
+  ancla) y se recorre con las flechas; sin JavaScript anda como antes.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md), DTI-34 y el
+  [ADR sucesor](../adr/cliente-liviano/20261104-dialogo-con-popover-y-fragmentos-solo-donde-hay-estructura-en-el-cliente-liviano.md).
+  `-Pvisual` (55 pruebas verdes) con una corrida de ruido como base, las dos sobre el código sin tocar: 584 de
+  588 capturas iguales; `/estilos` (3) cambió por el contenido nuevo y la portada «lento» a 360 px difiere 15
+  px (no usa ninguna clase tocada, y antes y ruido ya difieren 7 px en esa misma captura). Estados, en un test
+  temporal de Playwright (borrado) sobre el código viejo (un worktree en `HEAD`), el nuevo y otra corrida del
+  viejo como ruido, con y sin JavaScript, a 360 y 1280 px: 140 capturas iguales (hover y foco por teclado de la
+  zona de fotos, el botón y las pestañas; las pestañas con `#datos`, `#como-te-avisamos` y tras guardar; los
+  accesos a novedades, los esqueletos «lento» de Inicio, Recibidas, Notificaciones y Administración, y el mapa
+  con una ficha elegida), y los estilos calculados iguales salvo la estructura nueva (el contenedor de pestañas y
+  los paneles sin `id`) y el color de borde invisible de la zona de fotos. Comportamiento (test temporal,
+  borrado, 4 pruebas): elegir dos imágenes muestra dos miniaturas, el anuncio «2 fotos elegidas» y pasa axe AA;
+  «Quitar» deja una, el control manda solo esa y el foco vuelve a él; sin JavaScript el control queda y la vista
+  previa no aparece; las pestañas cambian con clic, ← → (con vuelta), Inicio y Fin, con `tabindex` rotativo,
+  roles y axe AA, y llegar con `#sección` abre la pestaña; sin JavaScript se ve una sección por vez con `:target`
+  y la pestaña marcada. Tras la auditoría de cierre se ajustaron tres detalles (el anuncio de la vista previa pasó a una región
+  viva siempre presente, `.subida-aviso`, solo para lectores de pantalla; el título de la lista del mapa y el nombre de
+  cada entidad aceptan dos niveles de título, y el nombre se achica en vez de desbordar) y se repitió `-Pvisual` en
+  `/estilos`, el mapa, Confirmar recepción, el perfil y la portada (4 pruebas verdes, 12 capturas iguales a las de
+  antes) y el test de comportamiento (4 verdes).
+
 ### 2026-11-04 · stack · Fase 2, tanda 3 del backlog: navegación, tarjeta y lista adaptable
 
 - **Decisión:** se implementan B2-06, B2-07 y B2-08. **Navegación:** la barra de secciones de cada rol (con

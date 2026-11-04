@@ -78,7 +78,7 @@
     </section>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus novedades…</p>
-    <div th:if="${escenario == 'lento'}" class="hueco" aria-busy="true"></div>
+    <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo" aria-busy="true"></div>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{piezas-entidad :: error('No pudimos cargar tus novedades.',

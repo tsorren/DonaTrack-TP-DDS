@@ -60,7 +60,7 @@ main .puerta h2 {
   list-style: none;
 }
 
-.puerta .hueco {
+.puerta .esqueleto {
   border-color: var(--color-texto-suelo);
 }
 

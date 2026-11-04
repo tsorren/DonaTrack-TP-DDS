@@ -42,7 +42,7 @@
     <section th:if="${escenario != 'error'}" class="decisiones" aria-labelledby="decisiones-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="decisiones-titulo">Lo que espera tu decisión</h2>
-      <div th:if="${escenario == 'lento'}" class="hueco"></div>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
       <div th:if="${escenario == 'vacio'}" class="vacio">
         <p><b>Hoy no hay nada que espere tu decisión.</b></p>
         <p>Ninguna entidad pide sumarse, ninguna donación vence en los próximos 7 días y no hay propuestas de
@@ -82,7 +82,7 @@
     <section th:if="${escenario != 'error'}" class="todo" aria-labelledby="todo-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="todo-titulo">Cómo está todo</h2>
-      <div th:if="${escenario == 'lento'}" class="hueco"></div>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
       <th:block th:if="${conDatos}">
         <p class="todo-fecha">Al 15 de octubre de 2026, 18:30.</p>
         <div class="registros">

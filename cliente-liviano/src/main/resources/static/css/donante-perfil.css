@@ -66,10 +66,6 @@
 }
 
 /* --- Los datos de la cuenta y los avisos (nota de Nico, 2026-11-04) ------------------------------ */
-.perfil .perfil-seccion {
-  margin-top: 2rem;
-}
-
 .perfil-seccion > h2 {
   margin: 0 0 0.25rem;
 }
@@ -117,68 +113,11 @@
   }
 }
 
-/* --- Las pestañas (A/B layout:perfil, 2026-11-04, usuario) -----------------------------------------
-   "Cómo te ven", "Datos de la cuenta" y "Avisos", como pestañas de carpeta sobre la lámina; se ve una
-   sección por vez (la primera al entrar). Cada pestaña es un enlace a su sección; Términos y
-   privacidad, siempre debajo. */
-.perfil-pestanas {
-  display: flex;
-  gap: 0.25rem;
-  margin: 0 0 -2px;
-  overflow-x: auto;
-}
-
-.perfil-pestanas a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 3rem;
-  padding: 0 1rem;
-  border: 2px solid var(--color-tinta);
-  border-bottom: 0;
-  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-/* La pestaña de la sección que se ve: del color de la lámina, pegada a ella. */
-.perfil:has(#como-te-ven:target) .perfil-pestanas a[href="#como-te-ven"],
-.perfil:has(#datos:target) .perfil-pestanas a[href="#datos"],
-.perfil:has(#como-te-avisamos:target) .perfil-pestanas a[href="#como-te-avisamos"],
-.perfil:not(:has(.perfil-panel:target)) .perfil-pestanas a[href="#como-te-ven"] {
-  position: relative;
-  z-index: 1;
-  background: var(--color-papel);
-  text-decoration: underline;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 0.4em;
-}
-
-.perfil .perfil-panel {
-  display: none;
-  margin-top: 0;
+/* --- Las pestañas ---------------------------------------------------------------------------------
+   Son el bloque `.pestanas` (componentes/pestanas.css): "Cómo te ven", "Datos de la cuenta" y "Avisos",
+   como pestañas de carpeta sobre la lámina. Acá solo cómo se pega la lámina (el formulario) a su
+   pestaña: sin la esquina de arriba a la izquierda, que es la de la pestaña (el aire de arriba ya
+   lo quita `.perfil .formulario`). */
+.perfil .pestanas-panel > .formulario {
   border-top-left-radius: 0;
-}
-
-/* En reglas separadas: sin :has() (navegadores viejos) se descartaría también la de :target. */
-.perfil .perfil-panel:target {
-  display: grid;
-}
-
-.perfil:not(:has(.perfil-panel:target)) #como-te-ven {
-  display: grid;
-}
-
-.perfil-panel:target {
-  scroll-margin-top: 8rem;
-}
-
-/* La pestaña elegida se imprime al abrirse: aparece con la segunda tinta corrida que calza (como la
-   portada). Sin movimiento si la persona lo pidió así. */
-@media (prefers-reduced-motion: no-preference) {
-  .perfil .perfil-panel:target {
-    animation: var(--movimiento-animacion-registro-fino);
-  }
 }

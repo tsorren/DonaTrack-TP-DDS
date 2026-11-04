@@ -175,9 +175,11 @@
           <p class="obligatorios">Los dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">
             <legend><h2>Las pruebas</h2></legend>
-            <div class="campo campo--fotos" th:data-estado="${conError} ? 'error'">
+            <!--/* La zona de subida (B2-10): el control nativo es lo esencial; Alpine (subidaFotos) suma la vista
+                   previa de lo elegido, con un botón para quitar cada foto. */-->
+            <div class="campo subida" th:data-estado="${conError} ? 'error'" x-data="subidaFotos">
               <label for="fotos">
-                <svg class="carga-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <svg class="subida-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
                   <path d="M6 16H14L18 10H30L34 16H42V38H6Z"/><circle cx="24" cy="26" r="7"/>
                 </svg>
                 <span>Fotos de lo que llegó</span>
@@ -188,7 +190,20 @@
                  th:text="|${e.foto}.jpg pesa más de 5 MB. Probá con una más liviana. Por seguridad, el navegador no guarda las fotos: volvé a elegirlas.|">lentejas-1.jpg
                 pesa más de 5 MB.</p>
               <input id="fotos" name="fotos" type="file" accept="image/*" multiple required
+                     x-ref="entrada" x-on:change="elegir"
                      th:attr="aria-describedby=${conError} ? 'fotos-error fotos-ayuda' : 'fotos-ayuda',aria-invalid=${conError} ? 'true' : null">
+              <span class="subida-aviso" role="status" x-text="resumen"></span>
+              <p class="subida-resumen" hidden x-bind:hidden="sinFotos" x-text="resumen"></p>
+              <ul class="subida-previas" role="list" hidden x-bind:hidden="sinFotos">
+                <template x-for="foto in fotos" x-bind:key="foto.id">
+                  <li class="subida-previa" x-bind:data-id="foto.id">
+                    <img x-bind:src="foto.url" x-bind:alt="foto.alt" width="112" height="112">
+                    <small class="subida-nombre" x-text="foto.nombre"></small>
+                    <button type="button" class="boton" data-tamano="chico" x-bind:aria-label="foto.quitar"
+                            x-on:click="quitar">Quitar</button>
+                  </li>
+                </template>
+              </ul>
             </div>
             <p class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver tus fotos y la fecha de hoy. Una foto puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada. El remito no se publica.|">Distribuidora
               Ejemplo SA va a ver tus fotos y la fecha de hoy.</p>

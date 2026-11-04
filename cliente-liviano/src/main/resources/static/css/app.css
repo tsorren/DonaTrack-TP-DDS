@@ -14,6 +14,11 @@
 @import url("componentes/muestra.css") layer(bloques);
 @import url("componentes/boton.css") layer(bloques);
 @import url("componentes/campo.css") layer(bloques);
+@import url("componentes/subida.css") layer(bloques);
+@import url("componentes/pestanas.css") layer(bloques);
+@import url("componentes/novedades.css") layer(bloques);
+@import url("componentes/cabecera-entidad.css") layer(bloques);
+@import url("componentes/mapa.css") layer(bloques);
 @import url("componentes/sello.css") layer(bloques);
 @import url("componentes/aviso.css") layer(bloques);
 @import url("componentes/carga.css") layer(bloques);
