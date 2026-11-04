@@ -142,5 +142,5 @@ tamaño:
 | 2026-11-04 | — (línea de base) | 212 | — |
 | 2026-11-04 | B0-01 a B0-10 (fase 0 completa) | 211 (el cerco mide sin comentarios, textos ni urls: 211; los 212 de la línea de base incluían una palabra de un comentario) | 2e7ace16 (rama `E6_raices`) |
 | 2026-11-04 | B1-01 a B1-05 (fase 1 completa) | 211 (medido después del cambio; la fase no toca selectores) | c0884659 (rama `E6_raices`) |
-| 2026-11-04 | B2-01 a B2-03 (tanda 1 de la fase 2: botón, campo y sello) | 197 (medido después del cambio; era 211) | Sin commit (rama `E6_raices`) |
-| 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | Sin commit (rama `E6_raices`) |
+| 2026-11-04 | B2-01 a B2-03 (tanda 1 de la fase 2: botón, campo y sello) | 197 (medido después del cambio; era 211) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
+| 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
