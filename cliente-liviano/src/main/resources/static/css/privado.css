@@ -78,6 +78,14 @@
   display: none;
 }
 
+/* Con 5 celdas, a 360 px cada una mide 72 px y "Donaciones" no entraba: en esa barra la letra va
+   angosta, el mismo tamaño (revision-ui del cierre del pulido, 2026-11-03). Con :where, pesa lo
+   mismo que ".armazon-menu a" y la tableta lo pisa. */
+.armazon-menu :where(ul:has(.armazon-mas) > li) > a {
+  padding-inline: 0.125rem;
+  font-stretch: 75%;
+}
+
 .armazon-mas > button {
   display: flex;
   align-items: center;

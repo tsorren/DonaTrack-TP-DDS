@@ -36,9 +36,10 @@
       <li th:if="${#lists.size(navegacion) > 5}" class="armazon-mas">
         <button type="button" popovertarget="menu-completo"><span aria-hidden="true">+</span>
           Más</button>
-        <div id="menu-completo" class="menu-completo" popover>
+        <div id="menu-completo" class="menu-completo" popover role="dialog"
+             aria-labelledby="menu-completo-titulo">
           <div class="menu-completo-cabecera">
-            <p class="menu-completo-titulo">Secciones</p>
+            <p id="menu-completo-titulo" class="menu-completo-titulo">Secciones</p>
             <button class="boton boton--secundario" type="button" popovertarget="menu-completo"
                     popovertargetaction="hide">Cerrar</button>
           </div>

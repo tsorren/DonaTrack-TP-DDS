@@ -34,6 +34,9 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
     muestra 4 y "+ Más", que abre una hoja desde abajo con las 7 en filas, Cerrar arriba y la
     página oscurecida detrás. Es una ventana del navegador (popover): anda sin JavaScript y se
     cierra con Esc o tocando afuera. "Más" queda marcado si la sección actual no entra en la barra.
+    Arreglo de la revisión de cierre: a 360 px "Entidades" y "Donaciones" se pisaban en celdas de
+    72 px; en esa barra la letra va angosta (`font-stretch` 75 %), del mismo tamaño, y la hoja
+    lleva el nombre "Secciones" para el lector de pantalla.
   - **Menú del admin en pantalla grande:** va entero en una fila propia de la cabecera. Antes se
     partía al lado de la cuenta y dejaba un hueco.
   - **Contacto y Términos y privacidad** llevan el menú público, sin sección marcada. Se cambia la
@@ -55,7 +58,8 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 - **Quién decidió:** usuario (D propia, F entre E, F y G, y el menú en Contacto y Términos,
   2026-11-03).
 - **Evidencia:** [`evidencia/raices/pulido-publicas/`](evidencia/raices/pulido-publicas/), láminas
-  del primer A/B (A, B y C), de B contra D y de E, F y G.
+  del primer A/B (A, B y C), de B contra D y de E, F y G; la barra arreglada, en
+  `admin-inicio-360x640.jpg`.
 
 ### 2026-11-03 · layout:entidad (Raíces) · Pulido del sitio de la entidad: Notificaciones y el menú en un renglón
 
