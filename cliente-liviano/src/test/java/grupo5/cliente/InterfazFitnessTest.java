@@ -288,6 +288,13 @@ class InterfazFitnessTest {
   private static final Pattern DE_PANTALLA_PROHIBIDO =
       Pattern.compile(
           "(?<![\\w-])(?:color|background(?:-color|-image)?|font(?:-family)?)\\s*:|@keyframes");
+  private static final Pattern SOLO_DE_MOVIMIENTO_CSS =
+      Pattern.compile(
+          "@keyframes|--movimiento-(?:duracion|curva)-[a-z]+|--movimiento-retraso-(?!ninguno)[a-z]+");
+
+  /** Hojas que pueden declarar @keyframes y usar duraciones y curvas: la base y las primitivas. */
+  private static final Set<String> HOJAS_DE_MOVIMIENTO = Set.of("app.css", "movimiento.css");
+
   private static final Pattern COMENTARIO_THYMELEAF =
       Pattern.compile("<!--/\\*.*?\\*/-->", Pattern.DOTALL);
   private static final Pattern CLASE_ESTATICA = Pattern.compile("(?<![\\w:-])class=\"([^\"]*)\"");
@@ -399,6 +406,23 @@ class InterfazFitnessTest {
         .isEmpty();
   }
 
+  /** Fase 1 del backlog: los @keyframes y los tiempos viven solo en movimiento.css. */
+  @Test
+  void keyframesYTiemposDeMovimientoSoloEnMovimientoCss() {
+    List<String> fallas = new ArrayList<>();
+    for (Path css : cssFueraDeTokens()) {
+      boolean deLaCarpetaRaiz = css.getParent().equals(CSS);
+      if (deLaCarpetaRaiz && !HOJAS_DE_MOVIMIENTO.contains(css.getFileName().toString())) {
+        fallas.addAll(
+            movimientoFueraDeSuHoja(leer(css)).stream().map(falla -> css + ": " + falla).toList());
+      }
+    }
+    assertThat(fallas)
+        .as(
+            "Una animación nueva se agrega a movimiento.css y se referencia con --movimiento-animacion-*")
+        .isEmpty();
+  }
+
   @Test
   void alpineNoHaceLoQueElAdrProhibe() {
     String codigo =
@@ -442,6 +466,20 @@ class InterfazFitnessTest {
         .isEmpty();
     assertThat(movimientoLiteral("a { min-height: 100svh; margin: 0.5rem; /* 2s */ }")).isEmpty();
 
+    assertThat(movimientoFueraDeSuHoja("@keyframes a { from { opacity: 0 } }")).hasSize(1);
+    assertThat(
+            movimientoFueraDeSuHoja("a { transition: opacity var(--movimiento-duracion-corta); }"))
+        .hasSize(1);
+    assertThat(movimientoFueraDeSuHoja("a { animation: x var(--movimiento-curva-base); }"))
+        .hasSize(1);
+    assertThat(movimientoFueraDeSuHoja("a { animation-delay: var(--movimiento-retraso-sello); }"))
+        .hasSize(1);
+    assertThat(
+            movimientoFueraDeSuHoja(
+                "a { animation: var(--movimiento-animacion-registro); animation-delay:"
+                    + " var(--movimiento-retraso-ninguno); /* @keyframes */ }"))
+        .isEmpty();
+
     assertThat(declaracionesProhibidasEnPantalla(".x { color: red; }")).hasSize(1);
     assertThat(declaracionesProhibidasEnPantalla("@keyframes a { from { opacity: 0 } }"))
         .hasSize(1);
@@ -474,6 +512,17 @@ class InterfazFitnessTest {
     DURACION.matcher(limpio).results().forEach(m -> fallas.add("duración literal " + m.group()));
     CURVA.matcher(limpio).results().forEach(m -> fallas.add("curva literal " + m.group()));
     return fallas;
+  }
+
+  /**
+   * @keyframes, duraciones y curvas de movimiento escritos fuera de movimiento.css y app.css.
+   */
+  static List<String> movimientoFueraDeSuHoja(String css) {
+    return SOLO_DE_MOVIMIENTO_CSS
+        .matcher(sinComentariosCss(css))
+        .results()
+        .map(java.util.regex.MatchResult::group)
+        .toList();
   }
 
   /** Clases que aparecen una sola vez entre todas las hojas, sin comentarios, urls ni textos. */

@@ -393,29 +393,11 @@ main .etiqueta-titulo {
    movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .confirmada--recien .ciclo-trazo {
-    animation: ciclo-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
+    animation: var(--movimiento-animacion-recorta);
   }
 
   .confirmada--recien .ciclo-entidad {
-    animation: ciclo-imprime var(--movimiento-duracion-media) var(--movimiento-curva-salida) var(--movimiento-retraso-sello) both;
-  }
-}
-
-/* El recorte se pasa 40 px de la caja del trazo para no comerse su punta redonda. */
-@keyframes ciclo-traza {
-  from {
-    clip-path: inset(-40px 100% -40px -40px);
-  }
-
-  to {
-    clip-path: inset(-40px);
-  }
-}
-
-@keyframes ciclo-imprime {
-  from {
-    opacity: 0;
-    scale: 1.4;
+    animation: var(--movimiento-animacion-imprime);
   }
 }
 

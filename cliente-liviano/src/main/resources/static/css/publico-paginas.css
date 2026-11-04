@@ -152,24 +152,11 @@
 @media (prefers-reduced-motion: no-preference) {
   .lamina-dibujo :is(.dib-raiz, .dib-raicilla) {
     stroke-dasharray: 1;
-    animation: lamina-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
+    animation: var(--movimiento-animacion-traza);
   }
 
   .lamina-dibujo g:last-child {
-    animation: lamina-aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-sello) both;
-  }
-}
-
-@keyframes lamina-traza {
-  from {
-    stroke-dashoffset: 1;
-  }
-}
-
-@keyframes lamina-aparece {
-  from {
-    opacity: 0;
-    translate: 0 -6px;
+    animation: var(--movimiento-animacion-baja);
   }
 }
 

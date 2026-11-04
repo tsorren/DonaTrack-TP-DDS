@@ -118,6 +118,29 @@
         media, larga, trazo y ambiente), las esperas <code>--movimiento-retraso-*</code>, las curvas
         <code>--movimiento-curva-*</code> (entrada, enfasis, salida, base y ambiente) y las distancias
         <code>--movimiento-distancia-*</code> (corta, media y larga). Un movimiento nuevo los usa; no escribe un valor.</p>
+      <h3 id="animaciones-con-nombre">Animaciones con nombre</h3>
+      <p data-tono="suave">En <code>movimiento.css</code>. Una hoja de pantalla las pide completas, por ejemplo
+        <code>animation: var(--movimiento-animacion-registro)</code> o <code>transition: var(--movimiento-transicion-atenua)</code>; no
+        escribe <code>@keyframes</code>, duraciones ni curvas. Con «reducir movimiento» no existen y el elemento
+        no se anima.</p>
+      <p data-tono="suave">Cada nombre de la lista lleva el prefijo <code>--movimiento-animacion-</code>, salvo
+        <code>--movimiento-transicion-atenua</code> y los dos <code>@keyframes</code> del final.</p>
+      <ul class="pila" data-espacio="2">
+        <li><code>aparece</code>: se muestra con un fundido. Sin espera.</li>
+        <li><code>aparece-cierre</code>: fundido al final de una coreografía. Espera de cierre.</li>
+        <li><code>registro</code>: se imprime, con la segunda tinta corrida que calza. Espera de entrada.</li>
+        <li><code>registro-fino</code>: lo mismo, con un corrimiento más chico (el panel de una pestaña). Sin espera.</li>
+        <li><code>traza</code>: dibuja un trazo SVG con <code>pathLength="1"</code>. Espera de entrada.</li>
+        <li><code>traza-raiz</code>: dibuja un trazo SVG después del brote. Espera de trazo.</li>
+        <li><code>recorta</code>: revela un trazo de izquierda a derecha. Espera de entrada.</li>
+        <li><code>baja</code>: aparece bajando un poco desde arriba. Espera de sello.</li>
+        <li><code>imprime</code>: un sello aparece achicándose, como al imprimirse. Espera de sello.</li>
+        <li><code>hoja-sube</code>: una hoja (el menú completo) sube desde abajo. Sin espera.</li>
+        <li><code>viento</code> y <code>viento-fruto</code>: las hojas y los frutos se mecen en ciclo, sin fin. Espera de ambiente.</li>
+        <li><code>--movimiento-transicion-atenua</code>: la opacidad cambia con suavidad al pasar o enfocar.</li>
+        <li><code>mov-crece-alto</code>: el tronco crece de arriba; va con <code>animation-timeline</code>.</li>
+        <li><code>mov-asiento</code>: un asiento aparece subiendo al bajar; va con <code>animation-timeline</code>.</li>
+      </ul>
     </section>
   </div>
 </th:block>

@@ -11,9 +11,33 @@
    crece    se muestra creciendo desde un poco más chico.
    traza    se dibuja un trazo SVG (el path lleva pathLength="1").
 
-   data-retraso="entrada", "trazo", "sello" o "cierre" espera antes de empezar (coreografías). */
+   data-retraso="entrada", "trazo", "sello" o "cierre" espera antes de empezar (coreografías).
+
+   Animaciones con nombre (fase 1 del backlog): las de una pantalla o una identidad, que no se piden
+   con data-movimiento sino que la hoja de pantalla referencia, completas, con una custom property:
+   animation: var(--movimiento-animacion-registro) o transition: var(--movimiento-transicion-atenua). Cada una junta
+   @keyframes, duración, curva y espera (siempre de los tokens --movimiento-*). Las custom properties
+   existen solo con movimiento permitido: con "reducir movimiento" la declaración queda sin valor y
+   el elemento no se anima. Una animación nueva se agrega acá y en el catálogo, no en una hoja de
+   pantalla. */
 
 @media (prefers-reduced-motion: no-preference) {
+  :root {
+    --movimiento-animacion-aparece: mov-aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) both;
+    --movimiento-animacion-aparece-cierre: mov-aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-cierre) both;
+    --movimiento-animacion-registro: mov-registro var(--movimiento-duracion-larga) var(--movimiento-curva-entrada) var(--movimiento-retraso-entrada) both;
+    --movimiento-animacion-registro-fino: mov-registro-fino var(--movimiento-duracion-media) var(--movimiento-curva-entrada) both;
+    --movimiento-animacion-traza: mov-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
+    --movimiento-animacion-traza-raiz: mov-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-trazo) both;
+    --movimiento-animacion-recorta: mov-recorta var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
+    --movimiento-animacion-baja: mov-baja var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-sello) both;
+    --movimiento-animacion-imprime: mov-imprime var(--movimiento-duracion-media) var(--movimiento-curva-salida) var(--movimiento-retraso-sello) both;
+    --movimiento-animacion-hoja-sube: mov-hoja-sube var(--movimiento-duracion-corta) var(--movimiento-curva-salida);
+    --movimiento-animacion-viento: mov-viento var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
+    --movimiento-animacion-viento-fruto: mov-viento-fruto var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
+    --movimiento-transicion-atenua: opacity var(--movimiento-duracion-corta);
+  }
+
   [data-movimiento] {
     animation-duration: var(--movimiento-duracion-media);
     animation-timing-function: var(--movimiento-curva-entrada);
@@ -92,6 +116,111 @@
   @keyframes mov-traza {
     from {
       stroke-dashoffset: 1;
+    }
+  }
+
+  /* Se imprime: aparece con la segunda tinta corrida que calza (la portada y la pestaña del perfil). */
+  @keyframes mov-registro {
+    from {
+      opacity: 0;
+      translate: 7px -6px;
+    }
+  }
+
+  @keyframes mov-registro-fino {
+    from {
+      opacity: 0;
+      translate: 4px -4px;
+    }
+  }
+
+  @keyframes mov-baja {
+    from {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+  }
+
+  @keyframes mov-imprime {
+    from {
+      opacity: 0;
+      scale: 1.4;
+    }
+  }
+
+  /* El recorte se pasa 40 px de la caja del trazo para no comerse su punta redonda. */
+  @keyframes mov-recorta {
+    from {
+      clip-path: inset(-40px 100% -40px -40px);
+    }
+
+    to {
+      clip-path: inset(-40px);
+    }
+  }
+
+  @keyframes mov-hoja-sube {
+    from {
+      translate: 0 100%;
+    }
+  }
+
+  /* Con la línea de tiempo del scroll: el tronco crece de arriba y los asientos aparecen al bajar. */
+  @keyframes mov-crece-alto {
+    from {
+      scale: 1 0;
+    }
+  }
+
+  @keyframes mov-asiento {
+    from {
+      opacity: 0;
+      translate: 0 1.5rem;
+    }
+  }
+
+  /* La ráfaga ocupa el primer octavo del ciclo; el resto, quieto. */
+  @keyframes mov-viento {
+    0%,
+    13%,
+    100% {
+      rotate: 0deg;
+    }
+
+    3% {
+      rotate: 7deg;
+    }
+
+    6% {
+      rotate: -4deg;
+    }
+
+    9% {
+      rotate: 3deg;
+    }
+
+    11% {
+      rotate: -1deg;
+    }
+  }
+
+  @keyframes mov-viento-fruto {
+    0%,
+    13%,
+    100% {
+      rotate: 0deg;
+    }
+
+    4% {
+      rotate: -5deg;
+    }
+
+    8% {
+      rotate: 3deg;
+    }
+
+    11% {
+      rotate: -1deg;
     }
   }
 }

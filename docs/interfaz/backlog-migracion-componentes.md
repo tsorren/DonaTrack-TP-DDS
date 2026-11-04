@@ -44,13 +44,31 @@
 
 ## Fase 1 — Movimiento que hoy está suelto
 
+> Cerrada el 2026-11-04. Notas de lo hecho: los 13 `@keyframes` de las 5 hojas pasaron a
+> `movimiento.css` como 10 (`mov-*`): `aparece`, `traza` y `lamina-traza` eran iguales a las
+> primitivas `mov-aparece` y `mov-traza` y se reusaron. Cada animación se declaró **completa**
+> (`@keyframes`, duración, curva y espera, solo con tokens) como una custom property
+> `--movimiento-animacion-*` (y `--movimiento-transicion-atenua`) de `movimiento.css`; la hoja de
+> pantalla la pide con `animation: var(--movimiento-animacion-registro)` y no declara `@keyframes`,
+> duraciones, curvas ni esperas. Se eligió ese camino y no `data-movimiento` en las plantillas
+> porque las clases animadas (`.raiz`, `.fruto`, `.etiqueta`) las comparten varias pantallas y el
+> cambio tocaba unos 40 elementos SVG de 10 plantillas. Las custom properties solo existen con
+> movimiento permitido: "reducir movimiento" quedó resuelto adentro (el bloque `reduce` de
+> `.linea` en `donante-seguimiento.css` quedó redundante). Quedan en la portada dos
+> `animation-delay: var(--movimiento-retraso-ninguno)` (las reglas de la escena con línea de tiempo
+> del scroll anulan así la espera de la animación del tiempo): es un reset con un token, no una
+> duración. Nueva regla del cerco en `InterfazFitnessTest`: `@keyframes`, `--movimiento-duracion-*` y
+> `--movimiento-curva-*` y las esperas (salvo `retraso-ninguno`) no se escriben en ninguna hoja
+> de la carpeta `css/` salvo `movimiento.css`, `app.css` y `tokens.css`. No cambió ninguna clase: el tope de
+> clases de un solo uso sigue en 211, el valor medido.
+
 | ID | Hoja | Contenido a mover | Estado |
 |---|---|---|---|
-| B1-01 | `publico-portada.css` | 7 `@keyframes` y 16 duraciones (viento, traza, crece…) a `movimiento.css` y tokens | Pendiente |
-| B1-02 | `publico-paginas.css` | 2 `@keyframes` y 4 duraciones | Pendiente |
-| B1-03 | `entidad-seguimiento-confirmar.css` | 2 `@keyframes` y 4 duraciones | Pendiente |
-| B1-04 | `privado.css`, `donante-perfil.css` | 1 `@keyframes` cada una y sus duraciones | Pendiente |
-| B1-05 | `publico-mapa.css`, `donante-seguimiento.css` | 1 duración cada una | Pendiente |
+| B1-01 | `publico-portada.css` | 7 `@keyframes` y 16 duraciones (viento, traza, crece…) a `movimiento.css` y tokens | Hecho (2026-11-04) |
+| B1-02 | `publico-paginas.css` | 2 `@keyframes` y 4 duraciones | Hecho (2026-11-04) |
+| B1-03 | `entidad-seguimiento-confirmar.css` | 2 `@keyframes` y 4 duraciones | Hecho (2026-11-04) |
+| B1-04 | `privado.css`, `donante-perfil.css` | 1 `@keyframes` cada una y sus duraciones | Hecho (2026-11-04) |
+| B1-05 | `publico-mapa.css`, `donante-seguimiento.css` | 1 duración cada una | Hecho (2026-11-04) |
 
 ## Fase 2 — Componentes
 
@@ -93,3 +111,4 @@ tamaño:
 |---|---|:-:|---|
 | 2026-11-04 | — (línea de base) | 212 | — |
 | 2026-11-04 | B0-01 a B0-10 (fase 0 completa) | 211 (el cerco mide sin comentarios, textos ni urls: 211; los 212 de la línea de base incluían una palabra de un comentario) | 2e7ace16 (rama `E6_raices`) |
+| 2026-11-04 | B1-01 a B1-05 (fase 1 completa) | 211 (medido después del cambio; la fase no toca selectores) | sin commit (rama `E6_raices`) |

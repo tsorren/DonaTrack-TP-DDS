@@ -179,13 +179,6 @@
    portada). Sin movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .perfil .perfil-panel:target {
-    animation: perfil-registro var(--movimiento-duracion-media) var(--movimiento-curva-entrada) both;
-  }
-}
-
-@keyframes perfil-registro {
-  from {
-    opacity: 0;
-    translate: 4px -4px;
+    animation: var(--movimiento-animacion-registro-fino);
   }
 }

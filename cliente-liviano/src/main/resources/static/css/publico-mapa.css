@@ -156,6 +156,6 @@ figure.mapa-dibujo.reserva {
 
 @media (prefers-reduced-motion: no-preference) {
   .estacion {
-    transition: opacity var(--movimiento-duracion-corta);
+    transition: var(--movimiento-transicion-atenua);
   }
 }

@@ -1428,34 +1428,34 @@ dl.registro-datos > div:nth-child(3) dd::before {
    las raíces de la lámina y la red se trazan desde el brote. Sin movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .ejemplar-sol {
-    animation: aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) both;
+    animation: var(--movimiento-animacion-aparece);
   }
 
   .portada-texto,
   .ejemplar-brote,
   .vineta p {
-    animation: registro var(--movimiento-duracion-larga) var(--movimiento-curva-entrada) var(--movimiento-retraso-entrada) both;
+    animation: var(--movimiento-animacion-registro);
   }
 
   .ejemplar :is(.raiz, .raicilla) {
     stroke-dasharray: 1;
-    animation: traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-trazo) both;
+    animation: var(--movimiento-animacion-traza-raiz);
   }
 
   .red-dibujo .ruta {
-    transition: opacity var(--movimiento-duracion-corta);
+    transition: var(--movimiento-transicion-atenua);
   }
 
   /* La red se traza desde el brote hasta cada etiqueta (ronda de movimiento de A). */
   .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
     stroke-dasharray: 1;
-    animation: traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
+    animation: var(--movimiento-animacion-traza);
   }
 
 
   .punta,
   .llamada {
-    animation: aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-cierre) both;
+    animation: var(--movimiento-animacion-aparece-cierre);
   }
 
   /* Viento en ciclo (A/B de movimiento, review de Sofía, 2026-11-02): después de trazarse, las hojas
@@ -1465,13 +1465,13 @@ dl.registro-datos > div:nth-child(3) dd::before {
   .planta-dibujo .hoja {
     transform-box: view-box;
     transform-origin: 31px 41px;
-    animation: viento var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
+    animation: var(--movimiento-animacion-viento);
   }
 
   .planta-dibujo .fruto {
     transform-box: fill-box;
     transform-origin: 50% 0;
-    animation: viento-fruto var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
+    animation: var(--movimiento-animacion-viento-fruto);
   }
 
   /* La pausa: la casilla cubre el botón entero (el toque es el del botón) y, marcada, el viento se
@@ -1490,100 +1490,23 @@ dl.registro-datos > div:nth-child(3) dd::before {
        celular, cada fila de etiquetas se imprime al entrar y su tramo de tronco crece de arriba.
        Sin línea de tiempo de scroll (Firefox), la red se traza al cargar, como antes. */
     .etiqueta {
-      animation: registro linear both;
+      animation: mov-registro linear both;
       animation-timeline: view();
       animation-range: entry 20% entry 80%;
     }
 
     .etiqueta::after {
       transform-origin: top;
-      animation: crece linear both;
+      animation: mov-crece-alto linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 70%;
     }
 
     .cuaderno .asiento {
-      animation: asiento-aparece linear both;
+      animation: mov-asiento linear both;
       animation-timeline: view();
       animation-range: entry 10% entry 90%;
     }
-  }
-}
-
-/* La ráfaga ocupa el primer octavo del ciclo; el resto, quieto. */
-@keyframes viento {
-  0%,
-  13%,
-  100% {
-    rotate: 0deg;
-  }
-
-  3% {
-    rotate: 7deg;
-  }
-
-  6% {
-    rotate: -4deg;
-  }
-
-  9% {
-    rotate: 3deg;
-  }
-
-  11% {
-    rotate: -1deg;
-  }
-}
-
-@keyframes viento-fruto {
-  0%,
-  13%,
-  100% {
-    rotate: 0deg;
-  }
-
-  4% {
-    rotate: -5deg;
-  }
-
-  8% {
-    rotate: 3deg;
-  }
-
-  11% {
-    rotate: -1deg;
-  }
-}
-
-@keyframes crece {
-  from {
-    scale: 1 0;
-  }
-}
-
-@keyframes asiento-aparece {
-  from {
-    opacity: 0;
-    translate: 0 1.5rem;
-  }
-}
-
-@keyframes aparece {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes registro {
-  from {
-    opacity: 0;
-    translate: 7px -6px;
-  }
-}
-
-@keyframes traza {
-  from {
-    stroke-dashoffset: 1;
   }
 }
 
@@ -1637,7 +1560,7 @@ dl.registro-datos > div:nth-child(3) dd::before {
     .escena .red-dibujo .tronco {
       transform-box: fill-box;
       transform-origin: top;
-      animation: crece linear both;
+      animation: mov-crece-alto linear both;
       animation-timeline: --escena;
       animation-range: contain 0% contain 6%;
     }
@@ -1646,7 +1569,7 @@ dl.registro-datos > div:nth-child(3) dd::before {
        que va en reglas de menos peso (revision-ui, 2026-11-04). */
     .escena .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
       stroke-dasharray: 1;
-      animation-name: traza;
+      animation-name: mov-traza;
       animation-duration: auto;
       animation-delay: var(--movimiento-retraso-ninguno);
       animation-timing-function: linear;
@@ -1655,7 +1578,7 @@ dl.registro-datos > div:nth-child(3) dd::before {
     }
 
     .escena :is(.etiqueta, .red-dibujo .ruta--pendiente) {
-      animation-name: registro;
+      animation-name: mov-registro;
       animation-duration: auto;
       animation-delay: var(--movimiento-retraso-ninguno);
       animation-timing-function: linear;

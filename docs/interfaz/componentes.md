@@ -5,8 +5,9 @@
 > [ADR de interacción, movimiento y componentes](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
 > (`proposed`). La versión visual es `/estilos` (RF-CL-05), con el mismo orden.
 >
-> **Estado (2026-11-04):** fase 0 del [backlog de migración](backlog-migracion-componentes.md)
-> hecha en composición, utilidades, movimiento y la muestra del catálogo. Los componentes de la
+> **Estado (2026-11-04):** fases 0 y 1 del [backlog de migración](backlog-migracion-componentes.md)
+> hechas: composición, utilidades, movimiento (con las animaciones con nombre de las pantallas) y la
+> muestra del catálogo. Los componentes de la
 > fase 2 (botón, campo, sello, aviso, diálogo…) todavía viven en las hojas de pantalla: figuran
 > como heredados (ver abajo). Mientras tanto, su patrón está en
 > [patrones y microcopy](patrones-y-microcopy.md#componentes-y-su-patrón).
@@ -72,8 +73,41 @@ plantilla. Duraciones, curvas y distancias salen de los tokens `--movimiento-*` 
 
 `data-retraso="entrada"`, `"trazo"`, `"sello"` o `"cierre"` hace esperar a la primitiva
 (`--movimiento-retraso-*`), para armar una coreografía. Los `@keyframes` de estas primitivas se
-llaman `mov-*` y viven solo en `movimiento.css`. Las animaciones que hoy están en las hojas de
-pantalla se mueven acá con la fase 1 del backlog.
+llaman `mov-*` y viven solo en `movimiento.css` (el cerco de `InterfazFitnessTest` falla si una
+hoja de la carpeta `css/` que no es `movimiento.css`, `app.css` ni `tokens.css` declara `@keyframes` o
+usa `--movimiento-duracion-*`, `--movimiento-curva-*` o una espera `--movimiento-retraso-*` que no sea
+`retraso-ninguno`).
+
+### Animaciones con nombre
+
+Fase 1 del backlog. Las animaciones de una pantalla o una identidad (la portada, la lámina de contacto,
+el menú completo) no se piden con `data-movimiento`: la hoja de pantalla las referencia completas, con
+una custom property de `movimiento.css`, por ejemplo `animation: var(--movimiento-animacion-registro)` o
+`transition: var(--movimiento-transicion-atenua)`. Cada una junta `@keyframes`, duración, curva y espera, siempre
+de los tokens. Las custom properties existen solo con movimiento permitido: con "reducir movimiento"
+la declaración queda sin valor y el elemento no se anima. Una animación nueva se agrega acá, en
+`movimiento.css` y en `/estilos`.
+
+| Custom property | `@keyframes` | Qué hace | Tokens (duración · curva · espera) |
+|---|---|---|---|
+| `--movimiento-animacion-aparece` | `mov-aparece` | Fundido | media · base · — |
+| `--movimiento-animacion-aparece-cierre` | `mov-aparece` | Fundido al final de una coreografía | media · base · cierre |
+| `--movimiento-animacion-registro` | `mov-registro` | Se imprime: aparece con la segunda tinta corrida (7 px, −6 px) | larga · entrada · entrada |
+| `--movimiento-animacion-registro-fino` | `mov-registro-fino` | Igual, con corrimiento de 4 px (panel de una pestaña) | media · entrada · — |
+| `--movimiento-animacion-traza` | `mov-traza` | Dibuja un trazo SVG con `pathLength="1"` | trazo · enfasis · entrada |
+| `--movimiento-animacion-traza-raiz` | `mov-traza` | Dibuja un trazo después del brote | trazo · enfasis · trazo |
+| `--movimiento-animacion-recorta` | `mov-recorta` | Revela un trazo de izquierda a derecha con `clip-path` | trazo · enfasis · entrada |
+| `--movimiento-animacion-baja` | `mov-baja` | Aparece bajando 6 px desde arriba | media · base · sello |
+| `--movimiento-animacion-imprime` | `mov-imprime` | Un sello aparece desde escala 1,4 | media · salida · sello |
+| `--movimiento-animacion-hoja-sube` | `mov-hoja-sube` | Una hoja (menú completo) sube desde abajo | corta · salida · — |
+| `--movimiento-animacion-viento`, `--movimiento-animacion-viento-fruto` | `mov-viento`, `mov-viento-fruto` | Las hojas y los frutos se mecen en ciclo, sin fin | ambiente · ambiente · ambiente |
+| `--movimiento-transicion-atenua` | — | Transición de opacidad al pasar o enfocar | corta |
+
+`mov-crece-alto` (el tronco crece de arriba) y `mov-asiento` (un asiento aparece subiendo) no son
+custom properties: son `@keyframes` para las líneas de tiempo del scroll
+(`animation: mov-asiento linear both` más `animation-timeline` y `animation-range` en la hoja de
+pantalla, que es disposición). Esas reglas dejan `animation-delay: var(--movimiento-retraso-ninguno)`
+para anular la espera de la animación del tiempo: es un reset, no una duración.
 
 ## Componentes (bloques)
 

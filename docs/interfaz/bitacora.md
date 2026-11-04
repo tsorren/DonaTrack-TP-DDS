@@ -27,6 +27,33 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Fase 1 del backlog de componentes: el movimiento suelto, a `movimiento.css`
+
+- **Decisión:** se implementan B1-01 a B1-05. Los 13 `@keyframes` de siete hojas de pantalla pasan a
+  `movimiento.css` (10 `mov-*`; `aparece`, `traza` y `lamina-traza` se reusan de las primitivas). Cada
+  animación se declara completa (`@keyframes`, duración, curva y espera, solo con tokens) como una
+  custom property `--movimiento-animacion-*` o `--movimiento-transicion-atenua`, y la hoja de pantalla
+  la pide con `animation: var(--movimiento-animacion-registro)`. Las custom properties existen solo con
+  movimiento permitido. El cerco suma una regla: `@keyframes`, `--movimiento-duracion-*`,
+  `--movimiento-curva-*` y las esperas (salvo `retraso-ninguno`) no se escriben en ninguna hoja de la
+  carpeta `css/` salvo `movimiento.css`, `app.css` y `tokens.css`.
+- **Alternativas:** `data-movimiento` en las plantillas (descartada: las clases animadas, como `.raiz`,
+  `.fruto` y `.etiqueta`, las comparten varias pantallas y tocaba unos 40 elementos SVG de 10
+  plantillas, con riesgo de cambio visual); mover los selectores animados a `movimiento.css` (descartada:
+  bajaba el conteo de clases de un solo uso sin migrar nada y llenaba la capa CUBE de clases de
+  pantalla).
+- **Por qué:** cumple la fase 1 (hojas de pantalla sin `@keyframes` ni duraciones) sin tocar plantillas
+  y sin cambio visual; un rediseño del movimiento cambia solo `movimiento.css`.
+- **Costo:** las animaciones de pantalla no se piden con `data-movimiento` sino con una custom property
+  desde la hoja: dos maneras de pedir movimiento (el catálogo las documenta juntas). Quedan en la portada
+  dos `animation-delay: var(--movimiento-retraso-ninguno)`, un reset de las reglas con línea de tiempo del
+  scroll. El tope de clases de un solo uso no baja: sigue en 211 porque la fase no toca selectores.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: implementar la fase 1. El mecanismo de las custom
+  properties lo decidió el agente: queda para que el usuario lo confirme.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34.
+  `-Pvisual` sin cambios en 583 de 588 capturas; las de `/estilos` cambiaron por el contenido nuevo y
+  las de la portada (5) difieren 6 a 27 px en las mismas filas que entre dos corridas del mismo código.
+
 ### 2026-11-04 · stack · Fase 0 del backlog de componentes: base, catálogo y cerco
 
 - **Decisión:** se implementan los diez ítems de la fase 0 (B0-01 a B0-10): tokens de movimiento

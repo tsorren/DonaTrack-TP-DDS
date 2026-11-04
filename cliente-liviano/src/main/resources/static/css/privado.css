@@ -134,13 +134,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .menu-completo:popover-open {
-    animation: hoja-sube var(--movimiento-duracion-corta) var(--movimiento-curva-salida);
-  }
-}
-
-@keyframes hoja-sube {
-  from {
-    translate: 0 100%;
+    animation: var(--movimiento-animacion-hoja-sube);
   }
 }
 
