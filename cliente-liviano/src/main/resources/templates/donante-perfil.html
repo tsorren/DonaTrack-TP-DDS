@@ -19,7 +19,8 @@
 
 <th:block th:fragment="hoja(enviado)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             guardado=${!enviado ? '' : (param.mostrar != null ? 'visible' : 'oculto')},
+             seccion=${enviado and param.seccion != null ? param.seccion[0] : ''},
+             guardado=${!enviado or seccion != '' ? '' : (param.mostrar != null ? 'visible' : 'oculto')},
              oculto=${guardado == 'oculto' or (guardado == '' and escenario == 'oculto')},
              nombre=${cuenta.nombre},
              anonimo='Empresa donante · Sostenedor'">
@@ -34,6 +35,10 @@
     <p th:if="${guardado == 'visible'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus
        th:text="|Listo. Las entidades ven tu nombre: «${nombre}».|">Listo. Las entidades ven tu nombre:
       «Distribuidora Ejemplo SA».</p>
+    <p th:if="${seccion == 'datos'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus>Listo.
+      Guardamos los datos de tu cuenta.</p>
+    <p th:if="${seccion == 'avisos'}" class="aviso aviso--hecho" role="status" tabindex="-1" autofocus>Listo.
+      Guardamos cómo te avisamos.</p>
     <section th:if="${escenario == 'error'}" class="aviso aviso--error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos guardar tu elección.</h2>
@@ -49,8 +54,17 @@
       <p>Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó elegido.</p>
     </section>
 
-    <form action="/donante-perfil-guardado"
-          th:action="@{/donante-perfil-guardado}" method="post" class="formulario"
+    <!--/* Las secciones como pestañas de la misma pantalla (A/B layout:perfil, 2026-11-04, usuario): cada
+           pestaña es un enlace a su sección, sin JavaScript; se ve una por vez (la primera al entrar) y al
+           guardar vuelve a la misma. */-->
+    <nav class="perfil-pestanas" aria-label="Secciones de tu perfil">
+      <a href="#como-te-ven">Cómo te ven</a>
+      <a href="#datos">Datos de la cuenta</a>
+      <a href="#como-te-avisamos">Avisos</a>
+    </nav>
+
+    <form id="como-te-ven" action="/donante-perfil-guardado"
+          th:action="@{/donante-perfil-guardado}" method="post" class="formulario perfil-panel"
           th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <fieldset class="opciones" aria-describedby="nombre-ayuda nombre-nota">
         <legend><h2>Cómo te ven las entidades</h2></legend>
@@ -66,6 +80,120 @@
       <button class="boton boton--principal" type="submit" th:disabled="${escenario == 'lento'}"
               th:text="${escenario == 'lento'} ? 'Guardando…' : 'Guardar mi elección'">Guardar mi
         elección</button>
+    </form>
+
+    <!--/* Los datos de la cuenta y los avisos (nota de Nico, 2026-11-04: "faltan más campos"): los de la
+           persona jurídica y sus medios de contacto en donaciones-service (JuridicaInputDTO,
+           MedioDeContactoInputDTO). ponytail: maqueta con datos de ejemplo; guardar no cambia nada
+           hasta que haya backend (RI-AUTH-02, HB-11; docs/interfaz/flujos/raices-ab-huecos-backend.md). */-->
+    <form id="datos" action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#datos(seccion='datos')}"
+          method="post" class="formulario perfil-seccion perfil-panel" aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo">Datos de tu cuenta</h2>
+      <p class="obligatorios">Todos los datos son obligatorios, salvo los que dicen «opcional».</p>
+      <div class="campo">
+        <label for="razon-social">Razón social</label>
+        <input id="razon-social" name="razonSocial" type="text" required autocomplete="organization"
+               th:value="${nombre}" value="Distribuidora Ejemplo SA">
+      </div>
+      <div class="perfil-par">
+        <div class="campo">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo" required>
+            <option selected>Empresa</option>
+            <option>ONG</option>
+            <option>Institución</option>
+            <option>Organismo del Estado</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="rubro">Rubro <small>(opcional)</small></label>
+          <input id="rubro" name="rubro" type="text" value="Distribución de alimentos">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="cuit">CUIT</label>
+        <small id="cuit-ayuda">No se cambia desde acá. Si está mal,
+          <a href="/publico-contacto" th:href="@{/publico-contacto(volver='/donante-perfil')}">escribinos</a>.</small>
+        <input id="cuit" name="cuit" type="text" value="30-00000000-0" readonly aria-describedby="cuit-ayuda">
+      </div>
+      <fieldset class="perfil-grupo">
+        <legend>Dirección</legend>
+        <div class="perfil-par perfil-par--calle">
+          <div class="campo">
+            <label for="calle">Calle</label>
+            <input id="calle" name="calle" type="text" required autocomplete="address-line1"
+                   value="Avenida Ejemplo">
+          </div>
+          <div class="campo">
+            <label for="altura">Número <small>(opcional)</small></label>
+            <input id="altura" name="altura" type="text" inputmode="numeric" value="1234">
+          </div>
+        </div>
+        <div class="perfil-par">
+          <div class="campo">
+            <label for="piso">Piso y departamento <small>(opcional)</small></label>
+            <input id="piso" name="piso" type="text" value="3.º B">
+          </div>
+          <div class="campo">
+            <label for="codigo-postal">Código postal <small>(opcional)</small></label>
+            <input id="codigo-postal" name="codigoPostal" type="text" autocomplete="postal-code"
+                   value="C1000">
+          </div>
+        </div>
+        <div class="perfil-par">
+          <div class="campo">
+            <label for="localidad">Localidad</label>
+            <input id="localidad" name="localidad" type="text" required autocomplete="address-level2"
+                   value="Ciudad de Buenos Aires">
+          </div>
+          <div class="campo">
+            <label for="provincia">Provincia</label>
+            <input id="provincia" name="provincia" type="text" required autocomplete="address-level1"
+                   value="Ciudad de Buenos Aires">
+          </div>
+        </div>
+      </fieldset>
+      <button class="boton boton--principal" type="submit">Guardar los datos</button>
+    </form>
+
+    <form id="como-te-avisamos" action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#como-te-avisamos(seccion='avisos')}"
+          method="post" class="formulario perfil-seccion perfil-panel" aria-labelledby="avisos-titulo">
+      <h2 id="avisos-titulo">Cómo te avisamos</h2>
+      <p>Te avisamos cuando tu donación se asigna a una entidad, cuando sale y cuando la entidad
+        confirma la entrega con la foto. Los avisos también quedan en
+        <a href="/donante-notificaciones" th:href="@{/donante-notificaciones}">Notificaciones</a>.</p>
+      <div class="campo">
+        <label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" required autocomplete="email"
+               value="contacto@distribuidora-ejemplo.test">
+      </div>
+      <div class="perfil-par">
+        <div class="campo">
+          <label for="whatsapp">WhatsApp <small>(opcional)</small></label>
+          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="11 5555-0100">
+        </div>
+        <div class="campo">
+          <label for="telefono">Teléfono <small>(opcional)</small></label>
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel">
+        </div>
+      </div>
+      <fieldset class="opciones">
+        <legend>Por dónde te avisamos</legend>
+        <label><input type="radio" name="medio" value="correo" checked>
+          <span>Por correo</span></label>
+        <label><input type="radio" name="medio" value="whatsapp">
+          <span>Por WhatsApp</span></label>
+        <label><input type="radio" name="medio" value="telefono">
+          <span>Por mensaje de texto al teléfono</span></label>
+      </fieldset>
+      <fieldset class="opciones">
+        <legend>Qué te avisamos</legend>
+        <label><input type="radio" name="cuales" value="todos" checked>
+          <span>Todo: cuando se asigna, cuando sale y cuando llega</span></label>
+        <label><input type="radio" name="cuales" value="llegadas">
+          <span>Solo cuando la entidad confirma que llegó</span></label>
+      </fieldset>
+      <button class="boton boton--principal" type="submit">Guardar los avisos</button>
     </form>
 
     <section class="perfil-legales" aria-labelledby="legales-titulo">

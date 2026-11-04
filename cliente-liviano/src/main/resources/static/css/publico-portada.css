@@ -208,6 +208,16 @@
   position: relative;
 }
 
+/* El rótulo va aparte de la escena (planta y red), que en la computadora queda fija al bajar. */
+.escena .superficie {
+  padding-top: 0;
+}
+
+/* Las cifras siguen en la tierra, sin otra línea de tierra encima. */
+.suelo--registro {
+  border-top: 0;
+}
+
 .superficie .sol {
   position: absolute;
   bottom: 0;
@@ -1476,6 +1486,22 @@ dl.registro-datos > div:nth-child(3) dd::before {
 
   /* Las entregas del mes aparecen de a una al bajar. Sin línea de tiempo de scroll (Firefox), quietas. */
   @supports (animation-timeline: view()) {
+    /* La red al bajar (A/B de movimiento de la red, C con la escena entera, 2026-11-04). En el
+       celular, cada fila de etiquetas se imprime al entrar y su tramo de tronco crece de arriba.
+       Sin línea de tiempo de scroll (Firefox), la red se traza al cargar, como antes. */
+    .etiqueta {
+      animation: registro linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 80%;
+    }
+
+    .etiqueta::after {
+      transform-origin: top;
+      animation: crece linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+
     .cuaderno .asiento {
       animation: asiento-aparece linear both;
       animation-timeline: view();
@@ -1529,6 +1555,12 @@ dl.registro-datos > div:nth-child(3) dd::before {
   }
 }
 
+@keyframes crece {
+  from {
+    scale: 1 0;
+  }
+}
+
 @keyframes asiento-aparece {
   from {
     opacity: 0;
@@ -1552,5 +1584,149 @@ dl.registro-datos > div:nth-child(3) dd::before {
 @keyframes traza {
   from {
     stroke-dashoffset: 1;
+  }
+}
+
+/* La escena fija (A/B de movimiento de la red, C, 2026-11-04): en la computadora, al llegar a la
+   planta, la escena entera (de los frutos a tu entidad) queda quieta en la pantalla durante 1,5
+   pantallas de scroll; el tronco crece, las raíces llegan de a una, de izquierda a derecha, y cada
+   etiqueta se imprime en su punta; al final, tu entidad. La red se achica para entrar en la
+   pantalla. Sin línea de tiempo de scroll o con movimiento reducido, la escena no se fija. */
+@media (min-width: 68.75em) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .escena {
+      view-timeline: --escena block;
+      /* Alto y no relleno: el fijado solo recorre la caja de contenido. */
+      height: calc(100dvh + 150vh);
+      background: var(--color-suelo);
+    }
+
+    .escena-fija {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      background: var(--color-papel);
+    }
+
+    .escena .planta-dibujo {
+      width: min(10rem, 18dvh);
+    }
+
+    .escena .suelo {
+      flex: 1;
+      overflow: clip;
+    }
+
+    /* Lo que queda debajo de la planta: el dibujo (alto = ancho / 2) y el lugar de tu entidad. */
+    /* Con un piso de 60 rem: en una pantalla baja (menos de unos 800 px) la red no se achica más,
+       para que las etiquetas no se pisen, y "Tu entidad" puede quedar debajo hasta que se suelta
+       la escena (revision-ui, 2026-11-04). */
+    .escena .herbario {
+      max-width: max(60rem, min(75rem, calc(2 * (100dvh - 22rem)) + 4rem));
+      padding-bottom: 10rem;
+    }
+
+    /* Cada etiqueta, más angosta que la distancia entre dos raíces (un 14 % del dibujo). */
+    .escena .etiqueta:not(.etiqueta--tuya) {
+      width: clamp(7rem, 12.5%, 9.5rem);
+    }
+
+    .escena .red-dibujo .tronco {
+      transform-box: fill-box;
+      transform-origin: top;
+      animation: crece linear both;
+      animation-timeline: --escena;
+      animation-range: contain 0% contain 6%;
+    }
+
+    /* Sin el atajo "animation": reiniciaría el tramo (animation-range) de cada raíz y su etiqueta,
+       que va en reglas de menos peso (revision-ui, 2026-11-04). */
+    .escena .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
+      stroke-dasharray: 1;
+      animation-name: traza;
+      animation-duration: auto;
+      animation-delay: 0s;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --escena;
+    }
+
+    .escena :is(.etiqueta, .red-dibujo .ruta--pendiente) {
+      animation-name: registro;
+      animation-duration: auto;
+      animation-delay: 0s;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --escena;
+    }
+
+    /* Con el teclado, la etiqueta enfocada se ve entera aunque su raíz no haya llegado. */
+    .escena .etiqueta:focus-within {
+      animation: none;
+    }
+
+    /* De a una, de izquierda a derecha, como se lee (el borde de cada raíz es el path 2 a 7, tras el
+       tronco): cada raíz se traza en un 14 % del recorrido y
+       su etiqueta se imprime al final; tu entidad, a lo último. */
+    .escena .red-dibujo .raiz--1,
+    .escena .red-dibujo .borde:nth-of-type(2) {
+      animation-range: contain 6% contain 20%;
+    }
+
+    .escena .etiqueta--1 {
+      animation-range: contain 17% contain 23%;
+    }
+
+    .escena .red-dibujo .raiz--2,
+    .escena .red-dibujo .borde:nth-of-type(3) {
+      animation-range: contain 17% contain 31%;
+    }
+
+    .escena .etiqueta--2 {
+      animation-range: contain 28% contain 34%;
+    }
+
+    .escena .red-dibujo .raiz--3,
+    .escena .red-dibujo .borde:nth-of-type(4) {
+      animation-range: contain 28% contain 42%;
+    }
+
+    .escena .etiqueta--3 {
+      animation-range: contain 39% contain 45%;
+    }
+
+    .escena .red-dibujo .raiz--5,
+    .escena .red-dibujo .borde:nth-of-type(5) {
+      animation-range: contain 39% contain 53%;
+    }
+
+    .escena .etiqueta--5 {
+      animation-range: contain 50% contain 56%;
+    }
+
+    .escena .red-dibujo .raiz--6,
+    .escena .red-dibujo .borde:nth-of-type(6) {
+      animation-range: contain 50% contain 64%;
+    }
+
+    .escena .etiqueta--6 {
+      animation-range: contain 61% contain 67%;
+    }
+
+    .escena .red-dibujo .raiz--7,
+    .escena .red-dibujo .borde:nth-of-type(7) {
+      animation-range: contain 61% contain 75%;
+    }
+
+    .escena .etiqueta--7 {
+      animation-range: contain 72% contain 78%;
+    }
+
+    .escena :is(.etiqueta--tuya, .red-dibujo .ruta--pendiente) {
+      animation-range: contain 85% contain 91%;
+    }
   }
 }

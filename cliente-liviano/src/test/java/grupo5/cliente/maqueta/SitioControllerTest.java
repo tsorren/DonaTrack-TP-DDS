@@ -346,6 +346,15 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("la entidad ve tu categoría como donante")));
     mvc.perform(get("/donante-perfil-guardado?mostrar=si"))
         .andExpect(content().string(containsString("Las entidades ven tu nombre")));
+    mvc.perform(post("/donante-perfil-guardado").param("seccion", "datos"))
+        .andExpect(redirectedUrl("/donante-perfil-guardado?seccion=datos"));
+    mvc.perform(post("/donante-perfil-guardado").param("seccion", "otra"))
+        .andExpect(redirectedUrl("/donante-perfil-guardado"));
+    mvc.perform(get("/donante-perfil-guardado?seccion=datos"))
+        .andExpect(content().string(containsString("Guardamos los datos de tu cuenta")))
+        .andExpect(content().string(not(containsString("Las entidades ya no ven tu nombre"))));
+    mvc.perform(get("/donante-perfil-guardado?seccion=avisos"))
+        .andExpect(content().string(containsString("Guardamos cómo te avisamos")));
     mvc.perform(get("/publico-legales"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Versión 1, vigente desde")))

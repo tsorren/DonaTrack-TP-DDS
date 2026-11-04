@@ -4,6 +4,9 @@
 > **Ajustada:** 2026-11-02, con la review de Sofía Deane: con el nombre oculto, la entidad ve la
 > categoría del ranking, y se puede ocultar también en una sola donación (bitácora, "La review de la
 > diseñadora, decidida").
+> **Ajustada:** 2026-11-04, con la nota de Nico ("faltan más campos"): suma "Datos de tu cuenta" y
+> "Cómo te avisamos", y las tres secciones van en pestañas (A/B `layout:perfil`, usuario; bitácora,
+> "Mi perfil con pestañas"). Las secciones nuevas son maqueta: no guardan hasta el perfil real (RI-AUTH-02, HB-11); ver los [huecos de backend](raices-ab-huecos-backend.md).
 > Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
 > ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/donante-perfil`, que hasta hoy abría "todavía no está dibujada". Es un perfil
@@ -74,6 +77,31 @@ Desvíos: no guardar (se va con el menú y no cambia nada), error del servidor y
 └─────────────────────────────────────────────────┘
 ```
 
+Desde el 2026-11-04, arriba de la lámina van tres pestañas: **Cómo te ven** (lo de arriba),
+**Datos de la cuenta** y **Avisos**. Se ve una sección por vez, la primera al entrar; cada pestaña
+es un enlace a su sección (`#como-te-ven`, `#datos`, `#como-te-avisamos`; `#avisos` es la región de avisos del layout), anda sin JavaScript y con "atrás",
+y al guardar vuelve a la misma. Términos y privacidad queda siempre debajo.
+
+```text
+ [Cómo te ven] [Datos de la cuenta] [Avisos]
+┌ Datos de tu cuenta ───────────────────────────┐
+│ Razón social · Tipo · Rubro (opcional)         │
+│ CUIT (fijo; "si está mal, escribinos")         │
+│ Dirección: calle, número, piso y depto, código │
+│ postal, localidad, provincia                   │
+│ [Guardar los datos]                            │
+└────────────────────────────────────────────────┘
+┌ Cómo te avisamos ─────────────────────────────┐
+│ Correo · WhatsApp (opcional) · Teléfono (opc.) │
+│ Por dónde: correo / WhatsApp / mensaje de texto│
+│ Qué: todo / solo cuando la entidad confirma    │
+│ [Guardar los avisos]                           │
+└────────────────────────────────────────────────┘
+```
+
+Los campos son los de la persona jurídica y sus medios de contacto en donaciones-service
+(`JuridicaInputDTO`, `DireccionInputDTO`, `MedioDeContactoInputDTO`, con un medio predeterminado).
+
 Cada opción lleva debajo cómo la ve la entidad, con la etiqueta "Donó" igual a la de Confirmar
 recepción. Funciona sin JavaScript: dos opciones y un botón Guardar (usuario, 2026-11-02, contra un
 interruptor que guarda solo).
@@ -90,6 +118,8 @@ interruptor que guarda solo).
 | Mi perfil | Error del servidor (`?escenario=error`) | Aviso arriba | "No pudimos guardar tu elección. Es un problema nuestro: sigue como estaba. Probá de nuevo en unos minutos; si sigue, escribinos con este código." + código y enlace a Contacto |
 | Mi perfil | Sin conexión (`?escenario=sin-conexion`) | Aviso arriba | "Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó elegido." |
 | Mi perfil | Cargando | No aplica en la maqueta: la página llega armada del servidor | — |
+| Guardado (`donante-perfil-guardado?seccion=datos#datos`) | Éxito, datos | Aviso arriba, en la pestaña Datos | "Listo. Guardamos los datos de tu cuenta." |
+| Guardado (`donante-perfil-guardado?seccion=avisos#como-te-avisamos`) | Éxito, avisos | Aviso arriba, en la pestaña Avisos | "Listo. Guardamos cómo te avisamos." |
 
 ## 6. Textos
 
@@ -101,6 +131,9 @@ interruptor que guarda solo).
 | Opciones | "Mostrar mi nombre" · "No mostrarlo" | Con su ejemplo debajo |
 | Nota | "Sin tu nombre, la entidad ve tu categoría como donante. Vale para todas tus donaciones, también las que ya llegaron. Los avisos que la entidad ya recibió no cambian." | Sale del ADR: el nombre se calcula al leer |
 | Acción principal | "Guardar mi elección" | |
+| Pestañas | "Cómo te ven" · "Datos de la cuenta" · "Avisos" | `nav` "Secciones de tu perfil" |
+| Datos | "Datos de tu cuenta" · "Todos los datos son obligatorios, salvo los que dicen «opcional»." · "Razón social", "Tipo", "Rubro (opcional)", "CUIT" ("No se cambia desde acá. Si está mal, escribinos."), "Dirección": "Calle", "Número (opcional)", "Piso y departamento (opcional)", "Código postal (opcional)", "Localidad", "Provincia" · "Guardar los datos" | Tipo: Empresa, ONG, Institución, Organismo del Estado |
+| Avisos | "Cómo te avisamos" · "Te avisamos cuando tu donación se asigna a una entidad, cuando sale y cuando la entidad confirma la entrega con la foto. Los avisos también quedan en Notificaciones." · "Correo", "WhatsApp (opcional)", "Teléfono (opcional)" · "Por dónde te avisamos": "Por correo", "Por WhatsApp", "Por mensaje de texto al teléfono" · "Qué te avisamos": "Todo: cuando se asigna, cuando sale y cuando llega", "Solo cuando la entidad confirma que llegó" · "Guardar los avisos" | |
 | Legales | "Aceptaste la versión 1 el 1 de noviembre de 2026." · "Leer los términos y la política de privacidad" | La constancia, a la vista; la versión 1 rige desde ese día |
 
 Persona en vez de empresa: "Donante Sostenedor" (con su categoría), el mismo texto que ve la
@@ -111,6 +144,10 @@ entidad en Confirmar recepción y en Necesidades.
 Un solo `h1`. Las opciones son un `fieldset` con `legend`; el ejemplo de cada opción va en su
 `label`, para que se lea con ella. El aviso de guardado usa `role="status"` y recibe el foco; el
 de error, `role="alert"`.
+
+Pestañas (2026-11-04): son enlaces dentro de un `nav` "Secciones de tu perfil"; la abierta se marca
+con fondo y subrayado. Sin JavaScript no se puede anunciar cuál está abierta (`aria-current`): el
+lector de pantalla llega al título de la sección. Queda aceptado como límite de la técnica.
 
 ## 8. Revisión de usabilidad
 
@@ -152,6 +189,8 @@ Decisiones tomadas:
   registrar una donación, que Raíces todavía no tiene (usuario, 2026-11-02).
 - Sofía pidió los legales también en los ajustes: Mi perfil ya muestra la constancia y el enlace,
   y queda así (usuario, 2026-11-02).
+- Datos de la cuenta y avisos, como maqueta con datos de ejemplo; en pestañas, una sección por vez
+  (usuario, 2026-11-04, contra una columna y dos columnas; nota de Nico).
 - Si la categoría no llega (Incentivos no responde o el donante no tiene una), la entidad ve «Un
   donante» o «Una empresa donante», y la pantalla no falla (usuario, 2026-11-02, por la revisión).
 

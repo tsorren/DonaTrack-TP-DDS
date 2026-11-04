@@ -150,6 +150,24 @@
   gap: 1rem;
 }
 
+/* Sin ventanas del navegador (popover, navegadores de antes de 2024), "Más" no abriría nada: la barra
+   muestra todas las secciones, en filas de a 3 (pulido, 2026-11-04). */
+@supports not selector(:popover-open) {
+  /* Desde la tableta la lista es flex: la grilla no la toca, y "Más" ya no se ve. */
+  .armazon-menu ul:has(.armazon-mas) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .armazon-menu ul:has(.armazon-mas) > li:nth-child(n + 5):not(.armazon-mas) {
+    display: list-item;
+  }
+
+  .armazon-mas {
+    display: none;
+  }
+}
+
 /* "Más" va marcado cuando la sección actual es una de las que no entran en la barra. */
 .armazon-mas:has(.menu-completo li:nth-child(n + 5) a[aria-current="page"]) > button {
   background: var(--color-raiz);

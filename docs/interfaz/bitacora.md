@@ -27,6 +27,83 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · movimiento:red (Raíces) · La portada: la escena queda quieta y las raíces llegan de a una
+
+- **Decisión:** en la computadora, al llegar a "Quiénes reciben", la escena entera (de la planta con
+  sus frutos hasta "Tu entidad") queda fija en la pantalla durante 1,5 pantallas de scroll. El
+  tronco crece, las raíces llegan de a una, de izquierda a derecha, y cada etiqueta se imprime en su
+  punta; "Tu entidad", al final. La red se achica para entrar en la pantalla. En el celular, cada
+  fila de etiquetas se imprime al entrar y su tramo de tronco crece. Solo CSS (líneas de tiempo de
+  scroll): sin línea de tiempo (Firefox) o con movimiento reducido, la escena no se fija y la red se
+  traza al cargar, como antes. Para fijar la planta con la red, la plantilla separa el rótulo de la
+  escena (`.escena` y `.escena-fija`) y saca las cifras del bloque de la tierra.
+- **Alternativas:** A, una vez al llegar (con un script); B, ligada al scroll, ida y vuelta, sin
+  fijar. El usuario eligió C y pidió que se vea desde los frutos hasta "Tu entidad".
+- **Por qué:** es lo que pidió Nico (las raíces bajan al scrollear y se forma quién recibe, como
+  "Cómo funciona" al entrar), y fijar la escena cuenta el recorrido de la donación paso a paso.
+- **Costo:** la portada suma 1,5 pantallas de scroll en la computadora. La red tiene un ancho
+  mínimo (60 rem) para que las etiquetas no se pisen: en pantallas muy bajas, "Tu entidad" puede
+  quedar justo al borde (medido: entra a 1280 × 720 y a 1366 × 650). Las capturas de página
+  completa no muestran el movimiento: se revisa con video o con cuadros de scroll. La revisión
+  independiente marcó que las raíces se trazaban juntas y que las etiquetas se pisaban en
+  pantallas bajas; se arregló antes de cerrar.
+- **Quién decidió:** usuario (2026-11-04), con la nota de Nico.
+- **Evidencia:** [`ab-red-a-una-vez.jpg`](evidencia/raices/mejoras-nico/ab-red-a-una-vez.jpg),
+  [`ab-red-b-con-el-scroll.jpg`](evidencia/raices/mejoras-nico/ab-red-b-con-el-scroll.jpg),
+  [`ab-red-c-tierra-quieta.jpg`](evidencia/raices/mejoras-nico/ab-red-c-tierra-quieta.jpg) y la aplicada,
+  [`portada-escena-fija-1280.jpg`](evidencia/raices/mejoras-nico/portada-escena-fija-1280.jpg),
+  [`portada-escena-fija-1920.jpg`](evidencia/raices/mejoras-nico/portada-escena-fija-1920.jpg) y
+  [`portada-celular-375.jpg`](evidencia/raices/mejoras-nico/portada-celular-375.jpg) (cuadros cada 170 a 260 px de scroll; 1280 a 720 px de alto).
+
+### 2026-11-04 · layout:contacto (Raíces) · Contacto con lámina: de la raíz al correo
+
+- **Decisión:** a la derecha del formulario, a su misma altura (en el celular, debajo), una lámina
+  como "Cómo funciona" de la portada: un brote cuya raíz central llega a un sobre, y "Cuándo
+  escribirnos" con tres motivos. Las raíces se trazan al entrar.
+- **Alternativas:** B, un corte de suelo alto con el mensaje sobre la tierra; C, tres raíces con un
+  motivo en cada etiqueta. La frase "Contactanos para empezar a ser parte de nuestra comunidad"
+  se cambió: en la página de contacto no tenía sentido (usuario).
+- **Por qué:** repite el lenguaje de la portada y el sobre se entiende solo; los motivos ayudan a
+  elegir el tema.
+- **Costo:** ninguno en datos; la lámina no cambia el formulario.
+- **Quién decidió:** usuario (2026-11-04), con la nota de Nico.
+- **Evidencia:** [`ab-contacto-1280.jpg`](evidencia/raices/mejoras-nico/ab-contacto-1280.jpg),
+  [`ab-contacto-360.jpg`](evidencia/raices/mejoras-nico/ab-contacto-360.jpg), [`contacto-1280.jpg`](evidencia/raices/mejoras-nico/contacto-1280.jpg) y
+  [`contacto-360.jpg`](evidencia/raices/mejoras-nico/contacto-360.jpg).
+
+### 2026-11-04 · layout:perfil (Raíces) · Mi perfil con pestañas: cómo te ven, datos y avisos
+
+- **Decisión:** Mi perfil suma "Datos de tu cuenta" (razón social, tipo, rubro, CUIT fijo y
+  dirección) y "Cómo te avisamos" (correo, WhatsApp, teléfono, por dónde y qué). Las tres secciones
+  van en pestañas sobre la lámina; se ve una por vez. Cada pestaña es un enlace a su sección: anda
+  sin JavaScript y con "atrás", y al guardar vuelve a la misma. Es maqueta: guardar no cambia nada
+  hasta el perfil real (RI-AUTH-02, HB-11; [huecos de backend](flujos/raices-ab-huecos-backend.md)).
+- **Alternativas:** A, una columna con todo a la vista; B, dos columnas en la computadora. El
+  usuario pidió comparar pestañas contra A y eligió pestañas.
+- **Por qué:** son tres tareas que no se hacen juntas; cada una entra en una pantalla y se encuentra
+  por su nombre.
+- **Costo:** lo que no está en la pestaña abierta no se ve; los campos salen de donaciones-service
+  pero no se guardan.
+- **Quién decidió:** usuario (2026-11-04), con la nota de Nico ("faltan más campos").
+- **Evidencia:** [`ab-perfil-una-y-dos-columnas-1280.jpg`](evidencia/raices/mejoras-nico/ab-perfil-una-y-dos-columnas-1280.jpg),
+  [`perfil-pestanas-1280.jpg`](evidencia/raices/mejoras-nico/perfil-pestanas-1280.jpg) y
+  [`perfil-pestanas-375.jpg`](evidencia/raices/mejoras-nico/perfil-pestanas-375.jpg).
+
+### 2026-11-04 · layout:admin (Raíces) · Los avisos abiertos del pulido, cerrados
+
+- **Decisión:** en el menú del admin en el celular, la hoja de "Más" se llama "Todas las secciones"
+  (el menú ya se llamaba "Secciones"), el foco entra a la primera sección al abrirla y vuelve a "Más"
+  al cerrarla, y sin ventanas del navegador (popover, navegadores de antes de 2024) la barra
+  muestra las 9 secciones en filas de a 3. El orden de las cifras de Seguimiento no cambia: el
+  dibujo es decorativo (`aria-hidden`, sin enlaces), y el orden de lectura y de foco (cifras,
+  después la lista) coincide con lo que se ve de arriba abajo.
+- **Alternativas:** dejar los avisos abiertos.
+- **Por qué:** el usuario pidió cerrar los avisos abiertos del pulido como mejora propia.
+- **Costo:** con el respaldo, la barra del celular ocupa tres filas en navegadores viejos.
+- **Quién decidió:** agente, dentro del alcance que dio el usuario (2026-11-04).
+- **Evidencia:** prueba en vivo a 360 px: al cargar, el foco queda en la página; al abrir "Más",
+  en "Inicio"; al cerrar, en "Más".
+
 ### 2026-11-03 · layout:publico y admin (Raíces) · Pulido de las públicas y del admin: el menú de 7 secciones y Contacto con menú
 
 - **Decisión:** cuarto grupo del pulido visual (páginas públicas e inicio del admin).

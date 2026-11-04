@@ -1,6 +1,9 @@
 # Flujo: Contacto, en Raíces
 
 > **Estado:** aprobado · **Fecha:** 2026-11-02 · **Aprobó:** usuario (2026-11-02), al ver las pantallas dibujadas
+> **Ajustada:** 2026-11-04, con la nota de Nico (rellenar el lado derecho): una lámina a la derecha
+> del formulario, a su altura, con la raíz que llega a un sobre y "Cuándo escribirnos" (A/B
+> `layout:contacto`, A, usuario; bitácora, "Contacto con lámina").
 > Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
 > ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/publico-contacto`. Sale de la pregunta 17 del artifact de
@@ -80,6 +83,11 @@ audacia de Raíces queda en la portada: esta es una pantalla de trabajo.
 ahora ("te respondemos por correo") y un botón para volver a la pantalla de origen o, si no hay,
 "Ir a la portada".
 
+Desde el 2026-11-04, a la derecha del formulario (desde la tableta; en el celular, debajo) va una
+lámina como "Cómo funciona" de la portada, del alto del formulario: "Lámina 2, de la raíz al
+correo", un brote cuya raíz central llega a un sobre, y "Cuándo escribirnos" con tres motivos. Es
+un `aside`: el dibujo es decorativo y la lista se lee después del formulario.
+
 ## 5. Estados
 
 | Pantalla | Estado | Qué se ve | Texto |
@@ -108,6 +116,9 @@ ahora ("te respondemos por correo") y un botón para volver a la pantalla de ori
 
 Filtro de tono: no promete un plazo de respuesta que nadie fijó; el error del servidor dice que el
 mensaje sigue escrito; sin conexión dice que no se sabe si llegó.
+
+Lámina (2026-11-04): "Lámina 2, de la raíz al correo" · "Cuándo escribirnos" · "Querés sumar tu
+entidad al mapa." · "Querés donar con tu empresa." · "Pasó algo con una entrega o con el sitio."
 
 ## 7. Accesibilidad
 
@@ -140,6 +151,9 @@ personas: si los temas alcanzan y si se entiende qué es "código del error".
 
 Decisiones tomadas:
 
+- Lámina a la derecha, a la altura del formulario, con "Cuándo escribirnos" en vez de
+  "Contactanos para empezar a ser parte de nuestra comunidad", que en esta página no tenía
+  sentido (usuario, 2026-11-04, contra un corte de suelo y motivos en etiquetas).
 - Un formulario dentro de DonaTrack, no un correo ni un chat (usuario, 2026-11-02, pregunta 17).
 - Lo puede usar cualquiera: sin sesión pide el correo; con sesión usa el de la cuenta (usuario,
   2026-11-02).

@@ -36,6 +36,8 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 - Donante · donante-entidades · lo que la empresa ya donó a cada entidad · no hay filtro de donaciones de un donante por entidad asignada (HB-04 es del lado de la entidad).
 - Donante · donante-entidades · dirección y horario del depósito · no hay endpoint de depósitos.
 - Donante · donante-notificaciones · tipo de evento e id de la donación en NotificacionDTO · sin ellos no hay sello ni enlace al detalle (hoy solo mensaje).
+- Donante · donante-perfil · datos de la cuenta (razón social, tipo, rubro, CUIT y dirección) y medios de contacto con el predeterminado · están en donaciones-service (`JuridicaInputDTO`, `MedioDeContactoInputDTO`), pero no hay `GET /api/personas/me` ni edición del perfil propio (RI-AUTH-02, HB-11) · agregado el 2026-11-04 (nota de Nico); la maqueta no guarda.
+- Donante · donante-perfil · "Qué te avisamos" (todo o solo cuando la entidad confirma) · notificaciones-service no tiene preferencia de qué avisar · agregado el 2026-11-04; la maqueta no guarda.
 - Donante · donante-notificaciones · avisos "recibida en el depósito" y "lista para entregar" · no están en EventoNotificableDTO; RF-08 pide asignación y recepción (HB-09).
 
 ## Entidad

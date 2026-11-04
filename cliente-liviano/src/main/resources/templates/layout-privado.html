@@ -39,12 +39,15 @@
         <div id="menu-completo" class="menu-completo" popover role="dialog"
              aria-labelledby="menu-completo-titulo">
           <div class="menu-completo-cabecera">
-            <p id="menu-completo-titulo" class="menu-completo-titulo">Secciones</p>
+            <!--/* "Todas las secciones": el menú ya se llama "Secciones" (pulido de Nico, 2026-11-04). */-->
+            <p id="menu-completo-titulo" class="menu-completo-titulo">Todas las secciones</p>
             <button class="boton boton--secundario" type="button" popovertarget="menu-completo"
                     popovertargetaction="hide">Cerrar</button>
           </div>
+          <!--/* Al abrirse, el foco entra a la hoja, en la primera sección (autofocus de la ventana). */-->
           <ul role="list">
-            <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+            <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+                th:autofocus="${vuelta.first}"
                 th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
           </ul>
         </div>

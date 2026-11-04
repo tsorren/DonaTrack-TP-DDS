@@ -169,14 +169,16 @@ class SitioController {
    * Los formularios se envían con POST, para que lo escrito (una contraseña, por ejemplo) no quede
    * en la dirección; vuelven a la pantalla de destino sin sus datos. Se conservan dos datos que no
    * son lo escrito: a qué pantalla volver después ({@code ?volver=}, en Contacto, solo si es una
-   * pantalla del sitio) y la elección de Mi perfil ({@code mostrar=si}), para que el aviso diga lo
-   * que se eligió.
+   * pantalla del sitio), la elección de Mi perfil ({@code mostrar=si}) y la sección de Mi perfil
+   * que se guardó ({@code seccion=datos} o {@code avisos}), para que el aviso diga lo que se
+   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección.
    */
   @PostMapping("/{pantalla:" + NOMBRE + "}")
   String enviar(
       @PathVariable String pantalla,
       @RequestParam(required = false) String volver,
-      @RequestParam(required = false) String mostrar) {
+      @RequestParam(required = false) String mostrar,
+      @RequestParam(required = false) String seccion) {
     if (!existe(pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
@@ -186,6 +188,9 @@ class SitioController {
     }
     if ("si".equals(mostrar)) {
       consulta.add("mostrar=si");
+    }
+    if ("datos".equals(seccion) || "avisos".equals(seccion)) {
+      consulta.add("seccion=" + seccion);
     }
     String destino = "redirect:/" + pantalla;
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);
