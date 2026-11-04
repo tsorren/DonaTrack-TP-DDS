@@ -81,6 +81,35 @@ class SitioControllerTest {
     mvc.perform(get("/img/logo.svg")).andExpect(status().isOk());
   }
 
+  /**
+   * B0-05 (D31): los tres layouts cargan Alpine CSP desde el WebJar con defer. La plantilla no
+   * escribe la versión (vive en el pom.xml); Spring la agrega a la dirección.
+   */
+  @Test
+  void losLayoutsCarganAlpineDesdeElWebJarDespuesDeSusComponentes() throws Exception {
+    String alpine = "/webjars/alpinejs__csp/";
+    for (String pantalla : List.of("/", "/publico-ingresar", "/donante-inicio")) {
+      String html =
+          mvc.perform(get(pantalla))
+              .andExpect(status().isOk())
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+      assertTrue(
+          Pattern.compile(
+                  "<script[^>]*src=\"" + alpine + "[\\d.]+/dist/cdn\\.min\\.js\"[^>]*\\bdefer\\b")
+              .matcher(html)
+              .find(),
+          pantalla + ": falta Alpine con defer");
+      assertTrue(
+          html.indexOf("/js/interfaz.js") > 0
+              && html.indexOf("/js/interfaz.js") < html.indexOf(alpine),
+          pantalla + ": interfaz.js va antes que Alpine");
+    }
+    mvc.perform(get(alpine + "dist/cdn.min.js")).andExpect(status().isOk());
+    mvc.perform(get("/js/interfaz.js")).andExpect(status().isOk());
+  }
+
   @Test
   void unaPantallaDeNivelTresMarcaSuSeccionEnElMenuDeSuRol() throws Exception {
     mvc.perform(get("/donante-donaciones-prueba"))

@@ -2,8 +2,9 @@
 name: revision-ui
 description: >-
   Revisor independiente y escéptico de la interfaz del cliente liviano de DonaTrack. Revisa fichas
-  de flujo o pantallas construidas con los vectores U1–U9 (usabilidad, accesibilidad, responsive,
-  identidad, textos y tono, estados, arquitectura MVC, requerimientos y lenguaje llano) y emite un
+  de flujo o pantallas construidas con los vectores U1–U10 (usabilidad, accesibilidad, responsive,
+  identidad, textos y tono, estados, arquitectura MVC, requerimientos, lenguaje llano y catálogo
+  de componentes) y emite un
   veredicto PASS o CHANGES_REQUIRED en modo SOURCE_READ_ONLY. Usar al cerrar un flujo o una
   pantalla, antes de pedir la aprobación del usuario, o en modo panel de exploración para criticar
   los conceptos de una corrida creativa sin diluir su audacia.
@@ -16,6 +17,7 @@ description: >-
 > formato), [`cliente-liviano/AGENTS.md`](../../../cliente-liviano/AGENTS.md) y
 > [`docs/interfaz/README.md`](../../../docs/interfaz/README.md). **Criterios de la cátedra:**
 > [`criterios-catedra-ux-ui.md`](../../../docs/interfaz/criterios-catedra-ux-ui.md) (las 10 heurísticas con su "cómo se consigue", los 7 factores y los patrones conocidos).
+> **Catálogo:** [`componentes.md`](../../../docs/interfaz/componentes.md) (D33): se lee primero, es la vara del vector U10.
 
 ## 1. Modo
 
@@ -26,7 +28,7 @@ description: >-
   capturas y el reporte), no el razonamiento de quien los hizo. Si corre en el mismo contexto, lo
   declara como `Mode: SELF_REVIEW`.
 - **Modo flujo:** revisa la ficha con U1, U5, U6, U8 y U9.
-- **Modo pantalla:** revisa los 9 vectores.
+- **Modo pantalla:** revisa los 10 vectores, empezando por leer `componentes.md`.
 - **Modo panel de exploración:** compara varias propuestas creativas (los conceptos de una
   [`corrida-creativa`](../corrida-creativa/SKILL.md) o de una iteración A/B de estructura) con una
   sola lente (arte, piso o flujo) y el
@@ -45,6 +47,7 @@ description: >-
 | U7 Arquitectura | Controller sin lógica, sin dominio, sin `common-lib`; funciona sin JS; piezas compartidas reutilizadas | Un `hx-post` sin `action` real |
 | U8 Requerimientos | Criterio de aceptación del RF; navegación de 3 niveles o menos; desvíos del boceto anotados en la bitácora | Un criterio del RF que no se cumple |
 | U9 Lenguaje llano | Lo que ve el usuario del proceso (preguntas, resúmenes, A/B): una decisión por pregunta, 3 o menos por ronda, sin jerga | Una pregunta con dos decisiones o con jerga técnica |
+| U10 Catálogo y capas | Cada clase de las plantillas está en [`componentes.md`](../../../docs/interfaz/componentes.md) (o es heredada de la lista del cerco); una clase o un componente nuevo tiene su entrada en el catálogo y en `/estilos`; las hojas de pantalla no declaran colores, fuentes, `@keyframes` ni duraciones; el movimiento sale de `data-movimiento` y de los tokens `--movimiento-*`; el estado del navegador, de Alpine CSP, y el del servidor, de HTMX; la migración del backlog que la tarea debía hacer | Una clase fuera del catálogo, una hoja de pantalla con `@keyframes` o una duración literal, un componente nuevo sin su entrada |
 
 ## 3. Veredicto
 
@@ -63,6 +66,7 @@ U6 Estados y avisos:  …
 U7 Arquitectura:      …
 U8 Requerimientos:    …
 U9 Lenguaje llano:    …
+U10 Catálogo y capas: …
 
 Verdict:  PASS | CHANGES_REQUIRED
 

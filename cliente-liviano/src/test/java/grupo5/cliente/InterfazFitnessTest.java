@@ -221,6 +221,349 @@ class InterfazFitnessTest {
     assertThat(fallas).isEmpty();
   }
 
+  // --- El cerco de la capa CUBE (D33, B0-07): ver docs/interfaz/componentes.md
+  // ----------------------
+
+  /**
+   * Tope de clases que aparecen una sola vez en las hojas heredadas. Solo baja (backlog, regla 3).
+   */
+  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 211;
+
+  private static final Path CATALOGO = Path.of("../docs/interfaz/componentes.md");
+  private static final Path ESTILOS = PLANTILLAS.resolve("estilos.html");
+  private static final Path COMPONENTES = CSS.resolve("componentes");
+  private static final Path CLASES_HEREDADAS =
+      Path.of("src/test/resources/verificacion/clases-heredadas.txt");
+
+  /** Hojas de la capa CUBE: no cuentan como heredadas ni como hojas de pantalla. */
+  private static final Set<String> HOJAS_CUBE =
+      Set.of("composicion.css", "utilidades.css", "movimiento.css");
+
+  /** Hojas que no son de pantalla: la base y las capas. */
+  private static final Set<String> HOJAS_DE_BASE = Set.of("app.css", TOKENS);
+
+  /**
+   * Las hojas de pantalla y compartidas que existían el 2026-11-04. Una hoja nueva que no es de
+   * esta lista nace en la capa CUBE: solo disposición, sin color, fuente ni movimiento. La lista
+   * solo baja: una hoja migrada por completo sale de acá.
+   */
+  private static final Set<String> HOJAS_HEREDADAS =
+      Set.of(
+          "admin-inicio.css",
+          "donante-comun.css",
+          "donante-donaciones-detalle.css",
+          "donante-donaciones.css",
+          "donante-entidades.css",
+          "donante-inicio.css",
+          "donante-notificaciones.css",
+          "donante-perfil.css",
+          "donante-seguimiento.css",
+          "entidad-comun.css",
+          "entidad-inicio.css",
+          "entidad-necesidades.css",
+          "entidad-notificaciones.css",
+          "entidad-recibidas.css",
+          "entidad-seguimiento-confirmar.css",
+          "formularios.css",
+          "privado.css",
+          "publico-donaciones.css",
+          "publico-entidades.css",
+          "publico-ingresar.css",
+          "publico-listas.css",
+          "publico-mapa.css",
+          "publico-navegacion.css",
+          "publico-paginas.css",
+          "publico-portada.css",
+          "publico-registro.css",
+          "sellos.css");
+
+  private static final Pattern COMENTARIO_CSS = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+  private static final Pattern TEXTO_CSS = Pattern.compile("\"[^\"]*\"");
+  private static final Pattern URL_CSS = Pattern.compile("url\\([^)]*\\)");
+  private static final Pattern CLASE_CSS = Pattern.compile("\\.([A-Za-z_][\\w-]*)");
+  private static final Pattern DURACION =
+      Pattern.compile("(?<![\\w.-])(?:\\d+\\.?\\d*|\\.\\d+)m?s\\b");
+  private static final Pattern CURVA =
+      Pattern.compile("cubic-bezier\\(|steps\\(|\\bease(?:-in-out|-in|-out)?\\b");
+  private static final Pattern DE_PANTALLA_PROHIBIDO =
+      Pattern.compile(
+          "(?<![\\w-])(?:color|background(?:-color|-image)?|font(?:-family)?)\\s*:|@keyframes");
+  private static final Pattern COMENTARIO_THYMELEAF =
+      Pattern.compile("<!--/\\*.*?\\*/-->", Pattern.DOTALL);
+  private static final Pattern CLASE_ESTATICA = Pattern.compile("(?<![\\w:-])class=\"([^\"]*)\"");
+  private static final Pattern CLASE_DE_THYMELEAF =
+      Pattern.compile("th:class(?:append)?=\"([^\"]*)\"");
+  private static final Pattern TEXTO_ENTRE_COMILLAS = Pattern.compile("'([^']*)'");
+  private static final Pattern NOMBRE_DE_CLASE = Pattern.compile("[A-Za-z_][\\w-]*");
+  private static final Pattern MOVIMIENTO_PEDIDO = Pattern.compile("data-movimiento=\"([a-z]+)\"");
+
+  @Test
+  void clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas() {
+    Set<String> usadas = clasesUsadasEnPlantillas(PLANTILLAS);
+    Set<String> heredadas = heredadas();
+    assertThat(clasesFueraDelCatalogo(usadas, clasesCube().keySet(), heredadas))
+        .as(
+            "Una clase nueva entra primero a docs/interfaz/componentes.md y a /estilos, en la capa"
+                + " CUBE; la lista de heredadas no se amplía")
+        .isEmpty();
+    assertThat(heredadas.stream().filter(clase -> !usadas.contains(clase)).sorted().toList())
+        .as("Clases heredadas que ya no usa ninguna plantilla: sacarlas de %s", CLASES_HEREDADAS)
+        .isEmpty();
+  }
+
+  @Test
+  void laCapaCubeEstaEnElCatalogoYEnEstilos() {
+    String catalogo = leer(CATALOGO);
+    String muestras =
+        leer(ESTILOS)
+            + archivos(PLANTILLAS.resolve("componentes"), HTML).stream()
+                .map(InterfazFitnessTest::leer)
+                .collect(Collectors.joining("\n"));
+    List<String> fallas = new ArrayList<>();
+    clasesCube()
+        .forEach(
+            (clase, componente) -> {
+              boolean enCatalogo =
+                  palabra(clase).matcher(catalogo).find()
+                      || (componente != null && clase.startsWith(componente + "-"));
+              if (!enCatalogo) {
+                fallas.add(clase + " no figura en " + CATALOGO);
+              }
+              if (!palabra(clase).matcher(muestras).find()) {
+                fallas.add(clase + " no figura en /estilos (templates/estilos.html)");
+              }
+            });
+    String movimiento = leer(CSS.resolve("movimiento.css"));
+    MOVIMIENTO_PEDIDO
+        .matcher(movimiento)
+        .results()
+        .map(m -> "data-movimiento=\"" + m.group(1) + "\"")
+        .distinct()
+        .forEach(
+            pedido -> {
+              if (!catalogo.contains(pedido)) {
+                fallas.add(pedido + " no figura en " + CATALOGO);
+              }
+              if (!muestras.contains(pedido)) {
+                fallas.add(pedido + " no figura en /estilos");
+              }
+            });
+    assertThat(fallas).isEmpty();
+  }
+
+  @Test
+  void clasesDeUnSoloUsoNoSuperanElTope() {
+    List<String> hojas =
+        archivos(CSS, ".css").stream()
+            .filter(css -> css.getParent().equals(CSS))
+            .filter(css -> !HOJAS_CUBE.contains(css.getFileName().toString()))
+            .map(InterfazFitnessTest::leer)
+            .toList();
+    assertThat(clasesDeUnSoloUso(hojas))
+        .as("El tope solo baja: al cerrar un ítem del backlog, bajarlo al valor medido")
+        .isLessThanOrEqualTo(TOPE_DE_CLASES_DE_UN_SOLO_USO);
+  }
+
+  @Test
+  void hojasDePantallaNuevasSoloDisponen() {
+    List<String> fallas = new ArrayList<>();
+    for (Path css : archivos(CSS, ".css")) {
+      String nombre = css.getFileName().toString();
+      boolean deLaCarpetaRaiz = css.getParent().equals(CSS);
+      if (deLaCarpetaRaiz
+          && !HOJAS_HEREDADAS.contains(nombre)
+          && !HOJAS_CUBE.contains(nombre)
+          && !HOJAS_DE_BASE.contains(nombre)) {
+        fallas.addAll(
+            declaracionesProhibidasEnPantalla(leer(css)).stream()
+                .map(falla -> css + ": " + falla)
+                .toList());
+      }
+    }
+    assertThat(fallas)
+        .as("Una hoja de pantalla nueva solo dispone; lo demás va a la capa CUBE")
+        .isEmpty();
+  }
+
+  @Test
+  void sinDuracionesNiCurvasLiteralesFueraDeTokens() {
+    List<String> fallas = new ArrayList<>();
+    for (Path css : cssFueraDeTokens()) {
+      if (!css.startsWith(VARIANTES)) {
+        fallas.addAll(
+            movimientoLiteral(leer(css)).stream().map(falla -> css + ": " + falla).toList());
+      }
+    }
+    assertThat(fallas)
+        .as("Duraciones y curvas salen de los tokens --movimiento-* de tokens.css")
+        .isEmpty();
+  }
+
+  @Test
+  void alpineNoHaceLoQueElAdrProhibe() {
+    String codigo =
+        leer(RECURSOS.resolve("static/js/interfaz.js")).replaceAll("(?m)^\\s*//.*$", "");
+    assertThat(codigo).doesNotContainPattern("fetch\\(|XMLHttpRequest|localStorage|sessionStorage");
+    assertThat(
+            archivos(PLANTILLAS, HTML).stream()
+                .filter(plantilla -> leer(plantilla).contains("x-html"))
+                .toList())
+        .as("x-html está prohibido (D31)")
+        .isEmpty();
+  }
+
+  @Test
+  void lasSkillsDeInterfazEmpiezanPorElCatalogo() {
+    for (String skill : List.of("vista-ui", "revision-ui")) {
+      Path ruta = Path.of("../.agents/skills", skill, "SKILL.md");
+      assertThat(leer(ruta)).as("%s cita el catálogo", ruta).contains("componentes.md");
+    }
+  }
+
+  @Test
+  void laNavegacionEntrePaginasRespetaReducirMovimiento() {
+    String app = leer(CSS.resolve("app.css"));
+    assertThat(app)
+        .as("@view-transition va solo con prefers-reduced-motion: no-preference")
+        .containsPattern(
+            "@media \\(prefers-reduced-motion: no-preference\\)\\s*\\{[^@]*@view-transition\\s*\\{"
+                + "\\s*navigation: auto");
+    assertThat(leer(PLANTILLAS.resolve("interaccion.html")))
+        .as("HTMX hace sus intercambios con View Transitions")
+        .contains("globalViewTransitions");
+  }
+
+  /** Los casos inventados: cada regla del cerco tiene que fallar cuando se la rompe. */
+  @Test
+  void elCercoFallaConUnCasoInventadoYPasaConUnoSano() {
+    assertThat(movimientoLiteral("a { transition: opacity 0.2s; }")).hasSize(1);
+    assertThat(movimientoLiteral("a { animation: x 1s ease; }")).hasSize(2);
+    assertThat(movimientoLiteral("a { transition: opacity var(--movimiento-duracion-corta); }"))
+        .isEmpty();
+    assertThat(movimientoLiteral("a { min-height: 100svh; margin: 0.5rem; /* 2s */ }")).isEmpty();
+
+    assertThat(declaracionesProhibidasEnPantalla(".x { color: red; }")).hasSize(1);
+    assertThat(declaracionesProhibidasEnPantalla("@keyframes a { from { opacity: 0 } }"))
+        .hasSize(1);
+    assertThat(declaracionesProhibidasEnPantalla(".x { border-color: red; display: grid; }"))
+        .isEmpty();
+
+    assertThat(clasesDeUnSoloUso(List.of(".a, .b { x: y } .a { z: w }"))).isEqualTo(1);
+    assertThat(clasesDeUnSoloUso(List.of("/* .c */ .d { src: url(f.woff2); margin: 1.5rem }")))
+        .isEqualTo(1);
+
+    assertThat(
+            clasesFueraDelCatalogo(
+                Set.of("pila", "nueva", "vieja"), Set.of("pila"), Set.of("vieja")))
+        .containsExactly("nueva");
+  }
+
+  /** Las declaraciones que una hoja de pantalla nueva no puede tener (D33). */
+  static List<String> declaracionesProhibidasEnPantalla(String css) {
+    return DE_PANTALLA_PROHIBIDO
+        .matcher(sinComentariosCss(css))
+        .results()
+        .map(coincidencia -> coincidencia.group().strip())
+        .toList();
+  }
+
+  /** Duraciones y curvas escritas a mano, en una hoja que no es tokens.css (D32). */
+  static List<String> movimientoLiteral(String css) {
+    String limpio = sinComentariosCss(css);
+    List<String> fallas = new ArrayList<>();
+    DURACION.matcher(limpio).results().forEach(m -> fallas.add("duración literal " + m.group()));
+    CURVA.matcher(limpio).results().forEach(m -> fallas.add("curva literal " + m.group()));
+    return fallas;
+  }
+
+  /** Clases que aparecen una sola vez entre todas las hojas, sin comentarios, urls ni textos. */
+  static long clasesDeUnSoloUso(List<String> hojas) {
+    Map<String, Integer> veces = new HashMap<>();
+    for (String css : hojas) {
+      CLASE_CSS
+          .matcher(sinTextosCss(css))
+          .results()
+          .forEach(m -> veces.merge(m.group(1), 1, Integer::sum));
+    }
+    return veces.values().stream().filter(cantidad -> cantidad == 1).count();
+  }
+
+  static List<String> clasesFueraDelCatalogo(
+      Set<String> usadas, Set<String> cube, Set<String> heredadas) {
+    return usadas.stream()
+        .filter(clase -> !cube.contains(clase) && !heredadas.contains(clase))
+        .sorted()
+        .toList();
+  }
+
+  /**
+   * Sin comentarios, textos ni urls: los textos primero, porque un data: URI lleva url() adentro.
+   */
+  private static String sinTextosCss(String css) {
+    String sinTextos = TEXTO_CSS.matcher(sinComentariosCss(css)).replaceAll("");
+    return URL_CSS.matcher(sinTextos).replaceAll("");
+  }
+
+  private static String sinComentariosCss(String css) {
+    return COMENTARIO_CSS.matcher(css).replaceAll("");
+  }
+
+  private static Pattern palabra(String clase) {
+    return Pattern.compile("(?<![\\w-])" + Pattern.quote(clase) + "(?![\\w-])");
+  }
+
+  /** Clase declarada en la capa CUBE → su componente (la hoja de componentes/), o null. */
+  private static Map<String, String> clasesCube() {
+    Map<String, String> clases = new HashMap<>();
+    List<Path> hojas = new ArrayList<>(HOJAS_CUBE.stream().map(CSS::resolve).toList());
+    if (Files.isDirectory(COMPONENTES)) {
+      hojas.addAll(archivos(COMPONENTES, ".css"));
+    }
+    for (Path hoja : hojas) {
+      String nombre = hoja.getFileName().toString().replace(".css", "");
+      String componente = hoja.getParent().equals(COMPONENTES) ? nombre : null;
+      CLASE_CSS
+          .matcher(sinTextosCss(leer(hoja)))
+          .results()
+          .forEach(m -> clases.put(m.group(1), componente));
+    }
+    return clases;
+  }
+
+  private static Set<String> heredadas() {
+    return lineas(CLASES_HEREDADAS).stream()
+        .map(String::strip)
+        .filter(linea -> !linea.isEmpty() && !linea.startsWith("#"))
+        .collect(Collectors.toSet());
+  }
+
+  /** Las clases escritas a mano en las plantillas: class="…" y los textos de th:class(append). */
+  private static Set<String> clasesUsadasEnPlantillas(Path carpeta) {
+    Set<String> clases = new HashSet<>();
+    for (Path plantilla : archivos(carpeta, HTML)) {
+      String html = COMENTARIO_THYMELEAF.matcher(leer(plantilla)).replaceAll("");
+      List<String> listas = new ArrayList<>();
+      CLASE_ESTATICA.matcher(html).results().forEach(m -> listas.add(m.group(1)));
+      CLASE_DE_THYMELEAF
+          .matcher(html)
+          .results()
+          .forEach(
+              m ->
+                  TEXTO_ENTRE_COMILLAS
+                      .matcher(m.group(1))
+                      .results()
+                      .forEach(texto -> listas.add(texto.group(1))));
+      for (String lista : listas) {
+        for (String clase : lista.split("\\s+")) {
+          if (NOMBRE_DE_CLASE.matcher(clase).matches()) {
+            clases.add(clase);
+          }
+        }
+      }
+    }
+    return clases;
+  }
+
   /** Resuelve var(--x) hasta un #rrggbb y devuelve su luminancia relativa (WCAG). */
   private static double color(Path hoja, Map<String, String> tokens, String token) {
     String valor = tokens.get(token);

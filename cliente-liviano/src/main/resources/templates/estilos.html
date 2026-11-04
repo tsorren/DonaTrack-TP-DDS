@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--/* /estilos: el catálogo vivo de la capa CUBE (RF-CL-05, D33, B0-06). Muestra cada pieza con su
+       ejemplo, en el mismo orden que docs/interfaz/componentes.md, que es el índice para los
+       agentes. Una clase o un componente nuevo entra primero a los dos. No es una pantalla del
+       recorrido: SitioController lo sirve con su propia dirección, sin rol. Se arma con las mismas
+       piezas que documenta (centro, pila, grilla, muestra), y no lleva hoja propia. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+<head>
+  <title>Catálogo de estilos - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="centro pila" data-espacio="4">
+    <header class="pila" data-espacio="1">
+      <h1>Catálogo de estilos</h1>
+      <p data-tono="suave">Las piezas de la interfaz, una por una, con su ejemplo. Antes de crear una clase
+        nueva, buscá acá si ya existe. La lista para los agentes está en <code>docs/interfaz/componentes.md</code>.</p>
+    </header>
+
+    <section class="pila" data-espacio="3" aria-labelledby="composicion">
+      <h2 id="composicion">Composición</h2>
+      <p data-tono="suave">Cómo se disponen las cosas. El espacio entre hijos se cambia con
+        <code>data-espacio</code>.</p>
+      <div class="grilla">
+        <div th:replace="~{componentes/muestra :: muestra('.pila', 'Hijos en columna con el mismo espacio entre ellos (stack).', ~{::demo-pila})}">
+          <th:block th:fragment="demo-pila">
+            <div class="pila" data-espacio="2"><span data-celda>Uno</span><span data-celda>Dos</span><span data-celda>Tres</span></div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.racimo', 'Hijos en fila que bajan de renglón cuando no entran: botones, etiquetas (cluster). data-alinea: centro, fin o entre.', ~{::demo-racimo})}">
+          <th:block th:fragment="demo-racimo">
+            <div class="racimo"><span data-celda>Uno</span><span data-celda>Dos</span><span data-celda>Tres</span><span data-celda>Cuatro</span><span data-celda>Cinco</span></div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.barra-lateral', 'Dos hijos lado a lado, el primero angosto; en una pantalla chica quedan uno sobre otro (sidebar).', ~{::demo-barra})}">
+          <th:block th:fragment="demo-barra">
+            <div class="barra-lateral"><span data-celda>Barra</span><span data-celda>Contenido que ocupa el resto del ancho</span></div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.cubierta', 'Llena la altura de la pantalla; el hijo con data-centro queda en el medio (cover).', ~{::demo-cubierta})}">
+          <th:block th:fragment="demo-cubierta">
+            <p data-tono="suave">Se usa para una portada o una pantalla de bienvenida; acá no se muestra para no ocupar toda la página.</p>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.grilla', 'Tantas columnas como entren (grid).', ~{::demo-grilla})}">
+          <th:block th:fragment="demo-grilla">
+            <div class="grilla" data-espacio="2"><span data-celda>Uno</span><span data-celda>Dos</span><span data-celda>Tres</span><span data-celda>Cuatro</span></div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.centro', 'Contenido centrado con un ancho máximo y aire a los lados (center). Esta página lo usa.', ~{::demo-centro})}">
+          <th:block th:fragment="demo-centro">
+            <div class="centro"><span data-celda>Centrado</span></div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.marco', 'Fuerza una proporción (data-proporcion: 1-1, 4-3 o 16-9) y recorta lo de adentro (frame).', ~{::demo-marco})}">
+          <th:block th:fragment="demo-marco">
+            <div class="marco" data-proporcion="4-3"><span data-celda>4 a 3</span></div>
+          </th:block>
+        </div>
+      </div>
+    </section>
+
+    <section class="pila" data-espacio="3" aria-labelledby="utilidades">
+      <h2 id="utilidades">Utilidades</h2>
+      <div class="grilla">
+        <div th:replace="~{componentes/muestra :: muestra('data-espacio=&quot;1&quot; a &quot;5&quot;', 'El espacio entre los hijos de una composición.', ~{::demo-espacio})}">
+          <th:block th:fragment="demo-espacio">
+            <div class="pila" data-espacio="5"><span data-celda>Espacio 5</span><span data-celda>Espacio 5</span></div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.texto-chico, .texto-base, .texto-grande', 'El tamaño del texto, por token de uso.', ~{::demo-texto})}">
+          <th:block th:fragment="demo-texto">
+            <div class="pila" data-espacio="1">
+              <span class="texto-chico">Texto chico</span><span class="texto-base">Texto base</span><span class="texto-grande">Texto grande</span>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('data-tono', 'El color del texto según lo que dice: suave, acento, exito, aviso o error. Siempre con palabras, no solo con color.', ~{::demo-tono})}">
+          <th:block th:fragment="demo-tono">
+            <div class="pila" data-espacio="1">
+              <span data-tono="suave">Suave</span><span data-tono="acento">Acento</span><span data-tono="exito">Éxito</span><span data-tono="aviso">Aviso</span><span data-tono="error">Error</span>
+            </div>
+          </th:block>
+        </div>
+      </div>
+    </section>
+
+    <section class="pila" data-espacio="3" aria-labelledby="movimiento">
+      <h2 id="movimiento">Movimiento</h2>
+      <p data-tono="suave">Con <code>data-movimiento</code>; cada ejemplo se mueve una vez al abrir la página. Con
+        «reducir movimiento» en el sistema no se mueve: los ejemplos quedan quietos y visibles.
+        <code>data-retraso</code> (entrada, trazo, sello o cierre) lo hace esperar.</p>
+      <div class="grilla">
+        <div th:replace="~{componentes/muestra :: muestra('data-movimiento=&quot;aparece&quot;', 'Se muestra con un fundido.', ~{::demo-aparece})}">
+          <th:block th:fragment="demo-aparece"><span data-celda data-movimiento="aparece">Aparece</span></th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('data-movimiento=&quot;sube&quot;', 'Se muestra subiendo desde abajo.', ~{::demo-sube})}">
+          <th:block th:fragment="demo-sube"><span data-celda data-movimiento="sube">Sube</span></th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('data-movimiento=&quot;resalta&quot;', 'Se marca un momento con el color destacado: un dato que cambió.', ~{::demo-resalta})}">
+          <th:block th:fragment="demo-resalta"><span data-celda data-movimiento="resalta">Resalta</span></th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('data-movimiento=&quot;crece&quot;', 'Se muestra creciendo desde un poco más chico.', ~{::demo-crece})}">
+          <th:block th:fragment="demo-crece"><span data-celda data-movimiento="crece">Crece</span></th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('data-movimiento=&quot;traza&quot;', 'Se dibuja un trazo SVG; el path lleva pathLength=&quot;1&quot;.', ~{::demo-traza})}">
+          <th:block th:fragment="demo-traza">
+            <svg viewBox="0 0 120 24" width="120" height="24" role="img" aria-label="Una línea que se dibuja">
+              <path d="M4 12 C30 0 50 24 76 12 S104 4 116 12" pathLength="1" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" data-movimiento="traza"/>
+            </svg>
+          </th:block>
+        </div>
+      </div>
+      <h3>Tokens de movimiento</h3>
+      <p data-tono="suave">En <code>tokens.css</code>: las duraciones <code>--movimiento-duracion-*</code> (corta,
+        media, larga, trazo y ambiente), las esperas <code>--movimiento-retraso-*</code>, las curvas
+        <code>--movimiento-curva-*</code> (entrada, enfasis, salida, base y ambiente) y las distancias
+        <code>--movimiento-distancia-*</code> (corta, media y larga). Un movimiento nuevo los usa; no escribe un valor.</p>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

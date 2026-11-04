@@ -14,6 +14,26 @@ description: >-
 > obligatorias), [`docs/interfaz/README.md`](../../../docs/interfaz/README.md) (cuándo está lista) y
 > [`direccion-de-arte.md`](../../../docs/interfaz/direccion-de-arte.md). **Criterios de la cátedra:**
 > [`criterios-catedra-ux-ui.md`](../../../docs/interfaz/criterios-catedra-ux-ui.md) (patrones de interacción, largo de línea, color 60-30-10 y accesibilidad).
+> **Catálogo:** [`componentes.md`](../../../docs/interfaz/componentes.md) (D33): se lee primero.
+
+## 0. El catálogo primero
+
+Antes de escribir una plantilla o una hoja, leer [`componentes.md`](../../../docs/interfaz/componentes.md)
+y mirar `/estilos`.
+
+- Lo que existe en el catálogo (composición, utilidades, movimiento, componentes) se usa como está. No
+  se crea una clase parecida.
+- Lo que falta se agrega primero al catálogo y a `/estilos` (`templates/estilos.html`), y después se
+  usa: una clase o un componente nuevo nace en la capa CUBE (`composicion`, `utilidades`, `bloques`
+  o `excepciones`), nunca en una hoja de pantalla.
+- Una hoja de pantalla nueva solo dispone: sin colores, fuentes, `@keyframes` ni duraciones. El
+  movimiento se pide con `data-movimiento` (`movimiento.css`) y sus tiempos salen de los tokens
+  `--movimiento-*`.
+- Si la tarea toca una hoja de pantalla heredada, migrar antes lo que esa pantalla usa del
+  [backlog de migración](../../../docs/interfaz/backlog-migracion-componentes.md), y bajar el tope del
+  cerco al valor medido.
+- Estado que no sale del navegador (abrir y cerrar, pestañas, vista previa): Alpine CSP, con la
+  lógica en `Alpine.data()` de `static/js/interfaz.js`. Lo que habla con el servidor es HTMX.
 
 ## 1. Precondiciones
 
@@ -46,8 +66,8 @@ description: >-
    - Formularios reales: `action` y `method` verdaderos. HTMX los mejora y lleva `hx-indicator`.
 4. **Pieza compartida.** Si la usan varias pantallas, va en `templates/<pieza>.html`, con un nombre
    que no empieza con un rol (así no se sirve como pantalla), como fragmento parametrizado.
-5. **Estilos** en la hoja de la pantalla, `static/css/<pantalla>.css` (la que el layout recibe en
-   `hoja`); lo común a todo el sitio, en `app.css` o `privado.css`.
+5. **Estilos.** Lo reutilizable va a la capa CUBE (sección 0). En la hoja de la pantalla,
+   `static/css/<pantalla>.css` (la que el layout recibe en `hoja`), solo la disposición propia.
    - Solo tokens de uso y los puntos de quiebre de `tokens.css`, con mobile first.
    - Una sola audacia por pantalla.
 6. **Variante A/B.** Si surge una duda de disposición, usar `iteracion-ab`.
@@ -74,6 +94,7 @@ description: >-
 | Criterio | Cumple | Evidencia |
 |---|---|---|
 | Solo tokens de uso, sin colores ni `style` sueltos | | `InterfazFitnessTest` |
+| Clases del catálogo; lo nuevo, en `componentes.md` y `/estilos` | | `InterfazFitnessTest` |
 | Todos los estados de la ficha | | escenarios + test del controller |
 | Funciona sin JavaScript | | formularios con `action` real |
 | Accesibilidad AA sin errores en 3 anchos | | reporte de `-Pvisual` |

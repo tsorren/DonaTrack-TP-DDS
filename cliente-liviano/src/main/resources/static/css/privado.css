@@ -134,7 +134,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .menu-completo:popover-open {
-    animation: hoja-sube 0.2s ease-out;
+    animation: hoja-sube var(--movimiento-duracion-corta) var(--movimiento-curva-salida);
   }
 }
 

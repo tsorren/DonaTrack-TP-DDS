@@ -20,6 +20,7 @@
         th:href="@{/css/{hoja}.css(hoja=${hoja})}">
   <link rel="stylesheet" href="/css/publico-navegacion.css"
         th:href="@{/css/publico-navegacion.css}">
+  <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
 <body class="raices-publico">
 <a class="saltar" href="#contenido">Saltar al contenido</a>

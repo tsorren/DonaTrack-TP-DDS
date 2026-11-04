@@ -118,6 +118,16 @@ class SitioController {
   }
 
   /**
+   * El catálogo de la interfaz (RF-CL-05, D33): página interna, sin rol y fuera del menú. Muestra
+   * cada pieza de la capa CUBE con su ejemplo; el índice para los agentes es docs/interfaz/
+   * componentes.md.
+   */
+  @GetMapping("/estilos")
+  String estilos() {
+    return "estilos";
+  }
+
+  /**
    * Una pantalla de nivel 3 lleva el nombre de su sección adelante ({@code
    * donante-donaciones-detalle}): el menú marca esa sección. La dirección acepta solo nombres de
    * pantalla, para que el resto (hojas, imágenes, scripts) siga siendo estático.

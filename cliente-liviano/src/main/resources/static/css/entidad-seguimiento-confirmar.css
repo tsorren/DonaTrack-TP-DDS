@@ -393,11 +393,11 @@ main .etiqueta-titulo {
    movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .confirmada--recien .ciclo-trazo {
-    animation: ciclo-traza 1.2s cubic-bezier(0.3, 0.7, 0.2, 1) 0.2s both;
+    animation: ciclo-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
   }
 
   .confirmada--recien .ciclo-entidad {
-    animation: ciclo-imprime 0.4s ease-out 1.3s both;
+    animation: ciclo-imprime var(--movimiento-duracion-media) var(--movimiento-curva-salida) var(--movimiento-retraso-sello) both;
   }
 }
 

@@ -7,9 +7,12 @@ import com.deque.html.axecore.results.AxeResults;
 import com.deque.html.axecore.results.CheckedNode;
 import com.deque.html.axecore.results.Rule;
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
+import com.microsoft.playwright.Video;
+import com.microsoft.playwright.options.ReducedMotion;
 import com.microsoft.playwright.options.ScreenshotAnimations;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -108,6 +111,16 @@ class VerificacionVisualTest {
         return razon < minimo ? razon.toFixed(2) + ':1, pide ' + minimo + ':1' : null;
       }
       """;
+
+  /** Hay alguna animación o transición corriendo (CSS o scroll): la pantalla "tiene movimiento". */
+  private static final String HAY_MOVIMIENTO = "() => document.getAnimations().length > 0";
+
+  /** Cuánto se graba cada pantalla: la coreografía de entrada de las primitivas dura menos. */
+  private static final int MS_DE_VIDEO = 3500;
+
+  private static final int ANCHO_DE_VIDEO = 1280;
+  private static final int ALTO_DE_VIDEO = 720;
+  private static final Path VIDEOS = CAPTURAS.resolve("videos");
 
   private static final String HAY_DESBORDE =
       "() => document.documentElement.scrollWidth > document.documentElement.clientWidth";
@@ -345,6 +358,76 @@ class VerificacionVisualTest {
         .writeValue(CAPTURAS.resolve("reporte.json"), fallas);
 
     assertThat(fallas).as("Detalle en %s", CAPTURAS.resolve("reporte.json")).isEmpty();
+  }
+
+  /**
+   * B0-09 (D32): por cada pantalla de la lista que tiene movimiento al abrirse, un video de {@code
+   * MS_DE_VIDEO} ms en {@code target/capturas/videos/<ruta>.webm}; las que no se mueven no dejan
+   * video. Con "reducir movimiento" en el navegador, ninguna pantalla puede tener animaciones
+   * corriendo (D32: se resuelve dentro de las primitivas).
+   */
+  @Test
+  void lasPantallasConMovimientoDejanSuVideoYRespetanReducirMovimiento() throws IOException {
+    Files.createDirectories(VIDEOS);
+    List<Falla> fallas = new ArrayList<>();
+    List<String> grabadas = new ArrayList<>();
+    Opcion sitio = new Opcion("");
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      for (String ruta : paginas()) {
+        if (!abrir(pagina, ruta, sitio, ANCHO_DE_VIDEO, fallas)
+            || !Boolean.TRUE.equals(pagina.evaluate(HAY_MOVIMIENTO))) {
+          continue;
+        }
+        grabadas.add(grabar(navegador, ruta, sitio));
+        revisarReducirMovimiento(navegador, ruta, fallas);
+      }
+    }
+    JsonMapper.builder()
+        .build()
+        .writerWithDefaultPrettyPrinter()
+        .writeValue(VIDEOS.resolve("reporte.json"), Map.of("videos", grabadas, "fallas", fallas));
+    assertThat(grabadas).as("Al menos /estilos y la portada se mueven").isNotEmpty();
+    assertThat(fallas).as("Detalle en %s", VIDEOS.resolve("reporte.json")).isEmpty();
+  }
+
+  /** Abre la pantalla en un contexto con video, espera y deja el .webm con el nombre de la ruta. */
+  private String grabar(Browser navegador, String ruta, Opcion opcion) {
+    String archivo = nombreDeCaptura(ruta, opcion, "movimiento").replace(".png", ".webm");
+    try (BrowserContext contexto =
+        navegador.newContext(
+            new Browser.NewContextOptions()
+                .setViewportSize(ANCHO_DE_VIDEO, ALTO_DE_VIDEO)
+                .setRecordVideoDir(VIDEOS)
+                .setRecordVideoSize(ANCHO_DE_VIDEO, ALTO_DE_VIDEO))) {
+      Page pagina = contexto.newPage();
+      pagina.navigate("http://localhost:" + puerto + ruta);
+      pagina.waitForTimeout(MS_DE_VIDEO);
+      Video video = pagina.video();
+      pagina.close();
+      video.saveAs(VIDEOS.resolve(archivo));
+      video.delete();
+    }
+    return archivo;
+  }
+
+  private void revisarReducirMovimiento(Browser navegador, String ruta, List<Falla> fallas) {
+    try (BrowserContext contexto =
+        navegador.newContext(
+            new Browser.NewContextOptions().setReducedMotion(ReducedMotion.REDUCE))) {
+      Page pagina = contexto.newPage();
+      pagina.navigate("http://localhost:" + puerto + ruta);
+      if (Boolean.TRUE.equals(pagina.evaluate(HAY_MOVIMIENTO))) {
+        fallas.add(
+            new Falla(
+                ruta,
+                SITIO,
+                ANCHO_DE_VIDEO,
+                "movimiento",
+                "tiene animaciones con \"reducir movimiento\""));
+      }
+    }
   }
 
   private boolean abrir(Page pagina, String ruta, Opcion opcion, int ancho, List<Falla> fallas) {

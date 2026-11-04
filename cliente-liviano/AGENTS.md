@@ -47,13 +47,13 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/` es la portada; `/<pantalla>` muestra `templates/<pantalla>.html`, y una sección del menú sin plantilla, `sin-dibujar`), los escenarios y las variantes A/B |
 | `templates/<pantalla>.html` | Una plantilla por pantalla. El nombre empieza con el rol (`publico-`, `donante-`, `entidad-`, `admin-`) y, en el nivel 3, con el de su sección (`donante-donaciones-detalle`) |
 | `templates/layout-privado.html` y `layout-publico.html` | Estructura de las pantallas privadas y de las públicas (la portada tiene la suya) |
-| `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar` |
+| `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, `interaccion` (la carga de Alpine y la configuración de View Transitions, en el head de los tres layouts), los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar`. `estilos.html` es el catálogo (`/estilos`, RF-CL-05) y `componentes/<componente>.html`, los fragmentos de la capa CUBE |
 | `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre |
 | `static/css/app.css`, `privado.css` y `<pantalla>.css` | Estilos comunes, los de las pantallas privadas y una hoja por pantalla, solo con tokens de uso. Las hojas de pantalla migran a capas CUBE por el [backlog](../docs/interfaz/backlog-migracion-componentes.md) |
-| `static/css/composicion.css`, `utilidades.css`, `movimiento.css` y `componentes/<componente>.css` | Capas CUBE (D33) y primitivas de movimiento (D32), registradas en el [catálogo](../docs/interfaz/componentes.md). Se crean con la fase 0 del backlog |
+| `static/css/composicion.css`, `utilidades.css`, `movimiento.css` y `componentes/<componente>.css` | Capas CUBE (D33) y primitivas de movimiento (D32), registradas en el [catálogo](../docs/interfaz/componentes.md). Creadas con la fase 0 del backlog; `app.css` las carga cada una en su capa |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
 | `templates/variantes/` | Las variantes de estructura: reemplazan la pantalla entera con `?variante=<nombre>`; se borran al decidir |
-| `static/js/` | JavaScript propio y los `Alpine.data()`, solo como mejora sobre lo que ya funciona sin él (hoy, `publico.js`, las mejoras de las páginas públicas) |
+| `static/js/` | JavaScript propio y los `Alpine.data()`, solo como mejora sobre lo que ya funciona sin él: `interfaz.js` (los componentes de Alpine, sin ninguno todavía) y `publico.js` (las mejoras de las páginas públicas) |
 
 Una sola identidad visual ([ADR aceptado](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio (skills
@@ -112,15 +112,17 @@ Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio
 ## Capas CUBE, componentes y movimiento (D32, D33)
 
 - **Primero el [catálogo](../docs/interfaz/componentes.md).** Si lo que hace falta existe, se usa
-  como está. Si falta, se agrega al catálogo (y a `/estilos`, cuando exista con B0-06) antes de usarlo. No se crean clases
+  como está. Si falta, se agrega al catálogo y a `/estilos` (`templates/estilos.html`) antes de usarlo. No se crean clases
   parecidas a una existente.
 - Orden de capas, declarado una vez en `app.css`:
   `@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas;`.
 - Un componente es un fragmento con parámetros con nombre y slots (`~{::#cuerpo}`) más su hoja en
   `static/css/componentes/`. Sus variantes van por atributo (`data-estado`, `data-tono`).
 - Las hojas de pantalla tienen solo disposición propia: sin colores, fuentes, `@keyframes` ni
-  duraciones. Rige para lo nuevo desde ya; lo existente se ajusta por el backlog, y el cerco de
-  `InterfazFitnessTest` lo exige al cerrar su fase 0.
+  duraciones. Rige para lo nuevo: el cerco de `InterfazFitnessTest` lo exige a toda hoja de pantalla
+  que no esté en su lista de heredadas, rechaza las clases de las plantillas que no están en el
+  catálogo ni en `clases-heredadas.txt` (solo baja), y falla si las clases de un solo uso superan su
+  tope. Lo existente se ajusta por el backlog.
 - Movimiento: duraciones, curvas y distancias salen de los tokens `--movimiento-*`; las animaciones
   son primitivas de `movimiento.css` (`data-movimiento`), con "reducir movimiento" resuelto adentro.
   View Transitions, `@starting-style`, `@container` y `popover`, como mejora progresiva.

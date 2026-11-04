@@ -147,3 +147,5 @@
 /admin-inicio?escenario=vacio
 /admin-inicio?escenario=lento
 /admin-inicio?escenario=error
+# El catálogo de la capa CUBE (RF-CL-05, B0-06): axe AA sobre /estilos.
+/estilos

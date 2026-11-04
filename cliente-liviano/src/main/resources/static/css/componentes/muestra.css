@@ -1,0 +1,38 @@
+/* Bloque muestra (D33, B0-06): la ficha de una pieza en /estilos (templates/componentes/muestra.html).
+   Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.muestra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3);
+  border: 2px solid var(--color-borde-control);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+}
+
+.muestra-nombre {
+  margin: 0;
+  color: var(--color-titulo);
+  font-family: var(--fuente-titulo);
+  font-size: var(--tamano-grande);
+}
+
+.muestra-cuando {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.muestra-demo {
+  padding: var(--espacio-2);
+  border: 2px dashed var(--color-borde-control);
+  border-radius: var(--radio-boton);
+}
+
+/* Las celdas de los ejemplos: un hijo con data-celda se ve como una caja. */
+.muestra-demo [data-celda] {
+  padding: var(--espacio-2);
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+}

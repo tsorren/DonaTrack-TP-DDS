@@ -122,7 +122,7 @@ figure.seguimiento-dibujo {
 /* Al pasar o enfocar una entrega de la lista, su línea queda llena y el resto se apaga, como la red
    de la portada (brief, ronda de movimiento). El dibujo acompaña: la lista dice todo. */
 .linea {
-  transition: opacity 0.2s;
+  transition: opacity var(--movimiento-duracion-corta);
 }
 
 .seguimiento-cuerpo:has(.entrega:is(:hover, :focus-within)) .linea {

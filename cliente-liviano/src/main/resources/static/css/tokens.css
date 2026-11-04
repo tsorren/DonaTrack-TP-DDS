@@ -58,6 +58,38 @@
   --p-entregada-texto: #2b5a35;
   --p-problema-fondo: #f3d9d2;
   --p-problema-texto: #93301f;
+  /* El movimiento (D32, B0-01): tiempos, esperas, curvas y distancias base. Las hojas usan solo los
+     tokens de uso de abajo. Los valores salen de las 28 duraciones literales de la línea de base
+     (2026-11-04), con un redondeo de hasta 0,1 s. Duraciones: 0,3 y 0,35 → 0,4; 1 y 1,2 → 1,1.
+     Esperas: 0,2 → 0,3; 1,2 → 1,3; 2,2 y 2,4 → 2,3. */
+  --p-tiempo-1: 0.2s;
+  --p-tiempo-2: 0.4s;
+  --p-tiempo-3: 0.75s;
+  --p-tiempo-4: 1.1s;
+  --p-tiempo-5: 24s;
+  --p-espera-0: 0s;
+  --p-espera-1: 0.3s;
+  --p-espera-2: 0.9s;
+  --p-espera-3: 1.3s;
+  --p-espera-4: 1.7s;
+  --p-espera-5: 2.3s;
+  --p-curva-1: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --p-curva-2: cubic-bezier(0.3, 0.7, 0.2, 1);
+  --p-curva-3: ease-out;
+  --p-curva-4: ease;
+  --p-curva-5: ease-in-out;
+  --p-distancia-1: 0.5rem;
+  --p-distancia-2: 1rem;
+  --p-distancia-3: 2rem;
+  /* El espacio y el tamaño del texto que piden las capas de composición y de utilidades (D33). */
+  --p-espacio-1: 0.5rem;
+  --p-espacio-2: 0.75rem;
+  --p-espacio-3: 1rem;
+  --p-espacio-4: 1.5rem;
+  --p-espacio-5: 2.5rem;
+  --p-texto-1: 0.875rem;
+  --p-texto-2: 1.0625rem;
+  --p-texto-3: 1.125rem;
 }
 
 :root {
@@ -128,6 +160,37 @@
      gastado; el marco doble y la sombra plana salvia, como antes. */
   --radio-lamina: 0.75rem;
   --radio-boton: 0.5rem;
+  /* Movimiento (D32): duraciones (corta, media, larga, trazo y ambiente, la de una escena que no
+     termina), esperas de una coreografía, curvas (entrada, énfasis, salida, base y ambiente) y las
+     distancias que recorre un elemento al entrar. Un movimiento que no es de estos tiene que
+     pedirlos acá, no escribir un valor. */
+  --movimiento-duracion-corta: var(--p-tiempo-1);
+  --movimiento-duracion-media: var(--p-tiempo-2);
+  --movimiento-duracion-larga: var(--p-tiempo-3);
+  --movimiento-duracion-trazo: var(--p-tiempo-4);
+  --movimiento-duracion-ambiente: var(--p-tiempo-5);
+  --movimiento-retraso-ninguno: var(--p-espera-0);
+  --movimiento-retraso-entrada: var(--p-espera-1);
+  --movimiento-retraso-trazo: var(--p-espera-2);
+  --movimiento-retraso-sello: var(--p-espera-3);
+  --movimiento-retraso-cierre: var(--p-espera-4);
+  --movimiento-retraso-ambiente: var(--p-espera-5);
+  --movimiento-curva-entrada: var(--p-curva-1);
+  --movimiento-curva-enfasis: var(--p-curva-2);
+  --movimiento-curva-salida: var(--p-curva-3);
+  --movimiento-curva-base: var(--p-curva-4);
+  --movimiento-curva-ambiente: var(--p-curva-5);
+  --movimiento-distancia-corta: var(--p-distancia-1);
+  --movimiento-distancia-media: var(--p-distancia-2);
+  --movimiento-distancia-larga: var(--p-distancia-3);
+  --espacio-1: var(--p-espacio-1);
+  --espacio-2: var(--p-espacio-2);
+  --espacio-3: var(--p-espacio-3);
+  --espacio-4: var(--p-espacio-4);
+  --espacio-5: var(--p-espacio-5);
+  --tamano-chico: var(--p-texto-1);
+  --tamano-base: var(--p-texto-2);
+  --tamano-grande: var(--p-texto-3);
   /* Los puntos de quiebre del sitio. */
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;

@@ -1428,34 +1428,34 @@ dl.registro-datos > div:nth-child(3) dd::before {
    las raíces de la lámina y la red se trazan desde el brote. Sin movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .ejemplar-sol {
-    animation: aparece 0.4s ease both;
+    animation: aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) both;
   }
 
   .portada-texto,
   .ejemplar-brote,
   .vineta p {
-    animation: registro 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+    animation: registro var(--movimiento-duracion-larga) var(--movimiento-curva-entrada) var(--movimiento-retraso-entrada) both;
   }
 
   .ejemplar :is(.raiz, .raicilla) {
     stroke-dasharray: 1;
-    animation: traza 1s cubic-bezier(0.3, 0.7, 0.2, 1) 0.9s both;
+    animation: traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-trazo) both;
   }
 
   .red-dibujo .ruta {
-    transition: opacity 0.2s;
+    transition: opacity var(--movimiento-duracion-corta);
   }
 
   /* La red se traza desde el brote hasta cada etiqueta (ronda de movimiento de A). */
   .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
     stroke-dasharray: 1;
-    animation: traza 1s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s both;
+    animation: traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
   }
 
 
   .punta,
   .llamada {
-    animation: aparece 0.35s ease 1.7s both;
+    animation: aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-cierre) both;
   }
 
   /* Viento en ciclo (A/B de movimiento, review de Sofía, 2026-11-02): después de trazarse, las hojas
@@ -1465,13 +1465,13 @@ dl.registro-datos > div:nth-child(3) dd::before {
   .planta-dibujo .hoja {
     transform-box: view-box;
     transform-origin: 31px 41px;
-    animation: viento 24s ease-in-out 2.2s infinite;
+    animation: viento var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
   }
 
   .planta-dibujo .fruto {
     transform-box: fill-box;
     transform-origin: 50% 0;
-    animation: viento-fruto 24s ease-in-out 2.4s infinite;
+    animation: viento-fruto var(--movimiento-duracion-ambiente) var(--movimiento-curva-ambiente) var(--movimiento-retraso-ambiente) infinite;
   }
 
   /* La pausa: la casilla cubre el botón entero (el toque es el del botón) y, marcada, el viento se
@@ -1648,7 +1648,7 @@ dl.registro-datos > div:nth-child(3) dd::before {
       stroke-dasharray: 1;
       animation-name: traza;
       animation-duration: auto;
-      animation-delay: 0s;
+      animation-delay: var(--movimiento-retraso-ninguno);
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: --escena;
@@ -1657,7 +1657,7 @@ dl.registro-datos > div:nth-child(3) dd::before {
     .escena :is(.etiqueta, .red-dibujo .ruta--pendiente) {
       animation-name: registro;
       animation-duration: auto;
-      animation-delay: 0s;
+      animation-delay: var(--movimiento-retraso-ninguno);
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: --escena;

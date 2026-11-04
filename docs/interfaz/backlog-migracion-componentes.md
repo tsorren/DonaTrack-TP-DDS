@@ -21,18 +21,26 @@
 
 ## Fase 0 — Base y cerco
 
+> Cerrada el 2026-11-04. Notas de lo hecho: las duraciones se redondearon hasta 0,1 s para entrar en
+> la escala de tokens; Pico no se carga en ninguna plantilla, así que la capa `pico` queda declarada y
+> vacía; las clases que las plantillas ya usaban están en
+> `cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt` (527, solo baja); el cerco
+> mide 211 clases de un solo uso (sin comentarios, textos ni urls): el tope quedó en 211, el valor medido (regla 3), y no en los 212 de la línea de base, que contaban una palabra de un comentario. Las capturas de
+> `-Pvisual` antes y después son iguales salvo 7 de 584 de la portada con 8 a 19 px de diferencia,
+> que también aparecen entre dos corridas del mismo código (ruido de la barra fija).
+
 | ID | Ítem | Depende de | Hecho cuando | Estado |
 |---|---|---|---|---|
-| B0-01 | Tokens de movimiento en `tokens.css`: duraciones, curvas y distancias, en dos niveles | — | Las 28 duraciones literales tienen su token equivalente | Pendiente |
-| B0-02 | `@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas` en `app.css`, con Pico en la capa `pico` | — | Capturas de `-Pvisual` iguales a las de antes | Pendiente |
-| B0-03 | `composicion.css` (`pila`, `racimo`, `barra-lateral`, `cubierta`, `grilla`, `centro`, `marco`) y `utilidades.css` | B0-01, B0-02 | Cada primitiva con su entrada en el catálogo | Pendiente |
-| B0-04 | `movimiento.css` con las primitivas (`aparece`, `sube`, `resalta`, `crece`, `traza`) en `data-movimiento` y "reducir movimiento" resuelto adentro | B0-01 | Video del movimiento en el perfil `visual` | Pendiente |
-| B0-05 | Alpine CSP: WebJar `alpinejs__csp` en `cliente-liviano/pom.xml`, carga `defer` en los layouts y `Alpine.data()` en `static/js/` | — | Test del layout que verifica la carga desde el WebJar | Pendiente |
-| B0-06 | Catálogo: `/estilos` y [`componentes.md`](componentes.md) (nombre, cuándo, parámetros, slots, estados, movimiento, patrón) | B0-03 | RF-CL-05 cumplido; axe AA sobre `/estilos` | Pendiente |
-| B0-07 | Cerco en `InterfazFitnessTest`: clases en el catálogo, tope de clases de un solo uso (212), hojas de pantalla sin color, fuente, `@keyframes` ni duraciones, sin duraciones literales fuera de `tokens.css` | B0-01, B0-06 | Las reglas fallan con un caso inventado y pasan sobre el sitio | Pendiente |
-| B0-08 | Skills: `vista-ui` empieza por el catálogo y `revision-ui` rechaza clases fuera de él (vector nuevo) | B0-06 | Las dos skills citan `componentes.md` | Pendiente |
-| B0-09 | Video de movimiento con Playwright (`recordVideo`) en `VerificacionVisualTest` | B0-04 | Un video por pantalla con movimiento | Pendiente |
-| B0-10 | View Transitions entre páginas y en los intercambios de HTMX | B0-02, B0-04 | Navegación sin animación donde no hay soporte; respeta "reducir movimiento" | Pendiente |
+| B0-01 | Tokens de movimiento en `tokens.css`: duraciones, curvas y distancias, en dos niveles | — | Las 28 duraciones literales tienen su token equivalente | Hecho (2026-11-04) |
+| B0-02 | `@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas` en `app.css`, con Pico en la capa `pico` | — | Capturas de `-Pvisual` iguales a las de antes | Hecho (2026-11-04) |
+| B0-03 | `composicion.css` (`pila`, `racimo`, `barra-lateral`, `cubierta`, `grilla`, `centro`, `marco`) y `utilidades.css` | B0-01, B0-02 | Cada primitiva con su entrada en el catálogo | Hecho (2026-11-04) |
+| B0-04 | `movimiento.css` con las primitivas (`aparece`, `sube`, `resalta`, `crece`, `traza`) en `data-movimiento` y "reducir movimiento" resuelto adentro | B0-01 | Video del movimiento en el perfil `visual` | Hecho (2026-11-04) |
+| B0-05 | Alpine CSP: WebJar `alpinejs__csp` en `cliente-liviano/pom.xml`, carga `defer` en los layouts y `Alpine.data()` en `static/js/` | — | Test del layout que verifica la carga desde el WebJar | Hecho (2026-11-04) |
+| B0-06 | Catálogo: `/estilos` y [`componentes.md`](componentes.md) (nombre, cuándo, parámetros, slots, estados, movimiento, patrón) | B0-03 | RF-CL-05 cumplido; axe AA sobre `/estilos` | Hecho (2026-11-04) |
+| B0-07 | Cerco en `InterfazFitnessTest`: clases en el catálogo, tope de clases de un solo uso (211, el valor medido), hojas de pantalla sin color, fuente, `@keyframes` ni duraciones, sin duraciones literales fuera de `tokens.css` | B0-01, B0-06 | Las reglas fallan con un caso inventado y pasan sobre el sitio | Hecho (2026-11-04) |
+| B0-08 | Skills: `vista-ui` empieza por el catálogo y `revision-ui` rechaza clases fuera de él (vector nuevo) | B0-06 | Las dos skills citan `componentes.md` | Hecho (2026-11-04) |
+| B0-09 | Video de movimiento con Playwright (`recordVideo`) en `VerificacionVisualTest` | B0-04 | Un video por pantalla con movimiento | Hecho (2026-11-04) |
+| B0-10 | View Transitions entre páginas y en los intercambios de HTMX | B0-02, B0-04 | Navegación sin animación donde no hay soporte; respeta "reducir movimiento" | Hecho (2026-11-04) |
 
 ## Fase 1 — Movimiento que hoy está suelto
 
@@ -84,3 +92,4 @@ tamaño:
 | Fecha | Ítems cerrados | Tope de clases de un solo uso | Commit |
 |---|---|:-:|---|
 | 2026-11-04 | — (línea de base) | 212 | — |
+| 2026-11-04 | B0-01 a B0-10 (fase 0 completa) | 211 (el cerco mide sin comentarios, textos ni urls: 211; los 212 de la línea de base incluían una palabra de un comentario) | sin commit; rama `E6_raices`, árbol de trabajo |

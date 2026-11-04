@@ -16,6 +16,7 @@
         th:href="@{/css/{hoja}.css(hoja=${hoja})}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
 <body class="raices-privado">
 <a class="saltar" href="#contenido">Saltar al contenido</a>

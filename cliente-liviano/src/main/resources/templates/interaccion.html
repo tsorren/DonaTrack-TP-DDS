@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<!--/* La interacción del navegador (D31 y D32; B0-05 y B0-10), igual en los tres layouts:
+       layout-publico, layout-privado y la portada. No es una pantalla: su nombre no empieza con un
+       rol, así que SitioController no la muestra. Va en el head.
+       View Transitions en los intercambios de HTMX: la configuración que HTMX lee cuando se cargue
+       (todavía no se carga en ninguna pantalla); entre páginas rige @view-transition de app.css.
+       Alpine.js, con defer. El orden importa: /js/interfaz.js registra los
+       componentes (Alpine.data) cuando Alpine avisa con alpine:init, así que se carga antes que
+       Alpine. Alpine viene del WebJar alpinejs__csp (build CSP, sin versión en la dirección: la
+       versión vive en el pom.xml). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="cargar">
+  <meta name="htmx-config" content='{"globalViewTransitions": true}'>
+  <script src="/js/interfaz.js" th:src="@{/js/interfaz.js}" defer></script>
+  <script src="/webjars/alpinejs__csp/dist/cdn.min.js"
+          th:src="@{/webjars/alpinejs__csp/dist/cdn.min.js}" defer></script>
+</th:block>
+</body>
+</html>

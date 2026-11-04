@@ -27,6 +27,23 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Fase 0 del backlog de componentes: base, catálogo y cerco
+
+- **Decisión:** se implementan los diez ítems de la fase 0 (B0-01 a B0-10): tokens de movimiento
+  (`--movimiento-*`, con las 28 duraciones literales reemplazadas), `@layer` en `app.css`,
+  `composicion.css`, `utilidades.css` y `movimiento.css`, Alpine CSP desde el WebJar, el catálogo
+  `/estilos` con `componentes.md`, el cerco en `InterfazFitnessTest` (tope de clases de un solo
+  uso en 211, el valor medido), las skills `vista-ui` y `revision-ui` con el catálogo y el vector U10, el video del
+  movimiento con Playwright y View Transitions.
+- **Alternativas:** mover todos los `@keyframes` ahora (queda en la fase 1); exigir que toda clase de
+  las plantillas esté en el catálogo desde el primer día (imposible con 527 clases heredadas: lista
+  congelada que solo baja); dejar las duraciones tal cual (no cabían en una escala de cinco).
+- **Por qué:** sin el cerco, migrar no sirve: la entropía vuelve (regla 1 del backlog).
+- **Costo:** las duraciones se redondearon hasta 0,1 s para entrar en la escala de tokens; Pico no se
+  carga hoy en ninguna plantilla, así que la capa `pico` queda declarada y vacía.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: la fase 0 y el OK a la dependencia `alpinejs__csp`. El redondeo de las duraciones y el tope en 211 en lugar de 212 los decidió el agente: queda para que el usuario los confirme.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34.
+
 ### 2026-11-04 · stack · Alpine CSP, CSS nativo con sistema de movimiento y capa CUBE con cerco
 
 - **Decisión:** Alpine.js con el build CSP para el estado que no sale del navegador (HTMX sigue

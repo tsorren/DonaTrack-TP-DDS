@@ -16,6 +16,8 @@
     <properties>
         <htmx.version>2.0.11</htmx.version>
         <pico.version>2.1.1</pico.version>
+        <!-- Alpine.js, build CSP (D31): sin eval, expresiones solo con nombres. Sin plugins. -->
+        <alpine.version>3.17.5</alpine.version>
         <!-- La misma versión que usa axe-core-playwright. -->
         <playwright.version>1.63.0</playwright.version>
         <axe-core-playwright.version>4.14.0</axe-core-playwright.version>
@@ -75,6 +77,11 @@
             <groupId>org.webjars.npm</groupId>
             <artifactId>picocss__pico</artifactId>
             <version>${pico.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>alpinejs__csp</artifactId>
+            <version>${alpine.version}</version>
         </dependency>
         <!-- URLs de WebJars sin versión (/webjars/htmx.org/...): la versión vive solo acá. -->
         <dependency>

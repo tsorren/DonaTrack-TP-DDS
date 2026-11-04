@@ -152,11 +152,11 @@
 @media (prefers-reduced-motion: no-preference) {
   .lamina-dibujo :is(.dib-raiz, .dib-raicilla) {
     stroke-dasharray: 1;
-    animation: lamina-traza 1.1s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s both;
+    animation: lamina-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
   }
 
   .lamina-dibujo g:last-child {
-    animation: lamina-aparece 0.35s ease 1.2s both;
+    animation: lamina-aparece var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-sello) both;
   }
 }
 
