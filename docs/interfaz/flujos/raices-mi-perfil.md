@@ -5,7 +5,7 @@
 > categoría del ranking, y se puede ocultar también en una sola donación (bitácora, "La review de la
 > diseñadora, decidida").
 > Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/donante-perfil`, que hasta hoy abría "todavía no está dibujada". Es un perfil
 > **mínimo**: solo lo que pidieron las decisiones del 2026-11-02 (preguntas 15, 16 y 18). Editar los
 > datos de la cuenta (RI-AUTH-02) queda para cuando se dibuje el perfil completo.

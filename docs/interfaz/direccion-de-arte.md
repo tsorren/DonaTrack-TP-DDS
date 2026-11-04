@@ -137,7 +137,7 @@ diseño:
     `--medida-toque-minimo`.
 - Las variables `--pico-*` se asignan solo en `tokens.css`, a partir de los usos.
 - El sitio tiene una sola identidad, con un `tokens.css` y un `app.css`
-  ([ADR propuesto](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+  ([ADR aceptado](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 - Los puntos de quiebre se declaran una vez en `tokens.css` como `--medida-quiebre-*`. Las media
   queries usan solo esos valores.
 - Si una dirección elegida pide dejar Pico, eso es otra decisión de arquitectura: requiere un ADR

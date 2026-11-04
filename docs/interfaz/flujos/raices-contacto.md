@@ -2,7 +2,7 @@
 
 > **Estado:** aprobado · **Fecha:** 2026-11-02 · **Aprobó:** usuario (2026-11-02), al ver las pantallas dibujadas
 > Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/publico-contacto`. Sale de la pregunta 17 del artifact de
 > preguntas abiertas: el grupo empató y el usuario eligió un formulario dentro de DonaTrack
 > (2026-11-02).

@@ -2,7 +2,7 @@
 
 > **Estado:** borrador, en construcción con el usuario por comparaciones A/B · **Desde:** 2026-10-31
 > La identidad del cliente liviano: la única desde 2026-11-03
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 > Plantilla: [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
 > dice "abierto"; lo que propone el agente dice "propuesto".
 > **Dónde vive (2026-11-03):** es el sitio. Sus pantallas en `templates/`, sus hojas en

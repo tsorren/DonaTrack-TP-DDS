@@ -1,6 +1,6 @@
 # Una sola identidad visual en el cliente liviano: Raíces es el sitio y se retiran las alternativas
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-03
 - Deciders: tsorren, al pedir que el cliente liviano quede solo con Raíces
 - Tags: cliente-liviano, interfaz, identidad, tokens, entrega-6
@@ -35,7 +35,7 @@ neutralidad de la guía para diseñar 25 · reversibilidad 10 · costo del cambi
 
 ## Relaciones Arquitectónicas
 
-1. **Propone reemplazar (`superseded`, a aprobar por un humano):** el
+1. **Reemplaza (`superseded`, aprobado por tsorren el 2026-11-04, al aceptar este ADR):** el
    [ADR de dos alternativas](./20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md) y el
    [ADR de la tercera alternativa](./20261101-tercera-alternativa-raices-como-prototipo-propio.md).
    Ninguno se edita; este ADR dice dónde quedó lo que enlazan

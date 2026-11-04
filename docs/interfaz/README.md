@@ -41,7 +41,7 @@ sus plantillas en `cliente-liviano/src/main/resources/templates/` y sus hojas en
 (`tokens.css`, `app.css` y una hoja por pantalla). En la maqueta, `/` es la portada y cada pantalla
 se ve en `/<pantalla>`. Tiene el recorrido público, el del donante y el de la entidad, más el inicio
 del admin ([mapa del sitio](mapa-del-sitio.md)). Las identidades anteriores se retiraron el
-2026-11-03 ([ADR propuesto](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md));
+2026-11-03 ([ADR aceptado](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md));
 sus documentos están en el [archivo histórico](historico/README.md), que no es guía para diseñar.
 
 La voz, el tono de cada pantalla, los nombres de los estados y las cifras están en

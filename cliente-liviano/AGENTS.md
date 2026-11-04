@@ -53,7 +53,7 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `templates/variantes/` | Las variantes de estructura: reemplazan la pantalla entera con `?variante=<nombre>`; se borran al decidir |
 | `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `publico.js`, las mejoras de las páginas públicas) |
 
-Una sola identidad visual ([ADR propuesto](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+Una sola identidad visual ([ADR aceptado](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio (skills
 `relevamiento-creativo` y `corrida-creativa`).
 

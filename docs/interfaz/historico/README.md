@@ -4,7 +4,7 @@
 > **Desde 2026-11-03 · no es guía vigente**
 
 Acá quedan las dos identidades visuales que el cliente liviano tuvo antes de quedarse con una sola
-([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 Su código se borró; se conservan sus documentos para entender las decisiones de la bitácora y de
 los ADR que las nombran.
 

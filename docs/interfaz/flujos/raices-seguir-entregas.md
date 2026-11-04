@@ -5,7 +5,7 @@
 > (bitácora, "Las líneas de subte, con los codos redondeados").
 > 2026-11-03, pulido: las cifras como leyenda del dibujo y el acceso a Notificaciones en la cabecera.
 > Plantilla de la skill `ux-flujo`. Es la segunda pantalla de Raíces y la primera privada, en el sitio
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/donante-seguimiento`. Mantiene los datos del primer prototipo de esta pantalla.
 
 ## 1. Para quién y para qué

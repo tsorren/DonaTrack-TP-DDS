@@ -668,7 +668,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | Nombre visible del donante y constancia de los legales | Preguntas 15, 16 y 18 de Raíces (HB-20) | Sí | Privacidad y datos personales | Redactado (`proposed`): [ADR](../adr/20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
 | Dos alternativas de identidad visual con hojas propias | Refina D20 | Sí | Cambia D20 y la verificación de RNF-UI-11; costo de mantener dos hojas | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md) |
 | Tercera alternativa (Raíces) como prototipo propio | Refina el ADR de dos alternativas | Sí | Tercera identidad sin triplicar cada pantalla; dirección propia en la maqueta | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md) |
-| Una sola identidad visual (Raíces) y retiro de las alternativas | Propone reemplazar los dos ADR anteriores | Sí | Una pantalla se escribe una vez; el sitio en `/`; propuestas nuevas en su rama | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md) |
+| Una sola identidad visual (Raíces) y retiro de las alternativas | Reemplaza los dos ADR anteriores | Sí | Una pantalla se escribe una vez; el sitio en `/`; propuestas nuevas en su rama | Aceptado (`accepted`, 2026-11-04): [ADR](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md) |
 
 Sin ADR (AGENTS.md §9.2):
 - D28: endpoints aditivos sobre un patrón decidido.

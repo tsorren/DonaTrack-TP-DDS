@@ -10,7 +10,7 @@
 > la raíz grande tiene el grosor de las otras líneas (bitácora, "Lo nuevo primero y la raíz con su
 > grosor").
 > Plantilla de la skill `ux-flujo`. Es la tercera pantalla de Raíces y la primera de la entidad, en el sitio
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/entidad-seguimiento-confirmar`. Mantiene los datos, los campos y las acciones del primer
 > prototipo de esta pantalla.
 

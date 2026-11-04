@@ -7,7 +7,7 @@
 > datos y gráfico, cartel del cambio de cantidad y categoría del ranking con el nombre oculto;
 > bitácora, "La review de la diseñadora, decidida").
 > Plantilla de la skill `ux-flujo`. Es la cuarta pantalla de Raíces y la segunda de la entidad, en el sitio
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/entidad-necesidades`. Parte de los datos del primer prototipo de esta pantalla y le suma lo
 > que pide RF-10 (editar y dar de baja) y el contenido que eligió el usuario.
 

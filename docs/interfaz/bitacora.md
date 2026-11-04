@@ -164,7 +164,7 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 - **Costo:** comparar dos identidades lado a lado pide dos ramas. Los enlaces de los dos ADR
   anteriores a los documentos movidos quedan rotos (los ADR no se editan).
 - **Quién decidió:** usuario.
-- **Evidencia:** [ADR propuesto](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md).
+- **Evidencia:** [ADR aceptado](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md).
 
 ### 2026-11-03 · estructura (Raíces) · Sitio A elegido, con la cabecera, el menú y el pie de B
 

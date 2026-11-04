@@ -2,7 +2,7 @@
 
 > **Estado:** aprobado · **Fecha:** 2026-11-02 · **Aprobó:** usuario (2026-11-02), al ver las pantallas dibujadas
 > Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
-> ([ADR propuesto](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
+> ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/publico-legales`, y el pie que la enlaza desde todas las páginas. Sale de la
 > pregunta 18 del artifact de preguntas abiertas: enlace en el pie y aceptación al registrarse, con
 > constancia (usuario, 2026-11-02). Sofía Deane pidió sumarlos al menú de la portada y a los
