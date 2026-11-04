@@ -16,13 +16,9 @@ main h1 em {
   text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
-/* El papel de una parte: borde de tinta y sombra plana salvia, esquina suave. */
+/* El relleno de una parte (el papel y el filete, de .tarjeta). */
 .lamina {
   padding: 1.25rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 .lamina h2 {

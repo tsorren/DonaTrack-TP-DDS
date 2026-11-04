@@ -71,7 +71,7 @@
 
       <th:block th:if="${escenario == ''}">
         <!--/* Con problema: qué pasó, la última noticia y la nueva salida, sin alarma. */-->
-        <section th:if="${d.estado.tono == 'con-problema'}" class="lamina demora"
+        <section th:if="${d.estado.tono == 'con-problema'}" class="tarjeta lamina demora"
                  aria-labelledby="demora-titulo">
           <h2 id="demora-titulo" th:text="|No pudo llegar a ${destino}.|">No pudo llegar a Escuela
             Ejemplo N.º 12.</h2>
@@ -101,7 +101,7 @@
 
           <section class="detalle-foto" aria-labelledby="foto-titulo">
             <h2 id="foto-titulo">La foto de la entidad</h2>
-            <figure th:if="${d.foto}" class="foto">
+            <figure th:if="${d.foto}" class="tarjeta foto">
               <img src="/img/ejemplo-entrega.svg" th:src="@{${d.foto}}" th:alt="${d.fotoAlt}"
                    alt="Cajas con la ropa de abrigo junto a la puerta del merendero" width="640" height="400">
               <figcaption th:text="|${destino} confirmó la entrega el ${llego} y subió esta foto.|">Merendero
@@ -116,7 +116,7 @@
 
           <svg th:replace="~{iconos :: categorias}"></svg>
 
-          <section class="detalle-datos etiqueta-datos" aria-labelledby="datos-titulo">
+          <section class="tarjeta detalle-datos etiqueta-datos" data-filete="doble" aria-labelledby="datos-titulo">
             <h2 id="datos-titulo">
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria}|"/>

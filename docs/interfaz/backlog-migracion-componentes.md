@@ -105,6 +105,25 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 > lámina, pasaron a `.banner` para no cambiar lo que se ve (hallazgo para la fase 3: son indicadores de
 > carga y quizá deberían ser `.cargando`).
 
+> Tanda 3 (B2-06, B2-07 y B2-08), 2026-11-04. Notas de lo hecho: la barra de secciones (la de cada rol, con
+> su hoja "Más", y la pública) es un solo bloque, `.navegacion` (`componentes/navegacion.css`), con
+> `data-zona="publica"` para la pública; dónde va dentro de la cabecera (el orden y el ancho de la fila)
+> queda en `privado.css` y `publico-navegacion.css`, porque es disposición de esa cabecera. La cabecera
+> misma (`.armazon`, la cuenta y el acceso a Notificaciones) no se migró: no era parte del ítem. La
+> tarjeta (`.tarjeta`, `data-filete`: simple, doble y contorno) es solo el papel, con el filete, la esquina
+> y la sombra: 10 piezas de 8 hojas lo repetían y lo piden ahora con el atributo (`lamina` del donante, `acta`,
+> `etiqueta`, `ejemplar`, `etiqueta-datos`, `decision`, `pedido`, `foto`, `siguiente` y la `lamina` pública);
+> el relleno y la disposición de cada una siguen en su hoja, por eso esas clases siguen como ganchos
+> heredados. La lista adaptable (`.lista`, con `--medida-columna`) reemplaza el reinicio de la lista y las
+> columnas de `laminas`, `actas`, `ejemplares` y `ejemplares-reserva`. **La tabla no se hizo:** ninguna plantilla
+> usa `<table>`, así que no hay nada que migrar (el catálogo lo dice). Para que la barra (fija) le gane a
+> `.tierra-impresa`, esa textura pasó a la capa `utilidades`, y el anillo de foco (`:focus-visible`) y el de
+> paja sobre la cabecera y el pie, a la capa `pico`: una regla sin capa le gana a una con capa. Quedan como
+> clases heredadas las piezas con línea de tiempo (el cuaderno de entregas recibidas, `asiento`, `noticias`,
+> `libro`), que repiten una estructura propia: se propone un ítem nuevo para ellas (B2-14) si el usuario lo
+> confirma. Las demás láminas de una sola pantalla (`.confirmado`, `.puerta`, `.grupo-avisos--sin-leer`,
+> `.estacion-ficha` y `.etiqueta-entidad`) no son iguales a ninguna variante y se quedan.
+
 | ID | Componente | Origen hoy | Pantallas que lo usan | Estado |
 |---|---|---|---|---|
 | B2-01 | Botón | `app.css`, `formularios.css` | Todas | Hecho (2026-11-04) |
@@ -112,9 +131,9 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 | B2-03 | Sello de estado | `sellos.css` | Privadas | Hecho (2026-11-04) |
 | B2-04 | Aviso (toast) y banner, con la cola en Alpine | `app.css`, `privado.css` | Todas las acciones | Hecho (2026-11-04) |
 | B2-05 | Diálogo (`<dialog>` + `@starting-style`) | Foto de la entrega en la portada, bajas | Portada, necesidades | Hecho (2026-11-04) |
-| B2-06 | Navegación por rol y barra pública | `privado.css`, `publico-navegacion.css` | Todas | Pendiente |
-| B2-07 | Tarjeta | `donante-comun.css`, `entidad-comun.css`, `publico-listas.css` | Listas y seguimiento | Pendiente |
-| B2-08 | Tabla o lista adaptable | `publico-listas.css`, `entidad-recibidas.css` | Listados | Pendiente |
+| B2-06 | Navegación por rol y barra pública | `privado.css`, `publico-navegacion.css` | Todas | Hecho (2026-11-04) |
+| B2-07 | Tarjeta | `donante-comun.css`, `entidad-comun.css`, `publico-donaciones.css` y otras 5 hojas | Listas y seguimiento | Hecho (2026-11-04) |
+| B2-08 | Tabla o lista adaptable | `publico-donaciones.css`, `entidad-recibidas.css`, `donante-entidades.css` | Listados | Hecho (2026-11-04); la tabla no: el sitio no tiene ninguna |
 | B2-09 | Estado vacío, esqueleto e indicador de carga | Varias hojas | Todas las listas | Hecho (2026-11-04) |
 | B2-10 | Carga de fotos con vista previa (Alpine) | `entidad-seguimiento-confirmar.css` | Confirmar recepción | Pendiente |
 | B2-11 | Pestañas (Alpine) | `donante-perfil.css` | Mi perfil | Pendiente |
@@ -144,3 +163,4 @@ tamaño:
 | 2026-11-04 | B1-01 a B1-05 (fase 1 completa) | 211 (medido después del cambio; la fase no toca selectores) | c0884659 (rama `E6_raices`) |
 | 2026-11-04 | B2-01 a B2-03 (tanda 1 de la fase 2: botón, campo y sello) | 197 (medido después del cambio; era 211) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
 | 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
+| 2026-11-04 | B2-06, B2-07 y B2-08 (tanda 3 de la fase 2: navegación, tarjeta y lista adaptable) | 186 (medido después del cambio; era 189) | COMMIT_TANDA3 (rama `E6_raices`) |

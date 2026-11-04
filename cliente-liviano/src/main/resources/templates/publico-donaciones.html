@@ -64,7 +64,7 @@
            en el sistema, el aviso va a una región viva. */-->
     <th:block th:if="${escenario == 'lento'}">
       <p class="banner">Cargando las entregas confirmadas…</p>
-      <ul class="laminas" role="list" aria-busy="true">
+      <ul class="lista laminas" role="list" aria-busy="true">
         <li th:each="i : ${#numbers.sequence(1, 6)}" class="esqueleto lamina"></li>
       </ul>
     </th:block>
@@ -74,8 +74,8 @@
           'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-donaciones', true)}"></section>
     </th:block>
 
-    <ol th:if="${conDatos}" class="laminas" role="list">
-      <li th:each="e, i : ${lista}" class="lamina" th:with="id=${'foto-' + i.count}">
+    <ol th:if="${conDatos}" class="lista laminas" role="list">
+      <li th:each="e, i : ${lista}" class="tarjeta lamina" data-filete="contorno" th:with="id=${'foto-' + i.count}">
         <div class="lamina-foto">
           <img src="/img/ejemplo-entrega.svg"
                th:src="${escenario == 'sin-foto' and i.first} ? @{/img/foto-que-no-carga.jpg} : @{${e.foto}}"

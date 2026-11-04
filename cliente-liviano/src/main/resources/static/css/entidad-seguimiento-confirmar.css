@@ -43,15 +43,9 @@
   align-content: start;
 }
 
-/* --- La etiqueta de la entrega: doble filete y sombra plana salvia, como la lámina de la portada - */
+/* --- La etiqueta de la entrega: el relleno (el papel, el doble filete y la sombra, de .tarjeta) ----- */
 .etiqueta {
   padding: 1rem 1.25rem;
-  border: 1.5px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: -7px;
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 main .etiqueta-titulo {
@@ -324,10 +318,6 @@ main .etiqueta-titulo {
 .siguiente {
   justify-items: start;
   padding: 1rem 1.25rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 .siguiente-entrega {

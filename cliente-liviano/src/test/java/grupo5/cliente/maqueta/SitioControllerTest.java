@@ -454,12 +454,13 @@ class SitioControllerTest {
     for (String pantalla : List.of("publico-contacto", "publico-legales")) {
       mvc.perform(get("/" + pantalla))
           .andExpect(status().isOk())
-          .andExpect(content().string(containsString("publica-menu")))
+          .andExpect(content().string(containsString("data-zona=\"publica\"")))
           .andExpect(content().string(not(containsString("aria-current=\"page\""))));
     }
     mvc.perform(get("/donante-donaciones"))
         .andExpect(content().string(containsString("armazon-avisos")));
-    mvc.perform(get("/publico-mapa")).andExpect(content().string(containsString("publica-menu")));
+    mvc.perform(get("/publico-mapa"))
+        .andExpect(content().string(containsString("data-zona=\"publica\"")));
   }
 
   /** Solo el menú de más de 5 secciones (la administración) lleva "Más" en el celular. */

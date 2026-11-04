@@ -90,11 +90,7 @@
 }
 
 .actas {
-  display: grid;
   gap: 1.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .actas .acta {
@@ -216,7 +212,7 @@ main .asiento-texto h3 {
 
 @media (min-width: 53.75em) {
   .actas {
-    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    --medida-columna: 19rem;
   }
 
   /* La línea cruza: las estaciones en una fila, el nombre debajo de cada una. */

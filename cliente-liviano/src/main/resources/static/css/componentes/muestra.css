@@ -36,3 +36,37 @@
   background: var(--color-acento-claro);
   color: var(--color-tinta);
 }
+
+/* Un ejemplo con algo fijo a la pantalla (la barra de navegación): la caja lo contiene (con transform) y
+   lleva la tierra honda de la cabecera. En el celular, la barra no entra de a 48 px en una ficha: la caja
+   tiene un ancho mínimo y la ficha se desplaza de costado. */
+.muestra-demo:has([data-ventana]) {
+  overflow-x: auto;
+}
+
+.muestra-demo [data-ventana] {
+  position: relative;
+  min-width: 20rem;
+  min-height: 11rem;
+  padding: var(--espacio-2);
+  transform: translate(0);
+  border-radius: var(--radio-boton);
+  background: var(--color-suelo-hondo);
+}
+
+/* Desde la tableta, la barra es horizontal y entra en la ficha. */
+@media (min-width: 37.5em) {
+  .muestra-demo [data-ventana] {
+    min-width: 0;
+  }
+}
+
+/* Las tarjetas y la lista de ejemplo: el relleno y la medida de columna que en el sitio pone la pantalla. */
+.muestra-demo .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+.muestra-demo .lista {
+  --medida-columna: 9rem;
+  gap: var(--espacio-3);
+}

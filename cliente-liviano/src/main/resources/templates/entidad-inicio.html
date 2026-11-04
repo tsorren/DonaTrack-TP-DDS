@@ -71,7 +71,7 @@
                th:text="${#lists.size(puerta) == 1} ? '1 entrega espera tu confirmación.' : |${#lists.size(puerta)} entregas esperan tu confirmación.|">2
               entregas esperan tu confirmación.</p>
             <ul class="puerta-lista" role="list">
-              <li th:each="d : ${puerta}" class="acta">
+              <li th:each="d : ${puerta}" class="tarjeta acta" data-filete="doble">
                 <h3 th:id="|puerta-${d.clave}|" class="acta-titulo">
                   <svg class="categoria-icono" viewBox="0 0 100 100" role="img"
                        th:aria-label="${d.categoriaNombre}" aria-label="Alimentos">

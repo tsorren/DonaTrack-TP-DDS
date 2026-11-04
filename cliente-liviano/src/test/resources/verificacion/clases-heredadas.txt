@@ -16,8 +16,6 @@ armazon-avisos
 armazon-avisos-cuenta
 armazon-avisos-texto
 armazon-cuenta
-armazon-mas
-armazon-menu
 asentado
 asentado-pedido
 asiento
@@ -269,9 +267,6 @@ mapa-fruto
 mapa-lista
 marca
 marcar
-menu-completo
-menu-completo-cabecera
-menu-completo-titulo
 mesa
 mesa-cabecera
 mesa-fecha
@@ -375,10 +370,6 @@ problema
 publica
 publica-barra
 publica-cabeza
-publica-menu
-publica-menu-crear
-publica-menu-cuenta
-publica-menu-largo
 publicar
 puerta
 puerta-bajada

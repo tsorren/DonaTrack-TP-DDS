@@ -204,7 +204,7 @@
       <h2 id="pedidos-titulo">Tus necesidades vigentes</h2>
       <ul class="pedidos-lista" role="list">
         <li th:each="n : ${vigentes}" th:id="${n.clave}">
-          <details class="pedido" th:open="${n.clave == pedida}"
+          <details class="tarjeta pedido" data-filete="doble" th:open="${n.clave == pedida}"
                    th:classappend="${mostrarNueva and n.clave == 'fideos'} ? 'pedido--nuevo'">
             <!--/* El resumen dice todo lo necesario para recorrer la lista sin abrir nada. */-->
             <summary class="pedido-resumen">

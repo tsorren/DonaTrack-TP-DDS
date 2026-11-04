@@ -84,7 +84,7 @@
               avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha.</p>
           </section>
 
-          <section th:if="${e.clave == 'lentejas'}" class="siguiente" aria-labelledby="siguiente-titulo">
+          <section th:if="${e.clave == 'lentejas'}" class="tarjeta siguiente" aria-labelledby="siguiente-titulo">
             <h2 id="siguiente-titulo">Te queda una en la puerta</h2>
             <div class="siguiente-entrega">
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
@@ -105,7 +105,7 @@
         </div>
 
         <div class="acta-entrega">
-          <section class="etiqueta" aria-labelledby="etiqueta-titulo">
+          <section class="tarjeta etiqueta" data-filete="doble" aria-labelledby="etiqueta-titulo">
             <h2 id="etiqueta-titulo" class="etiqueta-titulo">
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>

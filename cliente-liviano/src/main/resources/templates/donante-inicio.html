@@ -90,7 +90,7 @@
       </section>
 
       <!--/* En curso: las tres formas de estado, con su cuenta, y las que esperan destino. */-->
-      <section class="lamina en-curso" aria-labelledby="curso-titulo">
+      <section class="tarjeta lamina en-curso" aria-labelledby="curso-titulo">
         <h2 id="curso-titulo">En curso</h2>
         <p th:text="|${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso: ${vanEnCamino} en camino, ${#lists.size(tienenProblema)} con problema y ${esperanSalir} ${esperanSalir == 1 ? 'pendiente' : 'pendientes'}.|">3
           entregas en curso: 1 en camino, 1 con problema y 1 pendiente.</p>
@@ -110,7 +110,7 @@
       </section>
 
       <!--/* Una entrega con problema: qué pasó y la nueva salida, sin alarma. */-->
-      <section th:each="d : ${tienenProblema}" class="lamina demora" aria-labelledby="demora-titulo"
+      <section th:each="d : ${tienenProblema}" class="tarjeta lamina demora" aria-labelledby="demora-titulo"
                th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
         <h2 id="demora-titulo">Una entrega con problema</h2>
         <p class="demora-texto">

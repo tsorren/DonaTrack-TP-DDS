@@ -26,7 +26,7 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <nav id="menu" class="armazon-menu tierra-impresa" aria-label="Secciones">
+  <nav id="menu" class="navegacion tierra-impresa" aria-label="Secciones">
     <ul role="list">
       <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
           th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
@@ -34,14 +34,14 @@
              "Más", que abre todas en una hoja desde abajo, una fila por sección (pulido, 2026-11-03,
              alternativa del usuario; A/B del panel, F). Es una ventana del navegador (popover): anda sin
              JavaScript. Desde la tableta, "Más" no se ve: el menú entra entero en la cabecera. */-->
-      <li th:if="${#lists.size(navegacion) > 5}" class="armazon-mas">
+      <li th:if="${#lists.size(navegacion) > 5}" class="navegacion-mas">
         <button type="button" popovertarget="menu-completo"><span aria-hidden="true">+</span>
           Más</button>
-        <div id="menu-completo" class="menu-completo" popover role="dialog"
+        <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
              aria-labelledby="menu-completo-titulo">
-          <div class="menu-completo-cabecera">
+          <div class="navegacion-hoja-cabecera">
             <!--/* "Todas las secciones": el menú ya se llama "Secciones" (pulido de Nico, 2026-11-04). */-->
-            <p id="menu-completo-titulo" class="menu-completo-titulo">Todas las secciones</p>
+            <p id="menu-completo-titulo" class="navegacion-hoja-titulo">Todas las secciones</p>
             <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
                     popovertargetaction="hide">Cerrar</button>
           </div>

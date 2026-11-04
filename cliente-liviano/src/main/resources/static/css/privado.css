@@ -1,10 +1,9 @@
 /* Estructura de las pantallas privadas de Raíces (layout-privado.html): la cabecera con la marca,
-   el menú del rol y la cuenta, y el contenido. En el celular, el menú es una barra de navegación
-   inferior: el patrón para 3 a 5 destinos de primer nivel, al alcance del pulgar (criterios de la
-   cátedra, sección 4). Desde la tableta, el menú va horizontal en la cabecera de tierra honda
-   (usuario, 2026-11-03, tomado del sitio B: reemplaza la columna plegable del 2026-11-01). En la
-   tableta, en una segunda fila; en pantalla grande, en la misma fila que la marca. También: el
-   rótulo y el título de cada pantalla, y los avisos. */
+   el menú del rol y la cuenta, y el contenido. El menú es el bloque `navegacion`
+   (componentes/navegacion.css): una barra inferior en el celular (criterios de la cátedra, sección
+   4) y, desde la tableta, horizontal en la cabecera de tierra honda (usuario, 2026-11-03, tomado del
+   sitio B). Acá solo va dónde queda en la cabecera: en la tableta, en una segunda fila; en pantalla
+   grande, en la misma fila que la marca. También: el rótulo y el título de cada pantalla. */
 @import url("app.css");
 
 /* --- El celular: la marca y la cuenta arriba; el menú, una barra fija abajo ---------------------- */
@@ -19,203 +18,6 @@
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
   padding: 0.75rem 1rem;
-}
-
-.armazon-menu {
-  position: fixed;
-  inset: auto 0 0;
-  z-index: 2;
-  background: var(--color-suelo);
-  border-top: 3px solid var(--color-tinta);
-}
-
-.armazon-menu ul {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.armazon-menu a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 3.75rem;
-  padding: 0.5rem 0.25rem;
-  color: var(--color-texto-suelo);
-  font-size: 0.875rem;
-  font-weight: 700;
-  line-height: 1.15;
-  text-align: center;
-  text-decoration: none;
-}
-
-.armazon-menu a:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
-}
-
-/* La sección actual se destaca (criterios de la cátedra: pestañas). */
-.armazon-menu a[aria-current="page"] {
-  background: var(--color-raiz);
-  color: var(--color-tinta);
-}
-
-.armazon-menu :focus-visible {
-  outline-color: var(--color-raiz);
-  outline-offset: -5px;
-}
-
-.armazon-menu a[aria-current="page"]:focus-visible {
-  outline-color: var(--color-tinta);
-}
-
-/* Con más de 5 secciones (la administración): la barra muestra las 4 primeras y "Más", que abre
-   todas en una hoja desde abajo, una fila por sección (layout-privado.html). */
-.armazon-menu ul:has(.armazon-mas) > li:nth-child(n + 5):not(.armazon-mas) {
-  display: none;
-}
-
-/* Con 5 celdas, a 360 px cada una mide 72 px y "Donaciones" no entraba: en esa barra la letra va
-   angosta, el mismo tamaño (revision-ui del cierre del pulido, 2026-11-03). Con :where, pesa lo
-   mismo que ".armazon-menu a" y la tableta lo pisa. */
-.armazon-menu :where(ul:has(.armazon-mas) > li) > a {
-  padding-inline: 0.125rem;
-  font-stretch: 75%;
-}
-
-.armazon-mas > button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  width: 100%;
-  min-height: 3.75rem;
-  margin: 0;
-  padding: 0.5rem 0.25rem;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--color-texto-suelo);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.armazon-mas > button span {
-  font-size: 1.375rem;
-  line-height: 1;
-}
-
-/* Una hoja que sube desde abajo, al alcance del pulgar, con la página oscurecida detrás (A/B del
-   panel de "Más", F, usuario, 2026-11-03). */
-.menu-completo {
-  inset: auto 0 0;
-  width: 100%;
-  max-width: none;
-  height: auto;
-  max-height: 85vh;
-  margin: 0;
-  padding: 1.5rem 1rem 2rem;
-  border: 0;
-  border-top: 3px solid var(--color-tinta);
-  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-}
-
-.menu-completo::backdrop {
-  background: var(--color-tinta);
-  opacity: 0.55;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .menu-completo:popover-open {
-    animation: var(--movimiento-animacion-hoja-sube);
-  }
-}
-
-.menu-completo:popover-open {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Sin ventanas del navegador (popover, navegadores de antes de 2024), "Más" no abriría nada: la barra
-   muestra todas las secciones, en filas de a 3 (pulido, 2026-11-04). */
-@supports not selector(:popover-open) {
-  /* Desde la tableta la lista es flex: la grilla no la toca, y "Más" ya no se ve. */
-  .armazon-menu ul:has(.armazon-mas) {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .armazon-menu ul:has(.armazon-mas) > li:nth-child(n + 5):not(.armazon-mas) {
-    display: list-item;
-  }
-
-  .armazon-mas {
-    display: none;
-  }
-}
-
-/* "Más" va marcado cuando la sección actual es una de las que no entran en la barra. */
-.armazon-mas:has(.menu-completo li:nth-child(n + 5) a[aria-current="page"]) > button {
-  background: var(--color-raiz);
-  color: var(--color-tinta);
-}
-
-/* Cerrar arriba, a la vista (pulido, 2026-11-03, buenas prácticas de ventanas). */
-.menu-completo-cabecera {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.menu-completo-titulo {
-  margin: 0;
-  font: 800 1.5rem / 1.2 var(--fuente-titulo);
-  font-stretch: 118%;
-}
-
-.armazon-menu .menu-completo ul {
-  display: grid;
-  grid-auto-flow: row;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 2px solid var(--color-tinta);
-}
-
-.armazon-menu .menu-completo a {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 3.5rem;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--color-tinta);
-  color: var(--color-tinta);
-  font-size: 1.0625rem;
-  font-weight: 700;
-  text-align: left;
-  text-decoration: none;
-}
-
-.armazon-menu .menu-completo a[aria-current="page"] {
-  background: var(--color-raiz);
-}
-
-.armazon-menu .menu-completo :focus-visible {
-  outline-color: var(--color-tinta);
-  outline-offset: -4px;
-}
-
-.menu-completo .boton {
-  cursor: pointer;
 }
 
 .armazon-cuenta {
@@ -388,53 +190,11 @@ main h1 {
     padding-inline: max(2rem, (100% - 82rem) / 2);
   }
 
-  /* En la tableta, una segunda fila a todo el ancho de la cabecera. */
-  .armazon-menu {
-    position: static;
+  /* En la tableta, el menú (componentes/navegacion.css) va en una segunda fila a todo el ancho de la
+     cabecera. */
+  .armazon .navegacion {
     order: 1;
     flex-basis: 100%;
-    background: none;
-    border-top: 0;
-  }
-
-  /* En la cabecera, sin la tierra impresa de la barra: la franja ya es tierra. */
-  .armazon-menu::before {
-    content: none;
-  }
-
-  .armazon-menu ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-  }
-
-  .armazon-menu a {
-    min-height: 3rem;
-    padding: 0.5rem 0.875rem;
-    border-radius: var(--radio-boton);
-    font-size: 1rem;
-    font-stretch: 112%;
-  }
-
-  /* La sección actual, impresa en paja con la sombra corrida de Raíces. */
-  .armazon-menu a[aria-current="page"] {
-    box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
-  }
-
-  .armazon-menu :focus-visible {
-    outline-offset: 3px;
-  }
-
-  .armazon-menu a[aria-current="page"]:focus-visible {
-    outline-color: var(--color-raiz);
-  }
-
-  .armazon-menu ul:has(.armazon-mas) > li:nth-child(n + 5):not(.armazon-mas) {
-    display: list-item;
-  }
-
-  .armazon-mas {
-    display: none;
   }
 }
 
@@ -445,7 +205,7 @@ main h1 {
     column-gap: 1rem;
   }
 
-  .armazon-menu {
+  .armazon .navegacion {
     order: 0;
     flex: 1 1 auto;
   }
@@ -453,22 +213,22 @@ main h1 {
   /* El menú en un solo renglón: si se parte, la segunda fila deja un hueco a su lado (pulido,
      2026-11-03: "Seguir entregas" de la entidad bajaba a 1280 px). Se achica la cuenta. Solo con
      hasta 5 secciones (donante y entidad): las 7 de la administración no entran en una fila. */
-  .armazon-menu ul:not(:has(li:nth-child(6))) {
+  .armazon .navegacion ul:not(:has(li:nth-child(6))) {
     flex-wrap: nowrap;
   }
 
-  .armazon-menu ul:not(:has(li:nth-child(6))) a {
+  .armazon .navegacion ul:not(:has(li:nth-child(6))) a {
     padding-inline: 0.5rem;
     white-space: nowrap;
   }
 
   /* Con más (las 7 de la administración), el menú en su propia fila, como en la tableta: partido
      al lado de la cuenta dejaba un hueco. */
-  .armazon:has(.armazon-menu li:nth-child(6)) {
+  .armazon:has(.navegacion li:nth-child(6)) {
     flex-wrap: wrap;
   }
 
-  .armazon-menu:has(li:nth-child(6)) {
+  .armazon .navegacion:has(li:nth-child(6)) {
     order: 1;
     flex-basis: 100%;
   }

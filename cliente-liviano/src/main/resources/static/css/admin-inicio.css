@@ -44,12 +44,6 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 1.125rem 1.25rem 1.25rem;
-  border: 1.5px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: -7px;
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 main .decision h3 {

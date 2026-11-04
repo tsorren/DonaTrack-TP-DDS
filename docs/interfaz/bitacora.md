@@ -27,6 +27,61 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Fase 2, tanda 3 del backlog: navegación, tarjeta y lista adaptable
+
+- **Decisión:** se implementan B2-06, B2-07 y B2-08. **Navegación:** la barra de secciones de cada rol (con
+  su hoja "Más", un popover) y la de las páginas públicas son un solo bloque, `.navegacion`
+  (`componentes/navegacion.css`), con `data-zona="publica"` para la pública y las piezas `.navegacion-mas`,
+  `.navegacion-hoja` (+ `-cabecera` y `-titulo`), `.navegacion-largo`, `.navegacion-aparte` y
+  `.navegacion-destacado`. Dónde va dentro de la cabecera (el orden y el ancho de la fila) sigue en
+  `privado.css` y `publico-navegacion.css`: es disposición de esa cabecera. **Tarjeta:** `.tarjeta`
+  (`componentes/tarjeta.css`) es solo el papel (filete, esquina suave y sombra plana salvia), con
+  `data-filete`: simple, `doble` (etiqueta de herbario) y `contorno`; el relleno (`--espacio-relleno`) y la
+  disposición los pone la hoja de cada pantalla. La piden 10 piezas de 8 hojas (`lamina` del donante,
+  `acta`, `etiqueta`, `ejemplar`, `etiqueta-datos`, `foto`, `decision`, `pedido`, `siguiente` y la `lamina`
+  pública), que dejaron de repetir entre 4 y 6 declaraciones. **Lista adaptable:** `.lista` (`componentes/lista.css`)
+  reinicia la lista y reparte los elementos en columnas de al menos `--medida-columna` (una sola sin ella);
+  la usan `laminas`, `actas`, `ejemplares` y `ejemplares-reserva`. El tope de clases de un solo uso baja de
+  189 a 186 y las heredadas, de 487 a 478.
+- **Alternativas:** una tarjeta con relleno, título y disposición propios (descartada: cada una de las 10
+  piezas tiene otro relleno y otra estructura, y unificarlos cambiaba lo que se ve); `.grilla` para las
+  listas (descartada: usa `auto-fit` y estira los pocos elementos, y no reinicia la lista); variantes de la
+  barra pública con custom properties (descartada: el cerco solo deja `var()` de tokens de uso; se resolvió con
+  `:where()` para que pesen lo mismo que la base); un fragmento Thymeleaf para el menú privado (descartada:
+  `layout-privado` ya lo arma con el modelo y no se repite); migrar también la cabecera (`.armazon`, la
+  cuenta y el acceso a Notificaciones; descartada: no era parte del ítem).
+- **Por qué:** la barra era la misma en dos hojas con diferencias de tres propiedades; el papel de la
+  tarjeta salía de 10 lugares con un mismo valor de tinta, esquina y sombra; el reinicio y la grilla de las
+  listas se repetían en cuatro. Una regla sin capa le gana a una con capa, así que la barra (fija) no podía
+  ganarle a `.tierra-impresa` (`position: relative`) ni al anillo de foco sin capa: la textura pasó a la capa
+  `utilidades` y el anillo de foco (`:focus-visible`, y el de paja sobre la cabecera y el pie), a `pico`.
+- **Costo:** **la tabla no se hizo:** ninguna plantilla usa `<table>`, así que no había nada que migrar (el
+  catálogo lo dice). Siguen como heredadas las clases gancho de las 10 piezas (relleno y disposición), las
+  piezas con línea de tiempo (el cuaderno de entregas recibidas con `asiento`, `noticias` y `libro`, que
+  repiten una estructura propia; se propone un ítem B2-14) y otras láminas de una sola pantalla
+  (`.confirmado`, `.puerta`, `.grupo-avisos--sin-leer`, `.estacion-ficha`, `.etiqueta-entidad`). La cabecera
+  `.armazon` sigue en `privado.css`. En `/estilos` las barras de ejemplo van dentro de una caja con
+  `transform` (para contener lo fijo) y, en el celular, con ancho mínimo y desplazamiento de costado (si no,
+  cada celda mide 46 px y falla el toque de 48).
+- **Quién decidió:** usuario (tsorren), 2026-11-04: hacer B2-06, B2-07 y B2-08 en esta tanda. El agente
+  decidió y queda para que el usuario confirme: los nombres (`.navegacion` y sus piezas, `.tarjeta`, `.lista`,
+  `data-zona`, `data-filete`, `--espacio-relleno`, `--medida-columna`); que `data-filete` tenga tres
+  valores; las 10 piezas migradas a la tarjeta; el alcance de la lista (grillas de tarjetas, no el cuaderno);
+  no construir la tabla; la cabecera fuera; mover la textura `.tierra-impresa` a la capa `utilidades` y el
+  anillo de foco a `pico`; y quitar `cursor: pointer` del botón "Cerrar" de la hoja (ya lo da `.boton`).
+  **Cambios visuales por confirmar:** ninguno.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. `-Pvisual`
+  (55 pruebas verdes) con una corrida de ruido como base, las dos sobre el código sin tocar: 583 de 588
+  capturas iguales; `/estilos` (3) cambió por el contenido nuevo y la
+  portada (2) difiere 7 y 19 px en las mismas filas que entre dos corridas del mismo código. Hover, foco por
+  teclado y hoja "Más", en un test temporal de Playwright (borrado) sobre el código viejo (un worktree en
+  `HEAD`), el nuevo y otra corrida del viejo como ruido: 83 estados con los estilos calculados idénticos y
+  55 capturas iguales (la barra de Donante, Administración y Mapa a 360, 768 y 1280 px y de la portada a
+  360 y 1280 px; las tarjetas de Necesidades, Recibidas, Inicio de la entidad, Entidades, Inicio del donante
+  y Entregas confirmadas con el foco puesto), salvo 2
+  px que también difieren entre las dos corridas del código viejo. `/estilos` con las barras, las tarjetas y la
+  lista pasa axe AA, el toque de 48 px y sin desbordes en 360, 1280 y 1920 px.
+
 ### 2026-11-04 · stack · Fase 2, tanda 2 del backlog: aviso breve y banner con su cola, diálogo, estado vacío, carga y esqueleto
 
 - **Decisión:** se implementan B2-04, B2-05 y B2-09. El papel del aviso (la lámina con filete y sombra

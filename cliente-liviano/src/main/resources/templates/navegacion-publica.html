@@ -8,22 +8,22 @@
        la portada, Contacto y Términos. No es una pantalla: su nombre no empieza con un rol. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="navegacion(actual)" class="publica-menu tierra-impresa" aria-label="Secciones">
+<nav th:fragment="navegacion(actual)" class="navegacion tierra-impresa" data-zona="publica" aria-label="Secciones">
   <ul role="list">
     <li><a href="/publico-donaciones" th:href="@{/publico-donaciones}"
            th:aria-current="${actual == 'publico-donaciones'} ? 'page' : null"><span>Entregas<span
-          class="publica-menu-largo"> confirmadas</span></span></a></li>
+          class="navegacion-largo"> confirmadas</span></span></a></li>
     <li><a href="/publico-mapa" th:href="@{/publico-mapa}"
            th:aria-current="${actual == 'publico-mapa'} ? 'page' : null">Mapa</a></li>
     <li><a href="/publico-entidades" th:href="@{/publico-entidades}"
            th:aria-current="${actual == 'publico-entidades'} ? 'page' : null">Entidades</a></li>
-    <li class="publica-menu-cuenta"><a href="/publico-ingresar"
+    <li class="navegacion-aparte"><a href="/publico-ingresar"
            th:href="@{/publico-ingresar}"
            th:aria-current="${actual == 'publico-ingresar'} ? 'page' : null">Ingresar</a></li>
-    <li class="publica-menu-cuenta publica-menu-crear"><a href="/publico-registro"
+    <li class="navegacion-destacado"><a href="/publico-registro"
            th:href="@{/publico-registro}"
            th:aria-current="${actual == 'publico-registro'} ? 'page' : null"><span>Crear<span
-          class="publica-menu-largo"> una</span> cuenta</span></a></li>
+          class="navegacion-largo"> una</span> cuenta</span></a></li>
   </ul>
 </nav>
 </body>

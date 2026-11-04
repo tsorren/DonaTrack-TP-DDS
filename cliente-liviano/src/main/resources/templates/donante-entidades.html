@@ -79,7 +79,7 @@
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando">Cargando las entidades…</p>
-      <div class="ejemplares-reserva" aria-busy="true">
+      <div class="lista ejemplares-reserva" aria-busy="true">
         <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
         <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
       </div>
@@ -108,8 +108,8 @@
 
       <svg th:replace="~{iconos :: categorias}"></svg>
 
-      <ul th:if="${dibujada or busca != ''}" class="ejemplares" role="list">
-        <li th:each="e, vuelta : ${lista}" class="ejemplar">
+      <ul th:if="${dibujada or busca != ''}" class="lista ejemplares" role="list">
+        <li th:each="e, vuelta : ${lista}" class="tarjeta ejemplar" data-filete="doble">
           <svg class="ejemplar-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
             <circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/>
             <use href="#cat-alimentos" th:href="|#${e.icono}|" x="4" y="4" width="34" height="34"/>
@@ -157,7 +157,7 @@
     </th:block>
 
     <!--/* Cómo donar (RF-15 y RF-17): texto fijo, con los datos del depósito, sintéticos. */-->
-    <section class="lamina como-donar" aria-labelledby="como-titulo">
+    <section class="tarjeta lamina como-donar" aria-labelledby="como-titulo">
       <h2 id="como-titulo">Cómo llega tu donación</h2>
       <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
         entidad. Desde que la registran, ves cada paso en Mis donaciones.</p>

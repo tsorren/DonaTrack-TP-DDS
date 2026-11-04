@@ -18,6 +18,9 @@
 @import url("componentes/aviso.css") layer(bloques);
 @import url("componentes/carga.css") layer(bloques);
 @import url("componentes/dialogo.css") layer(bloques);
+@import url("componentes/navegacion.css") layer(bloques);
+@import url("componentes/tarjeta.css") layer(bloques);
+@import url("componentes/lista.css") layer(bloques);
 
 *,
 *::before,
@@ -33,17 +36,25 @@ body {
   font: 400 1.0625rem/1.6 var(--fuente-texto);
 }
 
-/* El color de los enlaces es la base: va en la capa `pico` para que los componentes (el botón con forma
-   de enlace) le ganen sin pelear por especificidad. */
+/* El color de los enlaces y el anillo de foco son la base: van en la capa `pico` para que los
+   componentes (el botón con forma de enlace, la barra de navegación) le ganen sin pelear por
+   especificidad. */
 @layer pico {
   a {
     color: var(--color-acento);
   }
-}
 
-:focus-visible {
-  outline: 3px solid var(--color-acento);
-  outline-offset: 3px;
+  :focus-visible {
+    outline: 3px solid var(--color-acento);
+    outline-offset: 3px;
+  }
+
+  /* Sobre la tierra honda de la cabecera y del pie, el anillo es de paja. */
+  .raices-cabecera :focus-visible,
+  .raices-pie :focus-visible,
+  .armazon :focus-visible {
+    outline-color: var(--color-raiz);
+  }
 }
 
 .saltar {
@@ -83,12 +94,6 @@ body {
 .raices-cabecera,
 .raices-pie {
   border-image: conic-gradient(var(--color-suelo-hondo) 0 0) fill 0 / / 0 100vmax;
-}
-
-.raices-cabecera :focus-visible,
-.raices-pie :focus-visible,
-.armazon :focus-visible {
-  outline-color: var(--color-raiz);
 }
 
 /* La marca, un cartel de papel sobre la tierra (como en B). */
@@ -157,22 +162,25 @@ body::before {
 }
 
 /* En los planos de tierra, la tinta no cubre del todo y el papel se asoma en puntitos, también
-   detrás del contenido. Tarjetas, botones y dibujos quedan lisos. */
-.tierra-impresa {
-  position: relative;
-  isolation: isolate;
-}
+   detrás del contenido. Tarjetas, botones y dibujos quedan lisos. Va en la capa `utilidades` para que
+   un bloque le gane: la barra de navegación es fija y, desde la tableta, no lleva la textura. */
+@layer utilidades {
+  .tierra-impresa {
+    position: relative;
+    isolation: isolate;
+  }
 
-.tierra-impresa::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.07;
-  background: var(--color-texto-suelo);
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -6 0 0 0 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")
-    0 0 / 260px 260px;
-  pointer-events: none;
+  .tierra-impresa::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.07;
+    background: var(--color-texto-suelo);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -6 0 0 0 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")
+      0 0 / 260px 260px;
+    pointer-events: none;
+  }
 }
 
 .hero {

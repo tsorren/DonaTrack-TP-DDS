@@ -263,6 +263,84 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.navegacion', 'La barra de secciones: en el celular, fija abajo; desde la tableta, horizontal en la cabecera (acá, dentro de una caja). La sección actual lleva aria-current=&quot;page&quot;. data-zona=&quot;publica&quot; para las páginas públicas, con .navegacion-largo (lo que solo se lee en la barra del celular), .navegacion-aparte (va a la derecha) y .navegacion-destacado (el botón principal). Con más de 5 secciones, .navegacion-mas abre .navegacion-hoja (un popover) con todas, en el celular.', ~{::demo-navegacion})}">
+          <th:block th:fragment="demo-navegacion">
+            <div class="pila" data-espacio="3">
+              <div data-ventana>
+                <nav class="navegacion tierra-impresa" aria-label="Secciones de ejemplo, de un rol">
+                  <ul role="list">
+                    <li><a href="#navegacion" aria-current="page">Inicio</a></li>
+                    <li><a href="#navegacion">Donaciones</a></li>
+                    <li><a href="#navegacion">Entidades</a></li>
+                    <li><a href="#navegacion">Reportes</a></li>
+                    <li><a href="#navegacion">Usuarios</a></li>
+                    <li><a href="#navegacion">Auditoría</a></li>
+                    <li class="navegacion-mas">
+                      <button type="button" popovertarget="muestra-menu-completo"><span aria-hidden="true">+</span>
+                        Más</button>
+                      <div id="muestra-menu-completo" class="navegacion-hoja" popover role="dialog"
+                           aria-labelledby="muestra-menu-completo-titulo">
+                        <div class="navegacion-hoja-cabecera">
+                          <p id="muestra-menu-completo-titulo" class="navegacion-hoja-titulo">Todas las secciones</p>
+                          <button class="boton" data-tono="secundario" type="button"
+                                  popovertarget="muestra-menu-completo" popovertargetaction="hide">Cerrar</button>
+                        </div>
+                        <ul role="list">
+                          <li><a href="#navegacion" aria-current="page">Inicio</a></li>
+                          <li><a href="#navegacion">Donaciones</a></li>
+                          <li><a href="#navegacion">Entidades</a></li>
+                          <li><a href="#navegacion">Reportes</a></li>
+                          <li><a href="#navegacion">Usuarios</a></li>
+                          <li><a href="#navegacion">Auditoría</a></li>
+                        </ul>
+                      </div>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+              <div data-ventana>
+                <nav class="navegacion tierra-impresa" data-zona="publica" aria-label="Secciones de ejemplo, públicas">
+                  <ul role="list">
+                    <li><a href="#navegacion" aria-current="page"><span>Entregas<span
+                        class="navegacion-largo"> confirmadas</span></span></a></li>
+                    <li><a href="#navegacion">Mapa</a></li>
+                    <li><a href="#navegacion">Entidades</a></li>
+                    <li class="navegacion-aparte"><a href="#navegacion">Ingresar</a></li>
+                    <li class="navegacion-destacado"><a href="#navegacion"><span>Crear<span
+                        class="navegacion-largo"> una</span> cuenta</span></a></li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.tarjeta', 'Una parte con papel propio: filete de tinta, esquina suave y sombra plana salvia. Es solo el papel; el relleno es --espacio-relleno y la disposición de lo de adentro la pone la pantalla. data-filete: sin él, simple; doble (la etiqueta de herbario: Mis entidades, las actas, los pedidos) o contorno (el filete por fuera, sin borde).', ~{::demo-tarjeta})}">
+          <th:block th:fragment="demo-tarjeta">
+            <div class="grilla">
+              <article class="tarjeta">
+                <h4>Filete simple</h4>
+                <p>Una parte de la página, como «Lo que va en camino».</p>
+              </article>
+              <article class="tarjeta" data-filete="doble">
+                <h4>Filete doble</h4>
+                <p>La etiqueta de herbario: una entrega, un pedido o una entidad.</p>
+              </article>
+              <article class="tarjeta" data-filete="contorno">
+                <h4>Filete de contorno</h4>
+                <p>El filete por fuera del papel, como las entregas confirmadas.</p>
+              </article>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. Todavía no hay una tabla en el sitio: cuando haga falta, se agrega acá.', ~{::demo-lista})}">
+          <th:block th:fragment="demo-lista">
+            <ul class="lista" role="list">
+              <li class="tarjeta" data-filete="doble"><b>Lentejas secas</b><br>15 kg · Esperan tu confirmación</li>
+              <li class="tarjeta" data-filete="doble"><b>Ropa de abrigo</b><br>10 unidades · En camino</li>
+              <li class="tarjeta" data-filete="doble"><b>Fideos secos</b><br>8 kg · Pendiente</li>
+            </ul>
+          </th:block>
+        </div>
       </div>
     </section>
   </div>

@@ -116,10 +116,6 @@
 .foto {
   margin: 0;
   padding: 0.75rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 .foto img {
@@ -154,12 +150,6 @@
 /* --- Los datos, en su etiqueta de herbario ----------------------------------------------------- */
 .etiqueta-datos {
   padding: 1rem 1.25rem 1.25rem;
-  border: 1.5px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: -7px;
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
 }
 
 main .etiqueta-datos h2 {

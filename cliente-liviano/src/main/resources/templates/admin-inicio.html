@@ -49,7 +49,7 @@
           asignación.</p>
       </div>
       <div th:if="${conDecisiones}" class="decisiones-lista">
-        <section class="decision" aria-labelledby="decision-entidades">
+        <section class="tarjeta decision" data-filete="doble" aria-labelledby="decision-entidades">
           <h3 id="decision-entidades">Entidades <span>3 piden sumarse</span></h3>
           <ul class="decision-nombres" role="list">
             <li>Hogar Ejemplo Norte</li>
@@ -60,13 +60,13 @@
           <a class="boton" data-tono="principal" href="/admin-entidades"
              th:href="@{/admin-entidades}">Revisar entidades</a>
         </section>
-        <section class="decision" aria-labelledby="decision-vencen">
+        <section class="tarjeta decision" data-filete="doble" aria-labelledby="decision-vencen">
           <h3 id="decision-vencen">Donaciones <span>4 vencen en los próximos 7 días</span></h3>
           <p>La primera, Leche en polvo, vence el 17 de octubre, en 2 días.</p>
           <a class="boton" data-tono="principal" href="/admin-donaciones?vence=pronto"
              th:href="@{/admin-donaciones(vence='pronto')}">Ver las que vencen</a>
         </section>
-        <section class="decision" aria-labelledby="decision-propuestas">
+        <section class="tarjeta decision" data-filete="doble" aria-labelledby="decision-propuestas">
           <h3 id="decision-propuestas">Asignar donaciones <span>2 propuestas</span></h3>
           <ul class="decision-nombres" role="list">
             <li>Leche en polvo, 10 unidades, para Merendero Ejemplo Sur.</li>

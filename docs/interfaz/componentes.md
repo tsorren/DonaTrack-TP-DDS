@@ -9,9 +9,9 @@
 > hechas (composición, utilidades, movimiento con las animaciones con nombre de las pantallas y la
 > muestra del catálogo) y, de la fase 2, botón, campo de formulario y sello de estado (B2-01 a B2-03)
 > y aviso breve con su cola de Alpine, banner, diálogo, estado vacío, indicador de carga y esqueleto
-> (B2-04, B2-05 y B2-09). Los demás componentes (navegación, tarjeta, tabla, carga de fotos,
-> pestañas, piezas de la entidad y mapa) todavía viven en las hojas de pantalla: figuran como heredados
-> (ver abajo). Mientras tanto, su patrón está en
+> (B2-04, B2-05 y B2-09), y navegación, tarjeta y lista adaptable (B2-06 a B2-08). Los demás
+> componentes (carga de fotos, pestañas, piezas de la entidad y mapa) todavía viven en las hojas de
+> pantalla: figuran como heredados (ver abajo). Mientras tanto, su patrón está en
 > [patrones y microcopy](patrones-y-microcopy.md#componentes-y-su-patrón).
 
 ## Cómo se usa
@@ -28,7 +28,7 @@
   nuevas a la lista.
 - Las capas, en orden (la última gana): `pico, tokens, composicion, utilidades, bloques,
   excepciones, pantallas`, declaradas en `app.css`. Lo que no está en una capa (las hojas de
-  pantalla de hoy) gana a todas, hasta que se migre: por eso una regla sin capa de un elemento (como `a { color }`) le ganaría a un componente, y las de base viven en la capa `pico`.
+  pantalla de hoy) gana a todas, hasta que se migre: por eso una regla sin capa de un elemento (como `a { color }`) le ganaría a un componente, y las de base viven en la capa `pico`: el color de los enlaces, el anillo de foco (`:focus-visible`, también el de paja sobre la cabecera y el pie) y el título de sección (`main h2`). La textura `.tierra-impresa` vive en la capa `utilidades` por lo mismo: la barra de navegación, que es fija, tiene que ganarle.
 
 ## Composición
 
@@ -120,7 +120,7 @@ variantes van por atributo (`data-estado`, `data-tono`, `data-tamano`), en la mi
 
 | Componente | Fragmento | Parámetros | Slots | Estados y excepciones | Movimiento | Patrón |
 |---|---|---|---|---|---|---|
-| `.muestra` (la ficha de una pieza en `/estilos`) | `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | `nombre`, `cuando` | `cuerpo` | — | — | Tarjeta de documentación (Material: card) |
+| `.muestra` (la ficha de una pieza en `/estilos`) | `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | `nombre`, `cuando` | `cuerpo` | `data-celda` (un hijo que se ve como una caja) y `data-ventana` (una caja que contiene lo que va fijo a la pantalla, como la barra de navegación, y lleva la tierra honda de la cabecera; en el celular se desplaza de costado) | — | Tarjeta de documentación (Material: card) |
 | `.boton` | Sin fragmento: el elemento nativo, `<button class="boton">` o `<a class="boton" href>` | — | El texto del botón | `data-tono`: `principal` (la acción de la pantalla), `secundario` o `quitar` (dar de baja). `data-tamano="chico"`: más bajo, en contorno; con `data-tono="principal"` queda lleno y solo más angosto. `hidden` lo oculta. Al apretar se hunde sobre su sombra | `:active` | Material: Buttons (filled, outlined, text) |
 | `.campo` y `.campo-error` | Sin fragmento: `<div class="campo">` con `label`, el control nativo (`input`, `select` o `textarea`), una ayuda `small` opcional y, si falla, `<p class="campo-error">` | — | La etiqueta, el control, la ayuda y el error | `data-estado="error"` (borde del control en el color del problema; el mensaje va en `.campo-error` y se enlaza con `aria-describedby`). `input[type="number"]` es angosto; `textarea` se estira en vertical | — | Material: Text fields |
 | `.estado` y `.estado-sello` | `componentes/sello :: sello(estado)` (el dibujo) dentro de `<span class="estado" data-estado="…">` con la palabra al lado | `estado` | — | `data-estado`: donante `pendiente`, `en-camino`, `entregada`, `con-problema`; entidad `puerta`, `camino`, `salir`, `recibida`, `problema`. El fragmento dibuja además `hecho` y `falta` (etapas de un recorrido) y cualquier otro valor lo dibuja como problema. El color solo acompaña: el estado va siempre en palabras | — | Material: Chips / badges |
@@ -130,9 +130,18 @@ variantes van por atributo (`data-estado`, `data-tono`, `data-tamano`), en la mi
 | `.vacio` | Sin fragmento: `<section class="vacio" aria-labelledby>` con `h2`, `p` y, si hay, el botón del paso posible | — | El título, el texto y la acción | Mismo papel que el banner. Con el brote del donante (`.aviso-brote`, heredada) | — | Material: Empty states |
 | `.cargando` y `.esqueleto` | Sin fragmento: `<p class="cargando" role="status">` con el texto de lo que se trae y, dentro de una región con `aria-busy="true"`, los `<div class="esqueleto">` | — | El texto; los lugares de las partes | `.esqueleto`: `data-forma="punteado"` (contorno punteado) y `data-tamano="alto"` (más altura). Sin datos inventados | — | Material: Progress indicators |
 | `.dialogo` y `.dialogo-titulo` | Sin fragmento: `<dialog class="dialogo" popover aria-labelledby>` y, en la página, un `<button popovertarget="…">` que lo abre y un botón con `popovertargetaction="hide"` que lo cierra | — | El título (`.dialogo-titulo`), el contenido y los botones | `data-tono="quitar"` (confirmar algo irreversible: borde del color del problema, más angosto, el foco entra en "No, dejarla" con `autofocus`). Se abre y se cierra sin JavaScript, con Esc o tocando afuera; el navegador devuelve el foco al botón | Fundido de entrada y de salida (`--movimiento-transicion-dialogo`, con `@starting-style`) | Material: Dialogs / HIG: Alerts |
+| `.navegacion`, `.navegacion-largo`, `.navegacion-aparte`, `.navegacion-destacado` | `navegacion-publica :: navegacion(actual)` para las públicas y la portada; la de cada rol, en `layout-privado` (el menú del modelo de vista) | `actual` (la pantalla de la sección actual; `''` en la portada, Contacto y Términos) | Los enlaces de las secciones, una lista (`ul role="list"`) dentro de `<nav aria-label="Secciones">` | La sección actual lleva `aria-current="page"` (en paja). `data-zona="publica"`: las páginas públicas (franja de papel sobre la barra, letra más angosta). `.navegacion-largo` es el resto del nombre, que en la barra del celular solo leen los lectores; `.navegacion-aparte` (Ingresar) va a la derecha desde la tableta y `.navegacion-destacado` (Crear una cuenta) es el botón principal. Con la clase `tierra-impresa` lleva la textura de la tierra en el celular. Dónde va dentro de la cabecera (el orden y el ancho de la fila) lo dice la hoja de la pantalla (`privado.css`, `publico-navegacion.css`) | — | Material: Navigation bar |
+| `.navegacion-mas`, `.navegacion-hoja`, `.navegacion-hoja-cabecera`, `.navegacion-hoja-titulo` | Sin fragmento: un `<li class="navegacion-mas">` más en la lista, con un `<button popovertarget>` y la hoja `<div class="navegacion-hoja" popover role="dialog" aria-labelledby>` | — | El título, el botón "Cerrar" y la lista de todas las secciones | Solo con más de 5 secciones (la administración): la barra del celular muestra las 4 primeras y "Más", que abre todas en una hoja desde abajo y queda marcado si la sección actual no entra en la barra. Desde la tableta no se ve "Más": el menú entra entero. Sin popover, la barra muestra todas en filas de a 3. El foco entra a la primera sección (`autofocus`) | Sube desde abajo (`--movimiento-animacion-hoja-sube`) | Material: Navigation drawer / bottom sheet |
+| `.tarjeta` | Sin fragmento: cualquier elemento con `class="tarjeta"` y su clase de pantalla (`lamina` del donante y la pública, `acta`, `etiqueta`, `etiqueta-datos`, `ejemplar`, `decision`, `pedido`, `foto`, `siguiente`) para el relleno y la disposición | `--espacio-relleno` (sin él, ninguno) | El contenido; el título y sus partes los dispone la pantalla | `data-filete`: sin él, simple (borde de 2 px); `doble` (la etiqueta de herbario: borde fino y otro filete más adentro); `contorno` (el filete por fuera, sin borde: no suma alto ni ancho). Esquina suave y sombra plana salvia. Una sombra de otro color (la de demora del donante, la de lo que espera en la puerta de la entidad) la pone la pantalla | — | Material: Cards |
+| `.lista` | Sin fragmento: `<ul class="lista" role="list">`, `<ol>` o, para los esqueletos de una carga, un `<div>`, con `--medida-columna` | `--medida-columna` (ancho mínimo de cada columna; sin él, una sola columna) | Los elementos de la lista, casi siempre `.tarjeta` | Reparte los elementos en tantas columnas como entren (no estira los pocos, a diferencia de `.grilla`) y reinicia la lista (sin viñetas, margen ni relleno). El espacio entre elementos, el margen y la medida en cada ancho los dice la hoja de la pantalla (por ejemplo, `--medida-columna: 19rem` desde 53,75 em). **Todavía no hay una tabla en el sitio** (ninguna plantilla usa `<table>`): cuando haga falta, se agrega acá | — | Material: Lists / Data tables |
 
-Los demás componentes (navegación, tarjeta, tabla, carga de fotos, pestañas, piezas de la entidad y
-mapa) se agregan acá al cerrar su ítem de la fase 2 del backlog.
+`--espacio-relleno` y `--medida-columna` son parámetros de `.tarjeta` y `.lista`, no tokens de `tokens.css`: llevan el prefijo de los tokens de uso para pasar el cerco, y esos nombres quedan reservados (no se definen en `:root`).
+
+Las listas con una línea de tiempo (el cuaderno de entregas recibidas, `asiento`; las noticias del
+donante; el libro de donaciones) y las demás láminas de una sola pantalla (`.confirmado`, `.puerta`,
+`.grupo-avisos--sin-leer`, `.estacion-ficha`, `.etiqueta-entidad`, `.herbario`) siguen como clases
+heredadas de la hoja de su pantalla. Los demás componentes (carga de fotos, pestañas, piezas de la
+entidad y mapa) se agregan acá al cerrar su ítem de la fase 2 del backlog.
 
 **Quedan como clases heredadas**, de una sola pantalla: en la portada, `aviso` y `aviso--suelo` (el
 estado sin datos en un marco de filete, con otro aspecto que el banner; B3-01), `foto-ventana` y

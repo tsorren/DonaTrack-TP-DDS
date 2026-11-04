@@ -100,9 +100,9 @@
               th:text="|${g.nombre} (${#lists.size(lista)})|">Esperan tu confirmación (2)</h2>
 
           <!--/* Lo que todavía no se recibió: un acta por donación, con su estado y su próximo paso. */-->
-          <ul th:if="${g.clave != 'recibida'}" class="actas" role="list">
+          <ul th:if="${g.clave != 'recibida'}" class="lista actas" role="list">
             <li th:each="d : ${lista}">
-              <article class="acta" th:aria-labelledby="|don-${d.clave}|">
+              <article class="tarjeta acta" data-filete="doble" th:aria-labelledby="|don-${d.clave}|">
                 <h3 th:id="|don-${d.clave}|" class="acta-titulo">
                   <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                     <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>

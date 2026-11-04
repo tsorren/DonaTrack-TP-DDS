@@ -5,12 +5,8 @@
 @import url("publico-listas.css");
 
 .laminas {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  --medida-columna: 15rem;
   gap: 2rem 1.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .lamina {
@@ -18,16 +14,10 @@
   grid-template-rows: auto 1fr auto;
   gap: 1rem;
   padding: 0.75rem 0.75rem 1rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
-  outline: 1.5px solid var(--color-tinta);
 }
 
 .lamina.esqueleto {
   min-height: 22rem;
-  outline: 0;
-  box-shadow: none;
   background: var(--color-pendiente-fondo);
 }
 

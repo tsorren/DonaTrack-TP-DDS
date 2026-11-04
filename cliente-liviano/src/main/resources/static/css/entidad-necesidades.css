@@ -125,15 +125,6 @@
   list-style: none;
 }
 
-.pedido {
-  border: 1.5px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: -7px;
-  background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
-}
-
 .pedido-resumen {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr) 1.5rem;
