@@ -111,4 +111,4 @@ tamaño:
 |---|---|:-:|---|
 | 2026-11-04 | — (línea de base) | 212 | — |
 | 2026-11-04 | B0-01 a B0-10 (fase 0 completa) | 211 (el cerco mide sin comentarios, textos ni urls: 211; los 212 de la línea de base incluían una palabra de un comentario) | 2e7ace16 (rama `E6_raices`) |
-| 2026-11-04 | B1-01 a B1-05 (fase 1 completa) | 211 (medido después del cambio; la fase no toca selectores) | sin commit (rama `E6_raices`) |
+| 2026-11-04 | B1-01 a B1-05 (fase 1 completa) | 211 (medido después del cambio; la fase no toca selectores) | c0884659 (rama `E6_raices`) |
