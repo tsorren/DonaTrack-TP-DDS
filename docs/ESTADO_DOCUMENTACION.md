@@ -99,7 +99,7 @@ docs/
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04, SPEC-05)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-06)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -118,7 +118,7 @@ docs/
 │   └── evals-agentes-resumen.md
 │
 ├── requerimientos/                        # 🟢 Requerimientos por entrega
-│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs; D1 cerrada con Keycloak)
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
@@ -158,6 +158,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | Especificación SDD | Topología AMQP Pub/Sub canónica, colas segregadas, envelope nativo, 10 schemas y Hard Cutover. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-04-broker-integracion-logistica.md`](specs/active/SPEC-04-broker-integracion-logistica.md) | Especificación SDD | Broker de Integración con Logística: selección de proveedor (AMQP/HTTP), comando dirigido, `mandatory` + acuse, outbox basado en datos. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md`](specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) | Especificación SDD | Rediseño del roadmap de preprod fiel (D1–D5) e implementación de RM-01 a RM-08. `APPROVED_BY_USER`. | 🟢 Sincronizado |
+| [`docs/specs/active/SPEC-06-auth-mvp-keycloak.md`](specs/active/SPEC-06-auth-mvp-keycloak.md) | Especificación SDD | MVP de autenticación con Keycloak (login, registro de donante, menú por rol y logout) y backlog ordenado de las etapas siguientes. `APPROVED_BY_USER`. | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
 | [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
@@ -253,6 +254,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md`](adr/20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md) | ADR Arquitectura AMQP | Incentivos tolera eventos fuera de orden (reintento con espera creciente y DLQ por cola) y la suite de integración espera la propagación de eventos (PollingUtils + ArchUnit, Toxiproxy en preprod). `proposed`. | 🟢 Sincronizado |
 | [`docs/adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md`](adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) | ADR CI/CD y Despliegue | Preprod post-merge sobre el digest candidato, promoción por re-etiquetado y manifiesto de versión; despliegue reproducible del manifiesto en el runner con smoke y rollback, y Render como adaptador opcional (revisión 2026-10-28). `proposed`. | 🟢 Sincronizado |
 | [`docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md`](adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) | ADR Persistencia | Una base por servicio en el mismo PostgreSQL, con el schema `<servicio>` adentro; reemplaza al ADR multi-schema, que queda `superseded`. Implementado el 2026-10-29 (RM-19, DTI-26). `accepted` (2026-10-29). | 🟢 Sincronizado |
+| [`docs/adr/auth-service/20261104-proveedor-de-identidad-keycloak.md`](adr/auth-service/20261104-proveedor-de-identidad-keycloak.md) | ADR Seguridad | D1 de E6: Keycloak configurado como proveedor de identidad (OIDC, JWKS, claim `roles` plano, sin PII en el token); el Key Broker de E7 pasa a un servicio aparte. `proposed`. | 🟢 Sincronizado |
 | [`docs/adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md`](adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md) | ADR Contratos | Contrato primero, schemas de eventos abiertos y chequeos nuevos en aviso en el PR y en error en el post-merge y en el corte de entrega (D5). `accepted` (2026-10-29). | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
@@ -294,9 +296,9 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
-| [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación (Entrega 6) y Key Broker (Entrega 7, decisión D29 de [requerimientos-e6](requerimientos/requerimientos-e6.md)). | 🟢 Sincronizado |
+| [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Decidido, sin implementar: tendrá la configuración de Keycloak (realm, tema, Dockerfile) según el [ADR del proveedor de identidad](adr/auth-service/20261104-proveedor-de-identidad-keycloak.md); implementación en el backlog de [SPEC-06](specs/active/SPEC-06-auth-mvp-keycloak.md). El Key Broker es un servicio aparte en E7 (D29). | 🟢 Sincronizado |
 | [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para la interfaz de usuario y arquitectura MVC (Entrega 6). | 🟢 Sincronizado |
-| [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend; decisiones D1–D30 con alternativas (5 pendientes) y ADRs candidatos. | 🟢 Sincronizado |
+| [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend; decisiones D1–D30 con alternativas (4 pendientes; D1 cerrada con Keycloak) y ADRs candidatos. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entrega-4/README.md`](entrega-4/README.md) | Índice Entrega 4 | Índice de todos los `.md` de `docs/entrega-4/` y de la guía de migración de Notificaciones. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/entregable-5/`](entrega-4/arquitectura/entregable-5/README.md) | Entregable 5 Entrega 4 | Informe de arquitectura en .docx/.pdf, su fuente `contenido.md`, las 5 figuras y el constructor. | 🟢 Sincronizado |

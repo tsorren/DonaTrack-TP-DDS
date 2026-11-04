@@ -1,0 +1,199 @@
+# Spec: SPEC-06 — MVP de autenticación con Keycloak (backlog)
+
+> **Estado:** APPROVED_BY_USER (2026-11-04, tsorren). Falta la revisión del equipo en el PR.
+> **Nivel:** ARCHITECTURAL (AGENTS.md §7.0): introduce una tecnología nueva (Keycloak), cambia los mecanismos de seguridad y tiene impacto cross-service.
+> **Fecha:** 2026-11-04
+> **Base:** `ENTREGA_6` (`8962906f`). Rama del PR: `E6_auth-service`, hacia `ENTREGA_6`. Ojo: no es `E6_auth_service`, que tiene un IdP propio con Spring Authorization Server y queda como referencia.
+> **ADR:** [Proveedor de identidad: Keycloak configurado](../../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md) (`proposed`).
+> **Requerimientos:** [requerimientos de E6](../../requerimientos/requerimientos-e6.md), §4 (IdP) y §9–§10 (decisiones).
+
+---
+
+## 1. Objetivo Funcional (Goal)
+
+Que una persona **inicie sesión con email y clave en el cliente liviano** y que **el sitio sepa su rol** (`DONANTE`, `ENTIDAD` o `ADMIN`) para mostrarle sus secciones. Es la primera etapa del servicio de autenticación de E6. Las etapas siguientes quedan ordenadas en el backlog (§4).
+
+En lenguaje llano:
+- **Keycloak** es el "portero": guarda las cuentas, comprueba la clave y entrega un **pase firmado** (token JWT) con el id de la persona y sus roles.
+- El **sitio** manda a la persona a la pantalla de Keycloak, recibe el pase y lo guarda en la sesión del servidor. El navegador solo tiene una cookie.
+- Los **servicios** del backend van a comprobar ese pase en la etapa 2. En el MVP todavía no lo hacen.
+
+**Criterio de hecho del MVP:**
+- Un donante se registra.
+- Un donante y el admin inicial entran con su email y su clave.
+- Cada uno llega a su inicio y ve su menú.
+- Ninguno entra a las secciones de otro rol.
+- Al salir, para volver a entrar hay que escribir la clave otra vez.
+
+## 2. Alcance Delimitado (Scope Boundaries)
+
+### In-Scope
+
+- **Esta spec (docs):** el ADR del proveedor de identidad, este backlog y la sincronía de `requerimientos-e6.md`, `auth-service/README.md`, `docs/README.md`, `docs/specs/README.md`, `docs/ESTADO_DOCUMENTACION.md` y `docs/adr/DEUDA_TECNICA.md`.
+- **Etapa 1 (MVP), en sesiones siguientes:**
+  - Keycloak en el compose y el realm `donatrack` versionado.
+  - El admin inicial y un tema mínimo para la pantalla de login.
+  - El cliente liviano como cliente OIDC: login, registro de donante, menú por rol y logout.
+
+### Out-of-Scope
+
+Queda fuera del MVP. Va a la etapa 2 en adelante (§4):
+- Gateway y validación del token en los 4 servicios.
+- Spring Session JDBC (D5).
+- `sub` en `Persona` y "completar perfil".
+- Registro de entidad con aprobación.
+- Google (D3, D4).
+- Recuperación de la clave y verificación del email (D8).
+- Client credentials y retiro de `X-API-Key` (D25).
+- Alta masiva por CSV (D12).
+- Tema completo con la identidad Raíces.
+- Cambio de rol.
+- Quién entra por una jurídica (D30).
+
+También queda fuera:
+- Key Broker: E7, como servicio aparte (D29).
+- El código de la rama `E6_auth_service` (Spring Authorization Server): no se integra.
+
+## 3. Decisiones Acordadas y Trade-offs
+
+| # | Decisión (usuario, 2026-11-04) | Alternativas descartadas y por qué |
+|---|---|---|
+| D1 | Keycloak configurado como IdP. Según el equipo, la cátedra confirmó que cuenta como servicio de autenticación | Spring Authorization Server, Keycloak con fachada propia y JWT casero: ver la matriz del [ADR](../../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md) |
+| M1 | El MVP es "IdP + sitio": la validación en los servicios va a la etapa 2 | "Solo el IdP": no cumple el criterio de hecho. "IdP + sitio + servicios": rompe Postman y los tests de integración antes de la entrega |
+| M2 | En el MVP, la pantalla de login es la de Keycloak con logo y colores mínimos; el tema Raíces completo, en la etapa 2 | Formulario propio con *password grant* (ROPC): OAuth 2.1 lo elimina, el sitio vería la clave y se pierde el SSO |
+| M3 | Rama nueva `E6_auth-service` desde `ENTREGA_6`, sin el código de `E6_auth_service` | Traerlo dejaría código muerto. Sus reglas (bloqueo tras 5 intentos en 15 min; clave de 10 a 128 caracteres y distinta del email) pasan al realm |
+| M4 | La parte A del MVP (Keycloak) arranca ya; la parte B (el sitio) espera los PR del cliente liviano | Empezar B sobre `ENTREGA_6`: el módulo `cliente-liviano` todavía no existe ahí (PR 920, 924 y 926 abiertos) |
+
+## 4. Backlog
+
+**Reglas:**
+1. Cada ítem cierra con su test, la documentación que toca y esta tabla actualizada (fecha y commit).
+2. Las cadenas de configuración marcadas `[INFERRED]` se confirman exportando el realm desde la consola de Keycloak antes de versionarlas.
+3. Los secretos van solo por variables de entorno (RNF-AUTH-05). En el repo, solo `.env.example`.
+
+### Etapa 1 — MVP. Parte A: Keycloak (sin dependencias, desde `ENTREGA_6`)
+
+| ID | Ítem | Depende de | Hecho cuando | Estado |
+|---|---|---|---|---|
+| A1-01 | **Keycloak en el compose.** Imagen `quay.io/keycloak/keycloak:26.8.1` fijada por digest, con un `Dockerfile` en `auth-service/` que copia el realm y el tema y corre `kc.sh build`. Servicio en `docker-compose.yml`, puerto 8180 (el 8080 es de Donaciones y el 8085 de Adminer). Base `keycloak` con su rol `keycloak_user` en `persistencia/init-db/01-init-schemas-roles.sql` y su clave en `02-set-role-passwords.sh` (ADR de base por servicio). Variables en `.env.example` y `scripts/generar-env-db.sh`: `KEYCLOAK_DB_PASSWORD`, `KC_BOOTSTRAP_ADMIN_USERNAME` y `KC_BOOTSTRAP_ADMIN_PASSWORD` (admin de la consola, no de DonaTrack), `KC_HOSTNAME`, `KC_HTTP_ENABLED`, `KC_HEALTH_ENABLED`. Healthcheck por el puerto de gestión 9000 dentro del contenedor (sin publicarlo en el host: el 9000 del host es de MinIO); la imagen no trae curl, así que no puede copiar el de los demás servicios | — | `docker compose up` deja `keycloak` en `healthy`. El README de `auth-service/` avisa que, con un volumen previo, hace falta `docker compose down -v` para crear la base | Pendiente |
+| A1-02 | **Realm `donatrack` versionado** en `auth-service/realm/donatrack-realm.json`, importado al arrancar (`--import-realm`). Contenido:<br>• roles `DONANTE`, `ENTIDAD` y `ADMIN`; login por email (`registrationEmailAsUsername`);<br>• perfil de usuario sin nombre ni apellido obligatorios (sirve también para una jurídica);<br>• política de clave `length(10) and maxLength(128) and notEmail` `[INFERRED]`;<br>• fuerza bruta: 5 fallos en 15 min bloquean 15 min (RNF-AUTH-07);<br>• access token de 15 min (D6) y SSO idle de 8 h (D7);<br>• `revokeRefreshToken=true` con `refreshTokenMaxReuse=0` (D7);<br>• cliente confidencial `cliente-liviano` (*authorization code*), con el secreto por variable, `redirectUris` y `post.logout.redirect.uris`;<br>• mapper de roles con el claim `roles` plano y multivalor en el access token, el ID token y el token liviano (RNF-AUTH-08);<br>• `aud` del API; access token sin email ni nombre (RNF-AUTH-09) | A1-01 | Test con Testcontainers (`GenericContainer` con la imagen del Dockerfile, sin dependencia nueva) que pide un token y verifica `sub`, `roles`, `aud` y `exp − iat = 900 s`, sin `email` ni `name` en el access token. Además, 5 fallos bloquean la cuenta y reusar un refresh rotado corta la sesión | Pendiente |
+| A1-03 | **Admin inicial y rol por defecto.** El usuario ADMIN del realm se importa con `${AUTH_ADMIN_EMAIL}` y `${AUTH_ADMIN_PASSWORD}`; el compose usa `${VAR:?}` para fallar si faltan. El autorregistro da `DONANTE` y el admin no lo hereda (D10; los `default-roles` del realm se aplican a todo usuario nuevo) | A1-02 | Un test verifica que el admin tiene solo `ADMIN`, que un usuario autorregistrado tiene `DONANTE` y que la clave del admin no quedó como el literal `${...}` | Pendiente |
+| A1-04 | **Tema mínimo `donatrack`** para la pantalla de login y registro: extiende el tema base de Keycloak, con el logo, los colores de `tokens.css` como CSS propio y el idioma español por defecto | A1-01 | Captura de la pantalla de login y de la de registro en 360 y 1280 px | Pendiente |
+
+### Etapa 1 — MVP. Parte B: el sitio
+
+> **Depende de que se mergeen los PR 920 y 924 (hacia `ENTREGA_6`) y 926 (hacia `E6_corrida_creativa`).** En `ENTREGA_6`, `cliente-liviano` todavía no es módulo de Maven. Si la parte B no puede esperar, va en un PR apilado sobre `E6_raices`, y eso se declara en el PR.
+
+| ID | Ítem | Depende de | Hecho cuando | Estado |
+|---|---|---|---|---|
+| B1-01 | **Cliente OIDC.** `spring-boot-starter-security` y `spring-boot-starter-security-oauth2-client` (nombres de Spring Boot 4.0.7; el test usa `spring-boot-starter-security-oauth2-client-test`). Registro `keycloak` con el `issuer-uri` por variable. Un `GrantedAuthoritiesMapper` arma `ROLE_*` desde el claim `roles` del ID token. Reglas por ruta: las páginas públicas abiertas; `/donante*`, `/entidad*` y `/admin*`, cada una con su rol. Con el perfil `maqueta`, todo abierto, para que la maqueta y sus capturas sigan iguales | A1-02, PR del cliente | Tests con MockMvc y `oidcLogin()`. `SitioControllerTest` y `-Pvisual` siguen en verde | Pendiente |
+| B1-02 | **Ingresar y registrarse.** "Ingresar" lleva a `/oauth2/authorization/keycloak`. "Registrarse" agrega `prompt=create` con un `OAuth2AuthorizationRequestResolver` propio (el endpoint `/registrations` está deprecado). `publico-ingresar` y `publico-registro-donante` quedan solo en la maqueta | B1-01 | Test del redirect: "Registrarse" lleva `prompt=create` | Pendiente |
+| B1-03 | **Navegación según el rol.** Los menús por rol (`MENUS` de `SitioController`, perfil `maqueta`) pasan a un componente compartido. Un controller real en `grupo5.cliente.web` llena `navegacion`, `cuenta` y `perfil` desde el `OidcUser`. El inicio depende del rol, con precedencia `ADMIN` > `ENTIDAD` > `DONANTE`; el cambio de rol (RI-AUTH-04) queda para la etapa 2 | B1-01 | Un test por rol: cada uno llega a su inicio y ve su menú; el donante recibe 403 en `/admin*` | Pendiente |
+| B1-04 | **Cerrar sesión.** Botón con un formulario POST `/logout` (con CSRF) en `layout-privado.html`. `OidcClientInitiatedLogoutSuccessHandler` con `post_logout_redirect_uri` a la portada, para cerrar también la sesión SSO de Keycloak | B1-01 | Test del logout. De punta a punta: después de salir, volver a entrar pide la clave | Pendiente |
+| B1-05 | **Punta a punta y documentación.** Test con Playwright contra Keycloak en un contenedor, en un perfil propio (no corre en el `mvn test` por defecto). Recorrido: registro de donante, inicio y logout; login del admin. `auth-service/README.md` explica cómo levantarlo, las variables y los usuarios; el README del cliente explica cómo correrlo con Keycloak | B1-02, B1-03, B1-04, A1-04 | El recorrido pasa y queda grabado (video del perfil `visual`) | Pendiente |
+
+### Etapa 2 en adelante — en orden, sin detalle
+
+| ID | Ítem | Requerimientos |
+|---|---|---|
+| E2-01 | Gateway (Spring Cloud Gateway) y validación por JWKS en los 4 servicios, con autorización por rol y por pertenencia | RI-GW-01..04, RI-SVC-01..04, D2, D13, D16 |
+| E2-02 | Sesión del cliente en Spring Session JDBC, con base propia | D5 |
+| E2-03 | `usuarioId` (= `sub`) en `Persona`, `GET /api/personas/me` y "completar perfil" al primer login | RI-AUTH-01..03, HB-11, D9, D11 |
+| E2-04 | Registro de entidad pendiente de aprobación y pantalla de aprobación del admin | RF-AUTH-06, RI-AUTH-05, RF-21, D10 |
+| E2-05 | Login con Google y vinculación por contraseña | RF-AUTH-02..04, D3, D4 |
+| E2-06 | Recuperación de la clave y verificación del email: SPI de Keycloak → RabbitMQ → notificaciones | RF-AUTH-13, RF-AUTH-16, D8 |
+| E2-07 | Client credentials para n8n, jobs y el proveedor externo; retiro de `X-API-Key` y de `X-Actor` | RF-AUTH-17, RI-SVC-05..08, D15, D25, DTI-09, DTI-14 |
+| E2-08 | Alta masiva de usuarios desde el CSV | RF-AUTH-14, RF-AUTH-15, D12 |
+| E2-09 | Tema completo de Keycloak con la identidad Raíces | D20 (`tokens.css`) |
+| E2-10 | Cambio de rol para quien tiene dos | RI-AUTH-04, RF-CL-03 |
+| E2-11 | Cuenta por representante de una jurídica | RI-AUTH-06, D30 |
+| E2-12 | Keycloak en `docker-compose.preprod.yml` y en CI; el cliente liviano en el compose (emisor único para el navegador y el backchannel) | — |
+
+## Invariantes
+
+- Ningún secreto en el repo: clave del admin, secreto del cliente, base y Google van por variables de entorno.
+- El access token no lleva datos personales: solo `sub` y roles (RNF-AUTH-09).
+- Los servicios y el cliente no dependen de claims propios de Keycloak (`realm_access`): solo de `sub`, `roles`, `aud`, `iss` y `exp`.
+- El navegador nunca ve un token: solo la cookie de sesión del cliente liviano.
+- El perfil `maqueta` del cliente liviano sigue andando sin Keycloak.
+
+## 5. Restricciones (Constraints)
+
+- AGENTS.md §4.3: ningún test se deshabilita ni se debilita.
+- La imagen de Keycloak es una imagen nueva en el compose, aprobada por el usuario con este plan (2026-11-04). Cualquier otra dependencia de `pom.xml` fuera de las de §4 pide OK aparte.
+- El ADR queda en `proposed`.
+- La parte B no empieza sobre `ENTREGA_6` mientras no estén mergeados los PR del cliente liviano.
+
+## Criterios de Aceptación
+
+```gherkin
+Escenario: login de un donante (B1-01, B1-03)
+  Dado un donante registrado en el realm donatrack
+  Cuando ingresa su email y su clave en la pantalla de Keycloak
+  Entonces vuelve al sitio en su inicio de donante
+  Y ve el menú de donante
+
+Escenario: el donante no entra a lo de otro rol (B1-03)
+  Dado un donante con la sesión iniciada
+  Cuando pide una página que empieza con /admin
+  Entonces recibe 403
+
+Escenario: registro de un donante (A1-03, B1-02)
+  Dado una persona sin cuenta
+  Cuando elige "Registrarse" y completa email y clave válidos
+  Entonces queda con el rol DONANTE y vuelve al sitio con la sesión iniciada
+
+Escenario: el token no lleva datos personales (A1-02)
+  Dado el realm importado
+  Cuando el cliente liviano obtiene un access token
+  Entonces trae sub, roles, aud y una vida de 15 minutos
+  Y no trae email ni nombre
+
+Escenario: bloqueo por fuerza bruta (A1-02)
+  Dado una cuenta activa
+  Cuando falla la clave 5 veces en 15 minutos
+  Entonces el sexto intento con la clave correcta también falla, con el mismo mensaje genérico
+
+Escenario: cerrar sesión cierra el SSO (B1-04)
+  Dado un usuario con la sesión iniciada
+  Cuando elige "Cerrar sesión" y después "Ingresar"
+  Entonces Keycloak le pide la clave otra vez
+```
+
+## 6. Validación
+
+| Ítem | Validación |
+|---|---|
+| Esta spec y el ADR | `node scripts/agent-check.js`, `node scripts/tests/run-tests.js` y `python scripts/validate_docs_links.py`, todos con exit 0 |
+| A1-01..A1-04 | Test de contrato del realm con Testcontainers; `docker compose up` sano; capturas del tema |
+| B1-01..B1-04 | `mvn clean test -pl cliente-liviano -am` |
+| B1-05 | Perfil de punta a punta con Playwright y Keycloak en un contenedor |
+
+## 7. Especificación Técnica de Diseño
+
+**Two-Gate ADR (AGENTS.md §9.1):**
+
+| Decisión | Gate A | Gate B | Resultado |
+|---|---|---|---|
+| D1, Keycloak como IdP | Sí | Sí: tecnología nueva y mecanismo de seguridad | ADR nuevo `proposed` |
+| M1 a M4, alcance y orden del MVP | No: alcance de una tarea | — | Sin ADR; quedan en esta spec |
+| Cliente OIDC con *authorization code* y logout RP-initiated | No: implementa D2, D5 y D1 | — | Sin ADR |
+
+**Plan de tests (TDD por ítem):**
+
+- `auth-service` (A1-02, A1-03): módulo de test con `GenericContainer` sobre la imagen de `auth-service/Dockerfile`. Casos:
+  - claims del access token y del ID token;
+  - vida de 15 minutos;
+  - bloqueo tras 5 fallos;
+  - reuso del refresh;
+  - admin con solo `ADMIN`;
+  - autorregistro con `DONANTE`.
+  
+  Dónde vive el test (un módulo Maven chico o `integration-tests`) se decide en A1-02, sin dependencias nuevas.
+- `cliente-liviano` (B1-01..B1-04): `SecurityConfigTest` con MockMvc, `oidcLogin()` y `logout()`. Cubre:
+  - acceso por rol;
+  - 403 cruzado;
+  - el redirect con `prompt=create`;
+  - el logout con `post_logout_redirect_uri`;
+  - el perfil `maqueta` abierto.
+- De punta a punta (B1-05): Playwright en el perfil propio, contra Keycloak en un contenedor.

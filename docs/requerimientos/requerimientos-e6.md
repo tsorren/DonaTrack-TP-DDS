@@ -14,7 +14,7 @@
 - **Estado de cada decisión:** ✅ tomada por el equipo · ⏸️ pendiente · 🎓 pendiente de consulta a la cátedra.
 - **Cobertura de cada requerimiento:** ✅ resuelto · 🟡 parcial o a verificar · ❌ falta.
 - Las decisiones se numeran **D1–D30**. El detalle de cada una (alternativas, comparación y buenas prácticas) está en §9 y §10. Los requerimientos citan la decisión que los origina.
-- Cuando dice **IdP** (*Identity Provider*, proveedor de identidad) se refiere al componente que hace el login y emite los tokens: Keycloak o un servicio propio, según se cierre la D1.
+- Cuando dice **IdP** (*Identity Provider*, proveedor de identidad) se refiere al componente que hace el login y emite los tokens: Keycloak configurado, según la D1 (cerrada el 2026-11-04, ver el [ADR](../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md)).
 
 ---
 
@@ -79,7 +79,7 @@
                                  │ OIDC
  Navegador ──cookie de sesión──▶ ┌───────────────────┐   OIDC (login, refresh, logout)   ┌───────────────┐
  (HTML + HTMX)                   │  cliente-liviano  │ ◀───────────────────────────────▶ │      IdP      │
-                                 │ Spring MVC +      │                                   │ (D1 ⏸️:       │
+                                 │ Spring MVC +      │                                   │ (D1 ✅:       │
                                  │ Thymeleaf         │                                   │  Keycloak)    │
                                  │ sesión JDBC (D5)  │                                   └──────┬────────┘
                                  └─────────┬─────────┘                                          │ JWKS
@@ -106,7 +106,7 @@ En lenguaje llano:
 
 ## 4. Servicio de autenticación (IdP)
 
-Los requerimientos están escritos sin depender del producto, porque la D1 sigue pendiente. Donde un producto cambia la implementación, se aclara.
+Los requerimientos están escritos sin depender del producto, porque se escribieron antes de cerrar la D1 (Keycloak). Donde un producto cambia la implementación, se aclara.
 
 Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: así los propone este documento, la cátedra no los fija.
 
@@ -143,7 +143,7 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | RNF-AUTH-05 | Secretos fuera del repo | Credenciales de administración del IdP, secretos de clientes OAuth2 y de Google por variables de entorno (patrón `.env.example` existente); la configuración exportada al repo, sin secretos | AGENTS.md §4.3 |
 | RNF-AUTH-06 | Base de datos propia del IdP | Schema o base propia en el PostgreSQL existente; el enunciado permite compartir el motor | Enunciado E5: un schema por servicio, motor compartido (por analogía) |
 | RNF-AUTH-07 | Protección de fuerza bruta en el login | Bloqueo temporal tras N intentos fallidos (sugerido: 5 en 15 min); el rate limiting general queda para E7 | Buena práctica |
-| RNF-AUTH-08 | Claims independientes del producto | Los roles viajan en un claim `roles` plano (en Keycloak, con un *protocol mapper*), para que los servicios no dependan de `realm_access.roles` | D1 ⏸️ |
+| RNF-AUTH-08 | Claims independientes del producto | Los roles viajan en un claim `roles` plano (en Keycloak, con un *protocol mapper*), para que los servicios no dependan de `realm_access.roles` | D1 |
 | RNF-AUTH-09 | Sin datos personales en el token | Ni nombre, ni documento, ni datos de contacto: solo `sub` y roles (minimización de PII, ADR [crypto-shredding](../adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md)) | D9 |
 | RNF-AUTH-10 | Respuestas que no revelan cuentas | Login, recuperación y activación responden igual exista o no el email | OWASP ASVS |
 
@@ -370,7 +370,7 @@ Cada uso da uno nuevo. Reusar uno viejo es señal de robo y corta la sesión. In
 | Criterio | **`sub` guardado en el negocio** | Claim `donanteId` en el token | Mismo id en ambos |
 |---|---|---|---|
 | Acoplamiento | **Bajo**: el IdP no sabe qué es un donante | Alto | Total |
-| Si se cambia de IdP (D1 está pendiente) | **Se migra una columna** | Se rehacen mappers y atributos | Se migran todas las PK y FK |
+| Si se cambia de IdP (D1 cerrada con Keycloak) | **Se migra una columna** | Se rehacen mappers y atributos | Se migran todas las PK y FK |
 | Costo por request | Lookup por índice, cacheado en la sesión | Cero | Cero |
 | Datos viejos | No hay | Hasta el próximo refresh | No hay |
 
@@ -397,7 +397,7 @@ Cada uso da uno nuevo. Reusar uno viejo es señal de robo y corta la sesión. In
 | UI con estilo propio | Total | Requiere un tema del IdP | Tema del IdP |
 
 ### D13 — Autorización por rol + pertenencia ✅ · ADR-E6-04
-El riesgo nº 1 del OWASP API Top 10 (*Broken Object Level Authorization*) es ver objetos ajenos cambiando un id. El rol solo no alcanza. La pertenencia es regla de negocio y va en el Application Service. Authorization Services de Keycloak descartado `[REJECTED]`: ata las reglas a un IdP que está en revisión.
+El riesgo nº 1 del OWASP API Top 10 (*Broken Object Level Authorization*) es ver objetos ajenos cambiando un id. El rol solo no alcanza. La pertenencia es regla de negocio y va en el Application Service. Authorization Services de Keycloak descartado `[REJECTED]`: ata las reglas del negocio a un producto de IdP concreto.
 
 ### D14 — Roles `DONANTE`, `ENTIDAD`, `ADMIN` ✅ · ADR-E6-04
 Si es humana o jurídica sale del dominio (`Persona`). Separar `DONANTE_HUMANO` y `DONANTE_JURIDICO` duplicaría un dato del negocio en el IdP. Para procesos sin usuario se suma un rol técnico (RI-SVC-08).
@@ -528,8 +528,8 @@ E6 ya suma IdP, gateway y cliente. El objetivo de DTI-07 y el del crypto-shreddi
 
 ## 10. Decisiones pendientes
 
-### D1 — Proveedor de identidad ⏸️ · ADR-E6-01
-**Estado:** se avanza con **Keycloak + un servicio aparte** (el Key Broker de E7). La decisión queda **pendiente de revisión** frente a Spring Authorization Server (SAS).
+### D1 — Proveedor de identidad ✅ · ADR-E6-01
+**Estado:** **decidida el 2026-11-04: Keycloak configurado**, en un ADR `proposed` que falta aprobar en el PR. Según el equipo, la cátedra confirmó que cuenta como servicio de autenticación (P1). El Key Broker de E7 es un servicio aparte. Ver el [ADR](../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md) (`proposed`), que actualiza la matriz de abajo, y el backlog del MVP en la [SPEC-06](../specs/active/SPEC-06-auth-mvp-keycloak.md). La matriz y los pasos que siguen quedan como registro del análisis previo.
 
 | Criterio (peso) — nota 1 a 5 | SAS (servicio propio) | Keycloak |
 |---|---|---|
@@ -560,7 +560,7 @@ Con SAS, la primera opción es natural: el propio servicio publica el evento.
 
 - **Recomendación:** event listener → RabbitMQ → notificaciones. Es la única que cumple lo decidido sin duplicar lo que trae el IdP.
 - **Para cerrarla hace falta:**
-  1. Cerrar la D1.
+  1. ~~Cerrar la D1.~~ Cerrada el 2026-11-04 (Keycloak): la opción es el SPI.
   2. Si queda Keycloak, probar que el SPI se empaqueta en la imagen del IdP y que el evento llega a notificaciones con su `traceId`.
   3. Definir el evento nuevo (`EnlaceDeCuentaSolicitado` o similar) en el [catálogo de eventos](../arquitectura/eventos-amqp.md).
 
@@ -645,7 +645,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 
 | ADR | Decisiones | Gate A (nueva) | Gate B (significativa) | Estado para redactarlo |
 |---|---|---|---|---|
-| ADR-E6-01 Proveedor de identidad, Social-Login y emails de cuenta | D1, D3, D4, D8, D12 | Sí | Tecnología nueva y seguridad | Esperar D1, D8 y D12 |
+| ADR-E6-01 Proveedor de identidad, Social-Login y emails de cuenta | D1, D3, D4, D8, D12 | Sí | Tecnología nueva y seguridad | D1 redactada en su propio [ADR](../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md); el resto espera D8 y D12 |
 | ADR-E6-02 API gateway, validación JWT en doble capa y rutas públicas | D2, D16, D26 | Sí | Integración entre servicios y seguridad | Listo |
 | ADR-E6-03 Sesión del cliente liviano y ciclo de vida de los tokens | D5, D6, D7 | Sí | Estado y seguridad | Listo |
 | ADR-E6-04 Identidad y autorización: `sub`, roles, pertenencia y alta de cuentas | D9, D10, D11, D13, D14, D30 | Sí | Contratos entre IdP y negocio, seguridad | Esperar D30 (se puede redactar marcándola) |
@@ -665,12 +665,12 @@ Sin ADR (AGENTS.md §9.2):
 | # | Riesgo o pregunta | Impacto | Mitigación o próximo paso |
 |---|---|---|---|
 | R1 | E6 suma tres componentes nuevos (IdP, gateway, cliente) para la fecha de entrega de E6 | Alto | Construir primero el camino crítico: IdP + gateway + login + una pantalla por rol |
-| R2 | D1 sigue abierta y condiciona D8 | Medio | D9 y RNF-AUTH-08 reducen el costo de cambiar de IdP |
+| R2 | D1 cerrada con Keycloak: D8 necesita una extensión (SPI) que publique en RabbitMQ | Medio | D9 y RNF-AUTH-08 reducen el costo de cambiar de IdP |
 | R3 | D12 puede incumplir la consigna | Alto | Consulta a la cátedra (§10, D12) |
 | R4 | Los 4 servicios pasan a exigir token: se rompen los tests de integración, Postman y el preprod | Alto | Token de prueba por client credentials en los tests; colección de Postman con autenticación |
 | R5 | La migración de `X-Actor` deja dos fuentes del actor durante E6 | Bajo | El token manda; el header solo se loguea |
 | R6 | OpenFreeMap no tiene SLA | Bajo | Para la demo alcanza; el estilo del mapa permite cambiar de proveedor de teselas |
-| P1 | ¿Keycloak configurado cuenta como "implementación de un SSO" y "servicio de Autenticación"? | — | Cátedra (D1) |
+| P1 | ¿Keycloak configurado cuenta como "implementación de un SSO" y "servicio de Autenticación"? | Sí, según el equipo (2026-11-04) | Cátedra (D1) |
 | P2 | ¿Un link de activación cuenta como "enviarle sus credenciales"? | — | Cátedra (D12) |
 
 ---
