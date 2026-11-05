@@ -168,6 +168,49 @@ services:
     networks:
       - donatrack-network
 
+  keycloak:
+    # IdP de DonaTrack (SPEC-06 A1-01, ADR 20261104): Keycloak fijado por digest, con el realm y el
+    # tema ya construidos (kc.sh build). Sus datos viven en la base `keycloak` de Postgres.
+    image: donatrack/keycloak:local
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8180:8080"
+    environment:
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_USERNAME=keycloak_user
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD:?ver .env.example}
+      # Admin de la consola de Keycloak (no es el ADMIN de DonaTrack). Solo se crea con la base vacía.
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME:?ver .env.example}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:?ver .env.example}
+      - KC_HOSTNAME=${KC_HOSTNAME:?ver .env.example}
+      - KC_HTTP_ENABLED=${KC_HTTP_ENABLED:-true}
+      - KC_HEALTH_ENABLED=${KC_HEALTH_ENABLED:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # La salud sale por el puerto de gestión (9000), que no se publica en el host: el 9000 del host
+    # es de MinIO. La imagen no trae curl, así que se abre el socket con bash (/dev/tcp) y se exige
+    # un 200 en /health/ready.
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          read -r estado <&3 &&
+          case "$$estado" in *' 200 '*) exit 0;; *) exit 1;; esac
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+      start_interval: 2s
+    networks:
+      - donatrack-network
+
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     ports:
@@ -227,6 +270,7 @@ services:
       INCENTIVOS_DB_PASSWORD: ${INCENTIVOS_DB_PASSWORD:?ver .env.example}
       LOGISTICA_DB_PASSWORD: ${LOGISTICA_DB_PASSWORD:?ver .env.example}
       DONACIONES_DB_PASSWORD: ${DONACIONES_DB_PASSWORD:?ver .env.example}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?ver .env.example}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

@@ -14,7 +14,7 @@ DO $$
 DECLARE
   rol text;
 BEGIN
-  FOREACH rol IN ARRAY ARRAY['notificaciones_user', 'incentivos_user', 'logistica_user', 'donaciones_user'] LOOP
+  FOREACH rol IN ARRAY ARRAY['notificaciones_user', 'incentivos_user', 'logistica_user', 'donaciones_user', 'keycloak_user'] LOOP
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = rol) THEN
       EXECUTE format('CREATE ROLE %I WITH LOGIN', rol);
     END IF;
@@ -25,15 +25,19 @@ $$;
 -- 2. Una base por servicio, con dueño su rol. CREATE DATABASE no corre dentro de un
 -- bloque DO: \gexec ejecuta solo las sentencias que faltan (el script es idempotente).
 SELECT format('CREATE DATABASE %I OWNER %I', servicio, servicio || '_user')
-FROM unnest(ARRAY['notificaciones', 'incentivos', 'logistica', 'donaciones']) AS servicio
+FROM unnest(ARRAY['notificaciones', 'incentivos', 'logistica', 'donaciones', 'keycloak']) AS servicio
 WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_database WHERE datname = servicio)\gexec
 
 -- REGLA CLAVE DE EVALUACIÓN: solo el rol dueño se conecta a la base de su servicio (Aislamiento)
-REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones FROM PUBLIC;
+REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones, keycloak FROM PUBLIC;
 -- Tampoco a la base administrativa (POSTGRES_DB) ni a postgres: el superusuario sigue entrando
 SELECT format('REVOKE CONNECT ON DATABASE %I FROM PUBLIC', datname)
 FROM pg_catalog.pg_database
 WHERE datname IN (current_database(), 'postgres')\gexec
+
+-- Keycloak (SPEC-06 A1-01, auth-service) es un producto de terceros: tiene su base `keycloak` y su rol
+-- `keycloak_user`, pero no un schema <servicio>. Crea sus tablas en `public`, de la que es dueño
+-- por ser dueño de la base (PostgreSQL 15+: public es de pg_database_owner).
 
 -- 3. El schema <servicio> dentro de su base, igual que antes: currentSchema,
 -- hibernate.default_schema y spring.flyway.schemas no cambian.

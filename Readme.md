@@ -86,7 +86,7 @@ DonaTrack-TP-DDS/
 ├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos (:8082)
 ├── logistica-service/            # Modulo troncal de transporte, camiones, rutas y entregas (:8083)
 ├── cliente-liviano/              # [PLACEHOLDER] Directorio reservado para interfaz web
-└── auth-service/                 # [PLACEHOLDER] Directorio reservado para modulo de seguridad
+└── auth-service/                 # Keycloak (IdP): Dockerfile, realm y tema (SPEC-06; realm real en curso)
 ```
 
 ---

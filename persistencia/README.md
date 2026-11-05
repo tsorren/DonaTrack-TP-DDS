@@ -8,7 +8,7 @@ Documentación técnica de PostgreSQL: un motor compartido con **una base por se
 
 ## Una base por servicio
 
-Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro bases, una por microservicio. Cada base tiene como dueño el rol de su servicio y adentro el schema `<servicio>`. PostgreSQL no permite consultas entre bases, así que el aislamiento entre dominios no depende de los `GRANT`.
+Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro bases, una por microservicio, más la de `keycloak` ([SPEC-06](../docs/specs/active/SPEC-06-auth-mvp-keycloak.md) A1-01). Cada base tiene como dueño el rol de su servicio y adentro el schema `<servicio>`. PostgreSQL no permite consultas entre bases, así que el aislamiento entre dominios no depende de los `GRANT`.
 
 ```
 PostgreSQL 16
@@ -16,6 +16,7 @@ PostgreSQL 16
 ├── base: donaciones     → schema donaciones      ← donaciones-service     (dueño: donaciones_user)
 ├── base: logistica      → schema logistica       ← perfil postgres de logistica-service (dueño: logistica_user)
 ├── base: incentivos     → schema incentivos      ← incentivos-service     (dueño: incentivos_user)
+├── base: keycloak       → schema public          ← auth-service (Keycloak)  (dueño: keycloak_user)
 └── base: donatrack      (POSTGRES_DB: solo administración, sin datos)
 ```
 
@@ -34,6 +35,7 @@ Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas
 | `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | **Activo** — JPA conectado |
 | `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | Congelado — solo el perfil `postgres`; en los composes corre MongoDB (ver [MongoDB](#mongodb-logistica-service)) |
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
+| `keycloak_user`       | `KEYCLOAK_DB_PASSWORD`          | `keycloak` (`public`) | **Activo** — Keycloak de `docker-compose.yml`. En `02-set-role-passwords.sh` la variable es opcional: `docker-compose.preprod.yml` aún no la pasa (E2-12) |
 
 Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
 
@@ -42,7 +44,7 @@ Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarro
 ```sql
 -- Cada base es del rol de su servicio; nadie más se conecta
 CREATE DATABASE notificaciones OWNER notificaciones_user;   -- vía \gexec, solo si falta
-REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones FROM PUBLIC;
+REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones, keycloak FROM PUBLIC;
 -- También en POSTGRES_DB (donatrack) y en postgres
 
 \connect notificaciones
