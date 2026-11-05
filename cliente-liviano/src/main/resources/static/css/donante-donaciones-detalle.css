@@ -207,10 +207,6 @@ main .etiqueta-datos h2 {
   margin: -0.5rem 0 1rem;
 }
 
-.noticia--simple .noticia-texto {
-  min-height: 0;
-}
-
 /* Desde la tableta, dos columnas: la raíz y las noticias a la izquierda, la prueba y los datos a la
    derecha. Los datos ocupan dos filas para quedar justo debajo de la foto, sin esperar a que
    termine la raíz. */

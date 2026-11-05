@@ -10,9 +10,9 @@
 > muestra del catálogo) y, de la fase 2, botón, campo de formulario y sello de estado (B2-01 a B2-03)
 > y aviso breve con su cola de Alpine, banner, diálogo, estado vacío, indicador de carga y esqueleto
 > (B2-04, B2-05 y B2-09), navegación, tarjeta y lista adaptable (B2-06 a B2-08), y subida de fotos con
-> vista previa, pestañas, piezas de la entidad y mapa con su lista (B2-10 a B2-13). Quedan, en la hoja
-> de su pantalla, las piezas con línea de tiempo (B2-14, propuesto) y otras láminas de una sola pantalla:
-> figuran como heredadas (ver abajo). Su patrón está en
+> vista previa, pestañas, piezas de la entidad y mapa con su lista (B2-10 a B2-13), y el cuaderno de noticias
+> del donante (B2-14). Quedan, en la hoja de su pantalla, el cuaderno de entregas, el libro de donaciones
+> y otras láminas de una sola pantalla: figuran como heredadas (ver abajo). Su patrón está en
 > [patrones y microcopy](patrones-y-microcopy.md#componentes-y-su-patrón).
 
 ## Cómo se usa
@@ -122,7 +122,7 @@ variantes van por atributo (`data-estado`, `data-tono`, `data-tamano`), en la mi
 | Componente | Fragmento | Parámetros | Slots | Estados y excepciones | Movimiento | Patrón |
 |---|---|---|---|---|---|---|
 | `.muestra` (la ficha de una pieza en `/estilos`) | `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | `nombre`, `cuando` | `cuerpo` | `data-celda` (un hijo que se ve como una caja) y `data-ventana` (una caja que contiene lo que va fijo a la pantalla, como la barra de navegación, y lleva la tierra honda de la cabecera; en el celular se desplaza de costado) | — | Tarjeta de documentación (Material: card) |
-| `.boton` | Sin fragmento: el elemento nativo, `<button class="boton">` o `<a class="boton" href>` | — | El texto del botón | `data-tono`: `principal` (la acción de la pantalla), `secundario` o `quitar` (dar de baja). `data-tamano="chico"`: más bajo, en contorno; con `data-tono="principal"` queda lleno y solo más angosto. `hidden` lo oculta. Al apretar se hunde sobre su sombra | `:active` | Material: Buttons (filled, outlined, text) |
+| `.boton` | Sin fragmento: el elemento nativo, `<button class="boton">` o `<a class="boton" href>` | — | El texto del botón | `data-tono`: `principal` (la acción de la pantalla), `secundario` o `quitar` (dar de baja). `data-tamano="chico"`: más bajo, en contorno; con `data-tono="principal"` queda lleno y solo más angosto. `hidden` lo oculta. El texto va en el color de acento tanto en el `<a>` como en el `<button>` (el navegador pone negro el del botón). Al apretar se hunde sobre su sombra | `:active` | Material: Buttons (filled, outlined, text) |
 | `.campo` y `.campo-error` | Sin fragmento: `<div class="campo">` con `label`, el control nativo (`input`, `select` o `textarea`), una ayuda `small` opcional y, si falla, `<p class="campo-error">` | — | La etiqueta, el control, la ayuda y el error | `data-estado="error"` (borde del control en el color del problema; el mensaje va en `.campo-error` y se enlaza con `aria-describedby`). `input[type="number"]` es angosto; `textarea` se estira en vertical | — | Material: Text fields |
 | `.estado` y `.estado-sello` | `componentes/sello :: sello(estado)` (el dibujo) dentro de `<span class="estado" data-estado="…">` con la palabra al lado | `estado` | — | `data-estado`: donante `pendiente`, `en-camino`, `entregada`, `con-problema`; entidad `puerta`, `camino`, `salir`, `recibida`, `problema`. El fragmento dibuja además `hecho` y `falta` (etapas de un recorrido) y cualquier otro valor lo dibuja como problema. El color solo acompaña: el estado va siempre en palabras | — | Material: Chips / badges |
 | `.sello-*` (tinta, disco, contorno, contorno--punteado, medio, problema, calado, calado--fino, tilde, hecho, falta) | Las piezas del dibujo del sello, para el SVG de `componentes/sello` y para los dibujos de las pantallas | — | — | — | — | — |
@@ -140,13 +140,16 @@ variantes van por atributo (`data-estado`, `data-tono`, `data-tamano`), en la mi
 | `.novedades` y `.novedades-cuenta` | `piezas-entidad :: novedades(cuantas)` | `cuantas` (cuántas novedades sin leer) | — | Un botón de papel con la cuenta en un disco paja; sin rojo ni signo de exclamación (es un dato). Al pasar se tiñe de acento claro; al apretar se hunde sobre su sombra | `:active` | Material: Badges |
 | `.cabecera-entidad` | Sin fragmento: `<header class="cabecera-entidad">` con `<p class="rotulo">`, el `h1`, la bajada (`p`) y, si hay, el acceso a las novedades | — | El rótulo, el título, la bajada y las novedades | El acceso a las novedades va debajo en el celular y a la derecha desde 53,75 em. Otras piezas de la cabecera (un botón «Marcar») las dispone la hoja de la pantalla | — | Material: Top app bar |
 | `.mapa-cuerpo`, `.mapa-dibujo`, `.mapa-lista`, `.estaciones`, `.estacion-ficha`, `.estacion-cabeza`, `.estacion-sello`, `.estacion-entregas` y `.estacion` | Sin fragmento: `<div class="mapa-cuerpo">` con la `<figure class="mapa-dibujo" aria-hidden="true">` (el dibujo) y la `<section class="mapa-lista" aria-labelledby>` con una `<ol class="estaciones" role="list">` de `<li class="estacion-ficha estacion-ficha--N" id="entidad-clave" tabindex="-1">` (cabeza con sello, nombre y cuenta, y la lista de entregas; el título de la lista es un `h2` o `h3` y el nombre de cada entidad, un `h3` o `h4`, según el nivel que toque en la página). Cada estación del dibujo es un `<g class="estacion estacion--N">` | — | El dibujo (SVG) y la lista | El dibujo es de la pantalla; el bloque pone el marco (esquina suave, la tierra bajo la línea de tierra), las dos columnas desde 68,75 em (el dibujo queda fijo) y la lista. Al pasar, enfocar o llegar con `#entidad-<clave>` a una ficha, su estación queda llena y las demás se apagan (hasta 6; en el dibujo `.estacion--1`, `.estacion--2`, `.estacion--3`, `.estacion--4`, `.estacion--5`, `.estacion--6` y en la lista `.estacion-ficha--1`, `.estacion-ficha--2`, `.estacion-ficha--3`, `.estacion-ficha--4`, `.estacion-ficha--5`, `.estacion-ficha--6`). La lista dice todo lo del dibujo: el mapa nunca es el único medio (RF-CL-06) | Las estaciones se atenúan con `--movimiento-transicion-atenua` | Material: Maps con lista de resultados |
+| `.noticias`, `.noticia`, `.noticia-marca`, `.noticia-estado`, `.noticia-texto`, `.noticia-cuando` y `.noticia-donacion` | Sin fragmento: `<ol class="noticias" role="list">` con un `<li class="noticia">` por noticia (en el sistema, la pieza `datos-donante :: aviso`): la marca (`span.noticia-marca`: «Sin leer» o «Leída»), el estado (`span.estado.noticia-estado` con el sello y la palabra), el texto (`a.noticia-texto`, o `span` si no lleva enlace), cuándo (`time.noticia-cuando`) y de qué donación (`span.noticia-donacion`) | — | Las noticias | `.noticia--sin-leer` (estación impresa en paja con su sombra salvia, marca con filete y texto en negrita); sin ella, la estación queda hueca y la marca punteada. A la vista van la marca y la fecha, el texto y el estado con la donación; para el lector, el orden del código. La línea impresa cuelga a la izquierda de la lista. `data-forma="libro"` en la lista: desde la tableta, cada noticia es un renglón con columnas (cuándo, qué pasó, estado y donación) y la marca solo para el lector. Si el texto no lleva enlace (`span.noticia-texto`), no pide el alto de un toque. La disposición de cada pantalla (la franja de tierra de las sin leer en Notificaciones, las dos columnas del detalle) queda en su hoja | — | Material: Timeline (lista con línea de tiempo) |
 
 `--espacio-relleno` y `--medida-columna` son parámetros de `.tarjeta` y `.lista`, no tokens de `tokens.css`: llevan el prefijo de los tokens de uso para pasar el cerco, y esos nombres quedan reservados (no se definen en `:root`).
 
-Las listas con una línea de tiempo (el cuaderno de entregas recibidas, `asiento`; las noticias del
-donante; el libro de donaciones) y las demás láminas de una sola pantalla (`.confirmado`, `.puerta`,
-`.grupo-avisos--sin-leer`, `.etiqueta-entidad`, `.herbario`) siguen como clases heredadas de la hoja de
-su pantalla. De la entidad quedan en su hoja `.acta` (el cuerpo de la etiqueta de herbario; en
+De las piezas con línea de tiempo (B2-14) solo las noticias del donante tienen más de una pantalla y son un
+bloque (`.noticias`). `asiento` es el nombre de tres piezas distintas (el cuaderno de entregas recibidas de
+la entidad, el cuaderno de la portada y el libro de donaciones del donante: cada una con su disposición), y
+`novedad` y `libro` son de una sola pantalla: siguen como clases heredadas de la hoja de su pantalla, igual
+que las demás láminas de una sola pantalla (`.confirmado`, `.puerta`, `.grupo-avisos--sin-leer`,
+`.etiqueta-entidad`, `.herbario`). De la entidad quedan en su hoja `.acta` (el cuerpo de la etiqueta de herbario; en
 Confirmar recepción `acta` es además la grilla de la página, otro uso del mismo nombre) y `.salidas`
 (las salidas de una parte; las páginas públicas tienen las suyas con el mismo nombre y otra
 disposición). Del dibujo del mapa quedan en la hoja de la pantalla `.estacion-numero`, `.mapa-fruto` y
@@ -160,9 +163,9 @@ donante), `aviso-acciones` (los botones de un banner de Ingresar), `aviso--nombr
 del donante). El esqueleto de la entidad, que era `hueco`, es desde B2-12 `.esqueleto` con
 `data-forma="hueco"` y `data-tamano="bajo"`.
 
-**Indicadores de carga que hoy son banner:** los «Cargando…» de Entregas, Entidades y Mapa públicos
-(`publico-donaciones`, `publico-entidades` y `publico-mapa`) usan `.banner`, no `.cargando`, porque hoy
-son una lámina y pasarían a un texto en negrita; se unifican en la fase 3 si el usuario lo confirma.
+Los «Cargando…» de Entregas, Entidades y Mapa públicos (`publico-donaciones`, `publico-entidades` y
+`publico-mapa`) son `.cargando` con `role="status"` desde el 2026-11-04 (el usuario lo confirmó; dejaron de
+ser una lámina). En la portada siguen los suyos, con `.aviso` (B3-01).
 
 Las variantes por atributo van en la misma hoja del bloque, después de la base: la capa `excepciones`
 queda para cuando una variante necesite ganarle a otro bloque. El tamaño, la sombra y el color de los

@@ -870,11 +870,6 @@ dl.registro-datos > div:nth-child(3) dd::before {
   object-fit: cover;
 }
 
-/* Los botones del sitio que son <button> toman el color de los enlaces con forma de botón. */
-:where(button).boton {
-  color: var(--color-acento);
-}
-
 /* El botón chico no se parte en dos renglones. */
 .boton[data-tamano="chico"] {
   white-space: nowrap;

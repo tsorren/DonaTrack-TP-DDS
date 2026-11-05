@@ -70,6 +70,12 @@ identidad propia, sin salir del enunciado ni sumar un build de frontend?
 3. **Complementa:** [verificación visual con Playwright y axe](./20261030-verificacion-visual-con-playwright-y-axe.md)
    (`proposed`), que suma el video del movimiento.
 4. **No cambia:** la [arquitectura de capas y puertos](../20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores.md).
+5. **Corregido en parte por (propuesto):** [diálogo con `popover` y fragmentos solo donde hay estructura](./20261104-dialogo-con-popover-y-fragmentos-solo-donde-hay-estructura-en-el-cliente-liviano.md)
+   (`proposed`). Dos frases de este ADR no son lo que el sitio hace hoy: en D31, el `<dialog>` con
+   `showModal()` que atrapa el foco (el del sitio es un `<dialog popover>`, que no lo atrapa, para que
+   una baja se confirme sin JavaScript) y, en D33, "un componente es un fragmento con parámetros con
+   nombre y slots" (solo tienen fragmento los componentes con estructura o parámetros). Nota agregada
+   el 2026-11-04 con el OK del usuario; el texto de D31 y D33 no se editó.
    Los datos siguen entrando por los controllers.
 
 ## Contraste con el enunciado

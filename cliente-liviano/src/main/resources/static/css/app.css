@@ -26,6 +26,7 @@
 @import url("componentes/navegacion.css") layer(bloques);
 @import url("componentes/tarjeta.css") layer(bloques);
 @import url("componentes/lista.css") layer(bloques);
+@import url("componentes/noticias.css") layer(bloques);
 
 *,
 *::before,

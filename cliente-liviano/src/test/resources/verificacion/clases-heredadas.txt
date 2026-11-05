@@ -263,15 +263,6 @@ necesidades-bajada
 nodo
 nodo-numero
 nota
-noticia
-noticia--simple
-noticia--sin-leer
-noticia-cuando
-noticia-donacion
-noticia-estado
-noticia-marca
-noticia-texto
-noticias
 noticias-inicio
 noticias-todas
 notificaciones

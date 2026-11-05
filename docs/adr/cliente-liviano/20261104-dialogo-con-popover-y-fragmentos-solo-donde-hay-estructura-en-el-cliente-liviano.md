@@ -10,7 +10,7 @@
 > (tandas 2 a 4) el código siguió caminos distintos a dos frases del
 > [ADR de interacción, movimiento y componentes](./20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
 > (`proposed`, D31 y D33). Este documento no lo reemplaza: propone corregir esas dos frases. No se
-> toca el ADR de origen hasta que el usuario decida.
+> edita el texto de D31 y D33 del ADR de origen; el 2026-11-04 el usuario pidió agregarle una nota de remisión (relación 5) y se la agregó.
 
 ## Contexto y Problema
 

@@ -1,4 +1,4 @@
-/* Notificaciones del donante en Raíces: el cuaderno de noticias (donante-comun.css), en dos
+/* Notificaciones del donante en Raíces: el cuaderno de noticias (el bloque componentes/noticias.css), en dos
    grupos, sin leer y leídas. Las sin leer, en una lámina de papel con la sombra salvia: es lo que
    hay que mirar. En pantalla grande (variante C del pulido, 2026-11-03), las sin leer van en una
    franja de tierra a todo el ancho, como "Lo que está confirmado" del inicio, cada una en una
@@ -123,61 +123,6 @@
   }
 
   .grupo-avisos--sin-leer .noticia-donacion::before {
-    content: none;
-  }
-}
-
-/* Las leídas, desde la tableta: un libro de registro, una fila por aviso (cuándo, qué pasó, estado
-   y donación). La marca "Leída" queda solo para el lector: ya la dice el título del grupo. */
-@media (min-width: 53.75em) {
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticias {
-    gap: 0;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia {
-    display: grid;
-    grid-template-columns: 10.5rem minmax(0, 1fr) 15rem;
-    grid-template-areas:
-      "cuando texto estado"
-      "cuando texto donacion";
-    align-items: center;
-    column-gap: 1.5rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px dotted var(--color-tinta-suave);
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia::before {
-    top: 1rem;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-marca {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-cuando {
-    grid-area: cuando;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-texto {
-    grid-area: texto;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-estado {
-    grid-area: estado;
-    align-self: end;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-donacion {
-    grid-area: donacion;
-    align-self: start;
-  }
-
-  .grupo-avisos:not(.grupo-avisos--sin-leer) .noticia-donacion::before {
     content: none;
   }
 }

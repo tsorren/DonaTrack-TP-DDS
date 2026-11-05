@@ -27,6 +27,51 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-04 · stack · Fase 2, tanda 5 del backlog: cuaderno de noticias del donante y dos hallazgos de la fase 3
+
+- **Decisión:** se implementa B2-14 recortado y se resuelven dos hallazgos que la tanda 2 había dejado para la
+  fase 3. **Noticias:** `.noticias` y `.noticia` (`componentes/noticias.css`) son el cuaderno del donante en
+  Inicio, Notificaciones y el detalle de la donación (y la pieza `datos-donante :: aviso`): una lista que
+  cuelga de una línea impresa por fecha, con la estación impresa si no se leyó y hueca si se leyó.
+  `data-forma="libro"` es la variante de las leídas de Notificaciones (desde la tableta, un renglón con columnas)
+  y `span.noticia-texto` es el texto sin enlace (reemplaza a `noticia--simple`); la franja de tierra de las sin
+  leer y las dos columnas del detalle siguen en las hojas de esas pantallas. **«Cargando…» públicos:** los de
+  Entregas, Entidades y Mapa son `.cargando` con `role="status"` y no `.banner`. **Botón:** `.boton` toma el
+  color de los enlaces en su base, así que el `<button>` secundario de las privadas deja el negro del navegador
+  y es verde como en las públicas; se sacan los dos `:where(button).boton` que lo parchaban. Nota de remisión
+  en el ADR de origen hacia el ADR sucesor `proposed`.
+- **Alternativas:** migrar también `asiento`, `novedad` y `libro` (descartada: `asiento` nombra tres piezas con
+  disposiciones distintas, el cuaderno de entregas recibidas de la entidad, el de la portada y el libro de
+  donaciones, y `novedad` y `libro` son de una sola pantalla; el mismo criterio que dejó `acta` y `salidas`);
+  subir el tope a 176 (descartada: el tope nunca sube; mover la base de `.noticia*` al bloque dejaba tres
+  clases de un solo uso en las hojas de pantalla); mantener `noticia--simple` como clase heredada (descartada:
+  era una clase de un solo uso y el bloque la resuelve por el elemento); `.publica .cargando` en `publico-listas.css`
+  (descartada: sumaba una clase de un solo uso; se usa `[role="status"]`); `.cargando` con una variante que
+  conserve la lámina (descartada: `.banner` y `.cargando` quedan con un significado cada uno); dejar el negro
+  del navegador en el botón y pintarlo solo en las públicas (descartada: dos botones iguales con dos colores).
+- **Por qué:** las noticias son lo único de B2-14 que usan varias pantallas; el libro de registro y el texto
+  sin enlace son dos disposiciones del mismo cuaderno y pertenecen al bloque; los «Cargando…» son indicadores
+  de carga, no avisos que afecten a la pantalla; y el botón con el texto negro era un hallazgo (no un
+  diseño) de la tanda 1.
+- **Costo:** el tope de clases de un solo uso no baja (172 antes y después): el aporte de este ítem es sacar
+  `noticia--simple` y 8 clases de la lista de heredadas, pero la base que se mudó dejó otras tres clases con
+  una sola mención, y absorberlas en el bloque lo devolvió a 172. `asiento`, `novedad` y `libro` siguen
+  heredadas. Las noticias en `bloques` pierden contra cualquier regla sin capa que las toque: la franja de tierra de las sin leer en `donante-notificaciones.css` y las dos columnas del detalle les ganan a propósito, y las capturas confirman que nada más cambió.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: confirmó los nombres de la tanda 4; pidió la nota de
+  remisión en el ADR de origen (opción B); aprobó pasar los «Cargando…» públicos a `.cargando` y unificar el
+  botón secundario al verde; y pidió no hacer push. El agente decidió y queda para que el usuario confirme: el
+  recorte de B2-14 (solo `.noticias`), los nombres (`.noticias`, `.noticia`, `.noticia-marca`, `.noticia-estado`,
+  `.noticia-texto`, `.noticia-cuando`, `.noticia-donacion`, `data-forma="libro"`, `span.noticia-texto`) y que el
+  tope no baje. **Cambios visuales por confirmar:** en las pantallas privadas, el texto del botón secundario
+  pasa de negro a verde (la marca «Marcar todas como leídas» de las notificaciones, «Filtrar» de las entregas
+  recibidas y otros); y los «Cargando…» de Entregas, Entidades y Mapa públicos dejan de ser una lámina con
+  borde y sombra y son texto en negrita. **Cambio de comportamiento por confirmar:** ninguno.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. Estados en
+  un test temporal de Playwright (borrado) sobre el código viejo (un worktree en `HEAD`, dos corridas iguales)
+  y el nuevo, a 360 y 1280 px, en reposo, con foco y con el puntero: las noticias de Inicio, Notificaciones y el
+  detalle no cambian; el botón secundario cambia solo el color del texto (de negro a verde) y su contorno de
+  foco; el «Cargando…» de las tres públicas pasa a texto sin papel ni borde con margen 0. `-Pvisual` (55 pruebas verdes), con una corrida de ruido como base, las dos sobre el código sin tocar: 550 de 588 capturas iguales; difieren `/estilos` (3, contenido nuevo), los tres «Cargando…» públicos «lento» (12, el tamaño cambia por la lámina que ya no está y las de 360 × 640 por el texto), el texto de «Marcar todas como leídas» y de «Filtrar» (donante-notificaciones, entidad-notificaciones y entidad-recibidas, 20 capturas: cajas de unos 233 × 13 px y 53 × 13 px, el texto del botón) y 8 a 16 px en la portada (sin ninguna clase tocada; antes y ruido ya difieren allí). `/estilos` se volvió a comprobar con la muestra final (axe AA, toque y desbordes: verde).
+
 ### 2026-11-04 · stack · Fase 2, tanda 4 del backlog: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista
 
 - **Decisión:** se implementan B2-10 a B2-13. **Subida de fotos:** `.subida` (`componentes/subida.css`) es el campo

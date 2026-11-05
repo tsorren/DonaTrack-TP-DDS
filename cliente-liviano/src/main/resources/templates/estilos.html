@@ -448,6 +448,36 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.noticias', 'El cuaderno de noticias del donante: una lista que cuelga de una línea impresa por fecha, la más nueva arriba. Cada .noticia lleva su estación (impresa si no se leyó, hueca si ya se leyó), la marca, el estado con su sello, el texto, cuándo y de qué donación. El estado va siempre en palabras.', ~{::demo-noticias})}">
+          <th:block th:fragment="demo-noticias">
+            <ol class="noticias" role="list">
+              <li class="noticia noticia--sin-leer">
+                <span class="noticia-marca">Sin leer</span>
+                <span class="estado noticia-estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block><span>En camino</span></span>
+                <a class="noticia-texto" href="#">El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</a>
+                <time class="noticia-cuando" datetime="2026-10-15T14:30">Hoy, 14:30</time>
+                <span class="noticia-donacion">Lentejas secas, 15 kg</span>
+              </li>
+              <li class="noticia">
+                <span class="noticia-marca">Leída</span>
+                <span class="estado noticia-estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block><span>Entregada</span></span>
+                <a class="noticia-texto" href="#">Comedor Barrio Ejemplo confirmó que recibió tu ropa de abrigo.</a>
+                <time class="noticia-cuando" datetime="2026-10-14T18:05">Ayer, 18:05</time>
+                <span class="noticia-donacion">Ropa de abrigo, 5 unidades</span>
+              </li>
+            </ol>
+            <p class="texto-chico" data-tono="suave">La misma lista con <code>data-forma="libro"</code> (desde la tableta, un renglón con columnas) y un texto sin enlace.</p>
+            <ol class="noticias" data-forma="libro" role="list">
+              <li class="noticia">
+                <span class="noticia-marca">Leída</span>
+                <span class="estado noticia-estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block><span>Pendiente</span></span>
+                <span class="noticia-texto">Tu donación de arroz espera que una entidad la tome.</span>
+                <time class="noticia-cuando" datetime="2026-10-13T09:10">13 de octubre, 09:10</time>
+                <span class="noticia-donacion">Arroz, 20 kg</span>
+              </li>
+            </ol>
+          </th:block>
+        </div>
       </div>
     </section>
   </div>

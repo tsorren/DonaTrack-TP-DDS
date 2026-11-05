@@ -143,7 +143,7 @@
             <h2 id="noticias-titulo">Noticias de esta donación</h2>
             <p class="nota">De la más nueva a la primera.</p>
             <ol class="noticias" role="list">
-              <li th:each="c : ${d.cartas}" class="noticia noticia--simple"
+              <li th:each="c : ${d.cartas}" class="noticia"
                   th:with="dia=${#strings.substring(c.fecha, 0, 10)}, hora=${#strings.substringAfter(c.cuando, ', ')}">
                 <time class="noticia-cuando" th:datetime="${c.fecha}"
                       th:text="${dia == '2026-10-15' ? 'Hoy, ' + hora : (dia == '2026-10-14' ? 'Ayer, ' + hora : c.cuando)}">Hoy,

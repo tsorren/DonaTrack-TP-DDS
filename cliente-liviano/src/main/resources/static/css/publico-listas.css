@@ -17,7 +17,7 @@
   margin-bottom: 0;
 }
 
-.publica :is(.banner, .vacio) {
+.publica :is(.banner, .vacio, [role="status"]) {
   margin: 0;
 }
 
@@ -182,14 +182,6 @@
 /* El lugar de lo que todavía carga, en las páginas públicas: más alto que el esqueleto base. */
 .esqueleto {
   min-height: 12rem;
-}
-
-:where(button).boton {
-  color: var(--color-acento);
-}
-
-:where(button).boton[data-tono="principal"] {
-  color: var(--color-papel);
 }
 
 @media (min-width: 53.75em) {

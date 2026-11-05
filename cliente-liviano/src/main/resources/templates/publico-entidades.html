@@ -94,7 +94,7 @@
     </section>
 
     <th:block th:if="${escenario == 'lento'}">
-      <p class="banner">Cargando las entidades…</p>
+      <p class="cargando" role="status">Cargando las entidades…</p>
       <div class="herbario tierra-impresa" aria-busy="true">
         <ul class="herbario-lista" role="list">
           <li th:each="i : ${#numbers.sequence(1, 4)}" class="esqueleto etiqueta-entidad"></li>

@@ -73,7 +73,7 @@
       </section>
       <section class="grupo-avisos" aria-labelledby="leidas-titulo">
         <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(avisos) - sinLeerAhora})|">Leídas (13)</h2>
-        <ol class="noticias" role="list">
+        <ol class="noticias" data-forma="libro" role="list">
           <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index >= sinLeerAhora}">
             <li th:replace="~{datos-donante :: aviso(${a}, false)}"></li>
           </th:block>

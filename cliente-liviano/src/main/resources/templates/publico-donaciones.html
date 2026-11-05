@@ -63,7 +63,7 @@
     <!--/* Cargando: el aviso y el lugar de cada entrega, sin datos inventados. Viene con la página:
            en el sistema, el aviso va a una región viva. */-->
     <th:block th:if="${escenario == 'lento'}">
-      <p class="banner">Cargando las entregas confirmadas…</p>
+      <p class="cargando" role="status">Cargando las entregas confirmadas…</p>
       <ul class="lista laminas" role="list" aria-busy="true">
         <li th:each="i : ${#numbers.sequence(1, 6)}" class="esqueleto lamina"></li>
       </ul>

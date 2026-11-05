@@ -53,7 +53,7 @@
       <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar el mapa de entregas.',
           'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-mapa', true)}"></section>
     </th:block>
-    <p th:if="${escenario == 'lento'}" class="banner">Cargando el mapa de entregas…</p>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el mapa de entregas…</p>
 
     <div th:unless="${escenario == 'error'}" class="mapa-cuerpo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <!--/* El dibujo, fijo en su forma y con los datos de cada entidad: de la estación del depósito

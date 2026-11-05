@@ -14,6 +14,8 @@
   box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
   /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */
   background: var(--color-papel);
+  /* El color de los enlaces, también en un `<button>` (el navegador lo pone negro). */
+  color: var(--color-acento);
   font: inherit;
   font-weight: 700;
   font-stretch: 112%;

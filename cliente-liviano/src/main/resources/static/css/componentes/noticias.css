@@ -1,0 +1,169 @@
+/* Bloque noticias (D33, B2-14): el cuaderno de noticias del donante. Una lista (`.noticias`) cuyas
+   noticias (`.noticia`) cuelgan de una línea impresa por fecha, la más nueva arriba, cada una con su
+   estación: impresa la sin leer (`.noticia--sin-leer`) y hueca la leída. Se carga en la capa `bloques`
+   desde app.css. La disposición de cada pantalla (la franja de tierra de las sin leer, el libro de
+   las leídas, las dos columnas del detalle) queda en su hoja. Catálogo: docs/interfaz/componentes.md. */
+.noticias {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0 0 0 2rem;
+  list-style: none;
+}
+
+/* La línea: paja con borde, como las raíces impresas. */
+.noticias::before {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.4375rem;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.noticia {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+/* La estación de cada noticia: impresa la sin leer, hueca la leída. */
+.noticia::before {
+  content: "";
+  position: absolute;
+  top: 0.375rem;
+  left: -2rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-papel);
+}
+
+.noticia--sin-leer::before {
+  background: var(--color-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+}
+
+.noticia-marca {
+  padding: 0 0.5rem;
+  border: 1.5px dotted var(--color-tinta-suave);
+  border-radius: var(--radio-boton);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.noticia--sin-leer .noticia-marca {
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+  color: var(--color-tinta);
+}
+
+/* A la vista: la marca y la fecha, el texto, y el estado con la donación; para el lector, en el
+   orden del código. */
+.noticia-cuando {
+  order: 1;
+  font-size: 0.9375rem;
+}
+
+.noticia-texto {
+  order: 2;
+}
+
+.noticia-estado,
+.noticia-donacion {
+  order: 3;
+}
+
+.noticia-texto {
+  flex: 1 1 100%;
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-tinta);
+  text-underline-offset: 0.25em;
+}
+
+/* Sin enlace (el texto de una noticia de solo lectura): no hace falta el alto de un toque. */
+span.noticia-texto {
+  min-height: 0;
+}
+
+.noticia--sin-leer .noticia-texto {
+  font-weight: 700;
+}
+
+.noticia-estado {
+  font-size: 0.9375rem;
+}
+
+.noticia-donacion {
+  font-size: 0.9375rem;
+}
+
+.noticia-donacion::before {
+  content: "· ";
+}
+
+/* Las leídas, desde la tableta: un libro de registro, una fila por aviso (cuándo, qué pasó, estado
+   y donación). La marca "Leída" queda solo para el lector: ya la dice el título del grupo. */
+@media (min-width: 53.75em) {
+  .noticias[data-forma="libro"] {
+    gap: 0;
+  }
+
+  .noticias[data-forma="libro"] .noticia {
+    display: grid;
+    grid-template-columns: 10.5rem minmax(0, 1fr) 15rem;
+    grid-template-areas:
+      "cuando texto estado"
+      "cuando texto donacion";
+    align-items: center;
+    column-gap: 1.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dotted var(--color-tinta-suave);
+  }
+
+  .noticias[data-forma="libro"] .noticia::before {
+    top: 1rem;
+  }
+
+  .noticias[data-forma="libro"] .noticia-marca {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .noticias[data-forma="libro"] .noticia-cuando {
+    grid-area: cuando;
+  }
+
+  .noticias[data-forma="libro"] .noticia-texto {
+    grid-area: texto;
+  }
+
+  .noticias[data-forma="libro"] .noticia-estado {
+    grid-area: estado;
+    align-self: end;
+  }
+
+  .noticias[data-forma="libro"] .noticia-donacion {
+    grid-area: donacion;
+    align-self: start;
+  }
+
+  .noticias[data-forma="libro"] .noticia-donacion::before {
+    content: none;
+  }
+}
