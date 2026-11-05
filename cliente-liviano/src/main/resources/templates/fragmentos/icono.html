@@ -1,0 +1,24 @@
+<!--/* Ícono de trazo (24 × 24, toma el color del texto), del prototipo v2. Siempre decorativo:
+       acompaña a un texto que dice lo mismo. nombre: inicio | donaciones | entidades | incentivos |
+       seguimiento | notificaciones | camiones | check | alerta | flecha | cat-alimentos |
+       cat-vestimenta | cat-escolares. tamanio: en px. */-->
+<svg th:fragment="icono(nombre, tamanio)" class="icono" xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 24 24" width="20" height="20" th:attr="width=${tamanio},height=${tamanio}"
+     fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+     stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <th:block th:switch="${nombre}">
+    <th:block th:case="'inicio'"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></th:block>
+    <th:block th:case="'donaciones'"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></th:block>
+    <th:block th:case="'entidades'"><path d="M4 21V5l8-2v18"/><path d="M12 9h8v12"/><path d="M8 8v.01M8 12v.01M8 16v.01M16 13v.01M16 17v.01"/></th:block>
+    <th:block th:case="'incentivos'"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></th:block>
+    <th:block th:case="'seguimiento'"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6.5a3.5 3.5 0 0 0 0-7h-5a3.5 3.5 0 0 1 0-7H16"/></th:block>
+    <th:block th:case="'notificaciones'"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></th:block>
+    <th:block th:case="'camiones'"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></th:block>
+    <th:block th:case="'check'"><path d="m5 12.5 4.5 4.5L19 7.5"/></th:block>
+    <th:block th:case="'alerta'"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 10v4.5M12 17.5v.01"/></th:block>
+    <th:block th:case="'flecha'"><path d="M5 12h14M13 6l6 6-6 6"/></th:block>
+    <th:block th:case="'cat-alimentos'"><path d="M12 7.5c-1.6-2-5.2-1.8-6 1.6-.9 3.6 1.2 8.8 3.6 9.8.9.4 1.6 0 2.4 0s1.5.4 2.4 0c2.4-1 4.5-6.2 3.6-9.8-.8-3.4-4.4-3.6-6-1.6Z"/><path d="M12 7.5c0-2 .9-3.6 2.8-4.5"/></th:block>
+    <th:block th:case="'cat-vestimenta'"><path d="M9 3.5 4 6.5l2 4 2-1V20h8V9.5l2 1 2-4-5-3a3 3 0 0 1-6 0Z"/></th:block>
+    <th:block th:case="'cat-escolares'"><path d="m15 4.5 4.5 4.5L9 19.5H4.5V15z"/><path d="m13 6.5 4.5 4.5"/></th:block>
+  </th:block>
+</svg>

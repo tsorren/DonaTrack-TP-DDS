@@ -1,0 +1,21 @@
+<!--/* Cifra de impacto: el tile oscuro del prototipo v2, con curvas, nodo encendido y un gráfico
+       chico. Es un enlace a las entregas que la forman ("cada número es una entrega que se puede
+       ver"). El gráfico es decorativo: el cambio respecto del mes anterior va en texto.
+       cifra: CifraVista. */-->
+<a th:fragment="cifra(cifra)" class="cifra" href="#" th:href="@{${cifra.ruta}}">
+  <span class="cifra-etiqueta" th:text="${cifra.etiqueta}">Donaciones realizadas</span>
+  <span class="cifra-ir" aria-hidden="true"><svg
+        th:replace="~{fragmentos/icono :: icono('flecha', 16)}"></svg></span>
+  <span class="cifra-cuerpo">
+    <span class="cifra-valor" th:text="${cifra.valor}">7</span>
+    <span class="cifra-chip" th:if="${cifra.cambio}"><b th:text="${cifra.cambio}">+3</b><span
+          th:text="${cifra.cambioTexto}">respecto al mes pasado</span></span>
+  </span>
+  <svg class="cifra-grafico" aria-hidden="true" focusable="false" viewBox="0 0 142 84"
+       th:if="${cifra.barras}"
+       th:attr="viewBox=|0 0 ${#lists.size(cifra.barras) * 25 - 8} 84|">
+    <rect th:each="alto, vuelta : ${cifra.barras}" th:classappend="${vuelta.last} ? 'actual'"
+          width="17" rx="4" x="0" y="0" height="84"
+          th:attr="x=${vuelta.index * 25},y=${84 - alto},height=${alto}"></rect>
+  </svg>
+</a>

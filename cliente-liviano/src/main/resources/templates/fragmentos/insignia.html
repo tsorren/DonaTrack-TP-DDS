@@ -1,0 +1,5 @@
+<!--/* Estado de una entrega: píldora en tinte, con un color y un ícono por estado. Color, ícono y
+       texto juntos: el color nunca va solo. estado: EstadoEntrega. */-->
+<span th:fragment="insignia(estado)" class="insignia" th:classappend="|insignia--${estado.tono}|"><svg
+      th:replace="~{fragmentos/icono :: icono(${estado.icono}, 14)}"></svg><span
+      th:text="${estado.texto}">Estado</span></span>
