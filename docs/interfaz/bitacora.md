@@ -27,8 +27,67 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-05 · paleta y acabado (Raíces) · Huerta de noche: afiche verde sobre tierra casi negra, con la paja como luz
+
+- **Decisión:** B9, Huerta de noche. Reemplaza a H, Huerta viva en cera, elegida antes en el día. Se
+  borra su variante (`paleta-h.css`). Todavía no está aplicada: `tokens.css` no cambia. Queda como
+  variante (`css/variantes/paleta-noche.css`, `?variante=paleta-noche`) para probarla en la portada
+  y en una pantalla de donante. Cambian el color y el acabado:
+  - papel de cera `#fbf2d3`, tinta `#17140f` y tinta suave `#4a4234`;
+  - verde hoja honda en títulos y botones (`#2d6a1e`, al apretar `#1f4f14`), lechuga en los
+    secundarios (`#d3e98a`) y hoja en la ilustración (`#86b832`);
+  - la tierra casi negra, en tres pasos (`#2a2a1c`, `#222217` y `#17170f`);
+  - raíces paja (`#f4c844`) y frutos zanahoria (`#f07a12`, con su segunda tinta `#a8420a`);
+  - los estados de Huerta viva, como en H;
+  - esquinas rectas: los dos radios por token (`--radio-lamina` y `--radio-boton`) en 0; quedan
+    algunos radios fijos de hojas de pantalla;
+  - sombras planas de paja detrás de botones, tarjetas, diálogos y avisos breves, y como segunda
+    tinta del énfasis del título de la portada, como faroles sobre la tierra oscura. Van en la capa
+    de los bloques, así que el botón apretado, el de quitar y el de la tierra conservan las suyas;
+  - el mismo grano que el sitio actual.
+- **Alternativas:** cuatro vueltas más, ahora de color y acabado (esquinas, sombras y grano), en la
+  portada y solo en escritorio.
+  - Cuarta: cuatro direcciones que cambian qué color domina. A, Invernadero: todo claro, tierra
+    lechuga, sin sombras ni grano. B, Afiche de huerta: tierra casi negra, zanahoria en títulos y
+    botones, esquinas rectas y sombras de tinta. C, Lechuga y remolacha. D, Panal y hoja: la tierra
+    de miel. Al usuario le gustaron el fondo de A, aunque con pocos colores, y B, aunque el negro le
+    pareció muy fuerte.
+  - Quinta: A2 (en flor) y A3 (regado), sobre el fondo de A; B2 (tierra de monte) y B3 (humus), con
+    la tierra menos negra. No gustó ninguna; de B prefirió la original.
+  - Sexta: B con el color principal en verde. B4, verde hoja honda; B5, verde vivo con secundarios
+    durazno; B6, botones verdes y el énfasis de los títulos en zanahoria. El usuario eligió B4 como
+    base.
+  - Séptima: tres acabados sobre B4. B7, dos tintas corridas (sombras zanahoria y más grano); B8,
+    paquete de semillas (contornos gruesos y sombras grandes verde brote); y B9, huerta de noche. La
+    recomendada fue B7.
+- **Por qué:** el usuario eligió B9. Las vueltas de solo paleta daban alternativas muy parecidas. Al
+  cambiar qué color domina y cómo se terminan las piezas, apareció un estilo propio: el afiche. El
+  verde mantiene las plantas como protagonistas. La tierra oscura da la seriedad que pidió la
+  encuesta, y la paja de las raíces suma calidez sin agregar un color nuevo.
+- **Costo:**
+  - El negro de la tierra domina la red de entidades y las cifras; falta verlo en una pantalla
+    privada, donde la cabecera también es tierra.
+  - Las sombras de paja sobre el papel de cera tienen poco contraste. Son decorativas: el borde de
+    tinta sigue marcando cada pieza.
+  - La variante no cambia la sombra verde hoja del banner, el estado vacío, el mapa, la red, las
+    novedades ni las láminas de las páginas públicas de ingreso y registro.
+  - Al aplicarla, `tokens.css` necesita los radios en 0, y las sombras pasan a la paja en cada
+    componente. Hoy las sombras usan `--color-hoja` en las hojas de componentes: hará falta un token
+    de sombra.
+  - La variante pasa los 32 pares de contraste del test y 5 más (el mínimo es 5,43:1, medido con un
+    script fuera del test), y la verificación visual completa de la portada con
+    `?variante=paleta-noche` (contraste y axe en 360, 1280 y 1920 px; exit 0, sin capturas
+    guardadas como evidencia).
+  - Por pedido del usuario, se exploró rápido: un solo ancho en las comparaciones, y los documentos
+    y la auditoría solo al elegir.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/acabado-huerta-noche/`, con la primera pantalla y las cifras de
+  cada alternativa a 1280 px: `vuelta-4-*` (A, B, C y D), `vuelta-5-*` (A2, A3, B2 y B3),
+  `vuelta-6-*` (B4, B5 y B6) y `vuelta-7-*` (B7, B8 y B9).
+
 ### 2026-11-05 · paleta (Raíces) · Huerta viva en cera: más saturada, con papel de cera y frutos zanahoria
 
+- **Reemplazada** el mismo día por Huerta de noche (B9, entrada de arriba); su variante se borró.
 - **Decisión:** H, Huerta viva en cera. Elegida para reemplazar a Oliva, todavía sin aplicar:
   `tokens.css` no cambia. Queda como variante (`css/variantes/paleta-h.css`, `?variante=paleta-h`)
   para probarla en la portada y en una pantalla de donante antes de aplicarla. Valores base:

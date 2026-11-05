@@ -1,0 +1,53 @@
+/* Huerta de noche (B9): un afiche a dos tintas sobre papel de cera. La tierra casi negra, el verde
+   hoja honda en títulos y botones, raíces paja, frutos zanahoria y los estados de Huerta viva.
+   Esquinas rectas y la paja de las raíces como luz: sombras planas de paja detrás de botones,
+   láminas y el título, como faroles sobre la tierra oscura. */
+
+:root {
+  --p-papel: #fbf2d3;
+  --p-tinta: #17140f;
+  --p-tinta-suave: #4a4234;
+  --p-acento: #2d6a1e;
+  --p-acento-hondo: #1f4f14;
+  --p-acento-claro: #d3e98a;
+  --p-tallo: #2d6a1e;
+  --p-hoja: #86b832;
+  --p-suelo: #2a2a1c;
+  --p-suelo-medio: #222217;
+  --p-suelo-hondo: #17170f;
+  --p-texto-suelo: #fbf2d3;
+  --p-raiz: #f4c844;
+  --p-nodo: #f4c844;
+  --p-destacado: #f4c844;
+  --p-fruto: #f07a12;
+  --p-fruto-hondo: #a8420a;
+  --p-pendiente-fondo: #ebe3c4;
+  --p-pendiente-texto: #4b4a32;
+  --p-en-camino-fondo: #f8e3a0;
+  --p-en-camino-texto: #6a4f05;
+  --p-en-camino-sello: #d9a514;
+  --p-entregada-fondo: #d3e98a;
+  --p-entregada-texto: #24521a;
+  --p-problema-fondo: #f1cfdc;
+  --p-problema-texto: #86244c;
+  --radio-lamina: 0;
+  --radio-boton: 0;
+}
+
+/* Las sombras van en la capa de los bloques: le ganan a la regla base de cada uno, que va antes,
+   y dejan en pie los estados más específicos (el botón apretado, quitar, el de la tierra). */
+@layer bloques {
+  .boton {
+    box-shadow: 0.3rem 0.3rem 0 var(--color-raiz);
+  }
+
+  .tarjeta,
+  .dialogo,
+  .aviso-breve {
+    box-shadow: 0.5rem 0.5rem 0 var(--color-raiz);
+  }
+}
+
+.hero h1 em {
+  text-shadow: 0.04em 0.035em 0 var(--color-raiz);
+}

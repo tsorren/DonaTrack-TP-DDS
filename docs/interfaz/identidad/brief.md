@@ -190,10 +190,12 @@ empresa, hitos de lo acumulado.
 monte, en verdes oliva: más cálida y menos oscura que Bosque, con frutos mandarina. Detalle, valores
 y alternativas en la [bitácora](../bitacora.md).
 
-**Elegida para reemplazarla (usuario, 2026-11-05): Huerta viva en cera.** Es más saturada, con
-papel de cera, verde hoja honda, tierra oliva viva, raíces paja, frutos zanahoria y los estados de
-Huerta viva. Todavía no está aplicada: se prueba con `?variante=paleta-h` en la portada y en una
-pantalla de donante, y después reemplaza a esta tabla.
+**Elegida para reemplazarla (usuario, 2026-11-05): Huerta de noche.** Es un afiche a dos tintas
+sobre papel de cera, con la tierra casi negra, el verde hoja honda en títulos y botones, raíces
+paja, frutos zanahoria y los estados de Huerta viva. Lleva esquinas rectas y sombras planas de paja,
+como luz sobre la tierra. Reemplaza a Huerta viva en cera, elegida antes ese mismo día. Todavía no
+está aplicada: se prueba con `?variante=paleta-noche` en la portada y en una pantalla de donante, y
+después reemplaza a esta tabla.
 
 | Color | Qué es en la pantalla | Qué significa |
 |---|---|---|
