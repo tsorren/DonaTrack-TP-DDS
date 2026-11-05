@@ -27,6 +27,49 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-05 · stack · Fase 3, B3-01 subtanda 2: los pasos, la planta, la rama de frutos y la libreta del mes son bloques
+
+- **Decisión:** segunda subtanda de `publico-portada.css`: cuatro bloques nuevos en `componentes/`, con su
+  movimiento adentro. `.pasos` (la lámina «Cómo funciona»: `.paso`, `.paso-dibujo` con sus piezas
+  `.paso-*`, `.paso-numero`), `.planta` (el brote con frutos: `.planta-dibujo`, `.planta-cosecha`,
+  `.planta-sol`), `.frutos` (lo que está confirmado: `.frutos-interior`, `.frutos-cabeza`, `.frutos-rama`,
+  `.frutos-aviso`) y `.libreta` (lo que viajó este mes: `.libreta-lista`, `.libreta-entrada` con
+  `data-estado="en-camino"` y sus partes `.libreta-*`). Las piezas genéricas del dibujo (`.tallo`, `.hoja`,
+  `.hoja--tinta`, `.raiz`, `.raicilla`, `.cruce`, `.rama`, `.fruto`, `.fruto-*`, `.tinta-corrida`) se nombran
+  dentro de cada bloque. En la hoja quedan la pausa del viento (detiene dos bloques) y la escena. `.muestra`
+  suma `data-ancho="pantalla"` para los ejemplos anchos de `/estilos`. Además, las tres observaciones de la
+  auditoría de la subtanda 1: la zona suelo del estado vacío exige los filetes y la muestra del botón aclara
+  el tono principal.
+- **Alternativas:** conservar los nombres (`registro`, `viajo`, `cuaderno`, `asiento`, `ejemplar`, `cuadro`,
+  `llamada`, `vineta`) como bloques (descartada: `registro`, `cuaderno`, `asiento` y `ejemplar` ya nombran
+  otras piezas del sitio, y el handoff pedía nombres distintos); prefijar también las piezas del dibujo
+  (`.paso-hoja`, `.planta-fruto-disco`; descartada: son las mismas piezas en dos dibujos y la pausa las
+  detiene juntas); un bloque de título de sección para los `h2` de la portada (descartada por ahora: cada
+  bloque lleva el suyo; se puede unificar cuando la tierra sea bloque, en la subtanda 3); el movimiento de
+  cada pieza en la hoja (descartada: es parte del bloque, como en las pestañas).
+- **Por qué:** cada una de estas piezas es una unidad con su dibujo, sus estados y su movimiento; en la hoja
+  solo quedaba disposición propia de la portada.
+- **Costo:** el tope baja de 171 a 163 y salen 38 clases de la lista de heredadas (403 quedan). Las clases de
+  dibujo que comparten otras pantallas (`.raiz`, `.rama`, `.fruto`) siguen también como heredadas. La hoja
+  pasa de 1.446 a 695 líneas y sigue en `HOJAS_HEREDADAS` hasta la subtanda 3.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: qué piezas van en la subtanda 2. El agente decidió y queda
+  para que el usuario confirme (el usuario pidió correr sin preguntar): los nombres de los cuatro bloques y
+  de sus partes, `data-estado="en-camino"` en la libreta y `data-ancho="pantalla"` en la muestra.
+  **Cambios visuales:** ninguno en la portada. **Hallazgo resuelto en el camino:** el título de la rama de
+  frutos va dentro de `.tierra` y heredaba sin querer de `.tierra h2` el `text-wrap: balance` y la sombra
+  del `em`; la primera corrida lo mostró (la palabra «confirmado» sin su segunda tinta) y ahora el bloque los
+  declara, así que se ve igual que antes.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. `-Pvisual`
+  completo (55 pruebas más la temporal), con la corrida de la subtanda 1 como ruido: 573 de 588 capturas
+  iguales y las 15 distintas eran `/estilos` (contenido nuevo) y el título de la rama de frutos (la sombra del
+  `em`, corregida). Las muestras nuevas de `/estilos` fallaron axe la primera vez (el contraste de `.frutos`
+  fuera de la tierra y una región con desplazamiento sin nada enfocable): `.frutos` declara su letra clara
+  (la que ya heredaba en la portada) y la muestra lleva el botón del mapa. Después, `-Pvisual` sobre
+  `/estilos` y la portada con sus cuatro escenarios: 56 pruebas verdes, `reporte.json` vacío y las 16 capturas
+  de la portada iguales a la base. Estados (test temporal, viejo dos veces y nuevo): solo cambia el `outline`
+  del `dl` de la rama, que no se ve (estilo `none`), y un estado apretado a 1920 px que también cambia entre
+  corridas.
+
 ### 2026-11-05 · stack · Fase 3, B3-01 subtanda 1: la portada usa la tarjeta, el diálogo, el estado vacío, el botón y dos tokens
 
 - **Decisión:** primera de las 3 subtandas de `publico-portada.css`, que solo reusa bloques existentes. La lámina

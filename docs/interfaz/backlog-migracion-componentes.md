@@ -208,9 +208,29 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 > tabla se corrigieron al valor de hoy: las de la línea de base (2026-11-04) quedaron viejas con las fases 1 y 2
 > (por ejemplo, `privado.css` tenía 522 y hoy tiene 239).
 
+> B3-01, subtanda 2, 2026-11-05. Notas de lo hecho: cuatro bloques nuevos con nombres que no chocan con otras
+> pantallas. `.pasos` (`componentes/pasos.css`) es la lámina «Cómo funciona»: `.paso` por paso, el dibujo en
+> franjas `.paso-dibujo` (con `.paso-sol`, `.paso-suelo`, `.paso-horizonte`, `.paso-brote` y `.paso-punta`) y
+> el número `.paso-numero`. `.planta` (`planta.css`) es el brote con frutos: `.planta-dibujo`, la cuenta
+> `.planta-cosecha` (era `cosecha`) y el sol `.planta-sol` (era `sol`). `.frutos` (`frutos.css`) es lo que
+> está confirmado (era `registro`, que choca con el registro de cuentas): `.frutos-interior`,
+> `.frutos-cabeza`, la rama `dl.frutos-rama` y el aviso `.frutos-aviso` (las dos eran `registro-datos`).
+> `.libreta` (`libreta.css`) es lo que viajó este mes (era `viajo` y el cuaderno con `asiento`, que chocan
+> con el cuaderno de la entidad y el libro del donante): `.libreta-lista`, `.libreta-entrada` con
+> `data-estado="en-camino"` (era `asiento--en-camino`) y sus partes `.libreta-*`. Las piezas genéricas del
+> dibujo (`.tallo`, `.hoja`, `.hoja--tinta`, `.raiz`, `.raicilla`, `.cruce`, `.rama`, `.fruto` y los
+> `.fruto-*`) se nombran dentro de cada bloque (`.paso-brote .hoja`), como las del sello. Cada bloque lleva su
+> movimiento (la impresión, la traza, el viento y la libreta que aparece al bajar); en la hoja quedan la
+> pausa (que detiene el viento de dos bloques) y lo que compone la escena. El título de la tierra pasó a
+> `.superficie h2` en la hoja: con `.tierra h2`, sin capa, le habría ganado al de la rama de frutos, que va
+> dentro de `.tierra`. Se resolvieron también las tres observaciones de la auditoría de la subtanda 1: la
+> zona suelo del estado vacío exige `data-forma="filetes"` (y así el botón centrado ya no depende del orden
+> de los imports) y la muestra del botón dice que el tono principal es la acción de la pantalla o de una
+> parte de ella. Salen 38 clases de la lista de heredadas (403 quedan); el tope baja a 163.
+
 | ID | Hoja | Líneas (2026-11-05) | Estado |
 |---|---|:-:|---|
-| B3-01 | `publico-portada.css` | 1.446 (1.590 antes de la subtanda 1) | En curso: subtanda 1 hecha (2026-11-05) |
+| B3-01 | `publico-portada.css` | 695 (1.590 antes de la subtanda 1; 1.446 después) | En curso: subtandas 1 y 2 hechas (2026-11-05) |
 | B3-02 | `entidad-necesidades.css` | 575 | Pendiente |
 | B3-03 | `privado.css` | 239 | Pendiente |
 | B3-04 | `entidad-seguimiento-confirmar.css` | 387 | Pendiente |
@@ -230,3 +250,4 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 | 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | 9343fbb4 (rama `E6_raices`) |
 | 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | 06cd7190 (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | 7c07ca8b (rama `E6_raices`) |
+| 2026-11-05 | B3-01, subtanda 2 (la portada: pasos, planta, rama de frutos y libreta del mes, bloques nuevos) | 163 (medido después del cambio; era 171) | — |

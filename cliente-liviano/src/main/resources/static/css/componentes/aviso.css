@@ -65,8 +65,9 @@
   margin: 0;
 }
 
-/* Sobre la tierra: los filetes de paja, la letra clara y todo al centro. */
-.vacio[data-zona="suelo"] {
+/* Sobre la tierra (solo con los filetes: el papel claro no va sobre la tierra): los filetes de paja,
+   la letra clara y todo al centro. */
+.vacio[data-forma="filetes"][data-zona="suelo"] {
   justify-items: center;
   padding-inline: 1rem;
   border-color: var(--color-raiz);
@@ -75,7 +76,7 @@
 }
 
 /* También el botón (el chico se alinea al principio). */
-.vacio[data-zona="suelo"] .boton {
+.vacio[data-forma="filetes"][data-zona="suelo"] .boton {
   justify-self: center;
 }
 

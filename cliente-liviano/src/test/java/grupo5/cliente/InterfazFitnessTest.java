@@ -227,7 +227,7 @@ class InterfazFitnessTest {
   /**
    * Tope de clases que aparecen una sola vez en las hojas heredadas. Solo baja (backlog, regla 3).
    */
-  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 171;
+  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 163;
 
   private static final Path CATALOGO = Path.of("../docs/interfaz/componentes.md");
   private static final Path ESTILOS = PLANTILLAS.resolve("estilos.html");

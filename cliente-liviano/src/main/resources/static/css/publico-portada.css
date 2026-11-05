@@ -23,133 +23,6 @@
   padding: 1rem;
 }
 
-/* Una sola ilustración en tres franjas pegadas, el brote, la raíz que se abre y la punta que llega,
-   cada una con su paso a la derecha (usuario, mezcla de las viñetas y los números, 2026-11-01). */
-.vinetas {
-  margin: 0;
-  padding: 0 0 0 0.625rem;
-  list-style: none;
-}
-
-/* En el celular, la franja más angosta (5 rem) para que el paso tenga renglones más largos
-   (decisión del usuario, 2026-11-01); desde 37.5em, 7 rem. */
-.vineta {
-  display: grid;
-  grid-template-columns: 5rem minmax(0, 1fr);
-  column-gap: 1rem;
-  min-height: 7rem;
-  color: var(--color-tinta);
-  line-height: 1.45;
-}
-
-.vineta p {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: center;
-  margin: 0;
-  padding: 0.75rem 0;
-}
-
-.vineta b {
-  display: block;
-  font-stretch: 110%;
-}
-
-/* Cada franja ocupa todo el alto de su paso: el recorte se ensancha o se angosta, nunca deja hueco. */
-.cuadro {
-  display: block;
-  grid-column: 1;
-  grid-row: 1;
-  width: 100%;
-  height: 100%;
-  border-inline: 1.5px solid var(--color-tinta);
-  background: var(--color-papel);
-}
-
-.vineta:first-child .cuadro {
-  border-top: 1.5px solid var(--color-tinta);
-}
-
-.vineta:last-child .cuadro {
-  border-bottom: 1.5px solid var(--color-tinta);
-}
-
-.ejemplar path {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.ejemplar .ejemplar-sol {
-  fill: var(--color-acento-claro);
-}
-
-.ejemplar-suelo {
-  fill: var(--color-suelo);
-}
-
-.ejemplar .ejemplar-horizonte {
-  stroke: var(--color-tinta);
-  stroke-width: 4;
-}
-
-.ejemplar-brote .tallo {
-  stroke: var(--color-tallo);
-  stroke-width: 2.5;
-}
-
-.ejemplar-brote .hoja {
-  fill: var(--color-hoja);
-  stroke: none;
-}
-
-.ejemplar-brote .hoja--tinta {
-  fill: var(--color-tallo);
-}
-
-.ejemplar .raiz {
-  stroke: var(--color-raiz);
-  stroke-width: 6;
-}
-
-.ejemplar .raicilla {
-  stroke: var(--color-raiz);
-  stroke-width: 2.5;
-}
-
-.ejemplar .cruce {
-  fill: var(--color-suelo);
-  stroke: var(--color-texto-suelo);
-  stroke-width: 2.5;
-}
-
-.punta {
-  fill: var(--color-nodo);
-}
-
-.punta .punta-tinta {
-  fill: var(--color-hoja);
-}
-
-/* El número, un sello paja con la segunda tinta corrida, sobre el borde izquierdo de su franja. */
-.llamada {
-  position: relative;
-  display: grid;
-  grid-column: 1;
-  grid-row: 1;
-  place-items: center;
-  align-self: center;
-  justify-self: start;
-  width: 2.25rem;
-  height: 2.25rem;
-  margin-left: -0.625rem;
-  border-radius: 50%;
-  background: var(--color-raiz);
-  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
-  font: 900 1.125rem/1 var(--fuente-titulo);
-  font-stretch: 125%;
-}
-
 /* --- La tierra y el herbario -------------------------------------------------------------------- */
 
 /* El rótulo en papel, y debajo la planta con su sol sobre la línea
@@ -162,7 +35,7 @@
   text-align: center;
 }
 
-.superficie > :not(.sol) {
+.superficie > :not(.planta-sol) {
   position: relative;
 }
 
@@ -176,105 +49,13 @@
   border-top: 0;
 }
 
-.superficie .sol {
+/* El sol de la planta (`.planta-sol`), detrás, medio hundido en la línea de tierra. */
+.superficie .planta-sol {
   position: absolute;
   bottom: 0;
   left: 50%;
   z-index: -1;
-  width: clamp(15rem, 30vw, 24rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-acento-claro);
   translate: -50% 50%;
-}
-
-/* La planta (A/B de frutos, 2026-11-02, C): el brote creció y da frutos con los datos del mes.
-   Cada fruto impreso es una entrega confirmada; el hueco, la que va en camino. */
-.planta {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
-.planta-dibujo {
-  display: block;
-  width: clamp(11rem, 24vw, 15rem);
-  height: auto;
-  overflow: visible;
-}
-
-.planta-dibujo .tallo,
-.planta-dibujo .rama {
-  fill: none;
-  stroke: var(--color-tallo);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.planta-dibujo .hoja {
-  fill: var(--color-hoja);
-}
-
-.planta-dibujo .hoja--tinta {
-  fill: var(--color-tallo);
-}
-
-.fruto-disco {
-  fill: var(--color-fruto);
-}
-
-.fruto-tinta {
-  fill: var(--color-fruto-hondo);
-}
-
-.fruto-hoja {
-  fill: var(--color-tallo);
-}
-
-/* El que va en camino, hueco: el contorno en la segunda tinta, que se ve sobre el papel (A/B de
-   paleta, 2026-11-02). */
-.fruto-hueco {
-  fill: none;
-  stroke: var(--color-fruto-hondo);
-  stroke-width: 2.5;
-  stroke-dasharray: 4 3;
-}
-
-/* La cuenta, como la etiqueta de un ejemplar: arriba en el celular, al lado de la planta desde la
-   tableta. */
-.cosecha {
-  order: -1;
-  max-width: 17rem;
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 4px 4px 0 var(--color-acento-claro);
-  font-size: 0.95rem;
-  line-height: 1.3;
-  text-align: left;
-}
-
-.cosecha b {
-  display: block;
-  color: var(--color-fruto-hondo);
-  font: 800 1.05rem / 1.2 var(--fuente-titulo);
-  font-stretch: 118%;
-}
-
-@media (min-width: 53.75em) {
-  .planta {
-    position: relative;
-  }
-
-  .cosecha {
-    position: absolute;
-    top: 2.5rem;
-    left: calc(50% + 9rem);
-  }
 }
 
 .suelo {
@@ -297,7 +78,7 @@
   padding: 2rem 1rem 3rem;
 }
 
-.tierra h2 {
+.superficie h2 {
   margin: 0 0 0.5rem;
   color: var(--color-tinta);
   font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--fuente-titulo);
@@ -306,7 +87,7 @@
   text-wrap: balance;
 }
 
-.tierra h2 em {
+.superficie h2 em {
   color: var(--color-acento);
   text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
@@ -496,312 +277,13 @@
   margin-top: 0.5rem;
 }
 
-/* --- Lo que está confirmado, la rama de frutos ------------------------------------------------ */
+/* --- El mes ----------------------------------------------------------------------------------- */
 
-.registro {
-  background: var(--color-suelo-hondo);
-}
-
-.registro-interior {
-  display: grid;
-  gap: 1.5rem;
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 2.5rem 1rem 3rem;
-}
-
-.registro h2 {
-  margin: 0 0 0.75rem;
-  color: var(--color-texto-suelo);
-  font: 800 clamp(1.75rem, 3.4vw, 2.75rem) / 1.05 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: -0.02em;
-}
-
-.registro h2 em {
-  color: var(--color-raiz);
-}
-
-.registro .nota {
-  margin: 0;
-}
-
-/* Sin datos (vacío, cargando o error), el aviso en un marco doble color paja. */
-.registro-datos {
-  margin: 0;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-raiz);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-raiz);
-  outline-offset: 5px;
-}
-
-/* La rama de frutos (A/B de cifras, 2026-11-02, C; no confundir con .cosecha, la cuenta de la
-   planta): los frutos cuelgan de una rama color paja, cada uno de su tamaño y su color, con el
-   número adentro y una etiqueta de papel. Mandarina, como los frutos de la planta, las entregas
-   confirmadas; paja, las entidades; verde, todavía creciendo, las que van en camino. En el celular,
-   la rama baja por el costado y los frutos salen de ella. */
-dl.registro-datos {
-  display: grid;
-  gap: 1.75rem;
-  margin-left: 0.5rem;
-  padding: 0.5rem 0 0.5rem 2.25rem;
-  border: 0;
-  border-left: 0.4rem solid var(--color-raiz);
-  border-radius: 0;
-  outline: 0;
-}
-
-dl.registro-datos > div {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 1rem;
-  padding: 0;
-}
-
-/* El cabo, de la rama al fruto. */
-dl.registro-datos > div::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -2.25rem;
-  width: 2.25rem;
-  border-bottom: 0.25rem solid var(--color-raiz);
-}
-
-.registro-datos dt {
-  order: 2;
-  justify-self: start;
-  padding: 0.45rem 0.7rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
-  color: var(--color-tinta);
-  font-size: 0.95rem;
-  line-height: 1.3;
-}
-
-.registro-datos dd {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  order: 1;
-  place-items: center;
-  width: 7.5rem;
-  aspect-ratio: 1;
-  margin: 0;
-  border-radius: 50%;
-  background: var(--color-fruto);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
-  color: var(--color-tinta);
-  font: 900 1.9rem / 1 var(--fuente-titulo);
-  font-stretch: 110%;
-  letter-spacing: -0.03em;
-}
-
-dl.registro-datos > div:nth-child(2) dd {
-  width: 6rem;
-  background: var(--color-raiz);
-  font-size: 1.75rem;
-}
-
-/* Lo que va en camino todavía no se imprimió, como el fruto hueco de la planta: el disco verde sin
-   la segunda tinta corrida, con el contorno punteado en esa tinta. */
-dl.registro-datos > div:nth-child(3) dd {
-  width: 5.25rem;
-  border: 0.2rem dashed var(--color-fruto-hondo);
-  background: var(--color-hoja);
-  box-shadow: none;
-  font-size: 1.6rem;
-}
-
-/* La hoja de cada fruto. */
-.registro-datos dd::before {
-  content: "";
-  position: absolute;
-  top: -0.5rem;
-  right: 0.75rem;
-  width: 1.75rem;
-  height: 0.95rem;
-  border-radius: 0 100%;
-  background: var(--color-hoja);
-  rotate: -18deg;
-}
-
-dl.registro-datos > div:nth-child(3) dd::before {
-  background: var(--color-raiz);
-}
-
-/* --- El cuaderno del mes ----------------------------------------------------------------------- */
-
-.viajo {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
+/* El sprite de los íconos de lo donado, que usa la libreta del mes. */
 .iconos {
   position: absolute;
   width: 0;
   height: 0;
-}
-
-.viajo-interior {
-  position: relative;
-  z-index: 1;
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 3rem 1rem 3.5rem;
-}
-
-.viajo h2 {
-  margin: 0 0 0.5rem;
-  color: var(--color-tinta);
-  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: -0.03em;
-}
-
-.viajo h2 em {
-  color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
-}
-
-.viajo-bajada {
-  margin: 0 0 2rem;
-}
-
-/* En el celular: la raíz baja a la izquierda con el sello de cada entrega. */
-.cuaderno {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--color-tinta);
-}
-
-.asiento {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.75rem 4rem minmax(0, 1fr);
-  column-gap: 0.875rem;
-  row-gap: 0.5rem;
-  align-items: start;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--color-tinta);
-}
-
-/* El tramo de raíz de cada asiento; el último que llega a hoy, punteado. */
-.asiento::before {
-  content: "";
-  position: absolute;
-  top: calc(1.25rem + 11px);
-  left: calc(0.875rem - 3px);
-  width: 6px;
-  height: 100%;
-  background: var(--color-raiz);
-}
-
-.asiento:has(+ .asiento--en-camino)::before {
-  left: calc(0.875rem - 2px);
-  width: 4px;
-  background: repeating-linear-gradient(180deg, var(--color-acento) 0 4px, transparent 4px 12px);
-}
-
-.asiento:last-child::before {
-  content: none;
-}
-
-.asiento-sello {
-  position: relative;
-  grid-column: 1;
-  grid-row: 1;
-  width: 1.75rem;
-  height: 1.75rem;
-}
-
-.asiento-fecha {
-  grid-column: 2 / -1;
-  grid-row: 1;
-  align-self: center;
-  margin: 0;
-  color: var(--color-tinta);
-  font-weight: 700;
-  font-stretch: 110%;
-}
-
-.asiento-fecha b {
-  margin-inline-end: 0.2em;
-  font: 900 1.5rem/1 var(--fuente-titulo);
-  font-stretch: 125%;
-}
-
-.asiento-cuadro {
-  grid-column: 2;
-  display: block;
-  width: 4rem;
-  aspect-ratio: 1;
-  background: var(--color-acento-claro);
-  color: var(--color-acento);
-  fill: currentcolor;
-}
-
-.asiento-cuadro .tinta-corrida {
-  color: var(--color-hoja);
-}
-
-.asiento--en-camino .asiento-cuadro {
-  background: none;
-  outline: 2px dashed var(--color-tinta-suave);
-  outline-offset: -2px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 2;
-}
-
-.asiento-texto {
-  grid-column: 3;
-}
-
-.asiento-texto > * {
-  margin: 0;
-}
-
-.asiento h3 {
-  color: var(--color-tinta);
-  font-size: 1.125rem;
-  font-stretch: 110%;
-  line-height: 1.3;
-}
-
-.asiento-estado {
-  color: var(--color-entregada-texto);
-  font-weight: 700;
-}
-
-.asiento--en-camino .asiento-estado {
-  color: var(--color-en-camino-texto);
-}
-
-/* La foto a la vista (usuario, A/B del cuaderno, 2026-11-01): una miniatura dentro del botón
-   (`data-forma="foto"`), con su leyenda debajo; tocarla abre el diálogo con la foto grande. */
-.asiento .boton[data-forma="foto"],
-.asiento-pendiente {
-  grid-column: 2 / -1;
-  margin: 0;
-}
-
-.asiento-pendiente {
-  font-size: 0.9375rem;
-}
-
-.miniatura {
-  display: block;
-  width: 7.5rem;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  object-fit: cover;
 }
 
 /* El botón chico no se parte en dos renglones. */
@@ -818,38 +300,16 @@ dl.registro-datos > div:nth-child(3) dd::before {
 
 /* El aviso ocupa el lugar de los datos: qué pasa y, si hace falta, qué hacer
    (`.vacio[data-forma="filetes"]`). En la tierra, centrado y con aire abajo. */
-.vacio[data-zona="suelo"] {
+.vacio[data-forma="filetes"][data-zona="suelo"] {
   margin: 0 auto 1.5rem;
-}
-
-.registro-datos > p,
-.registro-datos > div {
-  margin: 0;
-  padding: 1rem 0;
-}
-
-.registro-datos > div > p {
-  margin: 0;
-}
-
-/* --- La foto de la entrega, en un diálogo sobre la página (`.dialogo`) ------------------------- */
-
-.asiento dialog .boton {
-  margin-top: 0.5rem;
 }
 
 /* --- Con más lugar ----------------------------------------------------------------------------- */
 
 @media (min-width: 37.5em) {
   .portada-grilla,
-  .tierra-interior,
-  .registro-interior,
-  .viajo-interior {
+  .tierra-interior {
     padding-inline: 2rem;
-  }
-
-  .vineta {
-    grid-template-columns: 7rem minmax(0, 1fr);
   }
 }
 
@@ -861,177 +321,6 @@ dl.registro-datos > div:nth-child(3) dd::before {
 
   .ficha {
     max-width: 46rem;
-  }
-
-  /* La cabeza arriba, con el botón a la derecha; la rama cruza de lado a lado y los frutos cuelgan a
-     distinta altura, cada cabo tan largo como el aire de arriba de su fruto. */
-  .registro-interior {
-    gap: 1rem;
-  }
-
-  .registro-cabeza {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    column-gap: 2rem;
-  }
-
-  .registro-cabeza > * {
-    grid-column: 1;
-  }
-
-  .registro-cabeza > .boton {
-    grid-row: 1 / span 2;
-    grid-column: 2;
-  }
-
-  dl.registro-datos {
-    grid-template-columns: 1.3fr 1fr 1fr;
-    align-items: start;
-    gap: 2rem;
-    margin: 1rem 0 0;
-    padding: 0 2rem;
-    border-top: 0.45rem solid var(--color-raiz);
-    border-left: 0;
-    border-radius: var(--radio-boton);
-  }
-
-  dl.registro-datos > div {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    padding-top: 1.75rem;
-    text-align: center;
-  }
-
-  dl.registro-datos > div:nth-child(2) {
-    padding-top: 3.5rem;
-  }
-
-  dl.registro-datos > div:nth-child(3) {
-    padding-top: 2.25rem;
-  }
-
-  dl.registro-datos > div::after {
-    content: none;
-  }
-
-  .registro-datos dd::after {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    width: 0.25rem;
-    height: 1.75rem;
-    background: var(--color-raiz);
-    translate: -50% 0;
-  }
-
-  dl.registro-datos > div:nth-child(2) dd::after {
-    height: 3.5rem;
-  }
-
-  dl.registro-datos > div:nth-child(3) dd::after {
-    height: 2.25rem;
-  }
-
-  .registro-datos dt {
-    justify-self: center;
-  }
-
-  .registro-datos dd {
-    width: 12rem;
-    font-size: 3rem;
-  }
-
-  dl.registro-datos > div:nth-child(2) dd {
-    width: 9rem;
-    font-size: 2.5rem;
-  }
-
-  dl.registro-datos > div:nth-child(3) dd {
-    width: 8rem;
-    font-size: 2.25rem;
-  }
-
-  /* El cuaderno: fecha, raíz con sello, cuadro, la entrega y el botón, en una fila por entrega. */
-  .asiento {
-    grid-template-columns: 9rem 1.75rem 4.5rem minmax(0, 1fr) auto;
-    column-gap: 1.25rem;
-    align-items: center;
-  }
-
-  .asiento::before {
-    top: 0;
-    left: calc(9rem + 1.25rem + 0.875rem - 3px);
-    height: 100%;
-  }
-
-  .asiento:first-child::before {
-    top: 50%;
-    height: 50%;
-  }
-
-  /* El punteado va de sello a sello: media fila arriba y media fila en la entrega en camino, que es
-     más baja. */
-  .asiento:has(+ .asiento--en-camino)::before {
-    top: 50%;
-    left: calc(9rem + 1.25rem + 0.875rem - 2px);
-    height: 50%;
-  }
-
-  .asiento.asiento--en-camino::before {
-    content: "";
-    top: 0;
-    left: calc(9rem + 1.25rem + 0.875rem - 2px);
-    width: 4px;
-    height: 50%;
-    background: repeating-linear-gradient(180deg, var(--color-acento) 0 4px, transparent 4px 12px);
-  }
-
-  /* El tramo punteado sale del medio de su fila: el anterior llega hasta ahí, sin corte. */
-  .asiento:has(+ .asiento + .asiento--en-camino)::before {
-    height: 150%;
-  }
-
-  .asiento:first-child:has(+ .asiento + .asiento--en-camino)::before {
-    height: 100%;
-  }
-
-  .asiento-fecha {
-    grid-column: 1;
-    text-align: right;
-  }
-
-  .asiento-fecha time {
-    display: grid;
-    justify-items: end;
-  }
-
-  .asiento-fecha b {
-    margin: 0;
-    font-size: 2.5rem;
-  }
-
-  .asiento-sello {
-    grid-column: 2;
-  }
-
-  .asiento-cuadro {
-    grid-column: 3;
-    grid-row: 1;
-    width: 4.5rem;
-  }
-
-  .asiento-texto {
-    grid-column: 4;
-    grid-row: 1;
-  }
-
-  .asiento .boton[data-forma="foto"],
-  .asiento-pendiente {
-    grid-column: 5;
-    grid-row: 1;
-    max-width: 16rem;
   }
 }
 
@@ -1218,19 +507,8 @@ dl.registro-datos > div:nth-child(3) dd::before {
 /* Al entrar, una vez: la lámina se imprime (el sol, después la segunda tinta corrida que calza) y
    las raíces de la lámina y la red se trazan desde el brote. Sin movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
-  .ejemplar-sol {
-    animation: var(--movimiento-animacion-aparece);
-  }
-
-  .portada-texto,
-  .ejemplar-brote,
-  .vineta p {
+  .portada-texto {
     animation: var(--movimiento-animacion-registro);
-  }
-
-  .ejemplar :is(.raiz, .raicilla) {
-    stroke-dasharray: 1;
-    animation: var(--movimiento-animacion-traza-raiz);
   }
 
   .red-dibujo .ruta {
@@ -1243,39 +521,16 @@ dl.registro-datos > div:nth-child(3) dd::before {
     animation: var(--movimiento-animacion-traza);
   }
 
-
-  .punta,
-  .llamada {
-    animation: var(--movimiento-animacion-aparece-cierre);
-  }
-
-  /* Viento en ciclo (A/B de movimiento, review de Sofía, 2026-11-02): después de trazarse, las hojas
-     del brote y de la planta y los frutos se mecen unos 3 s y quedan quietos unos 20, una y otra vez.
-     La hoja gira desde su base; el fruto, desde donde cuelga. */
-  .ejemplar-brote .hoja,
-  .planta-dibujo .hoja {
-    transform-box: view-box;
-    transform-origin: 31px 41px;
-    animation: var(--movimiento-animacion-viento);
-  }
-
-  .planta-dibujo .fruto {
-    transform-box: fill-box;
-    transform-origin: 50% 0;
-    animation: var(--movimiento-animacion-viento-fruto);
-  }
-
   /* La pausa: la casilla cubre el botón entero (el toque es el del botón) y, marcada, el viento se
      detiene en reposo. */
   .pausa {
     display: flex;
   }
 
-  body:has(#pausar-movimiento:checked) :is(.ejemplar-brote .hoja, .planta-dibujo .hoja, .planta-dibujo .fruto) {
+  body:has(#pausar-movimiento:checked) :is(.paso-brote .hoja, .planta-dibujo .hoja, .planta-dibujo .fruto) {
     animation: none;
   }
 
-  /* Las entregas del mes aparecen de a una al bajar. Sin línea de tiempo de scroll (Firefox), quietas. */
   @supports (animation-timeline: view()) {
     /* La red al bajar (A/B de movimiento de la red, C con la escena entera, 2026-11-04). En el
        celular, cada fila de etiquetas se imprime al entrar y su tramo de tronco crece de arriba.
@@ -1291,12 +546,6 @@ dl.registro-datos > div:nth-child(3) dd::before {
       animation: mov-crece-alto linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 70%;
-    }
-
-    .cuaderno .asiento {
-      animation: mov-asiento linear both;
-      animation-timeline: view();
-      animation-range: entry 10% entry 90%;
     }
   }
 }

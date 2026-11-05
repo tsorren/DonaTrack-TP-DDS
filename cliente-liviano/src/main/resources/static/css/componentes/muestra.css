@@ -39,8 +39,9 @@
 
 /* Un ejemplo con algo fijo a la pantalla (la barra de navegación): la caja lo contiene (con transform) y
    lleva la tierra honda de la cabecera. En el celular, la barra no entra de a 48 px en una ficha: la caja
-   tiene un ancho mínimo y la ficha se desplaza de costado. */
-.muestra-demo:has([data-ventana]) {
+   tiene un ancho mínimo y la ficha se desplaza de costado. Lo mismo un ejemplo que necesita el ancho de una
+   pantalla (`data-ancho="pantalla"`: la rama de frutos, la libreta del mes). */
+.muestra-demo:has([data-ventana], [data-ancho="pantalla"]) {
   overflow-x: auto;
 }
 

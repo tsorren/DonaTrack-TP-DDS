@@ -148,7 +148,7 @@
       <h2 id="componentes">Componentes</h2>
       <p data-tono="suave">Cada uno con su hoja en <code>static/css/componentes/</code>. Las variantes van por atributo.</p>
       <div class="grilla">
-        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón. data-tono: principal (una por pantalla), secundario o quitar. data-tamano=&quot;chico&quot;: más bajo, para acciones dentro de una lista. data-forma=&quot;foto&quot; (con el tamaño chico): la miniatura de una foto arriba y la leyenda debajo. data-zona=&quot;suelo&quot; o &quot;suelo-hondo&quot;: sobre la tierra, con el contorno de paja; con el tono principal, lleno de paja.', ~{::demo-boton})}">
+        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón. data-tono: principal (la acción de la pantalla o de una parte de ella, como la tierra de la portada), secundario o quitar. data-tamano=&quot;chico&quot;: más bajo, para acciones dentro de una lista. data-forma=&quot;foto&quot; (con el tamaño chico): la miniatura de una foto arriba y la leyenda debajo. data-zona=&quot;suelo&quot; o &quot;suelo-hondo&quot;: sobre la tierra, con el contorno de paja; con el tono principal, lleno de paja.', ~{::demo-boton})}">
           <th:block th:fragment="demo-boton">
             <div class="pila" data-espacio="3">
               <div class="racimo">
@@ -504,6 +504,120 @@
                 <span class="noticia-donacion">Arroz, 20 kg</span>
               </li>
             </ol>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.pasos', 'La lámina Cómo funciona de la portada: una ilustración en franjas pegadas, cada una con su número (.paso-numero) y su paso al lado. Cada .paso lleva el dibujo (.paso-dibujo, que recorta con su viewBox la parte que le toca: .paso-sol, .paso-suelo, .paso-horizonte, .paso-brote con .tallo, .hoja y .hoja--tinta, .raiz, .raicilla, .cruce y .paso-punta con .paso-punta-tinta) y el texto. Se imprime al entrar y las raíces se trazan.', ~{::demo-pasos})}">
+          <th:block th:fragment="demo-pasos">
+            <ol class="pasos" role="list">
+              <li class="paso">
+                <svg class="paso-dibujo" viewBox="110 20 180 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                  <path class="paso-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+                  <rect class="paso-suelo" x="0" y="170" width="400" height="350"/>
+                  <g class="paso-brote" transform="translate(140 30) scale(2)">
+                    <path class="tallo" d="M30 70V28"/>
+                    <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+                    <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+                    <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+                  </g>
+                  <path class="paso-horizonte" d="M0 170H400"/>
+                  <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360"/>
+                  <path class="raicilla" pathLength="1" d="M200 290C188 296 182 304 178 316"/>
+                  <circle class="cruce" cx="200" cy="232" r="7"/>
+                  <g class="paso-punta"><circle class="paso-punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+                </svg>
+                <span class="paso-numero" aria-hidden="true">1</span>
+                <p><b>Registrás lo que donás.</b> Alimentos, ropa o muebles, a tu nombre o al de tu empresa.</p>
+              </li>
+            </ol>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.planta', 'La planta de la portada: el brote que creció y da un fruto por entrega confirmada del mes (.fruto con .fruto-tinta, .fruto-disco y .fruto-hoja) y uno hueco por la que va en camino (.fruto-hueco), con su cuenta (.planta-cosecha) y el sol detrás (.planta-sol, que ubica la pantalla). Las hojas y los frutos se mecen en ciclo.', ~{::demo-planta})}">
+          <th:block th:fragment="demo-planta">
+            <div class="pila" data-espacio="3">
+              <div class="planta">
+                <svg class="planta-dibujo" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
+                  <path class="tallo" d="M100 170V50"/>
+                  <path class="rama" d="M100 132C84 126 68 112 60 96"/>
+                  <path class="rama" d="M100 108C116 102 132 90 140 78"/>
+                  <g transform="translate(70 112)">
+                    <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+                    <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+                    <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+                  </g>
+                  <g class="fruto"><circle class="fruto-tinta" cx="58" cy="87" r="13"/><circle class="fruto-disco" cx="55" cy="84" r="13"/><path class="fruto-hoja" d="M57 71C60 64 66 62 71 63C68 69 63 72 57 71Z"/></g>
+                  <circle class="fruto-hueco" cx="147" cy="72" r="12"/>
+                </svg>
+                <p class="planta-cosecha"><b>Octubre de 2026</b> 1 entrega confirmada y 1 en camino</p>
+              </div>
+              <div class="marco"><div class="planta-sol" aria-hidden="true"></div></div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.frutos', 'Lo que está confirmado, en la tierra honda de la portada: cada cifra es un fruto que cuelga de una rama de paja (.frutos-rama, un div con dt y dd por cifra). En el celular la rama baja por el costado; desde la tableta cruza de lado a lado. Sin datos, el aviso va en un marco doble de paja (.frutos-aviso). La cabeza (.frutos-cabeza) lleva el título, una nota y, si hay, un botón.', ~{::demo-frutos})}">
+          <th:block th:fragment="demo-frutos">
+            <div data-ancho="pantalla">
+            <section class="frutos tierra-impresa" aria-labelledby="muestra-frutos-titulo">
+              <div class="frutos-interior">
+                <div class="frutos-cabeza">
+                  <h2 id="muestra-frutos-titulo">Lo que está <em>confirmado</em></h2>
+                  <p class="nota">Se cuenta con la confirmación de cada entidad.</p>
+                  <a href="#componentes" class="boton" data-tamano="chico" data-zona="suelo-hondo">Ver el mapa</a>
+                </div>
+                <dl class="frutos-rama">
+                  <div><dt>Entregas confirmadas</dt><dd>1.284</dd></div>
+                  <div><dt>Entidades en el mapa</dt><dd>46</dd></div>
+                  <div><dt>En camino ahora</dt><dd>32</dd></div>
+                </dl>
+                <div class="frutos-aviso">
+                  <p role="status">Cargando las cifras…</p>
+                </div>
+              </div>
+            </section>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.libreta', 'Lo que viajó este mes en la portada: una libreta de entregas (.libreta-lista) que baja por fecha por una línea de raíz. Cada .libreta-entrada lleva la fecha (.libreta-fecha), el sello (.libreta-sello), el cuadro de lo donado (.libreta-cuadro, con la segunda tinta en .tinta-corrida), el texto (.libreta-texto y .libreta-estado) y la foto (un botón chico con data-forma=&quot;foto&quot; y .libreta-miniatura) o lo que falta (.libreta-pendiente). data-estado=&quot;en-camino&quot; en la que todavía no llegó. Al bajar, cada entrada aparece.', ~{::demo-libreta})}">
+          <th:block th:fragment="demo-libreta">
+            <div data-ancho="pantalla">
+            <section class="libreta" aria-labelledby="muestra-libreta-titulo">
+              <div class="libreta-interior">
+                <div>
+                  <h2 id="muestra-libreta-titulo">Lo que viajó <em>este mes</em></h2>
+                  <p class="libreta-bajada">La entidad sube la foto cuando confirma la entrega.</p>
+                </div>
+                <ol class="libreta-lista" role="list">
+                  <li class="libreta-entrada">
+                    <p class="libreta-fecha"><time datetime="2026-10-05"><b>5</b> <span>de octubre</span></time></p>
+                    <svg class="libreta-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+                    <svg class="libreta-cuadro" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><circle class="tinta-corrida" cx="52" cy="52" r="40"/><circle cx="50" cy="50" r="40"/></svg>
+                    <div class="libreta-texto">
+                      <h3 id="muestra-libreta-1">Fideos secos, 8 kg</h3>
+                      <p>Comedor Barrio Ejemplo</p>
+                      <p class="libreta-estado">Entrega confirmada</p>
+                    </div>
+                    <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="muestra-libreta-foto" aria-describedby="muestra-libreta-1">
+                      <img class="libreta-miniatura" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
+                    <dialog class="dialogo" id="muestra-libreta-foto" popover aria-labelledby="muestra-libreta-foto-titulo">
+                      <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="Cajas con la donación junto a la puerta del comedor" width="640" height="400">
+                      <p class="dialogo-titulo" id="muestra-libreta-foto-titulo">Fideos secos, 8 kg</p>
+                      <button type="button" class="boton" data-tono="secundario" popovertarget="muestra-libreta-foto" popovertargetaction="hide">Cerrar</button>
+                    </dialog>
+                  </li>
+                  <li class="libreta-entrada" data-estado="en-camino">
+                    <p class="libreta-fecha"><time datetime="2026-10-15"><b>15</b> <span>de octubre, hoy</span></time></p>
+                    <svg class="libreta-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></svg>
+                    <svg class="libreta-cuadro" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="40"/></svg>
+                    <div class="libreta-texto">
+                      <h3>Lentejas secas, 15 kg</h3>
+                      <p>Comedor Barrio Ejemplo</p>
+                      <p class="libreta-estado">En camino, salió a las 14:30</p>
+                    </div>
+                    <p class="libreta-pendiente">Falta confirmar la entrega: la confirma el comedor con la foto.</p>
+                  </li>
+                </ol>
+              </div>
+            </section>
+            </div>
           </th:block>
         </div>
       </div>
