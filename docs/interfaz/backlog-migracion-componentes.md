@@ -161,7 +161,7 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 > clase de un solo uso), y `.boton` toma el color de los enlaces en su base (el `<button>` secundario de las
 > privadas tenía el negro del navegador; los dos `:where(button).boton` de `publico-listas.css` y de
 > `publico-portada.css` ya no hacen falta). El tope de clases de un solo uso queda en 172: mover la base de
-> `.noticia*` al bloque dejaba 176 (tres clases pasaban a figurar una sola vez en las hojas de pantalla), y
+> `.noticia*` al bloque dejaba 176 (tres clases de noticia pasaban a figurar una sola vez en las hojas de pantalla, y `.cargando` sumaba otra en `publico-listas.css`), y
 > absorber el libro y el texto sin enlace en el bloque lo devolvió a 172. **El tope no baja en este ítem.**
 
 | ID | Componente | Origen hoy | Pantallas que lo usan | Estado |
@@ -179,7 +179,7 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 | B2-11 | Pestañas (Alpine) | `donante-perfil.css` | Mi perfil | Hecho (2026-11-04) |
 | B2-12 | Piezas de la entidad | `piezas-entidad.html`, `entidad-comun.css` | Sitio de la entidad | Hecho (2026-11-04); `acta` y `salidas` no: comparten nombre con otro uso |
 | B2-13 | Mapa con su lista (RF-CL-06) | `publico-mapa.css` | Mapa público, seguimiento | Hecho (2026-11-04); el dibujo queda en la hoja de la pantalla |
-| B2-14 | Cuaderno con línea de tiempo (`asiento`, `noticias`, `libro`) | `donante-comun.css`, `donante-notificaciones.css`, `donante-donaciones-detalle.css` | Inicio, Notificaciones y detalle de la donación del donante | Hecho (2026-11-04), recortado: solo `.noticias`; `asiento`, `novedad` y `libro` no |
+| B2-14 | Cuaderno con línea de tiempo (`asiento`, `noticias`, `libro`) | `entidad-recibidas.css`, `entidad-notificaciones.css`, `donante-notificaciones.css`, `donante-donaciones.css` | Entregas recibidas, Notificaciones, Mis donaciones | Hecho (2026-11-04), recortado: solo `.noticias` (de `donante-comun.css`, `donante-notificaciones.css` y `donante-donaciones-detalle.css`; Inicio, Notificaciones y detalle del donante); `asiento`, `novedad` y `libro` no |
 
 ## Fase 3 — Hojas de pantalla reducidas a disposición
 
@@ -206,4 +206,4 @@ tamaño:
 | 2026-11-04 | B2-04, B2-05 y B2-09 (tanda 2 de la fase 2: aviso breve con su cola, banner, diálogo, estado vacío, carga y esqueleto) | 189 (medido después del cambio; era 197) | 38033d2a (rama `E6_raices`; tandas 1 y 2 en un solo commit) |
 | 2026-11-04 | B2-06, B2-07 y B2-08 (tanda 3 de la fase 2: navegación, tarjeta y lista adaptable) | 186 (medido después del cambio; era 189) | 392f6239 (rama `E6_raices`) |
 | 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | 9343fbb4 (rama `E6_raices`) |
-| 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | pendiente (segundo commit, rama `E6_raices`) |
+| 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | 06cd7190 (rama `E6_raices`) |

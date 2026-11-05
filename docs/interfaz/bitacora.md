@@ -44,7 +44,7 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
   disposiciones distintas, el cuaderno de entregas recibidas de la entidad, el de la portada y el libro de
   donaciones, y `novedad` y `libro` son de una sola pantalla; el mismo criterio que dejó `acta` y `salidas`);
   subir el tope a 176 (descartada: el tope nunca sube; mover la base de `.noticia*` al bloque dejaba tres
-  clases de un solo uso en las hojas de pantalla); mantener `noticia--simple` como clase heredada (descartada:
+  clases de noticia con una sola mención en las hojas de pantalla, y `.cargando` sumaba una cuarta); mantener `noticia--simple` como clase heredada (descartada:
   era una clase de un solo uso y el bloque la resuelve por el elemento); `.publica .cargando` en `publico-listas.css`
   (descartada: sumaba una clase de un solo uso; se usa `[role="status"]`); `.cargando` con una variante que
   conserve la lámina (descartada: `.banner` y `.cargando` quedan con un significado cada uno); dejar el negro
