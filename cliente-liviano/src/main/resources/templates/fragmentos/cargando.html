@@ -1,0 +1,5 @@
+<!--/* Indicador de carga. Patrón: Material Progress indicators. Destino de hx-indicator: HTMX lo
+       muestra mientras dura el pedido (clase htmx-request). activo=true lo muestra siempre. */-->
+<span th:fragment="cargando(id, texto, activo)" id="cargando" th:id="${id}"
+      class="cargando htmx-indicator" th:classappend="${activo} ? 'htmx-request'"
+      aria-busy="true" th:text="${texto}">Enviando…</span>

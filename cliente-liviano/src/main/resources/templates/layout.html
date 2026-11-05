@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--/* Estructura común de las pantallas públicas. Uso:
+       <html th:replace="~{layout :: pagina(~{::title}, ~{::contenido})}">. Las privadas usan
+       layout-privado, que toma de acá la cabecera y la marca. data-theme="light": solo modo claro
+       (bitácora, 2026-10-30). */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="pagina(titulo, contenido)">
+<head th:fragment="cabeza(titulo)">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:replace="${titulo}">DonaTrack</title>
+  <link rel="stylesheet" href="/webjars/picocss__pico/css/pico.min.css"
+        th:href="@{/webjars/picocss__pico/css/pico.min.css}">
+  <link rel="stylesheet" href="/css/tokens.css" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" href="/css/app.css" th:href="@{/css/app.css}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <script src="/webjars/htmx.org/dist/htmx.min.js"
+          th:src="@{/webjars/htmx.org/dist/htmx.min.js}" defer></script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="encabezado">
+    <a th:fragment="marca" class="marca" href="/" th:href="@{/}"
+       aria-label="DonaTrack, ir al inicio">
+      <span class="marca-simbolo"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt=""
+            width="15" height="20"></span>
+      <span class="marca-nombre">Dona<em>Track</em></span>
+    </a>
+  </header>
+  <main id="contenido" class="container" tabindex="-1" th:insert="${contenido}"></main>
+  <footer class="pie container">
+    <small>DonaTrack · UTN-FRBA · Diseño de Sistemas 2026</small>
+  </footer>
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>
