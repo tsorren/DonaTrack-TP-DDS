@@ -229,4 +229,4 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 | 2026-11-04 | B2-06, B2-07 y B2-08 (tanda 3 de la fase 2: navegación, tarjeta y lista adaptable) | 186 (medido después del cambio; era 189) | 392f6239 (rama `E6_raices`) |
 | 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | 9343fbb4 (rama `E6_raices`) |
 | 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | 06cd7190 (rama `E6_raices`) |
-| 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | — |
+| 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | 7c07ca8b (rama `E6_raices`) |
