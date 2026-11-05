@@ -27,6 +27,46 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-05 · stack · Fase 3, B3-01 subtanda 3: la tierra, la red y la pausa son bloques y la portada solo dispone
+
+- **Decisión:** última subtanda de `publico-portada.css`: tres bloques nuevos. El de la tierra, sin clase raíz (la
+  parte de la superficie al suelo: `.tierra-superficie` con el título y `.tierra-bajada`, `.tierra-suelo` y `.tierra-interior`; la
+  `section` no lleva clase propia), `.red` (quiénes reciben: el dibujo
+  `.red-dibujo` con sus piezas, `.red-etiquetas`, `.red-etiqueta` con `--1` a `--7` y `--tuya`, `.red-sello`,
+  `.red-pide`, `data-estado="sin-datos"`, y la escena fija `.escena`/`.escena-fija`) y `.pausa` (`.pausa-boton`,
+  `.pausa-casilla`). La hoja queda con la disposición de la portada (la grilla, el lugar de la lámina y del sol,
+  el aire de los botones chicos en la tierra y del aviso, y el tamaño del dibujo de la red, que le tiene que
+  ganar a `.dibujo` de `app.css`, sin capa), la pausa que detiene el viento de los pasos y de la
+  planta, y lo que la escena hace con la planta y el suelo. No declara colores, fondos, fuentes ni
+  `@keyframes`: sale de `HOJAS_HEREDADAS` y el cerco la trata como una hoja de pantalla nueva.
+- **Alternativas:** conservar `suelo`, `herbario` y `etiqueta` como nombres (descartada: `herbario` y
+  `etiqueta` nombran piezas de la lista de entidades y de Confirmar recepción, y `suelo`, genérico, es parte de
+  la tierra: `.tierra-suelo`); la escena
+  como bloque propio (descartada: solo existe para la red); la regla de la pausa en su bloque (descartada:
+  nombraría piezas de otros dos bloques; qué detiene es de la pantalla); `.herbario--sin-red` como clase del
+  bloque (descartada: es un estado, va por atributo como en los demás).
+- **Por qué:** cierra B3-01: la hoja de la pantalla más grande del sitio queda solo con disposición.
+- **Costo:** el tope baja de 163 a 159 y salen 33 clases de la lista de heredadas (370 quedan; también `tierra`,
+  que no tenía estilo). La hoja pasa de 695 a 146 líneas.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: qué piezas van en la subtanda 3 y que la hoja sale de la
+  lista al terminarla. El agente decidió y queda para que el usuario confirme (el usuario pidió correr sin
+  preguntar): los nombres de los tres bloques y de sus partes y `data-estado="sin-datos"`.
+  **Cambios visuales:** ninguno. **Cambios de comportamiento:** ninguno. **Hallazgos en el camino:** la regla
+  `.suelo--registro { border-top: 0 }` («las cifras siguen en la tierra, sin otra línea de tierra») no tenía
+  efecto: perdía contra `.suelo`, declarada después con el mismo peso, y la línea de tierra de 4 px sí se ve
+  sobre la rama de frutos. Una primera versión la hizo funcionar (`data-continua`) y subió 4 px todo lo de
+  abajo; se quitó para no cambiar lo que se ve, y queda para que el usuario decida si esa línea va. Además,
+  `.dibujo` de `app.css` le ganaba al tamaño 0 del dibujo de la red movido al bloque: el tamaño volvió a la
+  hoja.
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. El cerco con
+  la portada fuera de `HOJAS_HEREDADAS` pasa (15/15). `-Pvisual` completo (56 pruebas verdes, `reporte.json`
+  vacío; la base, una corrida completa sobre la subtanda 2) y, tras los dos arreglos, `-Pvisual` sobre `/estilos`
+  y la portada con sus cuatro escenarios: 56 verdes, `reporte.json` vacío y 14 de las 16 capturas de la
+  portada iguales a la base; las otras 2 difieren en una fila de 7 y 11 px que también cambia entre dos
+  corridas del mismo código (ruido). Estados del test temporal (viejo dos veces y nuevo, con la tierra, la
+  red, sus etiquetas con el puntero, la pausa con foco y marcada, y la escena): ninguna diferencia fuera del
+  ruido.
+
 ### 2026-11-05 · stack · Fase 3, B3-01 subtanda 2: los pasos, la planta, la rama de frutos y la libreta del mes son bloques
 
 - **Decisión:** segunda subtanda de `publico-portada.css`: cuatro bloques nuevos en `componentes/`, con su
@@ -38,8 +78,9 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
   `.hoja--tinta`, `.raiz`, `.raicilla`, `.cruce`, `.rama`, `.fruto`, `.fruto-*`, `.tinta-corrida`) se nombran
   dentro de cada bloque. En la hoja quedan la pausa del viento (detiene dos bloques) y la escena. `.muestra`
   suma `data-ancho="pantalla"` para los ejemplos anchos de `/estilos`. Además, las tres observaciones de la
-  auditoría de la subtanda 1: la zona suelo del estado vacío exige los filetes y la muestra del botón aclara
-  el tono principal.
+  auditoría de la subtanda 1, con dos cambios: la zona suelo del estado vacío exige los filetes (lo que también
+  quita la dependencia del orden de los imports para centrar su botón) y la muestra del botón aclara el tono
+  principal.
 - **Alternativas:** conservar los nombres (`registro`, `viajo`, `cuaderno`, `asiento`, `ejemplar`, `cuadro`,
   `llamada`, `vineta`) como bloques (descartada: `registro`, `cuaderno`, `asiento` y `ejemplar` ya nombran
   otras piezas del sitio, y el handoff pedía nombres distintos); prefijar también las piezas del dibujo

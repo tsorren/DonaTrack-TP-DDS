@@ -620,6 +620,44 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.tierra-superficie y .tierra-suelo', 'La tierra de la portada, una section sin clase propia: arriba la superficie en papel (.tierra-superficie, centrada, con el título y la bajada .tierra-bajada, o la planta con su sol) y debajo el suelo (.tierra-suelo, con la línea de tierra arriba, letra clara y anillo de foco claro; adentro, .tierra-interior). La textura va con la utilidad .tierra-impresa.', ~{::demo-tierra})}">
+          <th:block th:fragment="demo-tierra">
+            <section aria-labelledby="muestra-tierra-titulo">
+              <div class="tierra-superficie">
+                <h2 id="muestra-tierra-titulo">Quiénes reciben <em>las donaciones</em></h2>
+                <p class="tierra-bajada">Cada una pide lo que necesita y confirma lo que recibe.</p>
+              </div>
+              <div class="tierra-suelo tierra-impresa">
+                <div class="tierra-interior">
+                  <p>El suelo: aquí va la red de entidades.</p>
+                </div>
+              </div>
+            </section>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.red', 'Quiénes reciben, en el suelo de la portada: la red (.red, junto con .tierra-interior) baja del brote hasta las etiquetas de herbario (.red-etiquetas, una .red-etiqueta por entidad: un enlace con el sello .red-sello, el nombre, el lugar y lo que pide, .red-pide) y la vacía de tu entidad (.red-etiqueta--tuya, punteada, con el botón para sumarse). En el celular, las etiquetas cuelgan de a dos de un tronco al centro; desde 68,75 em, cada una va en la punta de su raíz del dibujo .red-dibujo (.tronco, un .borde y una .ruta por raíz, .raiz--1, .raiz--2, .raiz--3, .raiz--5, .raiz--6 y .raiz--7, y la de tu entidad, .ruta--pendiente y .raiz--tuya, con los .cruce), en .red-etiqueta--1, .red-etiqueta--2, .red-etiqueta--3, .red-etiqueta--5, .red-etiqueta--6 y .red-etiqueta--7 (acá, sin datos: solo la de tu entidad). Al pasar o enfocar una etiqueta, su raíz queda llena. data-estado=&quot;sin-datos&quot; sin datos: sin dibujo, tu entidad no cuelga de nada. La escena (.escena con .escena-fija) deja quietas la planta y la red en la computadora mientras se baja.', ~{::demo-red})}">
+          <th:block th:fragment="demo-red">
+            <div class="tierra-suelo">
+              <div class="tierra-interior red" data-estado="sin-datos">
+                <ul class="red-etiquetas" role="list">
+                  <li class="red-etiqueta red-etiqueta--tuya">
+                    <b>Tu entidad</b> <span>Pedí lo que necesitás y confirmá lo que recibís.</span>
+                    <a href="#componentes" class="boton" data-tono="principal" data-zona="suelo">Sumar mi entidad</a></li>
+                </ul>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.pausa', 'El botón para pausar el movimiento que no termina (WCAG 2.2.2): una casilla con forma de botón chico, sin JavaScript (.pausa-boton con la casilla .pausa-casilla, que lo cubre entero). Solo se muestra si hay movimiento; marcada, queda hundida. Qué detiene lo dice la pantalla.', ~{::demo-pausa})}">
+          <th:block th:fragment="demo-pausa">
+            <p class="pausa">
+              <label class="boton pausa-boton" data-tamano="chico">
+                <input class="pausa-casilla" id="muestra-pausa" type="checkbox">
+                Pausar el movimiento
+              </label>
+            </p>
+          </th:block>
+        </div>
       </div>
     </section>
   </div>

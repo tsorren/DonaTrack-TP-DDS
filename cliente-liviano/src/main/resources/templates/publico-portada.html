@@ -158,8 +158,8 @@
   <!--/* El rótulo va en papel, sobre el brote; de él baja la red radial de A hasta las etiquetas de
          herbario de C, cada una colgada de un sello con el ícono de lo que pide. Las posiciones de las etiquetas salen del dibujo (viewBox de 1200 × 600); sin
          lugar para la red, las etiquetas cuelgan de a dos de un tronco al centro, en espejo. */-->
-  <section class="tierra" aria-labelledby="red-titulo">
-    <div class="superficie">
+  <section aria-labelledby="red-titulo">
+    <div class="tierra-superficie">
       <h2 id="red-titulo">Quiénes reciben <em>las donaciones</em></h2>
       <p class="tierra-bajada" th:if="${conDatos}">Una entidad de cada tipo, entre las 46 que están en el mapa.
         Cada una pide lo que necesita y confirma lo que recibe.</p>
@@ -173,7 +173,7 @@
            la red, C, 2026-11-04). */-->
     <div class="escena">
     <div class="escena-fija">
-    <div class="superficie">
+    <div class="tierra-superficie">
       <span class="planta-sol" aria-hidden="true"></span>
       <div class="planta">
         <svg class="planta-dibujo" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
@@ -199,8 +199,8 @@
           este mes.</p>
       </div>
     </div>
-    <div class="suelo tierra-impresa">
-      <div class="tierra-interior herbario" th:classappend="${conDatos} ? '' : 'herbario--sin-red'">
+    <div class="tierra-suelo tierra-impresa">
+      <div class="tierra-interior red" th:attr="data-estado=${conDatos} ? null : 'sin-datos'">
         <svg th:if="${conDatos}" class="dibujo red-dibujo" viewBox="0 0 1200 600" aria-hidden="true" focusable="false">
           <path class="tronco" d="M600 0V40"/>
           <path class="borde" pathLength="1" d="M600 40H298Q270 40 250 60L110 200"/>
@@ -226,27 +226,27 @@
           <p>No pudimos cargar las entidades. Probá de nuevo en unos minutos.</p>
           <a href="" class="boton" data-tamano="chico" data-zona="suelo">Volver a cargar</a>
         </div>
-        <ul class="etiquetas" role="list">
-          <li th:if="${conDatos}" class="etiqueta etiqueta--1"><a href="/publico-mapa" th:href="@{/publico-mapa}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
-            <b>Comedor</b> <span>Barrio Ejemplo</span> <span class="pide">Pide alimentos</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--2"><a href="/publico-mapa" th:href="@{/publico-mapa}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
-            <b>Escuela</b> <span>Ejemplo N.º 12</span> <span class="pide">Pide muebles</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--3"><a href="/publico-mapa" th:href="@{/publico-mapa}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
-            <b>Merendero</b> <span>Ejemplo Sur</span> <span class="pide">Pide alimentos</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--5"><a href="/publico-mapa" th:href="@{/publico-mapa}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
-            <b>Hogar</b> <span>Casa Ejemplo</span> <span class="pide">Pide ropa de abrigo</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--6"><a href="/publico-mapa" th:href="@{/publico-mapa}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
-            <b>Club</b> <span>Ejemplo Norte</span> <span class="pide">Pide ropa</span></a></li>
-          <li th:if="${conDatos}" class="etiqueta etiqueta--7"><a href="/publico-mapa" th:href="@{/publico-mapa}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
-            <b>Biblioteca</b> <span>Popular Ejemplo</span> <span class="pide">Pide muebles</span></a></li>
+        <ul class="red-etiquetas" role="list">
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--1"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
+            <b>Comedor</b> <span>Barrio Ejemplo</span> <span class="red-pide">Pide alimentos</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--2"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
+            <b>Escuela</b> <span>Ejemplo N.º 12</span> <span class="red-pide">Pide muebles</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--3"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
+            <b>Merendero</b> <span>Ejemplo Sur</span> <span class="red-pide">Pide alimentos</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--5"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
+            <b>Hogar</b> <span>Casa Ejemplo</span> <span class="red-pide">Pide ropa de abrigo</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--6"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
+            <b>Club</b> <span>Ejemplo Norte</span> <span class="red-pide">Pide ropa</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--7"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
+            <b>Biblioteca</b> <span>Popular Ejemplo</span> <span class="red-pide">Pide muebles</span></a></li>
           <!--/* La etiqueta vacía, al centro de la red cuando hay lugar: lo que todavía no se imprimió. */-->
-          <li class="etiqueta etiqueta--tuya">
+          <li class="red-etiqueta red-etiqueta--tuya">
             <b>Tu entidad</b> <span>Pedí lo que necesitás y confirmá lo que recibís.</span>
             <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
                class="boton" data-tono="principal" data-zona="suelo">Sumar mi entidad</a></li>
@@ -255,7 +255,7 @@
     </div>
     </div>
     </div>
-    <div class="suelo suelo--registro">
+    <div class="tierra-suelo">
       <!--/* La rama de frutos (A/B de cifras, C): cada cifra, un fruto que cuelga de una rama, con su etiqueta. */-->
       <section class="frutos tierra-impresa" aria-labelledby="registro-titulo">
         <div class="frutos-interior">

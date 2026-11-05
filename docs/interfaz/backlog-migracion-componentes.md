@@ -228,9 +228,21 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 > de los imports) y la muestra del botón dice que el tono principal es la acción de la pantalla o de una
 > parte de ella. Salen 38 clases de la lista de heredadas (403 quedan); el tope baja a 163.
 
+> B3-01, subtanda 3, 2026-11-05. Notas de lo hecho: tres bloques nuevos. El de la tierra no tiene clase raíz (la
+> `section` no lleva estilo propio): `.tierra-superficie` (era `superficie`), `.tierra-bajada`, `.tierra-suelo`
+> (era `suelo`; `suelo--registro` no tenía efecto: su `border-top: 0` perdía contra `.suelo`, declarada después, y se quitó sin cambiar lo que se ve) y `.tierra-interior`. `.red` (`red.css`, era
+> `herbario`, que choca con la lista de entidades) con `.red-dibujo` y sus piezas, `.red-etiquetas`,
+> `.red-etiqueta` (era `etiqueta`, que choca con la de Confirmar recepción) y sus `--1` a `--7` y `--tuya`,
+> `.red-sello`, `.red-pide`, `data-estado="sin-datos"` (era `herbario--sin-red`) y la escena fija (`.escena`,
+> `.escena-fija`). `.pausa` (`pausa.css`) con `.pausa-boton` y `.pausa-casilla`. En la hoja quedan la grilla de
+> la portada, el lugar de la lámina y del sol, el aire de los botones chicos de la tierra y del aviso, la pausa
+> del viento de los pasos y de la planta, lo que la escena hace con la planta y el suelo, y el tamaño del dibujo de
+> la red (le tiene que ganar a `.dibujo` de `app.css`, que no tiene capa): no declara colores,
+> fondos, fuentes ni `@keyframes`, y `publico-portada.css` sale de `HOJAS_HEREDADAS`. **B3-01 queda hecho.**
+
 | ID | Hoja | Líneas (2026-11-05) | Estado |
 |---|---|:-:|---|
-| B3-01 | `publico-portada.css` | 695 (1.590 antes de la subtanda 1; 1.446 después) | En curso: subtandas 1 y 2 hechas (2026-11-05) |
+| B3-01 | `publico-portada.css` | 146 (1.590 antes de la subtanda 1; 1.446 y 695 después de la 1 y la 2) | Hecho (2026-11-05), en 3 subtandas; la hoja salió de `HOJAS_HEREDADAS` |
 | B3-02 | `entidad-necesidades.css` | 575 | Pendiente |
 | B3-03 | `privado.css` | 239 | Pendiente |
 | B3-04 | `entidad-seguimiento-confirmar.css` | 387 | Pendiente |
@@ -251,3 +263,4 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 | 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | 06cd7190 (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | 7c07ca8b (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 2 (la portada: pasos, planta, rama de frutos y libreta del mes, bloques nuevos) | 163 (medido después del cambio; era 171) | 954dd1cd (rama `E6_raices`) |
+| 2026-11-05 | B3-01, subtanda 3 (la portada: tierra, red y pausa como bloques; la hoja solo dispone) | 159 (medido después del cambio; era 163) | — |

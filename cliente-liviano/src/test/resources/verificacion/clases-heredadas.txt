@@ -34,7 +34,6 @@ aviso-brote
 aviso-codigo
 bajada
 bandeja
-borde
 boton--google
 cambiar
 cambio
@@ -140,8 +139,6 @@ entrega-estado
 entrega-noticia
 entrega-numero
 entregas
-escena
-escena-fija
 estacion--
 estacion-ficha--
 estacion-numero
@@ -150,13 +147,6 @@ etapa-detalle
 etapa-nombre
 etapas
 etiqueta
-etiqueta--1
-etiqueta--2
-etiqueta--3
-etiqueta--5
-etiqueta--6
-etiqueta--7
-etiqueta--tuya
 etiqueta-barrio
 etiqueta-datos
 etiqueta-entidad
@@ -164,7 +154,6 @@ etiqueta-pide
 etiqueta-sello
 etiqueta-tipo
 etiqueta-titulo
-etiquetas
 ficha
 fideos
 filtro
@@ -188,7 +177,6 @@ grupo-avisos
 grupo-avisos--sin-leer
 grupos
 herbario
-herbario--sin-red
 herbario-lista
 hero
 hero-bajada
@@ -264,9 +252,6 @@ opciones-cuenta
 paginas
 parte
 parte--periodos
-pausa
-pausa-boton
-pausa-casilla
 pedido
 pedido--nuevo
 pedido-acciones
@@ -304,7 +289,6 @@ periodos
 periodos--lista
 periodos-anteriores
 periodos-desde
-pide
 portada-grilla
 portada-texto
 problema
@@ -321,13 +305,6 @@ raices-pie
 raices-privado
 raices-publico
 raiz
-raiz--1
-raiz--2
-raiz--3
-raiz--5
-raiz--6
-raiz--7
-raiz--tuya
 raiz-detalle
 raiz-nombre
 raiz-paso
@@ -338,7 +315,6 @@ recibido-fruto
 recibido-rama
 recibido-sello
 recibido-texto
-red-dibujo
 registro-mesa
 registros
 renglon-que
@@ -346,8 +322,6 @@ renglon-va
 resultado
 resumen
 rotulo
-ruta
-ruta--pendiente
 salidas
 saltar
 seguimiento
@@ -373,14 +347,8 @@ subte-estacion
 subte-hueco
 subte-hueco-centro
 subte-linea
-suelo
-suelo--registro
-superficie
 terminadas
-tierra
-tierra-bajada
 tierra-impresa
-tierra-interior
 todo
 todo-fecha
 tramo
@@ -395,7 +363,6 @@ tramo-paso--falta
 tramo-paso--hecho
 tramo-seccion
 tramo-sello
-tronco
 ver-mas
 ver-menos
 viene

@@ -1,7 +1,10 @@
 /* Portada de Raíces, segunda iteración (2026-11-01): D, la mezcla de A y C elegida por el usuario.
    El título de A con la lámina "Cómo funciona" de C; debajo, el rótulo y un brote con su sol sobre
    la tierra, del que sale la red radial de A hasta las etiquetas de herbario, con la vacía de tu
-   entidad al centro. Las cifras, frutos colgados de una rama; el mes, un cuaderno de entregas. */
+   entidad al centro. Las cifras, frutos colgados de una rama; el mes, una libreta de entregas.
+   La hoja solo dispone (fase 3 del backlog, B3-01): cada pieza es un bloque de componentes/ (la
+   lámina, una `.tarjeta` con `.pasos`; `.planta`, `.frutos`, `.libreta`, `.tierra-*`, `.red` y `.pausa`)
+   y acá queda dónde va cada una. */
 @import url("app.css");
 
 /* --- La portada y la lámina ------------------------------------------------------------------- */
@@ -23,34 +26,14 @@
   padding: 1rem;
 }
 
-/* --- La tierra y el herbario -------------------------------------------------------------------- */
+/* --- La tierra ------------------------------------------------------------------------------------ */
 
-/* El rótulo en papel, y debajo la planta con su sol sobre la línea
-   de tierra (de A). */
-.superficie {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: 1rem 1rem 0;
-  text-align: center;
-}
-
-.superficie > :not(.planta-sol) {
+/* La planta con su sol (`.planta-sol`), detrás, medio hundido en la línea de tierra. */
+.tierra-superficie > :not(.planta-sol) {
   position: relative;
 }
 
-/* El rótulo va aparte de la escena (planta y red), que en la computadora queda fija al bajar. */
-.escena .superficie {
-  padding-top: 0;
-}
-
-/* Las cifras siguen en la tierra, sin otra línea de tierra encima. */
-.suelo--registro {
-  border-top: 0;
-}
-
-/* El sol de la planta (`.planta-sol`), detrás, medio hundido en la línea de tierra. */
-.superficie .planta-sol {
+.tierra-superficie .planta-sol {
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -58,47 +41,14 @@
   translate: -50% 50%;
 }
 
-.suelo {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-top: 4px solid var(--color-tinta);
-  color: var(--color-texto-suelo);
-  background: var(--color-suelo);
+/* El rótulo va aparte de la escena (planta y red), que en la computadora queda fija al bajar. */
+.escena .tierra-superficie {
+  padding-top: 0;
 }
 
-.suelo :focus-visible {
-  outline-color: var(--color-texto-suelo);
-}
-
-.tierra-interior {
-  position: relative;
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 2rem 1rem 3rem;
-}
-
-.superficie h2 {
-  margin: 0 0 0.5rem;
-  color: var(--color-tinta);
-  font: 800 clamp(2rem, 4.6vw, 3.75rem) / 1 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
-}
-
-.superficie h2 em {
-  color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
-}
-
-.tierra-bajada {
-  max-width: 36rem;
-  margin: 0 auto;
-}
-
-/* Sin lugar para la red, el dibujo queda presente pero invisible: así el trazado ya terminó si la
-   ventana se agranda, en vez de empezar de nuevo. */
+/* Sin lugar para la red, su dibujo queda presente pero invisible: así el trazado ya terminó si la
+   ventana se agranda, en vez de empezar de nuevo. Va acá y no en el bloque `red`: le tiene que ganar a
+   `.dibujo` de app.css, que no tiene capa. */
 .red-dibujo {
   position: absolute;
   width: 0;
@@ -106,178 +56,7 @@
   visibility: hidden;
 }
 
-/* Sin lugar para la red, la espina en espejo (usuario, A/B del celular, 2026-11-01): un tronco baja
-   del brote por el centro y las etiquetas cuelgan de él de a dos, con una rama corta y su cruce. */
-.etiquetas {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 2.25rem 2.5rem;
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 0;
-  list-style: none;
-}
-
-.etiqueta {
-  position: relative;
-  display: grid;
-}
-
-/* La rama, del costado de la etiqueta al tronco. */
-.etiqueta::before {
-  content: "";
-  position: absolute;
-  top: 0.95rem;
-  left: 100%;
-  width: 1.25rem;
-  height: 5px;
-  background: var(--color-raiz);
-}
-
-.etiqueta:where(:nth-child(even))::before {
-  left: auto;
-  right: 100%;
-}
-
-/* El tronco, un tramo por fila; el primero llega hasta la línea de tierra, debajo del brote. */
-.etiqueta:where(:nth-child(odd):not(.etiqueta--tuya))::after {
-  content: "";
-  position: absolute;
-  top: -2.25rem;
-  bottom: 0;
-  left: calc(100% + 1.25rem - 2.5px);
-  width: 5px;
-  background: var(--color-raiz);
-}
-
-.etiqueta:where(:first-child)::after {
-  top: -2rem;
-}
-
-/* El cruce de cada fila, sobre el tronco. */
-.etiqueta:where(:nth-child(even))::after {
-  content: "";
-  position: absolute;
-  top: calc(0.95rem + 2.5px - 0.5625rem);
-  left: calc(-1.25rem - 0.5625rem);
-  width: 1.125rem;
-  height: 1.125rem;
-  box-sizing: border-box;
-  border: 2.5px solid var(--color-texto-suelo);
-  border-radius: 50%;
-  background: var(--color-suelo);
-}
-
-/* La etiqueta de herbario: papel con la segunda tinta corrida, colgada de su sello. */
-.etiqueta a:not(.boton) {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 0.1rem;
-  align-content: start;
-  min-height: 3rem;
-  padding: 1.875rem 0.75rem 0.875rem;
-  border-radius: var(--radio-lamina);
-  color: var(--color-tinta);
-  background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
-  text-align: center;
-  text-decoration: none;
-  line-height: 1.3;
-}
-
-/* El sello en la punta (usuario, A/B de la red, 2026-11-01): un disco paja con el ícono de lo que
-   pide la entidad, el mismo del cuaderno del mes, y la segunda tinta corrida. */
-.etiqueta-sello {
-  position: absolute;
-  top: -1.375rem;
-  left: 50%;
-  width: 2.75rem;
-  height: 2.75rem;
-  translate: -50% 0;
-  color: var(--color-suelo-hondo);
-  fill: currentcolor;
-}
-
-.etiqueta b {
-  font: 800 1.125rem/1.15 var(--fuente-titulo);
-  font-stretch: 115%;
-}
-
-.etiqueta span {
-  font-size: 0.875rem;
-}
-
-.etiqueta .pide {
-  margin-top: 0.35rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--color-tinta-suave);
-  color: var(--color-acento);
-  font-weight: 700;
-}
-
-.etiqueta a:not(.boton):hover {
-  background: var(--color-acento-claro);
-}
-
-.etiqueta a:not(.boton):hover b {
-  text-decoration: underline;
-}
-
-.etiqueta a:not(.boton):active {
-  box-shadow: none;
-  translate: 0.3rem 0.3rem;
-}
-
-/* La etiqueta vacía: punteada y sin imprimir, con el botón para sumarse. */
-.etiqueta--tuya {
-  grid-column: 1 / -1;
-  display: grid;
-  justify-items: center;
-  gap: 0.25rem;
-  padding: 1.25rem 1rem 1rem;
-  border: 2px dashed var(--color-raiz);
-  border-radius: var(--radio-lamina);
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.etiqueta--tuya::before {
-  top: -1.6rem;
-  left: 50%;
-  height: 1.6rem;
-  width: 3px;
-  translate: -50% 0;
-  background: repeating-linear-gradient(180deg, var(--color-raiz) 0 4px, transparent 4px 10px);
-}
-
-/* Sin datos no hay tronco: la etiqueta de tu entidad no cuelga de nada. */
-.herbario--sin-red .etiqueta--tuya::before {
-  content: none;
-}
-
-/* Con la red, el tronco sigue punteado desde la última fila hasta tu entidad. */
-.herbario:not(.herbario--sin-red) .etiqueta--tuya::before {
-  top: calc(-1.5rem - 2.25rem - 2px);
-  height: calc(1.5rem + 2.25rem);
-}
-
-.etiqueta--tuya b {
-  font: 800 1.125rem/1.15 var(--fuente-titulo);
-  font-stretch: 115%;
-}
-
-.etiqueta--tuya span {
-  max-width: 16rem;
-  font-size: 0.875rem;
-}
-
-.etiqueta--tuya .boton {
-  margin-top: 0.5rem;
-}
-
-/* --- El mes ----------------------------------------------------------------------------------- */
+/* --- El mes --------------------------------------------------------------------------------------- */
 
 /* El sprite de los íconos de lo donado, que usa la libreta del mes. */
 .iconos {
@@ -292,7 +71,7 @@
 }
 
 /* En la tierra, el botón chico (`data-zona="suelo"` o `"suelo-hondo"`) toma aire arriba. */
-.suelo .boton[data-tamano="chico"] {
+.tierra-suelo .boton[data-tamano="chico"] {
   margin-top: 1rem;
 }
 
@@ -307,8 +86,7 @@
 /* --- Con más lugar ----------------------------------------------------------------------------- */
 
 @media (min-width: 37.5em) {
-  .portada-grilla,
-  .tierra-interior {
+  .portada-grilla {
     padding-inline: 2rem;
   }
 }
@@ -324,8 +102,6 @@
   }
 }
 
-/* Con lugar para siete etiquetas: las raíces salen del centro y cada una termina en el ojal de la
-   suya; las pares cuelgan más hondo. La de tu entidad, al centro, debajo del tronco. */
 @media (min-width: 68.75em) {
   .portada-grilla {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
@@ -333,363 +109,38 @@
     gap: 3rem;
   }
 
-  /* La red radial de A: líneas de subte con borde, del brote a cada etiqueta, con codos a 45°. */
+  /* Con lugar para la red: el dibujo a todo el ancho. */
   .red-dibujo {
     position: static;
     width: 100%;
     height: auto;
     visibility: visible;
   }
-
-  .red-dibujo path {
-    stroke-linejoin: round;
-  }
-
-  .red-dibujo .tronco {
-    stroke: var(--color-raiz);
-    stroke-width: 9;
-  }
-
-  .red-dibujo .borde {
-    stroke: var(--color-suelo-medio);
-    stroke-width: 9;
-  }
-
-  .red-dibujo .ruta {
-    stroke: var(--color-raiz);
-    stroke-width: 5;
-  }
-
-  .red-dibujo .ruta--pendiente {
-    stroke-dasharray: 2 14;
-  }
-
-  .red-dibujo .cruce {
-    fill: var(--color-suelo);
-    stroke: var(--color-texto-suelo);
-    stroke-width: 2.5;
-  }
-
-  /* El tronco sale pegado a la línea de tierra; debajo del dibujo, lugar para tu entidad. */
-  .herbario {
-    padding-top: 0;
-    padding-bottom: 12rem;
-  }
-
-  /* Cada etiqueta, con el centro de su sello en la punta de su raíz: la posición sale del dibujo
-     (1200 × 600). Crecen con el ancho hasta donde no se pisan. */
-  .etiquetas {
-    position: absolute;
-    inset: 0 2rem auto;
-    aspect-ratio: 2;
-    display: block;
-    max-width: none;
-    margin: 0;
-  }
-
-  .etiqueta {
-    position: absolute;
-    width: clamp(8.25rem, 12vw, 9.5rem);
-    padding-top: 0;
-    translate: -50% 0;
-  }
-
-  .etiqueta::before,
-  .etiqueta::after {
-    content: none;
-  }
-
-  .etiqueta b {
-    font-size: clamp(1.125rem, 1.25vw, 1.25rem);
-  }
-
-  .etiqueta span {
-    font-size: clamp(0.875rem, 0.9vw, 0.9375rem);
-  }
-
-  .etiqueta--1 { left: 9.1667%; top: 33.333%; }
-  .etiqueta--2 { left: 25%; top: 50%; }
-  .etiqueta--3 { left: 39.1667%; top: 63.333%; }
-  .etiqueta--5 { left: 60.8333%; top: 63.333%; }
-  .etiqueta--6 { left: 75%; top: 50%; }
-  .etiqueta--7 { left: 90.8333%; top: 33.333%; }
-
-  .etiqueta--tuya {
-    left: 50%;
-    top: 93.333%;
-    width: 14.5rem;
-    margin: 0;
-    padding: 1.25rem 0.75rem 1rem;
-    background: var(--color-suelo);
-    translate: -50% -0.85rem;
-  }
-
-  /* El botón de tu entidad, en una sola línea. */
-  .etiqueta--tuya .boton {
-    padding-inline: 0.75rem;
-    font-size: 0.9375rem;
-    white-space: nowrap;
-  }
-
-  /* Sin datos no hay red: el aviso y la etiqueta de tu entidad, centrados, en el flujo. */
-  .herbario--sin-red {
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-  }
-
-  .herbario--sin-red .etiquetas {
-    position: static;
-    aspect-ratio: auto;
-  }
-
-  .herbario--sin-red .etiqueta--tuya {
-    position: relative;
-    top: auto;
-    left: auto;
-    translate: none;
-    margin: 0 auto;
-  }
-
-  /* Al pasar o enfocar una etiqueta, su raíz queda llena y el resto se apaga. */
-  .herbario:has(.etiqueta a:is(:hover, :focus-visible)) .ruta {
-    opacity: 0.28;
-  }
-
-  .herbario:has(.etiqueta--1 a:is(:hover, :focus-visible)) .raiz--1,
-  .herbario:has(.etiqueta--2 a:is(:hover, :focus-visible)) .raiz--2,
-  .herbario:has(.etiqueta--3 a:is(:hover, :focus-visible)) .raiz--3,
-  .herbario:has(.etiqueta--5 a:is(:hover, :focus-visible)) .raiz--5,
-  .herbario:has(.etiqueta--6 a:is(:hover, :focus-visible)) .raiz--6,
-  .herbario:has(.etiqueta--7 a:is(:hover, :focus-visible)) .raiz--7,
-  .herbario:has(.etiqueta--tuya a:is(:hover, :focus-visible)) .raiz--tuya {
-    opacity: 1;
-  }
-
-  .herbario:has(.etiqueta--tuya a:is(:hover, :focus-visible)) .raiz--tuya {
-    stroke-dasharray: none;
-  }
 }
 
-/* El botón para pausar el viento: solo se muestra si hay movimiento (más abajo). Marcado, queda
-   hundido sobre su sombra, como un botón apretado. */
-.pausa {
-  display: none;
-  justify-content: flex-end;
-  margin: 0.75rem 0 0;
-}
-
-.pausa-boton {
-  position: relative;
-  cursor: pointer;
-}
-
-.pausa-casilla {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.pausa-boton:has(.pausa-casilla:focus-visible) {
-  outline: 3px solid var(--color-acento);
-  outline-offset: 3px;
-}
-
-.pausa-boton:has(.pausa-casilla:checked) {
-  box-shadow: none;
-  translate: 0.2rem 0.2rem;
-  background: var(--color-acento-claro);
-}
-
-/* Al entrar, una vez: la lámina se imprime (el sol, después la segunda tinta corrida que calza) y
-   las raíces de la lámina y la red se trazan desde el brote. Sin movimiento si la persona lo pidió así. */
+/* Al entrar, una vez, el texto de la portada se imprime. La pausa (bloque `pausa`), marcada, detiene el
+   viento de los pasos y de la planta en reposo. Sin movimiento si la persona lo pidió así. */
 @media (prefers-reduced-motion: no-preference) {
   .portada-texto {
     animation: var(--movimiento-animacion-registro);
   }
 
-  .red-dibujo .ruta {
-    transition: var(--movimiento-transicion-atenua);
-  }
-
-  /* La red se traza desde el brote hasta cada etiqueta (ronda de movimiento de A). */
-  .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
-    stroke-dasharray: 1;
-    animation: var(--movimiento-animacion-traza);
-  }
-
-  /* La pausa: la casilla cubre el botón entero (el toque es el del botón) y, marcada, el viento se
-     detiene en reposo. */
-  .pausa {
-    display: flex;
-  }
-
   body:has(#pausar-movimiento:checked) :is(.paso-brote .hoja, .planta-dibujo .hoja, .planta-dibujo .fruto) {
     animation: none;
   }
-
-  @supports (animation-timeline: view()) {
-    /* La red al bajar (A/B de movimiento de la red, C con la escena entera, 2026-11-04). En el
-       celular, cada fila de etiquetas se imprime al entrar y su tramo de tronco crece de arriba.
-       Sin línea de tiempo de scroll (Firefox), la red se traza al cargar, como antes. */
-    .etiqueta {
-      animation: mov-registro linear both;
-      animation-timeline: view();
-      animation-range: entry 20% entry 80%;
-    }
-
-    .etiqueta::after {
-      transform-origin: top;
-      animation: mov-crece-alto linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 70%;
-    }
-  }
 }
 
-/* La escena fija (A/B de movimiento de la red, C, 2026-11-04): en la computadora, al llegar a la
-   planta, la escena entera (de los frutos a tu entidad) queda quieta en la pantalla durante 1,5
-   pantallas de scroll; el tronco crece, las raíces llegan de a una, de izquierda a derecha, y cada
-   etiqueta se imprime en su punta; al final, tu entidad. La red se achica para entrar en la
-   pantalla. Sin línea de tiempo de scroll o con movimiento reducido, la escena no se fija. */
+/* La escena fija (bloque `red`): en la computadora, la planta más chica y el suelo llenando lo que queda
+   de la pantalla. */
 @media (min-width: 68.75em) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    .escena {
-      view-timeline: --escena block;
-      /* Alto y no relleno: el fijado solo recorre la caja de contenido. */
-      height: calc(100dvh + 150vh);
-      background: var(--color-suelo);
-    }
-
-    .escena-fija {
-      position: sticky;
-      top: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      height: 100dvh;
-      background: var(--color-papel);
-    }
-
     .escena .planta-dibujo {
       width: min(10rem, 18dvh);
     }
 
-    .escena .suelo {
+    .escena .tierra-suelo {
       flex: 1;
       overflow: clip;
-    }
-
-    /* Lo que queda debajo de la planta: el dibujo (alto = ancho / 2) y el lugar de tu entidad. */
-    /* Con un piso de 60 rem: en una pantalla baja (menos de unos 800 px) la red no se achica más,
-       para que las etiquetas no se pisen, y "Tu entidad" puede quedar debajo hasta que se suelta
-       la escena (revision-ui, 2026-11-04). */
-    .escena .herbario {
-      max-width: max(60rem, min(75rem, calc(2 * (100dvh - 22rem)) + 4rem));
-      padding-bottom: 10rem;
-    }
-
-    /* Cada etiqueta, más angosta que la distancia entre dos raíces (un 14 % del dibujo). */
-    .escena .etiqueta:not(.etiqueta--tuya) {
-      width: clamp(7rem, 12.5%, 9.5rem);
-    }
-
-    .escena .red-dibujo .tronco {
-      transform-box: fill-box;
-      transform-origin: top;
-      animation: mov-crece-alto linear both;
-      animation-timeline: --escena;
-      animation-range: contain 0% contain 6%;
-    }
-
-    /* Sin el atajo "animation": reiniciaría el tramo (animation-range) de cada raíz y su etiqueta,
-       que va en reglas de menos peso (revision-ui, 2026-11-04). */
-    .escena .red-dibujo :is(.ruta, .borde):not(.ruta--pendiente) {
-      stroke-dasharray: 1;
-      animation-name: mov-traza;
-      animation-duration: auto;
-      animation-delay: var(--movimiento-retraso-ninguno);
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: --escena;
-    }
-
-    .escena :is(.etiqueta, .red-dibujo .ruta--pendiente) {
-      animation-name: mov-registro;
-      animation-duration: auto;
-      animation-delay: var(--movimiento-retraso-ninguno);
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: --escena;
-    }
-
-    /* Con el teclado, la etiqueta enfocada se ve entera aunque su raíz no haya llegado. */
-    .escena .etiqueta:focus-within {
-      animation: none;
-    }
-
-    /* De a una, de izquierda a derecha, como se lee (el borde de cada raíz es el path 2 a 7, tras el
-       tronco): cada raíz se traza en un 14 % del recorrido y
-       su etiqueta se imprime al final; tu entidad, a lo último. */
-    .escena .red-dibujo .raiz--1,
-    .escena .red-dibujo .borde:nth-of-type(2) {
-      animation-range: contain 6% contain 20%;
-    }
-
-    .escena .etiqueta--1 {
-      animation-range: contain 17% contain 23%;
-    }
-
-    .escena .red-dibujo .raiz--2,
-    .escena .red-dibujo .borde:nth-of-type(3) {
-      animation-range: contain 17% contain 31%;
-    }
-
-    .escena .etiqueta--2 {
-      animation-range: contain 28% contain 34%;
-    }
-
-    .escena .red-dibujo .raiz--3,
-    .escena .red-dibujo .borde:nth-of-type(4) {
-      animation-range: contain 28% contain 42%;
-    }
-
-    .escena .etiqueta--3 {
-      animation-range: contain 39% contain 45%;
-    }
-
-    .escena .red-dibujo .raiz--5,
-    .escena .red-dibujo .borde:nth-of-type(5) {
-      animation-range: contain 39% contain 53%;
-    }
-
-    .escena .etiqueta--5 {
-      animation-range: contain 50% contain 56%;
-    }
-
-    .escena .red-dibujo .raiz--6,
-    .escena .red-dibujo .borde:nth-of-type(6) {
-      animation-range: contain 50% contain 64%;
-    }
-
-    .escena .etiqueta--6 {
-      animation-range: contain 61% contain 67%;
-    }
-
-    .escena .red-dibujo .raiz--7,
-    .escena .red-dibujo .borde:nth-of-type(7) {
-      animation-range: contain 61% contain 75%;
-    }
-
-    .escena .etiqueta--7 {
-      animation-range: contain 72% contain 78%;
-    }
-
-    .escena :is(.etiqueta--tuya, .red-dibujo .ruta--pendiente) {
-      animation-range: contain 85% contain 91%;
     }
   }
 }

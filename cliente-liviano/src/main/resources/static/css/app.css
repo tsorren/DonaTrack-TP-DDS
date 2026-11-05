@@ -31,6 +31,10 @@
 @import url("componentes/planta.css") layer(bloques);
 @import url("componentes/frutos.css") layer(bloques);
 @import url("componentes/libreta.css") layer(bloques);
+/* `tierra` antes que `red`: `.tierra-interior` y `.red` son el mismo elemento y la red cambia su relleno. */
+@import url("componentes/tierra.css") layer(bloques);
+@import url("componentes/red.css") layer(bloques);
+@import url("componentes/pausa.css") layer(bloques);
 
 *,
 *::before,
