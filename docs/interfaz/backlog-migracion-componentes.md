@@ -263,4 +263,4 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 | 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | 06cd7190 (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | 7c07ca8b (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 2 (la portada: pasos, planta, rama de frutos y libreta del mes, bloques nuevos) | 163 (medido después del cambio; era 171) | 954dd1cd (rama `E6_raices`) |
-| 2026-11-05 | B3-01, subtanda 3 (la portada: tierra, red y pausa como bloques; la hoja solo dispone) | 159 (medido después del cambio; era 163) | — |
+| 2026-11-05 | B3-01, subtanda 3 (la portada: tierra, red y pausa como bloques; la hoja solo dispone) | 159 (medido después del cambio; era 163) | 81d9fb4d (rama `E6_raices`) |
