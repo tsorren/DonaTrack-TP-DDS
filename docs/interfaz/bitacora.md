@@ -57,7 +57,8 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
   sobre la rama de frutos. Una primera versión la hizo funcionar (`data-continua`) y subió 4 px todo lo de
   abajo; se quitó para no cambiar lo que se ve, y queda para que el usuario decida si esa línea va. Además,
   `.dibujo` de `app.css` le ganaba al tamaño 0 del dibujo de la red movido al bloque: el tamaño volvió a la
-  hoja.
+  hoja. En la entrada de la subtanda 2 se corrigió la redacción de las observaciones de la auditoría de la
+  subtanda 1 (eran tres, resueltas con dos cambios), a pedido de su auditoría de cierre.
 - **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. El cerco con
   la portada fuera de `HOJAS_HEREDADAS` pasa (15/15). `-Pvisual` completo (56 pruebas verdes, `reporte.json`
   vacío; la base, una corrida completa sobre la subtanda 2) y, tras los dos arreglos, `-Pvisual` sobre `/estilos`

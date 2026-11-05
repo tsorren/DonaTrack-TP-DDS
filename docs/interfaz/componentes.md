@@ -5,7 +5,7 @@
 > [ADR de interacción, movimiento y componentes](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
 > (`proposed`). La versión visual es `/estilos` (RF-CL-05), con el mismo orden.
 >
-> **Estado (2026-11-04):** fases 0 y 1 del [backlog de migración](backlog-migracion-componentes.md)
+> **Estado (2026-11-05):** fases 0 y 1 del [backlog de migración](backlog-migracion-componentes.md)
 > hechas (composición, utilidades, movimiento con las animaciones con nombre de las pantallas y la
 > muestra del catálogo) y, de la fase 2, botón, campo de formulario y sello de estado (B2-01 a B2-03)
 > y aviso breve con su cola de Alpine, banner, diálogo, estado vacío, indicador de carga y esqueleto
