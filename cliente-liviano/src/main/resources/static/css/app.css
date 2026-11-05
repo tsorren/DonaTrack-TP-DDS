@@ -195,11 +195,13 @@ body::before {
   overflow: hidden;
 }
 
+/* El título manda en la portada, bien por encima de los títulos de sección (usuario, A/B de arriba,
+   2026-11-01). */
 .hero h1 {
   margin: 0 0 1.25rem;
   color: var(--color-tinta);
-  font: 800 clamp(2.5rem, 7.6vw, 6rem) / 0.92 var(--fuente-titulo);
-  font-stretch: 125%;
+  font: 800 var(--tamano-titulo-portada) / 0.92 var(--fuente-titulo);
+  font-stretch: 118%;
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
@@ -213,7 +215,8 @@ body::before {
 .hero-bajada {
   max-width: 34rem;
   margin: 0 0 1.75rem;
-  font-size: 1.125rem;
+  color: var(--color-tinta);
+  font-size: var(--tamano-bajada-portada);
 }
 
 .acciones {

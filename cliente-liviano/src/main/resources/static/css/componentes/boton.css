@@ -1,7 +1,8 @@
 /* Bloque botón (D33, B2-01): el botón y el enlace con forma de botón (`<button class="boton">`,
    `<a class="boton">`). Se carga en la capa `bloques` desde app.css. Las variantes van por atributo,
-   después de la base y en el mismo bloque: `data-tono` ("principal", "secundario", "quitar") y
-   `data-tamano` ("chico"). Catálogo: docs/interfaz/componentes.md. */
+   después de la base y en el mismo bloque: `data-tono` ("principal", "secundario", "quitar"),
+   `data-tamano` ("chico"), `data-forma` ("foto") y `data-zona` ("suelo", "suelo-hondo").
+   Catálogo: docs/interfaz/componentes.md. */
 .boton {
   display: inline-flex;
   align-items: center;
@@ -86,6 +87,45 @@
   fill: none;
   stroke: currentcolor;
   stroke-width: 1.75;
+}
+
+/* Con la foto adentro (la de una entrega, B3-01): la miniatura arriba y la leyenda debajo, a la
+   izquierda. Va con el tamaño chico. */
+.boton[data-tamano="chico"][data-forma="foto"] {
+  display: grid;
+  justify-items: start;
+  gap: 0.375rem;
+  padding: 0.375rem 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+/* Sobre la tierra (B3-01): `data-zona="suelo"` en el plano de la tierra y `"suelo-hondo"` en el de la
+   tierra honda. El contorno es paja y la letra, clara; el fondo, liso, del color de su plano, tapa la
+   textura. La acción principal, llena de paja. */
+.boton:is([data-zona="suelo"], [data-zona="suelo-hondo"]):not([data-tono="principal"]) {
+  border-color: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
+  background: var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+.boton[data-zona="suelo-hondo"]:not([data-tono="principal"]) {
+  background: var(--color-suelo-hondo);
+}
+
+.boton:is([data-zona="suelo"], [data-zona="suelo-hondo"]):not([data-tono="principal"]):hover {
+  background: var(--color-suelo);
+}
+
+.boton[data-zona="suelo"][data-tono="principal"] {
+  border-color: var(--color-raiz);
+  background: var(--color-raiz);
+  color: var(--color-suelo-hondo);
+}
+
+.boton[data-zona="suelo"][data-tono="principal"]:hover {
+  background: var(--color-texto-suelo);
 }
 
 /* Al apretar se hunde sobre su sombra, como un sello (ronda de formas, 2026-11-01). Va al final para

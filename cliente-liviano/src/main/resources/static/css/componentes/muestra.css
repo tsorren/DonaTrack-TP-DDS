@@ -61,6 +61,18 @@
   }
 }
 
+/* Un ejemplo que en el sitio va sobre la tierra (`data-fondo="suelo"`) o la tierra honda
+   (`"suelo-hondo"`): la caja lleva el color de ese plano. */
+.muestra-demo [data-fondo] {
+  padding: var(--espacio-3);
+  border-radius: var(--radio-boton);
+  background: var(--color-suelo);
+}
+
+.muestra-demo [data-fondo="suelo-hondo"] {
+  background: var(--color-suelo-hondo);
+}
+
 /* Las tarjetas y la lista de ejemplo: el relleno y la medida de columna que en el sitio pone la pantalla. */
 .muestra-demo .tarjeta {
   --espacio-relleno: var(--espacio-3);

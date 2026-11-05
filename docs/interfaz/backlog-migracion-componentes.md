@@ -183,17 +183,39 @@ Prioridad por uso: primero los que comparten varias pantallas. El patrón de cad
 
 ## Fase 3 — Hojas de pantalla reducidas a disposición
 
-Al terminar las fases 1 y 2, cada hoja de pantalla queda solo con la disposición propia. Orden por
-tamaño:
+Al terminar las fases 1 y 2, cada hoja de pantalla queda solo con la disposición propia. Una hoja sale
+de `HOJAS_HEREDADAS` (`InterfazFitnessTest`) cuando no declara `color:`, `background:` (ni `-color` ni
+`-image`), `font:` ni `font-family:`, ni `@keyframes`: cada pieza visual va a un bloque de `componentes/` o
+a un token. Orden acordado con el usuario: la portada en 3 subtandas y después una hoja por tanda
+(B3-02, B3-05, B3-04, B3-03); B3-06 se parte por rol.
 
-| ID | Hoja | Líneas (2026-11-04) | Estado |
+> B3-01, subtanda 1, 2026-11-05. Notas de lo hecho: la lámina «Cómo funciona» es una `.tarjeta` de filete
+> doble (`ficha` queda como gancho de su disposición) con una cabeza nueva del bloque, `.tarjeta-cabeza` (el
+> título en cursiva y su rótulo sobre un filete fino); su sombra pasa de 0,45 a 0,4 rem, como las demás
+> tarjetas (el usuario lo eligió). La foto de una entrega abre un `<dialog class="dialogo" popover>` con
+> `.dialogo-titulo`, con el fundido de entrada y salida del diálogo (el usuario lo aceptó). Los avisos de la
+> tierra y del cuaderno del mes (vacío, cargando y error) son `.vacio` con `data-forma="filetes"` (sin papel,
+> entre dos filetes: el usuario eligió conservar las dos líneas) y, en la tierra, `data-zona="suelo"`. Los
+> botones propios pasan a variantes del bloque: `data-forma="foto"` (la miniatura dentro del botón chico),
+> `data-zona="suelo"` y `"suelo-hondo"` (el chico sobre la tierra y la tierra honda, y «Sumar mi entidad»
+> con el tono principal); el del mapa solo tenía su lugar en la cabeza de la rama y lo toma por estructura
+> (`.registro-cabeza > .boton`). El título y la bajada de la portada usan dos tokens nuevos,
+> `--tamano-titulo-portada` y `--tamano-bajada-portada`, en `.hero h1` y `.hero-bajada` de `app.css` (solo
+> la portada los usa), y la clase `portada` desaparece. Se borró `.suelo a`: su color solo alcanzaba a los
+> botones con forma de enlace (los de las etiquetas tienen el suyo) y, sin capa, les habría ganado a las
+> variantes. Salen 9 clases de la lista de heredadas (441 quedan). El tope baja a 171: `foto-titulo` y
+> `boton--mapa` tenían una sola mención y `hero-bajada` pasa a tenerla (solo en `app.css`). Las líneas de la
+> tabla se corrigieron al valor de hoy: las de la línea de base (2026-11-04) quedaron viejas con las fases 1 y 2
+> (por ejemplo, `privado.css` tenía 522 y hoy tiene 239).
+
+| ID | Hoja | Líneas (2026-11-05) | Estado |
 |---|---|:-:|---|
-| B3-01 | `publico-portada.css` | 1.732 | Pendiente |
-| B3-02 | `entidad-necesidades.css` | 647 | Pendiente |
-| B3-03 | `privado.css` | 522 | Pendiente |
-| B3-04 | `entidad-seguimiento-confirmar.css` | 489 | Pendiente |
+| B3-01 | `publico-portada.css` | 1.446 (1.590 antes de la subtanda 1) | En curso: subtanda 1 hecha (2026-11-05) |
+| B3-02 | `entidad-necesidades.css` | 575 | Pendiente |
+| B3-03 | `privado.css` | 239 | Pendiente |
+| B3-04 | `entidad-seguimiento-confirmar.css` | 387 | Pendiente |
 | B3-05 | `publico-registro.css` | 453 | Pendiente |
-| B3-06 | Las 23 hojas restantes, de mayor a menor | 4.946 en total, sin contar `tokens.css` | Pendiente |
+| B3-06 | Las 23 hojas restantes (con `app.css`, sin `tokens.css` ni las de la capa CUBE) | 4.070 en total | Pendiente |
 
 ## Registro de avance
 
@@ -207,3 +229,4 @@ tamaño:
 | 2026-11-04 | B2-06, B2-07 y B2-08 (tanda 3 de la fase 2: navegación, tarjeta y lista adaptable) | 186 (medido después del cambio; era 189) | 392f6239 (rama `E6_raices`) |
 | 2026-11-04 | B2-10 a B2-13 (tanda 4 de la fase 2: subida de fotos con vista previa, pestañas, piezas de la entidad y mapa con su lista) | 172 (medido después del cambio; era 186) | 9343fbb4 (rama `E6_raices`) |
 | 2026-11-04 | B2-14 (tanda 5 de la fase 2: cuaderno de noticias del donante, con el libro de registro y el texto sin enlace) y los dos hallazgos de la fase 3 (los «Cargando…» públicos y el botón secundario) | 172 (medido después del cambio; era 172: no baja) | 06cd7190 (rama `E6_raices`) |
+| 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | — |

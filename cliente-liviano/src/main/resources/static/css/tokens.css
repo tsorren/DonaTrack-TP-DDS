@@ -90,6 +90,9 @@
   --p-texto-1: 0.875rem;
   --p-texto-2: 1.0625rem;
   --p-texto-3: 1.125rem;
+  /* El título y la bajada de la portada (B3-01): crecen con el ancho de la pantalla. */
+  --p-texto-portada: clamp(2.5rem, 7vw, 5.75rem);
+  --p-texto-bajada: clamp(1.0625rem, 1.4vw, 1.2rem);
 }
 
 :root {
@@ -191,6 +194,8 @@
   --tamano-chico: var(--p-texto-1);
   --tamano-base: var(--p-texto-2);
   --tamano-grande: var(--p-texto-3);
+  --tamano-titulo-portada: var(--p-texto-portada);
+  --tamano-bajada-portada: var(--p-texto-bajada);
   /* Los puntos de quiebre del sitio. */
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;

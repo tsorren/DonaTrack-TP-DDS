@@ -148,14 +148,26 @@
       <h2 id="componentes">Componentes</h2>
       <p data-tono="suave">Cada uno con su hoja en <code>static/css/componentes/</code>. Las variantes van por atributo.</p>
       <div class="grilla">
-        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón. data-tono: principal (una por pantalla), secundario o quitar. data-tamano=&quot;chico&quot;: más bajo, para acciones dentro de una lista.', ~{::demo-boton})}">
+        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón. data-tono: principal (una por pantalla), secundario o quitar. data-tamano=&quot;chico&quot;: más bajo, para acciones dentro de una lista. data-forma=&quot;foto&quot; (con el tamaño chico): la miniatura de una foto arriba y la leyenda debajo. data-zona=&quot;suelo&quot; o &quot;suelo-hondo&quot;: sobre la tierra, con el contorno de paja; con el tono principal, lleno de paja.', ~{::demo-boton})}">
           <th:block th:fragment="demo-boton">
-            <div class="racimo">
-              <button type="button" class="boton" data-tono="principal">Principal</button>
-              <button type="button" class="boton" data-tono="secundario">Secundario</button>
-              <button type="button" class="boton" data-tono="quitar">Quitar</button>
-              <button type="button" class="boton" data-tamano="chico">Chico</button>
-              <button type="button" class="boton" data-tono="principal" data-tamano="chico">Chico principal</button>
+            <div class="pila" data-espacio="3">
+              <div class="racimo">
+                <button type="button" class="boton" data-tono="principal">Principal</button>
+                <button type="button" class="boton" data-tono="secundario">Secundario</button>
+                <button type="button" class="boton" data-tono="quitar">Quitar</button>
+                <button type="button" class="boton" data-tamano="chico">Chico</button>
+                <button type="button" class="boton" data-tono="principal" data-tamano="chico">Chico principal</button>
+                <button type="button" class="boton" data-tamano="chico" data-forma="foto"><img
+                    src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="120"
+                    height="75"><span>Ver la foto</span></button>
+              </div>
+              <div class="racimo" data-fondo="suelo">
+                <button type="button" class="boton" data-tono="principal" data-zona="suelo">Principal en la tierra</button>
+                <button type="button" class="boton" data-tamano="chico" data-zona="suelo">Chico en la tierra</button>
+              </div>
+              <div class="racimo" data-fondo="suelo-hondo">
+                <button type="button" class="boton" data-tamano="chico" data-zona="suelo-hondo">Chico en la tierra honda</button>
+              </div>
             </div>
           </th:block>
         </div>
@@ -224,13 +236,22 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué significa e invita a la acción posible. Mismo papel que el banner. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón.', ~{::demo-vacio})}">
+        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué significa e invita a la acción posible. Mismo papel que el banner. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
           <th:block th:fragment="demo-vacio">
-            <section class="vacio" aria-labelledby="muestra-vacio-titulo">
-              <h2 id="muestra-vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
-              <p>Empezá por publicar lo que necesita tu entidad. Cuando se te asigne una donación, aparece acá.</p>
-              <a class="boton" data-tono="principal" href="#vacio">Publicar una necesidad</a>
-            </section>
+            <div class="pila" data-espacio="3">
+              <section class="vacio" aria-labelledby="muestra-vacio-titulo">
+                <h2 id="muestra-vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
+                <p>Empezá por publicar lo que necesita tu entidad. Cuando se te asigne una donación, aparece acá.</p>
+                <a class="boton" data-tono="principal" href="#vacio">Publicar una necesidad</a>
+              </section>
+              <p class="vacio" data-forma="filetes">Todavía no hay entregas confirmadas este mes.</p>
+              <div data-fondo="suelo">
+                <div class="vacio" data-forma="filetes" data-zona="suelo">
+                  <p>No pudimos cargar las entidades. Probá de nuevo en unos minutos.</p>
+                  <a href="#vacio" class="boton" data-tamano="chico" data-zona="suelo">Volver a cargar</a>
+                </div>
+              </div>
+            </div>
           </th:block>
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;); .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;. data-forma=&quot;punteado&quot; le pone contorno y data-forma=&quot;hueco&quot;, contorno sin papel adentro (el de la entidad); data-tamano=&quot;alto&quot; da más altura y data-tamano=&quot;bajo&quot;, menos.', ~{::demo-carga})}">
@@ -315,7 +336,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.tarjeta', 'Una parte con papel propio: filete de tinta, esquina suave y sombra plana salvia. Es solo el papel; el relleno es --espacio-relleno y la disposición de lo de adentro la pone la pantalla. data-filete: sin él, simple; doble (la etiqueta de herbario: Mis entidades, las actas, los pedidos) o contorno (el filete por fuera, sin borde).', ~{::demo-tarjeta})}">
+        <div th:replace="~{componentes/muestra :: muestra('.tarjeta', 'Una parte con papel propio: filete de tinta, esquina suave y sombra plana salvia. Es solo el papel; el relleno es --espacio-relleno y la disposición de lo de adentro la pone la pantalla. data-filete: sin él, simple; doble (la etiqueta de herbario: Mis entidades, las actas, los pedidos) o contorno (el filete por fuera, sin borde). .tarjeta-cabeza es la cabeza de una lámina: el título en cursiva y su rótulo sobre un filete fino.', ~{::demo-tarjeta})}">
           <th:block th:fragment="demo-tarjeta">
             <div class="grilla">
               <article class="tarjeta">
@@ -329,6 +350,13 @@
               <article class="tarjeta" data-filete="contorno">
                 <h4>Filete de contorno</h4>
                 <p>El filete por fuera del papel, como las entregas confirmadas.</p>
+              </article>
+              <article class="tarjeta" data-filete="doble">
+                <div class="tarjeta-cabeza">
+                  <h4>Cómo funciona</h4>
+                  <p>Lámina 1</p>
+                </div>
+                <p>Una lámina con su cabeza, como la de la portada.</p>
               </article>
             </div>
           </th:block>

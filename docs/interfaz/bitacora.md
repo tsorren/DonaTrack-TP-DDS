@@ -27,6 +27,51 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-05 · stack · Fase 3, B3-01 subtanda 1: la portada usa la tarjeta, el diálogo, el estado vacío, el botón y dos tokens
+
+- **Decisión:** primera de las 3 subtandas de `publico-portada.css`, que solo reusa bloques existentes. La lámina
+  «Cómo funciona» es `.tarjeta[data-filete="doble"]` con una cabeza nueva del bloque, `.tarjeta-cabeza` (el
+  título en cursiva y su rótulo sobre un filete fino); `ficha` queda como gancho de su disposición. La foto de
+  una entrega abre un `<dialog class="dialogo" popover>` con `.dialogo-titulo`. Los avisos de la tierra y del
+  cuaderno del mes (vacío, cargando y error) son `.vacio[data-forma="filetes"]` (sin papel, entre dos filetes)
+  y, en la tierra, además `data-zona="suelo"`. Los botones propios son variantes de `.boton`:
+  `data-forma="foto"` (la miniatura dentro del botón chico) y `data-zona="suelo"` y `"suelo-hondo"` (el chico
+  sobre la tierra y la tierra honda; «Sumar mi entidad», con el tono principal, lleno de paja); el del mapa
+  solo tenía su lugar y lo toma por estructura (`.registro-cabeza > .boton`). El título y la bajada usan
+  `--tamano-titulo-portada` y `--tamano-bajada-portada` en `.hero h1` y `.hero-bajada` de `app.css` (solo la
+  portada los usa) y se va la clase `portada`. `/estilos` suma las muestras y `.muestra` un fondo de tierra
+  (`data-fondo`) para las que van sobre ella.
+- **Alternativas:** dejar la sombra de la lámina en 0,45 rem con un token `--sombra-lamina` (descartada por el
+  usuario: menos de 1 px, y la hoja seguiría declarando una sombra); la foto sin fundido, con una variante del
+  diálogo (descartada por el usuario); el aviso del cuaderno con el papel del estado vacío (descartada por el
+  usuario: cambiaba los tres estados y el «Cargando…» volvía a ser una lámina, lo que la tanda 5 sacó en las
+  páginas públicas); una variante `data-forma` para el botón del mapa (descartada: su regla era solo de
+  lugar); los tokens del título usados desde la hoja de la pantalla (descartada: el título ya vivía en
+  `.hero h1` de `app.css`, que solo usa la portada, y la regla de la hoja lo pisaba).
+- **Por qué:** la fase 3 saca de la hoja de pantalla todo lo que no es disposición, y estas piezas ya tenían
+  un bloque igual o casi igual en el catálogo. Además se borró `.suelo a`: sin capa, le habría ganado al color
+  de las variantes del botón, y para los enlaces de las etiquetas ya estaba pisado por el suyo.
+- **Costo:** el tope de clases de un solo uso baja de 172 a 171 (`foto-titulo` y `boton--mapa` tenían una sola
+  mención y `hero-bajada` pasa a tenerla, solo en `app.css`). Salen 9 clases de la lista de heredadas (441
+  quedan). La hoja todavía no sale de `HOJAS_HEREDADAS`: le faltan las subtandas 2 y 3.
+- **Quién decidió:** usuario (tsorren), 2026-11-04: la sombra a 0,4 rem, el fundido del diálogo y el aviso del
+  cuaderno con sus dos líneas; antes, el corte en 3 subtandas y qué va en cada una. El agente decidió y queda
+  para que el usuario confirme: los nombres (`.tarjeta-cabeza`, `data-forma="filetes"`, `data-forma="foto"`,
+  `data-zona="suelo"` y `"suelo-hondo"`, `data-fondo`, `--tamano-titulo-portada` y `--tamano-bajada-portada`) y
+  borrar `.suelo a`. **Cambios visuales:** la sombra de la lámina «Cómo funciona», 0,8 px más corta (pedido
+  del usuario). **Cambios de comportamiento:** la ventana de la foto aparece y se va con un fundido (sin él
+  con "reducir movimiento") y, al abrirse, el foco entra en ella (antes quedaba en el botón; el navegador lo
+  devuelve al cerrar, como antes); al apretar los botones chicos de la tierra, su sombra se esconde como en
+  los demás botones (antes quedaba).
+- **Evidencia:** [backlog](backlog-migracion-componentes.md), [catálogo](componentes.md) y DTI-34. Estados en un
+  test temporal de Playwright (borrado) sobre el código viejo (un worktree en `HEAD`, dos corridas) y el nuevo,
+  a 360, 1280 y 1920 px, en reposo, con foco, con el puntero y apretados, más el diálogo abierto y cerrado:
+  entre las dos corridas viejas solo cambia «Sumar mi entidad» apretado a 1920 px; contra el nuevo, solo la
+  sombra de la lámina, el fundido y el foco del diálogo y la sombra apretada de los tres botones chicos de la
+  tierra. `-Pvisual` (55 pruebas verdes, más la temporal), con una corrida de ruido como base, las dos sobre
+  el código sin tocar: 569 de 588 capturas iguales; difieren `/estilos` (3, contenido nuevo) y la portada en
+  sus cuatro escenarios (16, la sombra de la lámina; recorte lado a lado revisado). `reporte.json` vacío.
+
 ### 2026-11-04 · stack · Fase 2, tanda 5 del backlog: cuaderno de noticias del donante y dos hallazgos de la fase 3
 
 - **Decisión:** se implementa B2-14 recortado y se resuelven dos hallazgos que la tanda 2 había dejado para la

@@ -38,7 +38,7 @@
 <main id="contenido" tabindex="-1"
       th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
                conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
-  <section class="hero portada" aria-labelledby="hero-titulo">
+  <section class="hero" aria-labelledby="hero-titulo">
     <div class="portada-grilla">
       <div class="portada-texto">
         <h1 id="hero-titulo">Lo que donás echa raíces <em>en tu comunidad</em>.</h1>
@@ -53,8 +53,8 @@
       </div>
 
       <!--/* La lámina: una ilustración en tres franjas pegadas, cada una con su número y su paso en texto. */-->
-      <section class="ficha" aria-labelledby="ficha-titulo">
-        <div class="ficha-cabeza">
+      <section class="tarjeta ficha" data-filete="doble" aria-labelledby="ficha-titulo">
+        <div class="tarjeta-cabeza">
           <h2 id="ficha-titulo">Cómo funciona</h2>
           <p>Lámina 1, el recorrido de una donación</p>
         </div>
@@ -219,12 +219,12 @@
           <circle class="cruce" cx="600" cy="40" r="11"/>
           <circle class="cruce" cx="600" cy="120" r="7"/>
         </svg>
-        <p class="aviso aviso--suelo" th:if="${estado == 'vacio'}">Todavía no hay entidades en el mapa. La
+        <p class="vacio" data-forma="filetes" data-zona="suelo" th:if="${estado == 'vacio'}">Todavía no hay entidades en el mapa. La
           primera puede ser la tuya.</p>
-        <p class="aviso aviso--suelo" th:if="${estado == 'lento'}" role="status">Cargando las entidades…</p>
-        <div class="aviso aviso--suelo" th:if="${estado == 'error'}" role="alert">
+        <p class="vacio" data-forma="filetes" data-zona="suelo" th:if="${estado == 'lento'}" role="status">Cargando las entidades…</p>
+        <div class="vacio" data-forma="filetes" data-zona="suelo" th:if="${estado == 'error'}" role="alert">
           <p>No pudimos cargar las entidades. Probá de nuevo en unos minutos.</p>
-          <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
+          <a href="" class="boton" data-tamano="chico" data-zona="suelo">Volver a cargar</a>
         </div>
         <ul class="etiquetas" role="list">
           <li th:if="${conDatos}" class="etiqueta etiqueta--1"><a href="/publico-mapa" th:href="@{/publico-mapa}">
@@ -249,7 +249,7 @@
           <li class="etiqueta etiqueta--tuya">
             <b>Tu entidad</b> <span>Pedí lo que necesitás y confirmá lo que recibís.</span>
             <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
-               class="boton boton--suelo">Sumar mi entidad</a></li>
+               class="boton" data-tono="principal" data-zona="suelo">Sumar mi entidad</a></li>
         </ul>
       </div>
     </div>
@@ -264,7 +264,7 @@
             <p class="nota">Se cuenta con la confirmación de cada entidad.<th:block th:if="${conDatos}"> Actualizado
               el 15 de octubre de 2026, 14:30.</th:block></p>
             <!--/* Un botón chico en contorno, como el de la foto: el enlace en línea era chico para el dedo. */-->
-            <a href="/publico-mapa" th:href="@{/publico-mapa}" class="boton boton--mapa" data-tamano="chico">
+            <a href="/publico-mapa" th:href="@{/publico-mapa}" class="boton" data-tamano="chico" data-zona="suelo-hondo">
               <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><path d="M1 3l6-2 6 2 6-2v12l-6 2-6-2-6 2Z"/><path d="M7 1v12M13 3v12"/></svg>Ver el mapa de entregas confirmadas</a>
           </div>
           <div class="registro-datos" th:unless="${conDatos}">
@@ -273,7 +273,7 @@
             <p th:if="${estado == 'lento'}" role="status">Cargando las cifras…</p>
             <div th:if="${estado == 'error'}" role="alert">
               <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
-              <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
+              <a href="" class="boton" data-tamano="chico" data-zona="suelo-hondo">Volver a cargar</a>
             </div>
           </div>
           <dl class="registro-datos" th:if="${conDatos}">
@@ -296,11 +296,11 @@
         <p class="viajo-bajada" th:if="${conDatos}">Las últimas entregas de octubre de 2026. La entidad sube la foto cuando confirma la entrega.</p>
         <p class="viajo-bajada" th:unless="${conDatos}">La entidad sube la foto cuando confirma la entrega.</p>
       </div>
-      <p class="aviso" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este mes. Cuando una
+      <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este mes. Cuando una
         entidad confirme una entrega, aparece acá con su foto.</p>
       <!--/* Viene con la página: sin región viva, como en Seguimiento (en el sistema, a #avisos). */-->
-      <p class="aviso" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
-      <div class="aviso" th:if="${estado == 'error'}" role="alert">
+      <p class="vacio" data-forma="filetes" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
+      <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
         <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
         <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
       </div>
@@ -314,14 +314,14 @@
             <p>Comedor Barrio Ejemplo</p>
             <p class="asiento-estado">Entrega confirmada</p>
           </div>
-          <button type="button" class="boton boton--foto" data-tamano="chico" popovertarget="foto-1" aria-describedby="asiento-1">
+          <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="foto-1" aria-describedby="asiento-1">
             <img class="miniatura" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
-          <div class="foto-ventana" id="foto-1" popover role="dialog" aria-labelledby="foto-1-titulo">
+          <dialog class="dialogo" id="foto-1" popover aria-labelledby="foto-1-titulo">
             <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="Cajas con la donación junto a la puerta del comedor" width="640" height="400">
-            <p class="foto-titulo" id="foto-1-titulo">Fideos secos, 8 kg</p>
+            <p class="dialogo-titulo" id="foto-1-titulo">Fideos secos, 8 kg</p>
             <p>Comedor Barrio Ejemplo confirmó la entrega el <time datetime="2026-10-05">5 de octubre de 2026</time> y subió esta foto.</p>
             <button type="button" class="boton" data-tono="secundario" popovertarget="foto-1" popovertargetaction="hide">Cerrar</button>
-          </div>
+          </dialog>
         </li>
         <li class="asiento">
           <p class="asiento-fecha"><time datetime="2026-10-09"><b>9</b> <span>de octubre</span></time></p>
@@ -332,14 +332,14 @@
             <p>Merendero Ejemplo Sur</p>
             <p class="asiento-estado">Entrega confirmada</p>
           </div>
-          <button type="button" class="boton boton--foto" data-tamano="chico" popovertarget="foto-2" aria-describedby="asiento-2">
+          <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="foto-2" aria-describedby="asiento-2">
             <img class="miniatura" src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
-          <div class="foto-ventana" id="foto-2" popover role="dialog" aria-labelledby="foto-2-titulo">
+          <dialog class="dialogo" id="foto-2" popover aria-labelledby="foto-2-titulo">
             <img src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640" height="400">
-            <p class="foto-titulo" id="foto-2-titulo">Ropa de abrigo, 12 prendas</p>
+            <p class="dialogo-titulo" id="foto-2-titulo">Ropa de abrigo, 12 prendas</p>
             <p>Merendero Ejemplo Sur confirmó la entrega el <time datetime="2026-10-09">9 de octubre de 2026</time> y subió esta foto.</p>
             <button type="button" class="boton" data-tono="secundario" popovertarget="foto-2" popovertargetaction="hide">Cerrar</button>
-          </div>
+          </dialog>
         </li>
         <li class="asiento">
           <p class="asiento-fecha"><time datetime="2026-10-14"><b>14</b> <span>de octubre</span></time></p>
@@ -350,14 +350,14 @@
             <p>Escuela Ejemplo N.º 12</p>
             <p class="asiento-estado">Entrega confirmada</p>
           </div>
-          <button type="button" class="boton boton--foto" data-tamano="chico" popovertarget="foto-3" aria-describedby="asiento-3">
+          <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="foto-3" aria-describedby="asiento-3">
             <img class="miniatura" src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
-          <div class="foto-ventana" id="foto-3" popover role="dialog" aria-labelledby="foto-3-titulo">
+          <dialog class="dialogo" id="foto-3" popover aria-labelledby="foto-3-titulo">
             <img src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="Sillas apiladas en un aula" width="640" height="400">
-            <p class="foto-titulo" id="foto-3-titulo">Sillas, 6 unidades</p>
+            <p class="dialogo-titulo" id="foto-3-titulo">Sillas, 6 unidades</p>
             <p>Escuela Ejemplo N.º 12 confirmó la entrega el <time datetime="2026-10-14">14 de octubre de 2026</time> y subió esta foto.</p>
             <button type="button" class="boton" data-tono="secundario" popovertarget="foto-3" popovertargetaction="hide">Cerrar</button>
-          </div>
+          </dialog>
         </li>
         <li class="asiento asiento--en-camino">
           <p class="asiento-fecha"><time datetime="2026-10-15"><b>15</b> <span>de octubre, hoy</span></time></p>

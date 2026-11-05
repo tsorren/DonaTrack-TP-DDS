@@ -1,7 +1,8 @@
 /* Bloque aviso (D33, B2-04): el aviso breve (toast), el banner y el estado vacío comparten el mismo
    papel (la lámina con el filete y la sombra plana). Se carga en la capa `bloques` desde app.css.
    Las variantes van por atributo, en este bloque y después de la base: `data-estado="hecho"` en el
-   aviso breve y `data-estado="error"` en el banner. La región `.avisos` y la cola de avisos
+   aviso breve, `data-estado="error"` en el banner y `data-forma="filetes"` y `data-zona="suelo"` en
+   el estado vacío. La región `.avisos` y la cola de avisos
    (`Alpine.data("avisos")`, static/js/interfaz.js) llevan los avisos breves que trae HTMX.
    Catálogo: docs/interfaz/componentes.md. */
 
@@ -40,6 +41,42 @@
   :is(.banner, .vacio, .aviso-breve) p {
     margin-bottom: 1rem;
   }
+}
+
+/* --- Estado vacío entre dos filetes ------------------------------------------------------------ */
+/* Sin papel ni sombra: un renglón entre dos filetes finos que ocupa el lugar de los datos de una parte
+   que no es una lámina (el cuaderno del mes y la tierra de la portada, B3-01). */
+.vacio[data-forma="filetes"] {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  max-width: 40rem;
+  margin: 0;
+  padding: 1.25rem 0;
+  border: 0;
+  border-block: 1px solid var(--color-tinta);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-tinta);
+}
+
+.vacio[data-forma="filetes"] p {
+  margin: 0;
+}
+
+/* Sobre la tierra: los filetes de paja, la letra clara y todo al centro. */
+.vacio[data-zona="suelo"] {
+  justify-items: center;
+  padding-inline: 1rem;
+  border-color: var(--color-raiz);
+  color: var(--color-texto-suelo);
+  text-align: center;
+}
+
+/* También el botón (el chico se alinea al principio). */
+.vacio[data-zona="suelo"] .boton {
+  justify-self: center;
 }
 
 /* --- Banner: algo que afecta a toda la pantalla ------------------------------------------------ */

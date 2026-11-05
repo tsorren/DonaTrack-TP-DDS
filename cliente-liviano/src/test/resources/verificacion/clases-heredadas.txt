@@ -32,19 +32,14 @@ asiento-pendiente
 asiento-que
 asiento-sello
 asiento-texto
-aviso
 aviso--nombre
-aviso--suelo
 aviso-acciones
 aviso-brote
 aviso-codigo
 bajada
 bandeja
 borde
-boton--foto
 boton--google
-boton--mapa
-boton--suelo
 cambiar
 cambio
 camion
@@ -183,7 +178,6 @@ etiqueta-tipo
 etiqueta-titulo
 etiquetas
 ficha
-ficha-cabeza
 fideos
 filtro
 filtro--buscar
@@ -199,8 +193,6 @@ firma-quien
 formulario
 foto
 foto-falta
-foto-titulo
-foto-ventana
 fruto
 fruto--paja
 fruto-disco
@@ -335,7 +327,6 @@ periodos-desde
 pide
 planta
 planta-dibujo
-portada
 portada-grilla
 portada-texto
 problema
