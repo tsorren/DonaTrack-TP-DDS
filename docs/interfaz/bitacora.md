@@ -27,6 +27,58 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-05 · paleta (Raíces) · Huerta viva en cera: más saturada, con papel de cera y frutos zanahoria
+
+- **Decisión:** H, Huerta viva en cera. Elegida para reemplazar a Oliva, todavía sin aplicar:
+  `tokens.css` no cambia. Queda como variante (`css/variantes/paleta-h.css`, `?variante=paleta-h`)
+  para probarla en la portada y en una pantalla de donante antes de aplicarla. Valores base:
+  - papel de cera `#fbf2d3`, tinta `#1e2417` y tinta suave `#4b4a32`;
+  - verde hoja honda en títulos y botones (`#2d6a1e`, al apretar `#1f4f14`), lechuga en los
+    secundarios (`#d3e98a`) y hoja en la ilustración y las sombras (`#86b832`);
+  - la tierra en tres oliva saturados (`#4c5a1f`, `#3d4a17` y `#2b3612`);
+  - raíces paja (`#f4c844`);
+  - frutos zanahoria (`#ef7a16`, con su segunda tinta `#9a4708`);
+  - los estados de Huerta viva: pendiente `#ebe3c4` / `#4b4a32`, en camino `#f8e3a0` / `#6a4f05`,
+    entregada `#d3e98a` / `#24521a` y con problema `#f1cfdc` / `#86244c` (remolacha).
+- **Alternativas:** tres vueltas.
+  - Primera, en el muestrario `/estilos`: A, Huerta en flor (verde hoja, girasol, tomate y rosa); B,
+    Bosque y frutos (verde pino, mora y frambuesa); y C, Abejas (papel amarillo, miel y café de
+    panal, desde los tokens que trajo el usuario). Al usuario le gustó la línea de A; el muestrario
+    no servía para juzgar una paleta.
+  - Segunda, en la portada, solo en escritorio: A y cuatro de la misma familia. D, zapallo y
+    lavanda; E, regada (tierra verde agua y celeste); F, pétalos (raíces rosa y frutilla); y G,
+    mediodía (la más clara). D fue la que más se acercó, sin convencer.
+  - Tercera, desde la encuesta "Huerta con abejas" de una integrante del equipo. Ganó su paleta B,
+    Huerta viva, con el papel de cera de su A, los estados y el verde oscuro de B, saturación 4 de
+    5, verde y amarillo parejos y un registro menos infantil. Con esa base, D de control, H (la
+    mezcla directa), I (tierra verde hoja honda) y J (sobria: tierra de monte y frutos tostados con
+    sombra remolacha). La recomendada fue I.
+- **Por qué:** el usuario eligió H. Oliva se veía apagada. Huerta viva sube la saturación sin
+  volverse chillona, conserva las plantas y suma colores: lechuga, paja, zanahoria y remolacha. El
+  papel de cera da calidez. La tierra oliva y los estados sobrios sostienen la seriedad que pidió la
+  encuesta.
+- **Costo:**
+  - Falta probarla en la portada completa y en una pantalla de donante, y aplicarla en
+    `tokens.css`. Al aplicarla hay que correr el test de contraste del sitio. La variante ya pasa
+    los 32 pares de ese test y 5 más (el mínimo es 4,73:1), medidos con un script fuera del test,
+    que no recorre las variantes.
+  - La variante se conserva, aunque la skill `iteracion-ab` pide borrarla al decidir: el usuario
+    pidió solo elegir y probar la paleta después en la portada y en una pantalla de donante. Se
+    borra al aplicarla.
+  - Por pedido del usuario, las comparaciones fueron solo en escritorio (1280 px), sin capturas de
+    360 px. El celular se mira al probarla en las pantallas.
+  - Con problema pasa de rojo óxido a remolacha: hay que mirar que se siga leyendo como problema.
+  - Las otras respuestas de la encuesta quedan para sus propios temas: las abejas, la ilustración,
+    una letra serif para los títulos y la huerta que cambia con los meses.
+  - Para que una variante de estilo se vea en las páginas públicas, `layout-publico.html` carga
+    ahora la hoja de la variante, como ya lo hacían la portada y el layout privado.
+- **Quién decidió:** usuario, con la encuesta de una integrante del equipo.
+- **Evidencia:** `evidencia/raices/paleta-huerta-viva/`.
+  - Primera vuelta en el muestrario a 1280 px (`vuelta-1-*`): componentes y bloques, la actual y
+    A, B y C.
+  - Segunda y tercera en la portada a 1280 px (`vuelta-2-*` y `vuelta-3-*`): la primera pantalla
+    y las cifras de cada una.
+
 ### 2026-11-05 · stack · Fase 3, B3-01 subtanda 3: la tierra, la red y la pausa son bloques y la portada solo dispone
 
 - **Decisión:** última subtanda de `publico-portada.css`: tres bloques nuevos. El de la tierra, sin clase raíz (la

@@ -1,0 +1,31 @@
+/* H, Huerta viva en cera: la mezcla directa de la encuesta. Papel de cera, hoja honda en títulos y
+   botones, tierra oliva saturada, raíces paja, frutos zanahoria y los estados de Huerta viva. */
+
+:root {
+  --p-papel: #fbf2d3;
+  --p-tinta: #1e2417;
+  --p-tinta-suave: #4b4a32;
+  --p-acento: #2d6a1e;
+  --p-acento-hondo: #1f4f14;
+  --p-acento-claro: #d3e98a;
+  --p-tallo: #2d6a1e;
+  --p-hoja: #86b832;
+  --p-suelo: #4c5a1f;
+  --p-suelo-medio: #3d4a17;
+  --p-suelo-hondo: #2b3612;
+  --p-texto-suelo: #fcf7e6;
+  --p-raiz: #f4c844;
+  --p-nodo: #f4c844;
+  --p-destacado: #f4c844;
+  --p-fruto: #ef7a16;
+  --p-fruto-hondo: #9a4708;
+  --p-pendiente-fondo: #ebe3c4;
+  --p-pendiente-texto: #4b4a32;
+  --p-en-camino-fondo: #f8e3a0;
+  --p-en-camino-texto: #6a4f05;
+  --p-en-camino-sello: #d9a514;
+  --p-entregada-fondo: #d3e98a;
+  --p-entregada-texto: #24521a;
+  --p-problema-fondo: #f1cfdc;
+  --p-problema-texto: #86244c;
+}
