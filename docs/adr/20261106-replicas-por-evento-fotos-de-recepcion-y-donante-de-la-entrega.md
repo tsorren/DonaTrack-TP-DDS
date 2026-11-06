@@ -62,7 +62,7 @@ pertenencia 10.
 4. **Respeta:** [referencias a donaciones sin clave foránea](./logistica-service/20261007-referencias-a-donaciones-sin-clave-foranea.md):
    `donanteId` es otra referencia sin integridad referencial.
 5. **Depende de:** ADR-E6-08, fotos de recepción en almacenamiento de objetos (D27 de
-   `requerimientos-e6.md`; `proposed`, en un PR aparte), que define la URL estable de cada foto.
+   `requerimientos-e6.md`; `proposed` en el PR #932, sin integrar todavía), que define la URL estable de cada foto.
 
 ## Alternativas Consideradas
 
@@ -104,7 +104,8 @@ Se eligen **R1**, **U1** y **H1**.
    - Campo opcional `fotosRecepcion`: lista de URLs estables (`format: uri`), una por foto, en el
      orden de la entrega.
    - La URL estable de una foto subida a MinIO es `GET /api/entregas/{id}/fotos/{fotoId}` de
-     Logística, armada con la URL pública que ya usa `GeneradorDeURLSeguimiento`. Responde `302`
+     Logística, armada sobre una URL base configurable, como hace `GeneradorDeURLSeguimiento` con la
+     del seguimiento de rutas (hoy no existe una URL de fotos). Responde `302`
      hacia una URL firmada de vida corta (ADR-E6-08). Una foto cargada por URL con el
      `PATCH /api/entregas/{id}/fotos` actual viaja con su URL tal cual.
    - Donaciones guarda la lista en la donación independiente al aplicar `ENTREGADA` y sirve
@@ -154,8 +155,9 @@ Logística recibe ids que no puede verificar.
   aporta destacadas. Si Donaciones no manda `donanteId` (un broker viejo), la entrega no sale en el
   listado por donante.
 - **Réplica de identificador:** si una donación cambiara de donante, Logística quedaría con el
-  viejo. Hoy no pasa `[OBSERVED]`: `Donacion.donanteId` es obligatorio desde el alta y solo lo asignan
-  los dos constructores de `Donacion`.
+  viejo. Hoy no pasa `[OBSERVED]`: `Donacion.donanteId` es obligatorio desde el alta y lo asignan los dos
+  constructores de `Donacion`; tiene un setter de paquete (`@Setter(AccessLevel.PACKAGE)`) sin
+  llamadas en el código.
 - La URL estable de una foto es pública mientras la foto esté publicada; quien la tenga puede
   verla. Se acepta porque RF-01 y RF-02 publican esas fotos.
 - `EventoEntregaExitosa` de Donaciones no declara `@JsonIgnoreProperties(ignoreUnknown = true)` y
