@@ -1,6 +1,8 @@
-# Brief de identidad visual
+# Brief de identidad visual — Alternativa Glassmorphism
 
 > **Estado:** aprobado · **Fecha:** 2026-10-30 · **Aprobó:** usuario
+> Es una de las dos alternativas de identidad: la profesional y seria, y la que se ve por
+> defecto. La otra es la [Alternativa Cozy / Medieval](brief-cozy-medieval.md).
 > Resultado de la skill `identidad-visual` (3 rondas de preguntas). Plantilla:
 > [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
 > dice "abierto"; lo que propone el agente dice "propuesto".

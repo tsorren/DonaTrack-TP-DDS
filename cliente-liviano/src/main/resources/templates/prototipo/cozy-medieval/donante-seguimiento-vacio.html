@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": Seguimiento sin entregas en curso. La tierra sin explorar dice qué
+       se va a ver acá y lleva a Mis donaciones, donde están las que esperan destino y las que ya
+       llegaron. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Seguimiento - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/viaje.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/viaje.css}">
+  <div class="viaje-pagina viaje-vacio">
+    <header class="viaje-cabecera">
+      <h1>Los caminos de tus donaciones</h1>
+      <p class="viaje-rotulo" th:text="${seccion}">Seguimiento</p>
+      <p class="viaje-bajada">Ninguna entrega en curso.</p>
+    </header>
+    <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+             'Ningún camión está en camino con tus donaciones',
+             'Cuando una donación salga del depósito, vas a ver acá su camino y por dónde va el camión.',
+             'Ver Mis donaciones', '/prototipo/donante-donaciones')}"></section>
+  </div>
+</th:block>
+</body>
+</html>

@@ -71,7 +71,9 @@ sigan abiertos, en el orden del [catálogo](../../../docs/interfaz/temas-ab.md):
 
 1. Valores base con prefijo `--p-*`, tokens de uso (`--color-*`, `--fuente-*`, etc.) y asignación
    de `--pico-*` a partir de los usos, todo en
-   `cliente-liviano/src/main/resources/static/css/tokens.css`.
+   `cliente-liviano/src/main/resources/static/css/tokens.css` (Glassmorphism) o en el
+   `tokens.css` de la alternativa que se está diseñando, en `static/css/alternativas/<nombre>/`.
+   Una alternativa nueva lleva además su brief en `docs/interfaz/identidad/` y su `app.css`.
 2. Puntos de quiebre en `--medida-quiebre-*`.
 3. Fuentes OFL en `static/fuentes/`, con su archivo de licencia.
 4. Si se agregan pares texto-fondo nuevos, sumarlos a la lista de contrastes que comprueba

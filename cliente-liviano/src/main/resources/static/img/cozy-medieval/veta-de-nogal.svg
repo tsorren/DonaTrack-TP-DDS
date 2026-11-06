@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 720">
+  <!-- Veta de nogal para el lomo de cuero del atlas (la barra lateral), a lo largo del lomo. Dibujo
+       propio de la Alternativa Cozy / Medieval, de un solo color: app.css lo usa como máscara y lo
+       pinta con un token apenas más claro que la madera. Cada línea empieza y termina en la misma
+       columna, con la misma dirección, para que el dibujo se repita hacia abajo sin cortes. -->
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <path d="M10 0C14 240 6 480 10 720" stroke-width="1.2" stroke-opacity="0.5"/>
+    <path d="M27 0C21 240 33 480 27 720" stroke-width="2.2" stroke-opacity="0.35"/>
+    <path d="M46 0C52 240 40 480 46 720" stroke-width="0.9" stroke-opacity="0.7"/>
+    <path d="M68 0C65 240 71 480 68 720" stroke-width="1.6" stroke-opacity="0.45"/>
+    <path d="M92 0C100 240 84 480 92 720" stroke-width="1" stroke-opacity="0.6"/>
+    <path d="M113 0C108 240 118 480 113 720" stroke-width="2.6" stroke-opacity="0.3"/>
+    <path d="M136 0C137 220 135 300 131 360C128 410 132 450 136 490C139 560 136 640 136 720"
+          stroke-width="1.1" stroke-opacity="0.6"/>
+    <path d="M166 0C165 220 168 300 171 360C174 410 170 450 166 490C163 560 166 640 166 720"
+          stroke-width="1.4" stroke-opacity="0.5"/>
+    <path d="M187 0C182 240 192 480 187 720" stroke-width="1.3" stroke-opacity="0.55"/>
+    <path d="M209 0C216 240 202 480 209 720" stroke-width="2" stroke-opacity="0.4"/>
+    <path d="M232 0C229 240 235 480 232 720" stroke-width="1" stroke-opacity="0.65"/>
+  </g>
+  <!-- Un nudo de la madera, entre las dos líneas que se abren a su alrededor. -->
+  <g fill="none" stroke="#000">
+    <ellipse cx="151" cy="420" rx="10" ry="30" stroke-width="1" stroke-opacity="0.2"/>
+    <ellipse cx="151" cy="420" rx="5" ry="15" stroke-width="1.2" stroke-opacity="0.4"/>
+    <ellipse cx="151" cy="420" rx="1.8" ry="6" stroke-width="1" stroke-opacity="0.3"/>
+  </g>
+</svg>

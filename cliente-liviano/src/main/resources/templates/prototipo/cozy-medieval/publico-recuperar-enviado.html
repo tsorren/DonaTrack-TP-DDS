@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): recuperar la contraseña, con el
+       pedido ya enviado (adonde lleva el formulario de publico-recuperar). La misma hoja, con el
+       aviso en lugar del formulario: no dice si el correo existe y toma el foco al cargar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Te mandamos un enlace - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div th:replace="~{prototipo/cozy-medieval/publico-recuperar :: hoja(true)}"></div>
+</th:block>
+</body>
+</html>

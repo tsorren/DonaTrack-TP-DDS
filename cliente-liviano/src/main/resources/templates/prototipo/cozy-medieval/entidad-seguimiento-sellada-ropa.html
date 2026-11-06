@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* Prototipo (iteración 3), entidad: la respuesta al POST del acta de recepción de esta entrega
+       (el controller vuelve a la pantalla del action sin lo escrito). El acta sellada de
+       entidad-seguimiento-sellada con la tinta que llega y el sello que cae, una sola vez:
+       js/prototipo-entidad.js cambia la dirección por la del acta ya sellada. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Recepción confirmada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-seguimiento-confirmar :: entrega('ropa',
+            ~{prototipo/cozy-medieval/entidad-seguimiento-sellada :: sellada(true)})}"></th:block>
+</th:block>
+</body>
+</html>

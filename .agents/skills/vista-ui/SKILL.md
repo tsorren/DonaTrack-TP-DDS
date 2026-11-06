@@ -31,15 +31,23 @@ description: >-
 3. **Controller** en `grupo5.cliente.web`.
    - Pide los datos al puerto y elige la vista. Nada más.
    - Con `HX-Request`, devuelve el fragmento; sin él, la página completa.
-4. **Plantilla** en `templates/paginas/`.
-   - Usa `layout.html` y los fragmentos existentes.
+4. **Plantilla** en `templates/paginas/` y su gemela en `templates/alternativas/<alt>/paginas/`
+   para cada alternativa (hoy, `cozy-medieval`).
+   - Usa `layout.html` y los fragmentos existentes; la de cada alternativa, su propio `layout.html`
+     y sus fragmentos.
+   - Los datos, las acciones y los nombres de botones y enlaces son **los mismos** en las dos: un
+     test (`InterfazFitnessTest`) falla si difieren. Cada alternativa puede decir a su modo los
+     títulos y los rótulos, declarados en su tabla de voz (`src/test/resources/voz/<alt>.txt`).
    - Los textos salen de la ficha del flujo.
    - Formularios reales: `action` y `method` verdaderos. HTMX los mejora y lleva `hx-indicator`.
 5. **Componente nuevo.**
-   - Fragmento parametrizado en `templates/fragmentos/`.
-   - Agregarlo a `/estilos` con todos sus estados y el patrón que sigue.
-6. **Estilos** en `app.css`.
-   - Solo tokens de uso y los puntos de quiebre de `tokens.css`, con mobile first.
+   - Fragmento parametrizado en `templates/fragmentos/` y su gemela, con el mismo nombre y los
+     mismos datos y acciones, en `templates/alternativas/<alt>/fragmentos/` para cada alternativa.
+   - Agregarlo a `/estilos` con todos sus estados y el patrón que sigue, y también al `/estilos`
+     de cada alternativa (`templates/alternativas/<alt>/paginas/estilos.html`).
+6. **Estilos** en el `app.css` de cada alternativa de identidad: el de Glassmorphism
+   (`static/css/`) y el de cada carpeta de `static/css/alternativas/`.
+   - Solo tokens de uso y los puntos de quiebre de su `tokens.css`, con mobile first.
    - Una sola audacia por pantalla.
 7. **Variante A/B.** Si surge una duda de disposición, usar `iteracion-ab`.
 

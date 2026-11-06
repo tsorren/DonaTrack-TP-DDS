@@ -1,0 +1,12 @@
+<!--/* Cifra de impacto: un asiento del libro de cuentas (bitácora, iteración 2). Lo que cuenta, la
+       guía de puntos y el número en la columna de doble filete; debajo, el cambio respecto del mes
+       anterior en texto. Es un enlace a las entregas que la forman ("cada número es una entrega que
+       se puede ver"). Sin flecha ni gráfico de los meses: los datos van limpios. Lo que cuenta va en el color de los
+       enlaces y subrayado, para no confundirse con los asientos. Estilos: app.css.
+       cifra: CifraVista. */-->
+<a th:fragment="cifra(cifra)" class="cifra" href="#" th:href="@{${cifra.ruta}}">
+  <span class="cifra-etiqueta" th:text="${cifra.etiqueta}">Donaciones realizadas</span>
+  <span class="cifra-valor" th:text="${cifra.valor}">7</span>
+  <span class="cifra-chip" th:if="${cifra.cambio}"><b th:text="${cifra.cambio}">+3</b><span
+        th:text="${cifra.cambioTexto}">respecto al mes pasado</span></span>
+</a>

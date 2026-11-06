@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--/* Prototipo, iteración 3, grupo juego: la donación quedó anotada (adonde lleva el paso corto de
+       donante-entidades-detalle, con post). Arriba, la tira con el título; enseguida, el aviso,
+       que toma el foco al cargar: adónde y cuándo llevarla, como el talón de un envío con el
+       depósito, su dirección y su horario (datos sintéticos), y qué sigue. Salidas: Mis donaciones
+       y la vuelta a los pueblos. El prototipo no guarda lo escrito, así que no nombra la necesidad.
+       Estilos: juego.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donación anotada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/juego.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/juego.css}">
+  <div class="juego juego--anotada">
+    <section class="juego-tira" aria-labelledby="anotada-h1">
+      <div class="juego-tira-cartela">
+        <h1 id="anotada-h1">Tu donación quedó anotada</h1>
+        <p class="juego-rotulo juego-seccion">Entidades</p>
+        <p class="juego-tira-frase">Gracias. Ahora falta un tramo: llevarla al depósito. Desde ahí
+          sale hacia su pueblo.</p>
+      </div>
+    </section>
+
+    <section class="juego-aviso juego-talon" role="status" aria-labelledby="aviso-titulo"
+             tabindex="-1" autofocus>
+      <h2 id="aviso-titulo">Llevala al depósito</h2>
+      <dl class="juego-datos">
+        <div><dt>Depósito</dt><dd>Depósito Central Ejemplo</dd></div>
+        <div><dt>Dirección</dt><dd>Calle Ejemplo 1234, Ciudad Ejemplo</dd></div>
+        <div><dt>Horario</dt><dd>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</dd></div>
+      </dl>
+      <p>Decí que es una donación anotada a tu nombre. Cuando la registremos, te llega una carta y
+        la ves en Mis donaciones, en la etapa de su viaje.</p>
+      <p class="juego-talon-acciones">
+        <a href="/prototipo/donante-donaciones" th:href="@{/prototipo/donante-donaciones}"
+           role="button">Ver Mis donaciones</a>
+        <a href="/prototipo/donante-entidades" th:href="@{/prototipo/donante-entidades}"
+           class="enlace-fuerte">Volver a los pueblos</a>
+      </p>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

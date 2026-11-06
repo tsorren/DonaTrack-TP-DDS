@@ -1,0 +1,75 @@
+<!--/* Recorrido de una donación: el mapa del viaje y su leyenda, sobre la mesa del cartógrafo
+       (bitácora, iteración 2). Patrón: Material Steppers, con un mapa al lado (RF-CL-06: la lista
+       dice lo mismo que el dibujo). El mapa sale de los datos, para cualquier cantidad de etapas y
+       cualquier etapa actual: cada paso dibuja su tramo desde la parada anterior y su parada, a lo
+       ancho y alternando arriba y abajo. El tramo va en tinta hasta la etapa actual y en lápiz lo
+       que falta. Cada parada lleva su signo (● cumplida, ◆ el alfiler de latón en la actual, ○ lo
+       que falta y ◉ el pueblo sellado si la última ya se cumplió) y su número; la actual, la
+       banderita "Estás acá", corrida hacia adentro si es la primera o la última, para no tocar el
+       depósito ni el pueblo. Al lado del camino, el depósito en la primera parada y el pueblo en
+       la última; el río es una aguada clara, para no confundirse con el camino, y el resto del
+       terreno es un dibujo fijo (img/cozy-medieval/mesa-mapa-terreno.svg) que deja libre la franja
+       del camino. Sin etapas no hay mapa. El dibujo no se lee: la leyenda, una lista ordenada con
+       el número, el signo y el texto de cada etapa, dice lo mismo, con aria-current="step" y
+       "Estás acá" en la actual (role="list": sin viñetas, algunos lectores dejan de anunciar la
+       lista). titulo: nombre accesible de la lista. pasos: List<PasoRecorrido>. Estilos: app.css. */-->
+<div th:fragment="recorrido(titulo, pasos)" class="viaje"
+     th:with="n=${#lists.size(pasos)}, tramo=${n > 1 ? 500.0 / (n - 1) : 0}">
+  <div class="viaje-mapa" th:if="${n > 0}">
+    <svg viewBox="0 0 640 360" aria-hidden="true" focusable="false">
+      <!--/* El río: la aguada clara y, encima, el cauce a pluma, fino y ondulado. */-->
+      <g class="viaje-rio" th:with="cauce='m216 0 2.4 5 0 5 -3 5 -4.9 5 -4.9 5 -3 5 0 5 2.4 5 3.3 5 2.5 5 0.9 5 -0.1 5 0.1 5
+                1.7 5 3.9 5 4.9 5 4.2 5 1.6 5 -1.4 5 -3.5 5 -4 5 -2.6 5 -0.5 5 1 5 1 5 -0.5 5 -2.6 5
+                -4 5 -3.5 5 -1.4 5 1.5 5 4 5 4.6 5 3.4 5 1.5 5 0 5 0 5 1.5 5 3.4 5 4.6 5 4 5 1.5 5
+                -1.4 5 -3.5 5 -4 5 -2.6 5 -0.5 5 1 5 1 5 -0.5 5 -2.6 5 -4 5 -3.5 5 -1.4 5 1.5 5 4 5
+                4.6 5 3.4 5 1.5 5 0 5 0 5 1.5 5 3.4 5 4.6 5 4 5 1.5 5 -1.8 5 -4.4 5 -5.1 5 -3.5 5
+                -0.4 5 2.2 5'">
+        <path th:attr="d=${cauce}"/>
+        <path th:attr="d=${cauce}"/>
+      </g>
+      <!--/* Los tramos, primero, para que las paradas queden encima. Cada parada está en x (a lo
+             ancho, de 70 a 570) e y (abajo las impares, arriba las pares, con un poco de mano). */-->
+      <path th:each="paso, vuelta : ${pasos}" th:unless="${vuelta.first}" class="viaje-tramo"
+            th:classappend="${paso.avance.tono == 'pendiente'} ? 'viaje-tramo--lapiz' : 'viaje-tramo--tinta'"
+            th:with="xa=${70 + (vuelta.index - 1) * tramo}, ya=${(vuelta.odd ? 108 : 212) + (vuelta.index - 1) % 3 * 6},
+                     y=${(vuelta.odd ? 212 : 108) + vuelta.index % 3 * 6}"
+            th:attr="d=|m${xa} ${ya}c${tramo / 2} 0 ${tramo / 2} ${y - ya} ${tramo} ${y - ya}|"
+            d="M70 212C132 212 132 108 195 108"/>
+      <g th:each="paso, vuelta : ${pasos}" class="viaje-parada"
+         th:classappend="|viaje-parada--${paso.avance.tono}|"
+         th:with="x=${n > 1 ? 70 + vuelta.index * tramo : 320}, y=${(vuelta.odd ? 212 : 108) + vuelta.index % 3 * 6},
+                  lado=${vuelta.odd ? 1 : -1}, corrida=${vuelta.first ? 60 : (vuelta.last ? -60 : 0)}"
+         th:attr="transform=|translate(${x} ${y})|" transform="translate(70 212)">
+        <!--/* El depósito, al lado de la primera parada; el pueblo de destino, al lado de la última. */-->
+        <path th:if="${vuelta.first}" class="viaje-lugar"
+              d="M-58 -14h30v22h-30zM-58 -14l15 -11 15 11M-49 8v-10h12v10M-43 -25v-6"/>
+        <path th:if="${vuelta.last}" class="viaje-lugar"
+              d="M24 -30h20v14h-20zM24 -23h20M30 -30l-6 7M40 -6h16v12h-16zM40 0h16M45 -6l-5 6M20 4h14v11h-14zM20 9.5h14"/>
+        <circle class="viaje-signo" r="9"/>
+        <text th:if="${paso.avance.tono != 'actual'}" class="viaje-numero"
+              th:attr="y=${lado == 1 ? 40 : -22}" y="40" th:text="${vuelta.count}">1</text>
+        <!--/* El alfiler de latón, clavado en la actual, y su banderita del lado libre del camino. */-->
+        <g th:if="${paso.avance.tono == 'actual'}" class="viaje-alfiler">
+          <path class="viaje-hilo" th:attr="d=|m0 0v${lado * 34}|" d="M0 0V34"/>
+          <g class="viaje-bandera" th:attr="transform=|translate(${corrida} ${lado * 48})|" transform="translate(0 48)">
+            <rect x="-75" y="-19" width="150" height="38" rx="3"/>
+            <text y="1">Estás acá</text>
+          </g>
+          <ellipse class="viaje-alfiler-sombra" cx="5" cy="6" rx="15" ry="9"/>
+          <path class="viaje-alfiler-cabeza" d="M0 -17 17 0 0 17 -17 0Z"/>
+          <path class="viaje-alfiler-grabado" d="M0 -9 9 0 0 9 -9 0Z"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <ol class="recorrido" role="list" th:aria-label="${titulo}">
+    <li th:each="paso, vuelta : ${pasos}" class="recorrido-paso"
+        th:classappend="|recorrido-paso--${paso.avance.tono}|"
+        th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+      <span class="recorrido-nodo" aria-hidden="true" th:text="${vuelta.count}">1</span>
+      <span class="recorrido-texto"><span th:text="${paso.nombre}">Paso</span><small
+            th:text="${paso.detalle}">Detalle</small><em class="recorrido-aca"
+            th:if="${paso.avance.tono == 'actual'}">Estás acá</em></span>
+    </li>
+  </ol>
+</div>

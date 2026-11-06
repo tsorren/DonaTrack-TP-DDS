@@ -1,0 +1,25 @@
+<!--/* Estado vacío. Patrón: Material Empty states. Dice qué significa y invita a la acción posible.
+       En Cozy es tierra sin explorar: un trozo de mapa rectangular, con su cuadrícula; arriba,
+       la costa punteada (la que nadie relevó), con su primer tramo ya pasado a pluma, y las
+       líneas del agua que la siguen (dibujo aria-hidden: la costa es una sola curva, en % del
+       ancho, que se repite en cada línea). La rosa de los vientos es la ruta chica, junto a la
+       acción; sin acción queda última y no se muestra. Sus tres nodos son de Glassmorphism y acá
+       no se muestran. accionTexto y accionRuta pueden ser null si no hay acción. */-->
+<section th:fragment="estado-vacio(titulo, texto, accionTexto, accionRuta)" class="estado-vacio">
+  <svg class="estado-vacio-costa" viewBox="0 0 100 40" preserveAspectRatio="none"
+       aria-hidden="true" focusable="false"
+       th:with="costa='m0 29c6-4 9-6 14-3c5 3 8 6 14 3c6-3 7-8 13-7c6 1 7 7 13 7c6 0 8-6 14-6c6 0 7 5 12 5c5 0 7-3 10-3c4 0 7 2 10 2'">
+    <g class="estado-vacio-agua">
+      <path transform="translate(0 -20)" th:attr="d=${costa}"/>
+      <path transform="translate(0 -13)" th:attr="d=${costa}"/>
+      <path transform="translate(0 -6)" th:attr="d=${costa}"/>
+    </g>
+    <path class="estado-vacio-orilla" th:attr="d=${costa}"/>
+    <path class="estado-vacio-pluma" th:attr="d=${costa}"/>
+  </svg>
+  <h3 th:text="${titulo}">Todavía no hay nada acá</h3>
+  <p th:text="${texto}">Qué significa y qué se puede hacer.</p>
+  <div class="ruta-chica" aria-hidden="true"><span></span><span></span><span></span></div>
+  <a th:if="${accionTexto}" href="#" th:href="@{${accionRuta}}" role="button"
+     th:text="${accionTexto}">Acción</a>
+</section>

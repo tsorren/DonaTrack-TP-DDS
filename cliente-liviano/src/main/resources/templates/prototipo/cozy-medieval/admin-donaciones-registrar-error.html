@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): registrar una donación con un error de validación (la fecha de vencimiento ya pasó): el resumen enfocado arriba y el error junto a su campo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Revisá la donación - Registrar donación - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-donaciones-registrar :: formulario(true)}"></th:block>
+</th:block>
+</body>
+</html>

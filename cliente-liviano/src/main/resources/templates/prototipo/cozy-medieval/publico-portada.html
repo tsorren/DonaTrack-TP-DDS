@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): la portada, para quien llega desde
+       un enlace, en el celular primero. Su audacia es la encrucijada (estructura-cozy-medieval.md):
+       arriba, el título y Donar ahora; el paisaje grabado de identidad; abajo, tres caminos en
+       lápiz que salen de la rosa de los vientos (soy donante, soy una entidad y el mapa de
+       entregadas). Sobre la mesa, debajo: lo que viajó en octubre, en fichas escritas acá con el
+       marcado del fragmento tarjeta (las entregadas, con la foto que subió la entidad pegada; la
+       que va en camino, con el hueco en lápiz donde va a ir su foto), y lo que se logró, como la
+       leyenda de un mapa. Hoy es el jueves 15 de octubre de 2026. Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>DonaTrack: cada donación deja un camino en el mapa</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico">
+    <section class="carta-portada papel" aria-labelledby="portada-titulo">
+      <div class="portada-entrada">
+        <h1 id="portada-titulo">Cada donación deja un camino en el mapa</h1>
+        <p>DonaTrack lleva lo que donás a comedores, merenderos y escuelas, y te muestra cada tramo
+          del viaje hasta que la entidad confirma que llegó.</p>
+        <div class="portada-acciones">
+          <a href="/prototipo/publico-registro-donante" role="button">Donar ahora</a>
+          <a href="/prototipo/publico-ingresar" role="button" class="fantasma">Ingresar</a>
+        </div>
+      </div>
+      <div class="grabado-paisaje" aria-hidden="true"></div>
+
+      <!--/* La encrucijada: el abanico (svg) se dibuja solo con lugar; en el celular, los caminos
+             son los filetes a trazos de cada destino (publico.css). */-->
+      <section class="encrucijada" aria-labelledby="encrucijada-titulo">
+        <h2 id="encrucijada-titulo">¿Por dónde empezás?</h2>
+        <span class="rosa" aria-hidden="true"></span>
+        <svg class="encrucijada-caminos" viewBox="0 0 600 100" preserveAspectRatio="none"
+             aria-hidden="true" focusable="false">
+          <path d="M300 0C300 60 100 40 100 100" vector-effect="non-scaling-stroke"/>
+          <path d="M300 0V100" vector-effect="non-scaling-stroke"/>
+          <path d="M300 0C300 60 500 40 500 100" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <ul role="list">
+          <li>
+            <span class="encrucijada-hito" aria-hidden="true"><svg
+                  th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('donaciones', 26)}"></svg></span>
+            <h3>Soy donante</h3>
+            <p>Doná alimentos, ropa o útiles y seguí cada tramo del viaje. Cada misión cumplida te
+              suma un sello.</p>
+            <a href="/prototipo/publico-registro-donante" role="button" class="fantasma">Quiero donar</a>
+          </li>
+          <li>
+            <span class="encrucijada-hito" aria-hidden="true"><svg
+                  th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('inicio', 26)}"></svg></span>
+            <h3>Soy una entidad</h3>
+            <p>Comedores, merenderos y escuelas: contá lo que necesitás y confirmá lo que te llega.
+              Aparecés en el mapa como un pueblo.</p>
+            <a href="/prototipo/publico-registro-entidad" role="button" class="fantasma">Sumar mi entidad</a>
+          </li>
+          <li>
+            <span class="encrucijada-hito" aria-hidden="true"><svg
+                  th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('seguimiento', 26)}"></svg></span>
+            <h3>Quiero ver el mapa</h3>
+            <p>Cada pueblo es una entidad; cada camino de tinta, una entrega que llegó. Sin cuenta.</p>
+            <a href="/prototipo/publico-mapa" role="button" class="fantasma">Ver el mapa de entregadas</a>
+          </li>
+        </ul>
+      </section>
+    </section>
+
+    <section class="destacadas" aria-labelledby="destacadas-titulo">
+      <header class="tira papel">
+        <h2 id="destacadas-titulo">Lo que viajó este mes</h2>
+        <p>Las fotos las sube la entidad al recibir: son la prueba de que llegó.</p>
+      </header>
+      <div class="tarjetas">
+        <article class="tarjeta">
+          <img class="tarjeta-foto" src="/img/cozy-medieval/prototipo-publico-foto-utiles.svg"
+               th:src="@{/img/cozy-medieval/prototipo-publico-foto-utiles.svg}"
+               alt="Cuadernos y una caja de útiles sobre una mesa del aula" width="640" height="400"
+               loading="lazy">
+          <span class="insignia insignia--entregada"><span>Entregada</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Escuela Ejemplo 12</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-3"
+                th:href="@{/prototipo/publico-mapa#pueblo-3}">Útiles escolares, 30 cuadernos</a></h3>
+            <p class="tarjeta-fecha">Llegó ayer, 14 de octubre</p>
+          </div>
+        </article>
+        <article class="tarjeta">
+          <img class="tarjeta-foto" src="/img/cozy-medieval/prototipo-publico-foto-ropa.svg"
+               th:src="@{/img/cozy-medieval/prototipo-publico-foto-ropa.svg}"
+               alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640"
+               height="400" loading="lazy">
+          <span class="insignia insignia--entregada"><span>Entregada</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Merendero Ejemplo Sur</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-2"
+                th:href="@{/prototipo/publico-mapa#pueblo-2}">Ropa de abrigo, 12 prendas</a></h3>
+            <p class="tarjeta-fecha">Llegó el 9 de octubre</p>
+          </div>
+        </article>
+        <article class="tarjeta">
+          <img class="tarjeta-foto" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}"
+               alt="Cajas con los fideos apiladas junto a la puerta del comedor" width="640"
+               height="400" loading="lazy">
+          <span class="insignia insignia--entregada"><span>Entregada</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Comedor Barrio Ejemplo</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-1"
+                th:href="@{/prototipo/publico-mapa#pueblo-1}">Fideos secos, 8 kg</a></h3>
+            <p class="tarjeta-fecha">Llegó el 5 de octubre</p>
+          </div>
+        </article>
+        <!--/* La que va en camino: todavía no tiene foto. En su lugar, el hueco marcado en lápiz. */-->
+        <article class="tarjeta">
+          <div class="tarjeta-portada tarjeta-hueco">
+            <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 56)}"></svg>
+            <p>La foto llega cuando el comedor la reciba</p>
+          </div>
+          <span class="insignia insignia--en-camino"><span>En camino</span></span>
+          <div class="tarjeta-cuerpo">
+            <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+                 alt="" width="20" height="15"><span>Comedor Barrio Ejemplo</span></p>
+            <h3 class="tarjeta-titulo"><a href="/prototipo/publico-mapa#pueblo-1"
+                th:href="@{/prototipo/publico-mapa#pueblo-1}">Lentejas secas, 15 kg</a></h3>
+            <p class="tarjeta-fecha">Salió hoy a las 14:30</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="leyenda-portada papel" aria-labelledby="logros-titulo">
+      <div>
+        <h2 id="logros-titulo">El camino recorrido</h2>
+        <p class="bajada">Desde marzo de 2026, en siete provincias.</p>
+      </div>
+      <ul class="leyenda-cifras" role="list">
+        <li class="signo signo--entregada"><span><b>1.284</b> donaciones entregadas</span></li>
+        <li class="signo signo--pueblo"><span><b>46</b> entidades en el mapa</span></li>
+        <li class="signo signo--camino"><span><b>32</b> en camino ahora</span></li>
+      </ul>
+      <a href="/prototipo/publico-mapa" class="enlace-fuerte">Ver adónde llegaron</a>
+      <p class="nota-chica">Actualizado el 15 de octubre, 14:30.</p>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

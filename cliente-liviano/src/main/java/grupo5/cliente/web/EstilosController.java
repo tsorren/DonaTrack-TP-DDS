@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * pantallas privadas. Los datos son de ejemplo.
  */
 @Controller
-class EstilosController {
+public class EstilosController {
 
   private static final String FOTO = "/img/ejemplo-entrega.svg";
   private static final String FOTO_ALT =
@@ -94,7 +94,8 @@ class EstilosController {
     return "paginas/estilos-armazon";
   }
 
-  private static void datosDeEjemplo(Model model) {
+  /** Los datos de ejemplo del catálogo; también los usa el prototipo del flujo de Cozy. */
+  public static void datosDeEjemplo(Model model) {
     model.addAttribute("entregas", ENTREGAS);
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("opciones", NAVEGACION);

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Grabado de una insignia ganada (prototipo, grupo juego): el canto con su cordón, el anillo y,
+       al centro, el emblema de Explorador, un globo con sus meridianos y paralelos. Dibujo propio de
+       la Alternativa Cozy / Medieval, de un solo color: juego.css lo usa como máscara sobre el disco
+       de latón. -->
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <circle cx="50" cy="50" r="46" stroke-width="3"/>
+    <circle cx="50" cy="50" r="40.5" stroke-width="3" stroke-dasharray="0 6.36"/>
+    <circle cx="50" cy="50" r="35" stroke-width="1.6"/>
+    <circle cx="50" cy="50" r="21" stroke-width="2.6"/>
+    <ellipse cx="50" cy="50" rx="9" ry="21" stroke-width="2"/>
+    <path stroke-width="2" d="M50 29v42M29 50h42M32.5 39.5h35M32.5 60.5h35"/>
+  </g>
+</svg>

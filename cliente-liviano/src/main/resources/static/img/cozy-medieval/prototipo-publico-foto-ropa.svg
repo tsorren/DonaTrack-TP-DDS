@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img">
+  <!-- Ilustración sintética para datos de ejemplo: bolsas con ropa de abrigo junto a la puerta de
+       un merendero. Mismo estilo plano que img/ejemplo-entrega.svg. -->
+  <rect width="640" height="400" fill="#ece6dc"/>
+  <rect x="70" y="50" width="190" height="310" fill="#cfc4b4"/>
+  <rect x="88" y="68" width="154" height="292" fill="#8f7f6b"/>
+  <circle cx="222" cy="222" r="8" fill="#ece6dc"/>
+  <rect x="300" y="78" width="150" height="58" fill="#d9cfc0"/>
+  <rect x="316" y="96" width="118" height="8" fill="#b8ab98"/>
+  <rect x="316" y="112" width="80" height="8" fill="#b8ab98"/>
+  <rect y="360" width="640" height="40" fill="#c2b8a8"/>
+  <path d="M276 360c-8-62 14-110 62-116h44c48 6 70 54 62 116z" fill="#7d8f9a"/>
+  <path d="M344 244l-12-20h56l-12 20z" fill="#6b7d88"/>
+  <path d="M420 360c-6-48 10-88 50-92h34c40 4 56 44 50 92z" fill="#9c6b55"/>
+  <path d="M474 268l-10-16h46l-10 16z" fill="#875a46"/>
+  <path d="M330 300h96l-14-26h-68z" fill="#b5894f"/>
+  <rect x="356" y="282" width="44" height="10" fill="#d4ad75"/>
+</svg>

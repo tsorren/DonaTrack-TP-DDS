@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Prototipo (iteración 3), entidad: la respuesta al POST de "Publicar necesidad" (el controller
+       vuelve a la pantalla del action sin lo escrito). La hoja de entidad-necesidades con el aviso
+       de publicada, con foco al cargar, antes del formulario y del libro. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Necesidad publicada - Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-necesidades :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

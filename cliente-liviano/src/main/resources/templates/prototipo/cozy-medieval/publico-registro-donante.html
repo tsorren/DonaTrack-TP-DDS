@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): el formulario corto de la persona
+       donante, en la libreta de viaje (la hoja de adorno, como en ingresar). Tres datos y la
+       aceptación de las condiciones, todos obligatorios. Es un prototipo: el envío (post) lleva al
+       inicio de la persona donante de ejemplo. Los campos van escritos a mano, con el marcado y las
+       clases del fragmento campo, para llevar autocomplete. Desvíos: ingresar y el camino de la
+       entidad. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Registrarme como donante - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico">
+    <div class="libreta">
+      <div class="libreta-hoja libreta-hoja--adorno" aria-hidden="true">
+        <div class="grabado-paisaje"></div>
+        <blockquote>Cada donación deja un camino en el mapa.</blockquote>
+        <p class="nota-chica">Tu libreta guarda los tuyos.</p>
+      </div>
+      <section class="libreta-hoja" aria-labelledby="donante-titulo">
+        <h1 id="donante-titulo">Empezá tu viaje</h1>
+        <p class="bajada">Creá tu cuenta de persona donante. Son tres datos.</p>
+        <form action="/prototipo/donante-inicio" th:action="@{/prototipo/donante-inicio}" method="post">
+          <div class="campo">
+            <label for="nombre">Tu nombre</label>
+            <input id="nombre" name="nombre" type="text" autocomplete="given-name" required
+                   aria-describedby="nombre-ayuda">
+            <small id="nombre-ayuda">Como querés que te saludemos.</small>
+          </div>
+          <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" name="correo" type="email" autocomplete="email" required
+                   aria-describedby="correo-ayuda">
+            <small id="correo-ayuda">Para avisarte cada tramo del viaje. No lo compartimos.</small>
+          </div>
+          <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" autocomplete="new-password"
+                   minlength="8" required aria-describedby="contrasena-ayuda">
+            <small id="contrasena-ayuda">Al menos 8 caracteres, con una letra y un número.</small>
+          </div>
+          <div class="libreta-fila">
+            <label class="casilla"><input type="checkbox" name="condiciones" required><span>Acepto las
+                condiciones de uso y la política de privacidad</span></label>
+          </div>
+          <button type="submit">Crear mi cuenta</button>
+        </form>
+        <p class="nota-prototipo">Es un prototipo: no se guarda nada. Crear mi cuenta te lleva al
+          inicio de una persona donante de ejemplo.</p>
+        <p class="libreta-desvio">¿Ya tenés cuenta? <a href="/prototipo/publico-ingresar">Ingresar</a></p>
+        <p class="libreta-desvio">¿Sos una entidad? <a href="/prototipo/publico-registro-entidad">Registrá
+            tu entidad</a></p>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

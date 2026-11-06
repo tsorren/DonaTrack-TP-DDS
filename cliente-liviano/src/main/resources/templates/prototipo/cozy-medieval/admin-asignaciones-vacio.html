@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): asignar donaciones, sin propuestas. El mismo libro de rutas
+       que admin-asignaciones, con la tierra sin explorar y el camino a las donaciones. Estilos:
+       prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
+  <section class="admin-libro" aria-labelledby="asignar-titulo">
+    <header class="admin-etiqueta">
+      <h1 id="asignar-titulo">Asignar donaciones</h1>
+      <p class="admin-rotulo">Caminos por trazar</p>
+    </header>
+    <div class="admin-hoja">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'No hay propuestas para revisar',
+               'Cuando entre una donación, el sistema propone a qué necesidad va y aparece acá.',
+               'Ver donaciones', '/prototipo/admin-donaciones')}"></section>
+    </div>
+  </section>
+</th:block>
+</body>
+</html>

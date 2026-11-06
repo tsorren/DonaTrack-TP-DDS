@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): lo que ve quien aprueba a Comedor Ejemplo Oeste (el POST de su "Aprobar" vuelve acá). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Aprobaste a Comedor Ejemplo Oeste - Entidades por aprobar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-entidades :: libro('aprobada', 'comedor')}"></th:block>
+</th:block>
+</body>
+</html>

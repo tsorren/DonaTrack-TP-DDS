@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): registrarse, eligiendo el camino. Es
+       la encrucijada de la portada con dos caminos en lápiz que salen de la rosa: persona donante o
+       entidad, con lo que significa cada uno (qué podés hacer y qué te pedimos). Cada camino lleva
+       a su formulario corto: publico-registro-donante y publico-registro-entidad. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico">
+    <section class="carta-portada carta-registro papel" aria-labelledby="registro-titulo">
+      <div class="encrucijada encrucijada--dos">
+        <h1 id="registro-titulo">Elegí tu camino</h1>
+        <p class="bajada">Las dos cuentas son gratis. Según el camino, te pedimos datos distintos.</p>
+        <span class="rosa" aria-hidden="true"></span>
+        <svg class="encrucijada-caminos" viewBox="0 0 600 100" preserveAspectRatio="none"
+             aria-hidden="true" focusable="false">
+          <path d="M300 0C300 60 150 40 150 100" vector-effect="non-scaling-stroke"/>
+          <path d="M300 0C300 60 450 40 450 100" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <ul role="list">
+          <li>
+            <span class="encrucijada-hito" aria-hidden="true"><svg
+                  th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('donaciones', 26)}"></svg></span>
+            <h2>Persona donante</h2>
+            <p>Para quien dona alimentos, ropa o útiles.</p>
+            <ul class="registro-puntos" role="list">
+              <li>Elegís a qué entidad o necesidad va tu donación.</li>
+              <li>Seguís el camino hasta que la entidad confirma que llegó.</li>
+              <li>Sumás sellos y rango con cada misión cumplida.</li>
+            </ul>
+            <p class="registro-pedido">Te pedimos tu nombre, tu correo y una contraseña.</p>
+            <a href="/prototipo/publico-registro-donante" role="button">Registrarme como donante</a>
+          </li>
+          <li>
+            <span class="encrucijada-hito" aria-hidden="true"><svg
+                  th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('inicio', 26)}"></svg></span>
+            <h2>Entidad</h2>
+            <p>Para comedores, merenderos, escuelas y otras organizaciones que reciben donaciones.</p>
+            <ul class="registro-puntos" role="list">
+              <li>Contás lo que necesitás y cuánto.</li>
+              <li>Confirmás cada entrega con una foto.</li>
+              <li>Aparecés en el mapa como un pueblo.</li>
+            </ul>
+            <p class="registro-pedido">Te pedimos los datos de la entidad y una dirección de entrega.
+              El equipo la revisa antes de sumarla al mapa.</p>
+            <a href="/prototipo/publico-registro-entidad" role="button">Registrar mi entidad</a>
+          </li>
+        </ul>
+        <p class="registro-cuenta">¿Ya tenés cuenta? <a href="/prototipo/publico-ingresar">Ingresar</a></p>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

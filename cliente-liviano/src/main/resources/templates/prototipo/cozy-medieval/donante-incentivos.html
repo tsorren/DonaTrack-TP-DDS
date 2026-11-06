@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--/* Prototipo, iteración 3, grupo juego: misiones e insignias del donante (RF-07), como el cuaderno
+       de sellos sobre la mesa del cartógrafo. Arriba, la tira del rango: la escala del viaje, una
+       casilla por misión, agrupadas por rango, con la banderita "Estás acá" en la misión en curso.
+       El objeto grande es el cuaderno abierto: a la izquierda, la misión en curso con un sello de
+       latón por paso cumplido y el hueco punteado, con la condición escrita, del que falta; a la
+       derecha, el índice de todas las misiones por rango (● cumplida, ◆ en curso, ○ por venir, con
+       su texto). Al costado, el estuche de las insignias: la medalla grabada de la ganada y el lugar
+       vacío de las otras, y el sobre que lleva a las cartas. Los rangos y las misiones son los de
+       incentivos-service (MisionFactory): dos por rango y una sola en curso. Datos de ejemplo,
+       coherentes con la muestra del inicio: hoy es 15 de octubre de 2026. Arriba del título, el
+       nombre del menú como rótulo. Estilos: juego.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Misiones e insignias - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/juego.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/juego.css}">
+  <div class="juego juego--incentivos">
+
+    <!--/* La tira del rango: el título de la página y la escala del viaje. */-->
+    <section class="juego-tira juego-rango" aria-labelledby="cuaderno-h1">
+      <div class="juego-tira-cartela">
+        <h1 id="cuaderno-h1">Tu cuaderno de sellos</h1>
+        <p class="juego-rotulo juego-seccion">Incentivos</p>
+        <p class="juego-tira-frase">Sos <b>Colaborador</b>. Un sello más y llegás a
+          <b>Sostenedor</b>.</p>
+      </div>
+      <figure class="juego-escala">
+        <figcaption class="juego-rotulo">Tu avance por los rangos</figcaption>
+        <ol class="juego-escala-rangos" role="list">
+          <li class="juego-escala-rango juego-escala-rango--actual" aria-current="step">
+            <ol class="juego-escala-tramos" role="list">
+              <li class="juego-tramo juego-tramo--cumplida"><span class="solo-lectores">Explorador:
+                cumplida</span></li>
+              <li class="juego-tramo juego-tramo--curso">
+                <progress value="2" max="3" aria-label="Donante constante, en curso">2 de 3</progress>
+                <span class="juego-aca">Estás acá</span>
+              </li>
+            </ol>
+            <p class="juego-escala-nombre"><b>Colaborador</b><span>1 de 2 misiones</span></p>
+          </li>
+          <li class="juego-escala-rango">
+            <ol class="juego-escala-tramos" role="list">
+              <li class="juego-tramo"><span class="solo-lectores">Gran aporte: por venir</span></li>
+              <li class="juego-tramo"><span class="solo-lectores">Constancia: por venir</span></li>
+            </ol>
+            <p class="juego-escala-nombre"><b>Sostenedor</b><span>0 de 2 misiones</span></p>
+          </li>
+          <li class="juego-escala-rango">
+            <ol class="juego-escala-tramos" role="list">
+              <li class="juego-tramo"><span class="solo-lectores">Impacto real: por venir</span></li>
+              <li class="juego-tramo"><span class="solo-lectores">Diversidad solidaria: por
+                venir</span></li>
+            </ol>
+            <p class="juego-escala-nombre"><b>Transformador</b><span>0 de 2 misiones</span></p>
+          </li>
+        </ol>
+      </figure>
+    </section>
+
+    <!--/* El cuaderno abierto: la misión en curso y el índice de las misiones. */-->
+    <div class="juego-cuaderno">
+      <section class="juego-hoja juego-hoja--sellos" aria-labelledby="curso-titulo">
+        <h2 id="curso-titulo" class="juego-rotulo">Misión en curso</h2>
+        <h3 class="juego-mision-titulo">Donante constante</h3>
+        <p class="juego-mision-condicion">Doná tres meses seguidos.</p>
+        <ol class="juego-sellos" role="list" aria-label="Sellos de Donante constante">
+          <li class="juego-sello juego-sello--puesto">
+            <span class="juego-sello-marca" aria-hidden="true"></span>
+            <b>Septiembre</b><small>Sellado el 9 de septiembre</small>
+          </li>
+          <li class="juego-sello juego-sello--puesto">
+            <span class="juego-sello-marca" aria-hidden="true"></span>
+            <b>Octubre</b><small>Sellado el 12 de octubre</small>
+          </li>
+          <li class="juego-sello">
+            <span class="juego-sello-marca" aria-hidden="true"></span>
+            <b>Noviembre</b><small>Falta: doná en noviembre</small>
+          </li>
+        </ol>
+        <p class="juego-cuenta"><b>2 de 3 sellos.</b> Te falta 1.</p>
+        <p class="juego-premio">Al completarla ganás la insignia <b>Racha inicial</b> y subís a
+          <b>Sostenedor</b>.</p>
+        <p class="juego-accion">
+          <a href="/prototipo/donante-entidades" th:href="@{/prototipo/donante-entidades}"
+             role="button">Ver entidades</a>
+          <span>Elegí a quién ayudar este mes.</span>
+        </p>
+      </section>
+
+      <section class="juego-hoja juego-hoja--indice" aria-labelledby="indice-titulo">
+        <h2 id="indice-titulo" class="juego-rotulo">Todas tus misiones</h2>
+        <section class="juego-indice-rango" aria-labelledby="indice-colaborador">
+          <h3 id="indice-colaborador">Colaborador <small>Tu rango</small></h3>
+          <ol class="juego-misiones" role="list">
+            <li class="juego-mision juego-mision--cumplida">
+              <b>Explorador</b><span>Doná en tres categorías distintas.</span>
+              <em>Cumplida el 1 de octubre</em>
+            </li>
+            <li class="juego-mision juego-mision--curso" aria-current="step">
+              <b>Donante constante</b><span>Doná tres meses seguidos.</span>
+              <em>En curso: 2 de 3</em>
+            </li>
+          </ol>
+        </section>
+        <section class="juego-indice-rango" aria-labelledby="indice-sostenedor">
+          <h3 id="indice-sostenedor">Sostenedor <small>Próximo rango</small></h3>
+          <p class="juego-indice-nota">Sus misiones se abren cuando llegues a este rango.</p>
+          <ol class="juego-misiones" role="list">
+            <li class="juego-mision">
+              <b>Gran aporte</b><span>Hacé una donación de 50 bienes o más.</span>
+              <em>Por venir</em>
+            </li>
+            <li class="juego-mision">
+              <b>Constancia</b><span>Doná seis meses seguidos.</span><em>Por venir</em>
+            </li>
+          </ol>
+        </section>
+        <section class="juego-indice-rango" aria-labelledby="indice-transformador">
+          <h3 id="indice-transformador">Transformador</h3>
+          <ol class="juego-misiones" role="list">
+            <li class="juego-mision">
+              <b>Impacto real</b><span>Llegá a 10 donaciones recibidas por su entidad.</span>
+              <em>Por venir</em>
+            </li>
+            <li class="juego-mision">
+              <b>Diversidad solidaria</b><span>Doná en ocho categorías distintas.</span>
+              <em>Por venir</em>
+            </li>
+          </ol>
+        </section>
+      </section>
+    </div>
+
+    <!--/* El estuche de las insignias: la medalla grabada de la ganada; el lugar vacío de las otras. */-->
+    <section class="juego-estuche" aria-labelledby="insignias-titulo">
+      <h2 id="insignias-titulo">Tus insignias</h2>
+      <p class="juego-estuche-bajada">Ganaste 1 de 6. Cada misión cumplida suma la suya.</p>
+      <ul class="juego-medallas" role="list">
+        <li class="juego-medalla juego-medalla--ganada">
+          <span class="juego-medalla-disco" aria-hidden="true"></span>
+          <b>Explorador</b><small>Ganada el 1 de octubre de 2026</small>
+        </li>
+        <li class="juego-medalla">
+          <span class="juego-medalla-disco" aria-hidden="true"></span>
+          <b>Racha inicial</b><small>Por ganar</small>
+        </li>
+        <li class="juego-medalla">
+          <span class="juego-medalla-disco" aria-hidden="true"></span>
+          <b>Gran aporte</b><small>Por ganar</small>
+        </li>
+        <li class="juego-medalla">
+          <span class="juego-medalla-disco" aria-hidden="true"></span>
+          <b>Constancia</b><small>Por ganar</small>
+        </li>
+        <li class="juego-medalla">
+          <span class="juego-medalla-disco" aria-hidden="true"></span>
+          <b>Impacto real</b><small>Por ganar</small>
+        </li>
+        <li class="juego-medalla">
+          <span class="juego-medalla-disco" aria-hidden="true"></span>
+          <b>Diversidad solidaria</b><small>Por ganar</small>
+        </li>
+      </ul>
+    </section>
+
+    <aside th:replace="~{prototipo/cozy-medieval/donante-cartas :: sobre}"></aside>
+  </div>
+</th:block>
+</body>
+</html>

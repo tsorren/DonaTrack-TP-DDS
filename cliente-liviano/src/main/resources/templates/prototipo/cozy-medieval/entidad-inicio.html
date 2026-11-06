@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!--/* Prototipo (iteración 3), entidad: el inicio, "tu pueblo". La mesa de la entidad tiene tres
+       objetos: los talones de lo que llegó a tu puerta (lo que hay que hacer, primero, con
+       "Confirmar recepción"), el mapa de tu pueblo con los caminos de las entregas que le llegan
+       (la audacia) y la lista de lo que pediste. El fragmento mesa(vacio) lo usa también
+       entidad-inicio-vacio: sin entregas por confirmar, los talones dejan lugar a la tierra sin
+       explorar y el mapa pierde sus dos caminos. Arriba, el saludo con el nombre del menú como
+       rótulo. Cada "Confirmar recepción" abre el acta de su entrega (?entrega=<clave>). La hora de
+       las lentejas sigue el viaje que ve el donante: salieron a las 14:30, a las 16:25 iban por la
+       mitad y llegaron a las 18:20. Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/entidad-inicio :: mesa(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="mesa(vacio)">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/entidad.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/entidad.css}">
+  <div class="entidad-mesa entidad-mesa--inicio">
+    <header class="entidad-cabecera">
+      <h1>Hola, Marta</h1>
+      <p class="entidad-rotulo" th:text="${seccion}">Inicio</p>
+      <p class="mesa-bajada">Comedor Barrio Ejemplo · jueves 15 de octubre</p>
+    </header>
+
+    <!--/* Los talones: cada entrega que llegó es un remito con su talón, separado por el troquel.
+           El primero lleva la acción principal; los demás, la misma acción en papel. */-->
+    <section th:unless="${vacio}" class="entidad-talones" aria-labelledby="talones-titulo">
+      <div class="entidad-talones-cabecera">
+        <span class="moneda"><b>2</b></span>
+        <div>
+          <h2 id="talones-titulo">Llegaron a tu puerta</h2>
+          <p class="mesa-bajada">2 entregas esperan tu confirmación</p>
+        </div>
+      </div>
+      <ul class="entidad-talones-lista" role="list">
+        <li class="entidad-talon">
+          <p class="entidad-talon-cabo"><span class="entidad-signo entidad-signo--hueco"
+             aria-hidden="true"></span>Llegó hoy, 18:20</p>
+          <div class="entidad-talon-cuerpo">
+            <h3>Lentejas secas · 15 kg</h3>
+            <p>3 bultos, desde el Depósito Central</p>
+            <a href="/prototipo/entidad-seguimiento-confirmar?entrega=lentejas" role="button">Confirmar recepción<span
+               class="solo-lectores">: lentejas secas</span></a>
+          </div>
+        </li>
+        <li class="entidad-talon">
+          <p class="entidad-talon-cabo"><span class="entidad-signo entidad-signo--hueco"
+             aria-hidden="true"></span>Llegó ayer, 17:10</p>
+          <div class="entidad-talon-cuerpo">
+            <h3>Ropa de abrigo · 2 cajas</h3>
+            <p>2 bultos, desde el Depósito Central</p>
+            <a href="/prototipo/entidad-seguimiento-confirmar?entrega=ropa" role="button"
+               class="outline">Confirmar
+              recepción<span class="solo-lectores">: ropa de abrigo</span></a>
+          </div>
+        </li>
+      </ul>
+    </section>
+    <div th:if="${vacio}" class="entidad-talones entidad-talones--vacio">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'Todavía no tenés entregas para confirmar',
+               'Cuando una donación llegue a tu entidad, aparece acá para que confirmes la recepción.',
+               'Ver necesidades publicadas', '/prototipo/entidad-necesidades')}"></section>
+    </div>
+
+    <!--/* Tu pueblo: el mapa grabado de la entidad. El pueblo en el medio, con el alfiler "Estás
+           acá", y un camino por entrega desde el borde del mapa: en tinta lo andado, en lápiz lo
+           que falta. Al llegar a la puerta, el hueco del sello que espera tu confirmación; en
+           camino, la punta ▸; por salir, ○ al borde; con problema, el camino cortado con ╳. Cada
+           camino lleva el número de la leyenda, que dice lo mismo en texto. */-->
+    <section class="entidad-pueblo" aria-labelledby="pueblo-titulo">
+      <div class="mesa-mapa-cartela">
+        <h2 id="pueblo-titulo">Tu pueblo</h2>
+        <p>Comedor Barrio Ejemplo</p>
+        <p th:text="${vacio} ? '3 entregas por tus caminos' : '5 entregas por tus caminos'">5 entregas
+          por tus caminos</p>
+      </div>
+      <div class="entidad-pueblo-cuerpo">
+        <div class="viaje-mapa entidad-pueblo-mapa">
+          <svg viewBox="0 0 640 440" aria-hidden="true" focusable="false">
+            <!--/* El terreno, a pluma, lejos de los caminos: la sierra, el monte y los campos. */-->
+            <g class="entidad-terreno">
+              <path d="M392 78l26-34 24 34M430 78l22-30 22 30M466 78l20-26 20 26M408 56l-6 16M446 58l-5 13M482 60l-4 11"/>
+              <path d="M140 70v8M158 60v8M176 72v8M196 62v8M150 92v8M186 94v8M214 84v8M54 266v8M76 258v8M66 288v8M590 246v8M608 262v8M584 276v8"/>
+              <circle cx="140" cy="63" r="8"/><circle cx="158" cy="53" r="8"/><circle cx="176" cy="65" r="8"/><circle cx="196" cy="55" r="8"/><circle cx="150" cy="85" r="8"/><circle cx="186" cy="87" r="8"/><circle cx="214" cy="77" r="8"/>
+              <circle cx="54" cy="259" r="8"/><circle cx="76" cy="251" r="8"/><circle cx="66" cy="281" r="8"/>
+              <circle cx="590" cy="239" r="8"/><circle cx="608" cy="255" r="8"/><circle cx="584" cy="269" r="8"/>
+              <path d="M470 222h70M466 234h76M462 246h82M458 258h88M454 270h94M510 218v56"/>
+            </g>
+            <!--/* La muralla de tu pueblo, en lápiz, y sus casas; la más grande, el comedor, con su
+                   chimenea. */-->
+            <circle class="entidad-muralla" cx="330" cy="240" r="62"/>
+            <path class="viaje-lugar" d="M300 248v-36h60v36zM294 214l36-26 36 26M346 199v-16h9v23M322 248v-16h16v16M306 222h10v8h-10zM344 222h10v8h-10z"/>
+            <path class="entidad-humo" d="M351 176c-6-6 6-10 0-16M357 174c-5-6 5-9 0-14"/>
+            <path class="viaje-lugar" d="M270 238v-16h20v16zM267 224l13-10 13 10M370 238v-16h20v16zM367 224l13-10 13 10M292 280v-14h18v14zM289 268l12-9 12 9M350 282v-14h18v14zM347 270l12-9 12 9"/>
+            <!--/* Los caminos. Los dos primeros llegaron: tinta hasta la puerta y el hueco del sello. */-->
+            <th:block th:unless="${vacio}">
+              <path class="viaje-tramo viaje-tramo--tinta" d="M0 150c110 0 150 86 252 86"/>
+              <circle class="entidad-hueco" cx="252" cy="236" r="13"/>
+              <text class="viaje-numero" x="36" y="132">1</text>
+              <path class="viaje-tramo viaje-tramo--tinta" d="M190 440c10-60 80-110 128-134"/>
+              <circle class="entidad-hueco" cx="318" cy="306" r="13"/>
+              <text class="viaje-numero" x="168" y="428">2</text>
+            </th:block>
+            <!--/* En camino: tinta hasta la mitad, la punta que avanza y lápiz lo que falta. */-->
+            <path class="viaje-tramo viaje-tramo--lapiz" d="M512 144.25c-38 25.25-74 51.75-116 51.75"/>
+            <path class="viaje-tramo viaje-tramo--tinta" d="M640 100c-50-5-90 19-128 44.25"/>
+            <path class="entidad-punta" transform="translate(512 144.25) rotate(146)" d="M-4-10 14 0-4 10Z"/>
+            <text class="viaje-numero" x="612" y="82" th:text="${vacio ? 1 : 3}">3</text>
+            <!--/* Por salir: todo en lápiz, con ○ donde va a aparecer. */-->
+            <path class="viaje-tramo viaje-tramo--lapiz" d="M600 440c-20-70-140-120-208-148"/>
+            <circle class="entidad-por-salir" cx="591" cy="419" r="9"/>
+            <text class="viaje-numero" x="622" y="408" th:text="${vacio ? 2 : 4}">4</text>
+            <!--/* Con problema: la tinta se corta con ╳ y el resto queda en lápiz. */-->
+            <path class="viaje-tramo viaje-tramo--tinta" d="M0 400c40-5 87.5-25 135.25-48"/>
+            <path class="viaje-tramo viaje-tramo--lapiz" d="M135.25 352c47.75-23 95.75-49 136.75-66"/>
+            <path class="entidad-corte" d="M125 342l20 20M145 342l-20 20"/>
+            <text class="viaje-numero" x="30" y="382" th:text="${vacio ? 3 : 5}">5</text>
+            <!--/* El alfiler de latón: estás acá, en tu pueblo. */-->
+            <g class="viaje-alfiler" transform="translate(330 198)">
+              <path class="viaje-hilo" d="M0 0v-46"/>
+              <g class="viaje-bandera" transform="translate(0 -64)">
+                <rect x="-75" y="-19" width="150" height="38" rx="3"/>
+                <text y="1">Estás acá</text>
+              </g>
+              <ellipse class="viaje-alfiler-sombra" cx="5" cy="6" rx="15" ry="9"/>
+              <path class="viaje-alfiler-cabeza" d="M0-17 17 0 0 17-17 0Z"/>
+              <path class="viaje-alfiler-grabado" d="M0-9 9 0 0 9-9 0Z"/>
+            </g>
+          </svg>
+        </div>
+        <ol class="entidad-leyenda" role="list" aria-label="Las entregas que llegan a tu pueblo">
+          <th:block th:unless="${vacio}">
+            <li><span class="entidad-leyenda-numero" aria-hidden="true">1</span><span
+                class="entidad-signo entidad-signo--hueco" aria-hidden="true"></span><span><b>Lentejas
+                secas · 15 kg</b><small>Espera tu confirmación. Llegó hoy, 18:20.</small></span></li>
+            <li><span class="entidad-leyenda-numero" aria-hidden="true">2</span><span
+                class="entidad-signo entidad-signo--hueco" aria-hidden="true"></span><span><b>Ropa de
+                abrigo · 2 cajas</b><small>Espera tu confirmación. Llegó ayer, 17:10.</small></span></li>
+          </th:block>
+          <li><span class="entidad-leyenda-numero" aria-hidden="true" th:text="${vacio ? 1 : 3}">3</span><span
+              class="entidad-signo entidad-signo--en-camino" aria-hidden="true"></span><span><b>Arroz ·
+              20 kg</b><small>En camino. Llega mañana.</small></span></li>
+          <li><span class="entidad-leyenda-numero" aria-hidden="true" th:text="${vacio ? 2 : 4}">4</span><span
+              class="entidad-signo entidad-signo--pendiente" aria-hidden="true"></span><span><b>Leche en
+              polvo · 12 latas</b><small>Por salir. Sale el 17 de octubre.</small></span></li>
+          <li><span class="entidad-leyenda-numero" aria-hidden="true" th:text="${vacio ? 3 : 5}">5</span><span
+              class="entidad-signo entidad-signo--con-problema" aria-hidden="true"></span><span><b>Aceite
+              de girasol · 10 litros</b><small>Con problema. Te avisamos la nueva fecha.</small></span></li>
+        </ol>
+      </div>
+      <div class="entidad-pueblo-pie">
+        <p><span class="entidad-signo entidad-signo--entregada" aria-hidden="true"></span>4 entregas
+          selladas este mes</p>
+        <a href="/prototipo/entidad-seguimiento" class="enlace-fuerte">Seguir entregas</a>
+        <a href="/prototipo/entidad-recibidas" class="enlace-fuerte">Donaciones recibidas</a>
+      </div>
+    </section>
+
+    <!--/* Lo que pediste: las necesidades publicadas, en renglones, con cuánto llegó. */-->
+    <section class="entidad-pedidos" aria-labelledby="pedidos-titulo">
+      <h2 id="pedidos-titulo">Lo que pediste</h2>
+      <p class="mesa-bajada">Tus necesidades publicadas</p>
+      <ul class="entidad-pedidos-lista" role="list">
+        <li><b>Lentejas secas</b><span>10 de 40 kg, hasta el 31 de octubre</span></li>
+        <li><b>Ropa de abrigo</b><span>1 de 6 cajas, hasta el 15 de noviembre</span></li>
+        <li><b>Leche en polvo</b><span>12 de 24 latas, hasta el 25 de octubre</span></li>
+      </ul>
+      <a href="/prototipo/entidad-necesidades" class="enlace-fuerte">Ver necesidades</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

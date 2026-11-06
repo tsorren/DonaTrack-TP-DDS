@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- El hueco del sello de un paso de una misión que todavía falta: el lugar donde va, en un
+       círculo punteado, sin relieve ni grabado. Dibujo propio de la Alternativa Cozy / Medieval,
+       de un solo color: app.css lo usa como máscara. -->
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"
+          stroke-dasharray="0 8.88"/>
+</svg>

@@ -59,7 +59,11 @@ Cada decisión se evaluó por separado; las tablas completas están en D17–D21
   templates* se abren como HTML y sirven de maqueta.
 - **D18 — HTMX.** El servidor devuelve fragmentos HTML; los indicadores de carga son declarativos
   (`hx-indicator`, RNF-UI-06). Todo lo esencial funciona sin JavaScript: cada `hx-*` está sobre un
-  `form` o un `a` reales (RNF-CL-02). Sin JavaScript propio salvo en los mapas.
+  `form` o un `a` reales (RNF-CL-02). JavaScript propio, solo como mejora: actualización del
+  2026-10-30, por aclaración del usuario ("está permitido usar javascript mientras se siga
+  considerando Server Side Rendering"); antes decía "sin JavaScript propio salvo en los mapas". Las
+  páginas se siguen armando en el servidor, lo esencial funciona sin JavaScript, el que se suma
+  respeta "reducir movimiento" y no hay SPA, frameworks de cliente ni build de frontend.
 - **D19 — Pico.css como base**, tematizado solo por sus variables `--pico-*`, más CSS propio para
   los componentes. Los patrones de Material y HIG se siguen como **patrones**, no como librería
   (RNF-UI-03); cada componente del catálogo `/estilos` cita el suyo (RF-CL-05).

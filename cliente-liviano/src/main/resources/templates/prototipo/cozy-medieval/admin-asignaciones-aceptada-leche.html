@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): lo que ve quien acepta la propuesta de la leche en polvo (POST de "Aceptar propuesta"): la tinta llega. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Aceptaste la propuesta - Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-asignaciones :: libro('aceptada', 'leche', '')}"></th:block>
+</th:block>
+</body>
+</html>
