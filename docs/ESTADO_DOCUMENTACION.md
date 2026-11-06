@@ -118,7 +118,8 @@ docs/
 │   └── evals-agentes-resumen.md
 │
 ├── requerimientos/                        # 🟢 Requerimientos por entrega
-│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   └── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
@@ -312,6 +313,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/interfaz/flujo-completo-cozy-medieval.md`](interfaz/flujo-completo-cozy-medieval.md) | Diseño de Interfaz E6 | El flujo completo del sitio en Cozy (iteración 3): recorrido por rol, 21 pantallas con sus estados y decisiones del prototipo navegable `/prototipo/<pantalla>` (perfil `maqueta`). Propuesta sin aprobar; cada pantalla real necesita su ficha de flujo y su gemela en Glassmorphism. | 🟡 Parcial |
 | [`docs/interfaz/identidad/referencias-cozy-medieval/`](interfaz/identidad/referencias-cozy-medieval/README.md) | Diseño de Interfaz E6 | Las 18 imágenes de referencia de Cozy que trajo el usuario (2026-10-31), con qué se toma de cada una. Imágenes de terceros: no entran al sitio ni al entregable. | 🟢 Sincronizado |
 | [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend; decisiones D1–D30 con alternativas (5 pendientes) y ADRs candidatos. | 🟢 Sincronizado |
+| [`docs/requerimientos/plan-e6-trabajo-sin-auth.md`](requerimientos/plan-e6-trabajo-sin-auth.md) | Plan de trabajo E6 | Inventario priorizado de tareas de E6 que no dependen de auth ni de los estilos de Raíces cálida: huecos de backend, cliente real, errores, decisiones y deuda documental (2026-11-06). | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entrega-4/README.md`](entrega-4/README.md) | Índice Entrega 4 | Índice de todos los `.md` de `docs/entrega-4/` y de la guía de migración de Notificaciones. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/entregable-5/`](entrega-4/arquitectura/entregable-5/README.md) | Entregable 5 Entrega 4 | Informe de arquitectura en .docx/.pdf, su fuente `contenido.md`, las 5 figuras y el constructor. | 🟢 Sincronizado |

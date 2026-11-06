@@ -112,7 +112,8 @@ docs/
 │   └── evals-agentes-resumen.md
 │
 ├── requerimientos/                        # 📋 Requerimientos por entrega
-│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   └── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
@@ -178,6 +179,7 @@ docs/
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
+* 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
 * 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
