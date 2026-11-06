@@ -276,8 +276,8 @@ Reglas para lo público (D26):
 |---|---|---|---|
 | RNF-PRIV-01 | Ubicación aproximada en lo público y en el camión | Mapa público y posición del camión con precisión de ~1 km (redondeo o desplazamiento de coordenadas en el DTO), también para donantes y entidades: la ruta del camión revela las paradas de **otras** entidades | D24 |
 | RNF-PRIV-02 | Ubicación exacta solo por pertenencia | La entidad ve exacta la dirección de su propia entrega; el donante, la de las entregas de sus donaciones ya completadas; el admin ve todo, incluida la posición exacta del camión | D24 |
-| RNF-PRIV-03 | Fotos privadas | Bucket privado; lectura por URL firmada de vida corta | D27 |
-| RNF-PRIV-04 | Fotos sin metadatos | Se quitan los EXIF (pueden traer coordenadas GPS) antes de guardar | D27 |
+| RNF-PRIV-03 | Fotos privadas | Bucket privado; lectura por URL firmada de vida corta (5 min, detrás de una URL estable de Logística que redirige) | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
+| RNF-PRIV-04 | Fotos sin metadatos | Se quitan los EXIF (pueden traer coordenadas GPS) antes de guardar, re-codificando la imagen | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | RNF-PRIV-05 | Sin PII en tokens ni en logs | Ver RNF-AUTH-09; los logs registran `sub`, no emails | ADR crypto-shredding |
 
 ---
@@ -297,7 +297,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-07 | Logística | `GET /api/entregas/mapa` con coordenadas aproximadas | RF-02 | D24 |
 | HB-08 | Donaciones | DTOs públicos de entidades y necesidades | RF-06, RF-22 | D26 |
 | HB-09 | Notificaciones | Verificar que los 4 eventos del donante y los 2 de la entidad generan notificación | RF-08, RF-13 | — |
-| HB-10 | Logística | `POST /api/entregas/{id}/fotos` multipart → MinIO; el `PATCH .../fotos` actual se conserva | RF-12 | D27 |
+| HB-10 | Logística | `POST /api/entregas/{id}/fotos` multipart → MinIO y `GET /api/entregas/{id}/fotos/{fotoId}` (redirige a la URL firmada); el `PATCH .../fotos` actual se conserva | RF-12 | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | HB-11 | Donaciones | `usuarioId` en `Persona` y `GET /api/personas/me` | RI-AUTH-01/03 | D9 |
 | HB-12 | Donaciones | Estado "pendiente de aprobación" para entidades autorregistradas y endpoint de aprobación | RF-21 | D10 |
 | HB-13 | Los 4 servicios | Resource server JWT, `@PreAuthorize` y chequeos de pertenencia | RI-SVC-01..03 | D2, D13 |
@@ -508,7 +508,7 @@ Obligatorio con cualquier opción: atribución de los datos y alternativa accesi
 | Fiel al boceto ("emergencias" en la landing) | No | **Sí** | No |
 | Datos a sanitizar | Pocos | **Entidades y necesidades** | Mínimos |
 
-### D27 — Fotos: multipart a Logística → MinIO ✅ · ADR-E6-08
+### D27 — Fotos: multipart a Logística → MinIO ✅ · [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md)
 
 | Criterio | **Multipart a Logística → MinIO** | URL prefirmada directa a MinIO | El cliente sube a MinIO |
 |---|---|---|---|
@@ -672,7 +672,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | ADR-E6-05 Autenticación entre servicios y retiro de `X-Actor` / `X-API-Key` | D15, D25 | Sí | *Breaking change* de contrato | Listo |
 | ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Esperar D22 |
-| ADR-E6-08 Fotos de recepción en almacenamiento de objetos | D27 | Sí | Persistencia y privacidad | Listo |
+| ADR-E6-08 Fotos de recepción en almacenamiento de objetos | D27 | Sí | Persistencia y privacidad | Redactado (`proposed`): [ADR](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | Contrato de entregas para la entidad: remito, reporte y datos de Donaciones | Preguntas 5 y 14 de Raíces (HB-17) | Sí | Integración entre servicios y contrato | Redactado (`proposed`): [ADR](../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
 | Ciclo de vida de la necesidad en el contrato | Preguntas 6 a 12 de Raíces (HB-18) | Sí | *Breaking change* de contrato | Redactado (`proposed`): [ADR](../adr/donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
 | Baja de una necesidad con entregas en curso | Pregunta 13 de Raíces (HB-19) | Sí | Integración entre servicios (comando y evento nuevos) | Redactado (`proposed`): [ADR](../adr/20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |

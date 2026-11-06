@@ -549,3 +549,21 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 
 1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
 2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.
+
+## DTI-37 — Logística no recibe fotos: solo acepta URLs, sin validar tipo, tamaño ni metadatos
+<a id="dti-37"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [ADR-E6-08 — Fotos de recepción en almacenamiento de objetos](./logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `PATCH /api/entregas/{id}/fotos` y la confirmación reciben URLs sin validar; `logistica-service/pom.xml` no tiene `io.minio`; no hay bucket ni usuario de MinIO para Logística. `FotoRecepcionSubdocument.clave` ya está previsto para la clave del objeto |
+| Target | `logistica-service` (puerto `AlmacenFotosRecepcion` y adaptador MinIO, validador de fotos, `EntregasController`, `openapi-logistica.yaml`, `pom.xml`) · `persistencia/minio/init-usuarios.sh` y los compose (usuario `logistica-service`) |
+| Cuándo se saldará | Entrega 6: tarea 8 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-10). Coordinar los compose con A1-01 de SPEC-06 |
+
+1. **Subida.** `POST /api/entregas/{id}/fotos` multipart: tope de 5 MB, JPEG o PNG por magic bytes, re-codificación sin metadatos y clave `entregas/<idEntrega>/<fotoId>.<ext>` en `logistica-fotos-recepcion`.
+2. **Lectura.** `GET /api/entregas/{id}/fotos/{fotoId}` con `302` hacia una URL firmada de 5 minutos.
+3. **Infraestructura.** `io.minio:minio:8.5.17`, usuario `logistica-service` con política `logistica-*` y endpoint público para firmar.
+4. **Huérfanas.** Regla de ciclo de vida para fotos de entregas que nunca se confirman.
+
+---
