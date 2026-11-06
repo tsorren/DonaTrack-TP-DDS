@@ -131,8 +131,8 @@ Se eligen **F1**, **P1** y **A**.
 
 Justificación: F1 sigue el patrón de puertos y adaptadores que Logística ya usa (`IServicioExternoPlanificacion`)
 y deja la fuente real como un adaptador más (OCP, inversión de dependencias). `PosicionCamion` es un
-value object del agregado `Camion` (DDD), su Experto (GRASP): ningún otro agregado la escribe. A no
-abre un canal nuevo entre servicios ni hace que el cliente consuma RabbitMQ: reusa REST y el gateway.
+value object del agregado `Camion` (DDD), su Experto (GRASP): ningún otro agregado la escribe. El polling
+(A) no abre un canal nuevo entre servicios ni hace que el cliente consuma RabbitMQ: reusa REST y el gateway.
 
 ## Consecuencias
 
@@ -157,8 +157,9 @@ abre un canal nuevo entre servicios ni hace que el cliente consuma RabbitMQ: reu
 - El marcador salta cada 30 s; no hay movimiento continuo.
 - El simulador escribe en Mongo cada 30 s por cada camión en ruta.
 - `[OBSERVED]` Textos que hoy prometen lo contrario: las plantillas `donante-seguimiento`,
-  `publico-mapa`, `publico-legales` y `viaje-datos` del cliente liviano, y las fichas de flujo
-  `raices-seguir-entregas`, `raices-publico-navegable` y `raices-legales`, dicen que la ubicación es
+  `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos` del cliente
+  liviano, y las fichas de flujo `raices-seguir-entregas`, `raices-confirmar-recepcion`,
+  `raices-publico-navegable` y `raices-legales`, dicen que la ubicación es
   aproximada. Hay que corregirlos antes de publicar el mapa con datos reales, en especial los
   legales (DTI-35, ítem 4).
 
