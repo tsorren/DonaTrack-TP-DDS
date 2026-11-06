@@ -31,6 +31,17 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-06 · color-y-acabado (Raíces) · La tierra humus, un paso más honda
+
+- **Decisión:** B, Humus hondo: `--p-suelo` `#46301f` y `--p-suelo-medio` `#3b2819`. Reemplaza el
+  humus de la entrada siguiente (`#5a3d28` y `#4d3322`); el marco casi negro no cambia.
+- **Alternativas:** una vuelta, en la portada y Seguir entregas: A, Humus (control); B, Humus hondo;
+  C, Café tostado (`#36251a`, la recomendada); D, Negro tibio (`#2a1f17`).
+- **Por qué:** el usuario pidió la tierra más oscura; B lo es sin dejar de leerse marrón.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/calida-etapa-1/tierra-*.jpg`.
+
 ### 2026-11-06 · color-y-acabado y tipografia (Raíces) · Tierra humus con marco de noche, esquinas suaves y títulos en Fraunces
 
 - **Decisión:** E, etapa 1 de [Raíces cálida](encargos/raices-calida.md). La tierra humus en

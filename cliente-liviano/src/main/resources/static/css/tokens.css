@@ -41,9 +41,9 @@
 :root {
   /* Paleta Huerta de noche (A/B de paleta y acabado, 2026-11-05; antes, Oliva): valores por
      función, no por tono. Un afiche verde sobre papel de cera: la tierra humus en sus dos primeros
-     pasos y casi negra en el más hondo (cabecera, pie y cifras; A/B de Raíces cálida, 2026-11-06),
-     el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de las piezas)
-     y los frutos zanahoria. */
+     pasos (humus hondo) y casi negra en el más hondo (cabecera, pie y cifras; A/B de Raíces cálida,
+     2026-11-06), el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de
+     las piezas) y los frutos zanahoria. */
   /* La letra (A/B de Raíces cálida, 2026-11-06; antes, Archivo en todo): los títulos en Fraunces,
      una serif de libro de jardinería, firme y tibia, con su cursiva en la parte cálida. El texto,
      los datos, los numerales y las cifras siguen en Archivo (Omnibus-Type, Buenos Aires), anchos y
@@ -58,8 +58,8 @@
   --p-acento-claro: #d3e98a;
   --p-tallo: #2d6a1e;
   --p-hoja: #86b832;
-  --p-suelo: #5a3d28;
-  --p-suelo-medio: #4d3322;
+  --p-suelo: #46301f;
+  --p-suelo-medio: #3b2819;
   --p-suelo-hondo: #17170f;
   --p-texto-suelo: #fbf2d3;
   --p-raiz: #f4c844;
