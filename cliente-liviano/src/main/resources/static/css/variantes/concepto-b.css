@@ -1,0 +1,663 @@
+/* El recorrido: la pantalla es el camino de tus donaciones, del depósito hasta la entidad, en tres
+   tramos con su cuenta y su acción. En cada tramo, una franja de tierra con una planta por donación,
+   que madura a medida que avanza hasta dar fruto en manos de quien recibe. En la computadora el
+   camino va de izquierda a derecha; en el celular, se recorre al bajar. */
+
+/* --- La pantalla y la cabecera ------------------------------------------------------------------ */
+/* El alto de una baldosa del camino (planta o persona); la tierra es el 32 % de abajo. */
+[data-concepto-b="pantalla"] {
+  --p-alto-baldosa: 6.25rem;
+
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+/* El h1 va primero en el HTML; el nombre del menú se ve encima. */
+[data-concepto-b="cabecera"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "rotulo abejas"
+    "titulo titulo"
+    "bajada bajada";
+  align-items: end;
+}
+
+[data-concepto-b="cabecera"] h1 {
+  grid-area: titulo;
+}
+
+[data-concepto-b="cabecera"] .rotulo {
+  grid-area: rotulo;
+}
+
+[data-concepto-b="cabecera"] .bajada {
+  grid-area: bajada;
+  margin-bottom: 0;
+}
+
+[data-concepto-b="abejas"] {
+  grid-area: abejas;
+  width: 7.5rem;
+  height: auto;
+  overflow: visible;
+}
+
+/* --- El camino: en el celular, una línea paja que baja por el costado --------------------------- */
+[data-concepto-b="recorrido"] {
+  position: relative;
+  display: grid;
+  padding-left: 2.25rem;
+}
+
+[data-concepto-b="recorrido"]::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  bottom: 3.5rem;
+  left: 0.5rem;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-raiz);
+}
+
+/* La salida: lo registrado, el punto donde empieza el camino. */
+[data-concepto-b="salida"] {
+  margin: 0 0 var(--espacio-2);
+  font-weight: 700;
+}
+
+[data-concepto-b="salida"]::before {
+  content: "";
+  position: absolute;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-acento);
+}
+
+[data-concepto-b="salida"] b {
+  font: 900 1.25rem / 1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+/* --- Cada tramo --------------------------------------------------------------------------------- */
+[data-concepto-b="tramo"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  padding-bottom: var(--espacio-5);
+}
+
+[data-concepto-b="cabeza"] .rotulo {
+  margin: 0;
+}
+
+/* La parada de cada tramo es el sello de su estado, sobre la línea del camino. */
+[data-concepto-b="cabeza"] .estado-sello {
+  position: absolute;
+  left: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.2rem;
+}
+
+main [data-concepto-b="cabeza"] h2 {
+  margin: 0;
+  font: 800 clamp(1.625rem, 2.6vw, 2.125rem) / 1.1 var(--fuente-titulo);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+main [data-concepto-b] h2 em,
+main [data-concepto-b="entidades"] h3 {
+  color: var(--color-acento);
+  font-style: italic;
+  text-shadow: 0.04em 0.035em 0 var(--color-hoja);
+}
+
+/* La cuenta: la cifra grande y su frase al lado. */
+p[data-concepto-b="cuenta"],
+[data-concepto-b="cuenta"] > p {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--espacio-3);
+  margin: 0;
+}
+
+[data-concepto-b="cuenta"] > b,
+[data-concepto-b="cuenta"] > p > b {
+  font: 900 3.25rem / 0.9 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+[data-concepto-b="cuenta"] .sellos-curso {
+  margin: var(--espacio-2) 0 0;
+}
+
+/* Lo que ya recibieron: la cifra de las entregas, en su fruto. */
+dl[data-concepto-b="cuenta"] {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+dl[data-concepto-b="cuenta"] > div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--espacio-3);
+}
+
+dl[data-concepto-b="cuenta"] dt {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+dl[data-concepto-b="cuenta"] dd {
+  order: -1;
+  margin: 0;
+  font: 900 1.75rem / 1 var(--fuente-cifra);
+  font-stretch: 118%;
+  text-align: center;
+}
+
+dl[data-concepto-b="cuenta"] > div:first-child dt {
+  font-size: var(--tamano-grande);
+}
+
+dl[data-concepto-b="cuenta"] > div:first-child dd {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4.25rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-fruto);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-fruto-hondo);
+  color: var(--color-tinta);
+  font-size: 2.25rem;
+}
+
+dl[data-concepto-b="cuenta"] > div:first-child dd::before {
+  content: "";
+  position: absolute;
+  top: -0.4rem;
+  right: 0.35rem;
+  width: 1.4rem;
+  height: 0.8rem;
+  border-radius: 0 100%;
+  background: var(--color-hoja);
+  rotate: -18deg;
+}
+
+/* --- La franja de tierra: una baldosa por donación, sin espacio entre ellas --------------------- */
+/* Cada baldosa trae su tierra (2 rem de abajo); la de la franja tapa lo que sobra en la última fila. */
+[data-concepto-b="tierra"] {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  align-items: flex-end;
+  order: 1;
+  min-height: var(--p-alto-baldosa);
+  margin-top: var(--espacio-2);
+  overflow: hidden;
+  border-radius: var(--radio-lamina);
+  background: linear-gradient(to top, var(--color-suelo) calc(var(--p-alto-baldosa) * 0.32),
+    transparent calc(var(--p-alto-baldosa) * 0.32));
+}
+
+/* La ruta, impresa en la tierra como una línea de subte. */
+[data-concepto-b="tierra"]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--p-alto-baldosa) * 0.11);
+  left: 0;
+  height: calc(var(--p-alto-baldosa) * 0.07);
+  border-block: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+[data-concepto-b="baldosa"] {
+  display: block;
+  flex: none;
+  width: calc(var(--p-alto-baldosa) * 0.44);
+  height: var(--p-alto-baldosa);
+}
+
+[data-concepto-b="baldosa"][data-forma="dona"] {
+  width: calc(var(--p-alto-baldosa) * 0.72);
+}
+
+[data-concepto-b="baldosa"][data-forma="recibe"] {
+  width: calc(var(--p-alto-baldosa) * 1.04);
+  margin-left: auto;
+}
+
+/* --- Los trazos de los dibujos ------------------------------------------------------------------ */
+[data-concepto-b] [data-t="suelo"] {
+  fill: var(--color-suelo);
+}
+
+[data-concepto-b] [data-t="raiz"] {
+  fill: none;
+  stroke: var(--color-raiz);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+[data-concepto-b] [data-t="tallo"] {
+  fill: none;
+  stroke: var(--color-tallo);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+[data-concepto-b] [data-t="hoja"] {
+  fill: var(--color-hoja);
+}
+
+[data-concepto-b] [data-t="hoja-honda"] {
+  fill: var(--color-acento);
+}
+
+[data-concepto-b] [data-t="hueco"] {
+  fill: var(--color-papel);
+  stroke: var(--color-fruto-hondo);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+[data-concepto-b] [data-t="fruto"] {
+  fill: var(--color-fruto);
+}
+
+[data-concepto-b] [data-t="fruto-sombra"] {
+  fill: var(--color-fruto-hondo);
+}
+
+[data-concepto-b] [data-t="problema"] {
+  fill: var(--color-problema-sello);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-concepto-b] [data-t="poste"] {
+  fill: none;
+  stroke: var(--color-tinta);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+[data-concepto-b] [data-t="calado"] {
+  fill: none;
+  stroke: var(--color-papel);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+[data-concepto-b] [data-t="cuerpo"] {
+  fill: var(--color-acento-hondo);
+}
+
+[data-concepto-b] [data-t="cabeza"] {
+  fill: var(--color-tinta-suave);
+}
+
+[data-concepto-b] [data-t="pierna"] {
+  fill: none;
+  stroke: var(--color-tinta-suave);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+[data-concepto-b] [data-t="brazo"] {
+  fill: none;
+  stroke: var(--color-acento-hondo);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+[data-concepto-b] :is([data-t="caja"], [data-t="ruta"]) {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-concepto-b] [data-t="cinta"] {
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-concepto-b] [data-t="casa"] {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+[data-concepto-b] [data-t="puerta"] {
+  fill: var(--color-acento-hondo);
+}
+
+[data-concepto-b] [data-t="parada"] {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+[data-concepto-b] [data-t="ala"] {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 1;
+}
+
+[data-concepto-b] [data-t="cuerpo-abeja"] {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.2;
+}
+
+[data-concepto-b] [data-t="franja"] {
+  stroke: var(--color-tinta);
+  stroke-width: 1.6;
+}
+
+[data-concepto-b] [data-t="vuelo"] {
+  fill: none;
+  stroke: var(--color-tinta-suave);
+  stroke-width: 1.5;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+}
+
+/* --- El pie de cada tramo: la acción y lo que acompaña ------------------------------------------ */
+[data-concepto-b="pie"] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+}
+
+:is([data-concepto-b="pie"], [data-concepto-b="aviso"]) > a:not(.boton) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+/* Lo que salió mal: un aviso claro, sin metáfora. */
+[data-concepto-b="aviso"] {
+  align-self: stretch;
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-1);
+  border: 2px solid var(--color-problema-texto);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-problema-fondo);
+}
+
+main [data-concepto-b="aviso"] h3,
+main [data-concepto-b="entidades"] h3 {
+  margin: 0 0 var(--espacio-2);
+  color: var(--color-tinta);
+  font: 800 1.3125rem / 1.2 var(--fuente-titulo);
+}
+
+[data-concepto-b="aviso"] p {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  margin: 0;
+}
+
+[data-concepto-b="aviso"] .estado-sello {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+[data-concepto-b="alcance"] {
+  max-width: 30rem;
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* El hito de lo acumulado, la etiqueta de un ejemplar. */
+[data-concepto-b="hito"] {
+  max-width: 26rem;
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -6px;
+  background: var(--color-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+[data-concepto-b="entidades"] {
+  display: grid;
+  justify-items: start;
+  margin-top: var(--espacio-2);
+}
+
+/* --- Lo último del camino ----------------------------------------------------------------------- */
+[data-concepto-b="noticias"] {
+  display: grid;
+  gap: var(--espacio-3);
+  padding-top: var(--espacio-4);
+  border-top: 2px dotted var(--color-tinta-suave);
+}
+
+main [data-concepto-b="noticias"] h2 {
+  margin: 0;
+  font: 800 clamp(1.625rem, 2.6vw, 2.125rem) / 1.1 var(--fuente-titulo);
+}
+
+/* --- Cargando y vacío --------------------------------------------------------------------------- */
+[data-concepto-b="espera"] {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+[data-concepto-b="vacio"] {
+  max-width: 44rem;
+}
+
+[data-concepto-b="camino-vacio"] {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--espacio-3);
+}
+
+/* --- Desde la tableta, las abejas crecen al costado del título ---------------------------------- */
+@media (min-width: 53.75em) {
+  [data-concepto-b="cabecera"] {
+    grid-template-areas:
+      "rotulo abejas"
+      "titulo abejas"
+      "bajada abejas";
+    column-gap: var(--espacio-5);
+  }
+
+  [data-concepto-b="abejas"] {
+    align-self: center;
+    width: 13rem;
+  }
+
+  [data-concepto-b="espera"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* --- En pantalla grande, el camino va de izquierda a derecha ------------------------------------ */
+/* Los tres tramos comparten las filas (subgrid): las cabezas, las cuentas, la tierra continua y los
+   pies quedan a la misma altura. */
+@media (min-width: 68.75em) {
+  [data-concepto-b="recorrido"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(5, auto);
+    gap: var(--espacio-3) 0;
+    padding-left: 0;
+  }
+
+  [data-concepto-b="recorrido"]::before {
+    content: none;
+  }
+
+  /* La salida abre el camino: una línea punteada que cruza los tres tramos. */
+  [data-concepto-b="salida"] {
+    position: relative;
+    display: flex;
+    grid-column: 1 / -1;
+    gap: var(--espacio-2);
+    align-items: center;
+    margin: 0;
+    padding-left: 1.75rem;
+  }
+
+  [data-concepto-b="salida"]::after {
+    content: "";
+    flex: 1;
+    border-top: 2px dotted var(--color-tinta-suave);
+  }
+
+  [data-concepto-b="salida"]::before {
+    left: 0;
+  }
+
+  [data-concepto-b="tramo"] {
+    display: grid;
+    grid-row: 2 / span 4;
+    grid-template-rows: subgrid;
+    gap: var(--espacio-3) 0;
+    padding-bottom: 0;
+  }
+
+  [data-concepto-b="pantalla"] {
+    --p-alto-baldosa: 10rem;
+
+    gap: var(--espacio-4);
+  }
+
+  [data-concepto-b="tramo"] > :not([data-concepto-b="tierra"]) {
+    padding-inline: var(--espacio-4);
+  }
+
+  [data-concepto-b="tramo"]:first-of-type > :not([data-concepto-b="tierra"]) {
+    padding-left: 0;
+  }
+
+  [data-concepto-b="tramo"]:last-of-type > :not([data-concepto-b="tierra"]) {
+    padding-right: 0;
+  }
+
+  [data-concepto-b="tramo"] + [data-concepto-b="tramo"] > :is([data-concepto-b="cabeza"], [data-concepto-b="pie"]) {
+    border-left: 2px dotted var(--color-tinta-suave);
+  }
+
+  [data-concepto-b="cabeza"] .estado-sello {
+    position: static;
+    margin: 0 0.4rem 0 0;
+    vertical-align: -0.35rem;
+  }
+
+  /* La cuenta, bajo su título; lo que queda arriba de la tierra es aire. */
+  [data-concepto-b="cuenta"] {
+    align-self: start;
+  }
+
+  [data-concepto-b="cuenta"] > b,
+  [data-concepto-b="cuenta"] > p > b {
+    font-size: 4.25rem;
+  }
+
+  [data-concepto-b="tierra"] {
+    order: 0;
+    margin-top: 0;
+    border-radius: 0;
+  }
+
+  [data-concepto-b="tramo"]:first-of-type [data-concepto-b="tierra"] {
+    border-radius: var(--radio-lamina) 0 0 var(--radio-lamina);
+  }
+
+  [data-concepto-b="tramo"]:last-of-type [data-concepto-b="tierra"] {
+    border-radius: 0 var(--radio-lamina) var(--radio-lamina) 0;
+  }
+
+  [data-concepto-b="noticias"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+/* --- Movimiento: el camino crece de izquierda a derecha, una vez; las abejas se mueven y paran ---- */
+@media (prefers-reduced-motion: no-preference) {
+  [data-concepto-b="tierra"] [data-t="planta"] {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: concepto-b-crecer var(--movimiento-duracion-trazo) var(--movimiento-curva-entrada) both;
+  }
+
+  [data-etapa="viaje"] [data-t="planta"] {
+    animation-delay: var(--movimiento-retraso-trazo);
+  }
+
+  [data-etapa="entidad"] [data-t="planta"] {
+    animation-delay: var(--movimiento-retraso-sello);
+  }
+
+  [data-concepto-b="tierra"] [data-t="maduro"] {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: concepto-b-madurar var(--movimiento-duracion-media) var(--movimiento-curva-enfasis)
+      var(--movimiento-retraso-ambiente) both;
+  }
+
+  [data-concepto-b] [data-t="vuela"] {
+    animation: concepto-b-volar var(--movimiento-duracion-trazo) var(--movimiento-curva-ambiente) 4
+      alternate;
+  }
+}
+
+@keyframes concepto-b-crecer {
+  from {
+    transform: scale(1, 0);
+  }
+}
+
+@keyframes concepto-b-madurar {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes concepto-b-volar {
+  to {
+    transform: translate(0, -3px);
+  }
+}
+
+/* --- Colores forzados: la tierra, la ruta y el fruto de la cifra conservan su borde ------------- */
+@media (forced-colors: active) {
+  [data-concepto-b="tierra"] {
+    border-bottom: 2px solid CanvasText;
+  }
+
+  dl[data-concepto-b="cuenta"] > div:first-child dd {
+    border: 2px solid CanvasText;
+  }
+}
