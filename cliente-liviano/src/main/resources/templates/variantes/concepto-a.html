@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<!--/* Raíces cálida, iteración 1, concepto-a: La lámina. La cuenta entera es una lámina de campo a todo
+       el ancho: el título de la cuenta arriba, un corte de suelo tibio con una figura por donación
+       (de la más vieja, a la izquierda, a la más nueva), el fruto maduro en las que la entidad
+       confirmó, y quien recibe y quien dona dibujados en los extremos. Debajo del dibujo, la leyenda
+       en texto, con los mismos conteos de donante-inicio.html; después, una sola columna angosta de
+       libro. En el celular, la lámina se recorta (queda la entidad con lo que ya le llegó) y la
+       leyenda va enseguida. Los mismos datos y acciones que donante-inicio.html, en sus cuatro
+       estados. Las clases son las del catálogo; lo propio va por data-ca. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-comun', ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{datos-donante :: donante(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="conDatos=${escenario == ''},
+             entregadas=${donaciones.?[estado.tono == 'entregada']},
+             enCurso=${donaciones.?[destino != null and estado.tono != 'entregada']},
+             vanEnCamino=${#lists.size(enCurso.?[estado.tono == 'en-camino'])},
+             tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
+             esperanSalir=${#lists.size(enCurso.?[estado.tono == 'pendiente'])},
+             sinDestino=${#lists.size(donaciones.?[destino == null])},
+             primera=${entregadas.isEmpty() ? null : entregadas[#lists.size(entregadas) - 1]}">
+  <div data-ca="lamina">
+    <header data-ca="cabeza">
+      <p class="rotulo" th:text="${seccion}">Inicio</p>
+      <h1>Hola, <em th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</em></h1>
+    </header>
+
+    <!--/* El dibujo: decorativo para el lector (todo lo que dice está en la leyenda). Una figura por
+           donación, de la más vieja a la más nueva; su forma sale de su estado. */-->
+    <div th:if="${conDatos or escenario == 'vacio'}" data-ca="ventana">
+      <div data-ca="campo" aria-hidden="true">
+        <div data-ca="suelo" class="tierra-impresa">
+          <p data-ca="nota-recibe">Quien recibe: comedores, escuelas, hogares</p>
+          <p data-ca="nota-dona">Quien dona</p>
+        </div>
+
+        <svg data-ca="recibe" viewBox="0 0 170 220" focusable="false">
+          <path data-ca="techo" d="M2 64L53 30L104 64Z"/>
+          <path data-ca="pared" d="M8 130V64H98V130"/>
+          <rect data-ca="cartel" x="34" y="68" width="38" height="8"/>
+          <rect data-ca="ventanita" x="16" y="80" width="16" height="14"/>
+          <rect data-ca="ventanita" x="74" y="80" width="16" height="14"/>
+          <rect data-ca="puerta" x="42" y="94" width="22" height="36"/>
+          <circle data-ca="persona" cx="118" cy="40" r="9"/>
+          <path data-ca="persona" d="M106 54C110 50 126 50 130 54L134 94H128L126 130H120L118 100L116 130H110L108 94H102Z"/>
+          <path data-ca="brazo" d="M108 58L132 72M128 58L140 68"/>
+          <rect data-ca="caja" x="128" y="60" width="26" height="20"/>
+          <path data-ca="cinta" d="M141 60V80"/>
+        </svg>
+
+        <div data-ca="hilera">
+          <th:block th:unless="${donaciones.isEmpty() or escenario == 'vacio'}">
+          <svg th:each="i : ${#numbers.sequence(#lists.size(donaciones) - 1, 0, -1)}"
+               th:with="d=${donaciones[i]}, etapa=${d.destino == null ? 'espera' : d.estado.tono}"
+               th:data-etapa="${etapa}"
+               data-ca="planta" viewBox="0 0 60 220" preserveAspectRatio="xMidYMax slice" focusable="false">
+            <g th:switch="${etapa}">
+            <g th:case="'espera'">
+              <path data-ca="raiz" d="M30 134V150M30 141L24 149M30 144L36 152"/>
+              <ellipse data-ca="grano" cx="30" cy="134" rx="6" ry="4"/>
+              <g data-ca="crece"><path data-ca="tallo" d="M30 130V121"/>
+                <path data-ca="hoja" d="M30 124C26 124 23 121 23 117C27 117 30 120 30 124Z"/></g>
+            </g>
+            <g th:case="'pendiente'">
+              <g data-ca="baja"><path data-ca="raiz" d="M30 130V158M30 140L21 151M30 147L39 159M30 153L26 166"/></g>
+              <g data-ca="crece"><path data-ca="tallo" d="M30 130V98"/>
+                <path data-ca="hoja" d="M30 114C22 114 17 108 17 101C25 101 30 107 30 114Z"/>
+                <path data-ca="hoja" d="M30 106C38 106 43 100 43 93C35 93 30 99 30 106Z"/></g>
+            </g>
+            <g th:case="'en-camino'">
+              <g data-ca="baja"><path data-ca="raiz" d="M30 130V172M30 141L18 155L14 166M30 150L42 163L46 176M30 160L23 177"/></g>
+              <g data-ca="crece"><path data-ca="tallo" d="M30 130C30 110 31 90 30 64"/>
+                <path data-ca="hoja" d="M30 120C21 120 15 114 15 106C24 106 30 112 30 120Z"/>
+                <path data-ca="hoja" d="M30 106C39 106 45 100 45 92C36 92 30 98 30 106Z"/>
+                <path data-ca="hoja" d="M30 92C22 92 17 86 17 79C25 79 30 85 30 92Z"/>
+                <path data-ca="hoja" d="M30 76C37 76 42 71 42 64C35 64 30 69 30 76Z"/>
+                <path data-ca="tallo" d="M30 84L41 90"/>
+                <circle data-ca="hueco" cx="42" cy="98" r="7"/></g>
+            </g>
+            <g th:case="'entregada'">
+              <g data-ca="baja"><path data-ca="raiz" d="M30 130V186M30 140L14 154L8 169M14 154L17 172M30 150L46 162L52 179M46 162L41 177M30 166L21 187M30 173L39 193"/></g>
+              <g data-ca="crece"><path data-ca="tallo" d="M30 130C29 104 31 70 30 28"/>
+                <path data-ca="hoja" d="M30 120C21 120 14 114 14 105C23 105 30 111 30 120Z"/>
+                <path data-ca="hoja" d="M30 106C39 106 46 100 46 91C37 91 30 97 30 106Z"/>
+                <path data-ca="hoja" d="M30 92C21 92 15 86 15 78C24 78 30 84 30 92Z"/>
+                <path data-ca="hoja" d="M30 60C38 60 44 54 44 46C36 46 30 52 30 60Z"/>
+                <path data-ca="hoja" d="M30 46C23 46 18 41 18 34C25 34 30 39 30 46Z"/>
+                <path data-ca="tallo" d="M30 70L42 75"/>
+                <g data-ca="madura">
+                  <circle data-ca="sombra" cx="47" cy="87" r="10"/>
+                  <circle data-ca="maduro" cx="45" cy="85" r="10"/>
+                  <path data-ca="hoja" d="M44 75C46 70 51 69 55 70C53 74 48 76 44 75Z"/>
+                </g></g>
+            </g>
+            <!--/* Lo que salió mal no es una planta: una estaca con el aviso de siempre. */-->
+            <g th:case="*">
+              <rect data-ca="estaca" x="28" y="96" width="4" height="46"/>
+              <circle data-ca="alerta" cx="30" cy="90" r="11"/>
+              <path data-ca="exclama" d="M30 84V92M30 96V96.5"/>
+            </g>
+            </g>
+          </svg>
+          </th:block>
+        </div>
+
+        <svg data-ca="dona" viewBox="0 0 120 220" focusable="false">
+          <circle data-ca="persona" cx="70" cy="40" r="9"/>
+          <path data-ca="persona" d="M58 54C62 50 78 50 82 54L86 94H80L78 130H72L70 100L68 130H62L60 94H54Z"/>
+          <path data-ca="brazo" d="M80 58L56 72M60 58L48 68"/>
+          <rect data-ca="caja" x="34" y="60" width="26" height="20"/>
+          <path data-ca="cinta" d="M47 60V80"/>
+        </svg>
+
+        <!--/* Pocas abejas, como firma, en el cielo de la lámina: sin dato detrás. */-->
+        <svg th:each="n : ${ {1, 2, 3} }" th:data-n="${n}" data-ca="abeja" viewBox="0 0 24 16" focusable="false">
+          <ellipse data-ca="ala" cx="10" cy="5" rx="5" ry="4"/>
+          <ellipse data-ca="ala" cx="15" cy="5" rx="4" ry="3.5"/>
+          <ellipse data-ca="cuerpo" cx="12" cy="10" rx="7" ry="4.5"/>
+          <path data-ca="raya" d="M10 6V14M14 6V14"/>
+        </svg>
+      </div>
+    </div>
+
+    <!--/* Cargando: el aviso y el lugar de cada parte, sin datos inventados. */-->
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando">Cargando tu inicio…</p>
+      <div data-ca="espera" aria-busy="true">
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
+      </div>
+    </th:block>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio'}" data-ca="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
+      <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
+        hasta que la entidad confirme la entrega.</p>
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
+         th:href="@{/donante-entidades}">Conocer las entidades</a>
+    </section>
+
+    <!--/* La leyenda de la lámina: los conteos, cada uno con el signo que lo dibuja. */-->
+    <div th:if="${conDatos}" data-ca="leyenda">
+      <section data-ca="grupo" aria-labelledby="curso-titulo">
+        <h2 id="curso-titulo">Lo que está <em>viajando</em></h2>
+        <p th:text="|${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso: ${vanEnCamino} en camino, ${#lists.size(tienenProblema)} con problema y ${esperanSalir} ${esperanSalir == 1 ? 'pendiente' : 'pendientes'}.|">3
+          entregas en curso: 1 en camino, 1 con problema y 1 pendiente.</p>
+        <ul data-ca="signos" role="list" aria-hidden="true">
+          <li><svg data-ca="signo" viewBox="0 0 24 24" focusable="false"><circle data-ca="hueco" cx="12" cy="12" r="7"/></svg><b th:text="${vanEnCamino}">1</b></li>
+          <li><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><b th:text="${#lists.size(tienenProblema)}">1</b></li>
+          <li><svg data-ca="signo" viewBox="0 0 24 24" focusable="false"><path data-ca="tallo" d="M12 22V10"/>
+            <path data-ca="hoja" d="M12 17C8 17 5 14 5 10C9 10 12 13 12 17Z"/><path data-ca="hoja" d="M12 13C16 13 19 10 19 6C15 6 12 9 12 13Z"/></svg><b th:text="${esperanSalir}">1</b></li>
+        </ul>
+        <a class="boton" data-tono="secundario" href="/donante-seguimiento"
+           th:href="@{/donante-seguimiento}">Ver seguimiento</a>
+      </section>
+
+      <section data-ca="grupo" aria-labelledby="confirmado-titulo">
+        <h2 id="confirmado-titulo">Lo que ya <em>recibieron</em></h2>
+        <dl data-ca="cuentas">
+          <div>
+            <dt>
+              <svg data-ca="signo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle data-ca="sombra" cx="13.5" cy="13.5" r="8"/><circle data-ca="maduro" cx="11.5" cy="11.5" r="8"/>
+              </svg>
+              <span th:text="${#lists.size(entregadas) == 1} ? 'entrega confirmada' : 'entregas confirmadas'">entregas
+                confirmadas</span>
+            </dt>
+            <dd th:text="${#lists.size(entregadas)}">2</dd>
+          </div>
+          <div th:with="cuantas=${#sets.size(#sets.toSet(entregadas.![destino]))}">
+            <dt>
+              <svg data-ca="signo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path data-ca="techo" d="M2 11L12 3L22 11Z"/><path data-ca="pared" d="M4 22V11H20V22"/>
+                <rect data-ca="puerta" x="10" y="15" width="4" height="7"/>
+              </svg>
+              <span th:text="${cuantas == 1} ? 'entidad confirmó lo que recibió' : 'entidades confirmaron lo que recibieron'">entidades
+                confirmaron lo que recibieron</span>
+            </dt>
+            <dd th:text="${cuantas}">2</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section data-ca="grupo" aria-labelledby="destino-titulo">
+        <h2 id="destino-titulo">Lo que espera <em>destino</em></h2>
+        <p data-ca="con-signo">
+          <svg data-ca="signo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect data-ca="tierra" x="0" y="12" width="24" height="12"/><ellipse data-ca="grano" cx="12" cy="13" rx="5" ry="3.5"/>
+          </svg>
+          <span th:text="|${sinDestino} ${sinDestino == 1 ? 'donación espera' : 'donaciones esperan'} destino en el depósito.|">2
+            donaciones esperan destino en el depósito.</span>
+        </p>
+        <a data-ca="enlace" href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver
+          Mis donaciones</a>
+      </section>
+    </div>
+    <!--/* El pie de la lámina: la bajada de la pantalla (en los cuatro estados) y, con datos, el total
+           y la fecha de los conteos. */-->
+    <div data-ca="pie">
+      <p data-ca="intro">Gracias por donar. Acá ves qué donó tu empresa, dónde está cada donación y qué
+        ya confirmaron las entidades.</p>
+
+      <p th:if="${conDatos}" data-ca="total">
+        <svg data-ca="signo-total" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path data-ca="tallo" d="M12 22V8"/><path data-ca="hoja" d="M12 15C7 15 4 12 4 8C9 8 12 11 12 15Z"/>
+          <path data-ca="hoja" d="M12 11C17 11 20 8 20 4C15 4 12 7 12 11Z"/>
+        </svg>
+        <span><b th:text="${#lists.size(donaciones)}">7</b> donaciones registradas</span>
+      </p>
+      <p th:if="${conDatos}" data-ca="alcance">Desde el 1 de octubre de 2026, según las confirmaciones de las entidades.
+        Actualizado hoy, 15 de octubre, 16:25.</p>
+    </div>
+  </div>
+
+  <!--/* La columna de libro: se lee de arriba abajo. */-->
+  <div th:if="${conDatos}" data-ca="libro">
+    <section th:if="${primera}" data-ca="capitulo" aria-labelledby="hito-titulo">
+      <h2 id="hito-titulo">La primera que <em>llegó</em></h2>
+      <p data-ca="hito"
+         th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
+        entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
+    </section>
+
+    <!--/* Una entrega con problema: qué pasó y la nueva salida, sin metáfora ni alarma. */-->
+    <section th:each="d : ${tienenProblema}" data-ca="problema" aria-labelledby="demora-titulo"
+             th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
+      <h2 id="demora-titulo">Una entrega con problema</h2>
+      <p data-ca="con-signo">
+        <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+        <span th:text="|${d.titulo} no pudo llegar a ${destino}: el camino estaba cortado. Sale de nuevo el 17 de octubre.|">Útiles
+          escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo el
+          17 de octubre.</span>
+      </p>
+      <a data-ca="enlace" href="/donante-donaciones-detalle?donacion=utiles"
+         th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+         th:aria-label="|Ver el detalle de ${d.titulo}|">Ver el detalle</a>
+    </section>
+
+    <section data-ca="capitulo" aria-labelledby="noticias-titulo">
+      <h2 id="noticias-titulo">Lo último que <em>pasó</em></h2>
+      <ol class="noticias" role="list">
+        <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < 3}">
+          <li th:replace="~{datos-donante :: aviso(${a}, ${vuelta.index < sinLeer})}"></li>
+        </th:block>
+      </ol>
+      <a data-ca="enlace" href="/donante-notificaciones"
+         th:href="@{/donante-notificaciones}"
+         th:text="|Ver todas las notificaciones (${sinLeer} sin leer)|">Ver todas las notificaciones (4
+        sin leer)</a>
+    </section>
+
+    <section data-ca="capitulo" aria-labelledby="entidades-titulo">
+      <h2 id="entidades-titulo">Conocé a quién le <em>llegó</em></h2>
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
+         th:href="@{/donante-entidades}">Conocer las entidades</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

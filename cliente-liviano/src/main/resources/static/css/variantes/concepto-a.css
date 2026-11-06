@@ -1,0 +1,633 @@
+/* La lámina: tu cuenta entera es una lámina de campo grande, arriba y a todo el ancho, con una
+   figura por donación en un corte de suelo tibio y la entidad que recibe y vos en los extremos.
+   Debajo, la leyenda dice en texto lo que muestra el dibujo, y después se lee una sola columna,
+   como un libro. En el celular la lámina se recorta, no se achica. */
+
+:root {
+  /* La capa de arriba del suelo, un paso más clara que la tierra humus. */
+  --p-ca-humus-claro: #5a3d27;
+}
+
+/* --- La lámina: papel con doble filete, como una lámina de campo --------------------------------- */
+[data-ca="lamina"] {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-2);
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -0.4rem;
+  background: var(--color-papel);
+}
+
+[data-ca="cabeza"] .rotulo {
+  margin: 0 0 var(--espacio-1);
+}
+
+[data-ca="cabeza"] h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 5.4vw, 4.25rem);
+  line-height: 0.98;
+}
+
+[data-ca="alcance"] {
+  max-width: 24rem;
+  margin: 0;
+  padding-left: var(--espacio-2);
+  border-left: 2px solid var(--color-tinta);
+  color: var(--color-tinta);
+  font-size: var(--tamano-chico);
+  line-height: 1.45;
+}
+
+/* --- El dibujo ------------------------------------------------------------------------------------ */
+/* La ventana recorta el campo: en el celular se ve la entidad con lo que ya le llegó. */
+[data-ca="ventana"] {
+  overflow: hidden;
+  height: 8rem;
+  border-block: 1.5px solid var(--color-tinta);
+}
+
+[data-ca="campo"] {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espacio-2);
+  min-width: 50rem;
+  height: 17rem;
+  margin: -2.25rem 0 0 -5rem;
+  padding-inline: var(--espacio-2);
+}
+
+/* El suelo empieza a la altura de la línea de tierra de cada figura (130 de 220). */
+[data-ca="suelo"] {
+  position: absolute;
+  inset: 59.1% 0 0;
+  border-top: 3px solid var(--color-tinta);
+  background: var(--color-suelo);
+}
+
+[data-ca="suelo"]::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1.25rem;
+  border-bottom: 1px dashed var(--color-raiz);
+  background: var(--p-ca-humus-claro);
+}
+
+[data-ca="campo"] > svg {
+  position: relative;
+  flex: none;
+  height: 100%;
+  overflow: visible;
+}
+
+[data-ca="recibe"] {
+  aspect-ratio: 170 / 220;
+}
+
+[data-ca="dona"] {
+  aspect-ratio: 120 / 220;
+}
+
+[data-ca="hilera"] {
+  position: relative;
+  display: flex;
+  flex: 1;
+  justify-content: space-evenly;
+  min-width: 0;
+  height: 100%;
+}
+
+[data-ca="hilera"] > svg {
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 100%;
+  aspect-ratio: 60 / 220;
+  overflow: visible;
+}
+
+/* Los rótulos de la lámina, en el suelo, con su línea guía hasta la figura. */
+[data-ca="nota-recibe"],
+[data-ca="nota-dona"] {
+  position: absolute;
+  bottom: var(--espacio-3);
+  max-width: 13rem;
+  margin: 0;
+  padding: 2.5rem 0 0 var(--espacio-1);
+  border-left: 2px solid var(--color-raiz);
+  color: var(--color-texto-suelo);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+[data-ca="nota-recibe"] {
+  left: 3.5rem;
+}
+
+[data-ca="nota-dona"] {
+  right: 4rem;
+  padding: 2.5rem var(--espacio-1) 0 0;
+  border-right: 2px solid var(--color-raiz);
+  border-left: 0;
+  text-align: right;
+}
+
+/* Las piezas del dibujo. */
+[data-ca="tallo"] {
+  fill: none;
+  stroke: var(--color-tallo);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+[data-ca="hoja"] {
+  fill: var(--color-hoja);
+  stroke: var(--color-tallo);
+  stroke-width: 1;
+}
+
+[data-ca="raiz"] {
+  fill: none;
+  stroke: var(--color-raiz);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-ca="grano"] {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1;
+}
+
+[data-ca="maduro"] {
+  fill: var(--color-fruto);
+}
+
+[data-ca="sombra"] {
+  fill: var(--color-fruto-hondo);
+}
+
+[data-ca="hueco"] {
+  fill: var(--color-papel);
+  stroke: var(--color-fruto-hondo);
+  stroke-width: 2;
+  stroke-dasharray: 3 2.5;
+}
+
+[data-ca="estaca"] {
+  fill: var(--color-tinta-suave);
+}
+
+[data-ca="alerta"] {
+  fill: var(--color-problema-sello);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-ca="exclama"] {
+  stroke: var(--color-papel);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+[data-ca="persona"] {
+  fill: var(--color-tinta-suave);
+}
+
+[data-ca="brazo"] {
+  fill: none;
+  stroke: var(--color-tinta-suave);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+[data-ca="caja"] {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-ca="cinta"] {
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-ca="techo"] {
+  fill: var(--color-suelo);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+[data-ca="pared"] {
+  fill: var(--color-pendiente-fondo);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-ca="puerta"] {
+  fill: var(--color-tinta-suave);
+}
+
+[data-ca="ventanita"],
+[data-ca="cartel"] {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+[data-ca="cartel"] {
+  fill: var(--color-papel);
+}
+
+[data-ca="tierra"] {
+  fill: var(--color-suelo);
+}
+
+/* Las abejas: pocas, como firma, en el cielo de la lámina. */
+[data-ca="campo"] > svg[data-ca="abeja"] {
+  position: absolute;
+  top: 1.75rem;
+  width: 2rem;
+  height: auto;
+}
+
+[data-ca="abeja"][data-n="1"] {
+  left: 46%;
+}
+
+[data-ca="abeja"][data-n="2"] {
+  top: 3.5rem;
+  left: 53%;
+  width: 1.5rem;
+}
+
+[data-ca="abeja"][data-n="3"] {
+  top: 2.25rem;
+  left: 64%;
+  width: 1.75rem;
+}
+
+[data-ca="ala"] {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 1;
+}
+
+[data-ca="cuerpo"] {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.25;
+}
+
+[data-ca="raya"] {
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+/* --- La leyenda ------------------------------------------------------------------------------------- */
+[data-ca="leyenda"] {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+[data-ca="pie"] {
+  display: grid;
+  gap: var(--espacio-3);
+  padding-top: var(--espacio-3);
+  border-top: 1.5px solid var(--color-tinta);
+}
+
+[data-ca="intro"] {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--color-tinta);
+  font-size: var(--tamano-grande);
+}
+
+[data-ca="total"] {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  color: var(--color-tinta);
+}
+
+[data-ca="total"] b,
+[data-ca="cuentas"] dd {
+  font: 800 2.5rem / 1 var(--fuente-cifra);
+  font-stretch: 125%;
+  color: var(--color-tinta);
+}
+
+[data-ca="total"] b {
+  margin-right: var(--espacio-1);
+}
+
+svg[data-ca="signo"],
+svg[data-ca="signo-total"],
+[data-ca="signos"] .estado-sello {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+[data-ca="grupo"] {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--espacio-1);
+  padding-top: var(--espacio-1);
+  border-top: 1.5px solid var(--color-tinta);
+}
+
+main [data-ca="grupo"] h2,
+main [data-ca="capitulo"] h2,
+main [data-ca="problema"] h2 {
+  margin: 0;
+}
+
+main h2 em {
+  color: var(--color-acento);
+}
+
+[data-ca="grupo"] p {
+  margin: 0;
+}
+
+[data-ca="cuentas"] {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+[data-ca="cuentas"] > div {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+[data-ca="cuentas"] dt {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  color: var(--color-tinta);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+[data-ca="cuentas"] dd {
+  margin: 0;
+}
+
+/* Los signos repiten la cuenta del renglón: en el celular no hacen falta. */
+[data-ca="signos"] {
+  display: none;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-ca="signos"] li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  font-size: var(--tamano-grande);
+  color: var(--color-tinta);
+}
+
+[data-ca="con-signo"] {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+}
+
+[data-ca="enlace"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+/* --- Los estados sin datos ------------------------------------------------------------------------ */
+[data-ca="vacio"] {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  max-width: 38rem;
+}
+
+[data-ca="vacio"] :is(h2, p) {
+  margin: 0;
+}
+
+[data-ca="espera"] {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+[data-ca="lamina"] .banner {
+  margin: 0;
+}
+
+/* --- La columna de libro ---------------------------------------------------------------------------- */
+[data-ca="libro"] {
+  display: grid;
+  gap: var(--espacio-5);
+  max-width: 36rem;
+  margin: var(--espacio-5) auto 0;
+}
+
+[data-ca="capitulo"],
+[data-ca="problema"] {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+}
+
+[data-ca="capitulo"] > h2::before {
+  content: "";
+  display: block;
+  width: 3rem;
+  margin-bottom: var(--espacio-2);
+  border-top: 3px solid var(--color-raiz);
+}
+
+[data-ca="hito"] {
+  margin: 0;
+  color: var(--color-tinta);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+[data-ca="problema"] {
+  padding: var(--espacio-3);
+  border: 2px solid var(--color-tinta);
+  border-left-width: 0.5rem;
+  border-left-color: var(--color-problema-sello);
+  border-radius: var(--radio-lamina);
+}
+
+[data-ca="problema"] p {
+  margin: 0;
+  color: var(--color-tinta);
+}
+
+[data-ca="problema"] .estado-sello {
+  flex: none;
+  margin-top: 0.2rem;
+}
+
+[data-ca="libro"] .noticias {
+  margin: 0;
+}
+
+/* --- Movimiento: crece una vez al llegar, con pausa; nada se mueve sin fin ------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-ca="crece"],
+  [data-ca="baja"],
+  [data-ca="madura"] {
+    transform-box: fill-box;
+    animation: ca-crece var(--movimiento-duracion-trazo) var(--movimiento-curva-entrada) both;
+    animation-delay: var(--p-ca-espera, var(--movimiento-retraso-entrada));
+  }
+
+  [data-ca="crece"] {
+    transform-origin: 50% 100%;
+  }
+
+  [data-ca="baja"] {
+    transform-origin: 50% 0;
+  }
+
+  [data-ca="madura"] {
+    transform-origin: 50% 50%;
+    animation-name: ca-madura;
+    animation-delay: calc(var(--p-ca-espera, var(--movimiento-retraso-entrada)) + var(--movimiento-retraso-sello));
+  }
+
+  [data-ca="hilera"] > :nth-child(2) { --p-ca-espera: 0.45s; }
+  [data-ca="hilera"] > :nth-child(3) { --p-ca-espera: 0.6s; }
+  [data-ca="hilera"] > :nth-child(4) { --p-ca-espera: 0.75s; }
+  [data-ca="hilera"] > :nth-child(5) { --p-ca-espera: 0.9s; }
+  [data-ca="hilera"] > :nth-child(6) { --p-ca-espera: 1.05s; }
+  [data-ca="hilera"] > :nth-child(n + 7) { --p-ca-espera: 1.2s; }
+
+  /* Las abejas dan unas vueltas cortas y se quedan quietas. */
+  [data-ca="abeja"] {
+    animation: ca-vuelo 3.2s var(--movimiento-curva-ambiente) var(--movimiento-retraso-trazo) 3 both;
+  }
+
+  [data-ca="abeja"][data-n="2"] {
+    animation-delay: var(--movimiento-retraso-cierre);
+    animation-direction: reverse;
+  }
+
+  [data-ca="abeja"][data-n="3"] {
+    animation-delay: var(--movimiento-retraso-ambiente);
+  }
+
+  @keyframes ca-crece {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes ca-madura {
+    from {
+      transform: scale(0);
+    }
+  }
+
+  @keyframes ca-vuelo {
+    25% {
+      transform: translate(0.75rem, -0.4rem) rotate(6deg);
+    }
+
+    50% {
+      transform: translate(1.5rem, 0.2rem);
+    }
+
+    75% {
+      transform: translate(0.6rem, 0.5rem) rotate(-6deg);
+    }
+  }
+}
+
+/* --- Colores forzados: los trazos y los signos se siguen viendo -------------------------------- */
+@media (forced-colors: active) {
+  [data-ca="campo"] svg * {
+    stroke: CanvasText;
+  }
+
+  [data-ca="suelo"],
+  [data-ca="problema"] {
+    border-color: CanvasText;
+  }
+}
+
+/* --- Desde la tableta: la lámina respira --------------------------------------------------------- */
+@media (min-width: 37.5em) {
+  [data-ca="lamina"] {
+    gap: var(--espacio-3);
+    padding: var(--espacio-4);
+  }
+
+  [data-ca="grupo"] {
+    gap: var(--espacio-2);
+    padding-top: var(--espacio-2);
+  }
+
+  [data-ca="ventana"] {
+    height: 17rem;
+  }
+
+  [data-ca="campo"] {
+    min-width: 56rem;
+    height: 20rem;
+    margin: -1rem 0 0;
+  }
+
+  [data-ca="signos"] {
+    display: flex;
+  }
+}
+
+/* --- Pantalla ancha: la lámina entera, sin recorte, y la leyenda en columnas --------------------- */
+@media (min-width: 53.75em) {
+  [data-ca="lamina"] {
+    gap: var(--espacio-4);
+    padding: var(--espacio-5);
+  }
+
+  [data-ca="ventana"] {
+    height: auto;
+  }
+
+  [data-ca="campo"] {
+    min-width: 0;
+    height: clamp(22rem, 27vw, 30rem);
+    margin-top: 0;
+  }
+
+  [data-ca="leyenda"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--espacio-5);
+  }
+
+  [data-ca="pie"] {
+    grid-template-columns: minmax(0, 2fr) auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--espacio-5);
+  }
+}
