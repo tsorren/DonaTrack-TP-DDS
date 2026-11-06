@@ -1,292 +1,138 @@
-/* El inicio de la empresa donante en Raíces A: lo que está confirmado en la tierra, como la rama de
-   frutos de la portada, con el hito colgado como etiqueta; debajo, en papel, lo que está en curso,
-   la que se demoró y las últimas noticias. */
+/* El inicio del donante en Raíces cálida: el recorrido (bloque componentes/recorrido.css). Acá solo
+   la disposición de la pantalla: en el celular, el nombre del menú y el saludo arriba, el camino, y
+   la bajada recién después, para que "Ver seguimiento" entre en la primera pantalla; desde la
+   tableta, la cabecera vuelve a ser una pieza. Lo último del camino, en pantalla grande, en tres
+   columnas como los tres tramos. */
 @import url("donante-comun.css");
 
-.inicio-cuerpo {
+.inicio {
   display: grid;
-  gap: 1.75rem;
+  gap: var(--espacio-1);
 }
 
-/* --- Lo que está confirmado: la rama de frutos en la tierra ------------------------------------ */
-.confirmado {
-  display: grid;
-  gap: 1.5rem;
-  padding: 1.5rem 1.25rem 1.75rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-suelo-hondo);
-  color: var(--color-texto-suelo);
+.inicio > * {
+  min-width: 0;
 }
 
-main .confirmado h2 {
-  margin: 0 0 0.5rem;
-  color: var(--color-texto-suelo);
-  font: 800 clamp(1.75rem, 3.4vw, 2.5rem) / 1.05 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: -0.02em;
+.inicio-cabecera {
+  display: contents;
 }
 
-.confirmado h2 em {
-  color: var(--color-raiz);
-}
-
-.confirmado-alcance {
-  max-width: 34rem;
+.inicio-cabecera .rotulo {
+  order: -2;
   margin: 0;
-  font-size: 0.9375rem;
 }
 
-/* La rama baja por el costado y los frutos salen de ella, cada uno con su etiqueta de papel. */
-.rama {
-  display: grid;
-  gap: 1.5rem;
-  margin: 0 0 0 0.5rem;
-  padding: 0.5rem 0 0.5rem 2rem;
-  border-left: 0.4rem solid var(--color-raiz);
+.inicio-cabecera h1 {
+  order: -1;
+  margin: 0;
+  font-size: 1.75rem;
 }
 
-.fruto {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 1rem;
-}
-
-/* El cabo, de la rama al fruto. */
-.fruto::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -2rem;
-  width: 2rem;
-  border-bottom: 0.25rem solid var(--color-raiz);
-}
-
-.fruto dt {
-  order: 2;
-  justify-self: start;
-  padding: 0.45rem 0.7rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
-  color: var(--color-tinta);
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.fruto dd {
-  position: relative;
-  z-index: 1;
-  display: grid;
+.inicio-cabecera .bajada {
   order: 1;
-  place-items: center;
-  width: 6.5rem;
-  aspect-ratio: 1;
   margin: 0;
-  border-radius: 50%;
-  background: var(--color-fruto);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
-  color: var(--color-tinta);
-  font: 900 2.25rem / 1 var(--fuente-cifra);
-  font-stretch: 110%;
-  letter-spacing: -0.03em;
 }
 
-.fruto--paja dd {
-  width: 5.5rem;
-  background: var(--color-raiz);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
-  font-size: 1.9rem;
-}
-
-/* La hoja de cada fruto. */
-.fruto dd::before {
-  content: "";
-  position: absolute;
-  top: -0.45rem;
-  right: 0.6rem;
-  width: 1.6rem;
-  height: 0.9rem;
-  border-radius: 0 100%;
-  background: var(--color-hoja);
-  rotate: -18deg;
-}
-
-/* El hito, la etiqueta de un ejemplar: papel con doble filete, colgado del pie de la rama con su
-   hilo paja. */
-.hito {
-  position: relative;
-  max-width: 24rem;
-  margin: 0;
-  padding: 0.75rem 1rem;
-  border: 1.5px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: -6px;
-  background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-suelo);
-  color: var(--color-tinta);
-  font-weight: 700;
-  line-height: 1.4;
-}
-
-.hito::before {
-  content: "";
-  position: absolute;
-  bottom: calc(100% + 1.5px);
-  left: calc(0.5rem - 1.5px);
-  height: 1.5rem;
-  border-left: 0.4rem solid var(--color-raiz);
-}
-
-/* La actividad, aparte y más chica: no es un resultado. */
-.actividad {
-  margin: 0;
-  font-size: 0.9375rem;
-}
-
-.actividad b {
-  font: 900 1.25rem / 1 var(--fuente-cifra);
-  font-stretch: 118%;
-}
-
-/* --- En curso y la que se demoró ---------------------------------------------------------------- */
-.sellos-curso {
+/* El vacío en el celular: primero qué pasa y "Conocer las entidades", después el camino sin plantas,
+   para que la acción entre en la primera pantalla. */
+.inicio > .vacio {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin: 0 0 1rem;
-  padding: 0;
-  list-style: none;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.sellos-curso .estado-sello {
-  width: 2rem;
-  height: 2rem;
+.inicio > .vacio > .recorrido-vacio {
+  order: 1;
+  margin: var(--espacio-3) 0 0;
 }
 
-.sellos-curso b {
-  font: 900 2rem / 1 var(--fuente-cifra);
-  font-stretch: 118%;
-}
-
-.en-curso-destino {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
+.noticias-inicio {
+  order: 2;
+  display: grid;
+  gap: var(--espacio-3);
+  padding-top: var(--espacio-4);
   border-top: 2px dotted var(--color-tinta-suave);
 }
 
-.en-curso-destino p {
+.noticias-inicio h2,
+.noticias-inicio .noticias {
   margin: 0;
 }
 
-.en-curso-destino a,
-.demora a,
 .noticias-todas {
   display: inline-flex;
   align-items: center;
+  justify-self: start;
   min-height: 3rem;
   font-weight: 700;
 }
 
-.demora {
-  border-color: var(--color-problema-texto);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-problema-fondo);
-}
-
-.demora-texto {
-  display: flex;
-  gap: 0.625rem;
-  align-items: flex-start;
-}
-
-.demora-texto .estado-sello {
-  flex: none;
-  margin-top: 0.15rem;
-}
-
-.noticias-inicio h2 {
-  margin: 0 0 1rem;
-}
-
-/* Desde la tableta, la rama a la derecha; a la izquierda, la cabeza, la actividad y el hito, como
-   nota al pie (variante B del pulido, 2026-11-03: llena el hueco de la izquierda). */
 @media (min-width: 53.75em) {
-  .confirmado {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      "cabeza rama"
-      "actividad rama"
-      "hito rama";
-    grid-template-rows: auto auto 1fr;
-    align-items: start;
-    gap: 1.25rem 3rem;
-    padding: 2rem 2.25rem 2.25rem;
+  .inicio {
+    gap: var(--espacio-4);
   }
 
-  .confirmado-cabeza {
-    grid-area: cabeza;
+  .inicio-cabecera {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .rama {
-    grid-area: rama;
+  .inicio-cabecera h1 {
+    margin: 0 0 var(--espacio-2);
+    font-size: clamp(2rem, 5vw, 3.5rem);
   }
 
-  .hito {
-    grid-area: hito;
-    align-self: end;
-  }
-
-  .hito::before {
-    content: none;
-  }
-
-  .actividad {
-    grid-area: actividad;
-  }
-}
-
-/* En pantalla grande, dos columnas: lo que está en curso y la demora a la izquierda, las noticias
-   a la derecha. */
-@media (min-width: 68.75em) {
-  .inicio-panel {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      "confirmado confirmado"
-      "curso noticias"
-      "demora noticias"
-      "acciones acciones";
-    align-items: start;
-    gap: 2rem 2.5rem;
-  }
-
-  .confirmado {
-    grid-area: confirmado;
-  }
-
-  .en-curso {
-    grid-area: curso;
-  }
-
-  .demora {
-    grid-area: demora;
+  .inicio-cabecera .rotulo {
+    margin-bottom: var(--espacio-1);
   }
 
   .noticias-inicio {
-    grid-area: noticias;
+    order: 0;
   }
 
-  .inicio-panel > .acciones {
-    grid-area: acciones;
+  .inicio > .vacio {
+    display: block;
   }
 
-  .inicio-cuerpo:not(.inicio-panel) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  .inicio > .vacio > .recorrido-vacio {
+    margin: 0 0 var(--espacio-3);
+  }
+}
+
+/* Lo último del camino: el título y "Ver todas" arriba, y las tres noticias en fila, colgadas de la
+   línea como las paradas del camino. */
+@media (min-width: 68.75em) {
+  .noticias-inicio {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
   }
 
-  .inicio-ancho {
+  .noticias-inicio .noticias {
+    grid-row: 2;
     grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--espacio-4);
+    padding: var(--espacio-5) 0 0;
+  }
+
+  .noticias-inicio .noticias::before {
+    top: 0.4375rem;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: 0.5rem;
+  }
+
+  .noticias-inicio .noticia::before {
+    top: -2.5rem;
+    left: 0;
+  }
+
+  .noticias-inicio .noticias-todas {
+    grid-row: 1;
+    grid-column: 2;
   }
 }

@@ -10,7 +10,6 @@ acta-paso
 acta-texto
 acta-titulo
 actas
-actividad
 armazon
 armazon-avisos
 armazon-avisos-cuenta
@@ -61,9 +60,6 @@ como-donar
 como-sigue
 confirmada
 confirmada--recien
-confirmado
-confirmado-alcance
-confirmado-cabeza
 confirmar
 confirmar-bajada
 confirmar-cabecera
@@ -86,7 +82,6 @@ decision-nombres
 decisiones
 decisiones-lista
 demora
-demora-texto
 deposito
 detalle
 detalle-cabecera
@@ -127,8 +122,6 @@ ejemplo-inicial
 ejemplos
 ejemplos-lista
 eleccion
-en-curso
-en-curso-destino
 enlace
 enlace-campo
 entidades
@@ -171,7 +164,6 @@ formulario
 foto
 foto-falta
 fruto
-fruto--paja
 grupo
 grupo-avisos
 grupo-avisos--sin-leer
@@ -180,14 +172,10 @@ herbario
 herbario-lista
 hero
 hero-bajada
-hito
 iconos
 inicio
-inicio-ancho
 inicio-cabecera
-inicio-cuerpo
 inicio-fecha
-inicio-panel
 inicio-partes
 lamina
 lamina-cabeza
@@ -334,7 +322,6 @@ seguimiento-lista
 seguimiento-pie
 seguimiento-reserva
 sello-entrega
-sellos-curso
 separador
 siguiente
 siguiente-entrega

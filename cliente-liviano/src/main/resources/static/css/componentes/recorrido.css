@@ -1,6 +1,799 @@
-/* Bloque recorrido (Raíces cálida, iteración 2, preparación): el camino de las donaciones del
-   inicio del donante, en tramos por etapa (en el depósito, con destino, en la entidad), cada uno con
-   su rótulo, su título, su cuenta, un corte de suelo con una planta por donación y su acción; quien
-   dona al principio y quien recibe al final. Lo llena la zona "recorrido" de la iteración 2; las
-   piezas llevan el prefijo `recorrido-`. Se carga en la capa `bloques` desde app.css. Catálogo:
-   docs/interfaz/componentes.md. */
+/* Bloque recorrido (Raíces cálida, iteración 2): el camino de las donaciones, del depósito hasta la
+   entidad, en tramos por etapa (`.recorrido-tramo`, `data-etapa="deposito|viaje|entidad"`). Cada
+   tramo lleva su cabeza (rótulo con su signo y título), su cuenta, un corte de suelo
+   (`.recorrido-tierra`) con una baldosa por donación (`.recorrido-baldosa`, `data-forma`) que
+   madura a medida que avanza, y su pie con la acción. Quien dona está al principio y quien recibe,
+   al final. En lo angosto (el celular) el camino baja por una línea paja y el depósito va
+   compacto; con lugar, los tramos van de izquierda a derecha y comparten las filas (subgrid), y la
+   cifra de cada tramo se para sobre su suelo. Responde al ancho de lo que lo contiene, no al de la
+   pantalla, así anda igual en la pantalla y en la muestra de /estilos. Los trazos de los dibujos
+   van por `data-t`. Se carga en la capa `bloques` desde app.css. Fragmentos:
+   templates/componentes/recorrido.html. Catálogo: docs/interfaz/componentes.md. */
+
+/* Lo que contiene al camino es su contenedor (las @container de abajo). */
+:has(> :is(.recorrido, .recorrido-espera)) {
+  container-type: inline-size;
+}
+
+/* --- El camino: en lo angosto, una línea paja que baja por el costado --------------------------- */
+/* El alto de una baldosa (planta o persona): el aire es el 48,6 % de arriba y el corte de suelo, el
+   51,4 % de abajo, con un estrato más claro arriba. */
+.recorrido {
+  --medida-baldosa: 6.25rem;
+
+  position: relative;
+  display: grid;
+  gap: var(--espacio-1);
+  padding-left: 2rem;
+}
+
+.recorrido::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  bottom: 3rem;
+  left: 0.375rem;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-raiz);
+}
+
+/* --- Cada tramo --------------------------------------------------------------------------------- */
+.recorrido-tramo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  min-width: 0;
+}
+
+.recorrido-cabeza > * {
+  margin: 0;
+}
+
+/* La parada de cada tramo es su signo, sobre la línea del camino. */
+.recorrido-cabeza :is(.estado-sello, .recorrido-signo) {
+  position: absolute;
+  left: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.2rem;
+}
+
+.recorrido-cabeza :is(h2, h4) {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 800 1.5rem / 1.1 var(--fuente-titulo);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.recorrido :is(h2, h4) em,
+.recorrido-entidades :is(h3, h5) {
+  color: var(--color-acento);
+  font-style: italic;
+  text-shadow: 0.04em 0.035em 0 var(--color-hoja);
+}
+
+/* La cuenta: la cifra y su frase al lado. */
+p.recorrido-cuenta,
+.recorrido-cuenta > p {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--espacio-2);
+  margin: 0;
+  line-height: 1.35;
+}
+
+:is(p.recorrido-cuenta, .recorrido-cuenta > p) > b {
+  color: var(--color-tinta);
+  font: 900 2.5rem / 0.9 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+/* Los sellos del viaje: cuántas de cada estado, con su dibujo. */
+.recorrido-sellos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recorrido-sellos .estado-sello {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.recorrido-sellos b {
+  font: 900 1.75rem / 1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+/* Lo que ya recibieron: la cifra de las entregas, en su fruto. */
+dl.recorrido-cuenta {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+dl.recorrido-cuenta > div {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--espacio-3);
+}
+
+dl.recorrido-cuenta dt {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+dl.recorrido-cuenta dd {
+  order: -1;
+  margin: 0;
+  color: var(--color-tinta);
+  font: 900 1.75rem / 1 var(--fuente-cifra);
+  font-stretch: 118%;
+  text-align: center;
+}
+
+dl.recorrido-cuenta > div:first-child dt {
+  font-size: var(--tamano-grande);
+}
+
+dl.recorrido-cuenta > div:first-child dd {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-fruto);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-fruto-hondo);
+  font-size: 1.875rem;
+}
+
+dl.recorrido-cuenta > div:first-child dd::before {
+  content: "";
+  position: absolute;
+  top: -0.4rem;
+  right: 0.3rem;
+  width: 1.3rem;
+  height: 0.75rem;
+  border-radius: 0 100%;
+  background: var(--color-hoja);
+  rotate: -18deg;
+}
+
+/* La salida: de acá salen todas, al pie del primer tramo. */
+.recorrido-salida {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.recorrido-salida b {
+  color: var(--color-tinta);
+  font: 900 1.25rem / 1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+/* El depósito en el celular, compacto: el título y la acción junto a su suelo, y abajo la cuenta y
+   el total bajo su suelo. Así "Ver seguimiento" entra en la primera pantalla sin achicar la tierra. */
+.recorrido-tramo[data-etapa="deposito"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) fit-content(60%);
+  grid-template-areas:
+    "cabeza tierra"
+    "pie tierra"
+    "cuenta salida";
+  align-items: end;
+  gap: 0.25rem var(--espacio-3);
+}
+
+:where([data-etapa="deposito"]) > .recorrido-cabeza {
+  grid-area: cabeza;
+  align-self: start;
+}
+
+:where([data-etapa="deposito"]) > .recorrido-cabeza :is(h2, h4) {
+  font-size: 1.3125rem;
+}
+
+:where([data-etapa="deposito"]) > .recorrido-tierra {
+  grid-area: tierra;
+}
+
+:where([data-etapa="deposito"]) > .recorrido-pie {
+  grid-area: pie;
+}
+
+:where([data-etapa="deposito"]) > .recorrido-cuenta {
+  grid-area: cuenta;
+  font-size: var(--tamano-chico);
+}
+
+[data-etapa="deposito"] > p.recorrido-cuenta > b {
+  font-size: 2rem;
+}
+
+:where([data-etapa="deposito"]) > .recorrido-salida {
+  grid-area: salida;
+  align-self: start;
+  contain: inline-size;
+  font-size: var(--tamano-chico);
+}
+
+/* El viaje en el celular: el título, la cifra con "Ver seguimiento" al lado, y después la frase,
+   los sellos, el suelo y el aviso. */
+.recorrido-tramo[data-etapa="viaje"] {
+  display: grid;
+  grid-template-columns: min-content minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+[data-etapa="viaje"] > :not(.recorrido-cuenta),
+[data-etapa="viaje"] > .recorrido-cuenta > p > span,
+[data-etapa="viaje"] > .recorrido-cuenta > ul {
+  grid-column: 1 / -1;
+}
+
+[data-etapa="viaje"] > .recorrido-cuenta,
+[data-etapa="viaje"] > .recorrido-cuenta > p {
+  display: contents;
+}
+
+[data-etapa="viaje"] > .recorrido-cuenta > p > b {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+[data-etapa="viaje"] > .recorrido-pie {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+/* --- El corte de suelo: una baldosa por donación, sin espacio entre ellas ----------------------- */
+/* Cada baldosa trae su suelo; el fondo de la franja completa lo que sobra en la última fila. */
+.recorrido-tierra {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  align-items: flex-end;
+  min-height: var(--medida-baldosa);
+  overflow: hidden;
+  border-radius: var(--radio-lamina);
+  background: linear-gradient(to top, var(--color-suelo) calc(var(--medida-baldosa) * 0.457),
+    color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%) calc(var(--medida-baldosa) * 0.457),
+    color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%) calc(var(--medida-baldosa) * 0.514),
+    transparent calc(var(--medida-baldosa) * 0.514));
+}
+
+/* La ruta, impresa al fondo del suelo como una línea de subte. */
+.recorrido-tierra::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--medida-baldosa) * 0.08);
+  left: 0;
+  height: calc(var(--medida-baldosa) * 0.05);
+  border-block: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.recorrido-baldosa {
+  display: block;
+  flex: none;
+  width: calc(var(--medida-baldosa) * 0.314);
+  height: var(--medida-baldosa);
+}
+
+.recorrido-baldosa[data-forma="dona"] {
+  width: calc(var(--medida-baldosa) * 0.514);
+}
+
+.recorrido-baldosa[data-forma="recibe"] {
+  width: calc(var(--medida-baldosa) * 0.743);
+  margin-left: auto;
+}
+
+/* --- Los trazos de los dibujos ------------------------------------------------------------------ */
+:where(.recorrido-baldosa, .recorrido-signo, .recorrido-vacio) [data-t="suelo"] {
+  fill: var(--color-suelo);
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="estrato"] {
+  fill: color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%);
+}
+
+:where(.recorrido-baldosa, .recorrido-signo) [data-t="raiz"] {
+  fill: none;
+  stroke: var(--color-raiz);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+:where(.recorrido-baldosa, .recorrido-signo) [data-t="grano"] {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+.recorrido-baldosa [data-t="planta"],
+.recorrido-baldosa [data-t="maduro"] {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.recorrido-baldosa [data-t="tallo"] {
+  fill: none;
+  stroke: var(--color-tallo);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.recorrido-baldosa [data-t="hoja"] {
+  fill: var(--color-hoja);
+}
+
+.recorrido-baldosa [data-t="hoja-honda"] {
+  fill: var(--color-acento);
+}
+
+/* En camino: el fruto a medio pintar y con borde continuo, como su sello. */
+.recorrido-baldosa [data-t="hueco"] {
+  fill: var(--color-papel);
+  stroke: var(--color-en-camino-texto);
+  stroke-width: 2;
+}
+
+.recorrido-baldosa [data-t="medio"] {
+  fill: var(--color-en-camino-sello);
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="fruto"] {
+  fill: var(--color-fruto);
+}
+
+.recorrido-baldosa [data-t="fruto-sombra"] {
+  fill: var(--color-fruto-hondo);
+}
+
+/* Lo que tiene problema no es planta: el signo "!" en su poste, sin metáfora. */
+.recorrido-baldosa [data-t="problema"] {
+  fill: var(--color-problema-sello);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+.recorrido-baldosa [data-t="poste"] {
+  fill: none;
+  stroke: var(--color-tinta);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.recorrido-baldosa [data-t="calado"] {
+  fill: none;
+  stroke: var(--color-papel);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* Dos personas, dos tonos: quien dona en verde hondo y quien recibe en ladrillo. */
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="cuerpo"] {
+  fill: var(--color-acento-hondo);
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="cabeza"] {
+  fill: var(--color-tinta-suave);
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="pierna"] {
+  fill: none;
+  stroke: var(--color-tinta-suave);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="brazo"] {
+  fill: none;
+  stroke: var(--color-acento-hondo);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-quien="recibe"] [data-t="cuerpo"] {
+  fill: var(--color-fruto-hondo);
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-quien="recibe"] [data-t="brazo"] {
+  stroke: var(--color-fruto-hondo);
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) :is([data-t="caja"], [data-t="ruta"]) {
+  fill: var(--color-raiz);
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="cinta"] {
+  stroke: var(--color-tinta);
+  stroke-width: 1.5;
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="casa"] {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+:where(.recorrido-baldosa, .recorrido-vacio) [data-t="puerta"] {
+  fill: var(--color-acento-hondo);
+}
+
+.recorrido-vacio [data-t="parada"] {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+/* --- El pie de cada tramo: la acción y lo que acompaña ------------------------------------------ */
+.recorrido-pie {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+}
+
+.recorrido-pie > a:not(.boton) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.recorrido-entidades {
+  display: grid;
+  justify-items: start;
+}
+
+.recorrido-entidades :is(h3, h5) {
+  margin: 0 0 var(--espacio-1);
+  font: 800 1.3125rem / 1.2 var(--fuente-titulo);
+}
+
+/* Lo que salió mal: un aviso claro, sin metáfora. */
+.recorrido-aviso {
+  margin-top: var(--espacio-2);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: 2px solid var(--color-problema-texto);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-problema-fondo);
+}
+
+.recorrido-aviso :is(h3, h5) {
+  margin: 0 0 var(--espacio-1);
+  color: var(--color-tinta);
+  font: 800 1.3125rem / 1.2 var(--fuente-titulo);
+}
+
+.recorrido-aviso p {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  margin: 0;
+}
+
+.recorrido-aviso .estado-sello {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+/* "Ver el detalle", al final de lo que pasó. */
+.recorrido-aviso p a {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* El hito de lo acumulado, la etiqueta de un ejemplar. */
+.recorrido-hito {
+  max-width: 26rem;
+  margin: var(--espacio-2) 0 0;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1.5px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -6px;
+  background: var(--color-papel);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+  color: var(--color-tinta);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* El cierre del camino: el alcance y la fecha, con una regla fina arriba. */
+.recorrido-alcance {
+  margin: 0;
+  padding-top: var(--espacio-2);
+  border-top: 1px solid var(--color-tinta-suave);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* --- Cargando y vacío --------------------------------------------------------------------------- */
+.recorrido-espera {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.recorrido-vacio {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--espacio-3);
+}
+
+@container (min-width: 40em) {
+  .recorrido-espera {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* En la tableta, el suelo del depósito queda junto a su título y no contra el borde. */
+  .recorrido-tramo[data-etapa="deposito"] {
+    grid-template-columns: minmax(0, 24rem) fit-content(60%);
+    justify-content: start;
+  }
+}
+
+/* --- Con lugar (el contenedor desde 62em), el camino va de izquierda a derecha ----------------- */
+/* Los tres tramos comparten las filas (subgrid): 1 la cabeza, 2 el suelo continuo con la cifra
+   parada encima, 3 la frase de la cuenta, 4 el detalle, 5 la acción y 6 lo que acompaña; 7, el
+   alcance a todo el ancho. */
+@container (min-width: 62em) {
+  .recorrido {
+    --medida-baldosa: clamp(9rem, 12cqi, 12rem);
+
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-rows: repeat(7, auto);
+    gap: 0;
+    padding-left: 0;
+  }
+
+  .recorrido::before {
+    content: none;
+  }
+
+  .recorrido-tramo,
+  .recorrido-tramo[data-etapa] {
+    --espacio-tramo-izq: var(--espacio-4);
+    --espacio-tramo-der: var(--espacio-4);
+    --medida-cifra: 6.5rem;
+
+    display: grid;
+    grid-row: 1 / span 6;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: none;
+    gap: 0;
+    align-items: start;
+  }
+
+  .recorrido-tramo:first-of-type {
+    --espacio-tramo-izq: 0rem;
+  }
+
+  .recorrido-tramo:last-of-type {
+    --espacio-tramo-der: 0rem;
+  }
+
+  /* Cada pieza, en su fila y en la única columna del tramo. */
+  .recorrido-tramo > *,
+  .recorrido-tramo :is(p.recorrido-cuenta, .recorrido-cuenta > p) > :is(b, span),
+  .recorrido-tramo .recorrido-cuenta > ul,
+  dl.recorrido-cuenta > div:first-child > :is(dt, dd),
+  dl.recorrido-cuenta > div:last-child,
+  [data-etapa="viaje"] > .recorrido-cuenta > p > b,
+  [data-etapa="viaje"] > .recorrido-pie {
+    grid-column: 1;
+  }
+
+  .recorrido-tramo > :is(.recorrido-cabeza, .recorrido-pie, .recorrido-salida, .recorrido-aviso,
+    .recorrido-hito) {
+    margin-inline: var(--espacio-tramo-izq) var(--espacio-tramo-der);
+  }
+
+  .recorrido-tramo > .recorrido-cabeza {
+    grid-row: 1;
+    padding-bottom: var(--espacio-3);
+  }
+
+  .recorrido-tramo > .recorrido-cabeza :is(h2, h4) {
+    font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+  }
+
+  .recorrido-tramo > .recorrido-tierra {
+    grid-row: 2;
+    align-self: stretch;
+    padding-right: calc(var(--medida-cifra) + var(--espacio-tramo-der));
+    border-radius: 0;
+  }
+
+  .recorrido-tramo:first-of-type > .recorrido-tierra {
+    border-radius: var(--radio-lamina) 0 0 var(--radio-lamina);
+  }
+
+  .recorrido-tramo:last-of-type > .recorrido-tierra {
+    border-radius: 0 var(--radio-lamina) var(--radio-lamina) 0;
+  }
+
+  /* Las acciones de los tres tramos, en la misma fila, justo bajo la cuenta. */
+  .recorrido-tramo > .recorrido-pie {
+    grid-row: 5;
+    align-self: end;
+    padding-top: var(--espacio-3);
+  }
+
+  .recorrido-tramo > :is(.recorrido-salida, .recorrido-aviso, .recorrido-hito) {
+    grid-row: 6;
+    margin-top: var(--espacio-3);
+  }
+
+  .recorrido-tramo + .recorrido-tramo > :is(.recorrido-cabeza, .recorrido-pie) {
+    margin-left: 0;
+    padding-left: var(--espacio-4);
+    border-left: 2px dotted var(--color-tinta-suave);
+  }
+
+  .recorrido-tramo + .recorrido-tramo > :is(.recorrido-aviso, .recorrido-hito) {
+    margin-left: var(--espacio-4);
+  }
+
+  .recorrido-cabeza :is(.estado-sello, .recorrido-signo) {
+    position: static;
+    margin: 0 0.4rem 0 0;
+    vertical-align: -0.35rem;
+  }
+
+  /* La cuenta se abre: la cifra se para sobre el suelo, al final de su hilera, y su frase va
+     debajo del suelo, como la etiqueta del tramo. */
+  .recorrido-tramo .recorrido-cuenta,
+  .recorrido-tramo .recorrido-cuenta > p,
+  dl.recorrido-cuenta > div:first-child {
+    display: contents;
+  }
+
+  .recorrido-tramo :is(p.recorrido-cuenta, .recorrido-cuenta > p) > b,
+  .recorrido-tramo[data-etapa="viaje"] > .recorrido-cuenta > p > b,
+  dl.recorrido-cuenta > div:first-child dd {
+    position: relative;
+    z-index: 1;
+    grid-row: 2;
+    align-self: end;
+    justify-self: end;
+    min-width: var(--medida-cifra);
+    margin: 0 var(--espacio-tramo-der) calc(var(--medida-baldosa) * 0.514 + 0.1rem) 0;
+    font-size: 4.25rem;
+    line-height: 0.85;
+    text-align: center;
+  }
+
+  dl.recorrido-cuenta > div:first-child dd {
+    min-width: 0;
+    width: 4.25rem;
+    margin-right: calc(var(--espacio-tramo-der) + 1.125rem);
+    margin-bottom: calc(var(--medida-baldosa) * 0.514 + 0.3rem);
+    font-size: 2.25rem;
+    line-height: 1;
+  }
+
+  .recorrido-tramo :is(p.recorrido-cuenta, .recorrido-cuenta > p) > span,
+  dl.recorrido-cuenta > div:first-child dt {
+    grid-row: 3;
+    justify-self: end;
+    max-width: 16rem;
+    margin: var(--espacio-3) var(--espacio-tramo-der) 0 var(--espacio-tramo-izq);
+    font-size: var(--tamano-grande);
+    line-height: 1.35;
+    text-align: end;
+  }
+
+  .recorrido-tramo .recorrido-cuenta > .recorrido-sellos,
+  dl.recorrido-cuenta > div:last-child {
+    grid-row: 4;
+    justify-self: end;
+    margin: var(--espacio-2) var(--espacio-tramo-der) 0 var(--espacio-4);
+  }
+
+  dl.recorrido-cuenta > div:last-child {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  /* La salida, en pantalla grande: el total, la etiqueta del primer tramo, como el hito del
+     último. */
+  .recorrido-tramo > .recorrido-salida {
+    justify-self: start;
+    contain: none;
+    padding: var(--espacio-2) var(--espacio-3);
+    border: 1.5px solid var(--color-tinta);
+    outline: 1px solid var(--color-tinta);
+    outline-offset: -6px;
+    border-radius: var(--radio-lamina);
+    background: var(--color-papel);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+    color: var(--color-tinta);
+    font-size: var(--tamano-base);
+  }
+
+  .recorrido-salida b {
+    margin-right: 0.2rem;
+    font-size: 3rem;
+    line-height: 0.9;
+    vertical-align: -0.35rem;
+  }
+
+  /* El cierre: el alcance, a todo el ancho, debajo de los tres tramos. */
+  .recorrido-alcance {
+    grid-row: 7;
+    grid-column: 1 / -1;
+    margin-top: var(--espacio-4);
+  }
+}
+
+/* --- Movimiento: el camino crece una vez, del depósito a la entidad, y termina antes de 3 s ----- */
+/* Las primitivas (data-movimiento="crece" en cada planta y "traza" en cada raíz) resuelven "reducir
+   movimiento"; acá solo la espera de cada tramo. */
+[data-etapa="viaje"] [data-movimiento] {
+  animation-delay: var(--movimiento-retraso-entrada);
+}
+
+[data-etapa="entidad"] [data-movimiento] {
+  animation-delay: var(--movimiento-retraso-trazo);
+}
+
+.recorrido-baldosa [data-t="maduro"][data-movimiento] {
+  animation-delay: var(--movimiento-retraso-cierre);
+}
+
+/* --- Colores forzados: los trazos, los frutos, el suelo y los signos se siguen viendo ----------- */
+@media (forced-colors: active) {
+  :where(.recorrido-baldosa, .recorrido-signo, .recorrido-vacio) :is([data-t="tallo"], [data-t="raiz"],
+    [data-t="pierna"], [data-t="brazo"], [data-t="casa"], [data-t="poste"], [data-t="cinta"]) {
+    stroke: CanvasText;
+  }
+
+  :where(.recorrido-baldosa, .recorrido-signo, .recorrido-vacio) :is([data-t="hoja"], [data-t="hoja-honda"],
+    [data-t="cuerpo"], [data-t="cabeza"], [data-t="puerta"], [data-t="fruto"], [data-t="fruto-sombra"],
+    [data-t="medio"], [data-t="problema"]) {
+    fill: CanvasText;
+  }
+
+  :where(.recorrido-baldosa, .recorrido-signo, .recorrido-vacio) :is([data-t="suelo"], [data-t="estrato"],
+    [data-t="hueco"], [data-t="grano"], [data-t="caja"], [data-t="ruta"], [data-t="parada"]) {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 1.5;
+  }
+
+  .recorrido-baldosa [data-t="calado"] {
+    stroke: Canvas;
+  }
+
+  .recorrido-tierra {
+    border: 2px solid CanvasText;
+  }
+
+  :is(p.recorrido-cuenta, .recorrido-cuenta > p) > b,
+  dl.recorrido-cuenta > div:first-child dd {
+    border: 2px solid CanvasText;
+  }
+}
