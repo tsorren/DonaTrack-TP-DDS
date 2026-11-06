@@ -31,6 +31,51 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-06 · sistema (Raíces cálida) · Iteración 2: el camino de la donación pasa al sitio, con un marco de suelo y paja y la firma de dos abejas
+
+- **Decisión:** las tres zonas de la iteración se quedan, porque en sistema son partes del mismo
+  sitio y no compiten. (1) **recorrido:** el inicio del donante es el camino de concepto-b en tres
+  tramos ("Lo que espera destino", "Lo que está viajando", "Lo que ya recibieron"), con una planta
+  por donación sacada de los datos, un solo botón relleno ("Ver seguimiento"), cada cifra con el
+  signo de su etapa y pegada a su frase, y el aviso de problema tomado de los datos. Está
+  hecho como bloque del catálogo (`componentes/recorrido`). (2) **casa:** un estrato de paja y humus
+  bajo la cabecera, la barra del menú de humus con nombres y la firma de la casa: dos abejas con su
+  vuelo punteado, decorativas, de tamaño fijo, pegadas a la marca, una sola por pantalla y solo en
+  cabecera, portada y estados vacíos. (3) **herencia:** el resto del sitio retoma el material y la
+  voz sin cambiar su composición: frutos en lo entregado, raíces en "En tu puerta" y "Sin leer",
+  títulos que encadenan con la ancla ("Conocé a quienes reciben", "A quién le llegó cada una") y los
+  `role="status"` de los vacíos que no son vacíos reales. Las variantes de concepto se borran.
+- **Alternativas:** elegir una sola zona y descartar las otras `[REJECTED]`. Rehacer la herencia con
+  más dibujo `[REJECTED]`: el encargo fija la composición de las demás pantallas. Un solo orden de
+  los tres tramos del celular con el dibujo antes de la acción `[REJECTED]`: sacaba "Ver
+  seguimiento" de la primera pantalla de 360 × 640; se toma el objetivo con la acción antes del
+  dibujo. Pasar la cabecera a humus, la cabecera de una sola línea y bajar la opacidad de las raíces
+  de "Sin leer" `[REJECTED]`. Plantas por destino en el mapa de seguimiento, el vacío de Mis
+  donaciones con el corte de suelo y corregir el calendario de la entidad: no se hicieron
+  (ver Costo). Volver "Entidades, donantes y camiones" a "La red" `[REJECTED]`.
+- **Por qué:** la ancla es la que mejor cuenta el mensaje ("lo que donás llega y se ve; detrás hay
+  personas") y su patrón sirve para el resto: ponderado 420 de 500 contra 360 de la casa y 330 de la
+  herencia. La casa ata el marco de noche de la etapa 1 al suelo y firma sin ruido. La herencia
+  extiende la voz y el material con la disciplina de no tocar la composición. Sin `BLOQUEA` en las
+  críticas y con el piso en `[]`.
+- **Costo:** (1) la herencia queda tímida frente a la ancla: `entidad-inicio`, `admin-inicio` y
+  `donante-donaciones` casi no cambian; la distancia es de la iteración de flujo. (2) Quedan
+  anotados para el flujo: el mapa de seguimiento dibujado desde los datos con plantas, el vacío de
+  Mis donaciones, "Confirmar recepción" en la primera pantalla de la entidad, el calendario único
+  (el de la entidad dice 18:20 y 18:30 contra "hoy, 16:25") y el nombre del estado de una donación
+  sin destino, que hoy se llama igual que el de una asignada. (3) Las fichas de `docs/interfaz/flujos/`
+  (`raices-seguir-entregas`, `raices-entidad-navegable`, `raices-necesidades`) todavía muestran los
+  títulos viejos; las actualiza el cierre de la corrida, junto con `docs/README.md` y
+  `docs/ESTADO_DOCUMENTACION.md`. (4) Sin `escenario=muchas`: el caso grande (30 plantas) se probó
+  en el navegador, no en las capturas. **Reemplaza:** el inicio del donante de la etapa 1 (decidido
+  por el usuario), los títulos y rótulos de las pantallas del donante, la entidad y el admin que se
+  reescribieron con la voz nueva ("Tus entregas en curso", "Lo asignado a tu entidad", "Tus
+  pedidos", entre otros, de la etapa 1 y de las entradas de Seguir entregas y Necesidades) y las
+  variantes `concepto-a|b|c` de la iteración 1 (de la corrida).
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** `evidencia/raices-calida-sistema/` (360 y 1280 de cada ruta, con los estados vacío,
+  error y lento del inicio del donante, y la primera pantalla de 360 × 640 de la ancla).
+
 ### 2026-11-06 · concepto (Raíces cálida) · Iteración 1: el inicio del donante es el camino de la donación, en tres tramos (concepto-b, El recorrido)
 
 - **Decisión:** ganó concepto-b sobre `/donante-inicio`: la pantalla es el camino de la donación, del
