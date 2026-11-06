@@ -93,6 +93,9 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400`, `409` |
 | `GET` | `/api/entregas` | Listar entregas registradas | — | `200` |
 | `GET` | `/api/entregas/{id}` | Consulta de entrega por ID | — | `200`, `404` |
+| `GET` | `/api/entregas/mapa` | Mapa público de entregas completadas (RF-02): solo `ENTREGADA` con coordenadas válidas, en `EntregaMapaPublicoResponseDTO` (coordenadas exactas, sin el texto de la dirección ni fotos) | — | `200` |
+| `GET` | `/api/entregas/seguimiento/donaciones/{idDonacion}` | Seguimiento de la entrega de una donación para el donante (RF-09): estado, ruta, camión y avance por paradas, sin direcciones de otras entregas | — | `200`, `404` |
+| `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | Seguimiento de las entregas de una entidad beneficiaria (RF-14), con el mismo DTO que el anterior | — | `200` |
 | `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
 | `PATCH` | `/api/entregas/{id}/fotos` | Adjuntar URL de foto de recepción | `AdjuntarFotoRecepcionRequestDTO` | `200`, `400`, `404` |
 | `GET` | `/api/entregas/{id}/historial` | Historial de transiciones de una entrega | — | `200`, `404` |

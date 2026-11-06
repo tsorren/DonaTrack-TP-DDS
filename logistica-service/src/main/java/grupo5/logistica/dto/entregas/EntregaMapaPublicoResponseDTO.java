@@ -6,9 +6,10 @@ import java.util.UUID;
 
 /**
  * Representación pública y sanitizada de una entrega completada para visualización en el mapa
- * público (RF-02). No incluye dirección exacta (calle, altura, piso, departamento, código postal),
- * identificadores de terceros (beneficiario, donación, ruta), historial de actores ni fotos de
- * recepción.
+ * público (RF-02). Expone las coordenadas exactas del destino ({@code latitud} y {@code longitud}),
+ * como fija la decisión D24 revisada (ADR-E6-07), junto con localidad, provincia y país. No incluye
+ * el texto de la dirección (calle, altura, piso, departamento, código postal), identificadores de
+ * terceros (beneficiario, donación, ruta), historial de actores ni fotos de recepción.
  */
 public record EntregaMapaPublicoResponseDTO(
     UUID idEntrega,
