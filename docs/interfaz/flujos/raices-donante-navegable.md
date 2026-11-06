@@ -102,17 +102,23 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
 ```text
 [Inicio]  Hola, Distribuidora Ejemplo SA
           bajada
-[Lo que está confirmado]  2 entregas confirmadas · 2 entidades · 7 donaciones registradas
-                          período y fuente · primera entrega confirmada
-[En curso]                3 entregas en curso (1 en camino, 1 con problema, 1 pendiente) → Seguimiento
-                          2 esperan destino → Mis donaciones
-[La que se demoró]        Útiles escolares: qué pasó y la nueva salida → detalle
-[Últimas noticias]        las 3 más nuevas → Ver todas las notificaciones (4 sin leer)
-[Accesos]                 Conocer las entidades
+[Lo que espera destino]   En el depósito: 2 donaciones esperan destino → Ver Mis donaciones
+                          al pie: 7 donaciones registradas
+[Lo que está viajando]    Con destino: 3 entregas en curso (1 en camino, 1 con problema, 1 pendiente)
+                          → Ver seguimiento
+                          Una entrega con problema: qué pasó y la nueva salida → Ver el detalle
+[Lo que ya recibieron]    En la entidad: 2 entregas confirmadas en 2 entidades distintas
+                          Conocé a quién le llegó → Conocer las entidades · primera entrega confirmada
+                          período y fuente, al cierre del camino
+[Lo último del camino]    las 3 más nuevas → Ver todas las notificaciones (4 sin leer)
 ```
 
-- **Lo que está confirmado** usa el mismo nombre que las cifras de la portada. Separa resultado
-  (entregas confirmadas, entidades que confirmaron) de actividad (donaciones registradas), como pide
+- **El camino de la donación** (Raíces cálida, 2026-11-06, ver la [bitácora](../bitacora.md)): tres tramos del depósito
+  a la entidad, con quien dona al principio y quien recibe al final, y una planta por donación
+  dibujada con los datos (`componentes/recorrido`, solo a la vista). En la computadora van de
+  izquierda a derecha y en el celular bajan. Antes, las cifras y las partes iban en bloques sueltos.
+- **Lo que ya recibieron** es el nombre de las cifras de la portada. Separa resultado
+  (entregas confirmadas, en cuántas entidades) de actividad (donaciones registradas), como pide
   [cifras y datos](../tono-y-comunicacion.md#cifras-y-datos).
 - **El juego se insinúa** (brief de Raíces): para la empresa, un hito de lo acumulado, dibujado con
   los datos y sin medallas. El dato: la primera entrega confirmada y cuántas van. La forma es de cada
@@ -120,7 +126,7 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
 - Qué cambia respecto del boceto (pág. 15): los tres anillos (meta mensual, ayuda respecto del mes
   anterior, necesidades satisfechas) se reemplazan por cifras con período y fuente. Una "meta
   mensual" no está en los requerimientos y "necesidades satisfechas" afirma un efecto que la
-  plataforma no prueba. Las notificaciones pendientes del boceto quedan como "Últimas noticias".
+  plataforma no prueba. Las notificaciones pendientes del boceto quedan como "Lo último del camino".
 
 ### donante-donaciones (nivel 2)
 
@@ -170,7 +176,7 @@ menú marca Mis donaciones.
 ### donante-entidades (nivel 2)
 
 ```text
-[Entidades]   Quiénes reciben las donaciones
+[Entidades]   Conocé a quienes reciben
               Entidades activas y lo que piden hoy. …
 [Búsqueda]    Buscar por nombre [__________] [Buscar]  (Ver todas)
 [Lista]       por entidad: nombre · tipo y zona · lo que tu empresa ya donó ahí (sello + texto)
@@ -196,7 +202,7 @@ menú marca Mis donaciones.
 ### donante-notificaciones (nivel 2)
 
 ```text
-[Notificaciones]  Noticias de tus donaciones
+[Notificaciones]  Lo que pasó con tus donaciones
                   4 sin leer. …                        [Marcar todas como leídas]
 [Sin leer (4)]    por aviso: "Sin leer" · sello del estado de su donación · texto (enlace al
                   detalle) · fecha y hora · nombre y cantidad de la donación
@@ -276,19 +282,21 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 |---|---|---|
 | Rótulo | Inicio | El nombre del menú |
 | Título | Hola, Distribuidora Ejemplo SA | El saludo del boceto. Si lleva la imagen de raíz, es acá |
-| Bajada | "Gracias por donar. Acá ves qué donó tu empresa, dónde está cada donación y qué ya confirmaron las entidades." | Reconoce el aporte sin adornarlo |
-| Cifras: título | Lo que está confirmado | El nombre de las cifras de la portada |
-| Cifras | "2 entregas confirmadas" · "2 entidades confirmaron lo que recibieron" · "7 donaciones registradas" | Fideos (Comedor Barrio Ejemplo) y ropa (Merendero Ejemplo Sur). La tercera es actividad, no resultado: va aparte o más chica |
-| Cifras: alcance | "Desde el 1 de octubre de 2026, según las confirmaciones de las entidades. Actualizado hoy, 15 de octubre, 16:25." | Período, fuente y fecha |
+| Bajada | "Acá ves dónde está cada donación." | Solo con datos (Raíces cálida, 2026-11-06; antes, "Gracias por donar. Acá ves qué donó tu empresa, dónde está cada donación y qué ya confirmaron las entidades.") |
+| Depósito: rótulo y título | "En el depósito" · "Lo que *espera destino*" | El rótulo lleva el signo del grano |
+| Depósito | "2 donaciones esperan destino en el depósito." · "Ver Mis donaciones" | Arroz y zapatillas; lo pendiente se dice pendiente |
+| Depósito: al pie | "7 donaciones registradas" | Actividad, no resultado: va aparte y más chica |
+| Viaje: rótulo y título | "Con destino" · "Lo que *está viajando*" | Muestra del encargo; antes, "En curso" |
+| Viaje | "3 entregas en curso: 1 en camino, 1 con problema y 1 pendiente." · "Ver seguimiento" | Los mismos números que Seguimiento; el único botón relleno de la pantalla |
+| La que se demoró | Título "Una entrega con problema" · "Útiles escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo el 17 de octubre." · "Ver el detalle" (`?donacion=utiles`) | En el tramo del viaje; qué pasó y el próximo paso, tomados de los datos, sin "lamentablemente" ni metáfora. Nombre accesible del enlace: "Ver el detalle de Útiles escolares" |
+| Entidad: rótulo y título | "En la entidad" · "Lo que *ya recibieron*" | El nombre de las cifras de la portada; muestra del encargo, antes "Lo que está confirmado" |
+| Entidad | "2 entregas confirmadas en 2 entidades distintas." · "Conocé a quién le llegó" · "Conocer las entidades" | Fideos (Comedor Barrio Ejemplo) y ropa (Merendero Ejemplo Sur) |
 | Hito | "Primera entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo." | Lo acumulado, sin medalla ni "¡felicitaciones!" |
-| En curso: título | En curso | — |
-| En curso | "3 entregas en curso: 1 en camino, 1 con problema y 1 pendiente." · "Ver seguimiento" | Los mismos números que Seguimiento |
-| Esperan destino | "2 donaciones esperan destino en el depósito." · "Ver Mis donaciones" | Arroz y zapatillas; lo pendiente se dice pendiente |
-| La que se demoró | "Útiles escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo el 17 de octubre." · "Ver el detalle" (`?donacion=utiles`) | Qué pasó y el próximo paso, sin "lamentablemente". Nombre accesible del enlace: "Ver el detalle de Útiles escolares" |
-| Noticias: título | Últimas noticias | — |
+| Alcance | "Desde el 1 de octubre de 2026, según las confirmaciones de las entidades. Actualizado hoy, 15 de octubre, 16:25." | Período, fuente y fecha, al cierre del camino |
+| Noticias: título | Lo último del camino | Raíces cálida, 2026-11-06; antes, "Últimas noticias" |
 | Noticias | Las tres más nuevas de la lista de Notificaciones, con su fecha | "Hoy, 14:30", "Ayer, 17:00", "Ayer, 12:15", cada una con `datetime` |
 | Noticias: enlace | "Ver todas las notificaciones (4 sin leer)" | — |
-| Accesos | "Conocer las entidades" | "Ver seguimiento" está en En curso y "Ver Mis donaciones", en Esperan destino: no se repiten (pulido, 2026-11-03) |
+| Accesos | "Conocer las entidades", en el tramo de la entidad | "Ver seguimiento" está en el tramo del viaje y "Ver Mis donaciones", en el del depósito: no se repiten (pulido, 2026-11-03) |
 
 ### donante-donaciones
 
@@ -312,8 +320,9 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Rótulo | Mis donaciones | La sección del menú |
 | Título | El nombre de la donación ("Lentejas secas") | — |
 | Bajada | "15 kg para Comedor Barrio Ejemplo" · "10 kg, todavía sin destino" | — |
-| Etapas: título | Cada paso de esta donación | Nombre accesible de la lista: "Etapas de Lentejas secas" |
+| Etapas: título | El camino de esta donación (Raíces cálida, 2026-11-06; antes, "Cada paso de esta donación") | Nombre accesible de la lista: "Etapas de Lentejas secas" |
 | Etapas | Las cinco de `pasos`, con su detalle ("12 de octubre", "Hoy, 14:30", "Pendiente", "11 de octubre: no pudo llegar", "Nueva salida: 17 de octubre") | Las mismas de Seguimiento |
+| Foto: título | La foto de quien la recibió | Raíces cálida, 2026-11-06; antes, "La foto de la entidad" |
 | Foto: pie | "<Entidad> confirmó la entrega el <fecha> y subió esta foto." | Alt del dato: "Cajas con la ropa de abrigo junto a la puerta del merendero" |
 | Foto: falta | "Falta confirmar la entrega: la confirma <entidad> con la foto." | La forma del tono común para lo pendiente |
 | Datos: título | Los datos | — |
@@ -326,7 +335,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Elemento | Texto | Nota |
 |---|---|---|
 | Rótulo | Entidades | — |
-| Título | Quiénes reciben las donaciones | El mismo rótulo de la tierra en la portada |
+| Título | Conocé a *quienes reciben* | Encadena con "Conocé a quién le llegó" del inicio (Raíces cálida, 2026-11-06); antes, "Quiénes reciben las donaciones", el rótulo de la tierra de la portada |
 | Bajada | "Entidades activas y lo que piden hoy. Cada una pide lo que necesita y confirma lo que recibe. Actualizado hoy, 15 de octubre, 16:25." | La entidad actúa: pide y confirma |
 | Búsqueda | "Buscar por nombre" · "Buscar" · "Ver todas" | `type="search"`; nombre accesible del formulario: "Buscar entidades" |
 | Cuenta | "46 entidades activas. Página 1 de 8." | El 46 es el de la portada |
@@ -361,7 +370,7 @@ en las páginas siguientes).
 | Elemento | Texto | Nota |
 |---|---|---|
 | Rótulo | Notificaciones | — |
-| Título | Noticias de tus donaciones | — |
+| Título | Lo que pasó con *tus donaciones* | Raíces cálida, 2026-11-06; antes, "Noticias de tus donaciones" |
 | Bajada | "4 sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa." | Sin "¡Tenés novedades!" |
 | Acción | Marcar todas como leídas | — |
 | Grupos | "Sin leer (4)" · "Leídas (13)" | — |
@@ -394,8 +403,9 @@ Filtro de tono:
 - Orden del foco: saltar al contenido, la marca, el menú, el acceso a Notificaciones, la cuenta
   (Mi perfil, Salir), y después el contenido en el orden de lectura. En el detalle, "Volver a Mis
   donaciones" va antes del título en el código, como en el primer prototipo.
-- Cifras: lista de definiciones (`dl`) con nombre ("Lo que está confirmado"); ningún número va
-  solo. Si un sitio las dibuja, el dibujo es `aria-hidden` y el texto dice lo mismo.
+- Cifras: cada tramo es una sección con su `h2` ("Lo que ya recibieron") y dice su cifra en una
+  frase ("2 entregas confirmadas en 2 entidades distintas."); ningún número va solo. Las plantas,
+  las personas y los sellos de la cuenta son `aria-hidden` y el texto dice lo mismo.
 - Estados: siempre texto y forma (el sello); el color solo acompaña. "Sin leer" y "Leída", en texto.
 - Etapas: lista ordenada (`ol`) con nombre; la actual con `aria-current="step"`; cada detalle en
   texto.
@@ -415,7 +425,7 @@ Filtro de tono:
 | 1 | Visibilidad del estado | Cada donación con su sello, su nota y su etapa; cifras y listas con su fecha de actualización; "4 sin leer" | El estado de cada donación cruza Donaciones y Logística (HB-16); si no llega en una llamada, el inicio tarda |
 | 2 | Lenguaje del usuario | Donación, depósito, entidad, en camino, entrega confirmada; sin códigos ni "persona jurídica" | — |
 | 3 | Control y libertad | Solo consulta; menú, "Volver a Mis donaciones" y Atrás; "Sacar los filtros" y "Ver todas" | "Marcar todas como leídas" no se deshace en la maqueta (en el sistema, una por una) |
-| 4 | Consistencia | Los datos, números y estados de Seguimiento; "Lo que está confirmado" y "Quiénes reciben las donaciones", como la portada; el mismo banner de error con código | Los nombres de las entidades de `viaje-datos` y los de la portada no coinciden del todo (ver Decisiones) |
+| 4 | Consistencia | Los datos, números y estados de Seguimiento; "Lo que ya recibieron", como las cifras de la portada; el mismo banner de error con código | Los nombres de las entidades de `viaje-datos` y los de la portada no coinciden del todo (ver Decisiones) |
 | 5 | Prevención de errores | Filtros con opciones cerradas; un valor desconocido se ignora y muestra todas, no un error | — |
 | 6 | Reconocer antes que recordar | El N.º y el nombre de cada donación iguales en todas las pantallas; cada aviso nombra su donación | — |
 | 7 | Flexibilidad | Quien quiere el panorama se queda en el inicio; quien busca algo filtra o entra al detalle desde cualquier pantalla | Sin atajos de teclado propios |

@@ -64,9 +64,11 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   Mis donaciones, "Confirmar recepción" en la primera pantalla de la entidad, el calendario único
   (el de la entidad dice 18:20 y 18:30 contra "hoy, 16:25") y el nombre del estado de una donación
   sin destino, que hoy se llama igual que el de una asignada. (3) Las fichas de `docs/interfaz/flujos/`
-  (`raices-seguir-entregas`, `raices-entidad-navegable`, `raices-necesidades`) todavía muestran los
-  títulos viejos; las actualiza el cierre de la corrida, junto con `docs/README.md` y
-  `docs/ESTADO_DOCUMENTACION.md`. (4) Sin `escenario=muchas`: el caso grande (30 plantas) se probó
+  (`raices-seguir-entregas`, `raices-entidad-navegable`, `raices-necesidades`) mostraban los títulos
+  viejos: se actualizaron en los arreglos de la auditoría de cierre (ronda 1), junto con
+  `raices-donante-navegable`, `raices-publico-navegable`, el brief (que suma la etapa 2) y
+  `docs/ESTADO_DOCUMENTACION.md`. `docs/README.md` no cambia: solo enlaza a `interfaz/README.md`,
+  que ya lista las carpetas de evidencia. (4) Sin `escenario=muchas`: el caso grande (30 plantas) se probó
   en el navegador, no en las capturas. **Reemplaza:** el inicio del donante de la etapa 1 (decidido
   por el usuario), los títulos y rótulos de las pantallas del donante, la entidad y el admin que se
   reescribieron con la voz nueva ("Tus entregas en curso", "Lo asignado a tu entidad", "Tus

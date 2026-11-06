@@ -39,7 +39,7 @@ dibujada en Raíces: "Ver en Seguir entregas" lleva a esa página.
 
 ```mermaid
 flowchart TD
-  entrada([Necesidades, desde el menú o Inicio]) --> lista[Tus necesidades vigentes]
+  entrada([Necesidades, desde el menú o Inicio]) --> lista[Lo que tu entidad pide hoy]
   lista -->|todavía no publicaste| vacio[Ninguna necesidad: publicá la primera]
   vacio --> publicar
   lista -->|no cargó| errorlista[No pudimos cargar tus necesidades]
@@ -133,7 +133,7 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
 │ │ Entregas para este pedido│ │
 │ │ · 15 kg en tu puerta     │ │
 │ │   [Confirmar recepción]  │ │
-│ │ Quién donó               │ │
+│ │ Quiénes donaron          │ │
 │ │ · Distribuidora Ejemplo  │ │
 │ │   SA, 10 kg, 10 de oct.  │ │
 │ │ Cada mes                 │ │
@@ -184,7 +184,7 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
   - **Entregas para este pedido:** las entregas asignadas que todavía no se confirmaron, cada una
     en su estado (en tu puerta, en camino, por salir, con un problema) y con su próximo paso; las
     que esperan en la puerta, con el botón "Confirmar recepción". Al pie, "Ver en Seguir entregas".
-  - **Quién donó:** lo recibido, por quien donó, con cuánto y cuándo. Se ve el nombre de la
+  - **Quiénes donaron:** lo recibido, por quien donó, con cuánto y cuándo. Se ve el nombre de la
     empresa o la persona; si lo ocultó en su perfil, su categoría en el ranking: "Donante
     Sostenedor" (o "Empresa donante · Sostenedor") (review de Sofía, 2026-11-02; antes, "Una
     persona que prefiere no mostrar su nombre" y, al principio, "Una persona"). Si la categoría no
@@ -276,6 +276,7 @@ donó, las terminadas) es de ejemplo, sintético.
 | Rótulo | "Necesidades" | El nombre del menú |
 | Título | "Lo que *hace falta*" | El del primer prototipo. La parte en cursiva, con la segunda tinta |
 | Bajada | "Tus pedidos vigentes. Los ven los donantes y el catálogo público, sin tus datos de contacto." | Dice quién los ve (RF-22, D26) |
+| Título de la lista | "Lo que tu entidad pide hoy" | Raíces cálida, 2026-11-06; antes, "Tus necesidades vigentes" |
 | Registro | "Al 15 de octubre de 2026" · "5 necesidades vigentes" · "2 entregas esperan tu confirmación" · "2 en camino o por salir" · "1 con un problema" | Cifras con fecha. "2 entregas esperan…" enlaza a Confirmar recepción de las lentejas; "1 con un problema", al aceite (`?necesidad=aceite`) |
 | Publicar | "Publicar otra necesidad" · campos: "Qué hace falta" (una lista agrupada por categoría: Alimentos, Ropa, Muebles; ayuda: "Si no está en la lista, elegí la más parecida y contalo en por qué hace falta.") · "Cuánto" (número; ayuda: "En la unidad que dice la lista, entre paréntesis. Si se repite, cuánto en cada período."; la lista dice la unidad de cada opción: "Fideos secos (kg)", "Aceite de girasol (litros)", "Ropa de abrigo (unidades)") · "¿Se repite?" ("Una sola vez", "Cada semana", "Cada quincena", "Cada mes"; ayuda: "Si se repite, el primer período empieza hoy y se renueva solo cada semana, cada quincena (15 días) o cada mes.") · "Hasta cuándo" ("Solo si es una sola vez. Desde hoy, 15 de octubre, en adelante.") · "Por qué hace falta" ("Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a viernes.") · botón "Publicar necesidad" | Los del primer prototipo, con la lista del catálogo en lugar del texto libre, más "¿Se repite?" y el motivo. Arriba: "Todos los datos son obligatorios; la fecha, solo si es una sola vez." |
 | Aceite de girasol | "Hasta el 20 de octubre" · "faltan 5 días" · "Una sola vez" · "0 de 20 litros recibidos" · por qué: "Para cocinar el almuerzo." · entregas: "10 litros · El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha." · quién donó: "Todavía no llegó nada." | |
@@ -286,7 +287,7 @@ donó, las terminadas) es de ejemplo, sintético.
 | Fideos secos | "Hasta el 30 de octubre" · "faltan 15 días" · "Una sola vez" · "0 de 30 kg recibidos" · por qué: "Para la cena de los viernes." · entregas: "No hay entregas pendientes para este pedido." · quién donó: "Todavía no llegó nada." · la marca "Nueva" | La que se publica en la maqueta: aparece en `entidad-necesidades-publicada`, abierta; sus datos precargan el formulario en el error de datos, el del servidor y sin conexión |
 | Orden | De la fecha más cercana a la más lejana | Lo que vence antes, arriba; sin marcarlo como urgente |
 | Cada período | "Llegó todo" · "Llegó una parte" · "No llegó nada" · "En curso" | El estado en palabras; la barra que se llena lo acompaña (punteada, la del período en curso). Un período que es el mes completo se nombra por el mes; uno semanal, con sus fechas ("del 6 al 12 de octubre") |
-| Partes del detalle | "Por qué hace falta" · "Entregas para este pedido" · "Quién donó" · "Cada mes" (o "Cada semana") | El nombre de la parte de los períodos dice cada cuánto se repite |
+| Partes del detalle | "Por qué hace falta" · "Entregas para este pedido" · "Quiénes donaron" · "Cada mes" (o "Cada semana") | El nombre de la parte de los períodos dice cada cuánto se repite |
 | Acciones del detalle | "Ver en Seguir entregas" · "Cambiar cantidad o motivo" · "Dar de baja" | |
 | Cambiar | "Cuánto, en kg" (la unidad de esa necesidad; número; ayuda en una que se repite: "Vale desde este período, octubre: si ya llegó más que lo nuevo, este período queda cumplido."; en una de una sola vez: "Si ya llegó más que lo nuevo, el pedido queda cumplido.") · "Por qué hace falta" (ayuda: "Lo ven los donantes.") · "Guardar cambios" · con conflicto, "Cuánto" trae lo que escribiste (en la maqueta, 50) · ayuda del formulario: "Qué hace falta y si se repite no se pueden cambiar: si cambiaron, dala de baja y publicá otra." | Lo que deja cambiar el contrato (cantidad y descripción) |
 | Cumplidas y terminadas | "Cumplidas y terminadas (3)" · "Útiles escolares · 30 kits · Cumplida el 28 de septiembre: llegaron los 30." · "Pañales · 10 paquetes · Terminó el 10 de octubre con 6 de 10 recibidos." · "Frazadas · 20 frazadas · La diste de baja el 1 de octubre, con 8 recibidas." | Cómo terminó, en palabras, con fecha y cifra; sin juzgar |
@@ -406,7 +407,7 @@ Partes que se deciden con A/B, en este orden:
    plegado arriba de la lista, como el primer prototipo, sin dibujar la columna al costado (la recomendada:
    publicar se hace pocas veces y la columna le quita ancho a la lista).
 4. El detalle desplegado en pantalla grande. **Decidido (usuario, 2026-11-02, review de Sofía):**
-   datos y gráfico: a la izquierda, "Por qué hace falta" y "Quién donó" lado a lado y las entregas
+   datos y gráfico: a la izquierda, "Por qué hace falta" y "Quiénes donaron" lado a lado y las entregas
    debajo; a la derecha, los períodos como barras que suben. Sin períodos, las tres partes en fila
    (B, la recomendada, contra tres columnas con una ficha por mes debajo; bitácora, "El detalle,
    datos y gráfico").
@@ -432,7 +433,7 @@ el de la [baja con entregas en curso](../../adr/20261102-baja-de-una-necesidad-c
   próximo; el usuario mantuvo el período en curso).
 - **Baja con entregas en camino:** según si salió. Lo que salió llega igual; lo que no, vuelve al
   depósito y se asigna a otra entidad. El diálogo de la baja lo dice por entrega.
-- **Quién donó:** el nombre se ve, sea empresa o persona, salvo que lo haya ocultado en
+- **Quiénes donaron:** el nombre se ve, sea empresa o persona, salvo que lo haya ocultado en
   [Mi perfil](raices-mi-perfil.md) o en esa donación; entonces, su categoría en el ranking.
 - **"Escribinos con este código":** lleva a [Contacto](raices-contacto.md), con el código ya
   escrito.

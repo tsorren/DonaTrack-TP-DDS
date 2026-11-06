@@ -71,7 +71,7 @@ A/B):
 ```text
 ┌──────────────┬───────────────────────────────────────────────────────────┐
 │ DonaTrack    │ Seguimiento                                               │
-│              │ Tus entregas en curso                                     │
+│              │ Lo que está viajando                                      │
 │ Inicio       │ 3 entregas en curso. Posiciones aproximadas.              │
 │ Mis          │ Actualizado el 15 de octubre, 16:25.                      │
 │ donaciones   │ ┌──────────┬──────────────┬────────────┬────────────────┐ │
@@ -86,7 +86,7 @@ A/B):
 │              │ │ su estado; la que va en camino, el      │               │
 │              │ │ camión donde va.                        │               │
 │              │ └─────────────────────────────────────────┘               │
-│              │ Entrega por entrega                                       │
+│              │ Cada entrega, hasta quien la espera                       │
 │ Distribuidora│ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐     │
 │ Ejemplo SA   │ │ 1 Lentejas    │ │ 2 Útiles      │ │ 3 Leche en    │     │
 │ Empresa      │ │ ▣ Alimentos   │ │ ▣ Útiles esc. │ │ ▣ Alimentos   │     │
@@ -159,10 +159,10 @@ pantalla:
 | Elemento | Texto | Nota |
 |---|---|---|
 | Rótulo de la sección | Seguimiento | El nombre del menú |
-| Título | Tus entregas en curso | Sin imagen de raíz: la regla de Raíces deja como mucho una por pantalla, en el título grande, y acá el dibujo ya la tiene |
+| Título | Lo que está *viajando* | La parte en cursiva, con la segunda tinta: el mismo nombre del tramo del viaje en el inicio del donante (Raíces cálida, 2026-11-06; antes, "Tus entregas en curso"). Sin imagen de raíz: la regla de Raíces deja como mucho una por pantalla, en el título grande, y acá el dibujo ya la tiene |
 | Bajada | "Gracias por donar. 3 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25." | Reconoce el aporte (tono del seguimiento del donante) y da la cifra con su fecha; "hoy" queda atado a una fecha, porque las notas de las entregas dicen "hoy"; "aproximadas" dice el límite del dato (RNF-PRIV) |
-| Cifras | "En camino" · "Con problema" · "Pendientes" · "Esperan destino" (enlace a Mis donaciones), cada una con su número | Nombre accesible del registro: "Tus donaciones, por estado". La fecha de corte es la de la bajada, justo arriba. Cada estado lleva su sello, como en la lista |
-| Título de la lista | Entrega por entrega | El primer prototipo decía "La hoja de ruta" |
+| Cifras | "En camino" · "Con problema" · "Pendientes" · "Esperan destino" (enlace a Mis donaciones), cada una con su número | Nombre accesible del registro: "Cómo van tus donaciones" (Raíces cálida, 2026-11-06; antes, "Tus donaciones, por estado"). La fecha de corte es la de la bajada, justo arriba. Cada estado lleva su sello, como en la lista |
+| Título de la lista | Cada entrega, hasta quien la espera | Dice adónde va cada una (Raíces cálida, 2026-11-06); antes, "Entrega por entrega", y en el primer prototipo, "La hoja de ruta" |
 | Categoría | El nombre de la categoría ("Alimentos", "Útiles escolares") con su ícono | El ícono, el mismo pictograma impreso del cuaderno de la portada; el nombre lo dice en texto |
 | Etapas | "En depósito" · "Asignada" · "Lista para entregar" · "En camino" · "Entregada", cada una con su detalle ("13 de octubre", "Pendiente", "11 de octubre: no pudo llegar", "Nueva salida: 17 de octubre") | Del dato (`pasos`), los mismos que el detalle del primer prototipo. Nombre accesible: "Etapas de <nombre>" |
 | Cada entrega | Nombre (enlace al detalle) · categoría · "6 kg para Merendero Ejemplo Sur" · estado + nota · etapas · última noticia | Del dato: "Asignada, espera el camión" y "Sale del depósito el 16 de octubre."; "Salió hoy a las 14:30" y "El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 16:25."; "No pudo llegar; sale de nuevo el 17 de octubre" y "El camino estaba cortado. Última noticia: 11 de octubre, 16:10." |
