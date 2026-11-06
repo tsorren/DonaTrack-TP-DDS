@@ -31,6 +31,22 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-06 · proceso (raices-calida) · Encargo creativo: Raíces más cálida para quien dona solo, en dos etapas
+
+- **Decisión:** el [encargo `raices-calida`](encargos/raices-calida.md), en la rama
+  `E6_raices_calida`, para todo el sitio. Etapa 1: un A/B de tierra más tibia y clara (con el negro
+  de hoy como control), esquinas suaves y serif cálida en los títulos. Etapa 2: una corrida de dos
+  vueltas con la huerta de cada donante en `/donante-inicio`, las abejas como firma y más personas
+  en la ilustración.
+- **Alternativas:** dos registros, de día para la persona y de noche para la empresa (pedía un ADR
+  y el doble de contraste que comprobar); solo las pantallas de la persona; ir bien lejos, que
+  reabría las fichas aprobadas; las estaciones; las abejas atadas a un dato.
+- **Por qué:** Huerta de noche gusta para la empresa, pero perdió la calidez que pedía la encuesta
+  "Huerta con abejas" (calidez 25 y ganas de sumarse 15) y no atrae a quien dona solo.
+- **Costo:** la empresa pierde el aspecto de Huerta de noche si en el A/B no gana el control.
+- **Quién decidió:** usuario, con la encuesta de una integrante del equipo.
+- **Evidencia:** el encargo.
+
 ### 2026-11-06 · proceso · iteracion-ab: modo exploración con eje de divergencia y vueltas en boceto
 
 - **Decisión:** la skill `iteracion-ab` distingue exploración (buscar un aspecto nuevo) de ajuste
