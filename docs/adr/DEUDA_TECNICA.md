@@ -559,7 +559,7 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] deferred` — `PATCH /api/entregas/{id}/fotos` y la confirmación reciben URLs sin validar; `logistica-service/pom.xml` no tiene `io.minio`; no hay bucket ni usuario de MinIO para Logística. `FotoRecepcionSubdocument.clave` ya está previsto para la clave del objeto |
 | Target | `logistica-service` (puerto `AlmacenFotosRecepcion` y adaptador MinIO, validador de fotos, `EntregasController`, `openapi-logistica.yaml`, `pom.xml`) · `persistencia/minio/init-usuarios.sh` y los compose (usuario `logistica-service`) |
-| Cuándo se saldará | Entrega 6: tarea 8 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-10). Coordinar los compose con A1-01 de SPEC-06 |
+| Cuándo se saldará | Entrega 6: tarea 8 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-10). Coordinar los compose con A1-01 de SPEC-06 (PR #927) |
 
 1. **Subida.** `POST /api/entregas/{id}/fotos` multipart: tope de 5 MB, JPEG o PNG por magic bytes, re-codificación sin metadatos y clave `entregas/<idEntrega>/<fotoId>.<ext>` en `logistica-fotos-recepcion`.
 2. **Lectura.** `GET /api/entregas/{id}/fotos/{fotoId}` con `302` hacia una URL firmada de 5 minutos.

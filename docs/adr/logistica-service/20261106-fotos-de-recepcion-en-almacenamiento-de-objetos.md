@@ -56,7 +56,7 @@ Donaciones e Incentivos 10 · escala con archivos grandes 5.
 4. **Respeta:** [política de evolución de contratos](../20261028-politica-de-evolucion-de-contratos-entre-servicios.md)
    (`accepted`): el endpoint multipart y la lectura son endpoints nuevos; el `PATCH .../fotos`
    actual se conserva.
-5. **Se usa en:** el ADR de réplicas por evento (`proposed`, en un PR aparte), que publica la URL
+5. **Se usa en:** el ADR de réplicas por evento (`proposed`, en el PR #930, sin integrar todavía), que publica la URL
    estable de cada foto en `entrega.exitosa`.
 
 ## Alternativas Consideradas
@@ -71,6 +71,7 @@ validación · superficie · costo · consistencia · escala.
 | **S1. Multipart a Logística, que valida, quita el EXIF y guarda en MinIO** | 5 | 5 | 5 | 4 | 4 | 2 | **4,6** |
 | S2. URL prefirmada: el navegador sube directo a MinIO y Logística valida después | 2 | 2 | 2 | 4 | 5 | 5 | 2,75 |
 | S3. El cliente liviano sube a MinIO con sus propias credenciales | — | — | — | — | — | — | Descartada `[REJECTED]` en la D27: credenciales de almacenamiento en la capa de UI |
+| S0. Status quo: solo el `PATCH .../fotos` con URLs publicadas en otro lado | — | — | — | — | — | — | Descartada: Logística no puede quitar el EXIF ni validar una imagen que vive en un servidor ajeno (incumple RNF-PRIV-03/04), y la entidad necesita dónde subirla (RF-12) |
 
 ### Cómo se quita el EXIF
 
@@ -152,7 +153,7 @@ dependencias, pureza del dominio de AGENTS.md §4.1). Re-codificar resuelve el E
 - **La URL estable es pública** mientras la foto esté publicada, porque RF-01 y RF-02 la muestran
   sin login. Con HB-13, la lectura de una entrega no confirmada se limita a la entidad dueña.
 - El compose suma un usuario y una variable de contraseña, en el mismo archivo que edita A1-01 de
-  SPEC-06: hay que coordinar.
+  SPEC-06 (PR #927, sin integrar): hay que coordinar.
 
 ## Análisis por alternativa
 
@@ -161,6 +162,8 @@ dependencias, pureza del dominio de AGENTS.md §4.1). Re-codificar resuelve el E
 - **S2.** Pro: la mejor escala y el patrón de las fotos de bienes. Contra: el archivo con GPS ya está
   guardado cuando Logística lo mira, y MinIO queda expuesto para escritura, con CORS.
 - **S3.** Pro: ninguno que compense. Contra: credenciales de almacenamiento en el navegador.
+- **S0.** Pro: no cambia nada. Contra: la foto queda fuera de nuestro control, con sus metadatos, y
+  puede desaparecer o cambiar después de confirmada.
 - **E1.** Pro: elimina todos los metadatos y prueba que es una imagen; sin dependencias. Contra:
   re-codificar cambia el archivo y limita los formatos a los del JDK.
 - **E2.** Pro: el archivo queda igual. Contra: hay que conocer cada segmento de cada formato; un
