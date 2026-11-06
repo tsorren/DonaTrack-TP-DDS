@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <!--/* Raíces cálida, iteración 1, concepto B: el recorrido. La pantalla es el camino de las
        donaciones, en tres tramos por etapa: esperan destino en el depósito, viajan, y ya las
-       recibieron las entidades. Cada tramo tiene su título, su cuenta, su acción y una franja de
-       tierra con una planta por donación, que madura a medida que avanza: brote, planta, planta con
-       el fruto hueco (en camino) y fruto maduro (entregada). La que tiene problema no es planta: es
-       el signo "!" y el aviso claro de su tramo. Quien dona está al principio del camino y quien
-       recibe, al final. En escritorio, el camino va de izquierda a derecha; en el celular, baja.
+       recibieron las entidades. Cada tramo tiene su título, su cuenta, su acción y un corte de suelo
+       con una planta por donación, que madura a medida que avanza: grano con raíz (en el depósito),
+       planta (con destino), planta con el fruto a medio pintar (en camino) y fruto maduro
+       (entregada). La que tiene problema no es planta: es el signo "!" y el aviso claro de su tramo.
+       Quien dona está al principio del camino y quien recibe, al final. En escritorio, el camino va
+       de izquierda a derecha y la cifra de cada tramo se para sobre su suelo; en el celular, baja.
        Mismos datos y acciones que donante-inicio.html. ?escenario=vacio, error y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-inicio', ~{::contenido})}">
@@ -50,17 +51,19 @@
       <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
     </th:block>
 
-    <!--/* Vacío: el camino sin plantas, con quien dona al principio y la entidad al final. */-->
+    <!--/* Vacío: el camino sin plantas, con quien dona al principio y, al final, quien recibe esperando
+           en su puerta, todavía sin nada en las manos. */-->
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo"
              data-concepto-b="vacio">
-      <svg viewBox="0 0 360 116" data-concepto-b="camino-vacio" aria-hidden="true" focusable="false">
-        <rect data-t="suelo" x="0" y="78" width="360" height="38" rx="8"/>
-        <rect data-t="ruta" x="0" y="94" width="360" height="7"/>
-        <circle data-t="parada" cx="128" cy="97.5" r="7"/>
-        <circle data-t="parada" cx="196" cy="97.5" r="7"/>
-        <circle data-t="parada" cx="264" cy="97.5" r="7"/>
+      <svg viewBox="0 0 360 124" data-concepto-b="camino-vacio" aria-hidden="true" focusable="false">
+        <rect data-t="suelo" x="0" y="78" width="360" height="46" rx="8"/>
+        <rect data-t="estrato" x="0" y="78" width="360" height="6"/>
+        <rect data-t="ruta" x="0" y="104" width="360" height="7"/>
+        <circle data-t="parada" cx="128" cy="107.5" r="7"/>
+        <circle data-t="parada" cx="196" cy="107.5" r="7"/>
+        <circle data-t="parada" cx="264" cy="107.5" r="7"/>
         <g transform="translate(4 10)"><g th:replace="~{variantes/concepto-b :: persona-dona}"></g></g>
-        <g transform="translate(270 10)"><g th:replace="~{variantes/concepto-b :: casa}"></g></g>
+        <g transform="translate(270 10)"><g th:replace="~{variantes/concepto-b :: casa(false)}"></g></g>
       </svg>
       <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
       <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
@@ -71,12 +74,10 @@
 
     <th:block th:if="${conDatos}">
       <div data-concepto-b="recorrido">
-        <p data-concepto-b="salida"><b th:text="${#lists.size(donaciones)}">7</b> donaciones registradas</p>
-
-        <!--/* Tramo 1: en el depósito, lo que espera destino. Brotes. */-->
+        <!--/* Tramo 1: en el depósito, lo que espera destino. Granos con su raíz: todavía no salió. */-->
         <section data-concepto-b="tramo" data-etapa="deposito" aria-labelledby="deposito-titulo">
           <div data-concepto-b="cabeza">
-            <p class="rotulo"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>En
+            <p class="rotulo"><svg th:replace="~{variantes/concepto-b :: grano}"></svg>En
               el depósito</p>
             <h2 id="deposito-titulo">Lo que <em>espera destino</em></h2>
           </div>
@@ -86,20 +87,23 @@
           <div data-concepto-b="tierra" aria-hidden="true">
             <svg th:replace="~{variantes/concepto-b :: persona('dona')}"></svg>
             <th:block th:each="d : ${donaciones.?[destino == null]}">
-              <svg th:replace="~{variantes/concepto-b :: planta('brote')}"></svg>
+              <svg th:replace="~{variantes/concepto-b :: planta('grano')}"></svg>
             </th:block>
           </div>
           <div data-concepto-b="pie">
             <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
           </div>
+          <!--/* De acá salen todas: el total, al pie del primer tramo. */-->
+          <p data-concepto-b="salida"><b th:text="${#lists.size(donaciones)}">7</b> donaciones registradas</p>
         </section>
 
-        <!--/* Tramo 2: lo que está viajando. Las asignadas crecen, la que va en camino tiene el fruto
-               hueco y la que tiene problema es el signo "!" y su aviso, sin metáfora. */-->
+        <!--/* Tramo 2: lo que está viajando. Primero la pendiente (planta sin fruto, más cerca del
+               depósito), después la que tiene problema (el signo "!" y su aviso, sin metáfora) y al
+               final la que va en camino (fruto a medio pintar, más cerca de la entidad). */-->
         <section data-concepto-b="tramo" data-etapa="viaje" aria-labelledby="curso-titulo">
           <div data-concepto-b="cabeza">
-            <p class="rotulo"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En
-              viaje</p>
+            <p class="rotulo"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>Con
+              destino</p>
             <h2 id="curso-titulo">Lo que <em>está viajando</em></h2>
           </div>
           <div data-concepto-b="cuenta">
@@ -124,23 +128,23 @@
             </th:block>
           </div>
           <div data-concepto-b="pie">
-            <a class="boton" data-tono="secundario" href="/donante-seguimiento"
+            <a class="boton" data-tono="principal" href="/donante-seguimiento"
                th:href="@{/donante-seguimiento}">Ver seguimiento</a>
-            <!--/* Una entrega con problema: qué pasó y la nueva salida, sin alarma ni metáfora. */-->
-            <section th:each="d : ${tienenProblema}" data-concepto-b="aviso" aria-labelledby="demora-titulo"
-                     th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
-              <h3 id="demora-titulo">Una entrega con problema</h3>
-              <p>
-                <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-                <span th:text="|${d.titulo} no pudo llegar a ${destino}: el camino estaba cortado. Sale de nuevo el 17 de octubre.|">Útiles
-                  escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo
-                  el 17 de octubre.</span>
-              </p>
-              <a href="/donante-donaciones-detalle?donacion=utiles"
-                 th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-                 th:aria-label="|Ver el detalle de ${d.titulo}|">Ver el detalle</a>
-            </section>
           </div>
+          <!--/* Una entrega con problema: qué pasó y la nueva salida, sin alarma ni metáfora. */-->
+          <section th:each="d : ${tienenProblema}" data-concepto-b="aviso" aria-labelledby="demora-titulo"
+                   th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
+            <h3 id="demora-titulo">Una entrega con problema</h3>
+            <p>
+              <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+              <span th:text="|${d.titulo} no pudo llegar a ${destino}: el camino estaba cortado. Sale de nuevo el 17 de octubre.|">Útiles
+                escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo
+                el 17 de octubre.</span>
+            </p>
+            <a href="/donante-donaciones-detalle?donacion=utiles"
+               th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+               th:aria-label="|Ver el detalle de ${d.titulo}|">Ver el detalle</a>
+          </section>
         </section>
 
         <!--/* Tramo 3: en la entidad, lo que ya recibieron. Frutos maduros y quien recibe. */-->
@@ -169,18 +173,20 @@
             <svg th:replace="~{variantes/concepto-b :: persona('recibe')}"></svg>
           </div>
           <div data-concepto-b="pie">
-            <p data-concepto-b="alcance">Desde el 1 de octubre de 2026, según las confirmaciones de las
-              entidades. Actualizado hoy, 15 de octubre, 16:25.</p>
-            <p th:if="${primera}" data-concepto-b="hito"
-               th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
-              entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
             <div data-concepto-b="entidades">
               <h3>Conocé a quién le llegó</h3>
               <a class="boton" data-tono="secundario" href="/donante-entidades"
                  th:href="@{/donante-entidades}">Conocer las entidades</a>
             </div>
           </div>
+          <p th:if="${primera}" data-concepto-b="hito"
+             th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
+            entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
         </section>
+
+        <!--/* El cierre del camino: el alcance y la fecha de las cuentas, a todo el ancho. */-->
+        <p data-concepto-b="alcance">Desde el 1 de octubre de 2026, según las confirmaciones de las
+          entidades. Actualizado hoy, 15 de octubre, 16:25.</p>
       </div>
 
       <section data-concepto-b="noticias" aria-labelledby="noticias-titulo">
@@ -201,21 +207,29 @@
   </div>
 </th:block>
 
-<!--/* Los dibujos. Cada uno es una baldosa de 100 de alto con la tierra desde 68: puestas en fila, sin
-       espacio entre ellas, arman la franja del camino. */-->
+<!--/* Los dibujos. Cada uno es una baldosa de 140 de alto: el aire hasta 68 y, debajo, el corte de
+       suelo con su estrato claro arriba y las raíces paja. Puestas en fila, sin espacio entre ellas,
+       arman el camino. */-->
 
-<!--/* Una planta por donación; forma: brote, crece, camino, fruto o problema (el signo, sin planta). */-->
-<svg th:fragment="planta(forma)" viewBox="0 0 44 100" data-concepto-b="baldosa" th:data-forma="${forma}"
+<!--/* El signo de "en el depósito": el grano sobre la tierra, con su raíz. */-->
+<svg th:fragment="grano" viewBox="0 0 22 22" data-concepto-b="grano" aria-hidden="true" focusable="false">
+  <rect data-t="suelo" x="1" y="12" width="20" height="9" rx="2"/>
+  <path data-t="raiz" d="M11 13V19M11 15.5L8 18.5M11 16.5L14 19.5"/>
+  <ellipse data-t="grano" cx="11" cy="10" rx="5.5" ry="3.8"/>
+</svg>
+
+<!--/* Una planta por donación; forma: grano, crece, camino, fruto o problema (el signo, sin planta). */-->
+<svg th:fragment="planta(forma)" viewBox="0 0 44 140" data-concepto-b="baldosa" th:data-forma="${forma}"
      aria-hidden="true" focusable="false">
-  <rect data-t="suelo" x="0" y="68" width="44" height="32"/>
-  <g th:if="${forma != 'problema'}">
-    <path data-t="raiz" d="M22 68V82M22 72L14 80M22 75L30 84"/>
+  <rect data-t="suelo" x="0" y="68" width="44" height="72"/>
+  <rect data-t="estrato" x="0" y="68" width="44" height="8"/>
+  <g th:if="${forma == 'grano'}">
+    <path data-t="raiz" d="M22 70V94M22 78L14 88M22 84L30 92"/>
+    <g data-t="planta"><ellipse data-t="grano" cx="22" cy="64" rx="7" ry="5"/></g>
+  </g>
+  <g th:if="${forma != 'problema' and forma != 'grano'}">
+    <path data-t="raiz" d="M22 68V112M22 78L11 92M22 86L33 100M22 98L15 108M11 92L8 100M33 100L36 106"/>
     <g data-t="planta" th:switch="${forma}">
-      <th:block th:case="'brote'">
-        <path data-t="tallo" d="M22 68V55"/>
-        <path data-t="hoja-honda" d="M22 57C14 57 9 52 9 45C17 45 22 50 22 57Z"/>
-        <path data-t="hoja" d="M22 55C30 55 35 50 35 43C27 43 22 48 22 55Z"/>
-      </th:block>
       <th:block th:case="'crece'">
         <path data-t="tallo" d="M22 68V30"/>
         <path data-t="hoja-honda" d="M22 60C14 60 8 55 8 48C16 48 22 53 22 60Z"/>
@@ -227,6 +241,7 @@
         <path data-t="hoja-honda" d="M22 62C14 62 8 57 8 50C16 50 22 55 22 62Z"/>
         <path data-t="hoja" d="M22 52C30 52 36 47 36 40C28 40 22 45 22 52Z"/>
         <circle data-t="hueco" cx="22" cy="20" r="9"/>
+        <path data-t="medio" d="M22 11A9 9 0 0 0 22 29Z"/>
       </th:block>
       <th:block th:case="*">
         <path data-t="tallo" d="M22 68V30"/>
@@ -247,34 +262,38 @@
   </g>
 </svg>
 
-<!--/* Las personas, en siluetas de trazo y sin caras: quien dona (con su caja, al principio) y quien
-       recibe (en la puerta de su entidad, al final). */-->
-<svg th:fragment="persona(quien)" th:viewBox="${quien == 'dona'} ? '0 0 72 100' : '0 0 104 100'"
+<!--/* Las personas, en siluetas sin caras y en dos tonos: quien dona (extiende su caja hacia el camino)
+       y quien recibe (la toma con los dos brazos, en la puerta de su entidad). */-->
+<svg th:fragment="persona(quien)" th:viewBox="${quien == 'dona'} ? '0 0 72 140' : '0 0 104 140'"
      data-concepto-b="baldosa" th:data-forma="${quien}" aria-hidden="true" focusable="false">
-  <rect data-t="suelo" x="0" y="68" th:width="${quien == 'dona'} ? 72 : 104" height="32"/>
+  <rect data-t="suelo" x="0" y="68" th:width="${quien == 'dona'} ? 72 : 104" height="72"/>
+  <rect data-t="estrato" x="0" y="68" th:width="${quien == 'dona'} ? 72 : 104" height="8"/>
   <th:block th:if="${quien == 'dona'}"><g th:replace="~{variantes/concepto-b :: persona-dona}"></g></th:block>
-  <g th:if="${quien != 'dona'}" transform="translate(6 0)"><g th:replace="~{variantes/concepto-b :: casa}"></g></g>
+  <g th:if="${quien != 'dona'}" transform="translate(6 0)"><g th:replace="~{variantes/concepto-b :: casa(true)}"></g></g>
 </svg>
 
-<g th:fragment="persona-dona" data-t="persona">
-  <path data-t="pierna" d="M30 46L25 67M40 46L46 67"/>
-  <path data-t="cuerpo" d="M25 27C25 22 29 19 35 19C41 19 45 22 45 27L46 48H24Z"/>
-  <circle data-t="cabeza" cx="35" cy="11" r="7"/>
-  <path data-t="brazo" d="M42 26L50 34"/>
-  <rect data-t="caja" x="46" y="26" width="22" height="18" rx="2"/>
-  <path data-t="cinta" d="M46 32H68"/>
+<g th:fragment="persona-dona" data-t="persona" data-quien="dona">
+  <path data-t="pierna" d="M29 47L24 67M37 47L44 67"/>
+  <path data-t="cuerpo" d="M23 28C23 22 27 19 33 19C39 19 43 22 44 27L45 49H23Z"/>
+  <circle data-t="cabeza" cx="34" cy="11" r="7"/>
+  <path data-t="brazo" d="M41 25L53 30M40 32L53 37"/>
+  <rect data-t="caja" x="51" y="22" width="20" height="18" rx="2"/>
+  <path data-t="cinta" d="M51 28H71"/>
 </g>
 
-<g th:fragment="casa" data-t="persona">
+<g th:fragment="casa(conCaja)" data-t="persona" data-quien="recibe">
   <path data-t="casa" d="M2 68V36L28 20L54 36V68Z"/>
   <rect data-t="puerta" x="20" y="48" width="14" height="20" rx="1"/>
-  <path data-t="pierna" d="M70 50L68 67M80 50L82 67"/>
-  <path data-t="cuerpo" d="M65 33C65 29 69 27 75 27C81 27 85 29 85 33L86 52H64Z"/>
-  <circle data-t="cabeza" cx="75" cy="19" r="6.5"/>
-  <rect data-t="caja" x="50" y="36" width="20" height="12" rx="2"/>
-  <circle data-t="fruto" cx="55" cy="33" r="4.5"/>
-  <circle data-t="fruto" cx="64" cy="32" r="5"/>
-  <path data-t="brazo" d="M67 34L62 41"/>
+  <path data-t="pierna" d="M71 51L69 67M80 51L83 67"/>
+  <path data-t="cuerpo" d="M66 34C66 30 70 27 76 27C82 27 86 30 86 34L87 53H65Z"/>
+  <circle data-t="cabeza" cx="76" cy="19" r="6.5"/>
+  <th:block th:if="${conCaja}">
+    <rect data-t="caja" x="49" y="38" width="20" height="13" rx="2"/>
+    <circle data-t="fruto" cx="54" cy="35" r="4.5"/>
+    <circle data-t="fruto" cx="63" cy="34" r="5"/>
+    <path data-t="brazo" d="M68 34L64 42M84 35L70 46"/>
+  </th:block>
+  <path th:unless="${conCaja}" data-t="brazo" d="M67 35L64 49M85 35L88 49"/>
 </g>
 
 <g th:fragment="abeja" data-t="abeja">
