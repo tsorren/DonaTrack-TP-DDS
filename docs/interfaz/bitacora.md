@@ -31,6 +31,39 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-06 · concepto (Raíces cálida) · Iteración 1: el inicio del donante es el camino de la donación, en tres tramos (concepto-b, El recorrido)
+
+- **Decisión:** ganó concepto-b sobre `/donante-inicio`: la pantalla es el camino de la donación, del
+  depósito a la entidad, en tres tramos ("Lo que espera destino", "Lo que está viajando", "Lo que ya
+  recibieron"). Cada tramo lleva una planta por donación, su cifra apoyada en el suelo y su acción;
+  quien dona está al principio y quien recibe, al final. En escritorio va de izquierda a derecha y en
+  el celular baja. Se tomó de a el corte de suelo con raíces y el signo de "espera destino", y de c la
+  cifra que sale del suelo y "Ver seguimiento" como único botón relleno. Abejas solo en la cabecera.
+  Los tres conceptos quedan como variantes en la rama (`?variante=concepto-a|b|c`); el sitio no cambia.
+- **Alternativas:** concepto-a, La lámina (una escena grande a todo el ancho, con el campo leído al
+  revés, abejas sin pausa y el único bloqueo de piso): `[REJECTED]`, pero su corte de suelo pasa a b.
+  concepto-c, Las cifras que crecen (el número es la punta del tallo): `[REJECTED]`, mezcla unidades
+  y en el celular pierde la calidez; pasan a b la cifra desde la planta y el botón relleno. También
+  descartadas: llenar el hueco de la primera columna con datos nuevos, duplicar "Ver seguimiento",
+  subir las cifras en banda al celular, mover el tramo "viajando" al principio y sacar la tierra en
+  el celular.
+- **Por qué:** es el que mejor cuenta el mensaje ("lo que donás llega y se ve; detrás hay
+  personas"): lo que donás va de vos a una entidad y se ve en qué tramo está; el problema vive en su
+  tramo, junto a "Ver seguimiento". Ponderado 440 de 500, contra 365 de a y 340 de c. Su patrón (tramo
+  con rótulo, título, cuenta, tierra y acción) sirve para seguimiento y Mis donaciones en la
+  iteración 2.
+- **Costo:** (1) en 360 × 640 "Ver seguimiento" no entra en la primera pantalla: la cabecera ocupa
+  unos 190 px y el tramo del depósito llena el resto; queda para la iteración 2, que rehace la
+  cabecera. (2) En 1280 quedan huecos bajo "Ver Mis donaciones" y "7 donaciones registradas". (3) La
+  verificación con filtro de páginas falla `lasPantallasConMovimientoDejanSuVideoYRespetanReducirMovimiento`
+  porque deja afuera la portada y `/estilos`; sin filtro pasa, y el piso (`reporte.json`) da `[]`. (4)
+  Los arreglos de a y c no se aplicaron. No reemplaza nada: las variantes conviven con el
+  inicio del donante actual (etapa 1, decidida por el usuario) hasta que la iteración 2 lleve el
+  ganador al sitio.
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** `evidencia/raices-calida-concepto-donante-inicio/` (las cuatro capturas de a, b y c y
+  del antes; estados vacío, error y lento de b en 360 y 1280).
+
 ### 2026-11-06 · color-y-acabado (Raíces) · La tierra humus, un paso más honda
 
 - **Decisión:** B, Humus hondo: `--p-suelo` `#46301f` y `--p-suelo-medio` `#3b2819`. Reemplaza el
