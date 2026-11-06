@@ -207,3 +207,4 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [plantillas/](plantillas/) | Ficha de flujo, iteración A/B, brief de identidad y los tres encargos de una corrida creativa (el creativo, el del constructor y el del crítico) |
 | [encargos/](encargos/README.md) | Los encargos creativos aprobados por el usuario: la entrada de cada corrida creativa |
 | `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso: el brief, las fichas de flujo y las capturas |
+| [evidencia/raices-calida-concepto-donante-inicio/](evidencia/raices-calida-concepto-donante-inicio/) y [evidencia/raices-calida-sistema/](evidencia/raices-calida-sistema/) | Capturas en JPG de la corrida creativa de [Raíces cálida](encargos/raices-calida.md): los tres conceptos sobre el inicio del donante con su antes (iteración 1) y las rutas del sitio con el sistema aplicado (iteración 2); las decisiones, en la [bitácora](bitacora.md) |
