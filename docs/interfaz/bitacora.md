@@ -25,7 +25,42 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 - **Evidencia:** capturas o enlace (si hay).
 ```
 
+Una decisión A/B (skill `iteracion-ab`) usa el mismo formato, en 15 líneas o menos: en
+**Alternativas**, una línea por vuelta, con las opciones y lo que dijo el usuario; en **Costo**, solo
+lo que queda pendiente. El detalle de valores va en el código y en las capturas, no acá.
+
 ## Decisiones
+
+### 2026-11-06 · proceso · iteracion-ab: modo exploración con eje de divergencia y vueltas en boceto
+
+- **Decisión:** la skill `iteracion-ab` distingue exploración (buscar un aspecto nuevo) de ajuste
+  (retocar uno elegido). En exploración:
+  - cada opción declara su eje de divergencia; en paleta, qué color domina, claro u oscuro,
+    temperatura o saturación, y no solo el tono de cada color en su rol;
+  - desde la segunda vuelta, una opción sale de la familia elegida;
+  - "cambio mínimo", superficie mínima y ponytail rigen el código, no la idea; la skill lee la
+    intensidad del brief, y "Lo que evitamos" es un aviso;
+  - las vueltas van en boceto: `-Dverificacion.boceto=true` captura solo a 1280 px, sin axe, toque,
+    desborde ni anchos intermedios. El piso, la evidencia y la bitácora, una vez, para la elegida.
+  Además: el tema `color-y-acabado` (color dominante, radios, bordes, sombras y grano juntos);
+  una variante puede crear un token de uso nuevo para mover un rol que no lo tenía (como la sombra
+  antes de `--color-sombra`); y las decisiones A/B van a la bitácora en 15 líneas o menos.
+  Cambian la skill, su plantilla, el catálogo de temas (versión 2), la dirección de arte (versión
+  4), el proceso (versión 3), las reglas del módulo, `VerificacionVisualTest`, una nota en el ADR
+  de verificación visual (`proposed`) y una línea de `identidad-visual` y de `revision-ui`.
+- **Alternativas:** constructores en paralelo con encargos opuestos; cargar la skill
+  `frontend-design`; una ficha corta de exploración; tope de 7 vueltas. Quedan sin aplicar.
+- **Por qué:** el 2026-11-05 las vueltas de solo paleta dieron opciones muy parecidas: la skill
+  pedía cambiar solo tokens en la misma estructura, y la diversidad apareció recién al cambiar qué
+  color domina y el acabado. Las reglas de minimalismo, pensadas para el código, recortaban la
+  idea. Cada vuelta corría la comprobación completa (3 anchos, 6 intermedios, axe, video y otros
+  tests), y el modo rápido se armó a mano.
+- **Costo:** una opción en boceto puede llegar al usuario con un problema de contraste o de celular;
+  se descubre al aplicar, y el arreglo tiene que conservar la idea. Las capturas de boceto no traen
+  360 px.
+- **Quién decidió:** usuario.
+- **Evidencia:** las entradas del 2026-11-05 de esta bitácora (siete vueltas de paleta y acabado) y
+  la versión anterior de la skill, `temas-ab.md` y `VerificacionVisualTest` en el historial de git.
 
 ### 2026-11-05 · paleta y acabado (Raíces) · Huerta de noche aplicada; "con problema" en negro y rojo vivo
 
