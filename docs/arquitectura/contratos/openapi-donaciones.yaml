@@ -31,12 +31,40 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: categoriaId
+          in: query
+          required: false
+          description: Donaciones con algún ítem de una subcategoría de esta categoría (HB-03).
+          schema:
+            type: string
+            format: uuid
         - name: donanteId
           in: query
           required: false
           schema:
             type: string
             format: uuid
+        - name: entidadId
+          in: query
+          required: false
+          description: Entidad beneficiaria asignada (HB-04). Sin autenticación llega por parámetro; la pertenencia se controla en la etapa 2 de SPEC-06.
+          schema:
+            type: string
+            format: uuid
+        - name: desde
+          in: query
+          required: false
+          description: Fecha de registro mínima, inclusiva (HB-04).
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: false
+          description: Fecha de registro máxima, inclusiva (HB-04). Si es anterior a `desde`, responde 400.
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Lista de donaciones independientes
@@ -46,6 +74,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
+        '400':
+          description: Fecha mal formada o `desde` posterior a `hasta` (ERR-CSR-003)
   /donaciones-independientes/{id}:
     get:
       summary: Consultar donación independiente por ID
