@@ -2,7 +2,7 @@
 name: relevamiento-creativo
 description: >-
   Releva con el usuario un encargo creativo para diseñar desde cero en el cliente liviano de
-  DonaTrack (un rediseño, una pantalla nueva o una alternativa de identidad): imágenes de
+  DonaTrack (un rediseño, una pantalla nueva o una identidad nueva): imágenes de
   referencia, mensaje, público, emoción, intensidad, libertades y límites, voz, juego, alcance y
   cantidad de iteraciones. Guarda las referencias con su README y deja un encargo creativo
   autocontenido y aprobado, listo para la skill corrida-creativa. Usar cuando el usuario quiere
@@ -21,17 +21,20 @@ description: >-
 
 ## 1. Antes de preguntar
 
-1. Leer las reglas para preguntar (README de interfaz), la dirección de arte y el brief de la
-   alternativa, si existe (`docs/interfaz/identidad/brief*.md`).
+1. Leer las reglas para preguntar (README de interfaz), la dirección de arte, el
+   [tono y comunicación](../../../docs/interfaz/tono-y-comunicacion.md) (común a todo el sitio:
+   no se vuelve a preguntar) y el brief vigente de la identidad
+   (`docs/interfaz/identidad/brief.md`).
 2. Sacar las capturas de lo actual, para mostrarlas y para el "qué no repetir" (las rutas sin la
    barra inicial, por Git Bash):
 
    ```bash
-   mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.alternativa=<alternativa> -Dverificacion.paginas=<ruta>,<ruta>
+   mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=<ruta>,<ruta>
    ```
 
 3. **Las referencias.** El usuario las adjunta o da una carpeta. Copiarlas a
-   `docs/interfaz/identidad/referencias-<nombre>/` como `NN-descripcion-corta.<ext>` y **mirarlas
+   `docs/interfaz/identidad/referencias/` como `NN-descripcion-corta.<ext>` (si la propuesta es una
+   identidad nueva, reemplazan a las que hay, en su rama; si no, siguen la numeración) y **mirarlas
    una por una**. Anotar, de cada una, qué rasgo propone (lo que se podría tomar) y qué riesgo trae
    (lo que podría volverse disfraz o juego para chicos). De ahí salen las opciones de la ronda 2.
 
@@ -55,10 +58,10 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
 **Ronda 2 — las referencias**
 
 1. "¿Qué es lo que más querés llevarte de las referencias?" (`multiSelect`) → los tres o cuatro
-   rasgos que más se repiten (por ejemplo, "El dibujo a tinta", "Los objetos con cuerpo", "El orden
-   editorial").
+   rasgos que más se repiten, dichos como se ven (por ejemplo, "La letra grande", "Los colores
+   planos", "El orden en columnas").
 2. "¿Qué no queremos, aunque aparezca en alguna?" (`multiSelect`) → los riesgos que se vieron (por
-   ejemplo, "Que parezca un juego para chicos", "Disfraz: textura en todo", "Letra antigua en todo").
+   ejemplo, "Que parezca un juego para chicos", "Disfraz: el adorno en todo", "Que cueste leer").
 3. "¿Alguna es la guía principal?" → las dos o tres más fuertes · "Ninguna: todas por igual".
 
 **Ronda 3 — libertades, voz y juego**
@@ -66,11 +69,13 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
 1. "¿Qué puede cambiar la corrida?" (`multiSelect`) → "La composición de cada pantalla
    (Recomendada)" · "La navegación" · "La voz en títulos y rótulos" · "Movimiento e interacción
    encima de lo que ya funciona" (es JavaScript propio como mejora; la página sigue andando sin él).
-   Datos, acciones, piso, stack y la otra alternativa no se preguntan: son fijos.
-2. "¿Cómo habla?" → dos o tres tonos con un título de muestra cada uno en el `preview` (la tabla
-   "Glassmorphism dice / esta dice").
+   Datos, acciones, piso y stack no se preguntan: son fijos.
+2. "¿Cómo habla en títulos y rótulos?" → dos o tres tonos con un título de muestra cada uno en el
+   `preview` (la tabla "Hoy dice / La propuesta dice"). Solo títulos y rótulos: el resto de la
+   voz es el tono común, y los títulos de muestra también lo pasan (sin prometer impacto).
 3. "¿Cuánto juego?" → "Se insinúa: misiones, sellos, rango (Recomendada)" · "Nada de juego" ·
-   "Bien presente".
+   "Bien presente". En cualquier caso, el juego celebra hechos confirmados y no presiona
+   ([tono común](../../../docs/interfaz/tono-y-comunicacion.md#juego-y-celebración)).
 
 **Ronda 4 — la corrida**
 
@@ -86,12 +91,13 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
 1. Copiar la plantilla a `docs/interfaz/encargos/<nombre>.md` y completarla: cada sección con lo que
    dijo el usuario (sus palabras textuales en la sección 2) y lo que decidió el agente marcado "a
    criterio de la corrida". Sin "a definir": si algo queda abierto, se dice quién lo decide.
-2. Escribir el README de las referencias (qué se toma de cada una y qué no), con el formato de
-   `docs/interfaz/identidad/referencias-cozy-medieval/README.md`.
-3. Si la alternativa es nueva, armar su brief con la plantilla
-   [`brief-identidad.md`](../../../docs/interfaz/plantillas/brief-identidad.md) en
-   `docs/interfaz/identidad/brief-<nombre>.md`.
-4. Completar la sección 9 (la corrida): conceptos (3 por defecto), rama (`E6_<nombre>` si hay PR),
+2. Escribir el README de las referencias: una fila por imagen, con el archivo, qué se toma y qué
+   no.
+3. Si la propuesta es una identidad nueva, armar su brief con la plantilla
+   [`brief-identidad.md`](../../../docs/interfaz/plantillas/brief-identidad.md): reemplaza a
+   `docs/interfaz/identidad/brief.md` en la rama de la corrida.
+4. Completar la sección 9 (la corrida): conceptos (3 por defecto), rama propia (`E6_<nombre>` si
+   hay PR; la rama es la propuesta), las pantallas fuera de alcance (las que no se tocan),
    el tamaño en unidades contadas y el presupuesto. El presupuesto lo propone el agente, no se
    pregunta: unos 10 agentes por iteración con 2 conceptos (director, constructores, integración,
    3 críticos, decisión, arreglos y cierre), uno de preparación y de 4 a 7 entre el cierre, la
@@ -110,13 +116,13 @@ Con el sí:
 
 1. Marcar el encargo "aprobado por el usuario el AAAA-MM-DD" con su frase.
 2. Una entrada en la [bitácora](../../../docs/interfaz/bitacora.md):
-   `AAAA-MM-DD · proceso (<alternativa>) · Encargo creativo: <frase>`, con "Quién decidió: usuario".
-3. Un commit con el encargo, las referencias, su README y el brief si es nuevo:
-   `E6: <alternativa>, encargo creativo`.
+   `AAAA-MM-DD · proceso (<nombre>) · Encargo creativo: <frase>`, con "Quién decidió: usuario".
+3. En la rama de la corrida, un commit con el encargo, las referencias, su README y el brief si es
+   nuevo: `E6: <nombre>, encargo creativo`.
 4. Seguir con `corrida-creativa`. El "arrancá" del usuario es el pedido de correr el workflow.
 
 ## 5. Criterio de salida
 
-- [ ] Referencias en `docs/interfaz/identidad/referencias-<nombre>/` con su README.
+- [ ] Referencias en `docs/interfaz/identidad/referencias/` con su README.
 - [ ] Encargo en `docs/interfaz/encargos/<nombre>.md`, autocontenido y aprobado, sin "a definir".
 - [ ] Entrada en la bitácora y commit.

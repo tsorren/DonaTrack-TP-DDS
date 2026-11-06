@@ -36,7 +36,7 @@ public class Imagenes {
       """
       Uso: java scripts/visual/Imagenes.java <orden> <argumentos>
         jpg <origen.png|carpeta> <destino.jpg|carpeta> [maxKB=400] [glob=*.png]
-        comparar <antes> <después> [glob] [ruido]   sin glob: los PNG de Glassmorphism (sin "--")
+        comparar <antes> <después> [glob] [ruido]   sin glob: los PNG del sitio (sin "--")
         recorte <entrada> <salida.png> <x> <y> <ancho> <alto> [escala=1]
         lado <a> <b> <salida.png> <x> <y> <ancho> <alto> <escala> <rótulo A> <rótulo B>
         tamano <imagen>...

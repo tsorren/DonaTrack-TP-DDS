@@ -1,6 +1,6 @@
 # Dos alternativas de identidad visual, cada una con sus propias hojas de estilo y plantillas
 
-- Status: proposed
+- Status: superseded by cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano (href: ./20261103-una-sola-identidad-en-el-cliente-liviano.md)
 - Date: 2026-10-30
 - Deciders: tsorren, al elegir entre tres opciones de hojas de estilo y cuatro de plantillas en la sesión de la Alternativa Cozy / Medieval
 - Tags: cliente-liviano, interfaz, identidad, tokens, entrega-6

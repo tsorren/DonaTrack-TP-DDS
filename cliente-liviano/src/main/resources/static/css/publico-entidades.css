@@ -1,0 +1,271 @@
+/* Raíces, sitio A: Entidades (publico-entidades.html). El herbario de la portada en la tierra: un
+   tronco paja y, colgada de su rama, la etiqueta de cada entidad, de papel con la sombra plana salvia
+   y el sello de lo que pide en la punta. En el celular, el tronco va al costado; desde la tableta,
+   al centro, con las entidades de a una a cada lado (la espina en espejo de la portada). */
+@import url("publico-listas.css");
+
+/* --- El buscador ------------------------------------------------------------------------------- */
+
+.filtro--buscar {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.filtro-buscar-fila {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filtro-buscar-fila input {
+  flex: 1;
+  width: 100%;
+}
+
+.filtro--buscar > .boton {
+  justify-self: start;
+}
+
+/* --- El herbario ------------------------------------------------------------------------------- */
+
+.herbario {
+  padding: 2.5rem 1rem 2rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-suelo);
+}
+
+.herbario-lista {
+  position: relative;
+  display: grid;
+  gap: 2.75rem;
+  margin: 0;
+  padding: 0 0 0 2rem;
+  list-style: none;
+}
+
+/* El tronco. */
+.herbario-lista::before {
+  content: "";
+  position: absolute;
+  top: -2.5rem;
+  bottom: 0;
+  left: 0.25rem;
+  width: 6px;
+  background: var(--color-raiz);
+}
+
+.etiqueta-entidad {
+  position: relative;
+}
+
+/* La rama, del tronco a la etiqueta, y el cruce sobre el tronco. */
+.etiqueta-entidad::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  right: 100%;
+  width: 1.75rem;
+  height: 5px;
+  background: var(--color-raiz);
+}
+
+.etiqueta-entidad::after {
+  content: "";
+  position: absolute;
+  top: calc(1.5rem + 2.5px - 0.5625rem);
+  left: calc(-2rem + 0.25rem + 3px - 0.5625rem);
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2.5px solid var(--color-texto-suelo);
+  border-radius: 50%;
+  background: var(--color-suelo);
+}
+
+.etiqueta-entidad.esqueleto {
+  min-height: 14rem;
+}
+
+.etiqueta-entidad article {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 0.125rem;
+  padding: 1.875rem 1rem 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-sombra);
+  color: var(--color-tinta);
+}
+
+.etiqueta-sello {
+  position: absolute;
+  top: -1.375rem;
+  left: 1rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--color-suelo-hondo);
+  fill: currentcolor;
+}
+
+.etiqueta-entidad p {
+  margin: 0;
+}
+
+.etiqueta-tipo {
+  color: var(--color-acento);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.etiqueta-entidad h2 {
+  margin: 0;
+  font-size: 1.3125rem;
+}
+
+.etiqueta-barrio {
+  color: var(--color-tinta-suave);
+}
+
+.etiqueta-pide {
+  justify-self: stretch;
+  margin: 0.75rem 0 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-tinta-suave);
+  color: var(--color-acento);
+  font: 700 0.875rem/1.2 var(--fuente-texto);
+  font-stretch: 112%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pedidos {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pedidos > li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0 0.625rem;
+}
+
+.pedidos .categoria-icono {
+  grid-row: span 2;
+}
+
+.pedido-porque {
+  grid-column: 2;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.pedidos-mas {
+  justify-self: stretch;
+}
+
+.pedidos-mas[open] .pedidos {
+  margin-top: 0.75rem;
+}
+
+.pedidos-mas summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pedidos-mas summary::-webkit-details-marker {
+  display: none;
+}
+
+.pedidos-mas summary {
+  list-style: none;
+}
+
+/* La flecha que dice si está plegado. */
+.pedidos-mas summary::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2.5px solid currentcolor;
+  border-bottom: 2.5px solid currentcolor;
+  rotate: 45deg;
+  translate: 0 -0.15rem;
+}
+
+.pedidos-mas[open] summary::before {
+  rotate: 225deg;
+  translate: 0 0.15rem;
+}
+
+.pedidos-mas[open] .pedidos-ver,
+.pedidos-mas:not([open]) .pedidos-menos {
+  display: none;
+}
+
+.etiqueta-entidad .boton[data-tamano="chico"] {
+  margin-top: 0.75rem;
+}
+
+/* El buscador y el filtro ocupan el ancho; la cifra, debajo. */
+.entidades .publica-barra {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 53.75em) {
+  .filtro--buscar {
+    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+    align-items: end;
+  }
+
+  .filtro--buscar > .boton {
+    grid-column: 2;
+  }
+
+  .herbario {
+    padding: 3rem 2rem 2.5rem;
+  }
+
+  /* El tronco al centro; las entidades de a una a cada lado, la de la derecha más abajo. */
+  .herbario-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.75rem 5rem;
+    padding: 0;
+  }
+
+  .herbario-lista::before {
+    top: -3rem;
+    left: calc(50% - 3px);
+  }
+
+  .etiqueta-entidad:nth-child(even) {
+    margin-top: 3rem;
+  }
+
+  .etiqueta-entidad:nth-child(even)::before {
+    width: 2.5rem;
+  }
+
+  .etiqueta-entidad:nth-child(odd)::before {
+    right: auto;
+    left: 100%;
+    width: 2.5rem;
+  }
+
+  .etiqueta-entidad:nth-child(even)::after {
+    left: calc(-2.5rem - 0.5625rem);
+  }
+
+  .etiqueta-entidad:nth-child(odd)::after {
+    left: calc(100% + 2.5rem - 0.5625rem);
+  }
+}

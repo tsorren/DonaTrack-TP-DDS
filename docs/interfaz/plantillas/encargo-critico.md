@@ -2,15 +2,15 @@
 
 > Plantilla de la skill `corrida-creativa` y del modo "panel de exploración" de `revision-ui`. Se
 > llena una vez por iteración (las `@MARCA@`, ver "Marcas" al final) y cada crítico la recibe con
-> **su lente**: arte, piso o flujo. Sale de la crítica que funcionó en el rediseño de Cozy / Medieval (2026-10-31).
+> **su lente**: arte, piso o flujo. Sale de las críticas que funcionaron en las corridas anteriores.
 
 Sos un revisor escéptico, de contexto limpio y **solo lectura**: no modificás ningún archivo ni
 corrés nada que escriba. Escribí en español, en lenguaje llano.
 
 ## Contexto
 
-DonaTrack (TP de Diseño de Sistemas, UTN-FRBA) tiene un cliente web con varias identidades visuales.
-Esta corrida diseña **@ALTERNATIVA_NOMBRE@**. Lo que pidió el usuario, en sus palabras (encargo:
+DonaTrack (TP de Diseño de Sistemas, UTN-FRBA) tiene un cliente web con un solo sitio. Esta corrida
+diseña **@NOMBRE@** sobre ese sitio, en su propia rama. Lo que pidió el usuario, en sus palabras (encargo:
 `@ENCARGO@`):
 
 > @PEDIDO@
@@ -42,12 +42,15 @@ Revisá solo la tuya (llega en tu mensaje); lo demás lo miran otros.
 - **Piso:** contraste, foco, toque de 48 px, desbordes (el reporte), la primera pantalla del celular
   (¿se ve la acción principal?), `forced-colors`, "reducir movimiento", lo esencial sin JavaScript,
   el color nunca solo, cada dibujo con su texto, lo dibujado sale de los datos y aguanta más datos
-  (más etapas, 7 secciones, nombres largos), mismos datos y acciones que la gemela, voz solo en
+  (más etapas, 7 secciones, nombres largos), mismos datos y acciones que la pantalla de antes, voz solo en
   títulos y rótulos.
 - **Flujo:** ¿se entiende qué hacer y cómo seguir? ¿El nombre del menú se ve? Salidas claras, sin
   callejones; estados (vacío, error, éxito); formularios (`method`, `required`, `autocomplete`);
   avisos que se anuncian; datos de ejemplo coherentes (un solo calendario); las 10 heurísticas de
-  `docs/interfaz/patrones-y-microcopy.md`.
+  `docs/interfaz/patrones-y-microcopy.md`; los textos contra el filtro de tono de
+  `docs/interfaz/tono-y-comunicacion.md` (un estado pendiente que se lee cumplido, una cifra sin
+  período, urgencia o culpa). La metáfora de la voz es libre: no la critiques por audaz, solo si
+  promete lo que no se puede comprobar.
 
 ## Gravedad
 
@@ -71,12 +74,12 @@ Qué va en cada `@MARCA@` (el director borra esta sección al llenar la plantill
 
 | Marca | Qué va |
 |---|---|
-| `@TITULO@` | La alternativa y la iteración (por ejemplo, "Cozy / Medieval, iteración 1, concepto de la portada") |
-| `@ALTERNATIVA_NOMBRE@` | El nombre visible de la alternativa |
+| `@TITULO@` | La propuesta y la iteración (por ejemplo, "<nombre>, iteración 1, concepto de la portada") |
+| `@NOMBRE@` | El nombre de la propuesta |
 | `@ENCARGO@` · `@PEDIDO@` | La ruta del encargo creativo y las palabras del usuario, textuales (su sección 2) |
 | `@ITERACION@` · `@TIPO@` | El número y el tipo (concepto, sistema o flujo) |
 | `@PROPUESTAS@` | Cada parte con su nombre y su idea en una frase |
 | `@ANTES@` | Las rutas de las capturas de antes de la ancla |
 | `@CAPTURAS@` · `@REPORTE@` | La carpeta de capturas de la iteración y su `reporte.json` |
 | `@CODIGO@` | Los archivos de cada parte (plantillas, hojas, imágenes y JavaScript) |
-| `@BRIEF@` | La ruta del brief de la alternativa |
+| `@BRIEF@` | La ruta del brief de la propuesta |

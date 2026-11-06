@@ -427,9 +427,125 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 | ADR | [20261030-verificacion-visual-con-playwright-y-axe](./cliente-liviano/20261030-verificacion-visual-con-playwright-y-axe.md) |
 | ADR complementario | [20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas](./cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `VerificacionVisualTest` (axe AA, toque de 48 px, desbordes y capturas) corre solo con `mvn test -pl cliente-liviano -Pvisual`. El CI (`main.yml`, job `build-and-test`) corre `mvn clean verify -pl cliente-liviano -am` sin el perfil, así que no la ejecuta. En el CI corre `InterfazFitnessTest` (tokens, colores, quiebres, catálogo y contraste) |
+| Implementation status | `[OBSERVED] deferred` — `VerificacionVisualTest` (axe AA, toque de 48 px, desbordes y capturas) corre solo con `mvn test -pl cliente-liviano -Pvisual`. El CI (`main.yml`, job `build-and-test`) corre `mvn clean verify -pl cliente-liviano -am` sin el perfil, así que no la ejecuta. En el CI corre `InterfazFitnessTest` (tokens, colores, quiebres y contraste) |
 | Target | `.github/workflows/main.yml` (un job o paso con `-Pvisual` y caché de los navegadores de Playwright) · `cliente-liviano/pom.xml` |
-| Cuándo se saldará | Antes del cierre de E6, cuando haya pantallas reales además del catálogo `/estilos`. Hasta entonces, cada flujo la corre a mano (skill `vista-ui`) |
+| Cuándo se saldará | Antes del cierre de E6. Hasta entonces, cada flujo la corre a mano (skill `vista-ui`) |
 
 1. **Riesgo:** un PR puede romper la accesibilidad, el toque o el responsive sin que el CI lo note.
 2. **Costo de saldarla:** el job baja unos 200 MB de driver más Chromium; con caché, es una vez por versión de Playwright.
+
+---
+
+## DTI-29 — El contrato de entregas no tiene remito ni reporte de problemas, y la donación no devuelve su necesidad
+<a id="dti-29"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `CambioEstadoEntregaRequestDTO` no acepta remito ni reporte; `EntregaResponseDTO` no los devuelve; `DonacionIndependienteResponseDTO` no devuelve `necesidadId`. El prototipo de Raíces ya pide el remito al confirmar |
+| Target | `logistica-service` (`Entrega`, DTOs de entregas, `entrega.exitosa`) · `donaciones-service` (`DonacionIndependienteResponseDTO`) · `openapi-logistica.yaml`, `openapi-donaciones.yaml` y `schemas/evento-entrega-exitosa.schema.json` |
+| Cuándo se saldará | Cuando `cliente-liviano` consuma Logística para Confirmar recepción (RF-12). Pide antes HB-13 (pertenencia) |
+
+1. **Remito.** `numeroRemito` en la confirmación (`ENTREGADA`) y en `EntregaResponseDTO`; fuera de las respuestas públicas y de los eventos.
+2. **Reporte.** `reporte` opcional en la confirmación (`motivo`, `detalle`, `cantidadRecibida`), guardado en la entrega y como campo opcional de `entrega.exitosa`. Falta decidir qué hace Donaciones con una cantidad recibida menor (por ejemplo, cuánto cuenta para el período).
+3. **`necesidadId`** como campo opcional de `DonacionIndependienteResponseDTO`.
+4. **Pantalla "Llegó con un problema":** sin diseñar (`sin-dibujar` en el prototipo).
+
+---
+
+## DTI-30 — La necesidad no expone estado, versión, unidad, fecha límite ni historia de períodos
+<a id="dti-30"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato](./donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `NecesidadDTO` (`id, tipo, idEntidad, idSubcategoria, cantidadNecesitada, descripcion, estaSatisfecha, fechaInicio, fechaFin`); `GET /api/necesidades` sin filtro por estado y con las dadas de baja; período de cualquier largo; el cambio de cantidad vale desde el próximo período. El prototipo de Raíces ya muestra lo decidido |
+| Target | `donaciones-service` (`NecesidadDTO`, `NecesidadesService`, `NecesidadRecurrente`, `Subcategoria`, consulta de lo recibido) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
+| Cuándo se saldará | Cuando `cliente-liviano` consuma Donaciones para Necesidades (RF-10). Los dos cambios incompatibles se coordinan con `integration-tests` y Postman |
+
+1. **`estado`** calculado (`VIGENTE`, `CUMPLIDA`, `TERMINADA`, `DADA_DE_BAJA`) y filtro `?estado=`; corregir "Listar necesidades activas" en la OpenAPI.
+2. **`version`** en la salida y en el `PUT` (`409` si no coincide).
+3. **`fechaLimite`** obligatoria en las extraordinarias. **Incompatible.**
+4. **`periodicidad`** (`SEMANAL`, `QUINCENAL`, `MENSUAL`) obligatoria en las recurrentes; `fechaFin` deprecado como entrada. **Incompatible.**
+5. **Cambio de cantidad** en el período en curso, que queda cumplido si lo recibido ya alcanza, y `ultimoCambio` (`cantidadAnterior`, `fecha`) en la salida mientras dure ese período, para el cartel de la entidad (review de Sofía, 2026-11-02).
+6. **`GET /api/necesidades/{id}/periodos`** (objetivo, asignado, recibido y resultado) y `GET /donaciones-independientes?necesidadId=`.
+7. **`unidad`** en la subcategoría (hereda la de la categoría) y de solo lectura en la necesidad.
+
+Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-service/20260609-gestion-de-necesidades-y-periodos.md).
+
+---
+
+## DTI-31 — Dar de baja una necesidad no cancela sus entregas que todavía no salieron
+<a id="dti-31"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-baja-de-una-necesidad-con-entregas-en-curso](./20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |
+| ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `NecesidadesService.eliminar` solo llama a `desactivar()`; Logística no tiene cancelación (`EstadoEntrega` sin `CANCELADA`); la asignación por `PATCH` no consulta si la necesidad sigue activa |
+| Target | `donaciones-service` (baja, broker, procesador de eventos de vuelta) · `logistica-service` (`Entrega.cancelar`, listener del comando, salida de la ruta) · `schemas/` (comando `entrega.cancelada.<proveedorId>.v1` y evento `entrega.cancelada`) |
+| Cuándo se saldará | Antes de habilitar la baja de necesidades en el cliente con datos reales |
+
+1. **Comando** `entrega.cancelada.<proveedorId>.v1` por el outbox del broker, y marca de "cancelación pedida" en la donación.
+2. **`Entrega.cancelar`** solo desde `PENDIENTE`, estado `CANCELADA`, salida de la ruta sin iniciar y evento firmado `entrega.cancelada`. **Incompatible** (valor nuevo del enum).
+3. **Vuelta** a `EN_DEPOSITO` sin destino al recibir el evento.
+4. **Guarda `NECESIDAD_INACTIVA`** en la asignación por `PATCH`.
+5. **Proveedores HTTP** sin cancelación: la entrega sigue y se loguea.
+
+---
+
+## DTI-32 — No hay preferencia para ocultar el nombre del donante ni constancia de los legales
+<a id="dti-32"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261102-nombre-visible-del-donante-y-constancia-de-los-legales](./20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `Donante` sin preferencia; `DonanteResumenDTO` devuelve la persona entera (documento, dirección, contactos); sin términos ni constancia de aceptación. El prototipo de Raíces ya muestra el nombre, la opción en Mi perfil, los legales en el pie y la casilla en la ficha |
+| Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `POST /api/personas`, `GET /api/personas/me`) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
+| Cuándo se saldará | Con el registro y el perfil reales (RF-03, RI-AUTH-02, HB-11) |
+
+1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias.
+2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`.
+3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Incompatible.**
+4. **Texto de los legales:** lo escribe el equipo.
+5. **`mostrarNombre` en la donación** (opcional; solo oculta) para "Esta vez, sin mi nombre" al registrarla (review de Sofía, 2026-11-02).
+6. **Categoría del ranking** con el nombre oculto (en el prototipo, dato fijo de la maqueta; `cliente-liviano` no tiene todavía un cliente de Incentivos): el cliente liviano la pide a Incentivos (`GET /api/incentivos/donantes/{donanteId}`, `DonantePerfilDTO.categoria`) con el `donanteId`, que `QuienDonoDTO` suma también con el nombre oculto; el cliente liviano lo usa en el servidor y a la entidad le muestra solo la categoría, nunca el id. Falta decidir con qué credencial lo pide el cliente liviano (`[INFERRED]` el perfil de incentivos es del propio donante, no de la entidad).
+
+Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de-usuarios.md): ocultar el nombre no reemplaza la anonimización.
+
+---
+
+## DTI-33 — El formulario de contacto no tiene endpoint ni bandeja
+<a id="dti-33"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | Sin ADR propio. Si el contacto termina en un servicio nuevo o en un canal nuevo entre servicios, lo pide (AGENTS.md §9.1) |
+| Decision status | `proposed` |
+| Decidido por | Usuario (2026-11-02, pregunta 17 del artifact de Raíces): formulario dentro de DonaTrack |
+| Implementation status | `[OBSERVED] deferred` — ningún servicio tiene mensajes de contacto. El prototipo de Raíces tiene la pantalla de Contacto, y los avisos de error enlazan a ella con el código del error |
+| Target | Por decidir: `notificaciones-service` (ya tiene una bandeja de notificaciones) o `donaciones-service` |
+| Cuándo se saldará | Antes de publicar el sitio. Hasta entonces, la pantalla es maqueta |
+
+1. **Dueño.** Decidir qué servicio recibe el mensaje (`POST /api/contacto`: tema, mensaje, código de error opcional, y correo si no hay sesión) y dónde lo lee el administrador.
+2. **Abuso y repetidos.** Límite de envíos por persona o dirección, porque el formulario es público; y detectar el mismo mensaje enviado dos veces (la pantalla sin conexión pide mandarlo de nuevo).
+3. **Respuesta.** Por correo, desde Notificaciones, con el número del mensaje.
+
+## DTI-34 — El cliente liviano no tiene catálogo, tokens de movimiento ni cerco de componentes
+<a id="dti-34"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [Interacción, movimiento y componentes del cliente liviano](cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md) |
+| Decision status | `proposed` |
+| Decidido por | tsorren (2026-11-04): Alpine CSP, CSS nativo, sistema de movimiento, capa CUBE con cerco y migración incremental con backlog obligatorio |
+| Implementation status | `[OBSERVED] partial` (2026-11-04): fase 0 implementada en la rama `E6_raices` (tokens `--movimiento-*` y 0 duraciones o curvas literales fuera de `tokens.css`; `@layer`; composición, utilidades y `movimiento.css`; Alpine CSP; catálogo `/estilos` y `componentes.md`; cerco en `InterfazFitnessTest`; skills; video; View Transitions). Fase 1 también implementada (2026-11-04, `E6_raices`): los 13 `@keyframes` y las duraciones, curvas y esperas de las 7 hojas de pantalla pasaron a `movimiento.css` como animaciones con nombre (`--movimiento-animacion-*`), con una regla nueva del cerco. Fase 2, tanda 1 (B2-01 a B2-03: botón, campo y sello) también implementada (2026-11-04, `E6_raices`, 38033d2a): variantes por atributo, fragmento `componentes/sello` y tope en 197. Fase 2, tanda 2 (B2-04, B2-05 y B2-09: aviso breve con la cola de Alpine, banner, diálogo, estado vacío, carga y esqueleto) también implementada (2026-11-04, `E6_raices`, 38033d2a): tope en 189. Fase 2, tanda 3 (B2-06 a B2-08: navegación, tarjeta y lista adaptable) también implementada (2026-11-04, `E6_raices`): tope en 186; la tabla no se hizo porque el sitio no tiene ninguna. Fase 2, tanda 4 (B2-10 a B2-13: subida de fotos con vista previa y pestañas, las dos con Alpine, piezas de la entidad y mapa con su lista) también implementada (2026-11-04, `E6_raices`): tope en 172; `acta` y `salidas` quedan en su hoja y el dibujo del mapa en la hoja de la pantalla. Fase 2, tanda 5 (B2-14, recortado al cuaderno de noticias del donante, con su libro de registro, más los «Cargando…» públicos como `.cargando` y el color de `.boton`) también implementada (2026-11-04, `E6_raices`): el tope sigue en 172 (no baja); `asiento`, `novedad` y `libro` quedan heredadas. Fase 3, B3-01 (la portada, en 3 subtandas): la subtanda 1 también implementada (2026-11-05, `E6_raices`): la lámina, el diálogo de la foto, los avisos, los botones propios y el tamaño del título pasan a bloques existentes y a dos tokens; tope en 171. La subtanda 2 también implementada (2026-11-05, `E6_raices`): los pasos, la planta, la rama de frutos y la libreta del mes son bloques nuevos (`.pasos`, `.planta`, `.frutos`, `.libreta`); tope en 163. La subtanda 3 también implementada (2026-11-05, `E6_raices`): la tierra, la red y la pausa son bloques (`.tierra-*`, `.red`, `.pausa`) y `publico-portada.css` solo dispone, así que salió de `HOJAS_HEREDADAS`; B3-01 queda hecho y el tope en 159. Sigue en deuda el resto de la fase 3 (B3-02 a B3-06): 159 clases de un solo uso (tope 159) y 370 clases heredadas sin componente. El ADR sucesor `proposed` [Diálogo con `popover` y fragmentos solo donde hay estructura](cliente-liviano/20261104-dialogo-con-popover-y-fragmentos-solo-donde-hay-estructura-en-el-cliente-liviano.md) corrige dos frases de D31 y D33; el usuario pidió una nota de remisión en el ADR de origen (puesta el 2026-11-04) y la aceptación la decide una persona al integrar el PR. Pico no se carga en ninguna plantilla |
+| Target | `cliente-liviano` |
+| Cuándo se saldará | Fase 0 del [backlog de migración](../interfaz/backlog-migracion-componentes.md) antes de cerrar E6; fases 1 a 3, incrementales, revisadas al cerrar cada entrega |
+
+1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
+2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.

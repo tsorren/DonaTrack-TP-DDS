@@ -8,13 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -23,8 +21,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Reglas de la interfaz que se pueden comprobar sin navegador (cliente-liviano/AGENTS.md). Las
- * reglas y las listas permitidas viven solo en este archivo; la voz propia de cada alternativa, en
- * {@code src/test/resources/voz/<alternativa>.txt}.
+ * reglas y las listas permitidas viven solo en este archivo.
  */
 class InterfazFitnessTest {
 
@@ -34,16 +31,6 @@ class InterfazFitnessTest {
   private static final String HTML = ".html";
   private static final Path VARIANTES = CSS.resolve("variantes");
   private static final Path PLANTILLAS = RECURSOS.resolve("templates");
-
-  /** El juego de plantillas de cada alternativa (estructura-cozy-medieval.md). */
-  private static final Path JUEGOS = PLANTILLAS.resolve("alternativas");
-
-  private static final Path ESTRUCTURAS_AB = PLANTILLAS.resolve("variantes");
-
-  /** El prototipo del flujo completo de Cozy (PrototipoController): no tiene gemelas. */
-  private static final Path PROTOTIPOS = PLANTILLAS.resolve("prototipo");
-
-  private static final String ALTERNATIVAS = "alternativas";
 
   /** Tokens de uso: lo único que pueden referenciar pantallas y componentes. */
   private static final List<String> PREFIJOS_DE_USO =
@@ -63,8 +50,8 @@ class InterfazFitnessTest {
 
   /**
    * Pares texto-fondo con contraste AA: 4,5 para texto y 3 para bordes y foco (WCAG 1.4.3 y
-   * 1.4.11). Un par nuevo de colores en tokens.css se agrega acá. Rigen para el tokens.css de cada
-   * alternativa: static/css/ (Glassmorphism) y static/css/alternativas/<nombre>/.
+   * 1.4.11). Un par nuevo de colores en tokens.css se agrega acá. Rigen para todo tokens.css de
+   * static/css/.
    */
   private static final List<Par> PARES =
       List.of(
@@ -116,64 +103,7 @@ class InterfazFitnessTest {
       Pattern.compile("<style|\\sstyle\\s*=|th:style", Pattern.CASE_INSENSITIVE);
   private static final Pattern HEX = Pattern.compile("#(\\p{XDigit}{6}|\\p{XDigit}{3})");
 
-  /** Textos de una plantilla: lo que se lee o se escucha. */
-  private static final Pattern COMENTARIO_HTML = Pattern.compile("<!--.*?-->", Pattern.DOTALL);
-
-  private static final Pattern NODO_DE_TEXTO = Pattern.compile(">([^<>]+)<");
-  private static final Pattern ATRIBUTO_DE_TEXTO =
-      Pattern.compile(
-          "\\s(?:th:)?(?:aria-label|alt|title|placeholder|data-etiqueta)\\s*=\\s*\"([^\"]*)\"");
-  private static final Pattern ATRIBUTO_TH = Pattern.compile("\\sth:[\\w-]+\\s*=\\s*\"([^\"]*)\"");
-  private static final Pattern LITERAL = Pattern.compile("'([^']*)'|\\|([^|]*)\\|");
-
-  /**
-   * Un literal de un atributo th:* es un texto si tiene mayúsculas, acentos o dos palabras; si no,
-   * es un nombre técnico (un ícono, un id, un tipo) que cada alternativa puede cambiar.
-   */
-  private static final Pattern PARECE_TEXTO =
-      Pattern.compile("\\p{Lu}|[^\\p{ASCII}]|\\p{L}{2,}[,.;:]?\\s+\\p{L}");
-
-  /**
-   * Voz propia (brief de cada alternativa, Voz): títulos y rótulos que una alternativa dice a su
-   * modo. Una línea por texto, {@code <Glassmorphism> => <alternativa>}; un lado vacío es un rótulo
-   * que la alternativa suma o que no usa.
-   */
-  private static final Path VOCES = Path.of("src/test/resources/voz");
-
-  private static final String FLECHA_DE_VOZ = "=>";
-  private static final Pattern NUMERO = Pattern.compile("\\d");
-
-  /** Controles: lo que se toca. Su nombre accesible y su destino no cambian con la alternativa. */
-  private static final Pattern CONTROL =
-      Pattern.compile(
-          "<(a|button|summary|label|select|textarea)\\b([^>]*)>(.*?)</\\1>", Pattern.DOTALL);
-
-  private static final Pattern CONTROL_SIN_CIERRE = Pattern.compile("<(input|form)\\b([^>]*)>");
-  private static final Pattern DESTINO =
-      Pattern.compile(
-          "\\s((?:th:)?(?:href|action|method|for|form|name|type|commandfor|command)|hx-[\\w-]+)"
-              + "\\s*=\\s*\"([^\"]*)\"");
-  private static final Pattern TEXTO_TH = Pattern.compile("\\sth:(?:u)?text\\s*=\\s*\"([^\"]*)\"");
-
-  /**
-   * Datos del modelo que se muestran: las expresiones ${…} de los atributos que escriben texto y de
-   * los argumentos de los fragmentos. Las de forma (th:classappend, th:if, th:each, th:attr…) y las
-   * de los íconos, que son siempre decorativos, no cuentan: un dibujo es propio de cada
-   * alternativa.
-   */
-  private static final Pattern ATRIBUTO_DE_DATOS =
-      Pattern.compile(
-          "\\sth:(?:u?text|value|aria-label|alt|title|placeholder|datetime|src|data-etiqueta"
-              + "|replace|insert)\\s*=\\s*\"([^\"]*)\"");
-
-  private static final String ICONO = "fragmentos/icono ::";
-
-  private static final Pattern EXPRESION = Pattern.compile("\\$\\{([^}]*)}");
-
   private record Par(String texto, String fondo, double minimo) {}
-
-  /** Un texto de Glassmorphism y cómo lo dice la alternativa; vacío, si no lo tiene. */
-  private record Voz(String comun, String propia) {}
 
   @Test
   void soloTokensCssDefineColores() {
@@ -270,119 +200,6 @@ class InterfazFitnessTest {
   }
 
   @Test
-  void cadaFragmentoFiguraEnElCatalogoDeSuAlternativa() {
-    List<String> faltan = new ArrayList<>(faltanEnElCatalogo(PLANTILLAS, ""));
-    for (Path juego : juegosDeAlternativas()) {
-      faltan.addAll(faltanEnElCatalogo(juego, prefijo(juego)));
-    }
-    assertThat(faltan).as("Componentes que faltan en el /estilos de su alternativa").isEmpty();
-  }
-
-  @Test
-  void cadaAlternativaTieneSuJuegoCompletoDePlantillas() {
-    List<String> fallas = new ArrayList<>();
-    Set<String> conHojas = new TreeSet<>();
-    for (Path tokens : hojasDeTokens()) {
-      if (tokens.getParent().getParent().endsWith(ALTERNATIVAS)) {
-        conHojas.add(tokens.getParent().getFileName().toString());
-      }
-    }
-    Set<String> conPlantillas = new TreeSet<>();
-    juegosDeAlternativas().forEach(juego -> conPlantillas.add(juego.getFileName().toString()));
-    if (!conHojas.equals(conPlantillas)) {
-      fallas.add("alternativas con hojas " + conHojas + " y con plantillas " + conPlantillas);
-    }
-
-    Set<String> comunes = new TreeSet<>();
-    plantillasDeGlassmorphism().forEach(plantilla -> comunes.add(relativa(PLANTILLAS, plantilla)));
-    for (Path juego : juegosDeAlternativas()) {
-      Set<String> propias = new TreeSet<>();
-      archivos(juego, HTML).forEach(plantilla -> propias.add(relativa(juego, plantilla)));
-      diferencia(juego.toString(), comunes, propias, fallas);
-    }
-    assertThat(fallas)
-        .as("Cada plantilla tiene su gemela en cada alternativa, y al revés")
-        .isEmpty();
-  }
-
-  @Test
-  void lasGemelasTienenLosMismosDatosYAcciones() {
-    List<String> fallas = new ArrayList<>();
-    for (Path juego : juegosDeAlternativas()) {
-      List<Voz> voz = voz(juego);
-      for (Path comun : plantillasDeGlassmorphism()) {
-        Path gemela = juego.resolve(PLANTILLAS.relativize(comun));
-        if (Files.exists(gemela)) {
-          diferencia(
-              gemela + " (textos)",
-              conVoz(textos(comun), voz),
-              sinRotulosNuevos(textos(gemela), voz),
-              fallas);
-          diferencia(gemela + " (datos)", datos(comun), datos(gemela), fallas);
-          diferencia(gemela + " (controles)", controles(comun), controles(gemela), fallas);
-        }
-      }
-    }
-    assertThat(fallas)
-        .as(
-            "Mismos datos, acciones y nombres de controles en todas las alternativas; los títulos y"
-                + " rótulos propios van en src/test/resources/voz/<alternativa>.txt")
-        .isEmpty();
-  }
-
-  @Test
-  void laVozPropiaSoloCambiaTitulosYRotulos() {
-    List<String> fallas = new ArrayList<>();
-    for (Path juego : juegosDeAlternativas()) {
-      List<String> comunes = new ArrayList<>();
-      List<String> propios = new ArrayList<>();
-      for (Path comun : plantillasDeGlassmorphism()) {
-        Path gemela = juego.resolve(PLANTILLAS.relativize(comun));
-        if (Files.exists(gemela)) {
-          comunes.addAll(textos(comun));
-          propios.addAll(textos(gemela));
-        }
-      }
-      for (Voz linea : voz(juego)) {
-        String donde = juego.getFileName() + ": " + linea;
-        if (NUMERO.matcher(linea.comun() + linea.propia()).find()) {
-          fallas.add(donde + " tiene números, que son datos");
-        }
-        boolean usada =
-            linea.comun().isEmpty()
-                ? propios.contains(linea.propia())
-                : comunes.contains(linea.comun());
-        if (!usada) {
-          fallas.add(donde + " no aparece en ninguna plantilla");
-        }
-      }
-    }
-    assertThat(fallas).as("La voz propia: rótulos sin números y en uso").isEmpty();
-  }
-
-  @Test
-  void lasPlantillasDeUnaAlternativaUsanSoloLasSuyas() {
-    List<String> fallas = new ArrayList<>();
-    for (Path juego : juegosDeAlternativas()) {
-      // ~{x :: y} o la forma corta th:replace="x :: y"; no cuentan las expresiones ${…} ni ::y.
-      Pattern ajena =
-          Pattern.compile(
-              "(?:~\\{|th:(?:replace|insert)\\s*=\\s*\"(?![~$@#*]\\{))(?!::)(?!"
-                  + Pattern.quote(prefijo(juego))
-                  + ")");
-      for (Path plantilla : archivos(juego, HTML)) {
-        List<String> lineas = lineas(plantilla);
-        for (int i = 0; i < lineas.size(); i++) {
-          if (ajena.matcher(lineas.get(i)).find()) {
-            fallas.add(ubicacion(plantilla, i) + ": " + lineas.get(i).strip());
-          }
-        }
-      }
-    }
-    assertThat(fallas).as("Referencias a plantillas de otra alternativa").isEmpty();
-  }
-
-  @Test
   void paresDeTokensCumplenContrasteAA() {
     List<String> fallas = new ArrayList<>();
     for (Path hoja : hojasDeTokens()) {
@@ -402,6 +219,397 @@ class InterfazFitnessTest {
       }
     }
     assertThat(fallas).isEmpty();
+  }
+
+  // --- El cerco de la capa CUBE (D33, B0-07): ver docs/interfaz/componentes.md
+  // ----------------------
+
+  /**
+   * Tope de clases que aparecen una sola vez en las hojas heredadas. Solo baja (backlog, regla 3).
+   */
+  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 159;
+
+  private static final Path CATALOGO = Path.of("../docs/interfaz/componentes.md");
+  private static final Path ESTILOS = PLANTILLAS.resolve("estilos.html");
+  private static final Path COMPONENTES = CSS.resolve("componentes");
+  private static final Path CLASES_HEREDADAS =
+      Path.of("src/test/resources/verificacion/clases-heredadas.txt");
+
+  /** Hojas de la capa CUBE: no cuentan como heredadas ni como hojas de pantalla. */
+  private static final Set<String> HOJAS_CUBE =
+      Set.of("composicion.css", "utilidades.css", "movimiento.css");
+
+  /** Hojas que no son de pantalla: la base y las capas. */
+  private static final Set<String> HOJAS_DE_BASE = Set.of("app.css", TOKENS);
+
+  /**
+   * Las hojas de pantalla y compartidas que existían el 2026-11-04. Una hoja nueva que no es de
+   * esta lista nace en la capa CUBE: solo disposición, sin color, fuente ni movimiento. La lista
+   * solo baja: una hoja migrada por completo sale de acá.
+   */
+  private static final Set<String> HOJAS_HEREDADAS =
+      Set.of(
+          "admin-inicio.css",
+          "donante-comun.css",
+          "donante-donaciones-detalle.css",
+          "donante-donaciones.css",
+          "donante-entidades.css",
+          "donante-inicio.css",
+          "donante-notificaciones.css",
+          "donante-perfil.css",
+          "donante-seguimiento.css",
+          "entidad-comun.css",
+          "entidad-inicio.css",
+          "entidad-necesidades.css",
+          "entidad-notificaciones.css",
+          "entidad-recibidas.css",
+          "entidad-seguimiento-confirmar.css",
+          "formularios.css",
+          "privado.css",
+          "publico-donaciones.css",
+          "publico-entidades.css",
+          "publico-ingresar.css",
+          "publico-listas.css",
+          "publico-mapa.css",
+          "publico-navegacion.css",
+          "publico-paginas.css",
+          "publico-registro.css",
+          "sellos.css");
+
+  private static final Pattern COMENTARIO_CSS = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+  private static final Pattern TEXTO_CSS = Pattern.compile("\"[^\"]*\"");
+  private static final Pattern URL_CSS = Pattern.compile("url\\([^)]*\\)");
+  private static final Pattern CLASE_CSS = Pattern.compile("\\.([A-Za-z_][\\w-]*)");
+  private static final Pattern DURACION =
+      Pattern.compile("(?<![\\w.-])(?:\\d+\\.?\\d*|\\.\\d+)m?s\\b");
+  private static final Pattern CURVA =
+      Pattern.compile("cubic-bezier\\(|steps\\(|\\bease(?:-in-out|-in|-out)?\\b");
+  private static final Pattern DE_PANTALLA_PROHIBIDO =
+      Pattern.compile(
+          "(?<![\\w-])(?:color|background(?:-color|-image)?|font(?:-family)?)\\s*:|@keyframes");
+  private static final Pattern SOLO_DE_MOVIMIENTO_CSS =
+      Pattern.compile(
+          "@keyframes|--movimiento-(?:duracion|curva)-[a-z]+|--movimiento-retraso-(?!ninguno)[a-z]+");
+
+  /** Hojas que pueden declarar @keyframes y usar duraciones y curvas: la base y las primitivas. */
+  private static final Set<String> HOJAS_DE_MOVIMIENTO = Set.of("app.css", "movimiento.css");
+
+  private static final Pattern COMENTARIO_THYMELEAF =
+      Pattern.compile("<!--/\\*.*?\\*/-->", Pattern.DOTALL);
+  private static final Pattern CLASE_ESTATICA = Pattern.compile("(?<![\\w:-])class=\"([^\"]*)\"");
+  private static final Pattern CLASE_DE_THYMELEAF =
+      Pattern.compile("th:class(?:append)?=\"([^\"]*)\"");
+  private static final Pattern TEXTO_ENTRE_COMILLAS = Pattern.compile("'([^']*)'");
+  private static final Pattern NOMBRE_DE_CLASE = Pattern.compile("[A-Za-z_][\\w-]*");
+  private static final Pattern MOVIMIENTO_PEDIDO = Pattern.compile("data-movimiento=\"([a-z]+)\"");
+
+  @Test
+  void clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas() {
+    Set<String> usadas = clasesUsadasEnPlantillas(PLANTILLAS);
+    Set<String> heredadas = heredadas();
+    assertThat(clasesFueraDelCatalogo(usadas, clasesCube().keySet(), heredadas))
+        .as(
+            "Una clase nueva entra primero a docs/interfaz/componentes.md y a /estilos, en la capa"
+                + " CUBE; la lista de heredadas no se amplía")
+        .isEmpty();
+    assertThat(heredadas.stream().filter(clase -> !usadas.contains(clase)).sorted().toList())
+        .as("Clases heredadas que ya no usa ninguna plantilla: sacarlas de %s", CLASES_HEREDADAS)
+        .isEmpty();
+  }
+
+  @Test
+  void laCapaCubeEstaEnElCatalogoYEnEstilos() {
+    String catalogo = leer(CATALOGO);
+    String muestras =
+        leer(ESTILOS)
+            + archivos(PLANTILLAS.resolve("componentes"), HTML).stream()
+                .map(InterfazFitnessTest::leer)
+                .collect(Collectors.joining("\n"));
+    List<String> fallas = new ArrayList<>();
+    clasesCube()
+        .forEach(
+            (clase, componente) -> {
+              boolean enCatalogo =
+                  palabra(clase).matcher(catalogo).find()
+                      || (componente != null && clase.startsWith(componente + "-"));
+              if (!enCatalogo) {
+                fallas.add(clase + " no figura en " + CATALOGO);
+              }
+              if (!palabra(clase).matcher(muestras).find()) {
+                fallas.add(clase + " no figura en /estilos (templates/estilos.html)");
+              }
+            });
+    String movimiento = leer(CSS.resolve("movimiento.css"));
+    MOVIMIENTO_PEDIDO
+        .matcher(movimiento)
+        .results()
+        .map(m -> "data-movimiento=\"" + m.group(1) + "\"")
+        .distinct()
+        .forEach(
+            pedido -> {
+              if (!catalogo.contains(pedido)) {
+                fallas.add(pedido + " no figura en " + CATALOGO);
+              }
+              if (!muestras.contains(pedido)) {
+                fallas.add(pedido + " no figura en /estilos");
+              }
+            });
+    assertThat(fallas).isEmpty();
+  }
+
+  @Test
+  void clasesDeUnSoloUsoNoSuperanElTope() {
+    List<String> hojas =
+        archivos(CSS, ".css").stream()
+            .filter(css -> css.getParent().equals(CSS))
+            .filter(css -> !HOJAS_CUBE.contains(css.getFileName().toString()))
+            .map(InterfazFitnessTest::leer)
+            .toList();
+    assertThat(clasesDeUnSoloUso(hojas))
+        .as("El tope solo baja: al cerrar un ítem del backlog, bajarlo al valor medido")
+        .isLessThanOrEqualTo(TOPE_DE_CLASES_DE_UN_SOLO_USO);
+  }
+
+  @Test
+  void hojasDePantallaNuevasSoloDisponen() {
+    List<String> fallas = new ArrayList<>();
+    for (Path css : archivos(CSS, ".css")) {
+      String nombre = css.getFileName().toString();
+      boolean deLaCarpetaRaiz = css.getParent().equals(CSS);
+      if (deLaCarpetaRaiz
+          && !HOJAS_HEREDADAS.contains(nombre)
+          && !HOJAS_CUBE.contains(nombre)
+          && !HOJAS_DE_BASE.contains(nombre)) {
+        fallas.addAll(
+            declaracionesProhibidasEnPantalla(leer(css)).stream()
+                .map(falla -> css + ": " + falla)
+                .toList());
+      }
+    }
+    assertThat(fallas)
+        .as("Una hoja de pantalla nueva solo dispone; lo demás va a la capa CUBE")
+        .isEmpty();
+  }
+
+  @Test
+  void sinDuracionesNiCurvasLiteralesFueraDeTokens() {
+    List<String> fallas = new ArrayList<>();
+    for (Path css : cssFueraDeTokens()) {
+      if (!css.startsWith(VARIANTES)) {
+        fallas.addAll(
+            movimientoLiteral(leer(css)).stream().map(falla -> css + ": " + falla).toList());
+      }
+    }
+    assertThat(fallas)
+        .as("Duraciones y curvas salen de los tokens --movimiento-* de tokens.css")
+        .isEmpty();
+  }
+
+  /** Fase 1 del backlog: los @keyframes y los tiempos viven solo en movimiento.css. */
+  @Test
+  void keyframesYTiemposDeMovimientoSoloEnMovimientoCss() {
+    List<String> fallas = new ArrayList<>();
+    for (Path css : cssFueraDeTokens()) {
+      boolean deLaCarpetaRaiz = css.getParent().equals(CSS);
+      if (deLaCarpetaRaiz && !HOJAS_DE_MOVIMIENTO.contains(css.getFileName().toString())) {
+        fallas.addAll(
+            movimientoFueraDeSuHoja(leer(css)).stream().map(falla -> css + ": " + falla).toList());
+      }
+    }
+    assertThat(fallas)
+        .as(
+            "Una animación nueva se agrega a movimiento.css y se referencia con --movimiento-animacion-*")
+        .isEmpty();
+  }
+
+  @Test
+  void alpineNoHaceLoQueElAdrProhibe() {
+    String codigo =
+        leer(RECURSOS.resolve("static/js/interfaz.js")).replaceAll("(?m)^\\s*//.*$", "");
+    assertThat(codigo).doesNotContainPattern("fetch\\(|XMLHttpRequest|localStorage|sessionStorage");
+    assertThat(
+            archivos(PLANTILLAS, HTML).stream()
+                .filter(plantilla -> leer(plantilla).contains("x-html"))
+                .toList())
+        .as("x-html está prohibido (D31)")
+        .isEmpty();
+  }
+
+  @Test
+  void lasSkillsDeInterfazEmpiezanPorElCatalogo() {
+    for (String skill : List.of("vista-ui", "revision-ui")) {
+      Path ruta = Path.of("../.agents/skills", skill, "SKILL.md");
+      assertThat(leer(ruta)).as("%s cita el catálogo", ruta).contains("componentes.md");
+    }
+  }
+
+  @Test
+  void laNavegacionEntrePaginasRespetaReducirMovimiento() {
+    String app = leer(CSS.resolve("app.css"));
+    assertThat(app)
+        .as("@view-transition va solo con prefers-reduced-motion: no-preference")
+        .containsPattern(
+            "@media \\(prefers-reduced-motion: no-preference\\)\\s*\\{[^@]*@view-transition\\s*\\{"
+                + "\\s*navigation: auto");
+    assertThat(leer(PLANTILLAS.resolve("interaccion.html")))
+        .as("HTMX hace sus intercambios con View Transitions")
+        .contains("globalViewTransitions");
+  }
+
+  /** Los casos inventados: cada regla del cerco tiene que fallar cuando se la rompe. */
+  @Test
+  void elCercoFallaConUnCasoInventadoYPasaConUnoSano() {
+    assertThat(movimientoLiteral("a { transition: opacity 0.2s; }")).hasSize(1);
+    assertThat(movimientoLiteral("a { animation: x 1s ease; }")).hasSize(2);
+    assertThat(movimientoLiteral("a { transition: opacity var(--movimiento-duracion-corta); }"))
+        .isEmpty();
+    assertThat(movimientoLiteral("a { min-height: 100svh; margin: 0.5rem; /* 2s */ }")).isEmpty();
+
+    assertThat(movimientoFueraDeSuHoja("@keyframes a { from { opacity: 0 } }")).hasSize(1);
+    assertThat(
+            movimientoFueraDeSuHoja("a { transition: opacity var(--movimiento-duracion-corta); }"))
+        .hasSize(1);
+    assertThat(movimientoFueraDeSuHoja("a { animation: x var(--movimiento-curva-base); }"))
+        .hasSize(1);
+    assertThat(movimientoFueraDeSuHoja("a { animation-delay: var(--movimiento-retraso-sello); }"))
+        .hasSize(1);
+    assertThat(
+            movimientoFueraDeSuHoja(
+                "a { animation: var(--movimiento-animacion-registro); animation-delay:"
+                    + " var(--movimiento-retraso-ninguno); /* @keyframes */ }"))
+        .isEmpty();
+
+    assertThat(declaracionesProhibidasEnPantalla(".x { color: red; }")).hasSize(1);
+    assertThat(declaracionesProhibidasEnPantalla("@keyframes a { from { opacity: 0 } }"))
+        .hasSize(1);
+    assertThat(declaracionesProhibidasEnPantalla(".x { border-color: red; display: grid; }"))
+        .isEmpty();
+
+    assertThat(clasesDeUnSoloUso(List.of(".a, .b { x: y } .a { z: w }"))).isEqualTo(1);
+    assertThat(clasesDeUnSoloUso(List.of("/* .c */ .d { src: url(f.woff2); margin: 1.5rem }")))
+        .isEqualTo(1);
+
+    assertThat(
+            clasesFueraDelCatalogo(
+                Set.of("pila", "nueva", "vieja"), Set.of("pila"), Set.of("vieja")))
+        .containsExactly("nueva");
+  }
+
+  /** Las declaraciones que una hoja de pantalla nueva no puede tener (D33). */
+  static List<String> declaracionesProhibidasEnPantalla(String css) {
+    return DE_PANTALLA_PROHIBIDO
+        .matcher(sinComentariosCss(css))
+        .results()
+        .map(coincidencia -> coincidencia.group().strip())
+        .toList();
+  }
+
+  /** Duraciones y curvas escritas a mano, en una hoja que no es tokens.css (D32). */
+  static List<String> movimientoLiteral(String css) {
+    String limpio = sinComentariosCss(css);
+    List<String> fallas = new ArrayList<>();
+    DURACION.matcher(limpio).results().forEach(m -> fallas.add("duración literal " + m.group()));
+    CURVA.matcher(limpio).results().forEach(m -> fallas.add("curva literal " + m.group()));
+    return fallas;
+  }
+
+  /**
+   * @keyframes, duraciones y curvas de movimiento escritos fuera de movimiento.css y app.css.
+   */
+  static List<String> movimientoFueraDeSuHoja(String css) {
+    return SOLO_DE_MOVIMIENTO_CSS
+        .matcher(sinComentariosCss(css))
+        .results()
+        .map(java.util.regex.MatchResult::group)
+        .toList();
+  }
+
+  /** Clases que aparecen una sola vez entre todas las hojas, sin comentarios, urls ni textos. */
+  static long clasesDeUnSoloUso(List<String> hojas) {
+    Map<String, Integer> veces = new HashMap<>();
+    for (String css : hojas) {
+      CLASE_CSS
+          .matcher(sinTextosCss(css))
+          .results()
+          .forEach(m -> veces.merge(m.group(1), 1, Integer::sum));
+    }
+    return veces.values().stream().filter(cantidad -> cantidad == 1).count();
+  }
+
+  static List<String> clasesFueraDelCatalogo(
+      Set<String> usadas, Set<String> cube, Set<String> heredadas) {
+    return usadas.stream()
+        .filter(clase -> !cube.contains(clase) && !heredadas.contains(clase))
+        .sorted()
+        .toList();
+  }
+
+  /**
+   * Sin comentarios, textos ni urls: los textos primero, porque un data: URI lleva url() adentro.
+   */
+  private static String sinTextosCss(String css) {
+    String sinTextos = TEXTO_CSS.matcher(sinComentariosCss(css)).replaceAll("");
+    return URL_CSS.matcher(sinTextos).replaceAll("");
+  }
+
+  private static String sinComentariosCss(String css) {
+    return COMENTARIO_CSS.matcher(css).replaceAll("");
+  }
+
+  private static Pattern palabra(String clase) {
+    return Pattern.compile("(?<![\\w-])" + Pattern.quote(clase) + "(?![\\w-])");
+  }
+
+  /** Clase declarada en la capa CUBE → su componente (la hoja de componentes/), o null. */
+  private static Map<String, String> clasesCube() {
+    Map<String, String> clases = new HashMap<>();
+    List<Path> hojas = new ArrayList<>(HOJAS_CUBE.stream().map(CSS::resolve).toList());
+    if (Files.isDirectory(COMPONENTES)) {
+      hojas.addAll(archivos(COMPONENTES, ".css"));
+    }
+    for (Path hoja : hojas) {
+      String nombre = hoja.getFileName().toString().replace(".css", "");
+      String componente = hoja.getParent().equals(COMPONENTES) ? nombre : null;
+      CLASE_CSS
+          .matcher(sinTextosCss(leer(hoja)))
+          .results()
+          .forEach(m -> clases.put(m.group(1), componente));
+    }
+    return clases;
+  }
+
+  private static Set<String> heredadas() {
+    return lineas(CLASES_HEREDADAS).stream()
+        .map(String::strip)
+        .filter(linea -> !linea.isEmpty() && !linea.startsWith("#"))
+        .collect(Collectors.toSet());
+  }
+
+  /** Las clases escritas a mano en las plantillas: class="…" y los textos de th:class(append). */
+  private static Set<String> clasesUsadasEnPlantillas(Path carpeta) {
+    Set<String> clases = new HashSet<>();
+    for (Path plantilla : archivos(carpeta, HTML)) {
+      String html = COMENTARIO_THYMELEAF.matcher(leer(plantilla)).replaceAll("");
+      List<String> listas = new ArrayList<>();
+      CLASE_ESTATICA.matcher(html).results().forEach(m -> listas.add(m.group(1)));
+      CLASE_DE_THYMELEAF
+          .matcher(html)
+          .results()
+          .forEach(
+              m ->
+                  TEXTO_ENTRE_COMILLAS
+                      .matcher(m.group(1))
+                      .results()
+                      .forEach(texto -> listas.add(texto.group(1))));
+      for (String lista : listas) {
+        for (String clase : lista.split("\\s+")) {
+          if (NOMBRE_DE_CLASE.matcher(clase).matches()) {
+            clases.add(clase);
+          }
+        }
+      }
+    }
+    return clases;
   }
 
   /** Resuelve var(--x) hasta un #rrggbb y devuelve su luminancia relativa (WCAG). */
@@ -432,182 +640,7 @@ class InterfazFitnessTest {
         / (Math.min(luminanciaA, luminanciaB) + 0.05);
   }
 
-  private static List<String> faltanEnElCatalogo(Path juego, String prefijo) {
-    Path catalogo = juego.resolve("paginas/estilos.html");
-    String texto = leer(catalogo);
-    return archivos(juego.resolve("fragmentos"), HTML).stream()
-        .map(fragmento -> fragmento.getFileName().toString().replace(HTML, ""))
-        .filter(nombre -> !texto.contains("~{" + prefijo + "fragmentos/" + nombre + " ::"))
-        .map(nombre -> catalogo + ": " + nombre)
-        .toList();
-  }
-
-  /** Nodos de texto, atributos que se leen y literales que parecen texto en atributos th:*. */
-  private static Set<String> textos(Path plantilla) {
-    String html = sinComentarios(plantilla);
-    Set<String> textos = new TreeSet<>();
-    NODO_DE_TEXTO.matcher(html).results().forEach(m -> agregarTexto(textos, m.group(1)));
-    ATRIBUTO_DE_TEXTO.matcher(html).results().forEach(m -> agregarTexto(textos, m.group(1)));
-    ATRIBUTO_TH
-        .matcher(html)
-        .results()
-        .flatMap(atributo -> LITERAL.matcher(atributo.group(1)).results())
-        .map(literal -> literal.group(1) != null ? literal.group(1) : literal.group(2))
-        .filter(literal -> PARECE_TEXTO.matcher(literal).find())
-        .forEach(literal -> agregarTexto(textos, literal));
-    return textos;
-  }
-
-  private static void agregarTexto(Set<String> textos, String texto) {
-    String limpio = texto.strip().replaceAll("\\s+", " ");
-    if (!limpio.isEmpty()) {
-      textos.add(limpio);
-    }
-  }
-
-  /** Los textos de Glassmorphism dichos con la voz de la alternativa. */
-  private static Set<String> conVoz(Set<String> comunes, List<Voz> voz) {
-    Set<String> dichos = new TreeSet<>();
-    for (String texto : comunes) {
-      String propio =
-          voz.stream()
-              .filter(linea -> linea.comun().equals(texto))
-              .map(Voz::propia)
-              .findFirst()
-              .orElse(texto);
-      if (!propio.isEmpty()) {
-        dichos.add(propio);
-      }
-    }
-    return dichos;
-  }
-
-  /** Los textos de la alternativa sin los rótulos que suma su voz. */
-  private static Set<String> sinRotulosNuevos(Set<String> propios, List<Voz> voz) {
-    Set<String> sinNuevos = new TreeSet<>(propios);
-    voz.stream()
-        .filter(linea -> linea.comun().isEmpty())
-        .forEach(linea -> sinNuevos.remove(linea.propia()));
-    return sinNuevos;
-  }
-
-  private static List<Voz> voz(Path juego) {
-    Path tabla = VOCES.resolve(juego.getFileName() + ".txt");
-    if (!Files.exists(tabla)) {
-      return List.of();
-    }
-    List<Voz> voz = new ArrayList<>();
-    for (String linea : lineas(tabla)) {
-      String limpia = linea.strip();
-      if (limpia.isEmpty() || limpia.startsWith("#")) {
-        continue;
-      }
-      int flecha = limpia.indexOf(FLECHA_DE_VOZ);
-      assertThat(flecha).as("%s: falta %s en «%s»", tabla, FLECHA_DE_VOZ, limpia).isNotNegative();
-      voz.add(
-          new Voz(
-              limpia.substring(0, flecha).strip(),
-              limpia.substring(flecha + FLECHA_DE_VOZ.length()).strip()));
-    }
-    return voz;
-  }
-
-  private static Set<String> datos(Path plantilla) {
-    Set<String> datos = new TreeSet<>();
-    ATRIBUTO_DE_DATOS
-        .matcher(sinComentarios(plantilla))
-        .results()
-        .map(atributo -> atributo.group(1))
-        .filter(valor -> !valor.contains(ICONO))
-        .flatMap(valor -> EXPRESION.matcher(valor).results())
-        .forEach(expresion -> datos.add(expresion.group(1).replaceAll("\\s+", "")));
-    return datos;
-  }
-
-  /** Cada control, con su etiqueta, su destino y las piezas de su nombre accesible. */
-  private static List<String> controles(Path plantilla) {
-    String html = sinComentarios(plantilla);
-    List<String> controles = new ArrayList<>();
-    CONTROL
-        .matcher(html)
-        .results()
-        .forEach(m -> controles.add(control(m.group(1), m.group(2), m.group(3))));
-    CONTROL_SIN_CIERRE
-        .matcher(html)
-        .results()
-        .forEach(m -> controles.add(control(m.group(1), m.group(2), "")));
-    return controles;
-  }
-
-  /** Las piezas del nombre van en cualquier orden: cada alternativa las acomoda a su modo. */
-  private static String control(String etiqueta, String atributos, String contenido) {
-    Set<String> destino = new TreeSet<>();
-    DESTINO.matcher(atributos).results().forEach(m -> destino.add(m.group(1) + "=" + m.group(2)));
-    Set<String> nombre = new TreeSet<>();
-    ATRIBUTO_DE_TEXTO.matcher(atributos).results().forEach(m -> agregarTexto(nombre, m.group(1)));
-    TEXTO_TH
-        .matcher(atributos + contenido)
-        .results()
-        .forEach(m -> agregarTexto(nombre, m.group(1)));
-    NODO_DE_TEXTO
-        .matcher(">" + contenido + "<")
-        .results()
-        .forEach(m -> agregarTexto(nombre, m.group(1)));
-    return etiqueta + " " + destino + " " + nombre;
-  }
-
-  /** Lo que sobra o falta, contando las repeticiones. */
-  private static void diferencia(
-      String donde, Collection<String> esperados, Collection<String> propios, List<String> fallas) {
-    List<String> faltan = new ArrayList<>(esperados);
-    propios.forEach(faltan::remove);
-    List<String> sobran = new ArrayList<>(propios);
-    esperados.forEach(sobran::remove);
-    if (!faltan.isEmpty() || !sobran.isEmpty()) {
-      faltan.sort(null);
-      sobran.sort(null);
-      fallas.add(donde + ": faltan " + faltan + "; sobran " + sobran);
-    }
-  }
-
-  private static String sinComentarios(Path plantilla) {
-    return COMENTARIO_HTML.matcher(leer(plantilla)).replaceAll("");
-  }
-
-  /**
-   * Las plantillas de templates/ salvo los juegos de alternativas, las variantes y el prototipo.
-   */
-  private static List<Path> plantillasDeGlassmorphism() {
-    return archivos(PLANTILLAS, HTML).stream()
-        .filter(
-            plantilla ->
-                !plantilla.startsWith(JUEGOS)
-                    && !plantilla.startsWith(ESTRUCTURAS_AB)
-                    && !plantilla.startsWith(PROTOTIPOS))
-        .toList();
-  }
-
-  private static List<Path> juegosDeAlternativas() {
-    if (!Files.isDirectory(JUEGOS)) {
-      return List.of();
-    }
-    try (Stream<Path> carpetas = Files.list(JUEGOS)) {
-      return carpetas.filter(Files::isDirectory).sorted().toList();
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  /** Cómo nombran las plantillas de un juego a las suyas: ~{alternativas/<nombre>/...}. */
-  private static String prefijo(Path juego) {
-    return ALTERNATIVAS + "/" + juego.getFileName() + "/";
-  }
-
-  private static String relativa(Path base, Path archivo) {
-    return base.relativize(archivo).toString().replace('\\', '/');
-  }
-
-  /** Un tokens.css por alternativa de identidad. */
+  /** Las hojas llamadas tokens.css de static/css/. */
   private static List<Path> hojasDeTokens() {
     return archivos(CSS, ".css").stream().filter(InterfazFitnessTest::esTokens).toList();
   }

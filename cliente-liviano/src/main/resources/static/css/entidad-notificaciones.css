@@ -1,0 +1,211 @@
+/* Notificaciones de la entidad en Raíces (ficha raices-entidad-navegable, 4.3): la bandeja es un
+   cuaderno de campo, una fila por novedad, con la hora al margen, el sello de su tipo y a dónde ir.
+   Las sin leer llevan una cinta paja en el margen, como la marca de una página por leer; las leídas,
+   sin cinta. El tipo va siempre en texto: el sello y el color acompañan. En pantalla grande (pulido,
+   2026-11-03, la variante C elegida para el donante), las sin leer van en una franja de tierra, una
+   tarjeta por novedad colgada de una raíz horizontal con su cinta; las leídas, debajo, en filas. */
+@import url("entidad-comun.css");
+
+.bandeja {
+  max-width: 76rem;
+}
+
+.marcar {
+  margin: 0.75rem 0 0;
+}
+
+.cuaderno-novedades {
+  margin: 0 0 2.5rem;
+}
+
+.cuaderno-novedades h2 {
+  margin: 0 0 0.5rem;
+}
+
+.novedades-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--color-tinta);
+}
+
+.novedad {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  row-gap: 0.5rem;
+  padding: 1rem 0 1rem 1rem;
+  border-bottom: 1px solid var(--color-tinta);
+}
+
+/* La cinta de lo que no se leyó: paja con su borde de tinta, al margen de la fila. */
+.novedad--sin-leer::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  left: 0;
+  width: 0.375rem;
+  border: 1px solid var(--color-tinta);
+  border-radius: 0.25rem;
+  background: var(--color-raiz);
+}
+
+.novedad--leida {
+  border-bottom-style: dotted;
+}
+
+.novedad-cuando {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-tinta);
+  font-stretch: 110%;
+}
+
+.novedad-cuando b {
+  margin-inline-end: 0.25em;
+  font: 800 1.0625rem/1.3 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.novedad .estado-sello {
+  margin-top: 0.125rem;
+}
+
+.novedad-texto {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.novedad-texto p {
+  margin: 0;
+}
+
+.novedad-tipo {
+  font-stretch: 112%;
+}
+
+.novedad > a {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.novedad-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+/* En pantalla grande: la hora al margen, la novedad en el medio y a dónde ir a la derecha. */
+@media (min-width: 53.75em) {
+  .novedad {
+    grid-template-columns: 8.5rem 1.375rem minmax(0, 1fr) auto;
+    column-gap: 1.25rem;
+    align-items: start;
+    padding: 1.125rem 0 1.125rem 1.25rem;
+  }
+
+  .novedad-cuando {
+    grid-column: 1;
+    display: grid;
+  }
+
+  .novedad > a {
+    grid-column: 4;
+    grid-row: 1;
+    align-self: center;
+  }
+}
+
+/* La textura de tierra (app.css), solo cuando las sin leer pasan a ser franja. */
+.cuaderno-novedades--sin-leer.tierra-impresa::before {
+  display: none;
+}
+
+@media (min-width: 68.75em) {
+  .cabecera-entidad:has(.marcar) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 2rem;
+  }
+
+  .cabecera-entidad:has(.marcar) > :not(.marcar) {
+    grid-column: 1;
+  }
+
+  .cabecera-entidad .marcar {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    margin: 0 0 0.75rem;
+  }
+
+  .cuaderno-novedades--sin-leer {
+    padding: 1.75rem 2rem 2rem;
+    border-radius: var(--radio-lamina);
+    background: var(--color-destacado-fondo);
+    color: var(--color-destacado-texto);
+  }
+
+  .cuaderno-novedades--sin-leer.tierra-impresa::before {
+    display: block;
+    border-radius: inherit;
+  }
+
+  .cuaderno-novedades--sin-leer h2 {
+    color: var(--color-destacado-texto);
+  }
+
+  /* La raíz horizontal de la que cuelgan las tarjetas. */
+  .cuaderno-novedades--sin-leer .novedades-lista {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    padding: 2.25rem 0 0;
+    border-top: 0;
+  }
+
+  .cuaderno-novedades--sin-leer .novedades-lista::before {
+    content: "";
+    position: absolute;
+    top: 0.75rem;
+    right: 0;
+    left: 0;
+    height: 0.5rem;
+    border: 1.5px solid var(--color-tinta);
+    background: var(--color-raiz);
+  }
+
+  .cuaderno-novedades--sin-leer .novedad {
+    grid-template-columns: 1.375rem minmax(0, 1fr);
+    align-content: start;
+    padding: 1rem;
+    border: 2px solid var(--color-tinta);
+    border-radius: var(--radio-lamina);
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+  }
+
+  .cuaderno-novedades--sin-leer .novedad-cuando {
+    grid-column: 1 / -1;
+    display: block;
+  }
+
+  .cuaderno-novedades--sin-leer .novedad > a {
+    grid-column: 2;
+    grid-row: auto;
+    align-self: end;
+  }
+
+  /* La cinta de lo que no se leyó, ahora el tramo que cuelga de la raíz. */
+  .cuaderno-novedades--sin-leer .novedad--sin-leer::before {
+    top: -1.375rem;
+    bottom: auto;
+    left: calc(50% - 0.1875rem);
+    height: 1.375rem;
+  }
+}

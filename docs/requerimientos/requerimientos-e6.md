@@ -13,7 +13,7 @@
 - **Etiquetas** (AGENTS.md §3): `[DOCUMENTED]` lo dice la cátedra o un ADR · `[OBSERVED]` está en el código · `[INFERRED]` es una deducción · `[PROPOSED]` es una propuesta que todavía no existe.
 - **Estado de cada decisión:** ✅ tomada por el equipo · ⏸️ pendiente · 🎓 pendiente de consulta a la cátedra.
 - **Cobertura de cada requerimiento:** ✅ resuelto · 🟡 parcial o a verificar · ❌ falta.
-- Las decisiones se numeran **D1–D30**. El detalle de cada una (alternativas, comparación y buenas prácticas) está en §9 y §10. Los requerimientos citan la decisión que los origina.
+- Las decisiones se numeran **D1–D33**. El detalle de cada una (alternativas, comparación y buenas prácticas) está en §9 y §10. Los requerimientos citan la decisión que los origina.
 - Cuando dice **IdP** (*Identity Provider*, proveedor de identidad) se refiere al componente que hace el login y emite los tokens: Keycloak o un servicio propio, según se cierre la D1.
 
 ---
@@ -262,11 +262,11 @@ Reglas para lo público (D26):
 | ID | Requerimiento | Criterio de aceptación | Origen |
 |---|---|---|---|
 | RNF-CL-01 | Desacople total del negocio | El cliente no tiene entidades del dominio ni acceso a bases de negocio; solo DTOs de las APIs | RQ-E6-01 |
-| RNF-CL-02 | Mejora progresiva | Las pantallas funcionan sin JS en lo esencial (navegar, ver, enviar formularios); HTMX solo mejora la experiencia | D18 |
-| RNF-CL-03 | Peso de la página | Sin build de frontend; HTMX + Pico.css + MapLibre solo en las pantallas con mapa | D18, D19, D21 |
+| RNF-CL-02 | Mejora progresiva | Las pantallas funcionan sin JS en lo esencial (navegar, ver, enviar formularios); HTMX, Alpine y el JS propio solo mejoran la experiencia, y lo que suman degrada a una versión más simple, nunca a una pantalla vacía (ajuste del 2026-11-04, D31) | D18, D31 |
+| RNF-CL-03 | Peso de la página | Sin build de frontend; HTMX + Alpine (build CSP) + Pico.css + MapLibre solo en las pantallas con mapa | D18, D19, D21, D31 |
 | RNF-CL-04 | Sesión escalable | Con 2 instancias del cliente, la sesión sobrevive a un cambio de instancia (Spring Session JDBC) | D5 |
 | RNF-CL-05 | Schema propio | Las tablas de sesión van en un schema `cliente` del PostgreSQL existente | D5 |
-| RNF-CL-06 | Guardarraíles de desarrollo con agentes | `cliente-liviano/AGENTS.md` con las reglas: solo tokens semánticos, un componente es un fragmento Thymeleaf, estados obligatorios, breakpoints fijos | D19 |
+| RNF-CL-06 | Guardarraíles de desarrollo con agentes | `cliente-liviano/AGENTS.md` con las reglas: solo tokens semánticos, un componente es un fragmento Thymeleaf, estados obligatorios, breakpoints fijos; desde D33, capas CUBE con cerco mecánico (catálogo, tope de clases de un solo uso) | D19, D33 |
 
 ---
 
@@ -304,6 +304,15 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error). **Avance:** la subida multipart → MinIO está implementada en la rama `E4_donaciones_minio`; falta el progreso con resultado por fila | RF-20 | Auditoría `[OBSERVED]` |
 | HB-15 | Donaciones | Paginado y búsqueda por nombre en `GET /api/entidades` (hoy devuelve todo, sin parámetros) | RF-06, RF-22 | Auditoría `[OBSERVED]` |
 | HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación) | RF-09, RF-14 | Auditoría `[OBSERVED]` |
+| HB-17 | Logística + Donaciones | Remito y reporte de problemas al confirmar; `necesidadId` en la donación independiente | RF-12 | [DTI-29](../adr/DEUDA_TECNICA.md#dti-29) |
+| HB-18 | Donaciones | Necesidad con estado y filtro, versión, unidad, fecha límite, períodos de semana, quincena o mes, y su historia en otra llamada. **Dos cambios incompatibles** | RF-10, RF-22 | [DTI-30](../adr/DEUDA_TECNICA.md#dti-30) |
+| HB-19 | Donaciones + Logística | Cancelar las entregas que no salieron cuando se da de baja su necesidad. **Valor nuevo del enum de entregas** | RF-10 | [DTI-31](../adr/DEUDA_TECNICA.md#dti-31) |
+| HB-20 | Donaciones | Nombre visible del donante con preferencia de ocultarlo, y constancia de los legales en el alta. **Campo obligatorio nuevo** | RF-12, RF-03, RF-01 | [DTI-32](../adr/DEUDA_TECNICA.md#dti-32) |
+| HB-21 | Por decidir | Recibir los mensajes del formulario de contacto | RF-01 | [DTI-33](../adr/DEUDA_TECNICA.md#dti-33) |
+
+HB-17 a HB-21 salen de las preguntas abiertas de Raíces, que el usuario decidió el 2026-11-02. Los
+marcados en negrita no son aditivos y se registran según la
+[política de evolución de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md).
 
 **Nota sobre HB-01** `[INFERRED]`: la foto de recepción vive en Logística (`PATCH /api/entregas/{id}/fotos`) y la categoría de la donación en Donaciones. "Destacada" cruza dos servicios. Opciones: que el cliente componga ambas respuestas, o que Donaciones replique "entregada con foto" escuchando el evento de recepción. Se define al implementar.
 
@@ -426,6 +435,8 @@ Integración nativa con Spring Security (`sec:authorize`). Las *natural template
 ### D18 — HTMX + JS puntual ✅ · ADR-E6-06
 El servidor devuelve fragmentos HTML. Los spinners salen declarativos con `hx-indicator` (RNF-UI-06). Sigue siendo MVC liviano. SPA (React/Vue) descartada `[REJECTED]`: contradice RQ-E6-03.
 
+> **Ajuste del 2026-11-04 (D31):** se suma Alpine.js con el build CSP para el estado que no sale del navegador; HTMX sigue siendo el único que habla con el servidor.
+
 ### D19 — Pico.css + CSS propio ✅ · ADR-E6-06
 
 | Criterio | CSS propio con tokens | **Pico.css + CSS propio** | Bootstrap 5 tematizado | Material (MDC Web) |
@@ -523,6 +534,15 @@ E6 ya suma IdP, gateway y cliente. El objetivo de DTI-07 y el del crypto-shreddi
 | DTI-07 | Se salda | Queda lista para saldar | **Sigue diferida** |
 | Riesgo | Alto: E6 ya suma IdP, gateway y cliente | Bajo | **E7 arranca sin el contrato diseñado** |
 | Encaje con la consigna | E7 es la entrega de Seguridad | Ídem | **Ídem** |
+
+### D31 — Alpine.js (build CSP) para el estado de interfaz en el navegador · decidida por tsorren (2026-11-04), a validar con el equipo; implementación pendiente (DTI-34) · [ADR](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
+HTMX habla con el servidor; Alpine maneja solo estado visual que no sale del navegador (diálogos, pestañas, pasos, vista previa de fotos). Prohibido en Alpine: `fetch`, armar listas con datos del negocio y guardar tokens, para que las vistas sigan renderizadas por el motor de plantillas (RQ-E6-03). Build CSP porque el estándar necesita `unsafe-eval`. Descartados: Alpine estándar, Petite-Vue y seguir con JS propio por pantalla. RNF-CL-02 queda en "lo esencial".
+
+### D32 — CSS nativo moderno y sistema de movimiento · decidida por tsorren (2026-11-04), a validar con el equipo; implementación pendiente (DTI-34) · [ADR](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
+`@layer` con Pico abajo, View Transitions, `@starting-style`, `@container` y `popover` como mejora progresiva; tokens de movimiento en `tokens.css` y primitivas con nombre en `movimiento.css`, con "reducir movimiento" resuelto adentro. Descartados: GSAP o Motion (por ahora) y `@keyframes` sueltos por pantalla.
+
+### D33 — Capa CUBE propia con cerco y componentes con migración incremental · decidida por tsorren (2026-11-04), a validar con el equipo; implementación pendiente (DTI-34) · [ADR](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
+Composición, utilidades, bloques (un componente por hoja y fragmento, con slots) y excepciones; las hojas de pantalla, solo disposición. Cerco en `InterfazFitnessTest` y en las skills; vuelve el catálogo `/estilos` (RF-CL-05) con [`componentes.md`](../interfaz/componentes.md). Migración por el [backlog obligatorio](../interfaz/backlog-migracion-componentes.md). Tailwind v4 diferido después de E6, con condiciones (quitar Pico, componentes migrados y cerco equivalente).
 
 ---
 
@@ -653,7 +673,14 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Esperar D22 |
 | ADR-E6-08 Fotos de recepción en almacenamiento de objetos | D27 | Sí | Persistencia y privacidad | Listo |
+| Contrato de entregas para la entidad: remito, reporte y datos de Donaciones | Preguntas 5 y 14 de Raíces (HB-17) | Sí | Integración entre servicios y contrato | Redactado (`proposed`): [ADR](../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
+| Ciclo de vida de la necesidad en el contrato | Preguntas 6 a 12 de Raíces (HB-18) | Sí | *Breaking change* de contrato | Redactado (`proposed`): [ADR](../adr/donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
+| Baja de una necesidad con entregas en curso | Pregunta 13 de Raíces (HB-19) | Sí | Integración entre servicios (comando y evento nuevos) | Redactado (`proposed`): [ADR](../adr/20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |
+| Nombre visible del donante y constancia de los legales | Preguntas 15, 16 y 18 de Raíces (HB-20) | Sí | Privacidad y datos personales | Redactado (`proposed`): [ADR](../adr/20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
 | Dos alternativas de identidad visual con hojas propias | Refina D20 | Sí | Cambia D20 y la verificación de RNF-UI-11; costo de mantener dos hojas | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md) |
+| Tercera alternativa (Raíces) como prototipo propio | Refina el ADR de dos alternativas | Sí | Tercera identidad sin triplicar cada pantalla; dirección propia en la maqueta | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md) |
+| Interacción, movimiento y componentes: Alpine CSP, CSS nativo y capa CUBE con cerco | D31, D32, D33; modifica en parte D18 | Sí | Dependencia nueva, organización del CSS y reglas para agentes | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md) |
+| Una sola identidad visual (Raíces) y retiro de las alternativas | Reemplaza los dos ADR anteriores | Sí | Una pantalla se escribe una vez; el sitio en `/`; propuestas nuevas en su rama | Aceptado (`accepted`, 2026-11-04): [ADR](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md) |
 
 Sin ADR (AGENTS.md §9.2):
 - D28: endpoints aditivos sobre un patrón decidido.

@@ -11,8 +11,8 @@ java scripts/visual/Imagenes.java <orden> <argumentos>
 
 | Orden | Para qué | Ejemplo |
 |---|---|---|
-| `jpg` | Pasar capturas a JPG de 400 KB o menos (la evidencia de `docs/interfaz/evidencia/`). Con una carpeta, convierte todos los PNG que cumplen el glob | `jpg cliente-liviano/target/capturas docs/interfaz/evidencia/cozy-medieval/concepto-portada 400 "*--concepto-*"` |
-| `comparar` | Comprobar que una alternativa no cambió: compara píxel a píxel los PNG que se llaman igual y dice la caja de cada diferencia. Sin glob, solo los de Glassmorphism (sin `--` en el nombre). Con una carpeta de ruido (otra corrida de la misma base), no cuenta lo que ya cambia entre antes y ruido. Sale con 1 si algo cambió o falta, o si el glob no encuentra ninguna captura | `comparar <carpeta-antes> cliente-liviano/target/capturas "*.png" <carpeta-ruido>` |
+| `jpg` | Pasar capturas a JPG de 400 KB o menos (la evidencia de `docs/interfaz/evidencia/`). Con una carpeta, convierte todos los PNG que cumplen el glob | `jpg cliente-liviano/target/capturas docs/interfaz/evidencia/<tema> 400 "*--concepto-*"` |
+| `comparar` | Comprobar que unas pantallas no cambiaron: compara píxel a píxel los PNG que se llaman igual y dice la caja de cada diferencia. Sin glob, los del sitio (sin `--` en el nombre: no son de una variante). Con una carpeta de ruido (otra corrida de la misma base), no cuenta lo que ya cambia entre antes y ruido. Sale con 1 si algo cambió o falta, o si el glob no encuentra ninguna captura | `comparar <carpeta-antes> cliente-liviano/target/capturas "*.png" <carpeta-ruido>` |
 | `recorte` | Una zona de una captura, opcionalmente escalada (para mirar de cerca o para un epígrafe) | `recorte a.png zona.png 0 0 1280 900 0.5` |
 | `lado` | La misma zona de dos capturas, lado a lado y con rótulos | `lado antes.png despues.png lado.png 0 0 1280 900 0.5 "Antes" "Después"` |
 | `tamano` | Ancho × alto de una o varias imágenes | `tamano a.png b.png` |
@@ -33,10 +33,10 @@ Las líneas `img` seguidas van en una misma fila. Las rutas relativas salen de l
 ## Comprobar solo algunas páginas
 
 La verificación visual acepta las rutas por propiedad, sin tocar `paginas.txt`. La barra inicial es
-opcional; en Git Bash conviene omitirla, porque convierte `=/estilos` en una ruta de Windows:
+opcional; en Git Bash conviene omitirla, porque convierte `=/publico-portada` en una ruta de Windows:
 
 ```bash
-mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.alternativa=cozy-medieval -Dverificacion.paginas=estilos/armazon,prototipo/publico-portada
+mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=publico-portada,donante-inicio
 ```
 
 Además de la página completa en 360, 1280 y 1920 px, deja la primera pantalla del celular
@@ -52,5 +52,5 @@ empezar (la primera es el antes y la segunda, el ruido) y pasá las dos a `compa
 sí.
 
 ```bash
-java scripts/visual/Imagenes.java comparar <antes> cliente-liviano/target/capturas "{estilos,estilos-armazon}-[0-9]*.png" <ruido>
+java scripts/visual/Imagenes.java comparar <antes> cliente-liviano/target/capturas "{publico-legales,publico-contacto}-[0-9]*.png" <ruido>
 ```

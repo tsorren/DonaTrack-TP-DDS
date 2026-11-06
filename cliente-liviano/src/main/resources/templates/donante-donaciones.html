@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!--/* Raíces A, Mis donaciones de la empresa (RF-05), según la ficha
+       docs/interfaz/flujos/raices-donante-navegable.md. El filtro por estado y categoría es un
+       formulario get real; un valor desconocido se ignora y ese filtro queda en "Todos" o "Todas".
+       La lista es el libro de la empresa: cada donación, un asiento colgado de la raíz por fecha, la
+       más reciente arriba. Su número es la estación: impresa (paja) si ya llegó, de papel si tiene
+       destino y hueca si todavía no (lo que falta todavía no se imprimió); el texto dice lo mismo.
+       En pantalla grande, cada asiento es un renglón con columnas, como un libro de registro.
+       ?escenario=vacio (cuenta nueva), error y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones', ~{::contenido})}">
+<head>
+  <title>Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{datos-donante :: donante(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="pedidoEstado=${param.estado != null ? param.estado[0] : ''},
+             pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
+             fEstado=${ {'pendiente', 'en-camino', 'entregada', 'con-problema'}.contains(pedidoEstado) ? pedidoEstado : ''},
+             fCategoria=${ {'alimentos', 'ropa', 'escolares'}.contains(pedidaCategoria) ? pedidaCategoria : ''},
+             filtrado=${fEstado != '' or fCategoria != ''},
+             lista=${donaciones.?[(#root.fEstado == '' or estado.tono == #root.fEstado)
+                     and (#root.fCategoria == '' or (categoria == 'cat-vestimenta' ? 'ropa' : categoria.substring(4)) == #root.fCategoria)]}">
+  <div class="donaciones">
+    <header>
+      <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
+      <h1>Lo que donó <em>tu empresa</em></h1>
+    </header>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Tu empresa todavía no tiene donaciones registradas.</h2>
+      <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
+        con su estado.</p>
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
+         th:href="@{/donante-entidades}">Conocer las entidades</a>
+    </section>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tus donaciones.', '/donante-donaciones')}"></section>
+    </th:block>
+
+    <th:block th:unless="${escenario == 'vacio' or escenario == 'error'}">
+      <form class="filtro" action="/donante-donaciones"
+            th:action="@{/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
+        <div class="campo">
+          <label for="estado">Estado</label>
+          <select id="estado" name="estado">
+            <option value="" th:selected="${fEstado == ''}">Todos</option>
+            <option value="pendiente" th:selected="${fEstado == 'pendiente'}">Pendiente</option>
+            <option value="en-camino" th:selected="${fEstado == 'en-camino'}">En camino</option>
+            <option value="entregada" th:selected="${fEstado == 'entregada'}">Entregada</option>
+            <option value="con-problema" th:selected="${fEstado == 'con-problema'}">Con problema</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoria">
+            <option value="" th:selected="${fCategoria == ''}">Todas</option>
+            <option value="alimentos" th:selected="${fCategoria == 'alimentos'}">Alimentos</option>
+            <option value="ropa" th:selected="${fCategoria == 'ropa'}">Ropa</option>
+            <option value="escolares" th:selected="${fCategoria == 'escolares'}">Útiles escolares</option>
+          </select>
+        </div>
+        <button class="boton" data-tono="principal" type="submit">Filtrar</button>
+        <a th:if="${filtrado}" class="filtro-sacar" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+      </form>
+    </th:block>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando">Cargando tus donaciones…</p>
+      <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
+    </th:block>
+
+    <th:block th:if="${escenario == ''}">
+      <p th:unless="${filtrado and lista.isEmpty()}" class="bajada" role="status"
+         th:text="${filtrado}
+           ? |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'} con esos filtros.|
+           : |${#lists.size(lista)} donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.|">7
+        donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.</p>
+
+      <section th:if="${filtrado and lista.isEmpty()}" class="vacio" role="status"
+               aria-labelledby="sin-resultados">
+        <h2 id="sin-resultados">No hay donaciones con esos filtros.</h2>
+        <p>Probá con otro estado o con otra categoría.</p>
+        <a class="boton" data-tono="secundario" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+      </section>
+
+      <svg th:replace="~{iconos :: categorias}"></svg>
+
+      <th:block th:unless="${lista.isEmpty()}">
+        <div class="libro-columnas" aria-hidden="true">
+          <span>N.º</span><span>Donación</span><span>Cuánto y para quién</span><span>Donada</span><span>Estado</span>
+        </div>
+        <ol class="libro" role="list">
+          <li th:each="d : ${lista}" class="asiento"
+              th:classappend="|asiento--${d.estado.tono}${d.destino == null ? ' asiento--sin-destino' : ''}|"
+              th:with="destino=${d.destino == null ? null : #strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')},
+                       icono=${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria},
+                       categoriaTexto=${d.categoriaTexto == 'Vestimenta' ? 'Ropa' : d.categoriaTexto}">
+            <p class="asiento-numero">
+              <span aria-hidden="true"><small>N.º</small> <b th:text="${d.numero}">7</b></span>
+              <span class="solo-lectores" th:text="|Donación número ${d.numero}|">Donación número 7</span>
+            </p>
+            <div class="asiento-que">
+              <h2><a href="/donante-donaciones-detalle?donacion=arroz"
+                     th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+                     th:text="${d.titulo}">Arroz largo fino</a></h2>
+              <p class="categoria">
+                <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                  <use href="#cat-alimentos" th:href="|#${icono}|"/>
+                </svg>
+                <span th:text="${categoriaTexto}">Alimentos</span>
+              </p>
+            </div>
+            <p class="asiento-para">
+              <b th:text="${d.cantidad}">10 kg</b>
+              <span th:text="${destino == null} ? 'Todavía sin destino' : |Para ${destino}|">Todavía sin
+                destino</span>
+            </p>
+            <p class="asiento-donada" th:text="|Donada el ${d.donada}|">Donada el 14 de octubre de 2026</p>
+            <p class="asiento-estado">
+              <span class="estado" th:data-estado="${d.estado.tono}">
+                <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+                <span th:text="${d.estado.texto}">Pendiente</span>
+              </span>
+              <span class="asiento-nota"
+                    th:text="${d.estado.tono == 'entregada'} ? |Entrega confirmada el ${#strings.substringBefore(d.llego, ' de 2026')}, con foto de la entidad| : ${d.nota}">En
+                el depósito, espera destino</span>
+            </p>
+          </li>
+        </ol>
+      </th:block>
+
+      <div class="donaciones-pie">
+        <p>Las que están en curso también se ven en Seguimiento, con dónde va el camión.</p>
+        <a class="boton" data-tono="secundario" href="/donante-seguimiento"
+           th:href="@{/donante-seguimiento}">Ver seguimiento</a>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,387 @@
+/* Confirmar recepción en Raíces: el acta de una entrega. La etiqueta (como una de herbario), el
+   último tramo (la raíz de la entrega, con la confirmación hueca) y el formulario, uno debajo del
+   otro; el celular es el dispositivo principal. */
+@import url("privado.css");
+@import url("sellos.css");
+@import url("formularios.css");
+
+.confirmar {
+  max-width: 44rem;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-stretch: 112%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-underline-offset: 0.25em;
+}
+
+.volver::before {
+  content: "← ";
+}
+
+.confirmar-bajada {
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.acta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.acta-entrega {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+/* --- La etiqueta de la entrega: el relleno (el papel, el doble filete y la sombra, de .tarjeta) ----- */
+.etiqueta {
+  padding: 1rem 1.25rem;
+}
+
+main .etiqueta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.25rem 0 0.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--color-tinta);
+  font-size: 1.125rem;
+}
+
+.etiqueta-titulo .categoria-icono {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.etiqueta dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.etiqueta dt {
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+}
+
+.etiqueta dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.etiqueta dd span + span {
+  font-weight: 400;
+}
+
+/* --- El último tramo: la raíz de la entrega, de arriba abajo -------------------------------------
+   Una línea de subte paja con borde une los sellos; hacia la confirmación que falta, la línea va
+   hueca: todavía no se imprimió (brief, mapa de las entregas). */
+.tramo-seccion h2 {
+  margin: 0 0 0.75rem;
+}
+
+.tramo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tramo-paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  padding-bottom: 1.25rem;
+}
+
+.tramo-paso:last-child {
+  padding-bottom: 0;
+}
+
+.tramo-paso .estado-sello {
+  grid-row: span 2;
+  position: relative;
+  z-index: 1;
+}
+
+.tramo-nombre {
+  font-weight: 700;
+}
+
+.tramo-detalle {
+  grid-column: 2;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.tramo-paso:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  bottom: -0.1rem;
+  left: 0.4375rem;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.tramo-paso:has(+ .tramo-paso--falta)::before {
+  border-style: dashed;
+  border-color: var(--color-tinta-suave);
+  background: var(--color-papel);
+}
+
+/* --- El formulario -------------------------------------------------------------------------------- */
+.acta-formulario {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0;
+}
+
+.grupo {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.grupo legend {
+  padding: 0;
+}
+
+.grupo legend h2 {
+  margin: 0 0 0.25rem;
+}
+
+/* La zona de subida de las fotos (el campo, su cámara y la vista previa) es el bloque `.subida`
+   (componentes/subida.css). */
+
+.quien-ve {
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--color-hoja);
+  font-size: 0.9375rem;
+}
+
+/* --- La firma: quién recibe, el botón, qué pasa al confirmar y el problema ------------------------ */
+.firma {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.firma p {
+  margin: 0;
+}
+
+.firma-quien {
+  font-style: italic;
+}
+
+.firma .boton[disabled] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.problema {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento);
+  text-underline-offset: 0.25em;
+}
+
+/* --- Recepción confirmada ---------------------------------------------------------------------- */
+.asentado,
+.siguiente {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.asentado h2,
+.siguiente h2 {
+  margin: 0;
+}
+
+.asentado dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.375rem 1rem;
+  margin: 0;
+}
+
+.asentado dl div {
+  display: contents;
+}
+
+.asentado dt {
+  color: var(--color-tinta-suave);
+}
+
+.asentado dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.asentado p,
+.siguiente p {
+  margin: 0;
+}
+
+.asentado-pedido {
+  font-weight: 700;
+}
+
+.siguiente {
+  justify-items: start;
+  padding: 1rem 1.25rem;
+}
+
+.siguiente-entrega {
+  display: flex;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.siguiente-entrega .categoria-icono {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.siguiente-que {
+  font-weight: 700;
+}
+
+.confirmada .acta-formulario {
+  align-content: start;
+}
+
+.siguiente-ninguna {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* El cierre del ciclo (A/B 3, usuario, 2026-11-01): la raíz completa, grande, del brote del depósito
+   hasta la estación de tu entidad. */
+.ciclo-raiz {
+  margin: 0 0 2rem;
+  /* Aire a los lados para que el rótulo de la entidad no toque la esquina redondeada; la línea de
+     tierra del dibujo sigue hasta el marco, que la recorta. */
+  overflow: hidden;
+  padding-inline: var(--radio-lamina);
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  /* La tierra, bajo la línea de tierra del dibujo (y = 70 de un alto de 210). */
+  background: linear-gradient(transparent calc(70 / 210 * 100%), var(--color-suelo) 0);
+}
+
+/* La línea de la entrega tiene el mismo grosor que las de Seguir entregas en cualquier ancho
+   (usuario, 2026-11-03): no escala con el dibujo, así que el trazado se revela de izquierda a
+   derecha en vez de medir su largo. */
+.ciclo-raiz .dibujo {
+  overflow: visible;
+}
+
+.ciclo-entidad .sello-calado--fino {
+  stroke-width: 3;
+}
+
+.ciclo-rotulo {
+  font-size: 17px;
+}
+
+/* La respuesta a confirmar: una vez, la raíz se traza hasta la entidad y su sello se imprime. Sin
+   movimiento si la persona lo pidió así. */
+@media (prefers-reduced-motion: no-preference) {
+  .confirmada--recien .ciclo-trazo {
+    animation: var(--movimiento-animacion-recorta);
+  }
+
+  .confirmada--recien .ciclo-entidad {
+    animation: var(--movimiento-animacion-imprime);
+  }
+}
+
+/* En pantalla grande, dos columnas (A/B 1, usuario, 2026-11-01): a la izquierda, la etiqueta y el
+   último tramo, quietos mientras se baja; a la derecha, el formulario. Desde la review de Sofía
+   (2026-11-02), solo en Recepción confirmada: el acta por completar va en dos filas (abajo). */
+@media (min-width: 68.75em) {
+  .confirmar {
+    max-width: 68rem;
+  }
+
+  .acta {
+    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .acta-entrega {
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .acta-formulario {
+    max-width: 38rem;
+  }
+
+  /* Recepción confirmada (usuario, 2026-11-03): lo asentado a la izquierda y la etiqueta con el
+     tramo a la derecha, para que se lea en el mismo orden en que se ve. */
+  .confirmada .acta {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+  }
+
+  .confirmada .acta-entrega {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  /* El acta por completar, en dos filas de dos columnas (A/B de la review de Sofía, 2026-11-02):
+     arriba, la etiqueta y el último tramo lado a lado; abajo, las pruebas a la izquierda y lo que
+     recibiste con la firma a la derecha. Recepción confirmada sigue en las dos columnas de arriba. */
+  .acta:has(> form.acta-formulario) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .acta:has(> form.acta-formulario) > .acta-entrega {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3rem;
+  }
+
+  form.acta-formulario {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 3rem;
+    align-items: start;
+  }
+
+  form.acta-formulario > .obligatorios {
+    grid-column: 1 / -1;
+  }
+
+  form.acta-formulario > .grupo:first-of-type {
+    grid-column: 1;
+    grid-row: span 2;
+  }
+
+  form.acta-formulario > :is(.grupo:last-of-type, .firma) {
+    grid-column: 2;
+  }
+}

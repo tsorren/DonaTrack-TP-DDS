@@ -1,8 +1,8 @@
 # cliente-liviano — Interfaz web de DonaTrack
 
-> **Estado:** en construcción (Entrega 6). Hay layouts público y privado, componentes base, el
-> catálogo `/estilos` y la muestra del área privada `/estilos/armazon`; la identidad visual está
-> definida y todavía no hay pantallas de negocio.
+> **Estado:** en construcción (Entrega 6). La maqueta navegable tiene el recorrido público, el del
+> donante y el de la entidad, más el inicio del admin, con datos de ejemplo y una sola identidad
+> visual; todavía no consume las APIs.
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
@@ -25,15 +25,14 @@ consume las APIs REST de los servicios a través del gateway.
 ## Cómo levantarlo
 
 ```bash
-mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/estilos
-mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, catálogo y vistas
+mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/
+mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, contraste y vistas
 mvn test -pl cliente-liviano -Pvisual                                         # capturas, accesibilidad, toque y desbordes
 ```
 
 - Puerto 8090. El perfil `maqueta` usa datos de ejemplo y admite `?escenario=<nombre>` (vacío,
-  lento, error, sin permiso), `?variante=<tema>-a|b` para las comparaciones A/B y
-  `?alternativa=cozy-medieval` para ver la Alternativa Cozy / Medieval, con su propio juego de
-  plantillas y de estilos (sin él, Glassmorphism).
+  lento, error, sin permiso) y `?variante=<tema>-a|b` para las comparaciones A/B. `/` es la
+  portada; cada pantalla se ve en `/<pantalla>` (por ejemplo, `/donante-inicio`).
 - En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador.
 - La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el
   resultado en `target/capturas/`. No corre en el CI

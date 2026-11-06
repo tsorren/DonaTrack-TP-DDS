@@ -1,37 +1,93 @@
 <!DOCTYPE html>
-<!--/* Estructura de las pantallas privadas (bitácora, 2026-10-30): barra lateral con la ruta
-       punteada en escritorio, barra inferior en el celular y, arriba, campana y cuenta, sin buscador.
-       Uso: <html th:replace="~{layout-privado :: pagina(~{::title}, ~{::contenido})}">. El modelo
-       trae navegacion (List<OpcionNavegacion>) y cuenta (CuentaVista). Las pantallas de
-       notificaciones y perfil, y la salida, llegan con sus flujos y con el IdP. */-->
-<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
-      th:fragment="pagina(titulo, contenido)">
-<head th:replace="~{layout :: cabeza(${titulo})}">
-  <title>DonaTrack</title>
+<!--/* Estructura de las pantallas privadas: la marca, el
+       menú del rol y la cuenta en una sola cabecera de tierra honda; el contenido debajo. En el
+       celular, el menú es una barra inferior; desde la tableta, va horizontal en la cabecera
+       (privado.css; usuario, 2026-11-03). La usan todas las pantallas privadas.
+       Uso: <html th:replace="~{layout-privado :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
+       donde 'hoja' es el nombre de la hoja de la pantalla en css/. El modelo trae
+       navegacion (List<OpcionNavegacion>), cuenta (CuentaVista) y perfil (la dirección de Mi perfil
+       del rol). Al final, el pie de todas las páginas (pie.html). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:replace="${titulo}">DonaTrack</title>
+  <link rel="stylesheet" href="/css/privado.css"
+        th:href="@{/css/{hoja}.css(hoja=${hoja})}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
-<body class="armazon">
-  <a class="saltar" href="#contenido">Saltar al contenido</a>
-  <header class="encabezado">
-    <a th:replace="~{layout :: marca}">DonaTrack</a>
-    <div class="encabezado-fin">
-      <a class="boton-icono" href="/notificaciones" th:href="@{/notificaciones}"
-         aria-label="Notificaciones"><svg
-         th:replace="~{fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
-      <details class="cuenta">
-        <summary th:aria-label="|Cuenta de ${cuenta.nombre}|" th:text="${cuenta.inicial}">A</summary>
-        <div class="cuenta-menu">
-          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
-          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
-          <a href="/salir" th:href="@{/salir}">Salir</a>
+<body class="raices-privado">
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="armazon">
+  <a class="marca" href="/publico-portada" th:href="@{/publico-portada}"
+     aria-label="DonaTrack, ir a la portada">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+  <nav id="menu" class="navegacion tierra-impresa" aria-label="Secciones">
+    <ul role="list">
+      <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+          th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
+      <!--/* Con más de 5 secciones (la administración), en el celular la barra muestra las 4 primeras y
+             "Más", que abre todas en una hoja desde abajo, una fila por sección (pulido, 2026-11-03,
+             alternativa del usuario; A/B del panel, F). Es una ventana del navegador (popover): anda sin
+             JavaScript. Desde la tableta, "Más" no se ve: el menú entra entero en la cabecera. */-->
+      <li th:if="${#lists.size(navegacion) > 5}" class="navegacion-mas">
+        <button type="button" popovertarget="menu-completo"><span aria-hidden="true">+</span>
+          Más</button>
+        <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
+             aria-labelledby="menu-completo-titulo">
+          <div class="navegacion-hoja-cabecera">
+            <!--/* "Todas las secciones": el menú ya se llama "Secciones" (pulido de Nico, 2026-11-04). */-->
+            <p id="menu-completo-titulo" class="navegacion-hoja-titulo">Todas las secciones</p>
+            <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
+                    popovertargetaction="hide">Cerrar</button>
+          </div>
+          <!--/* Al abrirse, el foco entra a la hoja, en la primera sección (autofocus de la ventana). */-->
+          <ul role="list">
+            <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+                th:autofocus="${vuelta.first}"
+                th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
+          </ul>
         </div>
-      </details>
-    </div>
-  </header>
-  <div class="armazon-cuerpo">
-    <nav th:replace="~{fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
-    <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+      </li>
+    </ul>
+  </nav>
+  <!--/* El acceso fijo a Notificaciones del donante y de la entidad (fichas raices-donante-navegable.md
+         y raices-entidad-navegable.md, sección 2): no es una sección del menú; va en todas las
+         pantallas del rol, con la cantidad sin leer. En la maqueta son 4 del donante y 3 de la
+         entidad, y ninguna en la pantalla de después de marcarlas como leídas (al volver a otra
+         pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
+         Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
+         recepción, que la corrida A/B había dejado sin tocar. */-->
+  <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
+     th:with="pantalla=${#execInfo.processedTemplateName},
+              avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
+     class="armazon-avisos" href="/donante-notificaciones"
+     th:href="${avisos}"
+     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
+     th:aria-current="${#strings.contains(pantalla, #strings.substringAfter(avisos, '/'))} ? 'page' : null">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path d="M3 6h18v12H3z"/><path d="M3 6l9 7 9-7"/>
+    </svg>
+    <span class="armazon-avisos-texto">Notificaciones</span>
+    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
+  </a>
+  <div class="armazon-cuenta">
+    <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+    <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
+       th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
+    <a href="/publico-portada" th:href="@{/publico-portada}">Salir</a>
   </div>
-  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
-  <div id="avisos" class="avisos" aria-live="polite"></div>
+</header>
+<main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<footer th:replace="~{pie :: pie}"></footer>
+<!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian, y la cola de Alpine
+       (avisos, static/js/interfaz.js) deja ver tres a la vez y los quita a los 6 segundos. */-->
+<div id="avisos" class="avisos" aria-live="polite" x-data="avisos" x-on:click="cerrar"
+     x-on:mouseenter="pausar" x-on:mouseleave="seguir" x-on:focusin="pausar" x-on:focusout="seguir"></div>
 </body>
 </html>

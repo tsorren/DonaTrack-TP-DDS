@@ -1,0 +1,52 @@
+/* Bloque de tarjeta (D33, B2-07): una parte con papel propio, con el filete de tinta, las esquinas
+   del token y la sombra plana paja que la despega de la página. Es solo el papel: la disposición de lo de
+   adentro y el título los pone la hoja de la pantalla con su propia clase. El relleno es el parámetro
+   `--espacio-relleno` (sin él, ninguno: lo pone la hoja de la pantalla). Se carga en la capa `bloques`
+   desde app.css. Variantes por atributo: `data-filete` ("doble" y "contorno"; sin él, el filete
+   simple). `.tarjeta-cabeza` es la cabeza de una lámina. Catálogo: docs/interfaz/componentes.md. */
+
+.tarjeta {
+  padding: var(--espacio-relleno, 0);
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-sombra);
+}
+
+/* La etiqueta de herbario: un filete fino y otro más adentro. */
+.tarjeta[data-filete="doble"] {
+  border-width: 1.5px;
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -7px;
+}
+
+/* El filete por fuera del papel, sin borde: no agrega alto ni ancho a la tarjeta. */
+.tarjeta[data-filete="contorno"] {
+  border: 0;
+  outline: 1.5px solid var(--color-tinta);
+}
+
+/* La cabeza de una lámina, como la de una ficha de campo (B3-01): el título en cursiva y su rótulo en
+   una fila que baja de renglón, sobre un filete fino. */
+.tarjeta-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.75rem;
+  padding: 0.25rem 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--color-tinta);
+}
+
+.tarjeta-cabeza :is(h2, h3, h4) {
+  margin: 0;
+  color: var(--color-tinta);
+  font: italic 800 1.5rem/1.1 var(--fuente-titulo);
+  font-stretch: 115%;
+}
+
+.tarjeta-cabeza p {
+  margin: 0;
+  font-size: 0.875rem;
+}

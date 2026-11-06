@@ -1,339 +1,208 @@
-/*
- * tokens.css: única fuente de colores, tipografías, espacios, bordes y puntos de quiebre (D20).
- * Versión 2: la identidad del prototipo v2 de la diseñadora (Figma "Prototipo v2" y
- * sofiadeane/frontend-donatrack) con la paleta Grafito cálido y menta y los ajustes de contraste AA
- * de docs/interfaz/bitacora.md.
- *
- * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Los colores opacos van en
- *    #rrggbb, para que InterfazFitnessTest pueda medir el contraste.
- * 2. Usos: lo único que usan pantallas y componentes.
- * 3. Pico: sus variables (--pico-*) se asignan solo acá, a partir de los usos.
- */
+/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Huerta de noche, estilo
+   impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
+   en su A/B), marca, botones, el grano de impresión de la referencia 01 y las cifras. */
 
-/* DM Sans (variable, peso 300–900), autoalojada. Google Fonts v17, subconjuntos latino y latino
-   extendido; licencia SIL OFL 1.1 en static/fuentes/OFL-dm-sans.txt. */
 @font-face {
-  font-family: "DM Sans";
+  font-family: Archivo;
   font-style: normal;
-  font-weight: 300 900;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
-  src: url("../fuentes/dm-sans-latin.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
-    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("../fuentes/archivo-latin.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "DM Sans";
-  font-style: normal;
-  font-weight: 300 900;
+  font-family: Archivo;
+  font-style: italic;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
-  src: url("../fuentes/dm-sans-latin-ext.woff2") format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
-    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
-    U+2C60-2C7F, U+A720-A7FF;
+  src: url("../fuentes/archivo-cursiva-latin.woff2") format("woff2");
 }
 
 :root {
-  /* 1. Valores base: Grafito cálido y menta (bitácora, 2026-10-30). El grafito reemplaza al verde
-     petróleo del prototipo; la menta, el turquesa y los rojos son los del prototipo. */
-  --p-grafito-900: #2a2624;
-  --p-grafito-800: #38332f;
-  --p-grafito-100: #e9e2da;
-  --p-verde-500: #50d794;
-  --p-verde-400: #54da8e;
-  --p-verde-50: #eafbf3;
-  --p-turquesa-500: #36c7b4;
-  --p-pizarra: #364d4a;
-  --p-tinta: #262321;
-  --p-tinta-suave: #6b6b6b;
-  --p-gris-100: #f0ede9;
-  --p-gris-50: #f7f5f2;
-  --p-blanco: #ffffff;
-  --p-rojo-600: #b9443b;
-  --p-rojo-50: #fdf1ef;
+  /* Paleta Huerta de noche (A/B de paleta y acabado, 2026-11-05; antes, Oliva): valores por
+     función, no por tono. Un afiche verde sobre papel de cera: la tierra casi negra en tres pasos,
+     el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de las piezas)
+     y los frutos zanahoria. */
+  /* La letra (A/B de letra, 2026-10-31): Archivo (Omnibus-Type, Buenos Aires) en todo. Los
+     títulos, los numerales y las cifras, anchos y pesados como un afiche (referencia 02); el texto,
+     en ancho normal. El carácter sale del ancho y del peso. */
+  --p-letra-titulo: Archivo, system-ui, sans-serif;
+  --p-letra-texto: Archivo, system-ui, sans-serif;
+  --p-papel: #fbf2d3;
+  --p-tinta: #17140f;
+  --p-tinta-suave: #4a4234;
+  --p-acento: #2d6a1e;
+  --p-acento-hondo: #1f4f14;
+  --p-acento-claro: #d3e98a;
+  --p-tallo: #2d6a1e;
+  --p-hoja: #86b832;
+  --p-suelo: #2a2a1c;
+  --p-suelo-medio: #222217;
+  --p-suelo-hondo: #17170f;
+  --p-texto-suelo: #fbf2d3;
+  --p-raiz: #f4c844;
+  --p-nodo: #f4c844;
+  --p-destacado: #f4c844;
+  /* Los frutos (A/B de frutos y de paleta, 2026-11-02): cada uno, una entrega confirmada, en
+     mandarina; con su segunda tinta, que también dibuja el contorno del que va en camino. */
+  --p-fruto: #f07a12;
+  --p-fruto-hondo: #a8420a;
+  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). "Con
+     problema" (2026-11-05): el texto en tinta negra y el rojo vivo en la sombra y en el ícono. */
+  --p-pendiente-fondo: #ebe3c4;
+  --p-pendiente-texto: #4b4a32;
+  --p-en-camino-fondo: #f8e3a0;
+  --p-en-camino-texto: #6a4f05;
+  --p-en-camino-sello: #d9a514;
+  --p-entregada-fondo: #d3e98a;
+  --p-entregada-texto: #24521a;
+  --p-problema-fondo: #ee3b24;
+  --p-problema-texto: #17140f;
+  --p-problema-sello: #d12a17;
+  /* El movimiento (D32, B0-01): tiempos, esperas, curvas y distancias base. Las hojas usan solo los
+     tokens de uso de abajo. Los valores salen de las 28 duraciones literales de la línea de base
+     (2026-11-04), con un redondeo de hasta 0,1 s. Duraciones: 0,3 y 0,35 → 0,4; 1 y 1,2 → 1,1.
+     Esperas: 0,2 → 0,3; 1,2 → 1,3; 2,2 y 2,4 → 2,3. */
+  --p-tiempo-1: 0.2s;
+  --p-tiempo-2: 0.4s;
+  --p-tiempo-3: 0.75s;
+  --p-tiempo-4: 1.1s;
+  --p-tiempo-5: 24s;
+  --p-espera-0: 0s;
+  --p-espera-1: 0.3s;
+  --p-espera-2: 0.9s;
+  --p-espera-3: 1.3s;
+  --p-espera-4: 1.7s;
+  --p-espera-5: 2.3s;
+  --p-curva-1: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --p-curva-2: cubic-bezier(0.3, 0.7, 0.2, 1);
+  --p-curva-3: ease-out;
+  --p-curva-4: ease;
+  --p-curva-5: ease-in-out;
+  --p-distancia-1: 0.5rem;
+  --p-distancia-2: 1rem;
+  --p-distancia-3: 2rem;
+  /* El espacio y el tamaño del texto que piden las capas de composición y de utilidades (D33). */
+  --p-espacio-1: 0.5rem;
+  --p-espacio-2: 0.75rem;
+  --p-espacio-3: 1rem;
+  --p-espacio-4: 1.5rem;
+  --p-espacio-5: 2.5rem;
+  --p-texto-1: 0.875rem;
+  --p-texto-2: 1.0625rem;
+  --p-texto-3: 1.125rem;
+  /* El título y la bajada de la portada (B3-01): crecen con el ancho de la pantalla. */
+  --p-texto-portada: clamp(2.5rem, 7vw, 5.75rem);
+  --p-texto-bajada: clamp(1.0625rem, 1.4vw, 1.2rem);
+}
 
-  /* Agregados por contraste AA (bitácora, 2026-10-30): borde de campos de 3:1, verde y ámbar de
-     texto y los tonos de aviso que el prototipo dejó propuestos. El azul de "en camino" se separa
-     del grafito y del verde de la marca. */
-  --p-borde-control: #8a847e;
-  --p-verde-700: #146c46;
-  --p-azul-700: #2457a3;
-  --p-azul-50: #eaf1fc;
-  --p-ambar-800: #8a4b00;
-  --p-ambar-50: #fff3dd;
-
-  /* Transparencias derivadas */
-  --p-blanco-a06: rgb(255 255 255 / 6%);
-  --p-blanco-a10: rgb(255 255 255 / 10%);
-  --p-blanco-a14: rgb(255 255 255 / 14%);
-  --p-blanco-a18: rgb(255 255 255 / 18%);
-  --p-blanco-a20: rgb(255 255 255 / 20%);
-  --p-blanco-a72: rgb(255 255 255 / 72%);
-  --p-gris-50-a78: rgb(247 245 242 / 78%);
-  --p-grafito-a06: rgb(42 38 36 / 6%);
-  --p-grafito-a08: rgb(42 38 36 / 8%);
-  --p-grafito-a14: rgb(42 38 36 / 14%);
-  --p-grafito-a15: rgb(42 38 36 / 15%);
-  --p-grafito-a35: rgb(42 38 36 / 35%);
-  --p-grafito-a45: rgb(42 38 36 / 45%);
-  --p-negro-a25: rgb(0 0 0 / 25%);
-  --p-verde-a28: rgb(84 218 142 / 28%);
-  --p-verde-a30: rgb(84 218 142 / 30%);
-  --p-verde-a35: rgb(84 218 142 / 35%);
-  --p-verde-a40: rgb(84 218 142 / 40%);
-  --p-verde-a55: rgb(84 218 142 / 55%);
-  --p-verde-a70: rgb(84 218 142 / 70%);
-  --p-verde-a80: rgb(84 218 142 / 80%);
-  --p-verde-500-a16: rgb(80 215 148 / 16%);
-  --p-turquesa-a35: rgb(54 199 180 / 35%);
-  --p-rojo-a16: rgb(185 68 59 / 16%);
-
-  --p-fuente: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-
-  /* 2. Usos */
-  --color-fondo-pagina: var(--p-gris-50);
-  --color-fondo: var(--p-blanco);
-  --color-superficie: var(--p-gris-100);
+:root {
+  /* Tokens de uso (D20): las hojas de Raíces usan solo estos, uno por valor base. */
+  --fuente-titulo: var(--p-letra-titulo);
+  --fuente-texto: var(--p-letra-texto);
+  --color-papel: var(--p-papel);
+  --color-tinta: var(--p-tinta);
+  --color-tinta-suave: var(--p-tinta-suave);
+  --color-acento: var(--p-acento);
+  --color-acento-hondo: var(--p-acento-hondo);
+  --color-acento-claro: var(--p-acento-claro);
+  --color-tallo: var(--p-tallo);
+  --color-hoja: var(--p-hoja);
+  --color-suelo: var(--p-suelo);
+  --color-suelo-medio: var(--p-suelo-medio);
+  --color-suelo-hondo: var(--p-suelo-hondo);
+  --color-texto-suelo: var(--p-texto-suelo);
+  --color-raiz: var(--p-raiz);
+  --color-nodo: var(--p-nodo);
+  --color-destacado: var(--p-destacado);
+  --color-fruto: var(--p-fruto);
+  --color-fruto-hondo: var(--p-fruto-hondo);
+  --color-pendiente-fondo: var(--p-pendiente-fondo);
+  --color-pendiente-texto: var(--p-pendiente-texto);
+  --color-en-camino-fondo: var(--p-en-camino-fondo);
+  --color-en-camino-texto: var(--p-en-camino-texto);
+  --color-en-camino-sello: var(--p-en-camino-sello);
+  --color-entregada-fondo: var(--p-entregada-fondo);
+  --color-entregada-texto: var(--p-entregada-texto);
+  --color-problema-fondo: var(--p-problema-fondo);
+  --color-problema-texto: var(--p-problema-texto);
+  --color-problema-sello: var(--p-problema-sello);
+  /* Los que piden los pares de contraste AA, del sitio. */
+  --color-fondo-pagina: var(--p-papel);
+  --color-fondo: var(--p-papel);
+  --color-superficie: var(--p-papel);
   --color-texto: var(--p-tinta);
   --color-texto-suave: var(--p-tinta-suave);
-  --color-titulo: var(--p-grafito-900);
-  --color-borde: var(--p-grafito-a08);
-  --color-borde-control: var(--p-borde-control);
-  --color-enlace: var(--p-grafito-900);
-  --color-accion-primaria: var(--p-verde-400);
-  --color-accion-primaria-activa: var(--p-verde-500);
-  --color-accion-secundaria: var(--p-grafito-900);
-  --color-accion-secundaria-activa: var(--p-grafito-800);
-  --color-texto-sobre-accion: var(--p-grafito-900);
-  --color-texto-sobre-secundaria: var(--p-blanco);
-  --color-foco: var(--p-grafito-900);
-  --color-foco-sobre-oscuro: var(--p-verde-400);
-  --color-foco-anillo: var(--p-verde-500-a16);
-  --color-velo: var(--p-grafito-a45);
-
-  /* Superficies oscuras (panel destacado, barra lateral, misión) */
-  --color-destacado-fondo: var(--p-grafito-900);
-  --color-destacado-fondo-alto: var(--p-grafito-800);
-  --color-destacado-texto: var(--p-blanco);
-  --color-destacado-texto-suave: var(--p-grafito-100);
-  --color-destacado-texto-tenue: var(--p-blanco-a72);
-  --color-vidrio: var(--p-blanco-a10);
-  --color-vidrio-tenue: var(--p-blanco-a06);
-  --color-vidrio-barra: var(--p-blanco-a14);
-  --color-vidrio-borde: var(--p-blanco-a20);
-  --color-vidrio-borde-suave: var(--p-blanco-a18);
-  --color-barra-superior: var(--p-gris-50-a78);
-
-  /* Marca: la ruta punteada, sus nodos y los acentos */
-  --color-marca: var(--p-verde-500);
-  --color-marca-brillante: var(--p-verde-400);
-  --color-marca-alterna: var(--p-turquesa-500);
-  --color-marca-suave: var(--p-grafito-100);
-  --color-marca-fondo: var(--p-verde-50);
-  --color-marca-texto: var(--p-verde-700);
-  --color-pizarra: var(--p-pizarra);
-  --color-ruta: var(--p-verde-a70);
-  --color-ruta-linea: var(--p-verde-a35);
-  --color-ruta-anillo: var(--p-verde-a55);
-  --color-segmento-vacio: var(--p-grafito-a15);
-
-  /* Estados */
-  --color-exito-fondo: var(--p-verde-50);
-  --color-exito-texto: var(--p-verde-700);
-  --color-info-fondo: var(--p-azul-50);
-  --color-info-texto: var(--p-azul-700);
-  --color-advertencia-fondo: var(--p-ambar-50);
-  --color-advertencia-texto: var(--p-ambar-800);
-  --color-error-fondo: var(--p-rojo-50);
-  --color-error-texto: var(--p-rojo-600);
-  --color-texto-sobre-error: var(--p-blanco);
-  --color-error-anillo: var(--p-rojo-a16);
-
-  /* Degradados de identidad */
-  --color-degradado-destacado: linear-gradient(
-    144.6deg,
-    var(--p-grafito-900) 0%,
-    var(--p-grafito-800) 60%,
-    var(--p-grafito-900) 100%
-  );
-  --color-degradado-lateral: linear-gradient(
-    170deg,
-    var(--p-grafito-900) 0%,
-    var(--p-grafito-800) 55%,
-    var(--p-grafito-900) 100%
-  );
-  --color-degradado-impulso: linear-gradient(
-    120deg,
-    var(--p-turquesa-500) 0%,
-    var(--p-verde-500) 100%
-  );
-  --color-degradado-pagina: radial-gradient(
-    900px 420px at 100% 0%,
-    var(--p-verde-50) 0%,
-    transparent 70%
-  );
-  --color-degradado-halo: radial-gradient(circle, var(--p-verde-500-a16) 0%, transparent 70%);
-  --color-degradado-esqueleto: linear-gradient(
-    90deg,
-    var(--p-gris-100),
-    var(--p-gris-50),
-    var(--p-gris-100)
-  );
-
-  --fuente-texto: var(--p-fuente);
-  --fuente-titulos: var(--p-fuente);
-
-  /* Tamaños del prototipo (de celular a escritorio con clamp). */
-  --tamano-mini: 0.8125rem;
-  --tamano-chico: 0.875rem;
-  --tamano-texto: 1rem;
-  --tamano-texto-grande: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --tamano-titulo-4: 1.0625rem;
-  --tamano-titulo-3: 1.375rem;
-  --tamano-titulo-2: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
-  --tamano-titulo-1: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
-  --tamano-cifra: clamp(2.875rem, 2rem + 3vw, 4.625rem);
-
-  --espacio-1: 0.25rem;
-  --espacio-2: 0.5rem;
-  --espacio-3: 0.75rem;
-  --espacio-4: 1rem;
-  --espacio-5: 1.5rem;
-  --espacio-6: 2rem;
-  --espacio-7: 3rem;
-
-  --radio-chico: 0.625rem;
-  --radio-control: 0.875rem;
-  --radio-boton: 999px;
-  --radio-tarjeta: 1.25rem;
-  --radio-panel: 1.5rem;
-  --radio-insignia: 999px;
-
-  --borde-ancho: 1px;
-  --borde-foco: 3px;
-  --borde-acento: 0.25rem;
-  --borde-ruta: 2px;
-
-  --sombra-tarjeta: 0 1px 15px var(--p-grafito-a08);
-  --sombra-elevada: 0 10px 30px var(--p-grafito-a14);
-  --sombra-flotante: 0 12px 30px var(--p-grafito-a35);
-  --sombra-boton: 0 10px 15px var(--p-grafito-a06);
-  --sombra-foto: -1px 1px 15px var(--p-negro-a25);
-  --sombra-moneda: 0 12px 24px var(--p-turquesa-a35);
-  --sombra-aviso: var(--sombra-elevada);
-  /* Aura del nodo encendido: el espacio con los vecinos se mide desde su borde. */
-  --sombra-nodo: 0 0 0 8px var(--p-verde-a28), 0 0 24px 6px var(--p-verde-a40);
-  --sombra-nodo-chico: 0 0 0 3px var(--p-verde-a30);
-  --sombra-icono: drop-shadow(0 0 6px var(--p-verde-a80));
-
-  --movimiento-rapido: 120ms;
-  --movimiento-duracion: 200ms;
-  --movimiento-lento: 300ms;
-  --movimiento-pulso: 1.2s;
-  --movimiento-curva: cubic-bezier(0.2, 0.7, 0.2, 1);
-
-  --capa-avisos: 10;
-
-  /* 48 × 48 px: área de toque mínima (RNF-UI-10). El prototipo usa 44 px; acá rige 48. */
-  --medida-toque-minimo: 3rem;
-  --medida-lectura: 70ch;
-  --medida-tarjeta-minima: 16rem;
-  --medida-muestra: 2.5rem;
-  --medida-nodo: 1.875rem;
-  --medida-nodo-chico: 0.625rem;
-  --medida-barra-superior: 4.25rem;
-  --medida-columna-estado: 11.5rem;
-
-  /* Puntos de quiebre del prototipo (600, 860 y 1100 px): las media queries de app.css usan solo
-     estos valores, con min-width. No se pueden leer con var() dentro de @media:
-     InterfazFitnessTest compara el literal. */
+  --color-titulo: var(--p-acento);
+  --color-enlace: var(--p-acento);
+  --color-texto-sobre-accion: var(--p-papel);
+  --color-accion-primaria: var(--p-acento);
+  --color-accion-primaria-activa: var(--p-acento-hondo);
+  --color-texto-sobre-secundaria: var(--p-tinta);
+  --color-accion-secundaria: var(--p-acento-claro);
+  --color-accion-secundaria-activa: var(--p-hoja);
+  --color-destacado-texto: var(--p-texto-suelo);
+  --color-destacado-texto-suave: var(--p-raiz);
+  --color-destacado-fondo: var(--p-suelo);
+  --color-destacado-fondo-alto: var(--p-suelo-medio);
+  --color-marca-brillante: var(--p-raiz);
+  --color-marca-alterna: var(--p-acento-hondo);
+  --color-marca: var(--p-acento);
+  --color-marca-texto: var(--p-acento);
+  --color-texto-sobre-error: var(--p-papel);
+  --color-error-texto: var(--p-problema-texto);
+  --color-error-fondo: var(--p-problema-fondo);
+  --color-exito-texto: var(--p-entregada-texto);
+  --color-exito-fondo: var(--p-entregada-fondo);
+  --color-info-texto: var(--p-pendiente-texto);
+  --color-info-fondo: var(--p-pendiente-fondo);
+  --color-advertencia-texto: var(--p-en-camino-texto);
+  --color-advertencia-fondo: var(--p-en-camino-fondo);
+  --color-borde-control: var(--p-tinta-suave);
+  --color-foco: var(--p-acento);
+  /* Los bordes y la sombra (A/B de paleta y acabado, 2026-11-05: Huerta de noche): esquinas
+     rectas, como un afiche impreso, y la sombra plana de paja detrás del papel y de los botones,
+     como un farol sobre la tierra oscura. Una pieza que ya es paja lleva la sombra hoja. */
+  --radio-lamina: 0;
+  --radio-boton: 0;
+  --color-sombra: var(--p-raiz);
+  /* Movimiento (D32): duraciones (corta, media, larga, trazo y ambiente, la de una escena que no
+     termina), esperas de una coreografía, curvas (entrada, énfasis, salida, base y ambiente) y las
+     distancias que recorre un elemento al entrar. Un movimiento que no es de estos tiene que
+     pedirlos acá, no escribir un valor. */
+  --movimiento-duracion-corta: var(--p-tiempo-1);
+  --movimiento-duracion-media: var(--p-tiempo-2);
+  --movimiento-duracion-larga: var(--p-tiempo-3);
+  --movimiento-duracion-trazo: var(--p-tiempo-4);
+  --movimiento-duracion-ambiente: var(--p-tiempo-5);
+  --movimiento-retraso-ninguno: var(--p-espera-0);
+  --movimiento-retraso-entrada: var(--p-espera-1);
+  --movimiento-retraso-trazo: var(--p-espera-2);
+  --movimiento-retraso-sello: var(--p-espera-3);
+  --movimiento-retraso-cierre: var(--p-espera-4);
+  --movimiento-retraso-ambiente: var(--p-espera-5);
+  --movimiento-curva-entrada: var(--p-curva-1);
+  --movimiento-curva-enfasis: var(--p-curva-2);
+  --movimiento-curva-salida: var(--p-curva-3);
+  --movimiento-curva-base: var(--p-curva-4);
+  --movimiento-curva-ambiente: var(--p-curva-5);
+  --movimiento-distancia-corta: var(--p-distancia-1);
+  --movimiento-distancia-media: var(--p-distancia-2);
+  --movimiento-distancia-larga: var(--p-distancia-3);
+  --espacio-1: var(--p-espacio-1);
+  --espacio-2: var(--p-espacio-2);
+  --espacio-3: var(--p-espacio-3);
+  --espacio-4: var(--p-espacio-4);
+  --espacio-5: var(--p-espacio-5);
+  --tamano-chico: var(--p-texto-1);
+  --tamano-base: var(--p-texto-2);
+  --tamano-grande: var(--p-texto-3);
+  --tamano-titulo-portada: var(--p-texto-portada);
+  --tamano-bajada-portada: var(--p-texto-bajada);
+  /* Los puntos de quiebre del sitio. */
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
-
-  /* 3. Pico: base */
-  --pico-font-family: var(--fuente-texto);
-  --pico-border-radius: var(--radio-control);
-  --pico-spacing: var(--espacio-4);
-  --pico-form-element-spacing-vertical: 0.75rem;
-  --pico-form-element-spacing-horizontal: 0.875rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --movimiento-rapido: 0ms;
-    --movimiento-duracion: 0ms;
-    --movimiento-lento: 0ms;
-    --movimiento-pulso: 0s;
-  }
-}
-
-/* 3. Pico: colores del tema claro, con el mismo selector que usa Pico. */
-[data-theme=light],
-:root:not([data-theme=dark]) {
-  --pico-background-color: var(--color-fondo-pagina);
-  --pico-color: var(--color-texto);
-  --pico-h1-color: var(--color-titulo);
-  --pico-h2-color: var(--color-titulo);
-  --pico-h3-color: var(--color-titulo);
-  --pico-h4-color: var(--color-titulo);
-  --pico-h5-color: var(--color-titulo);
-  --pico-h6-color: var(--color-titulo);
-  --pico-muted-color: var(--color-texto-suave);
-  --pico-muted-border-color: var(--color-borde);
-  --pico-primary: var(--color-enlace);
-  --pico-primary-underline: var(--color-enlace);
-  --pico-primary-background: var(--color-accion-primaria);
-  --pico-primary-border: var(--color-accion-primaria);
-  --pico-primary-hover: var(--color-accion-secundaria-activa);
-  --pico-primary-hover-underline: var(--color-accion-secundaria-activa);
-  --pico-primary-hover-background: var(--color-accion-primaria-activa);
-  --pico-primary-hover-border: var(--color-accion-primaria-activa);
-  --pico-primary-focus: var(--color-foco-anillo);
-  --pico-primary-inverse: var(--color-texto-sobre-accion);
-  --pico-secondary: var(--color-accion-secundaria);
-  --pico-secondary-underline: var(--color-accion-secundaria);
-  --pico-secondary-background: var(--color-accion-secundaria);
-  --pico-secondary-border: var(--color-accion-secundaria);
-  --pico-secondary-hover: var(--color-accion-secundaria-activa);
-  --pico-secondary-hover-underline: var(--color-accion-secundaria-activa);
-  --pico-secondary-hover-background: var(--color-accion-secundaria-activa);
-  --pico-secondary-hover-border: var(--color-accion-secundaria-activa);
-  --pico-secondary-focus: var(--color-foco-anillo);
-  --pico-secondary-inverse: var(--color-texto-sobre-secundaria);
-  --pico-form-element-background-color: var(--color-fondo);
-  --pico-form-element-border-color: var(--color-borde-control);
-  --pico-form-element-color: var(--color-texto);
-  --pico-form-element-placeholder-color: var(--color-texto-suave);
-  --pico-form-element-active-border-color: var(--color-marca);
-  --pico-form-element-focus-color: var(--color-foco-anillo);
-  --pico-form-element-invalid-border-color: var(--color-error-texto);
-  --pico-form-element-invalid-active-border-color: var(--color-error-texto);
-  --pico-form-element-invalid-focus-color: var(--color-error-anillo);
-  --pico-card-background-color: var(--color-fondo);
-  --pico-card-border-color: var(--color-borde);
-  --pico-card-box-shadow: var(--sombra-tarjeta);
-  --pico-card-sectioning-background-color: var(--color-superficie);
-  --pico-table-border-color: var(--color-borde);
-  --pico-code-background-color: var(--color-superficie);
-  --pico-code-color: var(--color-titulo);
-  --pico-del-color: var(--color-error-texto);
-  --pico-ins-color: var(--color-exito-texto);
-  --pico-modal-overlay-background-color: var(--color-velo);
-}
-
-h1 {
-  --pico-font-size: var(--tamano-titulo-1);
-}
-
-h2 {
-  --pico-font-size: var(--tamano-titulo-2);
-}
-
-h3 {
-  --pico-font-size: var(--tamano-titulo-3);
-}
-
-h4 {
-  --pico-font-size: var(--tamano-titulo-4);
 }

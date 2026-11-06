@@ -1,7 +1,7 @@
 # Dirección de arte
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 2 · 2026-10-31 (suma "Libertad creativa" y "Oficio") · parte del
+> **Versión 3 · 2026-10-31 (suma "Libertad creativa", "Oficio" y el tono común) · parte del
 > [proceso de diseño](README.md)**
 
 La meta es una interfaz **con carácter propio**: que alguien la vea y no pueda confundirla con una
@@ -25,17 +25,23 @@ Cada dirección gráfica (la "A" o la "B" de una comparación) se describe con e
 
 1. **Concepto en una frase**, anclado en el tema de DonaTrack: el recorrido de una donación, la
    comunidad, la transparencia y el alcance federal. Por ejemplo: "el camino visible", con el
-   recorrido punteado de los mapas de E1 como motivo gráfico.
+   recorrido punteado de los mapas de E1 como motivo gráfico. La metáfora es libre; lo que comunica
+   es el [norte compartido](tono-y-comunicacion.md#qué-fija-y-qué-deja-libre).
 2. **Una audacia por pantalla.** Un solo elemento memorable (un título tipográfico grande, el
    motivo del recorrido, una foto protagonista). El resto, disciplinado.
 3. **Tipografía.** Una o dos familias con licencia OFL, servidas desde el propio sitio, y una
    escala con proporción fija. El título se trata como elemento de diseño, no como texto más
    grande. Largo de línea de 80 caracteres o menos.
 4. **Color.** Entre 4 y 6 colores base con nombre. Los estados de una entrega (pendiente, en
-   camino, entregada, con problema) forman un sistema de color propio, siempre con texto.
+   camino, entregada, con problema) forman un sistema de color propio, siempre con texto. El texto
+   usa los nombres de los [estados](tono-y-comunicacion.md#los-estados-de-una-donación): el color de
+   "entregada" corresponde a la entrega confirmada por la entidad, y el texto dice "entrega
+   confirmada".
 5. **Forma.** Radios, bordes y sombras con una lógica única; no un poco de cada cosa.
-6. **Imagen.** Las fotos reales de entregas son el contenido más fuerte del sitio. Las insignias
-   de E1 ya marcan un estilo de ilustración (plana, geométrica, saturada) que se puede extender.
+6. **Imagen.** Las fotos reales de entregas son el contenido más fuerte del sitio. Muestran lo
+   entregado y el lugar, sin exponer a personas en situación vulnerable
+   ([personas y fotos](tono-y-comunicacion.md#personas-entidades-y-fotos)). Las insignias de E1 ya
+   marcan un estilo de ilustración (plana, geométrica, saturada) que se puede extender.
 7. **Movimiento.** Solo para explicar un cambio: una entrega que pasa de estado, un aviso que
    aparece. Nada de animaciones de entrada en cada sección.
 
@@ -64,19 +70,22 @@ Antes de mostrar una propuesta, el agente mira sus capturas en los 3 anchos y se
 - ¿En 360 px la acción principal está a la vista sin hacer scroll? La verificación visual deja la
   primera pantalla del celular (360 × 640) en una captura aparte para mirarlo.
 - ¿Algo está ahí solo de adorno? Se saca.
+- ¿Los textos pasan el [filtro de tono](tono-y-comunicacion.md#filtro-de-tono-7-preguntas)? ¿Algún
+  estado pendiente se lee como cumplido, o alguna cifra va sin período?
 
 ## Libertad creativa
 
-Cuando el usuario pide algo nuevo y creativo (un concepto, un rediseño o una alternativa desde
+Cuando el usuario pide algo nuevo y creativo (un concepto, un rediseño o una identidad desde
 cero), la libertad es real. Lo que es libre y lo que no:
 
 | Libre | Fijo |
 |---|---|
-| La composición de cada pantalla: qué va dónde, con qué forma y tamaño | Los datos y las acciones: los mismos, con el mismo nombre y el mismo destino (un test compara las gemelas) |
+| La composición de cada pantalla: qué va dónde, con qué forma y tamaño | Los datos y las acciones: los mismos, con el mismo nombre y el mismo destino |
 | La navegación: barra, cajones, índice, pestañas o lo que pida el concepto | El piso de arriba |
 | Los materiales, los dibujos propios y el movimiento que explica algo | El stack: Thymeleaf, HTMX, Pico tematizado y tokens; JavaScript solo como mejora |
-| La voz en títulos y rótulos, declarada en la tabla de voz | La otra alternativa: no se toca |
-| La tipografía y la paleta de la alternativa, con contraste AA | Lo que el usuario fijó en el encargo creativo |
+| La voz en títulos y rótulos | Las pantallas que el encargo deja fuera: no se tocan |
+| La metáfora y el mundo visual | El mensaje y el [tono común](tono-y-comunicacion.md): estados, cifras, acciones y errores dicen lo mismo en todas |
+| La tipografía y la paleta, con contraste AA | Lo que el usuario fijó en el encargo creativo |
 
 Reglas para encargar trabajo creativo, a una persona o a un agente (las plantillas de
 [`plantillas/`](plantillas/) ya las traen: `encargo-creativo`, `encargo-constructor` y
@@ -96,8 +105,8 @@ Reglas para encargar trabajo creativo, a una persona o a un agente (las plantill
 
 ## Oficio
 
-Reglas que salieron del rediseño de Cozy / Medieval (bitácora, 2026-10-31) y valen para cualquier
-alternativa:
+Reglas que salieron de las corridas creativas (bitácora, 2026-10-31) y valen para cualquier
+diseño:
 
 - **Un solo recurso material por objeto.** Una pieza es de madera, de papel o de metal; dos
   materiales en el mismo objeto compiten.
@@ -127,9 +136,8 @@ alternativa:
     `--movimiento-`, `--capa-` y `--medida-`. Por ejemplo, `--color-accion-primaria` o
     `--medida-toque-minimo`.
 - Las variables `--pico-*` se asignan solo en `tokens.css`, a partir de los usos.
-- Cada alternativa de identidad (Glassmorphism y Cozy / Medieval) tiene su propio `tokens.css`, su
-  propio `app.css` y su propio juego de plantillas, con estas mismas reglas
-  ([ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
+- El sitio tiene una sola identidad, con un `tokens.css` y un `app.css`
+  ([ADR aceptado](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 - Los puntos de quiebre se declaran una vez en `tokens.css` como `--medida-quiebre-*`. Las media
   queries usan solo esos valores.
 - Si una dirección elegida pide dejar Pico, eso es otra decisión de arquitectura: requiere un ADR

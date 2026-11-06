@@ -1,0 +1,239 @@
+/* Estructura de las pantallas privadas de Raíces (layout-privado.html): la cabecera con la marca,
+   el menú del rol y la cuenta, y el contenido. El menú es el bloque `navegacion`
+   (componentes/navegacion.css): una barra inferior en el celular (criterios de la cátedra, sección
+   4) y, desde la tableta, horizontal en la cabecera de tierra honda (usuario, 2026-11-03, tomado del
+   sitio B). Acá solo va dónde queda en la cabecera: en la tableta, en una segunda fila; en pantalla
+   grande, en la misma fila que la marca. También: el rótulo y el título de cada pantalla. */
+@import url("app.css");
+
+/* --- El celular: la marca y la cuenta arriba; el menú, una barra fija abajo ---------------------- */
+.raices-privado {
+  padding-bottom: 4.5rem;
+}
+
+.armazon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.armazon-cuenta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.armazon-cuenta p {
+  display: grid;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.armazon-cuenta b {
+  color: var(--color-texto-suelo);
+}
+
+.armazon-cuenta small {
+  font-size: 0.875rem;
+}
+
+.armazon-cuenta a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0 0.5rem;
+  color: var(--color-raiz);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* El acceso a Notificaciones del donante: en el celular, la carta sola con la cantidad sin leer en
+   un sello paja; igual desde la tableta, en la cabecera, junto a la cuenta. */
+.armazon-avisos {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  margin-left: auto;
+  color: var(--color-texto-suelo);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.armazon-avisos svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.armazon-avisos-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.armazon-avisos-cuenta {
+  position: absolute;
+  top: 0.125rem;
+  right: -0.125rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding: 0 0.25rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.125rem 0.125rem 0 var(--color-hoja);
+  color: var(--color-tinta);
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
+.armazon-avisos[aria-current="page"] {
+  color: var(--color-raiz);
+}
+
+main {
+  max-width: 82rem;
+  margin-inline: auto;
+  padding: 1rem 1rem 3rem;
+}
+
+.raices-privado .raices-pie {
+  max-width: 82rem;
+}
+
+main:focus {
+  outline: none;
+}
+
+.rotulo {
+  margin: 0 0 0.25rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+}
+
+main h1 {
+  margin: 0 0 0.5rem;
+  color: var(--color-tinta);
+  font: 800 clamp(2rem, 5vw, 3.5rem) / 1 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* El título de sección es la base: va en la capa `pico` para que los componentes (el título del banner
+   de error) le ganen sin pelear por especificidad. */
+@layer pico {
+  main h2 {
+    color: var(--color-tinta);
+    font: 800 1.375rem/1.2 var(--fuente-titulo);
+    font-stretch: 118%;
+  }
+}
+
+/* El código de seguimiento de un banner de error (el papel del banner está en componentes/aviso.css). */
+.aviso-codigo code {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Lo que solo leen los lectores de pantalla. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sin-dibujar {
+  max-width: 38rem;
+}
+
+@media (min-width: 37.5em) {
+  .armazon {
+    padding: 0.75rem 2rem;
+  }
+
+  main {
+    padding: 2rem 2rem 4rem;
+  }
+
+}
+
+/* --- Desde la tableta: el menú, horizontal en la cabecera ------------------------------------- */
+@media (min-width: 37.5em) {
+  .raices-privado {
+    padding-bottom: 0;
+  }
+
+  .armazon {
+    padding-inline: max(2rem, (100% - 82rem) / 2);
+  }
+
+  /* En la tableta, el menú (componentes/navegacion.css) va en una segunda fila a todo el ancho de la
+     cabecera. */
+  .armazon .navegacion {
+    order: 1;
+    flex-basis: 100%;
+  }
+}
+
+/* --- La pantalla grande: marca, menú, Notificaciones y cuenta en una sola fila ----------------- */
+@media (min-width: 68.75em) {
+  .armazon {
+    flex-wrap: nowrap;
+    column-gap: 1rem;
+  }
+
+  .armazon .navegacion {
+    order: 0;
+    flex: 1 1 auto;
+  }
+
+  /* El menú en un solo renglón: si se parte, la segunda fila deja un hueco a su lado (pulido,
+     2026-11-03: "Seguir entregas" de la entidad bajaba a 1280 px). Se achica la cuenta. Solo con
+     hasta 5 secciones (donante y entidad): las 7 de la administración no entran en una fila. */
+  .armazon .navegacion ul:not(:has(li:nth-child(6))) {
+    flex-wrap: nowrap;
+  }
+
+  .armazon .navegacion ul:not(:has(li:nth-child(6))) a {
+    padding-inline: 0.5rem;
+    white-space: nowrap;
+  }
+
+  /* Con más (las 7 de la administración), el menú en su propia fila, como en la tableta: partido
+     al lado de la cuenta dejaba un hueco. */
+  .armazon:has(.navegacion li:nth-child(6)) {
+    flex-wrap: wrap;
+  }
+
+  .armazon .navegacion:has(li:nth-child(6)) {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  .armazon-avisos {
+    margin-left: 0;
+  }
+}

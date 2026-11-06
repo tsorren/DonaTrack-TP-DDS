@@ -36,6 +36,7 @@ código propio que revisar y una identidad visual propia?
 1. **Aplica:** [20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores](../20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores.md) (`proposed`): controllers como adaptadores de entrada, puertos para los datos y adaptadores de ejemplo (perfil `maqueta`) o REST.
 2. **No usa:** [20260901-limites-y-responsabilidades-del-shared-kernel-common-lib](../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md): el cliente no depende de `common-lib`, porque su `@RestControllerAdvice` devolvería en JSON los errores de las vistas (RF-CL-08) y RNF-CL-01 pide desacople. La propagación de `traceId` se decide al integrar el gateway (ADR-E6-02).
 3. **Complementa:** [20261030-verificacion-visual-con-playwright-y-axe](./20261030-verificacion-visual-con-playwright-y-axe.md) (`proposed`): cómo se comprueba lo que este stack produce.
+4. **Modificado en parte por:** [20261104-interaccion-movimiento-y-componentes-del-cliente-liviano](./20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md) (`proposed`, 2026-11-04): D18 suma Alpine (build CSP); el CSS propio de D19 se ordena en capas CUBE con cerco.
 
 ## Alternativas Consideradas
 

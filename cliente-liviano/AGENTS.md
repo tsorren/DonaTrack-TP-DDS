@@ -33,7 +33,8 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
   APIs REST, a través del gateway, como DTOs propios del cliente.
 - **No depende de `common-lib`.** Su `@RestControllerAdvice` convertiría los errores de las vistas
   en JSON. La propagación de `traceId` se decide al integrar el gateway.
-- Stack fijo (D17–D21, ADR-E6-06): Spring MVC + Thymeleaf, HTMX, Pico.css + `tokens.css` y
+- Stack fijo (D17–D21, ADR-E6-06; D31–D33, [ADR de interacción, movimiento y componentes](../docs/adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)):
+  Spring MVC + Thymeleaf, HTMX, Alpine.js (build CSP), Pico.css + `tokens.css` en capas CUBE y
   MapLibre solo en pantallas con mapa. Sin build de frontend, sin Node y sin frameworks SPA.
 
 ## Estructura
@@ -43,42 +44,33 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. |
 | `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
 | `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos |
-| `grupo5.cliente.maqueta` | Adaptadores con datos de ejemplo (perfil `maqueta`) y sus escenarios |
-| `templates/layout.html` | Estructura de las pantallas públicas: encabezado, contenido, pie y región de avisos |
-| `templates/layout-privado.html` | Estructura de las pantallas privadas: barra lateral (barra inferior en el celular), campana, cuenta y región de avisos |
-| `templates/fragmentos/` | Un componente = un fragmento parametrizado |
-| `templates/paginas/` | Una vista por pantalla |
-| `templates/alternativas/<nombre>/` | El juego completo de plantillas de otra alternativa (hoy, `cozy-medieval`): su `layout.html`, `layout-privado.html`, `fragmentos/` y `paginas/`, con la misma estructura de carpetas que `templates/`. En la maqueta, `?alternativa=<nombre>` lo elige |
-| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre de la Alternativa Glassmorphism, la que se ve por defecto |
-| `static/css/app.css` | Estilos de componentes y pantallas de Glassmorphism, solo con tokens de uso |
-| `static/css/alternativas/<nombre>/` | Los estilos de esa alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`) |
+| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/` es la portada; `/<pantalla>` muestra `templates/<pantalla>.html`, y una sección del menú sin plantilla, `sin-dibujar`), los escenarios y las variantes A/B |
+| `templates/<pantalla>.html` | Una plantilla por pantalla. El nombre empieza con el rol (`publico-`, `donante-`, `entidad-`, `admin-`) y, en el nivel 3, con el de su sección (`donante-donaciones-detalle`) |
+| `templates/layout-privado.html` y `layout-publico.html` | Estructura de las pantallas privadas y de las públicas (la portada tiene la suya) |
+| `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, `interaccion` (la carga de Alpine y la configuración de View Transitions, en el head de los tres layouts), los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar`. `estilos.html` es el catálogo (`/estilos`, RF-CL-05) y `componentes/<componente>.html`, los fragmentos de la capa CUBE |
+| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre |
+| `static/css/app.css`, `privado.css` y `<pantalla>.css` | Estilos comunes, los de las pantallas privadas y una hoja por pantalla, solo con tokens de uso. Las hojas de pantalla migran a capas CUBE por el [backlog](../docs/interfaz/backlog-migracion-componentes.md) |
+| `static/css/composicion.css`, `utilidades.css`, `movimiento.css` y `componentes/<componente>.css` | Capas CUBE (D33) y primitivas de movimiento (D32), registradas en el [catálogo](../docs/interfaz/componentes.md). Creadas con la fase 0 del backlog; `app.css` las carga cada una en su capa |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
-| `templates/variantes/` | Las variantes de estructura: reemplazan la página entera (también una pantalla del prototipo) con `?variante=<nombre>`; se borran al decidir |
-| `static/js/` | JavaScript propio, solo como mejora sobre lo que ya funciona sin él (hoy, `cozy-navegacion.js` de Cozy y `prototipo-entidad.js` del prototipo) |
-| `templates/prototipo/cozy-medieval/` | El prototipo navegable del flujo completo de Cozy (perfil `maqueta`, `/prototipo/<pantalla>`, `PrototipoController`); sus estilos, en `static/css/alternativas/cozy-medieval/prototipo/`. No son pantallas del sistema ni tienen gemela: cada una se construye en las dos alternativas cuando se apruebe su flujo |
-| `src/test/resources/voz/<alternativa>.txt` | La tabla de voz de cada alternativa: los títulos y rótulos que dice a su modo (los vigila `InterfazFitnessTest`) |
+| `templates/variantes/` | Las variantes de estructura: reemplazan la pantalla entera con `?variante=<nombre>`; se borran al decidir |
+| `static/js/` | JavaScript propio y los `Alpine.data()`, solo como mejora sobre lo que ya funciona sin él: `interfaz.js` (los componentes de Alpine: `avisos`, `subidaFotos`, `pestanas` y `avisoDeMuestra`) y `publico.js` (las mejoras de las páginas públicas) |
+
+Una sola identidad visual ([ADR aceptado](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio (skills
+`relevamiento-creativo` y `corrida-creativa`).
 
 ## Reglas de plantillas
 
-- Cada componente es un fragmento en `templates/fragmentos/<componente>.html`. Figura en `/estilos`
-  con todos sus estados y el patrón que sigue ([catálogo de patrones](../docs/interfaz/patrones-y-microcopy.md)).
-  Un test falla si falta.
-- **Cada alternativa tiene su propio juego de plantillas.** Toda plantilla y todo fragmento de
-  `templates/` tiene su gemela, con el mismo nombre, en `templates/alternativas/<nombre>/` (y al
-  revés). Una pantalla o un componente nuevo se crea en los dos lugares. Las dos muestran los
-  mismos datos y las mismas acciones, con los mismos nombres de botones y enlaces: un test compara
-  cada par. Cada alternativa puede decir a su modo los títulos y los rótulos (sin números y nunca en
-  un control), declarados en su tabla de voz, `src/test/resources/voz/<alternativa>.txt`. En el
-  catálogo `/estilos` también entra la descripción de un componente que esa alternativa dibuja de
-  otro modo (en Cozy, la navegación son cajones y no una barra).
-- El catálogo `/estilos` de cada alternativa
-  (`templates/alternativas/<nombre>/paginas/estilos.html`) muestra todos los fragmentos de esa
-  alternativa. Un test falla si falta.
+- Una pieza que usan varias pantallas va en una plantilla compartida de `templates/` (sin rol en el
+  nombre) como fragmento parametrizado; no se copia.
 - HTML semántico: `header`, `nav`, `main`, `footer`, `button`, `label`, `table` con `th scope`.
 - Texto siempre con `th:text`. `th:utext` nunca con datos que vienen de afuera.
 - Cada estado del flujo (vacío, cargando, éxito, error, sin permiso) tiene su representación. En el
   perfil `maqueta` se ve con `?escenario=<nombre>`.
-- Los textos salen de la ficha del flujo (`docs/interfaz/flujos/`), no se improvisan.
+- Los textos salen de la ficha del flujo (`docs/interfaz/flujos/`), no se improvisan, y siguen el
+  [tono común](../docs/interfaz/tono-y-comunicacion.md): lo pendiente se dice pendiente, las cifras
+  van con período y fecha, sin urgencia ni culpa. La voz propia de la identidad cambia la forma de
+  un título o un rótulo, no lo que significa.
 
 ## HTMX y mejora progresiva
 
@@ -91,23 +83,55 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
   javascript mientras se siga considerando Server Side Rendering"). Las páginas se arman en el
   servidor con Thymeleaf; el JavaScript suma interacción o movimiento encima de enlaces y
   formularios reales, respeta "reducir movimiento" y va en `static/js/`. Nada de aplicaciones de
-  una sola página (SPA), frameworks de cliente ni build de frontend.
+  una sola página (SPA) ni build de frontend; el único framework de cliente es Alpine (D31).
+
+## Alpine (D31)
+
+- Build CSP (WebJar `alpinejs__csp`): las expresiones son nombres de propiedades y métodos; la
+  lógica va en `Alpine.data()` dentro de `static/js/`.
+- Reparto: **HTMX habla con el servidor** (datos, filtros, envíos, polling); **Alpine maneja estado
+  que nunca sale del navegador** (abrir y cerrar, paso actual, pestaña, vista previa de fotos,
+  mostrar la cola de avisos).
+- Prohibido en Alpine: `fetch` o `XMLHttpRequest`, armar listas con datos del negocio, `x-html`,
+  y guardar tokens o datos personales en `localStorage`.
+- `x-data` va fuera del bloque que HTMX reemplaza. `x-cloak` solo en lo que no es esencial.
+- Diálogos con `<dialog class="dialogo" popover>` nativo, que se abre con `popovertarget` y funciona sin
+  JavaScript, sin plugins de foco; `showModal()` solo para un diálogo que no sea esencial y necesite el
+  fondo inerte.
+- Avisos: la región `#avisos` de los layouts lleva `x-data="avisos"`, la cola de Alpine (3 a la vez, 6 s).
+  El texto de cada aviso lo trae el servidor; Alpine no lo arma.
 
 ## Reglas de estilos
 
 - Pantallas y componentes usan **solo tokens de uso** (`--color-*`, `--fuente-*`, `--tamano-*`,
   `--espacio-*`, `--radio-*`, `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*` y `--medida-*`).
-- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de un
+- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de
   `tokens.css`.
-- Fuera de los `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
-- Hay dos alternativas de identidad, cada una con sus plantillas, los mismos datos y acciones
-  (vigilados por test) y sus hojas de estilo: cada componente o pantalla nueva se escribe y se
-  estiliza en cada una
-  ([ADR propuesto](../docs/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
+- Fuera de `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.
 - Fuentes con licencia OFL, servidas desde `static/fuentes/` junto con su licencia.
 - Criterios gráficos y lo que evitamos: [dirección de arte](../docs/interfaz/direccion-de-arte.md).
+
+## Capas CUBE, componentes y movimiento (D32, D33)
+
+- **Primero el [catálogo](../docs/interfaz/componentes.md).** Si lo que hace falta existe, se usa
+  como está. Si falta, se agrega al catálogo y a `/estilos` (`templates/estilos.html`) antes de usarlo. No se crean clases
+  parecidas a una existente.
+- Orden de capas, declarado una vez en `app.css`:
+  `@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas;`.
+- Un componente es un fragmento con parámetros con nombre y slots (`~{::#cuerpo}`) más su hoja en
+  `static/css/componentes/`. Sus variantes van por atributo (`data-estado`, `data-tono`).
+- Las hojas de pantalla tienen solo disposición propia: sin colores, fuentes, `@keyframes` ni
+  duraciones. Rige para lo nuevo: el cerco de `InterfazFitnessTest` lo exige a toda hoja de pantalla
+  que no esté en su lista de heredadas, rechaza las clases de las plantillas que no están en el
+  catálogo ni en `clases-heredadas.txt` (solo baja), y falla si las clases de un solo uso superan su
+  tope. Lo existente se ajusta por el backlog.
+- Movimiento: duraciones, curvas y distancias salen de los tokens `--movimiento-*`; las animaciones
+  son primitivas de `movimiento.css` (`data-movimiento`), con "reducir movimiento" resuelto adentro.
+  View Transitions, `@starting-style`, `@container` y `popover`, como mejora progresiva.
+- Toda tarea que toca una hoja de pantalla migra antes lo que esa pantalla usa del
+  [backlog de migración](../docs/interfaz/backlog-migracion-componentes.md).
 
 ## Accesibilidad y anchos
 
@@ -125,11 +149,17 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 ```bash
 mvn spotless:check
-mvn clean test -pl cliente-liviano -am             # unitarios y reglas de tokens y catálogo
+mvn clean test -pl cliente-liviano -am             # unitarios y reglas de tokens y contraste
 mvn test -pl cliente-liviano -Pvisual              # capturas en 3 anchos, accesibilidad y toque
-mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=estilos/armazon   # solo esas rutas
+mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=donante-inicio   # solo esas rutas
+mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b   # una pasada por variante A/B
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
 ```
+
+Cuando axe no puede medir el contraste (por un pseudo-elemento, un degradado o una imagen de
+fondo), la verificación visual lo mide con el color de fondo de los contenedores, sin ver lo que
+pinta el pseudo-elemento, y falla por debajo de AA. El texto sobre un degradado lineal, o sobre una
+imagen sin color opaco debajo, no se puede medir así: queda para la revisión a ojo.
 
 La verificación visual deja también la primera pantalla del celular (`-360x640.png`). Para pasar
 capturas a JPG de evidencia, comparar las de antes y después o armar la página de antes y después:

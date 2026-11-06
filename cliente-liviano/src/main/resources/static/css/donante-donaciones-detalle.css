@@ -1,0 +1,244 @@
+/* El detalle de una donación en Raíces A: las etapas como la raíz de la donación, de arriba abajo
+   (lo cumplido impreso, lo que falta hueco), la foto de la entidad o el marco sin imprimir que dice
+   qué falta, la etiqueta de herbario con los datos y las noticias. */
+@import url("donante-comun.css");
+
+.detalle {
+  max-width: 72rem;
+}
+
+.detalle-cabecera {
+  margin-bottom: 1.5rem;
+}
+
+.detalle-cabecera .bajada {
+  margin-bottom: 0.5rem;
+}
+
+.detalle-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 1.25rem;
+}
+
+.detalle .demora {
+  max-width: 38rem;
+  margin-bottom: 1.75rem;
+  border-color: var(--color-problema-texto);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-problema-fondo);
+}
+
+.detalle .demora h2 {
+  color: var(--color-problema-texto);
+}
+
+.detalle .demora p {
+  margin: 0;
+}
+
+.detalle-cuerpo {
+  display: grid;
+  gap: 2rem;
+}
+
+.detalle-cuerpo h2 {
+  margin: 0 0 1rem;
+}
+
+/* --- La raíz de la donación: una línea de subte paja con borde que une los sellos; hacia lo que
+   falta, hueca. ---------------------------------------------------------------------------------- */
+.raiz {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.raiz-paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  column-gap: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+.raiz-paso:last-child {
+  padding-bottom: 0;
+}
+
+.raiz-paso .estado-sello {
+  grid-row: span 2;
+  position: relative;
+  z-index: 1;
+  width: 2rem;
+  height: 2rem;
+}
+
+.raiz-paso:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 1.6rem;
+  bottom: -0.1rem;
+  left: 0.6875rem;
+  width: 0.625rem;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.raiz-paso:has(+ .raiz-paso--pendiente)::before {
+  border-style: dashed;
+  border-color: var(--color-tinta-suave);
+  background: var(--color-papel);
+}
+
+.raiz-nombre {
+  color: var(--color-tinta);
+  font-weight: 700;
+  line-height: 2rem;
+}
+
+.raiz-paso--actual .raiz-nombre {
+  font-size: 1.125rem;
+  font-stretch: 112%;
+}
+
+.raiz-paso--pendiente .raiz-nombre {
+  color: var(--color-tinta-suave);
+}
+
+.raiz-detalle {
+  grid-column: 2;
+  font-size: 0.9375rem;
+}
+
+/* --- La foto, la prueba de lo confirmado ------------------------------------------------------- */
+.foto {
+  margin: 0;
+  padding: 0.75rem;
+}
+
+.foto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: calc(var(--radio-lamina) / 2);
+}
+
+.foto figcaption {
+  margin-top: 0.625rem;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* Sin foto todavía: el marco sin imprimir, punteado, con lo que falta y quién la sube. */
+.foto-falta {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  margin: 0;
+  padding: 1.5rem;
+  border: 2px dashed var(--color-tinta-suave);
+  border-radius: var(--radio-lamina);
+  background: var(--color-pendiente-fondo);
+  color: var(--color-tinta);
+  font-weight: 700;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* --- Los datos, en su etiqueta de herbario ----------------------------------------------------- */
+.etiqueta-datos {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+main .etiqueta-datos h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.25rem 0 0.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--color-tinta);
+}
+
+.etiqueta-datos .categoria-icono {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.etiqueta-datos dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.etiqueta-datos dl > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.etiqueta-datos dt {
+  font-size: 0.9375rem;
+}
+
+.etiqueta-datos dd {
+  margin: 0;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.datos-figura {
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.datos-figura a {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 400;
+}
+
+/* --- Las noticias de esta donación ------------------------------------------------------------- */
+.detalle-noticias .nota {
+  margin: -0.5rem 0 1rem;
+}
+
+/* Desde la tableta, dos columnas: la raíz y las noticias a la izquierda, la prueba y los datos a la
+   derecha. Los datos ocupan dos filas para quedar justo debajo de la foto, sin esperar a que
+   termine la raíz. */
+@media (min-width: 53.75em) {
+  .detalle-cuerpo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "etapas foto"
+      "etapas datos"
+      "noticias datos";
+    align-items: start;
+    gap: 2.5rem 3rem;
+  }
+
+  .detalle-etapas {
+    grid-area: etapas;
+  }
+
+  .detalle-foto {
+    grid-area: foto;
+  }
+
+  .detalle-datos {
+    grid-area: datos;
+  }
+
+  .detalle-noticias {
+    grid-area: noticias;
+  }
+
+  .detalle-cuerpo[aria-busy] {
+    grid-template-areas: none;
+  }
+}

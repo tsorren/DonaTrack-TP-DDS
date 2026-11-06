@@ -19,6 +19,7 @@ flowchart LR
     L --> LD[Landing donante]
     L --> LB[Landing beneficiario]
     L --> LG[Legales y privacidad]
+    L --> CO[Contacto]
     L --> IS[Iniciar sesión]
     L --> RE[Registrarse: elegir]
     RE --> RD[Registro de donante]
@@ -68,6 +69,7 @@ flowchart LR
 | Nosotros | Público | 2 | RF-01 | pág. 3 | E1 |
 | Landing donante / beneficiario | Público | 2 | RF-01 | — | E1 (sin boceto) |
 | Legales y privacidad | Público | 2 | RF-01 | pie de página | E6 |
+| Contacto | Público | 2 | RF-01 (HB-21) | pie de página y avisos de error | E6 (Raíces, 2026-11-02) |
 | Iniciar sesión | Público | 2 | RF-04 | pág. 4 | E1 |
 | Registrarse: elegir | Público | 2 | RF-03 | pág. 5 | E1 |
 | Registro de donante / entidad | Público | 3 | RF-03 | pág. 11 (entidad) | E1 |
@@ -94,6 +96,34 @@ flowchart LR
 | Camiones | Admin | 2 | RF-18 | pág. 13 (menú) | E1 |
 | Ranking | Admin | 2 | RF-19 | — | E6 |
 | Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
+
+## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
+
+El sitio dibuja el recorrido de los tres roles en la maqueta (`/<pantalla>`): es el sitio
+**A** de la corrida, elegido por el usuario el 2026-11-03. El sitio B de la corrida (otra navegación y composición con el mismo ADN) se borró; su
+evidencia queda en `evidencia/raices/ab-navegable/b/`. Las dibuja
+con su ficha de flujo en [`flujos/raices-publico-navegable.md`](flujos/raices-publico-navegable.md),
+[`raices-donante-navegable.md`](flujos/raices-donante-navegable.md) y
+[`raices-entidad-navegable.md`](flujos/raices-entidad-navegable.md), aprobadas al elegir el
+sitio A (usuario, 2026-11-03). Lo que falta de backend está en la ficha de cada recorrido.
+
+La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes de borrarlo.
+
+| Pantalla del mapa | En A | En B (histórico) |
+|---|---|---|
+| Landing, Donaciones realizadas, Mapa de entregadas, Entidades y necesidades | Dibujadas | Dibujadas, con la línea pública de navegación |
+| Contacto, Legales y privacidad | Dibujadas | Dibujadas |
+| Iniciar sesión, Registrarse: elegir, Registro de donante / entidad | Dibujadas | Dibujadas |
+| Recuperar contraseña | Dibujada, con su aviso de enviado | Dibujada, con su aviso de enviado |
+| Inicio, Mis donaciones → detalle, Beneficiarios (Entidades), Notificaciones, Mi perfil, Seguir entregas del donante | Dibujadas | Dibujadas |
+| Misiones e insignias (Incentivos) | No está: RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
+| Inicio de la entidad, Necesidades, Donaciones recibidas, Notificaciones, Confirmar recepción | Dibujadas | Dibujadas |
+| Seguir entregas de la entidad (lista) | Sin dibujar | Dibujada |
+| Inicio del admin | Dibujada, con el menú | Dibujada, con el menú |
+| Resto del admin (Donantes, Entidades, Donaciones, Asignaciones, Camiones, Ranking) | Sin dibujar | Sin dibujar |
+
+Lo público que no tiene plantilla no existe (la página de "sin dibujar" es privada); lo privado
+que no tiene plantilla muestra "sin dibujar".
 
 ## Observaciones para el diseño
 

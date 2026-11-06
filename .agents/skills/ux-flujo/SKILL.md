@@ -13,6 +13,8 @@ description: >-
 > **Alineación:** [`docs/interfaz/README.md`](../../../docs/interfaz/README.md),
 > [`plantillas/flujo.md`](../../../docs/interfaz/plantillas/flujo.md) y
 > [`patrones-y-microcopy.md`](../../../docs/interfaz/patrones-y-microcopy.md) (RNF-UI-01 a 06).
+> **Criterios de la cátedra:** [`criterios-catedra-ux-ui.md`](../../../docs/interfaz/criterios-catedra-ux-ui.md): los 7 factores de la experiencia, la arquitectura de la
+> información, los wireframes y wireflows, y las 10 heurísticas.
 
 ## 1. Juntar el contexto
 
@@ -22,6 +24,8 @@ description: >-
 - El boceto de E1: ubicarlo en [`bocetos-e1.md`](../../../docs/interfaz/bocetos-e1.md) y leer la
   página (cómo leer el PDF: README, "Cómo leer los bocetos de E1").
 - El lugar en el [mapa del sitio](../../../docs/interfaz/mapa-del-sitio.md).
+- El [tono y comunicación](../../../docs/interfaz/tono-y-comunicacion.md): a qué audiencia le habla
+  la pantalla, su tono, cómo se nombran los estados y las cifras.
 - Los contratos: `docs/arquitectura/contratos/openapi-*.yaml`.
 
 ## 2. Completar la ficha
@@ -32,6 +36,8 @@ Copiar la plantilla a `docs/interfaz/flujos/<flujo>.md` y completar sus 9 seccio
   tabla que en 360 px pasa a tarjetas), se cambia y el motivo va a la
   [bitácora](../../../docs/interfaz/bitacora.md).
 - **Cada pantalla tiene todos sus estados**, con su texto, siguiendo las reglas de textos.
+- **Los textos pasan el filtro de tono** (las 7 preguntas): lo pendiente se dice pendiente, las
+  cifras llevan período y fecha, sin urgencia ni culpa.
 - **Nada de reglas de negocio inventadas.** Si algo no está en los requerimientos ni en los
   contratos, va a "Preguntas abiertas".
 
@@ -52,11 +58,16 @@ Si una pantalla tiene más de una buena disposición, correr `iteracion-ab` con 
 
 ## 5. Revisar y aprobar
 
-1. Correr `revision-ui` en modo **flujo** (vectores U1, U5, U6, U8 y U9) y corregir lo bloqueante.
-2. Mostrar al usuario un resumen de 5 líneas: qué hace el flujo, cuántas pantallas tiene, el
+1. Completar la revisión de usabilidad de la ficha con las 10 heurísticas y una línea por cada uno
+   de los 7 factores de Morville (útil, usable, deseable, valioso, ubicable, accesible y creíble),
+   según los [criterios de la cátedra](../../../docs/interfaz/criterios-catedra-ux-ui.md). Anotar
+   qué conviene probar con personas reales: la revisión heurística no reemplaza al test con
+   usuarios.
+2. Correr `revision-ui` en modo **flujo** (vectores U1, U5, U6, U8 y U9) y corregir lo bloqueante.
+3. Mostrar al usuario un resumen de 5 líneas: qué hace el flujo, cuántas pantallas tiene, el
    cambio más importante respecto del boceto y las decisiones tomadas. Pedir la aprobación con una
    sola pregunta.
-3. Marcar la ficha como `aprobado`, con la fecha y quién aprobó.
+4. Marcar la ficha como `aprobado`, con la fecha y quién aprobó.
 
 ## Criterio de salida
 

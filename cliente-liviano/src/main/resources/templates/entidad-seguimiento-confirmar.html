@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<!--/* Raíces, Confirmar recepción de la entidad (RF-12), según su ficha de flujo
+       (docs/interfaz/flujos/raices-confirmar-recepcion.md). Arriba, qué entrega es y cuándo llegó; la
+       etiqueta de la entrega (categoría, cantidad, el pedido que cubre y quién donó); el último
+       tramo, la raíz de esta entrega, con la confirmación hueca porque todavía no pasó; y el
+       formulario: las fotos (al menos una), quién las ve y el remito. Sin bultos: el contrato suma
+       solo el remito (usuario, 2026-11-02; ADR 20261102 del contrato de entregas).
+       ?entrega=lentejas (de partida) o ropa; una clave que no está, o ?escenario=vacio, muestra "No
+       encontramos esa entrega". ?escenario=lento (enviando), error (del servidor), sin-conexion y
+       confirmada (ya confirmada). Es un formulario real (POST, multipart por las fotos, lo
+       obligatorio con required): va a entidad-seguimiento-sellada-<clave>.
+       Fragmentos:
+       - entrega(pedida, pantalla): las entregas que esperan confirmación, escritas una sola vez para
+         el acta, el acta con errores y la confirmada. pedida es la clave; null, la de ?entrega=.
+         Adentro de pantalla están e (la pedida, o null) y otra (la que sigue esperando).
+       - acta(conError): el acta entera; con conError, el error de datos de
+         entidad-seguimiento-confirmar-error.
+       - tramo(confirmada): el último tramo de e, en una lista con su raíz. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento-confirmar', ~{::contenido})}">
+<head>
+  <title>Confirmar recepción - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-seguimiento-confirmar :: entrega(null,
+            ~{entidad-seguimiento-confirmar :: acta(false)})}"></th:block>
+</th:block>
+
+<!--/* Los datos de la entrega y, además, la categoría, el pedido que cubre (de las
+       necesidades publicadas) y quién donó. El nombre se ve, sea empresa o persona, salvo
+       que quien donó lo haya ocultado en su perfil (dono null; donoTipo 'empresa' o, si falta, persona;
+       usuario, 2026-11-02): entonces se ve su categoría del ranking de Incentivos, donoCategoria
+       (review de Sofía, 2026-11-02). Si no llega (?escenario=sin-categoria), «Un donante» o «Una
+       empresa donante»: la pantalla no falla por esa llamada. Las cantidades,
+       en la unidad de la subcategoría del catálogo: kg, litros o unidades. */-->
+<th:block th:fragment="entrega(pedida, pantalla)"
+    th:with="entregas=${ {
+      {clave: 'lentejas', nombre: 'lentejas secas', titulo: 'Lentejas secas, 15 kg', cantidad: '15 kg',
+       salio: 'Hoy, 14:30', llego: 'Hoy, 18:20', llegoFrase: 'Llegó hoy a las 18:20.',
+       llegaron: 'Llegaron hoy a las 18:20.',
+       remito: '0001-00004521', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos',
+       pedido: 'Lentejas secas, 40 kg, hasta el 31 de octubre.', recibido: 'Van 10 kg recibidos.',
+       pedidoDespues: 'Tu pedido de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre.',
+       dono: 'Distribuidora Ejemplo SA', foto: 'lentejas-1', confirmo: '18:45'},
+      {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo, 10 unidades', cantidad: '10 unidades',
+       salio: 'Ayer, 15:50', llego: 'Ayer, 17:10', llegoFrase: 'Llegó ayer a las 17:10.',
+       llegaron: 'Llegó ayer a las 17:10.',
+       remito: '0001-00004498', categoria: 'cat-ropa', categoriaTexto: 'Ropa',
+       pedido: 'Ropa de abrigo, 30 unidades, hasta el 15 de noviembre.', recibido: 'Van 5 unidades recibidas.',
+       pedidoDespues: 'Tu pedido de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre.',
+       dono: null, donoCategoria: 'Sostenedor', foto: 'ropa-1', confirmo: '18:50'} } },
+             escenario=${param.escenario != null ? param.escenario[0] : ''},
+             clave=${pedida ?: (param.entrega == null ? 'lentejas' : param.entrega[0])},
+             elegidas=${escenario == 'vacio' ? {} : entregas.?[clave == #root.clave]},
+             e=${#lists.isEmpty(elegidas) ? null : elegidas[0]},
+             otra=${e == null ? null : entregas.?[clave != #root.clave][0]}">
+  <th:block th:replace="${pantalla}"></th:block>
+</th:block>
+
+<th:block th:fragment="acta(conError)">
+  <div class="confirmar">
+    <!--/* Sin entrega: no existe o es de otra entidad; no se dice de quién es (HB-13). */-->
+    <th:block th:if="${e == null}">
+      <h1>Confirmar recepción</h1>
+      <section class="vacio" aria-labelledby="vacio-titulo">
+        <h2 id="vacio-titulo">No encontramos esa entrega</h2>
+        <p>Puede que el enlace esté incompleto. Buscala en Seguir entregas.</p>
+        <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Volver a Seguir entregas</a>
+      </section>
+    </th:block>
+
+    <th:block th:if="${e}">
+      <header class="confirmar-cabecera">
+        <a class="volver" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Seguir entregas</a>
+        <h1 th:if="${escenario == 'confirmada'}">Esta entrega ya está <em>confirmada</em></h1>
+        <h1 th:unless="${escenario == 'confirmada'}">Confirmá lo que <em>llegó</em></h1>
+        <p class="confirmar-bajada" th:text="|${e.titulo}. ${e.llegoFrase}|">Lentejas secas, 15 kg.
+          Llegó hoy a las 18:20.</p>
+      </header>
+
+      <!--/* Error de datos: el resumen arriba, con el foco, y un enlace a cada campo. */-->
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+               aria-labelledby="resumen-titulo" autofocus>
+        <h2 id="resumen-titulo">Revisá dos cosas antes de confirmar</h2>
+        <ul>
+          <li><a href="#fotos" th:text="|${e.foto}.jpg pesa más de 5 MB|">lentejas-1.jpg pesa más de
+            5 MB</a></li>
+          <li><a href="#remito">Falta el número de remito</a></li>
+        </ul>
+      </section>
+      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="error-titulo">
+        <h2 id="error-titulo">No pudimos confirmar la entrega.</h2>
+        <p>Es un problema nuestro: la entrega sigue esperando tu confirmación y quien donó no recibió
+          ningún aviso. Volvé a elegir las fotos y probá de nuevo en unos minutos; si sigue,
+          <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=|/entidad-seguimiento-confirmar?entrega=${e.clave}|)}">escribinos
+          con este código</a>.</p>
+        <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+        <a class="boton" data-tono="secundario" href="#fotos">Volver a intentar</a>
+      </section>
+      <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="red-titulo">
+        <h2 id="red-titulo">No sabemos si la confirmación llegó.</h2>
+        <p>Se cortó la conexión mientras se enviaba. Revisá la señal y fijate en Seguir entregas si ya
+          aparece confirmada antes de repetirla.</p>
+        <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Ir a Seguir entregas</a>
+      </section>
+      <!--/* Enviando: en el sistema, el aviso va a la región #avisos del layout, que lo anuncia, y el
+             botón lleva hx-indicator; en la maqueta llega con la página. */-->
+      <p th:if="${escenario == 'lento'}" class="cargando">Subiendo las fotos y confirmando la
+        entrega…</p>
+
+      <div class="acta">
+        <div class="acta-entrega">
+          <!--/* La etiqueta de la entrega, como una de herbario: qué es, cuánto salió, el pedido que
+                 cubre y quién donó (decisiones del usuario, 2026-11-01). */-->
+          <section class="tarjeta etiqueta" data-filete="doble" aria-labelledby="etiqueta-titulo">
+            <h2 id="etiqueta-titulo" class="etiqueta-titulo">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
+              </svg>
+              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
+            </h2>
+            <dl>
+              <div>
+                <dt>Para tu pedido</dt>
+                <dd><span th:text="${e.pedido}">Lentejas secas, 40 kg, hasta el 31 de octubre.</span>
+                  <span th:unless="${escenario == 'confirmada'}" th:text="${e.recibido}">Van 10 kg
+                    recibidos.</span></dd>
+              </div>
+              <div>
+                <dt>Donó</dt>
+                <dd th:with="cat=${escenario == 'sin-categoria' ? null : e['donoCategoria']},
+                            empresa=${e['donoTipo'] == 'empresa'}"
+                    th:text="${e.dono ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)}">Distribuidora Ejemplo SA</dd>
+              </div>
+              <div>
+                <dt>Desde</dt>
+                <dd>Depósito Central</dd>
+              </div>
+            </dl>
+          </section>
+          <svg th:replace="~{iconos :: categorias}"></svg>
+
+          <section class="tramo-seccion" aria-labelledby="tramo-titulo">
+            <h2 id="tramo-titulo">El último tramo</h2>
+            <ol th:replace="~{:: tramo(${escenario == 'confirmada'})}"></ol>
+          </section>
+        </div>
+
+        <!--/* Ya confirmada: en lugar del formulario, quién y cuándo, y lo asentado. */-->
+        <section th:if="${escenario == 'confirmada'}" class="banner acta-formulario"
+                 aria-labelledby="ya-titulo">
+          <h2 id="ya-titulo">Ya confirmaste esta entrega</h2>
+          <p th:text="|La confirmó Marta el 15 de octubre de 2026 a las ${e.confirmo}.|">La confirmó
+            Marta el 15 de octubre de 2026 a las 18:45.</p>
+          <div class="acciones">
+            <a class="boton" data-tono="principal" href="/entidad-seguimiento-sellada?entrega=lentejas"
+               th:href="@{/entidad-seguimiento-sellada(entrega=${e.clave})}">Ver lo
+              que quedó asentado</a>
+            <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
+               th:href="@{/entidad-seguimiento}">Volver a Seguir entregas</a>
+          </div>
+        </section>
+
+        <form th:unless="${escenario == 'confirmada'}" class="acta-formulario"
+              action="/entidad-seguimiento-sellada-lentejas"
+              th:action="@{/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
+              method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+          <p class="obligatorios">Los dos datos son obligatorios: las fotos y el remito.</p>
+          <fieldset class="grupo">
+            <legend><h2>Las pruebas</h2></legend>
+            <!--/* La zona de subida (B2-10): el control nativo es lo esencial; Alpine (subidaFotos) suma la vista
+                   previa de lo elegido, con un botón para quitar cada foto. */-->
+            <div class="campo subida" th:data-estado="${conError} ? 'error'" x-data="subidaFotos">
+              <label for="fotos">
+                <svg class="subida-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                  <path d="M6 16H14L18 10H30L34 16H42V38H6Z"/><circle cx="24" cy="26" r="7"/>
+                </svg>
+                <span>Fotos de lo que llegó</span>
+              </label>
+              <small id="fotos-ayuda">Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB
+                cada una. Mostrá lo que llegó; no hace falta que salga nadie.</small>
+              <p th:if="${conError}" id="fotos-error" class="campo-error"
+                 th:text="|${e.foto}.jpg pesa más de 5 MB. Probá con una más liviana. Por seguridad, el navegador no guarda las fotos: volvé a elegirlas.|">lentejas-1.jpg
+                pesa más de 5 MB.</p>
+              <input id="fotos" name="fotos" type="file" accept="image/*" multiple required
+                     x-ref="entrada" x-on:change="elegir"
+                     th:attr="aria-describedby=${conError} ? 'fotos-error fotos-ayuda' : 'fotos-ayuda',aria-invalid=${conError} ? 'true' : null">
+              <span class="subida-aviso" role="status" x-text="resumen"></span>
+              <p class="subida-resumen" hidden x-bind:hidden="sinFotos" x-text="resumen"></p>
+              <ul class="subida-previas" role="list" hidden x-bind:hidden="sinFotos">
+                <template x-for="foto in fotos" x-bind:key="foto.id">
+                  <li class="subida-previa" x-bind:data-id="foto.id">
+                    <img x-bind:src="foto.url" x-bind:alt="foto.alt" width="112" height="112">
+                    <small class="subida-nombre" x-text="foto.nombre"></small>
+                    <button type="button" class="boton" data-tamano="chico" x-bind:aria-label="foto.quitar"
+                            x-on:click="quitar">Quitar</button>
+                  </li>
+                </template>
+              </ul>
+            </div>
+            <p class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver tus fotos y la fecha de hoy. Una foto puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada. El remito no se publica.|">Distribuidora
+              Ejemplo SA va a ver tus fotos y la fecha de hoy.</p>
+          </fieldset>
+
+          <fieldset class="grupo">
+            <legend><h2>Lo que recibiste</h2></legend>
+            <div class="campo" th:data-estado="${conError} ? 'error'">
+              <label for="remito">Número de remito</label>
+              <small id="remito-ayuda">Está arriba a la derecha del papel.</small>
+              <p th:if="${conError}" id="remito-error" class="campo-error">Falta el número de remito.</p>
+              <input id="remito" name="remito" type="text" required autocomplete="off"
+                     th:attr="aria-describedby=${conError} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError} ? 'true' : null">
+            </div>
+          </fieldset>
+
+          <div class="firma">
+            <p class="firma-quien">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
+            <button class="boton" data-tono="principal" type="submit"
+                    th:disabled="${escenario == 'lento'}"
+                    th:text="${escenario == 'lento'} ? 'Confirmando…' : 'Confirmar recepción'">Confirmar
+              recepción</button>
+            <p class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.
+              Si llegó incompleta o dañada, confirmala igual y contanos qué pasó.</p>
+            <a class="problema" href="/entidad-seguimiento-problema?entrega=lentejas"
+               th:href="@{/entidad-seguimiento-problema(entrega=${e.clave})}">Llegó con
+              un problema</a>
+          </div>
+        </form>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+
+<!--/* El último tramo, la raíz de esta entrega, de arriba abajo: lo cumplido, impreso (el disco paja
+       con el tilde calado); la confirmación, hueca mientras falta. La lista dice lo mismo en texto;
+       el paso que falta lleva aria-current="step". */-->
+<ol th:fragment="tramo(confirmada)" class="tramo" role="list"
+    th:aria-label="|Último tramo de ${e.nombre}|">
+  <li class="tramo-paso tramo-paso--hecho">
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
+    <span class="tramo-nombre">Salió del Depósito Central</span>
+    <span class="tramo-detalle" th:text="${e.salio}">Hoy, 14:30</span>
+  </li>
+  <li class="tramo-paso tramo-paso--hecho">
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
+    <span class="tramo-nombre">Llegó a tu puerta</span>
+    <span class="tramo-detalle" th:text="${e.llego}">Hoy, 18:20</span>
+  </li>
+  <li th:if="${confirmada}" class="tramo-paso tramo-paso--hecho tramo-paso--entidad">
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
+    <span class="tramo-nombre">Recepción confirmada</span>
+    <span class="tramo-detalle" th:text="|15 de octubre, ${e.confirmo}|">15 de octubre, 18:45</span>
+  </li>
+  <li th:unless="${confirmada}" class="tramo-paso tramo-paso--falta tramo-paso--entidad"
+      aria-current="step">
+    <th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block>
+    <span class="tramo-nombre">Tu confirmación</span>
+    <span class="tramo-detalle">Falta: es este paso</span>
+  </li>
+</ol>
+</body>
+</html>

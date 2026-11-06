@@ -1,0 +1,36 @@
+/* Bloque de cabecera de la entidad (D33, B2-12): la cabecera de cada pantalla de la entidad que dibuja
+   Raíces (Inicio, Donaciones recibidas y Notificaciones): el rótulo, el título y la bajada; el acceso a
+   las novedades (`.novedades`), debajo en el celular y a la derecha en pantalla grande. Se carga en la
+   capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+.cabecera-entidad {
+  display: grid;
+  gap: 0.25rem 2rem;
+  margin: 0 0 1.5rem;
+}
+
+.cabecera-entidad > p:not(.rotulo) {
+  max-width: 40rem;
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.cabecera-entidad .novedades {
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 53.75em) {
+  .cabecera-entidad {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .cabecera-entidad > * {
+    grid-column: 1;
+  }
+
+  .cabecera-entidad .novedades {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: end;
+  }
+}

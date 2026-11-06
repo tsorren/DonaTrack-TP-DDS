@@ -8,6 +8,7 @@
 | | |
 |---|---|
 | Quién | Rol y situación real (por ejemplo: "persona de la entidad que recibe el camión en la puerta, con el celular") |
+| Tono | El del momento en el sitio, de la tabla de [tono y comunicación](../tono-y-comunicacion.md#tono-según-la-pantalla) (por ejemplo: "pantalla de trabajo: claro, útil, tranquilizador") |
 | Qué quiere lograr | En una frase, con sus palabras |
 | Dispositivo principal | Celular / escritorio / ambos |
 | Requerimientos | RF-xx y su criterio de aceptación |
@@ -65,6 +66,11 @@ con su porqué.
 
 Ayudas por flujo crítico: copiar y completar la lista de
 [patrones y textos](../patrones-y-microcopy.md#ayudas-por-flujo-crítico-rnf-ui-04).
+
+Filtro de tono: cada texto pasa las 7 preguntas de
+[tono y comunicación](../tono-y-comunicacion.md#filtro-de-tono-7-preguntas). Anotar acá cualquier
+estado o cifra que la pantalla muestre y cómo se dice (lo pendiente, pendiente; la cifra, con
+período y fecha).
 
 ## 7. Accesibilidad
 

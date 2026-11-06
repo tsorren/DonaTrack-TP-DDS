@@ -16,8 +16,11 @@ description: >-
 
 ## 1. Antes de empezar
 
-1. Leer las reglas para preguntar (README, "Cómo se le pregunta al usuario"), la dirección de arte
-   y las pistas para la identidad de [`bocetos-e1.md`](../../../docs/interfaz/bocetos-e1.md).
+1. Leer las reglas para preguntar (README, "Cómo se le pregunta al usuario"), la dirección de arte,
+   las pistas para la identidad de [`bocetos-e1.md`](../../../docs/interfaz/bocetos-e1.md) y el
+   [tono y comunicación](../../../docs/interfaz/tono-y-comunicacion.md). El tono ya fija el trato,
+   la personalidad verbal, los estados y las cifras para el sitio: no se preguntan.
+   La identidad visual decide la metáfora y la estética, y solo la voz propia de títulos y rótulos.
 2. Si ya existe `docs/interfaz/identidad/brief.md` y el pedido es un ajuste puntual ("probemos otro
    verde"), saltar al paso 4 con el tema que corresponda.
 
@@ -29,17 +32,17 @@ propone el agente. Las preguntas ya están redactadas; adaptar las opciones al c
 
 **Ronda 1 — personalidad**
 
-1. "¿Qué tres palabras deberían describir a DonaTrack?" → "Cercana, confiable, viva
+1. "¿Qué tres palabras deberían describir cómo se ve DonaTrack?" → "Cercana, confiable, viva
    (Recomendada)" · "Seria, transparente, eficiente" · "Alegre, comunitaria, cálida".
 2. "¿A qué no queremos parecernos?" → "A un banco o una app de trámites" · "A una ONG antigua" ·
    "A una startup más".
-3. "¿Qué tiene que lucirse más?" → "Las fotos de las entregas (Recomendada)" · "Los números de
-   impacto" · "Las personas y las entidades".
+3. "¿Qué tiene que lucirse más?" → "Las fotos de las entregas (Recomendada)" · "Los resultados
+   registrados (entregas confirmadas)" · "Las personas y las entidades".
 
-**Ronda 2 — voz y forma**
+**Ronda 2 — voz propia y forma**
 
-1. "¿Cómo le hablamos a la gente?" → "Con vos, cercano, como los bocetos: 'Sumate' (Recomendada)"
-   · "Con vos, más formal" · "Con usted".
+1. "¿Cómo dicen los títulos esta identidad?" → dos o tres tonos con un título de muestra cada uno
+   en el `preview`; el trato (vos) y el resto de la voz vienen del tono común.
 2. "¿Qué sensación de formas preferís?" → "Suaves y amables" · "Firmes y precisas" · "Mezcla:
    suaves en botones, firmes en la estructura". Mostrar un `preview` con un botón y una tarjeta de
    cada tipo.
@@ -71,14 +74,15 @@ sigan abiertos, en el orden del [catálogo](../../../docs/interfaz/temas-ab.md):
 
 1. Valores base con prefijo `--p-*`, tokens de uso (`--color-*`, `--fuente-*`, etc.) y asignación
    de `--pico-*` a partir de los usos, todo en
-   `cliente-liviano/src/main/resources/static/css/tokens.css` (Glassmorphism) o en el
-   `tokens.css` de la alternativa que se está diseñando, en `static/css/alternativas/<nombre>/`.
-   Una alternativa nueva lleva además su brief en `docs/interfaz/identidad/` y su `app.css`.
+   `cliente-liviano/src/main/resources/static/css/tokens.css`, la única fuente de valores del
+   sitio. Una identidad nueva se diseña en su propia rama sobre ese mismo archivo, `app.css`,
+   `privado.css` y las hojas de las pantallas, y reemplaza el brief vigente,
+   `docs/interfaz/identidad/brief.md`, cuando se integra.
 2. Puntos de quiebre en `--medida-quiebre-*`.
 3. Fuentes OFL en `static/fuentes/`, con su archivo de licencia.
 4. Si se agregan pares texto-fondo nuevos, sumarlos a la lista de contrastes que comprueba
    `InterfazFitnessTest`.
-5. Actualizar `/estilos` y correr:
+5. Correr:
 
    ```bash
    mvn clean test -pl cliente-liviano -am
@@ -91,5 +95,5 @@ sigan abiertos, en el orden del [catálogo](../../../docs/interfaz/temas-ab.md):
 
 - [ ] Brief aprobado por el usuario.
 - [ ] `tokens.css` con la identidad elegida; tests y comprobación visual en verde.
-- [ ] `/estilos` muestra la identidad en todos los componentes.
+- [ ] Las capturas del sitio (`target/capturas/`) muestran la identidad en todas las pantallas.
 - [ ] Bitácora con una entrada por tema decidido y capturas en `docs/interfaz/evidencia/`.

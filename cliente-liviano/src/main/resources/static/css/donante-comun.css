@@ -1,0 +1,120 @@
+/* Raíces A: lo que comparten las pantallas nuevas del donante (inicio, mis donaciones y su detalle,
+   entidades y notificaciones): la bajada, el aviso de carga y el lugar reservado, la lámina, el
+   volver, el sello de entregada, los campos de filtro. El cuaderno de noticias es el bloque `componentes/noticias.css`. */
+@import url("privado.css");
+@import url("sellos.css");
+
+/* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
+.bajada {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+main h1 em {
+  color: var(--color-acento);
+  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
+}
+
+/* El relleno de una parte (el papel y el filete, de .tarjeta). */
+.lamina {
+  padding: 1.25rem;
+}
+
+.lamina h2 {
+  margin: 0 0 0.75rem;
+}
+
+.lamina p {
+  margin: 0 0 0.75rem;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento);
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+.volver::before {
+  content: "← ";
+  white-space: pre;
+}
+
+/* El brote del aviso vacío, chico en el celular: el próximo paso entra cerca de la primera
+   pantalla. */
+.aviso-brote {
+  max-width: 6rem;
+}
+
+@media (min-width: 37.5em) {
+  .aviso-brote {
+    max-width: 10rem;
+  }
+}
+
+/* El pictograma de categoría y su texto. */
+.categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Filtros y búsqueda: un renglón de campos con su etiqueta a la vista --------------------- */
+.filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -6px;
+}
+
+.filtro .campo {
+  display: grid;
+  gap: 0.25rem;
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.filtro label {
+  font-weight: 700;
+}
+
+.filtro :is(select, input) {
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: 0;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font: inherit;
+}
+
+.filtro .boton {
+  cursor: pointer;
+}
+
+.filtro-sacar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.resultado {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+@media (min-width: 37.5em) {
+  .filtro {
+    padding: 1.25rem;
+  }
+}

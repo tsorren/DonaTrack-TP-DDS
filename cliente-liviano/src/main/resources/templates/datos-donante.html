@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--/* Raíces A, lo que comparten las pantallas nuevas del donante (ficha
+       docs/interfaz/flujos/raices-donante-navegable.md). No es una pantalla: su nombre no empieza
+       con un rol, así que SitioController no la muestra.
+       Fragmentos:
+       - donante(vista): los datos de las donaciones de la empresa (los de Seguimiento,
+         viaje-datos.html) y, además, avisos: las 17 noticias de esas
+         donaciones, de la más nueva a la más vieja, cada una con su donación (d) y el número de su
+         carta (i); las 4 primeras, sin leer. En el sistema el orden lo da el endpoint de
+         notificaciones; acá se escribe una vez, con las claves, y los textos salen de viaje-datos.
+         También escenario (?escenario=).
+       - error(titulo, volver): el banner de error con el código para soporte.
+       - aviso(a, sinLeer): una noticia, con su marca de leída, el sello de su donación y el enlace.
+       Dos textos de viaje-datos se muestran distinto (ficha, sección 6): "Escuela Ejemplo 12" se
+       escribe "Escuela Ejemplo N.º 12" y la categoría Vestimenta, "Ropa". */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="donante(vista)">
+  <th:block th:replace="~{viaje-datos :: viaje(~{datos-donante :: conAvisos})}"></th:block>
+</th:block>
+
+<!--/* Adentro de viaje-datos: suma escenario y avisos, y muestra la vista de la pantalla. */-->
+<th:block th:fragment="conAvisos"
+      th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+               avisos=${ {
+        {d: donaciones.^[clave == 'lentejas'], i: 0}, {d: donaciones.^[clave == 'arroz'], i: 0},
+        {d: donaciones.^[clave == 'leche'], i: 0}, {d: donaciones.^[clave == 'lentejas'], i: 1},
+        {d: donaciones.^[clave == 'lentejas'], i: 2}, {d: donaciones.^[clave == 'leche'], i: 1},
+        {d: donaciones.^[clave == 'lentejas'], i: 3}, {d: donaciones.^[clave == 'utiles'], i: 0},
+        {d: donaciones.^[clave == 'utiles'], i: 1}, {d: donaciones.^[clave == 'ropa'], i: 0},
+        {d: donaciones.^[clave == 'ropa'], i: 1}, {d: donaciones.^[clave == 'utiles'], i: 2},
+        {d: donaciones.^[clave == 'zapatillas'], i: 0}, {d: donaciones.^[clave == 'fideos'], i: 0},
+        {d: donaciones.^[clave == 'fideos'], i: 1}, {d: donaciones.^[clave == 'ropa'], i: 2},
+        {d: donaciones.^[clave == 'fideos'], i: 2} } },
+               sinLeer=4">
+  <th:block th:replace="${vista}"></th:block>
+</th:block>
+
+<section th:fragment="error(titulo, volver)" class="banner" data-estado="error" role="alert"
+         aria-labelledby="error-titulo">
+  <h2 id="error-titulo" th:text="${titulo}">No pudimos cargar tu inicio.</h2>
+  <p>Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos
+    minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+       th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=${volver})}">escribinos
+      con este código</a>.</p>
+  <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+  <a class="boton" data-tono="secundario" href="#" th:href="${volver}">Volver a intentar</a>
+</section>
+
+<!--/* Hoy es el jueves 15 de octubre de 2026: lo de hoy dice "Hoy", lo del 14, "Ayer". */-->
+<li th:fragment="aviso(a, sinLeer)" class="noticia" th:classappend="${sinLeer} ? 'noticia--sin-leer'"
+    th:with="c=${a.d.cartas[a.i]}, dia=${#strings.substring(c.fecha, 0, 10)},
+             hora=${#strings.substringAfter(c.cuando, ', ')}">
+  <span class="noticia-marca" th:text="${sinLeer} ? 'Sin leer' : 'Leída'">Sin leer</span>
+  <span class="estado noticia-estado" th:data-estado="${a.d.estado.tono}">
+    <th:block th:replace="~{componentes/sello :: sello(${a.d.estado.tono})}"></th:block>
+    <span th:text="${a.d.estado.texto}">En camino</span>
+  </span>
+  <a class="noticia-texto" href="/donante-donaciones-detalle"
+     th:href="@{/donante-donaciones-detalle(donacion=${a.d.clave})}"
+     th:text="${#strings.replace(c.texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">El camión
+    salió a entregar tus lentejas a Comedor Barrio Ejemplo.</a>
+  <time class="noticia-cuando" th:datetime="${c.fecha}"
+        th:text="${dia == '2026-10-15' ? 'Hoy, ' + hora : (dia == '2026-10-14' ? 'Ayer, ' + hora : c.cuando)}">Hoy,
+    14:30</time>
+  <span class="noticia-donacion" th:text="|${a.d.titulo}, ${a.d.cantidad}|">Lentejas secas, 15 kg</span>
+</li>
+</body>
+</html>

@@ -8,19 +8,20 @@ clara. Para sumar un tema, se agrega una fila.
 
 | Tema | Qué cambia entre A y B | Qué queda fijo | Cómo se juzga | Dónde se muestra |
 |---|---|---|---|---|
-| `direccion-general` | Concepto, color, tipografía y forma juntos (dos mundos distintos) | Contenido y estructura | ¿Cuál expresa mejor el brief? ¿Cuál se recuerda? | `/estilos` y una pantalla de muestra |
-| `concepto` | La idea rectora de una alternativa: composición, navegación y voz juntas (de dos a cuatro mundos distintos, con la misma identidad; difieren en composición y navegación, no solo en estilo) | Datos, acciones y paleta | ¿Se recuerda? ¿Da para todo el sitio? ¿Pasa el piso con datos reales? | La pantalla ancla del encargo (por ejemplo, el inicio de una persona donante); también una pantalla del prototipo. Sin el usuario: skill `corrida-creativa` |
-| `paleta` | Valores base de color y su uso | Tipografía, forma, contenido | Carácter, armonía, estados distinguibles (siempre AA) | `/estilos` |
-| `tipografia` | Familias y escala | Color, forma, contenido | Legibilidad en 360 px, carácter del título | `/estilos` + texto largo |
-| `forma` | Radios, bordes y sombras | Color, tipografía | Coherencia, sensación (amable o firme) | `/estilos` |
+| `direccion-general` | Concepto, color, tipografía y forma juntos (dos mundos distintos) | Contenido y estructura | ¿Cuál expresa mejor el brief? ¿Cuál se recuerda? | La portada y una pantalla privada |
+| `concepto` | La idea rectora de una propuesta: composición, navegación y voz juntas (de dos a cuatro mundos distintos, con la misma identidad; difieren en composición y navegación, no solo en estilo) | Datos, acciones y paleta | ¿Se recuerda? ¿Da para todo el sitio? ¿Pasa el piso con datos reales? | La pantalla ancla del encargo (por ejemplo, el inicio de una persona donante); también una pantalla del prototipo. Sin el usuario: skill `corrida-creativa` |
+| `paleta` | Valores base de color y su uso | Tipografía, forma, contenido | Carácter, armonía, estados distinguibles (siempre AA) | La portada y una pantalla privada |
+| `estilo` | El lenguaje gráfico: textura, líneas, rótulos, ornamento y forma de botones y bordes | Paleta, tipografía, contenido y composición | ¿Cuál expresa mejor el brief? ¿El ornamento ayuda a leer los datos o compite con ellos? | La pantalla ancla (por ejemplo, el hero de la portada) |
+| `tipografia` | Familias y escala | Color, forma, contenido | Legibilidad en 360 px, carácter del título | La portada y una pantalla con texto largo |
+| `forma` | Radios, bordes y sombras | Color, tipografía | Coherencia, sensación (amable o firme) | La portada y una pantalla privada |
 | `densidad` | Espacios y tamaños | Todo lo demás | Cuánto entra sin agobiar; toque cómodo en celular | Una lista o tabla real |
 | `imagen` | Tratamiento de fotos e ilustración | Todo lo demás | ¿La foto real luce? ¿El estilo es propio? | Tarjetas de donación |
 | `movimiento` | Transiciones de estado y avisos | Todo lo demás | ¿Explica el cambio? ¿Molesta? | Un flujo con acciones |
 | `layout:<pantalla>` | Orden y disposición de una pantalla | Identidad, textos | ¿La tarea principal se ve primero? ¿Funciona en 360 px? | Esa pantalla, con datos de ejemplo |
-| `componente:<nombre>` | Diseño de un componente | Identidad | Claridad, estados, toque | `/estilos` |
+| `componente:<nombre>` | Diseño de un componente | Identidad | Claridad, estados, toque | La portada y una pantalla privada |
 | `microcopy:<flujo>` | Textos de un flujo | Diseño | ¿Se entiende sin ayuda? ¿Suena a nosotros? | Las pantallas del flujo |
 | `layout:navegacion-admin` | Agrupación del menú del admin (9 secciones) | Identidad | Encontrar cada sección en 1 intento | Inicio del admin |
-| `modo-oscuro` | Un modo oscuro además del claro | Todo lo demás | ¿Se lee igual de bien? ¿Vale revisar cada pantalla dos veces? | `/estilos` |
+| `modo-oscuro` | Un modo oscuro además del claro | Todo lo demás | ¿Se lee igual de bien? ¿Vale revisar cada pantalla dos veces? | La portada y una pantalla privada |
 
 ## Orden sugerido para la identidad
 

@@ -88,7 +88,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-28) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-34) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
@@ -112,17 +112,19 @@ docs/
 │   └── evals-agentes-resumen.md
 │
 ├── requerimientos/                        # 📋 Requerimientos por entrega
-│   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D33 (insumo de ADRs)
 │   └── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
 │   ├── bocetos-e1.md · mapa-del-sitio.md  # Insumos: inventario de bocetos de E1 y mapa con niveles
 │   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad, libertad creativa y oficio
-│   ├── estructura-cozy-medieval.md        # Estructura y navegación de la Alternativa Cozy / Medieval
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
+│   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todo el sitio
 │   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
-│   ├── identidad/                         # Un brief por alternativa: Glassmorphism y Cozy / Medieval
+│   ├── identidad/                         # El brief de la identidad del sitio (Raíces) y sus referencias
+│   ├── flujos/ · evidencia/               # Fichas de flujo aprobadas y capturas de las decisiones
+│   ├── historico/                         # Identidades retiradas el 2026-11-03; no es guía para diseñar
 │   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)
 │   └── plantillas/                        # Ficha de flujo, iteración A/B, brief de identidad y encargos creativos
 │

@@ -3,12 +3,16 @@ package grupo5.cliente.visual;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.deque.html.axecore.playwright.AxeBuilder;
+import com.deque.html.axecore.results.AxeResults;
 import com.deque.html.axecore.results.CheckedNode;
 import com.deque.html.axecore.results.Rule;
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
+import com.microsoft.playwright.Video;
+import com.microsoft.playwright.options.ReducedMotion;
 import com.microsoft.playwright.options.ScreenshotAnimations;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,13 +39,12 @@ import tools.jackson.databind.json.JsonMapper;
  * anchos de referencia, saca una captura y exige axe AA sin violaciones, controles de 48 × 48 px o
  * más y nada desbordado; en los anchos intermedios, solo que nada se desborde. En el celular
  * captura además la primera pantalla (360 × 640, {@code <página>-360x640.png}). Sin propiedades,
- * recorre Glassmorphism y cada alternativa de {@code static/css/alternativas/} y las compara. Con
- * {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada variante, sobre la
- * alternativa de {@code -Dverificacion.alternativa=<nombre>} si se indica. Con {@code
- * -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de las de paginas.txt. Resultado en
- * {@code target/capturas/}: PNG, index.html, comparacion.html y reporte.json. Las capturas congelan
- * las animaciones de la página, no las que van dentro de una imagen (el spinner de Pico): para
- * comparar dos corridas, {@code scripts/visual/Imagenes.java comparar} con carpeta de ruido.
+ * recorre el sitio. Con {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada
+ * variante y las compara. Con {@code -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de
+ * las de paginas.txt. Resultado en {@code target/capturas/}: PNG, index.html, comparacion.html y
+ * reporte.json. Las capturas congelan las animaciones de la página, no las que van dentro de una
+ * imagen (el spinner de Pico): para comparar dos corridas, {@code scripts/visual/Imagenes.java
+ * comparar} con carpeta de ruido.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -67,6 +70,58 @@ class VerificacionVisualTest {
           + Math.round(caja.width) + 'x' + Math.round(caja.height))
       """;
 
+  /**
+   * El contraste de un texto que axe deja sin medir (un pseudo-elemento, un degradado o una imagen
+   * en el fondo): el color del texto sobre los fondos de color de sus ancestros, compuestos con su
+   * transparencia. Si no llega a AA (4,5:1; 3:1 la letra grande) devuelve la razón y el mínimo como
+   * texto; si llega o no se puede medir, null. No se puede medir sin el nodo, con un degradado
+   * lineal (tapa el color de debajo) o con una imagen sin color opaco (no deja saber cuál es).
+   * ponytail: no ve el fondo que pinta un pseudo-elemento, una foto que tape un color claro ni la
+   * opacity de los contenedores; si hace falta, medir sobre la captura.
+   */
+  private static final String CONTRASTE_SIN_MEDIR =
+      """
+      selector => {
+        const rgba = valor => valor.startsWith('rgb') ? valor.match(/[\\d.]+/g).map(Number) : null;
+        const sobre = (arriba, abajo) =>
+          [0, 1, 2].map(i => arriba[i] * (arriba[3] ?? 1) + abajo[i] * (1 - (arriba[3] ?? 1)));
+        const luz = color => color.map(v => v / 255)
+          .map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+          .reduce((suma, v, i) => suma + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const texto = document.querySelector(selector);
+        if (!texto) return null;
+        const fondos = [];
+        for (let caja = texto; caja; caja = caja.parentElement) {
+          const estilo = getComputedStyle(caja);
+          const fondo = rgba(estilo.backgroundColor);
+          const opaco = fondo && (fondo[3] ?? 1) === 1;
+          if (!fondo || estilo.backgroundImage.includes('linear-gradient')
+              || (estilo.backgroundImage !== 'none' && !opaco)) return null;
+          fondos.unshift(fondo);
+          if (opaco) break;
+        }
+        const fondo = fondos.reduce((abajo, arriba) => sobre(arriba, abajo), [255, 255, 255]);
+        const estilo = getComputedStyle(texto);
+        const color = rgba(estilo.color);
+        if (!color) return null;
+        const [clara, oscura] = [luz(sobre(color, fondo)), luz(fondo)].sort((a, b) => b - a);
+        const razon = (clara + 0.05) / (oscura + 0.05);
+        const tamano = parseFloat(estilo.fontSize);
+        const minimo = tamano >= 24 || (tamano >= 18.66 && estilo.fontWeight >= 700) ? 3 : 4.5;
+        return razon < minimo ? razon.toFixed(2) + ':1, pide ' + minimo + ':1' : null;
+      }
+      """;
+
+  /** Hay alguna animación o transición corriendo (CSS o scroll): la pantalla "tiene movimiento". */
+  private static final String HAY_MOVIMIENTO = "() => document.getAnimations().length > 0";
+
+  /** Cuánto se graba cada pantalla: la coreografía de entrada de las primitivas dura menos. */
+  private static final int MS_DE_VIDEO = 3500;
+
+  private static final int ANCHO_DE_VIDEO = 1280;
+  private static final int ALTO_DE_VIDEO = 720;
+  private static final Path VIDEOS = CAPTURAS.resolve("videos");
+
   private static final String HAY_DESBORDE =
       "() => document.documentElement.scrollWidth > document.documentElement.clientWidth";
 
@@ -83,9 +138,8 @@ class VerificacionVisualTest {
 
   private static final Path CSS = Path.of("src/main/resources/static/css");
   private static final Path VARIANTES_CSS = CSS.resolve("variantes");
-  private static final Path ALTERNATIVAS_CSS = CSS.resolve("alternativas");
   private static final Pattern COMENTARIO = Pattern.compile("/\\*(.*?)\\*/", Pattern.DOTALL);
-  private static final String GLASSMORPHISM = "glassmorphism";
+  private static final String SITIO = "sitio";
 
   /**
    * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
@@ -229,33 +283,19 @@ class VerificacionVisualTest {
       }))
       """;
 
-  /**
-   * Lo que se captura en cada pasada: una alternativa de identidad (vacía: Glassmorphism) y una
-   * variante A/B (vacía: ninguna).
-   */
-  private record Opcion(String alternativa, String variante) {
+  /** Lo que se captura en cada pasada: el sitio o una variante A/B (vacía: ninguna). */
+  private record Opcion(String variante) {
 
     String nombre() {
-      if (!variante.isEmpty()) {
-        return variante;
-      }
-      return alternativa.isEmpty() ? GLASSMORPHISM : alternativa;
+      return variante.isEmpty() ? SITIO : variante;
     }
 
     String consulta() {
-      List<String> parametros = new ArrayList<>();
-      if (!alternativa.isEmpty()) {
-        parametros.add("alternativa=" + alternativa);
-      }
-      if (!variante.isEmpty()) {
-        parametros.add("variante=" + variante);
-      }
-      return String.join("&", parametros);
+      return variante.isEmpty() ? "" : "variante=" + variante;
     }
 
     String sufijo() {
-      return (alternativa.isEmpty() ? "" : "--" + alternativa)
-          + (variante.isEmpty() ? "" : "--" + variante);
+      return variante.isEmpty() ? "" : "--" + variante;
     }
   }
 
@@ -320,6 +360,129 @@ class VerificacionVisualTest {
     assertThat(fallas).as("Detalle en %s", CAPTURAS.resolve("reporte.json")).isEmpty();
   }
 
+  /**
+   * B0-09 (D32): por cada pantalla de la lista que tiene movimiento al abrirse, un video de {@code
+   * MS_DE_VIDEO} ms en {@code target/capturas/videos/<ruta>.webm}; las que no se mueven no dejan
+   * video. Con "reducir movimiento" en el navegador, ninguna pantalla puede tener animaciones
+   * corriendo (D32: se resuelve dentro de las primitivas).
+   */
+  @Test
+  void lasPantallasConMovimientoDejanSuVideoYRespetanReducirMovimiento() throws IOException {
+    Files.createDirectories(VIDEOS);
+    List<Falla> fallas = new ArrayList<>();
+    List<String> grabadas = new ArrayList<>();
+    Opcion sitio = new Opcion("");
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      for (String ruta : paginas()) {
+        if (!abrir(pagina, ruta, sitio, ANCHO_DE_VIDEO, fallas)
+            || !Boolean.TRUE.equals(pagina.evaluate(HAY_MOVIMIENTO))) {
+          continue;
+        }
+        grabadas.add(grabar(navegador, ruta, sitio));
+        revisarReducirMovimiento(navegador, ruta, fallas);
+      }
+    }
+    JsonMapper.builder()
+        .build()
+        .writerWithDefaultPrettyPrinter()
+        .writeValue(VIDEOS.resolve("reporte.json"), Map.of("videos", grabadas, "fallas", fallas));
+    assertThat(grabadas).as("Al menos /estilos y la portada se mueven").isNotEmpty();
+    assertThat(fallas).as("Detalle en %s", VIDEOS.resolve("reporte.json")).isEmpty();
+  }
+
+  /**
+   * La cola de avisos (B2-04, Alpine): de cuatro avisos en la región se ven tres, al cerrar uno
+   * aparece el cuarto, y los que quedan se van solos pasados unos segundos.
+   */
+  @Test
+  void laColaDeAvisosMuestraTresALaVezYLosQuita() {
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      pagina.navigate("http://localhost:" + puerto + "/estilos");
+      pagina.waitForFunction(
+          "() => window.Alpine && document.getElementById('avisos')._x_dataStack");
+      for (int i = 0; i < 4; i++) {
+        pagina.getByText("Mostrar un aviso en la región").click();
+      }
+      assertThat(pagina.locator("#avisos .aviso-breve").count()).isEqualTo(4);
+      assertThat(pagina.locator("#avisos .aviso-breve:not([hidden])").count()).isEqualTo(3);
+      pagina.locator("#avisos .aviso-cerrar").first().click();
+      pagina.mouse().move(0, 0);
+      pagina.waitForFunction(
+          "() => document.querySelectorAll('#avisos .aviso-breve').length === 3"
+              + " && document.querySelectorAll('#avisos .aviso-breve:not([hidden])').length === 3");
+      pagina.waitForFunction(
+          "() => document.querySelectorAll('#avisos .aviso-breve').length === 0",
+          null,
+          new Page.WaitForFunctionOptions().setTimeout(15_000));
+    }
+  }
+
+  /**
+   * El diálogo (B2-05) se abre con su botón sin JavaScript propio, lleva el foco y se cierra con
+   * Esc.
+   */
+  @Test
+  void elDialogoSeAbreConSuBotonYSeCierraConEscape() {
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      pagina.navigate("http://localhost:" + puerto + "/estilos");
+      String abierto =
+          "() => document.getElementById('dialogo-de-muestra').matches(':popover-open')";
+      assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+      pagina.locator("[popovertarget='dialogo-de-muestra']:not([popovertargetaction])").click();
+      assertThat(pagina.evaluate(abierto)).isEqualTo(true);
+      assertThat(
+              pagina.evaluate(
+                  "() => document.getElementById('dialogo-de-muestra').contains(document.activeElement)"))
+          .isEqualTo(true);
+      pagina.keyboard().press("Escape");
+      assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+    }
+  }
+
+  /** Abre la pantalla en un contexto con video, espera y deja el .webm con el nombre de la ruta. */
+  private String grabar(Browser navegador, String ruta, Opcion opcion) {
+    String archivo = nombreDeCaptura(ruta, opcion, "movimiento").replace(".png", ".webm");
+    try (BrowserContext contexto =
+        navegador.newContext(
+            new Browser.NewContextOptions()
+                .setViewportSize(ANCHO_DE_VIDEO, ALTO_DE_VIDEO)
+                .setRecordVideoDir(VIDEOS)
+                .setRecordVideoSize(ANCHO_DE_VIDEO, ALTO_DE_VIDEO))) {
+      Page pagina = contexto.newPage();
+      pagina.navigate("http://localhost:" + puerto + ruta);
+      pagina.waitForTimeout(MS_DE_VIDEO);
+      Video video = pagina.video();
+      pagina.close();
+      video.saveAs(VIDEOS.resolve(archivo));
+      video.delete();
+    }
+    return archivo;
+  }
+
+  private void revisarReducirMovimiento(Browser navegador, String ruta, List<Falla> fallas) {
+    try (BrowserContext contexto =
+        navegador.newContext(
+            new Browser.NewContextOptions().setReducedMotion(ReducedMotion.REDUCE))) {
+      Page pagina = contexto.newPage();
+      pagina.navigate("http://localhost:" + puerto + ruta);
+      if (Boolean.TRUE.equals(pagina.evaluate(HAY_MOVIMIENTO))) {
+        fallas.add(
+            new Falla(
+                ruta,
+                SITIO,
+                ANCHO_DE_VIDEO,
+                "movimiento",
+                "tiene animaciones con \"reducir movimiento\""));
+      }
+    }
+  }
+
   private boolean abrir(Page pagina, String ruta, Opcion opcion, int ancho, List<Falla> fallas) {
     pagina.setViewportSize(ancho, AnchosDeReferencia.ALTO);
     String separador = ruta.contains("?") ? "&" : "?";
@@ -338,7 +501,19 @@ class VerificacionVisualTest {
 
   private static void revisarAccesibilidad(
       Page pagina, String ruta, String variante, int ancho, List<Falla> fallas) {
-    for (Rule regla : new AxeBuilder(pagina).withTags(NORMAS_AXE).analyze().getViolations()) {
+    AxeResults resultado = new AxeBuilder(pagina).withTags(NORMAS_AXE).analyze();
+    resultado.getIncomplete().stream()
+        .filter(regla -> "color-contrast".equals(regla.getId()))
+        .flatMap(regla -> regla.getNodes().stream())
+        .map(nodo -> ((List<?>) nodo.getTarget()).get(0).toString())
+        .forEach(
+            selector -> {
+              if (pagina.evaluate(CONTRASTE_SIN_MEDIR, selector) instanceof String razon) {
+                fallas.add(
+                    new Falla(ruta, variante, ancho, "contraste", razon + " en " + selector));
+              }
+            });
+    for (Rule regla : resultado.getViolations()) {
       for (CheckedNode nodo : regla.getNodes()) {
         fallas.add(
             new Falla(
@@ -404,39 +579,20 @@ class VerificacionVisualTest {
         .toList();
   }
 
-  /**
-   * Con variantes, una pasada por variante sobre la alternativa pedida. Sin variantes, una pasada
-   * por alternativa: Glassmorphism y las de static/css/alternativas/, o solo la pedida.
-   */
-  private static List<Opcion> opciones() throws IOException {
-    String alternativa = System.getProperty("verificacion.alternativa", "").strip();
+  /** Con variantes, una pasada por variante; sin variantes, una pasada por el sitio. */
+  private static List<Opcion> opciones() {
     List<String> variantes =
         Arrays.stream(System.getProperty("verificacion.variantes", "").split(","))
             .map(String::strip)
             .filter(v -> !v.isEmpty())
             .toList();
     if (!variantes.isEmpty()) {
-      return variantes.stream().map(variante -> new Opcion(alternativa, variante)).toList();
+      return variantes.stream().map(Opcion::new).toList();
     }
-    if (!alternativa.isEmpty()) {
-      return List.of(new Opcion(alternativa, ""));
-    }
-    List<Opcion> opciones = new ArrayList<>(List.of(new Opcion("", "")));
-    if (Files.isDirectory(ALTERNATIVAS_CSS)) {
-      try (Stream<Path> carpetas = Files.list(ALTERNATIVAS_CSS)) {
-        carpetas
-            .filter(carpeta -> Files.exists(carpeta.resolve("tokens.css")))
-            .map(carpeta -> carpeta.getFileName().toString())
-            .sorted()
-            .forEach(nombre -> opciones.add(new Opcion(nombre, "")));
-      }
-    }
-    return opciones;
+    return List.of(new Opcion(""));
   }
 
-  /**
-   * {@code <ruta>[--<alternativa>][--<variante>]-<medida>.png}; la medida es el ancho o 360x640.
-   */
+  /** {@code <ruta>[--<variante>]-<medida>.png}; la medida es el ancho o 360x640. */
   private static String nombreDeCaptura(String ruta, Opcion opcion, String medida) {
     String base = ruta.replaceAll("[^A-Za-z0-9]+", "-").replaceAll("^-|-$", "");
     return (base.isEmpty() ? "inicio" : base) + opcion.sufijo() + "-" + medida + ".png";
@@ -480,16 +636,10 @@ class VerificacionVisualTest {
         : "Capturas: " + nombres.get(0);
   }
 
-  /**
-   * Primer comentario del CSS de la variante o, sin variante, del tokens.css de la alternativa, en
-   * una línea; vacío para Glassmorphism o si no hay.
-   */
+  /** Primer comentario del CSS de la variante, en una línea; vacío sin variante o si no hay. */
   private static String descripcion(Opcion opcion) throws IOException {
-    Path css =
-        opcion.variante().isEmpty()
-            ? ALTERNATIVAS_CSS.resolve(opcion.alternativa()).resolve("tokens.css")
-            : VARIANTES_CSS.resolve(opcion.variante() + ".css");
-    if ((opcion.alternativa().isEmpty() && opcion.variante().isEmpty()) || !Files.exists(css)) {
+    Path css = VARIANTES_CSS.resolve(opcion.variante() + ".css");
+    if (opcion.variante().isEmpty() || !Files.exists(css)) {
       return "";
     }
     Matcher comentario = COMENTARIO.matcher(Files.readString(css, StandardCharsets.UTF_8));
