@@ -83,7 +83,7 @@
           En camino (1).</span>
         <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver todas</a>
       </p>
-      <section th:if="${filtrada and #lists.isEmpty(asignadas.?[grupo == #root.filtro.grupo])}" class="vacio"
+      <section th:if="${filtrada and #lists.isEmpty(asignadas.?[grupo == #root.filtro.grupo])}" class="vacio" role="status"
                aria-labelledby="sinres-titulo" tabindex="-1" autofocus>
         <h2 id="sinres-titulo">No hay donaciones en ese estado.</h2>
         <p>Probá con otro estado o mirá todas.</p>

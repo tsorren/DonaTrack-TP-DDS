@@ -92,14 +92,14 @@
                  : (${dibujada} ? '46 entidades activas. Página 1 de 8.' : |46 entidades activas. Página ${pagina} de 8.|)">46
         entidades activas. Página 1 de 8.</p>
 
-      <section th:if="${busca != '' and lista.isEmpty()}" class="vacio"
+      <section th:if="${busca != '' and lista.isEmpty()}" class="vacio" role="status"
                aria-labelledby="sin-resultados">
         <h2 id="sin-resultados">Probá con otra parte del nombre.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
       </section>
 
-      <section th:if="${busca == '' and !dibujada}" class="vacio"
+      <section th:if="${busca == '' and !dibujada}" class="vacio" role="status"
                aria-labelledby="no-dibujada">
         <h2 id="no-dibujada">En la maqueta solo está dibujada la primera página.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"

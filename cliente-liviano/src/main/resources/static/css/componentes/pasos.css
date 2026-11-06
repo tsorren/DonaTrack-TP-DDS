@@ -73,7 +73,7 @@
 
 /* La línea de tierra, el estrato tibio del recorrido (antes, un trazo de tinta). */
 .paso-dibujo .paso-horizonte {
-  stroke: color-mix(in srgb, var(--color-suelo) 84%, var(--color-fruto));
+  stroke: var(--color-suelo-estrato, color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%));
   stroke-width: 8;
   vector-effect: non-scaling-stroke;
 }

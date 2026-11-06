@@ -10,7 +10,7 @@
 /* La línea de tierra es el estrato tibio del recorrido, del mismo grueso en cualquier dibujo (antes,
    un trazo de tinta). */
 .dibujo-tierra {
-  stroke: color-mix(in srgb, var(--color-suelo) 84%, var(--color-fruto));
+  stroke: var(--color-suelo-estrato, color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%));
   stroke-width: 8;
   vector-effect: non-scaling-stroke;
 }
