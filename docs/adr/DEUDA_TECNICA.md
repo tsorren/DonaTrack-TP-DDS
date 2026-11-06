@@ -549,3 +549,21 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 
 1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
 2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.
+
+## DTI-35 — El seguimiento no tiene posición del camión y los textos del cliente todavía dicen "ubicación aproximada"
+<a id="dti-35"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [ADR-E6-07 — Posición del camión: fuente, privacidad y actualización](./20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `Camion` no tiene posición; no existen `PosicionCamion` ni `FuentePosicionCamion`; `SeguimientoEntregaResponseDTO` no tiene `posicionCamion`; el cliente liviano no tiene el fragmento con polling. Las plantillas `donante-seguimiento`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-publico-navegable` y `raices-legales`, dicen que la ubicación es aproximada |
+| Target | `logistica-service` (`Camion`, puerto y adaptador simulado, `SeguimientoEntregaResponseDTO`, `openapi-logistica.yaml`) · `cliente-liviano` (fragmento del marcador y textos de ubicación) · `docs/interfaz/flujos/` |
+| Cuándo se saldará | Entrega 6: tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06) para Logística; los textos, con la sesión que conecte el cliente a Logística |
+
+1. **Posición del camión.** Value object `PosicionCamion(latitud, longitud, registradaEn)` en `Camion`, puerto `FuentePosicionCamion` y adaptador simulado que avanza cada 30 s; descarta la posición más vieja que la guardada.
+2. **Seguimiento.** Campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO` y en el contrato OpenAPI.
+3. **Cliente.** Endpoint de fragmento con el marcador y la "última actualización", pedido cada 30 s con la pestaña visible.
+4. **Textos.** Las plantillas, las fichas de flujo y los legales dejan de decir "aproximada": las coordenadas son exactas y la dirección textual no se publica (D24 revisada).
+
+---
