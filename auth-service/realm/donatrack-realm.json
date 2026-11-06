@@ -1,4 +1,74 @@
 {
   "realm": "donatrack",
-  "enabled": true
+  "enabled": true,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 28800,
+  "roles": {
+    "realm": [
+      { "name": "DONANTE", "description": "Persona o empresa que dona" },
+      { "name": "ENTIDAD", "description": "Entidad receptora de donaciones" },
+      { "name": "ADMIN", "description": "Administración de DonaTrack" }
+    ]
+  },
+  "scopeMappings": [
+    { "client": "cliente-liviano", "roles": ["DONANTE", "ENTIDAD", "ADMIN"] }
+  ],
+  "clients": [
+    {
+      "clientId": "cliente-liviano",
+      "name": "Cliente liviano",
+      "description": "Sitio web de DonaTrack: cliente OIDC confidencial con authorization code",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${CLIENTE_LIVIANO_SECRET}",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
+      "redirectUris": ["${CLIENTE_LIVIANO_BASE_URL}/login/oauth2/code/keycloak"],
+      "webOrigins": [],
+      "attributes": {
+        "post.logout.redirect.uris": "${CLIENTE_LIVIANO_BASE_URL}/"
+      },
+      "defaultClientScopes": ["basic"],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "lightweight.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "audiencia-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "donatrack-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ]
 }

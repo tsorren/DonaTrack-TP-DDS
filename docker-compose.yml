@@ -187,6 +187,9 @@ services:
       - KC_HOSTNAME=${KC_HOSTNAME:?ver .env.example}
       - KC_HTTP_ENABLED=${KC_HTTP_ENABLED:-true}
       - KC_HEALTH_ENABLED=${KC_HEALTH_ENABLED:-true}
+      # Los lee el realm al importarse (${...} en auth-service/realm/donatrack-realm.json), solo con la base vacía.
+      - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
+      - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
     depends_on:
       postgres:
         condition: service_healthy
