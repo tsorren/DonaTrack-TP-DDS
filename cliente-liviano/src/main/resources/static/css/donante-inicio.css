@@ -1,7 +1,7 @@
 /* El inicio del donante en Raíces cálida: el recorrido (bloque componentes/recorrido.css). Acá solo
-   la disposición de la pantalla: en el celular, el nombre del menú y el saludo arriba, el camino, y
-   la bajada recién después, para que "Ver seguimiento" entre en la primera pantalla; desde la
-   tableta, la cabecera vuelve a ser una pieza. Lo último del camino, en pantalla grande, en tres
+   la disposición de la pantalla: en el celular, el nombre del menú arriba y después el saludo con su
+   bajada de un renglón, en el orden del HTML, y el camino; desde la tableta, la cabecera vuelve a
+   ser una pieza. Lo último del camino, en pantalla grande, en tres
    columnas como los tres tramos. */
 @import url("donante-comun.css");
 
@@ -23,15 +23,14 @@
   margin: 0;
 }
 
-.inicio-cabecera h1 {
+.inicio-cabecera h1,
+.inicio-cabecera .bajada {
   order: -1;
   margin: 0;
-  font-size: 1.75rem;
 }
 
-.inicio-cabecera .bajada {
-  order: 1;
-  margin: 0;
+.inicio-cabecera h1 {
+  font-size: 1.75rem;
 }
 
 /* El vacío en el celular: primero qué pasa y "Conocer las entidades", después el camino sin plantas,

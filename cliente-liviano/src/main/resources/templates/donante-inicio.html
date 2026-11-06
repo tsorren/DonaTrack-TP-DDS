@@ -31,8 +31,7 @@
     <header class="inicio-cabecera">
       <h1>Hola, <em th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</em></h1>
       <p class="rotulo" th:text="${seccion}">Inicio</p>
-      <p class="bajada">Gracias por donar. Acá ves qué donó tu empresa, dónde está cada
-        donación y qué ya confirmaron las entidades.</p>
+      <p th:if="${conDatos}" class="bajada">Acá ves dónde está cada donación.</p>
     </header>
 
     <!--/* Cargando: el aviso y el lugar de cada tramo, sin datos inventados. */-->
@@ -82,7 +81,9 @@
             <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
           </div>
           <!--/* De acá salen todas: el total, al pie del primer tramo. */-->
-          <p class="recorrido-salida"><b th:text="${#lists.size(donaciones)}">7</b> donaciones registradas</p>
+          <p class="recorrido-salida" th:with="total=${#lists.size(donaciones)}"><b th:text="${total}">7</b>
+            <th:block th:text="${total == 1 ? 'donación registrada' : 'donaciones registradas'}">donaciones
+              registradas</th:block></p>
         </section>
 
         <!--/* Tramo 2: lo que está viajando. Primero la pendiente (planta sin fruto, más cerca del
@@ -119,13 +120,24 @@
             <a class="boton" data-tono="principal" href="/donante-seguimiento"
                th:href="@{/donante-seguimiento}">Ver seguimiento</a>
           </div>
-          <!--/* Una entrega con problema: qué pasó y la nueva salida, sin alarma ni metáfora. */-->
-          <section th:each="d : ${tienenProblema}" class="recorrido-aviso" aria-labelledby="demora-titulo"
-                   th:with="destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">
-            <h3 id="demora-titulo">Una entrega con problema</h3>
+          <!--/* Una entrega con problema: qué pasó y la nueva salida, sin alarma ni metáfora. Todo sale de
+                 la donación: la nota dice qué pasó y la nueva salida ("No pudo llegar; sale de nuevo
+                 el…") y la hoja de ruta, la causa, sin "Última noticia". Lo que viene vacío no va. */-->
+          <section th:each="d, vuelta : ${tienenProblema}" class="recorrido-aviso"
+                   th:with="titulo=${vuelta.first ? 'demora-titulo' : 'demora-titulo-' + vuelta.count},
+                            destino=${#strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')},
+                            nota=${d['nota'] ?: ''},
+                            dicho=${nota.contains(';') ? nota.split(';')[0].trim() : nota.trim()},
+                            hecho=${dicho.isEmpty() ? 'no pudo llegar' : dicho.substring(0, 1).toLowerCase() + dicho.substring(1)},
+                            salida=${nota.contains(';') ? #strings.capitalize(nota.split(';')[1].trim()) : ''},
+                            ruta=${(d['seguimiento'] ?: '').split('Última noticia')[0].trim()},
+                            corta=${ruta.endsWith('.') ? ruta.substring(0, ruta.length() - 1) : ruta},
+                            causa=${corta.isEmpty() ? '' : corta.substring(0, 1).toLowerCase() + corta.substring(1)}"
+                   aria-labelledby="demora-titulo" th:aria-labelledby="${titulo}">
+            <h3 th:id="${titulo}" id="demora-titulo">Una entrega con problema</h3>
             <p>
               <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-              <span><th:block th:text="|${d.titulo} no pudo llegar a ${destino}: el camino estaba cortado. Sale de nuevo el 17 de octubre.|">Útiles
+              <span><th:block th:text="|${d.titulo} ${hecho} a ${destino}${causa.isEmpty() ? '' : ': ' + causa}.${salida.isEmpty() ? '' : ' ' + salida + '.'}|">Útiles
                 escolares no pudo llegar a Escuela Ejemplo N.º 12: el camino estaba cortado. Sale de nuevo
                 el 17 de octubre.</th:block>
                 <a href="/donante-donaciones-detalle?donacion=utiles"
@@ -142,18 +154,12 @@
               la entidad</p>
             <h2 id="confirmado-titulo">Lo que <em>ya recibieron</em></h2>
           </div>
-          <dl class="recorrido-cuenta" aria-labelledby="confirmado-titulo">
-            <div>
-              <dt th:text="${#lists.size(entregadas) == 1} ? 'entrega confirmada' : 'entregas confirmadas'">entregas
-                confirmadas</dt>
-              <dd th:text="${#lists.size(entregadas)}">2</dd>
-            </div>
-            <div th:with="cuantas=${#sets.size(#sets.toSet(entregadas.![destino]))}">
-              <dt th:text="${cuantas == 1} ? 'entidad confirmó lo que recibió' : 'entidades confirmaron lo que recibieron'">entidades
-                confirmaron lo que recibieron</dt>
-              <dd th:text="${cuantas}">2</dd>
-            </div>
-          </dl>
+          <!--/* Una sola cifra grande, sobre el fruto: las entregas. Las entidades, en la frase. */-->
+          <p class="recorrido-cuenta" th:with="confirmadas=${#lists.size(entregadas)},
+                                               cuantas=${#sets.size(#sets.toSet(entregadas.![destino]))}"><b
+              th:text="${confirmadas}">2</b>
+            <span th:text="|${confirmadas == 1 ? 'entrega confirmada' : 'entregas confirmadas'} ${cuantas == 1 ? 'en 1 entidad' : 'en ' + cuantas + ' entidades distintas'}.|">entregas
+              confirmadas en 2 entidades distintas.</span></p>
           <div class="recorrido-tierra" aria-hidden="true">
             <th:block th:each="d : ${entregadas}">
               <svg th:replace="~{componentes/recorrido :: planta('fruto')}"></svg>

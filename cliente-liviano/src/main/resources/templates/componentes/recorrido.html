@@ -123,7 +123,7 @@
 
 <!--/* La muestra para /estilos: un camino chico con los tres tramos y todas sus piezas. */-->
 <th:block th:fragment="muestra">
-  <div th:replace="~{componentes/muestra :: muestra('.recorrido', 'El camino de las donaciones: un tramo por etapa (data-etapa: deposito, viaje, entidad) con su cabeza, su cuenta, el corte de suelo con una baldosa por donación (data-forma: grano, crece, camino, fruto, problema; personas: dona, recibe) y su acción. Abajo, el alcance y la fecha; el aviso de lo que salió mal, sin metáfora; el vacío y la espera.', ~{componentes/recorrido :: demo-recorrido})}">
+  <div th:replace="~{componentes/muestra :: muestra('.recorrido', 'El camino de las donaciones: un tramo por etapa (data-etapa: deposito, viaje, entidad) con su cabeza, su cuenta (la cifra en el sello de su etapa, con su frase al lado), el corte de suelo con una baldosa por donación (data-forma: grano, crece, camino, fruto, problema; personas: dona, recibe) y su acción. Abajo, el alcance y la fecha; el aviso de lo que salió mal, sin metáfora; el vacío y la espera.', ~{componentes/recorrido :: demo-recorrido})}">
     <th:block th:fragment="demo-recorrido">
       <div class="recorrido">
         <section class="recorrido-tramo" data-etapa="deposito" aria-labelledby="muestra-recorrido-1">
@@ -167,10 +167,7 @@
             <p class="rotulo"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block>En la entidad</p>
             <h4 id="muestra-recorrido-3">Lo que <em>ya recibieron</em></h4>
           </div>
-          <dl class="recorrido-cuenta">
-            <div><dt>entrega confirmada</dt><dd>1</dd></div>
-            <div><dt>entidad confirmó lo que recibió</dt><dd>1</dd></div>
-          </dl>
+          <p class="recorrido-cuenta"><b>1</b> <span>entrega confirmada en 1 entidad.</span></p>
           <div class="recorrido-tierra" aria-hidden="true">
             <svg th:replace="~{componentes/recorrido :: planta('fruto')}"></svg>
             <svg th:replace="~{componentes/recorrido :: persona('recibe')}"></svg>
