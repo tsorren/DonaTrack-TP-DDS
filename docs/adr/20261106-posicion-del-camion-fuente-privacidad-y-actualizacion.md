@@ -159,7 +159,7 @@ value object del agregado `Camion` (DDD), su Experto (GRASP): ningún otro agreg
 - `[OBSERVED]` Textos que hoy prometen lo contrario: las plantillas `donante-seguimiento`,
   `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos` del cliente
   liviano, y las fichas de flujo `raices-seguir-entregas`, `raices-confirmar-recepcion`,
-  `raices-publico-navegable` y `raices-legales`, dicen que la ubicación es
+  `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es
   aproximada. Hay que corregirlos antes de publicar el mapa con datos reales, en especial los
   legales (DTI-35, ítem 4).
 
