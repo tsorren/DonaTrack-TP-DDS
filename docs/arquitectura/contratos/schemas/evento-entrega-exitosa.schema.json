@@ -23,6 +23,11 @@
     "fechaEntrega": {
       "type": "string",
       "format": "date-time"
+    },
+    "fotosRecepcion": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" },
+      "description": "Opcional. URLs estables de las fotos de recepción, en el orden de la entrega; Donaciones las replica para las destacadas (ADR de réplicas por evento, 2026-11-06). Un emisor que no las manda sigue siendo válido."
     }
   },
   "required": ["entregaId", "donacionIndependienteId", "fechaEntrega"],

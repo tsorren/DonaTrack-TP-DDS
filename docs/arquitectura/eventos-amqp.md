@@ -70,7 +70,7 @@ logistica-service
 |---|---|---|---|---|
 | `ruta.asignada` | `donaciones.ruta.asignada` | `donaciones-service` (`LogisticaEventListener`) | Notifica que una donación fue incluida en una ruta planificada | [`evento-ruta-asignada.schema.json`](./contratos/schemas/evento-ruta-asignada.schema.json) |
 | `ruta.iniciada` | `donaciones.ruta.iniciada` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donaciones a `EN_TRASLADO` y difunde URL de tracking | [`evento-ruta-iniciada.schema.json`](./contratos/schemas/evento-ruta-iniciada.schema.json) |
-| `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA` | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
+| `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA` y replica las fotos de recepción (campo opcional) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
 | `entrega.fallida` | `donaciones.entrega.fallida` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGA_FALLIDA` y evalúa replanificación | [`evento-entrega-fallida.schema.json`](./contratos/schemas/evento-entrega-fallida.schema.json) |
 
 #### B. Eventos hacia `notificaciones-service`, `logistica-service` e `incentivos-service`
@@ -235,9 +235,12 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   },
   "pesoTotalKG": 10.5,
   "volumenTotalM3": 0.25,
-  "fecha": "2026-09-15T14:30:00Z"
+  "fecha": "2026-09-15T14:30:00Z",
+  "donanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22"
 }
 ```
+
+> **`donanteId` (opcional, desde el 2026-11-06):** Logística lo guarda en la entrega para listar las entregas activas de un donante (HB-16). Un broker que no lo manda sigue siendo válido; esa entrega no aparece en el listado por donante. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 
 > **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
 
@@ -271,9 +274,14 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
   "patenteCamion": "AB123CD",
-  "fechaEntrega": "2026-09-16T11:40:00Z"
+  "fechaEntrega": "2026-09-16T11:40:00Z",
+  "fotosRecepcion": [
+    "http://localhost:8083/api/entregas/55667788-99aa-bbcc-ddee-ff0011223344/fotos/0f1e2d3c-4b5a-6978-8a9b-acbdcedf0011"
+  ]
 }
 ```
+
+> **`fotosRecepcion` (opcional, desde el 2026-11-06):** URLs estables de las fotos, que redirigen a una URL firmada de vida corta. Donaciones las replica en la donación para servir `GET /donaciones/destacadas` sin llamar a Logística (HB-01). Un proveedor que no las manda sigue siendo válido; sus entregas no aportan destacadas. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 
 #### Entrega Fallida (`entrega.fallida`)
 ```json
