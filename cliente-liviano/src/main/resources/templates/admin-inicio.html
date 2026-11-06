@@ -41,7 +41,7 @@
 
     <section th:if="${escenario != 'error'}" class="decisiones" aria-labelledby="decisiones-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="decisiones-titulo">Lo que espera tu decisión</h2>
+      <h2 id="decisiones-titulo">Decisiones</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
       <div th:if="${escenario == 'vacio'}" class="vacio">
         <p><b>Hoy no hay nada que espere tu decisión.</b></p>
@@ -81,7 +81,7 @@
     <!--/* Las cifras: actividad y resultado registrado, con período y fecha; cada número, con su nombre. */-->
     <section th:if="${escenario != 'error'}" class="todo" aria-labelledby="todo-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="todo-titulo">Cómo está todo</h2>
+      <h2 id="todo-titulo">Resumen</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
       <th:block th:if="${conDatos}">
         <p class="todo-fecha">Al 15 de octubre de 2026, 18:30.</p>
@@ -96,7 +96,7 @@
             </dl>
           </section>
           <section class="registro-mesa" aria-labelledby="registro-red">
-            <h3 id="registro-red">La red</h3>
+            <h3 id="registro-red">Entidades, donantes y camiones</h3>
             <dl>
               <div><dt>Entidades activas</dt><dd>46</dd></div>
               <div><dt>Donantes</dt><dd>86</dd></div>

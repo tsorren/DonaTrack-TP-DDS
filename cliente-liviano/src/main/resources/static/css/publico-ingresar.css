@@ -40,6 +40,9 @@
   outline: 2px dashed var(--color-raiz);
   outline-offset: -0.625rem;
   background: var(--color-suelo);
+  /* Del corte de suelo (componentes/tierra.css), solo el estrato: el filete punteado ya cierra el
+     fondo. */
+  box-shadow: inset 0 0.5rem 0 color-mix(in srgb, var(--color-suelo) 84%, var(--color-fruto));
   color: var(--color-texto-suelo);
 }
 

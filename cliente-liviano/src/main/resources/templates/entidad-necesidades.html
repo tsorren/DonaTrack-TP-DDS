@@ -201,7 +201,7 @@
 
     <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="pedidos"
              aria-labelledby="pedidos-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="pedidos-titulo">Tus necesidades vigentes</h2>
+      <h2 id="pedidos-titulo">Lo que tu entidad pide hoy</h2>
       <ul class="pedidos-lista" role="list">
         <li th:each="n : ${vigentes}" th:id="${n.clave}">
           <details class="tarjeta pedido" data-filete="doble" th:open="${n.clave == pedida}"
@@ -260,7 +260,7 @@
                 </section>
 
                 <section class="parte" th:aria-labelledby="|${n.clave}-donaron|">
-                  <h3 th:id="|${n.clave}-donaron|">Quién donó</h3>
+                  <h3 th:id="|${n.clave}-donaron|">Quiénes donaron</h3>
                   <p th:if="${#lists.isEmpty(n.donaron)}">Todavía no llegó nada.</p>
                   <ul th:unless="${#lists.isEmpty(n.donaron)}" class="donaron" role="list">
                     <!--/* Con el nombre oculto, la categoría del ranking; si no llega

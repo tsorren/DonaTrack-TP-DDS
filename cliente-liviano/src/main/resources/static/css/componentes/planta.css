@@ -49,13 +49,23 @@
   fill: var(--color-tallo);
 }
 
-/* El que va en camino, hueco: el contorno en la segunda tinta, que se ve sobre el papel (A/B de
-   paleta, 2026-11-02). */
+/* El que va en camino rima con su sello y con la planta del recorrido: el borde continuo de "en
+   camino" sobre su fondo claro, todavía sin la tinta del fruto (antes, punteado, que ahora es solo
+   de lo pendiente; Raíces cálida, iteración 2). */
 .fruto-hueco {
-  fill: none;
-  stroke: var(--color-fruto-hondo);
+  fill: var(--color-en-camino-fondo);
+  stroke: var(--color-en-camino-texto);
   stroke-width: 2.5;
-  stroke-dasharray: 4 3;
+}
+
+@media (forced-colors: active) {
+  .planta-dibujo :is(.tallo, .rama, .fruto-hueco) {
+    stroke: CanvasText;
+  }
+
+  .planta-dibujo :is(.hoja, .fruto-disco, .fruto-tinta, .fruto-hoja) {
+    fill: CanvasText;
+  }
 }
 
 /* La cuenta, como la etiqueta de un ejemplar: arriba en el celular, al lado de la planta desde la

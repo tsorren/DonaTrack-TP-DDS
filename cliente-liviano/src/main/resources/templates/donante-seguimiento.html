@@ -30,7 +30,7 @@
   <div class="seguimiento">
     <header class="seguimiento-cabecera">
       <p class="rotulo" th:text="${seccion}">Seguimiento</p>
-      <h1>Tus entregas en curso</h1>
+      <h1>Lo que está <em>viajando</em></h1>
       <p class="seguimiento-bajada" th:if="${escenario == ''}"
          th:text="|Gracias por donar. ${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.|">Gracias
         por donar. 3 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.</p>
@@ -74,7 +74,7 @@
 
     <!--/* Las cifras por estado, un registro como el de la portada; aparte, las que esperan destino. */-->
     <section th:if="${escenario == ''}" class="cifras" aria-labelledby="cifras-titulo">
-      <h2 id="cifras-titulo" class="cifras-titulo">Tus donaciones, por estado</h2>
+      <h2 id="cifras-titulo" class="cifras-titulo">Cómo van tus donaciones</h2>
       <dl>
         <div class="cifra">
           <dt><span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span></dt>
@@ -171,7 +171,7 @@
 
       <!--/* La lista: lo mismo que el dibujo, con el mismo número (RF-CL-06). */-->
       <section class="seguimiento-lista" aria-labelledby="lista-titulo">
-        <h2 id="lista-titulo">Entrega por entrega</h2>
+        <h2 id="lista-titulo">Cada entrega, hasta quien la espera</h2>
         <ol class="entregas" role="list">
           <th:block th:each="d, vuelta : ${vanEnCamino}">
             <li th:replace="~{:: entrega(${d}, ${vuelta.count})}"></li>

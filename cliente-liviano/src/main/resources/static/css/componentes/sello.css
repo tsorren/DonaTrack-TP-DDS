@@ -100,3 +100,28 @@
   stroke: var(--color-tinta-suave);
   stroke-width: 1.5;
 }
+
+/* --- Colores forzados: los trazos y los signos se siguen viendo -------------------------------- */
+@media (forced-colors: active) {
+  .estado-sello :is(.sello-tinta, .sello-medio, .sello-problema, .fruto-tinta, .fruto-disco,
+    .fruto-hoja) {
+    fill: CanvasText;
+  }
+
+  .estado-sello :is(.sello-contorno, .sello-hecho, .sello-falta, .sello-disco) {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .estado-sello .sello-calado {
+    stroke: Canvas;
+  }
+
+  .estado-sello :is(.sello-tilde, .sello-calado--fino) {
+    stroke: CanvasText;
+  }
+
+  .estado-sello .fruto-disco ~ .sello-calado--fino {
+    stroke: Canvas;
+  }
+}

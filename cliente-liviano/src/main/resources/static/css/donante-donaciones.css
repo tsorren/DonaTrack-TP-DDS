@@ -76,10 +76,11 @@
   font-stretch: 118%;
 }
 
-/* Ya llegó: impresa, el disco paja con la segunda tinta corrida. */
+/* Ya llegó: el fruto maduro, como la planta que llegó a la entidad en el recorrido y su sello (Raíces
+   cálida, iteración 2; antes, el disco paja). */
 .asiento--entregada .asiento-numero {
-  background: var(--color-raiz);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  background: var(--color-fruto);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-fruto-hondo);
 }
 
 /* Todavía sin destino: hueca, sin imprimir. */

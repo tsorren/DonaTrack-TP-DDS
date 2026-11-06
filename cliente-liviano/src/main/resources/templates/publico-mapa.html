@@ -90,7 +90,7 @@
       </figure>
 
       <section th:if="${hay}" class="mapa-lista" aria-labelledby="lista-titulo">
-        <h2 id="lista-titulo">Entidad por entidad</h2>
+        <h2 id="lista-titulo">A quién le llegó cada una</h2>
         <ol class="estaciones" role="list">
           <th:block th:each="e : ${entidades}" th:with="suyas=${filtradas.?[entidad == '__${e.nombre}__']}">
           <li th:unless="${suyas.isEmpty()}" class="estacion-ficha" th:classappend="${'estacion-ficha--' + e.numero}"

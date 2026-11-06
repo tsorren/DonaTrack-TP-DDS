@@ -96,7 +96,7 @@
 
       <!--/* Lo que viene: una raíz de sellos, de lo que está más cerca de llegar a lo que no pudo. */-->
       <section class="viene" aria-labelledby="viene-titulo">
-        <h2 id="viene-titulo">Lo que viene</h2>
+        <h2 id="viene-titulo">Lo que viene a tu entidad</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}"
             th:with="lista=${asignadas.?[grupo == 'camino' or grupo == 'salir' or grupo == 'problema']}">
@@ -129,7 +129,7 @@
 
       <!--/* Los pedidos vigentes de Necesidades, con cuánto llegó de cuánto en su regla de tinta. */-->
       <section class="pedidos-inicio" aria-labelledby="pedidos-titulo">
-        <h2 id="pedidos-titulo">Tus pedidos</h2>
+        <h2 id="pedidos-titulo">Lo que pediste</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
           <p th:text="|${#lists.size(pedidos)} necesidades vigentes.|">5 necesidades vigentes.</p>
@@ -156,7 +156,7 @@
       <!--/* Lo recibido en el mes: un fruto de la rama de la portada ("Lo que está confirmado"), con la
              cifra adentro y su período y fecha al lado. Es un resultado registrado, no un efecto. */-->
       <section class="recibido" aria-labelledby="recibido-titulo">
-        <h2 id="recibido-titulo">Lo recibido en octubre</h2>
+        <h2 id="recibido-titulo">Lo que ya llegó en octubre</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <div th:if="${conDatos}" class="recibido-rama">
           <p class="recibido-fruto" aria-hidden="true" th:text="${#lists.size(recibidas)}">6</p>

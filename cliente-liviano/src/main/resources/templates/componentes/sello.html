@@ -7,8 +7,10 @@
        estado (la palabra y el dibujo):
        - pendiente (o salir): círculo punteado, todavía sin salir.
        - en-camino (o camino): círculo con la mitad ámbar.
-       - entregada: el disco paja con su sombra y el tilde calado.
-       - hecho (o recibida): el disco paja con el tilde calado, una etapa cumplida.
+       - entregada (o recibida): el fruto maduro (mandarina, con su segunda tinta y su hoja) y el
+         tilde, como el fruto de la planta que llegó a la entidad en el recorrido (Raíces cálida,
+         iteración 2; antes, el disco paja, y recibida era hecho).
+       - hecho: el disco paja con el tilde calado, una etapa cumplida.
        - puerta: el disco paja liso, lo que llegó a la puerta.
        - falta: círculo hueco, una etapa que no se imprimió todavía.
        - cualquier otro (con-problema, problema): el disco rojo vivo con "!".
@@ -18,11 +20,11 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="sello(estado)"
-          th:with="forma=${estado == 'salir' ? 'pendiente' : (estado == 'camino' ? 'en-camino' : (estado == 'recibida' ? 'hecho' : estado))}">
+          th:with="forma=${estado == 'salir' ? 'pendiente' : (estado == 'camino' ? 'en-camino' : (estado == 'recibida' ? 'entregada' : estado))}">
 <svg th:switch="${forma}" class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
   <circle th:case="'pendiente'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
   <g th:case="'en-camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
-  <g th:case="'entregada'"><circle class="sello-tinta" cx="12.5" cy="12.5" r="8.5"/><circle class="sello-hecho" cx="10.5" cy="10.5" r="8.5"/><path class="sello-calado sello-calado--fino" d="M6.5 10.5L9.5 13.5L14.5 8"/></g>
+  <g th:case="'entregada'"><circle class="fruto-tinta" cx="12" cy="13" r="8"/><circle class="fruto-disco" cx="10.5" cy="11.5" r="8"/><path class="fruto-hoja" d="M11 3.6C12.2 1.2 15.2 0.2 18.2 0.9C17.2 3.3 14.2 4.4 11 3.6Z"/><path class="sello-calado sello-calado--fino" d="M6.5 11.5L9.5 14.5L14.5 9"/></g>
   <g th:case="'hecho'"><circle class="sello-hecho" cx="11" cy="11" r="9"/><path class="sello-calado sello-calado--fino" d="M7 11.5L10 14.5L15.5 8"/></g>
   <g th:case="'puerta'"><circle class="sello-hecho" cx="11" cy="11" r="9"/></g>
   <circle th:case="'falta'" class="sello-falta" cx="11" cy="11" r="8"/>
