@@ -10,9 +10,9 @@
   min-height: 3rem;
   padding: 0.75rem 1.5rem;
   border: 2px solid var(--color-acento);
-  /* Esquina suave (A/B de bordes, 2026-11-02: B). */
+  /* Esquinas rectas (A/B de paleta y acabado, 2026-11-05). */
   border-radius: var(--radio-boton);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
   /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */
   background: var(--color-papel);
   /* El color de los enlaces, también en un `<button>` (el navegador lo pone negro). */
@@ -68,7 +68,7 @@
   justify-self: start;
   gap: 0.5rem;
   border-width: 1.5px;
-  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-sombra);
   color: var(--color-acento);
   font-size: 0.875rem;
 }

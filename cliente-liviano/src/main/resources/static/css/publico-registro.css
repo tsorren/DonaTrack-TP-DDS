@@ -77,7 +77,7 @@
 
 .eleccion a[aria-current] {
   background: var(--color-acento);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-sombra);
   color: var(--color-papel);
 }
 
@@ -206,7 +206,7 @@
   padding: 1.5rem;
   border-radius: var(--radio-lamina);
   background: var(--color-papel);
-  box-shadow: 0.45rem 0.45rem 0 var(--color-hoja);
+  box-shadow: 0.45rem 0.45rem 0 var(--color-sombra);
   outline: 1.5px solid var(--color-tinta);
 }
 

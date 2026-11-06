@@ -1,5 +1,5 @@
-/* Bloque de tarjeta (D33, B2-07): una parte con papel propio, con el filete de tinta, la esquina suave
-   y la sombra plana salvia que la despega de la página. Es solo el papel: la disposición de lo de
+/* Bloque de tarjeta (D33, B2-07): una parte con papel propio, con el filete de tinta, las esquinas
+   del token y la sombra plana paja que la despega de la página. Es solo el papel: la disposición de lo de
    adentro y el título los pone la hoja de la pantalla con su propia clase. El relleno es el parámetro
    `--espacio-relleno` (sin él, ninguno: lo pone la hoja de la pantalla). Se carga en la capa `bloques`
    desde app.css. Variantes por atributo: `data-filete` ("doble" y "contorno"; sin él, el filete
@@ -10,7 +10,7 @@
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
   background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-sombra);
 }
 
 /* La etiqueta de herbario: un filete fino y otro más adentro. */

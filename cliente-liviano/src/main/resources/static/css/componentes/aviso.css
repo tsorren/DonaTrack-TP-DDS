@@ -17,7 +17,7 @@
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
   background: var(--color-papel);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-sombra);
 }
 
 :is(.banner, .vacio, .aviso-breve) h2 {

@@ -1,4 +1,4 @@
-/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Oliva, estilo
+/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Huerta de noche, estilo
    impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
    en su A/B), marca, botones, el grano de impresión de la referencia 01 y las cifras. */
 
@@ -21,43 +21,46 @@
 }
 
 :root {
-  /* Paleta Oliva (A/B de paleta, 2026-11-02; antes, Bosque): valores por función, no por tono.
-     Más cálida y menos oscura que Bosque: la tierra en tres verdes oliva, raíces color paja, el
-     verde oliva en títulos y botones, y los frutos mandarina. */
+  /* Paleta Huerta de noche (A/B de paleta y acabado, 2026-11-05; antes, Oliva): valores por
+     función, no por tono. Un afiche verde sobre papel de cera: la tierra casi negra en tres pasos,
+     el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de las piezas)
+     y los frutos zanahoria. */
   /* La letra (A/B de letra, 2026-10-31): Archivo (Omnibus-Type, Buenos Aires) en todo. Los
      títulos, los numerales y las cifras, anchos y pesados como un afiche (referencia 02); el texto,
      en ancho normal. El carácter sale del ancho y del peso. */
   --p-letra-titulo: Archivo, system-ui, sans-serif;
   --p-letra-texto: Archivo, system-ui, sans-serif;
-  --p-papel: #f2ebd7;
-  --p-tinta: #22231a;
-  --p-tinta-suave: #515243;
-  --p-acento: #3d5a2a;
-  --p-acento-hondo: #2a411b;
-  --p-acento-claro: #dbdcae;
-  --p-tallo: #3d5a2a;
-  --p-hoja: #b0bf78;
-  --p-suelo: #56633a;
-  --p-suelo-medio: #4a562e;
-  --p-suelo-hondo: #343d20;
-  --p-texto-suelo: #f5eedb;
-  --p-raiz: #f3d68c;
-  --p-nodo: #f3d68c;
-  --p-destacado: #f3d68c;
+  --p-papel: #fbf2d3;
+  --p-tinta: #17140f;
+  --p-tinta-suave: #4a4234;
+  --p-acento: #2d6a1e;
+  --p-acento-hondo: #1f4f14;
+  --p-acento-claro: #d3e98a;
+  --p-tallo: #2d6a1e;
+  --p-hoja: #86b832;
+  --p-suelo: #2a2a1c;
+  --p-suelo-medio: #222217;
+  --p-suelo-hondo: #17170f;
+  --p-texto-suelo: #fbf2d3;
+  --p-raiz: #f4c844;
+  --p-nodo: #f4c844;
+  --p-destacado: #f4c844;
   /* Los frutos (A/B de frutos y de paleta, 2026-11-02): cada uno, una entrega confirmada, en
      mandarina; con su segunda tinta, que también dibuja el contorno del que va en camino. */
-  --p-fruto: #e8822a;
-  --p-fruto-hondo: #96460b;
-  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). */
-  --p-pendiente-fondo: #e2e0d2;
-  --p-pendiente-texto: #4d4c40;
-  --p-en-camino-fondo: #f4e6b5;
+  --p-fruto: #f07a12;
+  --p-fruto-hondo: #a8420a;
+  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). "Con
+     problema" (2026-11-05): el texto en tinta negra y el rojo vivo en la sombra y en el ícono. */
+  --p-pendiente-fondo: #ebe3c4;
+  --p-pendiente-texto: #4b4a32;
+  --p-en-camino-fondo: #f8e3a0;
   --p-en-camino-texto: #6a4f05;
-  --p-en-camino-sello: #c8961e;
-  --p-entregada-fondo: #d7e6cd;
-  --p-entregada-texto: #2b5a35;
-  --p-problema-fondo: #f3d9d2;
-  --p-problema-texto: #93301f;
+  --p-en-camino-sello: #d9a514;
+  --p-entregada-fondo: #d3e98a;
+  --p-entregada-texto: #24521a;
+  --p-problema-fondo: #ee3b24;
+  --p-problema-texto: #17140f;
+  --p-problema-sello: #d12a17;
   /* El movimiento (D32, B0-01): tiempos, esperas, curvas y distancias base. Las hojas usan solo los
      tokens de uso de abajo. Los valores salen de las 28 duraciones literales de la línea de base
      (2026-11-04), con un redondeo de hasta 0,1 s. Duraciones: 0,3 y 0,35 → 0,4; 1 y 1,2 → 1,1.
@@ -125,6 +128,7 @@
   --color-entregada-texto: var(--p-entregada-texto);
   --color-problema-fondo: var(--p-problema-fondo);
   --color-problema-texto: var(--p-problema-texto);
+  --color-problema-sello: var(--p-problema-sello);
   /* Los que piden los pares de contraste AA, del sitio. */
   --color-fondo-pagina: var(--p-papel);
   --color-fondo: var(--p-papel);
@@ -158,11 +162,12 @@
   --color-advertencia-fondo: var(--p-en-camino-fondo);
   --color-borde-control: var(--p-tinta-suave);
   --color-foco: var(--p-acento);
-  /* Los bordes (A/B de bordes, 2026-11-02: B, esquina suave). El papel (láminas, etiquetas y
-     tarjetas) y los botones con las esquinas apenas redondeadas, como un papel grueso o un canto
-     gastado; el marco doble y la sombra plana salvia, como antes. */
-  --radio-lamina: 0.75rem;
-  --radio-boton: 0.5rem;
+  /* Los bordes y la sombra (A/B de paleta y acabado, 2026-11-05: Huerta de noche): esquinas
+     rectas, como un afiche impreso, y la sombra plana de paja detrás del papel y de los botones,
+     como un farol sobre la tierra oscura. Una pieza que ya es paja lleva la sombra hoja. */
+  --radio-lamina: 0;
+  --radio-boton: 0;
+  --color-sombra: var(--p-raiz);
   /* Movimiento (D32): duraciones (corta, media, larga, trazo y ambiente, la de una escena que no
      termina), esperas de una coreografía, curvas (entrada, énfasis, salida, base y ambiente) y las
      distancias que recorre un elemento al entrar. Un movimiento que no es de estos tiene que

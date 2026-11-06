@@ -119,7 +119,7 @@ body {
   padding: 0.25rem 0.75rem 0.25rem 0.6rem;
   border-radius: var(--radio-boton);
   background: var(--color-papel);
-  box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
   color: var(--color-tinta);
   text-decoration: none;
   font: 800 1.375rem/1 var(--fuente-titulo);
@@ -217,7 +217,7 @@ body::before {
 /* La segunda tinta corrida, como en una impresión de dos pasadas. */
 .hero h1 em {
   color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
+  text-shadow: 0.04em 0.035em 0 var(--color-sombra);
 }
 
 .hero-bajada {

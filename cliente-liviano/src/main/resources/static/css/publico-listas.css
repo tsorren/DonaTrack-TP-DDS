@@ -87,7 +87,7 @@
 
 .filtro-opcion:has(:checked) {
   background: var(--color-acento);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-sombra);
   color: var(--color-papel);
 }
 

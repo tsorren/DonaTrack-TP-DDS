@@ -27,6 +27,49 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 
 ## Decisiones
 
+### 2026-11-05 · paleta y acabado (Raíces) · Huerta de noche aplicada; "con problema" en negro y rojo vivo
+
+- **Decisión:** Huerta de noche se aplica a todo el sitio, después de verla en la portada y en el
+  inicio del donante. Cambia un solo tema de la variante: "con problema". Lleva el texto en tinta
+  negra (`#17140f`), y el rojo vivo va en la sombra plana y en el fondo del botón de quitar
+  apretado (`#ee3b24`) y en el ícono "!" (`#d12a17`). Cambios:
+  - `tokens.css` lleva los valores de la variante y tres tokens nuevos: `--p-problema-sello` y
+    `--color-problema-sello`, para el ícono, y `--color-sombra`, la sombra plana (paja). Los dos
+    radios quedan en 0.
+  - 19 sombras de papel o de verde pasan de `--color-hoja` a `--color-sombra`: botones, tarjetas,
+    diálogos, banner, estado vacío, aviso breve, marca, mapa, red, novedades, láminas de ingreso y
+    registro, y las pantallas que las repetían.
+  - Nueve sombras siguen en hoja, porque van detrás de piezas que ya son paja, o que se vuelven paja
+    al pasar el mouse, y una sombra paja no se vería: la sección actual del menú, el botón
+    destacado del menú público, el contador de avisos, el punto de "sin leer", los números de los
+    pasos, de los asientos y de las entregas, la etiqueta del fruto paja y el ejemplo inicial de
+    ingreso.
+  - La segunda tinta del título de la portada pasa a la sombra paja. Se borra la variante
+    `paleta-noche.css`.
+- **Alternativas:** para "con problema", sobre Huerta de noche:
+  - la remolacha de la variante (`#86244c` sobre `#f1cfdc`): al usuario no le gustó para nada;
+  - A, Tomate (`#b3261e` sobre `#fcd6cb`): el rojo de alerta de siempre. Era la recomendada;
+  - C, Óxido (`#7a2e12` sobre `#efcfa8`): un rojo de tierra, el más tranquilo y el que menos alarma.
+- **Por qué:** el usuario eligió B, la más de afiche. El rojo sale de la sombra, como las demás
+  piezas, y es la única pieza con sombra roja. Además, no se confunde con la zanahoria de los
+  frutos. En la portada y en el inicio del donante, la cabecera de tierra negra se lee bien: el
+  paja de la sección actual y de los enlaces se destaca.
+- **Costo:**
+  - Los errores de formulario y el texto de "con problema" pasan a tinta negra. Lo marcan el ícono
+    rojo, el borde y la sombra roja. El texto negro sobre el rojo vivo (el botón de quitar apretado)
+    da 4,62:1: pasa AA, sin mucho margen.
+  - La sombra paja sobre el papel de cera tiene poco contraste; el borde de tinta sigue marcando
+    cada pieza.
+  - Los títulos conservan la segunda tinta hoja; solo la portada pasa a paja.
+  - Quedan algunos radios fijos de hojas de pantalla, fuera de los tokens.
+  - El bloque de la red de la portada, alto para la animación de las raíces, queda como una gran
+    superficie casi negra en una captura de página entera. Al bajar en el navegador, se ve la
+    animación.
+- **Quién decidió:** usuario.
+- **Evidencia:** capturas a 1280 px de la portada y del inicio del donante, con y sin la variante,
+  y de las tres alternativas de "con problema", mostradas al usuario y no guardadas. Verificación
+  visual con contraste y axe en 360, 1280 y 1920 px, exit 0.
+
 ### 2026-11-05 · paleta y acabado (Raíces) · Huerta de noche: afiche verde sobre tierra casi negra, con la paja como luz
 
 - **Decisión:** B9, Huerta de noche. Reemplaza a H, Huerta viva en cera, elegida antes en el día. Se

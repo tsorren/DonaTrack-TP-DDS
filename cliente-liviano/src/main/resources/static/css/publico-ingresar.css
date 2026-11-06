@@ -68,7 +68,7 @@
   padding: 0.625rem 0.875rem;
   border-radius: var(--radio-lamina);
   background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
   color: var(--color-tinta);
   font-weight: 700;
   text-decoration: none;

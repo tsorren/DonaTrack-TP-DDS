@@ -13,7 +13,7 @@
   border: 2px solid var(--color-acento);
   border-radius: var(--radio-boton);
   background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
   color: var(--color-tinta);
   font-weight: 700;
   font-stretch: 112%;

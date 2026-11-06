@@ -430,7 +430,7 @@ sección 2):
 |---|---|
 | Útil | Responde lo que la persona de RSE tiene que contar: qué se donó, a quién llegó y qué lo prueba |
 | Usable | Listas con enlaces, filtros de opciones cerradas y estados con texto; nada que aprender |
-| Deseable | La identidad de Raíces (paleta Oliva, risografía, sellos) y un hito de lo acumulado dibujado con los datos |
+| Deseable | La identidad de Raíces (paleta Huerta de noche, risografía, sellos) y un hito de lo acumulado dibujado con los datos |
 | Valioso | La foto y la fecha de confirmación de cada entrega son la prueba que la empresa muestra |
 | Ubicable | Cuatro secciones en el menú, Notificaciones a un toque desde todas las pantallas y nada a más de 3 niveles |
 | Accesible | Estados con forma y texto, listas como alternativa a todo dibujo, foco ordenado; WCAG AA y Ley 26.653 |

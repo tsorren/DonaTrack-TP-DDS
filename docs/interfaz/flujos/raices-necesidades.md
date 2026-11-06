@@ -396,7 +396,7 @@ Decisiones tomadas:
 Partes que se deciden con A/B, en este orden:
 
 1. La forma de la lista. **Decidido (usuario, 2026-11-01):** etiquetas de herbario, con doble
-   filete y sombra salvia, como las de la portada; desde la tableta, en dos columnas, y la abierta a
+   filete y sombra paja, como las de la portada; desde la tableta, en dos columnas, y la abierta a
    todo el ancho (B, contra el libro de registro en filas, la recomendada; bitácora, "La lista: una
    etiqueta de herbario por pedido").
 2. La historia de los períodos. **Decidido (usuario, 2026-11-01):** barras que se llenan, una por

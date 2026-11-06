@@ -42,7 +42,7 @@
   padding: 1.25rem 1.25rem 0.5rem;
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-hoja);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-sombra);
 }
 
 /* La textura de tierra (app.css), solo cuando la lámina pasa a ser franja. */
@@ -110,7 +110,7 @@
     border-radius: var(--radio-lamina);
     background: var(--color-papel);
     color: var(--color-tinta);
-    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
   }
 
   .grupo-avisos--sin-leer .noticia::before {

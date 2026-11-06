@@ -88,7 +88,7 @@ copa"), con el título "Lo que está confirmado". Ver la [bitácora](../bitacora
 
 En pantalla grande, el menú va en una columna de papel a la izquierda, como el lomo de un herbario,
 con la cuenta al pie como su etiqueta; se ve abierta al entrar y se puede plegar a una tira angosta.
-La sección actual, impresa en verde oliva con la segunda tinta corrida. En el celular y la tableta,
+La sección actual, impresa en paja con la segunda tinta corrida. En el celular y la tableta,
 una barra de navegación inferior en la tierra, con la sección actual en paja. La usan todas las
 pantallas privadas del prototipo (`templates/layout-privado.html`). Ver la
 [bitácora](../bitacora.md).
@@ -100,7 +100,7 @@ una línea de subte por entrega, en espejo, con codos a 45° redondeados (review
 recorrido va impreso (paja con borde) y lo que falta, hueco, solo el contorno. El sello de estado
 es la estación donde está la entrega: el camión va dentro del sello "en camino". En el sistema, ese
 estilo va sobre MapLibre. Debajo del dibujo, una tarjeta por entrega con el mismo número (borde de
-tinta y sombra plana salvia); al pasar por una, su línea queda llena y el resto se apaga. Arriba,
+tinta y sombra plana paja); al pasar por una, su línea queda llena y el resto se apaga. Arriba,
 un registro de cifras por estado con doble filete. En cada tarjeta, la categoría en un cuadro salvia
 y las etapas en una barra de progreso de sellos: es la primera pantalla que usa los sellos de las
 etapas. Ver la [bitácora](../bitacora.md).
@@ -108,7 +108,7 @@ etapas. Ver la [bitácora](../bitacora.md).
 ## Confirmar recepción (usuario, 2026-11-01)
 
 La primera pantalla de la entidad. El acta de una entrega lleva una etiqueta de herbario (doble
-filete y sombra plana salvia) con la categoría, cuánto llegó, el pedido que cubre y quién donó, y el
+filete y sombra plana paja) con la categoría, cuánto llegó, el pedido que cubre y quién donó, y el
 último tramo como raíz vertical: lo cumplido con el sello impreso y la confirmación hueca, unida por
 una línea paja que va hueca hacia lo que falta. En pantalla grande, dos filas de dos columnas:
 arriba, la etiqueta y el tramo; abajo, las pruebas y lo que recibiste (review de Sofía, 2026-11-02;
@@ -184,36 +184,33 @@ arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitá
 Se insinúa (usuario): el crecimiento es el avance, dibujado con los datos; sin medallas. Para la
 empresa, hitos de lo acumulado.
 
-## Color (usuario, tercer A/B; paleta Oliva desde el 2026-11-02)
+## Color (usuario, A/B de paleta y acabado; Huerta de noche desde el 2026-11-05)
 
-**Oliva** (antes, Bosque). Lo que se ve es papel con grano; lo que sostiene la donación es tierra de
-monte, en verdes oliva: más cálida y menos oscura que Bosque, con frutos mandarina. Detalle, valores
-y alternativas en la [bitácora](../bitacora.md).
-
-**Elegida para reemplazarla (usuario, 2026-11-05): Huerta de noche.** Es un afiche a dos tintas
-sobre papel de cera, con la tierra casi negra, el verde hoja honda en títulos y botones, raíces
-paja, frutos zanahoria y los estados de Huerta viva. Lleva esquinas rectas y sombras planas de paja,
-como luz sobre la tierra. Reemplaza a Huerta viva en cera, elegida antes ese mismo día. Todavía no
-está aplicada: se prueba con `?variante=paleta-noche` en la portada y en una pantalla de donante, y
-después reemplaza a esta tabla.
+**Huerta de noche** (antes, Oliva, y antes, Bosque). Es un afiche a dos tintas sobre papel de cera:
+la tierra casi negra, el verde hoja honda en títulos y botones, raíces paja, frutos zanahoria y los
+estados de Huerta viva. Lleva esquinas rectas y sombras planas de paja, como luz sobre la tierra.
+Reemplazó a Huerta viva en cera, elegida antes ese mismo día, y se aplicó al sitio el 2026-11-05,
+después de verla en la portada y en el inicio del donante. Detalle, valores y alternativas en la
+[bitácora](../bitacora.md).
 
 | Color | Qué es en la pantalla | Qué significa |
 |---|---|---|
-| Papel crema | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
-| Verde oliva | El título en cursiva y los botones | La organización que actúa |
-| Tres verdes oliva | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras | Lo que sostiene la donación, cada vez más hondo |
-| Paja | Las raíces, las etapas cumplidas y la rama de la que cuelgan las cifras de la portada; en esa rama, el fruto de las entidades | El recorrido comprobado |
-| Salvia | El brote y el sol; en la rama de las cifras, el fruto de lo que va en camino, sin la segunda tinta corrida y con el contorno punteado, como el fruto hueco de la planta | El resultado: lo que creció; en el fruto, lo que todavía está creciendo |
-| Mandarina | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado), y el fruto más grande de la rama de las cifras | Lo confirmado (en la planta, este mes; en la rama, desde marzo) |
+| Papel de cera | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
+| Verde hoja honda | El título en cursiva y los botones | La organización que actúa |
+| Tierra casi negra, en tres pasos | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras; también la cabecera y el pie | Lo que sostiene la donación, cada vez más hondo |
+| Paja | Las raíces, las etapas cumplidas y la rama de la que cuelgan las cifras de la portada; en esa rama, el fruto de las entidades. También la sombra plana del papel y de los botones (`--color-sombra`) | El recorrido comprobado; en la sombra, la luz sobre la tierra |
+| Hoja | El brote y el sol; la sombra de las piezas que ya son paja; en la rama de las cifras, el fruto de lo que va en camino, sin la segunda tinta corrida y con el contorno punteado, como el fruto hueco de la planta | El resultado: lo que creció; en el fruto, lo que todavía está creciendo |
+| Zanahoria | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado), y el fruto más grande de la rama de las cifras | Lo confirmado (en la planta, este mes; en la rama, desde marzo) |
 
 **Estados de una entrega** (siempre con texto y una forma, nunca solo con color): pendiente, gris
 tierra con círculo punteado; en camino, ámbar con medio círculo; entregada, verde con tilde; con
-problema, rojo óxido con "!".
+problema, texto en tinta negra con el "!" y la sombra en rojo vivo (usuario, 2026-11-05: la
+remolacha no se leía como problema; se descartaron el tomate y el óxido).
 
 **Cómo se dibujan, en la tierra (usuario, ronda de formas, 2026-11-01): el sello.** Lo cumplido
-está impreso: un disco paja lleno con la segunda tinta (salvia) corrida detrás y el tilde calado.
+está impreso: un disco paja lleno con la segunda tinta (hoja) corrida detrás y el tilde calado.
 En camino, un círculo con su mitad izquierda en ámbar. Pendiente, un círculo punteado. Con
-problema, un disco óxido con "!" calado. El numeral de lo que todavía no pasó va hueco (solo
+problema, un disco rojo vivo con "!" calado. El numeral de lo que todavía no pasó va hueco (solo
 contorno): lo que falta todavía no se imprimió. Se descartaron la marca de lámina (trazo fino, lo
 que falta apagado) y la etiqueta recta (cuadrados). Las etapas salieron de la portada; la primera pantalla que usa los sellos es Seguir
 entregas (2026-11-01).
@@ -230,17 +227,17 @@ Detalle en la [bitácora](../bitacora.md).
 | Pieza | Cómo es | Qué significa |
 |---|---|---|
 | Textura | Risografía suave, solo en el fondo: un polvo fino de tinta sobre el papel de todas las páginas y, en los planos de tierra, el papel que se asoma en puntitos; tarjetas, botones, el sol y los dibujos, lisos (usuario, A/B de textura, 2026-11-02) | Oficio: algo hecho a mano, no una plantilla |
-| Sol | Medio disco salvia claro, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
-| Brote | Dos cotiledones planos y simétricos: uno verde oliva con la segunda tinta salvia corrida detrás, el otro salvia | Lo que se ve: orgánico y cálido |
-| Planta y frutos | En la portada, el brote crecido: tallo y ramas en verde oliva y un fruto mandarina por entrega confirmada del mes, un disco con su segunda tinta corrida y una hoja; lo que va en camino, un fruto hueco punteado en la segunda tinta (A/B de frutos y de paleta, 2026-11-02) | El resultado, contado con los datos |
-| Tierra | Tres horizontes en verdes oliva, con la textura de la tierra. El semitono al pie de cada horizonte (ronda de tierra, 2026-11-01) quedó afuera: ya no estaba dibujado y en el A/B de textura (2026-11-02) el usuario eligió la risografía | Lo hondo, impreso |
+| Sol | Medio disco hoja, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
+| Brote | Dos cotiledones planos y simétricos: uno verde hoja honda con la segunda tinta hoja corrida detrás, el otro hoja | Lo que se ve: orgánico y cálido |
+| Planta y frutos | En la portada, el brote crecido: tallo y ramas en verde hoja honda y un fruto zanahoria por entrega confirmada del mes, un disco con su segunda tinta corrida y una hoja; lo que va en camino, un fruto hueco punteado en la segunda tinta (A/B de frutos y de paleta, 2026-11-02) | El resultado, contado con los datos |
+| Tierra | Tres horizontes casi negros, con la textura de la tierra. El semitono al pie de cada horizonte (ronda de tierra, 2026-11-01) quedó afuera: ya no estaba dibujado y en el A/B de textura (2026-11-02) el usuario eligió la risografía | Lo hondo, impreso |
 | Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° redondeados (review de Sofía, 2026-11-02) y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
-| Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta salvia | Calidez y comunidad |
+| Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta hoja (en la portada, paja) | Calidez y comunidad |
 | Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra). En "Lo que está confirmado" de la portada, en tinta dentro de frutos que cuelgan de una rama paja, cada uno de su tamaño y su color, con una etiqueta de papel (A/B de cifras, 2026-11-02) | El recorrido, como capítulos de un afiche; en la rama, la cosecha |
-| Botones y bordes | Esquina suave: el papel (láminas, etiquetas y tarjetas) y los botones apenas redondeados, con una sombra plana salvia corrida (usuario, A/B de bordes, 2026-11-02; antes, rectos); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
+| Botones y bordes | Esquinas rectas: el papel (láminas, etiquetas y tarjetas) y los botones, con una sombra plana paja corrida (usuario, A/B de paleta y acabado, 2026-11-05; antes, esquina suave con sombra salvia, A/B de bordes del 2026-11-02); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
 
-**Forma:** sale del estilo (esquina suave, sombra plana corrida). La línea entre horizontes no entró; la
+**Forma:** sale del estilo (esquinas rectas, sombra plana corrida). La línea entre horizontes no entró; la
 grava tampoco (la reemplazó el semitono, que después salió con el A/B de textura). En la ronda de ilustración se descartaron el grabado de
 lámina, el plano risográfico con raíces orgánicas, la orgánica simétrica, el abanico, la
 bifurcada y la fila de lámina (bitácora).

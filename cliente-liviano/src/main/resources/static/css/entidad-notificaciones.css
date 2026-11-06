@@ -187,7 +187,7 @@
     border-radius: var(--radio-lamina);
     background: var(--color-papel);
     color: var(--color-tinta);
-    box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
   }
 
   .cuaderno-novedades--sin-leer .novedad-cuando {
