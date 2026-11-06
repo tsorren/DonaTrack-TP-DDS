@@ -24,6 +24,8 @@ pw() { openssl rand -hex 16; }
   echo "KC_HEALTH_ENABLED=true"
   echo "CLIENTE_LIVIANO_SECRET=$(pw)"
   echo "CLIENTE_LIVIANO_BASE_URL=http://localhost:8090"
+  echo "AUTH_ADMIN_EMAIL=admin@donatrack.local"
+  echo "AUTH_ADMIN_PASSWORD=$(pw)"
   echo "RABBITMQ_PASS=$(pw)"
   echo "MINIO_ROOT_USER=donatrack-minio"
   echo "MINIO_ROOT_PASSWORD=$(pw)"

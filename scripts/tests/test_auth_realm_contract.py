@@ -18,6 +18,7 @@ from test_auth_keycloak_compose import RAIZ, bloque_servicio, leer, variables_en
 
 API_AUDIENCE = "donatrack-api"
 ROLES = {"DONANTE", "ENTIDAD", "ADMIN"}
+ROLES_DE_SISTEMA = {"default-roles-donatrack", "offline_access", "uma_authorization"}
 CLAIMS_CON_PII = {"email", "email_verified", "name", "given_name", "family_name", "preferred_username"}
 
 
@@ -44,9 +45,11 @@ class RealmBaseTests(unittest.TestCase):
         self.assertEqual(self.realm.get("realm"), "donatrack")
         self.assertIs(self.realm.get("enabled"), True)
 
-    def test_tiene_exactamente_los_tres_roles(self):
+    def test_tiene_exactamente_los_tres_roles_de_negocio(self):
+        """A1-03 suma `default-roles-donatrack` y los dos roles de sistema; los de negocio siguen siendo 3."""
         nombres = {r["name"] for r in self.realm.get("roles", {}).get("realm", [])}
-        self.assertEqual(nombres, ROLES)
+        self.assertEqual(nombres - ROLES_DE_SISTEMA, ROLES)
+        self.assertEqual(nombres & ROLES_DE_SISTEMA, ROLES_DE_SISTEMA)
 
     def test_login_por_email(self):
         self.assertIs(self.realm.get("registrationEmailAsUsername"), True)
@@ -145,6 +148,156 @@ class SinDatosPersonalesTests(unittest.TestCase):
             self.assertNotIn(claim, CLAIMS_CON_PII, "el mapper %s emite %s" % (m.get("name"), claim))
 
 
+def perfil_de_usuario(realm):
+    """El perfil declarativo va como un JSON dentro de un string en components."""
+    comps = realm.get("components", {}).get("org.keycloak.userprofile.UserProfileProvider", [])
+    if not comps:
+        return {}
+    return json.loads(comps[0]["config"]["kc.user.profile.config"][0])
+
+
+def atributo(perfil, nombre):
+    encontrados = [a for a in perfil.get("attributes", []) if a.get("name") == nombre]
+    return encontrados[0] if encontrados else {}
+
+
+class PoliticaDeClaveTests(unittest.TestCase):
+    def test_politica_de_clave_de_la_spec(self):
+        self.assertEqual(cargar_realm().get("passwordPolicy"),
+                         "length(10) and maxLength(128) and notEmail")
+
+
+class FuerzaBrutaTests(unittest.TestCase):
+    """RNF-AUTH-07: 5 fallos en 15 minutos bloquean 15 minutos (bloqueo temporal, no permanente)."""
+
+    def setUp(self):
+        self.realm = cargar_realm()
+
+    def test_proteccion_activa_y_bloqueo_temporal(self):
+        self.assertIs(self.realm.get("bruteForceProtected"), True)
+        self.assertIs(self.realm.get("permanentLockout"), False)
+
+    def test_cinco_fallos(self):
+        self.assertEqual(self.realm.get("failureFactor"), 5)
+
+    def test_ventana_y_bloqueo_de_15_minutos(self):
+        self.assertEqual(self.realm.get("maxDeltaTimeSeconds"), 15 * 60)      # ventana de los 5 fallos
+        self.assertEqual(self.realm.get("waitIncrementSeconds"), 15 * 60)     # cuánto bloquea
+        self.assertEqual(self.realm.get("maxFailureWaitSeconds"), 15 * 60)    # sin escalar más allá
+
+
+class RotacionDeRefreshTests(unittest.TestCase):
+    """D7 / RF-AUTH-09: cada refresh entrega uno nuevo y reusar uno viejo corta la sesión."""
+
+    def test_rotacion_sin_reuso(self):
+        realm = cargar_realm()
+        self.assertIs(realm.get("revokeRefreshToken"), True)
+        self.assertEqual(realm.get("refreshTokenMaxReuse"), 0)
+
+
+class PerfilDeUsuarioTests(unittest.TestCase):
+    """Sin nombre ni apellido obligatorios: sirve también para una persona jurídica."""
+
+    def setUp(self):
+        self.perfil = perfil_de_usuario(cargar_realm())
+
+    def test_el_perfil_esta_definido(self):
+        self.assertTrue(self.perfil, "falta el perfil de usuario en components")
+        nombres = {a["name"] for a in self.perfil["attributes"]}
+        self.assertEqual(nombres, {"username", "email", "firstName", "lastName"})
+
+    def test_nombre_y_apellido_no_son_obligatorios(self):
+        for nombre in ["firstName", "lastName"]:
+            self.assertNotIn("required", atributo(self.perfil, nombre), nombre)
+
+    def test_el_email_sigue_siendo_obligatorio_para_el_usuario(self):
+        self.assertEqual(atributo(self.perfil, "email").get("required", {}).get("roles"), ["user"])
+
+    def test_el_usuario_puede_editar_su_nombre_y_el_email(self):
+        for nombre in ["email", "firstName", "lastName"]:
+            self.assertIn("user", atributo(self.perfil, nombre).get("permissions", {}).get("edit", []))
+
+
+def rol_del_realm(realm, nombre):
+    encontrados = [r for r in realm.get("roles", {}).get("realm", []) if r.get("name") == nombre]
+    return encontrados[0] if encontrados else {}
+
+
+class RolPorDefectoTests(unittest.TestCase):
+    """D10: el donante se autorregistra; ENTIDAD y ADMIN no se autoasignan."""
+
+    def setUp(self):
+        self.realm = cargar_realm()
+
+    def test_el_registro_publico_esta_habilitado(self):
+        self.assertIs(self.realm.get("registrationAllowed"), True)
+
+    def test_el_rol_por_defecto_del_realm(self):
+        self.assertEqual(self.realm.get("defaultRole", {}).get("name"), "default-roles-donatrack")
+
+    def test_el_rol_por_defecto_da_donante_y_nada_mas_de_negocio(self):
+        por_defecto = rol_del_realm(self.realm, "default-roles-donatrack")
+        self.assertIs(por_defecto.get("composite"), True)
+        self.assertEqual(set(por_defecto["composites"]["realm"]),
+                         {"offline_access", "uma_authorization", "DONANTE"})
+        self.assertNotIn("composites", rol_del_realm(self.realm, "DONANTE"))
+
+
+class AdminInicialTests(unittest.TestCase):
+    """A1-03: el ADMIN se importa con su email y su clave por variable, solo con el rol ADMIN."""
+
+    def setUp(self):
+        self.usuarios = cargar_realm().get("users", [])
+
+    def test_hay_un_unico_usuario_importado(self):
+        self.assertEqual(len(self.usuarios), 1)
+
+    def test_email_por_variable(self):
+        admin = self.usuarios[0]
+        self.assertEqual(admin.get("username"), "${AUTH_ADMIN_EMAIL}")
+        self.assertEqual(admin.get("email"), "${AUTH_ADMIN_EMAIL}")
+        self.assertIs(admin.get("enabled"), True)
+        self.assertIs(admin.get("emailVerified"), True)
+
+    def test_clave_por_variable_y_no_temporal(self):
+        credenciales = self.usuarios[0].get("credentials", [])
+        self.assertEqual(len(credenciales), 1)
+        self.assertEqual(credenciales[0].get("type"), "password")
+        self.assertEqual(credenciales[0].get("value"), "${AUTH_ADMIN_PASSWORD}")
+        self.assertIs(credenciales[0].get("temporary"), False)
+
+    def test_solo_el_rol_admin_y_sin_el_rol_por_defecto(self):
+        """Un usuario importado solo recibe los roles que se le listan: no hereda DONANTE."""
+        self.assertEqual(self.usuarios[0].get("realmRoles"), ["ADMIN"])
+
+    def test_ningun_valor_de_credencial_es_literal(self):
+        for usuario in self.usuarios:
+            for cred in usuario.get("credentials", []):
+                self.assertTrue(str(cred.get("value", "")).startswith("${"), cred)
+
+
+class VariablesDelAdminTests(unittest.TestCase):
+    def test_el_compose_las_exige(self):
+        kc = bloque_servicio(leer("docker-compose.yml"), "keycloak") or ""
+        self.assertIn("AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?", kc)
+        self.assertIn("AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?", kc)
+
+    def test_env_example_cumple_la_politica_de_clave_del_realm(self):
+        """El import valida la política: con una clave corta o igual al email, Keycloak no arranca."""
+        env = variables_env(leer(".env.example"))
+        self.assertRegex(env.get("AUTH_ADMIN_EMAIL", ""), r"^[^@\s]+@[^@\s]+\.[a-z]+$")
+        clave = env.get("AUTH_ADMIN_PASSWORD", "")
+        self.assertTrue(clave.startswith("cambiar-"), clave)
+        self.assertGreaterEqual(len(clave), 10)
+        self.assertLessEqual(len(clave), 128)
+        self.assertNotEqual(clave, env["AUTH_ADMIN_EMAIL"])
+
+    def test_el_generador_hace_aleatoria_la_clave_del_admin(self):
+        texto = leer("scripts", "generar-env-db.sh")
+        self.assertIn("AUTH_ADMIN_EMAIL=admin@donatrack.local", texto)
+        self.assertRegex(texto, r"AUTH_ADMIN_PASSWORD=\$\(pw\)")
+
+
 class SecretosYVariablesTests(unittest.TestCase):
     def setUp(self):
         self.texto = leer("auth-service", "realm", "donatrack-realm.json")
@@ -155,7 +308,8 @@ class SecretosYVariablesTests(unittest.TestCase):
             self.assertTrue(valor.startswith("${"), "secreto literal en el realm: %r" % valor)
 
     def test_cada_variable_del_realm_la_recibe_el_servicio_keycloak(self):
-        usadas = set(re.findall(r"\$\{(\w+)\}", self.texto))
+        # Solo variables de entorno (MAYÚSCULAS): las claves de i18n del perfil, como ${email}, son de Keycloak.
+        usadas = set(re.findall(r"\$\{([A-Z][A-Z0-9_]*)\}", self.texto))
         self.assertTrue(usadas, "el realm debería usar variables")
         kc = bloque_servicio(leer("docker-compose.yml"), "keycloak") or ""
         pasadas = set(re.findall(r"(?m)^\s+- (\w+)=", kc))
@@ -194,7 +348,10 @@ class ModuloDeContratoTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(ruta), "falta RealmTokenContractIT.java")
         texto = leer("auth-service", "src", "test", "java", "grupo5", "auth", "RealmTokenContractIT.java")
         for fragmento in ["ImageFromDockerfile", "GenericContainer", "authorization_code", "\"roles\"",
-                          "\"aud\"", "900", "directAccessGrants"]:
+                          "\"aud\"", "900", "directAccessGrants",
+                          "reset-password", "attack-detection", "users/profile", "refresh_token",
+                          "invalid_grant", "prompt", "login-actions/registration", "password-confirm",
+                          "AUTH_ADMIN_EMAIL", "AUTH_ADMIN_PASSWORD", "role-mappings/realm/composite"]:
             self.assertIn(fragmento, texto)
         for pii in ["email", "name", "given_name", "family_name", "preferred_username"]:
             self.assertIn('"%s"' % pii, texto, "el IT no verifica la ausencia de %s" % pii)

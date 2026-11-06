@@ -2,6 +2,7 @@ package grupo5.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,10 +54,19 @@ class RealmTokenContractIT {
   private static final String REDIRECT_URI = BASE_URL_CLIENTE + "/login/oauth2/code/keycloak";
   private static final String ESTADO = "estado-de-prueba";
   private static final String EMAIL = "donante.contrato@example.com";
+  private static final String BLOQUEO_EMAIL = "bloqueo.contrato@example.com";
+  private static final String POLITICA_EMAIL = "politica.contrato@example.com";
+  private static final String REGISTRO_EMAIL = "registro.contrato@example.com";
+  private static final String ADMIN_DONATRACK_EMAIL = "admin.contrato@example.com";
+  private static final String SIN_MENSAJE = "(sin mensaje en la página)";
   private static final List<String> CLAIMS_CON_PII =
       List.of("email", "email_verified", "name", "given_name", "family_name", "preferred_username");
   private static final Pattern ACCION_DE_LOGIN =
       Pattern.compile("action=\"([^\"]*login-actions/authenticate[^\"]*)\"");
+  private static final Pattern CSS_DEL_TEMA =
+      Pattern.compile("href=\"([^\"]*/login/donatrack/css/donatrack\\.css)\"");
+  private static final Pattern ACCION_DE_REGISTRO =
+      Pattern.compile("action=\"([^\"]*login-actions/registration[^\"]*)\"");
   private static final Pattern MENSAJE_DE_KEYCLOAK =
       Pattern.compile("(?s)kc-(?:error-message|feedback-text)[^>]*>\\s*(?:<p[^>]*>)?\\s*([^<]+)");
 
@@ -65,6 +75,8 @@ class RealmTokenContractIT {
   private static final String ADMIN_PASSWORD = "adm-" + UUID.randomUUID();
   private static final String CLIENT_SECRET = "sec-" + UUID.randomUUID();
   private static final String USER_PASSWORD = "usr-" + UUID.randomUUID();
+  private static final String CLAVE_INCORRECTA = "mal-" + UUID.randomUUID();
+  private static final String ADMIN_DONATRACK_CLAVE = "adm-app-" + UUID.randomUUID();
 
   private static final ObjectMapper JSON = new ObjectMapper();
   private static final HttpClient HTTP = HttpClient.newHttpClient();
@@ -74,6 +86,7 @@ class RealmTokenContractIT {
   private static String userId;
   private static JsonNode accessToken;
   private static JsonNode idToken;
+  private static String refreshToken;
 
   @BeforeAll
   static void arrancarKeycloakYPedirUnToken() throws Exception {
@@ -92,6 +105,8 @@ class RealmTokenContractIT {
             .withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", ADMIN_PASSWORD)
             .withEnv("CLIENTE_LIVIANO_SECRET", CLIENT_SECRET)
             .withEnv("CLIENTE_LIVIANO_BASE_URL", BASE_URL_CLIENTE)
+            .withEnv("AUTH_ADMIN_EMAIL", ADMIN_DONATRACK_EMAIL)
+            .withEnv("AUTH_ADMIN_PASSWORD", ADMIN_DONATRACK_CLAVE)
             .withCommand("start-dev", "--import-realm")
             .withExposedPorts(8080)
             .waitingFor(
@@ -102,8 +117,9 @@ class RealmTokenContractIT {
     keycloak.start();
     baseUrl = "http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080);
 
-    userId = crearDonante(tokenDeAdmin());
-    JsonNode respuesta = iniciarSesionYCanjearElCodigo();
+    userId = crearUsuario(tokenDeAdmin(), EMAIL, USER_PASSWORD);
+    JsonNode respuesta = iniciarSesionYCanjearElCodigo(EMAIL, USER_PASSWORD);
+    refreshToken = respuesta.get("refresh_token").asText();
     accessToken = claims(respuesta.get("access_token").asText());
     idToken = claims(respuesta.get("id_token").asText());
   }
@@ -196,6 +212,129 @@ class RealmTokenContractIT {
     assertTrue(respuesta.body().contains("unauthorized_client"), respuesta.body());
   }
 
+  @Test
+  void elPerfilDeUsuarioNoExigeNombreNiApellido() throws Exception {
+    JsonNode perfil = admin("/admin/realms/" + REALM + "/users/profile");
+    assertFalse(esObligatorio(atributo(perfil, "firstName")), "el nombre no debe ser obligatorio");
+    assertFalse(esObligatorio(atributo(perfil, "lastName")), "el apellido no debe ser obligatorio");
+    JsonNode requeridoDelEmail = atributo(perfil, "email").get("required");
+    assertEquals(List.of("user"), valores(requeridoDelEmail.get("roles")));
+  }
+
+  @Test
+  void laPoliticaDeClaveRespetaLosLimitesDeLongitudYRechazaElEmail() throws Exception {
+    String token = tokenDeAdmin();
+    String id = crearUsuario(token, POLITICA_EMAIL, null);
+    assertEquals(400, cambiarClave(token, id, "x".repeat(9)).statusCode(), "9 caracteres");
+    assertEquals(400, cambiarClave(token, id, "x".repeat(129)).statusCode(), "129 caracteres");
+    assertEquals(400, cambiarClave(token, id, POLITICA_EMAIL).statusCode(), "igual al email");
+    assertEquals(204, cambiarClave(token, id, "y".repeat(10)).statusCode(), "10 caracteres");
+    assertEquals(204, cambiarClave(token, id, "z".repeat(128)).statusCode(), "128 caracteres");
+  }
+
+  @Test
+  void elRealmFijaLaFuerzaBrutaLaPoliticaDeClaveYLaRotacionDelRefresh() throws Exception {
+    JsonNode realm = admin("/admin/realms/" + REALM);
+    assertTrue(realm.get("bruteForceProtected").asBoolean());
+    assertFalse(realm.get("permanentLockout").asBoolean());
+    assertEquals(5, realm.get("failureFactor").asInt());
+    assertEquals(900, realm.get("maxDeltaTimeSeconds").asInt());
+    assertEquals(900, realm.get("waitIncrementSeconds").asInt());
+    assertEquals(900, realm.get("maxFailureWaitSeconds").asInt());
+    assertTrue(realm.get("revokeRefreshToken").asBoolean());
+    assertEquals(0, realm.get("refreshTokenMaxReuse").asInt());
+    String politica = realm.get("passwordPolicy").asText();
+    assertTrue(politica.contains("length(10)"), politica);
+    assertTrue(politica.contains("maxLength(128)"), politica);
+    assertTrue(politica.contains("notEmail"), politica);
+  }
+
+  @Test
+  void despuesDeCincoFallosLaClaveCorrectaTambienFallaConElMismoMensaje() throws Exception {
+    String id = crearUsuario(tokenDeAdmin(), BLOQUEO_EMAIL, USER_PASSWORD);
+    String mensajeDeClaveMala = "";
+    for (int intento = 1; intento <= 5; intento++) {
+      HttpResponse<String> fallido = enviarLogin(BLOQUEO_EMAIL, CLAVE_INCORRECTA).envio();
+      assertEquals(200, fallido.statusCode(), "intento fallido " + intento);
+      mensajeDeClaveMala = mensajeDeKeycloak(fallido.body());
+    }
+    assertNotEquals(SIN_MENSAJE, mensajeDeClaveMala, "la página de error no trae mensaje");
+    esperarBloqueo(id);
+
+    HttpResponse<String> sexto = enviarLogin(BLOQUEO_EMAIL, USER_PASSWORD).envio();
+    assertEquals(200, sexto.statusCode(), "el sexto intento no debería iniciar sesión");
+    assertEquals(mensajeDeClaveMala, mensajeDeKeycloak(sexto.body()));
+  }
+
+  @Test
+  void elRefreshRotaYReusarUnoViejoCortaLaSesion() throws Exception {
+    JsonNode login = iniciarSesionYCanjearElCodigo(EMAIL, USER_PASSWORD);
+    String primero = login.get("refresh_token").asText();
+
+    HttpResponse<String> rotado = refrescar(primero);
+    assertEquals(200, rotado.statusCode(), rotado.body());
+    String segundo = JSON.readTree(rotado.body()).get("refresh_token").asText();
+    assertNotEquals(primero, segundo);
+
+    HttpResponse<String> reuso = refrescar(primero);
+    assertEquals(400, reuso.statusCode(), reuso.body());
+    assertTrue(reuso.body().contains("invalid_grant"), reuso.body());
+
+    HttpResponse<String> sesionCortada = refrescar(segundo);
+    assertEquals(400, sesionCortada.statusCode(), sesionCortada.body());
+    assertTrue(sesionCortada.body().contains("invalid_grant"), sesionCortada.body());
+  }
+
+  @Test
+  void elRefreshTokenVenceALas8HorasDeInactividad() throws IOException {
+    JsonNode refresh = claims(refreshToken);
+    assertEquals(28800L, refresh.get("exp").asLong() - refresh.get("iat").asLong());
+  }
+
+  @Test
+  void elAdminInicialTieneSoloElRolAdmin() throws Exception {
+    String id = idDelUsuario(ADMIN_DONATRACK_EMAIL);
+    String base = "/admin/realms/" + REALM + "/users/" + id;
+    assertEquals(List.of("ADMIN"), nombresDeRoles(admin(base + "/role-mappings/realm")));
+    assertEquals(List.of("ADMIN"), nombresDeRoles(admin(base + "/role-mappings/realm/composite")));
+  }
+
+  @Test
+  void laClaveDelAdminSalioDeLaVariableYNoDelLiteral() throws Exception {
+    JsonNode login = iniciarSesionYCanjearElCodigo(ADMIN_DONATRACK_EMAIL, ADMIN_DONATRACK_CLAVE);
+    JsonNode access = claims(login.get("access_token").asText());
+    assertEquals(List.of("ADMIN"), valores(access.get("roles")));
+
+    String literalDeLaVariable = "${AUTH_ADMIN_PASSWORD}";
+    HttpResponse<String> literal = enviarLogin(ADMIN_DONATRACK_EMAIL, literalDeLaVariable).envio();
+    assertEquals(200, literal.statusCode(), "el literal no debe ser la clave del admin");
+  }
+
+  @Test
+  void unUsuarioAutorregistradoQuedaConElRolDonanteYSinNombreNiApellido() throws Exception {
+    JsonNode registro = registrarseYCanjearElCodigo(REGISTRO_EMAIL, USER_PASSWORD);
+    JsonNode access = claims(registro.get("access_token").asText());
+    assertEquals(List.of("DONANTE"), valores(access.get("roles")));
+
+    String id = idDelUsuario(REGISTRO_EMAIL);
+    assertEquals(id, access.get("sub").asText());
+    String ruta = "/admin/realms/" + REALM + "/users/" + id + "/role-mappings/realm/composite";
+    List<String> efectivos = nombresDeRoles(admin(ruta));
+    assertTrue(efectivos.contains("DONANTE"), efectivos.toString());
+    assertFalse(efectivos.contains("ADMIN"), efectivos.toString());
+    assertFalse(efectivos.contains("ENTIDAD"), efectivos.toString());
+  }
+
+  @Test
+  void laPantallaDeLoginUsaElTemaDonatrackEnEspanol() throws Exception {
+    verificarTema(abrirPantalla(HTTP, null).body());
+  }
+
+  @Test
+  void laPantallaDeRegistroUsaElMismoTema() throws Exception {
+    verificarTema(abrirPantalla(HTTP, "create").body());
+  }
+
   // ---- Cliente HTTP mínimo: sin librerías nuevas ----
 
   private static String urlDeToken(String realm) {
@@ -240,6 +379,17 @@ class RealmTokenContractIT {
     return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
   }
 
+  private static HttpResponse<String> putJson(String url, String token, String cuerpo)
+      throws IOException, InterruptedException {
+    HttpRequest peticion =
+        HttpRequest.newBuilder(URI.create(url))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
+            .PUT(HttpRequest.BodyPublishers.ofString(cuerpo))
+            .build();
+    return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
+  }
+
   private static JsonNode admin(String ruta) throws IOException, InterruptedException {
     HttpRequest peticion =
         HttpRequest.newBuilder(URI.create(baseUrl + ruta))
@@ -265,19 +415,19 @@ class RealmTokenContractIT {
   }
 
   // Con nombre y email cargados, para que la ausencia de esos claims en el token sea significativa.
-  private static String crearDonante(String tokenAdmin) throws IOException, InterruptedException {
-    Map<String, Object> credencial = new LinkedHashMap<>();
-    credencial.put("type", "password");
-    credencial.put("value", USER_PASSWORD);
-    credencial.put("temporary", false);
+  // Con clave == null se crea sin credenciales (para probar la política de clave).
+  private static String crearUsuario(String tokenAdmin, String email, String clave)
+      throws IOException, InterruptedException {
     Map<String, Object> usuario = new LinkedHashMap<>();
-    usuario.put("username", EMAIL);
-    usuario.put("email", EMAIL);
+    usuario.put("username", email);
+    usuario.put("email", email);
     usuario.put("firstName", "Dona");
     usuario.put("lastName", "Tante");
     usuario.put("enabled", true);
     usuario.put("emailVerified", true);
-    usuario.put("credentials", List.of(credencial));
+    if (clave != null) {
+      usuario.put("credentials", List.of(credencial(clave)));
+    }
 
     String urlUsuarios = baseUrl + "/admin/realms/" + REALM + "/users";
     HttpResponse<String> creado =
@@ -299,39 +449,145 @@ class RealmTokenContractIT {
     return id;
   }
 
-  // Lo que hace el navegador: pantalla de login, envío del formulario y redirect con el código.
-  private static JsonNode iniciarSesionYCanjearElCodigo() throws IOException, InterruptedException {
-    HttpClient navegador =
-        HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
+  private static Map<String, Object> credencial(String clave) {
+    Map<String, Object> credencial = new LinkedHashMap<>();
+    credencial.put("type", "password");
+    credencial.put("value", clave);
+    credencial.put("temporary", false);
+    return credencial;
+  }
 
+  private static HttpResponse<String> cambiarClave(String tokenAdmin, String id, String clave)
+      throws IOException, InterruptedException {
+    String url = baseUrl + "/admin/realms/" + REALM + "/users/" + id + "/reset-password";
+    return putJson(url, tokenAdmin, JSON.writeValueAsString(credencial(clave)));
+  }
+
+  // Keycloak puede registrar los fallos de forma asíncrona: se espera a que la cuenta figure
+  // bloqueada antes de intentar entrar con la clave correcta.
+  private static void esperarBloqueo(String id) throws IOException, InterruptedException {
+    String ruta = "/admin/realms/" + REALM + "/attack-detection/brute-force/users/" + id;
+    for (int espera = 0; espera < 20; espera++) {
+      if (admin(ruta).get("disabled").asBoolean()) {
+        return;
+      }
+      Thread.sleep(250);
+    }
+    throw new AssertionError("Keycloak no bloqueó la cuenta después de 5 fallos");
+  }
+
+  private static HttpResponse<String> refrescar(String refresh)
+      throws IOException, InterruptedException {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "refresh_token");
+    campos.put("client_id", CLIENT_ID);
+    campos.put("client_secret", CLIENT_SECRET);
+    campos.put("refresh_token", refresh);
+    return post(HTTP, urlDeToken(REALM), form(campos));
+  }
+
+  // Abre la pantalla de Keycloak: la de login o, con prompt == "create", la de registro.
+  private static HttpResponse<String> abrirPantalla(HttpClient cliente, String prompt)
+      throws IOException, InterruptedException {
     Map<String, String> autorizacion = new LinkedHashMap<>();
     autorizacion.put("client_id", CLIENT_ID);
     autorizacion.put("redirect_uri", REDIRECT_URI);
     autorizacion.put("response_type", "code");
     autorizacion.put("scope", "openid");
     autorizacion.put("state", ESTADO);
+    if (prompt != null) {
+      autorizacion.put("prompt", prompt);
+    }
     String urlAuth =
         baseUrl + "/realms/" + REALM + "/protocol/openid-connect/auth?" + form(autorizacion);
     HttpResponse<String> pantalla =
-        navegador.send(
+        cliente.send(
             HttpRequest.newBuilder(URI.create(urlAuth)).GET().build(),
             HttpResponse.BodyHandlers.ofString());
     assertEquals(200, pantalla.statusCode(), pantalla.body());
+    return pantalla;
+  }
 
-    Matcher accion = ACCION_DE_LOGIN.matcher(pantalla.body());
-    assertTrue(accion.find(), "no se encontró el formulario de login en la pantalla de Keycloak");
-    String urlLogin = accion.group(1).replace("&amp;", "&");
+  private static HttpResponse<String> descargar(String ruta)
+      throws IOException, InterruptedException {
+    HttpRequest peticion = HttpRequest.newBuilder(URI.create(baseUrl + ruta)).GET().build();
+    return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
+  }
 
+  // El tema se aplica, la pantalla está en español y Keycloak sirve el CSS y el logo del tema.
+  private static void verificarTema(String pantalla) throws IOException, InterruptedException {
+    assertTrue(pantalla.contains("lang=\"es\""), "la pantalla no está en español");
+    assertTrue(pantalla.contains("DonaTrack"), "la pantalla no muestra el nombre DonaTrack");
+    Matcher css = CSS_DEL_TEMA.matcher(pantalla);
+    assertTrue(css.find(), "la pantalla no carga /login/donatrack/css/donatrack.css");
+    String rutaCss = css.group(1);
+    HttpResponse<String> hoja = descargar(rutaCss);
+    assertEquals(200, hoja.statusCode(), rutaCss);
+    assertTrue(hoja.body().contains("--color-accion-primaria"), "el CSS no define los tokens");
+    String rutaLogo = rutaCss.replace("css/donatrack.css", "img/logo.svg");
+    HttpResponse<String> logo = descargar(rutaLogo);
+    assertEquals(200, logo.statusCode(), rutaLogo);
+    assertTrue(logo.body().contains("<svg"), "el logo no es un SVG");
+  }
+
+  private record ResultadoDeLogin(HttpResponse<String> envio, List<String> galletasRecibidas) {}
+
+  // Lo que hace el navegador: abre la pantalla de Keycloak y envía su formulario (sin seguir el
+  // redirect). Con prompt == "create" la pantalla es la de registro.
+  private static ResultadoDeLogin enviar(
+      String prompt, Pattern accionDelFormulario, Map<String, String> campos)
+      throws IOException, InterruptedException {
+    HttpClient navegador =
+        HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
+
+    HttpResponse<String> pantalla = abrirPantalla(navegador, prompt);
+
+    Matcher accion = accionDelFormulario.matcher(pantalla.body());
+    assertTrue(accion.find(), "no se encontró el formulario en la pantalla de Keycloak");
+    String urlFormulario = accion.group(1).replace("&amp;", "&");
+
+    HttpResponse<String> envio = post(navegador, urlFormulario, form(campos), galletas(pantalla));
+    return new ResultadoDeLogin(envio, galletasRecibidas(pantalla));
+  }
+
+  private static ResultadoDeLogin enviarLogin(String email, String clave)
+      throws IOException, InterruptedException {
     Map<String, String> credenciales = new LinkedHashMap<>();
-    credenciales.put("username", EMAIL);
-    credenciales.put("password", USER_PASSWORD);
+    credenciales.put("username", email);
+    credenciales.put("password", clave);
     credenciales.put("credentialId", "");
-    HttpResponse<String> envio = post(navegador, urlLogin, form(credenciales), galletas(pantalla));
+    return enviar(null, ACCION_DE_LOGIN, credenciales);
+  }
+
+  // Sin nombre ni apellido: el perfil de usuario no los exige (A1-02b).
+  private static ResultadoDeLogin enviarRegistro(String email, String clave)
+      throws IOException, InterruptedException {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("email", email);
+    campos.put("password", clave);
+    campos.put("password-confirm", clave);
+    return enviar("create", ACCION_DE_REGISTRO, campos);
+  }
+
+  private static JsonNode iniciarSesionYCanjearElCodigo(String email, String clave)
+      throws IOException, InterruptedException {
+    return canjearElCodigo(enviarLogin(email, clave));
+  }
+
+  private static JsonNode registrarseYCanjearElCodigo(String email, String clave)
+      throws IOException, InterruptedException {
+    return canjearElCodigo(enviarRegistro(email, clave));
+  }
+
+  // Tras el formulario Keycloak redirige al cliente con el código, que se canjea por tokens.
+  private static JsonNode canjearElCodigo(ResultadoDeLogin resultado)
+      throws IOException, InterruptedException {
+    HttpResponse<String> envio = resultado.envio();
     String detalle =
-        "Keycloak no redirigió tras el login: status="
+        "Keycloak no redirigió tras el formulario: status="
             + envio.statusCode()
             + ", Set-Cookie recibidas="
-            + galletasRecibidas(pantalla)
+            + resultado.galletasRecibidas()
             + ", mensaje="
             + mensajeDeKeycloak(envio.body());
     assertEquals(302, envio.statusCode(), detalle);
@@ -352,6 +608,20 @@ class RealmTokenContractIT {
     HttpResponse<String> tokens = post(HTTP, urlDeToken(REALM), form(canje));
     assertEquals(200, tokens.statusCode(), tokens.body());
     return JSON.readTree(tokens.body());
+  }
+
+  private static String idDelUsuario(String email) throws IOException, InterruptedException {
+    String consulta = URLEncoder.encode(email, StandardCharsets.UTF_8);
+    JsonNode usuarios = admin("/admin/realms/" + REALM + "/users?exact=true&email=" + consulta);
+    assertEquals(1, usuarios.size(), "no se encontró un único usuario con el email " + email);
+    return usuarios.get(0).get("id").asText();
+  }
+
+  private static List<String> nombresDeRoles(JsonNode roles) {
+    List<String> nombres = new ArrayList<>();
+    roles.forEach(rol -> nombres.add(rol.get("name").asText()));
+    nombres.sort(null);
+    return nombres;
   }
 
   // ---- Cookies a mano: lo que hace el navegador, sin las reglas de Secure ni de SameSite ----
@@ -384,7 +654,7 @@ class RealmTokenContractIT {
 
   private static String mensajeDeKeycloak(String html) {
     Matcher mensaje = MENSAJE_DE_KEYCLOAK.matcher(html);
-    return mensaje.find() ? mensaje.group(1).trim() : "(sin mensaje en la página)";
+    return mensaje.find() ? mensaje.group(1).trim() : SIN_MENSAJE;
   }
 
   // ---- Lectura de resultados ----
@@ -405,6 +675,20 @@ class RealmTokenContractIT {
   private static JsonNode claims(String jwt) throws IOException {
     String carga = jwt.split("\\.")[1];
     return JSON.readTree(Base64.getUrlDecoder().decode(carga));
+  }
+
+  private static JsonNode atributo(JsonNode perfil, String nombre) {
+    for (JsonNode atributo : perfil.get("attributes")) {
+      if (nombre.equals(atributo.get("name").asText())) {
+        return atributo;
+      }
+    }
+    throw new AssertionError("el perfil de usuario no define el atributo " + nombre);
+  }
+
+  private static boolean esObligatorio(JsonNode atributo) {
+    JsonNode requerido = atributo.get("required");
+    return requerido != null && !requerido.isNull();
   }
 
   // Un claim puede venir como texto (un solo valor) o como arreglo.

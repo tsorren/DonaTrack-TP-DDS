@@ -190,6 +190,8 @@ services:
       # Los lee el realm al importarse (${...} en auth-service/realm/donatrack-realm.json), solo con la base vacía.
       - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
       - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
+      - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?ver .env.example}
+      - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?ver .env.example}
     depends_on:
       postgres:
         condition: service_healthy
