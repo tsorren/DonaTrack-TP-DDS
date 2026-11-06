@@ -11,7 +11,8 @@ public interface IEntidadBeneficiariaController {
 
   ResponseEntity<EntidadBeneficiariaOutputDTO> obtenerEntidad(UUID id);
 
-  ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas();
+  ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas(
+      String nombre, Integer page, Integer size);
 
   ResponseEntity<EntidadBeneficiariaOutputDTO> actualizarEntidad(
       UUID id, EntidadBeneficiariaInputDTO entidad);
