@@ -38,6 +38,6 @@
   border: 1.5px solid var(--color-tinta);
   border-radius: 1rem;
   background: var(--color-raiz);
-  font: 900 1.0625rem/1 var(--fuente-titulo);
+  font: 900 1.0625rem/1 var(--fuente-cifra);
   font-stretch: 118%;
 }

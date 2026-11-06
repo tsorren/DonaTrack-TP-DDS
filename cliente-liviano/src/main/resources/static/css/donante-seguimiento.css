@@ -73,7 +73,7 @@
 .cifra dd {
   margin: 0;
   color: var(--color-acento);
-  font: 900 2.5rem / 1 var(--fuente-titulo);
+  font: 900 2.5rem / 1 var(--fuente-cifra);
   font-stretch: 125%;
 }
 
@@ -115,7 +115,7 @@ figure.seguimiento-dibujo {
 
 .nodo-numero {
   fill: var(--color-tinta);
-  font: 800 22px var(--fuente-titulo);
+  font: 800 22px var(--fuente-cifra);
   text-anchor: middle;
 }
 
@@ -176,7 +176,7 @@ figure.seguimiento-dibujo {
   background: var(--color-raiz);
   box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
   color: var(--color-tinta);
-  font: 800 1.25rem/1 var(--fuente-titulo);
+  font: 800 1.25rem/1 var(--fuente-cifra);
 }
 
 .entrega h3 {

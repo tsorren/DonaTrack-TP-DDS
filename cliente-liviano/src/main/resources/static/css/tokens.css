@@ -1,6 +1,7 @@
-/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Huerta de noche, estilo
-   impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
-   en su A/B), marca, botones, el grano de impresión de la referencia 01 y las cifras. */
+/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Huerta de noche con la tierra
+   humus (A/B de Raíces cálida, 2026-11-06), estilo impreso editorial, un afiche risográfico, títulos
+   en Fraunces y texto y cifras en Archivo (decididos en su A/B), marca, botones, el grano de
+   impresión de la referencia 01 y las cifras. */
 
 @font-face {
   font-family: Archivo;
@@ -20,15 +21,34 @@
   src: url("../fuentes/archivo-cursiva-latin.woff2") format("woff2");
 }
 
+/* Fraunces (Undercase Type, OFL), en los títulos (A/B de Raíces cálida, 2026-11-06). */
+@font-face {
+  font-family: Fraunces;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fuentes/fraunces-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Fraunces;
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fuentes/fraunces-cursiva-latin.woff2") format("woff2");
+}
+
 :root {
   /* Paleta Huerta de noche (A/B de paleta y acabado, 2026-11-05; antes, Oliva): valores por
-     función, no por tono. Un afiche verde sobre papel de cera: la tierra casi negra en tres pasos,
+     función, no por tono. Un afiche verde sobre papel de cera: la tierra humus en sus dos primeros
+     pasos y casi negra en el más hondo (cabecera, pie y cifras; A/B de Raíces cálida, 2026-11-06),
      el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de las piezas)
      y los frutos zanahoria. */
-  /* La letra (A/B de letra, 2026-10-31): Archivo (Omnibus-Type, Buenos Aires) en todo. Los
-     títulos, los numerales y las cifras, anchos y pesados como un afiche (referencia 02); el texto,
-     en ancho normal. El carácter sale del ancho y del peso. */
-  --p-letra-titulo: Archivo, system-ui, sans-serif;
+  /* La letra (A/B de Raíces cálida, 2026-11-06; antes, Archivo en todo): los títulos en Fraunces,
+     una serif de libro de jardinería, firme y tibia, con su cursiva en la parte cálida. El texto,
+     los datos, los numerales y las cifras siguen en Archivo (Omnibus-Type, Buenos Aires), anchos y
+     pesados como un afiche (referencia 02). */
+  --p-letra-titulo: Fraunces, Georgia, serif;
   --p-letra-texto: Archivo, system-ui, sans-serif;
   --p-papel: #fbf2d3;
   --p-tinta: #17140f;
@@ -38,8 +58,8 @@
   --p-acento-claro: #d3e98a;
   --p-tallo: #2d6a1e;
   --p-hoja: #86b832;
-  --p-suelo: #2a2a1c;
-  --p-suelo-medio: #222217;
+  --p-suelo: #5a3d28;
+  --p-suelo-medio: #4d3322;
   --p-suelo-hondo: #17170f;
   --p-texto-suelo: #fbf2d3;
   --p-raiz: #f4c844;
@@ -102,6 +122,7 @@
   /* Tokens de uso (D20): las hojas de Raíces usan solo estos, uno por valor base. */
   --fuente-titulo: var(--p-letra-titulo);
   --fuente-texto: var(--p-letra-texto);
+  --fuente-cifra: var(--p-letra-texto);
   --color-papel: var(--p-papel);
   --color-tinta: var(--p-tinta);
   --color-tinta-suave: var(--p-tinta-suave);
@@ -162,11 +183,11 @@
   --color-advertencia-fondo: var(--p-en-camino-fondo);
   --color-borde-control: var(--p-tinta-suave);
   --color-foco: var(--p-acento);
-  /* Los bordes y la sombra (A/B de paleta y acabado, 2026-11-05: Huerta de noche): esquinas
-     rectas, como un afiche impreso, y la sombra plana de paja detrás del papel y de los botones,
-     como un farol sobre la tierra oscura. Una pieza que ya es paja lleva la sombra hoja. */
-  --radio-lamina: 0;
-  --radio-boton: 0;
+  /* Los bordes y la sombra: esquinas suaves (A/B de Raíces cálida, 2026-11-06; antes, rectas) y
+     la sombra plana de paja detrás del papel y de los botones (Huerta de noche, 2026-11-05), como
+     un farol sobre la tierra. Una pieza que ya es paja lleva la sombra hoja. */
+  --radio-lamina: 0.75rem;
+  --radio-boton: 0.5rem;
   --color-sombra: var(--p-raiz);
   /* Movimiento (D32): duraciones (corta, media, larga, trazo y ambiente, la de una escena que no
      termina), esperas de una coreografía, curvas (entrada, énfasis, salida, base y ambiente) y las

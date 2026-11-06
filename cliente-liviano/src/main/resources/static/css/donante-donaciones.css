@@ -72,7 +72,7 @@
 }
 
 .asiento-numero b {
-  font: 900 1.375rem / 1 var(--fuente-titulo);
+  font: 900 1.375rem / 1 var(--fuente-cifra);
   font-stretch: 118%;
 }
 

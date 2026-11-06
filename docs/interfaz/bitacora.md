@@ -31,6 +31,22 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-06 · color-y-acabado y tipografia (Raíces) · Tierra humus con marco de noche, esquinas suaves y títulos en Fraunces
+
+- **Decisión:** E, etapa 1 de [Raíces cálida](encargos/raices-calida.md). La tierra humus en
+  `--p-suelo` y `--p-suelo-medio` (`#5a3d28`, `#4d3322`) y el casi negro en el más hondo (cabecera, pie
+  y cifras). Esquinas suaves (0,75 y 0,5 rem). Fraunces en títulos y marca; las cifras y los
+  numerales, en Archivo con el token nuevo `--fuente-cifra` (22 reglas de números).
+- **Alternativas:**
+  - Vuelta 1, tierra: A, Huerta de noche (control); B, Humus; C, Kraft de día; D, Monte tibio (la
+    primera D, Horizontes, se rehízo por parecerse a B). Letra: Fraunces, Literata y Young Serif.
+    El usuario pidió una mezcla de A y B, como D, y eligió Fraunces.
+  - Vuelta 2: E y F, la mezcla con esquinas suaves o rectas; eligió E (la recomendada).
+- **Por qué:** suma calidez sin perder el negro que gusta para la empresa.
+- **Costo:** se borraron Literata y Young Serif; Fraunces suma 82 KB. Falta la etapa 2 (la corrida).
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/calida-etapa-1/`.
+
 ### 2026-11-06 · proceso (raices-calida) · Encargo creativo: Raíces más cálida para quien dona solo, en dos etapas
 
 - **Decisión:** el [encargo `raices-calida`](encargos/raices-calida.md), en la rama
