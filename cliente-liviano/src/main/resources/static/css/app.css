@@ -35,6 +35,7 @@
 @import url("componentes/tierra.css") layer(bloques);
 @import url("componentes/red.css") layer(bloques);
 @import url("componentes/pausa.css") layer(bloques);
+@import url("componentes/recorrido.css") layer(bloques);
 
 *,
 *::before,

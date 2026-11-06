@@ -1,0 +1,6 @@
+/* Bloque recorrido (Raíces cálida, iteración 2, preparación): el camino de las donaciones del
+   inicio del donante, en tramos por etapa (en el depósito, con destino, en la entidad), cada uno con
+   su rótulo, su título, su cuenta, un corte de suelo con una planta por donación y su acción; quien
+   dona al principio y quien recibe al final. Lo llena la zona "recorrido" de la iteración 2; las
+   piezas llevan el prefijo `recorrido-`. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. */
