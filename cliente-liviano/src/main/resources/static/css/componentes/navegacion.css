@@ -7,12 +7,14 @@
    el ancho de la fila) lo dice la hoja de la pantalla. Catálogo: docs/interfaz/componentes.md. */
 
 /* --- El celular: una barra fija abajo --------------------------------------------------------- */
+/* Raíces cálida, iteración 2: la barra es el suelo donde se apoya la página, en humus tibio con la
+   línea de paja de las raíces arriba (la misma del estrato de la cabecera), y más baja: 52 px. */
 .navegacion {
   position: fixed;
   inset: auto 0 0;
   z-index: 2;
-  background: var(--color-suelo);
-  border-top: 3px solid var(--color-tinta);
+  background: var(--color-estrato);
+  border-top: 3px solid var(--color-horizonte);
 }
 
 /* Las páginas públicas: una franja de papel sobre la línea de tinta separa la barra de un bloque del
@@ -35,9 +37,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 3.75rem;
-  padding: 0.5rem 0.25rem;
-  color: var(--color-texto-suelo);
+  min-height: var(--medida-barra-menu);
+  padding: 0.375rem 0.25rem;
+  color: var(--color-marco-texto);
   font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.15;
@@ -57,8 +59,8 @@
 
 /* La sección actual se destaca (criterios de la cátedra: pestañas). */
 .navegacion a[aria-current="page"] {
-  background: var(--color-raiz);
-  color: var(--color-tinta);
+  background: var(--color-actual-fondo);
+  color: var(--color-actual-texto);
 }
 
 .navegacion :focus-visible {
@@ -98,13 +100,13 @@
   justify-content: center;
   gap: 0.25rem;
   width: 100%;
-  min-height: 3.75rem;
+  min-height: var(--medida-barra-menu);
   margin: 0;
-  padding: 0.5rem 0.25rem;
+  padding: 0.375rem 0.25rem;
   border: 0;
   border-radius: 0;
   background: none;
-  color: var(--color-texto-suelo);
+  color: var(--color-marco-texto);
   font: inherit;
   font-size: 0.875rem;
   font-weight: 700;
@@ -118,8 +120,8 @@
 
 /* "Más" va marcado cuando la sección actual es una de las que no entran en la barra. */
 .navegacion-mas:has(.navegacion-hoja li:nth-child(n + 5) a[aria-current="page"]) > button {
-  background: var(--color-raiz);
-  color: var(--color-tinta);
+  background: var(--color-actual-fondo);
+  color: var(--color-actual-texto);
 }
 
 /* Una hoja que sube desde abajo, al alcance del pulgar, con la página oscurecida detrás. */

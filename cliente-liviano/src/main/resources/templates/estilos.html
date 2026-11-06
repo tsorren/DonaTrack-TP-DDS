@@ -137,6 +137,8 @@
         <li><code>imprime</code>: un sello aparece achicándose, como al imprimirse. Espera de sello.</li>
         <li><code>hoja-sube</code>: una hoja (el menú completo) sube desde abajo. Sin espera.</li>
         <li><code>viento</code> y <code>viento-fruto</code>: las hojas y los frutos se mecen en ciclo, sin fin. Espera de ambiente.</li>
+        <li><code>llega</code> y <code>llega-tarde</code>: una abeja de la firma llega volando desde atrás y abajo. Espera de trazo y de sello.</li>
+        <li><code>zumba</code> y <code>aletea</code>: la abeja zumba en el lugar y aletea un momento (6 y 12 vueltas cortas); termina sola antes de 5 segundos. Espera de cierre.</li>
         <li><code>--movimiento-transicion-atenua</code>: la opacidad cambia con suavidad al pasar o enfocar.</li>
         <li><code>--movimiento-transicion-dialogo</code>: la opacidad, el fondo y el <code>display</code> de un diálogo cambian al abrirse y cerrarse (con <code>@starting-style</code>).</li>
         <li><code>mov-crece-alto</code>: el tronco crece de arriba; va con <code>animation-timeline</code>.</li>
@@ -236,7 +238,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué significa e invita a la acción posible. Mismo papel que el banner. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
+        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué significa e invita a la acción posible. Mismo papel que el banner. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. Lleva la firma de la casa (dos abejas en la esquina de arriba), salvo con data-forma o con role (un «Cargando…», un error, un filtro sin resultados). data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
           <th:block th:fragment="demo-vacio">
             <div class="pila" data-espacio="3">
               <section class="vacio" aria-labelledby="muestra-vacio-titulo">
@@ -656,6 +658,16 @@
                 Pausar el movimiento
               </label>
             </p>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.firma', 'La firma de la casa: dos abejas chicas que se van por un vuelo punteado con un rulo (.firma-vuelo; cada .firma-abeja con .firma-zumbido, dos .firma-ala, .firma-cuerpo, .firma-raya, .firma-antena y .firma-cabeza). Decorativa, sin dato detrás. Va en tres lugares y en ninguno más: la cabecera (data-lugar=&quot;cabecera&quot;, sobre el marco de noche; cede su lugar antes que nada), el final del título de la portada (data-lugar=&quot;portada&quot;) y los estados vacíos (desde .vacio). Nunca en botones, datos, errores ni en el banner. El vuelo se dibuja, las abejas llegan y zumban; termina sola antes de 5 segundos.', ~{::demo-firma})}">
+          <th:block th:fragment="demo-firma">
+            <div class="racimo" data-espacio="4">
+              <div data-fondo="suelo-hondo">
+                <svg th:replace="~{componentes/firma :: firma('cabecera')}"></svg>
+              </div>
+              <p class="texto-grande">Lo que donás echa raíces.<svg th:replace="~{componentes/firma :: firma('portada')}"></svg></p>
+            </div>
           </th:block>
         </div>
         <th:block th:replace="~{componentes/recorrido :: muestra}"></th:block>

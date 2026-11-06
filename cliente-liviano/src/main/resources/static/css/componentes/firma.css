@@ -1,0 +1,134 @@
+/* Bloque firma (Raíces cálida, iteración 2, casa): dos abejas chicas que se van por un vuelo
+   punteado con un rulo, la firma de la casa. Decorativa (aria-hidden), sin dato detrás. Fragmento
+   `componentes/firma :: firma(lugar)`; el lugar va en `data-lugar`: `cabecera` (sobre el marco de
+   noche, en la fila de la marca; cede su lugar antes que cualquier otra cosa de la cabecera) y
+   `portada` (al final del título, sobre el papel, sin ocupar lugar en el renglón). Los estados vacíos
+   la llevan desde `.vacio` (componentes/aviso.css), con el mismo dibujo en img/firma-vacio-*.svg.
+   Nunca en botones, datos, errores ni en el banner. Movimiento: el vuelo se dibuja, las abejas llegan
+   y zumban un momento; todo termina solo antes de 5 segundos (no hace falta pausa). Se carga en la
+   capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+.firma {
+  display: block;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.firma-vuelo {
+  fill: none;
+  stroke: var(--color-firma-vuelo);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 0 4.2;
+}
+
+.firma-ala {
+  fill: var(--color-firma-ala);
+  stroke: var(--color-firma-trazo);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+.firma-cuerpo,
+.firma-cabeza {
+  fill: var(--color-firma-cuerpo);
+  stroke: var(--color-firma-trazo);
+  stroke-width: 1.2;
+}
+
+.firma-cabeza {
+  fill: var(--color-firma-trazo);
+}
+
+.firma-raya,
+.firma-antena {
+  fill: none;
+  stroke: var(--color-firma-trazo);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.firma-antena {
+  stroke-width: 1.2;
+}
+
+/* --- En la cabecera: sobre el marco de noche ------------------------------------------------- */
+/* Hasta 6,5rem en la fila de la marca, con lo que sobre (base 0: nunca hace bajar a Notificaciones
+   ni a la cuenta de renglón); si falta lugar, se achica primero y puede desaparecer: la
+   marca, el menú, Notificaciones y la cuenta nunca se corren por ella. */
+.firma[data-lugar="cabecera"] {
+  flex: 1 1 0;
+  max-width: 6.5rem;
+  min-width: 0;
+  max-height: 2.5rem;
+}
+
+.firma[data-lugar="cabecera"] .firma-vuelo {
+  stroke: var(--color-firma-vuelo-marco);
+}
+
+.firma[data-lugar="cabecera"] :is(.firma-ala, .firma-cuerpo, .firma-raya) {
+  stroke: var(--color-marco);
+}
+
+.firma[data-lugar="cabecera"] .firma-cabeza {
+  fill: var(--color-firma-cuerpo);
+  stroke: var(--color-marco);
+}
+
+.firma[data-lugar="cabecera"] .firma-antena {
+  stroke: var(--color-firma-cuerpo);
+}
+
+/* --- En la portada: al final del título, saliendo del punto final -------------------------- */
+/* Crece con la letra del título y no ocupa lugar en el renglón (el margen negativo): nunca baja
+   sola a un renglón nuevo ni corre el texto. Con tope, para no tocar la lámina de al lado. */
+.firma[data-lugar="portada"] {
+  display: inline-block;
+  width: 1.6em;
+  max-width: 7.5rem;
+  margin-inline: 0.04em -1.64em;
+  vertical-align: 0.42em;
+}
+
+/* --- Movimiento: el vuelo se dibuja, llegan las abejas y zumban; todo termina antes de 5 s --- */
+@media (prefers-reduced-motion: no-preference) {
+  .firma-vuelo {
+    animation: var(--movimiento-animacion-recorta);
+  }
+
+  .firma-abeja {
+    animation: var(--movimiento-animacion-llega);
+  }
+
+  .firma-abeja + .firma-abeja {
+    animation: var(--movimiento-animacion-llega-tarde);
+  }
+
+  .firma-zumbido {
+    animation: var(--movimiento-animacion-zumba);
+  }
+
+  .firma-ala {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: var(--movimiento-animacion-aletea);
+  }
+}
+
+/* --- Colores forzados: la firma se sigue viendo, en los colores del sistema ----------------- */
+@media (forced-colors: active) {
+  .firma :is(.firma-vuelo, .firma-ala, .firma-cuerpo, .firma-raya, .firma-antena) {
+    stroke: CanvasText;
+  }
+
+  .firma :is(.firma-ala, .firma-cuerpo) {
+    fill: Canvas;
+  }
+
+  .firma .firma-cabeza {
+    fill: CanvasText;
+    stroke: CanvasText;
+  }
+}

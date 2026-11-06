@@ -43,6 +43,54 @@
   }
 }
 
+/* --- La firma en el estado vacío -------------------------------------------------------------- */
+/* Raíces cálida, iteración 2: el estado vacío de papel lleva la firma de la casa (bloque `firma`): dos
+   abejas que se escapan por la esquina de arriba, con el vuelo punteado que sale del papel. Es la
+   misma pieza en todo el sitio, sin tocar las plantillas: dos capas pintadas con un dibujo como
+   máscara (los cuerpos en paja, el trazo en tinta). Solo a la vista. No va en el que lleva
+   `data-forma` (los renglones de la portada, que ya firma en su título) ni en el que lleva `role` (un
+   «Cargando…», un error o un filtro sin resultados), ni en el banner ni en los avisos breves. */
+.vacio:not([data-forma], [role]) {
+  position: relative;
+}
+
+.vacio:not([data-forma], [role])::before,
+.vacio:not([data-forma], [role])::after {
+  content: "";
+  position: absolute;
+  inset: -1rem 1rem auto auto;
+  width: 5rem;
+  aspect-ratio: 96 / 36;
+  background: var(--color-firma-cuerpo);
+  mask: url("../../img/firma-vacio-cuerpo.svg") center / contain no-repeat;
+  pointer-events: none;
+}
+
+.vacio:not([data-forma], [role])::after {
+  background: var(--color-firma-trazo);
+  mask-image: url("../../img/firma-vacio-trazo.svg");
+}
+
+/* Llegan una vez, con el papel (las primitivas de movimiento.css; sin movimiento, quietas). */
+@media (prefers-reduced-motion: no-preference) {
+  .vacio:not([data-forma], [role])::before,
+  .vacio:not([data-forma], [role])::after {
+    animation: var(--movimiento-animacion-llega);
+  }
+}
+
+@media (forced-colors: active) {
+  .vacio:not([data-forma], [role])::before,
+  .vacio:not([data-forma], [role])::after {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .vacio:not([data-forma], [role])::before {
+    background: Canvas;
+  }
+}
+
 /* --- Estado vacío entre dos filetes ------------------------------------------------------------ */
 /* Sin papel ni sombra: un renglón entre dos filetes finos que ocupa el lugar de los datos de una parte
    que no es una lámina (el cuaderno del mes y la tierra de la portada, B3-01). */
@@ -128,7 +176,7 @@
 /* Fija abajo y centrada; en el celular, encima de la barra del menú. Vacía no ocupa nada. */
 .avisos {
   position: fixed;
-  inset: auto 0 5.5rem;
+  inset: auto 0 calc(var(--medida-barra-menu) + 1.5rem);
   z-index: 3;
   display: grid;
   justify-items: center;

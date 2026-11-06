@@ -227,3 +227,29 @@
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
 }
+
+/* --- Raíces cálida, iteración 2, casa --- */
+/* El marco común (cabecera, pie y barra del menú) y la firma de las abejas, armados con los valores
+   base de la etapa 1: la paleta no cambia. El marco sigue de noche; donde toca la página lleva un
+   estrato, la línea de paja de las raíces y la franja de humus tibio, como el corte de suelo del
+   recorrido. */
+:root {
+  --color-marco: var(--p-suelo-hondo);
+  --color-marco-texto: var(--p-texto-suelo);
+  --color-marco-enlace: var(--p-raiz);
+  --color-estrato: var(--p-suelo);
+  --color-horizonte: var(--p-raiz);
+  /* La sección actual del menú: tinta sobre paja. */
+  --color-actual-texto: var(--p-tinta);
+  --color-actual-fondo: var(--p-raiz);
+  /* La firma: abejas de paja con rayas y contorno de tinta y alas de papel; el vuelo, punteado. Sobre
+     el marco, las rayas y el contorno van en la noche del marco y el vuelo en paja. */
+  --color-firma-cuerpo: var(--p-raiz);
+  --color-firma-trazo: var(--p-tinta);
+  --color-firma-ala: var(--p-papel);
+  --color-firma-vuelo: var(--p-tinta-suave);
+  --color-firma-vuelo-marco: var(--p-raiz);
+  /* El alto de la barra del menú en el celular (48 px de toque y un poco de aire) y el del estrato. */
+  --medida-barra-menu: 3.25rem;
+  --medida-estrato: 0.6875rem;
+}

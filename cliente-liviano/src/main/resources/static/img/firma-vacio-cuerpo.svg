@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 36">
+  <!-- La firma de los estados vacíos, capa de los cuerpos (paja). Se usa como máscara desde
+       componentes/aviso.css: solo importa la forma; el color lo pone un token. Mismo dibujo que
+       templates/componentes/firma.html. -->
+  <g transform="translate(50 25) scale(0.8)">
+    <rect x="-8" y="-4.5" width="15" height="9" rx="4.5"/>
+  </g>
+  <g transform="translate(80 15)">
+    <rect x="-8" y="-4.5" width="15" height="9" rx="4.5"/>
+  </g>
+</svg>

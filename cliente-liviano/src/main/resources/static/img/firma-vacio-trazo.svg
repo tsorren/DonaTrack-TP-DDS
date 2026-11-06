@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 36">
+  <!-- La firma de los estados vacíos, capa del trazo (tinta): el vuelo punteado, que se corta debajo
+       de las abejas, y el contorno, las alas, las rayas y la cabeza. Se usa como máscara desde
+       componentes/aviso.css. Mismo dibujo que templates/componentes/firma.html. -->
+  <defs>
+    <mask id="sin-abejas">
+      <rect width="96" height="36" fill="#fff"/>
+      <ellipse cx="50" cy="22" rx="10" ry="10"/>
+      <ellipse cx="80" cy="12" rx="12" ry="12"/>
+    </mask>
+    <g id="abeja" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke-width="1.1" d="M-1 -3C-4 -12 -12 -12 -10 -6C-8 -2 -4 -2 -1 -3Z"/>
+      <path stroke-width="1.1" d="M1 -3.5C1 -13 9 -15 10 -8C10 -4 5 -3 1 -3.5Z"/>
+      <rect stroke-width="1.2" x="-8" y="-4.5" width="15" height="9" rx="4.5"/>
+      <path stroke-width="1.8" d="M-3 -4V4M1.5 -4.3V4.3"/>
+      <path stroke-width="1.2" d="M-8 0H-10.5M8.5 -3C9.5 -6 11 -7.5 13 -7.5"/>
+      <circle fill="#000" stroke-width="1.2" cx="8" cy="-0.3" r="3"/>
+    </g>
+  </defs>
+  <path mask="url(#sin-abejas)" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"
+        stroke-dasharray="0 4.2"
+        d="M3 32C12 33 18 27 24 22C30 16 40 15 40 22C40 28 31 28 31 22C31 16 44 22 52 25C58 27 63 18 69 15"/>
+  <use href="#abeja" transform="translate(50 25) scale(0.8)"/>
+  <use href="#abeja" transform="translate(80 15)"/>
+</svg>

@@ -7,8 +7,12 @@
 @import url("app.css");
 
 /* --- El celular: la marca y la cuenta arriba; el menú, una barra fija abajo ---------------------- */
+/* Raíces cálida, iteración 2: la cabecera más baja (de unos 140 px a unos 110) para que la acción
+   principal de cada pantalla entre arriba de la barra del menú. Lo mismo, en el mismo orden y en el
+   mismo lugar: la marca, la firma y Notificaciones en la primera fila; la cuenta, con "Mi perfil" y
+   "Salir", en una fila de 48 px (el nombre en hasta dos renglones chicos y el rol debajo). */
 .raices-privado {
-  padding-bottom: 4.5rem;
+  padding-bottom: calc(var(--medida-barra-menu) + 0.75rem);
 }
 
 .armazon {
@@ -16,37 +20,46 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1.5rem;
-  padding: 0.75rem 1rem;
+  gap: 0 0.75rem;
+  padding: 0.25rem 1rem calc(0.25rem + var(--medida-estrato));
 }
 
 .armazon-cuenta {
   display: flex;
+  flex: 1 1 100%;
   align-items: center;
-  gap: 1rem;
+  gap: 0.25rem;
 }
 
 .armazon-cuenta p {
   display: grid;
+  flex: 1;
+  min-width: 0;
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.15;
 }
 
 .armazon-cuenta b {
-  color: var(--color-texto-suelo);
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--color-marco-texto);
+  font-size: 0.9375rem;
 }
 
 .armazon-cuenta small {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .armazon-cuenta a {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-width: 3rem;
   min-height: 3rem;
   padding: 0 0.5rem;
-  color: var(--color-raiz);
+  color: var(--color-marco-enlace);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -62,7 +75,7 @@
   min-width: 3rem;
   min-height: 3rem;
   margin-left: auto;
-  color: var(--color-texto-suelo);
+  color: var(--color-marco-texto);
   font-weight: 700;
   text-decoration: none;
 }
@@ -95,15 +108,15 @@
   padding: 0 0.25rem;
   border: 1.5px solid var(--color-tinta);
   border-radius: 50%;
-  background: var(--color-raiz);
+  background: var(--color-actual-fondo);
   box-shadow: 0.125rem 0.125rem 0 var(--color-hoja);
-  color: var(--color-tinta);
+  color: var(--color-actual-texto);
   font-size: 0.8125rem;
   line-height: 1;
 }
 
 .armazon-avisos[aria-current="page"] {
-  color: var(--color-raiz);
+  color: var(--color-marco-enlace);
 }
 
 main {
@@ -171,7 +184,18 @@ main h1 {
 
 @media (min-width: 37.5em) {
   .armazon {
-    padding: 0.75rem 2rem;
+    padding: 0.5rem 2rem calc(0.5rem + var(--medida-estrato));
+    row-gap: 0.25rem;
+  }
+
+  /* Desde la tableta, la cuenta vuelve a su lugar en la fila de la marca. */
+  .armazon-cuenta {
+    flex: 0 1 auto;
+    gap: 1rem;
+  }
+
+  .armazon-cuenta p {
+    flex: 0 1 auto;
   }
 
   main {

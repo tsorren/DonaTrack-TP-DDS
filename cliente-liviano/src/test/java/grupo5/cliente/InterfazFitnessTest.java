@@ -86,7 +86,12 @@ class InterfazFitnessTest {
           new Par("--color-error-texto", "--color-fondo", 4.5),
           new Par("--color-borde-control", "--color-fondo", 3),
           new Par("--color-foco", "--color-fondo", 3),
-          new Par("--color-foco", "--color-superficie", 3));
+          new Par("--color-foco", "--color-superficie", 3),
+          // El marco común (Raíces cálida, iteración 2, casa): cabecera, pie y barra del menú.
+          new Par("--color-marco-texto", "--color-marco", 4.5),
+          new Par("--color-marco-enlace", "--color-marco", 4.5),
+          new Par("--color-marco-texto", "--color-estrato", 4.5),
+          new Par("--color-actual-texto", "--color-actual-fondo", 4.5));
 
   private static final Pattern COLOR_LITERAL =
       Pattern.compile(

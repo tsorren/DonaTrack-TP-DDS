@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--/* La firma de la casa (Raíces cálida, iteración 2, casa): dos abejas chicas que se van volando por
+       un vuelo punteado con un rulo, como quien firma al pie. Son los donantes, que polinizan sin ver
+       todo el recorrido (encuesta "Huerta con abejas", 2026-11-06), pero acá no cuentan nada: sin dato
+       detrás, solo a la vista (aria-hidden). Va en tres lugares y en ninguno más: la cabecera (privada
+       y pública, lugar 'cabecera'), la portada (al final del título, lugar 'portada') y los estados
+       vacíos, que la llevan desde la pieza .vacio (componentes/aviso.css, con el mismo dibujo en
+       img/firma-vacio-*.svg). Nunca en botones, datos, errores ni en el banner. Al abrir la página el
+       vuelo se dibuja, las abejas llegan y zumban un momento; todo termina solo antes de 5 segundos.
+       Uso: <svg th:replace="~{componentes/firma :: firma('cabecera')}"></svg>.
+       No es una pantalla: SitioController solo sirve nombres con rol. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<svg th:fragment="firma(lugar)" class="firma" th:attr="data-lugar=${lugar}" data-lugar="cabecera"
+     viewBox="0 0 96 36" aria-hidden="true" focusable="false">
+  <path class="firma-vuelo" d="M3 32C12 33 18 27 24 22C30 16 40 15 40 22C40 28 31 28 31 22C31 16 44 22 52 25C58 27 63 18 69 15"/>
+  <g class="firma-abeja" transform="translate(50 25) scale(0.8)">
+    <g class="firma-zumbido">
+      <path class="firma-ala" d="M-1 -3C-4 -12 -12 -12 -10 -6C-8 -2 -4 -2 -1 -3Z"/>
+      <path class="firma-ala" d="M1 -3.5C1 -13 9 -15 10 -8C10 -4 5 -3 1 -3.5Z"/>
+      <rect class="firma-cuerpo" x="-8" y="-4.5" width="15" height="9" rx="4.5"/>
+      <path class="firma-raya" d="M-3 -4V4M1.5 -4.3V4.3"/>
+      <path class="firma-antena" d="M-8 0H-10.5M8.5 -3C9.5 -6 11 -7.5 13 -7.5"/>
+      <circle class="firma-cabeza" cx="8" cy="-0.3" r="3"/>
+    </g>
+  </g>
+  <g class="firma-abeja" transform="translate(80 15)">
+    <g class="firma-zumbido">
+      <path class="firma-ala" d="M-1 -3C-4 -12 -12 -12 -10 -6C-8 -2 -4 -2 -1 -3Z"/>
+      <path class="firma-ala" d="M1 -3.5C1 -13 9 -15 10 -8C10 -4 5 -3 1 -3.5Z"/>
+      <rect class="firma-cuerpo" x="-8" y="-4.5" width="15" height="9" rx="4.5"/>
+      <path class="firma-raya" d="M-3 -4V4M1.5 -4.3V4.3"/>
+      <path class="firma-antena" d="M-8 0H-10.5M8.5 -3C9.5 -6 11 -7.5 13 -7.5"/>
+      <circle class="firma-cabeza" cx="8" cy="-0.3" r="3"/>
+    </g>
+  </g>
+</svg>
+</body>
+</html>
