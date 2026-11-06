@@ -2,6 +2,7 @@ package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.controllers.INecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
 import grupo5.donaciones.services.INecesidadesService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -41,6 +42,13 @@ public class NecesidadesController implements INecesidadesController {
       @RequestParam(required = false) UUID entidadId, @RequestParam(required = false) String tipo) {
     List<NecesidadDTO> lista = necesidadesService.listarConFiltros(entidadId, tipo);
     return ResponseEntity.ok(lista);
+  }
+
+  @Override
+  @GetMapping("/publicas")
+  public ResponseEntity<List<NecesidadPublicaDTO>> listarNecesidadesPublicas(
+      @RequestParam(required = false) UUID entidadId) {
+    return ResponseEntity.ok(necesidadesService.listarPublicas(entidadId));
   }
 
   @Override

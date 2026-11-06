@@ -17,6 +17,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.services.ResultadoRegistro;
 import java.util.List;
@@ -25,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
+
+  private static final String CANTIDAD = "$.size()";
 
   private static final String RUTA = "/api/entidades";
 
@@ -105,7 +108,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(header().string("X-Total-Count", "1"))
-        .andExpect(jsonPath("$.size()").value(1))
+        .andExpect(jsonPath(CANTIDAD).value(1))
         .andExpect(jsonPath("$[0].id").value(entidad.id().toString()));
   }
 
@@ -118,7 +121,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
         .perform(get(RUTA).param("nombre", "comedor").param("page", "2").param("size", "10"))
         .andExpect(status().isOk())
         .andExpect(header().string("X-Total-Count", "25"))
-        .andExpect(jsonPath("$.size()").value(0));
+        .andExpect(jsonPath(CANTIDAD).value(0));
   }
 
   @Test
@@ -157,5 +160,42 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
     UUID id = UUID.randomUUID();
 
     mockMvc.perform(delete(RUTA + "/" + id)).andExpect(status().isNoContent());
+  }
+
+  // ===================== GET /api/entidades/publicas (HB-08) =====================
+
+  @Test
+  void obtenerPublicas_devuelveSoloLosCamposPublicosYElTotal() throws Exception {
+    EntidadPublicaDTO entidad =
+        new EntidadPublicaDTO(UUID.randomUUID(), "Comedor Sur", "Alimentos");
+    when(entidadBeneficiariaService.buscarPublicas("comedor", 0, 10))
+        .thenReturn(new Pagina<>(List.of(entidad), 3));
+
+    mockMvc
+        .perform(
+            get(RUTA + "/publicas")
+                .param("nombre", "comedor")
+                .param("page", "0")
+                .param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "3"))
+        .andExpect(jsonPath("$[0].id").value(entidad.id().toString()))
+        .andExpect(jsonPath("$[0].razonSocial").value("Comedor Sur"))
+        .andExpect(jsonPath("$[0].rubro").value("Alimentos"))
+        .andExpect(jsonPath("$[0].juridica").doesNotExist())
+        .andExpect(jsonPath("$[0].documento").doesNotExist())
+        .andExpect(jsonPath("$[0].mediosDeContacto").doesNotExist())
+        .andExpect(jsonPath("$[0].direccion").doesNotExist());
+  }
+
+  @Test
+  void obtenerPublicas_noSeConfundeConElPathDeUnaEntidad() throws Exception {
+    when(entidadBeneficiariaService.buscarPublicas(null, null, null))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(get(RUTA + "/publicas"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(CANTIDAD).value(0));
   }
 }

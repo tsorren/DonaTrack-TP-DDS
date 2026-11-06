@@ -19,6 +19,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
@@ -492,6 +493,52 @@ class EntidadBeneficiariaServiceTest {
       ValidationException ex =
           assertThrows(
               ValidationException.class, () -> service.buscar(null, invalida[0], invalida[1]));
+      assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+    }
+    verify(repository, never()).findAll();
+  }
+
+  // ===================== buscarPublicas (HB-08) =====================
+
+  @Test
+  void buscarPublicas_devuelveSoloActivasConJuridicaYElDtoPublico() {
+    Juridica juridica =
+        new Juridica(PersonaMother.juanPerez(), COMEDOR_SUR, TipoJuridico.ONG, "Alimentos");
+    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
+    EntidadBeneficiaria activa = new EntidadBeneficiaria(juridica.getId());
+    EntidadBeneficiaria deBaja = entidadLlamada(ABRIGO_YA);
+    deBaja.darDeBaja();
+    EntidadBeneficiaria sinJuridica = entidadSinJuridica();
+    when(repository.findAll()).thenReturn(List.of(activa, deBaja, sinJuridica));
+
+    Pagina<EntidadPublicaDTO> pagina = service.buscarPublicas(null, null, null);
+
+    assertEquals(
+        List.of(new EntidadPublicaDTO(juridica.getId(), COMEDOR_SUR, "Alimentos")),
+        pagina.elementos());
+    assertEquals(1, pagina.total());
+  }
+
+  @Test
+  void buscarPublicas_conNombreYPaginado_aplicaLaMismaBusqueda() {
+    conEntidades(COMEDOR_SUR, COMEDOR_NORTE, BANCO_DE_ROPA);
+
+    Pagina<EntidadPublicaDTO> pagina = service.buscarPublicas("comedor", 0, 1);
+
+    assertEquals(
+        List.of(COMEDOR_NORTE),
+        pagina.elementos().stream().map(EntidadPublicaDTO::razonSocial).toList());
+    assertEquals(2, pagina.total());
+  }
+
+  @Test
+  void buscarPublicas_conPaginacionInvalida_lanzaValidationExceptionSinConsultar() {
+    int maximo = EntidadBeneficiariaService.TAMANIO_PAGINA_MAXIMO;
+    for (Integer[] invalida : new Integer[][] {{-1, null}, {null, 0}, {null, maximo + 1}}) {
+      ValidationException ex =
+          assertThrows(
+              ValidationException.class,
+              () -> service.buscarPublicas(null, invalida[0], invalida[1]));
       assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
     }
     verify(repository, never()).findAll();

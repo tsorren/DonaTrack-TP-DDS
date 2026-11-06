@@ -7,6 +7,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
@@ -83,18 +84,44 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
 
   @Override
   public Pagina<EntidadBeneficiariaOutputDTO> buscar(String nombre, Integer page, Integer size) {
+    validarPaginado(page, size);
+    return buscarEn(obtenerTodas(), nombre, page, size);
+  }
+
+  @Override
+  public Pagina<EntidadPublicaDTO> buscarPublicas(String nombre, Integer page, Integer size) {
+    validarPaginado(page, size);
+    List<EntidadBeneficiariaOutputDTO> activas =
+        obtenerTodas().stream().filter(e -> e.activo() && e.juridica() != null).toList();
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = buscarEn(activas, nombre, page, size);
+    return new Pagina<>(
+        pagina.elementos().stream()
+            .map(
+                e ->
+                    new EntidadPublicaDTO(e.id(), e.juridica().razonSocial(), e.juridica().rubro()))
+            .toList(),
+        pagina.total());
+  }
+
+  private static void validarPaginado(Integer page, Integer size) {
+    if ((page != null && page < 0)
+        || (size != null && (size < 1 || size > TAMANIO_PAGINA_MAXIMO))) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
+  /** Filtra por nombre y pagina; {@code page} y {@code size} ya validados. */
+  private static Pagina<EntidadBeneficiariaOutputDTO> buscarEn(
+      List<EntidadBeneficiariaOutputDTO> entidades, String nombre, Integer page, Integer size) {
     boolean paginado = page != null || size != null;
     int pagina = page == null ? 0 : page;
     int tamanio = size == null ? TAMANIO_PAGINA_POR_DEFECTO : size;
-    if (pagina < 0 || tamanio < 1 || tamanio > TAMANIO_PAGINA_MAXIMO) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
-    }
 
     // ponytail: filtra y pagina en memoria sobre findAll(); pasar a una consulta paginada cuando
     // el volumen lo pida.
     String buscado = nombre == null ? null : nombre.toLowerCase(Locale.ROOT);
     List<EntidadBeneficiariaOutputDTO> filtradas =
-        obtenerTodas().stream()
+        entidades.stream()
             .filter(
                 e ->
                     buscado == null

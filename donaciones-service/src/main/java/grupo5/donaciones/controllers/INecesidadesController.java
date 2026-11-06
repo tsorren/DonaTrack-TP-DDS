@@ -1,6 +1,7 @@
 package grupo5.donaciones.controllers;
 
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ public interface INecesidadesController {
 
   ResponseEntity<List<NecesidadDTO>> listarNecesidades(
       @RequestParam(required = false) UUID entidadId, @RequestParam(required = false) String tipo);
+
+  ResponseEntity<List<NecesidadPublicaDTO>> listarNecesidadesPublicas(UUID entidadId);
 
   ResponseEntity<NecesidadDTO> obtenerNecesidad(UUID id);
 
