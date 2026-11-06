@@ -91,7 +91,11 @@ class InterfazFitnessTest {
           new Par("--color-marco-texto", "--color-marco", 4.5),
           new Par("--color-marco-enlace", "--color-marco", 4.5),
           new Par("--color-marco-texto", "--color-estrato", 4.5),
-          new Par("--color-actual-texto", "--color-actual-fondo", 4.5));
+          new Par("--color-actual-texto", "--color-actual-fondo", 4.5),
+          // La cifra sobre el disco de su etapa (recorrido) y los números sobre los frutos.
+          new Par("--color-tinta", "--color-raiz", 4.5),
+          new Par("--color-tinta", "--color-en-camino-sello", 4.5),
+          new Par("--color-tinta", "--color-fruto", 4.5));
 
   private static final Pattern COLOR_LITERAL =
       Pattern.compile(

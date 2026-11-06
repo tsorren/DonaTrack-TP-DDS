@@ -7,10 +7,13 @@
 @import url("app.css");
 
 /* --- El celular: la marca y la cuenta arriba; el menú, una barra fija abajo ---------------------- */
-/* Raíces cálida, iteración 2: la cabecera más baja (de unos 140 px a unos 110) para que la acción
-   principal de cada pantalla entre arriba de la barra del menú. Lo mismo, en el mismo orden y en el
-   mismo lugar: la marca, la firma y Notificaciones en la primera fila; la cuenta, con "Mi perfil" y
-   "Salir", en una fila de 48 px (el nombre en hasta dos renglones chicos y el rol debajo). */
+/* Raíces cálida, iteración 2: la cabecera más baja (de unos 140 px a 100 con el estrato) para que la
+   acción principal de cada pantalla entre arriba de la barra del menú. Lo mismo, en el mismo orden y
+   en el mismo lugar: la marca, la firma y Notificaciones en la primera fila; la cuenta, con "Mi
+   perfil" y "Salir", en una fila de 48 px (el nombre en hasta dos renglones chicos y el rol debajo).
+   Sin aire de más: las dos filas de toque de 48 px, una sobre la otra; la placa de la marca cuelga
+   del borde de arriba, como un cartel, y la fila de la cuenta apoya su borde de toque sobre el
+   estrato (la letra queda unos 6 px arriba de la línea de paja: más abajo se pega a ella). */
 .raices-privado {
   padding-bottom: calc(var(--medida-barra-menu) + 0.75rem);
 }
@@ -21,7 +24,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0 0.75rem;
-  padding: 0.25rem 1rem calc(0.25rem + var(--medida-estrato));
+  padding: 0 1rem var(--medida-estrato);
 }
 
 .armazon-cuenta {
@@ -29,6 +32,7 @@
   flex: 1 1 100%;
   align-items: center;
   gap: 0.25rem;
+  margin-bottom: calc(var(--medida-estrato) * -0.625);
 }
 
 .armazon-cuenta p {
@@ -192,6 +196,7 @@ main h1 {
   .armazon-cuenta {
     flex: 0 1 auto;
     gap: 1rem;
+    margin-bottom: 0;
   }
 
   .armazon-cuenta p {
@@ -210,8 +215,11 @@ main h1 {
     padding-bottom: 0;
   }
 
+  /* La cabecera mide su fila para la firma (componentes/firma.css: donde no entra entera, no se
+     muestra). Solo desde acá: en el celular, un contenedor sería el marco de la barra fija. */
   .armazon {
     padding-inline: max(2rem, (100% - 82rem) / 2);
+    container: cabecera / inline-size;
   }
 
   /* En la tableta, el menú (componentes/navegacion.css) va en una segunda fila a todo el ancho de la
@@ -219,6 +227,32 @@ main h1 {
   .armazon .navegacion {
     order: 1;
     flex-basis: 100%;
+  }
+}
+
+/* --- La firma de la cabecera (componentes/firma.css) ------------------------------------------ */
+/* Un solo tamaño, pegada a la marca, y donde no entra entera, no se muestra: con el menú en su propia
+   fila, la marca, la firma, Notificaciones y la cuenta piden unos 42rem; con el menú de hasta 5
+   secciones en la misma fila (pantalla grande), unos 74rem (a 1280 px entra). Va acá, sin capa, porque
+   el pie del acta de Confirmar recepción también se llama `.firma` (entidad-seguimiento-confirmar.css,
+   sin capa) y le ganaba al bloque: le daba grilla, aire y un filete punteado. */
+.armazon > .firma {
+  display: block;
+  padding: 0;
+  border: 0;
+}
+
+@container cabecera (width < 42rem) {
+  .armazon > .firma {
+    display: none;
+  }
+}
+
+@media (min-width: 68.75em) {
+  @container cabecera (width < 74rem) {
+    .armazon:not(:has(.navegacion li:nth-child(6))) > .firma {
+      display: none;
+    }
   }
 }
 

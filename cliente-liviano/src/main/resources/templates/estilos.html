@@ -555,7 +555,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.frutos', 'Lo que está confirmado, en la tierra honda de la portada: cada cifra es un fruto que cuelga de una rama de paja (.frutos-rama, un div con dt y dd por cifra). En el celular la rama baja por el costado; desde la tableta cruza de lado a lado. Sin datos, el aviso va en un marco doble de paja (.frutos-aviso). La cabeza (.frutos-cabeza) lleva el título, una nota y, si hay, un botón.', ~{::demo-frutos})}">
+        <div th:replace="~{componentes/muestra :: muestra('.frutos', 'Lo que está confirmado, en la tierra tibia de la portada (el humus del recorrido, con su estrato y su ruta): cada cifra es un fruto que cuelga de una rama de paja (.frutos-rama, un div con dt y dd por cifra). En el celular la rama baja por el costado; desde la tableta cruza de lado a lado. Sin datos, el aviso va en un marco doble de paja (.frutos-aviso). La cabeza (.frutos-cabeza) lleva el título, una nota y, si hay, un botón.', ~{::demo-frutos})}">
           <th:block th:fragment="demo-frutos">
             <div data-ancho="pantalla">
             <section class="frutos tierra-impresa" aria-labelledby="muestra-frutos-titulo">
@@ -660,7 +660,7 @@
             </p>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.firma', 'La firma de la casa: dos abejas chicas que se van por un vuelo punteado con un rulo (.firma-vuelo; cada .firma-abeja con .firma-zumbido, dos .firma-ala, .firma-cuerpo, .firma-raya, .firma-antena y .firma-cabeza). Decorativa, sin dato detrás. Va en tres lugares y en ninguno más: la cabecera (data-lugar=&quot;cabecera&quot;, sobre el marco de noche; cede su lugar antes que nada), el final del título de la portada (data-lugar=&quot;portada&quot;) y los estados vacíos (desde .vacio). Nunca en botones, datos, errores ni en el banner. El vuelo se dibuja, las abejas llegan y zumban; termina sola antes de 5 segundos.', ~{::demo-firma})}">
+        <div th:replace="~{componentes/muestra :: muestra('.firma', 'La firma de la casa: dos abejas chicas que se van por un vuelo punteado con un rulo (.firma-vuelo; cada .firma-abeja con .firma-zumbido, dos .firma-ala, .firma-cuerpo, .firma-raya, .firma-antena y .firma-cabeza). Decorativa, sin dato detrás. Va en tres lugares y en ninguno más: la cabecera (data-lugar=&quot;cabecera&quot;, sobre el marco de noche, pegada a la marca y de un solo tamaño; donde no entra entera, no se muestra), el final del título de la portada (data-lugar=&quot;portada&quot;) y los estados vacíos (desde .vacio). Una por pantalla: en la cabecera, salvo que la vista tenga un vacío firmado o sea la portada. Nunca en botones, datos, errores ni en el banner. El vuelo se dibuja, las abejas llegan y zumban; termina sola antes de 5 segundos.', ~{::demo-firma})}">
           <th:block th:fragment="demo-firma">
             <div class="racimo" data-espacio="4">
               <div data-fondo="suelo-hondo">
@@ -670,8 +670,10 @@
             </div>
           </th:block>
         </div>
-        <th:block th:replace="~{componentes/recorrido :: muestra}"></th:block>
       </div>
+      <!--/* El recorrido, fuera de la grilla: su ficha ocupa todo el ancho para que se vea la forma de
+             escritorio (los tres tramos de izquierda a derecha). */-->
+      <th:block th:replace="~{componentes/recorrido :: muestra}"></th:block>
     </section>
   </div>
 </th:block>

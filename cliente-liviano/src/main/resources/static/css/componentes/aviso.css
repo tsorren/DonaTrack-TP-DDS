@@ -47,9 +47,12 @@
 /* Raíces cálida, iteración 2: el estado vacío de papel lleva la firma de la casa (bloque `firma`): dos
    abejas que se escapan por la esquina de arriba, con el vuelo punteado que sale del papel. Es la
    misma pieza en todo el sitio, sin tocar las plantillas: dos capas pintadas con un dibujo como
-   máscara (los cuerpos en paja, el trazo en tinta). Solo a la vista. No va en el que lleva
-   `data-forma` (los renglones de la portada, que ya firma en su título) ni en el que lleva `role` (un
-   «Cargando…», un error o un filtro sin resultados), ni en el banner ni en los avisos breves. */
+   máscara (los cuerpos en paja, el trazo en tinta). Solo a la vista, y solo en los vacíos reales (no
+   hay datos todavía). No va en el que lleva `data-forma` (los renglones de la portada, que ya firma
+   en su título) ni en el que lleva `role`: así se marca el vacío que no es vacío, con
+   `role="status"` (un filtro sin resultados o un «no encontrada», que no tienen firma), ni en el
+   banner ni en los avisos breves. Cuando la vista tiene un vacío firmado, la cabecera no firma
+   (componentes/firma.css): una firma por vista. */
 .vacio:not([data-forma], [role]) {
   position: relative;
 }

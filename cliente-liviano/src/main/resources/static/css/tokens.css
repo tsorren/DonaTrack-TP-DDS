@@ -252,4 +252,9 @@
   /* El alto de la barra del menú en el celular (48 px de toque y un poco de aire) y el del estrato. */
   --medida-barra-menu: 3.25rem;
   --medida-estrato: 0.6875rem;
+  /* El ancho de la firma en la cabecera: uno solo en todas las pantallas (alto proporcional). */
+  --medida-firma: 4.5rem;
+  /* El estrato claro del corte de suelo, uno solo en todo el sitio: el humus con un poco de paja (la
+     fórmula del recorrido). */
+  --color-suelo-estrato: color-mix(in srgb, var(--p-suelo), var(--p-raiz) 14%);
 }
