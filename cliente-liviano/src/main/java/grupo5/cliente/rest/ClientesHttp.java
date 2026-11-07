@@ -28,6 +28,11 @@ class ClientesHttp {
     return cliente(RestClient.builder(), url, IncentivosApi.class);
   }
 
+  @Bean
+  DonacionesApi donacionesApi(@Value("${cliente.api.donaciones.url}") String url) {
+    return cliente(RestClient.builder(), url, DonacionesApi.class);
+  }
+
   /** Arma el proxy de una API; los tests le pasan el builder atado a MockRestServiceServer. */
   static <T> T cliente(RestClient.Builder builder, String url, Class<T> api) {
     RestClient restClient =

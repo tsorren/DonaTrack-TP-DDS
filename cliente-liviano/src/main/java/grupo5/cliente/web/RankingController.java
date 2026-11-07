@@ -27,7 +27,7 @@ public class RankingController {
   String ranking(
       @RequestParam(required = false) String respuesta, Model model, HttpSession sesion) {
     // Primero la página: ?respuesta= responde sin llamar a la API.
-    String vista = sitio.pagina("admin-ranking", respuesta, model, sesion);
+    String vista = sitio.pagina("admin-ranking", respuesta, null, model, sesion);
     model.addAttribute("ranking", rankings.ranking());
     return vista;
   }

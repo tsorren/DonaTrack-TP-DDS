@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.web.MisDonacionesController;
 import grupo5.cliente.web.RankingController;
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
@@ -38,8 +39,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /** La pantalla de prueba está en src/test/resources/templates/. */
-@WebMvcTest({SitioController.class, RankingController.class})
-@Import({MaquetaConfig.class, RankingMaqueta.class, SitioControllerTest.PaginasDeError.class})
+@WebMvcTest({SitioController.class, RankingController.class, MisDonacionesController.class})
+@Import({
+  MaquetaConfig.class,
+  RankingMaqueta.class,
+  DonacionesMaqueta.class,
+  CuentaMaqueta.class,
+  SitioControllerTest.PaginasDeError.class
+})
 @ActiveProfiles("maqueta")
 class SitioControllerTest {
 
@@ -193,6 +200,9 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
     mvc.perform(get("/donante-donaciones?estado=otro"))
         .andExpect(content().string(containsString("7 donaciones, de la más reciente")));
+    // Mis donaciones tiene su controller, pero ?cuenta= sigue cambiando la cuenta de ejemplo.
+    mvc.perform(get("/donante-donaciones?cuenta=persona"))
+        .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=ropa"))
         .andExpect(model().attribute("seccion", "Mis donaciones"))
         .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")));

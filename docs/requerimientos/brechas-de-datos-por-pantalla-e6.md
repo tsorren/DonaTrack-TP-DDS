@@ -50,7 +50,7 @@ el de los datos.
 
 | Pantalla | Endpoints | Estado | Qué falta o se deriva | HB |
 |---|---|---|---|---|
-| Mis donaciones | `/donaciones-independientes?donanteId&estado&categoriaId` | 🟢 | 🔁 la categoría del filtro pasa de nombre a id con `/api/categorias`. 🔁 el número de la donación, por posición. 🔁 el destino, con una llamada por donación | HB-03 y HB-04, hechos |
+| Mis donaciones | `/donaciones-independientes?donanteId&estado&categoriaId` | 🟢 | 🔁 la categoría del filtro pasa de nombre a id con `/api/categorias`. 🔁 el número de la donación, por posición. 🔁 el destino: `entidadBeneficiariaId` (sumado al DTO al conectarla, 2026-11-07) y una llamada a `/api/entidades/{id}` por entidad distinta | HB-03 y HB-04, hechos |
 | Misiones e insignias | `/api/incentivos/donantes/{id}/misiones`, `/insignias`, `/donantes/{id}`, `/ascensos`; tipo de persona en Donaciones | 🟡 | 🔁 "en espera" y "se abre después", por el orden de la lista y la categoría del donante. ❌ unidad del progreso ("12 de 50 **bienes**"). ❌ número de misión. ❌ "tu donación más grande". Cuatro llamadas a dos servicios | — |
 | Notificaciones | `/api/notificaciones/persona/{id}`, conteo, marcar leídas | 🟡 | ✅ mensaje, fecha y leída. ❌ tipo de evento (sin sello) e id de la donación (sin enlace). El evento de entrada los trae; `NotificacionDTO` no los devuelve | HB-09 (nuevo campo) |
 | Detalle de una donación | `/donaciones-independientes/{id}`, seguimiento, `/api/entregas/{id}` | 🟡 | ✅ etapas y fechas (historial propio de la donación). 🔁 fotos con `fotosRecepcion` de la entrega. ❌ causa del problema y nueva salida. ❌ nombre visible | HB-20 |
@@ -109,7 +109,7 @@ La F0 del plan es el esqueleto; esta es la primera rebanada de la F2, que se hac
 | Pantalla | Por qué | Contra |
 |---|---|---|
 | **Ranking del admin** | Un servicio, un endpoint, una sola falta. El admin no tiene "mis datos": no necesita `CuentaActual` | La fecha de cálculo pide un cambio en Incentivos (o se oculta hasta tenerlo). Su plantilla está en `E6_raices`, todavía no en `ENTREGA_6` |
-| Mis donaciones | 🟢: los filtros ya existen | Necesita `CuentaActual` y una llamada por donación para el destino |
+| Mis donaciones | 🟢: los filtros ya existen | Necesita `CuentaActual` y una llamada por entidad para el destino (conectada el 2026-11-07) |
 | Entidades y necesidades | Pública y en `ENTREGA_6`; la unidad se deriva | Pierde barrio, "qué es", lo recibido y el período |
 
 ## 8. Líneas de la ficha que cambiaron
