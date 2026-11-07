@@ -1,0 +1,179 @@
+/* Inicio del admin en Raíces (ficha raices-entidad-navegable, 4.4): la mesa de trabajo de quien
+   decide, sobria. Lo que espera una decisión, una etiqueta de herbario por lista, con su cantidad en
+   el título; cómo está todo, en el registro de doble filete de Necesidades, con cada cifra en la
+   letra de texto y su nombre al lado, sin gráficos. */
+@import url("entidad-comun.css");
+
+.mesa {
+  max-width: 76rem;
+}
+
+.mesa-cabecera {
+  margin: 0 0 2rem;
+}
+
+.mesa-cabecera p:not(.rotulo) {
+  max-width: 40rem;
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.mesa-fecha {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.decisiones,
+.todo {
+  margin: 0 0 2.5rem;
+}
+
+.decisiones > h2,
+.todo > h2 {
+  margin: 0 0 1rem;
+}
+
+.decisiones-lista {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Cada lista que espera: la etiqueta de herbario, con su cantidad en el título. */
+.decision {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+
+main .decision h3 {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--color-tinta);
+  color: var(--color-acento);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.decision h3 span {
+  color: var(--color-tinta);
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.decision p,
+.decision ul {
+  margin: 0;
+}
+
+.decision-nombres {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0;
+  list-style: none;
+  color: var(--color-tinta);
+}
+
+.decision-nombres li::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  vertical-align: 0.1em;
+}
+
+/* El botón al pie de la etiqueta: los tres quedan a la misma altura. */
+.decision .boton {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.decisiones .vacio {
+  margin: 0;
+}
+
+/* --- Cómo está todo: dos registros de doble filete, cada cifra con su nombre --------------------- */
+.todo-fecha {
+  margin: -0.5rem 0 1rem;
+}
+
+.registros {
+  display: grid;
+  gap: 1.75rem;
+}
+
+main .registro-mesa h3 {
+  margin: 0 0 0.75rem;
+  color: var(--color-acento);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.registro-mesa dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 6px;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: 5px;
+}
+
+.registro-mesa dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.75rem 1rem;
+}
+
+.registro-mesa dl > div:nth-child(n + 3) {
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.registro-mesa dl > div:nth-child(even) {
+  border-left: 1px dotted var(--color-tinta-suave);
+}
+
+.registro-mesa dt {
+  order: 2;
+  line-height: 1.3;
+}
+
+.registro-mesa dd {
+  order: 1;
+  margin: 0;
+  color: var(--color-tinta);
+  font: 800 1.625rem / 1.1 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+@media (min-width: 53.75em) {
+  .decisiones-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .registro-mesa dl {
+    max-width: 56rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .registro-mesa dl > div:nth-child(n + 3) {
+    border-top: 0;
+  }
+
+  .registro-mesa dl > div + div {
+    border-left: 1px dotted var(--color-tinta-suave);
+  }
+}

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Mapa (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.2). El estilo
+       del mapa es el de Seguir entregas (brief, "Mapa de las entregas"): la red de la portada, con el
+       brote del depósito arriba y una línea de subte impresa hasta la estación de cada entidad, con
+       codos a 45° redondeados. Debajo de cada estación, un fruto mandarina por entrega confirmada
+       (los frutos de la planta de la portada). El dibujo sale de los datos (x, y de cada entidad y
+       sus entregas filtradas) y es aria-hidden: la lista "Entidad por entidad" dice todo, con el
+       mismo número (RF-CL-06). Al pasar o enfocar una entidad de la lista, o al llegar con
+       #entidad-<clave> (desde Entidades), su línea queda llena y las demás se apagan. En el sistema,
+       sobre MapLibre (D21). Estados: ?categoria=alimentos, ropa, muebles y escolares (sin
+       resultados), ?escenario=vacio, lento y error. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-mapa', ~{::contenido})}">
+<head>
+  <title>Mapa - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{datos-publicos :: datos(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             filtradas=${escenario == 'vacio' ? {} : (categoria == '' ? entregas : entregas.?[cat == '__${categoria}__'])},
+             elegida=${categoria == '' ? null : categorias.^[clave == '__${categoria}__']},
+             conEntidades=${#sets.toSet(filtradas.![entidad]).size()},
+             cargado=${escenario == '' or escenario == 'vacio'},
+             hay=${escenario == '' and !filtradas.isEmpty()}">
+  <svg th:replace="~{iconos :: categorias}"></svg>
+  <div class="publica mapa">
+    <header class="publica-cabeza">
+      <p class="rotulo">Mapa</p>
+      <h1>Adónde llegaron <em>las donaciones</em></h1>
+      <p class="lectura-bajada">Cada punto es una entidad que confirmó entregas en el último mes. La ubicación
+        es aproximada: mostramos el barrio, nunca la dirección.</p>
+    </header>
+
+    <div th:if="${escenario == ''}" class="publica-barra">
+      <form class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
+            method="get" data-al-cambiar>
+        <fieldset th:replace="~{datos-publicos :: filtroCategorias('Qué se donó', 'Todas')}"></fieldset>
+        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
+      </form>
+      <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
+        <p><b class="fruto" th:text="${#lists.size(filtradas)}">10</b>
+          <span th:text="|${#lists.size(filtradas) == 1 ? 'entrega' : 'entregas'}${elegida == null ? ' confirmadas' : ' de ' + elegida.enFrase} en ${conEntidades} ${conEntidades == 1 ? 'entidad' : 'entidades'}, del 16 de septiembre al 15 de octubre de 2026.|">entregas
+            confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026.</span></p>
+        <p class="nota">Actualizado el 15 de octubre de 2026, 14:30.</p>
+      </div>
+    </div>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar el mapa de entregas.',
+          'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-mapa', true)}"></section>
+    </th:block>
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el mapa de entregas…</p>
+
+    <div th:unless="${escenario == 'error'}" class="mapa-cuerpo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <!--/* El dibujo, fijo en su forma y con los datos de cada entidad: de la estación del depósito
+             (400, 130) baja la línea, dobla a 45° hacia el lado de la entidad y vuelve a bajar hasta
+             su estación. ponytail: las entidades no van justo debajo del depósito (x ≠ 400) ni más
+             arriba que su codo; en el sistema dibuja MapLibre. */-->
+      <figure class="mapa-dibujo tierra-impresa" th:classappend="${escenario == 'lento'} ? 'esqueleto'" aria-hidden="true">
+        <svg th:unless="${escenario == 'lento'}" class="dibujo" viewBox="0 0 800 590" aria-hidden="true" focusable="false">
+          <path class="dibujo-tierra" d="M0 80H800"/>
+          <path class="dibujo-tallo" d="M400 80V44"/>
+          <path class="dibujo-hoja" d="M400 58C386 58 378 48 378 38C392 38 400 48 400 58ZM400 50C412 50 422 42 422 32C408 32 400 40 400 50Z"/>
+          <text class="dibujo-rotulo dibujo-rotulo--papel" x="432" y="70">Depósito</text>
+          <th:block th:if="${hay}">
+          <th:block th:each="e : ${entidades}"
+             th:with="suyas=${filtradas.?[entidad == '__${e.nombre}__']},
+                      s=${e.x != null and e.x > 400 ? 1 : -1},
+                      dx=${e.x == null ? 0 : (e.x > 400 ? e.x - 400 : 400 - e.x)},
+                      yc=${130 + dx}">
+          <g th:unless="${suyas.isEmpty()}" class="estacion" th:classappend="${'estacion--' + e.numero}">
+            <path class="subte-borde" th:attr="d=|M400 82V116Q400 130 ${400 + s * 14} 144L${e.x - s * 14} ${yc - 14}Q${e.x} ${yc} ${e.x} ${yc + 20}V${e.y - 22}|"/>
+            <path class="subte-linea" th:attr="d=|M400 82V116Q400 130 ${400 + s * 14} 144L${e.x - s * 14} ${yc - 14}Q${e.x} ${yc} ${e.x} ${yc + 20}V${e.y - 22}|"/>
+            <g th:attr="transform=|translate(${e.x} ${e.y})|">
+              <circle class="sello-tinta" cx="3" cy="3" r="22"/><circle class="sello-disco" r="22"/>
+              <text class="estacion-numero" y="8" th:text="${e.numero}">1</text>
+              <circle th:each="f, j : ${suyas}" class="mapa-fruto" r="9"
+                      th:attr="cx=${(j.index % 3) * 22 - 22},cy=${36 + (j.index / 3) * 22}"/>
+              <text class="dibujo-rotulo" th:attr="y=${36 + ((#lists.size(suyas) - 1) / 3) * 22 + 32}"
+                    th:text="${e.barrio}">Barrio Ejemplo</text>
+            </g>
+          </g>
+          </th:block>
+          </th:block>
+        </svg>
+      </figure>
+
+      <section th:if="${hay}" class="mapa-lista" aria-labelledby="lista-titulo">
+        <h2 id="lista-titulo">Entidad por entidad</h2>
+        <ol class="estaciones" role="list">
+          <th:block th:each="e : ${entidades}" th:with="suyas=${filtradas.?[entidad == '__${e.nombre}__']}">
+          <li th:unless="${suyas.isEmpty()}" class="estacion-ficha" th:classappend="${'estacion-ficha--' + e.numero}"
+              th:id="${'entidad-' + e.clave}" tabindex="-1">
+            <header class="estacion-cabeza">
+              <svg class="estacion-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle
+                  class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><text
+                  class="estacion-numero" x="21" y="28" th:text="${e.numero}">1</text></svg>
+              <div>
+                <h3 th:text="${e.nombre}">Comedor Barrio Ejemplo</h3>
+                <p th:text="|${e.barrio} · ${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'}|">Barrio
+                  Ejemplo · 6 entregas confirmadas</p>
+              </div>
+            </header>
+            <ul class="estacion-entregas" role="list">
+              <li th:each="f : ${suyas}" th:with="id=${'foto-' + e.clave + '-' + fStat.count}">
+                <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
+                    href="#cat-alimentos" th:href="${'#cat-' + f.cat}"/></svg>
+                <p th:id="${id + '-que'}" th:text="|${f.que} · ${categorias.^[clave == '__${f.cat}__'].texto} · ${f.dia}|">Lentejas
+                  secas, 10 kg · Alimentos · 10 de octubre</p>
+                <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
+                  la foto de la entrega</button>
+                <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${f})}"></div>
+              </li>
+            </ul>
+          </li>
+          </th:block>
+        </ol>
+      </section>
+
+      <div th:if="${escenario == 'lento'}" class="esqueleto mapa-lista"></div>
+
+      <section th:if="${escenario == '' and filtradas.isEmpty()}" class="vacio" aria-labelledby="vacio-titulo">
+        <h2 id="vacio-titulo" th:text="|Todavía no hay entregas de ${elegida.enFrase} en el último mes.|">Todavía no
+          hay entregas de útiles escolares en el último mes.</h2>
+        <p>Cuando una entidad confirme una entrega de esta categoría, aparece en el mapa.</p>
+        <a class="boton" data-tono="secundario" href="/publico-mapa"
+           th:href="@{/publico-mapa}">Ver todas las categorías</a>
+      </section>
+
+      <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+        <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
+        <p>Se cuentan cuando cada entidad confirma lo que recibe.</p>
+        <a class="boton" data-tono="secundario" href="/publico-entidades"
+           th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+      </section>
+    </div>
+
+    <div th:if="${hay}" class="salidas">
+      <a class="boton" data-tono="secundario" href="/publico-donaciones"
+         th:href="@{/publico-donaciones}">Ver las fotos de cada entrega</a>
+      <a class="boton" data-tono="secundario" href="/publico-entidades"
+         th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+      <a class="boton" data-tono="principal" href="/publico-registro-donante"
+         th:href="@{/publico-registro-donante}">Quiero donar</a>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

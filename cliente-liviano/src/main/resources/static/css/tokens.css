@@ -1,0 +1,208 @@
+/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Huerta de noche, estilo
+   impreso editorial, un afiche risográfico, y letra grotesca ancha de afiche (los tres decididos
+   en su A/B), marca, botones, el grano de impresión de la referencia 01 y las cifras. */
+
+@font-face {
+  font-family: Archivo;
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("../fuentes/archivo-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Archivo;
+  font-style: italic;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("../fuentes/archivo-cursiva-latin.woff2") format("woff2");
+}
+
+:root {
+  /* Paleta Huerta de noche (A/B de paleta y acabado, 2026-11-05; antes, Oliva): valores por
+     función, no por tono. Un afiche verde sobre papel de cera: la tierra casi negra en tres pasos,
+     el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de las piezas)
+     y los frutos zanahoria. */
+  /* La letra (A/B de letra, 2026-10-31): Archivo (Omnibus-Type, Buenos Aires) en todo. Los
+     títulos, los numerales y las cifras, anchos y pesados como un afiche (referencia 02); el texto,
+     en ancho normal. El carácter sale del ancho y del peso. */
+  --p-letra-titulo: Archivo, system-ui, sans-serif;
+  --p-letra-texto: Archivo, system-ui, sans-serif;
+  --p-papel: #fbf2d3;
+  --p-tinta: #17140f;
+  --p-tinta-suave: #4a4234;
+  --p-acento: #2d6a1e;
+  --p-acento-hondo: #1f4f14;
+  --p-acento-claro: #d3e98a;
+  --p-tallo: #2d6a1e;
+  --p-hoja: #86b832;
+  --p-suelo: #2a2a1c;
+  --p-suelo-medio: #222217;
+  --p-suelo-hondo: #17170f;
+  --p-texto-suelo: #fbf2d3;
+  --p-raiz: #f4c844;
+  --p-nodo: #f4c844;
+  --p-destacado: #f4c844;
+  /* Los frutos (A/B de frutos y de paleta, 2026-11-02): cada uno, una entrega confirmada, en
+     mandarina; con su segunda tinta, que también dibuja el contorno del que va en camino. */
+  --p-fruto: #f07a12;
+  --p-fruto-hondo: #a8420a;
+  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). "Con
+     problema" (2026-11-05): el texto en tinta negra y el rojo vivo en la sombra y en el ícono. */
+  --p-pendiente-fondo: #ebe3c4;
+  --p-pendiente-texto: #4b4a32;
+  --p-en-camino-fondo: #f8e3a0;
+  --p-en-camino-texto: #6a4f05;
+  --p-en-camino-sello: #d9a514;
+  --p-entregada-fondo: #d3e98a;
+  --p-entregada-texto: #24521a;
+  --p-problema-fondo: #ee3b24;
+  --p-problema-texto: #17140f;
+  --p-problema-sello: #d12a17;
+  /* El movimiento (D32, B0-01): tiempos, esperas, curvas y distancias base. Las hojas usan solo los
+     tokens de uso de abajo. Los valores salen de las 28 duraciones literales de la línea de base
+     (2026-11-04), con un redondeo de hasta 0,1 s. Duraciones: 0,3 y 0,35 → 0,4; 1 y 1,2 → 1,1.
+     Esperas: 0,2 → 0,3; 1,2 → 1,3; 2,2 y 2,4 → 2,3. */
+  --p-tiempo-1: 0.2s;
+  --p-tiempo-2: 0.4s;
+  --p-tiempo-3: 0.75s;
+  --p-tiempo-4: 1.1s;
+  --p-tiempo-5: 24s;
+  --p-espera-0: 0s;
+  --p-espera-1: 0.3s;
+  --p-espera-2: 0.9s;
+  --p-espera-3: 1.3s;
+  --p-espera-4: 1.7s;
+  --p-espera-5: 2.3s;
+  --p-curva-1: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --p-curva-2: cubic-bezier(0.3, 0.7, 0.2, 1);
+  --p-curva-3: ease-out;
+  --p-curva-4: ease;
+  --p-curva-5: ease-in-out;
+  --p-distancia-1: 0.5rem;
+  --p-distancia-2: 1rem;
+  --p-distancia-3: 2rem;
+  /* El espacio y el tamaño del texto que piden las capas de composición y de utilidades (D33). */
+  --p-espacio-1: 0.5rem;
+  --p-espacio-2: 0.75rem;
+  --p-espacio-3: 1rem;
+  --p-espacio-4: 1.5rem;
+  --p-espacio-5: 2.5rem;
+  --p-texto-1: 0.875rem;
+  --p-texto-2: 1.0625rem;
+  --p-texto-3: 1.125rem;
+  /* El título y la bajada de la portada (B3-01): crecen con el ancho de la pantalla. */
+  --p-texto-portada: clamp(2.5rem, 7vw, 5.75rem);
+  --p-texto-bajada: clamp(1.0625rem, 1.4vw, 1.2rem);
+}
+
+:root {
+  /* Tokens de uso (D20): las hojas de Raíces usan solo estos, uno por valor base. */
+  --fuente-titulo: var(--p-letra-titulo);
+  --fuente-texto: var(--p-letra-texto);
+  --color-papel: var(--p-papel);
+  --color-tinta: var(--p-tinta);
+  --color-tinta-suave: var(--p-tinta-suave);
+  --color-acento: var(--p-acento);
+  --color-acento-hondo: var(--p-acento-hondo);
+  --color-acento-claro: var(--p-acento-claro);
+  --color-tallo: var(--p-tallo);
+  --color-hoja: var(--p-hoja);
+  --color-suelo: var(--p-suelo);
+  --color-suelo-medio: var(--p-suelo-medio);
+  --color-suelo-hondo: var(--p-suelo-hondo);
+  --color-texto-suelo: var(--p-texto-suelo);
+  --color-raiz: var(--p-raiz);
+  --color-nodo: var(--p-nodo);
+  --color-destacado: var(--p-destacado);
+  --color-fruto: var(--p-fruto);
+  --color-fruto-hondo: var(--p-fruto-hondo);
+  --color-pendiente-fondo: var(--p-pendiente-fondo);
+  --color-pendiente-texto: var(--p-pendiente-texto);
+  --color-en-camino-fondo: var(--p-en-camino-fondo);
+  --color-en-camino-texto: var(--p-en-camino-texto);
+  --color-en-camino-sello: var(--p-en-camino-sello);
+  --color-entregada-fondo: var(--p-entregada-fondo);
+  --color-entregada-texto: var(--p-entregada-texto);
+  --color-problema-fondo: var(--p-problema-fondo);
+  --color-problema-texto: var(--p-problema-texto);
+  --color-problema-sello: var(--p-problema-sello);
+  /* Los que piden los pares de contraste AA, del sitio. */
+  --color-fondo-pagina: var(--p-papel);
+  --color-fondo: var(--p-papel);
+  --color-superficie: var(--p-papel);
+  --color-texto: var(--p-tinta);
+  --color-texto-suave: var(--p-tinta-suave);
+  --color-titulo: var(--p-acento);
+  --color-enlace: var(--p-acento);
+  --color-texto-sobre-accion: var(--p-papel);
+  --color-accion-primaria: var(--p-acento);
+  --color-accion-primaria-activa: var(--p-acento-hondo);
+  --color-texto-sobre-secundaria: var(--p-tinta);
+  --color-accion-secundaria: var(--p-acento-claro);
+  --color-accion-secundaria-activa: var(--p-hoja);
+  --color-destacado-texto: var(--p-texto-suelo);
+  --color-destacado-texto-suave: var(--p-raiz);
+  --color-destacado-fondo: var(--p-suelo);
+  --color-destacado-fondo-alto: var(--p-suelo-medio);
+  --color-marca-brillante: var(--p-raiz);
+  --color-marca-alterna: var(--p-acento-hondo);
+  --color-marca: var(--p-acento);
+  --color-marca-texto: var(--p-acento);
+  --color-texto-sobre-error: var(--p-papel);
+  --color-error-texto: var(--p-problema-texto);
+  --color-error-fondo: var(--p-problema-fondo);
+  --color-exito-texto: var(--p-entregada-texto);
+  --color-exito-fondo: var(--p-entregada-fondo);
+  --color-info-texto: var(--p-pendiente-texto);
+  --color-info-fondo: var(--p-pendiente-fondo);
+  --color-advertencia-texto: var(--p-en-camino-texto);
+  --color-advertencia-fondo: var(--p-en-camino-fondo);
+  --color-borde-control: var(--p-tinta-suave);
+  --color-foco: var(--p-acento);
+  /* Los bordes y la sombra (A/B de paleta y acabado, 2026-11-05: Huerta de noche): esquinas
+     rectas, como un afiche impreso, y la sombra plana de paja detrás del papel y de los botones,
+     como un farol sobre la tierra oscura. Una pieza que ya es paja lleva la sombra hoja. */
+  --radio-lamina: 0;
+  --radio-boton: 0;
+  --color-sombra: var(--p-raiz);
+  /* Movimiento (D32): duraciones (corta, media, larga, trazo y ambiente, la de una escena que no
+     termina), esperas de una coreografía, curvas (entrada, énfasis, salida, base y ambiente) y las
+     distancias que recorre un elemento al entrar. Un movimiento que no es de estos tiene que
+     pedirlos acá, no escribir un valor. */
+  --movimiento-duracion-corta: var(--p-tiempo-1);
+  --movimiento-duracion-media: var(--p-tiempo-2);
+  --movimiento-duracion-larga: var(--p-tiempo-3);
+  --movimiento-duracion-trazo: var(--p-tiempo-4);
+  --movimiento-duracion-ambiente: var(--p-tiempo-5);
+  --movimiento-retraso-ninguno: var(--p-espera-0);
+  --movimiento-retraso-entrada: var(--p-espera-1);
+  --movimiento-retraso-trazo: var(--p-espera-2);
+  --movimiento-retraso-sello: var(--p-espera-3);
+  --movimiento-retraso-cierre: var(--p-espera-4);
+  --movimiento-retraso-ambiente: var(--p-espera-5);
+  --movimiento-curva-entrada: var(--p-curva-1);
+  --movimiento-curva-enfasis: var(--p-curva-2);
+  --movimiento-curva-salida: var(--p-curva-3);
+  --movimiento-curva-base: var(--p-curva-4);
+  --movimiento-curva-ambiente: var(--p-curva-5);
+  --movimiento-distancia-corta: var(--p-distancia-1);
+  --movimiento-distancia-media: var(--p-distancia-2);
+  --movimiento-distancia-larga: var(--p-distancia-3);
+  --espacio-1: var(--p-espacio-1);
+  --espacio-2: var(--p-espacio-2);
+  --espacio-3: var(--p-espacio-3);
+  --espacio-4: var(--p-espacio-4);
+  --espacio-5: var(--p-espacio-5);
+  --tamano-chico: var(--p-texto-1);
+  --tamano-base: var(--p-texto-2);
+  --tamano-grande: var(--p-texto-3);
+  --tamano-titulo-portada: var(--p-texto-portada);
+  --tamano-bajada-portada: var(--p-texto-bajada);
+  /* Los puntos de quiebre del sitio. */
+  --medida-quiebre-chico: 37.5em;
+  --medida-quiebre-medio: 53.75em;
+  --medida-quiebre-ancho: 68.75em;
+}

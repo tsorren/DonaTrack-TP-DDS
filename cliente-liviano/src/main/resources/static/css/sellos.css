@@ -1,0 +1,89 @@
+/* Raíces: las piezas del dibujo de las entregas (la tierra, el brote y la línea de subte) y el
+   pictograma de categoría en su cuadro salvia. Los comparten las pantallas privadas que muestran
+   entregas: Seguir entregas y Confirmar recepción. Los sellos de estado son el bloque
+   componentes/sello.css. */
+
+/* --- El dibujo -------------------------------------------------------------------------------- */
+/* La tierra no es parte del dibujo: la pinta el fondo de su marco, bajo la línea de tierra, para
+   que la textura impresa quede detrás de las raíces (app.css, .tierra-impresa). */
+
+.dibujo-tierra {
+  stroke: var(--color-tinta);
+  stroke-width: 3;
+}
+
+.dibujo-tallo {
+  stroke: var(--color-tallo);
+  stroke-width: 4;
+}
+
+.dibujo .dibujo-hoja {
+  fill: var(--color-hoja);
+}
+
+/* En el celular el dibujo es chico: los nombres los dice la lista, con el mismo número. */
+.dibujo-rotulo {
+  display: none;
+  fill: var(--color-texto-suelo);
+  font: 700 15px var(--fuente-texto);
+  text-anchor: middle;
+}
+
+.dibujo-rotulo--papel {
+  fill: var(--color-tinta);
+  text-anchor: start;
+}
+
+/* Las líneas de subte de la red de la portada (A/B 2): lo recorrido, paja con borde; lo que falta,
+   hueco, el contorno paja con el suelo adentro: todavía no se imprimió. */
+.dibujo path {
+  stroke-linejoin: round;
+}
+
+.subte-borde {
+  stroke: var(--color-suelo-hondo);
+  stroke-width: 12;
+}
+
+.subte-linea {
+  stroke: var(--color-raiz);
+  stroke-width: 7;
+}
+
+.subte-hueco {
+  stroke: var(--color-raiz);
+  stroke-width: 8;
+}
+
+.subte-hueco-centro {
+  stroke: var(--color-suelo);
+  stroke-width: 4;
+}
+
+.subte-estacion {
+  fill: var(--color-suelo);
+  stroke: var(--color-texto-suelo);
+  stroke-width: 3;
+}
+
+/* El pictograma de categoría, impreso en un cuadro salvia, como en el cuaderno de la portada. */
+.categoria-icono {
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  fill: var(--color-tinta);
+}
+
+/* Los pictogramas (iconos.html) se definen una vez y no ocupan lugar. */
+.iconos {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+@media (min-width: 37.5em) {
+  .dibujo-rotulo {
+    display: inline;
+  }
+}

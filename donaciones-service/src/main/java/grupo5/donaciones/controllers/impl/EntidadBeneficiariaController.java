@@ -1,8 +1,10 @@
 package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
@@ -17,11 +19,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/entidades")
 public class EntidadBeneficiariaController implements IEntidadBeneficiariaController {
+
+  static final String HEADER_TOTAL = "X-Total-Count";
 
   private final IEntidadBeneficiariaService service;
 
@@ -46,8 +51,26 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
 
   @Override
   @GetMapping
-  public ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas() {
-    return ResponseEntity.ok(service.obtenerTodas());
+  public ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return conTotal(service.buscar(nombre, page, size));
+  }
+
+  @Override
+  @GetMapping("/publicas")
+  public ResponseEntity<List<EntidadPublicaDTO>> obtenerPublicas(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return conTotal(service.buscarPublicas(nombre, page, size));
+  }
+
+  private static <T> ResponseEntity<List<T>> conTotal(Pagina<T> pagina) {
+    return ResponseEntity.ok()
+        .header(HEADER_TOTAL, String.valueOf(pagina.total()))
+        .body(pagina.elementos());
   }
 
   @Override

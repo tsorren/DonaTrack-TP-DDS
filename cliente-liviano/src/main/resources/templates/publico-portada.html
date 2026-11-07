@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<!--/* La portada. Segunda iteración (2026-11-01): el
+       usuario comparó A (el corte de suelo centrado), B (el afiche) y C (la lámina de campo) y eligió
+       D, una mezcla de A y C diseñada en dos rondas. Arriba, el título de A con la lámina "Cómo
+       funciona" de C, que explica la metáfora en tres franjas numeradas. Debajo, el rótulo y un brote
+       con su sol sobre la tierra: de él sale la red radial de A, que termina en etiquetas de herbario
+       (tipo, nombre y lo que pide), con la etiqueta vacía de tu entidad al centro. Desde el A/B de
+       frutos (2026-11-02, C), el brote es una planta que da frutos con los datos: uno impreso por
+       entrega confirmada del mes y uno hueco por la que va en camino, con la cuenta en texto al lado. Las cifras, frutos
+       colgados de una rama; el mes, un cuaderno de entregas que baja hasta hoy. Página
+       propia, sin el layout público
+       (antes, la variante concepto-b).
+       ponytail: datos fijos del caso de ejemplo; cuando haya backend, salen del modelo
+       (dirección de arte, "Oficio"). Textos según el tono común (docs/interfaz/tono-y-comunicacion.md). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DonaTrack: lo que donás echa raíces en tu comunidad</title>
+  <link rel="stylesheet" href="/css/publico-portada.css" th:href="@{/css/publico-portada.css}">
+  <link rel="stylesheet" href="/css/publico-navegacion.css" th:href="@{/css/publico-navegacion.css}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <th:block th:replace="~{interaccion :: cargar}"></th:block>
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="raices-cabecera">
+  <a class="marca" href="/publico-portada" th:href="@{/publico-portada}" aria-label="DonaTrack, ir al inicio">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás públicas. */-->
+  <nav th:replace="~{navegacion-publica :: navegacion('')}"></nav>
+</header>
+<!--/* Los estados de la maqueta (?escenario=vacio, error o lento) se ven en las tres partes con datos:
+       las entidades, las cifras y las entregas del mes. Sin parámetro, hay datos. */-->
+<main id="contenido" tabindex="-1"
+      th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
+               conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
+  <section class="hero" aria-labelledby="hero-titulo">
+    <div class="portada-grilla">
+      <div class="portada-texto">
+        <h1 id="hero-titulo">Lo que donás echa raíces <em>en tu comunidad</em>.</h1>
+        <p class="hero-bajada">Registrás lo que donás, vos o tu empresa. DonaTrack te muestra a qué entidad se
+          asignó, en qué estado está y la foto que sube la entidad cuando confirma la entrega.</p>
+        <div class="acciones">
+          <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}"
+             class="boton" data-tono="principal">Quiero donar</a>
+          <a href="/publico-ingresar" th:href="@{/publico-ingresar}"
+             class="boton" data-tono="secundario">Ingresar</a>
+        </div>
+      </div>
+
+      <!--/* La lámina: una ilustración en tres franjas pegadas, cada una con su número y su paso en texto. */-->
+      <section class="tarjeta ficha" data-filete="doble" aria-labelledby="ficha-titulo">
+        <div class="tarjeta-cabeza">
+          <h2 id="ficha-titulo">Cómo funciona</h2>
+          <p>Lámina 1, el recorrido de una donación</p>
+        </div>
+        <!--/* Una sola ilustración en tres franjas pegadas (el brote, la raíz que se abre y la punta que llega), cada una con su paso al lado. */-->
+        <ol class="pasos" role="list">
+          <li class="paso">
+            <svg class="paso-dibujo" viewBox="110 20 180 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <path class="paso-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+              <rect class="paso-suelo" x="0" y="170" width="400" height="350"/>
+              <g class="paso-brote" transform="translate(140 30) scale(2)">
+              <path class="tallo" d="M30 70V28"/>
+              <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+              <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+              <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+              </g>
+              <path class="paso-horizonte" d="M0 170H400"/>
+              <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
+              <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+              <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+              <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
+              <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
+              <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
+              <circle class="cruce" cx="200" cy="232" r="7"/>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
+            </svg>
+            <span class="paso-numero" aria-hidden="true">1</span>
+            <p><b>Registrás lo que donás.</b> Alimentos, ropa o muebles, a tu nombre o al de tu empresa.</p>
+          </li>
+          <li class="paso">
+            <svg class="paso-dibujo" viewBox="110 190 180 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <path class="paso-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+              <rect class="paso-suelo" x="0" y="170" width="400" height="350"/>
+              <g class="paso-brote" transform="translate(140 30) scale(2)">
+              <path class="tallo" d="M30 70V28"/>
+              <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+              <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+              <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+              </g>
+              <path class="paso-horizonte" d="M0 170H400"/>
+              <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
+              <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+              <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+              <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
+              <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
+              <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
+              <circle class="cruce" cx="200" cy="232" r="7"/>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
+            </svg>
+            <span class="paso-numero" aria-hidden="true">2</span>
+            <p><b>Se asigna a una entidad.</b> Un comedor, una escuela o un hogar que lo pidió.</p>
+          </li>
+          <li class="paso">
+            <svg class="paso-dibujo" viewBox="110 350 180 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <path class="paso-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+              <rect class="paso-suelo" x="0" y="170" width="400" height="350"/>
+              <g class="paso-brote" transform="translate(140 30) scale(2)">
+              <path class="tallo" d="M30 70V28"/>
+              <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+              <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+              <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+              </g>
+              <path class="paso-horizonte" d="M0 170H400"/>
+              <path class="raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C204 420 200 470 200 500"/>
+              <path class="raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+              <path class="raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+              <path class="raiz" pathLength="1" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
+              <path class="raiz" pathLength="1" d="M200 330C220 345 240 362 250 394"/>
+              <path class="raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 430C212 436 222 446 228 460M200 290C188 296 182 304 178 316"/>
+              <circle class="cruce" cx="200" cy="232" r="7"/>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="93" cy="351" r="9"/><circle cx="90" cy="348" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="315" cy="353" r="9"/><circle cx="312" cy="350" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="153" cy="445" r="9"/><circle cx="150" cy="442" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="253" cy="397" r="9"/><circle cx="250" cy="394" r="9"/></g>
+              <g class="paso-punta"><circle class="paso-punta-tinta" cx="203" cy="503" r="9"/><circle cx="200" cy="500" r="9"/></g>
+            </svg>
+            <span class="paso-numero" aria-hidden="true">3</span>
+            <p><b>La entidad confirma la entrega.</b> Con la fecha y una foto de lo entregado.</p>
+          </li>
+        </ol>
+        <!--/* La pausa del viento en ciclo (WCAG 2.2.2, review de Sofía, 2026-11-02): una casilla con forma
+               de botón, sin JavaScript. Frena las hojas y los frutos de toda la portada. Con "reducir
+               movimiento" no hay viento y no se muestra. */-->
+        <p class="pausa">
+          <label class="boton pausa-boton" data-tamano="chico">
+            <input class="pausa-casilla" id="pausar-movimiento" type="checkbox">
+            Pausar el movimiento
+          </label>
+        </p>
+      </section>
+    </div>
+  </section>
+
+  <!--/* El rótulo va en papel, sobre el brote; de él baja la red radial de A hasta las etiquetas de
+         herbario de C, cada una colgada de un sello con el ícono de lo que pide. Las posiciones de las etiquetas salen del dibujo (viewBox de 1200 × 600); sin
+         lugar para la red, las etiquetas cuelgan de a dos de un tronco al centro, en espejo. */-->
+  <section aria-labelledby="red-titulo">
+    <div class="tierra-superficie">
+      <h2 id="red-titulo">Quiénes reciben <em>las donaciones</em></h2>
+      <p class="tierra-bajada" th:if="${conDatos}">Una entidad de cada tipo, entre las 46 que están en el mapa.
+        Cada una pide lo que necesita y confirma lo que recibe.</p>
+      <p class="tierra-bajada" th:unless="${conDatos}">Comedores, escuelas, hogares y otras entidades de la
+        comunidad. Cada una pide lo que necesita y confirma lo que recibe.</p>
+      <p class="tierra-bajada"><a href="/publico-entidades"
+         th:href="@{/publico-entidades}">Ver todas las entidades y lo que piden</a></p>
+    </div>
+    <!--/* La escena: la planta sobre la línea de tierra y, debajo, la red hasta tu entidad. En la
+           computadora queda fija mientras se baja y las raíces llegan de a una (A/B de movimiento de
+           la red, C, 2026-11-04). */-->
+    <div class="escena">
+    <div class="escena-fija">
+    <div class="tierra-superficie">
+      <span class="planta-sol" aria-hidden="true"></span>
+      <div class="planta">
+        <svg class="planta-dibujo" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
+          <path class="tallo" d="M100 170V50"/>
+          <path class="rama" d="M100 132C84 126 68 112 60 96"/>
+          <path class="rama" d="M100 108C116 102 132 90 140 78"/>
+          <path class="rama" d="M100 78C90 70 80 60 75 50"/>
+          <path class="rama" d="M100 56C106 48 114 42 120 38"/>
+          <g transform="translate(70 112)">
+            <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+            <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+            <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+          </g>
+          <g th:if="${conDatos}">
+            <g class="fruto"><circle class="fruto-tinta" cx="58" cy="87" r="13"/><circle class="fruto-disco" cx="55" cy="84" r="13"/><path class="fruto-hoja" d="M57 71C60 64 66 62 71 63C68 69 63 72 57 71Z"/></g>
+            <g class="fruto"><circle class="fruto-tinta" cx="147" cy="72" r="13"/><circle class="fruto-disco" cx="144" cy="69" r="13"/><path class="fruto-hoja" d="M146 56C149 49 155 47 160 48C157 54 152 57 146 56Z"/></g>
+            <g class="fruto"><circle class="fruto-tinta" cx="72" cy="42" r="13"/><circle class="fruto-disco" cx="69" cy="39" r="13"/><path class="fruto-hoja" d="M71 26C74 19 80 17 85 18C82 24 77 27 71 26Z"/></g>
+            <circle class="fruto-hueco" cx="131" cy="27" r="12"/>
+          </g>
+        </svg>
+        <p class="planta-cosecha" th:if="${conDatos}"><b>Octubre de 2026</b> 3 entregas confirmadas y 1 en camino</p>
+        <p class="planta-cosecha" th:if="${estado == 'vacio'}"><b>Octubre de 2026</b> Todavía no hay entregas confirmadas
+          este mes.</p>
+      </div>
+    </div>
+    <div class="tierra-suelo tierra-impresa">
+      <div class="tierra-interior red" th:attr="data-estado=${conDatos} ? null : 'sin-datos'">
+        <svg th:if="${conDatos}" class="dibujo red-dibujo" viewBox="0 0 1200 600" aria-hidden="true" focusable="false">
+          <path class="tronco" d="M600 0V40"/>
+          <path class="borde" pathLength="1" d="M600 40H298Q270 40 250 60L110 200"/>
+          <path class="borde" pathLength="1" d="M600 40L540 100Q520 120 492 120H428Q400 120 380 140L320 200Q300 220 300 248V300"/>
+          <path class="borde" pathLength="1" d="M600 40V92Q600 120 580 140L490 230Q470 250 470 278V380"/>
+          <path class="borde" pathLength="1" d="M600 40V92Q600 120 620 140L710 230Q730 250 730 278V380"/>
+          <path class="borde" pathLength="1" d="M600 40L660 100Q680 120 708 120H772Q800 120 820 140L880 200Q900 220 900 248V300"/>
+          <path class="borde" pathLength="1" d="M600 40H902Q930 40 950 60L1090 200"/>
+          <path class="ruta raiz--1" pathLength="1" d="M600 40H298Q270 40 250 60L110 200"/>
+          <path class="ruta raiz--2" pathLength="1" d="M600 40L540 100Q520 120 492 120H428Q400 120 380 140L320 200Q300 220 300 248V300"/>
+          <path class="ruta raiz--3" pathLength="1" d="M600 40V92Q600 120 580 140L490 230Q470 250 470 278V380"/>
+          <path class="ruta raiz--5" pathLength="1" d="M600 40V92Q600 120 620 140L710 230Q730 250 730 278V380"/>
+          <path class="ruta raiz--6" pathLength="1" d="M600 40L660 100Q680 120 708 120H772Q800 120 820 140L880 200Q900 220 900 248V300"/>
+          <path class="ruta raiz--7" pathLength="1" d="M600 40H902Q930 40 950 60L1090 200"/>
+          <path class="ruta ruta--pendiente raiz--tuya" d="M600 120V560"/>
+          <circle class="cruce" cx="600" cy="40" r="11"/>
+          <circle class="cruce" cx="600" cy="120" r="7"/>
+        </svg>
+        <p class="vacio" data-forma="filetes" data-zona="suelo" th:if="${estado == 'vacio'}">Todavía no hay entidades en el mapa. La
+          primera puede ser la tuya.</p>
+        <p class="vacio" data-forma="filetes" data-zona="suelo" th:if="${estado == 'lento'}" role="status">Cargando las entidades…</p>
+        <div class="vacio" data-forma="filetes" data-zona="suelo" th:if="${estado == 'error'}" role="alert">
+          <p>No pudimos cargar las entidades. Probá de nuevo en unos minutos.</p>
+          <a href="" class="boton" data-tamano="chico" data-zona="suelo">Volver a cargar</a>
+        </div>
+        <ul class="red-etiquetas" role="list">
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--1"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
+            <b>Comedor</b> <span>Barrio Ejemplo</span> <span class="red-pide">Pide alimentos</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--2"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
+            <b>Escuela</b> <span>Ejemplo N.º 12</span> <span class="red-pide">Pide muebles</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--3"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-alimentos" x="4" y="4" width="34" height="34"/></svg>
+            <b>Merendero</b> <span>Ejemplo Sur</span> <span class="red-pide">Pide alimentos</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--5"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
+            <b>Hogar</b> <span>Casa Ejemplo</span> <span class="red-pide">Pide ropa de abrigo</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--6"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-ropa" x="4" y="4" width="34" height="34"/></svg>
+            <b>Club</b> <span>Ejemplo Norte</span> <span class="red-pide">Pide ropa</span></a></li>
+          <li th:if="${conDatos}" class="red-etiqueta red-etiqueta--7"><a href="/publico-mapa" th:href="@{/publico-mapa}">
+            <svg class="red-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use href="#cat-muebles" x="4" y="4" width="34" height="34"/></svg>
+            <b>Biblioteca</b> <span>Popular Ejemplo</span> <span class="red-pide">Pide muebles</span></a></li>
+          <!--/* La etiqueta vacía, al centro de la red cuando hay lugar: lo que todavía no se imprimió. */-->
+          <li class="red-etiqueta red-etiqueta--tuya">
+            <b>Tu entidad</b> <span>Pedí lo que necesitás y confirmá lo que recibís.</span>
+            <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
+               class="boton" data-tono="principal" data-zona="suelo">Sumar mi entidad</a></li>
+        </ul>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="tierra-suelo">
+      <!--/* La rama de frutos (A/B de cifras, C): cada cifra, un fruto que cuelga de una rama, con su etiqueta. */-->
+      <section class="frutos tierra-impresa" aria-labelledby="registro-titulo">
+        <div class="frutos-interior">
+          <div class="frutos-cabeza">
+            <h2 id="registro-titulo">Lo que está <em>confirmado</em></h2>
+            <p class="nota">Se cuenta con la confirmación de cada entidad.<th:block th:if="${conDatos}"> Actualizado
+              el 15 de octubre de 2026, 14:30.</th:block></p>
+            <!--/* Un botón chico en contorno, como el de la foto: el enlace en línea era chico para el dedo. */-->
+            <a href="/publico-mapa" th:href="@{/publico-mapa}" class="boton" data-tamano="chico" data-zona="suelo-hondo">
+              <svg viewBox="0 0 20 16" aria-hidden="true" focusable="false"><path d="M1 3l6-2 6 2 6-2v12l-6 2-6-2-6 2Z"/><path d="M7 1v12M13 3v12"/></svg>Ver el mapa de entregas confirmadas</a>
+          </div>
+          <div class="frutos-aviso" th:unless="${conDatos}">
+            <p th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas. Se cuentan cuando cada entidad
+              confirma lo que recibe.</p>
+            <p th:if="${estado == 'lento'}" role="status">Cargando las cifras…</p>
+            <div th:if="${estado == 'error'}" role="alert">
+              <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
+              <a href="" class="boton" data-tamano="chico" data-zona="suelo-hondo">Volver a cargar</a>
+            </div>
+          </div>
+          <dl class="frutos-rama" th:if="${conDatos}">
+            <div><dt>Entregas confirmadas desde marzo de 2026</dt><dd>1.284</dd></div>
+            <div><dt>Entidades en el mapa</dt><dd>46</dd></div>
+            <div><dt>Donaciones en camino ahora</dt><dd>32</dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!--/* El mes: un cuaderno de entregas que baja por fecha, de la primera a hoy, por la misma línea
+         de raíz. */-->
+  <section class="libreta" aria-labelledby="viajo-titulo">
+    <svg th:replace="~{iconos :: categorias}"></svg>
+    <div class="libreta-interior">
+      <div>
+        <h2 id="viajo-titulo">Lo que viajó <em>este mes</em></h2>
+        <p class="libreta-bajada" th:if="${conDatos}">Las últimas entregas de octubre de 2026. La entidad sube la foto cuando confirma la entrega.</p>
+        <p class="libreta-bajada" th:unless="${conDatos}">La entidad sube la foto cuando confirma la entrega.</p>
+      </div>
+      <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este mes. Cuando una
+        entidad confirme una entrega, aparece acá con su foto.</p>
+      <!--/* Viene con la página: sin región viva, como en Seguimiento (en el sistema, a #avisos). */-->
+      <p class="vacio" data-forma="filetes" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
+      <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
+        <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
+        <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
+      </div>
+      <ol class="libreta-lista" role="list" th:if="${conDatos}">
+        <li class="libreta-entrada">
+          <p class="libreta-fecha"><time datetime="2026-10-05"><b>5</b> <span>de octubre</span></time></p>
+          <svg class="libreta-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+          <svg class="libreta-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Alimentos"><use class="tinta-corrida" href="#cat-alimentos" x="2" y="2" width="100" height="100"/><use href="#cat-alimentos" width="100" height="100"/></svg>
+          <div class="libreta-texto">
+            <h3 id="asiento-1">Fideos secos, 8 kg</h3>
+            <p>Comedor Barrio Ejemplo</p>
+            <p class="libreta-estado">Entrega confirmada</p>
+          </div>
+          <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="foto-1" aria-describedby="asiento-1">
+            <img class="libreta-miniatura" src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
+          <dialog class="dialogo" id="foto-1" popover aria-labelledby="foto-1-titulo">
+            <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="Cajas con la donación junto a la puerta del comedor" width="640" height="400">
+            <p class="dialogo-titulo" id="foto-1-titulo">Fideos secos, 8 kg</p>
+            <p>Comedor Barrio Ejemplo confirmó la entrega el <time datetime="2026-10-05">5 de octubre de 2026</time> y subió esta foto.</p>
+            <button type="button" class="boton" data-tono="secundario" popovertarget="foto-1" popovertargetaction="hide">Cerrar</button>
+          </dialog>
+        </li>
+        <li class="libreta-entrada">
+          <p class="libreta-fecha"><time datetime="2026-10-09"><b>9</b> <span>de octubre</span></time></p>
+          <svg class="libreta-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+          <svg class="libreta-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Ropa"><use class="tinta-corrida" href="#cat-ropa" x="2" y="2" width="100" height="100"/><use href="#cat-ropa" width="100" height="100"/></svg>
+          <div class="libreta-texto">
+            <h3 id="asiento-2">Ropa de abrigo, 12 prendas</h3>
+            <p>Merendero Ejemplo Sur</p>
+            <p class="libreta-estado">Entrega confirmada</p>
+          </div>
+          <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="foto-2" aria-describedby="asiento-2">
+            <img class="libreta-miniatura" src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
+          <dialog class="dialogo" id="foto-2" popover aria-labelledby="foto-2-titulo">
+            <img src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640" height="400">
+            <p class="dialogo-titulo" id="foto-2-titulo">Ropa de abrigo, 12 prendas</p>
+            <p>Merendero Ejemplo Sur confirmó la entrega el <time datetime="2026-10-09">9 de octubre de 2026</time> y subió esta foto.</p>
+            <button type="button" class="boton" data-tono="secundario" popovertarget="foto-2" popovertargetaction="hide">Cerrar</button>
+          </dialog>
+        </li>
+        <li class="libreta-entrada">
+          <p class="libreta-fecha"><time datetime="2026-10-14"><b>14</b> <span>de octubre</span></time></p>
+          <svg class="libreta-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5" r="9"/><path class="sello-tilde" d="M6.5 10.5l3 3 5-5"/></svg>
+          <svg class="libreta-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Muebles"><use class="tinta-corrida" href="#cat-muebles" x="2" y="2" width="100" height="100"/><use href="#cat-muebles" width="100" height="100"/></svg>
+          <div class="libreta-texto">
+            <h3 id="asiento-3">Sillas, 6 unidades</h3>
+            <p>Escuela Ejemplo N.º 12</p>
+            <p class="libreta-estado">Entrega confirmada</p>
+          </div>
+          <button type="button" class="boton" data-tamano="chico" data-forma="foto" popovertarget="foto-3" aria-describedby="asiento-3">
+            <img class="libreta-miniatura" src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="" width="120" height="75"><span>Ver la foto de la entrega</span></button>
+          <dialog class="dialogo" id="foto-3" popover aria-labelledby="foto-3-titulo">
+            <img src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="Sillas apiladas en un aula" width="640" height="400">
+            <p class="dialogo-titulo" id="foto-3-titulo">Sillas, 6 unidades</p>
+            <p>Escuela Ejemplo N.º 12 confirmó la entrega el <time datetime="2026-10-14">14 de octubre de 2026</time> y subió esta foto.</p>
+            <button type="button" class="boton" data-tono="secundario" popovertarget="foto-3" popovertargetaction="hide">Cerrar</button>
+          </dialog>
+        </li>
+        <li class="libreta-entrada" data-estado="en-camino">
+          <p class="libreta-fecha"><time datetime="2026-10-15"><b>15</b> <span>de octubre, hoy</span></time></p>
+          <svg class="libreta-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></svg>
+          <svg class="libreta-cuadro" viewBox="-14 -14 128 128" role="img" aria-label="Alimentos"><use href="#cat-alimentos" width="100" height="100"/></svg>
+          <div class="libreta-texto">
+            <h3>Lentejas secas, 15 kg</h3>
+            <p>Comedor Barrio Ejemplo</p>
+            <p class="libreta-estado">En camino, salió a las 14:30</p>
+          </div>
+          <p class="libreta-pendiente">Falta confirmar la entrega: la confirma el comedor con la foto.</p>
+        </li>
+      </ol>
+      <p class="libreta-bajada"><a href="/publico-donaciones"
+         th:href="@{/publico-donaciones}">Ver todas las entregas confirmadas</a></p>
+    </div>
+  </section>
+</main>
+<footer th:replace="~{pie :: pie}"></footer>
+</body>
+</html>

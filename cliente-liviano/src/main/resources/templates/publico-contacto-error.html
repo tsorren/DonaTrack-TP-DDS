@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--/* Raíces, Contacto con el error de datos (falta el mensaje y el correo no tiene @), como lo
+       devolvería el servidor: el resumen arriba recibe el foco y enlaza a cada campo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+<head>
+  <title>Revisá tu mensaje - Contacto - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-contacto :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

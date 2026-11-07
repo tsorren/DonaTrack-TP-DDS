@@ -1,0 +1,128 @@
+/* Notificaciones del donante en Raíces: el cuaderno de noticias (el bloque componentes/noticias.css), en dos
+   grupos, sin leer y leídas. Las sin leer, en una lámina de papel con la sombra salvia: es lo que
+   hay que mirar. En pantalla grande (variante C del pulido, 2026-11-03), las sin leer van en una
+   franja de tierra a todo el ancho, como "Lo que está confirmado" del inicio, cada una en una
+   tarjeta colgada de una raíz horizontal; las leídas, debajo, como un libro de registro. */
+@import url("donante-comun.css");
+
+.notificaciones {
+  max-width: 76rem;
+}
+
+.notificaciones-cabecera {
+  margin-bottom: 1.5rem;
+}
+
+.notificaciones-cabecera .aviso-breve {
+  margin: 0 0 1rem;
+}
+
+.notificaciones-cabecera .bajada {
+  margin-bottom: 1rem;
+}
+
+.marcar {
+  margin: 0;
+}
+
+.marcar .boton {
+  cursor: pointer;
+}
+
+.notificaciones-grupos {
+  display: grid;
+  gap: 2rem;
+}
+
+.grupo-avisos h2 {
+  margin: 0 0 1rem;
+}
+
+.grupo-avisos--sin-leer {
+  padding: 1.25rem 1.25rem 0.5rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  box-shadow: 0.4rem 0.4rem 0 var(--color-sombra);
+}
+
+/* La textura de tierra (app.css), solo cuando la lámina pasa a ser franja. */
+.grupo-avisos--sin-leer.tierra-impresa::before {
+  display: none;
+}
+
+@media (min-width: 68.75em) {
+  .grupo-avisos--sin-leer.tierra-impresa::before {
+    display: block;
+    border-radius: inherit;
+  }
+
+  .notificaciones-cabecera {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 2rem;
+  }
+
+  .notificaciones-cabecera > :not(.marcar) {
+    grid-column: 1;
+  }
+
+  .marcar {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Las sin leer: la franja de tierra con sus tarjetas. */
+  .grupo-avisos--sin-leer {
+    padding: 1.75rem 2rem 2rem;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-destacado-fondo);
+    color: var(--color-destacado-texto);
+  }
+
+  .grupo-avisos--sin-leer h2 {
+    color: var(--color-destacado-texto);
+  }
+
+  .grupo-avisos--sin-leer .noticias {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 2rem 0 0;
+  }
+
+  .grupo-avisos--sin-leer .noticias::before {
+    top: 0.75rem;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: 0.5rem;
+  }
+
+  .grupo-avisos--sin-leer .noticia {
+    align-content: start;
+    padding: 1rem;
+    border: 2px solid var(--color-tinta);
+    border-radius: var(--radio-lamina);
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+  }
+
+  .grupo-avisos--sin-leer .noticia::before {
+    top: -1.6875rem;
+    left: calc(50% - 0.6875rem);
+  }
+
+  .grupo-avisos--sin-leer .noticia-donacion {
+    flex: 1 1 100%;
+  }
+
+  .grupo-avisos--sin-leer .noticia-donacion::before {
+    content: none;
+  }
+}

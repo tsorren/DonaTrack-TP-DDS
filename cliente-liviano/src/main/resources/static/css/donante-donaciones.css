@@ -1,0 +1,211 @@
+/* Mis donaciones de la empresa en Raíces A: el filtro en su lámina de doble filete y el libro, un
+   asiento por donación colgado de la raíz por fecha; el número es la estación, impresa si ya llegó
+   y hueca si todavía no tiene destino. En pantalla grande, un renglón con columnas. */
+@import url("donante-comun.css");
+
+.donaciones {
+  max-width: 72rem;
+}
+
+.donaciones h1 {
+  margin-bottom: 1.25rem;
+}
+
+/* --- El libro: la raíz baja por la izquierda y cada asiento cuelga de su estación ------------- */
+.libro-columnas {
+  display: none;
+}
+
+.libro {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+  margin: 0 0 2rem;
+  padding: 0 0 0 4rem;
+  list-style: none;
+}
+
+.libro::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1.375rem;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.asiento {
+  position: relative;
+  display: grid;
+  gap: 0.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 2px dotted var(--color-tinta-suave);
+}
+
+.asiento p {
+  margin: 0;
+}
+
+/* La estación: el número de la donación. */
+.asiento-numero {
+  position: absolute;
+  top: 0;
+  left: -4rem;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  line-height: 1;
+  text-align: center;
+}
+
+.asiento-numero small {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.asiento-numero b {
+  font: 900 1.375rem / 1 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+/* Ya llegó: impresa, el disco paja con la segunda tinta corrida. */
+.asiento--entregada .asiento-numero {
+  background: var(--color-raiz);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-hoja);
+}
+
+/* Todavía sin destino: hueca, sin imprimir. */
+.asiento--sin-destino .asiento-numero {
+  border-style: dashed;
+  border-color: var(--color-tinta-suave);
+}
+
+main .asiento h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-stretch: 112%;
+}
+
+.asiento h2 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-tinta);
+  text-underline-offset: 0.25em;
+}
+
+.asiento .categoria {
+  font-weight: 700;
+}
+
+.asiento-para b {
+  color: var(--color-tinta);
+}
+
+.asiento-para b::after {
+  content: " · ";
+  font-weight: 400;
+}
+
+.asiento--sin-destino .asiento-para span {
+  font-style: italic;
+}
+
+.asiento-donada {
+  font-size: 0.9375rem;
+}
+
+.asiento-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.asiento-nota {
+  font-size: 0.9375rem;
+}
+
+.donaciones-pie {
+  max-width: 38rem;
+}
+
+.donaciones-pie p {
+  margin: 0 0 0.75rem;
+}
+
+/* En pantalla grande, el libro de registro: un renglón por donación, con sus columnas a la vista y
+   la raíz por la columna de los números. */
+@media (min-width: 68.75em) {
+  .libro-columnas,
+  .asiento {
+    grid-template-columns: 4.5rem minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 1.5fr);
+    column-gap: 1.25rem;
+  }
+
+  .libro-columnas {
+    display: grid;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--color-tinta);
+    border-bottom: 1px solid var(--color-tinta);
+    color: var(--color-tinta);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    font-stretch: 112%;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .libro-columnas span:first-child {
+    text-align: center;
+  }
+
+  .libro {
+    gap: 0;
+    padding: 0;
+  }
+
+  .libro::before {
+    top: 0;
+    bottom: 0;
+    left: 2rem;
+  }
+
+  .asiento {
+    align-items: center;
+    padding: 1rem 0;
+  }
+
+  .asiento-numero {
+    position: relative;
+    left: 0;
+    justify-self: center;
+  }
+
+  .asiento-donada,
+  .asiento-para {
+    font-size: 0.9375rem;
+  }
+
+  .asiento-para b,
+  .asiento-para span {
+    display: block;
+  }
+
+  .asiento-para b::after {
+    content: none;
+  }
+
+  .asiento-estado {
+    margin: 0;
+  }
+}

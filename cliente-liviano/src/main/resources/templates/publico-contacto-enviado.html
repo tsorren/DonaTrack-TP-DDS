@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!--/* Raíces, Contacto enviado (docs/interfaz/flujos/raices-contacto.md): el sello de recibido, el
+       número del mensaje y una sola salida: la pantalla de origen (?volver=, solo pantallas de
+       /) o, si no hay, la portada. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+<head>
+  <title>Mensaje recibido - Contacto - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="volver=${param.volver != null and param.volver[0] matches '/(?:publico|donante|entidad|admin)(?:-[a-z]+)+(?:\?[a-z]+=[a-z0-9-]+(?:&[a-z]+=[a-z0-9-]+)*)?' ? param.volver[0] : null},
+             nombres=${ {'/entidad-necesidades': 'Necesidades',
+                         '/entidad-seguimiento-confirmar': 'la entrega',
+                         '/donante-seguimiento': 'Seguimiento',
+                         '/donante-perfil': 'Mi perfil'} }">
+  <div class="contacto lectura">
+    <p class="rotulo">Contacto</p>
+    <h1>Recibimos tu mensaje</h1>
+    <div class="recibido" role="status">
+      <svg viewBox="-30 -30 64 64" aria-hidden="true" focusable="false">
+        <circle class="sello-tinta" cx="4" cy="4" r="26"/><circle class="sello-disco" r="26"/>
+        <path class="sello-calado sello-calado--fino" d="M-10 1L-3 8L11 -7"/>
+      </svg>
+      <p>Su número es <b>4821</b>. Te respondemos por correo.</p>
+    </div>
+    <a th:if="${volver}" class="boton" data-tono="principal" href="/entidad-necesidades"
+       th:href="${volver}"
+       th:text="|Volver a ${nombres.get(#strings.substringBefore(volver + '?', '?')) ?: 'donde estabas'}|">Volver
+      a Necesidades</a>
+    <a th:unless="${volver}" class="boton" data-tono="principal" href="/publico-portada"
+       th:href="@{/publico-portada}">Ir a la portada</a>
+  </div>
+</th:block>
+</body>
+</html>

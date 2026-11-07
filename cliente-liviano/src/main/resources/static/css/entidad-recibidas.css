@@ -1,0 +1,274 @@
+/* Donaciones recibidas de la entidad en Raíces (ficha raices-entidad-navegable, 4.2). La audacia: el
+   filtro por estado es una línea de subte, una estación por estado, y la elegida queda impresa; en
+   el celular la línea baja, como el último tramo, y en pantalla grande cruza de lado a lado. Lo que
+   todavía no se recibió, en actas de papel; lo recibido, en el cuaderno de la portada, por una raíz
+   impresa. */
+@import url("entidad-comun.css");
+
+.recibidas {
+  max-width: 82rem;
+}
+
+/* --- El filtro: la línea y sus estaciones ------------------------------------------------------ */
+.filtro {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  max-width: 64rem;
+  margin: 0 0 2rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: 5px;
+}
+
+.filtro-linea {
+  position: relative;
+  display: grid;
+  width: 100%;
+}
+
+.filtro-linea legend {
+  margin-bottom: 0.5rem;
+  color: var(--color-acento);
+  font-size: 0.875rem;
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* La línea paja con borde de tinta: un tramo por estación, de su centro al de la siguiente, por
+   detrás de los círculos (la estación siguiente se pinta encima). En el celular baja; desde la
+   tableta, cruza. */
+.filtro-linea label {
+  z-index: 1;
+}
+
+.filtro-linea label:not(:last-of-type)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(0.6875rem - 0.25rem);
+  z-index: -1;
+  width: 0.5rem;
+  height: 100%;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+/* La estación elegida, impresa en verde con el papel calado; las demás, papel. */
+.filtro-linea label:has(:checked) {
+  font-weight: 700;
+  color: var(--color-tinta);
+}
+
+.mostrando {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1rem;
+  margin: 0 0 1.5rem;
+  font-weight: 700;
+}
+
+.mostrando a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+/* --- Los grupos --------------------------------------------------------------------------------- */
+.grupo {
+  margin: 0 0 2.5rem;
+}
+
+.grupo h2 {
+  margin: 0 0 1rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 2px solid var(--color-tinta);
+}
+
+.actas {
+  gap: 1.5rem;
+}
+
+.actas .acta {
+  height: 100%;
+}
+
+.acta-cuanto {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.acta a:not(.boton) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.acta-paso {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.625rem 0 0;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+/* Lo que espera en la puerta: el acta sobre la tierra, como en el Inicio. */
+.grupo--puerta .acta {
+  box-shadow: 0.4rem 0.4rem 0 var(--color-suelo);
+}
+
+/* --- Lo recibido: el cuaderno, por una raíz impresa de sello a sello ---------------------------- */
+.cuaderno-recibidas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cuaderno-recibidas .asiento {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  row-gap: 0.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-tinta);
+}
+
+/* En el celular, el sello va al lado de la fecha y la raíz baja por su columna, sin cruzar textos. */
+.cuaderno-recibidas li:not(:last-child) .asiento::before {
+  content: "";
+  position: absolute;
+  top: calc(1rem + 0.75rem);
+  bottom: calc(-1rem - 0.75rem);
+  left: 0.4375rem;
+  z-index: 0;
+  width: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.asiento-fecha {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  color: var(--color-tinta);
+  font-weight: 700;
+  font-stretch: 110%;
+}
+
+.asiento-fecha b {
+  margin-inline-end: 0.15em;
+  font: 900 1.5rem/1 var(--fuente-titulo);
+  font-stretch: 125%;
+}
+
+.asiento .estado-sello {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  grid-row: 1;
+  margin-top: 0.125rem;
+}
+
+.asiento-texto {
+  grid-column: 2;
+}
+
+.asiento-texto p {
+  margin: 0;
+}
+
+main .asiento-texto h3 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 800 1.125rem/1.3 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+/* Desde la pantalla grande, lo que espera en la puerta y lo recibido a todo el ancho; con problema,
+   en camino y por salir, uno al lado del otro. */
+@media (min-width: 68.75em) {
+  .grupos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .grupo--puerta,
+  .grupo--recibida {
+    grid-column: 1 / -1;
+  }
+
+  .grupo--problema .actas,
+  .grupo--camino .actas,
+  .grupo--salir .actas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 53.75em) {
+  .actas {
+    --medida-columna: 19rem;
+  }
+
+  /* La línea cruza: las estaciones en una fila, el nombre debajo de cada una. */
+  .filtro {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 1.5rem;
+  }
+
+  .filtro-linea {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    column-gap: 0.5rem;
+  }
+
+  .filtro-linea legend {
+    grid-column: 1 / -1;
+  }
+
+  .filtro-linea label:not(:last-of-type)::after {
+    top: calc(0.6875rem - 0.25rem);
+    left: 50%;
+    width: calc(100% + 0.5rem);
+    height: 0.5rem;
+  }
+
+  .filtro-linea label {
+    flex-direction: column;
+    gap: 0.375rem;
+    align-items: center;
+    font-size: 0.9375rem;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  /* La fecha a la izquierda, como en el cuaderno de la portada. */
+  .cuaderno-recibidas .asiento {
+    grid-template-columns: 9rem 1.375rem minmax(0, 1fr);
+    column-gap: 1.25rem;
+    align-items: start;
+  }
+
+  .asiento-fecha {
+    grid-column: 1;
+  }
+
+  .asiento .estado-sello {
+    grid-column: 2;
+  }
+
+  .asiento-texto {
+    grid-column: 3;
+  }
+
+  .cuaderno-recibidas li:not(:last-child) .asiento::before {
+    top: calc(1rem + 1.25rem);
+    bottom: calc(-1rem - 0.1rem);
+    left: calc(9rem + 1.25rem + 0.4375rem);
+  }
+}

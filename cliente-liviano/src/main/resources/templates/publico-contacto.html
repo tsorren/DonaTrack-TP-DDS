@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--/* Raíces, Contacto, según su ficha de flujo (docs/interfaz/flujos/raices-contacto.md): un
+       formulario dentro de DonaTrack que puede usar cualquiera (usuario, 2026-11-02). Sin sesión
+       pide el correo; con sesión (?escenario=con-sesion) usa el de la cuenta. ?codigo= llega desde
+       el enlace "escribinos" de un aviso de error, con el código ya escrito y el tema "Algo del sitio
+       no anduvo"; ?volver= es la pantalla de origen, a la que vuelve la página de enviado (solo
+       pantallas de /). ?escenario=lento (enviando), error (del servidor) y
+       sin-conexion. Es un formulario real (POST) que va a publico-contacto-enviado; el error de
+       datos es publico-contacto-error.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+<head>
+  <title>Contacto - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-contacto :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             codigo=${param.codigo != null ? param.codigo[0] : (conError ? 'a1b2c3d4e5f6' : '')},
+             volver=${param.volver != null and param.volver[0] matches '/(?:publico|donante|entidad|admin)(?:-[a-z]+)+(?:\?[a-z]+=[a-z0-9-]+(?:&[a-z]+=[a-z0-9-]+)*)?' ? param.volver[0] : null},
+             conSesion=${escenario == 'con-sesion'},
+             escrito=${conError or escenario == 'error' or escenario == 'sin-conexion'}">
+  <div class="contacto lectura">
+    <p class="rotulo">Contacto</p>
+    <h1>Escribinos</h1>
+    <p class="lectura-bajada">Contanos qué pasó y te respondemos por correo.</p>
+
+    <form action="/publico-contacto-enviado"
+          th:action="@{/publico-contacto-enviado(volver=${volver})}" method="post"
+          class="formulario" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+               autofocus aria-labelledby="resumen-titulo">
+        <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
+        <ul>
+          <li><a href="#mensaje">Falta contarnos qué pasó</a></li>
+          <li><a href="#correo">El correo no parece completo: falta la @</a></li>
+        </ul>
+      </section>
+      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="error-titulo">
+        <h2 id="error-titulo">No pudimos enviar tu mensaje.</h2>
+        <p>Es un problema nuestro: tu mensaje sigue acá. Probá de nuevo en unos minutos.</p>
+        <p class="aviso-codigo">Código: <code>f6e5d4c3b2a1</code></p>
+        <a class="boton" data-tono="secundario" href="#enviar">Volver a intentar</a>
+      </section>
+      <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="red-titulo">
+        <h2 id="red-titulo">No sabemos si tu mensaje llegó.</h2>
+        <p>Se cortó la conexión mientras se enviaba. Si no viste el número de tu mensaje, no sabemos
+          si llegó: mandalo de nuevo.</p>
+      </section>
+
+      <p class="obligatorios">Todos los datos son obligatorios, salvo el código.</p>
+      <div class="campo">
+        <label for="tema">Sobre qué es</label>
+        <select id="tema" name="tema" required>
+          <option value="">Elegí uno</option>
+          <option>Una entrega</option>
+          <option>Una donación</option>
+          <option>Una necesidad de mi entidad</option>
+          <option>Mi cuenta</option>
+          <option th:selected="${codigo != '' or escrito}">Algo del sitio no anduvo</option>
+          <option>Otra cosa</option>
+        </select>
+      </div>
+      <div class="campo" th:data-estado="${conError} ? 'error'">
+        <label for="mensaje">Contanos qué pasó</label>
+        <small id="mensaje-ayuda">Si pasó en una entrega o una donación, decinos cuál.</small>
+        <p th:if="${conError}" id="mensaje-error" class="campo-error">Falta contarnos qué pasó.</p>
+        <textarea id="mensaje" name="mensaje" rows="5" required
+                  th:attr="aria-describedby=${conError} ? 'mensaje-error mensaje-ayuda' : 'mensaje-ayuda',aria-invalid=${conError} ? 'true' : null"
+                  th:text="${escrito and !conError} ? 'Quise dar de baja el aceite y me dio un error.' : null"></textarea>
+      </div>
+      <div class="campo">
+        <label for="codigo">Código del error</label>
+        <small id="codigo-ayuda">Opcional. Está en el aviso de error, debajo del mensaje.</small>
+        <input id="codigo" name="codigo" type="text" autocomplete="off" aria-describedby="codigo-ayuda"
+               th:value="${codigo}">
+      </div>
+      <p th:if="${conSesion}" class="contacto-cuenta">Te respondemos a
+        <b>contacto@distribuidora-ejemplo.test</b>, el correo de tu cuenta.</p>
+      <div th:unless="${conSesion}" class="campo" th:data-estado="${conError} ? 'error'">
+        <label for="correo">Tu correo</label>
+        <small id="correo-ayuda">Para responderte. No lo usamos para otra cosa.</small>
+        <p th:if="${conError}" id="correo-error" class="campo-error">El correo no parece completo: falta
+          la @.</p>
+        <input id="correo" name="correo" type="email" required autocomplete="email"
+               th:value="${conError} ? 'marta.comedor-ejemplo.test' : (${escrito} ? 'marta@comedor-ejemplo.test' : null)"
+               th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
+      </div>
+      <button id="enviar" class="boton" data-tono="principal" type="submit"
+              th:disabled="${escenario == 'lento'}"
+              th:text="${escenario == 'lento'} ? 'Enviando…' : 'Enviar mensaje'">Enviar mensaje</button>
+    </form>
+
+    <!--/* A la derecha del formulario, a su altura (A/B layout:contacto, A, 2026-11-04; nota de Nico):
+           una lámina como "Cómo funciona" de la portada, con la raíz que llega a un sobre, y cuándo
+           escribirnos. En el celular, debajo del formulario. */-->
+    <aside class="contacto-lamina" aria-labelledby="lamina-titulo">
+      <p class="lamina-cabeza">Lámina 2, de la raíz al correo</p>
+      <svg class="lamina-dibujo" viewBox="60 40 280 470" aria-hidden="true" focusable="false">
+        <path class="dib-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+        <rect class="dib-suelo" x="0" y="170" width="400" height="400"/>
+        <g transform="translate(140 30) scale(2)">
+          <path class="dib-tallo" d="M30 70V28"/>
+          <path class="dib-hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+          <path class="dib-hoja dib-hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+          <path class="dib-hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+        </g>
+        <path class="dib-horizonte" d="M0 170H400"/>
+        <path class="dib-raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C203 390 200 410 200 420"/>
+        <path class="dib-raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
+        <path class="dib-raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
+        <path class="dib-raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M200 290C188 296 182 304 178 316M200 330C214 340 224 352 230 366"/>
+        <circle class="dib-cruce" cx="200" cy="232" r="7"/>
+        <g transform="translate(150 420)">
+          <rect class="dib-sobre-tinta" x="6" y="6" width="100" height="66" rx="4"/>
+          <rect class="dib-sobre" x="0" y="0" width="100" height="66" rx="4"/>
+          <path class="dib-sobre-linea" d="M2 4L50 40L98 4"/>
+        </g>
+      </svg>
+      <h2 id="lamina-titulo">Cuándo escribirnos</h2>
+      <ul>
+        <li>Querés sumar tu entidad al mapa.</li>
+        <li>Querés donar con tu empresa.</li>
+        <li>Pasó algo con una entrega o con el sitio.</li>
+      </ul>
+    </aside>
+  </div>
+</th:block>
+</body>
+</html>

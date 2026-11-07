@@ -1,0 +1,139 @@
+/* Bloque de mapa con su lista (D33, B2-13, RF-CL-06): un mapa y, al lado (debajo, en el celular), la
+   lista con los mismos datos, entidad por entidad. El dibujo es la pieza de cada pantalla (hoy el de
+   Seguir entregas dentro de `.mapa-dibujo`; en el sistema, MapLibre, D21); este bloque pone el marco,
+   el reparto en dos columnas, la lista de fichas y el resalte cruzado: al pasar, enfocar o llegar a
+   una entidad de la lista (#entidad-<clave>), su estación queda llena y las demás se apagan. Se carga
+   en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+.mapa-cuerpo {
+  display: grid;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.mapa-dibujo {
+  margin: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  overflow: hidden;
+}
+
+/* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 590). */
+figure.mapa-dibujo {
+  background: linear-gradient(transparent calc(80 / 590 * 100%), var(--color-suelo) 0);
+}
+
+/* Al pasar, enfocar o llegar a una entidad de la lista, las demás estaciones se apagan.
+   ponytail: una regla por número de estación, hasta 6; en el sistema, MapLibre. */
+.mapa-cuerpo:has(.estacion-ficha:is(:hover, :focus-within, :target)) .estacion {
+  opacity: 0.3;
+}
+
+.mapa-cuerpo:has(.estacion-ficha--1:is(:hover, :focus-within, :target)) .estacion--1,
+.mapa-cuerpo:has(.estacion-ficha--2:is(:hover, :focus-within, :target)) .estacion--2,
+.mapa-cuerpo:has(.estacion-ficha--3:is(:hover, :focus-within, :target)) .estacion--3,
+.mapa-cuerpo:has(.estacion-ficha--4:is(:hover, :focus-within, :target)) .estacion--4,
+.mapa-cuerpo:has(.estacion-ficha--5:is(:hover, :focus-within, :target)) .estacion--5,
+.mapa-cuerpo:has(.estacion-ficha--6:is(:hover, :focus-within, :target)) .estacion--6 {
+  opacity: 1;
+}
+
+/* --- La lista ---------------------------------------------------------------------------------- */
+
+.mapa-lista :is(h2, h3) {
+  margin: 0 0 1rem;
+}
+
+.estaciones {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.estacion-ficha {
+  padding: 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-sombra);
+  outline: 1.5px solid var(--color-tinta);
+  scroll-margin-top: 1rem;
+}
+
+.estacion-ficha:target {
+  outline: 3px solid var(--color-acento);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-raiz);
+}
+
+.estacion-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.estacion-cabeza > div {
+  min-width: 0;
+}
+
+.estacion-cabeza :is(h3, h4) {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-tinta);
+  font: 800 1.1875rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.estacion-cabeza p {
+  margin: 0;
+}
+
+.estacion-sello {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.estacion-entregas {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--color-tinta-suave);
+  list-style: none;
+}
+
+.estacion-entregas > li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.25rem 0.75rem;
+}
+
+.estacion-entregas p {
+  margin: 0;
+  color: var(--color-tinta);
+}
+
+.estacion-entregas .boton {
+  grid-column: 2;
+}
+
+@media (min-width: 68.75em) {
+  .mapa-cuerpo {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .mapa-dibujo {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .estacion {
+    transition: var(--movimiento-transicion-atenua);
+  }
+}

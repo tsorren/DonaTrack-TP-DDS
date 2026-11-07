@@ -1,0 +1,14 @@
+/* Bloque de lista adaptable (D33, B2-08): una lista sin viñetas cuyos elementos (casi siempre
+   tarjetas) se reparten en tantas columnas como entren, cada una de al menos `--medida-columna`.
+   Sin esa medida, una sola columna. A diferencia de `.grilla` (composición), no estira los pocos
+   elementos para llenar la fila y trae el reinicio de la lista (`ul`, `ol`). El espacio entre
+   elementos, el margen y la medida en cada ancho los pone la hoja de la pantalla. Se carga en la
+   capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+.lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--medida-columna, 100%)), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

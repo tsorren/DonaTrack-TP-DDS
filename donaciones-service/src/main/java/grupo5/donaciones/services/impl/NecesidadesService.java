@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
@@ -63,6 +64,30 @@ public class NecesidadesService implements INecesidadesService {
         .map(n -> n.toDTO(asignado.getOrDefault(n.getId(), 0)))
         .filter(dto -> entidadId == null || entidadId.equals(dto.idEntidad()))
         .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.tipo()))
+        .toList();
+  }
+
+  @Override
+  public List<NecesidadPublicaDTO> listarPublicas(UUID entidadId) {
+    List<Necesidad> necesidades =
+        necesidadRepository.findAll().stream()
+            .filter(Necesidad::isActiva)
+            .filter(n -> entidadId == null || entidadId.equals(n.getEntidadId()))
+            .toList();
+    Map<UUID, Integer> asignado = acumulados.asignadoA(necesidades);
+    return necesidades.stream()
+        .map(n -> n.toDTO(asignado.getOrDefault(n.getId(), 0)))
+        .filter(dto -> Boolean.FALSE.equals(dto.estaSatisfecha()))
+        .map(
+            dto ->
+                new NecesidadPublicaDTO(
+                    dto.id(),
+                    dto.idEntidad(),
+                    dto.idSubcategoria(),
+                    dto.descripcion(),
+                    dto.cantidadNecesitada(),
+                    dto.tipo(),
+                    dto.fechaFin()))
         .toList();
   }
 

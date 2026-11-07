@@ -1,0 +1,27 @@
+/* Raíces, sitio A: dónde va la navegación pública (navegacion-publica.html) dentro de la cabecera de
+   las públicas y de la portada. La barra es el bloque `navegacion` (componentes/navegacion.css, con
+   data-zona="publica"): en el celular, fija abajo, en la tierra, con la sección actual en paja; desde
+   la tableta, en la cabecera de tierra honda (usuario, 2026-11-03). Va después de la hoja de la
+   pantalla, que ya trae los tokens. */
+
+/* La barra no tapa el pie. */
+body {
+  padding-bottom: 4.5rem;
+}
+
+@media (min-width: 37.5em) {
+  body {
+    padding-bottom: 0;
+  }
+
+  .raices-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 2rem;
+  }
+
+  .raices-cabecera .navegacion {
+    flex: 1;
+  }
+}
