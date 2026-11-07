@@ -159,6 +159,27 @@ El criterio de hecho se cumple `[VERIFIED]`:
 `sin-dibujar` queda solo para una dirección privada de una sección sin plantilla, que ningún
 enlace del sitio usa.
 
+### Pendiente después del roadmap (2026-11-07)
+
+Quedan fuera del criterio de hecho. Ninguno es bloqueante:
+
+1. **Avisos de `revision-ui` de F7** (bitácora, "F7 construida"):
+   - en Llegó con un problema, a 1280 px y más, queda aire entre el remito y la firma;
+   - en la página 403, la barra pública ofrece "Ingresar" aunque la persona ya entró;
+   - en el 5xx, "Volver a intentar" acepta una dirección con `/\`. Hoy no se puede explotar,
+     porque Tomcat la rechaza; se cierra exigiendo que `path` no tenga `\`.
+2. **Avisos de `revision-ui` de F6** (bitácora, "F6 construida"): a 360 px, el texto de las
+   categorías de Para donantes baja debajo del ícono; el `data-espacio` de la cabecera de las
+   landings no rige entre el rótulo, el título y la bajada.
+3. **CI del PR 935:** `preprod-validation` falla porque faltan las imágenes `:e6_raices` en ghcr.
+   También falla en `E6_raices`. Hay que revisar la corrida del push del 2026-11-07 (`029b0346`).
+4. **Para el grupo:**
+   - qué hace Donaciones con una cantidad recibida menor;
+   - el ADR sucesor del contrato de entregas, porque las fotos con problema quedan privadas
+     ([DTI-29](../adr/DEUDA_TECNICA.md#dti-29));
+   - la pantalla de "no llegó nada" (`NO_RECIBIDA`);
+   - de dónde sale el `traceId`, al integrar el gateway.
+
 ## Para retomar en F7 (handoff del 2026-11-07, cumplido)
 
 Estado `[OBSERVED]` al abrir F7: F1 a F6 commiteadas en `E6_raices_calida`, la última en
