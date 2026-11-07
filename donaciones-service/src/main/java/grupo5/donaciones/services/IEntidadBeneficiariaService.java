@@ -1,5 +1,6 @@
 package grupo5.donaciones.services;
 
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import java.util.List;
@@ -12,6 +13,15 @@ public interface IEntidadBeneficiariaService {
   EntidadBeneficiariaOutputDTO obtenerEntidad(UUID id);
 
   List<EntidadBeneficiariaOutputDTO> obtenerTodas();
+
+  /**
+   * Entidades cuya razón social contiene {@code nombre} (sin distinguir mayúsculas; nulo no
+   * filtra). Sin {@code page} ni {@code size} devuelve todas, en el orden de {@link
+   * #obtenerTodas()}. Con alguno de los dos, ordena por razón social y devuelve ese tramo ({@code
+   * page} desde 0, por defecto 0; {@code size} entre 1 y 100, por defecto 20). El total cuenta las
+   * que cumplen el filtro.
+   */
+  Pagina<EntidadBeneficiariaOutputDTO> buscar(String nombre, Integer page, Integer size);
 
   EntidadBeneficiariaOutputDTO actualizarEntidad(UUID id, EntidadBeneficiariaInputDTO input);
 

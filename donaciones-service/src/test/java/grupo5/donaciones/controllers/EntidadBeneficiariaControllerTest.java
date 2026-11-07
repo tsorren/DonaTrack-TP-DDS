@@ -12,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
@@ -22,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
+
+  private static final String RUTA = "/api/entidades";
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -36,7 +41,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
     mockMvc
         .perform(
-            post("/api/entidades")
+            post(RUTA)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated())
@@ -54,7 +59,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
     mockMvc
         .perform(
-            post("/api/entidades")
+            post(RUTA)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isOk())
@@ -67,7 +72,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
     mockMvc
         .perform(
-            post("/api/entidades")
+            post(RUTA)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isBadRequest())
@@ -83,20 +88,48 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
     when(entidadBeneficiariaService.obtenerEntidad(id)).thenReturn(outputMock);
 
     mockMvc
-        .perform(get("/api/entidades/" + id))
+        .perform(get(RUTA + "/" + id))
         .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
-  void obtenerTodas_debeRetornarOk() throws Exception {
-    EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
-    when(entidadBeneficiariaService.obtenerTodas()).thenReturn(List.of(outputMock));
+  void obtenerTodas_sinParametros_devuelveElArregloYElTotal() throws Exception {
+    EntidadBeneficiariaOutputDTO entidad =
+        new EntidadBeneficiariaOutputDTO(UUID.randomUUID(), null, true);
+    when(entidadBeneficiariaService.buscar(null, null, null))
+        .thenReturn(new Pagina<>(List.of(entidad), 1));
 
     mockMvc
-        .perform(get("/api/entidades"))
+        .perform(get(RUTA))
         .andExpect(status().isOk())
-        .andExpect(header().exists("X-Trace-Id"));
+        .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(header().string("X-Total-Count", "1"))
+        .andExpect(jsonPath("$.size()").value(1))
+        .andExpect(jsonPath("$[0].id").value(entidad.id().toString()));
+  }
+
+  @Test
+  void obtenerTodas_conBusquedaYPaginado_pasaLosParametrosAlService() throws Exception {
+    when(entidadBeneficiariaService.buscar("comedor", 2, 10))
+        .thenReturn(new Pagina<>(List.of(), 25));
+
+    mockMvc
+        .perform(get(RUTA).param("nombre", "comedor").param("page", "2").param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "25"))
+        .andExpect(jsonPath("$.size()").value(0));
+  }
+
+  @Test
+  void obtenerTodas_conPaginacionInvalida_retorna400() throws Exception {
+    when(entidadBeneficiariaService.buscar(null, -1, null))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get(RUTA).param("page", "-1"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
   }
 
   @Test
@@ -112,7 +145,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
     mockMvc
         .perform(
-            put("/api/entidades/" + id)
+            put(RUTA + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isOk())
@@ -123,6 +156,6 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
   void eliminarEntidad_debeRetornarNoContent() throws Exception {
     UUID id = UUID.randomUUID();
 
-    mockMvc.perform(delete("/api/entidades/" + id)).andExpect(status().isNoContent());
+    mockMvc.perform(delete(RUTA + "/" + id)).andExpect(status().isNoContent());
   }
 }

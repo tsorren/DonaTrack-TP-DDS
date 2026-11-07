@@ -43,7 +43,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/asignaciones/propuestas` | Listado de propuestas de asignación generadas | — | `200` |
 | `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta (al aprobar: `409` si la necesidad ya no está activa o si una donación es de la propia entidad) | `ActualizarEstadoRequestDTO` | `200`, `400`, `404`, `409` |
 | `POST` | `/api/entidades` | Alta idempotente de entidad beneficiaria (id = `juridicaId`; `200` si ya existía o se reactivó; `409` si la jurídica fue anonimizada) | `EntidadBeneficiariaInputDTO` | `201`, `200`, `400`, `404`, `409` |
-| `GET` | `/api/entidades` | Listado de entidades beneficiarias | — | `200` |
+| `GET` | `/api/entidades` | Listado de entidades beneficiarias. Opcionales: `nombre` (contiene, sin distinguir mayúsculas), `page` (desde 0) y `size` (1..100, por defecto 20). Sin `page` ni `size` devuelve todas en el orden de siempre; paginando, ordena por razón social. El total va en el header `X-Total-Count` (HB-15) | — | `200`, `400` |
 | `GET` | `/api/entidades/{id}` | Consulta de entidad beneficiaria por ID | — | `200`, `404` |
 | `PUT` | `/api/entidades/{id}` | Revalidación de entidad beneficiaria (no cambia estado; `409` si está de baja) | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/entidades/{id}` | Baja lógica e idempotente de entidad beneficiaria (desactiva sus necesidades) | — | `204`, `404` |
