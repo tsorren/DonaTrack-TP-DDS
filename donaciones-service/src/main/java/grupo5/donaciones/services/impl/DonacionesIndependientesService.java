@@ -3,8 +3,11 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.SolicitudCambioEstadoDonacionIndependiente;
@@ -13,11 +16,14 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +38,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final IDonacionesIndependientesRepository repositorio;
   private final IDonacionesRepository donacionesRepository;
   private final INecesidadesRepository necesidadRepository;
+  private final ISubcategoriasRepository subcategoriasRepository;
   private final DonacionIndependienteMapper donacionIndependienteMapper;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -39,11 +46,13 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       IDonacionesIndependientesRepository repositorio,
       IDonacionesRepository donacionesRepository,
       INecesidadesRepository necesidadRepository,
+      ISubcategoriasRepository subcategoriasRepository,
       DonacionIndependienteMapper donacionIndependienteMapper,
       ApplicationEventPublisher eventPublisher) {
     this.repositorio = repositorio;
     this.donacionesRepository = donacionesRepository;
     this.necesidadRepository = necesidadRepository;
+    this.subcategoriasRepository = subcategoriasRepository;
     this.donacionIndependienteMapper = donacionIndependienteMapper;
     this.eventPublisher = eventPublisher;
   }
@@ -55,36 +64,63 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
   @Override
   public List<DonacionIndependienteResponseDTO> obtenerConFiltros(
-      TipoEstadoDonacion estado, UUID subcategoriaId, UUID donanteId) {
-    Set<UUID> donacionesOriginalesPermitidas = null;
-    if (donanteId != null) {
-      donacionesOriginalesPermitidas =
-          donacionesRepository.findAll().stream()
-              .filter(d -> donanteId.equals(d.getDonanteId()))
-              .map(Donacion::getId)
-              .collect(Collectors.toSet());
+      FiltroDonacionesIndependientes filtro) {
+    LocalDate desde = filtro.desde();
+    LocalDate hasta = filtro.hasta();
+    if (desde != null && hasta != null && desde.isAfter(hasta)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+    TipoEstadoDonacion estado = filtro.estado();
+    UUID subcategoriaId = filtro.subcategoriaId();
+    UUID entidadId = filtro.entidadId();
 
-    final Set<UUID> filtroDonaciones = donacionesOriginalesPermitidas;
-
+    // ponytail: filtra en memoria sobre findAll(), como hacía este listado; pasar a una consulta
+    // cuando el volumen lo pida.
     return repositorio.findAll().stream()
-        .filter(
-            di -> filtroDonaciones == null || filtroDonaciones.contains(di.getDonacionOriginalId()))
+        .filter(delDonante(filtro.donanteId()))
         .filter(
             di ->
                 estado == null
                     || (di.getEstadoActual() != null && di.getEstadoActual().getTipo() == estado))
-        .filter(
-            di ->
-                subcategoriaId == null
-                    || (di.getItems() != null
-                        && di.getItems().stream()
-                            .anyMatch(
-                                item ->
-                                    item.bien() != null
-                                        && subcategoriaId.equals(item.bien().subcategoriaId()))))
+        .filter(di -> subcategoriaId == null || tieneSubcategoria(di, Set.of(subcategoriaId)))
+        .filter(deLaCategoria(filtro.categoriaId()))
+        .filter(di -> entidadId == null || entidadId.equals(di.getEntidadBeneficiariaId()))
+        .filter(di -> desde == null || !di.getFechaRegistro().toLocalDate().isBefore(desde))
+        .filter(di -> hasta == null || !di.getFechaRegistro().toLocalDate().isAfter(hasta))
         .map(donacionIndependienteMapper::toDTO)
         .toList();
+  }
+
+  /** Las que salen de una donación del donante; sin donante, todas. */
+  private Predicate<DonacionIndependiente> delDonante(UUID donanteId) {
+    if (donanteId == null) {
+      return di -> true;
+    }
+    Set<UUID> donaciones =
+        donacionesRepository.findAll().stream()
+            .filter(d -> donanteId.equals(d.getDonanteId()))
+            .map(Donacion::getId)
+            .collect(Collectors.toSet());
+    return di -> donaciones.contains(di.getDonacionOriginalId());
+  }
+
+  /** Las que tienen algún ítem de una subcategoría de la categoría; sin categoría, todas. */
+  private Predicate<DonacionIndependiente> deLaCategoria(UUID categoriaId) {
+    if (categoriaId == null) {
+      return di -> true;
+    }
+    Set<UUID> subcategorias =
+        subcategoriasRepository.findAll().stream()
+            .filter(s -> categoriaId.equals(s.getCategoriaId()))
+            .map(Subcategoria::getId)
+            .collect(Collectors.toSet());
+    return di -> tieneSubcategoria(di, subcategorias);
+  }
+
+  // getItems() nunca es nula y cada ítem valida su bien al construirse.
+  private static boolean tieneSubcategoria(DonacionIndependiente di, Set<UUID> subcategorias) {
+    return di.getItems().stream()
+        .anyMatch(item -> subcategorias.contains(item.bien().subcategoriaId()));
   }
 
   @Override

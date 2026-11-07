@@ -30,7 +30,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
-| `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
+| `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada) y `desde`/`hasta` (fecha de registro ISO, inclusivas). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
 | `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
