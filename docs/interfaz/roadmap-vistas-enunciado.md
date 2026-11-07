@@ -89,8 +89,8 @@ Falta el mapa con su lista (RF-14, RF-CL-06); el paso de confirmar ya está hech
 | Entidades → registrar entidad · aprobar entidades | RF-15, RF-21 | `admin-entidades` (+ aprobada, correccion, rechazada), `admin-entidades-registrar` (+ error, registrada) | ✅ |
 | Donaciones → registrar donación · detalle y vencimiento | RF-15, RF-16 | `admin-donaciones`, `admin-donaciones-detalle` (+ vencida), `admin-donaciones-registrar` (+ error, registrada) | ✅ |
 | Asignar donaciones → propuesta | RF-17 | `admin-asignaciones` (+ aprobada, descartada, error, corrida) | ✅ |
-| **Camiones** | RF-18 | — | ❌ |
-| **Ranking** | RF-19 | — | ❌ |
+| Camiones → agregar · deshabilitar · volver a habilitar | RF-18 | `admin-camiones` (+ agregado, agregar-error, deshabilitado, habilitado) | ✅ |
+| Ranking → meses anteriores | RF-19 | `admin-ranking` | ✅ |
 
 ### Transversal
 
@@ -98,9 +98,9 @@ Falta el mapa con su lista (RF-14, RF-CL-06); el paso de confirmar ya está hech
 |---|---|:-:|
 | Páginas de error propias: 403 "sin permiso", 404 y 5xx con `traceId` (el 401 lleva al login) | RF-CL-08 | ❌ |
 
-**Resumen:** de las 34 filas de la matriz, 24 están dibujadas, 1 está parcial y 9 faltan
-(después de F3). De las que faltan, 2 son del admin. En ellas caen RF-18 y RF-19, que son
-requerimientos mínimos del enunciado.
+**Resumen:** de las 34 filas de la matriz, 26 están dibujadas, 1 está parcial y 7 faltan
+(después de F4). Todo el admin está dibujado. De las que faltan, RF-07 y RF-14 (este, parcial)
+son requerimientos mínimos del enunciado.
 
 ## Fases
 
@@ -133,7 +133,7 @@ requerimiento nuevo.
 | **F1** Ficha del admin ✅ hecha (2026-11-07, [ficha aprobada](flujos/raices-admin-navegable.md)) | Decisión 1 primero. Con la recomendada, `flujos/raices-admin-navegable.md` (nombre provisional): las 6 secciones y sus 7 acciones, estados y textos; las fichas aparte de importar CSV (resultado por fila, 20.000 filas sin bloquear la pantalla) y de asignar (propuesta de los algoritmos) | 1 tanda · 1 a 3 fichas | Fichas aprobadas por el usuario y PASS de `revision-ui` |
 | **F2** Admin: personas ✅ hecha (2026-11-07) | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
 | **F3** Admin: donaciones y asignar ✅ hecha (2026-11-07) | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
-| **F4** Admin: camiones y ranking | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
+| **F4** Admin: camiones y ranking ✅ hecha (2026-11-07) | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
 | **F5** Entidad y donante | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
 | **F6** Público | Nosotros, Landing donante, Landing beneficiario y Activar cuenta, enlazadas desde la portada, el pie o el ingreso | 1 tanda · 4 plantillas + 1 ficha | Las 4 pantallas listas y enlazadas |
 | **F7** Errores y cierre | Páginas 403, 404 y 5xx; un test nuevo en `SitioControllerTest` que sigue todos los enlaces del sitio y falla si alguno lleva a `sin-dibujar` (hoy el test comprueba enlaces sueltos, no el recorrido completo); mapa del sitio y bitácora al día | 1 tanda · 3 plantillas + 1 test | Criterio de hecho de este roadmap cumplido |

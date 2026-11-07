@@ -40,6 +40,28 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Costo:** ninguno en la maqueta; en el sistema depende del estado de la solicitud (HB-12).
 - **Quién decidió:** usuario, a partir de un aviso de `revision-ui`.
 
+### 2026-11-07 · vistas · Camiones y Ranking del admin (F4)
+
+- **Decisión:** se construyen Camiones (la flota en la tabla adaptable con sus cifras y su fecha,
+  "Agregar camión" plegado arriba, "Deshabilitar" en un diálogo con el motivo opcional y "Volver a
+  habilitar"; "En ruta" sin botón) y Ranking (el último mes, "Ver otro mes" como formulario GET y
+  el criterio con la fecha del cálculo arriba de la tabla), según la ficha
+  [`raices-admin-navegable`](flujos/raices-admin-navegable.md) §4.8 y §4.9. Sin componentes ni
+  estilos nuevos. Con esto, todo el menú del admin está dibujado.
+- **Alternativas:** la ficha nombra solo los resultados de agregar y deshabilitar; se suman
+  `admin-camiones-habilitado` ("Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las
+  próximas rutas.") y `admin-camiones-agregar-error` (capacidad y altura mayores que 0, como valida
+  `CamionRequestDTO`), porque cada acción lleva su aviso (RNF-UI-05). En el diálogo, el foco entra
+  en "Cancelar", como en F3; la ficha (§3 y §7) se ajustó a esto.
+- **Revisión:** `revision-ui` PASS sin bloqueantes. De sus avisos, se arreglaron la hora de las
+  cifras después de una acción (18:35), el motivo de ejemplo del camión deshabilitado y la ficha.
+  Queda para el usuario si "según Incentivos" (el nombre del servicio) se cambia por algo más llano.
+- **Por qué:** cumplir RF-18 y RF-19 con el mismo patrón lista → acción → aviso de F2 y F3.
+- **Costo:** la maqueta muestra un motivo de ejemplo, no el escrito al deshabilitar (el POST
+  vuelve sin lo escrito); el hueco de los deshabilitados y del motivo, en
+  [`raices-ab-huecos-backend`](flujos/raices-ab-huecos-backend.md).
+- **Quién decidió:** agente, dentro de la ficha aprobada.
+
 ### 2026-11-07 · vistas · Donaciones y Asignar donaciones del admin (F3)
 
 - **Decisión:** se construyen Donaciones (lista con filtro por estado y "vencen en los próximos 7

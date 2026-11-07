@@ -42,12 +42,12 @@ class SitioControllerTest {
 
   @Test
   void unaSeccionSinPantallaMuestraQueNoEstaDibujada() throws Exception {
-    mvc.perform(get("/admin-ranking"))
+    mvc.perform(get("/entidad-seguimiento"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Ranking"))
+        .andExpect(model().attribute("seccion", "Seguir entregas"))
         .andExpect(content().string(containsString("todavía no está dibujada")))
-        .andExpect(content().string(containsString("href=\"/admin-inicio\"")));
+        .andExpect(content().string(containsString("href=\"/entidad-inicio\"")));
   }
 
   @Test
@@ -502,7 +502,9 @@ class SitioControllerTest {
           "admin-entidades",
           "admin-donaciones",
           "admin-donaciones-registrar",
-          "admin-asignaciones");
+          "admin-asignaciones",
+          "admin-camiones",
+          "admin-ranking");
 
   @Test
   void losDonantesDelAdminMuestranCadaEstadoEImportanSinBloquear() throws Exception {
@@ -703,6 +705,62 @@ class SitioControllerTest {
     mvc.perform(get("/admin-asignaciones-corrida?escenario=nuevas"))
         .andExpect(content().string(containsString("generó 2 propuestas nuevas.")))
         .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
+  }
+
+  @Test
+  void losCamionesSeAgreganYSeDeshabilitanConSuMotivo() throws Exception {
+    mvc.perform(get("/admin-camiones"))
+        .andExpect(model().attribute("seccion", "Camiones"))
+        .andExpect(
+            content()
+                .string(containsString("5 camiones: 1 en ruta · 3 disponibles · 1 deshabilitado")))
+        .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
+        .andExpect(content().string(containsString("¿Deshabilitar el camión AC 456 EF?")))
+        .andExpect(
+            content().string(containsString("aria-label=\"Deshabilitar: camión AC 456 EF\"")))
+        .andExpect(content().string(containsString("En el taller desde el 12 de octubre.")))
+        .andExpect(content().string(containsString("action=\"/admin-camiones-agregado\"")))
+        .andExpect(content().string(not(containsString("Deshabilitar: camión AB 123 CD"))));
+    mvc.perform(get("/admin-camiones?escenario=vacio"))
+        .andExpect(content().string(containsString("Todavía no hay camiones.")));
+    mvc.perform(get("/admin-camiones?escenario=lento"))
+        .andExpect(content().string(containsString("Cargando los camiones…")));
+    mvc.perform(get("/admin-camiones?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar los camiones.")));
+    mvc.perform(post("/admin-camiones-agregado"))
+        .andExpect(redirectedUrl("/admin-camiones-agregado"));
+    mvc.perform(get("/admin-camiones-agregado"))
+        .andExpect(content().string(containsString("Agregaste el camión AF 345 KL.")))
+        .andExpect(content().string(containsString("6 camiones: 1 en ruta · 4 disponibles")));
+    mvc.perform(get("/admin-camiones-agregar-error"))
+        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+    mvc.perform(get("/admin-camiones-deshabilitado"))
+        .andExpect(content().string(containsString("Deshabilitaste el camión AC 456 EF.")))
+        .andExpect(content().string(containsString("Service de frenos. Desde hoy, 18:35.")))
+        .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:35.")))
+        .andExpect(content().string(containsString("Volver a habilitar: camión AC 456 EF")));
+    mvc.perform(get("/admin-camiones-habilitado"))
+        .andExpect(content().string(containsString("Volviste a habilitar el camión AA 999 ZZ.")))
+        .andExpect(content().string(containsString("Deshabilitar: camión AA 999 ZZ")));
+  }
+
+  @Test
+  void elRankingDiceSuCriterioYMuestraMesesAnteriores() throws Exception {
+    mvc.perform(get("/admin-ranking"))
+        .andExpect(model().attribute("seccion", "Ranking"))
+        .andExpect(content().string(containsString("Septiembre de 2026")))
+        .andExpect(content().string(containsString("Ordenado por misiones completadas en el mes")))
+        .andExpect(
+            content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
+        .andExpect(content().string(containsString("<caption>")));
+    mvc.perform(get("/admin-ranking?mes=2026-08"))
+        .andExpect(content().string(containsString("El ranking de agosto de 2026")))
+        .andExpect(content().string(containsString("value=\"2026-08\" selected")));
+    mvc.perform(get("/admin-ranking?escenario=vacio"))
+        .andExpect(content().string(containsString("Todavía no hay ningún ranking")));
+    mvc.perform(get("/admin-ranking?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar el ranking.")));
   }
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");

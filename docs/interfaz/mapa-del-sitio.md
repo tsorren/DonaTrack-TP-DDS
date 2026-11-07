@@ -122,7 +122,7 @@ La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes
 | Inicio del admin | Dibujada, con el menú | Dibujada, con el menú |
 | Donantes (registrar, importar CSV con su resultado) y Entidades (registrar, aprobar, pedir corrección, rechazar) del admin | Dibujadas (F2 del roadmap, 2026-11-07) | Dibujadas (F2 del roadmap, 2026-11-07) |
 | Donaciones (registrar, detalle, marcar vencida) y Asignar donaciones (aprobar, descartar, correr la asignación) del admin | Dibujadas (F3 del roadmap, 2026-11-07) | Dibujadas (F3 del roadmap, 2026-11-07) |
-| Resto del admin (Camiones, Ranking) | Sin dibujar | Sin dibujar |
+| Camiones (agregar, deshabilitar, volver a habilitar) y Ranking (meses anteriores) del admin | Dibujadas (F4 del roadmap, 2026-11-07) | Dibujadas (F4 del roadmap, 2026-11-07) |
 
 Lo público que no tiene plantilla no existe (la página de "sin dibujar" es privada); lo privado
 que no tiene plantilla muestra "sin dibujar".

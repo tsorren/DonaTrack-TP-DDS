@@ -199,5 +199,18 @@
 /admin-asignaciones-error?escenario=cambio
 /admin-asignaciones-corrida
 /admin-asignaciones-corrida?escenario=nuevas
+/admin-camiones
+/admin-camiones?escenario=vacio
+/admin-camiones?escenario=lento
+/admin-camiones?escenario=error
+/admin-camiones-agregado
+/admin-camiones-agregar-error
+/admin-camiones-deshabilitado
+/admin-camiones-habilitado
+/admin-ranking
+/admin-ranking?mes=2026-08
+/admin-ranking?escenario=vacio
+/admin-ranking?escenario=lento
+/admin-ranking?escenario=error
 # El catálogo de la capa CUBE (RF-CL-05, B0-06): axe AA sobre /estilos.
 /estilos

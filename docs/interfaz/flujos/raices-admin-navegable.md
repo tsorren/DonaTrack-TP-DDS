@@ -74,6 +74,8 @@ flowchart TD
 
   cam -->|Agregar camión| cok[admin-camiones-agregado]
   cam -->|Deshabilitar| cdes[admin-camiones-deshabilitado]
+  cam -->|Volver a habilitar| chab[admin-camiones-habilitado]
+  cam -->|datos inválidos| caer[admin-camiones-agregar-error]
 ```
 
 Desvíos considerados:
@@ -430,8 +432,8 @@ apura.
   repite el rótulo de cada dato.
 - Las pestañas de Entidades son enlaces con `aria-current`; con Alpine, el patrón de pestañas de
   `componentes.md`.
-- Los diálogos de rechazar, marcar vencida y deshabilitar usan `<dialog>`: el foco va al primer
-  campo, Escape cancela y al cerrar el foco vuelve al botón que lo abrió. Sin JavaScript, el
+- Los diálogos de rechazar, marcar vencida y deshabilitar usan `<dialog>`: el foco entra en
+  "Cancelar" (como pide el catálogo para `.dialogo` con tono quitar), Escape cancela y al cerrar el foco vuelve al botón que lo abrió. Sin JavaScript, el
   botón lleva a una pantalla de confirmación con el mismo texto.
 - El avance del CSV y los avisos breves se leen solos (`role="status"`, `aria-live="polite"`); el
   error del servidor, con `role="alert"`.
