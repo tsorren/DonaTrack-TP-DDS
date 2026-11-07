@@ -190,7 +190,7 @@ Los RF se numeran como los requerimientos mínimos de UI/UX del enunciado (págs
 | ID | Actor | Requerimiento | Criterio de aceptación `[PROPOSED]` | Endpoints | Cob. | Hueco (§8) |
 |---|---|---|---|---|:-:|---|
 | RF-01 | Público | Landing: propósito, destacadas del último mes, links a fotos, registro/login, legales | La landing carga sin login y muestra propósito, hasta N destacadas del último mes y los links de RF-01 | `GET /donaciones-independientes` | 🟡 | HB-01, HB-02 |
-| RF-02 | Público | Mapa de donaciones entregadas con detalle por marcador | Sin login; cada marcador abre el detalle (fecha, categoría, foto); ubicación aproximada (D24) | `GET /api/entregas/mapa` | 🟡 | HB-07 |
+| RF-02 | Público | Mapa de donaciones entregadas con detalle por marcador | Sin login; cada marcador abre el detalle (fecha, categoría, foto); coordenadas exactas, sin el texto de la dirección (D24) | `GET /api/entregas/mapa` | 🟡 | HB-07 |
 | RF-03 | Público | Registro de donantes y entidades | Un donante queda operativo al completar el perfil; una entidad queda pendiente de aprobación | IdP + `POST /api/personas`, `/api/donantes`, `/api/entidades` | 🟡 | RI-AUTH-02 |
 | RF-04 | Todos | Login de donantes, entidades y admins | Los 3 roles inician sesión y llegan a su inicio; credenciales inválidas dan error genérico | IdP | ❌ | §4 |
 | RF-05 | Donante | Filtrar sus donaciones por estado y categoría/subcategoría | Combinar estado y categoría o subcategoría devuelve solo donaciones propias que cumplen ambos | `GET /donaciones-independientes?estado&subcategoriaId&donanteId` | 🟡 | HB-03 |
@@ -202,7 +202,7 @@ Los RF se numeran como los requerimientos mínimos de UI/UX del enunciado (págs
 | RF-11 | Entidad | Estado de las donaciones asignadas | Listado de donaciones asignadas a la entidad, filtrable por estado | `GET /donaciones-independientes` | 🟡 | HB-04 |
 | RF-12 | Entidad | Confirmar recepción cargando fotos | Confirmar recepción exige al menos una foto válida (D27); la entrega pasa a `ENTREGADA` | `PATCH /api/entregas/{id}/estado`, `PATCH .../fotos` (solo URL) | 🟡 | HB-10 |
 | RF-13 | Entidad | Notificaciones de asignación y recepción | Asignación y recepción generan notificación visible en la bandeja | `GET /api/notificaciones/persona/{personaId}` | 🟡 | HB-09 |
-| RF-14 | Entidad | Mapa de entregas activas a recibir | Solo entregas que la entidad debe recibir; dirección exacta de su propia entrega y camión con posición aproximada | `GET /api/entregas/seguimiento/beneficiarios/{id}` | 🟡 | HB-05, HB-06, HB-16, D22 |
+| RF-14 | Entidad | Mapa de entregas activas a recibir | Solo entregas que la entidad debe recibir; dirección exacta de su propia entrega y camión con posición exacta (D24) | `GET /api/entregas/seguimiento/beneficiarios/{id}` | 🟡 | HB-05, HB-06, HB-16, D22 |
 | RF-15 | Admin | Registrar donantes y donaciones recibidas en el depósito | El admin registra un donante y su donación en un mismo flujo; el donante recibe acceso (D12) | `POST /api/personas`, `/api/donantes`, `/api/donaciones` | 🟡 | RF-AUTH-14 (alta de usuario) |
 | RF-16 | Admin | Marcar donaciones vencidas | Solo el admin; la transición queda auditada con el actor del token | `PATCH /donaciones-independientes/{id}/estado` | ✅ | Actor desde el token (RI-SVC-04) |
 | RF-17 | Admin | Elegir la entidad final según los algoritmos | El admin ve el resultado de los algoritmos y aprueba una propuesta | `/api/asignaciones/ejecuciones`, `/propuestas`, `/propuestas/{id}/estado` | ✅ | |
@@ -225,7 +225,7 @@ Resumen: 6 ✅ · 14 🟡 · 2 ❌.
 
 Reglas para lo público (D26):
 - Cada ruta pública usa un **DTO público propio**, nunca el interno con campos ocultos.
-- La ubicación se muestra aproximada (D24).
+- Las coordenadas se muestran exactas, pero nunca el texto de la dirección (D24).
 - Las rutas públicas son las únicas en la allowlist del gateway (RI-GW-03).
 
 ### 6.3 Requerimientos funcionales propios del cliente `[PROPOSED]`
@@ -274,8 +274,8 @@ Reglas para lo público (D26):
 
 | ID | Requerimiento | Criterio de aceptación | Origen |
 |---|---|---|---|
-| RNF-PRIV-01 | Ubicación aproximada en lo público y en el camión | Mapa público y posición del camión con precisión de ~1 km (redondeo o desplazamiento de coordenadas en el DTO), también para donantes y entidades: la ruta del camión revela las paradas de **otras** entidades | D24 |
-| RNF-PRIV-02 | Ubicación exacta solo por pertenencia | La entidad ve exacta la dirección de su propia entrega; el donante, la de las entregas de sus donaciones ya completadas; el admin ve todo, incluida la posición exacta del camión | D24 |
+| RNF-PRIV-01 | Coordenadas exactas en lo público y en el camión | Mapa público y posición del camión con las coordenadas exactas, para todos los roles y sin login; el DTO público no lleva calle, altura, piso, departamento ni código postal. Revisado el 2026-11-06: antes pedía ~1 km de precisión ([ADR-E6-07](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md)) | D24 |
+| RNF-PRIV-02 | Dirección textual solo por pertenencia | La entidad ve la dirección (calle, altura, piso) de su propia entrega; el donante, la de las entregas de sus donaciones ya completadas; el admin ve todo. Las paradas ajenas del seguimiento no muestran dirección | D24 |
 | RNF-PRIV-03 | Fotos privadas | Bucket privado; lectura por URL firmada de vida corta (5 min, detrás de una URL estable de Logística que redirige) | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | RNF-PRIV-04 | Fotos sin metadatos | Se quitan los EXIF (pueden traer coordenadas GPS) antes de guardar, re-codificando la imagen | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | RNF-PRIV-05 | Sin PII en tokens ni en logs | Ver RNF-AUTH-09; los logs registran `sub`, no emails | ADR crypto-shredding |
@@ -293,8 +293,8 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-03 | Donaciones | Filtro por `categoriaId` en `GET /donaciones-independientes` | RF-05 | D28 |
 | HB-04 | Donaciones | Filtro por entidad asignada y rango de fechas | RF-11, RF-01 | D28 |
 | HB-05 | Logística | VO `PosicionCamion` (coordenadas + timestamp de origen) y puerto `FuentePosicionCamion` con un adaptador simulado que avanza por las paradas de la ruta | RF-09, RF-14 | D23 |
-| HB-06 | Logística | Exponer la posición del camión en el seguimiento: campo aditivo en `SeguimientoEntregaResponseDTO`, siempre aproximada salvo para el admin (RNF-PRIV-01/02) | RF-09, RF-14 | D23, D24 |
-| HB-07 | Logística | `GET /api/entregas/mapa` con coordenadas aproximadas | RF-02 | D24 |
+| HB-06 | Logística | Exponer la posición del camión en el seguimiento: campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO`, exacta para todos (RNF-PRIV-01) | RF-09, RF-14 | D23, D24 |
+| HB-07 | Logística | ~~`GET /api/entregas/mapa` con coordenadas aproximadas~~ Con la D24 revisada las coordenadas quedan exactas: solo se corrige el Javadoc de `EntregaMapaPublicoResponseDTO` (tarea 22 del [plan sin auth](plan-e6-trabajo-sin-auth.md)) | RF-02 | D24 |
 | HB-08 | Donaciones | DTOs públicos de entidades y necesidades | RF-06, RF-22 | D26 |
 | HB-09 | Notificaciones | Verificar que los 4 eventos del donante y los 2 de la entidad generan notificación | RF-08, RF-13 | — |
 | HB-10 | Logística | `POST /api/entregas/{id}/fotos` multipart → MinIO y `GET /api/entregas/{id}/fotos/{fotoId}` (redirige a la URL firmada); el `PATCH .../fotos` actual se conserva | RF-12 | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
@@ -467,7 +467,26 @@ El servidor devuelve fragmentos HTML. Los spinners salen declarativos con `hx-in
 
 Obligatorio con cualquier opción: atribución de los datos y alternativa accesible (RF-CL-06).
 
-### D23 — Posición del camión simulada, detrás de un puerto ✅ · ADR-E6-07
+### D22 — Actualización de la posición del camión: polling con HTMX ✅ · [ADR-E6-07](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md)
+Decidida por tsorren el 2026-11-06 (antes ⏸️). El navegador pide cada 30 s, solo con la pestaña visible, un fragmento HTML con el marcador del camión (`hx-trigger="every 30s [document.visibilityState=='visible']"`). 30 s es la frecuencia de la fuente (D23): consultar más seguido no trae datos más frescos. El fragmento es una plantilla aislada para que un SSE futuro empuje el mismo HTML.
+
+| Criterio (peso) | **A. Polling** | B. SSE |
+|---|:-:|:-:|
+| Simplicidad y costo (20%) | **5** | 2 |
+| Escalabilidad (15%) | **5** | 3 |
+| Frescura (15%) | 3 | 5 |
+| Seguridad (15%) | **4** | 3 |
+| Testabilidad (10%) | **5** | 2 |
+| Resiliencia (10%) | **4** | 3 |
+| Consistencia arquitectónica (10%) | **5** | 3 |
+| Observabilidad (5%) | 3 | 3 |
+| **Total** `[INFERRED]` | **4,35** | **3,00** |
+
+- WebSocket queda descartado `[REJECTED]`: el navegador no le manda nada al servidor.
+- SSE pasa a convenir si el negocio pide frescura de pocos segundos, si el rate limiting de E7 vuelve caro el polling o si E7 adopta gRPC en streaming entre Logística y el cliente.
+- El análisis por atributo de calidad (frescura, rendimiento, escalabilidad, seguridad, observabilidad, E7) está en el ADR.
+
+### D23 — Posición del camión simulada, detrás de un puerto ✅ · [ADR-E6-07](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md)
 
 | Criterio | Derivada de la última parada | **Simulada detrás de un puerto** | Callback del proveedor externo | GPS del chofer en el navegador |
 |---|---|---|---|---|
@@ -477,12 +496,20 @@ Obligatorio con cualquier opción: atribución de los datos y alternativa accesi
 
 - Sigue el patrón de puertos y adaptadores que ya usa `ProveedorExternoPlanificacionSimulado` `[OBSERVED]`.
 - Cada posición lleva su timestamp de origen: se descarta la que llega más vieja que la guardada (idempotencia).
+- **Frecuencia:** el simulador avanza cada 30 s (decidido por tsorren el 2026-11-06).
 - **Evolución prevista:** el callback del proveedor externo es otro adaptador del mismo puerto; se suma sin rediseño.
 
-### D24 — Ubicación aproximada en lo público, exacta por pertenencia ✅ (alcance en revisión) · ADR-E6-07
-- Con el tiempo, la posición exacta de un camión en ruta revela dónde reciben **otras** entidades.
-- Mantiene el criterio que ya aplica `ParadaSeguimientoDTO` `[OBSERVED]` y extiende la minimización de PII al mapa público, que hoy muestra coordenadas exactas.
-- **Alcance afinado** `[INFERRED]`: la posición del camión es aproximada para todos menos el admin, porque su recorrido expone las paradas de otras entidades; lo exacto por pertenencia es la dirección de la propia entrega (RNF-PRIV-01/02). **Revisión pendiente:** el equipo confirmó este alcance para avanzar, pero lo revisa de nuevo antes de redactar ADR-E6-07.
+### D24 — Coordenadas exactas para todos; la dirección textual, por pertenencia ✅ (revisada el 2026-11-06) · [ADR-E6-07](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md)
+- **Cambio:** la versión anterior pedía coordenadas aproximadas (~1 km) en el mapa público y en la posición del camión, salvo para el admin. Revisada por tsorren el 2026-11-06: las coordenadas del mapa público (`GET /api/entregas/mapa`) y la posición del camión quedan **exactas para todos**.
+- **Lo que no cambia:** el texto de la dirección (calle, altura, piso, departamento, código postal) no sale en lo público ni en las paradas ajenas del seguimiento (`ParadaSeguimientoDTO` `[OBSERVED]`); solo lo ve quien tiene la entrega (RNF-PRIV-02).
+- **Motivo:** las direcciones de destino son de entidades beneficiarias, que son organizaciones. Desplazar el punto ~1 km da una privacidad engañosa: el camión igual se detiene en el punto exacto y la lista de entidades es conocida. Además, simplifica el código y hace más fiel la demo.
+- **Costo aceptado:** con el tiempo, el recorrido exacto del camión revela dónde reciben **otras** entidades. Si se suman destinatarios que sean personas, la decisión se revisa.
+
+| Criterio | **Exacta para todos** | Aproximada salvo admin (anterior) | Exacta solo para quien tiene una parada en la ruta | Sin camión salvo admin |
+|---|---|---|---|---|
+| Utilidad para RF-09 y RF-14 | **Alta** | Media: la entidad ve su camión a ~1 km | Alta | Nula: incumple RF-09 |
+| Privacidad real | **Baja**, aceptada | Aparente: se anula cruzando con la lista de entidades | Media | Alta |
+| Costo | **Ninguno** | Redondeo en dos DTOs y sus tests | Pertenencia (HB-13) y dos versiones del DTO | Ninguno |
 
 ### D25 — `X-Actor` y `X-API-Key` reemplazados por el token ✅ · ADR-E6-05
 - Hoy `X-Actor` lo manda quien llama y nadie lo verifica: se puede falsificar.
@@ -599,53 +626,6 @@ La preferencia del equipo (activación a demanda) no manda nada al importar. **S
 
 **Pregunta para la cátedra:** ¿un link de un solo uso para que la persona fije su contraseña cuenta como "enviarle sus credenciales de acceso"? ¿Es aceptable enviarlo bajo demanda?
 
-### D22 — Actualización de la posición del camión: polling vs SSE ⏸️ · ADR-E6-07
-
-**Las dos opciones:**
-- **A. Polling:** el navegador pregunta cada N segundos (HTMX `hx-trigger="every 15s [document.visibilityState=='visible']"`) y recibe solo el fragmento del marcador.
-- **B. Server-Sent Events (SSE):** el servidor mantiene una conexión abierta por usuario y empuja la posición cuando cambia.
-
-WebSocket queda descartado `[REJECTED]`: no hace falta mandar datos del navegador al servidor.
-
-**Un dato que condiciona todo:** la frescura máxima la pone **la fuente**. Si el simulador (D23) actualiza cada 15 s, SSE ahorra como mucho 15 s frente a un polling de 15 s.
-
-#### Análisis por atributo de calidad
-
-| Atributo | A. Polling | B. SSE |
-|---|---|---|
-| **Frescura** | Retraso de hasta N s más la frecuencia de la fuente | Inmediata cuando hay dato nuevo |
-| **Rendimiento** | Cada consulta recorre cliente → gateway → servicio → Mongo; con 200 mapas abiertos a 15 s son ~13 req/s; ETag/`304` ahorra el cuerpo, no el viaje | Una conexión por usuario, casi sin costo ociosa; el costo está en el *fan-out* de eventos |
-| **Escalabilidad** | Stateless: cualquier instancia atiende | Cada instancia del cliente tiene que recibir **todos** los eventos de posición (una cola por instancia) y mantener sus conexiones |
-| **Disponibilidad y resiliencia** | Si falla una consulta, la siguiente lo corrige | El navegador reconecta solo (`EventSource`, `Last-Event-ID`); proxies y gateway pueden cortar conexiones ociosas: hacen falta *heartbeats* y timeouts largos |
-| **Seguridad** | Cada request se autoriza de nuevo con un token vigente | Se autoriza al abrir; si el token vence o se revoca un rol, la conexión sigue: hay que cerrarla al vencer el token (15 min) y filtrar cada evento por pertenencia |
-| **Consistencia arquitectónica** | Reusa REST, gateway y patrón de lectura existentes | Un evento nuevo (`PosicionCamionActualizada`) y **el cliente liviano pasa a consumir RabbitMQ**: un canal nuevo hacia la capa de UI, que requiere ADR (AGENTS.md §4.2) |
-| **Observabilidad** | Un `traceId` por consulta; mucho volumen de log de lectura | Una traza larga por conexión; hay que propagar el `traceId` en cada evento |
-| **Interacción con E7** | El rate limiting de E7 cuenta estas consultas: hay que dimensionarlo o excluirlas | No consume cupo de rate limiting; E7 ofrece gRPC para "actualizaciones en tiempo real" entre servicios, que podría alimentar un SSE |
-| **Testabilidad** | Trivial (MockMvc) | Asíncrona: tests con tiempos y reconexiones |
-| **Costo de implementación** | 1 endpoint de fragmento + un atributo HTMX | Evento + publicador + consumidor en el cliente + registro de emisores + filtro por pertenencia + heartbeat + configuración del gateway |
-| **Experiencia de uso** | El marcador salta cada N s | Movimiento más continuo |
-
-#### Matriz ponderada `[INFERRED]` (1 = peor, 5 = mejor)
-
-| Criterio (peso) | A. Polling | B. SSE |
-|---|:-:|:-:|
-| Simplicidad y costo (20%) | 5 | 2 |
-| Escalabilidad (15%) | 5 | 3 |
-| Frescura (15%) | 3 | 5 |
-| Seguridad (15%) | 4 | 3 |
-| Testabilidad (10%) | 5 | 2 |
-| Resiliencia (10%) | 4 | 3 |
-| Consistencia arquitectónica (10%) | 5 | 3 |
-| Observabilidad (5%) | 3 | 3 |
-| **Total** | **4,35** | **3,00** |
-
-- **Recomendación:** polling ahora, con el endpoint de fragmento pensado para que un SSE futuro reuse el mismo HTML.
-- **SSE gana si pasa alguna de estas cosas:**
-  - el negocio pide frescura de pocos segundos;
-  - el rate limiting de E7 vuelve caro el polling;
-  - E7 adopta gRPC en streaming entre Logística y el cliente.
-- **Para cerrarla hace falta:** definir la frecuencia del simulador (D23) y el objetivo de frescura de RF-09/14.
-
 ### D30 — ¿Quién inicia sesión por una persona jurídica? ⏸️ · ADR-E6-04
 Surge del modelo de identidad `[OBSERVED]`: una jurídica tiene representantes con su propio email. El enunciado dice que la jurídica dona *"o en caso de las jurídicas, un representante"*.
 
@@ -671,7 +651,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | ADR-E6-04 Identidad y autorización: `sub`, roles, pertenencia y alta de cuentas | D9, D10, D11, D13, D14, D30 | Sí | Contratos entre IdP y negocio, seguridad | Esperar D30 (se puede redactar marcándola) |
 | ADR-E6-05 Autenticación entre servicios y retiro de `X-Actor` / `X-API-Key` | D15, D25 | Sí | *Breaking change* de contrato | Listo |
 | ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
-| ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Esperar D22 |
+| ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Redactado (`proposed`): [ADR](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md) |
 | ADR-E6-08 Fotos de recepción en almacenamiento de objetos | D27 | Sí | Persistencia y privacidad | Redactado (`proposed`): [ADR](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | Contrato de entregas para la entidad: remito, reporte y datos de Donaciones | Preguntas 5 y 14 de Raíces (HB-17) | Sí | Integración entre servicios y contrato | Redactado (`proposed`): [ADR](../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
 | Ciclo de vida de la necesidad en el contrato | Preguntas 6 a 12 de Raíces (HB-18) | Sí | *Breaking change* de contrato | Redactado (`proposed`): [ADR](../adr/donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
