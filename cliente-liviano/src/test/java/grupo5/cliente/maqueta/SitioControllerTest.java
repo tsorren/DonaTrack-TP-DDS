@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.web.RankingController;
+import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
 import java.util.ArrayDeque;
@@ -36,8 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /** La pantalla de prueba está en src/test/resources/templates/. */
-@WebMvcTest(SitioController.class)
-@Import({MaquetaConfig.class, SitioControllerTest.PaginasDeError.class})
+@WebMvcTest({SitioController.class, RankingController.class})
+@Import({MaquetaConfig.class, RankingMaqueta.class, SitioControllerTest.PaginasDeError.class})
 @ActiveProfiles("maqueta")
 class SitioControllerTest {
 
@@ -501,8 +503,8 @@ class SitioControllerTest {
     String html = error(404, "/no-existe", "");
     assertTrue(html.contains("Error 404"), html);
     assertTrue(html.contains("No encontramos esta"));
-    assertTrue(html.contains("Código para soporte: <code>a1b2c3d4e5f6</code>"));
-    assertTrue(html.contains("href=\"/publico-contacto?codigo=a1b2c3d4e5f6\""));
+    assertTrue(html.contains("Código para soporte: <code>" + CODIGO + "</code>"), html);
+    assertTrue(html.contains("href=\"/publico-contacto?codigo=" + CODIGO + "\""));
     assertTrue(html.contains("class=\"raices-publico\""));
     html = error(403, "/entidad-inicio", "");
     assertTrue(html.contains("Esta página no es para tu"));
@@ -516,6 +518,9 @@ class SitioControllerTest {
     assertTrue(html.contains("Si sigue, escribinos y contanos qué estabas haciendo."));
   }
 
+  /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */
+  private static final String CODIGO = "0123456789abcdef0123456789abcdef";
+
   /** La página de error que arma Spring Boot para ese código, como después de un sendError. */
   private String error(int codigo, String direccion, String escenario) throws Exception {
     return mvc.perform(
@@ -523,7 +528,9 @@ class SitioControllerTest {
                 .param("escenario", escenario)
                 .accept(MediaType.TEXT_HTML)
                 .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, codigo)
-                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, direccion))
+                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, direccion)
+                // Lo deja TraceIdFiltro en el pedido original; el despacho de error lo hereda.
+                .requestAttr(TraceIdFiltro.CLAVE, CODIGO))
         .andExpect(status().is(codigo))
         .andReturn()
         .getResponse()
@@ -975,6 +982,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Todavía no hay ningún ranking")));
     mvc.perform(get("/admin-ranking?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar el ranking.")));
+    mvc.perform(get("/admin-ranking?respuesta=404")).andExpect(status().isNotFound());
   }
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");

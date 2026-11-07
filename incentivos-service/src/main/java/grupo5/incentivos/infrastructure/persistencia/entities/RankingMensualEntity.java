@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,9 @@ public class RankingMensualEntity {
   @Convert(converter = YearMonthAttributeConverter.class)
   @Column(name = "periodo", nullable = false, unique = true, length = 7)
   private YearMonth periodo;
+
+  @Column(name = "calculado_en")
+  private Instant calculadoEn;
 
   // FetchType.EAGER justificado: el mapeo a dominio ocurre fuera de la transacción del repo.
   // Única colección de la entidad, así que un bag no provoca MultipleBagFetchException; el mapper
