@@ -31,6 +31,26 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · flujo · Admin en una sola ficha, con tres reglas de trabajo
+
+- **Decisión:** el recorrido del admin va en una sola ficha,
+  [`raices-admin-navegable`](flujos/raices-admin-navegable.md), con importar CSV y asignar adentro.
+  Ante una entidad que pide sumarse, el admin aprueba, pide corrección o rechaza; corregir y
+  rechazar llevan un texto que le llega a la entidad. El motivo para descartar una propuesta es
+  opcional. En Camiones, el admin solo pasa entre disponible y deshabilitado.
+- **Alternativas:** una ficha por sección, o fichas aparte para el CSV y para asignar; solo aprobar
+  entidades; motivo obligatorio al descartar; que el admin cambie los tres estados del camión.
+- **Por qué:** una ficha, como las de donante y entidad, mantiene el mismo patrón en las seis
+  secciones. Pedir corrección evita rechazar a una entidad a la que le falta un papel. "En ruta" lo
+  pone la logística, así no queda una ruta falsa.
+- **Costo:** pedir corrección y rechazar se suman a HB-12, que todavía no existe en el backend.
+  El motivo de descartar y volver a habilitar un camión necesitan huecos nuevos de backend
+  (ficha, Huecos).
+- **Quién decidió:** usuario. Además, el agente fijó dos cosas: el correo del donante es
+  obligatorio en el registro, porque por ahí le llega su acceso (RF-15, D12), y el inicio del
+  admin pasa a "7 en el depósito" en F3, porque solo pueden vencer las donaciones del depósito.
+- **Evidencia:** la ficha, §4 y §9.
+
 ### 2026-11-07 · proceso · Roadmap de las vistas del enunciado: el admin primero
 
 - **Decisión:** las vistas que faltan se terminan en 7 fases, según el

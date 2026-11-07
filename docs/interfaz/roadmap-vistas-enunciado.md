@@ -130,7 +130,7 @@ requerimiento nuevo.
 
 | Fase | Qué entrega | Tamaño `[INFERRED]` | Criterio de cierre |
 |---|---|---|---|
-| **F1** Ficha del admin | Decisión 1 primero. Con la recomendada, `flujos/raices-admin-navegable.md` (nombre provisional): las 6 secciones y sus 7 acciones, estados y textos; las fichas aparte de importar CSV (resultado por fila, 20.000 filas sin bloquear la pantalla) y de asignar (propuesta de los algoritmos) | 1 tanda · 1 a 3 fichas | Fichas aprobadas por el usuario y PASS de `revision-ui` |
+| **F1** Ficha del admin ✅ hecha (2026-11-07, [ficha aprobada](flujos/raices-admin-navegable.md)) | Decisión 1 primero. Con la recomendada, `flujos/raices-admin-navegable.md` (nombre provisional): las 6 secciones y sus 7 acciones, estados y textos; las fichas aparte de importar CSV (resultado por fila, 20.000 filas sin bloquear la pantalla) y de asignar (propuesta de los algoritmos) | 1 tanda · 1 a 3 fichas | Fichas aprobadas por el usuario y PASS de `revision-ui` |
 | **F2** Admin: personas | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
 | **F3** Admin: donaciones y asignar | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
 | **F4** Admin: camiones y ranking | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
@@ -148,7 +148,7 @@ Se piden al empezar la fase donde hacen falta, una por pregunta.
 
 | # | Fase | Decisión | Recomendada |
 |---|---|---|---|
-| 1 | F1 | ¿Una sola ficha para el recorrido del admin, o una por sección? | Una para el recorrido, como las de donante y entidad, y fichas aparte solo para importar CSV y asignar |
+| 1 | F1 | ¿Una sola ficha para el recorrido del admin, o una por sección? | **Decidida (usuario, 2026-11-07):** una sola ficha, CSV y asignar incluidos: [`raices-admin-navegable`](flujos/raices-admin-navegable.md) |
 | 2 | F5 | ¿Cómo se ve Misiones e insignias, si la cuenta de ejemplo es una empresa? | Una segunda cuenta de ejemplo, de una persona, con el menú que suma Incentivos |
 | 3 | F2 | ¿Importar CSV muestra el avance en la misma pantalla, o en una aparte? | En la misma, como dice el mapa del sitio, para no pasar de 3 niveles |
 
