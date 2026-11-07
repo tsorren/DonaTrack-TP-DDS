@@ -193,6 +193,7 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 |---|---|
 | [bocetos-e1.md](bocetos-e1.md) | Inventario de los bocetos de E1 |
 | [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles, y qué pantallas están dibujadas |
+| [roadmap-vistas-enunciado.md](roadmap-vistas-enunciado.md) | Las vistas que pide el enunciado y faltan, con su matriz requerimiento → vista y las 7 fases para terminarlas |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
 | [criterios-catedra-ux-ui.md](criterios-catedra-ux-ui.md) | Los criterios del material de UX/UI de la cátedra (2026): factores de la experiencia, patrones, arquitectura de la información, lenguaje visual, accesibilidad y las 10 heurísticas, como guía para diseñar y revisar |
 | [identidad/brief.md](identidad/brief.md) y [identidad/referencias/](identidad/referencias/README.md) | La identidad del sitio (Raíces: raíces y semillas para empresas que donan): su brief y las referencias que trajo el usuario |

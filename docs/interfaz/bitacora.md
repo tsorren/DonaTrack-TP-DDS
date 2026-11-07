@@ -31,6 +31,20 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · proceso · Roadmap de las vistas del enunciado: el admin primero
+
+- **Decisión:** las vistas que faltan se terminan en 7 fases, según el
+  [roadmap](roadmap-vistas-enunciado.md): primero el admin (ficha y tres tandas de pantallas),
+  después entidad y donante, después lo público y al final las páginas de error y el cierre.
+- **Alternativas:** empezar por lo público o por entidad y donante, que ya tienen casi todo.
+- **Por qué:** el admin tiene 6 de los 20 requerimientos mínimos (RF-15 a RF-20) y ninguna
+  sección dibujada.
+- **Costo:** quedan afuera la autenticación real y los datos de las APIs. Hay tres decisiones
+  abiertas, que se piden al empezar F1, F2 y F5.
+- **Quién decidió:** usuario (alcance: los cuatro roles, sin auth); el orden de las fases es una
+  propuesta del agente.
+- **Evidencia:** la matriz requerimiento → vista del roadmap.
+
 ### 2026-11-06 · revisión del usuario (Raíces cálida): vuelve la versión de la etapa 1; de la corrida queda solo el estrato de las barras
 
 - **Decisión:** el sitio vuelve a como estaba al cerrar la etapa 1 (`49b46ab4`: tierra humus, marco
