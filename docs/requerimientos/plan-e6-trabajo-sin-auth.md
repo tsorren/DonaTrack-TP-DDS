@@ -23,7 +23,7 @@ Contrastado el 2026-11-06 contra `origin/ENTREGA_6` (08d88cee), `origin/E6_raice
 | Huecos de backend HB-01 a HB-10, HB-14 (solo el progreso por fila), HB-15 y HB-16 | Ninguno está en `ENTREGA_6`. La subida multipart del CSV (`POST /api/donantes/archivos`, con `MinioStorageAdapter`) ya está integrada desde `E4_donaciones_minio`; `ArchivoOutputDTO` no trae progreso. `GET /donaciones-independientes` filtra por `estado`, `subcategoriaId` y `donanteId`; falta `categoriaId`, entidad asignada y fechas. `EntregasController` tiene `/mapa` y los dos `/seguimiento/...`, sin posición del camión |
 | Subida multipart | `DonantesController` ya recibe `MultipartFile` (base de HB-14, integrada); la subida de fotos de entrega (HB-10) no existe |
 | PRs abiertos | 924 (corrida creativa → `ENTREGA_6`), 926 (Raíces → `E6_corrida_creativa`), 927 (ADR + SPEC-06 → `ENTREGA_6`) |
-| Decisiones pendientes | D1 (⏸️ en `requerimientos-e6.md`; SPEC-06 del PR 927 la cierra con Keycloak, aún sin integrar), D8, D12 🎓, D22 (polling vs SSE), D30 |
+| Decisiones pendientes | D1 (⏸️ en `requerimientos-e6.md`; SPEC-06 del PR 927 la cierra con Keycloak, aún sin integrar), D8, D12 🎓, D30 (D22 se cerró el 2026-11-06 con ADR-E6-07, ver tarea 20) |
 
 ## 3. Criterios de elección
 
@@ -41,12 +41,12 @@ Son cambios aditivos (AGENTS.md §8.2, *Feature*). Cada uno es una tanda propia 
 
 | # | Tarea | RF | Tamaño `[INFERRED]` | Depende de | Choque |
 |:-:|---|---|---|---|---|
-| 1 | **HB-07** coordenadas aproximadas en `GET /api/entregas/mapa` (y corregir el Javadoc de `EntregaMapaPublicoResponseDTO`) | RF-02, RNF-PRIV-01 | ~3 archivos · 1 servicio | — | No |
+| 1 | ~~**HB-07** coordenadas aproximadas en `GET /api/entregas/mapa` (y corregir el Javadoc de `EntregaMapaPublicoResponseDTO`)~~ Con la D24 revisada (ADR-E6-07) las coordenadas quedan exactas: la tarea se reduce al Javadoc y la absorbe la tarea 22 | RF-02, RNF-PRIV-01 | ~3 archivos · 1 servicio | — | No |
 | 2 | **HB-03 y HB-04** filtros por `categoriaId`, entidad asignada y rango de fechas en `GET /donaciones-independientes` | RF-05, RF-11 | ~5 archivos · 1 servicio | — | No |
 | 3 | **HB-15** paginado y búsqueda por nombre en `GET /api/entidades` | RF-06, RF-22 | ~4 archivos · 1 servicio | — | No |
 | 4 | **HB-08** DTOs públicos de entidades y necesidades (D26: nunca el DTO interno con campos ocultos) | RF-22, RF-06 | ~6 archivos · 1 servicio | #3 | No |
 | 5 | **HB-16** listado de entregas activas de un donante o una entidad en una llamada. **Decidido:** `donanteId` opcional en el comando y en `Entrega` ([ADR](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md), `proposed`) | RF-09, RF-14 | ~5 archivos · 1 servicio | — | No |
-| 6 | **HB-05 y HB-06** `PosicionCamion`, puerto `FuentePosicionCamion` con adaptador simulado, campo aditivo en `SeguimientoEntregaResponseDTO` | RF-09, RF-14, RF-CL-07 | ~8 archivos · 1 servicio | D22 (ver 4.4) | No |
+| 6 | **HB-05 y HB-06** `PosicionCamion`, puerto `FuentePosicionCamion` con adaptador simulado, campo aditivo en `SeguimientoEntregaResponseDTO` | RF-09, RF-14, RF-CL-07 | ~8 archivos · 1 servicio | D22, cerrada (ADR-E6-07) | No |
 | 7 | **HB-01 y HB-02** `GET /donaciones/destacadas` (parámetro `periodo`) y contadores públicos de la landing. **Decidido:** Donaciones replica las fotos de `entrega.exitosa` ([ADR](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md), `proposed`) | RF-01 | ~8 archivos · 2 servicios | Fotos por `entrega.exitosa` (ADR de réplicas) y su URL estable (ADR-E6-08, tarea 8) | No |
 | 8 | **HB-10** `POST /api/entregas/{id}/fotos` multipart → MinIO, sin EXIF, bucket privado, URL firmada | RF-12, RNF-PRIV-03/04 | ~8 archivos · 1 servicio + compose | MinIO ya está en el compose | Toca `docker-compose.yml`, que A1-01 también edita: coordinar |
 | 9 | **HB-14** progreso con resultado por fila del CSV (la subida multipart → MinIO ya está en `ENTREGA_6`; falta el progreso en `ArchivoOutputDTO`) | RF-20 | ~6 archivos · 1 servicio | — | No |
@@ -88,7 +88,7 @@ la de menor riesgo, y solo con la rama de Raíces cálida como base.
 
 | # | Tarea | Tamaño | Choque |
 |:-:|---|---|---|
-| 20 | **D22 (polling vs SSE) para el camión:** matriz de alternativas y ADR `proposed` si aplican los dos gates. Desbloquea la tarea 6 | 1 documento · 1 ADR | No |
+| 20 | **D22 (polling vs SSE) para el camión:** matriz de alternativas y ADR `proposed` si aplican los dos gates. Desbloquea la tarea 6. **Redactada (2026-11-06):** [ADR-E6-07](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md), `proposed`, con la D24 revisada | 1 documento · 1 ADR | No |
 | 21 | **Integrar los PR 924 y 926 a `ENTREGA_6`** (revisión humana): sin eso el cliente real no tiene base común y las tareas 11 y 12 parten de una rama distinta de `ENTREGA_6` | Revisión, no código | Es la dependencia que más pesa |
 | 22 | **Deuda documental de §13 de requerimientos-e6:** `contratos-rest.md` sin `/mapa` ni `/seguimiento/...`; Javadoc de `EntregaMapaPublicoResponseDTO`; DTI-09 y DTI-14 con fecha sin respaldo | 3 documentos · 1 Javadoc | No |
 | 23 | **Script de demo de E6 punta a punta sin login** (recorrido de las pantallas públicas contra el backend real en el compose), para la defensa del 13/11 | 1 script · 1 doc | Bajo |
@@ -99,7 +99,7 @@ La entrega es el 13/11. Con el camino crítico de los requerimientos (R1: IdP + 
 pantalla por rol), esto es lo que más acerca a un cliente que muestre datos reales:
 
 1. **Ahora, en paralelo y sin choque:** tareas 1, 2, 3, 5 y 10 (backend aditivo, una por servicio y por sesión, sin tocar los mismos archivos).
-2. **Después de cerrar D22 (tarea 20):** tarea 6, y las 4, 7, 8 y 9.
+2. **Con D22 cerrada (tarea 20, ADR-E6-07):** tarea 6, y las 4, 7, 8 y 9.
 3. **En cuanto se integre 926:** tareas 11, 12 y 13 sobre esa base.
 4. **Cuando Raíces cálida fije tokens:** B3-03 en adelante.
 5. **Cierre:** tareas 22 y 23.
