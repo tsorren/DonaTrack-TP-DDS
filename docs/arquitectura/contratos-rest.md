@@ -35,6 +35,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
 | `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
 | `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
+| `GET` | `/api/necesidades/publicas` | **Ruta pública** (D26, HB-08): necesidades activas y no satisfechas con `NecesidadPublicaDTO` (sin datos internos); filtro opcional `entidadId` | — | `200` |
 | `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
 | `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente | `NecesidadDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/necesidades/{id}` | Baja de necesidad registrada | — | `204`, `404` |
@@ -44,6 +45,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta (al aprobar: `409` si la necesidad ya no está activa o si una donación es de la propia entidad) | `ActualizarEstadoRequestDTO` | `200`, `400`, `404`, `409` |
 | `POST` | `/api/entidades` | Alta idempotente de entidad beneficiaria (id = `juridicaId`; `200` si ya existía o se reactivó; `409` si la jurídica fue anonimizada) | `EntidadBeneficiariaInputDTO` | `201`, `200`, `400`, `404`, `409` |
 | `GET` | `/api/entidades` | Listado de entidades beneficiarias. Opcionales: `nombre` (contiene, sin distinguir mayúsculas), `page` (desde 0) y `size` (1..100, por defecto 20). Sin `page` ni `size` devuelve todas en el orden de siempre; paginando, ordena por razón social. El total va en el header `X-Total-Count` (HB-15) | — | `200`, `400` |
+| `GET` | `/api/entidades/publicas` | **Ruta pública** (D26, HB-08): entidades activas con `EntidadPublicaDTO` (`id`, `razonSocial`, `rubro`; sin documento, dirección, contacto ni representantes). Mismos `nombre`/`page`/`size` y header `X-Total-Count` que el listado | — | `200`, `400` |
 | `GET` | `/api/entidades/{id}` | Consulta de entidad beneficiaria por ID | — | `200`, `404` |
 | `PUT` | `/api/entidades/{id}` | Revalidación de entidad beneficiaria (no cambia estado; `409` si está de baja) | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/entidades/{id}` | Baja lógica e idempotente de entidad beneficiaria (desactiva sus necesidades) | — | `204`, `404` |

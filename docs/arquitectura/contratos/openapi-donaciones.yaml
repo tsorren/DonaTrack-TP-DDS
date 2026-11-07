@@ -194,6 +194,29 @@ paths:
       responses:
         '200':
           description: Listado de necesidades
+  /api/necesidades/publicas:
+    get:
+      summary: Listar necesidades vigentes (ruta pública)
+      description: >
+        Ruta pública (D26, HB-08): necesidades activas y no satisfechas, con un DTO propio, sin
+        datos internos. Las de una entidad dada de baja no aparecen (la baja las desactiva).
+      operationId: listarNecesidadesPublicas
+      parameters:
+        - name: entidadId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Necesidades vigentes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NecesidadPublicaDTO'
   /api/necesidades/{id}:
     get:
       summary: Consultar necesidad por ID
@@ -337,6 +360,49 @@ paths:
               description: Cantidad de entidades que cumplen el filtro, sin contar la paginación.
               schema:
                 type: integer
+        '400':
+          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
+  /api/entidades/publicas:
+    get:
+      summary: Listar entidades beneficiarias activas (ruta pública)
+      description: >
+        Ruta pública (D26, HB-08): solo entidades activas, con un DTO propio sin documento,
+        dirección, medios de contacto ni representantes. Mismos `nombre`, `page`, `size` y header
+        `X-Total-Count` que `GET /api/entidades`.
+      operationId: listarEntidadesPublicas
+      parameters:
+        - name: nombre
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Entidades activas
+          headers:
+            X-Total-Count:
+              description: Cantidad de entidades activas que cumplen el filtro.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntidadPublicaDTO'
         '400':
           description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
   /api/entidades/{id}:
@@ -821,6 +887,43 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    EntidadPublicaDTO:
+      type: object
+      description: Entidad beneficiaria para rutas públicas (D26).
+      properties:
+        id:
+          type: string
+          format: uuid
+        razonSocial:
+          type: string
+        rubro:
+          type: string
+    NecesidadPublicaDTO:
+      type: object
+      description: Necesidad vigente para rutas públicas (D26). `fechaFin` es el fin del período actual en las recurrentes y nulo en las extraordinarias.
+      properties:
+        id:
+          type: string
+          format: uuid
+        idEntidad:
+          type: string
+          format: uuid
+        idSubcategoria:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+        cantidadNecesitada:
+          type: integer
+        tipo:
+          type: string
+          enum:
+            - EXTRAORDINARIA
+            - RECURRENTE
+        fechaFin:
+          type: string
+          format: date
+          nullable: true
     SolicitudSubidaFotoInputDTO:
       type: object
       required: [tipoContenido]

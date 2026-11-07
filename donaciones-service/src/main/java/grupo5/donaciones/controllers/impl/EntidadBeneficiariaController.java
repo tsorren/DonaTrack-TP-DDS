@@ -4,6 +4,7 @@ import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
@@ -54,7 +55,19 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
       @RequestParam(required = false) String nombre,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size) {
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = service.buscar(nombre, page, size);
+    return conTotal(service.buscar(nombre, page, size));
+  }
+
+  @Override
+  @GetMapping("/publicas")
+  public ResponseEntity<List<EntidadPublicaDTO>> obtenerPublicas(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return conTotal(service.buscarPublicas(nombre, page, size));
+  }
+
+  private static <T> ResponseEntity<List<T>> conTotal(Pagina<T> pagina) {
     return ResponseEntity.ok()
         .header(HEADER_TOTAL, String.valueOf(pagina.total()))
         .body(pagina.elementos());

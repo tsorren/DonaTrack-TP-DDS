@@ -3,6 +3,7 @@ package grupo5.donaciones.services;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +23,12 @@ public interface IEntidadBeneficiariaService {
    * que cumplen el filtro.
    */
   Pagina<EntidadBeneficiariaOutputDTO> buscar(String nombre, Integer page, Integer size);
+
+  /**
+   * Lo mismo que {@link #buscar} sobre las entidades activas, con el DTO público (D26): sin
+   * documento, dirección, contacto ni representantes.
+   */
+  Pagina<EntidadPublicaDTO> buscarPublicas(String nombre, Integer page, Integer size);
 
   EntidadBeneficiariaOutputDTO actualizarEntidad(UUID id, EntidadBeneficiariaInputDTO input);
 
