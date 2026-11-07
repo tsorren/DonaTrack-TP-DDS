@@ -11,13 +11,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -74,14 +73,13 @@ class DonacionesRest implements DonacionesPuerto {
         api.donaciones(donante).stream()
             .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
             .toList();
-    Map<UUID, String> entidades =
-        lista.stream()
-            .map(DonacionesApi.Donacion::entidadBeneficiariaId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .collect(
-                Collectors.toMap(
-                    Function.identity(), id -> api.entidad(id).juridica().razonSocial()));
+    // HashMap y no toMap: una entidad sin nombre queda en null, sin NullPointerException.
+    Map<UUID, String> entidades = new HashMap<>();
+    lista.stream()
+        .map(DonacionesApi.Donacion::entidadBeneficiariaId)
+        .filter(Objects::nonNull)
+        .distinct()
+        .forEach(id -> entidades.put(id, nombre(api.entidad(id))));
     List<Donacion> donaciones =
         IntStream.range(0, lista.size())
             .mapToObj(i -> donacion(lista.get(i), lista.size() - i, entidades))
@@ -99,7 +97,9 @@ class DonacionesRest implements DonacionesPuerto {
   private static Donacion donacion(
       DonacionesApi.Donacion d, long numero, Map<UUID, String> entidades) {
     Categoria categoria =
-        d.items() == null || d.items().isEmpty() ? null : d.items().getFirst().bien().categoria();
+        d.items() == null || d.items().isEmpty() || d.items().getFirst().bien() == null
+            ? null
+            : d.items().getFirst().bien().categoria();
     String estado = normalizado(d.estadoActual());
     return new Donacion(
         d.id().toString(),
@@ -152,8 +152,15 @@ class DonacionesRest implements DonacionesPuerto {
     };
   }
 
+  private static String nombre(DonacionesApi.Entidad entidad) {
+    return entidad == null || entidad.juridica() == null ? null : entidad.juridica().razonSocial();
+  }
+
   private static String cantidad(int cantidad, Categoria categoria) {
     String unidad = categoria == null ? null : UNIDADES.get(categoria.unidad());
+    if (cantidad == 1 && "unidades".equals(unidad)) {
+      unidad = "unidad";
+    }
     return unidad == null ? String.valueOf(cantidad) : cantidad + " " + unidad;
   }
 

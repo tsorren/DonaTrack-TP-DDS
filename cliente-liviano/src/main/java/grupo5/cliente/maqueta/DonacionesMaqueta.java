@@ -32,6 +32,7 @@ class DonacionesMaqueta implements DonacionesPuerto {
   private static final String ROPA = "ropa";
   private static final String ICONO_ROPA = "cat-ropa";
   private static final String TEXTO_ROPA = "Ropa";
+  private static final String UTILES = "Útiles escolares";
   private static final String MERENDERO = "Merendero Ejemplo Sur";
   private static final String COMEDOR = "Comedor Barrio Ejemplo";
 
@@ -77,11 +78,11 @@ class DonacionesMaqueta implements DonacionesPuerto {
               new Donacion(
                   "utiles",
                   4,
-                  "Útiles escolares",
+                  UTILES,
                   "2 cajas",
                   "escolares",
                   "cat-escolares",
-                  "Útiles escolares",
+                  UTILES,
                   "Escuela Ejemplo N.º 12",
                   "8 de octubre de 2026",
                   CON_PROBLEMA,
@@ -125,7 +126,7 @@ class DonacionesMaqueta implements DonacionesPuerto {
           List.of(
               new Categoria(ALIMENTOS, TEXTO_ALIMENTOS),
               new Categoria(ROPA, TEXTO_ROPA),
-              new Categoria("escolares", "Útiles escolares")),
+              new Categoria("escolares", UTILES)),
           "hoy, 15 de octubre, 16:25");
 
   @Override

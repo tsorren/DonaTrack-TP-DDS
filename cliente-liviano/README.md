@@ -38,7 +38,8 @@ mvn test -pl cliente-liviano -Pvisual                                         # 
 - Sin el perfil `maqueta`, cada puerto usa su adaptador REST (`cliente.datos.<puerto>=rest`, en
   `application.properties`) con la URL de su API (`cliente.api.<api>.url`); las pantallas que
   todavía no pasaron a datos reales se siguen sirviendo con los datos de las plantillas. Un puerto
-  solo se elige con `--cliente.datos.ranking=maqueta|rest`. Sin login todavía, el donante entra con
+  solo se elige con `--cliente.datos.ranking=maqueta|rest`. Quién es la cuenta lo dice el puerto
+  `CuentaActual`: sin login todavía, el donante entra con
   `?donante=<id>` (la sesión lo recuerda; `cliente.datos.cuenta=parametro`); sin id, Mis
   donaciones manda a Ingresar. Cada pedido genera un `traceId` que
   viaja a las APIs en `X-Trace-Id` y es el código de soporte de las páginas de error.

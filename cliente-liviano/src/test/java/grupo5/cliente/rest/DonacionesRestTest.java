@@ -113,4 +113,58 @@ class DonacionesRestTest {
     assertEquals(List.of(new Categoria(ALIMENTOS, "Alimentos")), vista.categorias());
     assertEquals("hoy, 15 de octubre, 16:25", vista.actualizado());
   }
+
+  /** Los otros cuatro estados, sin historial, sin ítems y con un ítem sin bien: ninguno falla. */
+  private static final String CUATRO =
+      """
+      [
+        {"id": "6f1c2c1e-0000-4000-8000-000000000011", "descripcion": "A",
+         "estadoActual": "AsignacionRealizada", "fechaRegistro": "2026-10-04T10:00:00",
+         "historial": null, "items": null, "cantidad": 1},
+        {"id": "6f1c2c1e-0000-4000-8000-000000000012", "descripcion": "B",
+         "estadoActual": "ListaParaEntregar", "fechaRegistro": "2026-10-03T10:00:00",
+         "items": [{"bien": null}], "cantidad": 2},
+        {"id": "6f1c2c1e-0000-4000-8000-000000000013", "descripcion": "C",
+         "estadoActual": "EntregaFallida", "fechaRegistro": "2026-10-02T10:00:00",
+         "historial": [{"estadoNuevo": "EntregaFallida", "timestamp": "2026-10-11T16:10:00"}],
+         "cantidad": 3},
+        {"id": "6f1c2c1e-0000-4000-8000-000000000014", "descripcion": "D",
+         "estadoActual": "Vencida", "fechaRegistro": "2026-10-01T10:00:00", "cantidad": 4}
+      ]
+      """;
+
+  @Test
+  void losDemasEstadosYLosDatosQueFaltanNoRompenLaLista() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+        .andRespond(withSuccess(CUATRO, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    DonacionesRest adaptador =
+        new DonacionesRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            Clock.systemUTC());
+
+    List<Donacion> libro = adaptador.misDonaciones(DONANTE).donaciones();
+
+    donaciones.verify();
+    assertEquals(
+        List.of(
+            EstadoEntrega.PENDIENTE,
+            EstadoEntrega.PENDIENTE,
+            EstadoEntrega.CON_PROBLEMA,
+            EstadoEntrega.CON_PROBLEMA),
+        libro.stream().map(Donacion::estado).toList());
+    assertEquals(
+        List.of(
+            "Asignada, espera el camión",
+            "Lista para entregar, espera el camión",
+            "No pudo llegar el 11 de octubre",
+            "Venció en el depósito el 1 de octubre"),
+        libro.stream().map(Donacion::nota).toList());
+    assertNull(libro.get(1).categoria());
+  }
 }

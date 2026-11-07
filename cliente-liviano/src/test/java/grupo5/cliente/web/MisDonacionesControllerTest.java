@@ -35,6 +35,7 @@ class MisDonacionesControllerTest {
 
   private static final String ALIMENTOS = "6f1c2c1e-0000-4000-8000-0000000000c1";
   private static final String MUEBLES = "6f1c2c1e-0000-4000-8000-0000000000c2";
+  private static final String MOBILIARIO = "Mobiliario";
   private static final String DONANTE = "6f1c2c1e-0000-4000-8000-0000000000aa";
 
   @TestConfiguration
@@ -49,10 +50,10 @@ class MisDonacionesControllerTest {
                       "b",
                       2,
                       "Silla plegable",
-                      "1 unidades",
+                      "1 unidad",
                       MUEBLES,
                       null,
-                      "Mobiliario",
+                      MOBILIARIO,
                       null,
                       "14 de octubre de 2026",
                       EstadoEntrega.PENDIENTE,
@@ -69,7 +70,7 @@ class MisDonacionesControllerTest {
                       "1 de octubre de 2026",
                       EstadoEntrega.ENTREGADA,
                       "Entrega confirmada el 5 de octubre")),
-              List.of(new Categoria(ALIMENTOS, "Alimentos"), new Categoria(MUEBLES, "Mobiliario")),
+              List.of(new Categoria(ALIMENTOS, "Alimentos"), new Categoria(MUEBLES, MOBILIARIO)),
               "hoy, 7 de noviembre, 19:40");
     }
   }
@@ -94,7 +95,7 @@ class MisDonacionesControllerTest {
                     containsString(
                         "2 donaciones, de la más reciente a la primera. Actualizado hoy, 7 de"
                             + " noviembre, 19:40.")))
-        .andExpect(content().string(containsString("Mobiliario")));
+        .andExpect(content().string(containsString(MOBILIARIO)));
 
     mvc.perform(get("/donante-donaciones?categoria=" + ALIMENTOS).session(sesion))
         .andExpect(status().isOk())
