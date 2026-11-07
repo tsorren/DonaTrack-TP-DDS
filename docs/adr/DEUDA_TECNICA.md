@@ -566,4 +566,35 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 3. **Cliente.** Endpoint de fragmento con el marcador y la "última actualización", pedido cada 30 s con la pestaña visible.
 4. **Textos.** Las plantillas, las fichas de flujo y los legales dejan de decir "aproximada": las coordenadas son exactas y la dirección textual no se publica (D24 revisada).
 
+## DTI-36 — Las fotos de recepción no llegan a Donaciones y la entrega no sabe quién donó
+<a id="dti-36"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega](./20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06); los records `EventoEntregaExitosa` y `EventoEntregaSolicitadaV1` de los dos servicios, `Entrega`, `EntregaDocument` y `CrearEntregaRequestDTO` todavía no |
+| Target | `logistica-service` (`EventoEntregaExitosa`, `EventoEntregaSolicitadaV1`, `Entrega`, `EntregaDocument`, `CrearEntregaRequestDTO`, `openapi-logistica.yaml`) · `donaciones-service` (los dos records, `ProveedorLogisticaAmqp`, `ProcesadorEventosLogistica`, la donación independiente) |
+| Cuándo se saldará | Entrega 6: tareas 5 (HB-16) y 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md); la URL estable de las fotos depende de ADR-E6-08 (HB-10) |
+
+1. **Fotos.** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
+2. **Donante.** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
+3. **Datos viejos.** Sin backfill: las entregas y donaciones previas no aparecen en el listado por donante ni en destacadas.
+
+## DTI-37 — Logística no recibe fotos: solo acepta URLs, sin validar tipo, tamaño ni metadatos
+<a id="dti-37"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [ADR-E6-08 — Fotos de recepción en almacenamiento de objetos](./logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `PATCH /api/entregas/{id}/fotos` y la confirmación reciben URLs sin validar; `logistica-service/pom.xml` no tiene `io.minio`; no hay bucket ni usuario de MinIO para Logística. `FotoRecepcionSubdocument.clave` ya está previsto para la clave del objeto |
+| Target | `logistica-service` (puerto `AlmacenFotosRecepcion` y adaptador MinIO, validador de fotos, `EntregasController`, `openapi-logistica.yaml`, `pom.xml`) · `persistencia/minio/init-usuarios.sh` y los compose (usuario `logistica-service`) |
+| Cuándo se saldará | Entrega 6: tarea 8 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-10). Coordinar los compose con A1-01 de SPEC-06 (PR #927) |
+
+1. **Subida.** `POST /api/entregas/{id}/fotos` multipart: tope de 5 MB, JPEG o PNG por magic bytes, re-codificación sin metadatos y clave `entregas/<idEntrega>/<fotoId>.<ext>` en `logistica-fotos-recepcion`.
+2. **Lectura.** `GET /api/entregas/{id}/fotos/{fotoId}` con `302` hacia una URL firmada de 5 minutos.
+3. **Infraestructura.** `io.minio:minio:8.5.17`, usuario `logistica-service` con política `logistica-*` y endpoint público para firmar.
+4. **Huérfanas.** Regla de ciclo de vida para fotos de entregas que nunca se confirman.
+
 ---

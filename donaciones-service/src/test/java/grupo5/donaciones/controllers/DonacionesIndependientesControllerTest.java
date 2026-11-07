@@ -11,16 +11,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTest {
+
+  private static final String RUTA = "/donaciones-independientes";
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -174,7 +179,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             List.of(),
             5);
 
-    when(donacionesIndependientesService.obtenerConFiltros(null, null, null))
+    when(donacionesIndependientesService.obtenerConFiltros(
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null)))
         .thenReturn(List.of(response));
 
     mockMvc
@@ -186,6 +192,68 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
         .andExpect(jsonPath("$[0].descripcion").value("Descripcion"))
         .andExpect(jsonPath("$[0].estadoActual").value("EnDeposito"))
         .andExpect(jsonPath("$[0].cantidad").value(5));
+  }
+
+  @Test
+  void obtenerTodas_conFiltros_pasaTodosLosParametrosAlService() throws Exception {
+    UUID subcategoriaId = UUID.randomUUID();
+    UUID categoriaId = UUID.randomUUID();
+    UUID donanteId = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
+    FiltroDonacionesIndependientes esperado =
+        new FiltroDonacionesIndependientes(
+            TipoEstadoDonacion.EN_DEPOSITO,
+            subcategoriaId,
+            categoriaId,
+            donanteId,
+            entidadId,
+            LocalDate.of(2026, 11, 1),
+            LocalDate.of(2026, 11, 5));
+    when(donacionesIndependientesService.obtenerConFiltros(esperado)).thenReturn(List.of());
+
+    mockMvc
+        .perform(
+            get(RUTA)
+                .param("estado", "EN_DEPOSITO")
+                .param("subcategoriaId", subcategoriaId.toString())
+                .param("categoriaId", categoriaId.toString())
+                .param("donanteId", donanteId.toString())
+                .param("entidadId", entidadId.toString())
+                .param("desde", "2026-11-01")
+                .param("hasta", "2026-11-05"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.size()").value(0));
+
+    verify(donacionesIndependientesService).obtenerConFiltros(esperado);
+  }
+
+  @Test
+  void obtenerTodas_conFechaMalFormada_retorna400() throws Exception {
+    mockMvc
+        .perform(get(RUTA).param("desde", "01/11/2026"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
+
+    verify(donacionesIndependientesService, never()).obtenerConFiltros(any());
+  }
+
+  @Test
+  void obtenerTodas_conEstadoInexistente_sigueRespondiendo400() throws Exception {
+    mockMvc
+        .perform(get(RUTA).param("estado", "INEXISTENTE"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
+  }
+
+  @Test
+  void obtenerTodas_conDesdePosteriorAHasta_retorna400() throws Exception {
+    when(donacionesIndependientesService.obtenerConFiltros(any()))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get(RUTA).param("desde", "2026-11-05").param("hasta", "2026-11-01"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
   }
 
   @Test
