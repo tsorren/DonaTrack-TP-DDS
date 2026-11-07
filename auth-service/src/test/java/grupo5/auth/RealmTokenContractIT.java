@@ -528,6 +528,10 @@ class RealmTokenContractIT {
     HttpResponse<String> logo = descargar(rutaLogo);
     assertEquals(200, logo.statusCode(), rutaLogo);
     assertTrue(logo.body().contains("<svg"), "el logo no es un SVG");
+    String rutaLogoOscuro = rutaCss.replace("css/donatrack.css", "img/logo-oscuro.svg");
+    HttpResponse<String> logoOscuro = descargar(rutaLogoOscuro);
+    assertEquals(200, logoOscuro.statusCode(), rutaLogoOscuro);
+    assertTrue(logoOscuro.body().contains("<svg"), "el logo oscuro no es un SVG");
   }
 
   private record ResultadoDeLogin(HttpResponse<String> envio, List<String> galletasRecibidas) {}
@@ -546,7 +550,8 @@ class RealmTokenContractIT {
     assertTrue(accion.find(), "no se encontró el formulario en la pantalla de Keycloak");
     String urlFormulario = accion.group(1).replace("&amp;", "&");
 
-    HttpResponse<String> envio = post(navegador, urlFormulario, form(campos), galletas(pantalla));
+    HttpResponse<String> envio =
+        post(navegador, urlFormulario, form(campos), galletas(pantalla));
     return new ResultadoDeLogin(envio, galletasRecibidas(pantalla));
   }
 

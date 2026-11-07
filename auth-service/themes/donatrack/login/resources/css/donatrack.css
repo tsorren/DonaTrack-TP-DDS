@@ -5,29 +5,46 @@
 :root {
   /* Primitivos */
   --blanco: #ffffff;
+  --verde-300: #81c784;
   --verde-700: #2e7d32;
   --verde-900: #1b5e20;
   --neutro-50: #f3f6f3;
+  --neutro-800: #212427;
   --neutro-900: #1c2a1e;
+  --neutro-950: #101512;
+  --rojo-300: #f2b8b5;
   --rojo-700: #b3261e;
 
-  /* Semanticos */
+  /* Semanticos (modo claro) */
   --color-accion-primaria: var(--verde-700);
   --color-accion-primaria-hover: var(--verde-900);
   --color-texto-sobre-accion: var(--blanco);
   --color-fondo-pagina: var(--neutro-50);
+  --color-superficie: var(--blanco);
   --color-enlace: var(--verde-700);
   --color-texto: var(--neutro-900);
   --color-error: var(--rojo-700);
 
-  /* PatternFly 5 (keycloak.v2) toma sus colores de estas variables globales */
+  /* PatternFly 5 (keycloak.v2) toma varios colores de estas variables globales. No alcanzan para
+     todos los componentes (el boton principal no las usaba): por eso hay reglas directas mas abajo. */
   --pf-v5-global--primary-color--100: var(--color-accion-primaria);
   --pf-v5-global--primary-color--200: var(--color-accion-primaria-hover);
   --pf-v5-global--link--Color: var(--color-enlace);
   --pf-v5-global--link--Color--hover: var(--color-accion-primaria-hover);
+  --pf-v5-global--active-color--100: var(--color-enlace);
   --pf-v5-global--danger-color--100: var(--color-error);
   --pf-v5-global--Color--100: var(--color-texto);
   --pf-v5-c-button--m-primary--Color: var(--color-texto-sobre-accion);
+}
+
+/* Modo oscuro: Keycloak agrega esta clase al elemento html cuando el sistema esta en oscuro.
+   La accion primaria se mantiene (verde con texto blanco); cambian fondo, superficie, texto, enlace y error. */
+.pf-v5-theme-dark {
+  --color-fondo-pagina: var(--neutro-950);
+  --color-superficie: var(--neutro-800);
+  --color-enlace: var(--verde-300);
+  --color-texto: var(--neutro-50);
+  --color-error: var(--rojo-300);
 }
 
 /* Fondo liso en lugar de la imagen de Keycloak */
@@ -35,6 +52,25 @@ body#keycloak-bg,
 .pf-v5-c-login {
   background-image: none;
   background-color: var(--color-fondo-pagina);
+}
+
+.pf-v5-c-login__main {
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  border-top: 4px solid var(--color-accion-primaria);
+}
+
+/* Boton principal: regla directa, porque las variables globales de PatternFly no le llegaban */
+.pf-v5-c-button.pf-m-primary {
+  background-color: var(--color-accion-primaria);
+  color: var(--color-texto-sobre-accion);
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-v5-c-button.pf-m-primary:focus,
+.pf-v5-c-button.pf-m-primary:active {
+  background-color: var(--color-accion-primaria-hover);
+  color: var(--color-texto-sobre-accion);
 }
 
 /* El encabezado muestra el logo. El nombre del realm sigue en el HTML para los lectores de pantalla:
@@ -52,6 +88,7 @@ body#keycloak-bg,
   background: url("../img/logo.svg") no-repeat center / contain;
 }
 
-.pf-v5-c-login__main {
-  border-top: 4px solid var(--color-accion-primaria);
+/* En oscuro el texto del logo tiene que ser claro: con el de siempre el nombre desapareceria */
+.pf-v5-theme-dark #kc-header-wrapper {
+  background-image: url("../img/logo-oscuro.svg");
 }

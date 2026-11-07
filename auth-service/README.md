@@ -1,6 +1,6 @@
 # auth-service — Proveedor de identidad (Keycloak)
 
-> **Estado:** A1-01 (Keycloak en el compose), A1-02 (realm: tokens y políticas de seguridad) y A1-03 (admin y rol por defecto) hechos y verificados: `RealmTokenContractIT` 20 de 20 en verde y `docker compose` en `healthy`. A1-04 (tema de login y registro) implementado con paleta y logo provisorios, todavía sin ver en pantalla. El backlog del MVP está en [SPEC-06](../docs/specs/active/SPEC-06-auth-mvp-keycloak.md).
+> **Estado:** A1-01 (Keycloak en el compose), A1-02 (realm: tokens y políticas de seguridad) y A1-03 (admin y rol por defecto) hechos y verificados: `RealmTokenContractIT` 20 de 20 en verde y `docker compose` en `healthy`. A1-04 (tema de login y registro) hecho con paleta y logos provisorios: el IT de 22 casos pasó y las capturas, repetidas tras corregir el modo oscuro y el botón, las confirmó el equipo. El bloque A está completo. El backlog del MVP está en [SPEC-06](../docs/specs/active/SPEC-06-auth-mvp-keycloak.md).
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
@@ -21,8 +21,8 @@ En lenguaje llano:
 | `Dockerfile` | Keycloak 26.8.1 fijado por digest; copia el realm y el tema, corre `kc.sh build` y arranca con `start --optimized --import-realm` | A1-01 | Hecho |
 | `realm/donatrack-realm.json` | Realm versionado: roles, políticas de clave y bloqueo, vida de los tokens, cliente `cliente-liviano`, mapper `roles`. Sin secretos. **Hoy tiene** el contrato de tokens (A1-02a), las políticas de seguridad (A1-02b) y el admin con el rol por defecto (A1-03) | A1-02, A1-03 | Hecho y verificado |
 | `.dockerignore` | Deja afuera `src`, `target` y `pom.xml` del contexto de build (que es esta carpeta) | A1-02 | Hecho |
-| `pom.xml` y `src/test/java/grupo5/auth/RealmTokenContractIT.java` | Módulo Maven de test: levanta la imagen con Testcontainers, hace el login por *authorization code* y verifica los tokens. No está en los `<modules>` del pom raíz (ver abajo) | A1-02 | A1-02 y A1-03: 20 de 20 en verde (2026-11-06). A1-04: 2 casos nuevos, sin ejecutar |
-| `themes/donatrack/login/` | Tema de las pantallas de login y registro: `theme.properties` (extiende `keycloak.v2`), `resources/css/donatrack.css` y `resources/img/logo.svg`. **Paleta y logo provisorios** | A1-04 | Hecho, sin ver en pantalla |
+| `pom.xml` y `src/test/java/grupo5/auth/RealmTokenContractIT.java` | Módulo Maven de test: levanta la imagen con Testcontainers, hace el login por *authorization code* y verifica los tokens. No está en los `<modules>` del pom raíz (ver abajo) | A1-02 | 22 de 22 en verde (2026-11-06); desde entonces el IT suma un chequeo del logo oscuro, sin ejecutar |
+| `themes/donatrack/login/` | Tema de las pantallas de login y registro: `theme.properties` (extiende `keycloak.v2`), `resources/css/donatrack.css` y `resources/img/logo.svg` y `logo-oscuro.svg`. **Paleta y logos provisorios** | A1-04 | Hecho y confirmado con capturas |
 
 Más adelante, la extensión (SPI) que publica los emails de cuenta en RabbitMQ (D8, E2-06).
 
@@ -77,20 +77,24 @@ El perfil de usuario va en el realm como un JSON dentro de un string (`component
 
 ## Tema de login y registro (A1-04)
 
-`themes/donatrack/login/` extiende el tema `keycloak.v2` (PatternFly 5) sin templates propios: un `theme.properties`, un CSS y un logo. El realm lo activa con `loginTheme`, y también fija el español como único idioma (`defaultLocale`) y el nombre visible `DonaTrack` (`displayName`, que es lo que Keycloak muestra en el encabezado).
+`themes/donatrack/login/` extiende el tema `keycloak.v2` (PatternFly 5) sin templates propios: un `theme.properties`, un CSS y dos logos (`logo.svg` y `logo-oscuro.svg`). El realm lo activa con `loginTheme`, y también fija el español como único idioma (`defaultLocale`) y el nombre visible `DonaTrack` (`displayName`, que es lo que Keycloak muestra en el encabezado).
 
-- **Provisorio:** la paleta (verdes y neutros) y el logo son placeholders hasta que llegue el `tokens.css` de la diseñadora (D20). El CSS sigue los dos niveles de D20: **primitivos** (la paleta: `--verde-700`) y **semánticos** (el uso: `--color-accion-primaria`); las reglas usan solo los semánticos. Para cambiar la identidad alcanza con tocar los primitivos o apuntar los semánticos a los de `tokens.css`, y con reemplazar `logo.svg` (mismo nombre, con `viewBox` y `<title>`).
-- **Accesibilidad:** la paleta cumple WCAG AA (RNF-UI-09): `test_auth_theme.py` calcula los ratios de contraste de texto, botón, enlaces y error, así que un color nuevo que no llegue a 4.5:1 hace fallar el test.
-- **`[INFERRED]`:** los nombres de las variables de PatternFly 5 (`--pf-v5-global--primary-color--100`…) y los selectores (`#kc-header-wrapper`, `.pf-v5-c-login`) no se pudieron comprobar contra la hoja de estilos real. Si algún color no cambia en pantalla, el ajuste va en `donatrack.css`.
+- **Provisorio:** la paleta (verdes y neutros) y los logos son placeholders hasta que llegue el `tokens.css` de la diseñadora (D20). El CSS sigue los dos niveles de D20: **primitivos** (la paleta: `--verde-700`) y **semánticos** (el uso: `--color-accion-primaria`); las reglas usan solo los semánticos. Para cambiar la identidad alcanza con tocar los primitivos o apuntar los semánticos a los de `tokens.css`, y con reemplazar los logos (mismos nombres, con `viewBox` y `<title>`).
+- **Modo claro y modo oscuro.** Keycloak 26 activa solo el tema oscuro de PatternFly (clase `pf-v5-theme-dark` en `<html>`) cuando el sistema operativo está en oscuro. El CSS redefine ahí los semánticos de fondo, superficie, texto, enlace y error, y cambia al logo oscuro (mismo dibujo, texto claro: con el texto oscuro el nombre desaparecería sobre el fondo oscuro).
+- **Accesibilidad:** la paleta cumple WCAG AA (RNF-UI-09) **en los dos modos**: `test_auth_theme.py` calcula 4.5:1 para texto y 3:1 para el botón contra la tarjeta, así que un color nuevo que no llegue hace fallar el test.
+- **Botón principal.** Tiene una regla directa porque las variables globales de PatternFly no le llegaban: en las primeras capturas seguía azul. Esas variables sí alcanzan para otros componentes (enlaces, foco, error), pero si algún componente conserva el azul, se le agrega una regla directa igual.
+- **`[INFERRED]`:** el nombre de la clase del modo oscuro (`pf-v5-theme-dark`) y las variables de PatternFly se tomaron de PatternFly 5 y de lo que muestran las capturas; no se pudieron comprobar contra la hoja de estilos de Keycloak.
 
-**Cómo verlo.** El tema lo activa el realm al importarse, así que con una base ya existente hace falta `docker compose down -v` (borra los datos locales) y después `docker compose up --build -d keycloak`. Si no querés borrar la base, se puede activar a mano en la consola de Keycloak: *Realm settings → Themes → Login theme*.
+**Cómo verlo.** Los archivos del tema van dentro de la imagen: alcanza con `docker compose up --build -d keycloak`. Solo hace falta `docker compose down -v` (borra los datos locales) la primera vez que se activa el tema, porque `loginTheme` viene del realm y el realm se importa una sola vez; también se puede activar a mano en la consola de Keycloak: *Realm settings → Themes → Login theme*.
 
-**Capturas (el test de A1-04).** Con Keycloak arriba, abrí estas dos URL (el `redirect_uri` tiene que coincidir con `CLIENTE_LIVIANO_BASE_URL` de tu `.env`) y sacá una captura de cada una a **360 px** y a **1280 px** (DevTools → modo dispositivo):
+**Capturas (el test de A1-04).** Con Keycloak arriba, abrí estas dos URL (el `redirect_uri` tiene que coincidir con `CLIENTE_LIVIANO_BASE_URL` de tu `.env`):
 
 - Login: `http://localhost:8180/realms/donatrack/protocol/openid-connect/auth?client_id=cliente-liviano&redirect_uri=http://localhost:8090/login/oauth2/code/keycloak&response_type=code&scope=openid`
 - Registro: la misma URL con `&prompt=create` al final.
 
-Qué mirar: el logo se ve completo (también a 360 px), el botón es verde con texto blanco legible, no hay scroll horizontal, los textos están en español y los enlaces muestran el foco al navegar con teclado.
+Sacá una captura de cada una a **360 px** y a **1280 px** en modo claro, y una de cada una a 360 px en modo oscuro. En Chrome, Edge u Opera (DevTools): `Ctrl+Shift+M` para el modo dispositivo con ancho 360 px, y *⋮ → More tools → Rendering → Emulate CSS media feature prefers-color-scheme* para alternar entre claro y oscuro. Ojo: una ventana angosta del navegador no equivale a 360 px de viewport.
+
+Qué mirar: el logo se ve completo y con buen contraste en los dos modos, el botón es verde con texto blanco legible, los enlaces ("Registrarse", "Volver a la identificación") se leen bien, el fondo de la página y la tarjeta son coherentes entre sí, no hay scroll horizontal, y los textos están en español.
 
 ## Cómo probar el contrato
 
