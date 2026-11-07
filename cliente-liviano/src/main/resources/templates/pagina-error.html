@@ -4,15 +4,15 @@
        La usan error/404, error/403 y error/5xx, que Spring Boot elige por el código de estado; las
        tres van con el marco de las públicas (usuario, 2026-11-07). Spring pone en el modelo status
        (el código) y path (la dirección pedida).
-       El código para soporte es el traceId del request; su propagación se decide al integrar el
-       gateway. En la maqueta, uno de ejemplo; con ?escenario=sin-codigo, ninguno.
+       El código para soporte es el traceId del pedido (TraceIdFiltro, ADR-E6-02), el mismo que viaja
+       a las APIs en X-Trace-Id; con ?escenario=sin-codigo, ninguno.
        Fragmento pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto,
        contactoSin): el título con su parte en cursiva, la frase, la acción principal, si suma "Ir al
        inicio" y el texto del enlace a Contacto con código y sin él. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto, contactoSin)"
-    th:with="codigo=${param.escenario != null and param.escenario[0] == 'sin-codigo' ? null : 'a1b2c3d4e5f6'}">
+    th:with="codigo=${param.escenario != null and param.escenario[0] == 'sin-codigo' ? null : traceId}">
   <div class="grilla" data-espacio="5">
     <div class="lectura">
       <p class="rotulo" th:text="|Error ${status}|">Error 404</p>

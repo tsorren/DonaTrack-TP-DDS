@@ -14,7 +14,7 @@
 | Qué quiere lograr | "Entender qué pasó y volver a algo que funciona; si sigue fallando, poder avisar" |
 | Dispositivo principal | Cualquiera; celular primero |
 | Requerimientos | RF-CL-08 (403 "sin permiso"; 404 y 5xx con un mensaje amable y el `traceId` visible para soporte; el 401 lleva al login). RNF-UI-05 (error con próximo paso). RNF-CL-02 (sin JavaScript) |
-| Datos que usa | Ninguno de negocio. El código de estado y el `traceId` del request. Hueco: la propagación de `traceId` se decide al integrar el gateway ([`cliente-liviano/AGENTS.md`](../../../cliente-liviano/AGENTS.md)); en la maqueta, un código de ejemplo |
+| Datos que usa | Ninguno de negocio. El código de estado y el `traceId` del request: lo genera el cliente en cada pedido y es el mismo que viaja a las APIs en `X-Trace-Id` ([`cliente-liviano/AGENTS.md`](../../../cliente-liviano/AGENTS.md)) |
 | Boceto de E1 | No tiene |
 
 ## 2. Dónde está en el sitio

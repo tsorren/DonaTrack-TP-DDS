@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -31,10 +30,14 @@ import org.springframework.web.server.ResponseStatusException;
  * ?cuenta=persona} la sesión pasa a la segunda cuenta de ejemplo, una persona, con Misiones en el
  * menú; las otras pantallas del donante, dibujadas para la empresa, le muestran un aviso
  * (docs/interfaz/flujos/raices-misiones.md). {@code ?cuenta=empresa} vuelve a la empresa.
+ *
+ * <p>Corre también con los adaptadores REST: sirve las pantallas que todavía no pasaron a datos
+ * reales, y a los controllers de {@code web} les arma el menú y la cuenta ({@link #pagina}).
  */
+// ponytail: el menú y las cuentas de ejemplo viven acá; se separan cuando el login (F4) dé la
+// cuenta real.
 @Controller
-@Profile("maqueta")
-class SitioController {
+public class SitioController {
 
   private static final String NOMBRE = "(?:publico|donante|entidad|admin)(?:-[a-z]+)+";
   private static final String NO_EXISTE = "No existe esa pantalla";
@@ -186,6 +189,15 @@ class SitioController {
     if ("500".equals(respuesta)) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falla de ejemplo");
     }
+  }
+
+  /**
+   * El menú, la cuenta y la vista de una pantalla que ya tiene sus datos en el modelo; respeta
+   * {@code ?respuesta=} como cualquier otra pantalla.
+   */
+  public String pagina(String pantalla, String respuesta, Model model, HttpSession sesion) {
+    responderConError(respuesta);
+    return mostrar(pantalla, null, model, sesion);
   }
 
   private String mostrar(String pantalla, String cuenta, Model model, HttpSession sesion) {

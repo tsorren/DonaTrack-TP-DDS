@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <!--/* Raíces, Ranking de donantes del admin (RF-19), según su ficha de flujo
        (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.9). De partida, el último ranking
-       (septiembre); "Ver otro mes" es un formulario GET con ?mes=2026-08 o 2026-07. El criterio va
+       (el primero de ${ranking.meses}); "Ver otro mes" es un formulario GET con ?mes=2026-08. Los datos
+       los pone RankingController (de la maqueta o de Incentivos); sin meses, el vacío (el 204). El criterio va
        arriba de la tabla, con la fecha en que se calculó. El admin ve el nombre de cada donante.
-       ?escenario=vacio (el 204: todavía no hay ranking), lento y error. */-->
+       En la maqueta, ?escenario=vacio, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -12,25 +13,10 @@
 <body>
 <th:block th:fragment="contenido"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
-             meses=${ {
-      {clave: '2026-09', nombre: 'Septiembre de 2026', calculado: '30 de septiembre de 2026, 23:59', puestos: {
-        {donante: 'Ana Ejemplo', misiones: 5},
-        {donante: 'Juan Ejemplo', misiones: 4},
-        {donante: 'Distribuidora Ejemplo SA', misiones: 3},
-        {donante: 'Fundación Ejemplo Sur', misiones: 2},
-        {donante: 'Pedro Ejemplo', misiones: 1} } },
-      {clave: '2026-08', nombre: 'Agosto de 2026', calculado: '31 de agosto de 2026, 23:59', puestos: {
-        {donante: 'Juan Ejemplo', misiones: 6},
-        {donante: 'Ana Ejemplo', misiones: 4},
-        {donante: 'Fundación Ejemplo Sur', misiones: 2},
-        {donante: 'Distribuidora Ejemplo SA', misiones: 1} } },
-      {clave: '2026-07', nombre: 'Julio de 2026', calculado: '31 de julio de 2026, 23:59', puestos: {
-        {donante: 'Distribuidora Ejemplo SA', misiones: 3},
-        {donante: 'Ana Ejemplo', misiones: 2},
-        {donante: 'Juan Ejemplo', misiones: 1} } } } },
-             elegido=${param.mes != null ? param.mes[0] : '2026-09'},
-             m=${meses.^[clave == #root.elegido] ?: meses[0]}">
+             meses=${ranking.meses},
+             conDatos=${!meses.isEmpty() and escenario != 'error' and escenario != 'lento'},
+             elegido=${param.mes != null ? param.mes[0] : ''},
+             m=${meses.isEmpty() ? null : (meses.^[clave == #root.elegido] ?: meses[0])}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo">Administración</p>
@@ -52,7 +38,7 @@
         cargar</a>
     </section>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${meses.isEmpty() and escenario != 'error' and escenario != 'lento'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay ningún ranking: se arma al cerrar el primer mes con misiones.</h2>
     </section>
 
@@ -67,16 +53,17 @@
       <button class="boton" data-tono="secundario" type="submit">Ver</button>
     </form>
 
-    <section th:if="${escenario != 'error' and escenario != 'vacio'}" class="pila" data-espacio="3"
+    <section th:if="${escenario == 'lento' or conDatos}" class="pila" data-espacio="3"
              aria-labelledby="ranking-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="ranking-titulo" th:text="${conDatos} ? |El ranking de ${#strings.toLowerCase(m.nombre)}| : 'El ranking'">El
         ranking de septiembre de 2026</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
       <th:block th:if="${conDatos}">
         <p>Ordenado por la cantidad de misiones que cada donante completó en el mes.
-          <th:block th:text="|Calculado el ${m.calculado}.|">Calculado el 30 de septiembre de 2026,
-            23:59.</th:block>
-          El de octubre se calcula al cerrar el mes.</p>
+          <th:block th:if="${m.calculado}" th:text="|Calculado el ${m.calculado}.|">Calculado el 30 de
+            septiembre de 2026, 23:59.</th:block>
+          <th:block th:text="|El de ${ranking.proximo} se calcula al cerrar el mes.|">El de octubre se
+            calcula al cerrar el mes.</th:block></p>
         <table class="tabla">
           <caption th:text="|Donantes de ${#strings.toLowerCase(m.nombre)}, del que más misiones completó al que menos.|">Donantes
             de septiembre de 2026, del que más misiones completó al que menos.</caption>

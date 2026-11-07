@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -378,6 +379,9 @@ class RepositoriosIncentivosJpaTest {
         jdbc.queryForObject("SELECT periodo FROM incentivos.ranking_mensual", String.class));
     RankingMensual encontrado = rankingRepository.findByPeriodo(periodo).orElseThrow();
     assertEquals(ranking.getId(), encontrado.getId());
+    assertEquals(
+        ranking.getCalculadoEn().truncatedTo(ChronoUnit.MILLIS),
+        encontrado.getCalculadoEn().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(
         List.of(1, 2, 3),
         encontrado.getEntradas().stream().map(EntradaRanking::getPosicion).toList());
