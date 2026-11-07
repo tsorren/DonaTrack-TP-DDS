@@ -70,17 +70,26 @@
              grande, la etiqueta pasa a la columna de la derecha. */-->
       <div class="acta">
         <div class="acta-formulario">
-          <section class="asentado" aria-labelledby="asentado-titulo">
+          <!--/* Con ?problema= (incompleta, danada u otro), la vuelta de Llegó con un problema
+                 (docs/interfaz/flujos/raices-llego-con-un-problema.md): lo asentado suma el problema,
+                 con el detalle de ejemplo, y no muestra la cifra del pedido, que depende de qué haga
+                 Donaciones con una cantidad menor (DTI-29). */-->
+          <section class="asentado" aria-labelledby="asentado-titulo"
+                   th:with="problema=${param.problema == null ? null : param.problema[0]},
+                            conProblema=${problema == 'incompleta' or problema == 'danada' or problema == 'otro'}">
             <h2 id="asentado-titulo">Lo que quedó asentado</h2>
             <dl>
               <div><dt>Remito</dt><dd th:text="${e.remito}">0001-00004521</dd></div>
               <div><dt>Recibió</dt><dd>Marta, por Comedor Barrio Ejemplo</dd></div>
               <div><dt>Cuándo</dt><dd th:text="|15 de octubre de 2026, ${e.confirmo}|">15
                 de octubre de 2026, 18:45</dd></div>
+              <div th:if="${conProblema}"><dt>El problema</dt><dd><th:block
+                  th:text="${problema == 'incompleta' ? 'Llegó menos: ' + e.llegoMenos + '.' : (problema == 'danada' ? 'Llegó dañada.' : 'Otra cosa.')}">Llegó
+                  menos: 12 de 15 kg.</th:block><br><th:block th:text="${e.detalle}">Dos bolsas rotas.</th:block></dd></div>
             </dl>
-            <p class="asentado-pedido" th:text="${e.pedidoDespues}">Tu pedido de lentejas secas: 25 de
+            <p th:unless="${conProblema}" class="asentado-pedido" th:text="${e.pedidoDespues}">Tu pedido de lentejas secas: 25 de
               40 kg recibidos, hasta el 31 de octubre.</p>
-            <p class="quien-ve" th:text="|Le avisamos a ${e.dono ?: 'quien donó'}, con tus fotos y la fecha.|">Le
+            <p class="quien-ve" th:text="|Le avisamos a ${e.dono ?: 'quien donó'}, ${conProblema ? 'con tus fotos, la fecha y el problema' : 'con tus fotos y la fecha'}.|">Le
               avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha.</p>
           </section>
 

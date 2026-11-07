@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!--/* Raíces, la página de una falla nuestra, 500, 502 o 503 (docs/interfaz/flujos/
+       raices-paginas-de-error.md). "Volver a intentar" pide la misma dirección con GET, sin reenviar
+       un formulario. En la maqueta, ?respuesta=500 en cualquier pantalla. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-error', ~{::contenido})}">
+<head>
+  <title>No pudimos mostrar la página - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{pagina-error :: pagina('No pudimos mostrar esta', 'página',
+            'Es un problema nuestro, no de lo que hiciste. Probá de nuevo en unos minutos. Si estabas enviando algo, fijate si quedó guardado antes de repetirlo.',
+            'Volver a intentar',
+            ${path != null and #strings.startsWith(path, '/') and !#strings.startsWith(path, '//') ? path : '/'},
+            true,
+            'Si sigue, escribinos con este código.',
+            'Si sigue, escribinos y contanos qué estabas haciendo.')}"></th:block>
+</th:block>
+</body>
+</html>

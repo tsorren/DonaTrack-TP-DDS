@@ -1,0 +1,21 @@
+/* Raíces, Llegó con un problema (docs/interfaz/flujos/raices-llego-con-un-problema.md): el acta de
+   Confirmar recepción con un grupo más. Solo disposición; las piezas son las del acta y las del
+   catálogo (docs/interfaz/componentes.md). En pantalla grande, «Qué pasó» va en la columna de la
+   izquierda, debajo de las pruebas, y lo que recibiste con la firma a la derecha. */
+@import url("entidad-seguimiento-confirmar.css");
+
+@media (min-width: 68.75em) {
+  form.acta-formulario > .grupo:first-of-type,
+  form.acta-formulario > .grupo:last-of-type {
+    grid-row: 2;
+  }
+
+  form.acta-formulario > .grupo:nth-of-type(2) {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  form.acta-formulario > .firma {
+    grid-row: 3;
+  }
+}

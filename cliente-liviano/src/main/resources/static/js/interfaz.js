@@ -13,6 +13,7 @@ document.addEventListener("alpine:init", () => {
   Alpine.data("avisos", () => {
     const VISIBLES = 3; // el resto espera su turno, oculto
     const DURACION = 6000; // ms; la pauta pide que un aviso no se vaya antes de 5 s
+    const ESPERA_FUNDIDO = 1000; // ms; más que el fundido de salida, por si no llega transitionend
     const relojes = new WeakMap();
     let observador = null;
 
@@ -27,7 +28,7 @@ document.addEventListener("alpine:init", () => {
       const hayFundido = parseFloat(getComputedStyle(aviso).transitionDuration) > 0;
       if (hayFundido) {
         aviso.addEventListener("transitionend", () => aviso.remove(), { once: true });
-        setTimeout(() => aviso.remove(), 1000); // por si el navegador no avisa que terminó
+        setTimeout(() => aviso.remove(), ESPERA_FUNDIDO); // por si el navegador no avisa que terminó
       } else {
         aviso.remove();
       }

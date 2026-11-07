@@ -5,6 +5,7 @@ import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.vistas.PasoRecorrido;
 import grupo5.cliente.vistas.PasoRecorrido.Avance;
+import jakarta.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -26,7 +27,10 @@ import org.springframework.web.server.ResponseStatusException;
  * templates/<pantalla>.html}, con los datos que escribe cada plantilla y la navegación de su rol
  * (el prefijo del nombre: publico, donante, entidad o admin). Una sección del menú que todavía no
  * tiene plantilla muestra la página de sin dibujar. La cuenta de ejemplo del donante es una
- * empresa, y su menú no tiene Incentivos, que RF-07 oculta a la persona jurídica.
+ * empresa, y su menú no tiene Misiones, que RF-07 oculta a la persona jurídica. Con {@code
+ * ?cuenta=persona} la sesión pasa a la segunda cuenta de ejemplo, una persona, con Misiones en el
+ * menú; las otras pantallas del donante, dibujadas para la empresa, le muestran un aviso
+ * (docs/interfaz/flujos/raices-misiones.md). {@code ?cuenta=empresa} vuelve a la empresa.
  */
 @Controller
 @Profile("maqueta")
@@ -34,6 +38,11 @@ class SitioController {
 
   private static final String NOMBRE = "(?:publico|donante|entidad|admin)(?:-[a-z]+)+";
   private static final String NO_EXISTE = "No existe esa pantalla";
+  private static final String DONANTE = "donante";
+  private static final String ADMIN = "admin";
+
+  /** Los motivos de Llegó con un problema, los del reporte del contrato de entregas. */
+  private static final String MOTIVOS = "incompleta|danada|otro";
 
   /**
    * A dónde puede volver Contacto: una pantalla del sitio, con parámetros de letras, números y
@@ -66,7 +75,7 @@ class SitioController {
   /** Las secciones de cada rol, en el orden del menú. Notificaciones va aparte, en la cabecera. */
   private static final Map<String, List<Seccion>> MENUS =
       Map.of(
-          "donante",
+          DONANTE,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
               new Seccion("Mis donaciones", "Donaciones", ICONO_DONACIONES, "donante-donaciones"),
@@ -79,7 +88,7 @@ class SitioController {
               new Seccion(
                   "Donaciones recibidas", "Recibidas", ICONO_DONACIONES, "entidad-recibidas"),
               new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
-          "admin",
+          ADMIN,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
               new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
@@ -91,9 +100,12 @@ class SitioController {
 
   private static final Map<String, CuentaVista> CUENTAS =
       Map.of(
-          "donante", new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
-          "entidad", new CuentaVista("Marta", "Comedor Barrio Ejemplo"),
-          "admin", new CuentaVista("Leo", "Administración"));
+          DONANTE,
+          new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
+          "entidad",
+          new CuentaVista("Marta", "Comedor Barrio Ejemplo"),
+          ADMIN,
+          new CuentaVista("Leo", "Administración"));
 
   /** El recorrido de la donación en camino; viaje-datos toma de acá los avances de los pasos. */
   private static final List<PasoRecorrido> PASOS =
@@ -105,6 +117,21 @@ class SitioController {
           new PasoRecorrido("Entregada", "Pendiente", Avance.PENDIENTE));
 
   private static final String PUBLICO = "publico";
+  private static final String MISIONES = "donante-misiones";
+  private static final String CUENTA = "cuenta";
+  private static final String PERSONA = "persona";
+
+  /** El menú de la persona que dona: el de la empresa con Misiones antes de Seguimiento (§6.2). */
+  private static final List<Seccion> MENU_PERSONA =
+      List.of(
+          MENUS.get(DONANTE).get(0),
+          MENUS.get(DONANTE).get(1),
+          MENUS.get(DONANTE).get(2),
+          new Seccion("Misiones", ICONO_INCENTIVOS, MISIONES),
+          MENUS.get(DONANTE).get(3));
+
+  private static final CuentaVista CUENTA_PERSONA =
+      new CuentaVista("Martina Ruiz", "Persona donante");
 
   private final ResourceLoader recursos;
 
@@ -113,8 +140,8 @@ class SitioController {
   }
 
   @GetMapping("/")
-  String portada(Model model) {
-    return mostrar("publico-portada", model);
+  String portada(Model model, HttpSession sesion) {
+    return mostrar("publico-portada", null, model, sesion);
   }
 
   /**
@@ -133,14 +160,39 @@ class SitioController {
    * pantalla, para que el resto (hojas, imágenes, scripts) siga siendo estático.
    */
   @GetMapping("/{pantalla:" + NOMBRE + "}")
-  String pantalla(@PathVariable String pantalla, Model model) {
-    return mostrar(pantalla, model);
+  String pantalla(
+      @PathVariable String pantalla,
+      @RequestParam(required = false) String cuenta,
+      @RequestParam(required = false) String respuesta,
+      Model model,
+      HttpSession sesion) {
+    responderConError(respuesta);
+    return mostrar(pantalla, cuenta, model, sesion);
   }
 
-  private String mostrar(String pantalla, Model model) {
+  /**
+   * Las páginas de error propias (RF-CL-08, docs/interfaz/flujos/raices-paginas-de-error.md):
+   * {@code ?respuesta=404}, {@code 403} o {@code 500} en cualquier pantalla responde con ese
+   * código, y Spring Boot muestra templates/error/404, 403 o 5xx, como haría el sistema con una
+   * dirección que no existe, sin permiso o con una falla.
+   */
+  private static void responderConError(String respuesta) {
+    if ("404".equals(respuesta)) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
+    }
+    if ("403".equals(respuesta)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sin permiso, de ejemplo");
+    }
+    if ("500".equals(respuesta)) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falla de ejemplo");
+    }
+  }
+
+  private String mostrar(String pantalla, String cuenta, Model model, HttpSession sesion) {
     boolean dibujada = existe(pantalla);
     String rol = pantalla.split("-")[0];
-    List<Seccion> menu = MENUS.getOrDefault(rol, List.of());
+    boolean persona = DONANTE.equals(rol) && esPersona(cuenta, sesion);
+    List<Seccion> menu = persona ? MENU_PERSONA : MENUS.getOrDefault(rol, List.of());
     Seccion actual =
         menu.stream()
             .filter(
@@ -169,10 +221,35 @@ class SitioController {
                         "/" + seccion.pantalla(),
                         seccion.equals(actual)))
             .toList());
-    model.addAttribute("cuenta", CUENTAS.get(rol));
+    model.addAttribute("cuenta", persona ? CUENTA_PERSONA : CUENTAS.get(rol));
+    model.addAttribute("persona", persona);
+    // Mi perfil es del donante y de la entidad (mapa del sitio); la administración no lo tiene.
     model.addAttribute(
-        "perfil", menu.isEmpty() || PUBLICO.equals(rol) ? null : "/" + rol + "-perfil");
+        "perfil",
+        menu.isEmpty() || PUBLICO.equals(rol) || ADMIN.equals(rol) ? null : "/" + rol + "-perfil");
+    if (persona && !MISIONES.equals(pantalla)) {
+      return avisoDeLaPersona(model);
+    }
     return dibujada ? pantalla : SIN_DIBUJAR;
+  }
+
+  /** {@code ?cuenta=persona} o {@code empresa} elige la cuenta del donante y queda en la sesión. */
+  private static boolean esPersona(String cuenta, HttpSession sesion) {
+    if (PERSONA.equals(cuenta) || "empresa".equals(cuenta)) {
+      sesion.setAttribute(CUENTA, cuenta);
+    }
+    return PERSONA.equals(sesion.getAttribute(CUENTA));
+  }
+
+  /**
+   * Con la persona, las pantallas del donante dibujadas para la empresa muestran el aviso de la
+   * maqueta, con el rótulo de su sección; Notificaciones no es una sección del menú.
+   */
+  private static String avisoDeLaPersona(Model model) {
+    if (model.getAttribute("seccion") == null) {
+      model.addAttribute("seccion", "Notificaciones");
+    }
+    return "aviso-persona";
   }
 
   /**
@@ -181,14 +258,17 @@ class SitioController {
    * son lo escrito: a qué pantalla volver después ({@code ?volver=}, en Contacto, solo si es una
    * pantalla del sitio), la elección de Mi perfil ({@code mostrar=si}) y la sección de Mi perfil
    * que se guardó ({@code seccion=datos} o {@code avisos}), para que el aviso diga lo que se
-   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección.
+   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección. Llegó
+   * con un problema manda el motivo ({@code incompleta}, {@code danada} u {@code otro}), que vuelve
+   * como {@code ?problema=} para que Recepción confirmada muestre el problema asentado.
    */
   @PostMapping("/{pantalla:" + NOMBRE + "}")
   String enviar(
       @PathVariable String pantalla,
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar,
-      @RequestParam(required = false) String seccion) {
+      @RequestParam(required = false) String seccion,
+      @RequestParam(required = false) String motivo) {
     if (!existe(pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
@@ -201,6 +281,9 @@ class SitioController {
     }
     if ("datos".equals(seccion) || "avisos".equals(seccion)) {
       consulta.add("seccion=" + seccion);
+    }
+    if (motivo != null && motivo.matches(MOTIVOS)) {
+      consulta.add("problema=" + motivo);
     }
     String destino = "redirect:/" + pantalla;
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);

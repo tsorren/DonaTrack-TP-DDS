@@ -15,3 +15,4 @@ uno nuevo y la bitácora dice cuál reemplaza.
 | Encargo | Qué diseñó | Estado |
 |---|---|---|
 | [raices-ab-navegable](raices-ab-navegable.md) | Raíces (sitios A y B navegables) | Aprobado el 2026-11-02; cumplido: el usuario eligió A y B se borró (2026-11-03) |
+| [raices-calida](raices-calida.md) | Raíces más cálida para quien dona solo: A/B de tierra, esquinas y serif, y después una corrida de la huerta de cada donante | Aprobado el 2026-11-06; en curso (etapa 1) |

@@ -1,7 +1,7 @@
 # Interfaz de DonaTrack — proceso de diseño
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 2 · 2026-10-31 (suma el tono común) · cliente liviano de E6**
+> **Versión 3 · 2026-11-06 (exploración A/B en boceto) · cliente liviano de E6**
 
 Este es el punto de entrada para diseñar y construir la interfaz del cliente liviano. Lo usan las
 personas del equipo y los agentes de IA. Las reglas técnicas del módulo están en
@@ -60,7 +60,10 @@ creativa" y "Oficio").
 **Comparaciones A/B.** Cuando una decisión de gusto o de forma tiene más de una buena respuesta
 (una paleta, una tipografía, el orden de una pantalla), el agente arma dos variantes que difieren
 solo en ese tema y el usuario elige. Skill `iteracion-ab`; temas posibles en el
-[catálogo](temas-ab.md). Cada elección queda en la [bitácora](bitacora.md).
+[catálogo](temas-ab.md). Cada elección queda en la [bitácora](bitacora.md). Si se busca un aspecto
+nuevo (exploración), las opciones se separan en un eje declarado y las vueltas van en boceto (solo
+capturas a 1280 px); la comprobación del piso, la evidencia y la bitácora se hacen una vez, al
+elegir.
 
 Las skills están en `.agents/skills/<nombre>/SKILL.md`. Claude Code las encuentra mediante
 `.claude/skills/<nombre>/SKILL.md`, que apunta a la versión de `.agents/`.
@@ -190,10 +193,11 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 |---|---|
 | [bocetos-e1.md](bocetos-e1.md) | Inventario de los bocetos de E1 |
 | [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles, y qué pantallas están dibujadas |
+| [roadmap-vistas-enunciado.md](roadmap-vistas-enunciado.md) | Las vistas que pide el enunciado y faltan, con su matriz requerimiento → vista y las 7 fases para terminarlas |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
 | [criterios-catedra-ux-ui.md](criterios-catedra-ux-ui.md) | Los criterios del material de UX/UI de la cátedra (2026): factores de la experiencia, patrones, arquitectura de la información, lenguaje visual, accesibilidad y las 10 heurísticas, como guía para diseñar y revisar |
 | [identidad/brief.md](identidad/brief.md) y [identidad/referencias/](identidad/referencias/README.md) | La identidad del sitio (Raíces: raíces y semillas para empresas que donan): su brief y las referencias que trajo el usuario |
-| [flujos/](flujos/) | Las fichas de flujo aprobadas. Los recorridos navegables: [público](flujos/raices-publico-navegable.md), [donante](flujos/raices-donante-navegable.md) y [entidad con el inicio del admin](flujos/raices-entidad-navegable.md) (aprobadas el 2026-11-03); los huecos de backend, en [flujos/raices-ab-huecos-backend.md](flujos/raices-ab-huecos-backend.md) |
+| [flujos/](flujos/) | Las fichas de flujo aprobadas. Los recorridos navegables: [público](flujos/raices-publico-navegable.md), [donante](flujos/raices-donante-navegable.md) y [entidad con el inicio del admin](flujos/raices-entidad-navegable.md) (aprobadas el 2026-11-03), el [resto del admin](flujos/raices-admin-navegable.md) (aprobada el 2026-11-07) y [Misiones e insignias](flujos/raices-misiones.md) (aprobada el 2026-11-07; con ella, Seguir entregas y Mi perfil de la entidad amplían sus fichas) y [Nosotros, las dos landings y Activar cuenta](flujos/raices-conocer-y-activar.md) (aprobada el 2026-11-07), [Llegó con un problema](flujos/raices-llego-con-un-problema.md) y [las páginas de error](flujos/raices-paginas-de-error.md) (aprobadas el 2026-11-07); los huecos de backend, en [flujos/raices-ab-huecos-backend.md](flujos/raices-ab-huecos-backend.md) |
 | [historico/](historico/README.md) | Las identidades retiradas el 2026-11-03. No es guía para diseñar |
 | [tono-y-comunicacion.md](tono-y-comunicacion.md) y [identidad/brief-tono-y-comunicacion-v1.0.pdf](identidad/brief-tono-y-comunicacion-v1.0.pdf) | Voz, tono por pantalla, estados, cifras, personas y el filtro de 7 preguntas, comunes a todo el sitio; el PDF es el brief del equipo del que sale |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
@@ -204,3 +208,4 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [plantillas/](plantillas/) | Ficha de flujo, iteración A/B, brief de identidad y los tres encargos de una corrida creativa (el creativo, el del constructor y el del crítico) |
 | [encargos/](encargos/README.md) | Los encargos creativos aprobados por el usuario: la entrada de cada corrida creativa |
 | `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso: el brief, las fichas de flujo y las capturas |
+| [evidencia/raices-calida-concepto-donante-inicio/](evidencia/raices-calida-concepto-donante-inicio/) y [evidencia/raices-calida-sistema/](evidencia/raices-calida-sistema/) | Capturas en JPG de la corrida creativa de [Raíces cálida](encargos/raices-calida.md): los tres conceptos sobre el inicio del donante con su antes (iteración 1) y las rutas del sitio con el sistema aplicado (iteración 2); las decisiones, en la [bitácora](bitacora.md) |

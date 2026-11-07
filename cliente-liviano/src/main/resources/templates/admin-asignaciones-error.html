@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, una propuesta que no se pudo aprobar: no se asignó nada y sigue pendiente, con su Descartar. De partida, el pedido inactivo (NECESIDAD_INACTIVA); ?escenario=propia, la donación de la misma entidad (DONACION_A_SI_MISMO); ?escenario=cambio, la propuesta cambió a la vez y la lista se recargó (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.7). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>No se pudo aprobar - Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-asignaciones :: hoja('error')}"></th:block>
+</th:block>
+</body>
+</html>

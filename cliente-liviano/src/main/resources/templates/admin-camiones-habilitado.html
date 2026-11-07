@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Camiones después de volver a habilitar uno: el aviso y el camión disponible (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.8). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Camión habilitado - Camiones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-camiones :: hoja('habilitado')}"></th:block>
+</th:block>
+</body>
+</html>

@@ -15,7 +15,7 @@ figure.mapa-dibujo.esqueleto {
 
 .estacion-numero {
   fill: var(--color-tinta);
-  font: 800 24px var(--fuente-titulo);
+  font: 800 24px var(--fuente-cifra);
   text-anchor: middle;
 }
 

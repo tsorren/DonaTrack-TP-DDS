@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<!--/* Raíces, Donantes del admin (RF-15 y RF-20), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.1). Arriba, la cifra con su fecha y
+       "Registrar donante"; debajo, importar donantes desde un archivo, plegado (se abre con "Importar
+       CSV"); al final, la búsqueda y la lista en la tabla adaptable. La importación vive en la misma
+       pantalla, para no pasar de 3 niveles (decisión 3 del roadmap): su avance y su resultado quedan
+       en el bloque de importar, y la lista sigue debajo (RF-20: sin bloquear la pantalla).
+       ?escenario=vacio, lento y error. Importar es un formulario real (POST, multipart) que lleva a
+       admin-donantes-importando; el avance, a admin-donantes-importado; el archivo que no se acepta
+       es admin-donantes-importar-error. En el sistema, el avance se actualiza solo cada 5 s con HTMX
+       (hx-get sobre "Ver el avance"); en la maqueta, el enlace lleva al resultado.
+       Fragmentos:
+       - hoja(accion): la pantalla entera; accion es '' (la lista), 'importando', 'importado' o
+         'importar-error'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Donantes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donantes :: hoja('')}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(accion)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
+             importa=${accion != ''},
+             donantes=${ {
+      {nombre: 'Distribuidora Ejemplo SA', tipo: 'Empresa', documento: 'CUIT 30-00000001-0', alta: '2 de marzo', estado: 'Activo'},
+      {nombre: 'Ana Ejemplo', tipo: 'Persona', documento: 'DNI 20.000.001', alta: '14 de octubre', estado: 'Activo'},
+      {nombre: 'Juan Ejemplo', tipo: 'Persona', documento: 'DNI 20.000.002', alta: '3 de septiembre', estado: 'Activo'},
+      {nombre: 'Fundación Ejemplo Sur', tipo: 'Organización', documento: 'CUIT 30-00000002-0', alta: '21 de julio', estado: 'Activo'},
+      {nombre: 'Pedro Ejemplo', tipo: 'Persona', documento: 'DNI 20.000.003', alta: '5 de mayo', estado: 'Dado de baja'} } }">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo">Administración</p>
+      <h1>Donantes</h1>
+      <p th:if="${conDatos}">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
+    </header>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando los donantes…</p>
+
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar los donantes.</h2>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-donantes')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-donantes"
+         th:href="@{/admin-donantes}">Volver a cargar</a>
+    </section>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay donantes registrados.</h2>
+      <p>Registrá el primero o importá un archivo con muchos.</p>
+    </section>
+
+    <div th:if="${escenario != 'error'}" class="racimo">
+      <a class="boton" data-tono="principal" href="/admin-donantes-registrar"
+         th:href="@{/admin-donantes-registrar}">Registrar donante</a>
+    </div>
+
+    <!--/* Importar: plegado; abierto mientras hay una importación o su resultado. */-->
+    <details th:if="${escenario != 'error'}" id="importar" class="pila" data-espacio="3"
+             th:open="${importa or escenario == 'vacio'}">
+      <summary class="boton" data-tono="secundario">Importar CSV</summary>
+      <div class="tarjeta pila" data-espacio="3">
+      <h2>Importar donantes desde un archivo</h2>
+
+      <th:block th:if="${accion == 'importando'}">
+        <p><b>donantes-octubre.csv · 20.000 filas</b></p>
+        <p role="status">Procesando: 8.400 de 20.000 filas.</p>
+        <p>Podés seguir usando el sitio: el resultado queda acá cuando termine.</p>
+        <p><a class="boton" data-tono="secundario" href="/admin-donantes-importado"
+              th:href="@{/admin-donantes-importado}">Ver el avance</a></p>
+      </th:block>
+
+      <th:block th:if="${accion == 'importado'}">
+        <p class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Importación
+          terminada el 15 de octubre de 2026, 18:42.</p>
+        <p>20.000 filas leídas: 19.100 donantes nuevos, 754 actualizados, 20 sin cambios porque el
+          donante está dado de baja y 126 filas con error.</p>
+        <p>Los donantes nuevos reciben un correo para activar su cuenta.</p>
+        <table class="tabla">
+          <caption>Filas con error (las primeras 3 de 126)</caption>
+          <thead>
+            <tr><th scope="col">Fila</th><th scope="col">Qué pasó</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Fila 15</th><td data-rotulo="Qué pasó">Falta el apellido.</td></tr>
+            <tr><th scope="row">Fila 202</th><td data-rotulo="Qué pasó">El correo ya es de otra
+              persona, con otro documento.</td></tr>
+            <tr><th scope="row">Fila 3.410</th><td data-rotulo="Qué pasó">Tiene 6 columnas y el
+              encabezado tiene 8.</td></tr>
+          </tbody>
+        </table>
+        <!--/* En el sistema, descarga un CSV con las filas con error; en la maqueta vuelve acá. */-->
+        <form action="/admin-donantes-importado" th:action="@{/admin-donantes-importado}" method="post">
+          <button class="boton" data-tono="secundario" type="submit">Descargar las 126 filas con error</button>
+        </form>
+      </th:block>
+
+      <section th:if="${accion == 'importar-error'}" class="banner" data-estado="error" role="alert"
+               tabindex="-1" autofocus aria-labelledby="importar-error-titulo">
+        <h2 id="importar-error-titulo">No pudimos leer el archivo.</h2>
+        <p>Tiene que ser un CSV de hasta 50 MB. No se importó ninguna fila.</p>
+      </section>
+
+      <form th:if="${accion != 'importando'}" class="pila" data-espacio="3" action="/admin-donantes-importando"
+            th:action="@{/admin-donantes-importando}" method="post" enctype="multipart/form-data">
+        <div class="campo" th:data-estado="${accion == 'importar-error'} ? 'error'">
+          <label for="archivo">Archivo de donantes</label>
+          <small id="archivo-ayuda">Un archivo CSV separado por comas, con una fila de encabezado. Hasta
+            50 MB. Columnas que se leen: NOMBRE, APELLIDO, TIPO_DOCUMENTO, DOCUMENTO, EMAIL, TELEFONO,
+            FECHA_NACIMIENTO y TIPO_PERSONA (HUMANA o JURIDICA; para JURIDICA, RAZON_SOCIAL). Si el
+            documento ya está, se actualizan sus datos; si no, se suma un donante nuevo.</small>
+          <input id="archivo" name="archivo" type="file" accept=".csv,text/csv" required
+                 aria-describedby="archivo-ayuda"
+                 th:attr="aria-invalid=${accion == 'importar-error'} ? 'true' : null">
+        </div>
+        <button class="boton" data-tono="principal" type="submit">Importar</button>
+      </form>
+      </div>
+    </details>
+
+    <section th:if="${escenario != 'error' and escenario != 'vacio'}" class="pila" data-espacio="3"
+             aria-labelledby="lista-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <h2 id="lista-titulo">Todos los donantes</h2>
+      <form class="racimo" action="/admin-donantes" th:action="@{/admin-donantes}" method="get"
+            role="search">
+        <div class="campo">
+          <label for="buscar">Buscar por nombre o documento</label>
+          <input id="buscar" name="buscar" type="search" autocomplete="off">
+        </div>
+        <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+      </form>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+      <table th:if="${conDatos}" class="tabla">
+        <caption>Donantes, del más nuevo al más antiguo</caption>
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Alta</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="d : ${donantes}">
+            <th scope="row" th:text="${d.nombre}">Ana Ejemplo</th>
+            <td data-rotulo="Tipo" th:text="${d.tipo}">Persona</td>
+            <td data-rotulo="Documento" th:text="${d.documento}">DNI 20.000.001</td>
+            <td data-rotulo="Alta" th:text="${d.alta}">14 de octubre</td>
+            <td data-rotulo="Estado" th:text="${d.estado}">Activo</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

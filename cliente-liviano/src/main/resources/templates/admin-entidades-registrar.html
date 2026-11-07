@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--/* Raíces, Registrar entidad del admin (RF-15), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.4). La entidad es una organización
+       con dirección: el tipo no ofrece "Empresa". Es un formulario real (POST) que lleva a
+       admin-entidades-registrada. Estados: ?escenario=lento y error; el error de datos (el 400 del
+       contrato, sin dirección) es admin-entidades-registrar-error.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Registrar entidad - Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-entidades-registrar :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             escrito=${conError or escenario == 'error'}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo"><a href="/admin-entidades" th:href="@{/admin-entidades}">Entidades</a> ›
+        Registrar entidad</p>
+      <h1>Registrar entidad</h1>
+      <p>La entidad tiene que ser una organización con dirección (no una empresa).</p>
+    </header>
+
+    <form class="formulario" action="/admin-entidades-registrada" th:action="@{/admin-entidades-registrada}"
+          method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+               autofocus aria-labelledby="resumen-titulo">
+        <h2 id="resumen-titulo">Revisá 1 dato para seguir.</h2>
+        <ul>
+          <li><a href="#calle">Falta la dirección</a></li>
+        </ul>
+      </section>
+      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="error-titulo">
+        <h2 id="error-titulo">No pudimos guardar: no cambió nada.</h2>
+        <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo con «Registrar entidad» en unos minutos; si sigue,
+          <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+             th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-entidades-registrar')}">escribinos
+            con este código</a>.</p>
+        <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      </section>
+      <p class="obligatorios">* obligatorio</p>
+
+      <h2>La organización</h2>
+      <div class="grilla" data-espacio="3">
+        <div class="campo">
+          <label for="razon-social">Razón social *</label>
+          <input id="razon-social" name="razonSocial" type="text" required autocomplete="off"
+                 th:value="${escrito} ? 'Escuela Ejemplo N.º 5' : null">
+        </div>
+        <div class="campo">
+          <label for="tipo">Tipo *</label>
+          <select id="tipo" name="tipo" required>
+            <option>ONG</option>
+            <option th:selected="${escrito}">Institución</option>
+            <option>Gubernamental</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="cuit">CUIT</label>
+          <small id="cuit-ayuda">Con guiones. Por ejemplo: 30-00000001-0.</small>
+          <input id="cuit" name="cuit" type="text" autocomplete="off" aria-describedby="cuit-ayuda">
+        </div>
+      </div>
+
+      <section class="pila" data-espacio="3" aria-labelledby="direccion-titulo">
+        <h2 id="direccion-titulo">Dirección *</h2>
+        <p th:if="${conError}" id="direccion-error" class="campo-error">Falta la dirección: la usamos para
+          planificar las entregas.</p>
+        <div class="grilla" data-espacio="3">
+          <div class="campo" th:data-estado="${conError} ? 'error'">
+            <label for="calle">Calle *</label>
+            <input id="calle" name="calle" type="text" required autocomplete="off"
+                   th:attr="aria-describedby=${conError} ? 'direccion-error' : null,aria-invalid=${conError} ? 'true' : null">
+          </div>
+          <div class="campo"><label for="altura">Altura *</label>
+            <input id="altura" name="altura" type="text" inputmode="numeric" required autocomplete="off"></div>
+          <div class="campo"><label for="localidad">Localidad *</label>
+            <input id="localidad" name="localidad" type="text" required autocomplete="off"></div>
+          <div class="campo"><label for="provincia">Provincia *</label>
+            <input id="provincia" name="provincia" type="text" required autocomplete="off"></div>
+          <div class="campo"><label for="pais">País *</label>
+            <input id="pais" name="pais" type="text" value="Argentina" required autocomplete="off"></div>
+        </div>
+      </section>
+
+      <h2>Contacto</h2>
+      <div class="grilla" data-espacio="3">
+        <div class="campo">
+          <label for="responsable">Responsable *</label>
+          <input id="responsable" name="responsable" type="text" required autocomplete="off"
+                 th:value="${escrito} ? 'Clara Ejemplo' : null">
+        </div>
+        <div class="campo">
+          <label for="correo">Correo de contacto *</label>
+          <small id="correo-ayuda">Usamos el correo para que su responsable active la cuenta; no lo
+            mostramos a los donantes.</small>
+          <input id="correo" name="correo" type="email" required autocomplete="off" aria-describedby="correo-ayuda"
+                 th:value="${escrito} ? 'escuela5@ejemplo.org' : null">
+        </div>
+      </div>
+
+      <div class="racimo">
+        <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+                th:text="${escenario == 'lento'} ? 'Registrando…' : 'Registrar entidad'">Registrar entidad</button>
+        <a class="boton" data-tono="secundario" href="/admin-entidades" th:href="@{/admin-entidades}">Cancelar</a>
+      </div>
+      <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la entidad…</p>
+    </form>
+  </div>
+</th:block>
+</body>
+</html>

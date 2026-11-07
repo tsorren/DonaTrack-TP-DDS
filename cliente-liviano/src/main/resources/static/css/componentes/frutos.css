@@ -113,7 +113,7 @@
   background: var(--color-fruto);
   box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
   color: var(--color-tinta);
-  font: 900 1.9rem / 1 var(--fuente-titulo);
+  font: 900 1.9rem / 1 var(--fuente-cifra);
   font-stretch: 110%;
   letter-spacing: -0.03em;
 }
@@ -149,6 +149,13 @@
 
 .frutos-rama > div:nth-child(3) dd::before {
   background: var(--color-raiz);
+}
+
+/* Variante data-cosecha="completa" (Nosotros, F6): las tres cifras están cumplidas, así que el tercer
+   fruto también va impreso, con su segunda tinta corrida y sin el contorno punteado. */
+.frutos-rama[data-cosecha="completa"] > div:nth-child(3) dd {
+  border: 0;
+  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
 }
 
 @media (min-width: 37.5em) {

@@ -36,8 +36,8 @@ Seguir entregas, y desde el aviso de "Te queda una en la puerta" al terminar otr
 Raíces todavía no tiene las otras pantallas de la entidad. El menú muestra sus cuatro secciones
 (Inicio, Necesidades, Donaciones recibidas y Seguir entregas); las que faltan abren la página corta
 que dice que todavía no está dibujada (decisión del usuario, 2026-11-01, la misma de Seguir
-entregas; desde 2026-11-03, sin enlace a otra identidad). "Llegó con un problema" abre esa misma
-página, con la vuelta a la entrega.
+entregas; desde 2026-11-03, sin enlace a otra identidad). "Llegó con un problema" abre, desde F7
+(2026-11-07), su propia pantalla: [Llegó con un problema](raices-llego-con-un-problema.md).
 
 ## 3. Recorrido
 
@@ -59,7 +59,7 @@ flowchart TD
   ciclo -->|te queda otra en la puerta| acta
   ciclo --> inicio[Volver al inicio]
   ciclo --> seguir
-  acta -->|Llegó con un problema| problema[Página sin dibujar]
+  acta -->|Llegó con un problema| problema[Llegó con un problema: el acta con Qué pasó]
 ```
 
 Desvíos considerados:
@@ -82,7 +82,7 @@ Desvíos considerados:
 - **Sin permiso:** una entrega que no existe o es de otra entidad se muestra como "No encontramos
   esa entrega" (no se dice de quién es: HB-13).
 - **Llegó con un problema:** un enlace debajo del botón. El reporte se diseña aparte (decisión del
-  usuario, 2026-11-01).
+  usuario, 2026-11-01): su ficha es [Llegó con un problema](raices-llego-con-un-problema.md) (F7).
 
 ## 4. Pantallas
 
@@ -187,7 +187,7 @@ En la maqueta, `?entrega=lentejas` (de partida) o `ropa`, y `?escenario=lento`, 
 | Recepción confirmada | Con datos | La raíz completa, lo asentado, la necesidad, el aviso a quien donó y la siguiente entrega | Ver Textos |
 | Recepción confirmada | Vacío | No queda otra entrega en la puerta: en lugar de la siguiente, una línea | "No te quedan entregas para confirmar." |
 | Recepción confirmada | Cargando, error | No aplica: es la respuesta de la confirmación | — |
-| Llegó con un problema | — | La página sin dibujar, con la vuelta a la entrega | "Esta pantalla todavía no está dibujada." · "Volver a la entrega" |
+| Llegó con un problema | — | Su propia pantalla, desde F7 (2026-11-07): ver [su ficha](raices-llego-con-un-problema.md) | — |
 
 ## 6. Textos
 

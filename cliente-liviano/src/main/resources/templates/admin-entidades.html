@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!--/* Raíces, Entidades del admin (RF-21 y RF-15), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.3). Dos pestañas: las que piden
+       sumarse y las activas. Sin JavaScript, cada pestaña es un enlace a su sección (#solicitudes y
+       #activas, el bloque .pestanas); con Alpine, el patrón de pestañas. Cada solicitud se despliega
+       en la lista, como el detalle de Necesidades, con sus tres acciones: Aprobar (sin pregunta
+       extra), Pedir corrección (un campo obligatorio, plegado) y Rechazar (un diálogo del navegador,
+       popover, con el motivo obligatorio). Cada acción es un formulario real (POST) que lleva a
+       admin-entidades-aprobada, -correccion o -rechazada.
+       ?entidad=<clave> abre esa solicitud (de partida, la primera). ?escenario=vacio (nadie pide
+       sumarse), lento y error.
+       Fragmentos:
+       - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'correccion' o
+         'rechazada'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-entidades :: hoja('')}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(accion)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${escenario != 'error' and escenario != 'lento'},
+             todas=${ {
+      {clave: 'hogar', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar', cuando: '9 de octubre', falta: null,
+       razon: 'Asociación Civil Hogar Ejemplo Norte', cuit: '30-00000011-0',
+       direccion: 'Calle Ejemplo 1234, Localidad Ejemplo, Buenos Aires', responsable: 'Rosa Ejemplo',
+       correo: 'hogar@ejemplo.org', constancia: 'constancia-domicilio.pdf'},
+      {clave: 'merendero', nombre: 'Merendero Ejemplo Este', tipo: 'Merendero', cuando: '12 de octubre',
+       falta: 'Le falta la constancia de domicilio', razon: 'Merendero Ejemplo Este Asociación Civil',
+       cuit: '30-00000012-0', direccion: 'Pasaje Ejemplo 56, Localidad Ejemplo, Buenos Aires',
+       responsable: 'Luis Ejemplo', correo: 'merendero@ejemplo.org', constancia: null},
+      {clave: 'comedor', nombre: 'Comedor Ejemplo Oeste', tipo: 'Comedor', cuando: '14 de octubre', falta: null,
+       razon: 'Comedor Comunitario Ejemplo Oeste', cuit: '30-00000013-0',
+       direccion: 'Avenida Ejemplo 789, Localidad Ejemplo, Buenos Aires', responsable: 'Marta Ejemplo',
+       correo: 'comedor@ejemplo.org', constancia: 'constancia.pdf'} } },
+             solicitudes=${escenario == 'vacio' ? {} : todas.?[(clave != 'hogar' or #root.accion != 'aprobada') and (clave != 'comedor' or #root.accion != 'rechazada')]},
+             abierta=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero' : (#lists.isEmpty(solicitudes) ? '' : solicitudes[0].clave))},
+             activas=${accion == 'aprobada' ? 47 : 46},
+             entidades=${ {
+      {nombre: 'Comedor Barrio Ejemplo', tipo: 'Comedor', localidad: 'Localidad Ejemplo', alta: '4 de febrero'},
+      {nombre: 'Merendero Ejemplo Sur', tipo: 'Merendero', localidad: 'Localidad Ejemplo', alta: '18 de marzo'},
+      {nombre: 'Hogar Ejemplo Centro', tipo: 'Hogar', localidad: 'Localidad Ejemplo', alta: '2 de mayo'},
+      {nombre: 'Escuela Ejemplo N.º 3', tipo: 'Institución', localidad: 'Localidad Ejemplo', alta: '30 de junio'} } }">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo">Administración</p>
+      <h1>Entidades</h1>
+      <p th:if="${conDatos}" th:text="|${#lists.size(solicitudes)} piden sumarse y ${activas} están activas, al 15 de octubre de 2026, 18:30.|">3
+        piden sumarse y 46 están activas, al 15 de octubre de 2026, 18:30.</p>
+    </header>
+
+    <p th:if="${accion == 'aprobada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus pedidos y recibir donaciones. Le
+      avisamos por correo.</p>
+    <p th:if="${accion == 'correccion'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Le pedimos a Merendero Ejemplo Este que corrija su solicitud. Sigue en la lista hasta que
+      la vuelva a enviar.</p>
+    <p th:if="${accion == 'rechazada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Rechazaste la solicitud de Comedor Ejemplo Oeste. Le enviamos el motivo por correo.</p>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las entidades…</p>
+
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar las entidades.</h2>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-entidades')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-entidades"
+         th:href="@{/admin-entidades}">Volver a cargar</a>
+    </section>
+
+    <div th:if="${escenario != 'error'}" class="racimo">
+      <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
+         th:href="@{/admin-entidades-registrar}">Registrar entidad</a>
+    </div>
+
+    <div th:if="${escenario != 'error'}" class="pestanas" x-data="pestanas"
+         x-on:hashchange.window="desdeLaDireccion" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <nav class="pestanas-lista" aria-label="Entidades" x-on:keydown="teclear">
+        <a class="pestana" id="pestana-solicitudes" href="#solicitudes" x-on:click="elegir"
+           th:text="${conDatos} ? |Piden sumarse · ${#lists.size(solicitudes)}| : 'Piden sumarse'">Piden sumarse · 3</a>
+        <a class="pestana" id="pestana-activas" href="#activas" x-on:click="elegir"
+           th:text="${conDatos} ? |Activas · ${activas}| : 'Activas'">Activas · 46</a>
+      </nav>
+
+      <section class="pestanas-panel tarjeta pila" data-espacio="3" id="solicitudes"
+               aria-labelledby="solicitudes-titulo">
+        <h2 id="solicitudes-titulo">Piden sumarse</h2>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+        <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+          <h3 id="vacio-titulo">Ninguna entidad pide sumarse por ahora.</h3>
+        </section>
+        <ul th:if="${conDatos and !#lists.isEmpty(solicitudes)}" class="lista pila" data-espacio="3" role="list">
+          <li th:each="e : ${solicitudes}">
+            <details class="tarjeta pila" data-filete="doble" data-espacio="3" th:open="${e.clave == abierta}"
+                     th:id="|solicitud-${e.clave}|">
+              <summary>
+                <b th:text="${e.nombre}">Hogar Ejemplo Norte</b>
+                · <span th:text="${e.tipo}">Hogar</span>
+                · <span th:text="|pidió sumarse el ${e.cuando}|">pidió sumarse el 9 de octubre</span>
+                <th:block th:if="${e.falta != null and !(accion == 'correccion' and e.clave == 'merendero')}">
+                  · <span th:text="${e.falta}">Le falta la constancia de domicilio</span></th:block>
+                <span th:if="${accion == 'correccion' and e.clave == 'merendero'}" class="estado"
+                      data-estado="pendiente"><svg th:replace="~{componentes/sello :: sello('pendiente')}"></svg>Esperando
+                  corrección</span>
+                · <span data-tono="acento">Revisar</span>
+              </summary>
+              <dl class="grilla" data-espacio="2">
+                <div><dt>Razón social</dt><dd th:text="${e.razon}">Asociación Civil</dd></div>
+                <div><dt>CUIT</dt><dd th:text="${e.cuit}">30-00000011-0</dd></div>
+                <div><dt>Dirección</dt><dd th:text="${e.direccion}">Calle Ejemplo 1234</dd></div>
+                <div><dt>Responsable</dt><dd th:text="|${e.responsable} · ${e.correo}|">Rosa Ejemplo</dd></div>
+                <div><dt>Constancia de domicilio</dt><dd th:text="${e.constancia != null} ? ${e.constancia} : 'No la envió'">constancia.pdf</dd></div>
+              </dl>
+              <p th:text="${e.falta != null} ? |${e.falta}.| : 'Le falta: nada.'">Le falta: nada.</p>
+
+              <p th:if="${accion == 'correccion' and e.clave == 'merendero'}">Le pedimos que corrija su solicitud. Las
+                acciones vuelven cuando la entidad la reenvíe.</p>
+              <th:block th:unless="${accion == 'correccion' and e.clave == 'merendero'}">
+              <div class="racimo">
+                <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post">
+                  <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
+                  <button class="boton" data-tono="principal" type="submit"
+                          th:aria-label="|Aprobar: ${e.nombre}|">Aprobar</button>
+                </form>
+                <button type="button" class="boton" data-tono="quitar" th:popovertarget="|rechazar-${e.clave}|"
+                        popovertarget="rechazar-hogar" th:aria-label="|Rechazar: ${e.nombre}|">Rechazar</button>
+              </div>
+
+              <details>
+                <summary class="boton" data-tono="secundario" th:aria-label="|Pedir corrección: ${e.nombre}|">Pedir
+                  corrección</summary>
+                <form class="formulario" action="/admin-entidades-correccion"
+                      th:action="@{/admin-entidades-correccion}" method="post">
+                  <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
+                  <div class="campo">
+                    <label th:for="|correccion-${e.clave}|" for="correccion-hogar">Qué tiene que corregir *</label>
+                    <small th:id="|correccion-${e.clave}-ayuda|" id="correccion-hogar-ayuda">Le llega a la entidad.
+                      Por ejemplo: "Falta la constancia de domicilio".</small>
+                    <textarea th:id="|correccion-${e.clave}|" id="correccion-hogar" name="correccion" rows="3" required
+                              th:aria-describedby="|correccion-${e.clave}-ayuda|"></textarea>
+                  </div>
+                  <button class="boton" data-tono="principal" type="submit">Pedir corrección</button>
+                </form>
+              </details>
+
+              <dialog class="dialogo" data-tono="quitar" th:id="|rechazar-${e.clave}|" id="rechazar-hogar" popover
+                      th:aria-labelledby="|rechazar-${e.clave}-titulo|">
+                <h3 class="dialogo-titulo" th:id="|rechazar-${e.clave}-titulo|"
+                    th:text="|¿Rechazar la solicitud de ${e.nombre}?|">¿Rechazar la solicitud de Hogar Ejemplo
+                  Norte?</h3>
+                <form class="pila" data-espacio="3" action="/admin-entidades-rechazada"
+                      th:action="@{/admin-entidades-rechazada}" method="post">
+                  <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
+                  <div class="campo">
+                    <label th:for="|motivo-${e.clave}|" for="motivo-hogar">Motivo, que le llega a la entidad *</label>
+                    <textarea th:id="|motivo-${e.clave}|" id="motivo-hogar" name="motivo" rows="3" required
+                              autofocus></textarea>
+                  </div>
+                  <div class="racimo">
+                    <button class="boton" data-tono="quitar" type="submit">Rechazar solicitud</button>
+                    <button type="button" class="boton" data-tono="secundario"
+                            th:popovertarget="|rechazar-${e.clave}|" popovertarget="rechazar-hogar"
+                            popovertargetaction="hide">Cancelar</button>
+                  </div>
+                </form>
+              </dialog>
+              </th:block>
+            </details>
+          </li>
+        </ul>
+      </section>
+
+      <section class="pestanas-panel tarjeta pila" data-espacio="3" id="activas" aria-labelledby="activas-titulo">
+        <h2 id="activas-titulo">Activas</h2>
+        <form class="racimo" action="/admin-entidades#activas" th:action="|@{/admin-entidades}#activas|" method="get"
+              role="search">
+          <div class="campo">
+            <label for="buscar">Buscar por nombre</label>
+            <input id="buscar" name="buscar" type="search" autocomplete="off">
+          </div>
+          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+        </form>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+        <table th:if="${conDatos}" class="tabla">
+          <caption th:text="|Entidades activas: ${activas}. Se ven las ${accion == 'aprobada' ? 5 : 4} más recientes.|">Entidades activas: 46. Se
+            ven las 4 más recientes.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Localidad</th>
+              <th scope="col">Activa desde</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${accion == 'aprobada'}">
+              <th scope="row">Hogar Ejemplo Norte</th>
+              <td data-rotulo="Tipo">Hogar</td>
+              <td data-rotulo="Localidad">Localidad Ejemplo</td>
+              <td data-rotulo="Activa desde">15 de octubre</td>
+            </tr>
+            <tr th:each="e : ${entidades}">
+              <th scope="row" th:text="${e.nombre}">Comedor Barrio Ejemplo</th>
+              <td data-rotulo="Tipo" th:text="${e.tipo}">Comedor</td>
+              <td data-rotulo="Localidad" th:text="${e.localidad}">Localidad Ejemplo</td>
+              <td data-rotulo="Activa desde" th:text="${e.alta}">4 de febrero</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

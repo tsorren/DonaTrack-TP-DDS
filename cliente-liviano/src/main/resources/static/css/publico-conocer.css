@@ -1,0 +1,58 @@
+/* Nosotros, Para donantes y Para entidades (ficha docs/interfaz/flujos/raices-conocer-y-activar.md):
+   páginas de lectura del pie. Toman de publico-paginas.css el ancho de lectura, el rótulo, la lámina y
+   el dibujo; los bloques (frutos, tarjeta, lista, botón) y la composición (pila, grilla, racimo) son
+   del catálogo. Esta hoja solo dispone: el relleno de las tarjetas, el dibujo de la lámina y el aire
+   de las preguntas. */
+@import url("publico-paginas.css");
+
+main .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+main .tarjeta h3,
+main .tarjeta p {
+  margin-block-end: 0;
+}
+
+/* Entre las secciones de la página, siempre el espacio 5 de la pila de afuera, aunque la sección sea a
+   su vez una pila o una grilla con su propio data-espacio (que redefine --espacio-entre en ella). */
+main > [data-espacio="5"] > * + * {
+  margin-block-start: var(--espacio-5);
+}
+
+/* La bajada no suma margen propio: el espacio lo da la pila. */
+main .lectura-bajada {
+  margin-block-end: 0;
+}
+
+main figure.tarjeta {
+  margin: 0;
+}
+
+main .lamina-dibujo {
+  height: 20rem;
+  margin: 0;
+}
+
+main details {
+  margin-block-end: 0;
+}
+
+/* Cada pregunta se toca con el dedo: 48 px de alto, sin perder el triángulo del summary. */
+main summary {
+  box-sizing: border-box;
+  min-height: 3rem;
+  padding-block: 0.75rem;
+}
+
+/* Las grillas de tarjetas son listas: sin la sangría del navegador. */
+main .grilla {
+  margin-inline: 0;
+  margin-block-end: 0;
+  padding: 0;
+}
+
+/* En las secciones de lectura (sin pila), el título se separa de su lista. */
+main .lectura:not([data-espacio]) > h2 {
+  margin: 0 0 var(--espacio-2);
+}

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!--/* Raíces, Camiones del admin (RF-18), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.8). Arriba, las cifras con su fecha
+       y "Agregar camión" (el formulario plegado, POST real, que lleva a admin-camiones-agregado);
+       debajo, la lista en la tabla adaptable. El admin solo pasa un camión entre disponible y
+       deshabilitado: "En ruta" lo pone la logística y no tiene botón. "Deshabilitar" abre un diálogo
+       del navegador (popover) con el motivo opcional y lleva a admin-camiones-deshabilitado;
+       "Volver a habilitar" es un formulario real que lleva a admin-camiones-habilitado.
+       ?escenario=vacio, lento y error. El error de datos del alta es admin-camiones-agregar-error.
+       Fragmentos:
+       - hoja(accion): la pantalla entera; accion es '' (la lista), 'agregado', 'deshabilitado',
+         'habilitado' o 'error'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Camiones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-camiones :: hoja('')}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(accion)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
+             conError=${accion == 'error'},
+             palabras=${ {ruta: 'En ruta', disponible: 'Disponible', deshabilitado: 'Deshabilitado'} },
+             sellos=${ {ruta: 'camino', disponible: 'hecho', deshabilitado: 'falta'} },
+             todos=${ {
+      {clave: 'ab123cd', patente: 'AB 123 CD', capacidad: '3.500 kg · 18 m³', estado: 'ruta'},
+      {clave: 'ac456ef', patente: 'AC 456 EF', capacidad: '3.500 kg · 18 m³',
+       estado: accion == 'deshabilitado' ? 'deshabilitado' : 'disponible',
+       motivo: accion == 'deshabilitado' ? 'Service de frenos. Desde hoy, 18:35.' : null},
+      {clave: 'ad789gh', patente: 'AD 789 GH', capacidad: '1.500 kg · 9 m³', estado: 'disponible'},
+      {clave: 'ae012ij', patente: 'AE 012 IJ', capacidad: '1.500 kg · 9 m³', estado: 'disponible'},
+      {clave: 'aa999zz', patente: 'AA 999 ZZ', capacidad: '1.500 kg · 9 m³',
+       estado: accion == 'habilitado' ? 'disponible' : 'deshabilitado',
+       motivo: accion == 'habilitado' ? null : 'En el taller desde el 12 de octubre.'},
+      {clave: 'af345kl', patente: 'AF 345 KL', capacidad: '2.000 kg · 12 m³', estado: 'disponible',
+       nuevo: true} } },
+             camiones=${escenario == 'vacio' ? {} : todos.?[#this['nuevo'] == null or #root.accion == 'agregado']},
+             enRuta=${#lists.size(camiones.?[estado == 'ruta'])},
+             libres=${#lists.size(camiones.?[estado == 'disponible'])},
+             parados=${#lists.size(camiones.?[estado == 'deshabilitado'])}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo">Administración</p>
+      <h1>Camiones</h1>
+      <th:block th:if="${conDatos}">
+        <p th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}|">5
+          camiones: 1 en ruta · 3 disponibles · 1 deshabilitado</p>
+        <p th:text="${accion == '' or conError} ? 'Al 15 de octubre de 2026, 18:30.' : 'Al 15 de octubre de 2026, 18:35.'">Al
+          15 de octubre de 2026, 18:30.</p>
+      </th:block>
+    </header>
+
+    <p th:if="${accion == 'agregado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Agregaste el camión AF 345 KL. Queda disponible para las próximas rutas.</p>
+    <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Deshabilitaste el camión AC 456 EF. No se le van a asignar rutas hasta que lo vuelvas a
+      habilitar.</p>
+    <p th:if="${accion == 'habilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las próximas rutas.</p>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando los camiones…</p>
+
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar los camiones.</h2>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-camiones')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Volver a
+        cargar</a>
+    </section>
+
+    <!--/* Agregar camión: el formulario plegado; abierto cuando vuelve con el error de datos. */-->
+    <details th:if="${escenario != 'error' and escenario != 'lento'}" class="pila" data-espacio="3"
+             th:open="${conError}">
+      <summary class="boton" data-tono="principal">Agregar camión</summary>
+      <form class="formulario tarjeta" data-filete="doble" action="/admin-camiones-agregado"
+            th:action="@{/admin-camiones-agregado}" method="post">
+        <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+                 autofocus aria-labelledby="resumen-titulo">
+          <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
+          <ul>
+            <li><a href="#capacidad">Falta la capacidad en kg</a></li>
+            <li><a href="#altura">La altura tiene que ser mayor que 0</a></li>
+          </ul>
+        </section>
+        <p class="obligatorios">* obligatorio</p>
+        <div class="grilla" data-espacio="3">
+          <div class="campo">
+            <label for="patente">Patente *</label>
+            <small id="patente-ayuda">Por ejemplo: AF 345 KL.</small>
+            <input id="patente" name="patente" type="text" required autocomplete="off"
+                   aria-describedby="patente-ayuda" th:value="${conError} ? 'AF 345 KL' : null">
+          </div>
+          <div class="campo" th:data-estado="${conError} ? 'error'">
+            <label for="capacidad">Capacidad en kg *</label>
+            <p th:if="${conError}" id="capacidad-error" class="campo-error">Falta la capacidad: cuántos kg
+              carga. Por ejemplo: 2000.</p>
+            <input id="capacidad" name="capacidadKG" type="number" min="1" step="any" inputmode="decimal"
+                   required autocomplete="off"
+                   th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null">
+          </div>
+          <div class="campo">
+            <label for="volumen">Volumen en m³ *</label>
+            <input id="volumen" name="capacidadVolumen" type="number" min="0.1" step="any" inputmode="decimal"
+                   required autocomplete="off" th:value="${conError} ? '12' : null">
+          </div>
+          <div class="campo" th:data-estado="${conError} ? 'error'">
+            <label for="altura">Altura en m *</label>
+            <p th:if="${conError}" id="altura-error" class="campo-error">La altura tiene que ser mayor que 0.
+              Por ejemplo: 2,8.</p>
+            <input id="altura" name="altura" type="number" min="0.1" step="any" inputmode="decimal"
+                   required autocomplete="off" th:value="${conError} ? '0' : null"
+                   th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null">
+          </div>
+        </div>
+        <div class="racimo">
+          <button class="boton" data-tono="principal" type="submit">Agregar camión</button>
+          <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Cancelar</a>
+        </div>
+      </form>
+    </details>
+
+    <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
+             th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <h2 id="lista-titulo">La flota</h2>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+
+      <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+        <h3 id="vacio-titulo">Todavía no hay camiones.</h3>
+        <p>Agregá el primero para poder armar rutas.</p>
+      </section>
+
+      <table th:if="${conDatos}" class="tabla">
+        <caption>Los camiones de la red y su estado. "En ruta" lo pone la logística al armar la ruta.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Patente</th>
+            <th scope="col">Capacidad</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Qué podés hacer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="c : ${camiones}">
+            <th scope="row" th:text="${c.patente}">AB 123 CD</th>
+            <td data-rotulo="Capacidad" th:text="${c.capacidad}">3.500 kg · 18 m³</td>
+            <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[c.estado]}"><svg
+                th:replace="~{componentes/sello :: sello(${sellos[c.estado]})}"></svg><th:block
+                th:text="${palabras[c.estado]}">En ruta</th:block></span>
+              <th:block th:if="${c['motivo'] != null}"><br><small th:text="${c.motivo}">En el taller desde el 12
+                de octubre.</small></th:block></td>
+            <td data-rotulo="Qué podés hacer" th:switch="${c.estado}">
+              <th:block th:case="'ruta'">Vuelve a estar disponible cuando termina la ruta.</th:block>
+              <th:block th:case="'disponible'">
+                <button type="button" class="boton" data-tono="quitar" th:popovertarget="|deshabilitar-${c.clave}|"
+                        th:aria-label="|Deshabilitar: camión ${c.patente}|">Deshabilitar</button>
+                <dialog class="dialogo" data-tono="quitar" th:id="|deshabilitar-${c.clave}|" popover
+                        th:aria-labelledby="|deshabilitar-${c.clave}-titulo|">
+                  <h2 class="dialogo-titulo" th:id="|deshabilitar-${c.clave}-titulo|"
+                      th:text="|¿Deshabilitar el camión ${c.patente}?|">¿Deshabilitar el camión AC 456 EF?</h2>
+                  <p>No se le van a asignar rutas hasta que lo vuelvas a habilitar.</p>
+                  <form class="pila" data-espacio="3" action="/admin-camiones-deshabilitado"
+                        th:action="@{/admin-camiones-deshabilitado}" method="post">
+                    <input type="hidden" name="camion" th:value="${c.clave}">
+                    <div class="campo">
+                      <label th:for="|motivo-${c.clave}|">Motivo (opcional)</label>
+                      <textarea th:id="|motivo-${c.clave}|" name="motivo" rows="3"></textarea>
+                    </div>
+                    <div class="racimo">
+                      <button class="boton" data-tono="quitar" type="submit">Deshabilitar</button>
+                      <button type="button" class="boton" data-tono="secundario"
+                              th:popovertarget="|deshabilitar-${c.clave}|" popovertargetaction="hide"
+                              autofocus>Cancelar</button>
+                    </div>
+                  </form>
+                </dialog>
+              </th:block>
+              <form th:case="*" action="/admin-camiones-habilitado" th:action="@{/admin-camiones-habilitado}"
+                    method="post">
+                <input type="hidden" name="camion" th:value="${c.clave}">
+                <button class="boton" data-tono="secundario" type="submit"
+                        th:aria-label="|Volver a habilitar: camión ${c.patente}|">Volver a habilitar</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
