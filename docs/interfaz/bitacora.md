@@ -31,6 +31,32 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · flujo · Fichas de F5: Seguir entregas de la entidad, su perfil y Misiones
+
+- **Decisión:** Seguir entregas de la entidad es la red radial del donante dada vuelta, con la puerta
+  de la entidad al centro y una línea por entrega; confirmar sigue en su pantalla, de a una. Mi
+  perfil de la entidad copia la forma del perfil del donante (Datos y Avisos en pestañas), sin
+  "Cómo te ven" y con la dirección de entrega fija. Misiones e insignias muestra las 6 misiones,
+  las de la categoría siguiente cerradas, con una barra de progreso y la cuenta en texto en lugar
+  de la torta del boceto (pág. 18), y sin el detalle de misión (págs. 20 a 22). Para verla, una
+  segunda cuenta de ejemplo, una persona (Martina Ruiz); con ella, las demás pantallas del donante
+  muestran un aviso. Del boceto de la pág. 28 salen los botones "<Estado>" y "Reportar problema": el
+  estado va en cada entrega y lo que llega con un problema se informa en Confirmar recepción
+  ("Llegó con un problema"). Las misiones avanzan de a una, como en Incentivos: la siguiente de la
+  categoría queda "en espera".
+- **Alternativas:** una sola línea del depósito a la puerta; solo la categoría actual de misiones;
+  un perfil de la entidad sin pestañas ni avisos; que la persona vea las pantallas de la empresa, o
+  adaptar sus textos para las dos cuentas.
+- **Por qué:** la red es la misma pieza del donante y cada entrega tiene su línea; la barra deja
+  leer cuánto falta, y el detalle de misión ya entra en su tarjeta (un nivel menos); la dirección la
+  revisa la administración al aprobar la entidad (RF-21, con la constancia de domicilio de la ficha del admin); el aviso no toca pantallas aprobadas de la
+  empresa.
+- **Costo:** las insignias pierden la ilustración en color del boceto (van como pictogramas
+  impresos de Raíces); la persona de ejemplo solo ve Misiones.
+- **Quién decidió:** usuario (la red, las 6 misiones, el perfil, la segunda cuenta y el aviso);
+  agente (la barra en lugar de la torta, el detalle de misión dentro de la tarjeta, las insignias
+  como pictogramas, la dirección fija y sacar los botones de la pág. 28).
+
 ### 2026-11-07 · flujo · Una solicitud que espera corrección no muestra acciones
 
 - **Decisión:** mientras una entidad corrige su solicitud ("Esperando corrección"), se ocultan

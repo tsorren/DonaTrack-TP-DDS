@@ -40,7 +40,15 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 - Donante · donante-perfil · "Qué te avisamos" (todo o solo cuando la entidad confirma) · notificaciones-service no tiene preferencia de qué avisar · agregado el 2026-11-04; la maqueta no guarda.
 - Donante · donante-notificaciones · avisos "recibida en el depósito" y "lista para entregar" · no están en EventoNotificableDTO; RF-08 pide asignación y recepción (HB-09).
 
+- Donante · donante-misiones · desde cuándo está en su categoría · `.../ascensos` lo da, `DonantePerfilDTO` no. Sumado en F5.
+- Donante · donante-misiones · cuál es la misión en curso y qué donación fue la más grande en Gran Aporte · `MisionDTO` no trae el número de misión ni el detalle del progreso. Sumado en F5.
+- Donante · donante-misiones · la fecha del ascenso puede no coincidir con la de la misión que lo produjo (`CambioCategoria` guarda la fecha de proceso). Sumado en F5.
+
 ## Entidad
+
+- Entidad · entidad-seguimiento · todas las entregas activas de la entidad en una llamada, con las pendientes de salir y las que esperan confirmación · GET /api/entregas/seguimiento/beneficiarios/{id} existe, sin verificar qué trae (HB-16). Sumado en F5.
+- Entidad · entidad-seguimiento · la posición aproximada del camión · HB-05 y HB-06. Sumado en F5.
+- Entidad · entidad-perfil · editar los datos y los medios de contacto de la entidad · HB-11, como en el donante. Sumado en F5.
 
 - Entidad · entidad-inicio, entidad-recibidas · estado de la entrega (en la puerta, en camino, con problema) de todas las de la entidad en una llamada · Logística lo da por donación (HB-16).
 - Entidad · entidad-recibidas · donaciones asignadas a la entidad, con filtro por estado y rango de fechas · GET /donaciones-independientes no filtra por entidad asignada (HB-04).

@@ -134,7 +134,7 @@ requerimiento nuevo.
 | **F2** Admin: personas ✅ hecha (2026-11-07) | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
 | **F3** Admin: donaciones y asignar ✅ hecha (2026-11-07) | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
 | **F4** Admin: camiones y ranking ✅ hecha (2026-11-07) | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
-| **F5** Entidad y donante | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
+| **F5** Entidad y donante 🟡 fichas aprobadas (2026-11-07: [Misiones](flujos/raices-misiones.md), [Seguir entregas](flujos/raices-entidad-navegable.md#45-entidad-seguimiento) y [Mi perfil de la entidad](flujos/raices-mi-perfil.md#mi-perfil-de-la-entidad)); falta construir | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
 | **F6** Público | Nosotros, Landing donante, Landing beneficiario y Activar cuenta, enlazadas desde la portada, el pie o el ingreso | 1 tanda · 4 plantillas + 1 ficha | Las 4 pantallas listas y enlazadas |
 | **F7** Errores y cierre | Páginas 403, 404 y 5xx; un test nuevo en `SitioControllerTest` que sigue todos los enlaces del sitio y falla si alguno lleva a `sin-dibujar` (hoy el test comprueba enlaces sueltos, no el recorrido completo); mapa del sitio y bitácora al día | 1 tanda · 3 plantillas + 1 test | Criterio de hecho de este roadmap cumplido |
 
@@ -149,7 +149,7 @@ Se piden al empezar la fase donde hacen falta, una por pregunta.
 | # | Fase | Decisión | Recomendada |
 |---|---|---|---|
 | 1 | F1 | ¿Una sola ficha para el recorrido del admin, o una por sección? | **Decidida (usuario, 2026-11-07):** una sola ficha, CSV y asignar incluidos: [`raices-admin-navegable`](flujos/raices-admin-navegable.md) |
-| 2 | F5 | ¿Cómo se ve Misiones e insignias, si la cuenta de ejemplo es una empresa? | Una segunda cuenta de ejemplo, de una persona, con el menú que suma Incentivos |
+| 2 | F5 | ¿Cómo se ve Misiones e insignias, si la cuenta de ejemplo es una empresa? | **Decidida (usuario, 2026-11-07):** una segunda cuenta de ejemplo, Martina Ruiz, con el menú que suma Misiones; con ella, las otras pantallas del donante muestran un aviso ([ficha](flujos/raices-misiones.md)) |
 | 3 | F2 | ¿Importar CSV muestra el avance en la misma pantalla, o en una aparte? | **Decidida en la ficha aprobada (§4.1):** en la misma pantalla |
 
 ## Riesgos
