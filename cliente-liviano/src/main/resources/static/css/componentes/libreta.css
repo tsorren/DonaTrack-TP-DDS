@@ -102,7 +102,7 @@
 
 .libreta-fecha b {
   margin-inline-end: 0.2em;
-  font: 900 1.5rem/1 var(--fuente-titulo);
+  font: 900 1.5rem/1 var(--fuente-cifra);
   font-stretch: 125%;
 }
 

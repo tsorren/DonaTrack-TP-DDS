@@ -1,7 +1,7 @@
 # Interfaz de DonaTrack — proceso de diseño
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 2 · 2026-10-31 (suma el tono común) · cliente liviano de E6**
+> **Versión 3 · 2026-11-06 (exploración A/B en boceto) · cliente liviano de E6**
 
 Este es el punto de entrada para diseñar y construir la interfaz del cliente liviano. Lo usan las
 personas del equipo y los agentes de IA. Las reglas técnicas del módulo están en
@@ -60,7 +60,10 @@ creativa" y "Oficio").
 **Comparaciones A/B.** Cuando una decisión de gusto o de forma tiene más de una buena respuesta
 (una paleta, una tipografía, el orden de una pantalla), el agente arma dos variantes que difieren
 solo en ese tema y el usuario elige. Skill `iteracion-ab`; temas posibles en el
-[catálogo](temas-ab.md). Cada elección queda en la [bitácora](bitacora.md).
+[catálogo](temas-ab.md). Cada elección queda en la [bitácora](bitacora.md). Si se busca un aspecto
+nuevo (exploración), las opciones se separan en un eje declarado y las vueltas van en boceto (solo
+capturas a 1280 px); la comprobación del piso, la evidencia y la bitácora se hacen una vez, al
+elegir.
 
 Las skills están en `.agents/skills/<nombre>/SKILL.md`. Claude Code las encuentra mediante
 `.claude/skills/<nombre>/SKILL.md`, que apunta a la versión de `.agents/`.
@@ -204,3 +207,4 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [plantillas/](plantillas/) | Ficha de flujo, iteración A/B, brief de identidad y los tres encargos de una corrida creativa (el creativo, el del constructor y el del crítico) |
 | [encargos/](encargos/README.md) | Los encargos creativos aprobados por el usuario: la entrada de cada corrida creativa |
 | `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso: el brief, las fichas de flujo y las capturas |
+| [evidencia/raices-calida-concepto-donante-inicio/](evidencia/raices-calida-concepto-donante-inicio/) y [evidencia/raices-calida-sistema/](evidencia/raices-calida-sistema/) | Capturas en JPG de la corrida creativa de [Raíces cálida](encargos/raices-calida.md): los tres conceptos sobre el inicio del donante con su antes (iteración 1) y las rutas del sitio con el sistema aplicado (iteración 2); las decisiones, en la [bitácora](bitacora.md) |

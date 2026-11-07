@@ -162,7 +162,7 @@
 
 .asiento-fecha b {
   margin-inline-end: 0.15em;
-  font: 900 1.5rem/1 var(--fuente-titulo);
+  font: 900 1.5rem/1 var(--fuente-cifra);
   font-stretch: 125%;
 }
 

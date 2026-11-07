@@ -153,6 +153,7 @@ mvn clean test -pl cliente-liviano -am             # unitarios y reglas de token
 mvn test -pl cliente-liviano -Pvisual              # capturas en 3 anchos, accesibilidad y toque
 mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=donante-inicio   # solo esas rutas
 mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b   # una pasada por variante A/B
+mvn test -pl cliente-liviano -Pvisual -Dspotless.check.skip=true -Dtest=VerificacionVisualTest#paginasCumplenElPisoEnTodosLosAnchos -Dverificacion.boceto=true -Dverificacion.variantes=<tema>-a,<tema>-b -Dverificacion.paginas=<ruta>   # boceto: solo capturas a 1280 px, sin el piso (vueltas de exploración)
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
 ```
 

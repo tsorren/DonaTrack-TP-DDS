@@ -75,7 +75,7 @@
 .cifra dd {
   margin: 0;
   color: var(--color-acento);
-  font: 900 2.25rem / 1 var(--fuente-titulo);
+  font: 900 2.25rem / 1 var(--fuente-cifra);
   font-stretch: 125%;
 }
 

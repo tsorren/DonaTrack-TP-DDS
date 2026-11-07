@@ -12,7 +12,7 @@
   inset: auto 0 0;
   z-index: 2;
   background: var(--color-suelo);
-  border-top: 3px solid var(--color-tinta);
+  border-top: 3px solid var(--color-horizonte);
 }
 
 /* Las páginas públicas: una franja de papel sobre la línea de tinta separa la barra de un bloque del

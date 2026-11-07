@@ -25,7 +25,181 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 - **Evidencia:** capturas o enlace (si hay).
 ```
 
+Una decisión A/B (skill `iteracion-ab`) usa el mismo formato, en 15 líneas o menos: en
+**Alternativas**, una línea por vuelta, con las opciones y lo que dijo el usuario; en **Costo**, solo
+lo que queda pendiente. El detalle de valores va en el código y en las capturas, no acá.
+
 ## Decisiones
+
+### 2026-11-06 · revisión del usuario (Raíces cálida): vuelve la versión de la etapa 1; de la corrida queda solo el estrato de las barras
+
+- **Decisión:** el sitio vuelve a como estaba al cerrar la etapa 1 (`49b46ab4`: tierra humus, marco
+  casi negro, esquinas suaves y Fraunces). De la corrida creativa se conserva solo el estrato: la
+  línea de paja y la franja de humus donde la cabecera, el pie y la barra del menú tocan la página
+  (`--color-estrato`, `--color-horizonte` y `--medida-estrato` en `tokens.css`).
+- **Alternativas:** quedarse con el resultado de la corrida (el recorrido de concepto-b, las abejas
+  y la herencia), descartado por el usuario.
+- **Por qué:** lo dijo el usuario al ver el resultado: "Prefiero la versión de antes, lo único que
+  quiero mantener del estilo nuevo son las lineas en las barras".
+- **Costo:** se pierden el recorrido, la firma de las abejas, la planta por donación y la voz nueva
+  de los títulos. Las dos entradas de abajo (iteraciones 1 y 2) y su evidencia en
+  `evidencia/raices-calida-*` quedan como registro de lo que se probó. Reemplaza: las decisiones de
+  las iteraciones 1 y 2 de la corrida (corrida creativa desatendida).
+- **Quién decidió:** el usuario, 2026-11-06.
+
+### 2026-11-06 · sistema (Raíces cálida) · Iteración 2: el camino de la donación pasa al sitio, con un marco de suelo y paja y la firma de dos abejas
+
+- **Decisión:** las tres zonas de la iteración se quedan, porque en sistema son partes del mismo
+  sitio y no compiten. (1) **recorrido:** el inicio del donante es el camino de concepto-b en tres
+  tramos ("Lo que espera destino", "Lo que está viajando", "Lo que ya recibieron"), con una planta
+  por donación sacada de los datos, un solo botón relleno ("Ver seguimiento"), cada cifra con el
+  signo de su etapa y pegada a su frase, y el aviso de problema tomado de los datos. Está
+  hecho como bloque del catálogo (`componentes/recorrido`). (2) **casa:** un estrato de paja y humus
+  bajo la cabecera, la barra del menú de humus con nombres y la firma de la casa: dos abejas con su
+  vuelo punteado, decorativas, de tamaño fijo, pegadas a la marca, una sola por pantalla y solo en
+  cabecera, portada y estados vacíos. (3) **herencia:** el resto del sitio retoma el material y la
+  voz sin cambiar su composición: frutos en lo entregado, raíces en "En tu puerta" y "Sin leer",
+  títulos que encadenan con la ancla ("Conocé a quienes reciben", "A quién le llegó cada una") y los
+  `role="status"` de los vacíos que no son vacíos reales. Las variantes de concepto se borran.
+- **Alternativas:** elegir una sola zona y descartar las otras `[REJECTED]`. Rehacer la herencia con
+  más dibujo `[REJECTED]`: el encargo fija la composición de las demás pantallas. Un solo orden de
+  los tres tramos del celular con el dibujo antes de la acción `[REJECTED]`: sacaba "Ver
+  seguimiento" de la primera pantalla de 360 × 640; se toma el objetivo con la acción antes del
+  dibujo. Pasar la cabecera a humus, la cabecera de una sola línea y bajar la opacidad de las raíces
+  de "Sin leer" `[REJECTED]`. Plantas por destino en el mapa de seguimiento, el vacío de Mis
+  donaciones con el corte de suelo y corregir el calendario de la entidad: no se hicieron
+  (ver Costo). Volver "Entidades, donantes y camiones" a "La red" `[REJECTED]`.
+- **Por qué:** la ancla es la que mejor cuenta el mensaje ("lo que donás llega y se ve; detrás hay
+  personas") y su patrón sirve para el resto: ponderado 420 de 500 contra 360 de la casa y 330 de la
+  herencia. La casa ata el marco de noche de la etapa 1 al suelo y firma sin ruido. La herencia
+  extiende la voz y el material con la disciplina de no tocar la composición. Sin `BLOQUEA` en las
+  críticas y con el piso en `[]`.
+- **Costo:** (1) la herencia queda tímida frente a la ancla: `entidad-inicio`, `admin-inicio` y
+  `donante-donaciones` casi no cambian; la distancia es de la iteración de flujo. (2) Quedan
+  anotados para el flujo: el mapa de seguimiento dibujado desde los datos con plantas, el vacío de
+  Mis donaciones, "Confirmar recepción" en la primera pantalla de la entidad, el calendario único
+  (el de la entidad dice 18:20 y 18:30 contra "hoy, 16:25") y el nombre del estado de una donación
+  sin destino, que hoy se llama igual que el de una asignada. (3) Las fichas de `docs/interfaz/flujos/`
+  (`raices-seguir-entregas`, `raices-entidad-navegable`, `raices-necesidades`) mostraban los títulos
+  viejos: se actualizaron en los arreglos de la auditoría de cierre (ronda 1), junto con
+  `raices-donante-navegable`, `raices-publico-navegable`, el brief (que suma la etapa 2) y
+  `docs/ESTADO_DOCUMENTACION.md`. `docs/README.md` no cambia: solo enlaza a `interfaz/README.md`,
+  que ya lista las carpetas de evidencia. (4) Sin `escenario=muchas`: el caso grande (30 plantas) se probó
+  en el navegador, no en las capturas. **Reemplaza:** el inicio del donante de la etapa 1 (decidido
+  por el usuario), los títulos y rótulos de las pantallas del donante, la entidad y el admin que se
+  reescribieron con la voz nueva ("Tus entregas en curso", "Lo asignado a tu entidad", "Tus
+  pedidos", entre otros, de la etapa 1 y de las entradas de Seguir entregas y Necesidades) y las
+  variantes `concepto-a|b|c` de la iteración 1 (de la corrida).
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** `evidencia/raices-calida-sistema/` (360 y 1280 de cada ruta, con los estados vacío,
+  error y lento del inicio del donante, y la primera pantalla de 360 × 640 de la ancla).
+
+### 2026-11-06 · concepto (Raíces cálida) · Iteración 1: el inicio del donante es el camino de la donación, en tres tramos (concepto-b, El recorrido)
+
+- **Decisión:** ganó concepto-b sobre `/donante-inicio`: la pantalla es el camino de la donación, del
+  depósito a la entidad, en tres tramos ("Lo que espera destino", "Lo que está viajando", "Lo que ya
+  recibieron"). Cada tramo lleva una planta por donación, su cifra apoyada en el suelo y su acción;
+  quien dona está al principio y quien recibe, al final. En escritorio va de izquierda a derecha y en
+  el celular baja. Se tomó de a el corte de suelo con raíces y el signo de "espera destino", y de c la
+  cifra que sale del suelo y "Ver seguimiento" como único botón relleno. Abejas solo en la cabecera.
+  Los tres conceptos quedan como variantes en la rama (`?variante=concepto-a|b|c`); el sitio no cambia.
+- **Alternativas:** concepto-a, La lámina (una escena grande a todo el ancho, con el campo leído al
+  revés, abejas sin pausa y el único bloqueo de piso): `[REJECTED]`, pero su corte de suelo pasa a b.
+  concepto-c, Las cifras que crecen (el número es la punta del tallo): `[REJECTED]`, mezcla unidades
+  y en el celular pierde la calidez; pasan a b la cifra desde la planta y el botón relleno. También
+  descartadas: llenar el hueco de la primera columna con datos nuevos, duplicar "Ver seguimiento",
+  subir las cifras en banda al celular, mover el tramo "viajando" al principio y sacar la tierra en
+  el celular.
+- **Por qué:** es el que mejor cuenta el mensaje ("lo que donás llega y se ve; detrás hay
+  personas"): lo que donás va de vos a una entidad y se ve en qué tramo está; el problema vive en su
+  tramo, junto a "Ver seguimiento". Ponderado 440 de 500, contra 365 de a y 340 de c. Su patrón (tramo
+  con rótulo, título, cuenta, tierra y acción) sirve para seguimiento y Mis donaciones en la
+  iteración 2.
+- **Costo:** (1) en 360 × 640 "Ver seguimiento" no entra en la primera pantalla: la cabecera ocupa
+  unos 190 px y el tramo del depósito llena el resto; queda para la iteración 2, que rehace la
+  cabecera. (2) En 1280 quedan huecos bajo "Ver Mis donaciones" y "7 donaciones registradas". (3) La
+  verificación con filtro de páginas falla `lasPantallasConMovimientoDejanSuVideoYRespetanReducirMovimiento`
+  porque deja afuera la portada y `/estilos`; sin filtro pasa, y el piso (`reporte.json`) da `[]`. (4)
+  Los arreglos de a y c no se aplicaron. No reemplaza nada: las variantes conviven con el
+  inicio del donante actual (etapa 1, decidida por el usuario) hasta que la iteración 2 lleve el
+  ganador al sitio.
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** `evidencia/raices-calida-concepto-donante-inicio/` (las cuatro capturas de a, b y c y
+  del antes; estados vacío, error y lento de b en 360 y 1280).
+
+### 2026-11-06 · color-y-acabado (Raíces) · La tierra humus, un paso más honda
+
+- **Decisión:** B, Humus hondo: `--p-suelo` `#46301f` y `--p-suelo-medio` `#3b2819`. Reemplaza el
+  humus de la entrada siguiente (`#5a3d28` y `#4d3322`); el marco casi negro no cambia.
+- **Alternativas:** una vuelta, en la portada y Seguir entregas: A, Humus (control); B, Humus hondo;
+  C, Café tostado (`#36251a`, la recomendada); D, Negro tibio (`#2a1f17`).
+- **Por qué:** el usuario pidió la tierra más oscura; B lo es sin dejar de leerse marrón.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/calida-etapa-1/tierra-*.jpg`.
+
+### 2026-11-06 · color-y-acabado y tipografia (Raíces) · Tierra humus con marco de noche, esquinas suaves y títulos en Fraunces
+
+- **Decisión:** E, etapa 1 de [Raíces cálida](encargos/raices-calida.md). La tierra humus en
+  `--p-suelo` y `--p-suelo-medio` (`#5a3d28`, `#4d3322`) y el casi negro en el más hondo (cabecera, pie
+  y cifras). Esquinas suaves (0,75 y 0,5 rem). Fraunces en títulos y marca; las cifras y los
+  numerales, en Archivo con el token nuevo `--fuente-cifra` (22 reglas de números).
+- **Alternativas:**
+  - Vuelta 1, tierra: A, Huerta de noche (control); B, Humus; C, Kraft de día; D, Monte tibio (la
+    primera D, Horizontes, se rehízo por parecerse a B). Letra: Fraunces, Literata y Young Serif.
+    El usuario pidió una mezcla de A y B, como D, y eligió Fraunces.
+  - Vuelta 2: E y F, la mezcla con esquinas suaves o rectas; eligió E (la recomendada).
+- **Por qué:** suma calidez sin perder el negro que gusta para la empresa.
+- **Costo:** se borraron Literata y Young Serif; Fraunces suma 82 KB. Falta la etapa 2 (la corrida).
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/calida-etapa-1/`.
+
+### 2026-11-06 · proceso (raices-calida) · Encargo creativo: Raíces más cálida para quien dona solo, en dos etapas
+
+- **Decisión:** el [encargo `raices-calida`](encargos/raices-calida.md), en la rama
+  `E6_raices_calida`, para todo el sitio. Etapa 1: un A/B de tierra más tibia y clara (con el negro
+  de hoy como control), esquinas suaves y serif cálida en los títulos. Etapa 2: una corrida de dos
+  vueltas con la huerta de cada donante en `/donante-inicio`, las abejas como firma y más personas
+  en la ilustración.
+- **Alternativas:** dos registros, de día para la persona y de noche para la empresa (pedía un ADR
+  y el doble de contraste que comprobar); solo las pantallas de la persona; ir bien lejos, que
+  reabría las fichas aprobadas; las estaciones; las abejas atadas a un dato.
+- **Por qué:** Huerta de noche gusta para la empresa, pero perdió la calidez que pedía la encuesta
+  "Huerta con abejas" (calidez 25 y ganas de sumarse 15) y no atrae a quien dona solo.
+- **Costo:** la empresa pierde el aspecto de Huerta de noche si en el A/B no gana el control.
+- **Quién decidió:** usuario, con la encuesta de una integrante del equipo.
+- **Evidencia:** el encargo.
+
+### 2026-11-06 · proceso · iteracion-ab: modo exploración con eje de divergencia y vueltas en boceto
+
+- **Decisión:** la skill `iteracion-ab` distingue exploración (buscar un aspecto nuevo) de ajuste
+  (retocar uno elegido). En exploración:
+  - cada opción declara su eje de divergencia; en paleta, qué color domina, claro u oscuro,
+    temperatura o saturación, y no solo el tono de cada color en su rol;
+  - desde la segunda vuelta, una opción sale de la familia elegida;
+  - "cambio mínimo", superficie mínima y ponytail rigen el código, no la idea; la skill lee la
+    intensidad del brief, y "Lo que evitamos" es un aviso;
+  - las vueltas van en boceto: `-Dverificacion.boceto=true` captura solo a 1280 px, sin axe, toque,
+    desborde ni anchos intermedios. El piso, la evidencia y la bitácora, una vez, para la elegida.
+  Además: el tema `color-y-acabado` (color dominante, radios, bordes, sombras y grano juntos);
+  una variante puede crear un token de uso nuevo para mover un rol que no lo tenía (como la sombra
+  antes de `--color-sombra`); y las decisiones A/B van a la bitácora en 15 líneas o menos.
+  Cambian la skill, su plantilla, el catálogo de temas (versión 2), la dirección de arte (versión
+  4), el proceso (versión 3), las reglas del módulo, `VerificacionVisualTest`, una nota en el ADR
+  de verificación visual (`proposed`) y una línea de `identidad-visual` y de `revision-ui`.
+- **Alternativas:** constructores en paralelo con encargos opuestos; cargar la skill
+  `frontend-design`; una ficha corta de exploración; tope de 7 vueltas. Quedan sin aplicar.
+- **Por qué:** el 2026-11-05 las vueltas de solo paleta dieron opciones muy parecidas: la skill
+  pedía cambiar solo tokens en la misma estructura, y la diversidad apareció recién al cambiar qué
+  color domina y el acabado. Las reglas de minimalismo, pensadas para el código, recortaban la
+  idea. Cada vuelta corría la comprobación completa (3 anchos, 6 intermedios, axe, video y otros
+  tests), y el modo rápido se armó a mano.
+- **Costo:** una opción en boceto puede llegar al usuario con un problema de contraste o de celular;
+  se descubre al aplicar, y el arreglo tiene que conservar la idea. Las capturas de boceto no traen
+  360 px.
+- **Quién decidió:** usuario.
+- **Evidencia:** las entradas del 2026-11-05 de esta bitácora (siete vueltas de paleta y acabado) y
+  la versión anterior de la skill, `temas-ab.md` y `VerificacionVisualTest` en el historial de git.
 
 ### 2026-11-05 · paleta y acabado (Raíces) · Huerta de noche aplicada; "con problema" en negro y rojo vivo
 
