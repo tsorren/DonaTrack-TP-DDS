@@ -31,6 +31,45 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · pantalla · F6 construida: Nosotros, Para donantes, Para entidades y Activar cuenta
+
+- **Decisión:** las tres de lectura comparten una hoja nueva, `publico-conocer.css`, que solo dispone
+  (relleno de tarjetas, ritmo de 40 px entre secciones, 48 px de toque en las preguntas) sobre
+  `publico-paginas.css`; el resto son piezas del catálogo (`.pila`, `.grilla`, `.racimo`, `.tarjeta`,
+  `.lista`, `.frutos`). Las cifras de Nosotros usan una variante nueva de `.frutos`,
+  `data-cosecha="completa"`, porque las tres están cumplidas y el tercer fruto no debía leerse "en
+  camino". Activar cuenta copia las piezas de Ingresar y Recuperar, marca "Ingresar" en la
+  navegación y, con el enlace vencido, cambia el título a "Activá tu cuenta". Las preguntas
+  frecuentes son `<details>` nativos.
+- **Alternativas:** envolver cada sección en otra pila (más marcado para lo mismo); dejar el tercer
+  fruto punteado (contradecía su significado).
+- **Por qué:** lo mínimo que cumple la ficha aprobada sin clases nuevas fuera del catálogo.
+- **Costo:** en 360 px el texto de cada categoría de Para donantes baja debajo del ícono; el
+  `data-espacio` de la cabecera de las landings no rige entre rótulo, título y bajada (ganan sus
+  márgenes, como en el resto del sitio). Avisos de `revision-ui`, sin corregir.
+- **Quién decidió:** agente, dentro de la ficha aprobada por el usuario.
+- **Evidencia:** `SitioControllerTest` (2 tests nuevos), `-Pvisual` de las 17 rutas de F6 y
+  `revision-ui` PASS en la ronda 3.
+
+### 2026-11-07 · flujo · Ficha de F6: Nosotros, Para donantes, Para entidades y Activar cuenta
+
+- **Decisión:** una ficha para las cuatro públicas que faltan
+  ([`raices-conocer-y-activar`](flujos/raices-conocer-y-activar.md)). Se enlazan desde el pie de
+  todas las páginas y desde la portada; el menú público no cambia. "Landing donante" y "Landing
+  beneficiario" se llaman "Para donantes" y "Para entidades". Nosotros conserva lo del boceto (pág.
+  3): cifras, ahora con período y fecha; "Quiénes somos" con una lámina en lugar de una foto;
+  "Nuestra solución" pasa a "Cómo trabajamos", sin "en tiempo real" ni "automático"; "¡Unirse a la
+  Comunidad!" pasa a dos salidas, una por público. Activar cuenta sale del correo: elegir la
+  contraseña, cuenta activada y, si el enlace venció o se usó, "Pedir otro enlace", que también está
+  en Ingresar.
+- **Alternativas:** Nosotros en el menú público (seis opciones en el celular); solo el pie;
+  Nosotros sin cifras; Activar como un solo pedido de enlace, con la contraseña en el IdP.
+- **Por qué:** el menú del celular ya está lleno; las cifras con fecha dan confianza; el correo es
+  lo que la maqueta ya promete al registrar un donante en el depósito.
+- **Costo:** las cifras esperan HB-02; los textos de Activar dependen de D12.
+- **Quién decidió:** usuario (enlaces, Activar y cifras); agente (nombres y forma de cada página).
+- **Evidencia:** revisión de la ficha con `revision-ui` en modo flujo.
+
 ### 2026-11-07 · pantalla · F5 construida: Misiones, Seguir entregas y Mi perfil de la entidad
 
 - **Decisión:** la cuenta persona va en la sesión (`?cuenta=persona`, `?cuenta=empresa` vuelve) y

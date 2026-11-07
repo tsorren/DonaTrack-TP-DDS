@@ -115,6 +115,7 @@ La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes
 | Contacto, Legales y privacidad | Dibujadas | Dibujadas |
 | Iniciar sesión, Registrarse: elegir, Registro de donante / entidad | Dibujadas | Dibujadas |
 | Recuperar contraseña | Dibujada, con su aviso de enviado | Dibujada, con su aviso de enviado |
+| Nosotros, Landing donante ("Para donantes"), Landing beneficiario ("Para entidades") y Activar cuenta (con pedir otro enlace) | Dibujadas (F6 del roadmap, 2026-11-07; [ficha](flujos/raices-conocer-y-activar.md)), enlazadas desde el pie y la portada | No están |
 | Inicio, Mis donaciones → detalle, Beneficiarios (Entidades), Notificaciones, Mi perfil, Seguir entregas del donante | Dibujadas | Dibujadas |
 | Misiones e insignias (Incentivos) | Dibujada para la cuenta persona (F5 del roadmap, 2026-11-07); RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
 | Inicio de la entidad, Necesidades, Donaciones recibidas, Notificaciones, Confirmar recepción | Dibujadas | Dibujadas |

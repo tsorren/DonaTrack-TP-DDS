@@ -46,10 +46,10 @@ Estados: ✅ dibujada · 🟡 parcial · ❌ falta.
 | Iniciar sesión, con Google | RF-04, RQ-E6-05 | `publico-ingresar` (+ error) | ✅ |
 | Registrarse: elegir, donante, entidad | RF-03 | `publico-registro*` | ✅ |
 | Recuperar contraseña | RF-AUTH | `publico-recuperar` (+ enviado) | ✅ |
-| **Nosotros** | RF-01 | — | ❌ |
-| **Landing donante** | RF-01 | — | ❌ |
-| **Landing beneficiario** | RF-01 | — | ❌ |
-| **Activar cuenta** | RF-AUTH | — | ❌ |
+| **Nosotros** | RF-01 | `publico-nosotros` | ✅ |
+| **Landing donante** | RF-01 | `publico-para-donantes` | ✅ |
+| **Landing beneficiario** | RF-01 | `publico-para-entidades` | ✅ |
+| **Activar cuenta** | RF-AUTH | `publico-activar` (+ error, lista, pedir y pedido) | ✅ |
 
 ### Donante
 
@@ -137,7 +137,7 @@ requerimiento nuevo.
 | **F3** Admin: donaciones y asignar ✅ hecha (2026-11-07) | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
 | **F4** Admin: camiones y ranking ✅ hecha (2026-11-07) | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
 | **F5** Entidad y donante 🟡 construida (2026-11-07: [Misiones](flujos/raices-misiones.md), [Seguir entregas](flujos/raices-entidad-navegable.md#45-entidad-seguimiento) y [Mi perfil de la entidad](flujos/raices-mi-perfil.md#mi-perfil-de-la-entidad)); queda "Llegó con un problema" en `sin-dibujar`, sin ficha | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
-| **F6** Público | Nosotros, Landing donante, Landing beneficiario y Activar cuenta, enlazadas desde la portada, el pie o el ingreso | 1 tanda · 4 plantillas + 1 ficha | Las 4 pantallas listas y enlazadas |
+| **F6** Público ✅ construida (2026-11-07, `revision-ui` PASS, [ficha](flujos/raices-conocer-y-activar.md); 8 plantillas en lugar de 4, por los pasos de Activar cuenta) | Nosotros, Landing donante, Landing beneficiario y Activar cuenta, enlazadas desde la portada, el pie o el ingreso | 1 tanda · 4 plantillas + 1 ficha | Las 4 pantallas listas y enlazadas |
 | **F7** Errores y cierre | Páginas 403, 404 y 5xx; un test nuevo en `SitioControllerTest` que sigue todos los enlaces del sitio y falla si alguno lleva a `sin-dibujar` (hoy el test comprueba enlaces sueltos, no el recorrido completo); mapa del sitio y bitácora al día | 1 tanda · 3 plantillas + 1 test | Criterio de hecho de este roadmap cumplido |
 
 Una tanda es una sesión de trabajo sin corte, con su revisión.

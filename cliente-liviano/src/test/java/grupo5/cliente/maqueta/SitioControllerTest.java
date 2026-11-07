@@ -422,6 +422,87 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("href=\"/prototipo/"))));
   }
 
+  /**
+   * F6: Nosotros y las dos landings se enlazan desde el pie de todas las páginas y desde la
+   * portada; las cifras de Nosotros llevan período y fecha, y cada estado su aviso (ficha
+   * raices-conocer-y-activar.md).
+   */
+  @Test
+  void nosotrosYLasLandingsSeEnlazanDesdeElPieYLaPortada() throws Exception {
+    for (String pantalla : List.of("/publico-portada", "/publico-legales", "/donante-inicio")) {
+      mvc.perform(get(pantalla))
+          .andExpect(content().string(containsString("href=\"/publico-nosotros\"")))
+          .andExpect(content().string(containsString("href=\"/publico-para-donantes\"")))
+          .andExpect(content().string(containsString("href=\"/publico-para-entidades\"")));
+    }
+    mvc.perform(get("/publico-portada"))
+        .andExpect(content().string(containsString("Qué ganás si donás")))
+        .andExpect(content().string(containsString("Cómo se suma una entidad")));
+    mvc.perform(get("/publico-nosotros"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
+        .andExpect(content().string(containsString("data-cosecha=\"completa\"")))
+        .andExpect(content().string(containsString("Actualizado")))
+        .andExpect(content().string(not(containsString("aria-current=\"page\""))));
+    mvc.perform(get("/publico-nosotros?escenario=vacio"))
+        .andExpect(content().string(containsString("Todavía no hay entregas confirmadas.")))
+        .andExpect(content().string(not(containsString("Actualizado"))));
+    mvc.perform(get("/publico-nosotros?escenario=lento"))
+        .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")));
+    mvc.perform(get("/publico-nosotros?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar las cifras.")));
+    mvc.perform(get("/publico-para-donantes"))
+        .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
+        .andExpect(content().string(containsString("<details>")));
+    mvc.perform(get("/publico-para-entidades"))
+        .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
+        .andExpect(content().string(not(containsString("beneficiario"))));
+  }
+
+  /**
+   * Activar cuenta: elegir la contraseña con un formulario real, el error de datos, el enlace
+   * vencido con su remedio y el pedido de otro enlace, que no revela cuentas (RNF-AUTH-10).
+   */
+  @Test
+  void activarLaCuentaEligeLaContrasenaYPideOtroEnlaceSinRevelarCuentas() throws Exception {
+    String lista = "/publico-activar-lista";
+    String pedido = "/publico-activar-pedido";
+    mvc.perform(get("/publico-activar"))
+        .andExpect(content().string(containsString("action=\"/publico-activar-lista\"")))
+        .andExpect(content().string(containsString("method=\"post\"")))
+        .andExpect(content().string(containsString("minlength=\"8\"")))
+        .andExpect(content().string(containsString("readonly")));
+    mvc.perform(post(lista)).andExpect(redirectedUrl(lista));
+    mvc.perform(get(lista))
+        .andExpect(content().string(containsString("Tu cuenta <em>está lista</em>")))
+        .andExpect(content().string(containsString("href=\"/publico-ingresar\"")));
+    mvc.perform(get("/publico-activar-error"))
+        .andExpect(content().string(containsString("Revisá la contraseña")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+    mvc.perform(get("/publico-activar?escenario=vencido"))
+        .andExpect(content().string(containsString("Este enlace ya no sirve.")))
+        .andExpect(content().string(containsString("Activá <em>tu cuenta</em>")))
+        .andExpect(content().string(containsString("href=\"/publico-activar-pedir\"")))
+        .andExpect(content().string(not(containsString("action=\"/publico-activar-lista\""))));
+    mvc.perform(get("/publico-activar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos activar tu cuenta.")));
+    mvc.perform(get("/publico-activar?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("No sabemos si tu cuenta quedó activada.")));
+    mvc.perform(get("/publico-activar?escenario=lento"))
+        .andExpect(content().string(containsString("role=\"status\">Activando…")));
+    mvc.perform(get("/publico-ingresar"))
+        .andExpect(content().string(containsString("href=\"/publico-activar-pedir\"")));
+    mvc.perform(post("/publico-activar-pedido"))
+        .andExpect(redirectedUrl("/publico-activar-pedido"));
+    mvc.perform(get(pedido))
+        .andExpect(
+            content().string(containsString("Si hay una cuenta con ese correo, te mandamos")));
+    mvc.perform(get("/publico-activar-pedir?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos mandar el enlace.")));
+    mvc.perform(get("/publico-activar-pedir?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("No sabemos si el enlace salió.")));
+  }
+
   /** Recuperar la contraseña: el aviso no revela cuentas ni promete un plazo (RNF-AUTH-10, D8). */
   @Test
   void recuperarLaContrasenaAvisaSinRevelarCuentas() throws Exception {
@@ -485,6 +566,11 @@ class SitioControllerTest {
           "publico-registro-entidad",
           "publico-contacto",
           "publico-legales",
+          "publico-nosotros",
+          "publico-para-donantes",
+          "publico-para-entidades",
+          "publico-activar",
+          "publico-activar-pedir",
           "donante-inicio",
           "donante-donaciones",
           "donante-donaciones-detalle",

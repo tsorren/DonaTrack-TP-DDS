@@ -553,7 +553,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.frutos', 'Lo que está confirmado, en la tierra honda de la portada: cada cifra es un fruto que cuelga de una rama de paja (.frutos-rama, un div con dt y dd por cifra). En el celular la rama baja por el costado; desde la tableta cruza de lado a lado. Sin datos, el aviso va en un marco doble de paja (.frutos-aviso). La cabeza (.frutos-cabeza) lleva el título, una nota y, si hay, un botón.', ~{::demo-frutos})}">
+        <div th:replace="~{componentes/muestra :: muestra('.frutos', 'Lo que está confirmado, en la tierra honda de la portada: cada cifra es un fruto que cuelga de una rama de paja (.frutos-rama, un div con dt y dd por cifra). En el celular la rama baja por el costado; desde la tableta cruza de lado a lado. Con data-cosecha en «completa» en la rama, el tercer fruto también va impreso (todas las cifras cumplidas, como en Nosotros). Sin datos, el aviso va en un marco doble de paja (.frutos-aviso). La cabeza (.frutos-cabeza) lleva el título, una nota y, si hay, un botón.', ~{::demo-frutos})}">
           <th:block th:fragment="demo-frutos">
             <div data-ancho="pantalla">
             <section class="frutos tierra-impresa" aria-labelledby="muestra-frutos-titulo">
