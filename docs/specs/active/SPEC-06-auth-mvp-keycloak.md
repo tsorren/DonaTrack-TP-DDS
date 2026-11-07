@@ -96,7 +96,7 @@ También queda fuera:
 
 | ID | Ítem | Requerimientos |
 |---|---|---|
-| E2-01 | Gateway (Spring Cloud Gateway) y validación por JWKS en los 4 servicios, con autorización por rol y por pertenencia | RI-GW-01..04, RI-SVC-01..04, D2, D13, D16 |
+| E2-01 | Gateway (Spring Cloud Gateway) y validación por JWKS en los 4 servicios, con autorización por rol y por pertenencia | RI-GW-01..04, RI-SVC-01..04, D2, D13, D16, [ADR-E6-02](../../adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) (`proposed`) |
 | E2-02 | Sesión del cliente en Spring Session JDBC, con base propia | D5 |
 | E2-03 | `usuarioId` (= `sub`) en `Persona`, `GET /api/personas/me` y "completar perfil" al primer login | RI-AUTH-01..03, HB-11, D9, D11 |
 | E2-04 | Registro de entidad pendiente de aprobación y pantalla de aprobación del admin | RF-AUTH-06, RI-AUTH-05, RF-21, D10 |
