@@ -192,6 +192,9 @@ services:
       - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
       - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?ver .env.example}
       - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?ver .env.example}
+      # Google como identity provider (RX-01). Opcionales: vacías, el botón de Google no anda y lo demás sí (RX-13).
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy
