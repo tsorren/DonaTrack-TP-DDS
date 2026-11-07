@@ -12,10 +12,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /** El ranking de Incentivos: una sola llamada al historial da el selector de meses y los datos. */
+// @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
+@Primary
 @ConditionalOnProperty(name = "cliente.datos.ranking", havingValue = "rest")
 class RankingRest implements RankingPuerto {
 

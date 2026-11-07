@@ -17,7 +17,7 @@ public class RankingMensual implements AggregateRoot {
   private List<EntradaRanking> entradas;
 
   /** Cuándo se calculó; falta en los rankings guardados antes de que existiera el dato. */
-  private Instant calculadoEn;
+  private final Instant calculadoEn;
 
   public RankingMensual(YearMonth periodo) {
     if (periodo == null) {
