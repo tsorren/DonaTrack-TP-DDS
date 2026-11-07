@@ -144,6 +144,45 @@ Una tanda es una sesión de trabajo sin corte, con su revisión.
 Cada fase cierra con un commit en `E6_raices_calida` y es un buen punto para cortar la sesión:
 el handoff es este archivo, con la fase marcada como hecha.
 
+## Para retomar en F7 (handoff del 2026-11-07)
+
+Estado `[OBSERVED]`: F1 a F6 commiteadas en `E6_raices_calida`, la última en `6a473e8e`, sin
+push. Tests del módulo, 65/65.
+
+Lo que falta para el criterio de hecho:
+
+1. **"Llegó con un problema"** (`entidad-seguimiento-problema`), en Confirmar recepción: todavía
+   cae en `sin-dibujar` y no tiene ficha. Se recomienda sumarla a F7 (agente, 2026-11-07): con
+   ella, el test nuevo de F7 puede exigir que ningún enlace lleve a `sin-dibujar`. Hace falta
+   preguntarle al usuario si entra, y después la ficha (`ux-flujo`, que amplía
+   [`raices-confirmar-recepcion`](flujos/raices-confirmar-recepcion.md)) y su aprobación.
+2. **Páginas 403, 404 y 5xx** con su ficha. Hoy una pública que no existe da el 404 de Spring
+   (`SitioController`, `NO_EXISTE`).
+3. **El test del recorrido:** `SitioControllerTest.ningunEnlaceDelSitioEstaRoto` ya recorre el sitio
+   desde las cuatro portadas y exige 200 `[OBSERVED]`. Falta que también falle cuando la vista es
+   `sin-dibujar`. Lo más corto es comprobar el nombre de la vista en ese mismo recorrido, o sumar un
+   test hermano.
+4. **Al día:** la tabla "Pantallas dibujadas" del [mapa del sitio](mapa-del-sitio.md), sin filas
+   "Sin dibujar"; la bitácora; este roadmap con F7 ✅.
+
+Cómo se trabajó en F6 (sirve igual en F7):
+
+- `ux-flujo` arma la ficha → `revision-ui` en modo flujo → aprobación del usuario → `vista-ui` →
+  tests, `-Pvisual` y `revision-ui` en modo pantalla.
+- El piso visual completo tarda más de 10 minutos. Para una fase, conviene pasarle sus rutas, sin
+  la barra inicial (en Git Bash, `/ruta` se convierte en una ruta de Windows) y con `estilos`
+  sumada, porque el test de movimiento la necesita:
+  `mvn test -pl cliente-liviano -Pvisual "-Dverificacion.paginas=publico-x,estilos" -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false`.
+- El cerco de `InterfazFitnessTest` cuenta las clases de un solo uso en las hojas de pantalla
+  (tope 159). Una clase de `composicion.css` o de `componentes/`, nombrada una sola vez en una hoja
+  de pantalla, suma uno; para no sumar, se apunta con un atributo (`[data-espacio="5"]`).
+- Una regla de una hoja de pantalla le gana a la pila del catálogo, que está en una capa (`margin: 0`
+  borra su espacio). Por eso se usa `margin-block-end` o `margin-inline`.
+
+Avisos de `revision-ui` de F6 que quedaron sin corregir (bitácora, "F6 construida"): en 360 px el
+texto de las categorías de Para donantes baja debajo del ícono, y el `data-espacio` de la cabecera
+de las landings no rige entre el rótulo, el título y la bajada.
+
 ## Decisiones para el usuario
 
 Se piden al empezar la fase donde hacen falta, una por pregunta.
