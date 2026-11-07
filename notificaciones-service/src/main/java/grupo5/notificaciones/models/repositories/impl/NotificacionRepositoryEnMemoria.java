@@ -25,4 +25,29 @@ public class NotificacionRepositoryEnMemoria extends CrudRepositoryEnMemoria<Not
         .filter(n -> n.getPersonaId() != null && n.getPersonaId().equals(personaId))
         .toList();
   }
+
+  @Override
+  public List<Notificacion> findByPersonaIdAndLeida(UUID personaId, boolean leida) {
+    return this.findAll().stream()
+        .filter(
+            n ->
+                n.getPersonaId() != null
+                    && n.getPersonaId().equals(personaId)
+                    && n.isLeida() == leida)
+        .toList();
+  }
+
+  @Override
+  public long countByPersonaIdAndLeidaFalse(UUID personaId) {
+    return this.findAll().stream()
+        .filter(n -> n.getPersonaId() != null && n.getPersonaId().equals(personaId) && !n.isLeida())
+        .count();
+  }
+
+  @Override
+  public void marcarTodasComoLeidas(UUID personaId) {
+    this.findAll().stream()
+        .filter(n -> n.getPersonaId() != null && n.getPersonaId().equals(personaId) && !n.isLeida())
+        .forEach(Notificacion::marcarComoLeida);
+  }
 }

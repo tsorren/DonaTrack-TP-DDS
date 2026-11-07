@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.donaciones.config.AlmacenamientoProperties;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
@@ -12,12 +13,15 @@ import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +41,8 @@ public class ImportadorService implements IImportadorService {
   private final ValidadorPersonaDuplicada validadorDuplicados;
   private final IPersonasService personaService;
   private final IDonantesService donantesService;
+  private final StoragePort storage;
+  private final AlmacenamientoProperties almacenamiento;
   private static final Logger log = LoggerFactory.getLogger(ImportadorService.class);
 
   public ImportadorService(
@@ -46,7 +52,9 @@ public class ImportadorService implements IImportadorService {
       MedioDeContactoMapper medioDeContactoMapper,
       ValidadorPersonaDuplicada validadorDuplicados,
       IPersonasService personaService,
-      IDonantesService donantesService) {
+      IDonantesService donantesService,
+      StoragePort storage,
+      AlmacenamientoProperties almacenamiento) {
     this.archivoRepository = archivoRepository;
     this.lectorCSV = lectorCSV;
     this.personaMapper = personaMapper;
@@ -54,6 +62,8 @@ public class ImportadorService implements IImportadorService {
     this.validadorDuplicados = validadorDuplicados;
     this.personaService = personaService;
     this.donantesService = donantesService;
+    this.storage = storage;
+    this.almacenamiento = almacenamiento;
   }
 
   @Async
@@ -68,12 +78,13 @@ public class ImportadorService implements IImportadorService {
       archivo.marcarComoProcesando();
       archivoRepository.save(archivo);
 
-      List<Map<String, String>> filasValidas = lectorCSV.cargarDonantes(archivo.getPath());
+      List<Map<String, String>> filasValidas = leerPadron(archivo);
 
       int erroresDeNegocio = 0;
 
-      for (Map<String, String> fila : filasValidas) {
-        boolean exito = procesarFilaIndividual(fila);
+      for (int i = 0; i < filasValidas.size(); i++) {
+        // El número de fila es 1-based y no cuenta el encabezado
+        boolean exito = procesarFilaIndividual(filasValidas.get(i), i + 1);
         if (!exito) {
           erroresDeNegocio++;
         }
@@ -89,25 +100,42 @@ public class ImportadorService implements IImportadorService {
     }
   }
 
-  private boolean procesarFilaIndividual(Map<String, String> fila) {
+  /** El path del archivo es la clave del objeto en el bucket de padrones. */
+  private List<Map<String, String>> leerPadron(Archivo archivo) throws IOException {
+    try (InputStream contenido =
+        storage.abrir(almacenamiento.bucketPadrones(), archivo.getPath())) {
+      return lectorCSV.cargarDonantes(contenido);
+    }
+  }
+
+  private boolean procesarFilaIndividual(Map<String, String> fila, int numeroFila) {
     try {
       Persona personaClon = personaMapper.mapToPersona(fila);
 
       Optional<Persona> personaExistenteOpt = validadorDuplicados.buscarDuplicado(personaClon);
 
-      PersonaInputDTO dto = transformarAPersonaInputDTO(personaClon, fila);
-
       if (personaExistenteOpt.isPresent()) {
-        log.info("Actualizando persona existente con ID: {}", personaExistenteOpt.get().getId());
-        personaService.actualizarPersona(personaExistenteOpt.get().getId(), dto);
+        UUID personaId = personaExistenteOpt.get().getId();
+        if (donantesService.estaDadoDeBaja(personaId)) {
+          log.warn(
+              "La persona {} fue dada de baja como donante: no se la reactiva ni se actualiza",
+              personaId);
+          return false;
+        }
+        log.info("Actualizando persona existente con ID: {}", personaId);
+        personaService.actualizarParcial(personaId, personaMapper.mapToActualizacionParcial(fila));
+        // Recién con la fila válida y aplicada se registra el rol (y se publica donante.registrado)
+        donantesService.registrarSiNoExiste(personaId);
       } else {
         log.info("Creando nueva persona y donante...");
-        PersonaOutputDTO personaCreada = personaService.crearPersona(dto);
+        PersonaOutputDTO personaCreada =
+            personaService.crearPersona(transformarAPersonaInputDTO(personaClon, fila));
         donantesService.crearDonante(new DonanteInputDTO(personaCreada.id()));
       }
       return true;
     } catch (Exception e) {
-      log.error("Error de negocio al procesar la fila {}: {}", fila, e.getMessage());
+      // Solo el número de fila: la fila trae datos personales (nombre, documento, email)
+      log.error("Error de negocio al procesar la fila {}: {}", numeroFila, e.getMessage());
       return false;
     }
   }

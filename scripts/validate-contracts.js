@@ -525,7 +525,9 @@ assert('evento_donacion_asignada_v1_invalido_missing_logistica', !validateSchema
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Falta destino y peso'
 }).valid);
-assert('evento_donacion_asignada_v1_invalido_extra_properties_rejected', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+// D5 (SPEC-05, ADR 20261028 de política de contratos): los schemas de eventos aceptan campos
+// extra, como sus consumidores (ignoreUnknown). Un campo de más no es un cambio incompatible.
+assert('evento_donacion_asignada_v1_extra_properties_aceptadas_d5', validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
   personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
@@ -544,7 +546,7 @@ assert('evento_donacion_asignada_v1_invalido_extra_properties_rejected', !valida
   volumenTotalM3: 0.35,
   categorias: ['ROPA'],
   cantidades: 5
-}).valid, 'No debe aceptar campos adicionales tras desacoplamiento');
+}).valid, 'D5: un campo extra no rompe el contrato');
 
 const eventoEntregaSolicitadaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-entrega-solicitada-v1.schema.json'), 'utf8'));
 const entregaSolicitadaValida = {
@@ -570,11 +572,12 @@ assert('evento_entrega_solicitada_v1_invalido_missing_destino', !validateSchemaO
   volumenTotalM3: 0.35,
   fecha: '2026-10-07T12:00:00Z'
 }).valid);
-assert('evento_entrega_solicitada_v1_invalido_datos_de_notificacion', !validateSchemaObject(eventoEntregaSolicitadaV1Schema, {
+// D5: el schema ya no impide campos extra; la separación comando/hecho la cuida la revisión del contrato.
+assert('evento_entrega_solicitada_v1_extra_properties_aceptadas_d5', validateSchemaObject(eventoEntregaSolicitadaV1Schema, {
   ...entregaSolicitadaValida,
   donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
   descripcion: 'Caja de ropa'
-}).valid, 'El comando no debe llevar datos propios del hecho donacion.asignada.v1');
+}).valid, 'D5: un campo extra no rompe el contrato');
 
 // 13. evento-donacion-segmentada (Consumido por Incentivos)
 const eventoDonacionSegmentadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-segmentada.schema.json'), 'utf8'));
@@ -630,7 +633,8 @@ assert('evento_persona_sincronizada_invalido_missing', !validateSchemaObject(eve
   personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   denominacion: 'Carlos Gardel'
 }).valid);
-assert('evento_persona_sincronizada_invalido_extra_properties', !validateSchemaObject(eventoPersonaSincronizadaSchema, {
+// D5: campo extra aceptado (los required siguen exigiéndose, ver el caso anterior).
+assert('evento_persona_sincronizada_extra_properties_aceptadas_d5', validateSchemaObject(eventoPersonaSincronizadaSchema, {
   personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   denominacion: 'Carlos Gardel',
   tipoPersona: 'HUMANA',

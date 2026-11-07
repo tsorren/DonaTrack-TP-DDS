@@ -4,6 +4,7 @@ import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
+import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -32,8 +33,9 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   @PostMapping
   public ResponseEntity<EntidadBeneficiariaOutputDTO> crearEntidad(
       @Valid @RequestBody EntidadBeneficiariaInputDTO entidad) {
-    EntidadBeneficiariaOutputDTO creada = service.crearEntidad(entidad);
-    return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    ResultadoRegistro<EntidadBeneficiariaOutputDTO> resultado = service.crearEntidad(entidad);
+    HttpStatus status = resultado.creado() ? HttpStatus.CREATED : HttpStatus.OK;
+    return ResponseEntity.status(status).body(resultado.recurso());
   }
 
   @Override

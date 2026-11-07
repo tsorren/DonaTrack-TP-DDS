@@ -3,9 +3,11 @@ package grupo5.notificaciones.models.entities.notificaciones;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -346,5 +348,45 @@ class NotificacionTest {
     List<MedioDeContacto> ordenados = notificacion.ordenarMedios(destinatario);
 
     assertEquals(List.of(estandarPredeterminado, whatsappPredeterminado), ordenados);
+  }
+
+  // ==================== Ciclo de Lectura In-App (Fase 2) ====================
+
+  @Test
+  void deberiaCrearseComoNoLeidaYConFechaLecturaNulaPorDefecto() {
+    Persona destinatario = PersonaMother.conMedios(MedioDeContactoMother.correo());
+    Notificacion notificacion = NotificacionMother.pendiente(destinatario);
+
+    assertFalse(
+        notificacion.isLeida(), "Toda notificación recién creada debe iniciar como no leída");
+    assertNull(notificacion.getFechaLectura(), "La fecha de lectura debe ser nula al crearse");
+  }
+
+  @Test
+  void marcarComoLeida_deberiaCambiarEstadoYAsignarTimestamp() {
+    Persona destinatario = PersonaMother.conMedios(MedioDeContactoMother.correo());
+    Notificacion notificacion = NotificacionMother.pendiente(destinatario);
+
+    LocalDateTime antes = LocalDateTime.now().minusSeconds(1);
+    notificacion.marcarComoLeida();
+    LocalDateTime despues = LocalDateTime.now().plusSeconds(1);
+
+    assertTrue(notificacion.isLeida(), "Debe figurar como leída");
+    assertNotNull(notificacion.getFechaLectura(), "Debe registrar la fecha de lectura");
+    assertTrue(
+        notificacion.getFechaLectura().isAfter(antes)
+            && notificacion.getFechaLectura().isBefore(despues));
+  }
+
+  @Test
+  void marcarComoNoLeida_deberiaRestablecerEstadoYLimpiarTimestamp() {
+    Persona destinatario = PersonaMother.conMedios(MedioDeContactoMother.correo());
+    Notificacion notificacion = NotificacionMother.pendiente(destinatario);
+    notificacion.marcarComoLeida();
+
+    notificacion.marcarComoNoLeida();
+
+    assertFalse(notificacion.isLeida(), "Debe volver al estado no leída");
+    assertNull(notificacion.getFechaLectura(), "La fecha de lectura debe resetearse a null");
   }
 }

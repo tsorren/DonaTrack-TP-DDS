@@ -7,23 +7,15 @@ import java.util.UUID;
 
 public interface INecesidadesRepository extends CrudRepository<Necesidad> {
 
-  // Los métodos CRUD básicos ya vienen de BaseRepository
-
-  List<Necesidad> findByEstaSatisfechaFalse();
-
-  List<Necesidad> findByEstaSatisfechaFalseActivaTrue();
+  // "Satisfecha" no es un filtro del repositorio: depende de lo asignado, que se suma sobre las
+  // donaciones independientes (DTI-06, ver AcumuladosDeAsignacion).
+  List<Necesidad> findActivas();
 
   List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId);
-
-  // Activas y no satisfechas
-  List<Necesidad> findByActivaTrueAndSatisfechaFalse();
-
-  // Activas, no satisfechas y recurrentes
-  List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue();
 
   // Activas y recurrentes (para renovación de períodos)
   List<Necesidad> findByActivaTrueAndRecurrenteTrue();
 
-  // Activas, no satisfechas y extraordinarias
-  List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse();
+  /** Si alguna necesidad (activa o no) usa la subcategoría: impide borrarla. */
+  boolean existsBySubcategoriaId(UUID subcategoriaId);
 }

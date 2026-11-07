@@ -9,6 +9,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IEventosProcesados;
 import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.YearMonth;
 import java.util.Comparator;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.stereotype.Service;
@@ -28,18 +30,34 @@ public class MisionesDonacionService implements IMisionesDonacionService {
   private final IDonanteIncentivosRepository repository;
   private final ApplicationEventPublisher eventPublisher;
   private final MisionMapper misionMapper;
+  private final IEventosProcesados eventosProcesados;
 
   public MisionesDonacionService(
       IDonanteIncentivosRepository repository,
       ApplicationEventPublisher eventPublisher,
       MisionMapper misionMapper) {
+    this(repository, eventPublisher, misionMapper, null);
+  }
+
+  @Autowired
+  public MisionesDonacionService(
+      IDonanteIncentivosRepository repository,
+      ApplicationEventPublisher eventPublisher,
+      MisionMapper misionMapper,
+      IEventosProcesados eventosProcesados) {
     this.repository = repository;
     this.eventPublisher = eventPublisher;
     this.misionMapper = misionMapper;
+    this.eventosProcesados = eventosProcesados;
   }
 
   @Override
   public void procesarDonacion(NuevaDonacionRequest request) {
+    procesarDonacion(request, null);
+  }
+
+  @Override
+  public void procesarDonacion(NuevaDonacionRequest request, UUID eventoId) {
     EventoDonacion evento =
         EventoDonacion.builder()
             .categorias(request.categorias())
@@ -50,20 +68,31 @@ public class MisionesDonacionService implements IMisionesDonacionService {
     ReintentoPorConcurrencia.ejecutar(
         "donación del donante " + request.donanteId(),
         () -> {
+          if (yaProcesado(eventoId)) {
+            return;
+          }
           DonanteIncentivos donante = obtenerDonante(request.donanteId());
           donante.registrarDonacion(evento);
-          despacharEventosYGuardar(donante);
+          despacharEventosYGuardar(donante, eventoId);
         });
   }
 
   @Override
   public void procesarDonacionExitosa(DonacionExitosaRequest request) {
+    procesarDonacionExitosa(request, null);
+  }
+
+  @Override
+  public void procesarDonacionExitosa(DonacionExitosaRequest request, UUID eventoId) {
     ReintentoPorConcurrencia.ejecutar(
         "donación exitosa del donante " + request.donanteId(),
         () -> {
+          if (yaProcesado(eventoId)) {
+            return;
+          }
           DonanteIncentivos donante = obtenerDonante(request.donanteId());
           donante.registrarDonacionExitosa(request.organizacionId());
-          despacharEventosYGuardar(donante);
+          despacharEventosYGuardar(donante, eventoId);
         });
   }
 
@@ -109,9 +138,30 @@ public class MisionesDonacionService implements IMisionesDonacionService {
             () -> new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO));
   }
 
-  private void despacharEventosYGuardar(DonanteIncentivos donante) {
-    repository.save(donante);
+  private void despacharEventosYGuardar(DonanteIncentivos donante, UUID eventoId) {
+    if (!guardar(donante, eventoId)) {
+      // Evento ya procesado: el donante no se guardó, así que tampoco se publican sus eventos.
+      donante.clearDomainEvents();
+      return;
+    }
     donante.getDomainEvents().forEach(eventPublisher::publishEvent);
     donante.clearDomainEvents();
+  }
+
+  // Descarta el duplicado antes de modificar al donante (con el repositorio en memoria el donante
+  // leído es la instancia viva, y modificarlo ya lo cambiaría aunque después no se guarde).
+  private boolean yaProcesado(UUID eventoId) {
+    return eventoId != null && eventosProcesados != null && eventosProcesados.yaProcesado(eventoId);
+  }
+
+  // El guardado, la marca del inbox y los avisos del outbox son atómicos (ver IEventosProcesados).
+  // Sin eventoId (llamada REST, o evento sin messageId) no se deduplica, pero el guardado sigue
+  // pasando por ahí para que los avisos queden en la misma transacción que el donante.
+  private boolean guardar(DonanteIncentivos donante, UUID eventoId) {
+    if (eventosProcesados == null) {
+      repository.save(donante);
+      return true;
+    }
+    return eventosProcesados.guardarSiNoProcesado(eventoId, donante);
   }
 }

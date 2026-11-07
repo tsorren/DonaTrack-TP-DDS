@@ -324,4 +324,72 @@ class NotificacionControllerTest {
 
     mockMvc.perform(get("/api/notificaciones/persona/" + personaId)).andExpect(status().isOk());
   }
+
+  // ==================== Endpoints In-App Front ====================
+
+  @Test
+  void obtenerPorPersona_conFiltroLeida_deberiaResponderOk() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    when(notificacionService.obtenerPorPersona(personaId, false)).thenReturn(List.of());
+
+    mockMvc
+        .perform(get("/api/notificaciones/persona/" + personaId + "?leida=false"))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void contarNoLeidas_deberiaResponderOkConConteo() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    when(notificacionService.contarNoLeidas(personaId)).thenReturn(3L);
+
+    mockMvc
+        .perform(get("/api/notificaciones/persona/" + personaId + "/no-leidas/conteo"))
+        .andExpect(status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.noLeidas")
+                .value(3));
+  }
+
+  @Test
+  void marcarLeida_cuandoExiste_deberiaResponderOk() throws Exception {
+    UUID notifId = UUID.randomUUID();
+    NotificacionDTO dto =
+        new NotificacionDTO(
+            notifId, "Mensaje", "ENVIADA", LocalDateTime.now(), true, LocalDateTime.now());
+    when(notificacionService.marcarComoLeida(notifId)).thenReturn(Optional.of(dto));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                "/api/notificaciones/" + notifId + "/leida"))
+        .andExpect(status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.leida")
+                .value(true));
+  }
+
+  @Test
+  void marcarLeida_cuandoNoExiste_deberiaResponderNotFound() throws Exception {
+    UUID notifId = UUID.randomUUID();
+    when(notificacionService.marcarComoLeida(notifId)).thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                "/api/notificaciones/" + notifId + "/leida"))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void marcarTodasComoLeidas_deberiaResponderNoContent() throws Exception {
+    UUID personaId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                "/api/notificaciones/persona/" + personaId + "/marcar-todas-leidas"))
+        .andExpect(status().isNoContent());
+
+    verify(notificacionService, times(1)).marcarTodasComoLeidas(personaId);
+  }
 }

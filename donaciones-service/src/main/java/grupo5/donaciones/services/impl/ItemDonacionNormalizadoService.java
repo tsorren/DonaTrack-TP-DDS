@@ -40,8 +40,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
   @Override
   public List<ItemDonacionNormalizadoOutputDTO> obtenerPendientes() {
     log.info("Obteniendo todos los ítems de donación normalizados pendientes de revisión");
-    return itemNormalizadoRepository.findAll().stream()
-        .filter(ItemDonacionNormalizado::estaPendienteDeRevision)
+    return itemNormalizadoRepository.findPendientesDeRevision().stream()
         .map(mapper::toOutputDTO)
         .toList();
   }
@@ -148,12 +147,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
                         "Donación original no encontrada para el ID: " + donacionId));
 
     List<ItemDonacionNormalizado> itemsDeDonacion =
-        itemNormalizadoRepository.findAll().stream()
-            .filter(
-                i ->
-                    i.getDonacionOriginalId() != null
-                        && i.getDonacionOriginalId().equals(donacionId))
-            .toList();
+        itemNormalizadoRepository.findByDonacion(donacionId);
 
     if (EvaluadorNormalizacion.estanTodosNormalizados(itemsDeDonacion)) {
       donacion.marcarNormalizada();

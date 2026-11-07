@@ -26,13 +26,14 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems | `DonacionInputDTO` | `201`, `400` |
+| `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems (`409` si el donante está dado de baja) | `DonacionInputDTO` | `201`, `400`, `409` |
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
+| `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
 | `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
-| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias | `NecesidadDTO` | `201`, `400` |
+| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
 | `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
 | `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
 | `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente | `NecesidadDTO` | `200`, `400`, `404` |
@@ -40,17 +41,17 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/asignaciones/ejecuciones` | Ejecución del algoritmo de asignación | — | `201`, `400` |
 | `GET` | `/api/asignaciones/ejecuciones` | Historial de ejecuciones de asignación | — | `200` |
 | `GET` | `/api/asignaciones/propuestas` | Listado de propuestas de asignación generadas | — | `200` |
-| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta | `ActualizarEstadoRequestDTO` | `200`, `400`, `404` |
-| `POST` | `/api/entidades` | Alta de entidad beneficiaria | `EntidadBeneficiariaInputDTO` | `201`, `400` |
+| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta (al aprobar: `409` si la necesidad ya no está activa o si una donación es de la propia entidad) | `ActualizarEstadoRequestDTO` | `200`, `400`, `404`, `409` |
+| `POST` | `/api/entidades` | Alta idempotente de entidad beneficiaria (id = `juridicaId`; `200` si ya existía o se reactivó; `409` si la jurídica fue anonimizada) | `EntidadBeneficiariaInputDTO` | `201`, `200`, `400`, `404`, `409` |
 | `GET` | `/api/entidades` | Listado de entidades beneficiarias | — | `200` |
 | `GET` | `/api/entidades/{id}` | Consulta de entidad beneficiaria por ID | — | `200`, `404` |
-| `PUT` | `/api/entidades/{id}` | Actualización de entidad beneficiaria | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404` |
-| `DELETE` | `/api/entidades/{id}` | Baja de entidad beneficiaria | — | `204`, `404` |
-| `POST` | `/api/donantes` | Registro de nuevo donante | `DonanteInputDTO` | `201`, `400` |
-| `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`) | — | `200` |
+| `PUT` | `/api/entidades/{id}` | Revalidación de entidad beneficiaria (no cambia estado; `409` si está de baja) | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404`, `409` |
+| `DELETE` | `/api/entidades/{id}` | Baja lógica e idempotente de entidad beneficiaria (desactiva sus necesidades) | — | `204`, `404` |
+| `POST` | `/api/donantes` | Registro idempotente de donante (id = `personaId`; `200` si ya existía o se reactivó; `409` si la persona fue anonimizada) | `DonanteInputDTO` | `201`, `200`, `400`, `404`, `409` |
+| `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`: con él, solo activos y no anonimizados) | — | `200` |
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
-| `DELETE` | `/api/donantes/{id}` | Eliminación de donante | — | `204`, `404` |
-| `POST` | `/api/donantes/archivos` | Carga asíncrona de archivo/padrón de donantes (MinIO) | `ArchivoInputDTO` | `202`, `400` |
+| `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |
+| `POST` | `/api/donantes/archivos` | Carga asíncrona del padrón CSV de donantes: `multipart/form-data` con la parte `archivo`, guardado en MinIO | `multipart: archivo` | `202`, `400`, `413`, `415` |
 | `GET` | `/api/donantes/archivos/{id}` | Consulta de estado de procesamiento de archivo | — | `200`, `404` |
 | `POST` | `/api/categorias` | Alta de categoría de donación | `CategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/categorias` | Listado de categorías de donación | — | `200` |
@@ -69,8 +70,8 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `PATCH` | `/api/items-normalizados/{id}` | Revisión y reclasificación manual de normalización | `ItemDonacionNormalizadoPatchDTO` | `200`, `400`, `404` |
 | `POST` | `/api/personas` | Alta de persona y contactos en donaciones | `PersonaInputDTO` | `201`, `400` |
 | `GET` | `/api/personas` | Listado de personas (filtro opcional por `?tipo=HUMANA|JURIDICA`) | — | `200` |
-| `PUT` | `/api/personas/{id}` | Actualización de datos de persona | `PersonaInputDTO` | `200`, `400`, `404` |
-| `DELETE` | `/api/personas/{id}` | Baja y supresión de persona | — | `204`, `404` |
+| `PUT` | `/api/personas/{id}` | Actualización de datos de persona (`400` si una jurídica con entidad activa pasaría a EMPRESA o sin dirección; `409` si la persona fue anonimizada) | `PersonaInputDTO` | `200`, `400`, `404`, `409` |
+| `DELETE` | `/api/personas/{id}` | Baja y supresión de persona (da de baja sus roles de donante y entidad) | — | `204`, `404` |
 | `GET` | `/api/logistica/proveedores` | Broker de logística: proveedores configurados, transporte, disponibilidad y preferido (header `X-API-Key` de administración) | — | `200`, `401` |
 | `PUT` | `/api/logistica/proveedor-preferido` | Broker de logística: cambia en caliente el proveedor preferido (header `X-API-Key` de administración) | `PreferenciaProveedorRequestDTO` | `200`, `400`, `401` |
 
@@ -160,8 +161,11 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/notificaciones` | **[Legado, DTI-13]** Alias de `POST /api/notificaciones/eventos`; hoy solo lo invoca `incentivos-service` por Feign (`NotificacionesFeignClient`) y se dará de baja al completar la migración a AMQP | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
 | `GET` | `/api/notificaciones` | **[Canónico]** Consulta y filtrado de notificaciones por `personaId` (UUID) y/o `estado` (Enum `EstadoNotificacion`) | — | `200`, `400` |
 | `GET` | `/api/notificaciones/{id}` | **[Canónico]** Consulta de notificación por su identificador unívoco | — | `200`, `404` |
-| `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** Consulta de historial de notificaciones despachadas a una persona | — | `200` |
-| `GET` | `/notificaciones/persona/{personaId}` | **[Secundario QA]** Alias secundario de consulta de historial por persona (preservado para compatibilidad con `NotificacionesApiClient` y suites E2E) | — | `200` |
+| `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** Consulta de historial de notificaciones despachadas a una persona (filtro opcional `?leida=true|false`) | — | `200` |
+| `GET` | `/notificaciones/persona/{personaId}` | **[Secundario QA]** Alias secundario de consulta de historial por persona (filtro opcional `?leida=true|false`) | — | `200` |
+| `GET` | `/api/notificaciones/persona/{personaId}/no-leidas/conteo` | **[Canónico]** Conteo de notificaciones no leídas para badge de UI | — | `200` |
+| `PATCH` | `/api/notificaciones/{id}/leida` | **[Canónico]** Marcar notificación como leída o no leída (`?leida=true|false`, default: `true`) | — | `200`, `404` |
+| `PATCH` | `/api/notificaciones/persona/{personaId}/marcar-todas-leidas` | **[Canónico]** Marcar todas las notificaciones de una persona como leídas masivamente | — | `204` |
 | `PUT` | `/api/notificaciones/personas` | Sincronización idempotente de réplica de persona y contactos (reconciliación diferencial sin Key Churn) | [`persona-replica.schema.json`](./contratos/schemas/persona-replica.schema.json) | `200`, `400` |
 | `GET` | `/api/notificaciones/personas/{id}` | Consulta de réplica de persona | — | `200`, `404` |
 | `DELETE` | `/api/notificaciones/personas/{id}` | Baja y desasociación de datos de contacto (Crypto-Shredding) | — | `204`, `404` |

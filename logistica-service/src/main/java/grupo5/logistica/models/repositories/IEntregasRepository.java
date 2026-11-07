@@ -4,6 +4,7 @@ import grupo5.common.repositories.CrudRepository;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface IEntregasRepository extends CrudRepository<Entrega> {
@@ -15,4 +16,8 @@ public interface IEntregasRepository extends CrudRepository<Entrega> {
   List<Entrega> findSinRuta();
 
   boolean existsByIdDonacion(UUID idDonacion);
+
+  Optional<Entrega> findByIdDonacion(UUID idDonacion);
+
+  List<Entrega> findByIdBeneficiaria(UUID idBeneficiaria);
 }

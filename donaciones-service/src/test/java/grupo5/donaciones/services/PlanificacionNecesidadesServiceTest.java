@@ -1,11 +1,15 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.PlanificacionNecesidadesService;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -21,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PlanificacionNecesidadesServiceTest {
 
   @Mock private INecesidadesRepository necesidadRepository;
+  @Mock private AcumuladosDeAsignacion acumulados;
 
   @InjectMocks private PlanificacionNecesidadesService planificacionNecesidadesService;
 
@@ -29,7 +34,8 @@ class PlanificacionNecesidadesServiceTest {
     NecesidadRecurrente necesidadRecurrente = mock(NecesidadRecurrente.class);
     when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
         .thenReturn(Collections.singletonList(necesidadRecurrente));
-    when(necesidadRecurrente.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(true);
+    when(necesidadRecurrente.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt()))
+        .thenReturn(true);
 
     planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
 
@@ -41,7 +47,8 @@ class PlanificacionNecesidadesServiceTest {
     NecesidadRecurrente necesidadRecurrente = mock(NecesidadRecurrente.class);
     when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
         .thenReturn(Collections.singletonList(necesidadRecurrente));
-    when(necesidadRecurrente.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(false);
+    when(necesidadRecurrente.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt()))
+        .thenReturn(false);
 
     planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
 
@@ -56,15 +63,47 @@ class PlanificacionNecesidadesServiceTest {
     when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
         .thenReturn(
             List.of((Necesidad) necesidadA, (Necesidad) necesidadB, (Necesidad) necesidadC));
-    when(necesidadA.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(true);
-    when(necesidadB.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(false);
-    when(necesidadC.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(true);
+    when(necesidadA.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    when(necesidadB.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(false);
+    when(necesidadC.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
 
     planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
 
     verify(necesidadRepository, times(1)).save(necesidadA);
     verify(necesidadRepository, never()).save(necesidadB);
     verify(necesidadRepository, times(1)).save(necesidadC);
+  }
+
+  @Test
+  void generarNuevos_siUnaNecesidadFueModificadaAlMismoTiempo_igualRenuevaLasDemas() {
+    NecesidadRecurrente necesidadA = mock(NecesidadRecurrente.class);
+    NecesidadRecurrente necesidadB = mock(NecesidadRecurrente.class);
+    when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
+        .thenReturn(List.of((Necesidad) necesidadA, (Necesidad) necesidadB));
+    when(necesidadA.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    when(necesidadB.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    doThrow(new BusinessStateException(ErrorCatalog.NECESIDAD_MODIFICADA_CONCURRENTEMENTE))
+        .when(necesidadRepository)
+        .save(necesidadA);
+
+    planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
+
+    verify(necesidadRepository).save(necesidadB);
+  }
+
+  @Test
+  void generarNuevos_siElGuardadoFallaPorOtroMotivo_propagaLaExcepcion() {
+    NecesidadRecurrente necesidad = mock(NecesidadRecurrente.class);
+    when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
+        .thenReturn(Collections.singletonList(necesidad));
+    when(necesidad.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    doThrow(new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA))
+        .when(necesidadRepository)
+        .save(necesidad);
+
+    assertThrows(
+        BusinessStateException.class,
+        () -> planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes());
   }
 
   @Test

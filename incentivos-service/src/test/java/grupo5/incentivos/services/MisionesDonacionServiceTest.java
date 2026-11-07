@@ -19,6 +19,7 @@ import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.EventosProcesadosEnMemoria;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.LocalDate;
@@ -268,6 +269,47 @@ class MisionesDonacionServiceTest {
     ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
     orden.verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
     assertTrue(captor.getAllValues().stream().anyMatch(MisionCompletada.class::isInstance));
+  }
+
+  @Test
+  void procesarDonacion_conElMismoEventoDosVeces_deberiaSumarUnaSolaVez() {
+    UUID donanteId = UUID.randomUUID();
+    repository.save(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+    MisionesDonacionService conInbox =
+        new MisionesDonacionService(
+            repository,
+            eventPublisher,
+            new MisionMapper(),
+            new EventosProcesadosEnMemoria(repository));
+    UUID eventoId = UUID.randomUUID();
+    NuevaDonacionRequest request =
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+
+    conInbox.procesarDonacion(request, eventoId);
+    conInbox.procesarDonacion(request, eventoId);
+
+    DonanteIncentivos guardado = repository.findById(donanteId).orElseThrow();
+    assertEquals(1L, guardado.donacionesEnMes(YearMonth.of(2026, Month.MAY)));
+  }
+
+  @Test
+  void procesarDonacion_conEventosDistintos_deberiaSumarCadaUno() {
+    UUID donanteId = UUID.randomUUID();
+    repository.save(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+    MisionesDonacionService conInbox =
+        new MisionesDonacionService(
+            repository,
+            eventPublisher,
+            new MisionMapper(),
+            new EventosProcesadosEnMemoria(repository));
+    NuevaDonacionRequest request =
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+
+    conInbox.procesarDonacion(request, UUID.randomUUID());
+    conInbox.procesarDonacion(request, UUID.randomUUID());
+
+    DonanteIncentivos guardado = repository.findById(donanteId).orElseThrow();
+    assertEquals(2L, guardado.donacionesEnMes(YearMonth.of(2026, Month.MAY)));
   }
 
   @Test

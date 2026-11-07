@@ -40,6 +40,12 @@ public class NotificacionEntity {
   @Column(name = "estado_notificacion", nullable = false, length = 20)
   private EstadoNotificacion estadoNotificacion;
 
+  @Column(name = "leida", nullable = false)
+  private Boolean leida = false;
+
+  @Column(name = "fecha_lectura")
+  private LocalDateTime fechaLectura;
+
   @SuppressWarnings(
       "squid:S1319") // FetchType.EAGER justificado: Agregado Notificacion requiere consistencia
   // total de su historial

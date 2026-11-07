@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Broker de integración con logística. Registra cada pedido de entrega, elige proveedor con la
@@ -35,7 +36,9 @@ import org.springframework.stereotype.Service;
  *   <li>{@code ERROR_CONTRATO}: falla sin reintentar.
  * </ul>
  *
- * No habla con la red: los envíos los hace el relay del outbox.
+ * No habla con la red: los envíos los hace el relay del outbox. Cada operación es una transacción:
+ * la solicitud y su entrada del outbox se guardan juntas o no se guarda ninguna (Transactional
+ * Outbox).
  */
 @Service
 public class LogisticaBroker implements ILogisticaBroker {
@@ -65,6 +68,7 @@ public class LogisticaBroker implements ILogisticaBroker {
   }
 
   @Override
+  @Transactional
   public void solicitarEntrega(DatosEntregaLogistica datos) {
     if (datos == null || datos.donacionIndependienteId() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -86,6 +90,7 @@ public class LogisticaBroker implements ILogisticaBroker {
   }
 
   @Override
+  @Transactional
   public void registrarResultado(UUID entradaId, ResultadoEnvio resultado) {
     if (entradaId == null || resultado == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);

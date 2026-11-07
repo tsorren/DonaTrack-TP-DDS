@@ -22,5 +22,5 @@
     }
   },
   "required": ["personaDonanteId", "fecha", "diasInactividad"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

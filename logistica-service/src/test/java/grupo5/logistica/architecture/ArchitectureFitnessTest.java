@@ -49,6 +49,39 @@ class ArchitectureFitnessTest {
   }
 
   @Test
+  void entidadesDeDominio_noDebenDependerDeSpringDataMongo() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.models.entities..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("org.springframework.data.mongodb..")
+        .check(importedClasses);
+  }
+
+  @Test
+  void persistenciaMongo_noDebeDependerDeSpringOrm() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.infrastructure.persistencia.mongo..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("org.springframework.orm..")
+        .check(importedClasses);
+  }
+
+  @Test
+  void persistenciaMongo_noDebeDependerDePersistenciaJpa() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.infrastructure.persistencia.mongo..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("grupo5.logistica.infrastructure.persistencia.jpa..")
+        .check(importedClasses);
+  }
+
+  @Test
   void controladores_debenResidirEnPaqueteControllers() {
     classes()
         .that()

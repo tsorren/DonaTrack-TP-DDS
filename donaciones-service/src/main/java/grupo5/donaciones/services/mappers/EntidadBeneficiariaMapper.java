@@ -30,6 +30,6 @@ public class EntidadBeneficiariaMapper {
       }
     }
 
-    return new EntidadBeneficiariaOutputDTO(entidad.getId(), juridicaOutput);
+    return new EntidadBeneficiariaOutputDTO(entidad.getId(), juridicaOutput, entidad.estaActivo());
   }
 }

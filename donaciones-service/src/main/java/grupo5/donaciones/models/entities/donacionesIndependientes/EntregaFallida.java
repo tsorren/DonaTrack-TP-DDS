@@ -9,6 +9,9 @@ public class EntregaFallida implements EstadoDonacionIndependiente {
 
   @Override
   public void retornar(DonacionIndependiente d, String actor) {
+    // Vuelve al stock: deja de estar asignada y el algoritmo la puede asignar a otra necesidad.
+    // El reintento hacia el mismo destino es replanificar, que no pasa por el depósito.
+    d.asignarDestino(null);
     d.cambiarEstado(new EnDeposito(), null, actor);
   }
 

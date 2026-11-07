@@ -1,6 +1,7 @@
 package grupo5.logistica.testutils;
 
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -15,17 +16,26 @@ public final class EntregaMother {
     return conDimensiones(10f, 2f);
   }
 
+  public static Entrega pendienteEn(CoordenadasGeograficas coordenadas) {
+    return new Entrega(UUID.randomUUID(), UUID.randomUUID(), direccionEn(coordenadas), 10f, 2f);
+  }
+
   public static Entrega conDimensiones(float pesoKg, float volumenM3) {
     return new Entrega(UUID.randomUUID(), UUID.randomUUID(), direccion(), pesoKg, volumenM3);
   }
 
   public static Direccion direccion() {
+    return direccionEn(null);
+  }
+
+  public static Direccion direccionEn(CoordenadasGeograficas coordenadas) {
     return new Direccion(
         "Calle Falsa",
         123,
         4,
         "B",
         "C1000",
-        new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina"))));
+        new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina"))),
+        coordenadas);
   }
 }

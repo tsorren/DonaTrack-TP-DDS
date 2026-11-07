@@ -6,7 +6,7 @@ import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.necesidades.Asignable;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +21,8 @@ public final class DonacionIndependienteMother {
     Subcategoria subcategoria = CategoriaMother.camperas(categoria);
     Bien bien = BienMother.prendaRopa("Campera de abrigo");
     BienNormalizado bienNormalizado = BienMother.aceptado(bien, subcategoria.getId());
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, cantidad);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, cantidad);
 
     return new DonacionIndependiente(UUID.randomUUID(), List.of(item));
   }
@@ -29,7 +30,8 @@ public final class DonacionIndependienteMother {
   public static DonacionIndependiente crearParaSubcategoria(UUID subcategoriaId, int cantidad) {
     Bien bien = BienMother.simple("Item de prueba");
     BienNormalizado bienNormalizado = BienMother.aceptado(bien, subcategoriaId);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, cantidad);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, cantidad);
 
     return new DonacionIndependiente(UUID.randomUUID(), List.of(item));
   }
@@ -38,32 +40,32 @@ public final class DonacionIndependienteMother {
     return crearConCantidad(cantidad);
   }
 
-  public static DonacionIndependiente asignada(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente asignada(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = enDeposito(cantidad);
-    d.asignar(ACTOR_DEFECTO, receptor);
+    d.asignar(ACTOR_DEFECTO, receptor.destinoDeAsignacion());
     return d;
   }
 
-  public static DonacionIndependiente listaParaEntregar(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente listaParaEntregar(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = asignada(cantidad, receptor);
     d.planificarRuta(ACTOR_DEFECTO);
     return d;
   }
 
-  public static DonacionIndependiente enTraslado(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente enTraslado(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = listaParaEntregar(cantidad, receptor);
     d.iniciarRecorrido(ACTOR_DEFECTO);
     return d;
   }
 
-  public static DonacionIndependiente entregada(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente entregada(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = enTraslado(cantidad, receptor);
     d.confirmarEntrega(ACTOR_DEFECTO);
     return d;
   }
 
   public static DonacionIndependiente entregaFallida(
-      int cantidad, Asignable receptor, String motivo) {
+      int cantidad, Necesidad receptor, String motivo) {
     DonacionIndependiente d = enTraslado(cantidad, receptor);
     d.registrarFalla(motivo, ACTOR_DEFECTO);
     return d;

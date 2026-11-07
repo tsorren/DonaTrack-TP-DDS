@@ -30,11 +30,11 @@
     "urlMapa": {
       "type": "string",
       "format": "uri",
-      "description": "URL de tracking o visualización del mapa provista por logística"
+      "description": "URL de tracking o visualización del mapa provista por logística. Obligatoria si el estado es EN_TRASLADO (400 ERR-VAL-415): la exige el evento donacion.en-camino.v1"
     },
     "patenteCamion": {
       "type": "string",
-      "description": "Identificador de la patente del camión asignado a la entrega"
+      "description": "Identificador de la patente del camión asignado a la entrega. Obligatoria si el estado es ENTREGADA (400 ERR-VAL-416): la exige el evento donacion.recibida.v1"
     },
     "replanificable": {
       "type": "boolean",

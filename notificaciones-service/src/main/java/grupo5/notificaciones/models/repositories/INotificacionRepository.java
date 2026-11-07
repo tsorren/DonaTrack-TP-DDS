@@ -11,4 +11,10 @@ public interface INotificacionRepository extends CrudRepository<Notificacion> {
   List<Notificacion> findByEstado(EstadoNotificacion estado);
 
   List<Notificacion> findByPersonaId(UUID personaId);
+
+  List<Notificacion> findByPersonaIdAndLeida(UUID personaId, boolean leida);
+
+  long countByPersonaIdAndLeidaFalse(UUID personaId);
+
+  void marcarTodasComoLeidas(UUID personaId);
 }

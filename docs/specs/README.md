@@ -68,6 +68,7 @@ Al completar la implementación y pasar todos los Quality Gates, el archivo se t
 |:---:|---|:---:|:---:|---|
 | **SPEC-03** | [`SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | ARCHITECTURAL | `ACTIVE` | Topología AMQP Pub/Sub canónica DDD, colas segregadas, clúster Dead Letter (`notificaciones.dlx`), envelope nativo y Hard Cutover inter-servicios. |
 | **SPEC-04** | [`SPEC-04-broker-integracion-logistica.md`](active/SPEC-04-broker-integracion-logistica.md) | ARCHITECTURAL | `APPROVED_BY_USER` | Broker de Integración con Logística (Entrega 4): selección entre ≥ 2 proveedores (AMQP/HTTP), comando `entrega.solicitada.<id>.v1`, `mandatory` + acuse, outbox basado en datos. |
+| **SPEC-05** | [`SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md`](active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) | ARCHITECTURAL | `APPROVED_BY_USER` | Rediseño del roadmap de preprod fiel (base por servicio, despliegue sin Render, contratos vivos con política de aviso en el PR y bloqueo en el post-merge) e implementación de RM-01 a RM-08. |
 
 ---
 

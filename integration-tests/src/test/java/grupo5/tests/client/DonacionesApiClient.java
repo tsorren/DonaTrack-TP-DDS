@@ -7,6 +7,7 @@ import grupo5.tests.dto.NecesidadTestDTO;
 import grupo5.tests.dto.PersonaTestDTO;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -154,13 +155,28 @@ public class DonacionesApiClient {
         .put(baseUrl + "/api/asignaciones/propuestas/" + propuestaId + "/estado");
   }
 
+  /**
+   * EN_TRASLADO exige urlMapa y ENTREGADA exige patenteCamion: los eventos que publica Donaciones
+   * los requieren en su contrato.
+   */
   public Response cambiarEstadoDonacionIndependiente(UUID diId, String estado, String actor) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("estado", estado);
+    if ("EN_TRASLADO".equals(estado)) {
+      body.put("urlMapa", "https://seguimiento.donatrack.test/rutas/" + diId);
+    } else if ("ENTREGADA".equals(estado)) {
+      body.put("patenteCamion", "AB123CD");
+    }
     return given()
         .contentType(ContentType.JSON)
         .header("X-Actor", actor)
-        .body(Map.of("estado", estado))
+        .body(body)
         .when()
         .patch(baseUrl + "/donaciones-independientes/" + diId + "/estado");
+  }
+
+  public Response obtenerDonacionIndependiente(UUID diId) {
+    return given().when().get(baseUrl + "/donaciones-independientes/" + diId);
   }
 
   public Response obtenerOpenApi() {

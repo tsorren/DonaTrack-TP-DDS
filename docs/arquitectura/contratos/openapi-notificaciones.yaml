@@ -72,6 +72,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: leida
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtro opcional. Si es false trae solo pendientes.
       responses:
         '200':
           description: Historial de notificaciones despachadas
@@ -129,6 +135,72 @@ paths:
                 $ref: '#/components/schemas/NotificacionDTO'
         '404':
           description: Notificación no encontrada
+
+  /api/notificaciones/persona/{personaId}/no-leidas/conteo:
+    get:
+      summary: Obtener el conteo de notificaciones no leídas de una persona
+      operationId: contarNoLeidas
+      parameters:
+        - name: personaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Conteo devuelto exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  noLeidas:
+                    type: integer
+                    format: int64
+
+  /api/notificaciones/{id}/leida:
+    patch:
+      summary: Marcar una notificación como leída o no leída
+      operationId: marcarLeida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: leida
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Notificación actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificacionDTO'
+        '404':
+          description: Notificación no encontrada
+
+  /api/notificaciones/persona/{personaId}/marcar-todas-leidas:
+    patch:
+      summary: Marcar todas las notificaciones de una persona como leídas
+      operationId: marcarTodasComoLeidas
+      parameters:
+        - name: personaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Todas las notificaciones fueron marcadas como leídas
+
   /api/notificaciones/personas:
     put:
       summary: Sincronizar réplica de persona y medios de contacto
@@ -464,6 +536,7 @@ components:
         - mensaje
         - estado
         - fechaCreacion
+        - leida
       properties:
         id:
           type: string
@@ -475,3 +548,9 @@ components:
         fechaCreacion:
           type: string
           format: date-time
+        leida:
+          type: boolean
+        fechaLectura:
+          type: string
+          format: date-time
+          nullable: true

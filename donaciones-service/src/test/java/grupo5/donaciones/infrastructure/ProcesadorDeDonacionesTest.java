@@ -60,7 +60,7 @@ class ProcesadorDeDonacionesTest {
   void procesar_conTodosAceptados_deberiaNormalizarYPublicarEvento() {
     Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
-    Donacion donacion = new Donacion(donante.getId());
+    Donacion donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
@@ -84,7 +84,7 @@ class ProcesadorDeDonacionesTest {
   void procesar_conPendientesDeRevision_deberiaGuardarNormalizacionesYQuedarEnCargada() {
     Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
-    Donacion donacion = new Donacion(donante.getId());
+    Donacion donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");

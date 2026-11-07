@@ -11,9 +11,6 @@ import org.springframework.stereotype.Component;
 public class CategoriaMapper {
 
   public Categoria toEntity(CategoriaInputDTO dto) {
-    if (dto == null) {
-      return null;
-    }
     return new Categoria(dto.nombre(), dto.conUso(), dto.conVencimiento(), dto.unidad());
   }
 

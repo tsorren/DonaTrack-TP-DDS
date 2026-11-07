@@ -16,6 +16,20 @@ public class ItemDonacionNormalizado implements AggregateRoot {
     this.segmentado = true;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public ItemDonacionNormalizado(
+      UUID id,
+      UUID donacionOriginalId,
+      BienNormalizado bien,
+      Integer cantidad,
+      boolean segmentado) {
+    this.id = id;
+    this.donacionOriginalId = donacionOriginalId;
+    this.bien = bien;
+    this.cantidad = cantidad;
+    this.segmentado = segmentado;
+  }
+
   public ItemDonacionNormalizado(UUID donacionOriginalId, BienNormalizado bien, Integer cantidad) {
     this.id = UUID.randomUUID();
     this.donacionOriginalId = donacionOriginalId;

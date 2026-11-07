@@ -1,7 +1,7 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 100
+> **Total de Endpoints:** 104
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
@@ -15,40 +15,41 @@
 |:---:|---|---|---|---|
 | `GET` | `/donaciones-independientes` | `listarDonacionesIndependientes` | `-` | `200 (DonacionIndependienteResponseDTO)` |
 | `GET` | `/donaciones-independientes/{id}` | `obtenerDonacionIndependientePorId` | `-` | `200 (DonacionIndependienteResponseDTO), 404 (-)` |
-| `PATCH` | `/donaciones-independientes/{id}/estado` | `cambiarEstadoDonacionIndependiente` | `CambioEstadoDonacionIndependienteRequestDTO` | `200 (DonacionIndependienteResponseDTO), 400 (-)` |
-| `POST` | `/api/donaciones` | `registrarDonacion` | `DonacionInputDTO` | `201 (DonacionOutputDTO), 400 (-)` |
+| `PATCH` | `/donaciones-independientes/{id}/estado` | `cambiarEstadoDonacionIndependiente` | `CambioEstadoDonacionIndependienteRequestDTO` | `200 (DonacionIndependienteResponseDTO), 400 (-), 409 (-)` |
+| `POST` | `/api/donaciones` | `registrarDonacion` | `DonacionInputDTO` | `201 (DonacionOutputDTO), 400 (-), 409 (-)` |
 | `GET` | `/api/donaciones` | `listarDonaciones` | `-` | `200 (DonacionOutputDTO)` |
+| `POST` | `/api/donaciones/fotos` | `solicitarSubidaFoto` | `SolicitudSubidaFotoInputDTO` | `200 (SubidaFotoOutputDTO), 400 (-)` |
 | `GET` | `/api/donaciones/{id}` | `obtenerDonacionPorId` | `-` | `200 (DonacionOutputDTO), 404 (-)` |
-| `POST` | `/api/necesidades` | `registrarNecesidad` | `-` | `201 (-)` |
+| `POST` | `/api/necesidades` | `registrarNecesidad` | `-` | `201 (-), 409 (-)` |
 | `GET` | `/api/necesidades` | `listarNecesidades` | `-` | `200 (-)` |
 | `GET` | `/api/necesidades/{id}` | `obtenerNecesidadPorId` | `-` | `200 (-), 404 (-)` |
-| `PUT` | `/api/necesidades/{id}` | `actualizarNecesidad` | `-` | `200 (-), 400 (-), 404 (-)` |
+| `PUT` | `/api/necesidades/{id}` | `actualizarNecesidad` | `-` | `200 (-), 400 (-), 404 (-), 409 (-)` |
 | `DELETE` | `/api/necesidades/{id}` | `eliminarNecesidad` | `-` | `204 (-), 404 (-)` |
 | `POST` | `/api/asignaciones/ejecuciones` | `ejecutarAsignacion` | `-` | `201 (-)` |
 | `GET` | `/api/asignaciones/ejecuciones` | `historialEjecucionesAsignacion` | `-` | `200 (-)` |
 | `GET` | `/api/asignaciones/propuestas` | `listarPropuestasAsignacion` | `-` | `200 (-)` |
-| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | `actualizarEstadoPropuesta` | `-` | `200 (-)` |
-| `POST` | `/api/entidades` | `registrarEntidadBeneficiaria` | `-` | `201 (-)` |
+| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | `actualizarEstadoPropuesta` | `-` | `200 (-), 409 (-)` |
+| `POST` | `/api/entidades` | `registrarEntidadBeneficiaria` | `-` | `200 (-), 201 (-), 400 (-), 404 (-), 409 (-)` |
 | `GET` | `/api/entidades` | `listarEntidadesBeneficiarias` | `-` | `200 (-)` |
 | `GET` | `/api/entidades/{id}` | `obtenerEntidadPorId` | `-` | `200 (-), 404 (-)` |
-| `PUT` | `/api/entidades/{id}` | `actualizarEntidad` | `-` | `200 (-), 400 (-), 404 (-)` |
+| `PUT` | `/api/entidades/{id}` | `actualizarEntidad` | `-` | `200 (-), 400 (-), 404 (-), 409 (-)` |
 | `DELETE` | `/api/entidades/{id}` | `eliminarEntidad` | `-` | `204 (-), 404 (-)` |
-| `POST` | `/api/donantes` | `registrarDonante` | `-` | `201 (-)` |
+| `POST` | `/api/donantes` | `registrarDonante` | `-` | `200 (-), 201 (-), 404 (-), 409 (-)` |
 | `GET` | `/api/donantes` | `listarDonantes` | `-` | `200 (-)` |
 | `GET` | `/api/donantes/{id}` | `obtenerDonantePorId` | `-` | `200 (-), 404 (-)` |
 | `DELETE` | `/api/donantes/{id}` | `eliminarDonante` | `-` | `204 (-), 404 (-)` |
-| `POST` | `/api/donantes/archivos` | `cargarArchivoDonantes` | `-` | `202 (-), 400 (-)` |
-| `GET` | `/api/donantes/archivos/{id}` | `obtenerArchivoDonantes` | `-` | `200 (-), 404 (-)` |
+| `POST` | `/api/donantes/archivos` | `cargarArchivoDonantes` | `-` | `202 (ArchivoDonantesResponse), 400 (-), 413 (-), 415 (-)` |
+| `GET` | `/api/donantes/archivos/{id}` | `obtenerArchivoDonantes` | `-` | `200 (ArchivoDonantesResponse), 404 (-)` |
 | `GET` | `/api/categorias` | `listarCategorias` | `-` | `200 (-)` |
 | `POST` | `/api/categorias` | `crearCategoria` | `-` | `201 (-)` |
 | `GET` | `/api/categorias/{id}` | `obtenerCategoria` | `-` | `200 (-), 404 (-)` |
 | `PUT` | `/api/categorias/{id}` | `actualizarCategoria` | `-` | `200 (-), 404 (-)` |
-| `DELETE` | `/api/categorias/{id}` | `eliminarCategoria` | `-` | `200 (-), 404 (-)` |
+| `DELETE` | `/api/categorias/{id}` | `eliminarCategoria` | `-` | `200 (-), 404 (-), 409 (-)` |
 | `GET` | `/api/subcategorias` | `listarSubcategorias` | `-` | `200 (-)` |
 | `POST` | `/api/subcategorias` | `crearSubcategoria` | `-` | `201 (-)` |
 | `GET` | `/api/subcategorias/{id}` | `obtenerSubcategoria` | `-` | `200 (-), 404 (-)` |
 | `PUT` | `/api/subcategorias/{id}` | `actualizarSubcategoria` | `-` | `200 (-), 404 (-)` |
-| `DELETE` | `/api/subcategorias/{id}` | `eliminarSubcategoria` | `-` | `200 (-), 404 (-)` |
+| `DELETE` | `/api/subcategorias/{id}` | `eliminarSubcategoria` | `-` | `200 (-), 404 (-), 409 (-)` |
 | `POST` | `/api/subcategorias/{id}/aliases` | `agregarAliasSubcategoria` | `AliasSubcategoriaInputDTO` | `200 (SubcategoriaOutputDTO), 400 (-), 404 (-)` |
 | `DELETE` | `/api/subcategorias/{id}/aliases/{alias}` | `quitarAliasSubcategoria` | `-` | `200 (SubcategoriaOutputDTO), 404 (-)` |
 | `GET` | `/api/items-normalizados/pendientes` | `listarItemsNormalizadosPendientes` | `-` | `200 (ItemDonacionNormalizadoOutputDTO)` |
@@ -56,7 +57,7 @@
 | `PATCH` | `/api/items-normalizados/{id}` | `actualizarEstadoItemNormalizado` | `ItemDonacionNormalizadoPatchDTO` | `200 (ItemDonacionNormalizadoOutputDTO), 400 (-), 404 (-)` |
 | `GET` | `/api/personas` | `listarPersonasDonaciones` | `-` | `200 (-)` |
 | `POST` | `/api/personas` | `crearPersonaDonaciones` | `-` | `201 (-)` |
-| `PUT` | `/api/personas/{id}` | `actualizarPersonaDonaciones` | `-` | `200 (-), 404 (-)` |
+| `PUT` | `/api/personas/{id}` | `actualizarPersonaDonaciones` | `-` | `200 (-), 404 (-), 409 (-)` |
 | `DELETE` | `/api/personas/{id}` | `eliminarPersonaDonaciones` | `-` | `204 (-), 404 (-)` |
 | `GET` | `/api/logistica/proveedores` | `listarProveedoresLogistica` | `-` | `200 (ProveedorLogisticaDTO), 401 (-)` |
 | `PUT` | `/api/logistica/proveedor-preferido` | `cambiarProveedorLogisticaPreferido` | `PreferenciaProveedorRequestDTO` | `200 (ProveedorLogisticaDTO), 400 (-), 401 (-)` |
@@ -91,37 +92,40 @@
 
 ## Microservicio: DonaTrack - Logística Service API (`openapi-logistica.yaml`)
 
-* **Versión:** `1.0.0`
-* **Descripción:** API REST para planificación de rutas de transporte, seguimiento de camiones, asignación de choferes y trazabilidad de entregas.
+* **Versión:** `1.1.0`
+* **Descripción:** API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 * **Servidor Local:** `http://localhost:8083`
 
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
 |:---:|---|---|---|---|
 | `POST` | `/api/entregas` | `crearEntrega` | `CrearEntregaRequestDTO` | `201 (EntregaResponseDTO), 400 (-), 409 (-)` |
 | `GET` | `/api/entregas` | `listarEntregas` | `-` | `200 (EntregaResponseDTO)` |
+| `GET` | `/api/entregas/mapa` | `listarMapaPublico` | `-` | `200 (EntregaMapaPublicoResponseDTO)` |
+| `GET` | `/api/entregas/seguimiento/donaciones/{idDonacion}` | `obtenerSeguimientoPorDonacion` | `-` | `200 (SeguimientoEntregaResponseDTO), 404 (-)` |
+| `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | `listarSeguimientoPorBeneficiaria` | `-` | `200 (SeguimientoEntregaResponseDTO)` |
 | `GET` | `/api/entregas/{id}` | `obtenerEntregaPorId` | `-` | `200 (EntregaResponseDTO), 404 (-)` |
-| `PATCH` | `/api/entregas/{id}/estado` | `cambiarEstadoEntrega` | `CambioEstadoEntregaRequestDTO` | `200 (EntregaResponseDTO), 400 (-)` |
-| `PATCH` | `/api/entregas/{id}/fotos` | `adjuntarFotoRecepcion` | `-` | `200 (EntregaResponseDTO)` |
+| `PATCH` | `/api/entregas/{id}/estado` | `cambiarEstadoEntrega` | `CambioEstadoEntregaRequestDTO` | `200 (EntregaResponseDTO), 400 (-), 404 (-)` |
+| `PATCH` | `/api/entregas/{id}/fotos` | `adjuntarFotoRecepcion` | `AdjuntarFotoRecepcionRequestDTO` | `200 (EntregaResponseDTO), 400 (-), 404 (-)` |
 | `GET` | `/api/entregas/{id}/historial` | `obtenerHistorialEntrega` | `-` | `200 (CambioEstadoEntregaResponseDTO), 404 (-)` |
-| `GET` | `/api/rutas` | `listarRutas` | `-` | `200 (-)` |
-| `GET` | `/api/rutas/{id}` | `obtenerRutaPorId` | `-` | `200 (-)` |
-| `GET` | `/api/rutas/{id}/entregas` | `obtenerRutaConEntregas` | `-` | `200 (-)` |
-| `POST` | `/api/rutas/{id}/entregas` | `agregarEntregaRuta` | `-` | `201 (-)` |
-| `PATCH` | `/api/rutas/{id}/estado` | `cambiarEstadoRuta` | `-` | `200 (-)` |
-| `POST` | `/api/camiones` | `registrarCamion` | `-` | `201 (-)` |
-| `GET` | `/api/camiones` | `listarCamiones` | `-` | `200 (-)` |
-| `GET` | `/api/camiones/{id}` | `obtenerCamionPorId` | `-` | `200 (-), 404 (-)` |
+| `GET` | `/api/rutas` | `listarRutas` | `-` | `200 (RutaResponseDTO)` |
+| `GET` | `/api/rutas/{id}` | `obtenerRutaPorId` | `-` | `200 (RutaResponseDTO), 404 (-)` |
+| `GET` | `/api/rutas/{id}/entregas` | `obtenerRutaConEntregas` | `-` | `200 (RutaConEntregasResponseDTO), 404 (-)` |
+| `POST` | `/api/rutas/{id}/entregas` | `agregarEntregaRuta` | `AgregarEntregaRutaRequestDTO` | `201 (RutaResponseDTO), 400 (-), 404 (-)` |
+| `PATCH` | `/api/rutas/{id}/estado` | `cambiarEstadoRuta` | `CambioEstadoRutaRequestDTO` | `200 (RutaResponseDTO), 400 (-), 404 (-)` |
+| `POST` | `/api/camiones` | `registrarCamion` | `CamionRequestDTO` | `201 (CamionResponseDTO), 400 (-)` |
+| `GET` | `/api/camiones` | `listarCamiones` | `-` | `200 (CamionResponseDTO)` |
+| `GET` | `/api/camiones/{id}` | `obtenerCamionPorId` | `-` | `200 (CamionResponseDTO), 404 (-)` |
 | `DELETE` | `/api/camiones/{id}` | `darDeBajaCamion` | `-` | `204 (-), 404 (-)` |
-| `PATCH` | `/api/camiones/{id}/estado` | `cambiarEstadoCamion` | `-` | `200 (-), 400 (-), 404 (-)` |
-| `POST` | `/api/choferes` | `registrarChofer` | `-` | `201 (-)` |
-| `GET` | `/api/choferes` | `listarChoferes` | `-` | `200 (-)` |
-| `GET` | `/api/choferes/{id}` | `obtenerChoferPorId` | `-` | `200 (-), 404 (-)` |
+| `PATCH` | `/api/camiones/{id}/estado` | `cambiarEstadoCamion` | `CambioEstadoCamionRequestDTO` | `200 (CamionResponseDTO), 400 (-), 404 (-)` |
+| `POST` | `/api/choferes` | `registrarChofer` | `ChoferRequestDTO` | `201 (ChoferResponseDTO), 400 (-)` |
+| `GET` | `/api/choferes` | `listarChoferes` | `-` | `200 (ChoferResponseDTO)` |
+| `GET` | `/api/choferes/{id}` | `obtenerChoferPorId` | `-` | `200 (ChoferResponseDTO), 404 (-)` |
 | `DELETE` | `/api/choferes/{id}` | `darDeBajaChofer` | `-` | `204 (-), 404 (-)` |
-| `PATCH` | `/api/choferes/{id}/estado` | `cambiarEstadoChofer` | `-` | `200 (-), 400 (-), 404 (-)` |
+| `PATCH` | `/api/choferes/{id}/estado` | `cambiarEstadoChofer` | `CambioEstadoChoferRequestDTO` | `200 (ChoferResponseDTO), 400 (-), 404 (-)` |
 | `POST` | `/api/logistica/planificaciones/ejecuciones` | `iniciarPlanificacionManual` | `-` | `202 (-)` |
-| `GET` | `/api/logistica/planificaciones/{id}` | `obtenerSolicitudPlanificacion` | `-` | `200 (-)` |
-| `POST` | `/api/logistica/resultados` | `procesarCallbackPlanificacion` | `-` | `200 (-)` |
-| `POST` | `/api/logistica/callback/rutas` | `procesarCallbackRutasAlias` | `-` | `200 (-)` |
+| `GET` | `/api/logistica/planificaciones/{id}` | `obtenerSolicitudPlanificacion` | `-` | `200 (SolicitudPlanificacionResponseDTO), 404 (-)` |
+| `POST` | `/api/logistica/resultados` | `procesarCallbackPlanificacion` | `CallbackPlanificacionRequestDTO` | `200 (SolicitudPlanificacionResponseDTO)` |
+| `POST` | `/api/logistica/callback/rutas` | `procesarCallbackRutasAlias` | `CallbackPlanificacionRequestDTO` | `200 (SolicitudPlanificacionResponseDTO)` |
 
 ## Microservicio: DonaTrack - Notificaciones Service API (`openapi-notificaciones.yaml`)
 

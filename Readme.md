@@ -136,7 +136,7 @@ Para levantar manualmente el ecosistema virtualizado completo de microservicios 
 cp .env.example .env   # credenciales de Postgres, RabbitMQ y MinIO; o scripts/generar-env-db.sh para valores aleatorios
 docker compose -f docker-compose.preprod.yml up --build -d
 ```
-*Las contraseñas de Postgres, RabbitMQ y MinIO no están versionadas: compose las toma de `.env` (ver [`persistencia/README.md`](persistencia/README.md)). Un `.env` anterior que no tenga `RABBITMQ_PASS` o `MINIO_ROOT_*` hace fallar a compose: completarlo desde `.env.example`, o borrarlo y regenerarlo. Fuera de compose (`mvn spring-boot:run` contra un broker propio), exportar `RABBITMQ_PASS`: `application.properties` no trae contraseña por defecto.*
+*Las contraseñas de Postgres, RabbitMQ y MinIO no están versionadas: compose las toma de `.env` (ver [`persistencia/README.md`](persistencia/README.md)). Un `.env` anterior que no tenga `RABBITMQ_PASS`, `MINIO_ROOT_*` o `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD` hace fallar a compose: completarlo desde `.env.example`, o borrarlo y regenerarlo. Fuera de compose (`mvn spring-boot:run` contra un broker propio), exportar `RABBITMQ_PASS`: `application.properties` no trae contraseña por defecto.*
 *Los contenedores utilizan healthchecks basados en Actuator (/actuator/health) para asegurar una secuencia de arranque ordenada y segura.*
 
 ### 3. Suite de Validacion y Pruebas de Integracion Automatizadas

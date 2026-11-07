@@ -2,6 +2,7 @@ package grupo5.logistica.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,7 +14,9 @@ import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
 import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.testutils.EntregaMother;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -37,9 +40,11 @@ class EntregaMapperTest {
   @Test
   void mapeaLasTresSolicitudesDeCambio() {
     Entrega entrega = EntregaMother.pendiente();
-    assertEquals(
-        "beneficiaria",
-        mapper.toSolicitud(entrega, new ConfirmarRecepcionRequestDTO("beneficiaria")).actor());
+    var confirmacion =
+        mapper.toSolicitud(
+            entrega, new ConfirmarRecepcionRequestDTO("beneficiaria", List.of("https://f1.jpg")));
+    assertEquals("beneficiaria", confirmacion.actor());
+    assertEquals(List.of("https://f1.jpg"), confirmacion.fotosRecepcion());
     assertTrue(
         mapper
             .toSolicitud(
@@ -55,9 +60,28 @@ class EntregaMapperTest {
   }
 
   @Test
+  void mapeaEntregaParaMapaPublicoSoloSiTieneCoordenadas() {
+    Entrega sinCoords = EntregaMother.pendiente();
+    assertNull(mapper.toMapaPublicoResponseDTO(sinCoords));
+
+    sinCoords.getDestino().actualizarCoordenadas(new CoordenadasGeograficas(-34.5986, -58.4201));
+    sinCoords.iniciarRuta("Chofer");
+    sinCoords.confirmarEntrega("Beneficiaria", "https://foto.jpg");
+
+    var mapaDto = mapper.toMapaPublicoResponseDTO(sinCoords);
+    assertNotNull(mapaDto);
+    assertEquals(sinCoords.getId(), mapaDto.idEntrega());
+    assertEquals(-34.5986, mapaDto.latitud());
+    assertEquals(-58.4201, mapaDto.longitud());
+    assertEquals("CABA", mapaDto.localidad());
+    assertNotNull(mapaDto.fechaEntrega());
+  }
+
+  @Test
   void contemplaNulosYMagnitudesAusentes() {
     assertNull(mapper.toEntity(null));
     assertNull(mapper.toResponseDTO(null));
+    assertNull(mapper.toMapaPublicoResponseDTO(null));
     assertNull(mapper.toCambioEstadoResponseDTO(null));
     CrearEntregaRequestDTO dto =
         new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), null, null, 2f);

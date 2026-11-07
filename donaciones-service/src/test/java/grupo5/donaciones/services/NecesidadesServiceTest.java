@@ -4,14 +4,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.NecesidadesService;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -36,7 +40,8 @@ class NecesidadesServiceTest {
         new NecesidadesService(
             necesidadRepositoryMock,
             entidadesBeneficiariasRepositoryMock,
-            subcategoriaRepositoryMock);
+            subcategoriaRepositoryMock,
+            new AcumuladosDeAsignacion(mock(IDonacionesIndependientesRepository.class)));
   }
 
   @Test
@@ -58,6 +63,7 @@ class NecesidadesServiceTest {
 
     Subcategoria subcategoriaMock = mock(Subcategoria.class);
     EntidadBeneficiaria entidadMock = mock(EntidadBeneficiaria.class);
+    when(entidadMock.estaActivo()).thenReturn(true);
 
     when(subcategoriaRepositoryMock.findById(subcategoriaId))
         .thenReturn(Optional.of(subcategoriaMock));
@@ -69,6 +75,34 @@ class NecesidadesServiceTest {
     assertNotNull(resultado);
     assertEquals("RECURRENTE", resultado.tipo());
     verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
+  }
+
+  @Test
+  void guardar_conEntidadDeBaja_lanzaEntidadInactivaYNoGuarda() {
+    UUID entidadId = UUID.randomUUID();
+    NecesidadDTO inputDto =
+        new NecesidadDTO(
+            UUID.randomUUID(),
+            "EXTRAORDINARIA",
+            entidadId,
+            UUID.randomUUID(),
+            5,
+            "Mantas",
+            false,
+            null,
+            null);
+    EntidadBeneficiaria entidadDeBaja = mock(EntidadBeneficiaria.class);
+    when(entidadDeBaja.estaActivo()).thenReturn(false);
+    when(subcategoriaRepositoryMock.findById(inputDto.idSubcategoria()))
+        .thenReturn(Optional.of(mock(Subcategoria.class)));
+    when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
+        .thenReturn(Optional.of(entidadDeBaja));
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> necesidadesService.guardar(inputDto));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_INACTIVA, ex.getError());
+    verify(necesidadRepositoryMock, never()).save(any(Necesidad.class));
   }
 
   @Test
@@ -90,6 +124,7 @@ class NecesidadesServiceTest {
 
     Subcategoria subcategoriaMock = mock(Subcategoria.class);
     EntidadBeneficiaria entidadMock = mock(EntidadBeneficiaria.class);
+    when(entidadMock.estaActivo()).thenReturn(true);
 
     when(subcategoriaRepositoryMock.findById(subcategoriaId))
         .thenReturn(Optional.of(subcategoriaMock));
@@ -119,7 +154,7 @@ class NecesidadesServiceTest {
             LocalDate.of(2026, java.time.Month.JUNE, 18),
             null);
 
-    when(necesidadMock.toDTO()).thenReturn(dtoEsperado);
+    when(necesidadMock.toDTO(anyInt())).thenReturn(dtoEsperado);
     when(necesidadRepositoryMock.findById(idExistente)).thenReturn(Optional.of(necesidadMock));
 
     NecesidadDTO resultado = necesidadesService.obtenerPorId(idExistente);

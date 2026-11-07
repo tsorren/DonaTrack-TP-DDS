@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO;
@@ -127,7 +128,7 @@ class DonacionesIndependientesServiceTest {
 
     assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
     assertEquals(id, response.id());
-    assertEquals(necesidad, donacion.getAsignadaA());
+    assertEquals(necesidad.getId(), donacion.getNecesidadId());
     assertTrue(
         response.historial().stream().anyMatch(h -> "AsignacionRealizada".equals(h.estadoNuevo())));
     verify(repositoryMock, times(1)).save(donacion);
@@ -354,5 +355,33 @@ class DonacionesIndependientesServiceTest {
     when(repositoryMock.findById(id)).thenReturn(Optional.empty());
 
     assertThrows(RecursoNoEncontradoException.class, () -> service.obtener(id));
+  }
+
+  @Test
+  void vencer_siUnaDonacionFueModificadaAlMismoTiempo_igualVenceLasDemas() {
+    DonacionIndependiente conflicto = mock(DonacionIndependiente.class);
+    DonacionIndependiente otra = mock(DonacionIndependiente.class);
+    when(conflicto.estaVencida()).thenReturn(true);
+    when(otra.estaVencida()).thenReturn(true);
+    when(repositoryMock.findEnDeposito()).thenReturn(List.of(conflicto, otra));
+    when(repositoryMock.save(conflicto))
+        .thenThrow(
+            new BusinessStateException(
+                ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE));
+
+    service.vencer();
+
+    verify(repositoryMock).save(otra);
+  }
+
+  @Test
+  void vencer_siElGuardadoFallaPorOtroMotivo_propagaLaExcepcion() {
+    DonacionIndependiente donacion = mock(DonacionIndependiente.class);
+    when(donacion.estaVencida()).thenReturn(true);
+    when(repositoryMock.findEnDeposito()).thenReturn(List.of(donacion));
+    when(repositoryMock.save(donacion))
+        .thenThrow(new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA));
+
+    assertThrows(BusinessStateException.class, () -> service.vencer());
   }
 }

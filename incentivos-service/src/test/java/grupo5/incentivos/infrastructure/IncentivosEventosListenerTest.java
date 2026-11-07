@@ -5,16 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
-import grupo5.incentivos.dto.RegistrarDonanteRequest;
 import grupo5.incentivos.dto.events.EventoDonacionRecibidaV1;
 import grupo5.incentivos.dto.events.EventoDonacionSegmentadaV1;
-import grupo5.incentivos.dto.events.EventoDonanteDadoDeBajaV1;
-import grupo5.incentivos.dto.events.EventoDonanteRegistradoV1;
 import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.services.IGestionDonanteService;
@@ -51,63 +46,6 @@ class IncentivosEventosListenerTest {
   }
 
   @Test
-  @DisplayName("onDonanteRegistrado mapea a RegistrarDonanteRequest y registra el donante")
-  void onDonanteRegistrado_exitoso() {
-    UUID donanteId = UUID.randomUUID();
-    UUID personaId = UUID.randomUUID();
-    String nombre = "Carlos Gardel";
-    EventoDonanteRegistradoV1 evento = new EventoDonanteRegistradoV1(donanteId, personaId, nombre);
-
-    listener.onDonanteRegistrado(evento);
-
-    ArgumentCaptor<RegistrarDonanteRequest> captor =
-        ArgumentCaptor.forClass(RegistrarDonanteRequest.class);
-    verify(gestionDonanteService).registrarDonante(captor.capture());
-
-    RegistrarDonanteRequest req = captor.getValue();
-    assertEquals(donanteId, req.idDonante());
-    assertEquals(personaId, req.idPersona());
-    assertEquals(nombre, req.nombre());
-  }
-
-  @Test
-  @DisplayName("onDonanteDadoDeBaja ejecuta darDeBaja con el donanteId correcto")
-  void onDonanteDadoDeBaja_exitoso() {
-    UUID donanteId = UUID.randomUUID();
-    EventoDonanteDadoDeBajaV1 evento = new EventoDonanteDadoDeBajaV1(donanteId);
-
-    listener.onDonanteDadoDeBaja(evento);
-
-    verify(gestionDonanteService).darDeBaja(donanteId);
-  }
-
-  @Test
-  @DisplayName("onDonanteDadoDeBaja absorbe idempotentemente DONANTE_INCENTIVOS_NO_ENCONTRADO")
-  void onDonanteDadoDeBaja_cuandoDonanteNoExiste_noLanzaExcepcion() {
-    UUID donanteId = UUID.randomUUID();
-    EventoDonanteDadoDeBajaV1 evento = new EventoDonanteDadoDeBajaV1(donanteId);
-
-    doThrow(new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO))
-        .when(gestionDonanteService)
-        .darDeBaja(donanteId);
-
-    assertDoesNotThrow(() -> listener.onDonanteDadoDeBaja(evento));
-  }
-
-  @Test
-  @DisplayName("onDonanteDadoDeBaja propaga excepciones de negocio no esperadas para rechazo/DLQ")
-  void onDonanteDadoDeBaja_cuandoOcurreOtraExcepcionDeNegocio_propagaExcepcion() {
-    UUID donanteId = UUID.randomUUID();
-    EventoDonanteDadoDeBajaV1 evento = new EventoDonanteDadoDeBajaV1(donanteId);
-
-    doThrow(new BusinessStateException(ErrorCatalog.INSIGNIA_NO_ENCONTRADA))
-        .when(gestionDonanteService)
-        .darDeBaja(donanteId);
-
-    assertThrows(BusinessStateException.class, () -> listener.onDonanteDadoDeBaja(evento));
-  }
-
-  @Test
   @DisplayName("onDonacionSegmentada extrae categorías únicas, suma cantidades y delega")
   void onDonacionSegmentada_exitoso() {
     UUID donanteId = UUID.randomUUID();
@@ -119,11 +57,13 @@ class IncentivosEventosListenerTest {
             new EventoDonacionSegmentadaV1.Item("ALIMENTOS", 5));
     EventoDonacionSegmentadaV1 evento = new EventoDonacionSegmentadaV1(donanteId, items, fecha);
 
-    listener.onDonacionSegmentada(evento);
+    UUID messageId = UUID.randomUUID();
+
+    listener.onDonacionSegmentada(evento, messageId.toString());
 
     ArgumentCaptor<NuevaDonacionRequest> captor =
         ArgumentCaptor.forClass(NuevaDonacionRequest.class);
-    verify(misionesDonacionService).procesarDonacion(captor.capture());
+    verify(misionesDonacionService).procesarDonacion(captor.capture(), eq(messageId));
 
     NuevaDonacionRequest req = captor.getValue();
     assertEquals(donanteId, req.donanteId());
@@ -133,17 +73,46 @@ class IncentivosEventosListenerTest {
   }
 
   @Test
+  @DisplayName("onDonacionRecibida sin messageId delega sin clave de deduplicación")
+  void onDonacionRecibida_sinMessageId_delegaConEventoIdNulo() {
+    EventoDonacionRecibidaV1 evento =
+        new EventoDonacionRecibidaV1(UUID.randomUUID(), UUID.randomUUID());
+
+    listener.onDonacionRecibida(evento, null);
+    listener.onDonacionRecibida(evento, "  ");
+
+    verify(misionesDonacionService, times(2)).procesarDonacionExitosa(any(), isNull());
+  }
+
+  @Test
+  @DisplayName("onDonacionRecibida con messageId que no es UUID deriva una clave estable")
+  void onDonacionRecibida_messageIdNoUuid_derivaLaMismaClaveSiempre() {
+    EventoDonacionRecibidaV1 evento =
+        new EventoDonacionRecibidaV1(UUID.randomUUID(), UUID.randomUUID());
+
+    listener.onDonacionRecibida(evento, "mensaje-123");
+    listener.onDonacionRecibida(evento, "mensaje-123");
+
+    ArgumentCaptor<UUID> captor = ArgumentCaptor.forClass(UUID.class);
+    verify(misionesDonacionService, times(2)).procesarDonacionExitosa(any(), captor.capture());
+    assertNotNull(captor.getAllValues().get(0));
+    assertEquals(captor.getAllValues().get(0), captor.getAllValues().get(1));
+  }
+
+  @Test
   @DisplayName("onDonacionRecibida delega en procesarDonacionExitosa")
   void onDonacionRecibida_exitoso() {
     UUID donanteId = UUID.randomUUID();
     UUID beneficiarioId = UUID.randomUUID();
     EventoDonacionRecibidaV1 evento = new EventoDonacionRecibidaV1(donanteId, beneficiarioId);
 
-    listener.onDonacionRecibida(evento);
+    UUID messageId = UUID.randomUUID();
+
+    listener.onDonacionRecibida(evento, messageId.toString());
 
     ArgumentCaptor<DonacionExitosaRequest> captor =
         ArgumentCaptor.forClass(DonacionExitosaRequest.class);
-    verify(misionesDonacionService).procesarDonacionExitosa(captor.capture());
+    verify(misionesDonacionService).procesarDonacionExitosa(captor.capture(), eq(messageId));
 
     DonacionExitosaRequest req = captor.getValue();
     assertEquals(donanteId, req.donanteId());
@@ -205,8 +174,9 @@ class IncentivosEventosListenerTest {
   @DisplayName(
       "validar lanza ConstraintViolationException cuando los campos obligatorios son nulos")
   void onCualquierEvento_conCamposInvalidos_lanzaConstraintViolationException() {
-    EventoDonanteRegistradoV1 invalido = new EventoDonanteRegistradoV1(null, null, " ");
+    EventoPersonaSincronizadaV1 invalido = new EventoPersonaSincronizadaV1(null, " ");
 
-    assertThrows(ConstraintViolationException.class, () -> listener.onDonanteRegistrado(invalido));
+    assertThrows(
+        ConstraintViolationException.class, () -> listener.onPersonaSincronizada(invalido));
   }
 }

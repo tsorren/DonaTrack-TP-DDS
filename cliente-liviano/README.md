@@ -9,7 +9,7 @@
 
 `cliente-liviano` **no está implementado**. Existe únicamente como directorio placeholder registrado en [`.log4brains.yml`](../.log4brains.yml), con carpeta de ADRs reservada en `docs/adr/cliente-liviano/`.
 
-**Hito canónico de construcción:** Entrega 5 — Interfaz Web MVC (Semana del 19 de Octubre 2026).
+**Hito canónico de construcción:** Entrega 6 — Interfaz de Usuario y Arquitectura MVC ([enunciado completo](../docs/entregas/Enunciado-TP-Anual-2026.pdf); requerimientos en [`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md)).
 
 ---
 
@@ -26,9 +26,9 @@ Este bounded context será responsable de:
 ## ADRs relevantes
 
 No existen ADRs formalizados para este bounded context en `docs/adr/cliente-liviano/` aún.  
-Las decisiones de diseño de la interfaz de usuario deberán documentarse allí cuando comience la Entrega 5.
+Las decisiones de diseño de la interfaz de usuario deberán documentarse allí cuando comience la Entrega 6.
 
-> Ver: [`docs/adr/DEUDA_TECNICA.md — DTI-05`](../docs/adr/DEUDA_TECNICA.md) — refactor previo a la integración con la interfaz Web MVC (Entrega 5).
+> Ver: [`docs/adr/DEUDA_TECNICA.md — DTI-05`](../docs/adr/DEUDA_TECNICA.md) — refactor previo a la integración con la interfaz Web MVC (Entrega 6; fecha de la DTI a revisar).
 
 ---
 
@@ -43,4 +43,4 @@ Los contratos REST que este cliente consumirá están documentados en:
 
 ## No agregar código a este directorio
 
-Este directorio no debe contener código fuente hasta que el equipo decida iniciar la Entrega 5. Cualquier decisión de diseño previa debe documentarse como ADR en `docs/adr/cliente-liviano/`.
+Este directorio no debe contener código fuente hasta que el equipo decida iniciar la Entrega 6. Cualquier decisión de diseño previa debe documentarse como ADR en `docs/adr/cliente-liviano/`.

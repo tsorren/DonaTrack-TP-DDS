@@ -30,15 +30,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -280,5 +284,38 @@ class GlobalExceptionHandlerTest {
     assertNotNull(response.getBody());
     assertEquals(ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), response.getBody().code());
     assertTrue(response.getBody().details().contains("/api/inexistente"));
+  }
+
+  @Test
+  void handleMissingPart_deberiaRetornarBadRequestConElNombreDeLaParte() {
+    ResponseEntity<ErrorResponse> response =
+        handler.handleMissingPart(new MissingServletRequestPartException("archivo"));
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), response.getBody().code());
+    assertTrue(response.getBody().details().contains("archivo"));
+  }
+
+  @Test
+  void handleMaxUploadSize_deberiaRetornarContentTooLarge() {
+    ResponseEntity<ErrorResponse> response =
+        handler.handleMaxUploadSize(new MaxUploadSizeExceededException(1024));
+
+    assertEquals(HttpStatus.CONTENT_TOO_LARGE, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), response.getBody().code());
+  }
+
+  @Test
+  void handleMediaTypeNotSupported_deberiaRetornarUnsupportedMediaType() {
+    ResponseEntity<ErrorResponse> response =
+        handler.handleMediaTypeNotSupported(
+            new HttpMediaTypeNotSupportedException(
+                MediaType.APPLICATION_JSON, List.of(MediaType.MULTIPART_FORM_DATA)));
+
+    assertEquals(HttpStatus.UNSUPPORTED_MEDIA_TYPE, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertTrue(response.getBody().details().contains("multipart/form-data"));
   }
 }

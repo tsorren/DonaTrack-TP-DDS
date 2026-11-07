@@ -1,0 +1,79 @@
+@startuml donaciones-componentes-persistencia
+' ============================================================
+' Componentes de la persistencia de Donaciones (Entrega 5). Hexagonal: el dominio declara
+' los puertos y los implementa un adaptador JPA (perfil postgres) o uno en memoria
+' (perfil por defecto). Fuente: donaciones-service/src/main/java/grupo5/donaciones.
+' ============================================================
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam componentStyle rectangle
+
+title Donaciones — componentes de persistencia
+
+component "Controllers REST" as ctrl
+component "Listeners AMQP\n(eventos de Logística)" as amqpIn
+
+package "Aplicación" {
+  component "Servicios\n(propuestas, segmentación,\nnecesidades, personas…)" as svc
+  component "LogisticaBroker\n@Transactional" as broker
+  component "ProcesadorEventosLogistica\nuna transacción por donación" as proc
+  component "AcumuladosDeAsignacion\n(SUM / COUNT en la base)" as acum
+}
+
+package "Dominio" {
+  interface "Puertos de repositorio\nIDonacionesRepository · INecesidadesRepository ·\nIDonacionesIndependientesRepository · IPropuestasRepository ·\nISolicitudesEntregaRepository · ILogisticaOutbox ·\nIEventosConsumidosRepository · …" as puertos
+  component "Agregados\n(sin anotaciones JPA,\nconstructores de reconstitución)" as dom
+}
+
+package "Infraestructura — perfil postgres" {
+  component "Adapters JPA\n(CrudRepositoryJpaAdapter de common-lib)" as adapters
+  component "Mappers dominio ↔ entidad\n@Profile(postgres)" as mappers
+  component "Entidades JPA\n+ repositorios Spring Data" as entities
+  component "LogisticaOutboxRelay\n@Scheduled" as relay
+}
+
+package "Infraestructura — perfil por defecto" {
+  component "Repositorios en memoria\n@Profile(!postgres)" as mem
+}
+
+component "DonacionesEventPublisher\npublica después del commit" as pub
+
+database "PostgreSQL 16\nschema donaciones\nFlyway V1 a V13 · ddl validate" as pg
+queue "RabbitMQ" as rabbit
+component "Proveedores de logística\n(AMQP · HTTP)" as prov
+
+ctrl --> svc
+amqpIn --> proc
+svc --> dom
+svc --> puertos
+svc --> broker
+svc --> acum
+acum --> puertos
+proc --> puertos
+broker --> puertos
+adapters ..|> puertos
+mem ..|> puertos
+adapters --> mappers
+mappers --> entities
+entities --> pg : JDBC / Hibernate
+relay --> puertos : entradas pendientes
+relay --> prov
+relay --> broker : resultado del envío
+svc --> pub
+pub --> rabbit : afterCommit
+
+note right of broker
+  Transactional Outbox: la solicitud de entrega
+  y su entrada en outbox_logistica se guardan
+  en la misma transacción (payload JSONB, D6).
+  El relay envía fuera de la transacción.
+end note
+
+note bottom of mem
+  Solo con el perfil por defecto (preprod hoy).
+  El historial de corridas del algoritmo y los
+  reintentos hacia Notificaciones siguen en
+  memoria en los dos perfiles (D-36).
+end note
+@enduml

@@ -11,7 +11,11 @@ public interface IMisionesDonacionService {
 
   void procesarDonacion(NuevaDonacionRequest request);
 
+  void procesarDonacion(NuevaDonacionRequest request, UUID eventoId);
+
   void procesarDonacionExitosa(DonacionExitosaRequest request);
+
+  void procesarDonacionExitosa(DonacionExitosaRequest request, UUID eventoId);
 
   List<MisionDTO> obtenerMisiones(UUID donanteId);
 

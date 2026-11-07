@@ -141,12 +141,14 @@ package PERSONAS {
   }
 
   class Donante <<entity>> {
-    - id: UUID {final}
-    - persona: Persona
+    - id: UUID {final} // = personaId (identidad compartida)
+    - activo: boolean
     --
+    + personaId(): UUID
+    + estaActivo(): boolean
+    + darDeBaja(): boolean
+    + reactivar(): boolean
     + anonimizar(): void
-    + agregarDonacion(Donacion): void
-    + quitarDonacion(Donacion): void
   }
 
   Persona <|-- Humana
@@ -333,7 +335,6 @@ package DONACIONES_INDEPENDIENTES {
   }
 
   class EnTraslado <<entity>> {
-    - patenteCamion: String
     --
     + confirmarEntrega(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
     + registrarFalla(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
@@ -345,13 +346,19 @@ package DONACIONES_INDEPENDIENTES {
   }
 
   class Entregada <<entity>> {
+    - patenteCamion: String {final}
   }
 
   class EntregaFallida <<entity>> {
-    - replanificable: Boolean
     --
     + retornar(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + replanificar(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
   }
+  note right of EntregaFallida
+    retornar limpia el destino de la donación
+    (vuelve al stock); replanificar lo conserva
+    para reintentar la entrega (D-33)
+  end note
 
   class Vencida <<entity>> {
   }
@@ -364,8 +371,8 @@ package DONACIONES_INDEPENDIENTES {
     - actor: String
   }
 
-  class ItemDonacionIndependiente <<entity>> {
-    - donacionIndependiente: DonacionIndependiente
+  class ItemDonacionIndependiente <<value>> {
+    - itemNormalizadoId: UUID
     - bien: BienNormalizado
     - cantidad: Integer
     --
@@ -383,16 +390,23 @@ package DONACIONES_INDEPENDIENTES {
 
   class DonacionIndependiente <<entity>> {
     - id: UUID {final}
-    - donacionOriginal: Donacion {final}
+    - donacionOriginalId: UUID
     - items: List<ItemDonacionIndependiente>
-    - estado: EstadoDonacionIndependiente
-    - historialEstados: List<CambioEstado>
+    - estadoActual: EstadoDonacionIndependiente
+    - historial: List<CambioEstado> {final}
+    - fechaRegistro: LocalDateTime {final}
+    - necesidadId: UUID
+    - periodoId: UUID
+    - entidadBeneficiariaId: UUID
     - eventos: List<EventoDonacionIndependiente>
-    - cantidadTotal: Integer
     --
-    + DonacionIndependiente(donacionOriginal: Donacion, items: List<ItemDonacionIndependiente>)
+    + DonacionIndependiente(donacionOriginalId: UUID, items: List<ItemDonacionIndependiente>)
+    + DonacionIndependiente(datos: DatosDonacionIndependiente, items, historial) <<reconstitución>>
     + cambiarEstado(solicitud: SolicitudCambioEstadoDonacionIndependiente): void
-    + fragmentar(cantidadNecesaria: Integer): DonacionIndependiente
+    + asignar(actor: String, destino: DestinoAsignacion): void
+    + asignarDestino(destino: DestinoAsignacion): void
+    + getCantidad(): int
+    + fragmentarse(cantidadNecesitada: int): DonacionIndependiente
     + tieneSubcategoria(subcategoria: SubCategoria): boolean
     + estaVencida(): boolean
     + pesoTotal(): Double
@@ -411,7 +425,8 @@ package DONACIONES_INDEPENDIENTES {
   EstadoDonacionIndependiente <|.. EntregaFallida
   EstadoDonacionIndependiente <|.. Vencida
 
-  DonacionIndependiente --> Donacion
+  DonacionIndependiente ..> Donacion : donacionOriginalId
+  DonacionIndependiente ..> DestinoAsignacion
   DonacionIndependiente *-- TipoEstadoDonacion
   DonacionIndependiente *-- EstadoDonacionIndependiente
   DonacionIndependiente *-- CambioEstado
@@ -428,68 +443,64 @@ package DONACIONES_INDEPENDIENTES {
 package NECESIDADES {
   abstract class Necesidad <<entity>> {
     - id: UUID {final}
-    - entidadBeneficiaria: EntidadBeneficiaria {final}
-    - subcategoria: SubCategoria {final}
-    - cantidadTotal: Integer
+    - subcategoriaId: UUID {final}
+    - cantidadNecesitada: Integer
     - descripcion: String
-    - fechaPublicacion: LocalDate
-    - fechaFinalizacion: LocalDate
+    - fechaInicio: LocalDate {final}
+    - entidadId: UUID
+    - version: Long
     --
-    + Necesidad(subcategoria: SubCategoria, cantidadTotal: Integer, descripcion: String)
-    + {abstract} asignarDonacion(donacion: DonacionIndependiente): void
-    + {abstract} quitarDonacion(donacion: DonacionIndependiente): void
-    + {abstract} cantidadAcumulada(): Integer
-    + {abstract} estaSatisfecha(): boolean
-    + cantidadRestante(): Integer
-    + toDTO(): NecesidadDTO
+    # Necesidad(subcategoriaId: UUID, cantidadNecesitada: Integer, descripcion: String)
+    # Necesidad(datos: DatosNecesidad) <<reconstitución>>
+    + {abstract} destinoDeAsignacion(): DestinoAsignacion
+    + {abstract} periodoActualId(): UUID
+    + {abstract} estaSatisfechaCon(cantidadAcumulada: int): boolean
+    + cantidadRestante(cantidadAcumulada: int): int
+    + {abstract} toDTO(cantidadAcumulada: int): NecesidadDTO
+    + {abstract} isActiva(): boolean
+    + {abstract} desactivar(): void
+  }
+  note right of Necesidad
+    DTI-06: la necesidad no conoce sus donaciones.
+    Lo asignado se suma sobre las donaciones con ese
+    destino y se pasa como parámetro (AcumuladosDeAsignacion)
+  end note
+
+  class DestinoAsignacion <<value>> {
+    - necesidadId: UUID
+    - periodoId: UUID
+    - entidadBeneficiariaId: UUID
   }
 
   class NecesidadExtraordinaria <<entity>> {
-    - donacionesAsignadas: List<DonacionIndependiente>
+    - activa: boolean
     --
-    + NecesidadExtraordinaria(subcategoria: SubCategoria, cantidad: Integer, descripcion: String)
-    + toDTO(): NecesidadDTO
-    + asignarDonacion(donacion: DonacionIndependiente): void
-    + quitarDonacion(donacion: DonacionIndependiente): void
-    + cantidadAcumulada(): Integer
-    + estaSatisfecha(): boolean
-    + obtenerNecesidad(): Necesidad
+    + destinoDeAsignacion(): DestinoAsignacion
+    + estaSatisfechaCon(cantidadAcumulada: int): boolean
   }
 
-  class PeriodoNecesidad <<entity>> {
-    - logger: Logger
+  class PeriodoNecesidad <<value>> {
+    - id: UUID
     - fechaFin: LocalDate
-    - donacionesAsignadas: List<DonacionIndependiente>
     - cantidadObjetivo: Integer
-    - necesidadRecurrente: NecesidadRecurrente
     --
-    + PeriodoNecesidad(fechaFin: LocalDate, cantidadObjetivo: Integer)
-    + asignarDonacion(donacion: DonacionIndependiente): void
-    + quitarDonacion(donacion: DonacionIndependiente): void
-    + cantidadAcumulada(): Integer
-    + estaSatisfecha(): boolean
+    + estaSatisfechaCon(cantidadAcumulada: int): boolean
     + estaEnPeriodo(fecha: LocalDate): boolean
-    + finalizo(): void
-    + obtenerNecesidad(): Necesidad
+    + finalizo(cantidadAcumulada: int): void
   }
 
   class NecesidadRecurrente <<entity>> {
-    - periodo: Period
+    - periodo: Period {final}
     - periodos: List<PeriodoNecesidad>
     - activa: Boolean
     --
-    + NecesidadRecurrente(subcategoria: SubCategoria, cantidad: Integer, descripcion: String, periodo: Period, fechaInicio: LocalDate)
-    - validarNecesidadRecurrente(fechaInicio: LocalDate): void
-    + getDonacionesAsignadas(): List<DonacionIndependiente>
     + obtenerPeriodoActual(): PeriodoNecesidad
-    + asignarDonacion(donacion: DonacionIndependiente): void
-    + quitarDonacion(donacion: DonacionIndependiente): void
-    + cantidadAcumulada(): Integer
-    + estaSatisfecha(): boolean
+    + destinoDeAsignacion(): DestinoAsignacion
+    + periodoActualId(): UUID
+    + estaSatisfechaCon(cantidadAcumulada: int): boolean
     + hayQueGenerarNuevo(fechaActual: LocalDate): boolean
+    + renovarPeriodoSiCorresponde(fechaActual: LocalDate, acumuladoDelPeriodoActual: int): boolean
     + generarNuevoPeriodo(): void
-    + getActiva(): boolean
-    + toDTO(): NecesidadDTO
   }
 
   class GestorNecesidades <<service>> {
@@ -501,20 +512,25 @@ package NECESIDADES {
   Necesidad <|-- NecesidadExtraordinaria
   Necesidad <|-- NecesidadRecurrente
 
-  Necesidad --> SubCategoria
-  Necesidad --> EntidadBeneficiaria
-  NecesidadExtraordinaria o-- DonacionIndependiente
+  Necesidad ..> SubCategoria : subcategoriaId
+  Necesidad ..> EntidadBeneficiaria : entidadId
+  Necesidad ..> DestinoAsignacion
   NecesidadRecurrente *-- PeriodoNecesidad : "*"
-  PeriodoNecesidad o-- DonacionIndependiente
   GestorNecesidades --> NecesidadRecurrente
 }
 
 ' ==================== BENEFICIARIOS ====================
 package BENEFICIARIOS {
   class EntidadBeneficiaria <<entity>> {
-    - id: UUID
-    - juridica: UUID
+    - id: UUID {final} // = juridicaId (identidad compartida)
+    - activo: boolean
     --
+    + juridicaId(): UUID
+    + estaActivo(): boolean
+    + darDeBaja(): boolean
+    + reactivar(): boolean
+    + {static} validarApta(Persona): Juridica
+    + {static} validarRequisitos(TipoJuridico, boolean): void
     + anonimizar(): void
   }
 
@@ -529,9 +545,9 @@ package PROPUESTAS {
     DESCARTADA
   }
 
-  class PosibleFragmentacion <<entity>> {
-    - id: UUID
-    - donacionOriginal: DonacionIndependiente
+  class PosibleFragmentacion <<value>> {
+    - donacionOriginalId: UUID
+    - donacionOriginal: DonacionIndependiente <<transitorio, al confirmar>>
     - cantidadNecesaria: Integer
     --
     + confirmar(necesidad: Necesidad, actor: String): DonacionIndependiente
@@ -539,7 +555,7 @@ package PROPUESTAS {
 
   class Propuesta <<entity>> {
     - id: UUID
-    - necesidadQueSatisface: Necesidad
+    - necesidadQueSatisfaceId: UUID
     - posiblesFragmentaciones: List<PosibleFragmentacion>
     - estado: EstadoPropuesta
     - fechaCreacion: LocalDateTime
@@ -561,8 +577,8 @@ package PROPUESTAS {
 
   Propuesta *-- EstadoPropuesta
   Propuesta *-- PosibleFragmentacion
-  PosibleFragmentacion --> DonacionIndependiente
-  PosibleFragmentacion --> Propuesta
+  PosibleFragmentacion ..> DonacionIndependiente : donacionOriginalId
+  Propuesta ..> Necesidad : necesidadQueSatisfaceId
   GestorPropuestasDeAsignacion --> EstadoPropuesta
   GestorPropuestasDeAsignacion --> Propuesta
 }

@@ -14,9 +14,10 @@ body:
         - "Entrega 1: Arquitectura y Modelado en Objetos - Parte I"
         - "Entrega 2: Arquitectura y Modelado en Objetos - Parte II"
         - "Entrega 3: Arquitectura y Modelado en Objetos - Parte III"
-        - "Entrega 4: Persistencia y Maquetado de Interfaz de Usuario"
-        - "Entrega 5: Arquitectura Web MVC"
-        - "Entrega 6: Despliegue, Observabilidad y Seguridad"
+        - "Entrega 4: Persistencia, Integración y Despliegue"
+        - "Entrega 5: Persistencia"
+        - "Entrega 6: Interfaz de Usuario y Arquitectura MVC"
+        - "Entrega 7: Observabilidad y Seguridad"
     validations:
       required: true
 

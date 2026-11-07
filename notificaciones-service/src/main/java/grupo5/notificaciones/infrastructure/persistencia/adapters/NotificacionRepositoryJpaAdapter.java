@@ -36,4 +36,21 @@ public class NotificacionRepositoryJpaAdapter
   public List<Notificacion> findByPersonaId(UUID personaId) {
     return springDataRepo.findByPersonaId(personaId).stream().map(mapper::toDomain).toList();
   }
+
+  @Override
+  public List<Notificacion> findByPersonaIdAndLeida(UUID personaId, boolean leida) {
+    return springDataRepo.findByPersonaIdAndLeida(personaId, leida).stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  public long countByPersonaIdAndLeidaFalse(UUID personaId) {
+    return springDataRepo.countByPersonaIdAndLeidaFalse(personaId);
+  }
+
+  @Override
+  public void marcarTodasComoLeidas(UUID personaId) {
+    springDataRepo.marcarTodasComoLeidas(personaId);
+  }
 }

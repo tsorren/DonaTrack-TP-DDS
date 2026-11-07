@@ -8,6 +8,8 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.repositories.IOutboxIncentivos;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,5 +73,39 @@ class NotificacionesIncentivosListenerTest {
     verify(notificacionesClient, times(1))
         .notificarAscensoCategoria(
             personaId, CategoriaDonante.SOSTENEDOR.name(), CategoriaDonante.COLABORADOR.name());
+  }
+
+  @Test
+  void onMisionCompletada_conOutbox_noNotificaDirectoPeroSiPublicaEnN8n() {
+    NotificacionesIncentivosListener conOutbox =
+        new NotificacionesIncentivosListener(
+            notificacionesClient, n8nClient, Optional.of(mock(IOutboxIncentivos.class)));
+    UUID donanteId = UUID.randomUUID();
+    Insignia insignia = new Insignia("Gran Donador", "Por donar mucho", "/icon.png");
+    MisionCompletada evento =
+        new MisionCompletada(donanteId, UUID.randomUUID(), "Carlos", "Misión 1", insignia);
+
+    conOutbox.onMisionCompletada(evento);
+
+    verify(notificacionesClient, never()).notificarMisionCumplida(any(), any(), any());
+    verify(n8nClient, times(1))
+        .publicarInsigniaGanada(donanteId, "Donante Carlos", "Gran Donador", "Por donar mucho");
+  }
+
+  @Test
+  void onAscensoDonante_conOutbox_noNotificaDirecto() {
+    NotificacionesIncentivosListener conOutbox =
+        new NotificacionesIncentivosListener(
+            notificacionesClient, n8nClient, Optional.of(mock(IOutboxIncentivos.class)));
+    AscensoDonante evento =
+        new AscensoDonante(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            CategoriaDonante.COLABORADOR,
+            CategoriaDonante.SOSTENEDOR);
+
+    conOutbox.onAscensoDonante(evento);
+
+    verify(notificacionesClient, never()).notificarAscensoCategoria(any(), any(), any());
   }
 }

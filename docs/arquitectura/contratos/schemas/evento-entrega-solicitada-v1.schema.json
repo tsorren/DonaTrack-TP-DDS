@@ -28,7 +28,7 @@
         "pais": { "type": "string" }
       },
       "required": ["calle", "altura", "codigoPostal", "localidad", "provincia", "pais"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "description": "Dirección física de destino de la entrega (entidad beneficiaria)"
     },
     "pesoTotalKG": {
@@ -55,5 +55,5 @@
     "volumenTotalM3",
     "fecha"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }

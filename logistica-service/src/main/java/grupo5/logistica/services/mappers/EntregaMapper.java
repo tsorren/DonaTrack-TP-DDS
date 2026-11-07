@@ -5,14 +5,21 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
 import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
 import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
+import grupo5.logistica.models.entities.rutas.direccion.Direccion;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,16 +57,40 @@ public class EntregaMapper {
         entrega.getIdBeneficiaria(),
         direccionMapper.toResponseDTO(entrega.getDestino()),
         entrega.getEstadoActual(),
-        entrega.getHoraSalida(),
-        entrega.getHoraArribo(),
+        aInstantUtc(entrega.getHoraSalida()),
+        aInstantUtc(entrega.getHoraArribo()),
         entrega.getFotoRecepcionUrl(),
+        entrega.getFotosRecepcion(),
         entrega.getPesoTotalKG(),
         entrega.getVolumenTotalM3(),
         entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList());
   }
 
+  public EntregaMapaPublicoResponseDTO toMapaPublicoResponseDTO(Entrega entrega) {
+    if (entrega == null
+        || entrega.getDestino() == null
+        || !entrega.getDestino().tieneCoordenadas()) {
+      return null;
+    }
+
+    Direccion destino = entrega.getDestino();
+    CoordenadasGeograficas coords = destino.coordenadas();
+    Instant fechaEntrega = aInstantUtc(resolverFechaEntrega(entrega));
+
+    return new EntregaMapaPublicoResponseDTO(
+        entrega.getId(),
+        coords.latitud(),
+        coords.longitud(),
+        destino.localidad().nombre(),
+        destino.localidad().provincia().nombre(),
+        destino.localidad().provincia().pais().nombre(),
+        fechaEntrega,
+        entrega.getPesoTotalKG(),
+        entrega.getVolumenTotalM3());
+  }
+
   public ConfirmacionRecepcion toSolicitud(Entrega entrega, ConfirmarRecepcionRequestDTO dto) {
-    return new ConfirmacionRecepcion(entrega, dto.actor(), null);
+    return new ConfirmacionRecepcion(entrega, dto.actor(), dto.obtenerFotosRecepcion());
   }
 
   public NoRecepcion toSolicitud(Entrega entrega, ReportarNoRecepcionRequestDTO dto) {
@@ -77,7 +108,25 @@ public class EntregaMapper {
     }
 
     return new CambioEstadoEntregaResponseDTO(
-        cambio.estadoAnterior(), cambio.estadoNuevo(), cambio.timeStamp(), cambio.actor());
+        cambio.estadoAnterior(),
+        cambio.estadoNuevo(),
+        aInstantUtc(cambio.timeStamp()),
+        cambio.actor());
+  }
+
+  private static Instant aInstantUtc(LocalDateTime ldt) {
+    return ldt != null ? ldt.toInstant(ZoneOffset.UTC) : null;
+  }
+
+  private static LocalDateTime resolverFechaEntrega(Entrega entrega) {
+    if (entrega.getHoraArribo() != null) {
+      return entrega.getHoraArribo();
+    }
+    return entrega.getHistorialEstado().stream()
+        .filter(c -> c.estadoNuevo() == EstadoEntrega.ENTREGADA)
+        .map(CambioEstadoEntrega::timeStamp)
+        .reduce((primero, ultimo) -> ultimo)
+        .orElse(null);
   }
 
   private static void validarMagnitudes(CrearEntregaRequestDTO dto) {

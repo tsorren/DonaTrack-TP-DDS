@@ -8,6 +8,7 @@ import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
+import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,16 @@ class PosibleFragmentacionTest {
     necesidad = NecesidadMother.extraordinaria(subcategoriaId, 5);
   }
 
+  // DTI-06: lo acumulado es la suma de las donaciones asignadas a la necesidad
+  private int asignadoA(DonacionIndependiente... asignadas) {
+    DonacionesIndependientesRepositoryEnMemoria repo =
+        new DonacionesIndependientesRepositoryEnMemoria();
+    for (DonacionIndependiente d : asignadas) {
+      repo.save(d);
+    }
+    return repo.sumarCantidadAsignada(necesidad.getId(), necesidad.periodoActualId());
+  }
+
   @Test
   void confirmar_cuandoCantidadEsMenorQueDonacion_deberiaFragmentarYAsignar() {
     PosibleFragmentacion fragmentacion = new PosibleFragmentacion();
@@ -38,8 +49,8 @@ class PosibleFragmentacionTest {
     assertEquals(4, donacionAsignada.getCantidad());
     assertEquals(6, donacionOriginal.getCantidad());
     assertInstanceOf(AsignacionRealizada.class, donacionAsignada.getEstadoActual());
-    assertEquals(necesidad, donacionAsignada.getAsignadaA());
-    assertEquals(4, necesidad.cantidadAcumulada());
+    assertEquals(necesidad.getId(), donacionAsignada.getNecesidadId());
+    assertEquals(4, asignadoA(donacionAsignada));
   }
 
   @Test
@@ -54,8 +65,8 @@ class PosibleFragmentacionTest {
     assertSame(donacionOriginal, donacionAsignada);
     assertEquals(10, donacionAsignada.getCantidad());
     assertInstanceOf(AsignacionRealizada.class, donacionAsignada.getEstadoActual());
-    assertEquals(necesidad, donacionAsignada.getAsignadaA());
-    assertEquals(10, necesidad.cantidadAcumulada());
+    assertEquals(necesidad.getId(), donacionAsignada.getNecesidadId());
+    assertEquals(10, asignadoA(donacionAsignada));
   }
 
   @Test

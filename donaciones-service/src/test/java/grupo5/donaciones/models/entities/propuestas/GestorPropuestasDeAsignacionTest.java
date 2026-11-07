@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.models.algoritmos.AlgoritmoAsignacion;
+import grupo5.donaciones.models.algoritmos.DatosDeAsignacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.util.List;
@@ -38,13 +39,14 @@ class GestorPropuestasDeAsignacionTest {
     Propuesta prop3 = new Propuesta();
     prop3.asociarNecesidad(necesidad1Id);
 
-    when(algoritmo1Mock.ejecutar(anyList(), anyList())).thenReturn(List.of(prop1, prop2));
-    when(algoritmo2Mock.ejecutar(anyList(), anyList())).thenReturn(List.of(prop3));
+    when(algoritmo1Mock.ejecutar(anyList(), anyList(), any())).thenReturn(List.of(prop1, prop2));
+    when(algoritmo2Mock.ejecutar(anyList(), anyList(), any())).thenReturn(List.of(prop3));
 
     List<Necesidad> necesidades = List.of(mock(Necesidad.class));
     List<DonacionIndependiente> donaciones = List.of(mock(DonacionIndependiente.class));
 
-    List<Propuesta> resultado = gestor.generarPropuestas(necesidades, donaciones);
+    List<Propuesta> resultado =
+        gestor.generarPropuestas(necesidades, donaciones, DatosDeAsignacion.sinAsignaciones());
 
     assertEquals(1, resultado.size());
     assertSame(prop3, resultado.getFirst());
@@ -62,10 +64,11 @@ class GestorPropuestasDeAsignacionTest {
     Propuesta prop2 = new Propuesta();
     prop2.asociarNecesidad(necesidad2Id);
 
-    when(algoritmo1Mock.ejecutar(anyList(), anyList())).thenReturn(List.of(prop1));
-    when(algoritmo2Mock.ejecutar(anyList(), anyList())).thenReturn(List.of(prop2));
+    when(algoritmo1Mock.ejecutar(anyList(), anyList(), any())).thenReturn(List.of(prop1));
+    when(algoritmo2Mock.ejecutar(anyList(), anyList(), any())).thenReturn(List.of(prop2));
 
-    List<Propuesta> resultado = gestor.generarPropuestas(List.of(), List.of());
+    List<Propuesta> resultado =
+        gestor.generarPropuestas(List.of(), List.of(), DatosDeAsignacion.sinAsignaciones());
 
     assertEquals(2, resultado.size());
     assertTrue(resultado.contains(prop1));
@@ -74,10 +77,11 @@ class GestorPropuestasDeAsignacionTest {
 
   @Test
   void generarPropuestas_conListasVacias_retornaVacio() {
-    when(algoritmo1Mock.ejecutar(anyList(), anyList())).thenReturn(List.of());
-    when(algoritmo2Mock.ejecutar(anyList(), anyList())).thenReturn(List.of());
+    when(algoritmo1Mock.ejecutar(anyList(), anyList(), any())).thenReturn(List.of());
+    when(algoritmo2Mock.ejecutar(anyList(), anyList(), any())).thenReturn(List.of());
 
-    List<Propuesta> resultado = gestor.generarPropuestas(List.of(), List.of());
+    List<Propuesta> resultado =
+        gestor.generarPropuestas(List.of(), List.of(), DatosDeAsignacion.sinAsignaciones());
 
     assertTrue(resultado.isEmpty());
   }

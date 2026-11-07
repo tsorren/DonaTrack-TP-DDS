@@ -55,7 +55,7 @@ class RepositoriosJpaTest {
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres =
       new PostgreSQLContainer<>("postgres:16-alpine")
-          .withDatabaseName("donatrack")
+          .withDatabaseName("notificaciones")
           .withUsername("notificaciones_user")
           .withPassword("notif_pass_2026")
           .withCopyFileToContainer(

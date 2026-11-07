@@ -26,11 +26,21 @@ public class Subcategoria implements AggregateRoot {
     this.nombre = nombre;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public Subcategoria(
+      UUID id, UUID categoriaId, String nombre, List<AliasSubcategoria> aliasesPersistidos) {
+    this.id = id;
+    this.categoriaId = categoriaId;
+    this.nombre = nombre;
+    this.aliases.addAll(aliasesPersistidos);
+  }
+
   public List<AliasSubcategoria> getAliases() {
     return Collections.unmodifiableList(aliases);
   }
 
   public void agregarAlias(String alias) {
+    if (tieneAlias(alias)) return;
     aliases.add(new AliasSubcategoria(alias, this.nombre));
   }
 

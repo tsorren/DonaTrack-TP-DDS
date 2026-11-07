@@ -30,7 +30,13 @@ public class CatalogDataInitializer implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
-    log.info("Initializing catalog data (Categories and Subcategories) in memory...");
+    // Cada ejecución generaría ids nuevos: con una base persistente duplicaría el catálogo.
+    if (categoryRepository.count() > 0) {
+      log.info("El catálogo ya tiene datos; se omite la carga inicial.");
+      return;
+    }
+
+    log.info("Initializing catalog data (Categories and Subcategories)...");
 
     // Categoria Alimentos
     Categoria alimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);

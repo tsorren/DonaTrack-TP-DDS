@@ -53,6 +53,20 @@
             <version>2.44.1</version>
             <scope>test</scope>
         </dependency>
+        <!-- RM-08 (aprobada 2026-10-28): mensajes AMQP contra JSON Schema draft 2020-12.
+             La 1.5.x usa Jackson 2, como el resto del módulo -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>1.5.9</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- RM-08 (aprobada 2026-10-28): consumidor espía AMQP; versión del BOM de Spring Boot -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

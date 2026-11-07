@@ -3,18 +3,27 @@
 # ============================================================================
 # Disparador: push a main o ENTREGA_* (resultado de un PR mergeado)
 #
-# Responsabilidad única: compilar TODOS los servicios del monorepo y publicar
-# sus imágenes Docker con tags estables en GHCR. Estos tags son los que consume
-# preprod-validation en el pipeline de PR para resolver servicios no modificados.
+# Responsabilidad única: compilar todos los servicios del monorepo, validar el
+# estado integrado en preprod y promover a los tags estables solo lo validado
+# (RM-06, ADR 20261020 promoción por digest).
+#
+# Flujo: docker-publish publica el candidato :sha-<7> → preprod-post-merge corre el
+# preprod con esos digests (estricto, también los chequeos de contrato de RM-08) →
+# promote re-etiqueta el MISMO digest a :<branch> (y :latest en main) y publica el
+# manifiesto de versión (commit → digest por servicio), que consume main.yml.
+#
+# Corte de entrega (D5 de SPEC-05): workflow_dispatch sobre ENTREGA_x, 24 h antes del
+# vencimiento, a cargo del responsable de integración:
+#   gh workflow run merge.yml --ref ENTREGA_5
 #
 # Estrategia de tags publicados por cada servicio:
-#   :sha-<7 chars>  → Inmutable, para rollback/trazabilidad (ej: sha-a1b2c3d)
-#   :<branch>       → Tag de rama normalizado (ej: entrega_2, main)
-#   :latest         → Solo si el push es a 'main' (representa producción)
+#   :sha-<7 chars>  → Candidato inmutable, para rollback/trazabilidad (ej: sha-a1b2c3d)
+#   :<branch>       → Tag de rama normalizado (ej: entrega_2, main); solo tras el post-merge
+#   :latest         → Solo si el push es a 'main' (representa producción); idem
 #
 # Principios:
-#   • Build Once: cada servicio se compila y empaqueta una sola vez en la matriz
-#     y la imagen resultante se publica con múltiples tags sin reconstruir.
+#   • Build Once: cada servicio se compila y empaqueta una sola vez en la matriz;
+#     la promoción re-etiqueta el digest validado sin reconstruir.
 #   • Determinismo: todos los servicios del stack se publican en la misma corrida,
 #     garantizando cohesión de contratos entre imágenes de la misma entrega.
 #   • Cleanup: los tags efímeros de PR (pr-N) se eliminan de GHCR al finalizar,
@@ -42,6 +51,10 @@ on:
       - '.dockerignore'
       - 'docker-compose*.yml'
       - 'docker-compose*.yaml'
+      # D5: un PR de "contrato primero" solo toca docs; el post-merge lo valida igual
+      - 'docs/arquitectura/contratos/**'
+  # Corte de entrega (D5): corrida manual del post-merge sobre la cabeza de ENTREGA_x.
+  workflow_dispatch:
 
 # ── Concurrencia ──────────────────────────────────────────────────────────────
 # A diferencia del pipeline de PR (cancel-in-progress: true), aquí NO se cancela
@@ -66,6 +79,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   detect-services:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     outputs:
@@ -151,6 +165,7 @@ jobs:
     needs: detect-services
     if: ${{ needs.detect-services.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -192,15 +207,15 @@ jobs:
   # múltiples tags en un solo push usando docker/build-push-action con
   # la opción `tags` multilínea.
   #
-  # Tags publicados:
-  #   :sha-<7>    → inmutable, para rollback (nunca se sobreescribe)
-  #   :<branch>   → estable de rama (se sobreescribe en cada merge)
-  #   :latest     → solo en push a main (representa el estado de producción)
+  # Tag publicado: solo :sha-<7>, el candidato inmutable. :<branch> y :latest los
+  # asigna promote después del preprod post-merge (RM-06). El digest de cada
+  # servicio se guarda como artefacto para armar el manifiesto candidato.
   # ──────────────────────────────────────────────────────────────────────────
   docker-publish:
     needs: [detect-services, build-and-verify]
     if: ${{ needs.build-and-verify.result == 'success' && needs.detect-services.outputs.any-docker-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
@@ -258,25 +273,13 @@ jobs:
           REPO_LOWER=$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           IMAGE_BASE="ghcr.io/${REPO_LOWER}/${SERVICE}"
 
-          SHA_TAG="sha-${SHA_SHORT}"
+          # RM-06: solo el candidato inmutable; promote asigna :<branch> y :latest.
+          TAGS="${IMAGE_BASE}:sha-${SHA_SHORT}"
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "🏷️  Candidato a publicar: ${TAGS}"
 
-          # Construir lista de tags multilínea para build-push-action
-          TAGS="${IMAGE_BASE}:${BRANCH_TAG}"$'\n'"${IMAGE_BASE}:${SHA_TAG}"
-
-          # :latest solo cuando el merge es a main (estado de producción)
-          if [[ "$GH_REF_NAME" == "main" ]]; then
-            TAGS="${TAGS}"$'\n'"${IMAGE_BASE}:latest"
-            echo "🏷️  Publicando también :latest (push a main)"
-          fi
-
-          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$TAGS" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-          echo "🏷️  Tags a publicar:"
-          echo "$TAGS"
-
-      - name: "Construir y publicar imagen estable: ${{ matrix.service }}"
+      - name: "Construir y publicar candidato: ${{ matrix.service }}"
+        id: build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
@@ -285,17 +288,183 @@ jobs:
           build-args: |
             JAR_FILE=${{ steps.meta.outputs.jar_file }}
           push: true
-          # "Build Once, Tag Many": un solo build, múltiples tags en el mismo push.
-          # Esto evita reconstruir la imagen para cada tag y garantiza que todos
-          # los tags apunten al mismo digest (verificable con docker inspect).
           tags: ${{ steps.meta.outputs.tags }}
           # Caché GHA con scope por servicio (compartido con el pipeline de PR
           # para acelerar builds posteriores)
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
 
+      - name: Guardar el digest del candidato
+        env:
+          SERVICE: ${{ matrix.service }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p digests
+          echo "$DIGEST" > "digests/${SERVICE}.digest"
+          echo "🔑 ${SERVICE}: ${DIGEST}"
+
+      - name: Subir el digest del candidato
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: digest-${{ matrix.service }}
+          path: digests/
+          retention-days: 1
+          if-no-files-found: error
+
   # ──────────────────────────────────────────────────────────────────────────
-  # Job 4: Limpieza de Tags Efímeros de PR
+  # Job 4: Preprod post-merge sobre los digests candidatos (RM-06)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Mismo punto de entrada que el PR (run-preprod-tests.sh --images ghcr), con
+  # todas las imágenes fijadas por digest desde el manifiesto candidato. Es
+  # estricto: los chequeos nuevos de contratos (RM-08) fallan acá (D5).
+  # ──────────────────────────────────────────────────────────────────────────
+  preprod-post-merge:
+    needs: [detect-services, docker-publish]
+    if: ${{ needs.docker-publish.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      EXECUTION_ID: "postmerge_${{ github.run_id }}_${{ github.run_attempt }}"
+      PREPROD_STRICT: "true"
+      CONTRATOS_ESTRICTO: "true"
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Historia completa: el diff de contratos compara con el commit anterior o con main
+          fetch-depth: 0
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Descargar los digests candidatos
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: digest-*
+          path: digests
+          merge-multiple: true
+
+      - name: Armar el manifiesto candidato
+        env:
+          GH_REPOSITORY: ${{ github.repository }}
+          GH_REF_NAME: ${{ github.ref_name }}
+          GH_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          REPO_LOWER=$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          python scripts/manifiesto_version.py generar --rama "$GH_REF_NAME" --commit "$GH_SHA" \
+            --corrida "$RUN_ID" --registro "ghcr.io/${REPO_LOWER}" --digests digests -o manifiesto-version.json
+          cat manifiesto-version.json
+
+      - name: Validación pre-producción post-merge (estricta)
+        run: MANIFIESTO=manifiesto-version.json ./run-preprod-tests.sh --images ghcr
+
+      # D5: un cambio incompatible de OpenAPI falla acá. En un push se compara con la cabeza
+      # anterior de la rama (lo que integró este merge); en el corte (workflow_dispatch),
+      # con main, la última entrega presentada.
+      - name: Cambios incompatibles en las specs OpenAPI (D5, error)
+        if: ${{ success() || failure() }}
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # Corte, o push que crea la rama (before = 000…): se compara con main
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$BEFORE" =~ ^0+$ ]]; then BASE=origin/main; else BASE="$BEFORE"; fi
+          scripts/diff-contratos.sh "$BASE" error
+
+      - name: Subir el manifiesto candidato validado
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: manifiesto-candidato
+          path: manifiesto-version.json
+          retention-days: 1
+
+      - name: Subir reportes y logs del post-merge
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: preprod-post-merge
+          path: |
+            integration-tests/target/failsafe-reports/
+            logs/registro/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 5: Promoción por digest (RM-06)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Re-etiqueta el digest validado a :<branch> (y :latest en main) sin
+  # reconstruir, verifica que el tag apunte a ese digest y publica el
+  # manifiesto de versión. Si el post-merge falló, no corre: :<branch> sigue
+  # apuntando a la última versión validada.
+  # ──────────────────────────────────────────────────────────────────────────
+  promote:
+    needs: [detect-services, preprod-post-merge]
+    if: ${{ needs.preprod-post-merge.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Descargar el manifiesto candidato validado
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: manifiesto-candidato
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Re-etiquetar el digest validado
+        env:
+          GH_REF_NAME: ${{ github.ref_name }}
+          BRANCH_TAG: ${{ needs.detect-services.outputs.branch-tag }}
+        run: |
+          python scripts/manifiesto_version.py leer manifiesto-version.json | while read -r svc ref; do
+            image="${ref%@*}"
+            digest="${ref#*@}"
+            tags=(-t "${image}:${BRANCH_TAG}")
+            [[ "$GH_REF_NAME" == "main" ]] && tags+=(-t "${image}:latest")
+            docker buildx imagetools create "${tags[@]}" "$ref"
+            # Criterio 1 de RM-06: el tag promovido apunta al digest validado.
+            promoted=$(docker buildx imagetools inspect "${image}:${BRANCH_TAG}" --format '{{json .Manifest}}' | jq -r '.digest')
+            if [[ "$promoted" != "$digest" ]]; then
+              echo "::error::${svc}: ${image}:${BRANCH_TAG} apunta a ${promoted}, se esperaba ${digest}."
+              exit 1
+            fi
+            echo "✅ ${svc}: :${BRANCH_TAG} → ${digest}"
+          done
+
+      - name: Publicar el manifiesto de versión
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: manifiesto-version
+          path: manifiesto-version.json
+          retention-days: 90
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 6: Limpieza de Tags Efímeros de PR
   # ──────────────────────────────────────────────────────────────────────────
   # Los tags pr-N publicados por docker-build en el pipeline de PR son
   # temporales. Una vez mergeado el PR, su imagen ya no es necesaria y ocupa
@@ -324,6 +493,7 @@ jobs:
     needs: [ detect-services, docker-publish ]
     if: ${{ always() && needs.detect-services.outputs.any-docker-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       packages: write
@@ -400,15 +570,16 @@ jobs:
           echo "✅ Limpieza de tags efímeros completada."
 
   # ──────────────────────────────────────────────────────────────────────────
-  # Job 5: Resumen del Pipeline de Merge
+  # Job 7: Resumen del Pipeline de Merge
   # ──────────────────────────────────────────────────────────────────────────
   # Produce un resumen legible del estado de publicación para el historial
   # de GitHub Actions. Útil para auditoría y diagnóstico rápido.
   # ──────────────────────────────────────────────────────────────────────────
   merge-summary:
-    needs: [ detect-services, build-and-verify, docker-publish, cleanup-pr-tags ]
+    needs: [ detect-services, build-and-verify, docker-publish, preprod-post-merge, promote, cleanup-pr-tags ]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:
@@ -422,6 +593,8 @@ jobs:
           RES_DETECT: ${{ needs.detect-services.result }}
           RES_BUILD: ${{ needs.build-and-verify.result }}
           RES_DOCKER: ${{ needs.docker-publish.result }}
+          RES_POSTMERGE: ${{ needs.preprod-post-merge.result }}
+          RES_PROMOTE: ${{ needs.promote.result }}
           RES_CLEANUP: ${{ needs.cleanup-pr-tags.result }}
         run: |
           {
@@ -442,13 +615,18 @@ jobs:
             echo "| detect-services | $RES_DETECT |"
             echo "| build-and-verify | $RES_BUILD |"
             echo "| docker-publish | $RES_DOCKER |"
+            echo "| preprod-post-merge | $RES_POSTMERGE |"
+            echo "| promote | $RES_PROMOTE |"
             echo "| cleanup-pr-tags | $RES_CLEANUP |"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
           
-          if [[ "$RES_DOCKER" == "success" ]]; then
-            echo "✅ **Imágenes publicadas exitosamente en GHCR.**" >> "$GITHUB_STEP_SUMMARY"
-            echo "Los PRs futuros hacia \`$REF_NAME\` podrán resolver imágenes base desde \`:$BRANCH_TAG\`." >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$RES_PROMOTE" == "success" ]]; then
+            echo "✅ **Candidato validado y promovido.** \`:$BRANCH_TAG\` apunta a los digests de \`sha-$SHA_SHORT\`; el manifiesto de versión quedó como artefacto." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$RES_POSTMERGE" == "failure" ]]; then
+            echo "❌ **El preprod post-merge falló: no se promovió.** \`:$BRANCH_TAG\` sigue en la última versión validada; hay que arreglar la rama hacia adelante." >> "$GITHUB_STEP_SUMMARY"
           elif [[ "$RES_DOCKER" == "failure" ]]; then
-            echo "❌ **Fallo en la publicación de imágenes.** Los PRs futuros no podrán resolver imágenes base hasta que este pipeline se corrija y vuelva a ejecutar." >> "$GITHUB_STEP_SUMMARY"
+            echo "❌ **Fallo en la publicación del candidato.** No hubo post-merge ni promoción." >> "$GITHUB_STEP_SUMMARY"
           fi
+          # La corrida falla si el candidato no llegó a promoverse.
+          [[ "$RES_DOCKER" != "failure" && "$RES_POSTMERGE" != "failure" && "$RES_PROMOTE" != "failure" ]]

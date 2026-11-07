@@ -38,6 +38,24 @@ public class SolicitudEntrega implements AggregateRoot {
     this.ronda = 1;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA: no valida. */
+  public SolicitudEntrega(
+      UUID id,
+      UUID donacionIndependienteId,
+      LocalDateTime fechaCreacion,
+      Set<String> proveedoresDescartados,
+      String proveedorActual,
+      EstadoSolicitudEntrega estado,
+      int ronda) {
+    this.id = id;
+    this.donacionIndependienteId = donacionIndependienteId;
+    this.fechaCreacion = fechaCreacion;
+    this.proveedoresDescartados.addAll(proveedoresDescartados);
+    this.proveedorActual = proveedorActual;
+    this.estado = estado;
+    this.ronda = ronda;
+  }
+
   public void asignarProveedor(String proveedorId) {
     exigirPendiente();
     if (proveedorId == null || proveedorId.isBlank()) {

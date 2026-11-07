@@ -34,7 +34,9 @@ class DonacionTest {
 
   @Test
   void crearDonacion_conDonanteNulo_debeLanzarExcepcion() {
-    ValidationException ex = assertThrows(ValidationException.class, () -> new Donacion(null));
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class, () -> new Donacion(null, null, "Donación de prueba", null));
     assertEquals(ErrorCatalog.DONACION_SIN_DONANTE, ex.getError());
   }
 
@@ -181,5 +183,18 @@ class DonacionTest {
 
     assertEquals(cantidadEnElSnapshot, snapshot.size());
     assertDoesNotThrow(() -> snapshot.forEach(e -> {}));
+  }
+
+  @Test
+  void crear_sinDescripcion_lanzaValidacion() {
+    UUID donanteId = UUID.randomUUID();
+
+    ValidationException sinDescripcion =
+        assertThrows(ValidationException.class, () -> new Donacion(donanteId, null, null, null));
+    ValidationException enBlanco =
+        assertThrows(ValidationException.class, () -> new Donacion(donanteId, null, "  ", null));
+
+    assertEquals(ErrorCatalog.DONACION_SIN_DESCRIPCION, sinDescripcion.getError());
+    assertEquals(ErrorCatalog.DONACION_SIN_DESCRIPCION, enBlanco.getError());
   }
 }

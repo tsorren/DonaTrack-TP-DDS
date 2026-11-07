@@ -22,6 +22,7 @@ jobs:
   agent-governance:
     name: Governance Checks (Wave 7A)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
 

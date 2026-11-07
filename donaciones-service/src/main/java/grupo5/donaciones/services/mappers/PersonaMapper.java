@@ -4,6 +4,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.comunicaciones.MedioDeContactoEventoDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
@@ -122,6 +123,78 @@ public class PersonaMapper {
     }
   }
 
+  /**
+   * Actualización parcial: aplica solo los datos informados y conserva el resto. A diferencia de
+   * {@link #updateEntity}, un dato nulo o vacío significa "no tocar", nunca "borrar". El tipo
+   * jurídico y los representantes no se modifican por esta vía.
+   */
+  public void mergeEntity(Persona entity, PersonaInputDTO input) {
+    if (entity == null || input == null) {
+      return;
+    }
+
+    mergeTypeSpecificFields(entity, input);
+    mergeCommonFields(entity, input);
+  }
+
+  private static void mergeTypeSpecificFields(Persona entity, PersonaInputDTO input) {
+    switch (entity) {
+      case Humana h -> {
+        if (input instanceof HumanaInputDTO hi) {
+          h.actualizar(
+              textoOActual(hi.nombre(), h.getNombre()),
+              textoOActual(hi.apellido(), h.getApellido()),
+              conservar(hi.fechaNacimiento(), h.getFechaNacimiento()),
+              conservar(hi.genero(), h.getGenero()));
+        } else {
+          throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        }
+      }
+      case Juridica j -> {
+        if (input instanceof JuridicaInputDTO ji) {
+          j.actualizar(
+              textoOActual(ji.razonSocial(), j.getRazonSocial()),
+              j.getTipo(),
+              textoOActual(ji.rubro(), j.getRubro()));
+        } else {
+          throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        }
+      }
+      default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
+  private void mergeCommonFields(Persona entity, PersonaInputDTO input) {
+    if (input.documento() != null && !input.documento().isBlank()) {
+      entity.actualizarDocumento(
+          conservar(input.tipoDocumento(), entity.getTipoDocumento()), input.documento());
+    }
+    if (input.direccion() != null) {
+      entity.actualizarDireccion(direccionMapper.toEntity(input.direccion()));
+    }
+    if (input.mediosDeContacto() != null) {
+      input.mediosDeContacto().stream()
+          .map(medioDeContactoMapper::toEntity)
+          .filter(medio -> !entity.tieneMedioDeContacto(medio))
+          .forEach(medio -> agregarComoComplemento(entity, medio));
+    }
+  }
+
+  private static void agregarComoComplemento(Persona entity, MedioDeContacto medio) {
+    if (!entity.getMediosDeContacto().isEmpty()) {
+      medio.setEsPredeterminado(false);
+    }
+    entity.agregarMedioDeContacto(medio);
+  }
+
+  private static String textoOActual(String nuevo, String actual) {
+    return (nuevo != null && !nuevo.isBlank()) ? nuevo : actual;
+  }
+
+  private static <T> T conservar(T nuevo, T actual) {
+    return nuevo != null ? nuevo : actual;
+  }
+
   private void updateCommonFields(Persona entity, PersonaInputDTO input) {
     entity.actualizarDocumento(input.tipoDocumento(), input.documento());
     entity.actualizarDireccion(direccionMapper.toEntity(input.direccion()));
@@ -188,6 +261,44 @@ public class PersonaMapper {
     return persona;
   }
 
+  /**
+   * Arma el pedido de actualización parcial a partir de una fila del CSV. Solo incluye lo que la
+   * fila trae: no usa los valores de relleno con los que {@link #mapToPersona} completa una persona
+   * nueva (nombre "Donante", razón social "Empresa S.A.", rubro "Rubro CSV"). El CSV no trae
+   * dirección, género, rubro, tipo jurídico ni representantes, por lo que viajan nulos.
+   */
+  public PersonaInputDTO mapToActualizacionParcial(Map<String, String> fila) {
+    String nombreRazonSocial = obtenerNombreRazonSocial(fila);
+    Persona informada = mapToPersona(fila);
+    List<MedioDeContactoInputDTO> medios =
+        informada.getMediosDeContacto().stream().map(medioDeContactoMapper::toInputDTO).toList();
+
+    if ("JURIDICA".equals(obtenerTipoPersona(fila))) {
+      return new JuridicaInputDTO(
+          TipoPersona.JURIDICA,
+          informada.getTipoDocumento(),
+          informada.getDocumento(),
+          null,
+          medios,
+          nombreRazonSocial,
+          null,
+          null,
+          null);
+    }
+
+    String[] nombreApellido = extraerNombreYApellido(fila, nombreRazonSocial, null);
+    return new HumanaInputDTO(
+        TipoPersona.HUMANA,
+        informada.getTipoDocumento(),
+        informada.getDocumento(),
+        null,
+        medios,
+        nombreApellido[0],
+        nombreApellido[1],
+        null,
+        parsearFechaNacimiento(fila));
+  }
+
   private static String obtenerTipoPersona(Map<String, String> fila) {
     String tipo = obtenerValor(fila, "TIPO_PERSONA", "TipoPersona", "tipoPersona", "tipo_persona");
     return (tipo == null || tipo.isBlank()) ? "HUMANA" : tipo.trim().toUpperCase();
@@ -225,6 +336,20 @@ public class PersonaMapper {
 
   private static String[] resolverNombreYApellido(
       Map<String, String> fila, String nombreRazonSocial) {
+    String[] informados = extraerNombreYApellido(fila, nombreRazonSocial, "-");
+    String nombreFinal =
+        (informados[0] != null && !informados[0].isBlank()) ? informados[0] : "Donante";
+    String apellidoFinal =
+        (informados[1] != null && !informados[1].isBlank()) ? informados[1] : "Anonimo";
+    return new String[] {nombreFinal, apellidoFinal};
+  }
+
+  /**
+   * Devuelve nombre y apellido tal como los informa la fila, sin valores de relleno. Si solo hay
+   * una razón social de una palabra, el apellido es {@code apellidoSiMononimo}.
+   */
+  private static String[] extraerNombreYApellido(
+      Map<String, String> fila, String nombreRazonSocial, String apellidoSiMononimo) {
     String nombre = obtenerValor(fila, "NOMBRE", "Nombre", "nombre");
     String apellido = obtenerValor(fila, "APELLIDO", "Apellido", "apellido");
 
@@ -236,13 +361,10 @@ public class PersonaMapper {
         apellido = nombreRazonSocial.substring(lastSpace + 1).trim();
       } else {
         nombre = nombreRazonSocial;
-        apellido = "-";
+        apellido = apellidoSiMononimo;
       }
     }
-
-    String nombreFinal = (nombre != null && !nombre.isBlank()) ? nombre : "Donante";
-    String apellidoFinal = (apellido != null && !apellido.isBlank()) ? apellido : "Anonimo";
-    return new String[] {nombreFinal, apellidoFinal};
+    return new String[] {nombre, apellido};
   }
 
   private static LocalDate parsearFechaNacimiento(Map<String, String> fila) {

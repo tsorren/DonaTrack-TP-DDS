@@ -15,6 +15,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIn
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.services.IFotosBienesService;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +24,15 @@ public class DonacionIndependienteMapper {
 
   private final ISubcategoriasRepository subcategoriasRepository;
   private final ICategoriasRepository categoriasRepository;
+  private final IFotosBienesService fotosBienes;
 
   public DonacionIndependienteMapper(
       ISubcategoriasRepository subcategoriasRepository,
-      ICategoriasRepository categoriasRepository) {
+      ICategoriasRepository categoriasRepository,
+      IFotosBienesService fotosBienes) {
     this.subcategoriasRepository = subcategoriasRepository;
     this.categoriasRepository = categoriasRepository;
+    this.fotosBienes = fotosBienes;
   }
 
   public DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
@@ -108,13 +112,14 @@ public class DonacionIndependienteMapper {
         estadoAnterior, estadoNuevo, c.getTimestamp(), c.getJustificacion(), c.getActor());
   }
 
-  private static BienResumenDTO mapBienResumen(Bien bienOriginal) {
+  /** La foto se devuelve como URL temporal de descarga: en el bien se guarda la referencia. */
+  private BienResumenDTO mapBienResumen(Bien bienOriginal) {
     if (bienOriginal == null) {
       return null;
     }
     return new BienResumenDTO(
         bienOriginal.descripcion(),
-        bienOriginal.fotoUrl(),
+        fotosBienes.urlParaMostrar(bienOriginal.fotoUrl()),
         bienOriginal.fechaVencimiento(),
         bienOriginal.estado());
   }

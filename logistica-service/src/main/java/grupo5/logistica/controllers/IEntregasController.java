@@ -4,7 +4,9 @@ import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +19,15 @@ public interface IEntregasController {
 
   ResponseEntity<List<EntregaResponseDTO>> listar();
 
+  ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico();
+
   ResponseEntity<EntregaResponseDTO> obtenerPorId(@PathVariable("id") UUID id);
+
+  ResponseEntity<SeguimientoEntregaResponseDTO> obtenerSeguimientoPorDonacion(
+      @PathVariable("idDonacion") UUID idDonacion);
+
+  ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorBeneficiaria(
+      @PathVariable("idBeneficiaria") UUID idBeneficiaria);
 
   ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @Valid @RequestBody AdjuntarFotoRecepcionRequestDTO dto);

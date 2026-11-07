@@ -59,7 +59,7 @@ class SegmentacionServiceTest {
   void setUp() {
     humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     donante = new Donante(humana.getId());
-    donacion = new Donacion(donante.getId());
+    donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
     donacion.marcarNormalizada();
 
     categoria =
@@ -82,11 +82,12 @@ class SegmentacionServiceTest {
   @Test
   void procesarDonacionNormalizada_deberiaSegmentarSoloItemsAceptadosYProgresarDonacion() {
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemAceptado, itemRechazado));
+    when(itemNormalizadoRepository.findByDonacion(donacion.getId()))
+        .thenReturn(List.of(itemAceptado, itemRechazado));
 
     grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente itemIndep =
         new grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente(
-            itemAceptado.getBien(), 5);
+            itemAceptado.getId(), itemAceptado.getBien(), 5);
     DonacionIndependiente donacionIndependiente =
         new DonacionIndependiente(donacion.getId(), List.of(itemIndep));
 
@@ -114,7 +115,8 @@ class SegmentacionServiceTest {
   @Test
   void procesarDonacionNormalizada_cuandoNoHayAceptados_deberiaMarcarComoSegmentadaSinSegmentar() {
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemRechazado));
+    when(itemNormalizadoRepository.findByDonacion(donacion.getId()))
+        .thenReturn(List.of(itemRechazado));
 
     segmentacionService.procesarDonacionNormalizada(
         new DonacionNormalizada(donacion.getId(), donante.getId()));

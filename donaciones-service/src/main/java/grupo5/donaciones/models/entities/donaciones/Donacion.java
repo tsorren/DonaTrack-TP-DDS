@@ -44,6 +44,10 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
     if (donanteId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
+    // El enunciado pide una descripción general de lo que se dona (y el DER la marca obligatoria)
+    if (descripcion == null || descripcion.isBlank()) {
+      throw new ValidationException(ErrorCatalog.DONACION_SIN_DESCRIPCION);
+    }
     this.id = UUID.randomUUID();
     this.donanteId = donanteId;
     this.depositoRecepcion = depositoRecepcion;
@@ -55,12 +59,18 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
     this.registrarEvento(new DonacionCargada(this.id, this.donanteId));
   }
 
-  public Donacion(UUID donanteId, Deposito depositoRecepcion) {
-    this(donanteId, depositoRecepcion, null, null);
-  }
-
-  public Donacion(UUID donanteId) {
-    this(donanteId, null, null, null);
+  /** Constructor de reconstitución para el adaptador JPA: no revalida ni registra eventos. */
+  public Donacion(
+      DatosDonacion datos, List<ItemDonacion> items, List<CambioEstadoDonacion> historialEstados) {
+    this.id = datos.id();
+    this.donanteId = datos.donanteId();
+    this.descripcion = datos.descripcion();
+    this.fecha = datos.fecha();
+    this.depositoRecepcion = datos.depositoRecepcion();
+    this.estadoActual = datos.estadoActual();
+    this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
+    this.historialEstados =
+        historialEstados != null ? new ArrayList<>(historialEstados) : new ArrayList<>();
   }
 
   public List<ItemDonacion> getItems() {

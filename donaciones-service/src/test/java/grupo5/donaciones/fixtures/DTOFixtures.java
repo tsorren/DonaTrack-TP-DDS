@@ -9,7 +9,6 @@ import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
-import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
@@ -99,14 +98,6 @@ public final class DTOFixtures {
 
   public static DonanteInputDTO donanteInput(UUID personaId) {
     return new DonanteInputDTO(personaId);
-  }
-
-  public static ArchivoInputDTO archivoInput(String path) {
-    return new ArchivoInputDTO(path);
-  }
-
-  public static ArchivoInputDTO archivoInput() {
-    return archivoInput("/data/donantes.csv");
   }
 
   public static EntidadBeneficiariaInputDTO entidadBeneficiariaInput(UUID juridicaId) {

@@ -1,6 +1,6 @@
 package grupo5.notificaciones.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -230,6 +231,76 @@ class NotificacionServiceTest {
     serviceConDb.procesarPersonaSincronizada(dto, UUID.randomUUID().toString());
 
     verify(personasService, never()).sincronizar(any());
+  }
+
+  // ==================== Ciclo de Lectura In-App ====================
+
+  @Test
+  void marcarComoLeida_cuandoExiste_deberiaMarcarGuardarYRetornarDTO() {
+    UUID notifId = UUID.randomUUID();
+    Persona personaDummy = personaConCorreoQueSiempreEnvia("Juan");
+    Notificacion notif = NotificacionMother.pendiente(personaDummy);
+    when(repository.findById(notifId)).thenReturn(Optional.of(notif));
+    when(repository.save(any(Notificacion.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    Optional<NotificacionDTO> resultado = service.marcarComoLeida(notifId);
+
+    assertTrue(resultado.isPresent());
+    assertTrue(resultado.get().leida());
+    assertNotNull(resultado.get().fechaLectura());
+    verify(repository).save(notif);
+  }
+
+  @Test
+  void marcarComoNoLeida_cuandoExiste_deberiaRestablecerYRetornarDTO() {
+    UUID notifId = UUID.randomUUID();
+    Persona personaDummy = personaConCorreoQueSiempreEnvia("Juan");
+    Notificacion notif = NotificacionMother.pendiente(personaDummy);
+    notif.marcarComoLeida();
+    when(repository.findById(notifId)).thenReturn(Optional.of(notif));
+    when(repository.save(any(Notificacion.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    Optional<NotificacionDTO> resultado = service.marcarComoNoLeida(notifId);
+
+    assertTrue(resultado.isPresent());
+    assertFalse(resultado.get().leida());
+    assertNull(resultado.get().fechaLectura());
+    verify(repository).save(notif);
+  }
+
+  @Test
+  void marcarTodasComoLeidas_deberiaDelegarEnRepositorio() {
+    UUID personaId = UUID.randomUUID();
+
+    service.marcarTodasComoLeidas(personaId);
+
+    verify(repository, times(1)).marcarTodasComoLeidas(personaId);
+  }
+
+  @Test
+  void contarNoLeidas_deberiaDelegarEnRepositorio() {
+    UUID personaId = UUID.randomUUID();
+    when(repository.countByPersonaIdAndLeidaFalse(personaId)).thenReturn(5L);
+
+    long conteo = service.contarNoLeidas(personaId);
+
+    assertEquals(5L, conteo);
+    verify(repository, times(1)).countByPersonaIdAndLeidaFalse(personaId);
+  }
+
+  @Test
+  void obtenerPorPersona_conFiltroLeida_deberiaFiltrarPorEstadoDeLectura() {
+    UUID personaId = UUID.randomUUID();
+    Persona personaDummy = personaConCorreoQueSiempreEnvia("Juan");
+    Notificacion notif = NotificacionMother.pendiente(personaDummy);
+    when(repository.findByPersonaIdAndLeida(personaId, false)).thenReturn(List.of(notif));
+
+    List<NotificacionDTO> resultado = service.obtenerPorPersona(personaId, false);
+
+    assertEquals(1, resultado.size());
+    verify(repository, times(1)).findByPersonaIdAndLeida(personaId, false);
   }
 
   private static EventoDonacionAsignadaV1 donacionAsignada() {

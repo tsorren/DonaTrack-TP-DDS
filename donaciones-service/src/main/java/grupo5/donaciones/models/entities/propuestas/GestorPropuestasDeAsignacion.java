@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.algoritmos.AlgoritmoAsignacion;
 import grupo5.donaciones.models.algoritmos.AlgoritmoCompatibilidadSemantica;
 import grupo5.donaciones.models.algoritmos.AlgoritmoPrioridadSubAtendidos;
+import grupo5.donaciones.models.algoritmos.DatosDeAsignacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.normalizacion.ComparadorTexto;
@@ -37,7 +38,9 @@ public class GestorPropuestasDeAsignacion {
   }
 
   public List<Propuesta> generarPropuestas(
-      List<Necesidad> necesidades, List<DonacionIndependiente> donaciones) {
+      List<Necesidad> necesidades,
+      List<DonacionIndependiente> donaciones,
+      DatosDeAsignacion datos) {
     if (necesidades == null || donaciones == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
@@ -48,9 +51,11 @@ public class GestorPropuestasDeAsignacion {
         donaciones.size(),
         necesidades.size());
 
-    List<Propuesta> p1 = algoritmos.getFirst().ejecutar(necesidades, donaciones);
+    List<Propuesta> p1 = algoritmos.getFirst().ejecutar(necesidades, donaciones, datos);
     List<Propuesta> p2 =
-        algoritmos.size() > 1 ? algoritmos.get(1).ejecutar(necesidades, donaciones) : List.of();
+        algoritmos.size() > 1
+            ? algoritmos.get(1).ejecutar(necesidades, donaciones, datos)
+            : List.of();
 
     log.info("Propuestas generadas por algoritmo 1: {}, por algoritmo 2: {}", p1.size(), p2.size());
 

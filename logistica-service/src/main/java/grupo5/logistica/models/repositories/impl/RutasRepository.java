@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("!postgres")
+@Profile("!postgres & !mongo")
 public class RutasRepository extends CrudRepositoryEnMemoria<Ruta> implements IRutasRepository {
 
   @Override

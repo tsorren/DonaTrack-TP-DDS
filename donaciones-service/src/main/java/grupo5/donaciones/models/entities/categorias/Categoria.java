@@ -22,6 +22,16 @@ public class Categoria implements AggregateRoot {
     this.tipoUnidad = tipoUnidad;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public Categoria(
+      UUID id, String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
+    this.id = id;
+    this.nombre = nombre;
+    this.conUso = conUso;
+    this.conVencimiento = conVencimiento;
+    this.tipoUnidad = tipoUnidad;
+  }
+
   public Categoria(String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
     this.id = UUID.randomUUID();
 
