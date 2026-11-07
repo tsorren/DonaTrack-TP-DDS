@@ -90,7 +90,7 @@ la de menor riesgo, y solo con la rama de Raíces cálida como base.
 |:-:|---|---|---|
 | 20 | **D22 (polling vs SSE) para el camión:** matriz de alternativas y ADR `proposed` si aplican los dos gates. Desbloquea la tarea 6. **Redactada (2026-11-06):** [ADR-E6-07](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md), `proposed`, con la D24 revisada | 1 documento · 1 ADR | No |
 | 21 | **Integrar los PR 924 y 926 a `ENTREGA_6`** (revisión humana): sin eso el cliente real no tiene base común y las tareas 11 y 12 parten de una rama distinta de `ENTREGA_6` | Revisión, no código | Es la dependencia que más pesa |
-| 22 | **Deuda documental de §13 de requerimientos-e6:** `contratos-rest.md` sin `/mapa` ni `/seguimiento/...`; Javadoc de `EntregaMapaPublicoResponseDTO`; DTI-09 y DTI-14 con fecha sin respaldo | 3 documentos · 1 Javadoc | No |
+| 22 | **Deuda documental de §13 de requerimientos-e6:** `contratos-rest.md` sin `/mapa` ni `/seguimiento/...`; Javadoc de `EntregaMapaPublicoResponseDTO`; DTI-09 y DTI-14 con fecha sin respaldo. Absorbe la tarea 1 (con la D24 revisada solo queda el Javadoc). **Hecha (2026-11-06)**, más la nota de `docs/entregas/README.md` | 3 documentos · 1 Javadoc | No |
 | 23 | **Script de demo de E6 punta a punta sin login** (recorrido de las pantallas públicas contra el backend real en el compose), para la defensa del 13/11 | 1 script · 1 doc | Bajo |
 
 ## 5. Orden recomendado

@@ -114,7 +114,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — endpoints creados para testing; requiere auth-service y Spring Security |
 | Target | `incentivos-service` (`ProcesosIncentivosController`, `InactividadService`) |
-| Cuándo se saldará | **Entrega 6: Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026)** — integración con `auth-service`, protección perimetral con roles (`ROLE_ADMIN`), traslado a `/api/admin/` y respuesta `202 Accepted` asíncrona · **A revisar:** el enunciado final ([Enunciado-TP-Anual-2026.pdf](../entregas/Enunciado-TP-Anual-2026.pdf)) renumera las entregas: E5 es Persistencia, E6 Interfaz de Usuario y Arquitectura MVC, E7 Observabilidad y Seguridad. La reprogramación queda a cargo del equipo |
+| Cuándo se saldará | **Entrega 6: Interfaz de Usuario y Arquitectura MVC (13/11/2026, según el [mapa de entregas](../entregas/README.md), que la toma del borrador de calendario de la cátedra)**, que incluye el servicio de autenticación — integración con `auth-service`, protección perimetral con roles (`ROLE_ADMIN`), traslado a `/api/admin/` y respuesta `202 Accepted` asíncrona · Nombre y fecha corregidos el 2026-11-06 (§13 de [requerimientos-e6](../requerimientos/requerimientos-e6.md)): decían "Entrega 6: Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026)", sin respaldo en el enunciado ni en el repo. Si el equipo pasa una parte a E7 (Observabilidad y Seguridad), se reprograma acá |
 
 ---
 
@@ -178,7 +178,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] deferred` — el broker funciona completo, con estas limitaciones declaradas |
 | Target | `donaciones-service` (broker de logística) |
-| Cuándo se saldará | (1) y (2) ya saldados con el perfil `postgres` (persistencia JPA de `donaciones-service`), siguen en memoria solo con `!postgres`; (3) y (4) con el `auth-service` (**Entrega 6, semana del 23 de noviembre de 2026**); (5) y (6) al integrar un proveedor de logística real |
+| Cuándo se saldará | (1) y (2) ya saldados con el perfil `postgres` (persistencia JPA de `donaciones-service`), siguen en memoria solo con `!postgres`; (3) y (4) con el `auth-service` (**Entrega 6: Interfaz de Usuario y Arquitectura MVC, 13/11/2026**, según el [mapa de entregas](../entregas/README.md), tomada del borrador de calendario de la cátedra; antes decía "semana del 23 de noviembre", sin respaldo); (5) y (6) al integrar un proveedor de logística real |
 
 **Ítems:**
 
