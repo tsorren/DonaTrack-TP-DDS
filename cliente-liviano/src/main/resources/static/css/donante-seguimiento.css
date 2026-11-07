@@ -3,13 +3,6 @@
 @import url("privado.css");
 @import url("sellos.css");
 
-/* La voz del título ("Lo que está viajando"): la parte cálida en verde con la segunda tinta corrida,
-   como en las demás pantallas del donante (donante-comun.css). */
-main h1 em {
-  color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
-}
-
 /* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
 .seguimiento-bajada {
   max-width: 38rem;

@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <!--/* Estructura de las pantallas privadas: la marca, el
-       menú del rol y la cuenta en una sola cabecera del marco de noche; el contenido debajo. Raíces
-       cálida, iteración 2 (casa): la cabecera es más baja y lleva la firma de las abejas junto a la
-       marca (componentes/firma.html, solo a la vista), con el estrato de paja y humus abajo. En el
+       menú del rol y la cuenta en una sola cabecera de tierra honda; el contenido debajo. En el
        celular, el menú es una barra inferior; desde la tableta, va horizontal en la cabecera
        (privado.css; usuario, 2026-11-03). La usan todas las pantallas privadas.
        Uso: <html th:replace="~{layout-privado :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
@@ -28,7 +26,6 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <svg th:replace="~{componentes/firma :: firma('cabecera')}"></svg>
   <nav id="menu" class="navegacion tierra-impresa" aria-label="Secciones">
     <ul role="list">
       <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"

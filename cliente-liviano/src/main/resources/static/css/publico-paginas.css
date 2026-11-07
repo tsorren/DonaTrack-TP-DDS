@@ -139,13 +139,7 @@
 .dib-tallo { fill: none; stroke: var(--color-tallo); stroke-width: 3; stroke-linecap: round; }
 .dib-hoja { fill: var(--color-hoja); }
 .dib-hoja--tinta { fill: var(--color-tallo); }
-/* La línea de tierra, el estrato tibio del recorrido (antes, un trazo de tinta). */
-.dib-horizonte {
-  fill: none;
-  stroke: var(--color-suelo-estrato, color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%));
-  stroke-width: 8;
-  vector-effect: non-scaling-stroke;
-}
+.dib-horizonte { fill: none; stroke: var(--color-tinta); stroke-width: 4; }
 .dib-raiz { fill: none; stroke: var(--color-raiz); stroke-width: 6; stroke-linecap: round; }
 .dib-raicilla { fill: none; stroke: var(--color-raiz); stroke-width: 2.5; stroke-linecap: round; }
 .dib-cruce { fill: var(--color-suelo); stroke: var(--color-texto-suelo); stroke-width: 2.5; }
@@ -198,11 +192,5 @@
     flex: 1 1 0;
     height: auto;
     min-height: 0;
-  }
-}
-
-@media (forced-colors: active) {
-  .dib-horizonte {
-    stroke: CanvasText;
   }
 }

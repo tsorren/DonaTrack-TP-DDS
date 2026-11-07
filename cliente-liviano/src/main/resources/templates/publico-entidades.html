@@ -73,7 +73,7 @@
     </section>
 
     <!--/* Sin resultados: qué no se encontró y cómo volver a ver todas. */-->
-    <section th:if="${escenario == '' and n == 0}" class="vacio" role="status" aria-labelledby="sin-titulo">
+    <section th:if="${escenario == '' and n == 0}" class="vacio" aria-labelledby="sin-titulo">
       <th:block th:if="${q != '' and elegida != null}">
         <h2 id="sin-titulo" th:text="|Ninguna entidad con «${q}» en el nombre pide ${elegida.enFrase} ahora.|">Ninguna
           entidad con «biblioteca» en el nombre pide alimentos ahora.</h2>

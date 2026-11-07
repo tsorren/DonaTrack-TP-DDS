@@ -31,6 +31,22 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-06 · revisión del usuario (Raíces cálida): vuelve la versión de la etapa 1; de la corrida queda solo el estrato de las barras
+
+- **Decisión:** el sitio vuelve a como estaba al cerrar la etapa 1 (`49b46ab4`: tierra humus, marco
+  casi negro, esquinas suaves y Fraunces). De la corrida creativa se conserva solo el estrato: la
+  línea de paja y la franja de humus donde la cabecera, el pie y la barra del menú tocan la página
+  (`--color-estrato`, `--color-horizonte` y `--medida-estrato` en `tokens.css`).
+- **Alternativas:** quedarse con el resultado de la corrida (el recorrido de concepto-b, las abejas
+  y la herencia), descartado por el usuario.
+- **Por qué:** lo dijo el usuario al ver el resultado: "Prefiero la versión de antes, lo único que
+  quiero mantener del estilo nuevo son las lineas en las barras".
+- **Costo:** se pierden el recorrido, la firma de las abejas, la planta por donación y la voz nueva
+  de los títulos. Las dos entradas de abajo (iteraciones 1 y 2) y su evidencia en
+  `evidencia/raices-calida-*` quedan como registro de lo que se probó. Reemplaza: las decisiones de
+  las iteraciones 1 y 2 de la corrida (corrida creativa desatendida).
+- **Quién decidió:** el usuario, 2026-11-06.
+
 ### 2026-11-06 · sistema (Raíces cálida) · Iteración 2: el camino de la donación pasa al sitio, con un marco de suelo y paja y la firma de dos abejas
 
 - **Decisión:** las tres zonas de la iteración se quedan, porque en sistema son partes del mismo

@@ -119,14 +119,8 @@
   }
 }
 
-/* La textura de tierra (app.css) y el corte de suelo (componentes/tierra.css), solo cuando las sin
-   leer pasan a ser franja. */
-.cuaderno-novedades--sin-leer.tierra-impresa {
-  box-shadow: none;
-}
-
-.cuaderno-novedades--sin-leer.tierra-impresa::before,
-.cuaderno-novedades--sin-leer.tierra-impresa::after {
+/* La textura de tierra (app.css), solo cuando las sin leer pasan a ser franja. */
+.cuaderno-novedades--sin-leer.tierra-impresa::before {
   display: none;
 }
 
@@ -155,17 +149,9 @@
     color: var(--color-destacado-texto);
   }
 
-  .cuaderno-novedades--sin-leer.tierra-impresa {
-    box-shadow: revert-layer;
-  }
-
   .cuaderno-novedades--sin-leer.tierra-impresa::before {
     display: block;
     border-radius: inherit;
-  }
-
-  .cuaderno-novedades--sin-leer.tierra-impresa::after {
-    display: block;
   }
 
   .cuaderno-novedades--sin-leer h2 {

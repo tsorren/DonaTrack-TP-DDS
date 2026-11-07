@@ -347,7 +347,7 @@ y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comun
 | | Bajada | "Cada punto es una entidad que confirmó entregas en el último mes. La ubicación es aproximada: mostramos el barrio, nunca la dirección." | RNF-PRIV-01, D24 |
 | | Filtro | "Qué se donó" · "Todas" · "Alimentos" · "Ropa" · "Muebles" · "Útiles escolares" · "Filtrar" | "Filtrar", solo sin JavaScript |
 | | Cifra | "10 entregas confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026." · "Actualizado el 15 de octubre de 2026, 14:30." | |
-| | Lista | "A quién le llegó cada una" · "Comedor Barrio Ejemplo · Barrio Ejemplo · 6 entregas confirmadas" · cada entrega: "Lentejas secas, 10 kg · Alimentos · 10 de octubre" · "Ver la foto de la entrega" | La lista es la alternativa completa al mapa |
+| | Lista | "Entidad por entidad" · "Comedor Barrio Ejemplo · Barrio Ejemplo · 6 entregas confirmadas" · cada entrega: "Lentejas secas, 10 kg · Alimentos · 10 de octubre" · "Ver la foto de la entrega" | La lista es la alternativa completa al mapa |
 | | Atribución (sistema) | "Mapa: © OpenStreetMap" | D21; en la maqueta no hay mapa de terceros |
 | | Salidas | "Ver las fotos de cada entrega" · "Ver las entidades y lo que piden" · "Quiero donar" | |
 | Entidades | Rótulo y título | "Entidades" · "Lo que piden las entidades" | La entidad actúa: pide |

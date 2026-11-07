@@ -35,8 +35,6 @@
 @import url("componentes/tierra.css") layer(bloques);
 @import url("componentes/red.css") layer(bloques);
 @import url("componentes/pausa.css") layer(bloques);
-@import url("componentes/firma.css") layer(bloques);
-@import url("componentes/recorrido.css") layer(bloques);
 
 *,
 *::before,
@@ -96,56 +94,53 @@ body {
   padding: 1rem;
 }
 
-/* La cabecera y el pie, franjas del marco de noche a todo el ancho (usuario, 2026-11-03: tomado del
+/* La cabecera y el pie, franjas de tierra honda a todo el ancho (usuario, 2026-11-03: tomado del
    sitio B de la corrida A/B). El borde de imagen estira el fondo a los lados sin estirar el
    contenido ni recortarlo: un recorte escondería la barra fija del menú en el celular, que va
-   dentro de la cabecera. Raíces cálida, iteración 2: donde el marco toca la página lleva un estrato,
-   la línea de paja de las raíces y la franja de humus tibio, como el corte de suelo del recorrido
-   (abajo de la cabecera, arriba del pie). El fondo liso queda debajo: es el que miden los contrastes. */
+   dentro de la cabecera. Donde tocan la página llevan el estrato (tokens.css): abajo de la
+   cabecera, arriba del pie. El fondo liso queda debajo: es el que miden los contrastes. */
 .raices-cabecera,
 .raices-pie,
 .armazon {
-  background: var(--color-marco);
-  color: var(--color-marco-texto);
+  background: var(--color-suelo-hondo);
+  color: var(--color-texto-suelo);
 }
 
 .raices-cabecera,
 .armazon {
   border-image: linear-gradient(to top, var(--color-estrato) 0 0.5rem,
-      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-marco) var(--medida-estrato))
+      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-suelo-hondo) var(--medida-estrato))
     fill 0 / / 0 100vmax;
 }
 
 .raices-pie {
   border-image: linear-gradient(var(--color-estrato) 0 0.5rem,
-      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-marco) var(--medida-estrato))
+      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-suelo-hondo) var(--medida-estrato))
     fill 0 / / 0 100vmax;
+}
+
+.raices-cabecera,
+.armazon {
+  padding-bottom: calc(1rem + var(--medida-estrato));
+}
+
+.raices-pie {
   padding-top: calc(1rem + var(--medida-estrato));
 }
 
-/* La cabecera pública, más baja (Raíces cálida, iteración 2): la marca y la firma en una fila; en el
-   celular el menú es la barra de abajo. */
-.raices-cabecera {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  padding: 0.5rem 1rem calc(0.5rem + var(--medida-estrato));
-}
-
-/* La marca, un cartel de papel sobre el marco (como en B); en el celular, un poco más chica. */
+/* La marca, un cartel de papel sobre la tierra (como en B). */
 .marca {
   display: inline-flex;
-  flex: none;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   min-height: 3rem;
   padding: 0.25rem 0.75rem 0.25rem 0.6rem;
   border-radius: var(--radio-boton);
   background: var(--color-papel);
-  box-shadow: 0.1875rem 0.1875rem 0 var(--color-sombra);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
   color: var(--color-tinta);
   text-decoration: none;
-  font: 800 1.25rem/1 var(--fuente-titulo);
+  font: 800 1.375rem/1 var(--fuente-titulo);
   font-stretch: 112%;
 }
 
@@ -175,12 +170,12 @@ body {
   display: inline-flex;
   align-items: center;
   min-height: 3rem;
-  color: var(--color-marco-enlace);
+  color: var(--color-raiz);
   font-weight: 700;
 }
 
 .raices-pie small {
-  color: var(--color-marco-texto);
+  color: var(--color-texto-suelo);
 }
 
 /* La textura impresa (A/B de textura, 2026-11-02: B, risografía, más suave y solo en el fondo;
@@ -290,16 +285,11 @@ body::before {
 
 @media (min-width: 37.5em) {
   .raices-cabecera {
-    padding: 0.5rem 2rem calc(0.5rem + var(--medida-estrato));
+    padding: 1.25rem 2rem calc(1.25rem + var(--medida-estrato));
   }
 
   .raices-pie {
     padding: calc(1.25rem + var(--medida-estrato)) 2rem 1.25rem;
-  }
-
-  .marca {
-    font-size: 1.375rem;
-    box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
   }
 }
 

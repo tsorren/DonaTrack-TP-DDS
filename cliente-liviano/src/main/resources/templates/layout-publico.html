@@ -32,8 +32,6 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <!--/* La firma de las abejas junto a la marca (Raíces cálida, iteración 2, casa; solo a la vista). */-->
-  <svg th:replace="~{componentes/firma :: firma('cabecera')}"></svg>
   <nav th:replace="~{navegacion-publica :: navegacion(${hoja})}"></nav>
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>

@@ -51,7 +51,7 @@
   <div class="entidades">
     <header>
       <p class="rotulo" th:text="${seccion}">Entidades</p>
-      <h1>Conocé a <em>quienes reciben</em></h1>
+      <h1>Quiénes reciben <em>las donaciones</em></h1>
       <p class="bajada">Entidades activas y lo que piden hoy. Cada una pide lo que necesita y confirma
         lo que recibe. Actualizado hoy, 15 de octubre, 16:25.</p>
     </header>
@@ -92,14 +92,14 @@
                  : (${dibujada} ? '46 entidades activas. Página 1 de 8.' : |46 entidades activas. Página ${pagina} de 8.|)">46
         entidades activas. Página 1 de 8.</p>
 
-      <section th:if="${busca != '' and lista.isEmpty()}" class="vacio" role="status"
+      <section th:if="${busca != '' and lista.isEmpty()}" class="vacio"
                aria-labelledby="sin-resultados">
         <h2 id="sin-resultados">Probá con otra parte del nombre.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
       </section>
 
-      <section th:if="${busca == '' and !dibujada}" class="vacio" role="status"
+      <section th:if="${busca == '' and !dibujada}" class="vacio"
                aria-labelledby="no-dibujada">
         <h2 id="no-dibujada">En la maqueta solo está dibujada la primera página.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"

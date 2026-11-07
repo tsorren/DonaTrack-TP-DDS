@@ -45,10 +45,8 @@
   box-shadow: 0.4rem 0.4rem 0 var(--color-sombra);
 }
 
-/* La textura de tierra (app.css) y las raíces del corte de suelo (componentes/tierra.css), solo
-   cuando la lámina pasa a ser franja. */
-.grupo-avisos--sin-leer.tierra-impresa::before,
-.grupo-avisos--sin-leer.tierra-impresa::after {
+/* La textura de tierra (app.css), solo cuando la lámina pasa a ser franja. */
+.grupo-avisos--sin-leer.tierra-impresa::before {
   display: none;
 }
 
@@ -56,10 +54,6 @@
   .grupo-avisos--sin-leer.tierra-impresa::before {
     display: block;
     border-radius: inherit;
-  }
-
-  .grupo-avisos--sin-leer.tierra-impresa::after {
-    display: block;
   }
 
   .notificaciones-cabecera {
@@ -84,8 +78,7 @@
   .grupo-avisos--sin-leer {
     padding: 1.75rem 2rem 2rem;
     border: 0;
-    /* El corte de suelo del recorrido: el estrato arriba y la ruta al fondo (componentes/tierra.css). */
-    box-shadow: revert-layer;
+    box-shadow: none;
     background: var(--color-destacado-fondo);
     color: var(--color-destacado-texto);
   }

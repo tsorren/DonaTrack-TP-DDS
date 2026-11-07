@@ -81,7 +81,7 @@
 
         <div class="detalle-cuerpo">
           <section class="detalle-etapas" aria-labelledby="etapas-titulo">
-            <h2 id="etapas-titulo">El camino de esta donación</h2>
+            <h2 id="etapas-titulo">Cada paso de esta donación</h2>
             <!--/* La raíz: lo hecho, un disco paja con el tilde; la actual, el sello del estado; lo que
                    falta, un círculo hueco, y la raíz hacia él, hueca: todavía no se imprimió. */-->
             <ol class="raiz" role="list" th:aria-label="|Etapas de ${d.titulo}|">
@@ -100,7 +100,7 @@
           </section>
 
           <section class="detalle-foto" aria-labelledby="foto-titulo">
-            <h2 id="foto-titulo">La foto de quien la recibió</h2>
+            <h2 id="foto-titulo">La foto de la entidad</h2>
             <figure th:if="${d.foto}" class="tarjeta foto">
               <img src="/img/ejemplo-entrega.svg" th:src="@{${d.foto}}" th:alt="${d.fotoAlt}"
                    alt="Cajas con la ropa de abrigo junto a la puerta del merendero" width="640" height="400">

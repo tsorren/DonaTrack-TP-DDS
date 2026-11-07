@@ -71,11 +71,9 @@
   fill: var(--color-suelo);
 }
 
-/* La línea de tierra, el estrato tibio del recorrido (antes, un trazo de tinta). */
 .paso-dibujo .paso-horizonte {
-  stroke: var(--color-suelo-estrato, color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%));
-  stroke-width: 8;
-  vector-effect: non-scaling-stroke;
+  stroke: var(--color-tinta);
+  stroke-width: 4;
 }
 
 .paso-brote .tallo {
@@ -169,11 +167,5 @@
     transform-box: view-box;
     transform-origin: 31px 41px;
     animation: var(--movimiento-animacion-viento);
-  }
-}
-
-@media (forced-colors: active) {
-  .paso-dibujo .paso-horizonte {
-    stroke: CanvasText;
   }
 }

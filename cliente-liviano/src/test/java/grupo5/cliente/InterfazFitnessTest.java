@@ -86,16 +86,7 @@ class InterfazFitnessTest {
           new Par("--color-error-texto", "--color-fondo", 4.5),
           new Par("--color-borde-control", "--color-fondo", 3),
           new Par("--color-foco", "--color-fondo", 3),
-          new Par("--color-foco", "--color-superficie", 3),
-          // El marco común (Raíces cálida, iteración 2, casa): cabecera, pie y barra del menú.
-          new Par("--color-marco-texto", "--color-marco", 4.5),
-          new Par("--color-marco-enlace", "--color-marco", 4.5),
-          new Par("--color-marco-texto", "--color-estrato", 4.5),
-          new Par("--color-actual-texto", "--color-actual-fondo", 4.5),
-          // La cifra sobre el disco de su etapa (recorrido) y los números sobre los frutos.
-          new Par("--color-tinta", "--color-raiz", 4.5),
-          new Par("--color-tinta", "--color-en-camino-sello", 4.5),
-          new Par("--color-tinta", "--color-fruto", 4.5));
+          new Par("--color-foco", "--color-superficie", 3));
 
   private static final Pattern COLOR_LITERAL =
       Pattern.compile(

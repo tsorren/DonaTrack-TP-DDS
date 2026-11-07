@@ -7,12 +7,9 @@
 /* La tierra no es parte del dibujo: la pinta el fondo de su marco, bajo la línea de tierra, para
    que la textura impresa quede detrás de las raíces (app.css, .tierra-impresa). */
 
-/* La línea de tierra es el estrato tibio del recorrido, del mismo grueso en cualquier dibujo (antes,
-   un trazo de tinta). */
 .dibujo-tierra {
-  stroke: var(--color-suelo-estrato, color-mix(in srgb, var(--color-suelo), var(--color-raiz) 14%));
-  stroke-width: 8;
-  vector-effect: non-scaling-stroke;
+  stroke: var(--color-tinta);
+  stroke-width: 3;
 }
 
 .dibujo-tallo {
@@ -88,11 +85,5 @@
 @media (min-width: 37.5em) {
   .dibujo-rotulo {
     display: inline;
-  }
-}
-
-@media (forced-colors: active) {
-  .dibujo-tierra {
-    stroke: CanvasText;
   }
 }

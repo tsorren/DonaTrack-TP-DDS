@@ -61,15 +61,6 @@
   height: 1.5rem;
 }
 
-/* El sello de la entrega confirmada, el fruto maduro del recorrido (antes, el disco paja). */
-.sello-entrega .sello-disco {
-  fill: var(--color-fruto);
-}
-
-.sello-entrega .sello-tinta {
-  fill: var(--color-fruto-hondo);
-}
-
 .lamina-texto {
   display: grid;
   align-content: start;

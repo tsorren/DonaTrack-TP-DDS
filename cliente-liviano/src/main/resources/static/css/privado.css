@@ -7,15 +7,8 @@
 @import url("app.css");
 
 /* --- El celular: la marca y la cuenta arriba; el menú, una barra fija abajo ---------------------- */
-/* Raíces cálida, iteración 2: la cabecera más baja (de unos 140 px a 100 con el estrato) para que la
-   acción principal de cada pantalla entre arriba de la barra del menú. Lo mismo, en el mismo orden y
-   en el mismo lugar: la marca, la firma y Notificaciones en la primera fila; la cuenta, con "Mi
-   perfil" y "Salir", en una fila de 48 px (el nombre en hasta dos renglones chicos y el rol debajo).
-   Sin aire de más: las dos filas de toque de 48 px, una sobre la otra; la placa de la marca cuelga
-   del borde de arriba, como un cartel, y la fila de la cuenta apoya su borde de toque sobre el
-   estrato (la letra queda unos 6 px arriba de la línea de paja: más abajo se pega a ella). */
 .raices-privado {
-  padding-bottom: calc(var(--medida-barra-menu) + 0.75rem);
+  padding-bottom: 4.5rem;
 }
 
 .armazon {
@@ -23,47 +16,37 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0 0.75rem;
-  padding: 0 1rem var(--medida-estrato);
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem calc(0.75rem + var(--medida-estrato));
 }
 
 .armazon-cuenta {
   display: flex;
-  flex: 1 1 100%;
   align-items: center;
-  gap: 0.25rem;
-  margin-bottom: calc(var(--medida-estrato) * -0.625);
+  gap: 1rem;
 }
 
 .armazon-cuenta p {
   display: grid;
-  flex: 1;
-  min-width: 0;
   margin: 0;
-  line-height: 1.15;
+  line-height: 1.25;
 }
 
 .armazon-cuenta b {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  color: var(--color-marco-texto);
-  font-size: 0.9375rem;
+  color: var(--color-texto-suelo);
 }
 
 .armazon-cuenta small {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .armazon-cuenta a {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   min-width: 3rem;
   min-height: 3rem;
   padding: 0 0.5rem;
-  color: var(--color-marco-enlace);
+  color: var(--color-raiz);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -79,7 +62,7 @@
   min-width: 3rem;
   min-height: 3rem;
   margin-left: auto;
-  color: var(--color-marco-texto);
+  color: var(--color-texto-suelo);
   font-weight: 700;
   text-decoration: none;
 }
@@ -112,15 +95,15 @@
   padding: 0 0.25rem;
   border: 1.5px solid var(--color-tinta);
   border-radius: 50%;
-  background: var(--color-actual-fondo);
+  background: var(--color-raiz);
   box-shadow: 0.125rem 0.125rem 0 var(--color-hoja);
-  color: var(--color-actual-texto);
+  color: var(--color-tinta);
   font-size: 0.8125rem;
   line-height: 1;
 }
 
 .armazon-avisos[aria-current="page"] {
-  color: var(--color-marco-enlace);
+  color: var(--color-raiz);
 }
 
 main {
@@ -188,19 +171,7 @@ main h1 {
 
 @media (min-width: 37.5em) {
   .armazon {
-    padding: 0.5rem 2rem calc(0.5rem + var(--medida-estrato));
-    row-gap: 0.25rem;
-  }
-
-  /* Desde la tableta, la cuenta vuelve a su lugar en la fila de la marca. */
-  .armazon-cuenta {
-    flex: 0 1 auto;
-    gap: 1rem;
-    margin-bottom: 0;
-  }
-
-  .armazon-cuenta p {
-    flex: 0 1 auto;
+    padding: 0.75rem 2rem calc(0.75rem + var(--medida-estrato));
   }
 
   main {
@@ -215,11 +186,8 @@ main h1 {
     padding-bottom: 0;
   }
 
-  /* La cabecera mide su fila para la firma (componentes/firma.css: donde no entra entera, no se
-     muestra). Solo desde acá: en el celular, un contenedor sería el marco de la barra fija. */
   .armazon {
     padding-inline: max(2rem, (100% - 82rem) / 2);
-    container: cabecera / inline-size;
   }
 
   /* En la tableta, el menú (componentes/navegacion.css) va en una segunda fila a todo el ancho de la
@@ -227,32 +195,6 @@ main h1 {
   .armazon .navegacion {
     order: 1;
     flex-basis: 100%;
-  }
-}
-
-/* --- La firma de la cabecera (componentes/firma.css) ------------------------------------------ */
-/* Un solo tamaño, pegada a la marca, y donde no entra entera, no se muestra: con el menú en su propia
-   fila, la marca, la firma, Notificaciones y la cuenta piden unos 42rem; con el menú de hasta 5
-   secciones en la misma fila (pantalla grande), unos 74rem (a 1280 px entra). Va acá, sin capa, porque
-   el pie del acta de Confirmar recepción también se llama `.firma` (entidad-seguimiento-confirmar.css,
-   sin capa) y le ganaba al bloque: le daba grilla, aire y un filete punteado. */
-.armazon > .firma {
-  display: block;
-  padding: 0;
-  border: 0;
-}
-
-@container cabecera (width < 42rem) {
-  .armazon > .firma {
-    display: none;
-  }
-}
-
-@media (min-width: 68.75em) {
-  @container cabecera (width < 74rem) {
-    .armazon:not(:has(.navegacion li:nth-child(6))) > .firma {
-      display: none;
-    }
   }
 }
 

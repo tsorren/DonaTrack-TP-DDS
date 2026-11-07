@@ -7,8 +7,7 @@
    en `.tinta-corrida`), el texto (`div.libreta-texto`: `h3`, la entidad y `p.libreta-estado`) y la foto
    (`button.boton` chico con `data-forma="foto"` y una `img.libreta-miniatura`, que abre un `.dialogo`) o
    lo que falta (`p.libreta-pendiente`). `data-estado="en-camino"` en la entrega que todavía no llegó:
-   el cuadro a medio pintar con el borde continuo, como su sello y la planta del recorrido (el punteado
-   queda solo para lo pendiente), estado en el color de en camino y el último tramo de raíz punteado. En el
+   cuadro punteado sin color, estado en el color de en camino y el último tramo de raíz punteado. En el
    celular, la raíz baja a la izquierda con el sello de cada entrega; desde la tableta, una fila por
    entrega. Al bajar, cada entrega aparece (línea de tiempo del scroll). Se carga en la capa `bloques` desde
    app.css. Catálogo: docs/interfaz/componentes.md. */
@@ -91,16 +90,6 @@
   height: 1.75rem;
 }
 
-/* La entrega confirmada lleva el fruto maduro, como su sello y la planta del recorrido que llegó a la
-   entidad (Raíces cálida, iteración 2; antes, el disco paja). */
-.libreta-sello .sello-disco {
-  fill: var(--color-fruto);
-}
-
-.libreta-sello .sello-tinta {
-  fill: var(--color-fruto-hondo);
-}
-
 .libreta-fecha {
   grid-column: 2 / -1;
   grid-row: 1;
@@ -132,9 +121,8 @@
 }
 
 .libreta-entrada[data-estado="en-camino"] .libreta-cuadro {
-  background: linear-gradient(90deg, var(--color-en-camino-sello) 50%, var(--color-papel) 0);
-  color: var(--color-tinta);
-  outline: 2px solid var(--color-en-camino-texto);
+  background: none;
+  outline: 2px dashed var(--color-tinta-suave);
   outline-offset: -2px;
   fill: none;
   stroke: currentcolor;

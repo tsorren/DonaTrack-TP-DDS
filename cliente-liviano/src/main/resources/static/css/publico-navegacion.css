@@ -6,7 +6,7 @@
 
 /* La barra no tapa el pie. */
 body {
-  padding-bottom: calc(var(--medida-barra-menu) + 0.75rem);
+  padding-bottom: 4.5rem;
 }
 
 @media (min-width: 37.5em) {
@@ -15,8 +15,10 @@ body {
   }
 
   .raices-cabecera {
+    display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
+    align-items: center;
+    gap: 0.5rem 2rem;
   }
 
   .raices-cabecera .navegacion {

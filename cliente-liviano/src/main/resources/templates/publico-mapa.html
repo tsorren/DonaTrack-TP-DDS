@@ -90,7 +90,7 @@
       </figure>
 
       <section th:if="${hay}" class="mapa-lista" aria-labelledby="lista-titulo">
-        <h2 id="lista-titulo">A quién le llegó cada una</h2>
+        <h2 id="lista-titulo">Entidad por entidad</h2>
         <ol class="estaciones" role="list">
           <th:block th:each="e : ${entidades}" th:with="suyas=${filtradas.?[entidad == '__${e.nombre}__']}">
           <li th:unless="${suyas.isEmpty()}" class="estacion-ficha" th:classappend="${'estacion-ficha--' + e.numero}"
@@ -123,7 +123,7 @@
 
       <div th:if="${escenario == 'lento'}" class="esqueleto mapa-lista"></div>
 
-      <section th:if="${escenario == '' and filtradas.isEmpty()}" class="vacio" role="status" aria-labelledby="vacio-titulo">
+      <section th:if="${escenario == '' and filtradas.isEmpty()}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo" th:text="|Todavía no hay entregas de ${elegida.enFrase} en el último mes.|">Todavía no
           hay entregas de útiles escolares en el último mes.</h2>
         <p>Cuando una entidad confirme una entrega de esta categoría, aparece en el mapa.</p>

@@ -130,17 +130,17 @@ En tu puerta (lo primero que hay que hacer)
   Ropa de abrigo · 10 unidades · llegó ayer, 17:10 · para tu pedido de ropa de abrigo
     [Confirmar recepción]
 
-Lo que viene a tu entidad
+Lo que viene
   Arroz · 20 kg · En camino · llega mañana
   Leche en polvo · 12 unidades · Por salir · sale el 17 de octubre
   Aceite de girasol · 10 litros · Con problema · te avisamos la nueva fecha
   Ver todas en Donaciones recibidas · Seguir entregas
 
-Lo que pediste
+Tus pedidos
   5 necesidades vigentes, cada una con cuánto llegó de cuánto
   Ver tus necesidades · Publicar otra necesidad
 
-Lo que ya llegó en octubre
+Lo recibido en octubre
   6 donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30.
   Ver las recibidas
 ```
@@ -156,7 +156,7 @@ Lo que ya llegó en octubre
 
 ```text
 Donaciones recibidas
-Lo que donaron para tu entidad
+Lo asignado a tu entidad
 Las donaciones asignadas al Comedor Barrio Ejemplo, de la que está en tu puerta a la que ya
 recibiste. Al 15 de octubre de 2026, 18:30.
 
@@ -177,7 +177,7 @@ Recibidas en octubre (6)
 
 - **Es la lista de RF-11:** todas las donaciones asignadas a la entidad, agrupadas por estado, con
   el filtro por estado. El nombre del menú sigue siendo "Donaciones recibidas" (es el de E1); el
-  título dice qué hay de verdad: lo que donaron para la entidad, llegue o no todavía.
+  título dice qué hay de verdad: lo asignado, llegue o no todavía.
 - **El filtro funciona sin JavaScript:** un formulario `GET` con `?estado=` (`todas`,
   `en-tu-puerta`, `en-camino`, `por-salir`, `con-problema`, `recibidas`). En la maqueta, la
   plantilla lee el parámetro y muestra solo ese grupo. Con un filtro puesto, se dice cuál está
@@ -197,7 +197,7 @@ Recibidas en octubre (6)
 
 ```text
 Notificaciones
-Lo nuevo para tu entidad
+Tus novedades
 3 sin leer. Al 15 de octubre de 2026, 18:30.          [Marcar todas como leídas]
 
 Sin leer
@@ -250,7 +250,7 @@ Lo que espera tu decisión
 
 Cómo está todo (al 15 de octubre de 2026, 18:30)
   Donaciones: 3 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre
-  Entidades, donantes y camiones: 46 entidades activas · 86 donantes · 1 camión en ruta · 3 camiones libres
+  La red: 46 entidades activas · 86 donantes · 1 camión en ruta · 3 camiones libres
   Ver donaciones · Ver camiones
 ```
 
@@ -367,17 +367,17 @@ otras fichas. Ver el esquema 4.4.
 | Saludo | "Hola, Marta" · "Comedor Barrio Ejemplo · jueves 15 de octubre de 2026" | La cuenta de ejemplo del controlador |
 | Novedades | "3 novedades sin leer" (enlace a Notificaciones) | Sin rojo ni signo de exclamación: es un dato |
 | En tu puerta | Título "En tu puerta" · "2 entregas esperan tu confirmación." · por entrega: "Lentejas secas · 15 kg" · "Llegó hoy, 18:20, desde el Depósito Central. Para tu pedido de lentejas secas." · "Confirmar recepción" (nombre accesible: "Confirmar recepción: lentejas secas") | El texto del primer prototipo y de Confirmar recepción |
-| Lo que viene | Título "Lo que viene a tu entidad" · "3 entregas asignadas que todavía no llegaron." · una línea por entrega con su sello y su próximo paso · "Ver todas en Donaciones recibidas" · "Seguir entregas" | "Lo que viene", no "lo que llega" (Raíces cálida, 2026-11-06; antes, "Lo que viene" a secas): la del aceite no pudo llegar |
-| Lo que pediste | Título "Lo que pediste" · "5 necesidades vigentes." · un renglón por pedido · "Ver tus necesidades" · "Publicar otra necesidad" (a `entidad-necesidades`) | Cifras con período ("octubre, hasta el 31") |
-| Lo que ya llegó | Título "Lo que ya llegó en octubre" · "6 donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30." · "Ver las recibidas" (a `entidad-recibidas?estado=recibidas`) | Resultado registrado, con período y fuente; no dice nada del efecto |
+| Lo que viene | Título "Lo que viene" · "3 entregas asignadas que todavía no llegaron." · una línea por entrega con su sello y su próximo paso · "Ver todas en Donaciones recibidas" · "Seguir entregas" | "Lo que viene", no "lo que llega": la del aceite no pudo llegar |
+| Tus pedidos | Título "Tus pedidos" · "5 necesidades vigentes." · un renglón por pedido · "Ver tus necesidades" · "Publicar otra necesidad" (a `entidad-necesidades`) | Cifras con período ("octubre, hasta el 31") |
+| Lo recibido | Título "Lo recibido en octubre" · "6 donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30." · "Ver las recibidas" (a `entidad-recibidas?estado=recibidas`) | Resultado registrado, con período y fuente; no dice nada del efecto |
 | Rótulo (entidad-recibidas) | Donaciones recibidas | El nombre del menú |
-| Título | Lo que donaron *para tu entidad* | Raíces cálida, 2026-11-06; antes, "Lo asignado a tu entidad". La única imagen de raíz posible va acá, si el sitio la pone |
+| Título | Lo asignado a tu entidad | La única imagen de raíz posible va acá, si el sitio la pone |
 | Bajada | "Las donaciones asignadas al Comedor Barrio Ejemplo, de la que está en tu puerta a la que ya recibiste. Al 15 de octubre de 2026, 18:30." | Dice el alcance y la fecha |
 | Filtro | Rótulo "Estado" · "Todas (11)" · "Esperan tu confirmación (2)" · "En camino (1)" · "Por salir (1)" · "Con problema (1)" · "Recibidas en octubre (6)" · botón "Filtrar" | Con JavaScript puede filtrar al elegir; el botón queda para sin JavaScript |
 | Grupos | "Esperan tu confirmación" · "Con problema" · "En camino" · "Por salir" · "Recibidas en octubre", cada uno con su cantidad | Los nombres del filtro |
 | Cada donación | "Lentejas secas" · "Alimentos · 15 kg" · "Donó Distribuidora Ejemplo SA" · "Para tu pedido de lentejas secas" (enlace) · el estado y su próximo paso (tabla de datos) · "Confirmar recepción" o "Ver tu pedido" | Quien ocultó su nombre: su categoría ("Donante Sostenedor"); sin categoría, "Un donante" |
 | Rótulo (entidad-notificaciones) | Notificaciones | — |
-| Título | Lo nuevo para *tu entidad* | Raíces cálida, 2026-11-06; antes, "Tus novedades" |
+| Título | Tus novedades | — |
 | Bajada | "3 sin leer. Al 15 de octubre de 2026, 18:30." | — |
 | Grupos | "Sin leer" · "Leídas" | — |
 | Sellos | "Asignada" · "En camino" · "Con problema" · "Llegó a tu puerta" | Texto y forma; el color acompaña |
@@ -406,8 +406,8 @@ Filtro de tono:
 - Zonas en las cuatro: saltar al contenido, la navegación del rol (`nav` con nombre), `main` con un
   `h1` y una sección con `h2` por parte. La sección actual del menú lleva `aria-current="page"`.
 - **Inicio de la entidad:** el foco recorre "3 novedades sin leer", los dos "Confirmar recepción"
-  (con el nombre de la entrega en el nombre accesible), las salidas de "Lo que viene a tu entidad", las de
-  "Lo que pediste" y "Ver las recibidas".
+  (con el nombre de la entrega en el nombre accesible), las salidas de "Lo que viene", las de
+  "Tus pedidos" y "Ver las recibidas".
 - **Donaciones recibidas:** el filtro es un `fieldset` con `legend` "Estado" y opciones con su
   cantidad en el texto; al filtrar, el foco va al título del grupo mostrado. Cada donación es un
   `article` con `h3`.
@@ -425,7 +425,7 @@ Filtro de tono:
 | # | Heurística | Cómo la cumple | Riesgo que queda |
 |---|---|---|---|
 | 1 | Visibilidad del estado | Cada donación con su estado, su próximo paso y su fecha; cada pantalla dice hasta cuándo están los datos; las novedades sin leer, con su número | Las notificaciones de la entidad dependen de HB-09 |
-| 2 | Lenguaje del usuario | "En tu puerta", "Lo que viene a tu entidad", "Por salir", "piden sumarse"; sin códigos ni nombres de estados del sistema | "Donaciones recibidas" (menú, E1) lista también las que no llegaron: el título lo aclara |
+| 2 | Lenguaje del usuario | "En tu puerta", "Lo que viene", "Por salir", "piden sumarse"; sin códigos ni nombres de estados del sistema | "Donaciones recibidas" (menú, E1) lista también las que no llegaron: el título lo aclara |
 | 3 | Control y libertad | Solo consulta, salvo marcar como leídas, que no borra nada; menú y Atrás siempre | Confirmar recepción vuelve a Seguir entregas, no a la pantalla de origen; y Seguir entregas cae en `sin-dibujar` en esta corrida, así que esa vuelta saca del recorrido "recibir" a quien llegó desde Inicio, Donaciones recibidas o Notificaciones. Para el sistema, conviene que la vuelta lleve a la pantalla de origen |
 | 4 | Consistencia | Los mismos sellos, estados, datos y "Confirmar recepción" que Necesidades y Confirmar recepción; el mismo error con código en todas | — |
 | 5 | Prevención de errores | El filtro solo ofrece estados válidos; leer no confirma una entrega, y se dice | — |

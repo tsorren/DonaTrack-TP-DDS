@@ -1,9 +1,6 @@
 # Brief de identidad visual — Raíces
 
 > **Estado:** borrador, en construcción con el usuario por comparaciones A/B · **Desde:** 2026-10-31
-> **Raíces cálida (2026-11-06):** la etapa 1 (tierra humus, esquinas suaves y Fraunces) y la etapa 2
-> (el camino de la donación, el marco con estrato y la firma de las abejas), en la rama
-> `E6_raices_calida`; ver la [sección de la etapa 2](#raíces-cálida-etapa-2-corrida-creativa-2026-11-06).
 > La identidad del cliente liviano: la única desde 2026-11-03
 > ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 > Plantilla: [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
@@ -85,8 +82,7 @@ abre grande al tocarla. Ver la [bitácora](../bitacora.md).
 a una planta que da frutos con los datos. Cada fruto impreso es una entrega confirmada del mes y el
 hueco, la que va en camino; al lado, una etiqueta repite la cuenta en texto. El usuario pidió
 reusar en otras pantallas la idea de los frutos grandes con cifras adentro (la variante D, "raíz y
-copa"), con el título "Lo que está confirmado" (desde Raíces cálida, 2026-11-06, "Lo que ya
-recibieron"). Ver la [bitácora](../bitacora.md).
+copa"), con el título "Lo que está confirmado". Ver la [bitácora](../bitacora.md).
 
 ## Estructura privada (usuario, 2026-11-01)
 
@@ -131,40 +127,6 @@ resumen plegado dice hasta cuándo, y cuánto de cuánto solo en la barra (revie
 2026-11-02). "Publicar otra necesidad" va plegado
 arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitácora](../bitacora.md).
 
-## Raíces cálida, etapa 2 (corrida creativa, 2026-11-06)
-
-La corrida desatendida de [Raíces cálida](../encargos/raices-calida.md), sobre la tierra humus, las esquinas suaves y Fraunces de la
-etapa 1. La propuesta es la rama `E6_raices_calida`: el usuario la decide con el merge. Detalle,
-alternativas y costo en la [bitácora](../bitacora.md) (entradas "concepto" y "sistema" de Raíces
-cálida).
-
-**El camino de la donación (la pantalla ancla, el inicio del donante).** La pantalla es el camino
-de las donaciones en tres tramos: "Lo que espera destino" (en el depósito), "Lo que está viajando"
-(con destino) y "Lo que ya recibieron" (en la entidad). Cada tramo lleva su rótulo con el signo de
-su etapa, su cifra pegada a su frase, un corte de suelo con una planta por donación y su acción.
-Las plantas salen de los datos y maduran al avanzar: el grano con su raíz en el depósito, la planta
-sin fruto y el fruto a medio pintar en el viaje, el fruto maduro en la entidad. La que tiene un
-problema no es planta: es el signo "!" y un aviso claro en su tramo, sin metáfora. Quien dona está
-al principio del camino y quien recibe, en la puerta de su entidad, al final. "Ver seguimiento" es
-el único botón relleno. En la computadora el camino va de izquierda a derecha; en el celular, baja.
-Es el bloque `componentes/recorrido` del [catálogo](../componentes.md).
-
-**El marco con estrato (la casa).** La cabecera privada, la pública y el pie son el marco de noche.
-Donde el marco toca la página va el estrato: la línea de paja de las raíces y, debajo, una franja
-de humus tibio, como el horizonte de un corte de suelo. La barra del menú es de humus y lleva los
-nombres. En el celular la cabecera privada es más baja (unos 110 px, antes unos 140).
-
-**La firma de las abejas.** Dos abejas chicas que se van por un vuelo punteado con un rulo, como
-quien firma al pie. Son los donantes, que polinizan sin ver todo el recorrido (encuesta "Huerta con
-abejas"), pero no cuentan nada: sin dato detrás, solo a la vista. Una sola firma por vista y en
-tres lugares, en ninguno más: la cabecera, pegada a la marca y de tamaño fijo; el final del título
-de la portada; y los estados vacíos reales. Nunca en botones, datos, errores ni en el banner. Al
-abrir la página, el vuelo se dibuja, las abejas llegan y zumban un momento; todo termina solo antes
-de 5 segundos y, con "reducir movimiento", quedan quietas.
-
-**La herencia.** Las demás pantallas no cambian su composición (el encargo la deja fija): toman el
-material (frutos en lo entregado, raíces en "En tu puerta" y en "Sin leer") y la voz de los títulos.
-
 ## Voz
 
 - **Mensaje del hero (usuario, segundo A/B):** "Lo que donás echa raíces en tu comunidad." Lo
@@ -182,8 +144,8 @@ material (frutos en lo entregado, raíces en "En tu puerta" y en "Sin leer") y l
   ("Registrás lo que donás.", "Se asigna a una entidad.", "La entidad confirma la entrega.").
   Cada etiqueta dice "Pide …" y la de tu entidad, "Pedí lo que necesitás y confirmá lo que
   recibís.". El rótulo de la tierra suma la cifra: "entre las 46 que están en el mapa. Cada una pide
-  lo que necesita y confirma lo que recibe.". Las cifras se llaman "Lo que ya recibieron" (Raíces
-  cálida, 2026-11-06; antes, "Lo que está confirmado") y la bajada del mes es "Las últimas entregas de octubre de 2026. La entidad sube la foto cuando
+  lo que necesita y confirma lo que recibe.". Las cifras se llaman "Lo que está confirmado" y la
+  bajada del mes es "Las últimas entregas de octubre de 2026. La entidad sube la foto cuando
   confirma la entrega." (las cuatro entregas son una muestra, no el mes entero). La que va en
   camino dice "Falta confirmar la entrega: la confirma el comedor con la foto.", la forma del tono
   común para lo pendiente. Redacción del agente; reemplazan los textos anteriores de esta sección
@@ -198,8 +160,7 @@ material (frutos en lo entregado, raíces en "En tu puerta" y en "Sin leer") y l
   "Cerrar". Redacción del agente.
 - **Rótulo de la tierra (2026-11-01):** "Quiénes reciben las donaciones", con la bajada "Una entidad
   de cada tipo, entre las que están en el mapa." Reemplaza "Todo lo que pasa hasta que llega", que
-  afirmaba la llegada y se fue con las etapas. Sigue en la portada; desde Raíces cálida
-  (2026-11-06), Entidades del donante ya no lo repite: dice "Conocé a quienes reciben".
+  afirmaba la llegada y se fue con las etapas.
 - **Botón principal (usuario, 2026-10-31):** "Quiero donar".
   Reemplaza "Donar ahora" (urgencia artificial).
 - **Camino de la entidad y línea del mes (2026-11-01):** "Tu entidad" y "Sumar mi entidad";
@@ -210,20 +171,10 @@ material (frutos en lo entregado, raíces en "En tu puerta" y en "Sin leer") y l
   [estados](../tono-y-comunicacion.md#los-estados-de-una-donación) (registrada, asignada, preparada,
   en camino, entrega confirmada); lo pendiente se dice pendiente ("Falta confirmar la entrega").
   Las cifras son entregas confirmadas, con período y fuente.
-- **Voz de títulos y rótulos (Raíces cálida, 2026-11-06):** cercana y concreta: habla de la persona
-  y de quien recibe, con hechos. Muestras del encargo: "Lo que ya recibieron", "Lo que está
-  viajando" y "Conocé a quién le llegó"; la corrida siguió con la misma voz en el resto ("Conocé a
-  quienes reciben", "Lo que donaron para tu entidad", "Lo nuevo para tu entidad", entre otros;
-  la lista, en cada ficha de `flujos/`). Estados, cifras, acciones y errores no se adornan. En el
-  texto no van las palabras de la metáfora ("semilla", "cantero", "fruto", "huerta", "cosecha",
-  "polinizar"): dice "donación" y "entrega".
 - **Tono (usuario):** término medio entre "botánica medida" y "cálida y comunitaria", sin
   efectismo.
 - **Regla (propuesto):** como mucho una imagen de raíz o siembra por pantalla, en el título grande;
-  el resto habla de las personas que reciben; nunca en botones, datos ni errores. En Raíces cálida
-  (2026-11-06) las plantas del camino, los frutos de lo entregado y las raíces de "En tu puerta" y
-  "Sin leer" son dibujos de los datos, no de adorno: siguen la restricción "lo que dice un
-  dibujo sale de los datos".
+  el resto habla de las personas que reciben; nunca en botones, datos ni errores.
 - **Palabras que no van (propuesto):** "eco", "huella verde", "florecer", "regá", "cosechá" y
   "sostenible" puesto de adorno.
 - **Trato y registro:** vos, cercano (el del tono común).
@@ -231,8 +182,7 @@ material (frutos en lo entregado, raíces en "En tu puerta" y en "Sin leer") y l
 ## Juego
 
 Se insinúa (usuario): el crecimiento es el avance, dibujado con los datos; sin medallas. Para la
-empresa, hitos de lo acumulado. En el inicio del donante (Raíces cálida, 2026-11-06), una planta
-por donación que madura al avanzar por el camino y el hito de la primera entrega confirmada.
+empresa, hitos de lo acumulado.
 
 ## Color (usuario, A/B de paleta y acabado; Huerta de noche desde el 2026-11-05, con la tierra humus desde el 2026-11-06)
 
@@ -288,7 +238,7 @@ Detalle en la [bitácora](../bitacora.md).
 | Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° redondeados (review de Sofía, 2026-11-02) y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta hoja (en la portada, paja) | Calidez y comunidad |
-| Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra). En "Lo que ya recibieron" de la portada (antes, "Lo que está confirmado"), en tinta dentro de frutos que cuelgan de una rama paja, cada uno de su tamaño y su color, con una etiqueta de papel (A/B de cifras, 2026-11-02) | El recorrido, como capítulos de un afiche; en la rama, la cosecha |
+| Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra). En "Lo que está confirmado" de la portada, en tinta dentro de frutos que cuelgan de una rama paja, cada uno de su tamaño y su color, con una etiqueta de papel (A/B de cifras, 2026-11-02) | El recorrido, como capítulos de un afiche; en la rama, la cosecha |
 | Botones y bordes | Esquinas suaves (`--radio-lamina` 0,75 rem y `--radio-boton` 0,5 rem): el papel (láminas, etiquetas y tarjetas) y los botones, con una sombra plana paja corrida (usuario, A/B de Raíces cálida, 2026-11-06; antes, rectas desde el A/B de paleta y acabado del 2026-11-05, y antes, esquina suave con sombra salvia, A/B de bordes del 2026-11-02); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
 
 **Forma:** sale del estilo (esquinas suaves, sombra plana corrida). La línea entre horizontes no entró; la
