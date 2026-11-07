@@ -40,6 +40,33 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Costo:** ninguno en la maqueta; en el sistema depende del estado de la solicitud (HB-12).
 - **Quién decidió:** usuario, a partir de un aviso de `revision-ui`.
 
+### 2026-11-07 · vistas · Donaciones y Asignar donaciones del admin (F3)
+
+- **Decisión:** se construyen Donaciones (lista con filtro por estado y "vencen en los próximos 7
+  días", detalle con su historial, marcar como vencida en un diálogo, registrar en tres pasos) y
+  Asignar donaciones (propuestas con Aprobar y Descartar, las decididas plegadas, correr la
+  asignación a mano), según la ficha [`raices-admin-navegable`](flujos/raices-admin-navegable.md)
+  §4.5 a §4.7. Sin componentes nuevos: `.tabla`, `.tarjeta`, `.dialogo` y el sello de estado.
+- **Alternativas:** el filtro "vencen pronto" como casilla (la ficha lo dibuja como botón): no
+  llegaba al tamaño de toque, así que es un `select` "Vence" junto al de Estado. El donante dado
+  de baja del ejemplo es Pedro Ejemplo (la ficha decía Ana), para que coincida con la lista de
+  Donantes. Correr la asignación vuelve a `admin-asignaciones-corrida`, una pantalla que la ficha
+  nombra como estado pero no como página. En "Marcar como vencida", el foco entra en "Cancelar",
+  como pide el catálogo para `.dialogo` con tono quitar (la ficha, §7, decía "al primer campo").
+  El error del servidor de Registrar donación no tiene "Volver a cargar": dice "Probá de nuevo con
+  «Registrar donación»", para no perder lo escrito (igual que Registrar donante).
+- **Revisión:** `revision-ui` dio CHANGES_REQUIRED con 2 bloqueantes: los resultados de la búsqueda
+  de donante (nombre accesible distinto del texto y 19 px de alto) y el detalle sin la lista de sus
+  bienes. Los dos se arreglaron y se volvieron a comprobar con la verificación visual de las 29
+  rutas de F3 y el test del controller; también la alineación de las filas, la fecha de la donación
+  vencida y el sello neutro de las propuestas decididas.
+- **Por qué:** cumplir RF-15 a RF-17 con el mismo patrón lista → acción → aviso de F2.
+- **Costo:** "Sumar otro bien" recarga sin lo escrito en la maqueta (con Alpine, queda para
+  después); en el inicio, "En el depósito" pasa de 3 a 7 (decisión de la ficha). Huecos de backend
+  nuevos y la divergencia `donanteId`/`idDonante`, en
+  [`raices-ab-huecos-backend`](flujos/raices-ab-huecos-backend.md).
+- **Quién decidió:** agente, dentro de la ficha aprobada.
+
 ### 2026-11-07 · vistas · Donantes y Entidades del admin (F2), con la tabla adaptable
 
 - **Decisión:** se construyen Donantes (lista, registrar, importar CSV con su avance y su resultado

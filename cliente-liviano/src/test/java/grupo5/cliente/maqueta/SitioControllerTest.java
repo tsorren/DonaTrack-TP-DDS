@@ -499,7 +499,10 @@ class SitioControllerTest {
           "entidad-seguimiento-confirmar",
           "admin-inicio",
           "admin-donantes",
-          "admin-entidades");
+          "admin-entidades",
+          "admin-donaciones",
+          "admin-donaciones-registrar",
+          "admin-asignaciones");
 
   @Test
   void losDonantesDelAdminMuestranCadaEstadoEImportanSinBloquear() throws Exception {
@@ -590,6 +593,116 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Falta la dirección: la usamos para")));
     mvc.perform(get("/admin-entidades-registrada"))
         .andExpect(content().string(containsString("necesita aprobación.")));
+  }
+
+  @Test
+  void lasDonacionesDelAdminSeFiltranYSeMarcanVencidas() throws Exception {
+    mvc.perform(get("/admin-donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("7 en el depósito · 4 asignadas · 1 en camino")))
+        .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
+        .andExpect(content().string(containsString("data-rotulo=\"Vence\"")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=leche\"")));
+    mvc.perform(get("/admin-donaciones?vence=pronto"))
+        .andExpect(content().string(containsString("Vencen en los próximos 7 días")))
+        .andExpect(content().string(containsString("Queso · 6 kg")))
+        .andExpect(content().string(not(containsString("Arroz · 25 kg"))));
+    mvc.perform(get("/admin-donaciones?estado=asignada"))
+        .andExpect(content().string(containsString("Fideos · 20 kg")))
+        .andExpect(content().string(not(containsString("Leche en polvo · 10 u"))));
+    mvc.perform(get("/admin-donaciones?escenario=vacio"))
+        .andExpect(content().string(containsString("Todavía no hay donaciones registradas.")));
+    mvc.perform(get("/admin-donaciones?vence=pronto&escenario=vacio"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Ninguna donación del depósito vence en los próximos 7 días.")));
+    mvc.perform(get("/admin-donaciones?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar las donaciones.")));
+    mvc.perform(get("/admin-donaciones-detalle"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("¿Marcar Leche en polvo como vencida?")))
+        .andExpect(content().string(containsString("popover")))
+        .andExpect(
+            content().string(containsString("action=\"/admin-donaciones-detalle-vencida\"")));
+    mvc.perform(get("/admin-donaciones-detalle?donacion=fideos"))
+        .andExpect(content().string(containsString("quedó asignada a Comedor Barrio Ejemplo")))
+        .andExpect(content().string(containsString("Solo se puede marcar como vencida")))
+        .andExpect(content().string(not(containsString("popovertarget=\"vencida\""))));
+    mvc.perform(get("/admin-donaciones-detalle?escenario=cambio"))
+        .andExpect(content().string(containsString("cambió mientras la mirabas")));
+    mvc.perform(post("/admin-donaciones-detalle-vencida"))
+        .andExpect(redirectedUrl("/admin-donaciones-detalle-vencida"));
+    mvc.perform(get("/admin-donaciones-detalle-vencida"))
+        .andExpect(content().string(containsString("La marcaste como vencida el 15 de octubre")))
+        .andExpect(content().string(not(containsString("¿Marcar Leche en polvo como vencida?"))));
+  }
+
+  @Test
+  void registrarDonacionEligeAlDonanteYSumaBienes() throws Exception {
+    mvc.perform(get("/admin-donaciones-registrar"))
+        .andExpect(content().string(containsString("Buscar por nombre o documento")))
+        .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
+        .andExpect(content().string(containsString("formnovalidate")))
+        .andExpect(content().string(not(containsString("Bien 2"))));
+    mvc.perform(get("/admin-donaciones-registrar?donante=ana-ejemplo&bienes=2"))
+        .andExpect(content().string(containsString("<b>Ana Ejemplo</b>")))
+        .andExpect(content().string(containsString("Bien 2")))
+        .andExpect(content().string(containsString("value=\"ana-ejemplo\"")));
+    mvc.perform(get("/admin-donaciones-registrar?buscar=ejemplo"))
+        .andExpect(content().string(containsString("2 donantes coinciden con la búsqueda.")));
+    mvc.perform(get("/admin-donaciones-registrar-error"))
+        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+    mvc.perform(get("/admin-donaciones-registrar-error?escenario=inactivo"))
+        .andExpect(
+            content().string(containsString("Pedro Ejemplo está dado de baja como donante")));
+    mvc.perform(post("/admin-donaciones-registrada"))
+        .andExpect(redirectedUrl("/admin-donaciones-registrada"));
+    mvc.perform(get("/admin-donaciones-registrada"))
+        .andExpect(content().string(containsString("Caja de alimentos, 3 bienes.")));
+    mvc.perform(get("/admin-donaciones-detalle?donacion=caja"))
+        .andExpect(content().string(containsString("Caja de alimentos")))
+        .andExpect(content().string(containsString("Los 3 bienes de la donación")))
+        .andExpect(content().string(containsString("10 litros")));
+  }
+
+  @Test
+  void lasPropuestasSeApruebanODescartan() throws Exception {
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(model().attribute("seccion", "Asignar donaciones"))
+        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 2")))
+        .andExpect(content().string(containsString("Cubre 10 de las 12 unidades")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"Aprobar: propuesta para Comedor Barrio Ejemplo\"")))
+        .andExpect(content().string(containsString("Decididas · 7")));
+    mvc.perform(get("/admin-asignaciones?escenario=vacio"))
+        .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
+    mvc.perform(get("/admin-asignaciones?escenario=corriendo"))
+        .andExpect(content().string(containsString("Corriendo la asignación…")));
+    mvc.perform(get("/admin-asignaciones-aprobada"))
+        .andExpect(content().string(containsString("Aprobaste la propuesta para Comedor Barrio")))
+        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 1")))
+        .andExpect(content().string(containsString("Decididas · 8")));
+    mvc.perform(get("/admin-asignaciones-descartada"))
+        .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
+    mvc.perform(get("/admin-asignaciones-error"))
+        .andExpect(content().string(containsString("ya no está activo")))
+        .andExpect(
+            content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
+    mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
+        .andExpect(content().string(containsString("de la misma entidad que la")));
+    mvc.perform(get("/admin-asignaciones-error?escenario=cambio"))
+        .andExpect(content().string(containsString("Volvimos a cargar la lista.")));
+    mvc.perform(post("/admin-asignaciones-corrida"))
+        .andExpect(redirectedUrl("/admin-asignaciones-corrida"));
+    mvc.perform(get("/admin-asignaciones-corrida?escenario=nuevas"))
+        .andExpect(content().string(containsString("generó 2 propuestas nuevas.")))
+        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
   }
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");

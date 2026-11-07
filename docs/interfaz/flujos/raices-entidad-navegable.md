@@ -249,7 +249,7 @@ Lo que espera tu decisión
     [Revisar propuestas]
 
 Cómo está todo (al 15 de octubre de 2026, 18:30)
-  Donaciones: 3 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre
+  Donaciones: 7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre
   La red: 46 entidades activas · 86 donantes · 1 camión en ruta · 3 camiones libres
   Ver donaciones · Ver camiones
 ```
@@ -385,7 +385,7 @@ otras fichas. Ver el esquema 4.4.
 | Rótulo (admin-inicio) | Inicio | — |
 | Saludo | "Hola, Leo" · "Jueves 15 de octubre de 2026" · "Hoy esperan tu decisión 3 entidades y 2 propuestas de asignación. 4 donaciones vencen en los próximos 7 días." | Estado y próximo paso; sin urgencia: el vencimiento es un dato con fecha |
 | Lo que espera | Título "Lo que espera tu decisión" · "3 entidades piden sumarse" · "4 donaciones vencen en los próximos 7 días" · "2 propuestas de asignación" · con sus detalles del esquema · "Revisar entidades" · "Ver las que vencen" · "Revisar propuestas" | — |
-| Cifras | Título "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." · "3 en el depósito" · "4 asignadas" · "1 en camino" · "9 entregas confirmadas en octubre" · "46 entidades activas" · "86 donantes" · "1 camión en ruta" · "3 camiones libres" · "Ver donaciones" · "Ver camiones" | Actividad y resultado registrado, con período; sin comparar entidades |
+| Cifras | Título "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." · "7 en el depósito" · "4 asignadas" · "1 en camino" · "9 entregas confirmadas en octubre" · "46 entidades activas" · "86 donantes" · "1 camión en ruta" · "3 camiones libres" · "Ver donaciones" · "Ver camiones" | Actividad y resultado registrado, con período; sin comparar entidades |
 
 Ayudas por flujo crítico: ninguna de estas pantallas es un flujo crítico (no envían datos, salvo
 marcar como leídas). La ayuda es la bajada de cada una, que dice qué muestra y hasta cuándo.

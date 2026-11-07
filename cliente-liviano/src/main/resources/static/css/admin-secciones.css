@@ -8,13 +8,9 @@
   margin-top: var(--espacio-4);
 }
 
-/* El papel de importar, con su relleno (parámetro de .tarjeta). */
-#importar > .tarjeta {
-  --espacio-relleno: var(--espacio-3);
-}
-
-/* Los paneles de las pestañas de Entidades, con su relleno. */
-:is(#solicitudes, #activas) {
+/* Cada papel de la mesa (importar, las pestañas, una propuesta, una donación, un bien), con su
+   relleno (parámetro de .tarjeta). */
+.mesa .tarjeta {
   --espacio-relleno: var(--espacio-3);
 }
 
@@ -29,7 +25,19 @@
   width: fit-content;
 }
 
-/* Los datos de una solicitud: el rótulo arriba y el dato debajo, sin sangría. */
-#solicitudes dd {
+/* Las celdas de una fila, al medio: el enlace de la primera mide un toque y las demás, un renglón. */
+.tabla :is(th, td) {
+  vertical-align: middle;
+}
+
+/* El enlace al detalle de cada fila se toca con el alto de un toque. */
+.tabla tbody th a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+/* Los datos de una solicitud y de una donación: el rótulo arriba y el dato debajo, sin sangría. */
+:is(#solicitudes, .mesa .tarjeta) dd {
   margin: 0;
 }

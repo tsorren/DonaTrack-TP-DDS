@@ -57,4 +57,11 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 - Admin · admin-donantes-registrar · no duplicar a una persona ya registrada · POST /api/personas no busca por documento (solo la importación lo hace). Sumado en F2.
 - Admin · admin-donantes-importando e -importado · el avance y el resultado por fila · el backend guarda solo el estado del archivo (HB-14).
 - Admin · admin-entidades · pedir corrección y rechazar con motivo, y el estado pendiente de aprobación · no existen (HB-12, RI-AUTH-05).
+- Admin · admin-donaciones · una sola lista con estado, donante, depósito y vencimiento · el estado viene de GET /donaciones-independientes (solo trae donacionOriginalId) y el resto de GET /api/donaciones, con otro estado (EstadoDonacion); hoy hay que unirlas por donacionOriginalId. Sumado en F3.
+- Admin · admin-donaciones?vence=pronto · filtrar por fecha de vencimiento · no existe el filtro. Sumado en F3.
+- Admin · admin-donaciones · paginar (HB-04).
+- Admin · admin-donaciones-registrar · la lista de depósitos para elegir · el DTO recibe nombreDeposito y una dirección, sin catálogo. Sumado en F3.
+- Admin · admin-donaciones-registrar · divergencia contrato-código: openapi-donaciones.yaml (línea 1027) pide donanteId y DonacionesService lee dto.idDonante(). Reportada en F3, sin corregir (fuera del alcance del cliente liviano).
+- Admin · admin-asignaciones · la entidad del pedido sin buscarla aparte (la propuesta trae la necesidad sin la entidad); el nombre del algoritmo y su puntaje no se exponen. Sumado en F3.
+- Admin · admin-asignaciones · guardar y devolver el motivo y la fecha de la decisión: el controlador recibe la justificación pero no la pasa, y la propuesta no la guarda. Sumado en F3.
 - Admin · admin-inicio · las cifras de "Cómo está todo" (donaciones en depósito, asignadas y en camino, entregas confirmadas del mes, donantes, camiones en ruta y libres) · no hay un resumen agregado; contarlas obliga a traer las listas enteras de Donaciones, Logística y Usuarios en cada carga.
