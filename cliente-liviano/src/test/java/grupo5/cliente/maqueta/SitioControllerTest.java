@@ -497,7 +497,97 @@ class SitioControllerTest {
           "entidad-notificaciones",
           "entidad-necesidades",
           "entidad-seguimiento-confirmar",
-          "admin-inicio");
+          "admin-inicio",
+          "admin-donantes",
+          "admin-entidades");
+
+  @Test
+  void losDonantesDelAdminMuestranCadaEstadoEImportanSinBloquear() throws Exception {
+    mvc.perform(get("/admin-donantes"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Donantes"))
+        .andExpect(
+            content().string(containsString("86 donantes activos, al 15 de octubre de 2026")))
+        .andExpect(content().string(containsString("<caption>")))
+        .andExpect(content().string(containsString("scope=\"row\"")))
+        .andExpect(content().string(containsString("data-rotulo=\"Documento\"")))
+        .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
+        .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")));
+    mvc.perform(get("/admin-donantes?escenario=vacio"))
+        .andExpect(content().string(containsString("Todavía no hay donantes registrados.")));
+    mvc.perform(get("/admin-donantes?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/admin-donantes?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar los donantes.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/admin-donantes-importando"))
+        .andExpect(content().string(containsString("Procesando: 8.400 de 20.000 filas.")))
+        .andExpect(content().string(containsString("Todos los donantes")));
+    mvc.perform(get("/admin-donantes-importado"))
+        .andExpect(content().string(containsString("19.100 donantes nuevos, 754 actualizados")))
+        .andExpect(content().string(containsString("Falta el apellido.")));
+    mvc.perform(get("/admin-donantes-importar-error"))
+        .andExpect(content().string(containsString("No se importó ninguna fila.")));
+    mvc.perform(post("/admin-donantes-importando"))
+        .andExpect(redirectedUrl("/admin-donantes-importando"));
+  }
+
+  @Test
+  void registrarDonanteLlevaASuDonacionYNoDuplica() throws Exception {
+    mvc.perform(get("/admin-donantes-registrar"))
+        .andExpect(model().attribute("seccion", "Donantes"))
+        .andExpect(content().string(containsString("Apellido *")))
+        .andExpect(content().string(containsString("action=\"/admin-donantes-registrado\"")));
+    mvc.perform(get("/admin-donantes-registrar?tipo=organizacion"))
+        .andExpect(content().string(containsString("Razón social *")))
+        .andExpect(content().string(not(containsString("Apellido *"))));
+    mvc.perform(get("/admin-donantes-registrar-error"))
+        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+    mvc.perform(post("/admin-donantes-registrado"))
+        .andExpect(redirectedUrl("/admin-donantes-registrado"));
+    mvc.perform(get("/admin-donantes-registrado"))
+        .andExpect(content().string(containsString("Registraste a Ana Ejemplo como donante.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/admin-donaciones-registrar?donante=ana-ejemplo\"")));
+    mvc.perform(get("/admin-donantes-registrado?escenario=ya-era"))
+        .andExpect(
+            content().string(containsString("Ana Ejemplo ya era donante. No cambiamos nada.")));
+  }
+
+  @Test
+  void lasEntidadesDelAdminSeApruebanCorrigenORechazan() throws Exception {
+    mvc.perform(get("/admin-entidades"))
+        .andExpect(model().attribute("seccion", "Entidades"))
+        .andExpect(content().string(containsString("Piden sumarse · 3")))
+        .andExpect(content().string(containsString("Activas · 46")))
+        .andExpect(content().string(containsString("aria-label=\"Aprobar: Hogar Ejemplo Norte\"")))
+        .andExpect(content().string(containsString("popover")))
+        .andExpect(content().string(containsString("Le falta la constancia de domicilio")));
+    mvc.perform(get("/admin-entidades?escenario=vacio"))
+        .andExpect(content().string(containsString("Ninguna entidad pide sumarse por ahora.")));
+    mvc.perform(get("/admin-entidades?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar las entidades.")));
+    mvc.perform(get("/admin-entidades-aprobada"))
+        .andExpect(content().string(containsString("Aprobaste a Hogar Ejemplo Norte.")))
+        .andExpect(content().string(containsString("Piden sumarse · 2")))
+        .andExpect(content().string(containsString("Activas · 47")));
+    mvc.perform(get("/admin-entidades-correccion"))
+        .andExpect(content().string(containsString("Esperando")))
+        .andExpect(content().string(containsString("Le pedimos a Merendero Ejemplo Este")));
+    mvc.perform(get("/admin-entidades-rechazada"))
+        .andExpect(
+            content().string(containsString("Rechazaste la solicitud de Comedor Ejemplo Oeste.")))
+        .andExpect(content().string(not(containsString("pidió sumarse el 14 de octubre"))));
+    mvc.perform(post("/admin-entidades-rechazada"))
+        .andExpect(redirectedUrl("/admin-entidades-rechazada"));
+    mvc.perform(get("/admin-entidades-registrar-error"))
+        .andExpect(content().string(containsString("Falta la dirección: la usamos para")));
+    mvc.perform(get("/admin-entidades-registrada"))
+        .andExpect(content().string(containsString("necesita aprobación.")));
+  }
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");
 

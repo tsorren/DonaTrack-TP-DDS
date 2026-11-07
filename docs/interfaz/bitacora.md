@@ -31,6 +31,27 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · vistas · Donantes y Entidades del admin (F2), con la tabla adaptable
+
+- **Decisión:** se construyen Donantes (lista, registrar, importar CSV con su avance y su resultado
+  en la misma pantalla) y Entidades (pestañas Piden sumarse y Activas; aprobar, pedir corrección,
+  rechazar y registrar), según la ficha [`raices-admin-navegable`](flujos/raices-admin-navegable.md).
+  Las listas usan un bloque nuevo, `.tabla`: tabla desde 53,75 em y una tarjeta por fila en el
+  celular ([catálogo](componentes.md)).
+- **Alternativas:** las pestañas de Entidades como `?vista=` (la ficha) o como el bloque
+  `.pestanas` con `#solicitudes` y `#activas`; "Quién dona" con Alpine o con un formulario aparte y
+  "Cambiar".
+- **Por qué:** el bloque `.pestanas` ya existe y anda sin JavaScript; "Cambiar" es lo que la ficha
+  pide sin JavaScript, y alcanza.
+- **Costo:** el cambio de campos en el momento con Alpine queda para después; sin él, "Cambiar"
+  recarga y pierde lo escrito. Sin JavaScript, las pestañas no dicen cuál está activa a un lector de
+  pantalla (`:target`, sin `aria-current`). El error de Registrar entidad muestra solo "Falta la
+  dirección": "Una empresa no puede ser entidad" no se alcanza, porque el tipo no ofrece Empresa.
+  "Descargar las filas con error" vuelve a la misma pantalla en la maqueta. La búsqueda de
+  Donantes y Entidades no filtra en la maqueta. Los huecos del backend de F2 quedan en
+  [`raices-ab-huecos-backend`](flujos/raices-ab-huecos-backend.md).
+- **Quién decidió:** agente, dentro de la ficha aprobada por el usuario.
+
 ### 2026-11-07 · flujo · Admin en una sola ficha, con tres reglas de trabajo
 
 - **Decisión:** el recorrido del admin va en una sola ficha,

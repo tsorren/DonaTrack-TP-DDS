@@ -361,7 +361,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. Todavía no hay una tabla en el sitio: cuando haga falta, se agrega acá.', ~{::demo-lista})}">
+        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. Para datos en columnas, .tabla.', ~{::demo-lista})}">
           <th:block th:fragment="demo-lista">
             <ul class="lista" role="list">
               <li class="tarjeta" data-filete="doble"><b>Lentejas secas</b><br>15 kg · Esperan tu confirmación</li>
@@ -656,6 +656,20 @@
                 Pausar el movimiento
               </label>
             </p>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">
+          <th:block th:fragment="demo-tabla">
+            <table class="tabla">
+              <caption>Donantes de ejemplo</caption>
+              <thead>
+                <tr><th scope="col">Nombre</th><th scope="col">Tipo</th><th scope="col">Estado</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Ana Ejemplo</th><td data-rotulo="Tipo">Persona</td><td data-rotulo="Estado">Activo</td></tr>
+                <tr><th scope="row">Distribuidora Ejemplo SA</th><td data-rotulo="Tipo">Empresa</td><td data-rotulo="Estado">Activo</td></tr>
+              </tbody>
+            </table>
           </th:block>
         </div>
       </div>

@@ -85,8 +85,8 @@ Falta el mapa con su lista (RF-14, RF-CL-06); el paso de confirmar ya está hech
 | Pantalla | RF | Plantilla | Estado |
 |---|---|---|:-:|
 | Inicio | — | `admin-inicio` | ✅ |
-| **Donantes** → registrar donante · importar CSV con su resultado | RF-15, RF-20 | — | ❌ |
-| **Entidades** → registrar entidad · aprobar entidades | RF-15, RF-21 | — | ❌ |
+| Donantes → registrar donante · importar CSV con su resultado | RF-15, RF-20 | `admin-donantes` (+ importando, importado, importar-error), `admin-donantes-registrar` (+ error, registrado) | ✅ |
+| Entidades → registrar entidad · aprobar entidades | RF-15, RF-21 | `admin-entidades` (+ aprobada, correccion, rechazada), `admin-entidades-registrar` (+ error, registrada) | ✅ |
 | **Donaciones** → registrar donación · detalle y vencimiento | RF-15, RF-16 | — | ❌ |
 | **Asignar donaciones** → propuesta | RF-17 | — | ❌ |
 | **Camiones** | RF-18 | — | ❌ |
@@ -98,8 +98,8 @@ Falta el mapa con su lista (RF-14, RF-CL-06); el paso de confirmar ya está hech
 |---|---|:-:|
 | Páginas de error propias: 403 "sin permiso", 404 y 5xx con `traceId` (el 401 lleva al login) | RF-CL-08 | ❌ |
 
-**Resumen:** de las 34 filas de la matriz, 20 están dibujadas, 1 está parcial y 13 faltan.
-De las que faltan, 6 son del admin, con sus 7 acciones. En ellas caen RF-15 a RF-20, que son
+**Resumen:** de las 34 filas de la matriz, 22 están dibujadas, 1 está parcial y 11 faltan
+(después de F2). De las que faltan, 4 son del admin. En ellas caen RF-15 a RF-20, que son
 requerimientos mínimos del enunciado, y RF-21, que es `[PROPOSED]`.
 
 ## Fases
@@ -131,7 +131,7 @@ requerimiento nuevo.
 | Fase | Qué entrega | Tamaño `[INFERRED]` | Criterio de cierre |
 |---|---|---|---|
 | **F1** Ficha del admin ✅ hecha (2026-11-07, [ficha aprobada](flujos/raices-admin-navegable.md)) | Decisión 1 primero. Con la recomendada, `flujos/raices-admin-navegable.md` (nombre provisional): las 6 secciones y sus 7 acciones, estados y textos; las fichas aparte de importar CSV (resultado por fila, 20.000 filas sin bloquear la pantalla) y de asignar (propuesta de los algoritmos) | 1 tanda · 1 a 3 fichas | Fichas aprobadas por el usuario y PASS de `revision-ui` |
-| **F2** Admin: personas | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
+| **F2** Admin: personas ✅ hecha (2026-11-07) | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
 | **F3** Admin: donaciones y asignar | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
 | **F4** Admin: camiones y ranking | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
 | **F5** Entidad y donante | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
@@ -150,7 +150,7 @@ Se piden al empezar la fase donde hacen falta, una por pregunta.
 |---|---|---|---|
 | 1 | F1 | ¿Una sola ficha para el recorrido del admin, o una por sección? | **Decidida (usuario, 2026-11-07):** una sola ficha, CSV y asignar incluidos: [`raices-admin-navegable`](flujos/raices-admin-navegable.md) |
 | 2 | F5 | ¿Cómo se ve Misiones e insignias, si la cuenta de ejemplo es una empresa? | Una segunda cuenta de ejemplo, de una persona, con el menú que suma Incentivos |
-| 3 | F2 | ¿Importar CSV muestra el avance en la misma pantalla, o en una aparte? | En la misma, como dice el mapa del sitio, para no pasar de 3 niveles |
+| 3 | F2 | ¿Importar CSV muestra el avance en la misma pantalla, o en una aparte? | **Decidida en la ficha aprobada (§4.1):** en la misma pantalla |
 
 ## Riesgos
 

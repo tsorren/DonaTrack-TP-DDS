@@ -53,4 +53,8 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 
 - Admin · admin-inicio · entidades que piden sumarse · falta el estado pendiente de aprobación (HB-12).
 - Admin · admin-inicio · donaciones que vencen en los próximos días · GET /donaciones-independientes no filtra por vencimiento.
+- Admin · admin-donantes · buscar por nombre o documento y paginar · GET /api/donantes lista todos y solo filtra por canal (como HB-15 en entidades). Sumado en F2 del roadmap de vistas.
+- Admin · admin-donantes-registrar · no duplicar a una persona ya registrada · POST /api/personas no busca por documento (solo la importación lo hace). Sumado en F2.
+- Admin · admin-donantes-importando e -importado · el avance y el resultado por fila · el backend guarda solo el estado del archivo (HB-14).
+- Admin · admin-entidades · pedir corrección y rechazar con motivo, y el estado pendiente de aprobación · no existen (HB-12, RI-AUTH-05).
 - Admin · admin-inicio · las cifras de "Cómo está todo" (donaciones en depósito, asignadas y en camino, entregas confirmadas del mes, donantes, camiones en ruta y libres) · no hay un resumen agregado; contarlas obliga a traer las listas enteras de Donaciones, Logística y Usuarios en cada carga.

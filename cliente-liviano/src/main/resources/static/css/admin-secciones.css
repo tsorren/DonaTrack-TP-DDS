@@ -1,0 +1,35 @@
+/* Las secciones del admin en Raíces (ficha raices-admin-navegable): la misma mesa de trabajo del
+   inicio, con sus listas en la tabla adaptable (.tabla) y sus formularios. Hoja nueva: solo dispone;
+   lo demás viene de las capas CUBE y de la hoja del inicio. */
+@import url("admin-inicio.css");
+
+/* Va después de formularios.css: gana al margen propio del formulario. */
+.mesa > * + * {
+  margin-top: var(--espacio-4);
+}
+
+/* El papel de importar, con su relleno (parámetro de .tarjeta). */
+#importar > .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* Los paneles de las pestañas de Entidades, con su relleno. */
+:is(#solicitudes, #activas) {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* El renglón de cada solicitud se toca entero: al menos el alto de un toque. */
+#solicitudes summary {
+  min-height: 3rem;
+  padding-block: var(--espacio-2);
+}
+
+/* Un botón que pliega (summary) mide lo que su texto, no el ancho de la columna. */
+.mesa details > summary.boton {
+  width: fit-content;
+}
+
+/* Los datos de una solicitud: el rótulo arriba y el dato debajo, sin sangría. */
+#solicitudes dd {
+  margin: 0;
+}
