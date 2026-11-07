@@ -566,6 +566,21 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 3. **Cliente.** Endpoint de fragmento con el marcador y la "última actualización", pedido cada 30 s con la pestaña visible.
 4. **Textos.** Las plantillas, las fichas de flujo y los legales dejan de decir "aproximada": las coordenadas son exactas y la dirección textual no se publica (D24 revisada).
 
+## DTI-36 — Las fotos de recepción no llegan a Donaciones y la entrega no sabe quién donó
+<a id="dti-36"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega](./20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06); los records `EventoEntregaExitosa` y `EventoEntregaSolicitadaV1` de los dos servicios, `Entrega`, `EntregaDocument` y `CrearEntregaRequestDTO` todavía no |
+| Target | `logistica-service` (`EventoEntregaExitosa`, `EventoEntregaSolicitadaV1`, `Entrega`, `EntregaDocument`, `CrearEntregaRequestDTO`, `openapi-logistica.yaml`) · `donaciones-service` (los dos records, `ProveedorLogisticaAmqp`, `ProcesadorEventosLogistica`, la donación independiente) |
+| Cuándo se saldará | Entrega 6: tareas 5 (HB-16) y 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md); la URL estable de las fotos depende de ADR-E6-08 (HB-10) |
+
+1. **Fotos.** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
+2. **Donante.** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
+3. **Datos viejos.** Sin backfill: las entregas y donaciones previas no aparecen en el listado por donante ni en destacadas.
+
 ## DTI-37 — Logística no recibe fotos: solo acepta URLs, sin validar tipo, tamaño ni metadatos
 <a id="dti-37"></a>
 
