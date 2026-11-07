@@ -336,7 +336,7 @@ AA 999 ZZ   1.500 kg · 9 m³     Deshabilitado [Volver a habilitar]  En el tall
 ```text
 Ranking de donantes
 Septiembre de 2026  [Ver otro mes ▾ Agosto de 2026 …] [Ver]
-Ordenado por misiones completadas en el mes, según Incentivos. Calculado el 30 de septiembre de
+Ordenado por la cantidad de misiones que cada donante completó en el mes. Calculado el 30 de septiembre de
 2026, 23:59. El de octubre se calcula al cerrar el mes.
 
 Puesto   Donante                    Misiones completadas
@@ -408,7 +408,7 @@ F3, el inicio pasa a "7 en el depósito" (y la red, a lo que dé la suma); esta 
 | Acciones de una fila | "Revisar" · "Aprobar" · "Pedir corrección" · "Rechazar" · "Descartar" · "Marcar como vencida" · "Deshabilitar" · "Volver a habilitar" | Nombre accesible con el objeto: "Aprobar: Hogar Ejemplo Norte" |
 | Ayuda del CSV | "Un archivo CSV separado por comas, con una fila de encabezado. Hasta 50 MB." · columnas que se leen · "Si el documento ya está, se actualizan sus datos; si no, se suma un donante nuevo." | Las columnas salen del lector actual del backend |
 | Ayuda de asignar | "Los algoritmos proponen qué donaciones del depósito cubren cada pedido de las entidades. Vos aprobás o descartás cada propuesta." | Explica RF-17 sin jerga |
-| Criterio del ranking | "Ordenado por misiones completadas en el mes, según Incentivos. Se arma al cerrar el mes." | Período, fuente y criterio |
+| Criterio del ranking | "Ordenado por la cantidad de misiones que cada donante completó en el mes. Se arma al cerrar el mes." | Período y criterio, en palabras del admin (sin el nombre del servicio, decisión del usuario, 2026-11-07) |
 
 Ayudas por flujo crítico ([patrones y textos](../patrones-y-microcopy.md#ayudas-por-flujo-crítico-rnf-ui-04)):
 

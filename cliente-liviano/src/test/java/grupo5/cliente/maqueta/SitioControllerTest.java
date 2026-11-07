@@ -750,7 +750,7 @@ class SitioControllerTest {
     mvc.perform(get("/admin-ranking"))
         .andExpect(model().attribute("seccion", "Ranking"))
         .andExpect(content().string(containsString("Septiembre de 2026")))
-        .andExpect(content().string(containsString("Ordenado por misiones completadas en el mes")))
+        .andExpect(content().string(containsString("misiones que cada donante completó en el mes")))
         .andExpect(
             content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("<caption>")));

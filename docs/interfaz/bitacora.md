@@ -55,7 +55,8 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   en "Cancelar", como en F3; la ficha (§3 y §7) se ajustó a esto.
 - **Revisión:** `revision-ui` PASS sin bloqueantes. De sus avisos, se arreglaron la hora de las
   cifras después de una acción (18:35), el motivo de ejemplo del camión deshabilitado y la ficha.
-  Queda para el usuario si "según Incentivos" (el nombre del servicio) se cambia por algo más llano.
+  El criterio del ranking dejó de nombrar el servicio ("según Incentivos"): ahora dice "Ordenado por la
+  cantidad de misiones que cada donante completó en el mes." (decisión del usuario).
 - **Por qué:** cumplir RF-18 y RF-19 con el mismo patrón lista → acción → aviso de F2 y F3.
 - **Costo:** la maqueta muestra un motivo de ejemplo, no el escrito al deshabilitar (el POST
   vuelve sin lo escrito); el hueco de los deshabilitados y del motivo, en
