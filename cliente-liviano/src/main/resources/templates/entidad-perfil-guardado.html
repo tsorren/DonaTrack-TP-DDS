@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces, Mi perfil de la entidad después de guardar: el aviso, en la misma pestaña, dice qué se
+       guardó (?seccion=datos o avisos; la pestaña, #datos o #como-te-avisamos, la conserva el
+       navegador). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-perfil', ~{::contenido})}">
+<head>
+  <title>Guardado - Mi perfil - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-perfil :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

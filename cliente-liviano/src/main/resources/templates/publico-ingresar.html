@@ -102,13 +102,16 @@
       </form>
     </div>
 
-    <!--/* Solo en la maqueta: tres etiquetas colgadas en la tierra, una por rol. */-->
+    <!--/* Solo en la maqueta: cuatro etiquetas colgadas en la tierra, una por rol y dos del donante
+         (la empresa y la persona, F5). */-->
     <section class="ejemplos tierra-impresa" aria-labelledby="ejemplos-titulo">
       <h2 id="ejemplos-titulo">Cuentas de ejemplo</h2>
       <p>Es un prototipo: no se guarda nada. Entrá con una cuenta de ejemplo.</p>
       <ul class="ejemplos-lista" role="list">
-        <li><a href="/donante-inicio" th:href="@{/donante-inicio}">
+        <li><a href="/donante-inicio?cuenta=empresa" th:href="@{/donante-inicio(cuenta='empresa')}">
           <span class="ejemplo-inicial" aria-hidden="true">D</span>Distribuidora Ejemplo SA, empresa donante</a></li>
+        <li><a href="/donante-misiones?cuenta=persona" th:href="@{/donante-misiones(cuenta='persona')}">
+          <span class="ejemplo-inicial" aria-hidden="true">M</span>Martina Ruiz, persona donante</a></li>
         <li><a href="/entidad-inicio" th:href="@{/entidad-inicio}">
           <span class="ejemplo-inicial" aria-hidden="true">C</span>Comedor Barrio Ejemplo, entidad</a></li>
         <li><a href="/admin-inicio" th:href="@{/admin-inicio}">

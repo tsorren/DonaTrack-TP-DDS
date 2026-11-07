@@ -61,11 +61,12 @@
          entidad, y ninguna en la pantalla de después de marcarlas como leídas (al volver a otra
          pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
          Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
-         recepción, que la corrida A/B había dejado sin tocar. */-->
+         recepción, que la corrida A/B había dejado sin tocar. Con la cuenta de la persona que dona
+         (F5), sin cuenta: su bandeja muestra el aviso de la maqueta. */-->
   <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
      th:with="pantalla=${#execInfo.processedTemplateName},
               avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
-              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
+              sinLeer=${persona == true or #strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
      class="armazon-avisos" href="/donante-notificaciones"
      th:href="${avisos}"
      th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"

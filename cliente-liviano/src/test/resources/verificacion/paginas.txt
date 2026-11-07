@@ -214,3 +214,20 @@
 /admin-ranking?escenario=error
 # El catálogo de la capa CUBE (RF-CL-05, B0-06): axe AA sobre /estilos.
 /estilos
+# F5 del roadmap de vistas: Misiones (cuenta persona), Seguir entregas y Mi perfil de la entidad.
+/donante-misiones?cuenta=persona
+/donante-misiones?cuenta=persona&escenario=vacio
+/donante-misiones?cuenta=persona&escenario=lento
+/donante-misiones?cuenta=persona&escenario=error
+/donante-misiones?cuenta=empresa
+/donante-donaciones?cuenta=persona
+/entidad-seguimiento
+/entidad-seguimiento?escenario=vacio
+/entidad-seguimiento?escenario=lento
+/entidad-seguimiento?escenario=error
+/entidad-perfil
+/entidad-perfil?escenario=lento
+/entidad-perfil?escenario=error
+/entidad-perfil?escenario=sin-conexion
+/entidad-perfil-guardado?seccion=datos
+/entidad-perfil-guardado?seccion=avisos

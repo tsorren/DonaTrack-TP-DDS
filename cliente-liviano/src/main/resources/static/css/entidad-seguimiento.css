@@ -1,0 +1,31 @@
+/* Seguir entregas de la entidad en Raíces (ficha raices-entidad-navegable, 4.5): la red del donante
+   dada vuelta, con la puerta de la entidad al centro. El marco, las dos columnas, la lista y el
+   resalte cruzado son el bloque `.mapa-cuerpo`; el camión, los números del dibujo y las cifras, los
+   de Seguimiento del donante. Hoja nueva: solo dispone. */
+@import url("donante-seguimiento.css");
+
+/* Las cifras, la leyenda del dibujo: debajo de él, de a dos. */
+.mapa-cuerpo .cifras {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: var(--espacio-4) 0 0;
+}
+
+/* El pictograma de la categoría, al lado de su texto. */
+.estacion-cabeza .categoria-icono {
+  vertical-align: middle;
+  margin-inline-end: var(--espacio-1);
+}
+
+.mapa-cuerpo .cifras dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.estacion-ficha > p {
+  margin: var(--espacio-2) 0 0;
+}
+
+.estacion-ficha > .boton {
+  margin-top: var(--espacio-3);
+}

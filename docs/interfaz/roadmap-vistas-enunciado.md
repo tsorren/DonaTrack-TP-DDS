@@ -61,10 +61,11 @@ Estados: ✅ dibujada · 🟡 parcial · ❌ falta.
 | Seguir entregas | RF-09 | `donante-seguimiento` | ✅ |
 | Notificaciones | RF-08 | `donante-notificaciones` | ✅ |
 | Mi perfil | RI-AUTH-02 | `donante-perfil` | ✅ |
-| **Misiones e insignias** | RF-07 | — | ❌ |
+| **Misiones e insignias** | RF-07 | `donante-misiones` (con la cuenta persona, `?cuenta=persona`) | ✅ |
 
 La cuenta de ejemplo del donante es una empresa (Distribuidora Ejemplo SA). RF-07 le oculta
-Incentivos, así que hoy la pantalla no tiene desde dónde verse.
+Incentivos; desde F5 (2026-11-07) la maqueta suma una segunda cuenta, Martina Ruiz, persona
+donante, que ve Misiones en su menú; con ella, las otras pantallas del donante muestran un aviso.
 
 ### Entidad
 
@@ -74,11 +75,12 @@ Incentivos, así que hoy la pantalla no tiene desde dónde verse.
 | Necesidades → detalle | RF-10 | `entidad-necesidades` (detalle desplegado en la lista) | ✅ |
 | Donaciones recibidas | RF-11 | `entidad-recibidas` | ✅ |
 | Notificaciones | RF-13 | `entidad-notificaciones` | ✅ |
-| Seguir entregas → Confirmar recepción | RF-14, RF-12 | `entidad-seguimiento-confirmar*`, `-sellada*` | 🟡 |
-| **Mi perfil** | RI-AUTH-02 | — (el enlace lleva a `/entidad-perfil`) | ❌ |
+| Seguir entregas → Confirmar recepción | RF-14, RF-12 | `entidad-seguimiento`, `entidad-seguimiento-confirmar*`, `-sellada*` | ✅ |
+| **Mi perfil** | RI-AUTH-02 | `entidad-perfil`, `entidad-perfil-guardado` | ✅ |
 
-Seguir entregas está 🟡 porque el menú lleva a `entidad-seguimiento` y esa plantilla no existe.
-Falta el mapa con su lista (RF-14, RF-CL-06); el paso de confirmar ya está hecho.
+Seguir entregas y Mi perfil de la entidad, dibujadas en F5 (2026-11-07). Queda un enlace a
+`sin-dibujar`: "Llegó con un problema", de Confirmar recepción (`entidad-seguimiento-problema`), que
+ninguna ficha aprobada dibuja todavía.
 
 ### Admin
 
@@ -134,7 +136,7 @@ requerimiento nuevo.
 | **F2** Admin: personas ✅ hecha (2026-11-07) | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
 | **F3** Admin: donaciones y asignar ✅ hecha (2026-11-07) | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
 | **F4** Admin: camiones y ranking ✅ hecha (2026-11-07) | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
-| **F5** Entidad y donante 🟡 fichas aprobadas (2026-11-07: [Misiones](flujos/raices-misiones.md), [Seguir entregas](flujos/raices-entidad-navegable.md#45-entidad-seguimiento) y [Mi perfil de la entidad](flujos/raices-mi-perfil.md#mi-perfil-de-la-entidad)); falta construir | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
+| **F5** Entidad y donante 🟡 construida (2026-11-07: [Misiones](flujos/raices-misiones.md), [Seguir entregas](flujos/raices-entidad-navegable.md#45-entidad-seguimiento) y [Mi perfil de la entidad](flujos/raices-mi-perfil.md#mi-perfil-de-la-entidad)); queda "Llegó con un problema" en `sin-dibujar`, sin ficha | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
 | **F6** Público | Nosotros, Landing donante, Landing beneficiario y Activar cuenta, enlazadas desde la portada, el pie o el ingreso | 1 tanda · 4 plantillas + 1 ficha | Las 4 pantallas listas y enlazadas |
 | **F7** Errores y cierre | Páginas 403, 404 y 5xx; un test nuevo en `SitioControllerTest` que sigue todos los enlaces del sitio y falla si alguno lleva a `sin-dibujar` (hoy el test comprueba enlaces sueltos, no el recorrido completo); mapa del sitio y bitácora al día | 1 tanda · 3 plantillas + 1 test | Criterio de hecho de este roadmap cumplido |
 

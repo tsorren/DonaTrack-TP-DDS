@@ -42,7 +42,7 @@ class SitioControllerTest {
 
   @Test
   void unaSeccionSinPantallaMuestraQueNoEstaDibujada() throws Exception {
-    mvc.perform(get("/entidad-seguimiento"))
+    mvc.perform(get("/entidad-seguimiento-problema"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
         .andExpect(model().attribute("seccion", "Seguir entregas"))
@@ -492,7 +492,10 @@ class SitioControllerTest {
           "donante-notificaciones",
           "donante-seguimiento",
           "donante-perfil",
+          "donante-misiones",
           "entidad-inicio",
+          "entidad-seguimiento",
+          "entidad-perfil",
           "entidad-recibidas",
           "entidad-notificaciones",
           "entidad-necesidades",
@@ -764,6 +767,123 @@ class SitioControllerTest {
   }
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");
+
+  @Test
+  void laPersonaQueDonaVeSusMisionesYLaEmpresaNo() throws Exception {
+    mvc.perform(get("/donante-misiones?cuenta=persona"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("donante-misiones"))
+        .andExpect(model().attribute("persona", true))
+        .andExpect(content().string(containsString("Martina Ruiz")))
+        .andExpect(content().string(containsString("Persona donante")))
+        .andExpect(content().string(containsString("Tus misiones e insignias")))
+        .andExpect(content().string(containsString("Sos donante Sostenedor desde el")))
+        .andExpect(
+            content().string(containsString("href=\"/donante-misiones\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50 bienes\"")))
+        .andExpect(content().string(containsString("Completa el 3 de agosto de 2026")))
+        .andExpect(
+            content().string(containsString("Empieza a contar cuando completes Gran Aporte.")))
+        .andExpect(content().string(containsString("Se abre cuando completes las misiones de")))
+        .andExpect(content().string(containsString("aria-label=\"Tus insignias\"")))
+        .andExpect(content().string(containsString("(2 de 6)")))
+        .andExpect(content().string(not(containsString("Notificaciones, 4 sin leer"))));
+    mvc.perform(get("/donante-misiones?escenario=vacio").sessionAttr("cuenta", "persona"))
+        .andExpect(content().string(containsString("Todavía no tenés insignias")))
+        .andExpect(content().string(containsString("0 de 3 meses")))
+        .andExpect(content().string(containsString("(0 de 6)")));
+    mvc.perform(get("/donante-misiones?escenario=lento").sessionAttr("cuenta", "persona"))
+        .andExpect(content().string(containsString("role=\"status\">Cargando tus misiones")))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/donante-misiones?escenario=error").sessionAttr("cuenta", "persona"))
+        .andExpect(content().string(containsString("role=\"alert\"")))
+        .andExpect(content().string(containsString("No pudimos cargar tus misiones.")))
+        .andExpect(content().string(containsString("a1b2c3d4e5f6")));
+    mvc.perform(get("/donante-misiones"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("persona", false))
+        .andExpect(content().string(containsString("es para quienes donan como persona")))
+        .andExpect(content().string(not(containsString("Gran Aporte"))))
+        .andExpect(content().string(not(containsString("href=\"/donante-misiones\""))));
+  }
+
+  @Test
+  void conLaPersonaLasOtrasDelDonanteMuestranElAviso() throws Exception {
+    mvc.perform(get("/donante-donaciones").sessionAttr("cuenta", "persona"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("aviso-persona"))
+        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(content().string(containsString("la maqueta solo muestra Misiones e insignias")))
+        .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")));
+    mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
+        .andExpect(view().name("aviso-persona"))
+        .andExpect(model().attribute("seccion", "Notificaciones"));
+    mvc.perform(get("/donante-perfil").sessionAttr("cuenta", "persona"))
+        .andExpect(view().name("aviso-persona"))
+        .andExpect(model().attribute("seccion", "Mi perfil"));
+    mvc.perform(get("/donante-inicio?cuenta=empresa").sessionAttr("cuenta", "persona"))
+        .andExpect(view().name("donante-inicio"))
+        .andExpect(content().string(containsString("Distribuidora Ejemplo SA")));
+    mvc.perform(get("/entidad-inicio").sessionAttr("cuenta", "persona"))
+        .andExpect(view().name("entidad-inicio"));
+    mvc.perform(get("/publico-ingresar"))
+        .andExpect(content().string(containsString("href=\"/donante-misiones?cuenta=persona\"")))
+        .andExpect(content().string(containsString("Martina Ruiz, persona donante")));
+  }
+
+  @Test
+  void laEntidadSigueLoQueVieneASuPuerta() throws Exception {
+    mvc.perform(get("/entidad-seguimiento"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(
+            content().string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("Lo que viene a tu puerta")))
+        .andExpect(
+            content().string(containsString("class=\"mapa-dibujo tierra-impresa\" aria-hidden")))
+        .andExpect(content().string(containsString("estacion-ficha estacion-ficha--5")))
+        .andExpect(content().string(not(containsString("estacion-ficha--6"))))
+        .andExpect(content().string(containsString("Calle Ejemplo 450")))
+        .andExpect(content().string(containsString("entrega=lentejas")))
+        .andExpect(content().string(containsString("entrega=ropa")))
+        .andExpect(content().string(containsString("Última noticia: 14 de octubre, 16:40.")))
+        .andExpect(content().string(containsString("actualizada hoy a las 18:25")))
+        .andExpect(content().string(containsString("href=\"/entidad-recibidas?estado=recibidas\"")))
+        .andExpect(content().string(not(containsString("Confirmaste la recepción"))));
+    mvc.perform(get("/entidad-seguimiento?escenario=vacio"))
+        .andExpect(content().string(containsString("No tenés entregas por recibir.")))
+        .andExpect(content().string(not(containsString("mapa-dibujo"))));
+    mvc.perform(get("/entidad-seguimiento?escenario=lento"))
+        .andExpect(content().string(containsString("role=\"status\">Cargando tus entregas")));
+    mvc.perform(get("/entidad-seguimiento?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar tus entregas.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+  }
+
+  @Test
+  void elPerfilDeLaEntidadGuardaSusDatosYSusAvisos() throws Exception {
+    mvc.perform(get("/entidad-perfil"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Mi perfil"))
+        .andExpect(content().string(containsString("aria-label=\"Secciones de tu perfil\"")))
+        .andExpect(content().string(containsString("Datos de la entidad")))
+        .andExpect(content().string(containsString("Calle Ejemplo 450, Localidad Ejemplo")))
+        .andExpect(content().string(containsString("No se cambia desde acá")))
+        .andExpect(content().string(not(containsString("Cómo te ven"))))
+        .andExpect(content().string(containsString("Aceptaste la versión 1")));
+    mvc.perform(post("/entidad-perfil-guardado").param("seccion", "avisos"))
+        .andExpect(redirectedUrl("/entidad-perfil-guardado?seccion=avisos"));
+    mvc.perform(get("/entidad-perfil-guardado?seccion=datos"))
+        .andExpect(content().string(containsString("Guardamos los datos de tu entidad.")));
+    mvc.perform(get("/entidad-perfil-guardado?seccion=avisos"))
+        .andExpect(content().string(containsString("Guardamos cómo te avisamos.")));
+    mvc.perform(get("/entidad-perfil?escenario=lento"))
+        .andExpect(content().string(containsString("Guardando…")));
+    mvc.perform(get("/entidad-perfil?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos guardar los cambios.")));
+    mvc.perform(get("/entidad-perfil?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("No sabemos si se guardó.")));
+  }
 
   @Test
   void estanDibujadasLasPantallasDeLosTresRecorridos() throws Exception {

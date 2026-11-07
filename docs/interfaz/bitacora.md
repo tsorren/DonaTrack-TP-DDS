@@ -31,6 +31,27 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · pantalla · F5 construida: Misiones, Seguir entregas y Mi perfil de la entidad
+
+- **Decisión:** la cuenta persona va en la sesión (`?cuenta=persona`, `?cuenta=empresa` vuelve) y
+  `SitioController` le muestra un aviso (`aviso-persona`) en las otras pantallas del donante, sin
+  tocar las de la empresa; su bandeja no muestra cuenta sin leer. Las insignias son el sello de
+  Raíces (lleno la obtenida, hueco la que falta), no un pictograma propio por insignia. La barra de
+  progreso es un bloque nuevo, `.progreso`, sobre el `<progress>` nativo. Seguir entregas de la
+  entidad usa el bloque `.mapa-cuerpo` (hasta 6 líneas con resalte cruzado) y las piezas del dibujo
+  del donante; sus cifras van debajo del dibujo, como leyenda, porque a la derecha va la lista (la
+  ficha las ponía a la derecha). En el menú, la sección se llama "Misiones" (§2 de la ficha): con
+  "Misiones e insignias" la cabecera desbordaba a 1100 px; el rótulo y el título dicen el nombre
+  entero. Con 5 secciones, la barra del celular usa la letra angosta de la del admin.
+- **Alternativas:** guardar la cuenta en la dirección de cada enlace (se pierde al usar el menú);
+  un pictograma por insignia (más dibujo sin ficha que lo pida); la red del donante con sus clases
+  propias (resalta solo 3 líneas).
+- **Por qué:** lo mínimo que cumple las fichas aprobadas con piezas del catálogo.
+- **Costo:** "Llegó con un problema" (Confirmar recepción) sigue en `sin-dibujar`; las insignias
+  propias quedan para cuando exista el perfil público que las muestre.
+- **Quién decidió:** agente, dentro de las fichas aprobadas por el usuario.
+- **Evidencia:** `SitioControllerTest` y las capturas de `-Pvisual`.
+
 ### 2026-11-07 · flujo · Fichas de F5: Seguir entregas de la entidad, su perfil y Misiones
 
 - **Decisión:** Seguir entregas de la entidad es la red radial del donante dada vuelta, con la puerta

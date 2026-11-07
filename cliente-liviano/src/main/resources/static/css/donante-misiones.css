@@ -1,0 +1,58 @@
+/* Misiones e insignias de la persona que dona en Raíces (ficha raices-misiones): las insignias en
+   una fila que baja de renglón y las misiones de cada categoría en tarjetas, de a dos desde la
+   tableta. Hoja nueva: solo dispone, por id y sin clases propias; lo demás viene de las capas CUBE
+   (.tarjeta, .lista, .estado, .progreso, .racimo, .pila). */
+@import url("privado.css");
+
+#misiones {
+  max-width: 64rem;
+}
+
+#misiones > header p {
+  max-width: 38rem;
+}
+
+#misiones h2 {
+  margin: 0 0 var(--espacio-3);
+}
+
+/* Las insignias: el sello grande y, debajo, su nombre y su fecha. */
+#insignias {
+  align-items: start;
+  padding: 0;
+}
+
+#insignias > li {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--espacio-1);
+  width: 8.5rem;
+  text-align: center;
+}
+
+#insignias .estado-sello {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+#insignias p {
+  margin: 0;
+}
+
+#misiones .lista {
+  --medida-columna: 22rem;
+}
+
+#misiones .lista .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  height: 100%;
+}
+
+#misiones .tarjeta :is(h3, p) {
+  margin: 0;
+}

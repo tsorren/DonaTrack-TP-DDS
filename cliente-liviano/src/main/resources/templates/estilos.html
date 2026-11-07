@@ -658,6 +658,12 @@
             </p>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.progreso', 'Cuánto va de un objetivo, en una barra nativa (progress con max, value y nombre accesible). La barra acompaña: la cuenta va siempre en texto al lado.', ~{::demo-progreso})}">
+          <th:block th:fragment="demo-progreso">
+            <progress class="progreso" max="50" value="12" aria-label="Ejemplo: 12 de 50 bienes"></progress>
+            <p>12 de 50 bienes</p>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">
           <th:block th:fragment="demo-tabla">
             <table class="tabla">

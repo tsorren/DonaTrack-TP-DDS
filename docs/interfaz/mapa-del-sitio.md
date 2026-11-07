@@ -116,9 +116,9 @@ La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes
 | Iniciar sesión, Registrarse: elegir, Registro de donante / entidad | Dibujadas | Dibujadas |
 | Recuperar contraseña | Dibujada, con su aviso de enviado | Dibujada, con su aviso de enviado |
 | Inicio, Mis donaciones → detalle, Beneficiarios (Entidades), Notificaciones, Mi perfil, Seguir entregas del donante | Dibujadas | Dibujadas |
-| Misiones e insignias (Incentivos) | No está: RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
+| Misiones e insignias (Incentivos) | Dibujada para la cuenta persona (F5 del roadmap, 2026-11-07); RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
 | Inicio de la entidad, Necesidades, Donaciones recibidas, Notificaciones, Confirmar recepción | Dibujadas | Dibujadas |
-| Seguir entregas de la entidad (lista) | Sin dibujar | Dibujada |
+| Seguir entregas de la entidad (dibujo y lista) y Mi perfil de la entidad | Dibujadas (F5 del roadmap, 2026-11-07) | Dibujada |
 | Inicio del admin | Dibujada, con el menú | Dibujada, con el menú |
 | Donantes (registrar, importar CSV con su resultado) y Entidades (registrar, aprobar, pedir corrección, rechazar) del admin | Dibujadas (F2 del roadmap, 2026-11-07) | Dibujadas (F2 del roadmap, 2026-11-07) |
 | Donaciones (registrar, detalle, marcar vencida) y Asignar donaciones (aprobar, descartar, correr la asignación) del admin | Dibujadas (F3 del roadmap, 2026-11-07) | Dibujadas (F3 del roadmap, 2026-11-07) |
