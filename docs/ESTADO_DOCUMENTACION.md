@@ -120,7 +120,8 @@ docs/
 ├── requerimientos/                        # 🟢 Requerimientos por entrega
 │   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D33 (insumo de ADRs; D1 cerrada con Keycloak)
 │   ├── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
-│   └── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
+│   ├── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
+│   └── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan hoy y qué le falta al backend (insumo de F2)
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
@@ -331,6 +332,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend (HB-01 a HB-21); decisiones D1–D33 con alternativas (3 pendientes: D8, D12 y D30; D1 cerrada con Keycloak) y ADRs candidatos. | 🟢 Sincronizado |
 | [`docs/requerimientos/plan-e6-trabajo-sin-auth.md`](requerimientos/plan-e6-trabajo-sin-auth.md) | Plan de trabajo E6 | Inventario priorizado de tareas de E6 que no dependen de auth ni de los estilos de Raíces cálida: huecos de backend, cliente real, errores, decisiones y deuda documental (2026-11-06). | 🟢 Sincronizado |
 | [`docs/requerimientos/plan-e6-cliente-datos-reales-y-gateway.md`](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) | Plan de trabajo E6 | Cómo avanza el cliente liviano sin depender del diseño: contrato de vista, puertos con adaptadores de maqueta y REST, gateway en dos etapas y base para el login; siete matrices de alternativas y fases F0 a F6 (2026-11-07). `[PROPOSED]`. | 🟢 Sincronizado |
+| [`docs/requerimientos/brechas-de-datos-por-pantalla-e6.md`](requerimientos/brechas-de-datos-por-pantalla-e6.md) | Inventario E6 | Por pantalla y rol: endpoints, qué datos da la API, qué se deriva y qué falta, con el HB; los huecos que más destraban y las candidatas para la F0. Re-verifica la ficha de huecos de Raíces contra `ENTREGA_6` (2026-11-07). | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entrega-4/README.md`](entrega-4/README.md) | Índice Entrega 4 | Índice de todos los `.md` de `docs/entrega-4/` y de la guía de migración de Notificaciones. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/entregable-5/`](entrega-4/arquitectura/entregable-5/README.md) | Entregable 5 Entrega 4 | Informe de arquitectura en .docx/.pdf, su fuente `contenido.md`, las 5 figuras y el constructor. | 🟢 Sincronizado |
