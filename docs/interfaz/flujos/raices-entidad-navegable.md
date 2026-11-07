@@ -13,6 +13,13 @@
 Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-notificaciones`
 (con su estado `entidad-notificaciones-leidas`) y `admin-inicio`.
 
+> **Ampliada:** 2026-11-07, fase F5 del [roadmap de las vistas](../roadmap-vistas-enunciado.md):
+> suma `entidad-seguimiento` (Seguir entregas, RF-14), que hasta hoy caía en `sin-dibujar`
+> ([§4.5](#45-entidad-seguimiento)), aprobada por el usuario el 2026-11-07 (`revision-ui` PASS en la
+> ronda 2). Mi perfil de la entidad va en
+> [`raices-mi-perfil`](raices-mi-perfil.md#mi-perfil-de-la-entidad). Lo aprobado el 2026-11-03 no
+> cambia; donde esta ficha decía "sin dibujar" para Seguir entregas, ahora remite a §4.5.
+
 ## 1. Para quién y para qué
 
 | | |
@@ -21,8 +28,8 @@ Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-
 | Tono | Pantallas de trabajo: claro, útil, tranquilizador; estado y próximo paso. La entidad actúa: confirma, pide, revisa. Para demoras y errores: honesto, responsable, sereno ([tono según la pantalla](../tono-y-comunicacion.md#tono-según-la-pantalla)) |
 | Qué quiere lograr | **Entidad:** "Ver qué llegó a mi puerta y confirmarlo, qué viene en camino y qué ya recibimos". **Admin:** "Saber qué espera mi decisión hoy y cómo está todo" |
 | Dispositivo principal | Entidad: celular primero, también la computadora. Admin: computadora |
-| Requerimientos | Entidad: RF-11 (listado de donaciones asignadas a la entidad, filtrable por estado), RF-13 (asignación y recepción generan notificación en la bandeja), RF-12 (confirmar recepción, se llega desde acá), RF-10 (sus necesidades), RF-14 (seguir entregas, sin dibujar). Admin: el inicio resume RF-16 (vencimientos), RF-17 (propuestas de asignación), RF-21 (entidades que piden sumarse) y RF-18 (camiones). RF-04 (cada rol llega a su inicio). RNF-UI-02 (nada a más de 3 niveles). RF-CL-07 (toda cifra que cambia dice cuándo se actualizó). RNF-CL-02 (sin JavaScript, igual funciona) |
-| Datos que usa | Entidad: `GET /donaciones-independientes` (sin filtro por entidad: HB-04), el seguimiento de Logística por donación (HB-16), `GET /api/necesidades?entidadId=`, `GET /api/notificaciones/persona/{personaId}` (con `leida`), `.../no-leidas/conteo`, `PATCH /api/notificaciones/{id}/leida` y `.../marcar-todas-leidas`. Admin: `GET /donaciones-independientes?estado=`, `GET /api/asignaciones/propuestas`, `GET /api/entidades`, `GET /api/camiones`. Los que faltan, en [Huecos de backend](#huecos-de-backend). En la maqueta, datos sintéticos de esta ficha, coherentes con los de Necesidades, Confirmar recepción y la portada de Raíces |
+| Requerimientos | Entidad: RF-11 (listado de donaciones asignadas a la entidad, filtrable por estado), RF-13 (asignación y recepción generan notificación en la bandeja), RF-12 (confirmar recepción, se llega desde acá), RF-10 (sus necesidades), RF-14 (seguir entregas: el mapa de las entregas a recibir, con la dirección exacta de la entidad y el camión aproximado; §4.5, desde 2026-11-07). Admin: el inicio resume RF-16 (vencimientos), RF-17 (propuestas de asignación), RF-21 (entidades que piden sumarse) y RF-18 (camiones). RF-04 (cada rol llega a su inicio). RNF-UI-02 (nada a más de 3 niveles). RF-CL-07 (toda cifra que cambia dice cuándo se actualizó). RNF-CL-02 (sin JavaScript, igual funciona) |
+| Datos que usa | Entidad: `GET /donaciones-independientes` (sin filtro por entidad: HB-04), el seguimiento de Logística por donación (HB-16) y `GET /api/entregas/seguimiento/beneficiarios/{id}` (Seguir entregas; la posición del camión, HB-05 y HB-06), `GET /api/necesidades?entidadId=`, `GET /api/notificaciones/persona/{personaId}` (con `leida`), `.../no-leidas/conteo`, `PATCH /api/notificaciones/{id}/leida` y `.../marcar-todas-leidas`. Admin: `GET /donaciones-independientes?estado=`, `GET /api/asignaciones/propuestas`, `GET /api/entidades`, `GET /api/camiones`. Los que faltan, en [Huecos de backend](#huecos-de-backend). En la maqueta, datos sintéticos de esta ficha, coherentes con los de Necesidades, Confirmar recepción y la portada de Raíces |
 | Boceto de E1 | Pág. 24 (inicio de la entidad: saludo, métricas, notificaciones pendientes, "Entregas sin verificar >"). Pág. 27 (donaciones recibidas: tarjetas por donación con donante y fecha). Pág. 13 (inicio del admin: menú y saludo). Notificaciones de la entidad: sin boceto (la del donante, pág. 6, es una tabla Estado / Detalle / Fecha) |
 
 ## 2. Dónde está en el sitio
@@ -34,10 +41,10 @@ Pantallas nuevas de esta ficha: `entidad-inicio`, `entidad-recibidas`, `entidad-
 | `entidad-inicio` | 1 | Desde `publico-ingresar` (la maqueta entra con la cuenta de ejemplo de la entidad) y desde el menú |
 | `entidad-necesidades` (aprobada) | 2 | Menú e Inicio |
 | `entidad-recibidas` | 2 | Menú ("Donaciones recibidas") e Inicio |
-| `entidad-seguimiento` | 2 | Menú. **Sin dibujar** en esta corrida: cae en `sin-dibujar` |
+| `entidad-seguimiento` | 2 | Menú, Inicio ("Seguir entregas"), Necesidades y la vuelta de Confirmar recepción. Dibujada desde el 2026-11-07 ([§4.5](#45-entidad-seguimiento)) |
 | `entidad-seguimiento-confirmar` (aprobada) | 3 | Desde Inicio, Donaciones recibidas, Necesidades y Notificaciones, con `?entrega=lentejas` o `ropa` |
 | `entidad-notificaciones` | 2 | Desde las pantallas privadas de la entidad (un acceso fijo en la cabecera de todas, también Necesidades y Confirmar recepción desde el pulido del 2026-11-03; no es una sección del menú, como en el primer prototipo) y desde Inicio |
-| `entidad-perfil` | 2 | El enlace "Mi perfil" de la estructura privada. Sin dibujar para la entidad |
+| `entidad-perfil` | 2 | El enlace "Mi perfil" de la estructura privada. Dibujada desde el 2026-11-07 ([ficha de Mi perfil](raices-mi-perfil.md#mi-perfil-de-la-entidad)) |
 
 Rol Admin: `admin-inicio` (nivel 1), desde `publico-ingresar` con la cuenta de ejemplo del admin.
 Sus secciones (Donantes, Entidades, Donaciones, Asignar donaciones, Camiones y Ranking) caen en
@@ -64,6 +71,9 @@ flowchart TD
   inicio -->|Confirmar recepción| confirmar
   confirmar -->|confirmada| sellada[entidad-seguimiento-sellada-*]
   sellada -->|Volver al inicio| inicio
+  inicio -->|Seguir entregas| seguimiento[entidad-seguimiento]
+  seguimiento -->|Confirmar recepción| confirmar
+  confirmar -->|Volver a Seguir entregas| seguimiento
   inicio -->|novedades sin leer| notif[entidad-notificaciones]
   notif -->|Confirmar recepción| confirmar
   notif -->|Ver la donación| recibidas
@@ -93,10 +103,10 @@ Desvíos considerados:
 - **Volver:** el menú y el botón Atrás del navegador. Ninguna de estas pantallas deja algo a medio
   hacer, salvo "Marcar todas como leídas", que no borra nada: en el sistema, cada una puede volver a
   "sin leer" (`PATCH /api/notificaciones/{id}/leida?leida=false`); la maqueta no dibuja esa vuelta.
-  Confirmar recepción vuelve a "Seguir entregas" (su ficha), que en esta corrida cae en
-  `sin-dibujar`: quien llegó desde Inicio, Donaciones recibidas o Notificaciones y vuelve por ese
-  enlace sale del recorrido; vuelve con el menú o con Atrás. Solo la salida después de confirmar
-  ("Volver al inicio") sigue el recorrido. Es un riesgo anotado (sección 8, heurística 3).
+  Confirmar recepción vuelve a "Seguir entregas" (su ficha). Hasta el 2026-11-07 esa pantalla
+  caía en `sin-dibujar`; desde F5 está dibujada (§4.5) y la vuelta sigue en el recorrido "recibir".
+  Quien llegó desde Inicio, Donaciones recibidas o Notificaciones vuelve a Seguir entregas, no a su
+  pantalla de origen (sección 8, heurística 3).
 - **Error del servidor o sin conexión al cargar:** el estado de error de cada pantalla, con
   "Volver a cargar" y el código para escribirnos.
 - **Error al marcar como leídas:** el aviso arriba de la bandeja; las notificaciones quedan como
@@ -249,7 +259,7 @@ Lo que espera tu decisión
     [Revisar propuestas]
 
 Cómo está todo (al 15 de octubre de 2026, 18:30)
-  Donaciones: 3 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre
+  Donaciones: 7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre
   La red: 46 entidades activas · 86 donantes · 1 camión en ruta · 3 camiones libres
   Ver donaciones · Ver camiones
 ```
@@ -262,6 +272,86 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
 - Respecto del boceto (pág. 13): el boceto es un menú con saludo. Las 9 secciones quedaron en 6
   (mapa del sitio) y van en el menú; el inicio suma lo que espera una decisión, que el boceto no
   tiene.
+
+### 4.5 `entidad-seguimiento`
+
+Ampliación del 2026-11-07 (F5). Es la pantalla de RF-14: el mapa de las entregas que la entidad
+tiene que recibir, solo las suyas, con su dirección exacta y el camión en una posición aproximada.
+Es la hermana de Seguir entregas del donante ([su ficha](raices-seguir-entregas.md)), dada vuelta:
+allá la red sale del depósito hacia las entidades; acá todas las líneas llegan a la puerta de la
+entidad (decisión del usuario, 2026-11-07, contra una sola línea del depósito a la puerta).
+
+```text
+Seguir entregas
+Lo que viene a tu puerta
+Las entregas asignadas al Comedor Barrio Ejemplo, desde que salen del depósito hasta que confirmás
+la recepción. Tu dirección es exacta; la del camión, aproximada. Al 15 de octubre de 2026, 18:30.
+[3 novedades sin leer → Notificaciones]
+
+┌ El dibujo ─────────────────────────────┐  Esperan tu confirmación 2
+│ Tu puerta al centro, con el nombre y la │  Con problema    1
+│ dirección. Una línea de subte por       │  En camino       1
+│ entrega, que llega desde afuera; en     │  Pendientes      1
+│ cada una, el sello de su estado donde   │
+│ va: en la puerta, a mitad de camino, en │
+│ el depósito o parada donde se cortó.    │
+└─────────────────────────────────────────┘
+
+Entrega por entrega
+  1 Lentejas secas · Alimentos · 15 kg · Donó Distribuidora Ejemplo SA
+    [Espera tu confirmación] Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.
+                                                                     [Confirmar recepción]
+  2 Ropa de abrigo · Ropa · 10 unidades · Donó Donante Sostenedor
+    [Espera tu confirmación] Llegó a tu puerta ayer a las 17:10. Espera tu confirmación.
+                                                                     [Confirmar recepción]
+  3 Aceite de girasol · Alimentos · 10 litros · Donó Almacén Ejemplo SRL
+    [Con problema] El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.
+    Última noticia: 14 de octubre, 16:40.                            Ver tu pedido
+  4 Arroz · Alimentos · 20 kg · Donó Almacén Ejemplo SRL
+    [En camino] Salió del depósito hoy a las 9:15. Llega mañana.
+    El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 18:25.
+  5 Leche en polvo · Alimentos · 12 unidades · Donó Lácteos Ejemplo SA
+    [Pendiente] Asignada el 13 de octubre. Sale del depósito el 17 de octubre.
+
+Las que ya recibiste, con su foto, están en Donaciones recibidas.   Ver las recibidas
+```
+
+- **Qué entra:** las asignadas a la entidad que todavía no confirmó: en la puerta, con problema, en
+  camino y pendientes de salir. Las 5 de la [tabla de datos](#datos-de-maqueta), con los mismos
+  textos y los mismos nombres de estado que Donaciones recibidas tal como está construida
+  (`piezas-entidad`: "Espera tu confirmación", "Con problema", "En camino", "Pendiente"). En la
+  tabla de datos y en Inicio, "En tu puerta" y "Por salir" son esos mismos estados: los nombres
+  cambiaron al construir Donaciones recibidas, y esta sección usa los construidos. Las recibidas no entran: van a Donaciones recibidas.
+- **Orden y número:** el de lo que hay que hacer, como en Donaciones recibidas (en la puerta, con
+  problema, en camino, pendiente). El número de cada entrega es el mismo en la lista y en el dibujo.
+- **El dibujo:** una red radial como la del donante, con la estación de la entidad al centro ("Tu
+  puerta", el nombre y la dirección exacta, Calle Ejemplo 450). De ella salen 5 líneas de subte,
+  una por entrega, con su número en la punta de afuera, donde está el depósito. En cada línea, el
+  sello de su estado en su lugar: las dos de la puerta, junto al centro; el arroz con el camión a
+  mitad de camino (posición aproximada); el aceite, con el sello de problema donde se cortó; la
+  leche, en la punta del depósito. Lo recorrido va impreso y lo que falta, hueco, como en el
+  donante. El dibujo es `aria-hidden`: la lista dice todo (RF-CL-06).
+- **Las cifras**, como leyenda del dibujo (a la derecha en pantalla grande, debajo en el celular),
+  igual que en el donante: cuántas hay en cada estado.
+- **Cada entrega:** el número y el nombre, la categoría con su pictograma, cuánto, quién donó (nombre
+  visible o su categoría, como en Donaciones recibidas), el estado con su sello y su próximo paso, la
+  última noticia si la hay y la acción: "Confirmar recepción" (`?entrega=lentejas` o `ropa`) en las
+  de la puerta; "Ver tu pedido" en la que tiene un problema. Al pasar o enfocar una entrega, su línea
+  queda llena y las demás se apagan, como en el donante.
+- **Arriba, el acceso a las novedades**, como en las otras pantallas de la entidad.
+- **En el sistema, el mapa:** el mismo estilo sobre MapLibre (D21), con la dirección exacta de la
+  entidad y el camión en su posición aproximada (RNF-PRIV-01/02, HB-06). En la maqueta, un dibujo
+  SVG fijo de las 5 del ejemplo, como en el donante.
+
+En el celular: el título, el dibujo más chico (con los números, sin los nombres), las cifras de a
+dos y la lista. El menú, en la barra de abajo.
+
+Respecto del boceto (pág. 28): el mapa con su recorrido se mantiene, como red; la lista "Entregas a
+confirmar" pasa a ser la lista de todas las que vienen, y confirmar se hace en su propia pantalla, de
+a una (Confirmar recepción, ya aprobada). Los botones "<Estado>" y "Reportar problema" no se dibujan:
+el estado va en cada entrega, y lo que llega con un problema se informa desde Confirmar recepción
+("Llegó con un problema", [su ficha](raices-confirmar-recepcion.md)), que es a donde lleva cada
+entrega en la puerta. Va a la bitácora.
 
 ## 5. Estados
 
@@ -295,7 +385,14 @@ parámetro de las otras de Raíces). En `entidad-recibidas`, además, `?estado=`
 | `admin-inicio` | Vacío: nada espera decisión | El saludo, el aviso y las cifras | "Hoy no hay nada que espere tu decisión." · "Ninguna entidad pide sumarse, ninguna donación vence en los próximos 7 días y no hay propuestas de asignación." |
 | `admin-inicio` | Cargando | El saludo y el lugar de cada parte | "Cargando tu inicio…" |
 | `admin-inicio` | Error del servidor | El saludo y el aviso | "No pudimos cargar tu inicio." · "Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · `a1b2c3d4e5f6` · "Volver a cargar" |
-| Las cuatro | Sin permiso | No se dibuja (ver Desvíos) | "Esta pantalla es para las entidades." / "Esta pantalla es para la administración." · "Ir a tu inicio" |
+| `entidad-seguimiento` | Con datos | El dibujo, las cifras y la lista | Ver Textos |
+| `entidad-seguimiento` | Vacío (`?escenario=vacio`) | El título; en lugar del dibujo, las cifras y la lista, el aviso | "No tenés entregas por recibir." · "Cuando se asigne una donación a tu entidad, vas a ver acá por dónde viene y cuándo llega a tu puerta." · "Ver tus necesidades" (a `entidad-necesidades`) |
+| `entidad-seguimiento` | Cargando (`?escenario=lento`) | El título; el dibujo y la lista con su lugar reservado | "Cargando tus entregas…" (`role="status"`) |
+| `entidad-seguimiento` | Error del servidor (`?escenario=error`) | El título y el aviso en lugar del dibujo y la lista | "No pudimos cargar tus entregas." · "Es un problema nuestro: no cambió nada en tus entregas. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · `a1b2c3d4e5f6` · "Volver a cargar" |
+| `entidad-seguimiento` | Sin posición del camión (se describe, no se dibuja: depende de HB-05 y HB-06) | La entrega en camino, sin el camión en el dibujo; su línea queda hueca desde el depósito | "No tenemos la posición del camión. Salió del depósito hoy a las 9:15; llega mañana." |
+| `entidad-seguimiento` | Posición vieja (se describe, no se dibuja) | El camión donde se lo vio por última vez, con la hora a la vista | "Última posición conocida: hoy a las 15:10, aproximada." (la hora dice que es vieja, sin alarma, como en el donante) |
+| `entidad-seguimiento` | Éxito, error de datos, deshabilitado | No aplica: solo consulta; confirmar se hace en su pantalla | — |
+| Las cinco | Sin permiso | No se dibuja (ver Desvíos) | "Esta pantalla es para las entidades." / "Esta pantalla es para la administración." · "Ir a tu inicio" |
 
 ## 6. Textos
 
@@ -382,10 +479,18 @@ otras fichas. Ver el esquema 4.4.
 | Grupos | "Sin leer" · "Leídas" | — |
 | Sellos | "Asignada" · "En camino" · "Con problema" · "Llegó a tu puerta" | Texto y forma; el color acompaña |
 | Acción | "Marcar todas como leídas" · enviando: "Marcando…" | — |
+| Rótulo (entidad-seguimiento) | Seguir entregas | El nombre del menú |
+| Título | Lo que viene a tu puerta | La única imagen de raíz posible ya está en el dibujo: el título va sin ella |
+| Bajada | "Las entregas asignadas al Comedor Barrio Ejemplo, desde que salen del depósito hasta que confirmás la recepción. Tu dirección es exacta; la del camión, aproximada. Al 15 de octubre de 2026, 18:30." | El alcance, el límite del dato (RNF-PRIV) y la fecha |
+| Cifras | Nombre accesible "Tus entregas, por estado" · "Esperan tu confirmación" · "Con problema" · "En camino" · "Pendientes", cada una con su número y su sello | La fecha es la de la bajada |
+| En el dibujo | "Tu puerta" · "Comedor Barrio Ejemplo" · "Calle Ejemplo 450" · "Depósito" · el número de cada entrega | Decorativo (`aria-hidden`); la dirección también va en la bajada para el lector, como "tu dirección" |
+| Título de la lista | Entrega por entrega | El del donante |
+| Cada entrega | Los textos de la [tabla de datos](#datos-de-maqueta) · "Donó …" · "Última noticia: 14 de octubre, 16:40." (aceite) · "El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 18:25." (arroz) · "Confirmar recepción" (nombre accesible "Confirmar recepción: lentejas secas") · "Ver tu pedido" | La hora del camión, 18:25, es anterior al corte de las 18:30 |
+| Pie | "Las que ya recibiste, con su foto, están en Donaciones recibidas." · "Ver las recibidas" (a `entidad-recibidas?estado=recibidas`) | — |
 | Rótulo (admin-inicio) | Inicio | — |
 | Saludo | "Hola, Leo" · "Jueves 15 de octubre de 2026" · "Hoy esperan tu decisión 3 entidades y 2 propuestas de asignación. 4 donaciones vencen en los próximos 7 días." | Estado y próximo paso; sin urgencia: el vencimiento es un dato con fecha |
 | Lo que espera | Título "Lo que espera tu decisión" · "3 entidades piden sumarse" · "4 donaciones vencen en los próximos 7 días" · "2 propuestas de asignación" · con sus detalles del esquema · "Revisar entidades" · "Ver las que vencen" · "Revisar propuestas" | — |
-| Cifras | Título "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." · "3 en el depósito" · "4 asignadas" · "1 en camino" · "9 entregas confirmadas en octubre" · "46 entidades activas" · "86 donantes" · "1 camión en ruta" · "3 camiones libres" · "Ver donaciones" · "Ver camiones" | Actividad y resultado registrado, con período; sin comparar entidades |
+| Cifras | Título "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." · "7 en el depósito" · "4 asignadas" · "1 en camino" · "9 entregas confirmadas en octubre" · "46 entidades activas" · "86 donantes" · "1 camión en ruta" · "3 camiones libres" · "Ver donaciones" · "Ver camiones" | Actividad y resultado registrado, con período; sin comparar entidades |
 
 Ayudas por flujo crítico: ninguna de estas pantallas es un flujo crítico (no envían datos, salvo
 marcar como leídas). La ayuda es la bajada de cada una, que dice qué muestra y hasta cuándo.
@@ -414,6 +519,10 @@ Filtro de tono:
 - **Notificaciones:** una lista (`ul`) por grupo; cada notificación dice su tipo en texto antes
   de la fecha. El aviso de "Marcaste las 3 como leídas" va en la región `aria-live` y recibe el
   foco.
+- **Seguir entregas:** el dibujo es `aria-hidden` y no recibe foco; la lista es una `ol` con el
+  número de cada entrega, que es el del dibujo. Las cifras son una lista de definiciones (`dl`) con
+  nombre. El foco recorre las novedades, cada acción de la lista ("Confirmar recepción: lentejas
+  secas", "Ver tu pedido") y "Ver las recibidas".
 - **Admin:** cada bloque de decisión es una sección con su `h3` y su cantidad en el título; las
   cifras son listas de definiciones (`dl`) con nombre, nunca un número solo.
 - Los estados llevan texto y forma (sello); el color solo acompaña. Cargando y error se anuncian en
@@ -426,7 +535,7 @@ Filtro de tono:
 |---|---|---|---|
 | 1 | Visibilidad del estado | Cada donación con su estado, su próximo paso y su fecha; cada pantalla dice hasta cuándo están los datos; las novedades sin leer, con su número | Las notificaciones de la entidad dependen de HB-09 |
 | 2 | Lenguaje del usuario | "En tu puerta", "Lo que viene", "Por salir", "piden sumarse"; sin códigos ni nombres de estados del sistema | "Donaciones recibidas" (menú, E1) lista también las que no llegaron: el título lo aclara |
-| 3 | Control y libertad | Solo consulta, salvo marcar como leídas, que no borra nada; menú y Atrás siempre | Confirmar recepción vuelve a Seguir entregas, no a la pantalla de origen; y Seguir entregas cae en `sin-dibujar` en esta corrida, así que esa vuelta saca del recorrido "recibir" a quien llegó desde Inicio, Donaciones recibidas o Notificaciones. Para el sistema, conviene que la vuelta lleve a la pantalla de origen |
+| 3 | Control y libertad | Solo consulta, salvo marcar como leídas, que no borra nada; menú y Atrás siempre | Confirmar recepción vuelve a Seguir entregas, no a la pantalla de origen. Desde el 2026-11-07 Seguir entregas está dibujada y la vuelta queda en el recorrido "recibir"; para el sistema, conviene igual que la vuelta lleve a la pantalla de origen |
 | 4 | Consistencia | Los mismos sellos, estados, datos y "Confirmar recepción" que Necesidades y Confirmar recepción; el mismo error con código en todas | — |
 | 5 | Prevención de errores | El filtro solo ofrece estados válidos; leer no confirma una entrega, y se dice | — |
 | 6 | Reconocer antes que recordar | Inicio muestra lo que hay que hacer con su botón; cada notificación lleva a lo suyo | — |
@@ -472,6 +581,18 @@ Decisiones tomadas (agente, en la corrida A/B; aprobadas al elegir el sitio A, 2
 - Los desvíos del boceto (secciones 4.1 a 4.4) van a la [bitácora](../bitacora.md) en el cierre de
   la corrida, junto con los de las otras fichas.
 
+Decisiones de la ampliación del 2026-11-07 (F5):
+
+- Seguir entregas de la entidad es la red radial del donante dada vuelta: la puerta de la entidad
+  al centro y una línea por entrega (usuario, 2026-11-07, contra una sola línea del depósito a la
+  puerta).
+- Entran las asignadas que la entidad todavía no confirmó; las recibidas quedan en Donaciones
+  recibidas (agente, del texto de RF-14: "entregas activas a recibir").
+- La dirección de ejemplo del Comedor Barrio Ejemplo es Calle Ejemplo 450, Localidad Ejemplo
+  (agente, sintética; la misma en Mi perfil).
+- Sin "Reportar problema" ni botón de estado del boceto: el estado va en cada entrega y el problema
+  se informa en Confirmar recepción ("Llegó con un problema") (agente).
+
 Preguntas abiertas: ninguna para la corrida. La que queda para el equipo va en los huecos.
 
 ### Huecos de backend
@@ -490,6 +611,10 @@ También en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huec
   notificación a la entidad · sin verificar (HB-09).
 - Entidad · `entidad-notificaciones` · el id de la donación o la entrega en cada notificación, para
   enlazarla · los eventos traen solo `descripcion`.
+- Entidad · `entidad-seguimiento` · todas las entregas activas de la entidad en una llamada ·
+  `GET /api/entregas/seguimiento/beneficiarios/{id}` existe; que traiga también las por salir y las
+  que esperan confirmación, sin verificar (HB-16).
+- Entidad · `entidad-seguimiento` · la posición aproximada del camión · HB-05 y HB-06.
 - Admin · `admin-inicio` · las entidades que piden sumarse · falta el estado pendiente de
   aprobación (HB-12).
 - Admin · `admin-inicio` · las donaciones que vencen en los próximos días · `GET

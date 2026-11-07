@@ -1,0 +1,26 @@
+/* Bloque de progreso (D33, F5): cuánto va de un objetivo, en una barra nativa (`<progress
+   class="progreso" max value>`), como la regla de tinta que se llena de Necesidades. La barra
+   acompaña: la cuenta va siempre en texto al lado ("12 de 50 bienes"). Se carga en la capa `bloques`
+   desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.progreso {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 0.75rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 0;
+  background: var(--color-papel);
+  color: var(--color-raiz);
+}
+
+.progreso::-webkit-progress-bar {
+  background: var(--color-papel);
+}
+
+.progreso::-webkit-progress-value {
+  background: var(--color-raiz);
+}
+
+.progreso::-moz-progress-bar {
+  background: var(--color-raiz);
+}

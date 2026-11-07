@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<!--/* Raíces, Asignar donaciones del admin (RF-17), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.7). Arriba, la última asignación y
+       "Correr la asignación ahora" (un formulario real, POST, que lleva a admin-asignaciones-corrida);
+       debajo, la ayuda y las propuestas que esperan una decisión, cada una en su tarjeta con Aprobar
+       (sin pregunta extra) y Descartar (el motivo opcional, plegado). Al final, las decididas,
+       plegadas, cada una con su sello. Aprobar y Descartar llevan a admin-asignaciones-aprobada y
+       -descartada; la aprobación que falla, a admin-asignaciones-error.
+       ?escenario=vacio, lento, error y corriendo (el botón deshabilitado mientras corre).
+       Fragmentos:
+       - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'descartada', 'error'
+         o 'corrida'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-asignaciones :: hoja('')}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(accion)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${escenario != 'error' and escenario != 'lento'},
+             nuevas=${accion == 'corrida' and escenario == 'nuevas'},
+             fallo=${accion == 'error' ? (escenario == 'propia' ? 'propia' : (escenario == 'cambio' ? 'cambio' : 'inactiva')) : ''},
+             todas=${ {
+      {clave: 'arroz', entidad: 'Comedor Barrio Ejemplo', pide: 'Arroz, 25 kg', cuando: '15 de octubre',
+       cubre: 'Arroz · 25 kg (de Ana Ejemplo)', alcance: 'Cubre el pedido completo.', nueva: false},
+      {clave: 'leche', entidad: 'Merendero Ejemplo Sur', pide: 'Leche en polvo, 12 unidades', cuando: '15 de octubre',
+       cubre: 'Leche en polvo · 10 unidades (de Distribuidora Ejemplo SA)',
+       alcance: 'Cubre 10 de las 12 unidades; el resto sigue pendiente.', nueva: false},
+      {clave: 'yogur', entidad: 'Hogar Ejemplo Centro', pide: 'Yogur, 24 unidades', cuando: 'hoy, 18:36',
+       cubre: 'Yogur · 24 unidades (de Fundación Ejemplo Sur)', alcance: 'Cubre el pedido completo.', nueva: true},
+      {clave: 'utiles', entidad: 'Escuela Ejemplo N.º 3', pide: 'Útiles escolares, 40 unidades', cuando: 'hoy, 18:36',
+       cubre: 'Útiles escolares · 30 unidades (de Juan Ejemplo)',
+       alcance: 'Cubre 30 de las 40 unidades; el resto sigue pendiente.', nueva: true} } },
+             propuestas=${escenario == 'vacio' ? {} : todas.?[(!nueva or #root.nuevas)
+                 and (clave != 'arroz' or #root.accion != 'aprobada')
+                 and (clave != 'leche' or #root.accion != 'descartada')]},
+             decididas=${ {
+      {entidad: 'Comedor Barrio Ejemplo', que: 'Fideos, 20 kg', estado: 'Aprobada'},
+      {entidad: 'Hogar Ejemplo Centro', que: 'Aceite, 12 litros', estado: 'Aprobada'},
+      {entidad: 'Merendero Ejemplo Sur', que: 'Azúcar, 15 kg', estado: 'Aprobada'},
+      {entidad: 'Escuela Ejemplo N.º 3', que: 'Cuadernos, 40 unidades', estado: 'Aprobada'},
+      {entidad: 'Hogar Ejemplo Centro', que: 'Ropa de abrigo, 40 prendas', estado: 'Aprobada'},
+      {entidad: 'Comedor Barrio Ejemplo', que: 'Galletitas, 5 kg', estado: 'Descartada'},
+      {entidad: 'Merendero Ejemplo Sur', que: 'Harina, 10 kg', estado: 'Descartada'} } },
+             recienDecidida=${accion == 'aprobada' ? {entidad: 'Comedor Barrio Ejemplo', que: 'Arroz, 25 kg', estado: 'Aprobada'}
+                 : (accion == 'descartada' ? {entidad: 'Merendero Ejemplo Sur', que: 'Leche en polvo, 12 unidades', estado: 'Descartada'} : null)},
+             corriendo=${escenario == 'corriendo'}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo">Administración</p>
+      <h1>Asignar donaciones</h1>
+      <p th:if="${conDatos}"
+         th:text="${accion == 'corrida'} ? (${nuevas} ? 'Última asignación: hoy, 18:36 · generó 2 propuestas.' : 'Última asignación: hoy, 18:36 · no generó propuestas.') : 'Última asignación: hoy, 0:00 · generó 2 propuestas.'">Última
+        asignación: hoy, 0:00 · generó 2 propuestas.</p>
+    </header>
+
+    <p th:if="${accion == 'aprobada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Aprobaste la propuesta para Comedor Barrio Ejemplo. Las donaciones quedaron asignadas y salen
+      del depósito cuando se arme la ruta.</p>
+    <p th:if="${accion == 'descartada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para
+      otra asignación.</p>
+    <p th:if="${accion == 'corrida'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus th:text="${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ningún pedido nuevo.'">La
+      asignación no encontró donaciones para ningún pedido nuevo.</p>
+    <section th:if="${fallo != ''}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
+             aria-labelledby="fallo-titulo">
+      <h2 id="fallo-titulo" th:switch="${fallo}">
+        <th:block th:case="'inactiva'">No se pudo aprobar: el pedido de Merendero Ejemplo Sur ya no está activo
+          (la entidad lo dio de baja o ya se cumplió).</th:block>
+        <th:block th:case="'propia'">No se pudo aprobar: una de las donaciones es de la misma entidad que la
+          pidió.</th:block>
+        <th:block th:case="*">Esta propuesta cambió mientras la mirabas.</th:block>
+      </h2>
+      <p th:text="${fallo == 'cambio'} ? 'Volvimos a cargar la lista.' : 'No se asignó nada; podés descartar la propuesta.'">No
+        se asignó nada; podés descartar la propuesta.</p>
+    </section>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las propuestas…</p>
+
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar las propuestas.</h2>
+      <p>Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-asignaciones')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-asignaciones"
+         th:href="@{/admin-asignaciones}">Volver a cargar</a>
+    </section>
+
+    <form th:if="${escenario != 'error'}" class="racimo" action="/admin-asignaciones-corrida"
+          th:action="@{/admin-asignaciones-corrida}" method="post">
+      <button class="boton" data-tono="secundario" type="submit" th:disabled="${corriendo}"
+              th:text="${corriendo} ? 'Corriendo la asignación…' : 'Correr la asignación ahora'">Correr la
+        asignación ahora</button>
+      <span th:if="${corriendo}" class="solo-lectores" role="status">Corriendo la asignación…</span>
+    </form>
+
+    <p th:if="${escenario != 'error'}">Los algoritmos proponen qué donaciones del depósito cubren cada pedido
+      de las entidades. Vos aprobás o descartás cada propuesta.</p>
+
+    <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="propuestas-titulo"
+             th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <h2 id="propuestas-titulo"
+          th:text="${conDatos} ? |Propuestas que esperan tu decisión · ${#lists.size(propuestas)}| : 'Propuestas que esperan tu decisión'">Propuestas
+        que esperan tu decisión · 2</h2>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+      <section th:if="${conDatos and #lists.isEmpty(propuestas)}" class="vacio" aria-labelledby="vacio-titulo">
+        <h3 id="vacio-titulo">No hay propuestas que esperen tu decisión.</h3>
+        <p>La próxima asignación corre esta noche, a las 0:00, o podés correrla ahora.</p>
+      </section>
+      <ul th:if="${conDatos and !#lists.isEmpty(propuestas)}" class="lista pila" data-espacio="3" role="list">
+        <li th:each="p : ${propuestas}">
+          <article class="tarjeta pila" data-filete="doble" data-espacio="3" th:id="|propuesta-${p.clave}|"
+                   th:aria-labelledby="|propuesta-${p.clave}-titulo|">
+            <h3 th:id="|propuesta-${p.clave}-titulo|" th:text="|${p.entidad} pide ${p.pide}|">Comedor Barrio
+              Ejemplo pide Arroz, 25 kg</h3>
+            <p th:text="|Propuesta del ${p.cuando}|" th:if="${!p.nueva}">Propuesta del 15 de octubre</p>
+            <p th:text="|Propuesta de ${p.cuando}|" th:if="${p.nueva}">Propuesta de hoy, 18:36</p>
+            <p><span th:text="|La cubre: ${p.cubre}.|">La cubre: Arroz · 25 kg (de Ana Ejemplo).</span>
+              <span th:text="${p.alcance}">Cubre el pedido completo.</span></p>
+            <th:block th:with="sinAprobar=${fallo != '' and fallo != 'cambio' and p.clave == 'leche'}">
+              <div class="racimo" th:unless="${sinAprobar}">
+                <form action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}"
+                      method="post">
+                  <input type="hidden" name="propuesta" th:value="${p.clave}" value="arroz">
+                  <button class="boton" data-tono="principal" type="submit"
+                          th:aria-label="|Aprobar: propuesta para ${p.entidad}|">Aprobar</button>
+                </form>
+              </div>
+              <details th:open="${sinAprobar}">
+                <summary class="boton" data-tono="secundario"
+                         th:aria-label="|Descartar: propuesta para ${p.entidad}|">Descartar</summary>
+                <form class="formulario" action="/admin-asignaciones-descartada"
+                      th:action="@{/admin-asignaciones-descartada}" method="post">
+                  <input type="hidden" name="propuesta" th:value="${p.clave}" value="arroz">
+                  <div class="campo">
+                    <label th:for="|motivo-${p.clave}|" for="motivo-arroz">Motivo (opcional)</label>
+                    <textarea th:id="|motivo-${p.clave}|" id="motivo-arroz" name="motivo" rows="3"></textarea>
+                  </div>
+                  <button class="boton" data-tono="quitar" type="submit">Descartar propuesta</button>
+                </form>
+              </details>
+            </th:block>
+          </article>
+        </li>
+      </ul>
+    </section>
+
+    <details th:if="${conDatos}" class="pila" data-espacio="3">
+      <summary class="boton" data-tono="secundario"
+               th:text="|Decididas · ${#lists.size(decididas) + (recienDecidida != null ? 1 : 0)}|">Decididas · 7</summary>
+      <ul class="lista pila" data-espacio="2" role="list">
+        <li th:each="x : ${recienDecidida != null ? {recienDecidida} : {}}"
+            th:insert="~{admin-asignaciones :: decidida(${x})}"></li>
+        <li th:each="x : ${decididas}" th:insert="~{admin-asignaciones :: decidida(${x})}"></li>
+      </ul>
+    </details>
+  </div>
+</th:block>
+
+<!--/* Una propuesta decidida: su sello y la palabra, y qué cubría. El backend no guarda todavía el motivo
+       ni la fecha de la decisión, así que no se muestran (ver Huecos en la ficha). */-->
+<th:block th:fragment="decidida(x)">
+  <span class="estado"><svg
+      th:replace="~{componentes/sello :: sello(${x.estado == 'Aprobada'} ? 'hecho' : 'falta')}"></svg><th:block
+      th:text="${x.estado}">Aprobada</th:block></span>
+  · <span th:text="|${x.que} para ${x.entidad}|">Fideos, 20 kg para Comedor Barrio Ejemplo</span>
+</th:block>
+</body>
+</html>

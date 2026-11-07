@@ -184,11 +184,15 @@ arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitá
 Se insinúa (usuario): el crecimiento es el avance, dibujado con los datos; sin medallas. Para la
 empresa, hitos de lo acumulado.
 
-## Color (usuario, A/B de paleta y acabado; Huerta de noche desde el 2026-11-05)
+## Color (usuario, A/B de paleta y acabado; Huerta de noche desde el 2026-11-05, con la tierra humus desde el 2026-11-06)
 
 **Huerta de noche** (antes, Oliva, y antes, Bosque). Es un afiche a dos tintas sobre papel de cera:
-la tierra casi negra, el verde hoja honda en títulos y botones, raíces paja, frutos zanahoria y los
-estados de Huerta viva. Lleva esquinas rectas y sombras planas de paja, como luz sobre la tierra.
+la tierra humus, un marrón tibio, con el casi negro solo en el horizonte más hondo (cabecera, pie y
+cifras), el verde hoja honda en títulos y botones, raíces paja, frutos zanahoria y los estados de
+Huerta viva. Lleva esquinas suaves y sombras planas de paja, como luz sobre la tierra. La tierra
+humus y las esquinas suaves salieron del A/B de la etapa 1 de
+[Raíces cálida](../encargos/raices-calida.md) (2026-11-06): devuelven la calidez que pidió la
+encuesta "Huerta con abejas" sin perder el marco negro, que al equipo le gusta.
 Reemplazó a Huerta viva en cera, elegida antes ese mismo día, y se aplicó al sitio el 2026-11-05,
 después de verla en la portada y en el inicio del donante. Detalle, valores y alternativas en la
 [bitácora](../bitacora.md).
@@ -197,7 +201,7 @@ después de verla en la portada y en el inicio del donante. Detalle, valores y a
 |---|---|---|
 | Papel de cera | El fondo de arriba: título, bajada y botones | Lo que se ve: el resultado, a la vista |
 | Verde hoja honda | El título en cursiva y los botones | La organización que actúa |
-| Tierra casi negra, en tres pasos | La tierra en tres horizontes: la red y sus entidades, el rótulo y las cifras; también la cabecera y el pie | Lo que sostiene la donación, cada vez más hondo |
+| Tierra humus y casi negra, en tres pasos | La tierra en tres horizontes, humus en los dos primeros y casi negra en el más hondo: la red y sus entidades, el rótulo y las cifras; también la cabecera y el pie | Lo que sostiene la donación, cada vez más hondo |
 | Paja | Las raíces, las etapas cumplidas y la rama de la que cuelgan las cifras de la portada; en esa rama, el fruto de las entidades. También la sombra plana del papel y de los botones (`--color-sombra`) | El recorrido comprobado; en la sombra, la luz sobre la tierra |
 | Hoja | El brote y el sol; la sombra de las piezas que ya son paja; en la rama de las cifras, el fruto de lo que va en camino, sin la segunda tinta corrida y con el contorno punteado, como el fruto hueco de la planta | El resultado: lo que creció; en el fruto, lo que todavía está creciendo |
 | Zanahoria | Los frutos de la planta de la portada, con su segunda tinta (la del que va en camino, punteado), y el fruto más grande de la rama de las cifras | Lo confirmado (en la planta, este mes; en la rama, desde marzo) |
@@ -230,14 +234,14 @@ Detalle en la [bitácora](../bitacora.md).
 | Sol | Medio disco hoja, plano, que sale de la tierra detrás del brote | El resultado: lo que creció |
 | Brote | Dos cotiledones planos y simétricos: uno verde hoja honda con la segunda tinta hoja corrida detrás, el otro hoja | Lo que se ve: orgánico y cálido |
 | Planta y frutos | En la portada, el brote crecido: tallo y ramas en verde hoja honda y un fruto zanahoria por entrega confirmada del mes, un disco con su segunda tinta corrida y una hoja; lo que va en camino, un fruto hueco punteado en la segunda tinta (A/B de frutos y de paleta, 2026-11-02) | El resultado, contado con los datos |
-| Tierra | Tres horizontes casi negros, con la textura de la tierra. El semitono al pie de cada horizonte (ronda de tierra, 2026-11-01) quedó afuera: ya no estaba dibujado y en el A/B de textura (2026-11-02) el usuario eligió la risografía | Lo hondo, impreso |
+| Tierra | Tres horizontes: los dos primeros humus y el más hondo casi negro (desde el 2026-11-06; antes, los tres casi negros), con la textura de la tierra. El semitono al pie de cada horizonte (ronda de tierra, 2026-11-01) quedó afuera: ya no estaba dibujado y en el A/B de textura (2026-11-02) el usuario eligió la risografía | Lo hondo, impreso |
 | Raíces | Una **red radial**: líneas de subte paja con borde verde oscuro, codos a 45° redondeados (review de Sofía, 2026-11-02) y estaciones, del brote a una entidad de cada tipo, en espejo (usuario, ronda de ilustración, 2026-11-01). Donde no entra, una **espina en espejo**: un tronco al centro y las entidades de a dos, cada una con su rama y su cruce (usuario, A/B del celular, 2026-11-01) | Lo que sostiene: la logística que llega a la comunidad |
 | Entidades | Un sello paja con la segunda tinta corrida y el ícono de lo que pide (el del cuaderno del mes); debajo, la etiqueta de herbario con tipo, nombre y lo que pide (usuario, A/B de la red, 2026-11-01) | Quién recibe |
 | Títulos | Grandes, con la parte en cursiva corrida por una segunda tinta hoja (en la portada, paja) | Calidez y comunidad |
 | Numerales y cifras | Gigantes, anchos y color paja (derechos desde el A/B de letra). En "Lo que está confirmado" de la portada, en tinta dentro de frutos que cuelgan de una rama paja, cada uno de su tamaño y su color, con una etiqueta de papel (A/B de cifras, 2026-11-02) | El recorrido, como capítulos de un afiche; en la rama, la cosecha |
-| Botones y bordes | Esquinas rectas: el papel (láminas, etiquetas y tarjetas) y los botones, con una sombra plana paja corrida (usuario, A/B de paleta y acabado, 2026-11-05; antes, esquina suave con sombra salvia, A/B de bordes del 2026-11-02); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
+| Botones y bordes | Esquinas suaves (`--radio-lamina` 0,75 rem y `--radio-boton` 0,5 rem): el papel (láminas, etiquetas y tarjetas) y los botones, con una sombra plana paja corrida (usuario, A/B de Raíces cálida, 2026-11-06; antes, rectas desde el A/B de paleta y acabado del 2026-11-05, y antes, esquina suave con sombra salvia, A/B de bordes del 2026-11-02); al apretar, el botón se hunde sobre su sombra (usuario, ronda de formas, 2026-11-01) | Tinta plana, impreso; un papel grueso |
 
-**Forma:** sale del estilo (esquinas rectas, sombra plana corrida). La línea entre horizontes no entró; la
+**Forma:** sale del estilo (esquinas suaves, sombra plana corrida). La línea entre horizontes no entró; la
 grava tampoco (la reemplazó el semitono, que después salió con el A/B de textura). En la ronda de ilustración se descartaron el grabado de
 lámina, el plano risográfico con raíces orgánicas, la orgánica simétrica, el abanico, la
 bifurcada y la fila de lámina (bitácora).
@@ -253,13 +257,16 @@ usuario eligió el ciclo contra una sola ráfaga, la recomendada). Las entregas 
 mes" aparecen de a una al bajar (línea de tiempo de scroll; sin ella, quietas). Un botón "Pausar el
 movimiento", bajo la lámina, frena el viento (WCAG 2.2.2).
 
-**Letra (usuario, quinto A/B): grotesca ancha de afiche.** Una sola familia, Archivo
-(Omnibus-Type, Buenos Aires); el carácter sale del ancho y del peso. Detalle en la
-[bitácora](../bitacora.md).
+**Letra (usuario, quinto A/B y A/B de Raíces cálida, 2026-11-06): serif de libro en los títulos y
+grotesca ancha de afiche en lo demás.** Fraunces (OFL), una serif de libro de jardinería, firme y
+tibia, en los títulos y la marca; Archivo (Omnibus-Type, Buenos Aires) en el texto, los datos, los
+numerales y las cifras (`--fuente-cifra`). Se descartaron Literata (la más sobria) y Young Serif (la
+más redonda). Detalle en la [bitácora](../bitacora.md).
 
 | Pieza | Cómo es | Qué significa |
 |---|---|---|
-| Título, numerales, cifras y marca | Anchos y pesados; la parte cálida del título, en cursiva | Las letras gigantes de un afiche (referencia 02): firme, se recuerda |
+| Títulos y marca | Fraunces, pesada; la parte cálida del título, en su cursiva | Un libro de jardinería: cálido y profesional |
+| Numerales y cifras | Archivo, anchos y pesados | Las letras gigantes de un afiche (referencia 02): firme, se recuerda |
 | Texto, botones y datos | Ancho normal (los botones, apenas anchos) | Clara y neutra: deja hablar al título |
 
 ## Libertades (usuario)

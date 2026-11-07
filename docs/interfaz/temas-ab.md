@@ -1,7 +1,8 @@
 # Catálogo de temas para comparar con A/B
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-30 · usado por la skill `iteracion-ab`**
+> **Versión 2 · 2026-11-06 (la paleta cambia también qué color domina; tema `color-y-acabado`) ·
+> usado por la skill `iteracion-ab`**
 
 Una comparación A/B cambia **un solo tema**. Todo lo demás queda igual, para que la elección sea
 clara. Para sumar un tema, se agrega una fila.
@@ -10,7 +11,8 @@ clara. Para sumar un tema, se agrega una fila.
 |---|---|---|---|---|
 | `direccion-general` | Concepto, color, tipografía y forma juntos (dos mundos distintos) | Contenido y estructura | ¿Cuál expresa mejor el brief? ¿Cuál se recuerda? | La portada y una pantalla privada |
 | `concepto` | La idea rectora de una propuesta: composición, navegación y voz juntas (de dos a cuatro mundos distintos, con la misma identidad; difieren en composición y navegación, no solo en estilo) | Datos, acciones y paleta | ¿Se recuerda? ¿Da para todo el sitio? ¿Pasa el piso con datos reales? | La pantalla ancla del encargo (por ejemplo, el inicio de una persona donante); también una pantalla del prototipo. Sin el usuario: skill `corrida-creativa` |
-| `paleta` | Valores base de color y su uso | Tipografía, forma, contenido | Carácter, armonía, estados distinguibles (siempre AA) | La portada y una pantalla privada |
+| `paleta` | Valores base de color y su uso: qué color domina, claro u oscuro, temperatura y saturación (no solo el tono de cada color en su mismo rol) | Tipografía, forma, contenido | Carácter, armonía, estados distinguibles (siempre AA) | La portada y una pantalla privada |
+| `color-y-acabado` | Paleta y terminación juntas: qué color domina, claro u oscuro, y radios, bordes, sombras y grano | Tipografía, contenido y composición | ¿Tiene un estilo propio que se recuerda? ¿Los estados se distinguen? (siempre AA) | La pantalla ancla (por ejemplo, la primera pantalla de la portada) y una pantalla privada |
 | `estilo` | El lenguaje gráfico: textura, líneas, rótulos, ornamento y forma de botones y bordes | Paleta, tipografía, contenido y composición | ¿Cuál expresa mejor el brief? ¿El ornamento ayuda a leer los datos o compite con ellos? | La pantalla ancla (por ejemplo, el hero de la portada) |
 | `tipografia` | Familias y escala | Color, forma, contenido | Legibilidad en 360 px, carácter del título | La portada y una pantalla con texto largo |
 | `forma` | Radios, bordes y sombras | Color, tipografía | Coherencia, sensación (amable o firme) | La portada y una pantalla privada |
@@ -26,4 +28,5 @@ clara. Para sumar un tema, se agrega una fila.
 ## Orden sugerido para la identidad
 
 `direccion-general` → `paleta` → `tipografia` → `forma` → `densidad`. Si la dirección general ya
-dejó clara una pieza, ese tema se saltea.
+dejó clara una pieza, ese tema se saltea. Si las vueltas de `paleta` dan opciones parecidas, se pasa
+a `color-y-acabado`, que reemplaza a `paleta` y `forma` cuando la paleta sola no diverge.

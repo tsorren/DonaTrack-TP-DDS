@@ -326,7 +326,7 @@
 
 .tramo-numero {
   fill: var(--color-tinta);
-  font: 800 20px var(--fuente-titulo);
+  font: 800 20px var(--fuente-cifra);
   text-anchor: middle;
 }
 

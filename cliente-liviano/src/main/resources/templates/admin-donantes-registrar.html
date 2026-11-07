@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!--/* Raíces, Registrar donante del admin (RF-15), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.2). "Quién dona" es un formulario
+       aparte (GET) con dos opciones y "Cambiar": sin JavaScript recarga el formulario con los campos
+       de una persona o de una organización (?tipo=organizacion). El cambio en el momento con Alpine,
+       que pide la ficha, queda para después: sin él, todo funciona. El registro es un formulario real
+       (POST) que lleva a admin-donantes-registrado. Estados: ?escenario=lento y error; el error de
+       datos es admin-donantes-registrar-error.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Registrar donante - Donantes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donantes-registrar :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             organizacion=${!conError and param.tipo != null and param.tipo[0] == 'organizacion'},
+             escrito=${conError or escenario == 'error'}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo"><a href="/admin-donantes" th:href="@{/admin-donantes}">Donantes</a> ›
+        Registrar donante</p>
+      <h1>Registrar donante</h1>
+    </header>
+
+    <form class="formulario" action="/admin-donantes-registrar" th:action="@{/admin-donantes-registrar}"
+          method="get">
+      <fieldset class="opciones">
+        <legend>¿Quién dona?</legend>
+        <label><input type="radio" name="tipo" value="persona" th:checked="${!organizacion}"> Una
+          persona</label>
+        <label><input type="radio" name="tipo" value="organizacion" th:checked="${organizacion}"> Una
+          organización</label>
+      </fieldset>
+      <div class="racimo">
+        <button class="boton" data-tono="secundario" type="submit">Cambiar</button>
+      </div>
+    </form>
+
+    <form class="formulario" action="/admin-donantes-registrado" th:action="@{/admin-donantes-registrado}"
+          method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <input type="hidden" name="tipo" th:value="${organizacion} ? 'organizacion' : 'persona'" value="persona">
+      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+               autofocus aria-labelledby="resumen-titulo">
+        <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
+        <ul>
+          <li><a href="#apellido">Falta el apellido</a></li>
+          <li><a href="#correo">El correo no parece completo: falta la @</a></li>
+        </ul>
+      </section>
+      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="error-titulo">
+        <h2 id="error-titulo">No pudimos guardar: no cambió nada.</h2>
+        <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo con «Registrar donante» en unos minutos; si sigue,
+          <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+             th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-donantes-registrar')}">escribinos
+            con este código</a>.</p>
+        <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      </section>
+      <p class="obligatorios">* obligatorio</p>
+
+      <th:block th:unless="${organizacion}">
+        <h2>La persona</h2>
+        <div class="grilla" data-espacio="3">
+          <div class="campo">
+            <label for="nombre">Nombre *</label>
+            <input id="nombre" name="nombre" type="text" required autocomplete="off"
+                   th:value="${escrito} ? 'Ana' : null">
+          </div>
+          <div class="campo" th:data-estado="${conError} ? 'error'">
+            <label for="apellido">Apellido *</label>
+            <p th:if="${conError}" id="apellido-error" class="campo-error">Falta el apellido. Por ejemplo:
+              Ejemplo.</p>
+            <input id="apellido" name="apellido" type="text" required autocomplete="off"
+                   th:value="${escrito and !conError} ? 'Ejemplo' : null"
+                   th:attr="aria-describedby=${conError} ? 'apellido-error' : null,aria-invalid=${conError} ? 'true' : null">
+          </div>
+          <div class="campo">
+            <label for="tipo-documento">Tipo de documento</label>
+            <select id="tipo-documento" name="tipoDocumento">
+              <option>DNI</option>
+              <option>Libreta cívica</option>
+              <option>Pasaporte</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="documento">Número de documento</label>
+            <small id="documento-ayuda">Sin puntos. Por ejemplo: 20000001.</small>
+            <input id="documento" name="documento" type="text" inputmode="numeric" autocomplete="off"
+                   aria-describedby="documento-ayuda" th:value="${escrito} ? '20000001' : null">
+          </div>
+          <div class="campo">
+            <label for="nacimiento">Fecha de nacimiento</label>
+            <input id="nacimiento" name="nacimiento" type="date" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="genero">Género</label>
+            <select id="genero" name="genero">
+              <option value="">Prefiere no decirlo</option>
+              <option>Mujer</option>
+              <option>Varón</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+      </th:block>
+
+      <th:block th:if="${organizacion}">
+        <h2>La organización</h2>
+        <div class="grilla" data-espacio="3">
+          <div class="campo">
+            <label for="razon-social">Razón social *</label>
+            <input id="razon-social" name="razonSocial" type="text" required autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="tipo-organizacion">Tipo *</label>
+            <select id="tipo-organizacion" name="tipoOrganizacion" required>
+              <option>ONG</option>
+              <option>Empresa</option>
+              <option>Institución</option>
+              <option>Gubernamental</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="cuit">CUIT</label>
+            <small id="cuit-ayuda">Con guiones. Por ejemplo: 30-00000001-0.</small>
+            <input id="cuit" name="cuit" type="text" autocomplete="off" aria-describedby="cuit-ayuda">
+          </div>
+          <div class="campo">
+            <label for="rubro">Rubro</label>
+            <input id="rubro" name="rubro" type="text" autocomplete="off">
+          </div>
+        </div>
+      </th:block>
+
+      <h2>Contacto</h2>
+      <div class="grilla" data-espacio="3">
+        <div class="campo" th:data-estado="${conError} ? 'error'">
+          <label for="correo">Correo *</label>
+          <small id="correo-ayuda">Usamos el correo para que active su cuenta; no lo mostramos a las
+            entidades.</small>
+          <p th:if="${conError}" id="correo-error" class="campo-error">El correo no parece completo: falta la
+            @. Por ejemplo: ana@ejemplo.org.</p>
+          <input id="correo" name="correo" type="email" required autocomplete="off"
+                 th:value="${conError} ? 'ana.ejemplo.org' : (${escrito} ? 'ana@ejemplo.org' : null)"
+                 th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
+        </div>
+        <div class="campo">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" name="telefono" type="tel" autocomplete="off">
+        </div>
+      </div>
+
+      <details>
+        <summary class="boton" data-tono="secundario">Dirección (opcional)</summary>
+        <div class="grilla" data-espacio="3">
+          <div class="campo"><label for="calle">Calle</label>
+            <input id="calle" name="calle" type="text" autocomplete="off"></div>
+          <div class="campo"><label for="altura">Altura</label>
+            <input id="altura" name="altura" type="text" inputmode="numeric" autocomplete="off"></div>
+          <div class="campo"><label for="localidad">Localidad</label>
+            <input id="localidad" name="localidad" type="text" autocomplete="off"></div>
+          <div class="campo"><label for="provincia">Provincia</label>
+            <input id="provincia" name="provincia" type="text" autocomplete="off"></div>
+          <div class="campo"><label for="pais">País</label>
+            <input id="pais" name="pais" type="text" value="Argentina" autocomplete="off"></div>
+          <div class="campo"><label for="postal">Código postal</label>
+            <input id="postal" name="postal" type="text" autocomplete="off"></div>
+        </div>
+      </details>
+
+      <div class="racimo">
+        <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+                th:text="${escenario == 'lento'} ? 'Registrando…' : 'Registrar donante'">Registrar donante</button>
+        <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Cancelar</a>
+      </div>
+      <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando al donante…</p>
+    </form>
+  </div>
+</th:block>
+</body>
+</html>

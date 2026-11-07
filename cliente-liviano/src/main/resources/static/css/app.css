@@ -26,6 +26,7 @@
 @import url("componentes/navegacion.css") layer(bloques);
 @import url("componentes/tarjeta.css") layer(bloques);
 @import url("componentes/lista.css") layer(bloques);
+@import url("componentes/tabla.css") layer(bloques);
 @import url("componentes/noticias.css") layer(bloques);
 @import url("componentes/pasos.css") layer(bloques);
 @import url("componentes/planta.css") layer(bloques);
@@ -35,6 +36,7 @@
 @import url("componentes/tierra.css") layer(bloques);
 @import url("componentes/red.css") layer(bloques);
 @import url("componentes/pausa.css") layer(bloques);
+@import url("componentes/progreso.css") layer(bloques);
 
 *,
 *::before,
@@ -97,7 +99,8 @@ body {
 /* La cabecera y el pie, franjas de tierra honda a todo el ancho (usuario, 2026-11-03: tomado del
    sitio B de la corrida A/B). El borde de imagen estira el fondo a los lados sin estirar el
    contenido ni recortarlo: un recorte escondería la barra fija del menú en el celular, que va
-   dentro de la cabecera. */
+   dentro de la cabecera. Donde tocan la página llevan el estrato (tokens.css): abajo de la
+   cabecera, arriba del pie. El fondo liso queda debajo: es el que miden los contrastes. */
 .raices-cabecera,
 .raices-pie,
 .armazon {
@@ -106,8 +109,25 @@ body {
 }
 
 .raices-cabecera,
+.armazon {
+  border-image: linear-gradient(to top, var(--color-estrato) 0 0.5rem,
+      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-suelo-hondo) var(--medida-estrato))
+    fill 0 / / 0 100vmax;
+}
+
 .raices-pie {
-  border-image: conic-gradient(var(--color-suelo-hondo) 0 0) fill 0 / / 0 100vmax;
+  border-image: linear-gradient(var(--color-estrato) 0 0.5rem,
+      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-suelo-hondo) var(--medida-estrato))
+    fill 0 / / 0 100vmax;
+}
+
+.raices-cabecera,
+.armazon {
+  padding-bottom: calc(1rem + var(--medida-estrato));
+}
+
+.raices-pie {
+  padding-top: calc(1rem + var(--medida-estrato));
 }
 
 /* La marca, un cartel de papel sobre la tierra (como en B). */
@@ -243,7 +263,7 @@ body::before {
 }
 
 .cifras b {
-  font: 900 1.5rem/1 var(--fuente-titulo);
+  font: 900 1.5rem/1 var(--fuente-cifra);
   font-stretch: 125%;
   letter-spacing: -0.03em;
 }
@@ -266,9 +286,12 @@ body::before {
 }
 
 @media (min-width: 37.5em) {
-  .raices-cabecera,
+  .raices-cabecera {
+    padding: 1.25rem 2rem calc(1.25rem + var(--medida-estrato));
+  }
+
   .raices-pie {
-    padding: 1.25rem 2rem;
+    padding: calc(1.25rem + var(--medida-estrato)) 2rem 1.25rem;
   }
 }
 

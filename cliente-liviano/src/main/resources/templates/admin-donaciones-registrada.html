@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--/* Raíces, la donación quedó registrada (docs/interfaz/flujos/raices-admin-navegable.md, sección
+       4.6). "Ver la donación" lleva a su detalle; "Registrar otra", al formulario vacío. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Donación registrada - Donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Donaciones</a> ›
+        Registrar donación</p>
+      <h1>Registrar donación</h1>
+    </header>
+    <section class="banner" role="status" tabindex="-1" autofocus aria-labelledby="hecho-titulo">
+      <h2 id="hecho-titulo">Registraste la donación de Ana Ejemplo: Caja de alimentos, 3 bienes.</h2>
+      <p>Quedó en el Depósito Central.</p>
+      <div class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-donaciones-detalle?donacion=caja"
+           th:href="@{/admin-donaciones-detalle(donacion='caja')}">Ver la donación</a>
+        <a class="boton" data-tono="secundario" href="/admin-donaciones-registrar"
+           th:href="@{/admin-donaciones-registrar}">Registrar otra</a>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

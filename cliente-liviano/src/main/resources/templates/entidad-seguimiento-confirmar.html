@@ -13,8 +13,10 @@
        - entrega(pedida, pantalla): las entregas que esperan confirmación, escritas una sola vez para
          el acta, el acta con errores y la confirmada. pedida es la clave; null, la de ?entrega=.
          Adentro de pantalla están e (la pedida, o null) y otra (la que sigue esperando).
-       - acta(conError): el acta entera; con conError, el error de datos de
-         entidad-seguimiento-confirmar-error.
+       - acta(conError, problema): el acta entera; con conError, el error de datos de
+         entidad-seguimiento-confirmar-error. Con problema, Llegó con un problema
+         (docs/interfaz/flujos/raices-llego-con-un-problema.md): la misma acta con el grupo «Qué
+         pasó», que confirma y reporta en un solo envío; su error de datos es ?escenario=revisar.
        - tramo(confirmada): el último tramo de e, en una lista con su raíz. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento-confirmar', ~{::contenido})}">
@@ -24,7 +26,7 @@
 <body>
 <th:block th:fragment="contenido">
   <th:block th:replace="~{entidad-seguimiento-confirmar :: entrega(null,
-            ~{entidad-seguimiento-confirmar :: acta(false)})}"></th:block>
+            ~{entidad-seguimiento-confirmar :: acta(false, false)})}"></th:block>
 </th:block>
 
 <!--/* Los datos de la entrega y, además, la categoría, el pedido que cubre (de las
@@ -42,14 +44,17 @@
        remito: '0001-00004521', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos',
        pedido: 'Lentejas secas, 40 kg, hasta el 31 de octubre.', recibido: 'Van 10 kg recibidos.',
        pedidoDespues: 'Tu pedido de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre.',
-       dono: 'Distribuidora Ejemplo SA', foto: 'lentejas-1', confirmo: '18:45'},
+       dono: 'Distribuidora Ejemplo SA', foto: 'lentejas-1', confirmo: '18:45',
+       salida: 15, unidad: 'kg', decimales: true, llegoMenos: '12 de 15 kg', detalle: 'Dos bolsas rotas.'},
       {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo, 10 unidades', cantidad: '10 unidades',
        salio: 'Ayer, 15:50', llego: 'Ayer, 17:10', llegoFrase: 'Llegó ayer a las 17:10.',
        llegaron: 'Llegó ayer a las 17:10.',
        remito: '0001-00004498', categoria: 'cat-ropa', categoriaTexto: 'Ropa',
        pedido: 'Ropa de abrigo, 30 unidades, hasta el 15 de noviembre.', recibido: 'Van 5 unidades recibidas.',
        pedidoDespues: 'Tu pedido de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre.',
-       dono: null, donoCategoria: 'Sostenedor', foto: 'ropa-1', confirmo: '18:50'} } },
+       dono: null, donoCategoria: 'Sostenedor', foto: 'ropa-1', confirmo: '18:50',
+       salida: 10, unidad: 'unidades', decimales: false, llegoMenos: '8 de 10 unidades',
+       detalle: 'Faltaba una caja.'} } },
              escenario=${param.escenario != null ? param.escenario[0] : ''},
              clave=${pedida ?: (param.entrega == null ? 'lentejas' : param.entrega[0])},
              elegidas=${escenario == 'vacio' ? {} : entregas.?[clave == #root.clave]},
@@ -58,8 +63,8 @@
   <th:block th:replace="${pantalla}"></th:block>
 </th:block>
 
-<th:block th:fragment="acta(conError)">
-  <div class="confirmar">
+<th:block th:fragment="acta(conError, problema)">
+  <div class="confirmar" th:with="revisar=${problema and escenario == 'revisar'}">
     <!--/* Sin entrega: no existe o es de otra entidad; no se dice de quién es (HB-13). */-->
     <th:block th:if="${e == null}">
       <h1>Confirmar recepción</h1>
@@ -76,25 +81,33 @@
         <a class="volver" href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Seguir entregas</a>
         <h1 th:if="${escenario == 'confirmada'}">Esta entrega ya está <em>confirmada</em></h1>
-        <h1 th:unless="${escenario == 'confirmada'}">Confirmá lo que <em>llegó</em></h1>
+        <h1 th:if="${escenario != 'confirmada' and problema}">Contá qué <em>pasó</em></h1>
+        <h1 th:unless="${escenario == 'confirmada' or problema}">Confirmá lo que <em>llegó</em></h1>
         <p class="confirmar-bajada" th:text="|${e.titulo}. ${e.llegoFrase}|">Lentejas secas, 15 kg.
           Llegó hoy a las 18:20.</p>
       </header>
 
       <!--/* Error de datos: el resumen arriba, con el foco, y un enlace a cada campo. */-->
-      <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
-               aria-labelledby="resumen-titulo" autofocus>
+      <section th:if="${conError or revisar}" class="banner resumen" data-estado="error" role="alert"
+               tabindex="-1" aria-labelledby="resumen-titulo" autofocus>
         <h2 id="resumen-titulo">Revisá dos cosas antes de confirmar</h2>
         <ul>
-          <li><a href="#fotos" th:text="|${e.foto}.jpg pesa más de 5 MB|">lentejas-1.jpg pesa más de
-            5 MB</a></li>
+          <li th:if="${conError}"><a href="#fotos" th:text="|${e.foto}.jpg pesa más de 5 MB|">lentejas-1.jpg
+            pesa más de 5 MB</a></li>
+          <li th:if="${revisar}"><a href="#cantidad">Falta cuánto llegó</a></li>
           <li><a href="#remito">Falta el número de remito</a></li>
         </ul>
       </section>
       <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="error-titulo">
         <h2 id="error-titulo">No pudimos confirmar la entrega.</h2>
-        <p>Es un problema nuestro: la entrega sigue esperando tu confirmación y quien donó no recibió
+        <p th:if="${problema}">Es un problema nuestro: la entrega sigue esperando tu confirmación, el
+          problema no quedó asentado y quien donó no recibió ningún aviso. Volvé a elegir las fotos y
+          probá de nuevo en unos minutos; si sigue,
+          <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=|/entidad-seguimiento-problema?entrega=${e.clave}|)}">escribinos
+          con este código</a>.</p>
+        <p th:unless="${problema}">Es un problema nuestro: la entrega sigue esperando tu confirmación y quien donó no recibió
           ningún aviso. Volvé a elegir las fotos y probá de nuevo en unos minutos; si sigue,
           <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=|/entidad-seguimiento-confirmar?entrega=${e.clave}|)}">escribinos
@@ -172,7 +185,8 @@
               action="/entidad-seguimiento-sellada-lentejas"
               th:action="@{/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
               method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-          <p class="obligatorios">Los dos datos son obligatorios: las fotos y el remito.</p>
+          <p class="obligatorios" th:text="${problema} ? 'Son obligatorios las fotos, qué pasó y el remito; cuánto llegó, si llegó menos.' : 'Los dos datos son obligatorios: las fotos y el remito.'">Los
+            dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">
             <legend><h2>Las pruebas</h2></legend>
             <!--/* La zona de subida (B2-10): el control nativo es lo esencial; Alpine (subidaFotos) suma la vista
@@ -185,7 +199,8 @@
                 <span>Fotos de lo que llegó</span>
               </label>
               <small id="fotos-ayuda">Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB
-                cada una. Mostrá lo que llegó; no hace falta que salga nadie.</small>
+                cada una. Mostrá lo que llegó; no hace falta que salga nadie.<th:block th:if="${problema}">
+                Si se ve el daño, sacale una foto.</th:block></small>
               <p th:if="${conError}" id="fotos-error" class="campo-error"
                  th:text="|${e.foto}.jpg pesa más de 5 MB. Probá con una más liviana. Por seguridad, el navegador no guarda las fotos: volvé a elegirlas.|">lentejas-1.jpg
                 pesa más de 5 MB.</p>
@@ -205,18 +220,53 @@
                 </template>
               </ul>
             </div>
-            <p class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver tus fotos y la fecha de hoy. Una foto puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada. El remito no se publica.|">Distribuidora
+            <p th:if="${problema}" class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} y el equipo de DonaTrack van a ver tus fotos y la fecha de hoy. Como contás un problema, no se publican en la portada ni en el mapa. El remito tampoco se publica.|">Distribuidora
+              Ejemplo SA y el equipo de DonaTrack van a ver tus fotos y la fecha de hoy.</p>
+            <p th:unless="${problema}" class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver tus fotos y la fecha de hoy. Una foto puede mostrarse en la portada y en el mapa público de entregas, con la ubicación aproximada. El remito no se publica.|">Distribuidora
               Ejemplo SA va a ver tus fotos y la fecha de hoy.</p>
+          </fieldset>
+
+          <!--/* Llegó con un problema: el motivo, cuánto llegó y el detalle, los del reporte del
+                 contrato de entregas. «Cuánto llegó» va siempre a la vista, para que lo esencial no
+                 dependa de JavaScript: el servidor lo exige con «Llegó menos» y lo descarta con las
+                 otras. En la maqueta, ?escenario=revisar muestra la cantidad vacía y el remito. */-->
+          <fieldset th:if="${problema}" class="grupo">
+            <legend><h2>Qué pasó</h2></legend>
+            <div class="opciones">
+              <label><input type="radio" name="motivo" value="incompleta" required
+                            th:checked="${revisar}"> Llegó menos de lo que salió</label>
+              <label><input type="radio" name="motivo" value="danada"> Llegó dañada o en mal
+                estado</label>
+              <label><input type="radio" name="motivo" value="otro"> Otra cosa</label>
+            </div>
+            <div class="campo" th:data-estado="${revisar} ? 'error'">
+              <label for="cantidad" th:text="|Cuánto llegó, en ${e.unidad}|">Cuánto llegó, en kg</label>
+              <small id="cantidad-ayuda" th:text="|Obligatorio si llegó menos: salieron ${e.cantidad}.|">Obligatorio
+                si llegó menos: salieron 15 kg.</small>
+              <p th:if="${revisar}" id="cantidad-error" class="campo-error"
+                 th:text="|Escribí cuánto llegó, en ${e.unidad}.|">Escribí cuánto llegó, en kg.</p>
+              <input id="cantidad" name="cantidadRecibida" type="number"
+                     th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null">
+            </div>
+            <div class="campo">
+              <label for="detalle">Contanos más</label>
+              <small id="detalle-ayuda">Opcional, salvo si elegiste Otra cosa. Hasta 500 caracteres.</small>
+              <textarea id="detalle" name="detalle" rows="3" maxlength="500"
+                        aria-describedby="detalle-ayuda"></textarea>
+            </div>
+            <p class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver lo que contás junto con tus fotos, y el equipo de DonaTrack también. No se publica.|">Distribuidora
+              Ejemplo SA va a ver lo que contás junto con tus fotos, y el equipo de DonaTrack también.
+              No se publica.</p>
           </fieldset>
 
           <fieldset class="grupo">
             <legend><h2>Lo que recibiste</h2></legend>
-            <div class="campo" th:data-estado="${conError} ? 'error'">
+            <div class="campo" th:data-estado="${conError or revisar} ? 'error'">
               <label for="remito">Número de remito</label>
               <small id="remito-ayuda">Está arriba a la derecha del papel.</small>
-              <p th:if="${conError}" id="remito-error" class="campo-error">Falta el número de remito.</p>
+              <p th:if="${conError or revisar}" id="remito-error" class="campo-error">Falta el número de remito.</p>
               <input id="remito" name="remito" type="text" required autocomplete="off"
-                     th:attr="aria-describedby=${conError} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError} ? 'true' : null">
+                     th:attr="aria-describedby=${conError or revisar} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError or revisar} ? 'true' : null">
             </div>
           </fieldset>
 
@@ -224,13 +274,19 @@
             <p class="firma-quien">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
             <button class="boton" data-tono="principal" type="submit"
                     th:disabled="${escenario == 'lento'}"
-                    th:text="${escenario == 'lento'} ? 'Confirmando…' : 'Confirmar recepción'">Confirmar
+                    th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar
               recepción</button>
-            <p class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.
+            <p th:if="${problema}" class="nota">Al confirmar, la entrega queda como entregada, con el
+              problema anotado, y quien donó recibe el aviso.</p>
+            <p th:unless="${problema}" class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.
               Si llegó incompleta o dañada, confirmala igual y contanos qué pasó.</p>
-            <a class="problema" href="/entidad-seguimiento-problema?entrega=lentejas"
+            <a th:unless="${problema}" class="problema" href="/entidad-seguimiento-problema?entrega=lentejas"
                th:href="@{/entidad-seguimiento-problema(entrega=${e.clave})}">Llegó con
               un problema</a>
+            <a th:if="${problema}" class="problema" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+               th:href="@{/entidad-seguimiento-confirmar(entrega=${e.clave})}"
+               aria-describedby="volver-nota">No hubo problema: volver a la confirmación</a>
+            <p th:if="${problema}" id="volver-nota" class="nota">Lo que cargaste acá no se guarda.</p>
           </div>
         </form>
       </div>

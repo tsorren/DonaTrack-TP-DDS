@@ -89,7 +89,7 @@ main .confirmado h2 {
   background: var(--color-fruto);
   box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
   color: var(--color-tinta);
-  font: 900 2.25rem / 1 var(--fuente-titulo);
+  font: 900 2.25rem / 1 var(--fuente-cifra);
   font-stretch: 110%;
   letter-spacing: -0.03em;
 }
@@ -148,7 +148,7 @@ main .confirmado h2 {
 }
 
 .actividad b {
-  font: 900 1.25rem / 1 var(--fuente-titulo);
+  font: 900 1.25rem / 1 var(--fuente-cifra);
   font-stretch: 118%;
 }
 
@@ -168,7 +168,7 @@ main .confirmado h2 {
 }
 
 .sellos-curso b {
-  font: 900 2rem / 1 var(--fuente-titulo);
+  font: 900 2rem / 1 var(--fuente-cifra);
   font-stretch: 118%;
 }
 

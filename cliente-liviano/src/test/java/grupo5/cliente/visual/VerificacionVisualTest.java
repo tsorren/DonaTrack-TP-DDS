@@ -41,10 +41,11 @@ import tools.jackson.databind.json.JsonMapper;
  * captura además la primera pantalla (360 × 640, {@code <página>-360x640.png}). Sin propiedades,
  * recorre el sitio. Con {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada
  * variante y las compara. Con {@code -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de
- * las de paginas.txt. Resultado en {@code target/capturas/}: PNG, index.html, comparacion.html y
- * reporte.json. Las capturas congelan las animaciones de la página, no las que van dentro de una
- * imagen (el spinner de Pico): para comparar dos corridas, {@code scripts/visual/Imagenes.java
- * comparar} con carpeta de ruido.
+ * las de paginas.txt. Con {@code -Dverificacion.boceto=true}, solo capturas a 1280 px, sin
+ * comprobar el piso (las vueltas de una exploración A/B). Resultado en {@code target/capturas/}:
+ * PNG, index.html, comparacion.html y reporte.json. Las capturas congelan las animaciones de la
+ * página, no las que van dentro de una imagen (el spinner de Pico): para comparar dos corridas,
+ * {@code scripts/visual/Imagenes.java comparar} con carpeta de ruido.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -52,9 +53,26 @@ class VerificacionVisualTest {
 
   private static final Path CAPTURAS = Path.of("target/capturas");
   private static final Path PAGINAS = Path.of("src/test/resources/verificacion/paginas.txt");
+
+  /**
+   * Una ruta con {@code ?respuesta=404}, {@code 403} o {@code 500} pide en la maqueta una página de
+   * error (RF-CL-08): ese código es el esperado, no una falla.
+   */
+  private static final Pattern RESPUESTA_PEDIDA = Pattern.compile("[?&]respuesta=(\\d{3})\\b");
+
   private static final List<String> NORMAS_AXE =
       List.of("wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa");
   private static final int TOQUE_MINIMO = 48;
+
+  /**
+   * Boceto ({@code -Dverificacion.boceto=true}): para las vueltas de una exploración A/B, solo la
+   * captura a 1280 px, sin axe, toque, desborde, anchos intermedios ni primera pantalla. El piso se
+   * comprueba con la corrida completa sobre la opción elegida.
+   */
+  private static final boolean BOCETO = Boolean.getBoolean("verificacion.boceto");
+
+  private static final List<Integer> ANCHOS =
+      BOCETO ? List.of(1280) : AnchosDeReferencia.REFERENCIA;
 
   /** Controles visibles de menos de 48 × 48 px; los enlaces dentro de un texto no cuentan. */
   private static final String CONTROLES_CHICOS =
@@ -319,7 +337,7 @@ class VerificacionVisualTest {
       for (Opcion opcion : opciones) {
         String variante = opcion.nombre();
         for (String ruta : paginas()) {
-          for (int ancho : AnchosDeReferencia.REFERENCIA) {
+          for (int ancho : ANCHOS) {
             if (abrir(pagina, ruta, opcion, ancho, fallas)) {
               String archivo = nombreDeCaptura(ruta, opcion, String.valueOf(ancho));
               pagina.evaluate(CARGAR_IMAGENES);
@@ -329,6 +347,9 @@ class VerificacionVisualTest {
                       .setFullPage(true)
                       .setAnimations(ScreenshotAnimations.DISABLED));
               capturas.add(new Captura(ruta, variante, ancho, archivo, pagina.evaluate(SECCIONES)));
+              if (BOCETO) {
+                continue;
+              }
               revisarAccesibilidad(pagina, ruta, variante, ancho, fallas);
               revisarToque(pagina, ruta, variante, ancho, fallas);
               revisarDesborde(pagina, ruta, variante, ancho, fallas);
@@ -337,7 +358,7 @@ class VerificacionVisualTest {
               }
             }
           }
-          for (int ancho : AnchosDeReferencia.INTERMEDIOS) {
+          for (int ancho : BOCETO ? List.<Integer>of() : AnchosDeReferencia.INTERMEDIOS) {
             if (abrir(pagina, ruta, opcion, ancho, fallas)) {
               revisarDesborde(pagina, ruta, variante, ancho, fallas);
             }
@@ -490,7 +511,12 @@ class VerificacionVisualTest {
     String url =
         "http://localhost:" + puerto + ruta + (consulta.isEmpty() ? "" : separador + consulta);
     Response respuesta = pagina.navigate(url);
-    if (respuesta == null || !respuesta.ok()) {
+    Matcher codigo = RESPUESTA_PEDIDA.matcher(ruta);
+    boolean esperada =
+        codigo.find()
+            && respuesta != null
+            && respuesta.status() == Integer.parseInt(codigo.group(1));
+    if (respuesta == null || (!respuesta.ok() && !esperada)) {
       int estado = respuesta == null ? 0 : respuesta.status();
       fallas.add(
           new Falla(ruta, opcion.nombre(), ancho, "pagina", "HTTP " + estado + " en " + url));
@@ -622,7 +648,7 @@ class VerificacionVisualTest {
                 Map.of(
                     "variantes", descritas,
                     "capturas", porPagina,
-                    "anchos", AnchosDeReferencia.REFERENCIA))
+                    "anchos", ANCHOS))
             .replace("</", "<\\/");
     return VISOR
         .replace("@TITULO@", HtmlUtils.htmlEscape(titulo(opciones)))

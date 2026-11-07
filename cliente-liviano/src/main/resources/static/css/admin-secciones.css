@@ -1,0 +1,43 @@
+/* Las secciones del admin en Raíces (ficha raices-admin-navegable): la misma mesa de trabajo del
+   inicio, con sus listas en la tabla adaptable (.tabla) y sus formularios. Hoja nueva: solo dispone;
+   lo demás viene de las capas CUBE y de la hoja del inicio. */
+@import url("admin-inicio.css");
+
+/* Va después de formularios.css: gana al margen propio del formulario. */
+.mesa > * + * {
+  margin-top: var(--espacio-4);
+}
+
+/* Cada papel de la mesa (importar, las pestañas, una propuesta, una donación, un bien), con su
+   relleno (parámetro de .tarjeta). */
+.mesa .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* El renglón de cada solicitud se toca entero: al menos el alto de un toque. */
+#solicitudes summary {
+  min-height: 3rem;
+  padding-block: var(--espacio-2);
+}
+
+/* Un botón que pliega (summary) mide lo que su texto, no el ancho de la columna. */
+.mesa details > summary.boton {
+  width: fit-content;
+}
+
+/* Las celdas de una fila, al medio: el enlace de la primera mide un toque y las demás, un renglón. */
+.tabla :is(th, td) {
+  vertical-align: middle;
+}
+
+/* El enlace al detalle de cada fila se toca con el alto de un toque. */
+.tabla tbody th a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+/* Los datos de una solicitud y de una donación: el rótulo arriba y el dato debajo, sin sangría. */
+:is(#solicitudes, .mesa .tarjeta) dd {
+  margin: 0;
+}

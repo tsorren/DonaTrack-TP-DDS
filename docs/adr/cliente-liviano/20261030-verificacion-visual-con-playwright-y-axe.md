@@ -64,6 +64,11 @@ Se elige **A**:
 - Con `-Dverificacion.variantes=<tema>-a,<tema>-b` repite todo con cada variante A/B y arma
   `comparacion.html`. Deja en `target/capturas/` los PNG, `index.html` y `reporte.json`.
 - El test falla con cualquier hallazgo: una variante que rompe el piso no se le muestra al usuario.
+- Nota del 2026-11-06 (el ADR sigue `proposed`): con `-Dverificacion.boceto=true` solo captura a
+  1280 px, sin axe, toque, desborde ni anchos intermedios. Es para las vueltas de una exploración
+  A/B (skill `iteracion-ab`), que se muestran sin comprobar el piso; la opción elegida pasa la
+  corrida completa antes de aplicarse. Motivo y costo: [bitácora de diseño](../../interfaz/bitacora.md),
+  entrada del 2026-11-06.
 
 ## Consecuencias
 

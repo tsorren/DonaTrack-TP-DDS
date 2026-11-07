@@ -118,6 +118,7 @@ docs/
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
 │   ├── bocetos-e1.md · mapa-del-sitio.md  # Insumos: inventario de bocetos de E1 y mapa con niveles
+│   ├── roadmap-vistas-enunciado.md        # Vistas del enunciado que faltan y las fases para terminarlas
 │   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad, libertad creativa y oficio
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
 │   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todo el sitio

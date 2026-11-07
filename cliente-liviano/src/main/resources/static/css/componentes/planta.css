@@ -77,7 +77,7 @@
 .planta-cosecha b {
   display: block;
   color: var(--color-fruto-hondo);
-  font: 800 1.05rem / 1.2 var(--fuente-titulo);
+  font: 800 1.05rem / 1.2 var(--fuente-cifra);
   font-stretch: 118%;
 }
 

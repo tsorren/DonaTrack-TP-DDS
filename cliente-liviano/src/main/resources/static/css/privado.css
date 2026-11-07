@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem calc(0.75rem + var(--medida-estrato));
 }
 
 .armazon-cuenta {
@@ -171,7 +171,7 @@ main h1 {
 
 @media (min-width: 37.5em) {
   .armazon {
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 2rem calc(0.75rem + var(--medida-estrato));
   }
 
   main {

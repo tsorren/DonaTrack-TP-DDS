@@ -155,7 +155,7 @@ main .registro-mesa h3 {
   order: 1;
   margin: 0;
   color: var(--color-tinta);
-  font: 800 1.625rem / 1.1 var(--fuente-titulo);
+  font: 800 1.625rem / 1.1 var(--fuente-cifra);
   font-stretch: 118%;
 }
 
