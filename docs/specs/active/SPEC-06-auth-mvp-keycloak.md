@@ -107,7 +107,7 @@ También queda fuera:
 | E2-09 | Tema completo de Keycloak con la identidad Raíces | D20 (`tokens.css`) |
 | E2-10 | Cambio de rol para quien tiene dos | RI-AUTH-04, RF-CL-03 |
 | E2-11 | Cuenta por representante de una jurídica | RI-AUTH-06, D30 |
-| E2-12 | Keycloak en `docker-compose.preprod.yml` y en CI; el cliente liviano en el compose (emisor único para el navegador y el backchannel) | — |
+| E2-12 | Keycloak en `docker-compose.preprod.yml` y en CI; el cliente liviano en el compose (emisor único para el navegador y el backchannel). Hasta entonces el descubrimiento de servicios excluye `auth-service` en `main.yml`, `merge.yml` y `scripts/resolver-imagenes-ghcr.sh`: quitar esa exclusión acá | — |
 
 ## Invariantes
 

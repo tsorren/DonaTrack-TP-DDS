@@ -160,11 +160,13 @@ jobs:
           DOCKER_SERVICES=()
 
           # Descubrimiento 100% dinámico: escanea carpetas con pom.xml
+          # auth-service (Keycloak) queda afuera: no está en los <modules> del pom raíz ni en
+          # docker-compose.preprod.yml; sumarlo a CI y preprod es E2-12 de SPEC-06.
           ALL_SERVICES=()
           for pom in */pom.xml; do
             [ -f "$pom" ] || continue
             dir=$(dirname "$pom")
-            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
+            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" && "$dir" != "auth-service" ]]; then
               ALL_SERVICES+=("$dir")
             fi
           done
