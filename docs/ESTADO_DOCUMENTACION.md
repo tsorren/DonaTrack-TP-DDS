@@ -46,6 +46,7 @@ docs/
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
 │   ├── contratos-rest.md                  # 🟢 Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # 🟢 Topología RabbitMQ y contratos de eventos asíncronos
+│   ├── seguridad/matriz-permisos.md       # 🟡 Matriz de permisos E6 por endpoint (borrador para aprobar)
 │   ├── contratos/                         # 🟢 Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # 🟢 Bitácoras de refactor, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de bitácoras y diseño por microservicio
@@ -189,6 +190,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Logística | Ciclo de vida de entregas, planificación de rutas, camiones y eventos RabbitMQ. | 🟢 Sincronizado |
 | [`docs/arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) | Contratos REST | Catálogo consolidado de endpoints, DTOs, Swagger UI y especificaciones OpenAPI 3.0; desde el 2026-11-06 incluye el mapa público y los dos seguimientos de entregas de Logística. | 🟢 Sincronizado |
 | [`docs/arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) | Mensajería AMQP | Topología RabbitMQ, TopicExchange, routing keys, payloads JSON e idempotencia. | 🟢 Sincronizado |
+| [`docs/arquitectura/seguridad/matriz-permisos.md`](arquitectura/seguridad/matriz-permisos.md) | Seguridad | Matriz de permisos de E6: catálogo de permisos, plantillas, rutas públicas y rol, permiso y pertenencia de cada endpoint (RX-09). Borrador del 2026-11-07, pendiente de aprobación. | 🟡 Borrador |
 | [`docs/arquitectura/contratos/guia-migracion-notificaciones-e4.md`](arquitectura/contratos/guia-migracion-notificaciones-e4.md) | Migración E4 | Guía de migración técnica de contratos e ingesta AMQP/REST para `notificaciones-service`. | 🟢 Sincronizado |
 | [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas, auditoría semántica de OpenAPI 3.0 (tipos y nulabilidad) integrada en CI (`agent-governance.yml`) y tests de drift en Surefire. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/README.md`](arquitectura/diseno/README.md) | Diseño de Dominio | Portal de diseño detallado de subsistemas y anexos técnicos. | 🟢 Sincronizado |
