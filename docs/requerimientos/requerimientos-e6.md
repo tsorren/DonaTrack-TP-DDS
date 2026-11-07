@@ -288,7 +288,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 
 | ID | Servicio | Cambio `[PROPOSED]` | Para | Origen |
 |---|---|---|---|---|
-| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo` | RF-01 | D28 |
+| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo`. Las fotos llegan a Donaciones por `entrega.exitosa` (ver la nota) | RF-01 | D28, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | HB-02 | Donaciones / Incentivos | Contadores públicos de la landing (donantes activos, donaciones realizadas, beneficiarios activos) en un endpoint agregado | RF-01 (boceto) | Boceto E1 |
 | HB-03 | Donaciones | Filtro por `categoriaId` en `GET /donaciones-independientes` | RF-05 | D28 |
 | HB-04 | Donaciones | Filtro por entidad asignada y rango de fechas | RF-11, RF-01 | D28 |
@@ -303,7 +303,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-13 | Los 4 servicios | Resource server JWT, `@PreAuthorize` y chequeos de pertenencia | RI-SVC-01..03 | D2, D13 |
 | HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error). **Avance:** la subida multipart → MinIO está implementada en la rama `E4_donaciones_minio`; falta el progreso con resultado por fila | RF-20 | Auditoría `[OBSERVED]` |
 | HB-15 | Donaciones | Paginado y búsqueda por nombre en `GET /api/entidades` (hoy devuelve todo, sin parámetros) | RF-06, RF-22 | Auditoría `[OBSERVED]` |
-| HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación) | RF-09, RF-14 | Auditoría `[OBSERVED]` |
+| HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación). Para el donante, `donanteId` opcional en `entrega.solicitada.v1` y en `Entrega` | RF-09, RF-14 | Auditoría `[OBSERVED]`, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | HB-17 | Logística + Donaciones | Remito y reporte de problemas al confirmar; `necesidadId` en la donación independiente | RF-12 | [DTI-29](../adr/DEUDA_TECNICA.md#dti-29) |
 | HB-18 | Donaciones | Necesidad con estado y filtro, versión, unidad, fecha límite, períodos de semana, quincena o mes, y su historia en otra llamada. **Dos cambios incompatibles** | RF-10, RF-22 | [DTI-30](../adr/DEUDA_TECNICA.md#dti-30) |
 | HB-19 | Donaciones + Logística | Cancelar las entregas que no salieron cuando se da de baja su necesidad. **Valor nuevo del enum de entregas** | RF-10 | [DTI-31](../adr/DEUDA_TECNICA.md#dti-31) |
@@ -314,7 +314,7 @@ HB-17 a HB-21 salen de las preguntas abiertas de Raíces, que el usuario decidi�
 marcados en negrita no son aditivos y se registran según la
 [política de evolución de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md).
 
-**Nota sobre HB-01** `[INFERRED]`: la foto de recepción vive en Logística (`PATCH /api/entregas/{id}/fotos`) y la categoría de la donación en Donaciones. "Destacada" cruza dos servicios. Opciones: que el cliente componga ambas respuestas, o que Donaciones replique "entregada con foto" escuchando el evento de recepción. Se define al implementar.
+**Nota sobre HB-01**: la foto de recepción vive en Logística y la categoría de la donación en Donaciones. **Decidido el 2026-11-06** ([ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md), `proposed`): `entrega.exitosa` suma el campo opcional `fotosRecepcion` (URLs estables que redirigen a una URL firmada) y Donaciones lo replica, así sirve las destacadas sin llamar a Logística. Descartadas: que el cliente componga las dos respuestas y que Logística replique la categoría.
 
 ---
 
@@ -660,6 +660,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | Dos alternativas de identidad visual con hojas propias | Refina D20 | Sí | Cambia D20 y la verificación de RNF-UI-11; costo de mantener dos hojas | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md) |
 | Tercera alternativa (Raíces) como prototipo propio | Refina el ADR de dos alternativas | Sí | Tercera identidad sin triplicar cada pantalla; dirección propia en la maqueta | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md) |
 | Interacción, movimiento y componentes: Alpine CSP, CSS nativo y capa CUBE con cerco | D31, D32, D33; modifica en parte D18 | Sí | Dependencia nueva, organización del CSS y reglas para agentes | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md) |
+| Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega | HB-01, HB-16 (plan sin auth, 2026-11-06) | Sí | Integración entre servicios y contrato de dos mensajes | Redactado (`proposed`): [ADR](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | Una sola identidad visual (Raíces) y retiro de las alternativas | Reemplaza los dos ADR anteriores | Sí | Una pantalla se escribe una vez; el sitio en `/`; propuestas nuevas en su rama | Aceptado (`accepted`, 2026-11-04): [ADR](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md) |
 
 Sin ADR (AGENTS.md §9.2):
