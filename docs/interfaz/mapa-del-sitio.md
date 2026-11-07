@@ -119,14 +119,18 @@ La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes
 | Inicio, Mis donaciones → detalle, Beneficiarios (Entidades), Notificaciones, Mi perfil, Seguir entregas del donante | Dibujadas | Dibujadas |
 | Misiones e insignias (Incentivos) | Dibujada para la cuenta persona (F5 del roadmap, 2026-11-07); RF-07 la oculta a la empresa | No está: RF-07 la oculta a la empresa |
 | Inicio de la entidad, Necesidades, Donaciones recibidas, Notificaciones, Confirmar recepción | Dibujadas | Dibujadas |
+| Llegó con un problema (desde Confirmar recepción) | Dibujada (F7 del roadmap, 2026-11-07; [ficha](flujos/raices-llego-con-un-problema.md)) | No está |
 | Seguir entregas de la entidad (dibujo y lista) y Mi perfil de la entidad | Dibujadas (F5 del roadmap, 2026-11-07) | Dibujada |
 | Inicio del admin | Dibujada, con el menú | Dibujada, con el menú |
 | Donantes (registrar, importar CSV con su resultado) y Entidades (registrar, aprobar, pedir corrección, rechazar) del admin | Dibujadas (F2 del roadmap, 2026-11-07) | Dibujadas (F2 del roadmap, 2026-11-07) |
 | Donaciones (registrar, detalle, marcar vencida) y Asignar donaciones (aprobar, descartar, correr la asignación) del admin | Dibujadas (F3 del roadmap, 2026-11-07) | Dibujadas (F3 del roadmap, 2026-11-07) |
 | Camiones (agregar, deshabilitar, volver a habilitar) y Ranking (meses anteriores) del admin | Dibujadas (F4 del roadmap, 2026-11-07) | Dibujadas (F4 del roadmap, 2026-11-07) |
+| Páginas de error 404, 403 y 5xx (fuera del menú, con el marco público) | Dibujadas (F7 del roadmap, 2026-11-07; [ficha](flujos/raices-paginas-de-error.md)) | No están |
 
-Lo público que no tiene plantilla no existe (la página de "sin dibujar" es privada); lo privado
-que no tiene plantilla muestra "sin dibujar".
+Lo público que no tiene plantilla no existe y muestra la página 404; lo privado que no tiene
+plantilla muestra "sin dibujar". Desde F7 (2026-11-07) ningún enlace del sitio lleva a "sin
+dibujar": lo comprueba `SitioControllerTest`. La administración no tiene Mi perfil, como dice este
+mapa.
 
 ## Observaciones para el diseño
 

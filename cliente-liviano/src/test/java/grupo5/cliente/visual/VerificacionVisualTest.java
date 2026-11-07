@@ -53,6 +53,13 @@ class VerificacionVisualTest {
 
   private static final Path CAPTURAS = Path.of("target/capturas");
   private static final Path PAGINAS = Path.of("src/test/resources/verificacion/paginas.txt");
+
+  /**
+   * Una ruta con {@code ?respuesta=404}, {@code 403} o {@code 500} pide en la maqueta una página de
+   * error (RF-CL-08): ese código es el esperado, no una falla.
+   */
+  private static final Pattern RESPUESTA_PEDIDA = Pattern.compile("[?&]respuesta=(\\d{3})\\b");
+
   private static final List<String> NORMAS_AXE =
       List.of("wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa");
   private static final int TOQUE_MINIMO = 48;
@@ -504,7 +511,12 @@ class VerificacionVisualTest {
     String url =
         "http://localhost:" + puerto + ruta + (consulta.isEmpty() ? "" : separador + consulta);
     Response respuesta = pagina.navigate(url);
-    if (respuesta == null || !respuesta.ok()) {
+    Matcher codigo = RESPUESTA_PEDIDA.matcher(ruta);
+    boolean esperada =
+        codigo.find()
+            && respuesta != null
+            && respuesta.status() == Integer.parseInt(codigo.group(1));
+    if (respuesta == null || (!respuesta.ok() && !esperada)) {
       int estado = respuesta == null ? 0 : respuesta.status();
       fallas.add(
           new Falla(ruta, opcion.nombre(), ancho, "pagina", "HTTP " + estado + " en " + url));

@@ -2,6 +2,7 @@ package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -21,17 +23,36 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.WebProperties;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.error.DefaultErrorViewResolver;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /** La pantalla de prueba está en src/test/resources/templates/. */
 @WebMvcTest(SitioController.class)
-@Import(MaquetaConfig.class)
+@Import({MaquetaConfig.class, SitioControllerTest.PaginasDeError.class})
 @ActiveProfiles("maqueta")
 class SitioControllerTest {
+
+  /**
+   * En @WebMvcTest no hay DispatcherServlet de verdad, y Spring Boot no registra el resolvedor que
+   * elige templates/error/&lt;código&gt;: se registra acá, igual que en la aplicación.
+   */
+  @TestConfiguration
+  static class PaginasDeError {
+
+    @Bean
+    DefaultErrorViewResolver resolvedorDePaginasDeError(ApplicationContext contexto) {
+      return new DefaultErrorViewResolver(contexto, new WebProperties.Resources());
+    }
+  }
 
   @Autowired private MockMvc mvc;
 
@@ -42,7 +63,7 @@ class SitioControllerTest {
 
   @Test
   void unaSeccionSinPantallaMuestraQueNoEstaDibujada() throws Exception {
-    mvc.perform(get("/entidad-seguimiento-problema"))
+    mvc.perform(get("/entidad-seguimiento-tesoro"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
         .andExpect(model().attribute("seccion", "Seguir entregas"))
@@ -60,7 +81,10 @@ class SitioControllerTest {
   }
 
   @Test
-  void elPerfilQueEnlazaElLayoutMuestraQueNoEstaDibujado() throws Exception {
+  void laAdministracionNoTieneMiPerfil() throws Exception {
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("/admin-perfil"))));
     mvc.perform(get("/admin-perfil"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
@@ -398,11 +422,112 @@ class SitioControllerTest {
   }
 
   @Test
-  void unaEntregaSinPantallaVuelveALaEntrega() throws Exception {
+  void llegoConUnProblemaConfirmaYReportaEnUnSoloEnvio() throws Exception {
+    mvc.perform(get("/entidad-seguimiento-confirmar?entrega=lentejas"))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-seguimiento-problema?entrega=lentejas\"")));
     mvc.perform(get("/entidad-seguimiento-problema?entrega=lentejas"))
         .andExpect(status().isOk())
-        .andExpect(view().name("sin-dibujar"))
-        .andExpect(content().string(containsString("Volver a la entrega")));
+        .andExpect(view().name("entidad-seguimiento-problema"))
+        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(content().string(containsString("Contá qué <em>pasó</em>")))
+        .andExpect(
+            content().string(containsString("action=\"/entidad-seguimiento-sellada-lentejas\"")))
+        .andExpect(content().string(containsString("value=\"incompleta\" required")))
+        .andExpect(content().string(containsString("value=\"danada\"")))
+        .andExpect(content().string(containsString("value=\"otro\"")))
+        .andExpect(content().string(containsString("Cuánto llegó, en kg")))
+        .andExpect(content().string(containsString("inputmode=\"decimal\"")))
+        .andExpect(content().string(containsString("maxlength=\"500\"")))
+        .andExpect(content().string(containsString("no se publican en la portada ni en el mapa")))
+        .andExpect(content().string(containsString("Confirmar y contar el problema")))
+        .andExpect(content().string(containsString("No hubo problema: volver a la confirmación")))
+        .andExpect(content().string(not(containsString("entidad-seguimiento-problema?entrega"))));
+    mvc.perform(get("/entidad-seguimiento-problema?entrega=ropa"))
+        .andExpect(content().string(containsString("Cuánto llegó, en unidades")))
+        .andExpect(content().string(containsString("step=\"1\"")))
+        .andExpect(content().string(containsString("inputmode=\"numeric\"")));
+  }
+
+  @Test
+  void llegoConUnProblemaMuestraCadaEstado() throws Exception {
+    mvc.perform(get("/entidad-seguimiento-problema?escenario=revisar"))
+        .andExpect(content().string(containsString("role=\"alert\"")))
+        .andExpect(content().string(containsString("href=\"#cantidad\">Falta cuánto llegó")))
+        .andExpect(content().string(containsString("Escribí cuánto llegó, en kg.")))
+        .andExpect(
+            content().string(containsString("aria-describedby=\"cantidad-error cantidad-ayuda\"")))
+        .andExpect(content().string(containsString("Falta el número de remito.")));
+    mvc.perform(get("/entidad-seguimiento-problema?escenario=error"))
+        .andExpect(content().string(containsString("problema no quedó asentado")));
+    mvc.perform(get("/entidad-seguimiento-problema?escenario=lento"))
+        .andExpect(content().string(containsString("Confirmando…")));
+    mvc.perform(get("/entidad-seguimiento-problema?escenario=confirmada"))
+        .andExpect(content().string(containsString("Ya confirmaste esta entrega")));
+    mvc.perform(get("/entidad-seguimiento-problema?escenario=vacio"))
+        .andExpect(content().string(containsString("No encontramos esa entrega")));
+  }
+
+  @Test
+  void elProblemaQuedaAsentadoAlConfirmar() throws Exception {
+    mvc.perform(post("/entidad-seguimiento-sellada-lentejas").param("motivo", "incompleta"))
+        .andExpect(redirectedUrl("/entidad-seguimiento-sellada-lentejas?problema=incompleta"));
+    mvc.perform(post("/entidad-seguimiento-sellada-lentejas").param("motivo", "cualquiera"))
+        .andExpect(redirectedUrl("/entidad-seguimiento-sellada-lentejas"));
+    mvc.perform(get("/entidad-seguimiento-sellada-lentejas?problema=incompleta"))
+        .andExpect(content().string(containsString("<dt>El problema</dt>")))
+        .andExpect(content().string(containsString("Llegó menos: 12 de 15 kg.")))
+        .andExpect(content().string(containsString("Dos bolsas rotas.")))
+        .andExpect(content().string(containsString("con tus fotos, la fecha y el problema")))
+        .andExpect(content().string(not(containsString("25 de 40 kg"))));
+    mvc.perform(get("/entidad-seguimiento-sellada-ropa?problema=danada"))
+        .andExpect(content().string(containsString("Llegó dañada.")));
+    mvc.perform(get("/entidad-seguimiento-sellada-lentejas"))
+        .andExpect(content().string(not(containsString("El problema"))))
+        .andExpect(content().string(containsString("25 de 40 kg recibidos")))
+        .andExpect(content().string(containsString("con tus fotos y la fecha.")));
+  }
+
+  @Test
+  void enLaMaquetaUnaPantallaPuedeResponderSinPermisoOConUnaFalla() throws Exception {
+    mvc.perform(get("/entidad-inicio?respuesta=403")).andExpect(status().isForbidden());
+    mvc.perform(get("/donante-inicio?respuesta=500")).andExpect(status().isInternalServerError());
+    mvc.perform(get("/donante-inicio?respuesta=otra")).andExpect(status().isOk());
+  }
+
+  @Test
+  void lasPaginasDeErrorDicenQuePasoYAQuienAvisar() throws Exception {
+    String html = error(404, "/no-existe", "");
+    assertTrue(html.contains("Error 404"), html);
+    assertTrue(html.contains("No encontramos esta"));
+    assertTrue(html.contains("Código para soporte: <code>a1b2c3d4e5f6</code>"));
+    assertTrue(html.contains("href=\"/publico-contacto?codigo=a1b2c3d4e5f6\""));
+    assertTrue(html.contains("class=\"raices-publico\""));
+    html = error(403, "/entidad-inicio", "");
+    assertTrue(html.contains("Esta página no es para tu"));
+    assertTrue(html.contains("<title>Sin permiso - DonaTrack</title>"));
+    html = error(500, "/donante-inicio", "");
+    assertTrue(html.contains("Error 500"));
+    assertTrue(html.contains("href=\"/donante-inicio\">Volver a intentar"), html);
+    assertTrue(html.contains("Ir al\n          inicio"));
+    html = error(500, "/donante-inicio", "sin-codigo");
+    assertTrue(!html.contains("Código para soporte"));
+    assertTrue(html.contains("Si sigue, escribinos y contanos qué estabas haciendo."));
+  }
+
+  /** La página de error que arma Spring Boot para ese código, como después de un sendError. */
+  private String error(int codigo, String direccion, String escenario) throws Exception {
+    return mvc.perform(
+            get("/error")
+                .param("escenario", escenario)
+                .accept(MediaType.TEXT_HTML)
+                .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, codigo)
+                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, direccion))
+        .andExpect(status().is(codigo))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
   }
 
   @Test
@@ -994,6 +1119,10 @@ class SitioControllerTest {
       String direccion = pendientes.poll();
       MvcResult resultado =
           mvc.perform(get(URI.create(direccion))).andExpect(status().isOk()).andReturn();
+      assertNotEquals(
+          "sin-dibujar",
+          resultado.getModelAndView() == null ? null : resultado.getModelAndView().getViewName(),
+          direccion + " lleva a la página sin dibujar (F7 del roadmap de vistas)");
       Matcher enlace = ENLACE.matcher(resultado.getResponse().getContentAsString());
       while (enlace.find()) {
         String destino = enlace.group(1).replace("&amp;", "&");

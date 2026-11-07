@@ -185,11 +185,11 @@ Filtro de tono:
   controles de al menos 48 × 48 px.
 - "Cuánto llegó": `input type="number"`; en kg o litros, `inputmode="decimal"` y `step="any"`; en
   unidades, `inputmode="numeric"` y `step="1"`. `min` mayor que cero; el tope (menos que lo que
-  salió) lo valida el servidor. La unidad, en el `label` para el lector de pantalla y visible al
-  lado.
+  salió) lo valida el servidor. La unidad va en el `label`, a la vista: "Cuánto llegó, en kg".
 - "Contanos más": `textarea` con `maxlength="500"`.
 - Orden del foco: … las fotos, las opciones, la cantidad, el detalle, el remito, el botón y "No
-  hubo problema".
+  hubo problema". En pantalla grande se recorre por columnas: la izquierda (las pruebas y "Qué
+  pasó") y después la derecha (el remito y la firma).
 
 ## 8. Revisión de usabilidad
 

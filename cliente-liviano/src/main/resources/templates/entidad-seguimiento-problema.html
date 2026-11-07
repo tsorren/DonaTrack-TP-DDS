@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!--/* Raíces, Llegó con un problema (RF-12), según su ficha de flujo
+       (docs/interfaz/flujos/raices-llego-con-un-problema.md): el acta de Confirmar recepción con el
+       grupo «Qué pasó». Un solo envío confirma la entrega (ENTREGADA, con fotos y remito) y adjunta el
+       reporte (ADR del contrato de entregas, I1). ?entrega=lentejas (de partida) o ropa, y
+       ?escenario=revisar, lento, error, sin-conexion, confirmada y vacio. Va a
+       entidad-seguimiento-sellada-<clave>?problema=<motivo>. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento-problema', ~{::contenido})}">
+<head>
+  <title>Contá qué pasó - Confirmar recepción - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-seguimiento-confirmar :: entrega(null,
+            ~{entidad-seguimiento-confirmar :: acta(false, true)})}"></th:block>
+</th:block>
+</body>
+</html>

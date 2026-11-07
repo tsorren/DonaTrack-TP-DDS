@@ -31,6 +31,47 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · pantalla · F7 construida: Llegó con un problema, páginas de error y el recorrido sin "sin dibujar"
+
+- **Decisión:** Llegó con un problema es el fragmento del acta con un parámetro más,
+  `acta(conError, problema)`, y una hoja nueva, `entidad-seguimiento-problema.css`, que solo ubica
+  «Qué pasó» debajo de las pruebas en pantalla grande. El formulario manda `motivo` y la vuelta trae
+  `?problema=`, que suma «El problema» a lo asentado y quita la cifra del pedido. Las páginas de
+  error son `templates/error/404`, `403` y `5xx` (Spring Boot las elige por el código), con una
+  pieza compartida, `pagina-error`, y la hoja `publico-error.css`; en la maqueta,
+  `?respuesta=404`, `403` o `500` en cualquier pantalla. El dibujo usa las piezas del bloque pasos;
+  el viento de las hojas quedó limitado a `.paso`, porque fuera de la lámina se mecía sin fin y sin
+  pausa (bloqueo de `revision-ui`). El recorrido de `SitioControllerTest` falla si una vista es
+  `sin-dibujar`, y el piso visual acepta el código de `?respuesta=`.
+- **Alternativas:** una plantilla propia para el problema (duplicaba el acta); dejar Mi perfil en el
+  menú del admin con su "sin dibujar" (rompía el criterio de hecho).
+- **Por qué:** lo mínimo que cumple las dos fichas aprobadas sin clases nuevas fuera del catálogo.
+  Mi perfil salió del menú del admin porque el mapa del sitio lo da solo al donante y a la entidad.
+- **Costo:** en pantalla grande queda aire entre el remito y la firma, y el foco recorre por
+  columnas (avisos de `revision-ui`). Las fotos de una entrega con problema no se publican: se
+  aparta del ADR del contrato de entregas (`proposed`), anotado en DTI-29.
+- **Quién decidió:** agente, dentro de las fichas aprobadas por el usuario; Mi perfil del admin,
+  agente, por el mapa del sitio.
+- **Evidencia:** `SitioControllerTest` (44 tests, 6 nuevos o cambiados), módulo 69/69, `-Pvisual`
+  de las rutas de F7 y `revision-ui` en modo pantalla, con el bloqueo corregido.
+
+### 2026-11-07 · flujo · Fichas de F7: Llegó con un problema y páginas de error
+
+- **Decisión:** [Llegó con un problema](flujos/raices-llego-con-un-problema.md) es el acta de
+  Confirmar recepción con el grupo «Qué pasó» (motivo, cuánto llegó si llegó menos y un detalle);
+  un botón confirma y reporta a la vez. Quien donó ve el motivo y el detalle; el equipo, todo. Las
+  fotos de una entrega con problema no se publican. [Las páginas de error](flujos/raices-paginas-de-error.md)
+  van con el marco público y un corte de suelo chico, con el código para soporte y Contacto.
+- **Alternativas:** el reporte en una página aparte y la confirmación después (dos pasos); el
+  detalle siempre obligatorio; solo el equipo ve el reporte; las fotos publicables como las demás;
+  el marco de cada área en las páginas de error; solo texto, sin dibujo.
+- **Por qué:** el contrato confirma y reporta en un solo envío; una foto de algo dañado no va a la
+  portada; las páginas de error tienen que andar sin saber quién entró.
+- **Costo:** se aparta de una consecuencia del ADR del contrato de entregas (la foto llega a la
+  portada); queda para el grupo, con qué hace Donaciones con una cantidad menor.
+- **Quién decidió:** usuario (2026-11-07), en tres rondas de preguntas; las fichas, aprobadas.
+- **Evidencia:** `revision-ui` en modo flujo, con sus dos bloqueos corregidos antes de aprobar.
+
 ### 2026-11-07 · pantalla · F6 construida: Nosotros, Para donantes, Para entidades y Activar cuenta
 
 - **Decisión:** las tres de lectura comparten una hoja nueva, `publico-conocer.css`, que solo dispone

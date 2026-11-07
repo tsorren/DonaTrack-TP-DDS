@@ -162,8 +162,9 @@
     animation: var(--movimiento-animacion-aparece-cierre);
   }
 
-  /* La hoja gira desde su base. */
-  .paso-brote .hoja {
+  /* La hoja gira desde su base. El viento, que sigue en ciclo, solo en la lámina de pasos (que tiene
+     su pausa en la portada): fuera de ella, como en las páginas de error, el brote queda quieto. */
+  .paso .paso-brote .hoja {
     transform-box: view-box;
     transform-origin: 31px 41px;
     animation: var(--movimiento-animacion-viento);

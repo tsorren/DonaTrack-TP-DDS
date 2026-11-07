@@ -78,9 +78,9 @@ donante, que ve Misiones en su menú; con ella, las otras pantallas del donante 
 | Seguir entregas → Confirmar recepción | RF-14, RF-12 | `entidad-seguimiento`, `entidad-seguimiento-confirmar*`, `-sellada*` | ✅ |
 | **Mi perfil** | RI-AUTH-02 | `entidad-perfil`, `entidad-perfil-guardado` | ✅ |
 
-Seguir entregas y Mi perfil de la entidad, dibujadas en F5 (2026-11-07). Queda un enlace a
-`sin-dibujar`: "Llegó con un problema", de Confirmar recepción (`entidad-seguimiento-problema`), que
-ninguna ficha aprobada dibuja todavía.
+Seguir entregas y Mi perfil de la entidad, dibujadas en F5 (2026-11-07). "Llegó con un problema",
+de Confirmar recepción (`entidad-seguimiento-problema`), dibujada en F7 (2026-11-07,
+[ficha](flujos/raices-llego-con-un-problema.md)).
 
 ### Admin
 
@@ -98,7 +98,7 @@ ninguna ficha aprobada dibuja todavía.
 
 | Pantalla | Requerimiento | Estado |
 |---|---|:-:|
-| Páginas de error propias: 403 "sin permiso", 404 y 5xx con `traceId` (el 401 lleva al login) | RF-CL-08 | ❌ |
+| Páginas de error propias: 403 "sin permiso", 404 y 5xx con `traceId` (el 401 lleva al login, fuera del plan sin auth) | RF-CL-08 | ✅ `error/404`, `error/403`, `error/5xx` (F7, [ficha](flujos/raices-paginas-de-error.md)) |
 
 **Resumen:** de las 34 filas de la matriz, 26 están dibujadas, 1 está parcial y 7 faltan
 (después de F4). Todo el admin está dibujado. De las que faltan, RF-07 y RF-14 (este, parcial)
@@ -136,20 +136,35 @@ requerimiento nuevo.
 | **F2** Admin: personas ✅ hecha (2026-11-07) | Donantes (lista, registrar, importar CSV con su resultado) y Entidades (lista, registrar, aprobar) | 1 tanda · unas 6 plantillas + datos de ejemplo en el controller | Pantallas listas; el menú del admin no lleva a `sin-dibujar` en esas dos secciones |
 | **F3** Admin: donaciones y asignar ✅ hecha (2026-11-07) | Donaciones (lista, registrar, detalle con "marcar vencida") y Asignar donaciones (ejecución y propuesta para aprobar) | 1 tanda · unas 5 plantillas | Ídem |
 | **F4** Admin: camiones y ranking ✅ hecha (2026-11-07) | Camiones (alta, cambio de estado, baja) y Ranking (último mes y meses anteriores) | 1 tanda · unas 3 plantillas | Ídem; todo el menú del admin dibujado |
-| **F5** Entidad y donante 🟡 construida (2026-11-07: [Misiones](flujos/raices-misiones.md), [Seguir entregas](flujos/raices-entidad-navegable.md#45-entidad-seguimiento) y [Mi perfil de la entidad](flujos/raices-mi-perfil.md#mi-perfil-de-la-entidad)); queda "Llegó con un problema" en `sin-dibujar`, sin ficha | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
+| **F5** Entidad y donante ✅ construida (2026-11-07: [Misiones](flujos/raices-misiones.md), [Seguir entregas](flujos/raices-entidad-navegable.md#45-entidad-seguimiento) y [Mi perfil de la entidad](flujos/raices-mi-perfil.md#mi-perfil-de-la-entidad)); "Llegó con un problema", que quedaba en `sin-dibujar`, se dibujó en F7 | `entidad-seguimiento` (dibujo y lista de las entregas a recibir, con el enlace a confirmar), `entidad-perfil` y Misiones e insignias para un donante persona | 1 tanda · 3 plantillas · fichas: amplía `raices-entidad-navegable` (Seguir entregas, que hoy dice "sin dibujar") y `raices-mi-perfil` (hoy, solo del donante), y suma una ficha nueva de Misiones e insignias | Ningún enlace de donante ni de entidad lleva a `sin-dibujar` |
 | **F6** Público ✅ construida (2026-11-07, `revision-ui` PASS, [ficha](flujos/raices-conocer-y-activar.md); 8 plantillas en lugar de 4, por los pasos de Activar cuenta) | Nosotros, Landing donante, Landing beneficiario y Activar cuenta, enlazadas desde la portada, el pie o el ingreso | 1 tanda · 4 plantillas + 1 ficha | Las 4 pantallas listas y enlazadas |
-| **F7** Errores y cierre | Páginas 403, 404 y 5xx; un test nuevo en `SitioControllerTest` que sigue todos los enlaces del sitio y falla si alguno lleva a `sin-dibujar` (hoy el test comprueba enlaces sueltos, no el recorrido completo); mapa del sitio y bitácora al día | 1 tanda · 3 plantillas + 1 test | Criterio de hecho de este roadmap cumplido |
+| **F7** Errores y cierre ✅ hecha (2026-11-07, `revision-ui` PASS; fichas [Llegó con un problema](flujos/raices-llego-con-un-problema.md) y [Páginas de error](flujos/raices-paginas-de-error.md)) | Páginas 403, 404 y 5xx; un test nuevo en `SitioControllerTest` que sigue todos los enlaces del sitio y falla si alguno lleva a `sin-dibujar` (hoy el test comprueba enlaces sueltos, no el recorrido completo); mapa del sitio y bitácora al día | 1 tanda · 3 plantillas + 1 test | Criterio de hecho de este roadmap cumplido |
 
 Una tanda es una sesión de trabajo sin corte, con su revisión.
 Cada fase cierra con un commit en `E6_raices_calida` y es un buen punto para cortar la sesión:
 el handoff es este archivo, con la fase marcada como hecha.
 
-## Para retomar en F7 (handoff del 2026-11-07)
+## Cierre (F7, 2026-11-07)
 
-Estado `[OBSERVED]`: F1 a F6 commiteadas en `E6_raices_calida`, la última en `6a473e8e`, sin
-push. Tests del módulo, 65/65.
+El criterio de hecho se cumple `[VERIFIED]`:
 
-Lo que falta para el criterio de hecho:
+- `SitioControllerTest.ningunEnlaceDelSitioEstaRoto` recorre el sitio desde las cuatro portadas,
+  exige 200 y falla si una vista es `sin-dibujar`; pasa. Para cumplirlo, "Mi perfil" salió del
+  menú del admin: el mapa del sitio lo da solo al donante y a la entidad (bitácora, "F7
+  construida").
+- La tabla "Pantallas dibujadas" del [mapa del sitio](mapa-del-sitio.md) no tiene filas "Sin
+  dibujar".
+- Tests del módulo, 69/69; piso visual `-Pvisual` de las rutas de F7, sin fallas.
+
+`sin-dibujar` queda solo para una dirección privada de una sección sin plantilla, que ningún
+enlace del sitio usa.
+
+## Para retomar en F7 (handoff del 2026-11-07, cumplido)
+
+Estado `[OBSERVED]` al abrir F7: F1 a F6 commiteadas en `E6_raices_calida`, la última en
+`6a473e8e`, sin push. Tests del módulo, 65/65.
+
+Lo que faltaba para el criterio de hecho (hecho en F7):
 
 1. **"Llegó con un problema"** (`entidad-seguimiento-problema`), en Confirmar recepción: todavía
    cae en `sin-dibujar` y no tiene ficha. Se recomienda sumarla a F7 (agente, 2026-11-07): con

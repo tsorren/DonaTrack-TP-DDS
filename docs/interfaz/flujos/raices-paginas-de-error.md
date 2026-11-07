@@ -75,7 +75,9 @@ Una plantilla por código, con la misma disposición:
 ```
 
 - **El dibujo:** el corte de suelo de la portada, en chico, con una raíz que baja y se corta antes
-  de llegar (usuario, 2026-11-07). Decorativo (`aria-hidden`); el texto dice todo. Sin animación.
+  de llegar, sin la punta que en la portada marca que llegó (usuario, 2026-11-07). Decorativo
+  (`aria-hidden`); el texto dice todo. Se imprime y la raíz se traza una vez, como en la portada
+  (las piezas del bloque pasos); el brote no se mece, y con "reducir movimiento", quieto.
 - **El código:** el `traceId`, a la vista y seleccionable, con un enlace a Contacto con el código ya
   escrito.
 - En pantalla grande, el texto a la izquierda y el dibujo a la derecha; en el celular, el dibujo
@@ -83,8 +85,9 @@ Una plantilla por código, con la misma disposición:
 
 ## 5. Estados
 
-En la maqueta: una dirección que no existe da el 404 (`/no-existe`); `?respuesta=403` y
-`?respuesta=500` en cualquier pantalla del sitio responden con ese código y su página.
+En la maqueta: una dirección que no existe da el 404 (`/no-existe`); `?respuesta=404`, `403` y
+`500` en cualquier pantalla del sitio responden con ese código y su página, y
+`&escenario=sin-codigo` muestra el estado sin código.
 
 | Pantalla | Estado | Qué se ve | Texto |
 |---|---|---|---|
@@ -128,7 +131,7 @@ culpa a quien llegó; el número del error va como rótulo, para soporte, no com
 |---|---|---|---|
 | 1 | Visibilidad del estado | El título dice qué pasó; el rótulo, el número | — |
 | 2 | Lenguaje del usuario | "No encontramos esta página"; el número solo como rótulo | — |
-| 3 | Control y libertad | "Ir al inicio" siempre; Atrás del navegador | "Ir al inicio" lleva a la portada también a una entidad o un donante, por el marco público: se prueba si la buscan en su inicio |
+| 3 | Control y libertad | "Ir al inicio" siempre; Atrás del navegador | "Ir al inicio" lleva a la portada también a una entidad o un donante, por el marco público: se prueba si la buscan en su inicio. En el 403, la barra pública ofrece "Ingresar" aunque la persona ya entró: se prueba si confunde |
 | 4 | Consistencia | El marco público y el patrón de error del sitio (código y Contacto) | — |
 | 5 | Prevención de errores | El 5xx pide fijarse antes de repetir un envío | — |
 | 6 | Reconocer antes que recordar | El código ya va escrito al ir a Contacto | — |
@@ -160,7 +163,7 @@ Decisiones (usuario, 2026-11-07):
 Decisiones del agente (propuestas):
 
 - El número del error como rótulo, no como título.
-- `?respuesta=403` y `?respuesta=500` en la maqueta, para verlas y probarlas.
+- `?respuesta=404`, `403` y `500` en la maqueta, para verlas y probarlas.
 - La página sin dibujar queda solo para una sección del menú sin plantilla; ningún enlace del
   sitio lleva a ella (test del recorrido).
 

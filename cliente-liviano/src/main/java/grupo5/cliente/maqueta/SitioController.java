@@ -39,6 +39,10 @@ class SitioController {
   private static final String NOMBRE = "(?:publico|donante|entidad|admin)(?:-[a-z]+)+";
   private static final String NO_EXISTE = "No existe esa pantalla";
   private static final String DONANTE = "donante";
+  private static final String ADMIN = "admin";
+
+  /** Los motivos de Llegó con un problema, los del reporte del contrato de entregas. */
+  private static final String MOTIVOS = "incompleta|danada|otro";
 
   /**
    * A dónde puede volver Contacto: una pantalla del sitio, con parámetros de letras, números y
@@ -84,7 +88,7 @@ class SitioController {
               new Seccion(
                   "Donaciones recibidas", "Recibidas", ICONO_DONACIONES, "entidad-recibidas"),
               new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
-          "admin",
+          ADMIN,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
               new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
@@ -100,7 +104,7 @@ class SitioController {
           new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
           "entidad",
           new CuentaVista("Marta", "Comedor Barrio Ejemplo"),
-          "admin",
+          ADMIN,
           new CuentaVista("Leo", "Administración"));
 
   /** El recorrido de la donación en camino; viaje-datos toma de acá los avances de los pasos. */
@@ -159,9 +163,29 @@ class SitioController {
   String pantalla(
       @PathVariable String pantalla,
       @RequestParam(required = false) String cuenta,
+      @RequestParam(required = false) String respuesta,
       Model model,
       HttpSession sesion) {
+    responderConError(respuesta);
     return mostrar(pantalla, cuenta, model, sesion);
+  }
+
+  /**
+   * Las páginas de error propias (RF-CL-08, docs/interfaz/flujos/raices-paginas-de-error.md):
+   * {@code ?respuesta=404}, {@code 403} o {@code 500} en cualquier pantalla responde con ese
+   * código, y Spring Boot muestra templates/error/404, 403 o 5xx, como haría el sistema con una
+   * dirección que no existe, sin permiso o con una falla.
+   */
+  private static void responderConError(String respuesta) {
+    if ("404".equals(respuesta)) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
+    }
+    if ("403".equals(respuesta)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sin permiso, de ejemplo");
+    }
+    if ("500".equals(respuesta)) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falla de ejemplo");
+    }
   }
 
   private String mostrar(String pantalla, String cuenta, Model model, HttpSession sesion) {
@@ -199,8 +223,10 @@ class SitioController {
             .toList());
     model.addAttribute("cuenta", persona ? CUENTA_PERSONA : CUENTAS.get(rol));
     model.addAttribute("persona", persona);
+    // Mi perfil es del donante y de la entidad (mapa del sitio); la administración no lo tiene.
     model.addAttribute(
-        "perfil", menu.isEmpty() || PUBLICO.equals(rol) ? null : "/" + rol + "-perfil");
+        "perfil",
+        menu.isEmpty() || PUBLICO.equals(rol) || ADMIN.equals(rol) ? null : "/" + rol + "-perfil");
     if (persona && !MISIONES.equals(pantalla)) {
       return avisoDeLaPersona(model);
     }
@@ -232,14 +258,17 @@ class SitioController {
    * son lo escrito: a qué pantalla volver después ({@code ?volver=}, en Contacto, solo si es una
    * pantalla del sitio), la elección de Mi perfil ({@code mostrar=si}) y la sección de Mi perfil
    * que se guardó ({@code seccion=datos} o {@code avisos}), para que el aviso diga lo que se
-   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección.
+   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección. Llegó
+   * con un problema manda el motivo ({@code incompleta}, {@code danada} u {@code otro}), que vuelve
+   * como {@code ?problema=} para que Recepción confirmada muestre el problema asentado.
    */
   @PostMapping("/{pantalla:" + NOMBRE + "}")
   String enviar(
       @PathVariable String pantalla,
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar,
-      @RequestParam(required = false) String seccion) {
+      @RequestParam(required = false) String seccion,
+      @RequestParam(required = false) String motivo) {
     if (!existe(pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
@@ -252,6 +281,9 @@ class SitioController {
     }
     if ("datos".equals(seccion) || "avisos".equals(seccion)) {
       consulta.add("seccion=" + seccion);
+    }
+    if (motivo != null && motivo.matches(MOTIVOS)) {
+      consulta.add("problema=" + motivo);
     }
     String destino = "redirect:/" + pantalla;
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);

@@ -22,6 +22,15 @@
 /entidad-seguimiento-sellada-lentejas
 /entidad-seguimiento-sellada-ropa
 /entidad-seguimiento-problema?entrega=lentejas
+/entidad-seguimiento-problema?entrega=ropa
+/entidad-seguimiento-problema?escenario=revisar
+/entidad-seguimiento-problema?escenario=error
+/entidad-seguimiento-sellada-lentejas?problema=incompleta
+# Las páginas de error (RF-CL-08): el código de ?respuesta= es el esperado.
+/publico-donaciones?respuesta=404
+/entidad-inicio?respuesta=403
+/donante-inicio?respuesta=500
+/donante-inicio?respuesta=500&escenario=sin-codigo
 /entidad-necesidades
 /entidad-necesidades?escenario=vacio
 /entidad-necesidades?escenario=error
