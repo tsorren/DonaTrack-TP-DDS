@@ -31,6 +31,15 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-07 · flujo · Una solicitud que espera corrección no muestra acciones
+
+- **Decisión:** mientras una entidad corrige su solicitud ("Esperando corrección"), se ocultan
+  Aprobar, Pedir corrección y Rechazar; vuelven cuando la entidad la reenvía.
+- **Alternativas:** dejar las tres acciones a la vista (la ficha no lo prohibía).
+- **Por qué:** no hay nada que decidir hasta que la entidad corrija.
+- **Costo:** ninguno en la maqueta; en el sistema depende del estado de la solicitud (HB-12).
+- **Quién decidió:** usuario, a partir de un aviso de `revision-ui`.
+
 ### 2026-11-07 · vistas · Donantes y Entidades del admin (F2), con la tabla adaptable
 
 - **Decisión:** se construyen Donantes (lista, registrar, importar CSV con su avance y su resultado

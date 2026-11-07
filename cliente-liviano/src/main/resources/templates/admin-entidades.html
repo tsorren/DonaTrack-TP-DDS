@@ -122,6 +122,9 @@
               </dl>
               <p th:text="${e.falta != null} ? |${e.falta}.| : 'Le falta: nada.'">Le falta: nada.</p>
 
+              <p th:if="${accion == 'correccion' and e.clave == 'merendero'}">Le pedimos que corrija su solicitud. Las
+                acciones vuelven cuando la entidad la reenvíe.</p>
+              <th:block th:unless="${accion == 'correccion' and e.clave == 'merendero'}">
               <div class="racimo">
                 <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post">
                   <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
@@ -170,6 +173,7 @@
                   </div>
                 </form>
               </dialog>
+              </th:block>
             </details>
           </li>
         </ul>

@@ -576,7 +576,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Activas · 47")));
     mvc.perform(get("/admin-entidades-correccion"))
         .andExpect(content().string(containsString("Esperando")))
-        .andExpect(content().string(containsString("Le pedimos a Merendero Ejemplo Este")));
+        .andExpect(content().string(containsString("Le pedimos a Merendero Ejemplo Este")))
+        .andExpect(
+            content().string(containsString("acciones vuelven cuando la entidad la reenvíe.")))
+        .andExpect(content().string(not(containsString("Aprobar: Merendero Ejemplo Este"))));
     mvc.perform(get("/admin-entidades-rechazada"))
         .andExpect(
             content().string(containsString("Rechazaste la solicitud de Comedor Ejemplo Oeste.")))
