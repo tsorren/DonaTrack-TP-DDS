@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 /**
  * Mis donaciones y su detalle desde Donaciones: la lista del donante, las categorías del filtro y,
@@ -162,21 +163,27 @@ class DonacionesRest implements DonacionesPuerto {
         .map(DonacionesApi.Donacion::entidadBeneficiariaId)
         .filter(Objects::nonNull)
         .distinct()
-        .forEach(id -> entidades.put(id, nombre(api.entidad(id))));
+        .forEach(id -> entidades.put(id, nombreDeEntidad(id)));
     return entidades;
   }
 
-  /** La primera foto de recepción de la entrega; sin entrega (404) o sin foto, null. */
+  /**
+   * La primera foto de recepción de la entrega, o null: sin entrega (404), sin foto o con Logística
+   * caída. La entrega ya está confirmada en Donaciones; sin la foto, la pantalla dice eso solo.
+   */
   private String foto(UUID donacion) {
     try {
       LogisticaApi.Entrega entrega = logistica.entrega(logistica.seguimiento(donacion).idEntrega());
+      if (entrega == null) {
+        return null;
+      }
       String url =
           entrega.fotosRecepcion() == null || entrega.fotosRecepcion().isEmpty()
               ? entrega.fotoRecepcionUrl()
               : entrega.fotosRecepcion().getFirst();
       // Solo direcciones web: la URL viene de afuera y va a un src.
       return url != null && (url.startsWith("https://") || url.startsWith("http://")) ? url : null;
-    } catch (HttpClientErrorException.NotFound sinEntrega) {
+    } catch (RestClientException sinFoto) {
       return null;
     }
   }
@@ -319,9 +326,15 @@ class DonacionesRest implements DonacionesPuerto {
   private static Donacion donacion(
       DonacionesApi.Donacion d, long numero, Map<UUID, String> entidades) {
     Categoria categoria =
-        d.items() == null || d.items().isEmpty() || d.items().getFirst().bien() == null
+        d.items() == null
+                || d.items().isEmpty()
+                || d.items().getFirst() == null
+                || d.items().getFirst().bien() == null
             ? null
             : d.items().getFirst().bien().categoria();
+    if (categoria != null && (categoria.id() == null || categoria.nombre() == null)) {
+      categoria = null;
+    }
     String estado = normalizado(d.estadoActual());
     return new Donacion(
         d.id().toString(),
@@ -374,12 +387,21 @@ class DonacionesRest implements DonacionesPuerto {
     };
   }
 
-  private static String nombre(DonacionesApi.Entidad entidad) {
-    return entidad == null || entidad.juridica() == null ? null : entidad.juridica().razonSocial();
+  /** Una entidad que ya no está (404) o sin nombre queda sin destino escrito. */
+  private String nombreDeEntidad(UUID id) {
+    try {
+      DonacionesApi.Entidad entidad = api.entidad(id);
+      String nombre =
+          entidad == null || entidad.juridica() == null ? null : entidad.juridica().razonSocial();
+      return nombre == null || nombre.isBlank() ? null : nombre;
+    } catch (HttpClientErrorException.NotFound yaNoEsta) {
+      return null;
+    }
   }
 
   private static String cantidad(int cantidad, Categoria categoria) {
-    String unidad = categoria == null ? null : UNIDADES.get(categoria.unidad());
+    String unidad =
+        categoria == null || categoria.unidad() == null ? null : UNIDADES.get(categoria.unidad());
     if (cantidad == 1 && "unidades".equals(unidad)) {
       unidad = "unidad";
     }

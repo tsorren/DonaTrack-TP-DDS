@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withResourceNotFound;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.vistas.DetalleDonacionVista;
@@ -143,6 +144,18 @@ class DetalleDonacionRestTest {
     assertEquals(COMEDOR + " confirmó la entrega el 5 de octubre.", detalle.pieFoto());
     assertEquals(
         COMEDOR + " confirmó que recibió tu donación.", detalle.noticias().getFirst().texto());
+  }
+
+  @Test
+  void conLogisticaCaidaLaEntregadaSeMuestraSinFoto() {
+    conLaEntidad();
+    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donaciones/" + FIDEOS))
+        .andRespond(withServerError());
+
+    DetalleDonacionVista detalle = adaptador.detalle(DONANTE, FIDEOS).orElseThrow();
+
+    assertNull(detalle.foto());
+    assertEquals(COMEDOR + " confirmó la entrega el 5 de octubre.", detalle.pieFoto());
   }
 
   @Test
