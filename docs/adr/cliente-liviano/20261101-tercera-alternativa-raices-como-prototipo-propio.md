@@ -1,6 +1,6 @@
 # Tercera alternativa de identidad (Raíces) como prototipo propio, sin juego de plantillas hasta que se elija
 
-- Status: superseded by cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano (href: ./20261103-una-sola-identidad-en-el-cliente-liviano.md)
+- Status: superseded by [cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano](./20261103-una-sola-identidad-en-el-cliente-liviano.md)
 - Date: 2026-11-01
 - Deciders: tsorren, al elegir entre dos opciones de convivencia en la sesión de Raíces
 - Tags: cliente-liviano, interfaz, identidad, tokens, prototipo, entrega-6
