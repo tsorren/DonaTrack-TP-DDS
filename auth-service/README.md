@@ -113,6 +113,15 @@ Qué mirar: el logo se ve completo y con buen contraste en los dos modos, el bot
 - **Si Testcontainers dice `Could not find a valid Docker environment` (Windows):** es del entorno, no del realm. Con Docker Desktop abierto, probá `$env:DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine"` antes del `mvn`, y borrá la línea `docker.client.strategy=…` de `%USERPROFILE%\.testcontainers.properties` (Testcontainers cachea ahí la última estrategia que funcionó).
 - El módulo hereda del pom raíz (Spotless, JaCoCo) pero **no está en sus `<modules>`**: el `mvn` general no lo compila. Sumarlo al build y al CI queda para E2-12. Si Spotless se queja del formato, `mvn -f auth-service/pom.xml spotless:apply`.
 
+## Probar el ingreso
+
+1. En el `.env` (de `.env.example`) están `CLIENTE_LIVIANO_SECRET`, `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD`. Con `DONACIONES_SEGURIDAD_HABILITADA=true` en el `.env`, Donaciones valida el token (por defecto es `false` y acepta todo).
+2. Levantar Keycloak y Donaciones: `docker compose up --build -d keycloak donaciones-service` (arrastran Postgres y RabbitMQ).
+3. Levantar el sitio, con el mismo secreto del `.env`: `CLIENTE_LIVIANO_SECRET=<el del .env> mvn -pl cliente-liviano spring-boot:run`. Queda en <http://localhost:8090>; sin el perfil `maqueta` pide ingresar, y `DONACIONES_URL` y `KEYCLOAK_ISSUER_URI` valen `http://localhost:8080` y `http://localhost:8180/realms/donatrack` si no se cambian.
+4. Cuentas de prueba: el admin es `AUTH_ADMIN_EMAIL` con `AUTH_ADMIN_PASSWORD`. El donante y la entidad se crean con "Crear una cuenta" en Keycloak (pide completar el perfil) y la entidad espera la aprobación del admin en "Entidades".
+
+**Keycloak importa el realm solo la primera vez.** Si el realm `donatrack` ya existe en la base, un `donatrack-realm.json` nuevo no se aplica. Para reimportarlo: `docker compose down -v` (borra todos los datos locales) y volver a levantar, o borrar solo el realm en la consola (<http://localhost:8180>, *Manage realms → donatrack → Action → Delete*) y reiniciar con `docker compose restart keycloak`.
+
 ## Cómo levantarlo
 
 1. Variables: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios). Keycloak usa `KEYCLOAK_DB_PASSWORD`, `KC_BOOTSTRAP_ADMIN_USERNAME`, `KC_BOOTSTRAP_ADMIN_PASSWORD`, `KC_HOSTNAME`, `KC_HTTP_ENABLED`, `KC_HEALTH_ENABLED`, `CLIENTE_LIVIANO_SECRET`, `CLIENTE_LIVIANO_BASE_URL`, `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD`. Si ya tenías un `.env`, **agregale esas variables a mano**: `docker compose` falla con `ver .env.example` en cualquier comando, aunque no levantes Keycloak.

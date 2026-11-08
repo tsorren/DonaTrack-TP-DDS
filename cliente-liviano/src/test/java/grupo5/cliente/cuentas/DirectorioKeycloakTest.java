@@ -12,9 +12,11 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.DirectorioDeCuentas.SolicitudDeEntidad;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -72,6 +74,59 @@ class DirectorioKeycloakTest {
         .andRespond(withNoContent());
 
     directorio.vincular("cuenta-1", Map.of("personaId", "p-1"), Optional.of("DONANTE_PERSONA"));
+
+    keycloak.verify();
+  }
+
+  @Test
+  void lasSolicitudesSonLasCuentasConSolicitudEntidadYSuPersona() {
+    keycloak
+        .expect(requestTo(BASE + "/users?q=solicitudEntidad:pendiente&briefRepresentation=false"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\":\"cuenta-1\",\"email\":\"rosa@ejemplo.test\",\"attributes\":"
+                    + "{\"personaId\":[\"5f0c9a1e-2b7d-4c3a-9e11-6d2f8b4a7c10\"],"
+                    + "\"solicitudEntidad\":[\"pendiente\"]}}]",
+                APPLICATION_JSON));
+
+    assertThat(directorio.solicitudesDeEntidad())
+        .containsExactly(
+            new SolicitudDeEntidad(
+                "cuenta-1",
+                UUID.fromString("5f0c9a1e-2b7d-4c3a-9e11-6d2f8b4a7c10"),
+                "rosa@ejemplo.test"));
+  }
+
+  @Test
+  void unRolDelRealmSeLeeDeLosDisponiblesYSeAsigna() {
+    String roles = USUARIO + "/role-mappings/realm";
+    keycloak
+        .expect(requestTo(roles + "/available"))
+        .andRespond(withSuccess("[{\"id\":\"r1\",\"name\":\"ENTIDAD\"}]", APPLICATION_JSON));
+    keycloak
+        .expect(requestTo(roles))
+        .andExpect(method(POST))
+        .andExpect(jsonPath("$[0].name").value("ENTIDAD"))
+        .andRespond(withNoContent());
+
+    directorio.asignarRol("cuenta-1", "ENTIDAD");
+
+    keycloak.verify();
+  }
+
+  @Test
+  void quitarUnAtributoConservaLosDemas() {
+    String conSolicitud =
+        "{\"id\":\"cuenta-1\",\"attributes\":{\"locale\":[\"es\"],\"solicitudEntidad\":[\"pendiente\"]}}";
+    keycloak.expect(requestTo(USUARIO)).andRespond(withSuccess(conSolicitud, APPLICATION_JSON));
+    keycloak
+        .expect(requestTo(USUARIO))
+        .andExpect(method(PUT))
+        .andExpect(jsonPath("$.attributes.locale[0]").value("es"))
+        .andExpect(jsonPath("$.attributes.solicitudEntidad").doesNotExist())
+        .andRespond(withNoContent());
+
+    directorio.quitarAtributo("cuenta-1", "solicitudEntidad");
 
     keycloak.verify();
   }

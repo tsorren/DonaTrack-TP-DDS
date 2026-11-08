@@ -4,6 +4,7 @@ import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.puertos.PersonasDeDonaciones;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -16,7 +17,7 @@ class DonacionesRest implements PersonasDeDonaciones {
 
   private final RestClient donaciones;
 
-  DonacionesRest(RestClient donaciones) {
+  DonacionesRest(@Qualifier("donacionesComoServicio") RestClient donaciones) {
     this.donaciones = donaciones;
   }
 

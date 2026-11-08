@@ -5,6 +5,9 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.oauth2.core.AuthorizationGrantType.AUTHORIZATION_CODE;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
@@ -16,12 +19,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.cuentas.PerfilService;
+import grupo5.cliente.cuentas.SolicitudesDeEntidad;
+import grupo5.cliente.cuentas.SolicitudesDeEntidad.Pendiente;
+import grupo5.cliente.puertos.DonacionesComoUsuario;
+import grupo5.cliente.puertos.DonacionesComoUsuario.DonacionDelDonante;
+import grupo5.cliente.puertos.DonacionesComoUsuario.NecesidadDeEntidad;
 import grupo5.cliente.web.AccesoController;
+import grupo5.cliente.web.DatosDelUsuarioController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
+import grupo5.cliente.web.SolicitudesDeEntidadController;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -38,8 +51,14 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-@WebMvcTest({PantallasController.class, AccesoController.class})
+@WebMvcTest({
+  PantallasController.class,
+  AccesoController.class,
+  DatosDelUsuarioController.class,
+  SolicitudesDeEntidadController.class
+})
 @Import({SeguridadConfig.class, Pantallas.class})
 @TestPropertySource(
     properties = {
@@ -49,6 +68,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class SeguridadTest {
 
   private static final String INGRESAR = "/oauth2/authorization/keycloak";
+  private static final UUID PERSONA = UUID.fromString("5f0c9a1e-2b7d-4c3a-9e11-6d2f8b4a7c10");
 
   @TestConfiguration
   static class Keycloak {
@@ -70,12 +90,13 @@ class SeguridadTest {
   }
 
   @MockitoBean private PerfilService perfiles;
+  @MockitoBean private DonacionesComoUsuario donaciones;
+  @MockitoBean private SolicitudesDeEntidad solicitudes;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 
   private OidcLoginRequestPostProcessor como(String... roles) {
-    Map<String, Object> claims =
-        Map.of("roles", List.of(roles), "personaId", "5f0c9a1e-2b7d-4c3a-9e11-6d2f8b4a7c10");
+    Map<String, Object> claims = Map.of("roles", List.of(roles), "personaId", PERSONA.toString());
     return oidcLogin()
         .clientRegistration(clientes.findByRegistrationId("keycloak"))
         .idToken(token -> token.claims(datos -> datos.putAll(claims)))
@@ -137,6 +158,59 @@ class SeguridadTest {
     mvc.perform(get("/admin-inicio").with(como("ADMIN")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/admin-donantes\"")));
+  }
+
+  @Test
+  void misDonacionesMuestraLasDeSuPersonaEnDonaciones() throws Exception {
+    LocalDateTime registro = LocalDateTime.of(2026, 10, 14, 10, 0);
+    var arroz = new DonacionDelDonante(UUID.randomUUID(), "Arroz largo", "ENTREGADA", registro, 10);
+    when(donaciones.donacionesDe(PERSONA)).thenReturn(List.of(arroz));
+
+    mvc.perform(get("/donante-donaciones").with(como("DONANTE")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Arroz largo")))
+        .andExpect(content().string(containsString("14/10/2026")))
+        .andExpect(content().string(containsString("Entregada")));
+  }
+
+  @Test
+  void lasNecesidadesMuestranLasDeLaEntidad() throws Exception {
+    LocalDate fin = LocalDate.of(2026, 10, 31);
+    var lentejas =
+        new NecesidadDeEntidad(UUID.randomUUID(), "RECURRENTE", 40, "Lentejas", false, null, fin);
+    when(donaciones.necesidadesDe(PERSONA)).thenReturn(List.of(lentejas));
+
+    mvc.perform(get("/entidad-necesidades").with(como("ENTIDAD")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Lentejas")))
+        .andExpect(content().string(containsString("Hasta el 31/10/2026")));
+  }
+
+  @Test
+  void elAdminVeLasSolicitudesYLasApruebaConCsrf() throws Exception {
+    var rosa = new Pendiente("cuenta-1", "Merendero Oeste", "rosa@ejemplo.test");
+    when(solicitudes.pendientes()).thenReturn(List.of(rosa));
+
+    mvc.perform(get("/admin-entidades").with(como("ADMIN")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Merendero Oeste")))
+        .andExpect(content().string(containsString("rosa@ejemplo.test")))
+        .andExpect(content().string(containsString("name=\"cuenta\" value=\"cuenta-1\"")));
+    mvc.perform(aprobar("ADMIN")).andExpect(redirectedUrl("/admin-entidades"));
+    verify(solicitudes).aprobar("cuenta-1");
+  }
+
+  private MockHttpServletRequestBuilder aprobar(String rol) {
+    return post("/admin-entidades-aprobar")
+        .param("cuenta", "cuenta-1")
+        .with(como(rol))
+        .with(csrf());
+  }
+
+  @Test
+  void soloElAdminApruebaEntidades() throws Exception {
+    mvc.perform(aprobar("ENTIDAD")).andExpect(status().isForbidden());
+    verifyNoInteractions(solicitudes);
   }
 
   @Test

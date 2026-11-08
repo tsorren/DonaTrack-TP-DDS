@@ -100,6 +100,12 @@ public class Pantallas {
     return recursos.getResource("classpath:templates/" + pantalla + ".html").exists();
   }
 
+  /** La pantalla con los datos del sistema: su modelo y la plantilla de {@code reales/}. */
+  public String mostrarReal(String pantalla, Model model) {
+    mostrar(pantalla, model);
+    return "reales/" + pantalla;
+  }
+
   /** Completa el modelo de la pantalla y devuelve su vista. */
   public String mostrar(String pantalla, Model model) {
     boolean dibujada = existe(pantalla);

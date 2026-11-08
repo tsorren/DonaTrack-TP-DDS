@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!--/* Necesidades de la entidad con los datos de Donaciones (la maqueta sigue en
+       entidad-necesidades.html). Usa la hoja y las clases de esa pantalla. Donaciones todavía no
+       informa lo recibido ni la categoría, así que no se muestran. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-necesidades', ~{::contenido})}">
+<head>
+  <title>Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="necesidades">
+    <header>
+      <p class="rotulo" th:text="${seccion}">Necesidades</p>
+      <h1>Tus necesidades</h1>
+      <p class="necesidades-bajada">Tus pedidos. Los ven los donantes y el catálogo público, si los publicaste.</p>
+    </header>
+
+    <section th:if="${#lists.isEmpty(necesidades)}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">No tenés necesidades cargadas.</h2>
+    </section>
+
+    <section th:unless="${#lists.isEmpty(necesidades)}" class="pedidos" aria-labelledby="pedidos-titulo">
+      <h2 id="pedidos-titulo">Tus necesidades</h2>
+      <ul class="pedidos-lista" role="list">
+        <li th:each="n : ${necesidades}">
+          <div class="tarjeta pedido" data-filete="doble">
+            <p class="pedido-resumen">
+              <span class="pedido-que">
+                <b th:text="${n.descripcion}">Lentejas secas</b>
+                <span class="pedido-repite"
+                      th:text="${#strings.capitalize(#strings.toLowerCase(n.tipo))}">Recurrente</span>
+              </span>
+              <span class="pedido-cuanto">
+                <span th:text="|${n.cantidadNecesitada} unidades|">40 unidades</span>
+                <small th:if="${n.fechaFin != null}"
+                       th:text="|Hasta el ${#temporals.format(n.fechaFin, 'dd/MM/yyyy')}|">Hasta el 31/10/2026</small>
+              </span>
+              <span class="pedido-va" th:text="${n.estaSatisfecha} ? 'Satisfecha' : 'Vigente'">Vigente</span>
+            </p>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
