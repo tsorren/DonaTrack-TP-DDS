@@ -1,7 +1,9 @@
 package grupo5.common.logging;
 
+import brave.propagation.Propagation;
 import feign.RequestInterceptor;
 import io.micrometer.tracing.Tracer;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -26,6 +28,25 @@ public class LoggingAutoConfiguration {
     @ConditionalOnBean(Tracer.class)
     public ScheduledJobLoggingAspect scheduledJobLoggingAspect(Tracer tracer) {
       return new ScheduledJobLoggingAspect(tracer);
+    }
+  }
+
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass(Propagation.Factory.class)
+  public static class XTraceIdPropagationConfiguration {
+    /** Envuelve la propagación de Brave para que el span del servidor adopte el X-Trace-Id. */
+    @Bean
+    public static BeanPostProcessor xTraceIdPropagationPostProcessor() {
+      return new BeanPostProcessor() {
+        @Override
+        public Object postProcessAfterInitialization(Object bean, String beanName) {
+          if (bean instanceof Propagation.Factory factory
+              && !(bean instanceof XTraceIdPropagationFactory)) {
+            return new XTraceIdPropagationFactory(factory);
+          }
+          return bean;
+        }
+      };
     }
   }
 
