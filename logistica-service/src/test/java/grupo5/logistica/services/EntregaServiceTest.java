@@ -12,9 +12,11 @@ import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.PosicionCamionDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
@@ -34,6 +36,7 @@ import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import grupo5.logistica.testutils.EntregaMother;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -300,6 +303,8 @@ class EntregaServiceTest {
     assertEquals(1, dto.paradasEntregadas());
     assertEquals(2, dto.paradasProcesadas());
     assertNotNull(dto.ultimaActualizacion());
+    assertNull(
+        dto.posicionCamion(), "Sin posición registrada, el camión en traslado no la informa");
     assertEquals(3, dto.paradas().size());
     assertFalse(dto.paradas().get(0).esEntregaConsultada());
     assertFalse(dto.paradas().get(1).esEntregaConsultada());
@@ -526,5 +531,75 @@ class EntregaServiceTest {
         assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
     assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
     verify(entregasRepository, never()).save(any());
+  }
+
+  // ===================== Posición del camión (HB-06) =====================
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conRutaEnTraslado_incluyeLaPosicionDelCamion() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 8), UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entrega.getId());
+    entrega.asignarRuta(ruta.getId());
+    ruta.iniciarRuta();
+    PosicionCamion posicion =
+        new PosicionCamion(
+            -34.6, -58.4, ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC).plusSeconds(30));
+    camion.registrarPosicion(posicion);
+    entrega.iniciarRuta("Chofer");
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(
+        new PosicionCamionDTO(-34.6, -58.4, posicion.registradaEn()), dto.posicionCamion());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conPosicionDeUnaRutaAnterior_noLaInforma() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    camion.registrarPosicion(
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2020-01-01T00:00:00Z")));
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 8), UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entrega.getId());
+    entrega.asignarRuta(ruta.getId());
+    ruta.iniciarRuta();
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(EstadoRuta.EN_TRASLADO, dto.estadoRuta());
+    assertNull(dto.posicionCamion());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conRutaFueraDeTraslado_noIncluyePosicion() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    camion.registrarPosicion(
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2026-11-08T12:00:30Z")));
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 8), UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entrega.getId());
+    entrega.asignarRuta(ruta.getId());
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(EstadoRuta.PENDIENTE, dto.estadoRuta());
+    assertNull(dto.posicionCamion());
   }
 }

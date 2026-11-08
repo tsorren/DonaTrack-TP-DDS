@@ -35,6 +35,7 @@ import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataP
 import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataSolicitudTransicionEntregaRepository;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
@@ -521,5 +522,16 @@ class RepositoriosLogisticaJpaTest {
             "https://minio/foto_adicional_1.jpg",
             "https://minio/foto_adicional_2.jpg"),
         fotosFinalesEnDb);
+  }
+
+  @Test
+  void deberiaPersistirYRecuperarLaPosicionDelCamion() {
+    Camion camion = camionRepository.save(new Camion("GH789IJ", 50.0f, 2000.0f, 3.2f));
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6037, -58.3816, Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+    camionRepository.save(camion);
+
+    assertEquals(posicion, camionRepository.findById(camion.getId()).orElseThrow().getPosicion());
   }
 }

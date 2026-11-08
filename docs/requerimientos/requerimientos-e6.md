@@ -292,8 +292,8 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-02 | Donaciones / Incentivos | Contadores públicos de la landing (donantes activos, donaciones realizadas, beneficiarios activos) en un endpoint agregado | RF-01 (boceto) | Boceto E1 |
 | HB-03 | Donaciones | Filtro por `categoriaId` en `GET /donaciones-independientes` | RF-05 | D28 |
 | HB-04 | Donaciones | Filtro por entidad asignada y rango de fechas | RF-11, RF-01 | D28 |
-| HB-05 | Logística | VO `PosicionCamion` (coordenadas + timestamp de origen) y puerto `FuentePosicionCamion` con un adaptador simulado que avanza por las paradas de la ruta | RF-09, RF-14 | D23 |
-| HB-06 | Logística | Exponer la posición del camión en el seguimiento: campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO`, exacta para todos (RNF-PRIV-01) | RF-09, RF-14 | D23, D24 |
+| HB-05 | Logística | VO `PosicionCamion` (coordenadas + timestamp de origen) y puerto `FuentePosicionCamion` con un adaptador simulado que avanza por las paradas de la ruta. **Hecho (2026-11-08):** `FuentePosicionCamionSimulada` y `ActualizadorPosicionCamiones` cada 30 s | RF-09, RF-14 | D23 |
+| HB-06 | Logística | Exponer la posición del camión en el seguimiento: campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO`, exacta para todos (RNF-PRIV-01). **Hecho (2026-11-08):** OpenAPI de Logística 1.3.0 | RF-09, RF-14 | D23, D24 |
 | HB-07 | Logística | ~~`GET /api/entregas/mapa` con coordenadas aproximadas~~ Con la D24 revisada las coordenadas quedan exactas: solo se corrige el Javadoc de `EntregaMapaPublicoResponseDTO` (tarea 22 del [plan sin auth](plan-e6-trabajo-sin-auth.md)) | RF-02 | D24 |
 | HB-08 | Donaciones | DTOs públicos de entidades y necesidades | RF-06, RF-22 | D26 |
 | HB-09 | Notificaciones | Verificar que los 4 eventos del donante y los 2 de la entidad generan notificación | RF-08, RF-13 | — |

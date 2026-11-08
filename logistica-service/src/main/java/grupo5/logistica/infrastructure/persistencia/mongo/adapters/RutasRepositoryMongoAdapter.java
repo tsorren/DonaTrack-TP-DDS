@@ -10,6 +10,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.RutaMongoMapper;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataEntregaMongoRepository;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
@@ -72,6 +73,14 @@ public class RutasRepositoryMongoAdapter
       return List.of();
     }
     return aDominio(springDataRepo.findByFecha(fecha));
+  }
+
+  @Override
+  public List<Ruta> findByEstado(EstadoRuta estado) {
+    if (estado == null) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findByEstado(estado));
   }
 
   @Override
