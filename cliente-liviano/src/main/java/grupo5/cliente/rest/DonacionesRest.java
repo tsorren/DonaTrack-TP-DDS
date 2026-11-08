@@ -173,7 +173,11 @@ class DonacionesRest implements DonacionesPuerto {
    */
   private String foto(UUID donacion) {
     try {
-      LogisticaApi.Entrega entrega = logistica.entrega(logistica.seguimiento(donacion).idEntrega());
+      LogisticaApi.Seguimiento seguimiento = logistica.seguimiento(donacion);
+      LogisticaApi.Entrega entrega =
+          seguimiento == null || seguimiento.idEntrega() == null
+              ? null
+              : logistica.entrega(seguimiento.idEntrega());
       if (entrega == null) {
         return null;
       }
