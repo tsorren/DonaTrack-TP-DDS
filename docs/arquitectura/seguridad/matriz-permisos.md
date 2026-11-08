@@ -30,7 +30,7 @@ Cada endpoint pasa hasta tres chequeos. Los tres salen del token, nunca de un pa
 | **id** | El id de la ruta es el dueño | `GET /api/donantes/{id}`: `id == personaId` (identidad compartida: `Donante.id = personaId`, `EntidadBeneficiaria.id = juridicaId`) |
 | **param:X** | El parámetro `X` es el dueño, y es obligatorio para quien no es admin | `?donanteId=` |
 | **cuerpo:X** | El campo `X` del cuerpo es el dueño | `POST /api/donaciones` con `donanteId` |
-| **dueño** | Se busca el recurso y se compara su dueño; lo hace el bean de pertenencia del servicio con los servicios de lectura existentes | `PUT /api/necesidades/{id}`: `necesidad.entidadId` |
+| **dueño** | Se busca el recurso y se compara su dueño; lo hace el bean de pertenencia del servicio con los servicios de lectura existentes (si el recurso no existe, ver §10) | `PUT /api/necesidades/{id}`: `necesidad.entidadId` |
 
 ## 2. Catálogo de permisos
 
@@ -97,7 +97,7 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `GET` | `/api/donaciones/{id}` | `DONANTE` | `VER_DONACIONES` | dueño (`donanteId`) | Donante (detalle) |
 | `POST` | `/api/donaciones/fotos` | `DONANTE` | `REGISTRAR_DONACIONES` | — (URL prefirmada, sin recurso) | Donante |
 | `GET` | `/donaciones-independientes` | `DONANTE`, `ENTIDAD` | `VER_DONACIONES` | param:`donanteId` (donante) o param:`entidadId` (entidad) | Donante (mis donaciones), entidad (recibidas) |
-| `GET` | `/donaciones-independientes/{id}` | `DONANTE`, `ENTIDAD` | `VER_DONACIONES` | dueño (donante o entidad asignada) | Donante (detalle) |
+| `GET` | `/donaciones-independientes/{id}` | `DONANTE` (ver §10) | `VER_DONACIONES` | dueño (donante de la donación original) | Donante (detalle) |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | ADMIN | — | — | |
 | `POST` | `/api/necesidades` | `ENTIDAD` | `GESTIONAR_NECESIDADES` | cuerpo:`idEntidad` | Entidad (publicar) |
 | `GET` | `/api/necesidades` | `ENTIDAD` | `VER_NECESIDADES` | param:`entidadId` | Entidad (mis necesidades) |
@@ -130,7 +130,7 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `GET` | `/api/subcategorias`, `/api/subcategorias/{id}` | cualquier rol | — | — | Formularios de donación y necesidad |
 | `POST`, `PUT`, `DELETE` | `/api/subcategorias/**` (incluye `aliases`) | ADMIN | — | — | |
 | `GET`, `PATCH` | `/api/items-normalizados/**` | ADMIN | — | — | |
-| `GET`, `PUT` | `/api/logistica/proveedores`, `/api/logistica/proveedor-preferido` | ADMIN | — | — | Hoy con `X-API-Key`; queda así hasta E2-07 |
+| `GET`, `PUT` | `/api/logistica/proveedores`, `/api/logistica/proveedor-preferido` | ADMIN | — | — | Hoy con `X-API-Key`; queda así hasta E2-07 (ver §10) |
 
 ## 6. Logística (lo que usa la UI y lo técnico)
 
@@ -192,3 +192,11 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | M-05 | Los listados con filtro de dueño exigen el filtro a quien no es admin (regla 5 de §1) | Que el servicio complete el filtro con el `personaId` del token: es más cómodo, pero cambia la semántica del endpoint según quién llame |
 | M-06 | Los endpoints `X-API-Key` del broker se marcan `ADMIN` en la matriz, pero se cambian recién en E2-07 | Cortarlos en E6, como dice D25: queda fuera del alcance de este plan |
 | M-07 | En el compose, la validación de Donaciones se activa con `DONACIONES_SEGURIDAD_HABILITADA` (por defecto `false`). Postman, `integration-tests` y k6 llaman a Donaciones sin token y siguen andando hasta que pidan uno por client credentials | Activarla siempre y adaptar ya Postman, `integration-tests` y k6: suma trabajo fuera del alcance del 13/11 |
+
+## 10. Pendiente de revisión
+
+Provisorio: ya está implementado en Donaciones y falta la revisión de Tadeo. No son reglas confirmadas.
+
+1. `GET /donaciones-independientes/{id}`: solo `DONANTE` (pertenencia por la donación original) y `ADMIN`. El DTO no expone la entidad asignada; la entidad las ve con el listado filtrado por `entidadId`.
+2. Un recurso inexistente responde `404` antes de evaluar la pertenencia, así que quien no es admin puede saber si un id existe.
+3. `/api/logistica/proveedores` y `/api/logistica/proveedor-preferido`: `ADMIN` con la seguridad activa, además de `X-API-Key` (M-06).

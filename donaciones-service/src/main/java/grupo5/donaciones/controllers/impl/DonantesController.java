@@ -1,5 +1,10 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+import static grupo5.donaciones.seguridad.Acceso.ADMIN_O_SERVICIO;
+import static grupo5.donaciones.seguridad.Acceso.DONANTE;
+import static grupo5.donaciones.seguridad.Acceso.SU_ID;
+
 import grupo5.donaciones.controllers.IDonantesController;
 import grupo5.donaciones.dto.donantes.ArchivoDonantesSubido;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
@@ -16,6 +21,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/donantes")
 public class DonantesController implements IDonantesController {
 
@@ -40,6 +47,7 @@ public class DonantesController implements IDonantesController {
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping
   public ResponseEntity<DonanteOutputDTO> crearDonante(@Valid @RequestBody DonanteInputDTO dto) {
     ResultadoRegistro<DonanteOutputDTO> resultado = donantesService.crearDonante(dto);
@@ -56,6 +64,7 @@ public class DonantesController implements IDonantesController {
   }
 
   @Override
+  @PreAuthorize(DONANTE + SU_ID)
   @GetMapping("/{id}")
   public ResponseEntity<DonanteOutputDTO> obtenerDonante(@PathVariable("id") UUID id) {
     DonanteOutputDTO donante = donantesService.obtenerPorId(id);

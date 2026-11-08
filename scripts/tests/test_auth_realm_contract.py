@@ -7,6 +7,7 @@ exigen. El contrato de runtime (pedir un token de verdad y leer sus claims) lo c
 `auth-service/src/test/java/.../RealmTokenContractIT.java` con Testcontainers.
 """
 
+import glob
 import json
 import os
 import re
@@ -275,6 +276,16 @@ class CatalogoDePermisosTests(unittest.TestCase):
             hijos = set(compuestos.get("client", {}).get(API_AUDIENCE, []))
             self.assertEqual(hijos, permisos, nombre)
             self.assertNotIn("realm", compuestos, "%s no debe dar roles de plataforma" % nombre)
+
+
+    def test_los_enum_de_permisos_de_los_servicios_son_permisos_del_realm(self):
+        patron = os.path.join(RAIZ, "*-service", "src", "main", "java", "**", "Permiso*.java")
+        enums = glob.glob(patron, recursive=True)
+        self.assertTrue(enums, "ningún servicio declara su enum de permisos")
+        for ruta in enums:
+            cuerpo = re.search(r"enum \w+ implements Permiso \{(.*?)\}", leer(ruta), re.S)
+            for permiso in re.findall(r"[A-Z][A-Z_]+", cuerpo.group(1)):
+                self.assertIn(permiso, self.catalogo, "%s: %s" % (os.path.basename(ruta), permiso))
 
 
 class GoogleTests(unittest.TestCase):

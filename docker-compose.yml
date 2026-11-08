@@ -105,6 +105,10 @@ services:
       # Token de los eventos de vuelta de logística: valor sintético solo para desarrollo y pruebas
       - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
       - SEED_CATALOGO_ENABLED=${SEED_CATALOGO_ENABLED:-true}
+      # Validación del token de Keycloak: apagada por defecto, Postman, integration-tests y k6 llaman sin token
+      - DONACIONES_SEGURIDAD_HABILITADA=${DONACIONES_SEGURIDAD_HABILITADA:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off

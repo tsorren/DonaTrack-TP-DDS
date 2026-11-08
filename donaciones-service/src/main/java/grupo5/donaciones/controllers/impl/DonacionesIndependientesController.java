@@ -1,5 +1,9 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+import static grupo5.donaciones.seguridad.Acceso.DONANTE;
+import static grupo5.donaciones.seguridad.Acceso.SU_DONACION_INDEPENDIENTE;
+
 import grupo5.donaciones.controllers.IDonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
@@ -9,6 +13,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/donaciones-independientes")
 public class DonacionesIndependientesController implements IDonacionesIndependientesController {
 
@@ -28,6 +34,11 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
   }
 
   @Override
+  @PreAuthorize(
+      ADMIN
+          + " or hasAuthority('VER_DONACIONES') and ("
+          + "hasRole('DONANTE') and principal.puedeOperarSobre(#filtro.donanteId()) or "
+          + "hasRole('ENTIDAD') and principal.puedeOperarSobre(#filtro.entidadId()))")
   @GetMapping
   public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas(
       FiltroDonacionesIndependientes filtro) {
@@ -35,6 +46,7 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
   }
 
   @Override
+  @PreAuthorize(DONANTE + "hasAuthority('VER_DONACIONES') and " + SU_DONACION_INDEPENDIENTE)
   @GetMapping("/{id}")
   public ResponseEntity<DonacionIndependienteResponseDTO> obtener(@PathVariable UUID id) {
     return ResponseEntity.ok(service.obtener(id));
