@@ -1,5 +1,7 @@
 package grupo5.cliente.seguridad;
 
+import static org.springframework.http.HttpMethod.POST;
+
 import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.vistas.CuentaVista;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 /** Ingreso con Keycloak (authorization code) y acceso por área. Fuera del perfil maqueta. */
 @Configuration
@@ -43,12 +46,14 @@ class SeguridadConfig {
   SecurityFilterChain cadena(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(
         rutas -> {
+          rutas.requestMatchers(POST, "/publico-registro-*").authenticated();
           rutas.requestMatchers(PUBLICAS).permitAll();
           for (Area area : Area.values()) {
             rutas.requestMatchers("/" + area.prefijo() + "-*").hasRole(area.name());
           }
           rutas.anyRequest().authenticated();
         });
+    http.addFilterBefore(new PerfilPendiente(), AuthorizationFilter.class);
     http.oauth2Login(this::ingresarConKeycloak);
     http.logout(this::cerrarSesionEnKeycloak);
     return http.build();

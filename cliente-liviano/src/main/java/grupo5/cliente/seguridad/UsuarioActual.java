@@ -13,16 +13,26 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * Lo que el ID token dice de quien ingresó. Es el único lugar del cliente que conoce los nombres de
- * los claims. {@code personaId} es nulo mientras la cuenta no completó su perfil.
+ * los claims. {@code personaId} es nulo mientras la cuenta no completó su perfil, y {@code
+ * solicitudEntidad} lo trae la cuenta cuya entidad espera la aprobación del equipo.
  */
-public record UsuarioActual(Set<String> roles, Set<String> permisos, UUID personaId) {
+public record UsuarioActual(
+    Set<String> roles, Set<String> permisos, UUID personaId, String solicitudEntidad) {
 
   public static UsuarioActual desde(Map<String, Object> claims) {
     Object personaId = claims.get("personaId");
     return new UsuarioActual(
         valores(claims, "roles"),
         valores(claims, "permisos"),
-        personaId instanceof String id ? UUID.fromString(id) : null);
+        personaId instanceof String id ? UUID.fromString(id) : null,
+        claims.get("solicitudEntidad") instanceof String solicitud ? solicitud : null);
+  }
+
+  public EstadoDeCuenta estado() {
+    if (personaId == null) {
+      return EstadoDeCuenta.SIN_PERFIL;
+    }
+    return solicitudEntidad == null ? EstadoDeCuenta.ACTIVA : EstadoDeCuenta.SOLICITUD_RECIBIDA;
   }
 
   public Optional<Area> area() {

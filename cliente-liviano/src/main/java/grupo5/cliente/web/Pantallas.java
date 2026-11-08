@@ -119,6 +119,7 @@ public class Pantallas {
     if (!dibujada && !sinDibujar) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
+    model.addAttribute("completarPerfil", model.containsAttribute("completarPerfil"));
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("pasos", PASOS);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());

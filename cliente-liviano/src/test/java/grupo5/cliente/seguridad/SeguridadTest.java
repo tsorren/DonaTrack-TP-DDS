@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import grupo5.cliente.cuentas.PerfilService;
 import grupo5.cliente.web.AccesoController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
@@ -35,6 +36,7 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({PantallasController.class, AccesoController.class})
@@ -67,11 +69,13 @@ class SeguridadTest {
     }
   }
 
+  @MockitoBean private PerfilService perfiles;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 
   private OidcLoginRequestPostProcessor como(String... roles) {
-    Map<String, Object> claims = Map.of("roles", List.of(roles));
+    Map<String, Object> claims =
+        Map.of("roles", List.of(roles), "personaId", "5f0c9a1e-2b7d-4c3a-9e11-6d2f8b4a7c10");
     return oidcLogin()
         .clientRegistration(clientes.findByRegistrationId("keycloak"))
         .idToken(token -> token.claims(datos -> datos.putAll(claims)))

@@ -24,7 +24,7 @@ class UsuarioActualTest {
                 "personaId", PERSONA.toString()));
 
     assertThat(usuario)
-        .isEqualTo(new UsuarioActual(Set.of("ENTIDAD"), Set.of("VER_NECESIDADES"), PERSONA));
+        .isEqualTo(new UsuarioActual(Set.of("ENTIDAD"), Set.of("VER_NECESIDADES"), PERSONA, null));
     assertThat(usuario.autoridades().stream().map(GrantedAuthority::getAuthority))
         .containsExactlyInAnyOrder("ROLE_ENTIDAD", "VER_NECESIDADES");
   }

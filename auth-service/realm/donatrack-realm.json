@@ -252,6 +252,23 @@
           }
         },
         {
+          "name": "solicitudEntidad",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "solicitudEntidad",
+            "claim.name": "solicitudEntidad",
+            "multivalued": "false",
+            "jsonType.label": "String",
+            "access.token.claim": "false",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "lightweight.claim": "false",
+            "introspection.token.claim": "false"
+          }
+        },
+        {
           "name": "audiencia-api",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",

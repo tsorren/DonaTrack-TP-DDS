@@ -201,6 +201,13 @@ class MapperPermisosYPersonaTests(unittest.TestCase):
         self.assertEqual(cfg.get("claim.name"), "personaId")
         self.assertEqual(cfg.get("multivalued"), "false")
 
+    def test_solicitud_de_entidad_solo_en_el_id_token(self):
+        cfg = mapper(self.cli, "solicitudEntidad").get("config", {})
+        self.assertEqual(cfg.get("user.attribute"), "solicitudEntidad")
+        self.assertEqual(cfg.get("claim.name"), "solicitudEntidad")
+        self.assertEqual(cfg.get("id.token.claim"), "true")
+        self.assertEqual(cfg.get("access.token.claim"), "false")
+
     def test_van_en_el_access_y_el_id_token(self):
         for nombre in ["permisos", "personaId"]:
             cfg = mapper(self.cli, nombre).get("config", {})
