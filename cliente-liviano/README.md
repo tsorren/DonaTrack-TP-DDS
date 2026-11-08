@@ -3,7 +3,7 @@
 > **Estado:** en construcción (Entrega 6). La maqueta navegable tiene el recorrido público, el del
 > donante y el de la entidad, más el inicio del admin, con datos de ejemplo y una sola identidad
 > visual. Desde la F0 del plan con datos reales (el plan está en el
-> [PR 938](https://github.com/tsorren/DonaTrack-TP-DDS/pull/938)), el Ranking del admin consume Incentivos y Mis donaciones del donante, Donaciones; las demás pantallas siguen con datos de ejemplo.
+> [PR 938](https://github.com/tsorren/DonaTrack-TP-DDS/pull/938)), el Ranking del admin consume Incentivos, y Mis donaciones del donante y su detalle, Donaciones y Logística; las demás pantallas siguen con datos de ejemplo.
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
@@ -27,7 +27,7 @@ consume las APIs REST de los servicios a través del gateway.
 
 ```bash
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/
-mvn -pl cliente-liviano spring-boot:run                                       # con las APIs (INCENTIVOS_URL y DONACIONES_URL)
+mvn -pl cliente-liviano spring-boot:run                                       # con las APIs (INCENTIVOS_URL, DONACIONES_URL y LOGISTICA_URL)
 mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, contraste y vistas
 mvn test -pl cliente-liviano -Pvisual                                         # capturas, accesibilidad, toque y desbordes
 ```

@@ -33,7 +33,7 @@ interface DonacionesApi {
       int cantidad,
       UUID entidadBeneficiariaId) {}
 
-  record Cambio(String estadoNuevo, LocalDateTime timestamp) {}
+  record Cambio(String estadoNuevo, LocalDateTime timestamp, String justificacion) {}
 
   record Item(BienNormalizado bien) {}
 

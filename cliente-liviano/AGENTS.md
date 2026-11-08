@@ -42,7 +42,7 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 | Paquete o carpeta | Contiene |
 |---|---|
-| `grupo5.cliente.web` | Controllers de las pantallas con datos del puerto (por ahora, `RankingController` y `MisDonacionesController`): reciben el request, piden datos al puerto y eligen la vista, con el menú que arma `SitioController.pagina`. Sin lógica de negocio. También el `traceId` de cada pedido (`TraceIdFiltro`, ADR-E6-02) y los errores de las APIs → páginas de error (`ErroresHttp`: 401 a Ingresar, 403, 404 y el resto 502) |
+| `grupo5.cliente.web` | Controllers de las pantallas con datos del puerto (por ahora, `RankingController` y `MisDonacionesController`, con Mis donaciones y su detalle): reciben el request, piden datos al puerto y eligen la vista, con el menú que arma `SitioController.pagina`. Sin lógica de negocio. También el `traceId` de cada pedido (`TraceIdFiltro`, ADR-E6-02) y los errores de las APIs → páginas de error (`ErroresHttp`: 401 a Ingresar, 403, 404 y el resto 502) |
 | `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
 | `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos. Cada puerto tiene un adaptador de maqueta y uno REST; `cliente.datos.<puerto>=maqueta\|rest` elige cuál (el perfil `maqueta` pone todos en `maqueta`). `CuentaActual` dice quién es la cuenta: la de ejemplo o, con `cliente.datos.cuenta=parametro`, el `?donante=<id>` que guarda la sesión (`web.CuentaPorParametro`), hasta que el login (F4) sume su adaptador |
 | `grupo5.cliente.rest` | Adaptadores REST: una interfaz `@HttpExchange` por API sobre `RestClient`, con su URL en `cliente.api.<api>.url` y el `X-Trace-Id` en cada llamada (`ClientesHttp`); se prueban con `MockRestServiceServer` |
@@ -157,7 +157,7 @@ mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=donante-inicio   # 
 mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b   # una pasada por variante A/B
 mvn test -pl cliente-liviano -Pvisual -Dspotless.check.skip=true -Dtest=VerificacionVisualTest#paginasCumplenElPisoEnTodosLosAnchos -Dverificacion.boceto=true -Dverificacion.variantes=<tema>-a,<tema>-b -Dverificacion.paginas=<ruta>   # boceto: solo capturas a 1280 px, sin el piso (vueltas de exploración)
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
-mvn -pl cliente-liviano spring-boot:run   # con las APIs: INCENTIVOS_URL (por defecto :8082) y DONACIONES_URL (:8080); el donante, con ?donante=<id>
+mvn -pl cliente-liviano spring-boot:run   # con las APIs: INCENTIVOS_URL (por defecto :8082), DONACIONES_URL (:8080) y LOGISTICA_URL (:8083); el donante, con ?donante=<id>
 ```
 
 Cuando axe no puede medir el contraste (por un pseudo-elemento, un degradado o una imagen de
