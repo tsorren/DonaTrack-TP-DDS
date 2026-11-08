@@ -443,7 +443,7 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 |---|---|
 | ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) y su ajuste [20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md) |
 | Decision status | `proposed` (los dos) |
-| Implementation status | `[OBSERVED] partial` (HB-17, 2026-11-08) — ítems 1 a 3 implementados: `numeroRemito` y `reporte` en la confirmación y en `EntregaResponseDTO` (Flyway V7 de Logística, también en Mongo), `reporte` en `entrega.exitosa`, `necesidadId` en `DonacionIndependienteResponseDTO`, y Donaciones cuenta lo recibido (Flyway V14). Falta: excluir de las destacadas las entregas con reporte (HB-01), la pertenencia (HB-13) y conectar la pantalla |
+| Implementation status | `[OBSERVED] partial` (HB-17, 2026-11-08) — ítems 1 a 3 implementados: `numeroRemito` y `reporte` en la confirmación y en `EntregaResponseDTO` (Flyway V7 de Logística, también en Mongo), `reporte` en `entrega.exitosa`, `necesidadId` en `DonacionIndependienteResponseDTO`, y Donaciones cuenta lo recibido (Flyway V14). Excluir de las destacadas las entregas con reporte (HB-01): implementado en la rama `E6_HB01_destacadas`, la pertenencia (HB-13) y conectar la pantalla |
 | Target | `logistica-service` (`Entrega`, DTOs de entregas, `entrega.exitosa`) · `donaciones-service` (`DonacionIndependienteResponseDTO`) · `openapi-logistica.yaml`, `openapi-donaciones.yaml` y `schemas/evento-entrega-exitosa.schema.json` |
 | Cuándo se saldará | Cuando `cliente-liviano` consuma Logística para Confirmar recepción (RF-12). Pide antes HB-13 (pertenencia) |
 
@@ -577,7 +577,7 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 |---|---|
 | ADR | [Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega](./20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06); los records `EventoEntregaExitosa` y `EventoEntregaSolicitadaV1` de los dos servicios, `Entrega`, `EntregaDocument` y `CrearEntregaRequestDTO` todavía no |
+| Implementation status | `[OBSERVED] partial` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06). **Fotos (punto 1):** implementado en la rama `E6_HB01_destacadas` (HB-01): `EntregaConfirmada` y `EventoEntregaExitosa` de Logística llevan `fotosRecepcion`; Donaciones las guarda en la donación (V15) y sirve `GET /api/donaciones/destacadas`. **Donante (punto 2):** HB-16, PR #949 |
 | Target | `logistica-service` (`EventoEntregaExitosa`, `EventoEntregaSolicitadaV1`, `Entrega`, `EntregaDocument`, `CrearEntregaRequestDTO`, `openapi-logistica.yaml`) · `donaciones-service` (los dos records, `ProveedorLogisticaAmqp`, `ProcesadorEventosLogistica`, la donación independiente) |
 | Cuándo se saldará | Entrega 6: tareas 5 (HB-16) y 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md); la URL estable de las fotos depende de ADR-E6-08 (HB-10) |
 

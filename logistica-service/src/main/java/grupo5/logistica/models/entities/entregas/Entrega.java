@@ -214,7 +214,8 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.reporteRecepcion = reporte;
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
-    registrarEvento(new EntregaConfirmada(this.id, this.idDonacion, this.idRuta, reporte));
+    registrarEvento(
+        new EntregaConfirmada(this.id, this.idDonacion, this.idRuta, reporte, fotosNormalizadas));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {

@@ -26,4 +26,13 @@ public interface IDonacionesIndependientesRepository extends CrudRepository<Dona
 
   /** Cuántas donaciones asignadas a cada entidad se registraron después de {@code desde}. */
   Map<UUID, Integer> contarPorEntidadRegistradasDesde(LocalDateTime desde);
+
+  /**
+   * Destacadas (HB-01, D28): entregadas desde {@code desde} con fotos replicadas, de la más nueva a
+   * la más vieja, hasta {@code limite}.
+   */
+  List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite);
+
+  /** Cuántas destacadas hay desde {@code desde}, sin el límite. */
+  long contarDestacadasDesde(LocalDateTime desde);
 }

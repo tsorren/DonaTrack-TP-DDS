@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,14 @@ public interface SpringDataDonacionIndependienteRepository
     extends JpaRepository<DonacionIndependienteEntity, UUID> {
 
   List<DonacionIndependienteEntity> findByEstadoActual(TipoEstadoDonacion estadoActual);
+
+  // HB-01: fecha_entrega solo se guarda junto con fotos publicables (V15)
+  List<DonacionIndependienteEntity>
+      findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(
+          TipoEstadoDonacion estadoActual, LocalDateTime desde, Limit limite);
+
+  long countByEstadoActualAndFechaEntregaGreaterThanEqual(
+      TipoEstadoDonacion estadoActual, LocalDateTime desde);
 
   // Dos consultas en vez de una con «:periodoId is null»: Postgres no infiere el tipo de un
   // parámetro nulo

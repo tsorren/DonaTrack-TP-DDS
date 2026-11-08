@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.1.0
+  version: 1.3.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -182,6 +182,48 @@ paths:
                 $ref: '#/components/schemas/SubidaFotoOutputDTO'
         '400':
           description: Falta el tipo de contenido (ERR-CSR-003) o no está permitido (ERR-VAL-318)
+  /api/donaciones/destacadas:
+    get:
+      summary: Donaciones destacadas de la landing
+      description: >
+        Ruta pública (RF-01, HB-01, D28): sin token cuando el gateway aplique la allowlist (D26).
+        Donaciones independientes en ENTREGADA con fotos de recepción replicadas de entrega.exitosa
+        (ADR de réplicas por evento), de la más nueva a la más vieja. Una entrega con reporte no
+        aporta fotos y no sale (ADR de entregas con problema, 2026-11-08). Sin el donante ni la
+        descripción libre del bien. X-Total-Count da el total del período, sin el límite.
+      operationId: listarDestacadas
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          description: Ventana hacia atrás desde ahora; MES (30 días) si se omite.
+          schema:
+            type: string
+            enum: [SEMANA, MES, ANIO]
+        - name: limite
+          in: query
+          required: false
+          description: Cuántas devuelve; 10 si se omite.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Destacadas del período
+          headers:
+            X-Total-Count:
+              description: Total de destacadas del período
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionDestacadaDTO'
+        '400':
+          description: Período desconocido o límite fuera de 1..50
   /api/donaciones/{id}:
     get:
       summary: Consultar donación por ID
@@ -917,6 +959,46 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    DonacionDestacadaDTO:
+      type: object
+      description: Donación destacada de la landing (HB-01). Sin datos del donante.
+      required: [id, cantidad, fechaEntrega, fotos]
+      properties:
+        id:
+          type: string
+          format: uuid
+        categoria:
+          type: string
+          nullable: true
+        subcategoria:
+          type: string
+          nullable: true
+        cantidad:
+          type: integer
+          minimum: 1
+        unidad:
+          type: string
+          nullable: true
+          description: Unidad de la categoría
+        entidadId:
+          type: string
+          format: uuid
+          nullable: true
+        entidad:
+          type: string
+          nullable: true
+          description: Razón social de la entidad que la recibió
+        fechaEntrega:
+          type: string
+          format: date-time
+          description: En UTC, como la manda Logística
+        fotos:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
+          description: URLs estables de las fotos de recepción, en el orden de la entrega
     EntidadPublicaDTO:
       type: object
       description: Entidad beneficiaria para rutas públicas (D26).

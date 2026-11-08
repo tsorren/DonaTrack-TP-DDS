@@ -189,7 +189,7 @@ Los RF se numeran como los requerimientos mínimos de UI/UX del enunciado (págs
 
 | ID | Actor | Requerimiento | Criterio de aceptación `[PROPOSED]` | Endpoints | Cob. | Hueco (§8) |
 |---|---|---|---|---|:-:|---|
-| RF-01 | Público | Landing: propósito, destacadas del último mes, links a fotos, registro/login, legales | La landing carga sin login y muestra propósito, hasta N destacadas del último mes y los links de RF-01 | `GET /donaciones-independientes` | 🟡 | HB-01, HB-02 |
+| RF-01 | Público | Landing: propósito, destacadas del último mes, links a fotos, registro/login, legales | La landing carga sin login y muestra propósito, hasta N destacadas del último mes y los links de RF-01 | `GET /donaciones-independientes`; destacadas en `GET /api/donaciones/destacadas` (rama `E6_HB01_destacadas`) | 🟡 | HB-01, HB-02 |
 | RF-02 | Público | Mapa de donaciones entregadas con detalle por marcador | Sin login; cada marcador abre el detalle (fecha, categoría, foto); coordenadas exactas, sin el texto de la dirección (D24) | `GET /api/entregas/mapa` | 🟡 | HB-07 |
 | RF-03 | Público | Registro de donantes y entidades | Un donante queda operativo al completar el perfil; una entidad queda pendiente de aprobación | IdP + `POST /api/personas`, `/api/donantes`, `/api/entidades` | 🟡 | RI-AUTH-02 |
 | RF-04 | Todos | Login de donantes, entidades y admins | Los 3 roles inician sesión y llegan a su inicio; credenciales inválidas dan error genérico | IdP | ❌ | §4 |
@@ -288,7 +288,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 
 | ID | Servicio | Cambio `[PROPOSED]` | Para | Origen |
 |---|---|---|---|---|
-| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo`. Las fotos llegan a Donaciones por `entrega.exitosa` (ver la nota) | RF-01 | D28, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
+| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo`. Las fotos llegan a Donaciones por `entrega.exitosa` (ver la nota). **Avance:** `GET /api/donaciones/destacadas` implementado en la rama `E6_HB01_destacadas`, con la réplica de las fotos ([DTI-36](../adr/DEUDA_TECNICA.md#dti-36)) y la exclusión de las entregas con reporte | RF-01 | D28, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | HB-02 | Donaciones / Incentivos | Contadores públicos de la landing (donantes activos, donaciones realizadas, beneficiarios activos) en un endpoint agregado | RF-01 (boceto) | Boceto E1 |
 | HB-03 | Donaciones | Filtro por `categoriaId` en `GET /donaciones-independientes` | RF-05 | D28 |
 | HB-04 | Donaciones | Filtro por entidad asignada y rango de fechas | RF-11, RF-01 | D28 |

@@ -2,13 +2,17 @@ package grupo5.donaciones.infrastructure.persistencia.entities.donacionesIndepen
 
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
@@ -48,6 +52,18 @@ public class DonacionIndependienteEntity {
 
   @Column(name = "cantidad_no_recibida")
   private Integer cantidadNoRecibida;
+
+  // HB-01: réplica de entrega.exitosa para las destacadas
+  @Column(name = "fecha_entrega")
+  private LocalDateTime fechaEntrega;
+
+  @ElementCollection
+  @CollectionTable(
+      name = "foto_recepcion_donacion_independiente",
+      joinColumns = @JoinColumn(name = "id_donacion_independiente"))
+  @OrderColumn(name = "orden")
+  @Column(name = "url", nullable = false)
+  private List<String> fotosRecepcion = new ArrayList<>();
 
   // A2: sube en cada guardado (lo fuerza el adapter, porque agregar o quitar ítems no la cambia)
   @Version
