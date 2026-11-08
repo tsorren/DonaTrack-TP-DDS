@@ -125,7 +125,7 @@ class DonacionesRest implements DonacionesPuerto {
       return Optional.empty();
     }
     DonacionesApi.Donacion d = lista.get(posicion);
-    Donacion fila = donacion(d, lista.size() - posicion, entidades(List.of(d)));
+    Donacion fila = donacion(d, (long) lista.size() - posicion, entidades(List.of(d)));
     String estado = normalizado(d.estadoActual());
     String entidad = fila.destino() == null ? "la entidad" : fila.destino();
     LocalDateTime llego = ENTREGADA.equals(estado) ? desde(d, estado) : null;
