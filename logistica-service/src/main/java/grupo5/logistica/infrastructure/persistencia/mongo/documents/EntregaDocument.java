@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,10 @@ public class EntregaDocument {
   private Instant horaArribo;
   private Instant horaSalida;
   @Builder.Default private List<FotoRecepcionSubdocument> fotosRecepcion = new ArrayList<>();
+  private String numeroRemito;
+  private MotivoReporte reporteMotivo;
+  private String reporteDetalle;
+  private Double reporteCantidadRecibida;
   private Double volumenTotalM3;
   private Double pesoTotalKg;
 

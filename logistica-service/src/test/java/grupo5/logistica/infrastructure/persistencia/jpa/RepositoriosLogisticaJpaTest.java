@@ -40,8 +40,10 @@ import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
@@ -218,6 +220,27 @@ class RepositoriosLogisticaJpaTest {
         entityActualizada.getHistorialEstados().stream()
             .anyMatch(c -> idCambioOriginal.equals(c.getIdCambioEstadoChofer())),
         "El cambio de estado inicial del chofer debe conservar su PK sin key churn");
+  }
+
+  @Test
+  void deberiaPersistirYRecuperarRemitoYReporteDeRecepcion() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Belgrano", 900, null, null, "1092", caba),
+            15.0f,
+            1.5f);
+    entrega.iniciarRuta("Chofer Juan");
+    ReporteRecepcion reporte = new ReporteRecepcion(MotivoReporte.INCOMPLETA, "Faltó una", 12.5);
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), "R-77", reporte);
+
+    entregasRepository.save(entrega);
+    Entrega recuperada = entregasRepository.findById(entrega.getId()).orElseThrow();
+
+    assertEquals("R-77", recuperada.getNumeroRemito());
+    assertEquals(reporte, recuperada.getReporteRecepcion());
   }
 
   @Test

@@ -17,6 +17,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.FotoRecepcio
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
@@ -63,6 +64,11 @@ public class EntregaMongoMapper {
     doc.setIdDonacion(domain.getIdDonacion());
     doc.setIdBeneficiaria(domain.getIdBeneficiaria());
     doc.setEstado(domain.getEstadoActual());
+    doc.setNumeroRemito(domain.getNumeroRemito());
+    ReporteRecepcion reporte = domain.getReporteRecepcion();
+    doc.setReporteMotivo(reporte != null ? reporte.motivo() : null);
+    doc.setReporteDetalle(reporte != null ? reporte.detalle() : null);
+    doc.setReporteCantidadRecibida(reporte != null ? reporte.cantidadRecibida() : null);
     doc.setHoraArribo(aInstant(domain.getHoraArribo()));
     doc.setHoraSalida(aInstant(domain.getHoraSalida()));
     sincronizarFotos(domain, doc);
@@ -127,20 +133,28 @@ public class EntregaMongoMapper {
       return null;
     }
 
-    return new Entrega(
-        doc.getId(),
-        idRutaAsignada(doc),
-        doc.getIdDonacion(),
-        doc.getIdBeneficiaria(),
-        mapearDireccionADominio(doc.getDestino()),
-        doc.getEstado(),
-        mapearHistorialDominio(doc),
-        aLocalDateTime(doc.getHoraArribo()),
-        aLocalDateTime(doc.getHoraSalida()),
-        doc.getFotosRecepcion().stream().map(FotoRecepcionSubdocument::getClave).toList(),
-        doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
-        doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
-        doc.getVersion());
+    Entrega entrega =
+        new Entrega(
+            doc.getId(),
+            idRutaAsignada(doc),
+            doc.getIdDonacion(),
+            doc.getIdBeneficiaria(),
+            mapearDireccionADominio(doc.getDestino()),
+            doc.getEstado(),
+            mapearHistorialDominio(doc),
+            aLocalDateTime(doc.getHoraArribo()),
+            aLocalDateTime(doc.getHoraSalida()),
+            doc.getFotosRecepcion().stream().map(FotoRecepcionSubdocument::getClave).toList(),
+            doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
+            doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
+            doc.getVersion());
+    entrega.reconstituirRecepcion(
+        doc.getNumeroRemito(),
+        doc.getReporteMotivo() != null
+            ? new ReporteRecepcion(
+                doc.getReporteMotivo(), doc.getReporteDetalle(), doc.getReporteCantidadRecibida())
+            : null);
+    return entrega;
   }
 
   private static List<CambioEstadoEntrega> mapearHistorialDominio(EntregaDocument doc) {

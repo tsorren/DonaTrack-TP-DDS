@@ -131,6 +131,14 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   }
 
   @Override
+  public void registrarCantidadRecibida(UUID id, double cantidadRecibida) {
+    DonacionIndependiente donacion =
+        repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    donacion.registrarCantidadRecibida(cantidadRecibida);
+    repositorio.save(donacion);
+  }
+
+  @Override
   public DonacionIndependienteResponseDTO cambiarEstado(
       UUID id, CambioEstadoDonacionIndependienteRequestDTO request, String actor) {
 

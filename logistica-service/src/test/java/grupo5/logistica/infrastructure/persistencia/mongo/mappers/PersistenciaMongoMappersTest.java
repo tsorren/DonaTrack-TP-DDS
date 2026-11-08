@@ -20,6 +20,8 @@ import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
@@ -136,6 +138,24 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(5L);
     assertFallaPorVersion(() -> rutaMapper.toDocument(reconstituida, doc));
+  }
+
+  @Test
+  void entregaMapper_deberiaMapearIdaYVueltaRemitoYReporte() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
+    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    entrega.iniciarRuta("Chofer");
+    ReporteRecepcion reporte = new ReporteRecepcion(MotivoReporte.OTRO, "Llegó otra cosa", null);
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), "R-2", reporte);
+
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
+    assertEquals("R-2", doc.getNumeroRemito());
+    assertEquals(MotivoReporte.OTRO, doc.getReporteMotivo());
+
+    Entrega reconstituida = entregaMapper.toDomain(doc);
+    assertEquals("R-2", reconstituida.getNumeroRemito());
+    assertEquals(reporte, reconstituida.getReporteRecepcion());
   }
 
   @Test

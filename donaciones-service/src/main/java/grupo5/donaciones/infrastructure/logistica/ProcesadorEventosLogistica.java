@@ -35,6 +35,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
   private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
   private static final int MAX_INTENTOS_POR_CONFLICTO = 3;
+  private static final Runnable NADA = () -> {};
   private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
@@ -98,13 +99,19 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
         evento.donacionIndependienteId(),
         evento.patenteCamion());
 
+    Double cantidadRecibida = evento.reporte() != null ? evento.reporte().cantidadRecibida() : null;
     aplicarCambioEstado(
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGADA, null, null, null, evento.patenteCamion(), null),
         "EntregaExitosa",
         origen,
-        evento.entregaId());
+        evento.entregaId(),
+        cantidadRecibida == null
+            ? NADA
+            : () ->
+                donacionesIndependientesService.registrarCantidadRecibida(
+                    evento.donacionIndependienteId(), cantidadRecibida));
   }
 
   @Override
@@ -139,9 +146,23 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       String eventType,
       String origen,
       UUID businessId) {
+    aplicarCambioEstado(donacionId, request, eventType, origen, businessId, NADA);
+  }
+
+  /**
+   * {@code ademas} corre en la misma transacción, después del cambio, si el evento no es duplicado.
+   */
+  private void aplicarCambioEstado(
+      UUID donacionId,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String eventType,
+      String origen,
+      UUID businessId,
+      Runnable ademas) {
     try {
       conReintentoPorConflicto(
-          () -> aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId));
+          () ->
+              aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId, ademas));
     } catch (Exception e) {
       log.error(
           "Error al procesar donación {} en evento {} (estado destino={}): {}",
@@ -186,7 +207,8 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
       String origen,
-      UUID businessId) {
+      UUID businessId,
+      Runnable ademas) {
     if (eventosConsumidosRepository.yaFueConsumido(eventType, businessId, donacionId)) {
       log.info(
           "Evento duplicado ignorado: tipo={}, businessId={}, donacionId={}",
@@ -205,6 +227,8 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
     } else {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
     }
+    // Idempotente: también corre si la donación ya estaba en el estado destino
+    ademas.run();
     eventosConsumidosRepository.registrar(
         new EventoConsumido(
             UUID.randomUUID(),

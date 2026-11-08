@@ -70,7 +70,7 @@ logistica-service
 |---|---|---|---|---|
 | `ruta.asignada` | `donaciones.ruta.asignada` | `donaciones-service` (`LogisticaEventListener`) | Notifica que una donación fue incluida en una ruta planificada | [`evento-ruta-asignada.schema.json`](./contratos/schemas/evento-ruta-asignada.schema.json) |
 | `ruta.iniciada` | `donaciones.ruta.iniciada` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donaciones a `EN_TRASLADO` y difunde URL de tracking | [`evento-ruta-iniciada.schema.json`](./contratos/schemas/evento-ruta-iniciada.schema.json) |
-| `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA`; con DTI-36 replica además las fotos de recepción (campo opcional, `[PROPOSED]`) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
+| `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA`; si trae `reporte.cantidadRecibida`, guarda lo que no llegó y la necesidad cuenta lo recibido (HB-17); con DTI-36 replica además las fotos de recepción (campo opcional, `[PROPOSED]`) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
 | `entrega.fallida` | `donaciones.entrega.fallida` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGA_FALLIDA` y evalúa replanificación | [`evento-entrega-fallida.schema.json`](./contratos/schemas/evento-entrega-fallida.schema.json) |
 
 #### B. Eventos hacia `notificaciones-service`, `logistica-service` e `incentivos-service`
@@ -277,9 +277,20 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "fechaEntrega": "2026-09-16T11:40:00Z",
   "fotosRecepcion": [
     "http://localhost:8083/api/entregas/55667788-99aa-bbcc-ddee-ff0011223344/fotos/0f1e2d3c-4b5a-6978-8a9b-acbdcedf0011"
-  ]
+  ],
+  "reporte": {
+    "motivo": "INCOMPLETA",
+    "detalle": "Llegaron dos cajas de tres",
+    "cantidadRecibida": 10
+  }
 }
 ```
+
+> **`reporte` (opcional, implementado el 2026-11-08, HB-17):** solo viaja si la entidad contó un
+> problema al confirmar. `motivo` es `INCOMPLETA`, `DANADA` u `OTRO`. Donaciones usa
+> `cantidadRecibida` para que la necesidad cuente lo que llegó, en la misma transacción idempotente
+> que el paso a `ENTREGADA`. El remito no viaja. Ver el [ajuste del ADR del contrato de
+> entregas](../adr/20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md).
 
 > **`fotosRecepcion` (opcional, en el schema desde el 2026-11-06; implementación pendiente en DTI-36, `[PROPOSED]`):** URLs estables de las fotos, que redirigen a una URL firmada de vida corta. Donaciones las va a replicar en la donación para servir `GET /donaciones/destacadas` sin llamar a Logística (HB-01). Un proveedor que no las manda sigue siendo válido; sus entregas no aportan destacadas. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 

@@ -43,7 +43,7 @@ public class DonacionesIndependientesRepositoryEnMemoria
     return storage.values().stream()
         .filter(d -> necesidadId.equals(d.getNecesidadId()))
         .filter(d -> Objects.equals(periodoId, d.getPeriodoId()))
-        .mapToInt(DonacionIndependiente::getCantidad)
+        .mapToInt(DonacionIndependiente::getCantidadContada)
         .sum();
   }
 

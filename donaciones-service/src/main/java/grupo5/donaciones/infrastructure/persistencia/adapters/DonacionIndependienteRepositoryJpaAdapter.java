@@ -101,7 +101,9 @@ public class DonacionIndependienteRepositoryJpaAdapter
     long suma =
         periodoId != null
             ? springDataRepo.sumarCantidadAsignadaEnPeriodo(necesidadId, periodoId)
-            : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId);
+                - springDataRepo.sumarNoRecibidoEnPeriodo(necesidadId, periodoId)
+            : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId)
+                - springDataRepo.sumarNoRecibidoSinPeriodo(necesidadId);
     return Math.toIntExact(suma);
   }
 
@@ -117,6 +119,12 @@ public class DonacionIndependienteRepositoryJpaAdapter
       // Solo cuenta el período actual de la necesidad: los anteriores ya se cerraron
       if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
         sumas.put(fila.getNecesidadId(), Math.toIntExact(fila.getCantidad()));
+      }
+    }
+    for (SumaPorDestino fila :
+        springDataRepo.sumarNoRecibidoPorDestino(periodoPorNecesidad.keySet())) {
+      if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
+        sumas.merge(fila.getNecesidadId(), -Math.toIntExact(fila.getCantidad()), Integer::sum);
       }
     }
     return sumas;

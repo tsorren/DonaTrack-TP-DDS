@@ -46,6 +46,9 @@ public class DonacionIndependienteEntity {
   @Column(name = "id_beneficiario_asignado")
   private UUID entidadBeneficiariaId;
 
+  @Column(name = "cantidad_no_recibida")
+  private Integer cantidadNoRecibida;
+
   // A2: sube en cada guardado (lo fuerza el adapter, porque agregar o quitar ítems no la cambia)
   @Version
   @Column(name = "version", nullable = false)

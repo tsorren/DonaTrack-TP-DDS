@@ -2,6 +2,7 @@ package grupo5.donaciones.infrastructure.logistica;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -71,6 +72,89 @@ class ProcesadorEventosLogisticaTest {
 
     verify(donacionesIndependientesService, never()).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository, never()).registrar(any());
+  }
+
+  @Test
+  void onEntregaExitosa_conCantidadRecibida_laRegistraDespuesDelCambioDeEstado() {
+    UUID donacionId = UUID.randomUUID();
+    EventoEntregaExitosa evento =
+        new EventoEntregaExitosa(
+            UUID.randomUUID(),
+            donacionId,
+            UUID.randomUUID(),
+            "ABC-123",
+            LocalDateTime.now(),
+            new EventoEntregaExitosa.Reporte("INCOMPLETA", null, 12.5));
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    procesador.procesarEntregaExitosa(evento, ORIGEN);
+
+    var orden = inOrder(donacionesIndependientesService, eventosConsumidosRepository);
+    orden.verify(donacionesIndependientesService).cambiarEstado(eq(donacionId), any(), any());
+    orden.verify(donacionesIndependientesService).registrarCantidadRecibida(donacionId, 12.5);
+    orden.verify(eventosConsumidosRepository).registrar(any(EventoConsumido.class));
+  }
+
+  @Test
+  void onEntregaExitosa_sinCantidadRecibida_noDescuentaNada() {
+    UUID donacionId = UUID.randomUUID();
+    EventoEntregaExitosa evento =
+        new EventoEntregaExitosa(
+            UUID.randomUUID(),
+            donacionId,
+            UUID.randomUUID(),
+            "ABC-123",
+            LocalDateTime.now(),
+            new EventoEntregaExitosa.Reporte("DANADA", "Caja mojada", null));
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    procesador.procesarEntregaExitosa(evento, ORIGEN);
+
+    verify(donacionesIndependientesService).cambiarEstado(eq(donacionId), any(), any());
+    verify(donacionesIndependientesService, never()).registrarCantidadRecibida(any(), anyDouble());
+  }
+
+  @Test
+  void onEntregaExitosa_conDonacionYaEntregada_igualRegistraLaCantidadRecibida() {
+    UUID donacionId = UUID.randomUUID();
+    EventoEntregaExitosa evento =
+        new EventoEntregaExitosa(
+            UUID.randomUUID(),
+            donacionId,
+            UUID.randomUUID(),
+            "ABC-123",
+            LocalDateTime.now(),
+            new EventoEntregaExitosa.Reporte("INCOMPLETA", null, 4.0));
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    EstadoDonacionIndependiente estado = mock(EstadoDonacionIndependiente.class);
+    when(estado.getTipo()).thenReturn(TipoEstadoDonacion.ENTREGADA);
+    DonacionIndependiente donacion = mock(DonacionIndependiente.class);
+    when(donacion.getEstadoActual()).thenReturn(estado);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.of(donacion));
+
+    procesador.procesarEntregaExitosa(evento, ORIGEN);
+
+    verify(donacionesIndependientesService, never()).cambiarEstado(any(), any(), any());
+    verify(donacionesIndependientesService).registrarCantidadRecibida(donacionId, 4.0);
+  }
+
+  @Test
+  void onEntregaExitosa_duplicado_noVuelveADescontar() {
+    EventoEntregaExitosa evento =
+        new EventoEntregaExitosa(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "ABC-123",
+            LocalDateTime.now(),
+            new EventoEntregaExitosa.Reporte("INCOMPLETA", null, 3.0));
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(true);
+
+    procesador.procesarEntregaExitosa(evento, ORIGEN);
+
+    verify(donacionesIndependientesService, never()).registrarCantidadRecibida(any(), anyDouble());
   }
 
   @Test

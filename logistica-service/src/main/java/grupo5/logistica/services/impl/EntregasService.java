@@ -182,8 +182,7 @@ public class EntregasService implements IEntregasService {
 
     SolicitudTransicionEntrega solicitud =
         switch (request.estado()) {
-          case ENTREGADA ->
-              procesarEntregaEntregada(request.actor(), entrega, request.obtenerFotosRecepcion());
+          case ENTREGADA -> procesarEntregaEntregada(entrega, request);
           case NO_RECIBIDA ->
               procesarEntregaNoRecibida(
                   request.actor(), entrega, request.justificacion(), request.replanificable());
@@ -345,9 +344,14 @@ public class EntregasService implements IEntregasService {
   }
 
   private static SolicitudTransicionEntrega procesarEntregaEntregada(
-      String actor, Entrega entrega, List<String> fotosRecepcion) {
+      Entrega entrega, CambioEstadoEntregaRequestDTO request) {
     SolicitudTransicionEntrega solicitud =
-        new ConfirmacionRecepcion(entrega, actor, fotosRecepcion);
+        new ConfirmacionRecepcion(
+            entrega,
+            request.actor(),
+            request.obtenerFotosRecepcion(),
+            request.numeroRemito(),
+            request.reporte() != null ? request.reporte().aDominio() : null);
 
     GestorDeEntregas.cambiarEstado(solicitud);
     return solicitud;

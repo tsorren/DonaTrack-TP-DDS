@@ -31,6 +31,27 @@ public interface SpringDataDonacionIndependienteRepository
           + " where d.necesidadId = :necesidadId and d.periodoId is null")
   long sumarCantidadAsignadaSinPeriodo(@Param("necesidadId") UUID necesidadId);
 
+  // Lo que no llegó (HB-17) va aparte: sumado junto a los ítems se contaría una vez por ítem
+  @Query(
+      "select coalesce(sum(d.cantidadNoRecibida), 0) from DonacionIndependienteEntity d"
+          + " where d.necesidadId = :necesidadId and d.periodoId = :periodoId")
+  long sumarNoRecibidoEnPeriodo(
+      @Param("necesidadId") UUID necesidadId, @Param("periodoId") UUID periodoId);
+
+  @Query(
+      "select coalesce(sum(d.cantidadNoRecibida), 0) from DonacionIndependienteEntity d"
+          + " where d.necesidadId = :necesidadId and d.periodoId is null")
+  long sumarNoRecibidoSinPeriodo(@Param("necesidadId") UUID necesidadId);
+
+  @Query(
+      "select d.necesidadId as necesidadId, d.periodoId as periodoId,"
+          + " sum(d.cantidadNoRecibida) as cantidad"
+          + " from DonacionIndependienteEntity d"
+          + " where d.necesidadId in :necesidadIds and d.cantidadNoRecibida is not null"
+          + " group by d.necesidadId, d.periodoId")
+  List<SumaPorDestino> sumarNoRecibidoPorDestino(
+      @Param("necesidadIds") Collection<UUID> necesidadIds);
+
   @Query(
       "select d.entidadBeneficiariaId as entidadId, count(d) as cantidad"
           + " from DonacionIndependienteEntity d"

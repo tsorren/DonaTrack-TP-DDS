@@ -9,6 +9,7 @@ import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
 import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -63,7 +64,9 @@ public class EntregaMapper {
         entrega.getFotosRecepcion(),
         entrega.getPesoTotalKG(),
         entrega.getVolumenTotalM3(),
-        entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList());
+        entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList(),
+        entrega.getNumeroRemito(),
+        ReporteRecepcionDTO.de(entrega.getReporteRecepcion()));
   }
 
   public EntregaMapaPublicoResponseDTO toMapaPublicoResponseDTO(Entrega entrega) {
