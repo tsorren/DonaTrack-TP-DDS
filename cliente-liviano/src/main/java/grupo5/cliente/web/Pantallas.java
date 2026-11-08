@@ -126,6 +126,7 @@ public class Pantallas {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     model.addAttribute("completarPerfil", model.containsAttribute("completarPerfil"));
+    model.addAttribute("sesionPendiente", model.containsAttribute("sesionPendiente"));
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("pasos", PASOS);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());

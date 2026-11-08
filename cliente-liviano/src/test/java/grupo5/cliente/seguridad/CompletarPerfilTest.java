@@ -1,7 +1,9 @@
 package grupo5.cliente.seguridad;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -11,6 +13,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,6 +36,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 @WebMvcTest({PantallasController.class, AccesoController.class})
 @Import({SeguridadConfig.class, Pantallas.class, SeguridadTest.Keycloak.class})
@@ -90,6 +94,42 @@ class CompletarPerfilTest {
     mvc.perform(get("/inicio").with(solicitudRecibida())).andExpect(redirectedUrl(enviada));
     mvc.perform(get(DONANTE).with(solicitudRecibida())).andExpect(redirectedUrl(enviada));
     mvc.perform(get(enviada).with(solicitudRecibida())).andExpect(status().isOk());
+  }
+
+  @Test
+  void elAdminDeLaPlataformaEntraSinCompletarPerfil() throws Exception {
+    OidcLoginRequestPostProcessor admin = como(Map.of("roles", List.of("ADMIN")));
+    mvc.perform(get("/admin-entidades").with(admin)).andExpect(status().isOk());
+    mvc.perform(get("/inicio").with(admin)).andExpect(redirectedUrl("/admin-inicio"));
+    mvc.perform(get(DONANTE).with(admin)).andExpect(redirectedUrl("/inicio"));
+  }
+
+  @Test
+  void lasPantallasPendientesOfrecenCerrarSesionConCsrf() throws Exception {
+    String enviada = "/publico-registro-entidad-enviada";
+    for (String pantalla : List.of("/publico-registro", DONANTE, ENTIDAD)) {
+      mvc.perform(get(pantalla).with(sinPerfil())).andExpect(cierraSesion());
+    }
+    mvc.perform(get(enviada).with(solicitudRecibida())).andExpect(cierraSesion());
+    mvc.perform(get(enviada)).andExpect(content().string(not(containsString("/logout"))));
+  }
+
+  private static ResultMatcher cierraSesion() {
+    return content()
+        .string(
+            allOf(
+                containsString("action=\"/logout\""),
+                containsString("name=\"_csrf\""),
+                containsString("Cerrar sesión")));
+  }
+
+  @Test
+  void cerrarSesionPasaElFiltroDeLasCuentasPendientes() throws Exception {
+    for (var cuenta : List.of(sinPerfil(), solicitudRecibida())) {
+      mvc.perform(post("/logout").with(cuenta).with(csrf()))
+          .andExpect(status().is3xxRedirection())
+          .andExpect(header().string("Location", startsWith("http://keycloak/logout")));
+    }
   }
 
   @Test

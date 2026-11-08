@@ -6,16 +6,23 @@ import java.util.Optional;
 
 /** Las áreas privadas del sitio, en orden de precedencia cuando una cuenta tiene más de un rol. */
 public enum Area {
-  ADMIN("admin", "Administración"),
-  ENTIDAD("entidad", "Entidad"),
-  DONANTE("donante", "Donante");
+  ADMIN("admin", "Administración", false),
+  ENTIDAD("entidad", "Entidad", true),
+  DONANTE("donante", "Donante", true);
 
   private final String prefijo;
   private final String etiqueta;
+  private final boolean requierePersona;
 
-  Area(String prefijo, String etiqueta) {
+  Area(String prefijo, String etiqueta, boolean requierePersona) {
     this.prefijo = prefijo;
     this.etiqueta = etiqueta;
+    this.requierePersona = requierePersona;
+  }
+
+  /** La cuenta de la plataforma no es una persona de Donaciones: no completa perfil. */
+  public boolean requierePersona() {
+    return requierePersona;
   }
 
   /** El prefijo de las pantallas del área: {@code donante-inicio}. */

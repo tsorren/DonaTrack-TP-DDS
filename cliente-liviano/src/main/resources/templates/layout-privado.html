@@ -88,9 +88,7 @@
       <p th:if="${perfil}"><a href="/donante-perfil" th:href="${perfil}"
          th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a></p>
       <p th:if="${cuenta.cambiarClave}"><a href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a></p>
-      <form method="post" action="/logout" th:action="@{/logout}">
-        <button class="boton" data-tono="secundario" type="submit">Cerrar sesión</button>
-      </form>
+      <form th:replace="~{cerrar-sesion :: boton}"></form>
       <button type="button" class="boton" data-tono="secundario" popovertarget="menu-cuenta"
               popovertargetaction="hide">Cerrar</button>
     </dialog>

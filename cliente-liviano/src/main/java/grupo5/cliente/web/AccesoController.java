@@ -103,6 +103,15 @@ public class AccesoController {
     return guardar(usuario, perfil, sesion, model, ENTIDAD);
   }
 
+  /** Quien llegó con sesión (su solicitud espera) puede cerrarla desde esta pantalla. */
+  @GetMapping("/publico-registro-entidad-enviada")
+  String solicitudRecibida(@AuthenticationPrincipal OidcUser usuario, Model model) {
+    if (usuario != null) {
+      model.addAttribute("sesionPendiente", true);
+    }
+    return pantallas.mostrar("publico-registro-entidad-enviada", model);
+  }
+
   @GetMapping("/inicio")
   String inicio(@AuthenticationPrincipal OidcUser usuario) {
     return "redirect:"
@@ -127,6 +136,7 @@ public class AccesoController {
 
   private String completarPerfil(Model model, String pantalla) {
     model.addAttribute("completarPerfil", true);
+    model.addAttribute("sesionPendiente", true);
     return pantallas.mostrar(pantalla, model);
   }
 

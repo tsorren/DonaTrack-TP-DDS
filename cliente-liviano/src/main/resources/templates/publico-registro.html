@@ -53,6 +53,7 @@
 
     <p class="cuenta-salida" th:unless="${completarPerfil}">¿Ya tenés cuenta? <a href="/publico-ingresar"
        th:href="@{/publico-ingresar}">Ingresar</a></p>
+    <div class="cuenta-salida" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 </body>

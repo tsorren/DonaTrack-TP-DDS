@@ -39,6 +39,15 @@ class UsuarioActualTest {
   }
 
   @Test
+  void laCuentaDeLaPlataformaNoCompletaPerfil() {
+    assertThat(UsuarioActual.desde(Map.of("roles", List.of("ADMIN"))).estado())
+        .isEqualTo(EstadoDeCuenta.ACTIVA);
+    assertThat(UsuarioActual.desde(Map.of("roles", List.of("DONANTE"))).estado())
+        .isEqualTo(EstadoDeCuenta.SIN_PERFIL);
+    assertThat(UsuarioActual.desde(Map.of()).estado()).isEqualTo(EstadoDeCuenta.SIN_PERFIL);
+  }
+
+  @Test
   void conVariosRolesGanaElAreaDeMasPrecedencia() {
     assertThat(Area.de(Set.of("DONANTE", "ENTIDAD"))).contains(Area.ENTIDAD);
     assertThat(Area.de(Set.of("DONANTE", "ENTIDAD", "ADMIN"))).contains(Area.ADMIN);

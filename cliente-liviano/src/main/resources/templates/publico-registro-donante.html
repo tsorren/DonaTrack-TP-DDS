@@ -145,6 +145,7 @@
       <p>¿Representás a una entidad? <a href="/publico-registro-entidad"
          th:href="@{/publico-registro-entidad}">Sumar mi entidad</a></p>
     </div>
+    <div class="cuenta-salidas" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 </body>

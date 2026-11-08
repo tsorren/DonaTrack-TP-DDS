@@ -27,6 +27,7 @@
          th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
       <a class="boton" data-tono="secundario" href="/publico-portada"
          th:href="@{/publico-portada}">Ir a la portada</a>
+      <th:block th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></th:block>
     </div>
   </div>
 </th:block>

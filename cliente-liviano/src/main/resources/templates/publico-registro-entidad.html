@@ -165,6 +165,7 @@
 
     <p class="cuenta-salida" th:unless="${completarPerfil}">¿Querés donar? <a href="/publico-registro-donante"
        th:href="@{/publico-registro-donante}">Crear una cuenta de donante</a></p>
+    <div class="cuenta-salida" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 

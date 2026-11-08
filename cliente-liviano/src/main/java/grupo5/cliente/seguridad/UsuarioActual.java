@@ -29,7 +29,7 @@ public record UsuarioActual(
   }
 
   public EstadoDeCuenta estado() {
-    if (personaId == null) {
+    if (personaId == null && area().map(Area::requierePersona).orElse(true)) {
       return EstadoDeCuenta.SIN_PERFIL;
     }
     return solicitudEntidad == null ? EstadoDeCuenta.ACTIVA : EstadoDeCuenta.SOLICITUD_RECIBIDA;
