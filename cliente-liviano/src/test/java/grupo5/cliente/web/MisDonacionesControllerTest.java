@@ -9,11 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.maqueta.SitioController;
 import grupo5.cliente.puertos.DonacionesPuerto;
+import grupo5.cliente.vistas.DetalleDonacionVista;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.MisDonacionesVista;
 import grupo5.cliente.vistas.MisDonacionesVista.Categoria;
 import grupo5.cliente.vistas.MisDonacionesVista.Donacion;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -43,8 +46,10 @@ class MisDonacionesControllerTest {
 
     @Bean
     DonacionesPuerto donaciones() {
-      return donante ->
-          new MisDonacionesVista(
+      return new DonacionesPuerto() {
+        @Override
+        public MisDonacionesVista misDonaciones(UUID donante) {
+          return new MisDonacionesVista(
               List.of(
                   new Donacion(
                       "b",
@@ -72,6 +77,26 @@ class MisDonacionesControllerTest {
                       "Entrega confirmada el 5 de octubre")),
               List.of(new Categoria(ALIMENTOS, "Alimentos"), new Categoria(MUEBLES, MOBILIARIO)),
               "hoy, 7 de noviembre, 19:40");
+        }
+
+        @Override
+        public Optional<DetalleDonacionVista> detalle(UUID donante, String clave) {
+          // Como lo arma el adaptador REST: entregada sin foto y sin "Figura como" (HB-20).
+          return "a".equals(clave)
+              ? Optional.of(
+                  new DetalleDonacionVista(
+                      misDonaciones(donante).donaciones().get(1),
+                      "5 de octubre de 2026",
+                      List.of(),
+                      null,
+                      null,
+                      null,
+                      "Comedor Barrio Ejemplo confirmó la entrega el 5 de octubre.",
+                      List.of(),
+                      null))
+              : Optional.empty();
+        }
+      };
     }
   }
 
@@ -102,5 +127,25 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(containsString("1 donación con esos filtros.")))
         .andExpect(content().string(containsString("Fideos secos")))
         .andExpect(content().string(not(containsString("Silla plegable"))));
+  }
+
+  @Test
+  void elDetalleMuestraLoQueDaLaApiYNoInventaLaDeOtroDonante() throws Exception {
+    mvc.perform(get("/donante-donaciones-detalle?donacion=a"))
+        .andExpect(redirectedUrl("/publico-ingresar"));
+
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones-detalle?donacion=a&donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString("Comedor Barrio Ejemplo confirmó la entrega el 5 de octubre.")))
+        .andExpect(content().string(not(containsString("Figura como"))))
+        .andExpect(content().string(not(containsString("Falta confirmar la entrega"))));
+
+    mvc.perform(get("/donante-donaciones-detalle?donacion=b").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos esa donación.")));
   }
 }

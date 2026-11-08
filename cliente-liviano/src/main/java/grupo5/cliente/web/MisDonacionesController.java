@@ -12,12 +12,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Mis donaciones del donante (RF-05), con los datos del puerto. Sin cuenta todavía, manda a
- * ingresar, como un 401 de la API. El atributo se llama {@code misDonaciones} porque {@code
- * viaje-datos.html} ya define {@code donaciones} para las pantallas que siguen con la maqueta.
+ * Mis donaciones del donante (RF-05) y el detalle de una, con los datos del puerto. Sin cuenta
+ * todavía, manda a ingresar, como un 401 de la API. Los atributos se llaman {@code misDonaciones} y
+ * {@code detalle} porque {@code viaje-datos.html} ya define {@code donaciones} para las pantallas
+ * que siguen con la maqueta. Una donación que no es del donante es {@code detalle} null: "No
+ * encontramos esa donación".
  */
 @Controller
 public class MisDonacionesController {
+
+  private static final String INGRESAR = "redirect:/publico-ingresar";
 
   private final DonacionesPuerto donaciones;
   private final CuentaActual cuentas;
@@ -41,9 +45,26 @@ public class MisDonacionesController {
         sitio.pagina("donante-donaciones", respuesta, cuenta, model, pedido.getSession());
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
-      return "redirect:/publico-ingresar";
+      return INGRESAR;
     }
     model.addAttribute("misDonaciones", donaciones.misDonaciones(donante.get()));
+    return vista;
+  }
+
+  @GetMapping("/donante-donaciones-detalle")
+  String detalle(
+      @RequestParam(required = false) String donacion,
+      @RequestParam(required = false) String respuesta,
+      @RequestParam(required = false) String cuenta,
+      Model model,
+      HttpServletRequest pedido) {
+    String vista =
+        sitio.pagina("donante-donaciones-detalle", respuesta, cuenta, model, pedido.getSession());
+    Optional<UUID> donante = cuentas.donante(pedido);
+    if (donante.isEmpty()) {
+      return INGRESAR;
+    }
+    model.addAttribute("detalle", donaciones.detalle(donante.get(), donacion).orElse(null));
     return vista;
   }
 }

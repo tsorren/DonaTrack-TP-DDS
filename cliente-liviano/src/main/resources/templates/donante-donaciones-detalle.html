@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--/* Raíces A, el detalle de una donación de la empresa, según la ficha
-       docs/interfaz/flujos/raices-donante-navegable.md. ?donacion=<clave> con las claves de viaje-datos;
-       sin parámetro, lentejas (la que va en camino); una clave que no está muestra "No encontramos
-       esa donación". Arriba, qué es, para quién y su estado, y "Ver dónde está" si va en curso. Las
+       docs/interfaz/flujos/raices-donante-navegable.md. ?donacion=<clave>: los datos vienen del
+       controller (detalle: de la maqueta, con las claves de viaje-datos, o de Donaciones, con el id);
+       sin parámetro, la maqueta muestra lentejas (la que va en camino); una clave que no está, o una
+       donación de otro donante, muestra "No encontramos esa donación". Arriba, qué es, para quién y su estado, y "Ver dónde está" si va en curso. Las
        etapas son la raíz de esta donación, de arriba abajo: lo cumplido impreso, lo que falta hueco
        (la imagen de raíz de la pantalla). Al lado, la prueba: la foto de la entidad si llegó, o el
        marco sin imprimir que dice qué falta y quién la sube; la etiqueta de herbario con los datos;
@@ -18,10 +19,8 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="clave=${param.donacion != null ? param.donacion[0] : 'lentejas'},
-             d=${donaciones.^[clave == #root.clave]},
-             destino=${d == null or d.destino == null ? null : #strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')},
-             llego=${d == null or d.llego == null ? null : #strings.substringBefore(d.llego, ' de 2026')},
+    th:with="d=${detalle == null ? null : detalle.donacion},
+             destino=${d == null ? null : d.destino},
              enCurso=${destino != null and d.estado.tono != 'entregada'}">
   <div class="detalle">
     <a class="volver" href="/donante-donaciones"
@@ -48,7 +47,7 @@
               <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
               <span th:text="${d.estado.texto}">En camino</span>
             </span>
-            <span th:text="${d.estado.tono == 'entregada'} ? |Entrega confirmada el ${llego}, con foto de la entidad| : ${d.nota}">Salió
+            <span th:text="${d.nota}">Salió
               hoy a las 14:30</span>
           </p>
           <a th:if="${enCurso}" class="boton" data-tono="principal" href="/donante-seguimiento"
@@ -71,12 +70,12 @@
 
       <th:block th:if="${escenario == ''}">
         <!--/* Con problema: qué pasó, la última noticia y la nueva salida, sin alarma. */-->
-        <section th:if="${d.estado.tono == 'con-problema'}" class="tarjeta lamina demora"
+        <section th:if="${detalle.problema}" class="tarjeta lamina demora"
                  aria-labelledby="demora-titulo">
-          <h2 id="demora-titulo" th:text="|No pudo llegar a ${destino}.|">No pudo llegar a Escuela
+          <h2 id="demora-titulo" th:text="${detalle.problema.titulo}">No pudo llegar a Escuela
             Ejemplo N.º 12.</h2>
-          <p>El camino estaba cortado. Sale de nuevo el 17 de octubre. Última noticia: 11 de octubre,
-            16:10.</p>
+          <p th:text="${detalle.problema.texto}">El camino estaba cortado. Sale de nuevo el 17 de
+            octubre. Última noticia: 11 de octubre, 16:10.</p>
         </section>
 
         <div class="detalle-cuerpo">
@@ -85,7 +84,7 @@
             <!--/* La raíz: lo hecho, un disco paja con el tilde; la actual, el sello del estado; lo que
                    falta, un círculo hueco, y la raíz hacia él, hueca: todavía no se imprimió. */-->
             <ol class="raiz" role="list" th:aria-label="|Etapas de ${d.titulo}|">
-              <li th:each="p : ${d.pasos}" class="raiz-paso"
+              <li th:each="p : ${detalle.pasos}" class="raiz-paso"
                   th:classappend="|raiz-paso--${p.avance.tono()}|"
                   th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
                 <th:block th:if="${p.avance.tono() == 'hecho'}"><th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block></th:block>
@@ -101,13 +100,17 @@
 
           <section class="detalle-foto" aria-labelledby="foto-titulo">
             <h2 id="foto-titulo">La foto de la entidad</h2>
-            <figure th:if="${d.foto}" class="tarjeta foto">
-              <img src="/img/ejemplo-entrega.svg" th:src="@{${d.foto}}" th:alt="${d.fotoAlt}"
+            <figure th:if="${detalle.foto}" class="tarjeta foto">
+              <img src="/img/ejemplo-entrega.svg" th:src="@{${detalle.foto}}" th:alt="${detalle.fotoAlt}"
                    alt="Cajas con la ropa de abrigo junto a la puerta del merendero" width="640" height="400">
-              <figcaption th:text="|${destino} confirmó la entrega el ${llego} y subió esta foto.|">Merendero
-                Ejemplo Sur confirmó la entrega el 9 de octubre y subió esta foto.</figcaption>
+              <figcaption th:text="${detalle.pieFoto}">Merendero Ejemplo Sur confirmó la entrega el 9
+                de octubre y subió esta foto.</figcaption>
             </figure>
-            <p th:unless="${d.foto}" class="foto-falta"
+            <!--/* Entregada sin foto: lo que confirmó la entidad, sin decir que falta. */-->
+            <p th:if="${detalle.foto == null and detalle.pieFoto != null}" class="foto-falta"
+               th:text="${detalle.pieFoto}">Comedor Barrio Ejemplo confirmó la entrega el 5 de
+              octubre.</p>
+            <p th:if="${detalle.foto == null and detalle.pieFoto == null}" class="foto-falta"
                th:text="${destino == null}
                  ? 'Todavía sin destino: espera una necesidad que le corresponda. Cuando se le asigne una entidad, vas a ver acá a cuál y cuándo sale.'
                  : |Falta confirmar la entrega: la confirma ${destino} con la foto.|">Falta confirmar la
@@ -118,8 +121,8 @@
 
           <section class="tarjeta detalle-datos etiqueta-datos" data-filete="doble" aria-labelledby="datos-titulo">
             <h2 id="datos-titulo">
-              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                <use href="#cat-alimentos" th:href="|#${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria}|"/>
+              <svg th:if="${d.icono}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-alimentos" th:href="|#${d.icono}|"/>
               </svg>
               Los datos
             </h2>
@@ -127,13 +130,14 @@
               <div><dt>Donación</dt><dd th:text="|N.º ${d.numero}|">N.º 5</dd></div>
               <div><dt>Qué</dt><dd th:text="${d.titulo}">Lentejas secas</dd></div>
               <div><dt>Cuánto</dt><dd th:text="${d.cantidad}">15 kg</dd></div>
-              <div><dt>Categoría</dt>
-                <dd th:text="${d.categoriaTexto == 'Vestimenta' ? 'Ropa' : d.categoriaTexto}">Alimentos</dd></div>
+              <div th:if="${d.categoriaTexto}"><dt>Categoría</dt>
+                <dd th:text="${d.categoriaTexto}">Alimentos</dd></div>
               <div><dt>Para</dt><dd th:text="${destino ?: 'Todavía sin destino'}">Comedor Barrio Ejemplo</dd></div>
               <div><dt>Donada</dt><dd th:text="${d.donada}">12 de octubre de 2026</dd></div>
-              <div th:if="${d.llego}"><dt>Entregada</dt><dd th:text="${d.llego}">9 de octubre de 2026</dd></div>
-              <div class="datos-figura"><dt>Figura como</dt>
-                <dd><span th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</span>
+              <div th:if="${detalle.llego}"><dt>Entregada</dt><dd th:text="${detalle.llego}">9 de octubre de 2026</dd></div>
+              <!--/* Con datos reales, sin el nombre visible hasta HB-20. */-->
+              <div th:if="${detalle.figuraComo}" class="datos-figura"><dt>Figura como</dt>
+                <dd><span th:text="${detalle.figuraComo}">Distribuidora Ejemplo SA</span>
                   <a href="/donante-perfil" th:href="@{/donante-perfil}">Cambialo
                     en Mi perfil</a></dd></div>
             </dl>
@@ -143,13 +147,10 @@
             <h2 id="noticias-titulo">Noticias de esta donación</h2>
             <p class="nota">De la más nueva a la primera.</p>
             <ol class="noticias" role="list">
-              <li th:each="c : ${d.cartas}" class="noticia"
-                  th:with="dia=${#strings.substring(c.fecha, 0, 10)}, hora=${#strings.substringAfter(c.cuando, ', ')}">
-                <time class="noticia-cuando" th:datetime="${c.fecha}"
-                      th:text="${dia == '2026-10-15' ? 'Hoy, ' + hora : (dia == '2026-10-14' ? 'Ayer, ' + hora : c.cuando)}">Hoy,
+              <li th:each="c : ${detalle.noticias}" class="noticia">
+                <time class="noticia-cuando" th:datetime="${c.fecha}" th:text="${c.cuando}">Hoy,
                   14:30</time>
-                <span class="noticia-texto"
-                      th:text="${#strings.replace(c.texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">El
+                <span class="noticia-texto" th:text="${c.texto}">El
                   camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</span>
               </li>
             </ol>

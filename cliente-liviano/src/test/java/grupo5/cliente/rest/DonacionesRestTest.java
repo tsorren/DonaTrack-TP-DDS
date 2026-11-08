@@ -82,7 +82,9 @@ class DonacionesRestTest {
     Clock hoy = Clock.fixed(Instant.parse("2026-10-15T19:25:00Z"), ZoneOffset.UTC);
     DonacionesRest adaptador =
         new DonacionesRest(
-            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class), hoy);
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+            hoy);
 
     MisDonacionesVista vista = adaptador.misDonaciones(DONANTE);
 
@@ -146,6 +148,7 @@ class DonacionesRestTest {
     DonacionesRest adaptador =
         new DonacionesRest(
             ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
             Clock.systemUTC());
 
     List<Donacion> libro = adaptador.misDonaciones(DONANTE).donaciones();
