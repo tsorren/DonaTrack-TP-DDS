@@ -132,4 +132,9 @@ public class DonacionIndependienteRepositoryJpaAdapter
     filas.forEach(f -> conteo.put(f.getEntidadId(), Math.toIntExact(f.getCantidad())));
     return conteo;
   }
+
+  @Override
+  public long contarEnEstado(TipoEstadoDonacion estado) {
+    return springDataRepo.countByEstadoActual(estado);
+  }
 }

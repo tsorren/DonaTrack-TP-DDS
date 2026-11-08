@@ -18,6 +18,8 @@ public interface SpringDataDonacionIndependienteRepository
 
   List<DonacionIndependienteEntity> findByEstadoActual(TipoEstadoDonacion estadoActual);
 
+  long countByEstadoActual(TipoEstadoDonacion estadoActual);
+
   // Dos consultas en vez de una con «:periodoId is null»: Postgres no infiere el tipo de un
   // parámetro nulo
   @Query(
