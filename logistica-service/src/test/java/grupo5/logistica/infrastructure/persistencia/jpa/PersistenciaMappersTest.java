@@ -155,15 +155,19 @@ class PersistenciaMappersTest {
     DireccionEntity dirEntity = entregaMapper.construirDireccionNueva(dir, localidadEntity);
 
     Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
     entrega.iniciarRuta("Chofer");
 
     EntregaEntity entity = entregaMapper.toEntity(entrega, null, dirEntity);
+    assertEquals(donanteId, entity.getDonanteId());
     entity.setVersion(0L);
     UUID idDireccion = entity.getDireccion().getIdDireccion();
     UUID idCambioInicial = entity.getHistorialEstado().getFirst().getIdCambioEstadoEntrega();
 
     Entrega reconstituida = entregaMapper.toDomain(entity);
     assertEquals(entrega.getId(), reconstituida.getId());
+    assertEquals(donanteId, reconstituida.getDonanteId());
     assertEquals("Av. Cordoba", reconstituida.getDestino().calle());
     assertEquals(0L, reconstituida.getVersion());
 

@@ -38,6 +38,8 @@ public class EntregaDocument {
 
   @Indexed private UUID idBeneficiaria;
 
+  @Indexed private UUID donanteId;
+
   @Indexed private EstadoEntrega estado;
 
   private Instant horaArribo;

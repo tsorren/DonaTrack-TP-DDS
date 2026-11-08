@@ -69,9 +69,11 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `idRuta` (UUID nulable de la ruta asignada).
     *   `idDonacion` (UUID de la donación independiente correspondiente en `donaciones-service`).
     *   `idBeneficiaria` (UUID de la entidad beneficiaria destinataria).
+    *   `donanteId` (UUID nulable del donante de la donación original, replicado desde `donaciones-service` por `entrega.solicitada.v1` o `POST /api/entregas`; referencia opaca, sin datos personales ni clave foránea. Lo usa el seguimiento por donante, HB-16; las entregas anteriores al 2026-11-08 no lo tienen. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md)).
 *   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *ENTREGADA*, *NO_RECIBIDA*, *REVISION* (Enum `EstadoEntrega`).
 *   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado y emitiendo eventos (`EntregaConfirmada`, `EntregaFallida`).
 *   **Métodos de Negocio**:
+    *   `registrarDonante(UUID donanteId)` (al crear o reconstituir la entrega; `null` la deja sin donante)
     *   `asignarRuta(UUID idRuta)`
     *   `iniciarRuta(String chofer)`
     *   `confirmarEntrega(String entidad)`

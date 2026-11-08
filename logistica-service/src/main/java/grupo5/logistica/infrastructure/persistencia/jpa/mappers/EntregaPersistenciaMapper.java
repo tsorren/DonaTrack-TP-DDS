@@ -49,6 +49,7 @@ public class EntregaPersistenciaMapper {
     entity.setIdRuta(domain.getIdRuta());
     entity.setIdDonacion(domain.getIdDonacion());
     entity.setIdBeneficiario(domain.getIdBeneficiaria());
+    entity.setDonanteId(domain.getDonanteId());
     entity.setEstado(domain.getEstadoActual());
     entity.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
     entity.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
@@ -107,20 +108,23 @@ public class EntregaPersistenciaMapper {
 
     List<String> fotos = resolverFotosDesdeEntidad(entity);
 
-    return new Entrega(
-        entity.getIdEntrega(),
-        entity.getIdRuta(),
-        entity.getIdDonacion(),
-        entity.getIdBeneficiario(),
-        mapearDireccion(entity.getDireccion()),
-        entity.getEstado(),
-        historial,
-        aLocalDateTimeUtc(entity.getHoraArribo()),
-        aLocalDateTimeUtc(entity.getHoraSalida()),
-        fotos,
-        entity.getPesoTotalKg() != null ? entity.getPesoTotalKg().floatValue() : 0f,
-        entity.getVolumenTotalM3() != null ? entity.getVolumenTotalM3().floatValue() : 0f,
-        entity.getVersion());
+    Entrega entrega =
+        new Entrega(
+            entity.getIdEntrega(),
+            entity.getIdRuta(),
+            entity.getIdDonacion(),
+            entity.getIdBeneficiario(),
+            mapearDireccion(entity.getDireccion()),
+            entity.getEstado(),
+            historial,
+            aLocalDateTimeUtc(entity.getHoraArribo()),
+            aLocalDateTimeUtc(entity.getHoraSalida()),
+            fotos,
+            entity.getPesoTotalKg() != null ? entity.getPesoTotalKg().floatValue() : 0f,
+            entity.getVolumenTotalM3() != null ? entity.getVolumenTotalM3().floatValue() : 0f,
+            entity.getVersion());
+    entrega.registrarDonante(entity.getDonanteId());
+    return entrega;
   }
 
   private static List<String> resolverFotosDesdeEntidad(EntregaEntity entity) {

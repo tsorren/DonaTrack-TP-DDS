@@ -54,8 +54,8 @@ el de los datos.
 | Misiones e insignias | `/api/incentivos/donantes/{id}/misiones`, `/insignias`, `/donantes/{id}`, `/ascensos`; tipo de persona en Donaciones | 🟡 | 🔁 "en espera" y "se abre después", por el orden de la lista y la categoría del donante. ❌ unidad del progreso ("12 de 50 **bienes**"). ❌ número de misión. ❌ "tu donación más grande". Cuatro llamadas a dos servicios | — |
 | Notificaciones | `/api/notificaciones/persona/{id}`, conteo, marcar leídas | 🟡 | ✅ mensaje, fecha y leída. ❌ tipo de evento (sin sello) e id de la donación (sin enlace). El evento de entrada los trae; `NotificacionDTO` no los devuelve | HB-09 (nuevo campo) |
 | Detalle de una donación | `/donaciones-independientes/{id}`, seguimiento, `/api/entregas/{id}` | 🟡 | ✅ etapas y fechas (historial propio de la donación). 🔁 fotos con `fotosRecepcion` de la entrega. 🔁 causa del problema, con la justificación del cambio. ❌ nueva salida. ❌ nombre visible. Conectada el 2026-11-07: el número y la pertenencia salen del listado del donante | HB-20 |
-| Inicio | Donaciones, seguimiento por donación, conteo de notificaciones | 🟡 | 🔁 entidades que confirmaron, con una llamada por entidad. ❌ nueva fecha de salida | HB-16 |
-| Seguimiento | Seguimiento por donación (una llamada por donación) | 🟡 | ✅ estado, paradas, patente y última actualización. ❌ posición del camión. ❌ nombre del destino | HB-05, HB-06, HB-16 |
+| Inicio | Donaciones, `/api/entregas/seguimiento/donantes/{id}`, conteo de notificaciones | 🟡 | ✅ entregas activas en una llamada (HB-16, 2026-11-08; las creadas antes no tienen donante). 🔁 entidades que confirmaron, con una llamada por entidad. ❌ nueva fecha de salida | HB-16, hecho |
+| Seguimiento | `/api/entregas/seguimiento/donantes/{id}` (una llamada, desde el 2026-11-08) | 🟡 | ✅ estado, paradas, patente y última actualización. ✅ todas las activas en una llamada. ❌ posición del camión. ❌ nombre del destino | HB-05, HB-06; HB-16 hecho |
 | Entidades | `/api/entidades?nombre&page&size`, `/api/necesidades?entidadId` | 🟡 | ❌ "solo activas": el listado no filtra, solo `/publicas` lo hace. ❌ tipo. ❌ recibido y período | HB-18 |
 | Mi perfil | `GET /api/personas`, `PUT /api/personas/{id}` | 🟡 | ✅ datos de la cuenta y medios. ❌ nombre visible. ❌ "Qué te avisamos". Sin `/me` | HB-11, HB-20 |
 
@@ -122,6 +122,7 @@ Contra la [ficha de huecos](../interfaz/flujos/raices-ab-huecos-backend.md):
   - paginado y búsqueda de entidades (HB-15);
   - notificaciones de la entidad por evento (HB-09, en código);
   - entregas activas de una entidad en una llamada (HB-16, del lado de la entidad);
+  - entregas activas de un donante en una llamada (HB-16, del lado del donante, 2026-11-08);
   - fecha del ascenso (`/ascensos`).
 - **Desactualizadas:**
   - el mapa ya da coordenadas exactas (D24 revisada);

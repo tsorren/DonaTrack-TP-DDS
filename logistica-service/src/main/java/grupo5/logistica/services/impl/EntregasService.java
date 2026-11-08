@@ -160,6 +160,23 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId) {
+    if (donanteId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    return entregasRepository.findByDonanteId(donanteId).stream()
+        .filter(EntregasService::estaActiva)
+        .map(this::construirSeguimiento)
+        .toList();
+  }
+
+  private static boolean estaActiva(Entrega entrega) {
+    return entrega.getEstadoActual() == EstadoEntrega.PENDIENTE
+        || entrega.getEstadoActual() == EstadoEntrega.EN_TRASLADO;
+  }
+
+  @Override
   @Transactional
   public EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto) {
     if (dto == null) {

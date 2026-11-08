@@ -67,7 +67,8 @@ public class EntregaSolicitadaEventListener {
         comando.personaBeneficiariaId(),
         mapearDestino(comando.destino()),
         comando.pesoTotalKG().floatValue(),
-        comando.volumenTotalM3().floatValue());
+        comando.volumenTotalM3().floatValue(),
+        comando.donanteId());
   }
 
   private static DireccionDTO mapearDestino(DestinoEventoDTO destino) {

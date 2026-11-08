@@ -257,6 +257,34 @@ class RepositoriosLogisticaJpaTest {
   }
 
   @Test
+  void deberiaListarLasEntregasDeUnDonanteYDejarSinDonanteLasQueNoLoTraen() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID donanteId = UUID.randomUUID();
+    Entrega delDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1200, null, null, "1033", caba),
+            15.0f,
+            1.5f);
+    delDonante.registrarDonante(donanteId);
+    Entrega sinDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Corrientes", 3400, null, null, "1194", caba),
+            20.0f,
+            2.0f);
+    entregasRepository.save(delDonante);
+    entregasRepository.save(sinDonante);
+
+    List<Entrega> resultado = entregasRepository.findByDonanteId(donanteId);
+
+    assertEquals(List.of(delDonante.getId()), resultado.stream().map(Entrega::getId).toList());
+    assertNull(entregasRepository.findById(sinDonante.getId()).orElseThrow().getDonanteId());
+  }
+
+  @Test
   void deberiaDerivarRutaIdEnCamionYChoferYConservarElOrdenDeVisitaDeLaRuta() {
     Camion camion = camionRepository.save(new Camion("CD456EF", 80.0f, 4000.0f, 3.5f));
     Chofer chofer = choferesRepository.save(new Chofer("Maria", "Gomez", "LIC-002", "1199887766"));
