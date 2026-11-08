@@ -82,7 +82,7 @@ class DonacionesRest implements DonacionesPuerto {
         .forEach(id -> entidades.put(id, nombre(api.entidad(id))));
     List<Donacion> donaciones =
         IntStream.range(0, lista.size())
-            .mapToObj(i -> donacion(lista.get(i), lista.size() - i, entidades))
+            .mapToObj(i -> donacion(lista.get(i), (long) lista.size() - i, entidades))
             .toList();
     List<MisDonacionesVista.Categoria> categorias =
         api.categorias().stream()
