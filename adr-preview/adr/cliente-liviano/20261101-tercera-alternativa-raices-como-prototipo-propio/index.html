@@ -1,0 +1,2166 @@
+<!DOCTYPE html><html lang="en"><head><meta name="theme-color" content="#2176AE"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" data-href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap"/><link rel="stylesheet" data-href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&amp;display=swap"/><meta charSet="utf-8"/><meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/><link rel="shortcut icon" type="image/x-icon" href="/DonaTrack-TP-DDS/adr-preview/favicon.ico"/><meta name="og:image" content="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-og.png"/><title>Tercera alternativa de identidad (Raíces) como prototipo propio, sin juego de plantillas hasta que se elija ADR - Architecture knowledge base of DonaTrack</title><meta name="next-head-count" content="5"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/css/f4b1bfe580d32a3f533d.css" as="style"/><link rel="stylesheet" href="/DonaTrack-TP-DDS/adr-preview/_next/static/css/f4b1bfe580d32a3f533d.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/webpack-50bee04d1dc61f8adf5b.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/framework.b33896d72531466bcf17.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/commons.1a3eba1bbb8ea986a150.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/main-d0427bd7c9d85889a938.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/a3e17150ead73d62fba7a33a50672ae3f72841a5.56d1813f1730ddfb4c80.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/_app-796f4c8086e869be38c4.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/364bddfb.28847971f0e02b167249.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3da477db.e49cd5277ed36ace32c1.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3b07cb59.4f0af644828e83722dc4.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/b4e962f4.26c14c8db148d74faf11.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/45d2d314fc8da5e3d79852782e4a432ad4da6771.50511fed01efd2ad1ea2.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/adr/%5B...slug%5D-9f67d10c628dcc0d3aa2.js" as="script"/><style id="jss-server-side">html {
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+strong, b {
+  font-weight: 700;
+}
+body {
+  color: rgba(0, 0, 0, 0.87);
+  margin: 0;
+  padding: 0 !important;
+  font-size: 0.875rem;
+  max-width: 100%;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  background-color: #fff;
+}
+@media print {
+  body {
+    background-color: #fff;
+  }
+}
+  body::backdrop {
+    background-color: #fff;
+  }
+  blockquote {
+    color: #9e9e9e;
+    margin: 0;
+    padding: 0 1em;
+    border-left: 0.25em solid #F8F8F8;
+  }
+  .MuiSvgIcon-root {
+    fill: currentColor;
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    font-size: 1.5rem;
+    transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .MuiSvgIcon-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiSvgIcon-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiSvgIcon-colorAction {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  .MuiSvgIcon-colorError {
+    color: #ff1744;
+  }
+  .MuiSvgIcon-colorDisabled {
+    color: rgba(0, 0, 0, 0.26);
+  }
+  .MuiSvgIcon-fontSizeInherit {
+    font-size: inherit;
+  }
+  .MuiSvgIcon-fontSizeSmall {
+    font-size: 1.25rem;
+  }
+  .MuiSvgIcon-fontSizeLarge {
+    font-size: 2.1875rem;
+  }
+  .MuiTooltip-popper {
+    z-index: 1500;
+    pointer-events: none;
+  }
+  .MuiTooltip-popperInteractive {
+    pointer-events: auto;
+  }
+  .MuiTooltip-popperArrow[x-placement*="bottom"] .MuiTooltip-arrow {
+    top: 0;
+    left: 0;
+    margin-top: -0.71em;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="top"] .MuiTooltip-arrow {
+    left: 0;
+    bottom: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-bottom: -0.71em;
+  }
+  .MuiTooltip-popperArrow[x-placement*="right"] .MuiTooltip-arrow {
+    left: 0;
+    width: 0.71em;
+    height: 1em;
+    margin-top: 4px;
+    margin-left: -0.71em;
+    margin-bottom: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="left"] .MuiTooltip-arrow {
+    right: 0;
+    width: 0.71em;
+    height: 1em;
+    margin-top: 4px;
+    margin-right: -0.71em;
+    margin-bottom: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="left"] .MuiTooltip-arrow::before {
+    transform-origin: 0 0;
+  }
+  .MuiTooltip-popperArrow[x-placement*="right"] .MuiTooltip-arrow::before {
+    transform-origin: 100% 100%;
+  }
+  .MuiTooltip-popperArrow[x-placement*="top"] .MuiTooltip-arrow::before {
+    transform-origin: 100% 0;
+  }
+  .MuiTooltip-popperArrow[x-placement*="bottom"] .MuiTooltip-arrow::before {
+    transform-origin: 0 100%;
+  }
+  .MuiTooltip-tooltip {
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.625rem;
+    max-width: 300px;
+    word-wrap: break-word;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.4em;
+    border-radius: 4px;
+    background-color: rgba(97, 97, 97, 0.9);
+  }
+  .MuiTooltip-tooltipArrow {
+    margin: 0;
+    position: relative;
+  }
+  .MuiTooltip-arrow {
+    color: rgba(97, 97, 97, 0.9);
+    width: 1em;
+    height: 0.71em;
+    overflow: hidden;
+    position: absolute;
+    box-sizing: border-box;
+  }
+  .MuiTooltip-arrow::before {
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    content: "";
+    display: block;
+    transform: rotate(45deg);
+    background-color: currentColor;
+  }
+  .MuiTooltip-touch {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.14286em;
+  }
+  .MuiTooltip-tooltipPlacementLeft {
+    margin: 0 24px ;
+    transform-origin: right center;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementLeft {
+    margin: 0 14px;
+  }
+}
+  .MuiTooltip-tooltipPlacementRight {
+    margin: 0 24px;
+    transform-origin: left center;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementRight {
+    margin: 0 14px;
+  }
+}
+  .MuiTooltip-tooltipPlacementTop {
+    margin: 24px 0;
+    transform-origin: center bottom;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementTop {
+    margin: 14px 0;
+  }
+}
+  .MuiTooltip-tooltipPlacementBottom {
+    margin: 24px 0;
+    transform-origin: center top;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementBottom {
+    margin: 14px 0;
+  }
+}
+  .MuiButtonBase-root {
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    display: inline-flex;
+    outline: 0;
+    padding: 0;
+    position: relative;
+    align-items: center;
+    user-select: none;
+    border-radius: 0;
+    vertical-align: middle;
+    -moz-appearance: none;
+    justify-content: center;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiButtonBase-root::-moz-focus-inner {
+    border-style: none;
+  }
+  .MuiButtonBase-root.Mui-disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+@media print {
+  .MuiButtonBase-root {
+    color-adjust: exact;
+  }
+}
+  .MuiButton-root {
+    color: rgba(0, 0, 0, 0.87);
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    min-width: 64px;
+    box-sizing: border-box;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    border-radius: 4px;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+  }
+  .MuiButton-root:hover {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiButton-root.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+  }
+@media (hover: none) {
+  .MuiButton-root:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-root:hover.Mui-disabled {
+    background-color: transparent;
+  }
+  .MuiButton-label {
+    width: 100%;
+    display: inherit;
+    align-items: inherit;
+    justify-content: inherit;
+  }
+  .MuiButton-text {
+    padding: 6px 8px;
+  }
+  .MuiButton-textPrimary {
+    color: #2176AE;
+  }
+  .MuiButton-textPrimary:hover {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-textPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-textSecondary {
+    color: #FF007B;
+  }
+  .MuiButton-textSecondary:hover {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-textSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    padding: 5px 15px;
+  }
+  .MuiButton-outlined.Mui-disabled {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiButton-outlinedPrimary {
+    color: #2176AE;
+    border: 1px solid rgba(33, 118, 174, 0.5);
+  }
+  .MuiButton-outlinedPrimary:hover {
+    border: 1px solid #2176AE;
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-outlinedPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-outlinedSecondary {
+    color: #FF007B;
+    border: 1px solid rgba(255, 0, 123, 0.5);
+  }
+  .MuiButton-outlinedSecondary:hover {
+    border: 1px solid #FF007B;
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+  .MuiButton-outlinedSecondary.Mui-disabled {
+    border: 1px solid rgba(0, 0, 0, 0.26);
+  }
+@media (hover: none) {
+  .MuiButton-outlinedSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-contained {
+    color: rgba(0, 0, 0, 0.87);
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+    background-color: #e0e0e0;
+  }
+  .MuiButton-contained:hover {
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+    background-color: #d5d5d5;
+  }
+  .MuiButton-contained.Mui-focusVisible {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+  }
+  .MuiButton-contained:active {
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
+  }
+  .MuiButton-contained.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+    box-shadow: none;
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+@media (hover: none) {
+  .MuiButton-contained:hover {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+    background-color: #e0e0e0;
+  }
+}
+  .MuiButton-contained:hover.Mui-disabled {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  .MuiButton-containedPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiButton-containedPrimary:hover {
+    background-color: rgb(23, 82, 121);
+  }
+@media (hover: none) {
+  .MuiButton-containedPrimary:hover {
+    background-color: #2176AE;
+  }
+}
+  .MuiButton-containedSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiButton-containedSecondary:hover {
+    background-color: rgb(178, 0, 86);
+  }
+@media (hover: none) {
+  .MuiButton-containedSecondary:hover {
+    background-color: #FF007B;
+  }
+}
+  .MuiButton-disableElevation {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation:hover {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation.Mui-focusVisible {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation:active {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation.Mui-disabled {
+    box-shadow: none;
+  }
+  .MuiButton-colorInherit {
+    color: inherit;
+    border-color: currentColor;
+  }
+  .MuiButton-textSizeSmall {
+    padding: 4px 5px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-textSizeLarge {
+    padding: 8px 11px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-outlinedSizeSmall {
+    padding: 3px 9px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-outlinedSizeLarge {
+    padding: 7px 21px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-containedSizeSmall {
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-containedSizeLarge {
+    padding: 8px 22px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-fullWidth {
+    width: 100%;
+  }
+  .MuiButton-startIcon {
+    display: inherit;
+    margin-left: -4px;
+    margin-right: 8px;
+  }
+  .MuiButton-startIcon.MuiButton-iconSizeSmall {
+    margin-left: -2px;
+  }
+  .MuiButton-endIcon {
+    display: inherit;
+    margin-left: 8px;
+    margin-right: -4px;
+  }
+  .MuiButton-endIcon.MuiButton-iconSizeSmall {
+    margin-right: -2px;
+  }
+  .MuiButton-iconSizeSmall > *:first-child {
+    font-size: 18px;
+  }
+  .MuiButton-iconSizeMedium > *:first-child {
+    font-size: 20px;
+  }
+  .MuiButton-iconSizeLarge > *:first-child {
+    font-size: 22px;
+  }
+@media (min-width:0px) and (max-width:899.95px) {
+  .jss27 {
+    display: none;
+  }
+}
+@media (min-width:0px) {
+  .jss28 {
+    display: none;
+  }
+}
+@media (max-width:899.95px) {
+  .jss29 {
+    display: none;
+  }
+}
+@media (min-width:900px) and (max-width:1059.95px) {
+  .jss30 {
+    display: none;
+  }
+}
+@media (min-width:900px) {
+  .jss31 {
+    display: none;
+  }
+}
+@media (max-width:1059.95px) {
+  .jss32 {
+    display: none;
+  }
+}
+@media (min-width:1060px) and (max-width:1279.95px) {
+  .jss33 {
+    display: none;
+  }
+}
+@media (min-width:1060px) {
+  .jss34 {
+    display: none;
+  }
+}
+@media (max-width:1279.95px) {
+  .jss35 {
+    display: none;
+  }
+}
+@media (min-width:1280px) and (max-width:1919.95px) {
+  .jss36 {
+    display: none;
+  }
+}
+@media (min-width:1280px) {
+  .jss37 {
+    display: none;
+  }
+}
+@media (max-width:1919.95px) {
+  .jss38 {
+    display: none;
+  }
+}
+@media (min-width:1920px) {
+  .jss39 {
+    display: none;
+  }
+}
+@media (min-width:1920px) {
+  .jss40 {
+    display: none;
+  }
+}
+@media (min-width:0px) {
+  .jss41 {
+    display: none;
+  }
+}
+  .MuiDivider-root {
+    border: none;
+    height: 1px;
+    margin: 0;
+    flex-shrink: 0;
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  .MuiDivider-absolute {
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+  }
+  .MuiDivider-inset {
+    margin-left: 72px;
+  }
+  .MuiDivider-light {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+  .MuiDivider-middle {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  .MuiDivider-vertical {
+    width: 1px;
+    height: 100%;
+  }
+  .MuiDivider-flexItem {
+    height: auto;
+    align-self: stretch;
+  }
+  .MuiTypography-root {
+    margin: 0;
+  }
+  .MuiTypography-body2 {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.43;
+    letter-spacing: 0.01071em;
+  }
+  .MuiTypography-body1 {
+    font-size: 1rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.00938em;
+  }
+  .MuiTypography-caption {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: 0.03333em;
+  }
+  .MuiTypography-button {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+  }
+  .MuiTypography-h1 {
+    font-size: 3.5rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 300;
+    line-height: 1.167;
+    letter-spacing: -0.01562em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h1 {
+    font-size: 5.3556rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h1 {
+    font-size: 5.5698rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h1 {
+    font-size: 5.9983rem;
+  }
+}
+  .MuiTypography-h2 {
+    font-size: 2.375rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.00833em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h2 {
+    font-size: 3.3333rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h2 {
+    font-size: 3.5417rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h2 {
+    font-size: 3.75rem;
+  }
+}
+  .MuiTypography-h3 {
+    font-size: 2rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h3 {
+    font-size: 2.7273rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h3 {
+    font-size: 2.7273rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h3 {
+    font-size: 2.9545rem;
+  }
+}
+  .MuiTypography-h4 {
+    font-size: 1.5625rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.235;
+    letter-spacing: 0.00735em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+  .MuiTypography-h5 {
+    font-size: 1.25rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.334;
+    letter-spacing: 0em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+  .MuiTypography-h6 {
+    font-size: 1.125rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.0075em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+  .MuiTypography-subtitle1 {
+    font-size: 1rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.75;
+    letter-spacing: 0.00938em;
+  }
+  .MuiTypography-subtitle2 {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.57;
+    letter-spacing: 0.00714em;
+  }
+  .MuiTypography-overline {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 2.66;
+    letter-spacing: 0.08333em;
+    text-transform: uppercase;
+  }
+  .MuiTypography-srOnly {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+  }
+  .MuiTypography-alignLeft {
+    text-align: left;
+  }
+  .MuiTypography-alignCenter {
+    text-align: center;
+  }
+  .MuiTypography-alignRight {
+    text-align: right;
+  }
+  .MuiTypography-alignJustify {
+    text-align: justify;
+  }
+  .MuiTypography-noWrap {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .MuiTypography-gutterBottom {
+    margin-bottom: 0.35em;
+  }
+  .MuiTypography-paragraph {
+    margin-bottom: 16px;
+  }
+  .MuiTypography-colorInherit {
+    color: inherit;
+  }
+  .MuiTypography-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiTypography-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiTypography-colorTextPrimary {
+    color: rgba(0, 0, 0, 0.87);
+  }
+  .MuiTypography-colorTextSecondary {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  .MuiTypography-colorError {
+    color: #ff1744;
+  }
+  .MuiTypography-displayInline {
+    display: inline;
+  }
+  .MuiTypography-displayBlock {
+    display: block;
+  }
+  .MuiLink-root:hover {
+    color: rgb(23, 82, 121);
+  }
+  .MuiLink-underlineNone {
+    text-decoration: none;
+  }
+  .MuiLink-underlineHover {
+    text-decoration: none;
+  }
+  .MuiLink-underlineHover:hover {
+    text-decoration: underline;
+  }
+  .MuiLink-underlineAlways {
+    text-decoration: underline;
+  }
+  .MuiLink-button {
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    position: relative;
+    user-select: none;
+    border-radius: 0;
+    vertical-align: middle;
+    -moz-appearance: none;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiLink-button::-moz-focus-inner {
+    border-style: none;
+  }
+  .MuiLink-button.Mui-focusVisible {
+    outline: auto;
+  }
+  .MuiPaper-root {
+    color: rgba(0, 0, 0, 0.87);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #fff;
+  }
+  .MuiPaper-rounded {
+    border-radius: 4px;
+  }
+  .MuiPaper-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiPaper-elevation0 {
+    box-shadow: none;
+  }
+  .MuiPaper-elevation1 {
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation2 {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation3 {
+    box-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation4 {
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation5 {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 5px 8px 0px rgba(0,0,0,0.14),0px 1px 14px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation6 {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation7 {
+    box-shadow: 0px 4px 5px -2px rgba(0,0,0,0.2),0px 7px 10px 1px rgba(0,0,0,0.14),0px 2px 16px 1px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation8 {
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation9 {
+    box-shadow: 0px 5px 6px -3px rgba(0,0,0,0.2),0px 9px 12px 1px rgba(0,0,0,0.14),0px 3px 16px 2px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation10 {
+    box-shadow: 0px 6px 6px -3px rgba(0,0,0,0.2),0px 10px 14px 1px rgba(0,0,0,0.14),0px 4px 18px 3px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation11 {
+    box-shadow: 0px 6px 7px -4px rgba(0,0,0,0.2),0px 11px 15px 1px rgba(0,0,0,0.14),0px 4px 20px 3px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation12 {
+    box-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation13 {
+    box-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 13px 19px 2px rgba(0,0,0,0.14),0px 5px 24px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation14 {
+    box-shadow: 0px 7px 9px -4px rgba(0,0,0,0.2),0px 14px 21px 2px rgba(0,0,0,0.14),0px 5px 26px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation15 {
+    box-shadow: 0px 8px 9px -5px rgba(0,0,0,0.2),0px 15px 22px 2px rgba(0,0,0,0.14),0px 6px 28px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation16 {
+    box-shadow: 0px 8px 10px -5px rgba(0,0,0,0.2),0px 16px 24px 2px rgba(0,0,0,0.14),0px 6px 30px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation17 {
+    box-shadow: 0px 8px 11px -5px rgba(0,0,0,0.2),0px 17px 26px 2px rgba(0,0,0,0.14),0px 6px 32px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation18 {
+    box-shadow: 0px 9px 11px -5px rgba(0,0,0,0.2),0px 18px 28px 2px rgba(0,0,0,0.14),0px 7px 34px 6px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation19 {
+    box-shadow: 0px 9px 12px -6px rgba(0,0,0,0.2),0px 19px 29px 2px rgba(0,0,0,0.14),0px 7px 36px 6px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation20 {
+    box-shadow: 0px 10px 13px -6px rgba(0,0,0,0.2),0px 20px 31px 3px rgba(0,0,0,0.14),0px 8px 38px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation21 {
+    box-shadow: 0px 10px 13px -6px rgba(0,0,0,0.2),0px 21px 33px 3px rgba(0,0,0,0.14),0px 8px 40px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation22 {
+    box-shadow: 0px 10px 14px -6px rgba(0,0,0,0.2),0px 22px 35px 3px rgba(0,0,0,0.14),0px 8px 42px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation23 {
+    box-shadow: 0px 11px 14px -7px rgba(0,0,0,0.2),0px 23px 36px 3px rgba(0,0,0,0.14),0px 9px 44px 8px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation24 {
+    box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12);
+  }
+  .MuiIconButton-root {
+    flex: 0 0 auto;
+    color: rgba(0, 0, 0, 0.54);
+    padding: 12px;
+    overflow: visible;
+    font-size: 1.5rem;
+    text-align: center;
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-radius: 50%;
+  }
+  .MuiIconButton-root:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiIconButton-root.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+    background-color: transparent;
+  }
+@media (hover: none) {
+  .MuiIconButton-root:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-edgeStart {
+    margin-left: -12px;
+  }
+  .MuiIconButton-sizeSmall.MuiIconButton-edgeStart {
+    margin-left: -3px;
+  }
+  .MuiIconButton-edgeEnd {
+    margin-right: -12px;
+  }
+  .MuiIconButton-sizeSmall.MuiIconButton-edgeEnd {
+    margin-right: -3px;
+  }
+  .MuiIconButton-colorInherit {
+    color: inherit;
+  }
+  .MuiIconButton-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiIconButton-colorPrimary:hover {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiIconButton-colorPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiIconButton-colorSecondary:hover {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+@media (hover: none) {
+  .MuiIconButton-colorSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-sizeSmall {
+    padding: 3px;
+    font-size: 1.125rem;
+  }
+  .MuiIconButton-label {
+    width: 100%;
+    display: flex;
+    align-items: inherit;
+    justify-content: inherit;
+  }
+  .MuiAlert-root {
+    display: flex;
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.43;
+    border-radius: 4px;
+    letter-spacing: 0.01071em;
+    background-color: transparent;
+  }
+  .MuiAlert-standardSuccess {
+    color: rgb(30, 70, 32);
+    background-color: rgb(237, 247, 237);
+  }
+  .MuiAlert-standardSuccess .MuiAlert-icon {
+    color: #4caf50;
+  }
+  .MuiAlert-standardInfo {
+    color: rgb(13, 60, 97);
+    background-color: rgb(232, 244, 253);
+  }
+  .MuiAlert-standardInfo .MuiAlert-icon {
+    color: #2196f3;
+  }
+  .MuiAlert-standardWarning {
+    color: rgb(102, 60, 0);
+    background-color: rgb(255, 244, 229);
+  }
+  .MuiAlert-standardWarning .MuiAlert-icon {
+    color: #ff9800;
+  }
+  .MuiAlert-standardError {
+    color: rgb(102, 9, 27);
+    background-color: rgb(255, 231, 236);
+  }
+  .MuiAlert-standardError .MuiAlert-icon {
+    color: #ff1744;
+  }
+  .MuiAlert-outlinedSuccess {
+    color: rgb(30, 70, 32);
+    border: 1px solid #4caf50;
+  }
+  .MuiAlert-outlinedSuccess .MuiAlert-icon {
+    color: #4caf50;
+  }
+  .MuiAlert-outlinedInfo {
+    color: rgb(13, 60, 97);
+    border: 1px solid #2196f3;
+  }
+  .MuiAlert-outlinedInfo .MuiAlert-icon {
+    color: #2196f3;
+  }
+  .MuiAlert-outlinedWarning {
+    color: rgb(102, 60, 0);
+    border: 1px solid #ff9800;
+  }
+  .MuiAlert-outlinedWarning .MuiAlert-icon {
+    color: #ff9800;
+  }
+  .MuiAlert-outlinedError {
+    color: rgb(102, 9, 27);
+    border: 1px solid #ff1744;
+  }
+  .MuiAlert-outlinedError .MuiAlert-icon {
+    color: #ff1744;
+  }
+  .MuiAlert-filledSuccess {
+    color: #fff;
+    font-weight: 500;
+    background-color: #4caf50;
+  }
+  .MuiAlert-filledInfo {
+    color: #fff;
+    font-weight: 500;
+    background-color: #2196f3;
+  }
+  .MuiAlert-filledWarning {
+    color: #fff;
+    font-weight: 500;
+    background-color: #ff9800;
+  }
+  .MuiAlert-filledError {
+    color: #fff;
+    font-weight: 500;
+    background-color: #ff1744;
+  }
+  .MuiAlert-icon {
+    display: flex;
+    opacity: 0.9;
+    padding: 7px 0;
+    font-size: 22px;
+    margin-right: 12px;
+  }
+  .MuiAlert-message {
+    padding: 8px 0;
+  }
+  .MuiAlert-action {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: -8px;
+    padding-left: 16px;
+  }
+  .MuiAppBar-root {
+    width: 100%;
+    display: flex;
+    z-index: 1100;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    flex-direction: column;
+  }
+  .MuiAppBar-positionFixed {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: fixed;
+  }
+@media print {
+  .MuiAppBar-positionFixed {
+    position: absolute;
+  }
+}
+  .MuiAppBar-positionAbsolute {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: absolute;
+  }
+  .MuiAppBar-positionSticky {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: sticky;
+  }
+  .MuiAppBar-positionStatic {
+    position: static;
+  }
+  .MuiAppBar-positionRelative {
+    position: relative;
+  }
+  .MuiAppBar-colorDefault {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #f5f5f5;
+  }
+  .MuiAppBar-colorPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiAppBar-colorSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiAppBar-colorInherit {
+    color: inherit;
+  }
+  .MuiAppBar-colorTransparent {
+    color: inherit;
+    background-color: transparent;
+  }
+  .MuiBackdrop-root {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    z-index: -1;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiBackdrop-invisible {
+    background-color: transparent;
+  }
+  .MuiButtonGroup-root {
+    display: inline-flex;
+    border-radius: 4px;
+  }
+  .MuiButtonGroup-contained {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+  }
+  .MuiButtonGroup-disableElevation {
+    box-shadow: none;
+  }
+  .MuiButtonGroup-fullWidth {
+    width: 100%;
+  }
+  .MuiButtonGroup-vertical {
+    flex-direction: column;
+  }
+  .MuiButtonGroup-grouped {
+    min-width: 40px;
+  }
+  .MuiButtonGroup-groupedHorizontal:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .MuiButtonGroup-groupedHorizontal:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedVertical:not(:first-child) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedVertical:not(:last-child) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedTextHorizontal:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.23);
+  }
+  .MuiButtonGroup-groupedTextVertical:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.23);
+  }
+  .MuiButtonGroup-groupedTextPrimary:not(:last-child) {
+    border-color: rgba(33, 118, 174, 0.5);
+  }
+  .MuiButtonGroup-groupedTextSecondary:not(:last-child) {
+    border-color: rgba(255, 0, 123, 0.5);
+  }
+  .MuiButtonGroup-groupedOutlinedHorizontal:not(:first-child) {
+    margin-left: -1px;
+  }
+  .MuiButtonGroup-groupedOutlinedHorizontal:not(:last-child) {
+    border-right-color: transparent;
+  }
+  .MuiButtonGroup-groupedOutlinedVertical:not(:first-child) {
+    margin-top: -1px;
+  }
+  .MuiButtonGroup-groupedOutlinedVertical:not(:last-child) {
+    border-bottom-color: transparent;
+  }
+  .MuiButtonGroup-groupedOutlinedPrimary:hover {
+    border-color: #2176AE;
+  }
+  .MuiButtonGroup-groupedOutlinedSecondary:hover {
+    border-color: #FF007B;
+  }
+  .MuiButtonGroup-groupedContained {
+    box-shadow: none;
+  }
+  .MuiButtonGroup-groupedContainedHorizontal:not(:last-child) {
+    border-right: 1px solid #bdbdbd;
+  }
+  .MuiButtonGroup-groupedContainedHorizontal:not(:last-child).Mui-disabled {
+    border-right: 1px solid rgba(0, 0, 0, 0.26);
+  }
+  .MuiButtonGroup-groupedContainedVertical:not(:last-child) {
+    border-bottom: 1px solid #bdbdbd;
+  }
+  .MuiButtonGroup-groupedContainedVertical:not(:last-child).Mui-disabled {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.26);
+  }
+  .MuiButtonGroup-groupedContainedPrimary:not(:last-child) {
+    border-color: rgb(23, 82, 121);
+  }
+  .MuiButtonGroup-groupedContainedSecondary:not(:last-child) {
+    border-color: rgb(178, 0, 86);
+  }
+  .MuiChip-root {
+    color: rgba(0, 0, 0, 0.87);
+    border: none;
+    cursor: default;
+    height: 32px;
+    display: inline-flex;
+    outline: 0;
+    padding: 0;
+    font-size: 0.8125rem;
+    box-sizing: border-box;
+    transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    align-items: center;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    white-space: nowrap;
+    border-radius: 16px;
+    vertical-align: middle;
+    justify-content: center;
+    text-decoration: none;
+    background-color: #e0e0e0;
+  }
+  .MuiChip-root.Mui-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .MuiChip-root .MuiChip-avatar {
+    color: #616161;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    margin-left: 5px;
+    margin-right: -6px;
+  }
+  .MuiChip-root .MuiChip-avatarColorPrimary {
+    color: #fff;
+    background-color: rgb(23, 82, 121);
+  }
+  .MuiChip-root .MuiChip-avatarColorSecondary {
+    color: #fff;
+    background-color: rgb(178, 0, 86);
+  }
+  .MuiChip-root .MuiChip-avatarSmall {
+    width: 18px;
+    height: 18px;
+    font-size: 0.625rem;
+    margin-left: 4px;
+    margin-right: -4px;
+  }
+  .MuiChip-sizeSmall {
+    height: 24px;
+  }
+  .MuiChip-colorPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiChip-colorSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiChip-clickable {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiChip-clickable:hover, .MuiChip-clickable:focus {
+    background-color: rgb(206, 206, 206);
+  }
+  .MuiChip-clickable:active {
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+  .MuiChip-clickableColorPrimary:hover, .MuiChip-clickableColorPrimary:focus {
+    background-color: rgb(50, 128, 180);
+  }
+  .MuiChip-clickableColorSecondary:hover, .MuiChip-clickableColorSecondary:focus {
+    background-color: rgb(255, 20, 133);
+  }
+  .MuiChip-deletable:focus {
+    background-color: rgb(206, 206, 206);
+  }
+  .MuiChip-deletableColorPrimary:focus {
+    background-color: rgb(77, 145, 190);
+  }
+  .MuiChip-deletableColorSecondary:focus {
+    background-color: rgb(255, 51, 149);
+  }
+  .MuiChip-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    background-color: transparent;
+  }
+  .MuiChip-clickable.MuiChip-outlined:hover, .MuiChip-clickable.MuiChip-outlined:focus, .MuiChip-deletable.MuiChip-outlined:focus {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiChip-outlined .MuiChip-avatar {
+    margin-left: 4px;
+  }
+  .MuiChip-outlined .MuiChip-avatarSmall {
+    margin-left: 2px;
+  }
+  .MuiChip-outlined .MuiChip-icon {
+    margin-left: 4px;
+  }
+  .MuiChip-outlined .MuiChip-iconSmall {
+    margin-left: 2px;
+  }
+  .MuiChip-outlined .MuiChip-deleteIcon {
+    margin-right: 5px;
+  }
+  .MuiChip-outlined .MuiChip-deleteIconSmall {
+    margin-right: 3px;
+  }
+  .MuiChip-outlinedPrimary {
+    color: #2176AE;
+    border: 1px solid #2176AE;
+  }
+  .MuiChip-clickable.MuiChip-outlinedPrimary:hover, .MuiChip-clickable.MuiChip-outlinedPrimary:focus, .MuiChip-deletable.MuiChip-outlinedPrimary:focus {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+  .MuiChip-outlinedSecondary {
+    color: #FF007B;
+    border: 1px solid #FF007B;
+  }
+  .MuiChip-clickable.MuiChip-outlinedSecondary:hover, .MuiChip-clickable.MuiChip-outlinedSecondary:focus, .MuiChip-deletable.MuiChip-outlinedSecondary:focus {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+  .MuiChip-icon {
+    color: #616161;
+    margin-left: 5px;
+    margin-right: -6px;
+  }
+  .MuiChip-iconSmall {
+    width: 18px;
+    height: 18px;
+    margin-left: 4px;
+    margin-right: -4px;
+  }
+  .MuiChip-iconColorPrimary {
+    color: inherit;
+  }
+  .MuiChip-iconColorSecondary {
+    color: inherit;
+  }
+  .MuiChip-label {
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 12px;
+    padding-right: 12px;
+    text-overflow: ellipsis;
+  }
+  .MuiChip-labelSmall {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .MuiChip-deleteIcon {
+    color: rgba(0, 0, 0, 0.26);
+    width: 22px;
+    cursor: pointer;
+    height: 22px;
+    margin: 0 5px 0 -6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiChip-deleteIcon:hover {
+    color: rgba(0, 0, 0, 0.4);
+  }
+  .MuiChip-deleteIconSmall {
+    width: 16px;
+    height: 16px;
+    margin-left: -4px;
+    margin-right: 4px;
+  }
+  .MuiChip-deleteIconColorPrimary {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .MuiChip-deleteIconColorPrimary:hover, .MuiChip-deleteIconColorPrimary:active {
+    color: #fff;
+  }
+  .MuiChip-deleteIconColorSecondary {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .MuiChip-deleteIconColorSecondary:hover, .MuiChip-deleteIconColorSecondary:active {
+    color: #fff;
+  }
+  .MuiChip-deleteIconOutlinedColorPrimary {
+    color: rgba(33, 118, 174, 0.7);
+  }
+  .MuiChip-deleteIconOutlinedColorPrimary:hover, .MuiChip-deleteIconOutlinedColorPrimary:active {
+    color: #2176AE;
+  }
+  .MuiChip-deleteIconOutlinedColorSecondary {
+    color: rgba(255, 0, 123, 0.7);
+  }
+  .MuiChip-deleteIconOutlinedColorSecondary:hover, .MuiChip-deleteIconOutlinedColorSecondary:active {
+    color: #FF007B;
+  }
+  .MuiCircularProgress-root {
+    display: inline-block;
+  }
+  .MuiCircularProgress-static {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-indeterminate {
+    animation: MuiCircularProgress-keyframes-circular-rotate 1.4s linear infinite;
+  }
+  .MuiCircularProgress-determinate {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiCircularProgress-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiCircularProgress-svg {
+    display: block;
+  }
+  .MuiCircularProgress-circle {
+    stroke: currentColor;
+  }
+  .MuiCircularProgress-circleStatic {
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-circleIndeterminate {
+    animation: MuiCircularProgress-keyframes-circular-dash 1.4s ease-in-out infinite;
+    stroke-dasharray: 80px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  .MuiCircularProgress-circleDeterminate {
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+@keyframes MuiCircularProgress-keyframes-circular-rotate {
+  0% {
+    transform-origin: 50% 50%;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes MuiCircularProgress-keyframes-circular-dash {
+  0% {
+    stroke-dasharray: 1px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  50% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -15px;
+  }
+  100% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -125px;
+  }
+}
+  .MuiCircularProgress-circleDisableShrink {
+    animation: none;
+  }
+  .MuiDrawer-docked {
+    flex: 0 0 auto;
+  }
+  .MuiDrawer-paper {
+    top: 0;
+    flex: 1 0 auto;
+    height: 100%;
+    display: flex;
+    outline: 0;
+    z-index: 1200;
+    position: fixed;
+    overflow-y: auto;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+  }
+  .MuiDrawer-paperAnchorLeft {
+    left: 0;
+    right: auto;
+  }
+  .MuiDrawer-paperAnchorRight {
+    left: auto;
+    right: 0;
+  }
+  .MuiDrawer-paperAnchorTop {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    height: auto;
+    max-height: 100%;
+  }
+  .MuiDrawer-paperAnchorBottom {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    max-height: 100%;
+  }
+  .MuiDrawer-paperAnchorDockedLeft {
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedTop {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedRight {
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedBottom {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiList-root {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    list-style: none;
+  }
+  .MuiList-padding {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .MuiList-subheader {
+    padding-top: 0;
+  }
+  .MuiSnackbar-root {
+    left: 8px;
+    right: 8px;
+    display: flex;
+    z-index: 1400;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+  }
+  .MuiSnackbar-anchorOriginTopCenter {
+    top: 8px;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopCenter {
+    top: 24px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+  .MuiSnackbar-anchorOriginBottomCenter {
+    bottom: 8px;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomCenter {
+    left: 50%;
+    right: auto;
+    bottom: 24px;
+    transform: translateX(-50%);
+  }
+}
+  .MuiSnackbar-anchorOriginTopRight {
+    top: 8px;
+    justify-content: flex-end;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopRight {
+    top: 24px;
+    left: auto;
+    right: 24px;
+  }
+}
+  .MuiSnackbar-anchorOriginBottomRight {
+    bottom: 8px;
+    justify-content: flex-end;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomRight {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+  }
+}
+  .MuiSnackbar-anchorOriginTopLeft {
+    top: 8px;
+    justify-content: flex-start;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopLeft {
+    top: 24px;
+    left: 24px;
+    right: auto;
+  }
+}
+  .MuiSnackbar-anchorOriginBottomLeft {
+    bottom: 8px;
+    justify-content: flex-start;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomLeft {
+    left: 24px;
+    right: auto;
+    bottom: 24px;
+  }
+}
+  .MuiToolbar-root {
+    display: flex;
+    position: relative;
+    align-items: center;
+  }
+  .MuiToolbar-gutters {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+@media (min-width:900px) {
+  .MuiToolbar-gutters {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+  .MuiToolbar-regular {
+    min-height: 56px;
+  }
+@media (min-width:0px) and (orientation: landscape) {
+  .MuiToolbar-regular {
+    min-height: 48px;
+  }
+}
+@media (min-width:900px) {
+  .MuiToolbar-regular {
+    min-height: 64px;
+  }
+}
+  .MuiToolbar-dense {
+    min-height: 48px;
+  }
+  .jss80 {
+    height: 18px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    vertical-align: text-bottom;
+  }
+  .jss81 {
+    padding: 0 6px;
+  }
+  .jss82 {
+    color: #424242;
+  }
+  .jss83 {
+    color: #283593;
+  }
+  .jss84 {
+    color: #d84315;
+  }
+  .jss85 {
+    color: #558b2f;
+  }
+  .jss86 {
+    color: #6d4c41;
+  }
+  .jss87 {
+    color: #6d4c41;
+  }
+  .jss91 {
+    text-decoration: line-through;
+  }
+  .jss92 {
+    text-decoration: line-through;
+  }
+  .jss93 {
+    text-decoration: line-through;
+  }
+  .jss94:hover .jss95 {
+    visibility: visible;
+  }
+  .jss95 {
+    color: inherit;
+    visibility: hidden;
+    margin-left: 0.3ch;
+  }
+  .jss95:hover {
+    color: #2176AE;
+  }
+  .jss96 {
+    padding: 3px;
+    border-radius: 4px;
+    background-color: #F8F8F8;
+  }
+  .jss98 > ul {
+    padding: 0 !important;
+  }
+  .jss99 {
+    font-weight: 700;
+    padding-bottom: 8px;
+  }
+  .jss100 {
+    padding-left: 1rem;
+    list-style-type: none;
+  }
+  .jss71 {
+    display: flex;
+  }
+  .jss72 {
+    flex-grow: 0.5;
+  }
+@media (max-width:1279.95px) {
+  .jss72 {
+    display: none;
+  }
+}
+  .jss73 {
+    flex-grow: 1;
+    padding-left: 16px;
+    overflow-wrap: anywhere;
+    padding-right: 16px;
+  }
+@media (min-width:1060px) {
+  .jss73 {
+    flex-grow: 0;
+    flex-basis: 782px;
+    flex-shrink: 0;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+  .jss73 img {
+    max-width: 100%;
+  }
+  .jss74 {
+    flex-grow: 1;
+    flex-basis: 180px;
+  }
+@media (max-width:1279.95px) {
+  .jss74 {
+    display: none;
+  }
+}
+  .jss75 {
+    top: 112px;
+    position: sticky;
+    min-width: 20ch;
+    align-self: flex-start;
+    padding-left: 16px;
+  }
+  .jss43 {
+    padding: 0;
+  }
+  .jss44 {
+    display: block;
+  }
+  .jss45:hover .jss57 {
+    background-color: #2176AE;
+  }
+  .jss46 .jss57 {
+    background-color: #FF007B;
+  }
+  .jss46 .jss44 {
+    color: #FF007B;
+  }
+  .jss46 .jss44:hover {
+    color: #FF007B;
+  }
+  .jss46:hover .jss57 {
+    background-color: #FF007B;
+  }
+  .jss47 {
+    flex: 0 0 calc(12ch - 11.5px);
+  }
+  .jss48 {
+    flex: 0 0 12ch;
+  }
+  .jss49 {
+    width: 35px;
+    height: 35px;
+  }
+  .jss50 {
+    color: #9e9e9e;
+    font-size: 0.8rem;
+  }
+  .jss51 {
+    margin-left: -1ch;
+  }
+  .jss52 {
+    vertical-align: middle;
+  }
+  .jss53 {
+    margin-right: 0.5ch;
+  }
+  .jss54 {
+    color: #616161;
+    font-size: 0.8rem;
+    white-space: pre;
+    vertical-align: text-top;
+  }
+  .jss55 {
+    flex: 0 0 calc(12ch - 12px);
+  }
+  .jss56 {
+    padding-bottom: 16px;
+  }
+  .jss58 {
+    background-color: #FF007B;
+  }
+  .jss62 {
+    text-decoration: line-through;
+  }
+  .jss63 {
+    text-decoration: line-through;
+  }
+  .jss64 {
+    text-decoration: line-through;
+  }
+  .jss1 {
+    display: flex;
+  }
+  .jss2 {
+    flex-grow: 0.5;
+  }
+@media (max-width:1279.95px) {
+  .jss2 {
+    display: none;
+  }
+}
+  .jss3 {
+    flex-grow: 1;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+@media (min-width:1060px) {
+  .jss3 {
+    flex-grow: 0;
+    flex-basis: 782px;
+    flex-shrink: 0;
+  }
+}
+  .jss4 {
+    flex-grow: 1;
+    flex-basis: 180px;
+  }
+@media (max-width:1279.95px) {
+  .jss4 {
+    display: none;
+  }
+}
+  .jss5 {
+    z-index: 1201;
+  }
+@media (min-width:900px) {
+  .jss6 {
+    display: none;
+  }
+}
+  .jss7 {
+    display: none;
+  }
+@media (min-width:900px) {
+  .jss7 {
+    width: 356px;
+    cursor: pointer;
+    display: flex;
+    flex-grow: 0;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+  .jss8 {
+    color: inherit;
+    display: block;
+    margin-left: 16px;
+  }
+  .jss8:hover {
+    color: inherit;
+  }
+  .jss9 {
+    z-index: 1298;
+  }
+  .jss10 {
+    width: 100%;
+    z-index: 1299;
+    transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+@media (min-width:1060px) {
+  .jss10 {
+    width: 70%;
+  }
+}
+  .jss11 {
+    width: 100%;
+  }
+@media (min-width:900px) {
+  .jss12 {
+    width: 380px;
+    flex-shrink: 0;
+  }
+}
+  .jss13 {
+    width: 380px;
+  }
+  .jss14 {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+@media (min-width:900px) {
+  .jss14 {
+    padding-top: 48px;
+  }
+}
+  .jss15 {
+    visibility: visible;
+    justify-content: space-between;
+  }
+@media (min-width:900px) {
+  .jss15 {
+    visibility: hidden;
+  }
+}
+  .jss16 {
+    overflow: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  .jss16::-webkit-scrollbar {
+    width: 6px;
+    background-color: [object Object];
+  }
+  .jss16::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #bdbdbd;
+    -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,.3);
+  }
+  .jss17 {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+  .jss18 {
+    display: flex;
+    padding-left: 16px;
+    padding-right: 24px;
+    padding-bottom: 4px;
+    justify-content: space-between;
+  }
+@media (min-width:900px) {
+  .jss18 {
+    padding-left: 24px;
+  }
+}
+  .jss19 {
+    font-weight: 700;
+  }
+  .jss20 {
+    align-self: center;
+    margin-top: 30vh;
+  }
+  .jss21 {
+    flex-grow: 1;
+    padding-top: 16px;
+  }
+@media (min-width:900px) {
+  .jss21 {
+    padding-top: 48px;
+  }
+}
+  .jss22 {
+    min-height: calc(100vh - 35px - 72px);
+  }
+@media (min-width:900px) {
+  .jss22 {
+    min-height: calc(100vh - 35px - 112px);
+  }
+}
+  .jss23 {
+    color: #9e9e9e;
+    height: 35px;
+    display: flex;
+    margin-top: 48px;
+    background-color: #f5f5f5;
+  }
+  .jss24 {
+    font-size: 0.77rem;
+  }
+  .jss25 {
+    color: #757575;
+    font-size: 0.8rem;
+  }
+  .jss25:hover {
+    color: #424242;
+  }
+  .jss26 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .jss76 {
+    color: #616161;
+    display: flex;
+    justify-content: space-between;
+  }
+  .jss77 {
+    display: flex;
+  }
+  .jss77 > * {
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .jss77 > *:first-child {
+    margin-left: 0;
+  }
+  .jss77 > *:last-child {
+    margin-right: 0;
+  }
+  .jss78 {
+    vertical-align: middle;
+  }
+  .jss79 {
+    color: #757575;
+  }
+  .jss65 {
+    margin-top: 8px;
+    margin-bottom: 32px;
+  }
+  .jss66 {
+    margin-bottom: 24px;
+  }
+  .jss67 {
+    margin-top: 96px;
+  }
+  .jss68 {
+    display: flex;
+    margin-top: 8px;
+    justify-content: space-between;
+  }
+  .jss70 {
+    color: #757575;
+    font-size: 0.77rem;
+    text-align: center;
+  }</style><style data-href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuaabWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWub2bWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style><style data-href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&display=swap">@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oSWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjojISWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjovoSWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjoa4OWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JEqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JgqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JAqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67J8qxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JMqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JIqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JwqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JEqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JgqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JAqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67J8qxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JMqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JIqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JwqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JEqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JgqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JAqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67J8qxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JMqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JIqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JwqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JEqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JgqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JAqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67J8qxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JMqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JIqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/l/font?kit=BngmUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oT0Y0ySrU0d0sOjdXR67JwqxvD_WEw&skey=a9ad6a4717e923f0&v=v36) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style></head><body><div id="__next"><div class="jss1"><header class="MuiPaper-root MuiAppBar-root MuiAppBar-positionFixed MuiAppBar-colorPrimary jss5 mui-fixed MuiPaper-elevation4"><div class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"><button class="MuiButtonBase-root MuiIconButton-root jss6 MuiIconButton-colorInherit MuiIconButton-edgeStart" tabindex="0" type="button" aria-label="open drawer"><span class="MuiIconButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg></span></button><div class="jss7"><div><img src="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-logo-dark.png" alt="Log4brains logo" width="50" height="50"/></div><div><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss8 MuiTypography-h6 MuiTypography-colorPrimary MuiTypography-noWrap" href="/DonaTrack-TP-DDS/adr-preview/">DonaTrack</a><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss8 MuiTypography-body2 MuiTypography-colorPrimary MuiTypography-noWrap" href="/DonaTrack-TP-DDS/adr-preview/">Architecture knowledge base</a></div></div><div class="jss2"></div><div class="jss3"><div class="MuiBackdrop-root jss9" aria-hidden="true" style="opacity:0;visibility:hidden"></div></div><div class="jss4"></div></div></header><nav class="jss12" aria-label="architecture decision records list"><div class="jss31"></div><div class="jss29"><div class="MuiDrawer-root MuiDrawer-docked"><div class="MuiPaper-root MuiDrawer-paper jss13 MuiDrawer-paperAnchorLeft MuiDrawer-paperAnchorDockedLeft MuiPaper-elevation0"><div class="jss14"><div class="MuiToolbar-root MuiToolbar-regular jss15 MuiToolbar-gutters"><div></div><a class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeSmall" tabindex="0" aria-disabled="false" aria-label="go to homepage" title="Architecture knowledge base of DonaTrack" href="/DonaTrack-TP-DDS/adr-preview/"><span class="MuiIconButton-label"><img src="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-logo.png" alt="Log4brains logo" width="40" height="40"/></span></a><button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeSmall" tabindex="0" type="button" aria-label="close drawer" title="Close"><span class="MuiIconButton-label"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></span></button></div><div class="jss18"><h6 class="MuiTypography-root jss19 MuiTypography-subtitle2">Decision log</h6><div class="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate" style="width:13px;height:13px;opacity:0;visibility:hidden" role="progressbar"><svg class="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle></svg></div></div><div class="MuiCircularProgress-root jss20 MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate" style="width:30px;height:30px" role="progressbar"><svg class="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle></svg></div><ul class="MuiList-root jss17 MuiList-padding"></ul></div></div></div></div></nav><div class="jss21"><div class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"></div><main class="jss22"><div class="jss71"><div class="jss72"></div><div class="jss73"><h3 class="MuiTypography-root MuiTypography-h3 MuiTypography-gutterBottom">Tercera alternativa de identidad (Raíces) como prototipo propio, sin juego de plantillas hasta que se elija</h3><hr class="MuiDivider-root"/><div class="jss65 jss76"><div><div class="jss77"><p class="MuiTypography-root MuiTypography-body2" title="Package"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"></path></svg> <!-- -->cliente-liviano</p><p class="MuiTypography-root MuiTypography-body2" title="Publication date"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"></path></svg> <!-- -->Nov 2, 2026</p><div title="Status"><div class="MuiChip-root jss80 jss87 MuiChip-outlined MuiChip-sizeSmall"><span class="MuiChip-label MuiChip-labelSmall jss81">SUPERSEDED</span></div></div></div><p class="MuiTypography-root MuiTypography-body2" title="Deciders"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg> <!-- -->tsorren, al elegir entre dos opciones de convivencia en la sesión de Raíces</p><p class="MuiTypography-root MuiTypography-body2" title="Tags"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"></path></svg> <span class="jss79">#cliente-liviano #interfaz #identidad #tokens #prototipo #entrega-6</span></p></div><div><div><div role="group" class="MuiButtonGroup-root"><button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlined" tabindex="0" type="button" title="Copy link"><span class="MuiButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></svg></span></button><a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlined" tabindex="0" aria-disabled="false" href="https://github.com/tsorren/DonaTrack-TP-DDS/blob/master/docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md" target="_blank" rel="noopener" title="View/edit on Github"><span class="MuiButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9a127.5 127.5 0 0 1 38.1 91v112.5c.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"></path></svg></svg></span></a></div></div></div></div><div class="MuiPaper-root MuiAlert-root MuiAlert-standardWarning jss66 MuiPaper-elevation0" role="alert"><div class="MuiAlert-icon"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"></path></svg></div><div class="MuiAlert-message">This ADR is <strong>superseded</strong> by <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano/">Una sola identidad visual en el cliente liviano: Raíces es el sitio y se retiran las alternativas</a>.</div></div><div><div><blockquote><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Origen:</strong> el <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="../../interfaz/identidad/brief-raices.md">brief de Raíces</a> registraba este ADR como
+pendiente antes de construir Raíces como alternativa: con ella serían tres identidades, y con la regla del
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss93 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias/">ADR de dos alternativas</a>cada pantalla nueva se escribiría tres veces (<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="../../interfaz/bitacora.md">bitácora</a>,
+2026-10-31, &quot;Una tercera alternativa, diseñada con el usuario por A/B&quot;). Es un ADR nuevo y no una
+edición de aquel, porque aquel ya está publicado en la rama del PR 924.</p></blockquote>
+<h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="contexto-y-problema">Contexto y Problema<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#contexto-y-problema" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">El <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss93 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias/">ADR de dos alternativas</a>(<code class="jss96">proposed</code>) fija que cada alternativa tiene su juego completo de plantillas
+(<code class="jss96">templates/alternativas/&lt;nombre&gt;/</code>) y sus hojas (<code class="jss96">static/css/alternativas/&lt;nombre&gt;/</code>), con los
+mismos datos y acciones vigilados por test. Hoy hay dos: Glassmorphism y Cozy / Medieval.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Raíces es una tercera identidad (raíces y semillas, para las empresas que donan y quieren
+transparencia), en exploración con el usuario por comparaciones A/B. Estado actual:</p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> Su única pantalla es la portada, armada como variante de estructura:
+<code class="jss96">templates/variantes/concepto-b.html</code>, <code class="jss96">static/css/variantes/concepto-b.css</code> y sus valores base
+<code class="jss96">--p-*</code> en <code class="jss96">static/css/variantes/comun/raices.css</code>. La portada usa esos valores base directamente
+(141 usos: 121 en <code class="jss96">concepto-b.css</code> y 20 en <code class="jss96">comun/raices.css</code>): tiene un solo nivel de tokens.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> Las variantes son temporales: se borran al decidir (<code class="jss96">cliente-liviano/AGENTS.md</code>,
+Estructura). Raíces no puede quedarse ahí.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> El juego completo de una alternativa son hoy 18 plantillas: <code class="jss96">layout.html</code>,
+<code class="jss96">layout-privado.html</code>, 14 fragmentos y las 2 páginas del catálogo <code class="jss96">/estilos</code>. Las pantallas del
+sitio todavía no existen como plantillas del sistema: son el prototipo navegable de Cozy
+(<code class="jss96">templates/prototipo/cozy-medieval/</code>, servido por <code class="jss96">PrototipoController</code>), que no tiene gemelas.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> <code class="jss96">InterfazFitnessTest.cadaAlternativaTieneSuJuegoCompletoDePlantillas</code> exige que
+toda carpeta de <code class="jss96">static/css/alternativas/</code> con su <code class="jss96">tokens.css</code> tenga su juego en
+<code class="jss96">templates/alternativas/</code>. Poner a Raíces ahí obliga a escribir las 18 plantillas antes de dibujar
+cualquier pantalla.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Problema: ¿cómo vive una tercera alternativa que todavía se explora, sin triplicar el trabajo de
+cada pantalla y sin dejarla en un lugar temporal? Son cuatro preguntas:</p><ol start="1"><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Dónde vive:</strong> ¿juego completo como las otras dos, o algo más chico?</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Cómo se elige en la maqueta:</strong> ¿con qué dirección se ve una pantalla de Raíces?</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Tokens:</strong> ¿rige D20 (dos niveles de tokens) dentro de Raíces?</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Salida:</strong> ¿qué pasa si el equipo la elige o la descarta?</span></li></ol><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="atributos-de-calidad-y-drivers-de-decision">Atributos de Calidad y Drivers de Decisión<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#atributos-de-calidad-y-drivers-de-decision" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Los mismos pesos del ADR de dos alternativas, para comparar con aquella decisión: las otras dos
+alternativas intactas 30 · libertad de diseño de Raíces 20 · comparar sobre las mismas pantallas 20 ·
+costo de mantener cada pantalla 20 · reversibilidad 10. Requisito que decide si una opción sirve:
+Raíces queda en un lugar estable, no temporal.</p><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="relaciones-arquitectonicas">Relaciones Arquitectónicas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#relaciones-arquitectonicas" title="Permanent link">¶</a></h2><ol start="1"><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Refina:</strong> <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss93 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias/">dos alternativas de identidad visual</a>(<code class="jss96">proposed</code>). No lo reemplaza: Glassmorphism y Cozy siguen como están. Agrega una etapa previa al
+juego completo, el prototipo propio, para una alternativa que todavía no se eligió.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Respeta:</strong> <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas/">ADR-E6-06</a>(<code class="jss96">proposed</code>), decisión D20: dos niveles de tokens dentro de cada alternativa, también en Raíces.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Complementa:</strong> <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/cliente-liviano/20261030-verificacion-visual-con-playwright-y-axe/">verificación visual con Playwright y axe</a>(<code class="jss96">proposed</code>): las pantallas de Raíces entran en la lista de páginas que recorre.</span></li></ol><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="alternativas-consideradas">Alternativas Consideradas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#alternativas-consideradas" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Puntajes de 1 a 5; son estimaciones del agente (<code class="jss96">[INFERRED]</code>).</p><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="donde-vive">Dónde vive<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#donde-vive" title="Permanent link">¶</a></h3><table><thead><tr><th> Alternativa </th><th style="text-align:center"> Lugar estable </th><th style="text-align:center"> Las otras dos intactas </th><th style="text-align:center"> Libertad </th><th style="text-align:center"> Comparar </th><th style="text-align:center"> Costo por pantalla </th><th style="text-align:center"> Reversible </th><th style="text-align:center"> <strong>Total</strong> </th></tr></thead><tbody><tr><td> R1. Tercer juego completo ya (<code class="jss96">templates/alternativas/raices/</code> y <code class="jss96">static/css/alternativas/raices/</code>), más su prototipo </td><td style="text-align:center"> Sí </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 1 </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 4,1 </td></tr><tr><td> <strong>R2. Prototipo propio: sus pantallas y hojas en una carpeta de prototipo; el juego completo, solo si el equipo la elige</strong> </td><td style="text-align:center"> Sí </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 3 </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 5 </td><td style="text-align:center"> <strong>4,4</strong> </td></tr><tr><td> R3. Seguir como variantes de estructura (lo que hay) </td><td style="text-align:center"> No </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 3 </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 4,1, descartada por el requisito </td></tr><tr><td> R4. Reemplazar a Cozy o a Glassmorphism </td><td style="text-align:center"> Sí </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> <code class="jss96">[DOCUMENTED]</code> descartada por el usuario el 2026-10-31, cuando eligió una tercera alternativa (bitácora) </td></tr><tr><td> R5. Una rama propia </td><td style="text-align:center"> Sí </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> — </td><td style="text-align:center"> <code class="jss96">[REJECTED]</code> en el ADR de dos alternativas (opción C) </td></tr></tbody></table><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">El agente recomendó R2 y el usuario la eligió.</p><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="como-se-elige-en-la-maqueta">Cómo se elige en la maqueta<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#como-se-elige-en-la-maqueta" title="Permanent link">¶</a></h3><table><thead><tr><th> Alternativa </th><th style="text-align:center"> Las otras dos intactas </th><th style="text-align:center"> Se mantiene al navegar </th><th style="text-align:center"> Costo </th><th style="text-align:center"> <strong>Propuesta</strong> </th></tr></thead><tbody><tr><td> E1. <code class="jss96">?alternativa=raices</code> </td><td style="text-align:center"> No: el interceptor solo acepta carpetas de <code class="jss96">static/css/alternativas/</code>, que obligan al juego completo </td><td style="text-align:center"> No: los enlaces internos pierden el parámetro </td><td style="text-align:center"> Bajo </td><td style="text-align:center"></td></tr><tr><td> E2. <code class="jss96">?prototipo=raices</code> </td><td style="text-align:center"> Sí </td><td style="text-align:center"> No, por el mismo motivo </td><td style="text-align:center"> Bajo </td><td style="text-align:center"></td></tr><tr><td> <strong>E3. Una dirección propia: <code class="jss96">/prototipo/raices/&lt;pantalla&gt;</code></strong> </td><td style="text-align:center"> Sí </td><td style="text-align:center"> Sí: el menú y los enlaces de Raíces apuntan a su dirección </td><td style="text-align:center"> Bajo </td><td style="text-align:center"> <strong>Sí</strong> </td></tr></tbody></table><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Decisión del agente (<code class="jss96">[PROPOSED]</code>): E3 es la única que no pierde la alternativa al pasar de una
+pantalla a otra, el problema que el ADR anterior dejó abierto para <code class="jss96">?alternativa=</code>.</p><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="tokens">Tokens<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#tokens" title="Permanent link">¶</a></h3><table><thead><tr><th> Alternativa </th><th style="text-align:center"> Respeta D20 </th><th style="text-align:center"> Costo ahora </th><th style="text-align:center"> <strong>Propuesta</strong> </th></tr></thead><tbody><tr><td> <strong>K1. Dos niveles, como las otras: valores base <code class="jss96">--p-*</code> solo en el <code class="jss96">tokens.css</code> de Raíces; pantallas solo con tokens de uso</strong> </td><td style="text-align:center"> Sí </td><td style="text-align:center"> Medio: la portada pasa sus 141 usos de <code class="jss96">--p-*</code> a tokens de uso </td><td style="text-align:center"> <strong>Sí</strong> </td></tr><tr><td> K2. Un nivel mientras sea prototipo: las hojas de Raíces usan <code class="jss96">--p-*</code> directo </td><td style="text-align:center"> No </td><td style="text-align:center"> Nulo </td><td style="text-align:center"></td></tr></tbody></table><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Decisión del agente (<code class="jss96">[PROPOSED]</code>): K2 abriría en el test de reglas de interfaz una excepción sin
+fecha de vencimiento, y esas reglas son un quality gate que no se debilita (AGENTS.md §4.3). Con
+K1, el día que Raíces se elija sus hojas ya cumplen las reglas de una alternativa.</p><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="resultado-de-la-decision">Resultado de la Decisión<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#resultado-de-la-decision" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Se elige <strong>R2</strong> (usuario), con <strong>E3</strong> y <strong>K1</strong> (propuestas del agente, sin elegir por el usuario):</p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Carpetas.</strong> Las pantallas de Raíces viven en <code class="jss96">templates/prototipo/raices/&lt;pantalla&gt;.html</code>, con
+los mismos nombres que las del prototipo de Cozy (<code class="jss96">publico-portada</code>, <code class="jss96">donante-seguimiento</code>). Sus
+piezas propias (la estructura de la página pública y la privada, la navegación) van en la misma
+carpeta y no se apoyan en las plantillas de Glassmorphism ni en las de Cozy. Sus hojas viven en
+<code class="jss96">static/css/prototipo/raices/</code>: <code class="jss96">tokens.css</code> (valores base y tokens de uso) y las hojas de sus
+pantallas. Sus imágenes, en <code class="jss96">static/img/raices/</code> (ya existe).</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Sus hojas no van en <code class="jss96">static/css/alternativas/</code>.</strong> <code class="jss96">[OBSERVED]</code> Las del prototipo de Cozy sí
+están dentro de su alternativa (<code class="jss96">static/css/alternativas/cozy-medieval/prototipo/</code>), porque Cozy
+tiene juego. Raíces no puede seguir esa convención: una carpeta suya en <code class="jss96">alternativas/</code> con su
+<code class="jss96">tokens.css</code> obliga al juego completo (regla de abajo). Por eso usa <code class="jss96">static/css/prototipo/raices/</code>.
+Ahí van su <code class="jss96">tokens.css</code>, su <code class="jss96">app.css</code> (las piezas comunes de sus pantallas: marca, botones, sellos,
+grano de impresión y cifras, lo que antes estaba en <code class="jss96">variantes/comun/raices.css</code>) y una hoja por
+pantalla.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Sin gemelas ni tabla de voz.</strong> Como el prototipo de Cozy, las pantallas de Raíces no son
+pantallas del sistema: no tienen gemela y no tienen tabla de voz. Siguen el
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="../../interfaz/tono-y-comunicacion.md">tono común</a> y muestran los mismos datos de ejemplo que la
+pantalla del mismo nombre del prototipo de Cozy, para compararlas. Si la de Cozy toma sus datos
+de un fragmento de datos (como <code class="jss96">prototipo/cozy-medieval/viaje-datos.html</code>), la de Raíces usa el
+mismo fragmento, sin copiarlo. Lo demás lo vigila la revisión (<code class="jss96">revision-ui</code>), no un test.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Dirección.</strong> En el perfil <code class="jss96">maqueta</code>, <code class="jss96">PrototipoController</code> sirve <code class="jss96">/prototipo/raices/&lt;pantalla&gt;</code>
+desde <code class="jss96">templates/prototipo/raices/</code>, con su propio menú por rol, cuyos enlaces llevan el mismo
+prefijo. Una sección del menú que Raíces todavía no dibujó muestra su <code class="jss96">sin-dibujar.html</code> si lo
+tiene, y si no, no existe (404). <code class="jss96">/prototipo/&lt;pantalla&gt;</code> sigue mostrando Cozy, sin cambios. <code class="jss96">?variante=</code> de las
+comparaciones A/B sigue funcionando sobre las pantallas de Raíces.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Reglas de estilo, sin cambiar el test.</strong> <code class="jss96">[OBSERVED]</code> <code class="jss96">InterfazFitnessTest</code> ya recorre todo
+<code class="jss96">static/css/</code>: aplica a cada <code class="jss96">tokens.css</code> el contraste AA de los pares de tokens de uso y pide
+sus puntos de quiebre (<code class="jss96">paresDeTokensCumplenContrasteAA</code>, <code class="jss96">mediaQueriesUsanSoloLosQuiebresDeTokens</code>),
+y a toda otra hoja, solo tokens de uso y ningún color literal
+(<code class="jss96">estilosUsanSoloTokensDeUso</code>, <code class="jss96">soloTokensCssDefineColores</code>); la única excepción son las hojas de
+<code class="jss96">variantes/</code>, que pueden usar y redefinir valores base <code class="jss96">--p-*</code>. La regla de juego completo solo
+cuenta las carpetas de <code class="jss96">static/css/alternativas/</code>, así que no alcanza a <code class="jss96">prototipo/raices/</code>. Por
+eso el <code class="jss96">tokens.css</code> de Raíces declara los mismos tokens de uso de los pares de contraste que las
+otras dos, y sus <code class="jss96">--medida-quiebre-*</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>La portada se muda.</strong> La variante <code class="jss96">concepto-b</code> y su base <code class="jss96">variantes/comun/raices.css</code> pasan a
+<code class="jss96">templates/prototipo/raices/publico-portada.html</code> y a <code class="jss96">static/css/prototipo/raices/</code>, con sus
+valores base convertidos a tokens de uso. Se ve igual: lo comprueba la comparación píxel a píxel
+de las capturas de antes y después.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Verificación visual.</strong> Las pantallas de Raíces se agregan a
+<code class="jss96">src/test/resources/verificacion/paginas.txt</code>, con sus estados.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Excepción a &quot;cada pantalla en cada alternativa&quot;.</strong> La regla de
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="../../../cliente-liviano/AGENTS.md"><code class="jss96">cliente-liviano/AGENTS.md</code></a> (cada pantalla o componente nuevo
+se escribe en cada alternativa) rige para las plantillas del sistema (<code class="jss96">templates/</code> y los juegos de
+<code class="jss96">templates/alternativas/</code>). Raíces, sin juego, queda afuera hasta que se elija. Al implementarse
+este ADR, ese archivo suma a su tabla de Estructura las carpetas <code class="jss96">templates/prototipo/raices/</code> y
+<code class="jss96">static/css/prototipo/raices/</code>, y aclara la excepción en sus reglas de estilos.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Salida.</strong> Si el equipo elige Raíces como alternativa, rige el ADR de dos alternativas: se arma su
+juego completo en <code class="jss96">templates/alternativas/raices/</code> y <code class="jss96">static/css/alternativas/raices/</code>, con su
+tabla de voz, y el test de juego completo lo exige desde ese momento. Si la descarta, se borran
+<code class="jss96">templates/prototipo/raices/</code>, <code class="jss96">static/css/prototipo/raices/</code> y <code class="jss96">static/img/raices/</code>.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="consecuencias">Consecuencias<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#consecuencias" title="Permanent link">¶</a></h2><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="positivas">Positivas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#positivas" title="Permanent link">¶</a></h3><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Glassmorphism y Cozy no cambian: ni sus plantillas, ni sus hojas, ni su dirección.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Raíces se puede seguir diseñando pantalla por pantalla sin escribir antes 18 plantillas que
+todavía nadie eligió.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Al navegar el prototipo de Raíces no se pierde la alternativa: cada enlace lleva su prefijo.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Raíces queda en un lugar estable, con las mismas reglas de tokens que las otras dos.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Descartarla es borrar tres carpetas.</span></li></ul><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="negativas">Negativas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#negativas" title="Permanent link">¶</a></h3><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>El catálogo <code class="jss96">/estilos</code> no tiene versión Raíces.</strong> Sus componentes (sellos de estado, etiquetas,
+botones) se ven solo dentro de sus pantallas, y comparar componente por componente con las otras
+dos no se puede hasta que tenga juego.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Los datos de ejemplo no tienen test.</strong> Cuando la pantalla de Cozy escribe sus datos en la
+propia plantilla (y no en un fragmento de datos), la de Raíces los copia, y que muestren lo mismo
+depende de la revisión. Una diferencia puede pasar sin aviso.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>El prototipo crece en dos carpetas.</strong> Una pantalla que se quiera ver en las dos identidades se
+dibuja en <code class="jss96">prototipo/cozy-medieval/</code> y en <code class="jss96">prototipo/raices/</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Mudar la portada cuesta ahora:</strong> convertir 141 usos de valores base a tokens de uso, con el
+riesgo de un cambio visual que tiene que atrapar la comparación de capturas.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Los puntos de quiebre se suman entre todos.</strong> <code class="jss96">[OBSERVED]</code>
+<code class="jss96">mediaQueriesUsanSoloLosQuiebresDeTokens</code> junta en un solo conjunto los <code class="jss96">--medida-quiebre-*</code> de
+todos los <code class="jss96">tokens.css</code>. Si Raíces declara un quiebre que las otras no tienen, las hojas de las
+otras dos también pueden usarlo sin que el test lo note.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Si Raíces se elige, el trabajo de juego queda pendiente:</strong> las 18 plantillas, la tabla de voz y
+pasar sus pantallas al sistema siguen sin hacerse. Este ADR lo posterga, no lo ahorra.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">PrototipoController</code> suma una segunda carpeta y un segundo prefijo de direcciones: más casos que
+probar en un adaptador de maqueta.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="analisis-por-alternativa">Análisis por alternativa<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#analisis-por-alternativa" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Dónde vive:</p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>R1. Juego completo ya:</strong> deja a Raíces al mismo nivel que Cozy y permite comparar el catálogo,
+pero cada plantilla y componente nuevo se escribe tres veces desde hoy, para una alternativa que
+puede descartarse.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>R2. Prototipo propio (elegida):</strong> el costo crece solo con las pantallas que se dibujan, y la
+salida queda clara en los dos sentidos. Compara peor: sin catálogo y sin test de datos.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>R3. Variantes de estructura:</strong> cero trabajo nuevo, pero las variantes se borran al decidir y
+usan los valores base sin reglas; Raíces quedaría en un lugar pensado para durar una comparación.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>R4. Reemplazar a una de las dos:</strong> el usuario la descartó al empezar Raíces; quiere comparar
+las tres.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>R5. Rama propia:</strong> ya descartada para Cozy: las alternativas no se pueden ver juntas.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Cómo se elige:</p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>E1. <code class="jss96">?alternativa=raices</code>:</strong> reutiliza el mecanismo de Cozy, pero obliga al juego completo y se
+pierde al navegar.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>E2. <code class="jss96">?prototipo=raices</code>:</strong> no toca el interceptor, pero se pierde al navegar.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>E3. Dirección propia (propuesta):</strong> un prefijo más en el controlador del prototipo, a cambio de
+navegar sin perder la alternativa.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Tokens:</p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>K1. Dos niveles (propuesta):</strong> respeta D20 y deja las hojas listas para un juego, con el costo
+de mudar la portada.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>K2. Un nivel:</strong> gratis hoy, pero relaja una regla de calidad sin fecha y deja el costo entero
+para el día que se elija.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="validacion">Validación<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#validacion" title="Permanent link">¶</a></h2><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[VERIFIED]</code> 2026-11-01: <code class="jss96">mvn clean test -pl cliente-liviano -am</code>, 38 tests en verde (3 nuevos
+de <code class="jss96">PrototipoControllerTest</code>: la pantalla de Raíces con su menú en <code class="jss96">/prototipo/raices/</code>, lo que
+Raíces no dibujó da 404 y un formulario vuelve a Raíces; los de Cozy, sin cambios). El primer
+intento falló porque al <code class="jss96">tokens.css</code> de Raíces le faltaba <code class="jss96">--color-foco</code>, que piden los pares de
+contraste.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[VERIFIED]</code> 2026-11-01, prueba de mutación de <code class="jss96">InterfazFitnessTest</code> sobre las hojas de Raíces:
+un color literal en <code class="jss96">app.css</code> hace fallar <code class="jss96">soloTokensCssDefineColores</code>; un <code class="jss96">--p-*</code> en
+<code class="jss96">publico-portada.css</code>, <code class="jss96">estilosUsanSoloTokensDeUso</code>; y <code class="jss96">--color-texto</code> con un verde claro,
+<code class="jss96">paresDeTokensCumplenContrasteAA</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[VERIFIED]</code> 2026-11-01: la portada mudada es igual a la variante <code class="jss96">concepto-b</code>. <code class="jss96">Imagenes.java
+comparar</code> da IGUAL en sus 16 capturas (la portada y sus tres estados, en 360, 360×640, 1280 y
+1920 px), con una segunda corrida de antes como ruido.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[VERIFIED]</code> 2026-11-01: <code class="jss96">mvn test -pl cliente-liviano -Pvisual</code> sobre las cuatro rutas de
+<code class="jss96">/prototipo/raices/publico-portada</code>, sin hallazgos (<code class="jss96">reporte.json</code> vacío).</span></li></ul></div></div><hr class="MuiDivider-root jss67"/><nav class="jss68"><div></div><div class="jss69"><p class="MuiTypography-root jss70 MuiTypography-body1">Last edited by <!-- -->tsorren</p><p class="MuiTypography-root jss70 MuiTypography-body1">on <!-- -->Nov 8, 2026 2:57 AM</p></div><div></div></nav></div><div class="jss74 jss75"></div></div></main><footer class="jss23"><div class="jss2"></div><div class="jss3 jss26"><p class="MuiTypography-root jss24 MuiTypography-body1">Powered by<!-- --> <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss25 MuiTypography-colorPrimary" href="https://github.com/thomvaill/log4brains" target="_blank" rel="noopener">Log4brains</a> <span style="font-size:0.8em">(v1.1.0)</span></p></div><div class="jss4"></div></footer></div></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"projectName":"DonaTrack","currentAdr":{"slug":"cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio","package":"cliente-liviano","title":"Tercera alternativa de identidad (Raíces) como prototipo propio, sin juego de plantillas hasta que se elija","status":"superseded","supersededBy":{"slug":"cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano","package":"cliente-liviano","title":"Una sola identidad visual en el cliente liviano: Raíces es el sitio y se retiran las alternativas","status":"accepted","creationDate":"2026-11-03T14:54:37.000Z","publicationDate":"2026-11-04T02:59:59.000Z"},"tags":["cliente-liviano","interfaz","identidad","tokens","prototipo","entrega-6"],"deciders":["tsorren","al elegir entre dos opciones de convivencia en la sesión de Raíces"],"body":{"enhancedMdx":"\n\u003e **Origen:** el [brief de Raíces](../../interfaz/identidad/brief-raices.md) registraba este ADR como\n\u003e pendiente antes de construir Raíces como alternativa: con ella serían tres identidades, y con la regla del\n\u003e \u003cAdrLink slug=\"cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias\" status=\"superseded\" title=\"Dos alternativas de identidad visual, cada una con sus propias hojas de estilo y plantillas\" package=\"cliente-liviano\" customLabel=\"ADR de dos alternativas\" /\u003e\n\u003e cada pantalla nueva se escribiría tres veces ([bitácora](../../interfaz/bitacora.md),\n\u003e 2026-10-31, \"Una tercera alternativa, diseñada con el usuario por A/B\"). Es un ADR nuevo y no una\n\u003e edición de aquel, porque aquel ya está publicado en la rama del PR 924.\n\n## Contexto y Problema\n\nEl \u003cAdrLink slug=\"cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias\" status=\"superseded\" title=\"Dos alternativas de identidad visual, cada una con sus propias hojas de estilo y plantillas\" package=\"cliente-liviano\" customLabel=\"ADR de dos alternativas\" /\u003e\n(`proposed`) fija que cada alternativa tiene su juego completo de plantillas\n(`templates/alternativas/\u003cnombre\u003e/`) y sus hojas (`static/css/alternativas/\u003cnombre\u003e/`), con los\nmismos datos y acciones vigilados por test. Hoy hay dos: Glassmorphism y Cozy / Medieval.\n\nRaíces es una tercera identidad (raíces y semillas, para las empresas que donan y quieren\ntransparencia), en exploración con el usuario por comparaciones A/B. Estado actual:\n\n- `[OBSERVED]` Su única pantalla es la portada, armada como variante de estructura:\n  `templates/variantes/concepto-b.html`, `static/css/variantes/concepto-b.css` y sus valores base\n  `--p-*` en `static/css/variantes/comun/raices.css`. La portada usa esos valores base directamente\n  (141 usos: 121 en `concepto-b.css` y 20 en `comun/raices.css`): tiene un solo nivel de tokens.\n- `[OBSERVED]` Las variantes son temporales: se borran al decidir (`cliente-liviano/AGENTS.md`,\n  Estructura). Raíces no puede quedarse ahí.\n- `[OBSERVED]` El juego completo de una alternativa son hoy 18 plantillas: `layout.html`,\n  `layout-privado.html`, 14 fragmentos y las 2 páginas del catálogo `/estilos`. Las pantallas del\n  sitio todavía no existen como plantillas del sistema: son el prototipo navegable de Cozy\n  (`templates/prototipo/cozy-medieval/`, servido por `PrototipoController`), que no tiene gemelas.\n- `[OBSERVED]` `InterfazFitnessTest.cadaAlternativaTieneSuJuegoCompletoDePlantillas` exige que\n  toda carpeta de `static/css/alternativas/` con su `tokens.css` tenga su juego en\n  `templates/alternativas/`. Poner a Raíces ahí obliga a escribir las 18 plantillas antes de dibujar\n  cualquier pantalla.\n\nProblema: ¿cómo vive una tercera alternativa que todavía se explora, sin triplicar el trabajo de\ncada pantalla y sin dejarla en un lugar temporal? Son cuatro preguntas:\n\n1. **Dónde vive:** ¿juego completo como las otras dos, o algo más chico?\n2. **Cómo se elige en la maqueta:** ¿con qué dirección se ve una pantalla de Raíces?\n3. **Tokens:** ¿rige D20 (dos niveles de tokens) dentro de Raíces?\n4. **Salida:** ¿qué pasa si el equipo la elige o la descarta?\n\n## Atributos de Calidad y Drivers de Decisión\n\nLos mismos pesos del ADR de dos alternativas, para comparar con aquella decisión: las otras dos\nalternativas intactas 30 · libertad de diseño de Raíces 20 · comparar sobre las mismas pantallas 20 ·\ncosto de mantener cada pantalla 20 · reversibilidad 10. Requisito que decide si una opción sirve:\nRaíces queda en un lugar estable, no temporal.\n\n## Relaciones Arquitectónicas\n\n1. **Refina:** \u003cAdrLink slug=\"cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias\" status=\"superseded\" title=\"Dos alternativas de identidad visual, cada una con sus propias hojas de estilo y plantillas\" package=\"cliente-liviano\" customLabel=\"dos alternativas de identidad visual\" /\u003e\n   (`proposed`). No lo reemplaza: Glassmorphism y Cozy siguen como están. Agrega una etapa previa al\n   juego completo, el prototipo propio, para una alternativa que todavía no se eligió.\n2. **Respeta:** \u003cAdrLink slug=\"cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas\" status=\"proposed\" title=\"ADR-E6-06 — Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas\" package=\"cliente-liviano\" customLabel=\"ADR-E6-06\" /\u003e\n   (`proposed`), decisión D20: dos niveles de tokens dentro de cada alternativa, también en Raíces.\n3. **Complementa:** \u003cAdrLink slug=\"cliente-liviano/20261030-verificacion-visual-con-playwright-y-axe\" status=\"proposed\" title=\"Verificación visual del cliente liviano con Playwright y axe\" package=\"cliente-liviano\" customLabel=\"verificación visual con Playwright y axe\" /\u003e\n   (`proposed`): las pantallas de Raíces entran en la lista de páginas que recorre.\n\n## Alternativas Consideradas\n\nPuntajes de 1 a 5; son estimaciones del agente (`[INFERRED]`).\n\n### Dónde vive\n\n| Alternativa | Lugar estable | Las otras dos intactas | Libertad | Comparar | Costo por pantalla | Reversible | **Total** |\n|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|\n| R1. Tercer juego completo ya (`templates/alternativas/raices/` y `static/css/alternativas/raices/`), más su prototipo | Sí | 5 | 5 | 5 | 1 | 4 | 4,1 |\n| **R2. Prototipo propio: sus pantallas y hojas en una carpeta de prototipo; el juego completo, solo si el equipo la elige** | Sí | 5 | 5 | 3 | 4 | 5 | **4,4** |\n| R3. Seguir como variantes de estructura (lo que hay) | No | 5 | 4 | 3 | 4 | 4 | 4,1, descartada por el requisito |\n| R4. Reemplazar a Cozy o a Glassmorphism | Sí | — | — | — | — | — | `[DOCUMENTED]` descartada por el usuario el 2026-10-31, cuando eligió una tercera alternativa (bitácora) |\n| R5. Una rama propia | Sí | — | — | — | — | — | `[REJECTED]` en el ADR de dos alternativas (opción C) |\n\nEl agente recomendó R2 y el usuario la eligió.\n\n### Cómo se elige en la maqueta\n\n| Alternativa | Las otras dos intactas | Se mantiene al navegar | Costo | **Propuesta** |\n|---|:-:|:-:|:-:|:-:|\n| E1. `?alternativa=raices` | No: el interceptor solo acepta carpetas de `static/css/alternativas/`, que obligan al juego completo | No: los enlaces internos pierden el parámetro | Bajo | |\n| E2. `?prototipo=raices` | Sí | No, por el mismo motivo | Bajo | |\n| **E3. Una dirección propia: `/prototipo/raices/\u003cpantalla\u003e`** | Sí | Sí: el menú y los enlaces de Raíces apuntan a su dirección | Bajo | **Sí** |\n\nDecisión del agente (`[PROPOSED]`): E3 es la única que no pierde la alternativa al pasar de una\npantalla a otra, el problema que el ADR anterior dejó abierto para `?alternativa=`.\n\n### Tokens\n\n| Alternativa | Respeta D20 | Costo ahora | **Propuesta** |\n|---|:-:|:-:|:-:|\n| **K1. Dos niveles, como las otras: valores base `--p-*` solo en el `tokens.css` de Raíces; pantallas solo con tokens de uso** | Sí | Medio: la portada pasa sus 141 usos de `--p-*` a tokens de uso | **Sí** |\n| K2. Un nivel mientras sea prototipo: las hojas de Raíces usan `--p-*` directo | No | Nulo | |\n\nDecisión del agente (`[PROPOSED]`): K2 abriría en el test de reglas de interfaz una excepción sin\nfecha de vencimiento, y esas reglas son un quality gate que no se debilita (AGENTS.md §4.3). Con\nK1, el día que Raíces se elija sus hojas ya cumplen las reglas de una alternativa.\n\n## Resultado de la Decisión\n\nSe elige **R2** (usuario), con **E3** y **K1** (propuestas del agente, sin elegir por el usuario):\n\n- **Carpetas.** Las pantallas de Raíces viven en `templates/prototipo/raices/\u003cpantalla\u003e.html`, con\n  los mismos nombres que las del prototipo de Cozy (`publico-portada`, `donante-seguimiento`). Sus\n  piezas propias (la estructura de la página pública y la privada, la navegación) van en la misma\n  carpeta y no se apoyan en las plantillas de Glassmorphism ni en las de Cozy. Sus hojas viven en\n  `static/css/prototipo/raices/`: `tokens.css` (valores base y tokens de uso) y las hojas de sus\n  pantallas. Sus imágenes, en `static/img/raices/` (ya existe).\n- **Sus hojas no van en `static/css/alternativas/`.** `[OBSERVED]` Las del prototipo de Cozy sí\n  están dentro de su alternativa (`static/css/alternativas/cozy-medieval/prototipo/`), porque Cozy\n  tiene juego. Raíces no puede seguir esa convención: una carpeta suya en `alternativas/` con su\n  `tokens.css` obliga al juego completo (regla de abajo). Por eso usa `static/css/prototipo/raices/`.\n  Ahí van su `tokens.css`, su `app.css` (las piezas comunes de sus pantallas: marca, botones, sellos,\n  grano de impresión y cifras, lo que antes estaba en `variantes/comun/raices.css`) y una hoja por\n  pantalla.\n- **Sin gemelas ni tabla de voz.** Como el prototipo de Cozy, las pantallas de Raíces no son\n  pantallas del sistema: no tienen gemela y no tienen tabla de voz. Siguen el\n  [tono común](../../interfaz/tono-y-comunicacion.md) y muestran los mismos datos de ejemplo que la\n  pantalla del mismo nombre del prototipo de Cozy, para compararlas. Si la de Cozy toma sus datos\n  de un fragmento de datos (como `prototipo/cozy-medieval/viaje-datos.html`), la de Raíces usa el\n  mismo fragmento, sin copiarlo. Lo demás lo vigila la revisión (`revision-ui`), no un test.\n- **Dirección.** En el perfil `maqueta`, `PrototipoController` sirve `/prototipo/raices/\u003cpantalla\u003e`\n  desde `templates/prototipo/raices/`, con su propio menú por rol, cuyos enlaces llevan el mismo\n  prefijo. Una sección del menú que Raíces todavía no dibujó muestra su `sin-dibujar.html` si lo\n  tiene, y si no, no existe (404). `/prototipo/\u003cpantalla\u003e` sigue mostrando Cozy, sin cambios. `?variante=` de las\n  comparaciones A/B sigue funcionando sobre las pantallas de Raíces.\n- **Reglas de estilo, sin cambiar el test.** `[OBSERVED]` `InterfazFitnessTest` ya recorre todo\n  `static/css/`: aplica a cada `tokens.css` el contraste AA de los pares de tokens de uso y pide\n  sus puntos de quiebre (`paresDeTokensCumplenContrasteAA`, `mediaQueriesUsanSoloLosQuiebresDeTokens`),\n  y a toda otra hoja, solo tokens de uso y ningún color literal\n  (`estilosUsanSoloTokensDeUso`, `soloTokensCssDefineColores`); la única excepción son las hojas de\n  `variantes/`, que pueden usar y redefinir valores base `--p-*`. La regla de juego completo solo\n  cuenta las carpetas de `static/css/alternativas/`, así que no alcanza a `prototipo/raices/`. Por\n  eso el `tokens.css` de Raíces declara los mismos tokens de uso de los pares de contraste que las\n  otras dos, y sus `--medida-quiebre-*`.\n- **La portada se muda.** La variante `concepto-b` y su base `variantes/comun/raices.css` pasan a\n  `templates/prototipo/raices/publico-portada.html` y a `static/css/prototipo/raices/`, con sus\n  valores base convertidos a tokens de uso. Se ve igual: lo comprueba la comparación píxel a píxel\n  de las capturas de antes y después.\n- **Verificación visual.** Las pantallas de Raíces se agregan a\n  `src/test/resources/verificacion/paginas.txt`, con sus estados.\n- **Excepción a \"cada pantalla en cada alternativa\".** La regla de\n  [`cliente-liviano/AGENTS.md`](../../../cliente-liviano/AGENTS.md) (cada pantalla o componente nuevo\n  se escribe en cada alternativa) rige para las plantillas del sistema (`templates/` y los juegos de\n  `templates/alternativas/`). Raíces, sin juego, queda afuera hasta que se elija. Al implementarse\n  este ADR, ese archivo suma a su tabla de Estructura las carpetas `templates/prototipo/raices/` y\n  `static/css/prototipo/raices/`, y aclara la excepción en sus reglas de estilos.\n- **Salida.** Si el equipo elige Raíces como alternativa, rige el ADR de dos alternativas: se arma su\n  juego completo en `templates/alternativas/raices/` y `static/css/alternativas/raices/`, con su\n  tabla de voz, y el test de juego completo lo exige desde ese momento. Si la descarta, se borran\n  `templates/prototipo/raices/`, `static/css/prototipo/raices/` y `static/img/raices/`.\n\n## Consecuencias\n\n### Positivas\n\n- Glassmorphism y Cozy no cambian: ni sus plantillas, ni sus hojas, ni su dirección.\n- Raíces se puede seguir diseñando pantalla por pantalla sin escribir antes 18 plantillas que\n  todavía nadie eligió.\n- Al navegar el prototipo de Raíces no se pierde la alternativa: cada enlace lleva su prefijo.\n- Raíces queda en un lugar estable, con las mismas reglas de tokens que las otras dos.\n- Descartarla es borrar tres carpetas.\n\n### Negativas\n\n- **El catálogo `/estilos` no tiene versión Raíces.** Sus componentes (sellos de estado, etiquetas,\n  botones) se ven solo dentro de sus pantallas, y comparar componente por componente con las otras\n  dos no se puede hasta que tenga juego.\n- **Los datos de ejemplo no tienen test.** Cuando la pantalla de Cozy escribe sus datos en la\n  propia plantilla (y no en un fragmento de datos), la de Raíces los copia, y que muestren lo mismo\n  depende de la revisión. Una diferencia puede pasar sin aviso.\n- **El prototipo crece en dos carpetas.** Una pantalla que se quiera ver en las dos identidades se\n  dibuja en `prototipo/cozy-medieval/` y en `prototipo/raices/`.\n- **Mudar la portada cuesta ahora:** convertir 141 usos de valores base a tokens de uso, con el\n  riesgo de un cambio visual que tiene que atrapar la comparación de capturas.\n- **Los puntos de quiebre se suman entre todos.** `[OBSERVED]`\n  `mediaQueriesUsanSoloLosQuiebresDeTokens` junta en un solo conjunto los `--medida-quiebre-*` de\n  todos los `tokens.css`. Si Raíces declara un quiebre que las otras no tienen, las hojas de las\n  otras dos también pueden usarlo sin que el test lo note.\n- **Si Raíces se elige, el trabajo de juego queda pendiente:** las 18 plantillas, la tabla de voz y\n  pasar sus pantallas al sistema siguen sin hacerse. Este ADR lo posterga, no lo ahorra.\n- `PrototipoController` suma una segunda carpeta y un segundo prefijo de direcciones: más casos que\n  probar en un adaptador de maqueta.\n\n## Análisis por alternativa\n\nDónde vive:\n\n- **R1. Juego completo ya:** deja a Raíces al mismo nivel que Cozy y permite comparar el catálogo,\n  pero cada plantilla y componente nuevo se escribe tres veces desde hoy, para una alternativa que\n  puede descartarse.\n- **R2. Prototipo propio (elegida):** el costo crece solo con las pantallas que se dibujan, y la\n  salida queda clara en los dos sentidos. Compara peor: sin catálogo y sin test de datos.\n- **R3. Variantes de estructura:** cero trabajo nuevo, pero las variantes se borran al decidir y\n  usan los valores base sin reglas; Raíces quedaría en un lugar pensado para durar una comparación.\n- **R4. Reemplazar a una de las dos:** el usuario la descartó al empezar Raíces; quiere comparar\n  las tres.\n- **R5. Rama propia:** ya descartada para Cozy: las alternativas no se pueden ver juntas.\n\nCómo se elige:\n\n- **E1. `?alternativa=raices`:** reutiliza el mecanismo de Cozy, pero obliga al juego completo y se\n  pierde al navegar.\n- **E2. `?prototipo=raices`:** no toca el interceptor, pero se pierde al navegar.\n- **E3. Dirección propia (propuesta):** un prefijo más en el controlador del prototipo, a cambio de\n  navegar sin perder la alternativa.\n\nTokens:\n\n- **K1. Dos niveles (propuesta):** respeta D20 y deja las hojas listas para un juego, con el costo\n  de mudar la portada.\n- **K2. Un nivel:** gratis hoy, pero relaja una regla de calidad sin fecha y deja el costo entero\n  para el día que se elija.\n\n## Validación\n\n- `[VERIFIED]` 2026-11-01: `mvn clean test -pl cliente-liviano -am`, 38 tests en verde (3 nuevos\n  de `PrototipoControllerTest`: la pantalla de Raíces con su menú en `/prototipo/raices/`, lo que\n  Raíces no dibujó da 404 y un formulario vuelve a Raíces; los de Cozy, sin cambios). El primer\n  intento falló porque al `tokens.css` de Raíces le faltaba `--color-foco`, que piden los pares de\n  contraste.\n- `[VERIFIED]` 2026-11-01, prueba de mutación de `InterfazFitnessTest` sobre las hojas de Raíces:\n  un color literal en `app.css` hace fallar `soloTokensCssDefineColores`; un `--p-*` en\n  `publico-portada.css`, `estilosUsanSoloTokensDeUso`; y `--color-texto` con un verde claro,\n  `paresDeTokensCumplenContrasteAA`.\n- `[VERIFIED]` 2026-11-01: la portada mudada es igual a la variante `concepto-b`. `Imagenes.java\n  comparar` da IGUAL en sus 16 capturas (la portada y sus tres estados, en 360, 360×640, 1280 y\n  1920 px), con una segunda corrida de antes como ruido.\n- `[VERIFIED]` 2026-11-01: `mvn test -pl cliente-liviano -Pvisual` sobre las cuatro rutas de\n  `/prototipo/raices/publico-portada`, sin hallazgos (`reporte.json` vacío).\n"},"creationDate":"2026-11-01T20:30:30.000Z","lastEditDate":"2026-11-08T02:57:33.000Z","lastEditAuthor":"tsorren","publicationDate":"2026-11-02T02:59:59.000Z","file":{"relativePath":"docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md","absolutePath":"/home/runner/work/DonaTrack-TP-DDS/DonaTrack-TP-DDS/docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md"},"repository":{"provider":"github","viewUrl":"https://github.com/tsorren/DonaTrack-TP-DDS/blob/master/docs/adr/cliente-liviano/20261101-tercera-alternativa-raices-como-prototipo-propio.md"}},"l4bVersion":"1.1.0"},"__N_SSG":true},"page":"/adr/[...slug]","query":{"slug":["cliente-liviano","20261101-tercera-alternativa-raices-como-prototipo-propio"]},"buildId":"x4U4fzPaqRQjrZ8nRgzDf","assetPrefix":"/DonaTrack-TP-DDS/adr-preview","runtimeConfig":{},"isFallback":false,"gsp":true}</script><script nomodule="" src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/polyfills-694d8cb7f00ed89b8e7e.js"></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/webpack-50bee04d1dc61f8adf5b.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/framework.b33896d72531466bcf17.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/commons.1a3eba1bbb8ea986a150.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/main-d0427bd7c9d85889a938.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/a3e17150ead73d62fba7a33a50672ae3f72841a5.56d1813f1730ddfb4c80.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/_app-796f4c8086e869be38c4.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/364bddfb.28847971f0e02b167249.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3da477db.e49cd5277ed36ace32c1.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3b07cb59.4f0af644828e83722dc4.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/b4e962f4.26c14c8db148d74faf11.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/45d2d314fc8da5e3d79852782e4a432ad4da6771.50511fed01efd2ad1ea2.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/adr/%5B...slug%5D-9f67d10c628dcc0d3aa2.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/x4U4fzPaqRQjrZ8nRgzDf/_buildManifest.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/x4U4fzPaqRQjrZ8nRgzDf/_ssgManifest.js" async=""></script></body></html>
