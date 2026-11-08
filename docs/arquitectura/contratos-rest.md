@@ -100,6 +100,8 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | Seguimiento de las entregas de una entidad beneficiaria (RF-14): lista de `SeguimientoEntregaResponseDTO`, el mismo DTO que el anterior | — | `200` |
 | `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
 | `PATCH` | `/api/entregas/{id}/fotos` | Adjuntar URL de foto de recepción | `AdjuntarFotoRecepcionRequestDTO` | `200`, `400`, `404` |
+| `POST` | `/api/entregas/{id}/fotos` | Subir fotos de recepción (HB-10, ADR-E6-08): `multipart/form-data` con una o más partes `foto`, JPEG o PNG por magic bytes, hasta 5 MB y 24 MP cada una; se guardan re-codificadas, sin EXIF, en el bucket privado `logistica-fotos-recepcion`. No toca la entrega: devuelve `FotoRecepcionSubidaDTO` (`fotoId`, `url` estable) por foto, para mandar después en `fotosRecepcion` al confirmar | `multipart/form-data` | `201`, `400`, `404`, `409` (ya `ENTREGADA`), `413`, `415` |
+| `GET` | `/api/entregas/{id}/fotos/{fotoId}` | URL estable de una foto de recepción: `302` hacia una URL firmada de MinIO de 5 minutos (RNF-PRIV-03) | — | `302`, `404` |
 | `GET` | `/api/entregas/{id}/historial` | Historial de transiciones de una entrega | — | `200`, `404` |
 | `GET` | `/api/rutas` | Listar rutas planificadas (filtro opcional `camionId`) | — | `200` |
 | `GET` | `/api/rutas/{id}` | Consulta de ruta con paradas y URL de seguimiento | — | `200`, `404` |

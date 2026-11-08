@@ -37,7 +37,7 @@ Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
 | `keycloak_user`       | `KEYCLOAK_DB_PASSWORD`          | `keycloak` (`public`) | **Activo** — Keycloak de `docker-compose.yml`. En `02-set-role-passwords.sh` la variable es opcional: `docker-compose.preprod.yml` aún no la pasa (E2-12) |
 
-Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
+Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD`/`LOGISTICA_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
 
 ### Política de permisos (aislamiento cruzado)
 
@@ -196,6 +196,7 @@ Un usuario de MinIO por servicio, con acceso solo a sus buckets. Los crea el con
 |----------------------|-----------------------------|----------------|
 | `incentivos-service` | `INCENTIVOS_MINIO_PASSWORD` | `insignias`    |
 | `donaciones-service` | `DONACIONES_MINIO_PASSWORD` | `donaciones-*` |
+| `logistica-service` | `LOGISTICA_MINIO_PASSWORD` | `logistica-*` (fotos de recepción, ADR-E6-08) |
 
 ---
 
