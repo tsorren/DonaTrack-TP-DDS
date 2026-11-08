@@ -41,10 +41,11 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 | Paquete o carpeta | Contiene |
 |---|---|
-| `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. |
+| `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. `Pantallas` arma el modelo de cada pantalla (el menú de su área, la cuenta y los datos de ejemplo) y lo usan la maqueta y el sitio real; `PantallasController` sirve `/` y `/<pantalla>`; `AccesoController` (fuera de `maqueta`) lleva ingresar y registrarse a Keycloak |
+| `grupo5.cliente.seguridad` | Ingreso con Keycloak y acceso por área (fuera de `maqueta`): `Area`, `UsuarioActual` (el único lugar que lee los claims del ID token) y la cadena de filtros |
 | `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
 | `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos |
-| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/` es la portada; `/<pantalla>` muestra `templates/<pantalla>.html`, y una sección del menú sin plantilla, `sin-dibujar`), los escenarios y las variantes A/B |
+| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/estilos` y los formularios, que vuelven a su pantalla sin guardar), la cuenta de ejemplo de cada área, el sitio abierto sin ingreso, los escenarios y las variantes A/B. Una sección del menú sin plantilla muestra `sin-dibujar` |
 | `templates/<pantalla>.html` | Una plantilla por pantalla. El nombre empieza con el rol (`publico-`, `donante-`, `entidad-`, `admin-`) y, en el nivel 3, con el de su sección (`donante-donaciones-detalle`) |
 | `templates/layout-privado.html` y `layout-publico.html` | Estructura de las pantallas privadas y de las públicas (la portada tiene la suya) |
 | `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, `interaccion` (la carga de Alpine y la configuración de View Transitions, en el head de los tres layouts), los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar`. `estilos.html` es el catálogo (`/estilos`, RF-CL-05) y `componentes/<componente>.html`, los fragmentos de la capa CUBE |
