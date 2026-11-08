@@ -1183,6 +1183,11 @@ components:
             type: object
         cantidad:
           type: integer
+        entidadBeneficiariaId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Entidad a la que se asignó la donación; null mientras no tiene destino
     DonacionInputDTO:
       type: object
       required:

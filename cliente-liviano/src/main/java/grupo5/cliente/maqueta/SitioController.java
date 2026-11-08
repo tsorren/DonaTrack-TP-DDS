@@ -193,11 +193,12 @@ public class SitioController {
 
   /**
    * El menú, la cuenta y la vista de una pantalla que ya tiene sus datos en el modelo; respeta
-   * {@code ?respuesta=} como cualquier otra pantalla.
+   * {@code ?respuesta=} y {@code ?cuenta=} como cualquier otra pantalla.
    */
-  public String pagina(String pantalla, String respuesta, Model model, HttpSession sesion) {
+  public String pagina(
+      String pantalla, String respuesta, String cuenta, Model model, HttpSession sesion) {
     responderConError(respuesta);
-    return mostrar(pantalla, null, model, sesion);
+    return mostrar(pantalla, cuenta, model, sesion);
   }
 
   private String mostrar(String pantalla, String cuenta, Model model, HttpSession sesion) {

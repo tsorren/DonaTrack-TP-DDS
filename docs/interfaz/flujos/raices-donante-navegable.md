@@ -302,6 +302,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Para quién | "Para Comedor Barrio Ejemplo" · "Todavía sin destino" | — |
 | Fecha | "Donada el 12 de octubre de 2026" | — |
 | Estado y nota | El sello y la nota de `viaje-datos`; en las entregadas, "Entrega confirmada el 5 de octubre, con foto de la entidad" en lugar de "Llegó el 5 de octubre" | Lo confirmado dice qué lo respalda |
+| Estado y nota con datos reales | En depósito: "En el depósito, espera destino" · Asignada: "Asignada, espera el camión" · Lista para entregar: "Lista para entregar, espera el camión" (las tres, sello Pendiente) · En camino: "Salió el 15 de octubre, 14:30" · Entregada: "Entrega confirmada el 5 de octubre" · No pudo llegar: "No pudo llegar el 11 de octubre" · Vencida: "Venció en el depósito el 1 de octubre" (las dos, sello Con problema) | Aprobadas por el usuario el 2026-11-07, al conectar la pantalla con Donaciones (`DonacionesRest`). La fecha es la del último cambio a ese estado. Sin "con foto de la entidad": el listado no dice si la entrega tiene foto |
 | Pie | "Las que están en curso también se ven en Seguimiento, con dónde va el camión." · "Ver seguimiento" | — |
 
 ### donante-donaciones-detalle

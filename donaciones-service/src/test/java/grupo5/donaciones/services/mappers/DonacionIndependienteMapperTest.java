@@ -16,6 +16,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.necesidades.DestinoAsignacion;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
@@ -94,6 +95,16 @@ class DonacionIndependienteMapperTest {
     assertEquals(categoria.getId(), itemDto.bien().categoria().id());
     assertEquals("Alimentos", itemDto.bien().categoria().nombre());
     assertEquals("KILOGRAMO", itemDto.bien().categoria().unidad());
+    assertNull(dto.entidadBeneficiariaId());
+  }
+
+  @Test
+  void toDTO_donacionAsignada_deberiaIncluirLaEntidadBeneficiaria() {
+    DonacionIndependiente donacion = new DonacionIndependiente(UUID.randomUUID(), List.of());
+    UUID entidadId = UUID.randomUUID();
+    donacion.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), UUID.randomUUID(), entidadId));
+
+    assertEquals(entidadId, mapper.toDTO(donacion).entidadBeneficiariaId());
   }
 
   @Test

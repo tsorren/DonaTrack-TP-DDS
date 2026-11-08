@@ -12,4 +12,5 @@ public record DonacionIndependienteResponseDTO(
     LocalDateTime fechaRegistro,
     List<CambioEstadoDIResponseDTO> historial,
     List<ItemDonacionIndependienteResponseDTO> items,
-    int cantidad) {}
+    int cantidad,
+    UUID entidadBeneficiariaId) {}

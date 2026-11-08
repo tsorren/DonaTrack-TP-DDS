@@ -3,7 +3,7 @@
 > **Estado:** en construcción (Entrega 6). La maqueta navegable tiene el recorrido público, el del
 > donante y el de la entidad, más el inicio del admin, con datos de ejemplo y una sola identidad
 > visual. Desde la F0 del plan con datos reales (el plan está en el
-> [PR 938](https://github.com/tsorren/DonaTrack-TP-DDS/pull/938)), el Ranking del admin consume Incentivos; las demás pantallas siguen con datos de ejemplo.
+> [PR 938](https://github.com/tsorren/DonaTrack-TP-DDS/pull/938)), el Ranking del admin consume Incentivos y Mis donaciones del donante, Donaciones; las demás pantallas siguen con datos de ejemplo.
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
@@ -27,7 +27,7 @@ consume las APIs REST de los servicios a través del gateway.
 
 ```bash
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/
-mvn -pl cliente-liviano spring-boot:run                                       # con las APIs (Incentivos en INCENTIVOS_URL)
+mvn -pl cliente-liviano spring-boot:run                                       # con las APIs (INCENTIVOS_URL y DONACIONES_URL)
 mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, contraste y vistas
 mvn test -pl cliente-liviano -Pvisual                                         # capturas, accesibilidad, toque y desbordes
 ```
@@ -38,10 +38,13 @@ mvn test -pl cliente-liviano -Pvisual                                         # 
 - Sin el perfil `maqueta`, cada puerto usa su adaptador REST (`cliente.datos.<puerto>=rest`, en
   `application.properties`) con la URL de su API (`cliente.api.<api>.url`); las pantallas que
   todavía no pasaron a datos reales se siguen sirviendo con los datos de las plantillas. Un puerto
-  solo se elige con `--cliente.datos.ranking=maqueta|rest`. Cada pedido genera un `traceId` que
+  solo se elige con `--cliente.datos.ranking=maqueta|rest`. Quién es la cuenta lo dice el puerto
+  `CuentaActual`: sin login todavía, el donante entra con
+  `?donante=<id>` (la sesión lo recuerda; `cliente.datos.cuenta=parametro`); sin id, Mis
+  donaciones manda a Ingresar. Cada pedido genera un `traceId` que
   viaja a las APIs en `X-Trace-Id` y es el código de soporte de las páginas de error.
 - En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador: `cliente-liviano`
-  (maqueta), `cliente-liviano-rest` e `incentivos` (en memoria, sin RabbitMQ).
+  (maqueta), `cliente-liviano-rest`, `incentivos` y `donaciones` (los dos en memoria, sin RabbitMQ).
 - La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el
   resultado en `target/capturas/`. No corre en el CI
   ([DTI-28](../docs/adr/DEUDA_TECNICA.md#dti-28)).

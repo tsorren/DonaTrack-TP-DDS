@@ -51,7 +51,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
                     null,
                     ACTOR)),
             List.of(),
-            0);
+            0,
+            null);
 
     when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenReturn(response);
@@ -177,7 +178,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             java.time.LocalDateTime.now(),
             List.of(),
             List.of(),
-            5);
+            5,
+            null);
 
     when(donacionesIndependientesService.obtenerConFiltros(
             new FiltroDonacionesIndependientes(null, null, null, null, null, null, null)))
@@ -268,7 +270,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             java.time.LocalDateTime.now(),
             List.of(),
             List.of(),
-            5);
+            5,
+            null);
 
     when(donacionesIndependientesService.obtener(id)).thenReturn(response);
 
