@@ -566,7 +566,8 @@ class SitioControllerTest {
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
-        .andExpect(content().string(containsString("data-cosecha=\"completa\"")))
+        // Las cifras en árboles de K (2026-11-08; antes, la rama de frutos con data-cosecha).
+        .andExpect(content().string(containsString("class=\"huerta-cifras\"")))
         .andExpect(content().string(containsString("Actualizado")))
         .andExpect(content().string(not(containsString("aria-current=\"page\""))));
     mvc.perform(get("/publico-nosotros?escenario=vacio"))

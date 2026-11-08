@@ -60,11 +60,6 @@
     </section>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-      <svg class="dibujo aviso-brote" viewBox="0 0 120 90" aria-hidden="true" focusable="false">
-        <path class="dibujo-tierra" d="M0 60H120"/>
-        <path class="dibujo-tallo" d="M60 60V30"/>
-        <path class="dibujo-hoja" d="M60 40C48 40 42 32 42 24C54 24 60 32 60 40ZM60 34C70 34 78 28 78 20C66 20 60 26 60 34Z"/>
-      </svg>
       <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
       <p>Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por
         dónde va el camión.</p>
@@ -125,7 +120,8 @@
             <g class="camion" transform="translate(110 233)">
               <circle r="18"/>
               <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
-              <path class="camion-icono" transform="translate(-12 -12)" d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/>
+              <image href="/img/ilustraciones/abeja-arriba.svg" th:href="@{/img/ilustraciones/abeja-arriba.svg}"
+                   x="-4" y="-46" width="44" height="44"/>
             </g>
             <g class="nodo" transform="translate(110 318)">
               <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>

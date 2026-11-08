@@ -28,15 +28,8 @@
 @import url("componentes/lista.css") layer(bloques);
 @import url("componentes/tabla.css") layer(bloques);
 @import url("componentes/noticias.css") layer(bloques);
-@import url("componentes/pasos.css") layer(bloques);
-@import url("componentes/planta.css") layer(bloques);
-@import url("componentes/frutos.css") layer(bloques);
-@import url("componentes/libreta.css") layer(bloques);
-/* `tierra` antes que `red`: `.tierra-interior` y `.red` son el mismo elemento y la red cambia su relleno. */
-@import url("componentes/tierra.css") layer(bloques);
-@import url("componentes/red.css") layer(bloques);
-@import url("componentes/pausa.css") layer(bloques);
 @import url("componentes/progreso.css") layer(bloques);
+@import url("componentes/huerta.css") layer(bloques);
 
 *,
 *::before,
@@ -65,12 +58,25 @@ body {
     outline-offset: 3px;
   }
 
-  /* Sobre la tierra honda de la cabecera y del pie, el anillo es de paja. */
-  .raices-cabecera :focus-visible,
-  .raices-pie :focus-visible,
-  .armazon :focus-visible {
+  /* La parte destacada de un título va derecha, en otro color (piel Huerta, 2026-11-08). */
+  :is(h1, h2, h3, h4) em {
+    font-style: normal;
+  }
+
+  /* Sobre la tierra honda del pie, el anillo es de paja. */
+  .raices-pie :focus-visible {
     outline-color: var(--color-raiz);
   }
+}
+
+/* Lo que solo leen los lectores de pantalla. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .saltar {
@@ -89,73 +95,70 @@ body {
   padding: 0.75rem 1rem;
 }
 
-.raices-cabecera,
-.raices-pie {
+.raices-cabecera {
   max-width: 75rem;
   margin: 0 auto;
   padding: 1rem;
 }
 
-/* La cabecera y el pie, franjas de tierra honda a todo el ancho (usuario, 2026-11-03: tomado del
-   sitio B de la corrida A/B). El borde de imagen estira el fondo a los lados sin estirar el
-   contenido ni recortarlo: un recorte escondería la barra fija del menú en el celular, que va
-   dentro de la cabecera. Donde tocan la página llevan el estrato (tokens.css): abajo de la
-   cabecera, arriba del pie. El fondo liso queda debajo: es el que miden los contrastes. */
-.raices-cabecera,
-.raices-pie,
-.armazon {
-  background: var(--color-suelo-hondo);
-  color: var(--color-texto-suelo);
-}
-
+/* La cabecera, una barra de papel con un filete fino abajo (estética de K, 2026-11-08; antes, una
+   franja de tierra honda). El borde de imagen estira el fondo a los lados sin estirar el contenido ni recortarlo: un
+   recorte escondería la barra fija del menú en el celular, que va dentro de la cabecera. El fondo
+   liso queda debajo: es el que miden los contrastes. */
 .raices-cabecera,
 .armazon {
-  border-image: linear-gradient(to top, var(--color-estrato) 0 0.5rem,
-      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-suelo-hondo) var(--medida-estrato))
+  border-image: linear-gradient(to top, var(--color-filete) 0 1px, var(--color-papel) 1px)
     fill 0 / / 0 100vmax;
-}
-
-.raices-pie {
-  border-image: linear-gradient(var(--color-estrato) 0 0.5rem,
-      var(--color-horizonte) 0.5rem var(--medida-estrato), var(--color-suelo-hondo) var(--medida-estrato))
-    fill 0 / / 0 100vmax;
+  background: var(--color-papel);
+  color: var(--color-tinta);
 }
 
 .raices-cabecera,
 .armazon {
-  padding-bottom: calc(1rem + var(--medida-estrato));
+  padding-bottom: 1rem;
 }
 
-.raices-pie {
-  padding-top: calc(1rem + var(--medida-estrato));
-}
-
-/* La marca, un cartel de papel sobre la tierra (como en B). */
+/* La marca: el nombre en la letra de los títulos, con "Track" en verde (piel Huerta). */
 .marca {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
   min-height: 3rem;
-  padding: 0.25rem 0.75rem 0.25rem 0.6rem;
-  border-radius: var(--radio-boton);
-  background: var(--color-papel);
-  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
+  padding: 0.25rem 0.25rem 0.25rem 0;
   color: var(--color-tinta);
   text-decoration: none;
-  font: 800 1.375rem/1 var(--fuente-titulo);
-  font-stretch: 112%;
+  font: 850 1.375rem/1 var(--fuente-titulo);
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
 }
 
 .marca em {
-  font-weight: 400;
+  color: var(--color-acento);
+  font-style: normal;
 }
 
+/* El pie de todas las páginas, como el de K (estética de la variante K, 2026-11-08): una franja de
+   tierra con su textura a todo el ancho, las raíces finas de paja arriba, el lema y las secciones a la
+   izquierda, la firma abajo. Los enlaces, en el color del texto de la tierra (antes, paja). */
 .raices-pie {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0 1.5rem;
+  display: grid;
+  gap: 1rem 2.5rem;
+  margin-top: 3rem;
+  padding: 5.5rem max(1rem, (100% - 75rem) / 2) 2rem;
+  background: url("../img/raices-pie.svg") 0 0 / 100% 4.375rem no-repeat,
+    url("../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+.raices-pie > p {
+  margin: 0;
+  font: 850 clamp(1.4rem, 1.1rem + 1vw, 2rem) / 1.05 var(--fuente-titulo);
+  font-stretch: 122%;
+}
+
+.raices-pie > p em {
+  color: var(--color-raiz);
+  font-style: normal;
 }
 
 .raices-pie ul {
@@ -167,32 +170,21 @@ body {
   list-style: none;
 }
 
-/* El pie de todas las páginas: términos y privacidad, y contacto (usuario, 2026-11-02). */
 .raices-pie a {
   display: inline-flex;
   align-items: center;
   min-height: 3rem;
+  color: var(--color-texto-suelo);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.raices-pie a:hover {
   color: var(--color-raiz);
-  font-weight: 700;
 }
 
 .raices-pie small {
-  color: var(--color-texto-suelo);
-}
-
-/* La textura impresa (A/B de textura, 2026-11-02: B, risografía, más suave y solo en el fondo;
-   usuario, 2026-11-03: la mitad, en el papel y en la tierra). El papel de todas las páginas lleva
-   un polvo fino de tinta, detrás de todo el contenido. */
-body::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.06;
-  background: var(--color-tinta);
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -5 0 0 0 2.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")
-    0 0 / 200px 200px;
-  pointer-events: none;
+  font-size: 0.8125rem;
 }
 
 /* En los planos de tierra, la tinta no cubre del todo y el papel se asoma en puntitos, también
@@ -228,16 +220,16 @@ body::before {
 .hero h1 {
   margin: 0 0 1.25rem;
   color: var(--color-tinta);
-  font: 800 var(--tamano-titulo-portada) / 0.92 var(--fuente-titulo);
-  font-stretch: 118%;
+  font: 850 var(--tamano-titulo-portada) / 0.94 var(--fuente-titulo);
+  font-stretch: 125%;
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
-/* La segunda tinta corrida, como en una impresión de dos pasadas. */
+/* La parte destacada, en verde y derecha (piel Huerta; antes, la segunda tinta corrida). */
 .hero h1 em {
   color: var(--color-acento);
-  text-shadow: 0.04em 0.035em 0 var(--color-sombra);
+  font-style: normal;
 }
 
 .hero-bajada {
@@ -287,11 +279,16 @@ body::before {
 
 @media (min-width: 37.5em) {
   .raices-cabecera {
-    padding: 1.25rem 2rem calc(1.25rem + var(--medida-estrato));
+    padding: 1.25rem 2rem;
   }
 
   .raices-pie {
-    padding: calc(1.25rem + var(--medida-estrato)) 2rem 1.25rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .raices-pie > small {
+    grid-column: 1 / -1;
   }
 }
 

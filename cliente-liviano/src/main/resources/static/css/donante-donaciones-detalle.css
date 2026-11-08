@@ -75,21 +75,20 @@
   height: 2rem;
 }
 
+/* La línea entre etapas, como la ruta de las abejas de K (estética de K, 2026-11-08; antes, una raíz
+   paja con borde): verde lo recorrido, punteada lo que falta. */
 .raiz-paso:not(:last-child)::before {
   content: "";
   position: absolute;
-  top: 1.6rem;
-  bottom: -0.1rem;
-  left: 0.6875rem;
-  width: 0.625rem;
-  border: 1.5px solid var(--color-tinta);
-  background: var(--color-raiz);
+  top: 1.75rem;
+  bottom: 0.25rem;
+  left: calc(1rem - 1px);
+  border-left: 2px solid var(--color-acento);
 }
 
 .raiz-paso:has(+ .raiz-paso--pendiente)::before {
-  border-style: dashed;
-  border-color: var(--color-tinta-suave);
-  background: var(--color-papel);
+  border-left: 2px dashed var(--color-tinta-suave);
+  opacity: 0.6;
 }
 
 .raiz-nombre {

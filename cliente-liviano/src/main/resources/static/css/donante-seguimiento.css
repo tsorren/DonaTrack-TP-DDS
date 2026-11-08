@@ -107,7 +107,14 @@ figure.seguimiento-dibujo {
   stroke-linejoin: round;
 }
 
-/* El camión va dentro de su sello: el círculo con la mitad izquierda en ámbar. */
+/* La abeja que lleva la entrega (ilustraciones de diseño, 2026-11-08; antes, el camión) vuela sobre
+   su sello: el círculo con la mitad izquierda en ámbar. */
+@media (prefers-reduced-motion: no-preference) {
+  .camion image {
+    animation: var(--movimiento-animacion-vuelo);
+  }
+}
+
 .camion .sello-medio {
   fill: var(--color-en-camino-sello);
   stroke: none;
@@ -248,13 +255,6 @@ figure.seguimiento-dibujo {
   max-width: 36rem;
 }
 
-/* Sin entregas en curso, el brote solo, chico, para que el aviso no ocupe toda la pantalla. En el
-   celular de 640 px de alto, "Ver Mis donaciones" queda debajo de la barra y se llega bajando: el
-   usuario prefirió conservar el brote (2026-11-01). */
-.aviso-brote {
-  max-width: 12rem;
-}
-
 /* --- Cargando: el lugar de cada parte, sin datos ------------------------------------------------ */
 .seguimiento-reserva {
   min-height: 14rem;
@@ -349,9 +349,9 @@ figure.seguimiento-dibujo {
   .entrega {
     align-content: start;
     padding: 1.25rem;
-    border: 2px solid var(--color-tinta);
+    border: 0;
     border-radius: var(--radio-lamina);
-    box-shadow: 0.375rem 0.375rem 0 var(--color-sombra);
-    background: var(--color-papel);
+    box-shadow: var(--sombra-papel);
+    background: var(--color-superficie);
   }
 }

@@ -6,8 +6,27 @@
 
 /* El texto de lo que carga. Va con role="status" o dentro de una región con aria-busy="true". */
 .cargando {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin: 0 0 1rem;
   font-weight: 700;
+}
+
+/* La abeja vuela mientras la página trae los datos (ilustraciones de diseño, 2026-11-08). Decorativa:
+   el texto dice qué carga. */
+.cargando::before {
+  content: "";
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: url("../../img/ilustraciones/abeja-arriba.svg") center / contain no-repeat;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cargando::before {
+    animation: var(--movimiento-animacion-vuelo-carga);
+  }
 }
 
 /* El lugar de una parte que espera: papel gris tierra, sin datos inventados. */

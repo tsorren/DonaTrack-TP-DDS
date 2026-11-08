@@ -46,6 +46,7 @@ figure.mapa-dibujo {
 
 .estaciones {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   margin: 0;
   padding: 0;
@@ -55,9 +56,8 @@ figure.mapa-dibujo {
 .estacion-ficha {
   padding: 1rem;
   border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-sombra);
-  outline: 1.5px solid var(--color-tinta);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
   scroll-margin-top: 1rem;
 }
 

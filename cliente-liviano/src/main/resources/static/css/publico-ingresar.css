@@ -37,15 +37,15 @@
   gap: 0.75rem;
   padding: 1.75rem 1.5rem;
   border-radius: var(--radio-lamina);
-  outline: 2px dashed var(--color-raiz);
+  outline: 2px dashed var(--color-filete);
   outline-offset: -0.625rem;
-  background: var(--color-suelo);
-  color: var(--color-texto-suelo);
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
 }
 
 .ejemplos h2 {
   margin: 0;
-  color: var(--color-texto-suelo);
+  color: var(--color-tinta);
 }
 
 .ejemplos p {
@@ -67,8 +67,8 @@
   min-height: 3rem;
   padding: 0.625rem 0.875rem;
   border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
   color: var(--color-tinta);
   font-weight: 700;
   text-decoration: none;
@@ -84,7 +84,7 @@
 }
 
 .ejemplos :focus-visible {
-  outline-color: var(--color-raiz);
+  outline-color: var(--color-acento);
 }
 
 /* El sello de cada rol: un disco paja con su inicial. */

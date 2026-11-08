@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--/* Raíces, Nosotros (ficha docs/interfaz/flujos/raices-conocer-y-activar.md, 4.1; boceto de E1,
-       pág. 3): quiénes somos, las cifras con período y fecha (la rama de frutos de la portada), cómo
+       pág. 3): quiénes somos, las cifras con período y fecha (los árboles de la portada, estética de K), cómo
        trabajamos, lo que nos importa y dos salidas, una por público. Se llega desde el pie. Los estados
        de la maqueta (?escenario=vacio, lento o error) solo cambian las cifras: el resto es texto fijo.
        ponytail: cifras fijas del caso de ejemplo, iguales a las de la portada; con backend, HB-02. */-->
@@ -21,30 +21,10 @@
         donación desde el depósito hasta que la entidad confirma que llegó.</p>
     </header>
 
-    <section class="frutos tierra-impresa" aria-labelledby="cifras-titulo">
-      <div class="frutos-interior">
-        <div class="frutos-cabeza">
-          <h2 id="cifras-titulo">Lo que está <em>confirmado</em></h2>
-          <p class="nota">Se cuenta con la confirmación de cada entidad.<th:block th:if="${conDatos}"> Actualizado
-            el 15 de octubre de 2026, 14:30.</th:block></p>
-        </div>
-        <div class="frutos-aviso" th:unless="${conDatos}">
-          <p th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas. Se cuentan cuando cada entidad
-            confirma lo que recibe.</p>
-          <p th:if="${estado == 'lento'}" role="status">Cargando las cifras…</p>
-          <div th:if="${estado == 'error'}" role="alert">
-            <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
-            <a href="/publico-nosotros" th:href="@{/publico-nosotros}" class="boton" data-tamano="chico"
-               data-zona="suelo-hondo">Volver a cargar</a>
-          </div>
-        </div>
-        <dl class="frutos-rama" data-cosecha="completa" th:if="${conDatos}">
-          <div><dt>Entregas confirmadas desde marzo de 2026</dt><dd>1.284</dd></div>
-          <div><dt>Entidades en el mapa</dt><dd>46</dd></div>
-          <div><dt>Donantes con al menos una donación desde marzo de 2026</dt><dd>318</dd></div>
-        </dl>
-      </div>
-    </section>
+    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${ {
+        {n: '1.284', t: 'Entregas confirmadas desde marzo de 2026'},
+        {n: '46', t: 'Entidades en el mapa'},
+        {n: '318', t: 'Donantes con al menos una donación desde marzo de 2026'} } })}"></section>
 
     <section class="grilla" data-espacio="4" aria-labelledby="somos-titulo">
       <div class="lectura">
@@ -54,30 +34,9 @@
         <p>Ordenamos lo que llega al depósito, lo asignamos a lo que cada entidad pidió y mostramos el
           recorrido de cada entrega.</p>
       </div>
-      <!--/* La lámina de la familia de la portada y de Contacto: un brote cuya raíz se abre en la tierra.
-             Decorativa: el texto de al lado dice lo mismo. */-->
-      <figure class="tarjeta" aria-hidden="true">
-        <p class="lamina-cabeza">La raíz que se abre</p>
-        <svg class="lamina-dibujo" viewBox="60 40 280 420" focusable="false">
-          <path class="dib-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
-          <rect class="dib-suelo" x="0" y="170" width="400" height="400"/>
-          <g transform="translate(140 30) scale(2)">
-            <path class="dib-tallo" d="M30 70V28"/>
-            <path class="dib-hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
-            <path class="dib-hoja dib-hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
-            <path class="dib-hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
-          </g>
-          <path class="dib-horizonte" d="M0 170H400"/>
-          <path class="dib-raiz" d="M200 172C200 240 196 300 200 360C204 400 200 430 200 450"/>
-          <path class="dib-raiz" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
-          <path class="dib-raiz" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
-          <path class="dib-raiz" d="M200 330C180 345 162 362 154 394C150 410 150 428 150 442"/>
-          <path class="dib-raiz" d="M200 330C220 345 240 362 250 394"/>
-          <path class="dib-raicilla" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M154 394C140 396 128 404 118 414M200 290C188 296 182 304 178 316"/>
-          <circle class="dib-cruce" cx="200" cy="232" r="7"/>
-          <circle class="dib-cruce" cx="200" cy="330" r="7"/>
-        </svg>
-      </figure>
+      <!--/* Una lámina con el árbol del último paso (ilustración de diseño, estética de K). Decorativa: el
+             texto de al lado dice lo mismo. */-->
+      <figure th:replace="~{componentes/huerta :: lamina('paso-4-arbol', 173, 252)}"></figure>
     </section>
 
     <section aria-labelledby="trabajo-titulo" class="pila" data-espacio="3">

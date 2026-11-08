@@ -1,9 +1,8 @@
 /* Notificaciones de la entidad en Raíces (ficha raices-entidad-navegable, 4.3): la bandeja es un
    cuaderno de campo, una fila por novedad, con la hora al margen, el sello de su tipo y a dónde ir.
-   Las sin leer llevan una cinta paja en el margen, como la marca de una página por leer; las leídas,
-   sin cinta. El tipo va siempre en texto: el sello y el color acompañan. En pantalla grande (pulido,
-   2026-11-03, la variante C elegida para el donante), las sin leer van en una franja de tierra, una
-   tarjeta por novedad colgada de una raíz horizontal con su cinta; las leídas, debajo, en filas. */
+   El tipo va siempre en texto: el sello y el color acompañan. Las sin leer van en una caja
+   de papel claro con un punto verde por novedad (estética de K, 2026-11-08); las leídas, debajo, en
+   filas. */
 @import url("entidad-comun.css");
 
 .bandeja {
@@ -36,24 +35,32 @@
   column-gap: 0.875rem;
   row-gap: 0.5rem;
   padding: 1rem 0 1rem 1rem;
-  border-bottom: 1px solid var(--color-tinta);
+  border-bottom: 1px solid var(--color-filete);
 }
 
-/* La cinta de lo que no se leyó: paja con su borde de tinta, al margen de la fila. */
+/* Lo que no se leyó: un punto verde al margen de la fila, como en K. */
 .novedad--sin-leer::before {
   content: "";
   position: absolute;
-  top: 0.75rem;
-  bottom: 0.75rem;
+  top: 1.375rem;
   left: 0;
-  width: 0.375rem;
-  border: 1px solid var(--color-tinta);
-  border-radius: 0.25rem;
-  background: var(--color-raiz);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-acento);
 }
 
-.novedad--leida {
-  border-bottom-style: dotted;
+.novedad:last-child {
+  border-bottom: 0;
+}
+
+/* Las sin leer, en una caja de papel claro (estética de K, 2026-11-08; antes, una franja de tierra
+   con tarjetas colgadas de una raíz). */
+.cuaderno-novedades--sin-leer {
+  padding: 1.25rem 1.25rem 0.5rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
 }
 
 .novedad-cuando {
@@ -119,11 +126,6 @@
   }
 }
 
-/* La textura de tierra (app.css), solo cuando las sin leer pasan a ser franja. */
-.cuaderno-novedades--sin-leer.tierra-impresa::before {
-  display: none;
-}
-
 @media (min-width: 68.75em) {
   .cabecera-entidad:has(.marcar) {
     display: grid;
@@ -140,72 +142,5 @@
     grid-column: 2;
     grid-row: 1 / span 3;
     margin: 0 0 0.75rem;
-  }
-
-  .cuaderno-novedades--sin-leer {
-    padding: 1.75rem 2rem 2rem;
-    border-radius: var(--radio-lamina);
-    background: var(--color-destacado-fondo);
-    color: var(--color-destacado-texto);
-  }
-
-  .cuaderno-novedades--sin-leer.tierra-impresa::before {
-    display: block;
-    border-radius: inherit;
-  }
-
-  .cuaderno-novedades--sin-leer h2 {
-    color: var(--color-destacado-texto);
-  }
-
-  /* La raíz horizontal de la que cuelgan las tarjetas. */
-  .cuaderno-novedades--sin-leer .novedades-lista {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.25rem;
-    padding: 2.25rem 0 0;
-    border-top: 0;
-  }
-
-  .cuaderno-novedades--sin-leer .novedades-lista::before {
-    content: "";
-    position: absolute;
-    top: 0.75rem;
-    right: 0;
-    left: 0;
-    height: 0.5rem;
-    border: 1.5px solid var(--color-tinta);
-    background: var(--color-raiz);
-  }
-
-  .cuaderno-novedades--sin-leer .novedad {
-    grid-template-columns: 1.375rem minmax(0, 1fr);
-    align-content: start;
-    padding: 1rem;
-    border: 2px solid var(--color-tinta);
-    border-radius: var(--radio-lamina);
-    background: var(--color-papel);
-    color: var(--color-tinta);
-    box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
-  }
-
-  .cuaderno-novedades--sin-leer .novedad-cuando {
-    grid-column: 1 / -1;
-    display: block;
-  }
-
-  .cuaderno-novedades--sin-leer .novedad > a {
-    grid-column: 2;
-    grid-row: auto;
-    align-self: end;
-  }
-
-  /* La cinta de lo que no se leyó, ahora el tramo que cuelga de la raíz. */
-  .cuaderno-novedades--sin-leer .novedad--sin-leer::before {
-    top: -1.375rem;
-    bottom: auto;
-    left: calc(50% - 0.1875rem);
-    height: 1.375rem;
   }
 }

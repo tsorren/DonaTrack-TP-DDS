@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<!--/* Componente huerta: las piezas de la estética de la variante K de frontend-donatrack ("Huerta con
+       abejas", adoptada para todo el sitio el 2026-11-08). Tres metáforas con un trabajo cada una: las
+       plantas en láminas muestran el fruto (una lámina por donación), las raíces muestran hasta dónde
+       llegó (las entidades) y las abejas son la logística. Las ilustraciones son de diseño
+       (static/img/ilustraciones/) y decorativas: el texto dice todo. Su hoja es
+       static/css/componentes/huerta.css. Catálogo: docs/interfaz/componentes.md.
+
+       Fragmentos:
+       - planta(d): una donación como lámina, dentro de `<ul class="lista huerta-lista" role="list">`.
+         El dibujo sale del estado: entregada, la planta crecida de su categoría (naranjo para
+         Alimentos, algodón para Ropa y Vestimenta, pino para Muebles, menta para Útiles escolares,
+         oreja de elefante para lo demás); en camino, el brote con la abeja que lo lleva; pendiente, la
+         maceta en el depósito; con problema, la maceta de reintentar. `d` es una donación de
+         viaje-datos (titulo, cantidad, categoria, destino, nota, clave y estado).
+       - cabeza(rotulo, titulo, resaltado, bajada): la cabeza de una sección, como en K.
+       - hero(titulo, resaltado, bajada): la portada, con tres láminas y el enjambre.
+       - como: cómo funciona, la escalera de pasos con la ruta de las abejas y el árbol del final.
+       - raices: bajo tierra, las raíces de lo donado hasta cada tipo de entidad.
+       - cifras(estado, valores): lo que ya dio frutos, una cifra por árbol, con sus estados; valores es
+         una lista de {n, t} (el número y lo que cuenta, con su período).
+       - lamina(ilustracion, ancho, alto): una lámina decorativa con una ilustración de diseño.
+       - participa: quién participa, una tarjeta por planta.
+       - preguntas: las preguntas frecuentes.
+       - cierre: la invitación del final, con su planta.
+       No es una pantalla: SitioController solo sirve nombres con rol. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/* Una donación, una lámina. */-->
+<li th:fragment="planta(d)" class="tarjeta huerta-planta"
+    th:with="tono=${d.estado.tono},
+             planta=${d.categoria == 'cat-alimentos' ? 'naranjo'
+                     : (d.categoria == 'cat-ropa' or d.categoria == 'cat-vestimenta' ? 'algodon'
+                     : (d.categoria == 'cat-muebles' ? 'pino'
+                     : (d.categoria == 'cat-escolares' ? 'menta' : 'orejas')))},
+             dibujo=${tono == 'entregada' ? 'planta-' + planta
+                     : (tono == 'en-camino' ? 'paso-3-brote'
+                     : (tono == 'con-problema' ? 'reintentar' : 'paso-2-maceta'))}">
+  <div class="huerta-marco">
+    <img src="/img/ilustraciones/planta-naranjo.svg"
+         th:src="@{/img/ilustraciones/{p}.svg(p=${dibujo})}" alt="" width="90" height="230">
+    <img th:if="${tono == 'en-camino' or tono == 'entregada'}" class="huerta-marco-abeja"
+         src="/img/ilustraciones/abeja-paquete.svg"
+         th:src="@{/img/ilustraciones/{a}.svg(a=${tono == 'en-camino' ? 'abeja-paquete' : 'abeja-arriba'})}"
+         alt="" width="26" height="30">
+  </div>
+  <div class="huerta-pie">
+    <h3 th:text="${d.titulo}">Fideos secos</h3>
+    <p th:text="${d.destino != null} ? |${d.cantidad} para ${d.destino}| : |${d.cantidad}, en el depósito|">8 kg
+      para Comedor Barrio Ejemplo</p>
+    <span class="estado" data-estado="entregada" th:data-estado="${tono}">
+      <th:block th:replace="~{componentes/sello :: sello(${tono})}"></th:block>
+      <span th:text="${d.estado.texto}">Entregada</span>
+    </span>
+    <p class="huerta-nota" th:text="${d.nota}">Llegó el 5 de octubre</p>
+    <a href="/donante-donaciones-detalle?donacion=fideos"
+       th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+       th:with="texto=${d.numero != null} ? |N.º ${d.numero} · Ver el detalle| : 'Ver el detalle'"
+       th:aria-label="|${texto} de ${d.titulo}|" th:text="${texto}">Ver el detalle</a>
+  </div>
+</li>
+
+<!--/* La cabeza de una sección: el rótulo, el título con su parte en verde y la bajada. */-->
+<header th:fragment="cabeza(rotulo, titulo, resaltado, bajada)" class="huerta-cabeza">
+  <p class="huerta-rotulo" th:text="${rotulo}">Cómo funciona</p>
+  <h2><th:block th:text="${titulo}">Las abejas</th:block> <em th:text="${resaltado}">hacen el camino.</em></h2>
+  <p th:if="${bajada}" class="huerta-bajada" th:text="${bajada}">Bajada.</p>
+</header>
+
+<!--/* La portada: el texto y las acciones a la izquierda; tres láminas con el enjambre a la derecha. */-->
+<section th:fragment="hero(titulo, resaltado, bajada)" class="huerta-hero" aria-labelledby="hero-titulo">
+  <div class="huerta-hero-texto">
+    <p class="huerta-rotulo">Trazabilidad de donaciones</p>
+    <h1 id="hero-titulo"><th:block th:text="${titulo}">Lo que donás echa raíces</th:block>
+      <em th:text="${resaltado}">en tu comunidad.</em></h1>
+    <p class="huerta-bajada" th:text="${bajada}">Bajada.</p>
+    <div class="huerta-acciones">
+      <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}"
+         class="boton" data-tono="principal">Quiero donar</a>
+      <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
+         class="boton" data-tono="secundario">Soy una entidad</a>
+    </div>
+    <!--/* La pausa del movimiento (WCAG 2.2.2): una casilla con forma de botón, sin JavaScript. Frena
+           las abejas y las plantas de la página. Con "reducir movimiento" no hay movimiento y no se
+           muestra. */-->
+    <label class="boton huerta-pausa" data-tamano="chico">
+      <input class="huerta-pausa-casilla" id="pausar-movimiento" type="checkbox">
+      Pausar el movimiento
+    </label>
+  </div>
+  <div class="huerta-laminas" aria-hidden="true">
+    <div class="tarjeta huerta-planta"><div class="huerta-marco"><img
+         src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}" alt=""
+         width="90" height="230"></div></div>
+    <div class="tarjeta huerta-planta"><div class="huerta-marco"><img
+         src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}" alt=""
+         width="144" height="245"></div></div>
+    <div class="tarjeta huerta-planta"><div class="huerta-marco"><img
+         src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}" alt=""
+         width="95" height="166"></div></div>
+    <img class="huerta-enjambre" src="/img/ilustraciones/enjambre.svg"
+         th:src="@{/img/ilustraciones/enjambre.svg}" alt="" width="400" height="130">
+  </div>
+</section>
+
+<!--/* Cómo funciona: a la izquierda el título y el árbol del final, que queda sobre la tierra de la
+       sección que sigue; a la derecha, los pasos unidos por la ruta punteada de las abejas. */-->
+<section th:fragment="como" class="huerta-como" id="como" aria-labelledby="como-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Cómo funciona</p>
+    <h2 id="como-titulo">Las abejas <em>hacen el camino.</em></h2>
+    <p class="huerta-bajada">Vos donás; la logística la lleva el equipo del depósito. Cada paso queda
+      registrado con su fecha y lo ves en tu cuenta.</p>
+  </header>
+  <img class="huerta-como-arbol" src="/img/ilustraciones/paso-4-arbol.svg"
+       th:src="@{/img/ilustraciones/paso-4-arbol.svg}" alt="" width="173" height="252">
+  <ol class="huerta-pasos" role="list">
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/paso-1-semillas.svg" th:src="@{/img/ilustraciones/paso-1-semillas.svg}"
+           alt="" width="94" height="104">
+      <div>
+        <p class="huerta-paso-numero">Paso 1</p>
+        <h3>Registrás lo que donás</h3>
+        <p>Alimentos, ropa, útiles o muebles, a tu nombre o al de tu empresa.</p>
+      </div>
+    </li>
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}"
+           alt="" width="97" height="92">
+      <div>
+        <p class="huerta-paso-numero">Paso 2</p>
+        <h3>Se asigna a una entidad</h3>
+        <p>Un comedor, una escuela o un hogar que lo pidió.</p>
+      </div>
+    </li>
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
+           alt="" width="95" height="166">
+      <div>
+        <p class="huerta-paso-numero">Paso 3</p>
+        <h3>Las abejas lo llevan</h3>
+        <p>Sale del depósito en camión y ves en qué tramo está, hasta la puerta de la entidad.</p>
+      </div>
+    </li>
+    <li class="huerta-paso">
+      <span class="huerta-paso-nudo" aria-hidden="true"></span>
+      <div>
+        <p class="huerta-paso-numero">Paso 4</p>
+        <h3>La entidad confirma y echa raíces</h3>
+        <p>Con la fecha y una foto de lo entregado. Abajo se ve hasta dónde llegó.</p>
+      </div>
+    </li>
+  </ol>
+  <p class="huerta-como-mas"><a href="/publico-para-donantes" th:href="@{/publico-para-donantes}">Qué ganás si donás</a></p>
+</section>
+
+<!--/* Bajo tierra: lo donado se ramifica por categoría hasta cada tipo de entidad. El dibujo es una
+       muestra de los tipos, no datos: el texto lo dice. */-->
+<section th:fragment="raices" class="huerta-tierra" aria-labelledby="raices-titulo">
+  <div class="huerta-tierra-grilla">
+    <svg class="huerta-raices" viewBox="0 0 660 330" role="img" focusable="false"
+         aria-label="Una donación que se ramifica en raíces: por categoría y hasta cada tipo de entidad">
+      <path class="huerta-raiz huerta-raiz--0" d="M330 0V44"/>
+      <path class="huerta-raiz huerta-raiz--1" d="M330 44C330 84 110 76 110 120"/>
+      <path class="huerta-raiz huerta-raiz--1" d="M330 44C330 84 330 76 330 120"/>
+      <path class="huerta-raiz huerta-raiz--1" d="M330 44C330 84 550 76 550 120"/>
+      <path class="huerta-raiz huerta-raiz--2" d="M110 120C110 170 50 182 50 250"/>
+      <path class="huerta-raiz huerta-raiz--2" d="M110 120C110 170 170 182 170 250"/>
+      <path class="huerta-raiz huerta-raiz--2" d="M330 120C330 170 275 182 275 250"/>
+      <path class="huerta-raiz huerta-raiz--2" d="M330 120C330 170 385 182 385 250"/>
+      <path class="huerta-raiz huerta-raiz--2" d="M550 120C550 170 490 182 490 250"/>
+      <path class="huerta-raiz huerta-raiz--2" d="M550 120C550 170 610 182 610 250"/>
+      <path class="huerta-raiz huerta-raiz--3" d="M50 250C46 280 34 292 22 310 M170 250C174 280 186 292 198 310 M275 250C271 280 259 292 247 310 M385 250C389 280 401 292 413 310 M490 250C486 280 474 292 462 310 M610 250C614 280 626 292 638 310"/>
+      <circle class="huerta-nudo" cx="330" cy="44" r="9"/>
+      <circle class="huerta-nudo" cx="110" cy="120" r="7"/>
+      <circle class="huerta-nudo" cx="330" cy="120" r="7"/>
+      <circle class="huerta-nudo" cx="550" cy="120" r="7"/>
+      <circle class="huerta-nudo" cx="50" cy="250" r="5"/>
+      <circle class="huerta-nudo" cx="170" cy="250" r="5"/>
+      <circle class="huerta-nudo" cx="275" cy="250" r="5"/>
+      <circle class="huerta-nudo" cx="385" cy="250" r="5"/>
+      <circle class="huerta-nudo" cx="490" cy="250" r="5"/>
+      <circle class="huerta-nudo huerta-nudo--hueco" cx="610" cy="250" r="5"/>
+      <text class="huerta-rotulo-raiz huerta-rotulo-raiz--categoria" x="110" y="104" text-anchor="middle">Alimentos</text>
+      <text class="huerta-rotulo-raiz huerta-rotulo-raiz--categoria" x="330" y="104" text-anchor="middle">Ropa</text>
+      <text class="huerta-rotulo-raiz huerta-rotulo-raiz--categoria" x="550" y="104" text-anchor="middle">Muebles y útiles</text>
+      <text class="huerta-rotulo-raiz" x="50" y="276" text-anchor="middle">Comedores</text>
+      <text class="huerta-rotulo-raiz" x="170" y="276" text-anchor="middle">Merenderos</text>
+      <text class="huerta-rotulo-raiz" x="275" y="276" text-anchor="middle">Hogares</text>
+      <text class="huerta-rotulo-raiz" x="385" y="276" text-anchor="middle">Clubes</text>
+      <text class="huerta-rotulo-raiz" x="490" y="276" text-anchor="middle">Escuelas</text>
+      <text class="huerta-rotulo-raiz" x="610" y="276" text-anchor="middle">Tu entidad</text>
+    </svg>
+    <div class="huerta-tierra-texto">
+      <p class="huerta-rotulo">Bajo tierra</p>
+      <h2 id="raices-titulo">Cada entrega <em>echa raíces.</em></h2>
+      <p>Lo que donás se ramifica por categoría y termina en comedores, merenderos, hogares, clubes y
+        escuelas: hoy son 46 entidades en el mapa. Cada una pide lo que necesita y confirma lo que recibe.</p>
+      <p><a href="/publico-entidades" th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a></p>
+      <p><a href="/publico-para-entidades" th:href="@{/publico-para-entidades}">Cómo se suma una entidad</a></p>
+    </div>
+  </div>
+</section>
+
+<!--/* Lo que ya dio frutos: una cifra por árbol, todos plantados en la misma línea de suelo. Con
+       ?escenario=vacio, lento o error, el aviso ocupa el lugar de las cifras. */-->
+<section th:fragment="cifras(estado, valores)" class="huerta-impacto" id="impacto" aria-labelledby="impacto-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Impacto</p>
+    <h2 id="impacto-titulo">Lo que ya <em>dio frutos.</em></h2>
+    <p class="huerta-bajada">Se cuenta con la confirmación de cada entidad.<th:block th:if="${estado == ''}">
+      Actualizado el 15 de octubre de 2026, 14:30.</th:block></p>
+  </header>
+  <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas. Se
+    cuentan cuando cada entidad confirma lo que recibe.</p>
+  <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las cifras…</p>
+  <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
+    <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
+    <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
+  </div>
+  <ul class="huerta-cifras" role="list" th:if="${estado == ''}">
+    <li th:each="c, vuelta : ${valores}" class="huerta-cifra">
+      <img src="/img/ilustraciones/arbol-1.svg"
+           th:src="@{/img/ilustraciones/arbol-{n}.svg(n=${vuelta.index % 4 + 1})}" alt="" width="120" height="150">
+      <b th:text="${c.n}">1.284</b> <span th:text="${c.t}">entregas confirmadas desde marzo de 2026</span>
+    </li>
+  </ul>
+  <p><a href="/publico-mapa" th:href="@{/publico-mapa}">Ver el mapa de entregas confirmadas</a></p>
+</section>
+
+<!--/* Una lámina decorativa, con una ilustración de diseño en su marco. */-->
+<figure th:fragment="lamina(ilustracion, ancho, alto)" class="tarjeta huerta-planta" aria-hidden="true">
+  <div class="huerta-marco"><img src="/img/ilustraciones/paso-4-arbol.svg"
+       th:src="@{/img/ilustraciones/{i}.svg(i=${ilustracion})}" alt="" width="173" height="252"
+       th:width="${ancho}" th:height="${alto}"></div>
+</figure>
+
+<!--/* Quién participa: una tarjeta por forma de sumarse, cada una con su planta. */-->
+<section th:fragment="participa" class="huerta-participa" id="quien" aria-labelledby="quien-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Quién participa</p>
+    <h2 id="quien-titulo">¿Qué planta <em>sos vos?</em></h2>
+    <p class="huerta-bajada">Elegí cómo sumarte. Crear la cuenta lleva unos minutos.</p>
+  </header>
+  <ul class="huerta-opciones" role="list">
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
+           alt="" width="90" height="230">
+      <p class="huerta-rotulo">Personas que donan</p>
+      <h3>Donás y ves dónde da fruto.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Llevás lo que tenés al depósito y queda registrado.</li>
+        <li>Seguís cada donación hasta la entidad que la pidió.</li>
+        <li>Ves la foto que sube la entidad cuando la recibe.</li>
+      </ul>
+      <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}" class="boton"
+         data-tono="principal">Quiero donar</a>
+    </li>
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-algodon.svg" th:src="@{/img/ilustraciones/planta-algodon.svg}"
+           alt="" width="90" height="228">
+      <p class="huerta-rotulo">Empresas</p>
+      <h3>Tu empresa dona con constancia.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Las donaciones quedan a nombre de la empresa.</li>
+        <li>Cada entrega confirmada lleva su fecha y su foto.</li>
+        <li>Lo podés sumar a tu informe de responsabilidad social.</li>
+      </ul>
+      <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}" class="boton"
+         data-tono="principal">Registrar mi empresa</a>
+    </li>
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}"
+           alt="" width="144" height="245">
+      <p class="huerta-rotulo">Comedores, escuelas y hogares</p>
+      <h3>Pedís lo que falta y lo recibís.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Cargás lo que necesitás, con la cantidad.</li>
+        <li>Ves qué se te asignó y cuándo llega.</li>
+        <li>Confirmás cada entrega con una foto.</li>
+      </ul>
+      <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}" class="boton"
+         data-tono="principal">Sumar mi entidad</a>
+    </li>
+  </ul>
+</section>
+
+<!--/* Las preguntas frecuentes (ficha raices-conocer-y-activar.md, Preguntas). */-->
+<section th:fragment="preguntas" class="huerta-preguntas" id="preguntas" aria-labelledby="preguntas-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Preguntas frecuentes</p>
+    <h2 id="preguntas-titulo">Lo que <em>más nos preguntan.</em></h2>
+    <p class="huerta-bajada">Si no está acá, <a href="/publico-contacto" th:href="@{/publico-contacto}">escribinos</a>.</p>
+  </header>
+  <div class="huerta-preguntas-lista">
+    <details open><summary>¿Cuesta algo?</summary><p>No.</p></details>
+    <details><summary>¿Dónde dejo lo que dono?</summary><p>En el depósito; el equipo lo registra y lo vas
+      a ver en tu cuenta.</p></details>
+    <details><summary>¿Puedo donar sin que se vea mi nombre?</summary><p>Sí: lo elegís en tu
+      perfil.</p></details>
+    <details><summary>¿Cómo sé que llegó?</summary><p>La entidad confirma la entrega con una foto y te
+      avisamos.</p></details>
+  </div>
+</section>
+
+<!--/* La invitación del final, con su planta. */-->
+<section th:fragment="cierre" class="huerta-cierre" aria-labelledby="cierre-titulo">
+  <img src="/img/ilustraciones/planta-menta.svg" th:src="@{/img/ilustraciones/planta-menta.svg}" alt=""
+       width="97" height="176">
+  <h2 id="cierre-titulo">Tu huerta empieza <em>con una donación.</em></h2>
+  <div class="huerta-acciones">
+    <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}" class="boton"
+       data-tono="principal">Quiero donar</a>
+    <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}" class="boton"
+       data-tono="secundario">Soy una entidad</a>
+  </div>
+</section>
+
+<!--/* Las cifras del donante en fila, entre un filete de tinta y uno fino, sin metáfora (como en K). */-->
+<dl th:fragment="resumen(donaciones)" class="huerta-resumen">
+  <div><dt>donaciones registradas</dt><dd th:text="${#lists.size(donaciones)}">7</dd></div>
+  <div><dt>entregadas</dt><dd th:text="${#lists.size(donaciones.?[estado.tono == 'entregada'])}">2</dd></div>
+  <div><dt>en camino</dt><dd th:text="${#lists.size(donaciones.?[estado.tono == 'en-camino'])}">1</dd></div>
+  <div><dt>en el depósito</dt><dd th:text="${#lists.size(donaciones.?[estado.tono == 'pendiente'])}">3</dd></div>
+  <div><dt>salen de nuevo</dt><dd th:text="${#lists.size(donaciones.?[estado.tono == 'con-problema'])}">1</dd></div>
+</dl>
+
+<!--/* Las raíces de lo donado, en la tierra: una por entidad a la que se asignó algo. Llena y con su
+       nudo, la que ya confirmó una entrega; punteada y con el nudo hueco, la que todavía no. */-->
+<section th:fragment="raices-donante(donaciones)" class="huerta-tierra huerta-tierra--caja"
+         aria-labelledby="raices-titulo"
+         th:with="destinos=${#lists.toList(#sets.toSet(donaciones.?[destino != null].![destino]))},
+                  llegaron=${#sets.toSet(donaciones.?[estado.tono == 'entregada'].![destino])},
+                  n=${#lists.size(destinos)}">
+  <svg th:unless="${n == 0}" class="huerta-raices" viewBox="0 -10 600 250" role="img" focusable="false"
+       th:aria-label="|Raíces desde tus donaciones hasta ${n} entidades|">
+    <path class="huerta-raiz huerta-raiz--0" d="M300 -10V40"/>
+    <th:block th:each="e, vuelta : ${destinos}"
+              th:with="x=${n == 1 ? 300 : 70 + vuelta.index * 460 / (n - 1)}, llego=${llegaron.contains(e)}">
+      <path th:class="${llego} ? 'huerta-raiz huerta-raiz--1' : 'huerta-raiz huerta-raiz--1 huerta-raiz--camino'"
+            class="huerta-raiz huerta-raiz--1" d="M300 40C300 100 70 100 70 170"
+            th:attr="d=|M300 40C300 100 ${x} 100 ${x} 170|"/>
+      <circle th:class="${llego} ? 'huerta-nudo' : 'huerta-nudo huerta-nudo--hueco'" class="huerta-nudo"
+              cx="70" cy="170" r="7" th:attr="cx=${x}"/>
+      <text class="huerta-rotulo-raiz" x="70" y="200" text-anchor="middle" th:attr="x=${x}"
+            th:text="${e}">Comedor Barrio Ejemplo</text>
+    </th:block>
+    <circle class="huerta-nudo" cx="300" cy="40" r="9"/>
+  </svg>
+  <div class="huerta-tierra-texto">
+    <p class="huerta-rotulo">Raíces de lo que donaste</p>
+    <h2 id="raices-titulo" th:text="${#sets.size(llegaron) == 1} ? 'Llegaste a 1 entidad.' : |Llegaste a ${#sets.size(llegaron)} entidades.|">Llegaste
+      a 2 entidades.</h2>
+    <p th:if="${n == 0}">Cuando una de tus donaciones se asigne a una entidad, su raíz va a aparecer acá.</p>
+    <p th:unless="${n == 0}">Desde el 1 de octubre de 2026. Las raíces llenas llegan a una entidad que
+      confirmó la entrega; las punteadas, a una que todavía la espera.</p>
+  </div>
+</section>
+
+<!--/* El recorrido de una donación: un punto por etapa, la abeja sobre la etapa actual. */-->
+<section th:fragment="recorrido(d)" class="tarjeta huerta-caja" aria-labelledby="recorrido-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Tu donación en camino</p>
+    <h2 id="recorrido-titulo" th:text="|${d.titulo} · ${d.cantidad}|">Lentejas secas · 15 kg</h2>
+    <a href="/donante-donaciones-detalle?donacion=lentejas"
+       th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}">Ver el detalle</a>
+  </header>
+  <ol class="huerta-recorrido" role="list">
+    <li th:each="p : ${d.pasos}" th:data-avance="${#strings.toLowerCase(p.avance)}" data-avance="hecho"
+        th:aria-current="${#strings.toLowerCase(p.avance) == 'actual'} ? 'step' : null">
+      <img th:if="${#strings.toLowerCase(p.avance) == 'actual'}" class="huerta-recorrido-abeja"
+           src="/img/ilustraciones/abeja-paquete.svg" th:src="@{/img/ilustraciones/abeja-paquete.svg}"
+           alt="" width="26" height="30">
+      <span class="huerta-recorrido-punto" aria-hidden="true"></span>
+      <b th:text="${p.nombre}">En depósito</b>
+      <span th:text="${p.detalle}">12 de octubre</span>
+    </li>
+  </ol>
+</section>
+</body>
+</html>

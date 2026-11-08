@@ -13,7 +13,6 @@
 
 main h1 em {
   color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
 /* El relleno de una parte (el papel y el filete, de .tarjeta). */
@@ -41,18 +40,6 @@ main h1 em {
 .volver::before {
   content: "← ";
   white-space: pre;
-}
-
-/* El brote del aviso vacío, chico en el celular: el próximo paso entra cerca de la primera
-   pantalla. */
-.aviso-brote {
-  max-width: 6rem;
-}
-
-@media (min-width: 37.5em) {
-  .aviso-brote {
-    max-width: 10rem;
-  }
 }
 
 /* El pictograma de categoría y su texto. */
