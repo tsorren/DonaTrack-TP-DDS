@@ -9,7 +9,7 @@
 > §11 (decisiones D2, D16 y D26, "Listo" para redactar) y E2-01 de
 > [SPEC-06](../specs/active/SPEC-06-auth-mvp-keycloak.md). El orden de implementación está en el
 > [plan del cliente con datos reales y gateway](../requerimientos/plan-e6-cliente-datos-reales-y-gateway.md).
-> **Ninguna parte de esta decisión está implementada.**
+> **Implementación:** la etapa 1 (punto 6) está hecha en [SPEC-07](../specs/active/SPEC-07-api-gateway-etapa-1.md) (2026-11-07), con el tren de Spring Cloud 2025.1.1 (Gateway 5.0.1, variante WebMVC). La etapa 2 no está implementada.
 >
 > De dónde sale cada parte:
 >
@@ -128,7 +128,8 @@ a 6 agregan lo que esas decisiones no fijaban.
 
 1. **Entrada única (RI-GW-01).** Un módulo `api-gateway` con Spring Cloud Gateway, con rutas hacia
    los cuatro servicios. El cliente conoce una sola URL base. El tren de Spring Cloud se fija al
-   implementar, compatible con el Spring Boot del reactor `[INFERRED]`: no se verificó todavía.
+   implementar, compatible con el Spring Boot del reactor. `[VERIFIED]` 2026-11-07: 2025.1.1 (Gateway
+   5.0.1) con Boot 4.0.7, en SPEC-07.
 2. **Validación en doble capa (RI-GW-02, RI-SVC-01).** El gateway valida firma (JWKS), `exp`, `iss`
    y `aud`; un token inválido da `401` con el formato de error unificado. Cada servicio vuelve a
    validar con JWKS. Las claves se cachean, así que el IdP caído no corta las requests con tokens

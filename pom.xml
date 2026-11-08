@@ -16,6 +16,7 @@
         <module>incentivos-service</module>
         <module>logistica-service</module>
         <module>cliente-liviano</module>
+        <module>api-gateway</module>
         <module>integration-tests</module>
     </modules>
 

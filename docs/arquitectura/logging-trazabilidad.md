@@ -67,6 +67,8 @@ El span del servidor lo abre Micrometer Tracing (Brave) antes de `TraceResponseH
 
 [INFERRED] Vale igual para `notificaciones-service`, `incentivos-service` y `logistica-service`: toman `LoggingAutoConfiguration` de `common-lib` y ninguno configura `management.tracing.*` ni una `Propagation.Factory` propia. No se probó con curl en esos tres.
 
+**Con el gateway (SPEC-07).** `api-gateway` toma la misma autoconfiguración, así que elige el `traceId` con este mismo orden. Después lo copia en el `X-Trace-Id` del pedido que manda al servicio, y el servicio lo adopta por el paso 2. A la respuesta le saca el `X-Trace-Id` del servicio para que el header no quede duplicado. [VERIFIED] 2026-11-07 con `RutasGatewayTest` y servicios falsos: el header enviado y el generado llegan al servicio y vuelven una sola vez.
+
 ---
 
 ## 3. Ejemplo de Salida Estructurada de Logs
