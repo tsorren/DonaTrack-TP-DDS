@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<!--/* Prueba A/B de Misiones, segunda ronda del 2026-11-09 (tarde). Opción B: el invernadero. Un
-       invernadero de vidrio (img/ilustraciones/invernadero.svg: estructura, un estante por lado, la
-       mesada del medio y el piso) que se va llenando de plantas a medida que donás: un lugar por
-       misión. Colaborador, en el estante de la izquierda; Sostenedor, en la mesada; Transformador, en
-       el estante de la derecha. La misión completa es la planta crecida; la que está en curso, un brote
-       que crece; la que falta, un lugar vacío con contorno punteado. Las plantas se ubican encima del
-       dibujo con CSS; el dibujo es decorativo y la lista de abajo dice qué hay en cada lugar y qué falta
-       para llenarlo. Las misiones de una categoría que todavía no se abre no se nombran (usuaria,
-       2026-11-09). Usa los datos y los estados de donante-misiones (datos(vista)).
-       ?variante=misiones-b, también con ?escenario=vacio, lento y error. Se borra al decidir. */-->
+<!--/* Prueba A/B de Misiones, opción B: la huerta (tercera ronda del 2026-11-09, noche; reemplaza al
+       invernadero de la tarde). El dibujo de la diseñadora (assets/DonaTrack_Huerta.vacia, .completa y
+       .detalle) separado en capas (img/ilustraciones/huerta/): el invernadero vacío de fondo y, encima,
+       un lugar por logro. El conseguido muestra su planta; el que falta, la maceta negra con "?". Los
+       lugares son 8: la bienvenida (llega con la cuenta), las 6 misiones de MisionFactory y la planta
+       colgante de la huerta completa. Cada lugar es un enlace (?lugar=<clave>, sin JavaScript): al
+       elegirlo, el resto del invernadero se atenúa y la ficha (a la derecha; debajo en el celular) dice
+       qué hiciste, con 3 hitos y la donación, o qué falta, sin culpa. Las misiones de una categoría que
+       todavía no se abre no se nombran (usuaria, 2026-11-09). Usa los datos y los estados de
+       donante-misiones (datos(vista)). ?variante=misiones-b, también con &lugar=<clave> y
+       ?escenario=vacio, lento y error. Se borra al decidir. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
 <head>
@@ -16,102 +17,197 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{donante-misiones :: datos(~{::invernadero})}"></th:block>
+  <th:block th:replace="~{donante-misiones :: datos(~{::huerta})}"></th:block>
 </th:block>
 
-<th:block th:fragment="invernadero"
-    th:with="plantas=${ {'Racha Inicial': 'planta-menta', 'Explorador': 'planta-hojas-al-viento',
-                         'Gran Aporte': 'planta-naranjo', 'Constancia': 'planta-algodon',
-                         'Impacto Real': 'planta-orejas', 'Diversidad Solidaria': 'planta-pino'} },
-             lugares=${ {'Colaborador': 'el estante de la izquierda', 'Sostenedor': 'la mesada del medio',
-                         'Transformador': 'el estante de la derecha'} }">
-  <section id="invernadero" aria-labelledby="invernadero-titulo">
+<!--/* Los lugares, en el orden de las misiones (el de la lista y el del teclado). tipo: bienvenida, mision
+       o final. Los conseguidos traen qué hiciste, la categoría de la donación, los 3 hitos y el mensaje de
+       la entidad (datos de ejemplo, los de persona/datos-persona). La pintura va en el orden del dibujo
+       (las hojas del piso tapan el estante). */-->
+<th:block th:fragment="huerta"
+    th:with="pedido=${param.lugar != null ? param.lugar[0] : ''},
+             lugares=${ {
+      {clave: 'mesada-izq', tipo: 'bienvenida', planta: 'Jazmín', titulo: 'Bienvenida', categoria: 'cat-alimentos',
+       hizo: nueva ? 'Te sumaste a DonaTrack. Esta planta llega con tu cuenta.'
+                   : 'Te sumaste a DonaTrack y donaste por primera vez: lentejas secas, 4 kg, para Comedor Barrio Ejemplo.',
+       hitos: nueva ? { {texto: 'Te sumaste a DonaTrack', fecha: '15 de octubre de 2026', hecho: true},
+                        {texto: 'Tu primera donación', fecha: 'Cuando quieras', hecho: false},
+                        {texto: 'La entidad confirma que la recibió', fecha: 'Después de tu primera donación', hecho: false} }
+                    : { {texto: 'Te sumaste a DonaTrack', fecha: '1 de junio de 2026', hecho: true},
+                        {texto: 'Llevaste tus lentejas al depósito', fecha: '5 de junio de 2026', hecho: true},
+                        {texto: 'Comedor Barrio Ejemplo confirmó que las recibió', fecha: '9 de junio de 2026', hecho: true} },
+       donacion: nueva ? null : 'lentejas', entidad: 'Comedor Barrio Ejemplo',
+       mensaje: 'Gracias por las lentejas, Martina: alcanzaron para el guiso de toda la semana.'},
+      {clave: 'estante-izq', tipo: 'mision', planta: 'Palmera', titulo: 'Racha Inicial', categoria: 'cat-alimentos',
+       hizo: 'Donaste 3 meses seguidos: junio, julio y agosto de 2026. Tus galletitas completaron la misión.',
+       hitos: { {texto: 'Llevaste tus galletitas al depósito', fecha: '3 de agosto de 2026', hecho: true},
+                {texto: 'Llegaron a Merendero Ejemplo Sur', fecha: '7 de agosto de 2026, 10:30', hecho: true},
+                {texto: 'Merendero Ejemplo Sur confirmó que las recibió', fecha: '7 de agosto de 2026, 17:40', hecho: true} },
+       donacion: 'galletitas', entidad: 'Merendero Ejemplo Sur',
+       mensaje: 'Las galletitas acompañaron la merienda del viernes. ¡Gracias por acordarte de nosotros!'},
+      {clave: 'piso-izq', tipo: 'mision', planta: 'Bananero', titulo: 'Explorador', categoria: 'cat-escolares',
+       hizo: 'Donaste en 3 categorías distintas: alimentos, ropa y útiles escolares. Los útiles completaron la misión.',
+       hitos: { {texto: 'Llevaste tus útiles escolares al depósito', fecha: '2 de septiembre de 2026', hecho: true},
+                {texto: 'Llegaron a Escuela Ejemplo N.º 12', fecha: '8 de septiembre de 2026, 9:00', hecho: true},
+                {texto: 'Escuela Ejemplo N.º 12 confirmó que los recibió', fecha: '8 de septiembre de 2026, 12:30', hecho: true} },
+       donacion: 'utiles', entidad: 'Escuela Ejemplo N.º 12',
+       mensaje: 'Los útiles ya están en las mochilas de segundo grado. ¡Gracias!'},
+      {clave: 'mesada-medio', tipo: 'mision', planta: 'Orejas de elefante', titulo: 'Gran Aporte'},
+      {clave: 'mesada-der', tipo: 'mision', planta: 'Naranjo', titulo: 'Constancia'},
+      {clave: 'estante-der', tipo: 'mision', planta: 'Menta', titulo: 'Impacto Real'},
+      {clave: 'piso-der', tipo: 'mision', planta: 'Algodón', titulo: 'Diversidad Solidaria'},
+      {clave: 'colgante', tipo: 'final', planta: 'Potus colgante', titulo: 'Huerta completa'} } },
+             pintura=${ {'piso-der', 'mesada-der', 'colgante', 'estante-izq', 'mesada-medio', 'estante-der',
+                         'piso-izq', 'mesada-izq'} },
+             completas=${#lists.size(obtenidas)},
+             conPlanta=${completas + 1 + (completas == 6 ? 1 : 0)},
+             elegido=${lugares.^[clave == #root.pedido]}">
+  <svg th:replace="~{iconos :: categorias}"></svg>
+  <section id="huerta" aria-labelledby="huerta-titulo" th:data-elegido="${elegido != null} ? ${elegido.clave} : null">
     <header>
-      <h2 id="invernadero-titulo">Tu invernadero</h2>
-      <p th:text="|${#lists.size(obtenidas)} de 6 lugares con planta. Cada misión completa suma una planta: las de ${categorias[0].nombre} van en el estante de la izquierda, las de ${categorias[1].nombre} en la mesada y las de ${categorias[2].nombre} en el estante de la derecha.|">2
-        de 6 lugares con planta. Cada misión completa suma una planta: las de Colaborador van en el
-        estante de la izquierda, las de Sostenedor en la mesada y las de Transformador en el estante de
-        la derecha.</p>
+      <h2 id="huerta-titulo">Tu huerta</h2>
+      <p th:text="|${conPlanta} de 8 macetas con planta. Cada misión completa hace crecer una; la que tiene un signo de pregunta todavía espera. Elegí una para ver cómo la conseguiste o qué le falta.|">3
+        de 8 macetas con planta. Cada misión completa hace crecer una; la que tiene un signo de pregunta
+        todavía espera. Elegí una para ver cómo la conseguiste o qué le falta.</p>
     </header>
 
-    <!--/* El dibujo con las plantas encima. Decorativo: la lista de abajo dice lo mismo. */-->
-    <div id="invernadero-escena" aria-hidden="true">
-      <img src="/img/ilustraciones/invernadero.svg" th:src="@{/img/ilustraciones/invernadero.svg}"
-           alt="" width="1000" height="640">
-      <span th:each="m, v : ${misiones}" th:data-lugar="${v.count}"
-            th:data-estado="${m.estado == 'completa'} ? 'planta' : (${m.estado == 'curso'} ? 'brote' : 'vacio')">
-        <img th:if="${m.estado == 'completa'}" src="/img/ilustraciones/planta-menta.svg"
-             th:src="@{/img/ilustraciones/{p}.svg(p=${plantas[m.nombre]})}" alt="" width="90" height="230">
-        <img th:if="${m.estado == 'curso'}" src="/img/ilustraciones/paso-3-brote.svg"
-             th:src="@{/img/ilustraciones/paso-3-brote.svg}" alt="" width="95" height="166">
-        <b data-chapa th:text="${v.count}">1</b>
-      </span>
+    <div id="huerta-escena">
+      <!--/* El dibujo, decorativo: los enlaces de abajo dicen lo mismo. */-->
+      <div id="huerta-dibujo" aria-hidden="true">
+        <img src="/img/ilustraciones/huerta/invernadero.svg" th:src="@{/img/ilustraciones/huerta/invernadero.svg}"
+             alt="" width="1140" height="695">
+        <th:block th:each="k : ${pintura}"
+                  th:with="l=${lugares.^[clave == #root.k]},
+                           m=${l.tipo == 'mision' ? misiones.^[nombre == #root.l.titulo] : null},
+                           tiene=${l.tipo == 'bienvenida' or (l.tipo == 'final' and completas == 6) or (m != null and m.estado == 'completa')}">
+          <img th:src="${tiene} ? @{/img/ilustraciones/huerta/{k}.svg(k=${k})} : @{/img/ilustraciones/huerta/{k}-maceta.svg(k=${k})}"
+               src="/img/ilustraciones/huerta/piso-der.svg" alt="" th:data-lugar="${k}"
+               th:data-elegido="${elegido != null and elegido.clave == k} ? 'si' : null">
+        </th:block>
+        <img th:if="${completas > 0}" src="/img/ilustraciones/huerta/abejas.svg"
+             th:src="@{/img/ilustraciones/huerta/abejas.svg}" alt="" data-lugar="abejas" width="1140" height="695">
+      </div>
+
+      <!--/* Un enlace por lugar, encima de su maceta. Su nombre: la planta (o la maceta) y la misión. */-->
+      <ol id="huerta-lugares" role="list" aria-label="Las macetas de tu huerta">
+        <li th:each="l : ${lugares}" th:data-lugar="${l.clave}"
+            th:with="m=${l.tipo == 'mision' ? misiones.^[nombre == #root.l.titulo] : null},
+                     c=${m != null ? categorias.^[nombre == #root.m.categoria] : null},
+                     tiene=${l.tipo == 'bienvenida' or (l.tipo == 'final' and completas == 6) or (m != null and m.estado == 'completa')},
+                     oculta=${c != null and c.estado == 'se abre después'}">
+          <a th:href="${nueva} ? @{/donante-misiones(variante='misiones-b', escenario='vacio', lugar=${l.clave})} + '#huerta'
+                              : @{/donante-misiones(variante='misiones-b', lugar=${l.clave})} + '#huerta'"
+             href="#" th:aria-current="${elegido != null and elegido.clave == l.clave} ? 'true' : null">
+            <span class="solo-lectores"
+                  th:text="${tiene} ? |${l.planta}: ${l.titulo}, conseguida|
+                         : (${oculta} ? |Maceta sin planta todavía: una misión de ${m.categoria}|
+                         : |Maceta sin planta todavía: ${l.titulo}${m != null and m.estado == 'curso' ? ', en curso' : ''}|)">Palmera:
+              Racha Inicial, conseguida</span>
+          </a>
+        </li>
+      </ol>
     </div>
 
-    <!--/* Qué hay en cada lugar y qué falta para llenarlo, por estante. */-->
-    <div id="invernadero-lista" class="pila" data-espacio="3">
-      <th:block th:each="c : ${categorias}"
-                th:with="suyas=${misiones.?[categoria == #root.c.nombre]},
-                         llenos=${#lists.size(suyas.?[estado == 'completa'])}">
-        <details th:if="${c.estado == 'completa'}" data-estante="completo">
-          <summary>
-            <b th:text="|${c.nombre} · ${#strings.capitalize(lugares[c.nombre])}|">Colaborador · El estante de la
-              izquierda</b>
-            <small th:text="|Lleno: ${llenos} de ${#lists.size(suyas)} plantas. Ver las plantas|">Lleno: 2 de 2
-              plantas. Ver las plantas</small>
-          </summary>
-          <ol role="list">
-            <th:block th:each="m : ${suyas}">
-              <li th:replace="~{:: lugar(${m}, ${misiones.indexOf(m) + 1}, ${c})}"></li>
-            </th:block>
-          </ol>
-        </details>
-
-        <section th:unless="${c.estado == 'completa'}" th:data-estante="${c.estado == 'tu categoría'} ? 'actual' : 'despues'"
-                 th:aria-labelledby="|estante-${c.nombre}|">
-          <h3 th:id="|estante-${c.nombre}|" th:text="|${c.nombre} · ${#strings.capitalize(lugares[c.nombre])}|">Sostenedor
-            · La mesada del medio</h3>
-          <p th:if="${c.estado == 'tu categoría'}"
-             th:text="|${llenos} de ${#lists.size(suyas)} con planta. Se llenan de a uno, en orden.|">0 de 2 con planta. Se
-            llenan de a uno, en orden.</p>
-          <ol role="list">
-            <th:block th:each="m : ${suyas}">
-              <li th:replace="~{:: lugar(${m}, ${misiones.indexOf(m) + 1}, ${c})}"></li>
-            </th:block>
-          </ol>
-        </section>
+    <!--/* La ficha: sin elegir, la huerta en resumen; con un lugar elegido, su detalle. */-->
+    <section id="huerta-ficha" class="tarjeta" aria-labelledby="huerta-ficha-titulo" aria-live="polite"
+             th:with="l=${elegido},
+                      m=${l != null and l.tipo == 'mision' ? misiones.^[nombre == #root.l.titulo] : null},
+                      c=${m != null ? categorias.^[nombre == #root.m.categoria] : null},
+                      tiene=${l != null and (l.tipo == 'bienvenida' or (l.tipo == 'final' and completas == 6) or (m != null and m.estado == 'completa'))},
+                      oculta=${c != null and c.estado == 'se abre después'},
+                      proxima=${misiones.^[estado == 'curso']}">
+      <!--/* Sin elegir: cuántas hay y la próxima. */-->
+      <th:block th:if="${l == null}">
+        <header>
+          <p class="rotulo">Tu huerta</p>
+          <h3 id="huerta-ficha-titulo" th:text="|${conPlanta} de 8 macetas con planta|">3 de 8 macetas con planta</h3>
+        </header>
+        <p>Elegí una planta para ver cómo la conseguiste, o una maceta con signo de pregunta para ver qué le
+          falta.</p>
+        <th:block th:if="${proxima != null}">
+          <p><b th:text="|La próxima en crecer: ${proxima.nombre}|">La próxima en crecer: Gran Aporte</b></p>
+          <p th:text="${proxima.pide}">Una donación con al menos 50 bienes</p>
+          <progress class="progreso" th:value="${proxima.progreso}" th:max="${proxima.objetivo}" value="12" max="50"
+                    th:aria-label="|${proxima.nombre}: ${proxima.cuenta}|"></progress>
+          <p th:text="|Llevás ${proxima.cuenta}.|">Llevás 12 de 50 bienes.</p>
+        </th:block>
       </th:block>
-    </div>
+
+      <!--/* Una planta conseguida: qué hiciste, los 3 hitos y la donación. */-->
+      <th:block th:if="${tiene}">
+        <header class="racimo" data-espacio="3">
+          <svg class="categoria-icono" data-tamano="grande" viewBox="-14 -14 128 128" aria-hidden="true"
+               focusable="false"><use th:href="|#${l['categoria'] ?: 'cat-alimentos'}|" href="#cat-alimentos"
+                                      width="100" height="100"/></svg>
+          <div>
+            <p class="rotulo" th:text="${m != null} ? |${l.planta} · ${m.categoria}| : ${l.planta}">Palmera · Colaborador</p>
+            <h3 id="huerta-ficha-titulo" th:text="${l.titulo}">Racha Inicial</h3>
+          </div>
+        </header>
+        <p th:text="${l['hizo'] ?: 'Completaste las 6 misiones: tu huerta está completa.'}">Donaste 3 meses seguidos:
+          junio, julio y agosto de 2026. Tus galletitas completaron la misión.</p>
+        <ol th:if="${l['hitos'] != null}" id="huerta-hitos" role="list" aria-label="Cómo la conseguiste">
+          <li th:each="h : ${l.hitos}" th:data-hito="${h.hecho} ? 'hecho' : 'falta'">
+            <b th:text="${h.texto}">Llevaste tus galletitas al depósito</b>
+            <span th:text="${h.fecha}">3 de agosto de 2026</span>
+          </li>
+        </ol>
+        <div class="racimo" data-espacio="2">
+          <a th:if="${l['donacion'] != null}" class="boton" data-tono="secundario" href="/donante-donaciones-detalle"
+             th:href="@{/donante-donaciones-detalle(donacion=${l.donacion})}">Ver la donación</a>
+          <a th:if="${l.tipo == 'bienvenida' and l['donacion'] == null}" class="boton" data-tono="secundario"
+             href="/donante-entidades" th:href="@{/donante-entidades}">Ver a quién donar</a>
+        </div>
+        <details th:if="${l['donacion'] != null}" id="huerta-mensaje">
+          <summary class="boton" data-tono="secundario">Ver el mensaje de la entidad</summary>
+          <blockquote>
+            <p th:text="${l.mensaje}">Las galletitas acompañaron la merienda del viernes. ¡Gracias por acordarte de
+              nosotros!</p>
+            <footer th:text="${l.entidad}">Merendero Ejemplo Sur</footer>
+          </blockquote>
+        </details>
+      </th:block>
+
+      <!--/* Una maceta con "?": qué le falta, sin culpa. La de una categoría que no se abre no se nombra. */-->
+      <th:block th:if="${l != null and !tiene}">
+        <header class="racimo" data-espacio="3">
+          <th:block th:replace="~{componentes/sello :: sello(${m != null and m.estado == 'curso'} ? 'en-camino' : 'falta')}"></th:block>
+          <div>
+            <p class="rotulo" th:text="${m != null} ? |Maceta sin planta todavía · ${m.categoria}| : 'Maceta sin planta todavía'">Maceta
+              sin planta todavía · Sostenedor</p>
+            <h3 id="huerta-ficha-titulo" th:text="${oculta} ? |Una misión de ${m.categoria}| : ${l.titulo}">Gran Aporte</h3>
+          </div>
+        </header>
+        <th:block th:if="${m != null and m.estado == 'curso'}">
+          <p th:text="|Está creciendo. Para que salga la planta: ${#strings.toLowerCase(m.pide)}.|">Está creciendo.
+            Para que salga la planta: una donación con al menos 50 bienes.</p>
+          <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
+                    th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
+          <p><b th:text="|Llevás ${m.cuenta}.|">Llevás 12 de 50 bienes.</b>
+            <th:block th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de
+              septiembre.</th:block></p>
+        </th:block>
+        <p th:if="${m != null and m.estado == 'espera'}"
+           th:text="|Para que salga la planta: ${#strings.toLowerCase(m.pide)}. Empieza a contar cuando completes ${m.espera}.|">Para
+          que salga la planta: 6 meses seguidos donando. Empieza a contar cuando completes Gran Aporte.</p>
+        <p th:if="${m != null and m.estado == 'cerrada' and !oculta}"
+           th:text="|Para que salga la planta: ${#strings.toLowerCase(m.pide)}.|">Para que salga la planta: …</p>
+        <p th:if="${oculta}" th:text="|Su misión se ve cuando completes las de ${c['anterior']}.|">Su misión se ve
+          cuando completes las de Sostenedor.</p>
+        <p th:if="${l.tipo == 'final'}"
+           th:text="|La planta colgante sale cuando completes las 6 misiones. Llevás ${completas}.|">La planta
+          colgante sale cuando completes las 6 misiones. Llevás 2.</p>
+        <p>Las misiones cuentan tus donaciones, sin plazo.</p>
+      </th:block>
+
+      <a th:if="${l != null}" href="/donante-misiones"
+         th:href="${nueva} ? @{/donante-misiones(variante='misiones-b', escenario='vacio')} + '#huerta'
+                            : @{/donante-misiones(variante='misiones-b')} + '#huerta'">Ver toda la huerta</a>
+    </section>
   </section>
 
   <p>Las misiones cuentan tus donaciones: las que llevás al depósito y, en Impacto Real, las que la
     entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
 </th:block>
-
-<!--/* Un lugar del invernadero: la planta que ya está, el brote que crece (con su barra) o el lugar
-       vacío y qué falta. El de una categoría que todavía no se abre no nombra su misión. */-->
-<li th:fragment="lugar(m, n, c)"
-    th:data-estado="${m.estado == 'completa'} ? 'planta' : (${m.estado == 'curso'} ? 'brote' : 'vacio')">
-  <span data-chapa aria-hidden="true" th:text="${n}">1</span>
-  <span>
-    <b th:text="${c.estado == 'se abre después'} ? |Lugar ${n}| : |Lugar ${n} · ${m.nombre}|">Lugar 1 · Racha Inicial</b>
-    <small th:if="${m.estado == 'completa'}" th:text="|Con planta desde el ${m.fecha}: ${#strings.toLowerCase(m.pide)}.|">Con
-      planta desde el 3 de agosto de 2026: 3 meses seguidos donando.</small>
-    <th:block th:if="${m.estado == 'curso'}">
-      <small th:text="|Un brote creciendo. Para que sea planta: ${#strings.toLowerCase(m.pide)}. Llevás ${m.cuenta}.|">Un
-        brote creciendo. Para que sea planta: una donación con al menos 50 bienes. Llevás 12 de 50 bienes.</small>
-      <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
-                th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
-    </th:block>
-    <small th:if="${m.estado == 'espera'}"
-           th:text="|Vacío. Para llenarlo: ${#strings.toLowerCase(m.pide)}. Empieza a contar cuando completes ${m.espera}.|">Vacío.
-      Para llenarlo: 6 meses seguidos donando. Empieza a contar cuando completes Gran Aporte.</small>
-    <small th:if="${m.estado == 'cerrada' and c.estado != 'se abre después'}"
-           th:text="|Vacío. Para llenarlo: ${#strings.toLowerCase(m.pide)}.|">Vacío.</small>
-    <small th:if="${c.estado == 'se abre después'}"
-           th:text="|Vacío. Su misión se ve cuando completes las de ${c['anterior']}.|">Vacío. Su misión se ve cuando
-      completes las de Sostenedor.</small>
-  </span>
-</li>
 </body>
 </html>

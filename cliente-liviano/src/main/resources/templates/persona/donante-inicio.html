@@ -157,6 +157,22 @@
           <p>Del 1 de junio al 15 de octubre de 2026, según las confirmaciones de las entidades.</p>
         </section>
 
+        <!--/* El acceso a la huerta de misiones (tercera ronda del 2026-11-09, noche): el invernadero lleno
+               de la diseñadora (img/ilustraciones/huerta/acceso.svg, sin el botón dibujado) con el botón
+               real encima. Lleva a la prueba misiones-b. */-->
+        <section id="anio-huerta" class="tarjeta huerta-caja" aria-labelledby="huerta-acceso-titulo">
+          <header class="huerta-cabeza">
+            <p class="huerta-rotulo">Tu huerta</p>
+            <h2 id="huerta-acceso-titulo">Cada misión completa, una planta</h2>
+          </header>
+          <div id="anio-huerta-dibujo">
+            <img src="/img/ilustraciones/huerta/acceso.svg" th:src="@{/img/ilustraciones/huerta/acceso.svg}"
+                 alt="" width="726" height="463">
+            <a class="boton" data-tono="secundario" href="/donante-misiones?cuenta=persona&amp;variante=misiones-b"
+               th:href="@{/donante-misiones(cuenta='persona', variante='misiones-b')}">Ver mi huerta</a>
+          </div>
+        </section>
+
         <section class="tarjeta huerta-caja" aria-labelledby="mision-titulo">
           <header class="huerta-cabeza">
             <p class="huerta-rotulo">Tu próxima misión</p>

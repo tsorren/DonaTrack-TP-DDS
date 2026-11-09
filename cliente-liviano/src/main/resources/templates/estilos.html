@@ -619,15 +619,21 @@
             </ol>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.plegable', 'Una tarjeta que se despliega en el lugar (details nativo, sin JavaScript): plegada, el título, lo que la pantalla quiera mostrar y «Ver …»; desplegada, el cuerpo debajo. Abierta no lleva borde verde: la flecha sube.', ~{::demo-plegable})}">
+        <div th:replace="~{componentes/muestra :: muestra('.plegable', 'Una tarjeta que se despliega en el lugar (details nativo, sin JavaScript): plegada, el título, lo que la pantalla quiera mostrar y «Ver …»; desplegada, el cuerpo debajo. Abierta no lleva borde verde: la flecha sube. Puede llevar la foto (.plegable-foto) y una medida con su barra (.plegable-medida).', ~{::demo-plegable})}">
           <th:block th:fragment="demo-plegable">
             <details class="plegable">
               <summary>
+                <span class="plegable-foto"><svg viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
+                    width="100" height="100" href="#cat-alimentos"/></svg></span>
                 <span class="plegable-titulo"><b>Comedor de ejemplo</b><span>Comedor · Barrio de ejemplo</span></span>
-                <span class="plegable-ver">Ver los 2 pedidos</span>
+                <span class="plegable-medida"><b>Necesidades satisfechas: 50 %</b>
+                  <progress class="progreso" max="4" value="2" aria-label="Ejemplo: 2 de 4 necesidades cubiertas"></progress>
+                  <span>Cubiertas: 2 de 4, en octubre</span></span>
+                <span class="plegable-ver">Ver todas las necesidades</span>
               </summary>
               <div class="plegable-cuerpo">
                 <p>Lentejas secas: faltan 30 de 40 kg este mes.</p>
+                <hr>
                 <p>Arroz: faltan 25 de 40 kg este mes.</p>
               </div>
             </details>
@@ -642,6 +648,33 @@
                   href="#cat-ropa"/></svg>Ropa</span>
               <span class="chip" data-tono="emergencia">Emergencia</span>
             </p>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.necesidad', 'Una necesidad de una entidad: el ícono centrado en su caja (con data-tono=&quot;emergencia&quot;, el de alerta en los colores del problema), qué es, lo que falta y hasta cuándo, y la barra de lo que ya llegó. .necesidades las pone en una o dos columnas.', ~{::demo-necesidad})}">
+          <th:block th:fragment="demo-necesidad">
+            <ul class="necesidades" role="list">
+              <li class="necesidad"><span class="necesidad-icono"><svg viewBox="-14 -14 128 128" aria-hidden="true"
+                  focusable="false"><use width="100" height="100" href="#cat-alimentos"/></svg></span>
+                <p class="necesidad-texto"><b>Lentejas secas</b> <span>Faltan 30 de 40 kg este mes · Se repite cada mes</span></p>
+                <progress class="progreso" max="40" value="10" aria-label="Ejemplo: faltan 30 de 40 kg este mes"></progress></li>
+              <li class="necesidad" data-tono="emergencia"><span class="necesidad-icono"><svg viewBox="0 0 24 24"
+                  aria-hidden="true" focusable="false"><path d="M12 3.5 2.5 20h19z" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9.5v5" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.1" fill="currentColor"/></svg></span>
+                <p class="necesidad-texto"><b>Ropa de abrigo</b> <span>Faltan 25 de 30 unidades · Hasta el 15 de noviembre</span></p>
+                <progress class="progreso" max="30" value="5" aria-label="Ejemplo: faltan 25 de 30 unidades"></progress></li>
+            </ul>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.recorte', 'Un texto largo recortado a tres renglones, que se desvanece abajo, con «Leer más.» (details nativo, sin JavaScript) para verlo entero. Los lectores de pantalla leen el texto completo.', ~{::demo-recorte})}">
+          <th:block th:fragment="demo-recorte">
+            <div class="recorte">
+              <p class="recorte-texto"><b>Misión:</b> Damos el almuerzo de lunes a viernes a unas 120 personas del barrio,
+                la mayoría chicos que van a la escuela de la vuelta y sus familias. Cocinamos entre vecinas y vecinos que
+                se turnan cada semana, con lo que llega de las donaciones y de una huerta chica que armamos en el patio.
+                Los sábados abrimos para la merienda y para el apoyo escolar.</p>
+              <details class="recorte-mas"><summary><span>Leer más.</span><span>Leer menos.</span></summary></details>
+            </div>
           </th:block>
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.segmentos', 'Un selector de pocas vistas de la misma lista: enlaces reales, la que se ve con aria-current=&quot;page&quot;, una pastilla de papel sin borde verde. En el celular ocupa el ancho.', ~{::demo-segmentos})}">

@@ -1,6 +1,7 @@
 /* Raíces, sitio A: Entidades (publico-entidades.html). Desde la ronda del 2026-11-09 (tarde), la lista
-   compacta por tipo de entidad: un renglón plegable por entidad (.plegable) con sus categorías (.chip)
-   y, desplegado, cada pedido con su barra (.progreso). Acá, solo la disposición de la pantalla. */
+   compacta por tipo de entidad; desde la del 2026-11-09 (noche), la tarjeta que dibujó la usuaria: un
+   plegable por entidad (.plegable) con su foto, sus categorías (.chip) y «Necesidades satisfechas»
+   (.progreso) y, desplegado, la misión (.recorte) y cada necesidad (.necesidad). Acá, solo la disposición de la pantalla. */
 @import url("publico-listas.css");
 
 /* --- El hero a todo el ancho ------------------------------------------------------------------- */
@@ -28,7 +29,7 @@
   margin-bottom: 2rem;
 }
 
-/* --- La lista por tipo de entidad ---------------------------------------------------------------- */
+/* --- La lista por tipo de entidad, una tarjeta plegable por entidad ------------------------------- */
 
 .entidades ul.pila {
   margin: 0;
@@ -42,34 +43,25 @@
   font-size: 1.375rem;
 }
 
-.entidades .plegable p {
+.entidades .plegable p,
+.entidades .plegable h3 {
   margin: 0;
 }
 
-/* Cada pedido: el ícono a la izquierda, centrado en su caja; el texto y la barra al lado. */
-.pedidos {
-  display: grid;
-  gap: 1rem;
-  margin: 0;
-  padding: 0.75rem 0 0;
-  border-top: 1px solid var(--color-filete);
-  list-style: none;
+.entidades .plegable h3 {
+  align-items: center;
+  font-size: var(--tamano-grande);
 }
 
-.pedidos > li {
-  display: grid;
-  grid-template-columns: 1.75rem minmax(0, 1fr);
-  align-items: start;
-  gap: 0 0.625rem;
+/* La cabecera de la tarjeta. En el celular, la foto con el nombre y los chips al lado; la barra y
+   «Ver todas las necesidades», debajo, a todo el ancho. */
+.entidades .plegable > summary {
+  grid-template-columns: auto minmax(0, 1fr);
 }
 
-.pedidos .estado {
-  font-size: 0.875rem;
-}
-
-.pedido-porque {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
+.entidades .plegable-medida,
+.entidades .plegable-ver {
+  grid-column: 1 / -1;
 }
 
 @media (min-width: 53.75em) {
@@ -77,13 +69,22 @@
     grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
   }
 
-  /* El renglón plegado: el nombre, las categorías y «Ver los pedidos», en una fila. */
+  /* En ancho, en una fila: la foto, el nombre con los chips, la barra y el enlace. */
   .entidades .plegable > summary {
-    grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.4fr) auto;
+    grid-template-columns: auto minmax(0, 1.3fr) minmax(12rem, 1fr) auto;
+    gap: var(--espacio-3) var(--espacio-5);
   }
 
-  .pedidos {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-    column-gap: 2rem;
+  .entidades .plegable-medida,
+  .entidades .plegable-ver {
+    grid-column: auto;
+  }
+
+  .entidades .plegable-ver {
+    justify-self: end;
+  }
+
+  .entidades .plegable-foto {
+    width: 6.5rem;
   }
 }

@@ -1,5 +1,6 @@
-/* Variante C de Asignar donaciones (ronda 2026-11-09 tarde): paso a paso, pensada para el celular.
-   Solo tokens de uso. Se borra al decidir. */
+/* Variante C de Asignar donaciones (ronda 2026-11-09 tarde y noche): paso a paso, pensada para el
+   celular. Empieza por "¿Qué querés hacer?" y cada trámite es una página. Solo tokens de uso. Se borra
+   al decidir. */
 @import url("comun/asignaciones.css");
 
 [data-variante="asignaciones-c"] > :not(header) {
@@ -33,7 +34,7 @@
 }
 
 [data-variante="asignaciones-c"] [data-lista="pasos"] > li > a {
-  min-height: var(--medida-toque-minimo);
+  min-height: 3rem;
   color: var(--color-tinta);
 }
 
@@ -117,16 +118,37 @@
 [data-variante="asignaciones-c"] [data-forma="resumen"] > a {
   display: inline-flex;
   align-items: center;
-  min-height: var(--medida-toque-minimo);
+  min-height: 3rem;
 }
 
 [data-variante="asignaciones-c"] [data-lista="ranking"] a {
   display: inline-flex;
   align-items: center;
-  min-height: var(--medida-toque-minimo);
+  min-height: 3rem;
   font-weight: 700;
 }
 
 [data-variante="asignaciones-c"] section.tarjeta {
   --espacio-relleno: var(--espacio-4);
+}
+
+/* Volver al inicio y los atajos de consulta: enlaces con la altura de toque. */
+[data-variante="asignaciones-c"] [data-forma="volver"],
+[data-variante="asignaciones-c"] [data-forma="atajos"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+[data-variante="asignaciones-c"] [data-forma="atajos"] a {
+  padding: 0 var(--espacio-3);
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+/* En el conflicto, de a uno: los dos lados uno debajo del otro también en ancho (la columna es angosta). */
+[data-variante="asignaciones-c"] [data-forma="par"] {
+  grid-template-columns: 1fr;
 }

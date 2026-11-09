@@ -97,9 +97,7 @@
          y 3.svg; opción B, 2026-11-09): cada abeja da su vuelta entre las láminas, por delante en los
          tramos llenos del dibujo y por detrás en los punteados (static/js/abejas.js). Sin
          JavaScript, con la pausa o con "reducir movimiento", quedan quietas, adelante. */-->
-  <div class="huerta-laminas" data-abejas="quietas"
-       data-abeja-arriba="/img/ilustraciones/abeja-arriba.svg" th:data-abeja-arriba="@{/img/ilustraciones/abeja-arriba.svg}"
-       data-abeja-abajo="/img/ilustraciones/abeja-abajo.svg" th:data-abeja-abajo="@{/img/ilustraciones/abeja-abajo.svg}">
+  <div class="huerta-laminas" data-abejas="quietas">
     <div class="tarjeta huerta-planta" aria-hidden="true"><div class="huerta-marco"><img
          src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}" alt=""
          width="90" height="230"></div></div>
@@ -109,12 +107,18 @@
     <div class="tarjeta huerta-planta" aria-hidden="true"><div class="huerta-marco"><img
          src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}" alt=""
          width="95" height="166"></div></div>
-    <img class="huerta-abeja" src="/img/ilustraciones/abeja-arriba.svg"
-         th:src="@{/img/ilustraciones/abeja-arriba.svg}" alt="" width="34" height="37">
-    <img class="huerta-abeja" src="/img/ilustraciones/abeja-abajo.svg"
-         th:src="@{/img/ilustraciones/abeja-abajo.svg}" alt="" width="34" height="37">
-    <img class="huerta-abeja" src="/img/ilustraciones/abeja-arriba.svg"
-         th:src="@{/img/ilustraciones/abeja-arriba.svg}" alt="" width="34" height="37">
+    <span class="huerta-abeja" aria-hidden="true"><img data-ala="arriba"
+          src="/img/ilustraciones/abeja-arriba.svg" th:src="@{/img/ilustraciones/abeja-arriba.svg}" alt=""
+          width="34" height="37"><img data-ala="abajo" src="/img/ilustraciones/abeja-abajo.svg"
+          th:src="@{/img/ilustraciones/abeja-abajo.svg}" alt="" width="34" height="37"></span>
+    <span class="huerta-abeja" aria-hidden="true"><img data-ala="arriba"
+          src="/img/ilustraciones/abeja-arriba.svg" th:src="@{/img/ilustraciones/abeja-arriba.svg}" alt=""
+          width="34" height="37"><img data-ala="abajo" src="/img/ilustraciones/abeja-abajo.svg"
+          th:src="@{/img/ilustraciones/abeja-abajo.svg}" alt="" width="34" height="37"></span>
+    <span class="huerta-abeja" aria-hidden="true"><img data-ala="arriba"
+          src="/img/ilustraciones/abeja-arriba.svg" th:src="@{/img/ilustraciones/abeja-arriba.svg}" alt=""
+          width="34" height="37"><img data-ala="abajo" src="/img/ilustraciones/abeja-abajo.svg"
+          th:src="@{/img/ilustraciones/abeja-abajo.svg}" alt="" width="34" height="37"></span>
   </div>
 </section>
 

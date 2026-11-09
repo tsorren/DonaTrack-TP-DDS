@@ -23,10 +23,15 @@
   const ALTO = 150;
   const ABEJA_ANCHO = 14;
   const ABEJA_ALTO = (ABEJA_ANCHO * 37) / 34;
-  /* Unidades del dibujo por segundo, inclinación máxima y cada cuánto bate las alas. */
+  /* Unidades del dibujo por segundo e inclinación máxima. */
   const VELOCIDAD = 34;
   const INCLINACION = 28;
-  const ALETEO_MS = 90;
+  /* Las alas siguen la concavidad del recorrido: arriba cuando la curva se abre hacia arriba (∪),
+     abajo cuando se cierra (∩). CURVA es la curvatura (1/radio, en 1/unidad) a partir de la cual
+     la pose es plena; en el medio se funden. ALAS_S es cuánto tarda en acomodarse el fundido. */
+  const CURVA = 1 / 45;
+  const ALAS_S = 0.18;
+  const VECINO = 4;
   /* Las tres salen repartidas en su ciclo, para que no arranquen juntas. */
   const FASES = [0, 0.35, 0.7];
 
@@ -37,7 +42,6 @@
   const abejas = [...laminas.querySelectorAll(".huerta-abeja")];
   const pausa = document.getElementById("pausar-movimiento");
   const reducir = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const alas = [laminas.dataset.abejaArriba, laminas.dataset.abejaAbajo];
 
   const rutas = RUTAS.map(({ d, adelante }) => {
     const numeros = d.split(" ").map(Number);
@@ -51,7 +55,28 @@
     }
     const delante = new Uint8Array(puntos.length);
     adelante.forEach(([desde, hasta]) => delante.fill(1, desde, hasta + 1));
-    return { puntos, delante };
+    /* Hacia dónde se curva el recorrido en cada punto: de 0 (alas abajo) a 1 (alas arriba). */
+    const n = puntos.length;
+    const alas = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const [px, py] = puntos[(i - VECINO + n) % n];
+      const [cx, cy] = puntos[i];
+      const [sx, sy] = puntos[(i + VECINO) % n];
+      const tx = sx - px;
+      const ty = sy - py;
+      const largo = Math.hypot(tx, ty) || 1;
+      /* La normal de la curva (segunda diferencia sin su parte tangente) y su componente vertical:
+         en pantalla y crece hacia abajo, así que una normal hacia arriba es una curva que se abre
+         hacia arriba. */
+      const ax = sx + px - 2 * cx;
+      const ay = sy + py - 2 * cy;
+      const a = (ax * tx + ay * ty) / (largo * largo);
+      const ny = ay - a * ty;
+      const curvatura = (-ny * 4) / (largo * largo);
+      const u = Math.max(0, Math.min(1, (curvatura / CURVA + 1) / 2));
+      alas[i] = u * u * (3 - 2 * u);
+    }
+    return { puntos, delante, alas };
   });
 
   /* Un punto del ciclo para la fracción t (0 a 1): posición, dirección y si va adelante. */
@@ -70,10 +95,13 @@
       dx: ruta.puntos[k][0] - ax,
       dy: ruta.puntos[k][1] - ay,
       delante: ruta.delante[i] === 1,
+      alas: ruta.alas[i] + (ruta.alas[j] - ruta.alas[i]) * u,
     };
   }
 
-  function ubicar(abeja, ruta, t, aleteo) {
+  /* La pose actual de cada abeja, que se acerca de a poco a la del recorrido. */
+  const poses = abejas.map(() => null);
+  function ubicar(abeja, i, ruta, t, dt) {
     const p = punto(ruta, t);
     const izquierda = ((p.x - X0 - ABEJA_ANCHO / 2) / ANCHO) * 100;
     const arriba = ((p.y - Y0 - ABEJA_ALTO / 2) / ALTO) * 100;
@@ -84,8 +112,13 @@
     abeja.style.top = `${arriba}%`;
     abeja.style.transform = `scaleX(${haciaIzquierda ? -1 : 1}) rotate(${angulo}deg)`;
     abeja.dataset.capa = p.delante ? "delante" : "detras";
-    if (aleteo !== undefined && alas[aleteo] && abeja.getAttribute("src") !== alas[aleteo]) {
-      abeja.setAttribute("src", alas[aleteo]);
+    const pose = poses[i] === null ? p.alas : poses[i] + (p.alas - poses[i]) * (1 - Math.exp(-dt / ALAS_S));
+    poses[i] = pose;
+    const alaArriba = abeja.querySelector('[data-ala="arriba"]');
+    const alaAbajo = abeja.querySelector('[data-ala="abajo"]');
+    if (alaArriba && alaAbajo) {
+      alaArriba.style.opacity = pose.toFixed(3);
+      alaAbajo.style.opacity = (1 - pose).toFixed(3);
     }
   }
 
@@ -95,14 +128,12 @@
   let pedido = null;
 
   function cuadro(ahora) {
-    if (anterior !== null) {
-      tiempo += Math.min(ahora - anterior, 100) / 1000;
-    }
+    const dt = anterior === null ? 0 : Math.min(ahora - anterior, 100) / 1000;
+    tiempo += dt;
     anterior = ahora;
-    const aleteo = Math.floor(ahora / ALETEO_MS) % 2;
     abejas.forEach((abeja, i) => {
       const ruta = rutas[i % rutas.length];
-      ubicar(abeja, ruta, FASES[i % FASES.length] + tiempo / duraciones[i % rutas.length], aleteo);
+      ubicar(abeja, i, ruta, FASES[i % FASES.length] + tiempo / duraciones[i % rutas.length], dt);
     });
     pedido = requestAnimationFrame(cuadro);
   }
@@ -130,7 +161,7 @@
      vuelo, quedan donde estaban. */
   if (!quieto()) {
     laminas.dataset.abejas = "vuelan";
-    abejas.forEach((abeja, i) => ubicar(abeja, rutas[i % rutas.length], FASES[i % FASES.length]));
+    abejas.forEach((abeja, i) => ubicar(abeja, i, rutas[i % rutas.length], FASES[i % FASES.length], 0));
   }
   pausa?.addEventListener("change", actualizar);
   reducir.addEventListener("change", actualizar);

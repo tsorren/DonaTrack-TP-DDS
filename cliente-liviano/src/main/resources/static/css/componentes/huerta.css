@@ -384,9 +384,23 @@
 .huerta-abeja {
   position: absolute;
   z-index: 4;
+  display: block;
   width: 5.6%;
-  height: auto;
+  aspect-ratio: 34 / 37;
   pointer-events: none;
+}
+
+/* Las dos poses de las alas, una sobre otra. abejas.js funde una en otra según hacia dónde se
+   curva el recorrido: alas arriba cuando la curva se abre hacia arriba, abajo cuando se cierra. */
+.huerta-abeja img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.huerta-abeja img[data-ala="abajo"] {
+  opacity: 0;
 }
 
 .huerta-abeja:nth-of-type(1) {

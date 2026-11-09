@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--/* Raíces, sitio A: Entidades (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.3). Desde la
-       ronda del 2026-11-09 (tarde), la lista compacta de la prueba (la «b»), agrupada por tipo de
-       entidad: un renglón plegable por entidad (.plegable) con el nombre, el tipo y el barrio, las
-       categorías que pide (.chip) y, desplegado, cada pedido con su barra redondeada de lo que ya
-       llegó (.progreso, la de la «a») y, en palabras, lo que falta. Sin datos de contacto ni dirección
+       ronda del 2026-11-09 (noche), la tarjeta de entidad que dibujó la usuaria, agrupada por tipo de
+       entidad: plegada, la foto, el nombre, las categorías que pide (.chip), «Necesidades satisfechas»
+       con su barra (.progreso) y «Ver todas las necesidades»; desplegada, la misión, la emergencia y
+       cada necesidad con su barra (.necesidad). Sin datos de contacto ni dirección
        (RF-22, D24) y sin un botón por entidad: la asignación la decide DonaTrack (RF-17). Estados: ?q=
        (búsqueda), ?categoria=, los dos juntos (?q=biblioteca&categoria=alimentos, sin resultados),
-       ?escenario=vacio, lento y error. */-->
+       ?escenario=vacio, lento y error; ?abrir=<clave> abre una tarjeta. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
 <head>
@@ -118,11 +118,12 @@
       </ul>
     </th:block>
 
-    <!--/* La vista de las entidades: la lista por tipo, o la de una prueba A/B (ronda del 2026-11-09,
-           tarde: templates/variantes/entidades-a|b.html la pasan en vistaEntidades y reusan el resto). */-->
+    <!--/* La lista por tipo de entidad, con la tarjeta de cada una (ronda del 2026-11-09, noche). */-->
     <th:block th:if="${escenario == '' and n > 0}">
-      <th:block th:if="${vistaEntidades == null}"><div th:replace="~{publico-entidades :: grupos}"></div></th:block>
-      <th:block th:unless="${vistaEntidades == null}"><div th:replace="${vistaEntidades}"></div></th:block>
+      <p class="texto-chico" data-tono="suave">«Necesidades satisfechas» cuenta cuántas de las necesidades que
+        cada entidad publicó para octubre de 2026 ya se cubrieron del todo, sobre el total de ese mes. Cuenta
+        necesidades, no kilos ni litros. Al 15 de octubre de 2026.</p>
+      <div th:replace="~{publico-entidades :: grupos}"></div>
     </th:block>
 
     <div th:if="${escenario != 'error' and escenario != 'lento'}" class="salidas">
@@ -137,42 +138,133 @@
 </th:block>
 </th:block>
 
-<!--/* La lista por tipo de entidad: un renglón plegable por entidad. Plegado, el nombre, las
-       categorías que pide y cuántos pedidos tiene; desplegado, cada pedido con su barra. Los grupos y
-       el filtro de los pedidos los usan también las variantes (fragmentos grupos-de y pedidos-de). */-->
+<!--/* La lista por tipo de entidad: una tarjeta plegable por entidad (.plegable), como la dibujó la
+       usuaria (ronda del 2026-11-09, noche).
+       - Plegada: la foto (por ahora, el ícono de su categoría en una caja de salvia), el nombre, los
+         chips de lo que pide, «Necesidades satisfechas» con su barra y «Ver todas las necesidades».
+       - Desplegada: la misión (recortada a tres renglones, con «Leer más.»), la emergencia con su
+         contexto y su pedido, las necesidades recurrentes y las que tienen fecha límite, cada una con su
+         barra (.necesidad), y el enlace a sus entregas en el mapa.
+       «Necesidades satisfechas»: las necesidades cubiertas del todo en octubre de 2026 sobre el total de
+       ese mes (las cubiertas más las que siguen vigentes). Cuenta necesidades: nunca promedia kilos con
+       litros. ?abrir=<clave> abre una tarjeta (para revisar el diseño y para enlazar desde afuera).
+       fichas: lo que la tarjeta suma a datos-publicos (la misión, el contexto de la emergencia y cuántas
+       necesidades del mes ya se cubrieron). ponytail: datos de ejemplo; en el sistema salen del perfil
+       de la entidad y de sus necesidades (HB-07, HB-08). */-->
 <div th:fragment="grupos" class="pila" data-espacio="5"
      th:with="grupos=${ {
        {titulo: 'Comedores y merenderos', tipos: {'Comedor', 'Merendero'}},
        {titulo: 'Escuelas y bibliotecas', tipos: {'Escuela', 'Biblioteca'}},
        {titulo: 'Hogares', tipos: {'Hogar'}},
-       {titulo: 'Clubes', tipos: {'Club'}} } }">
+       {titulo: 'Clubes', tipos: {'Club'}} } },
+              fichas=${ {
+       comedor: {cubiertas: 3,
+         mision: 'Damos el almuerzo de lunes a viernes a unas 120 personas del barrio, la mayoría chicos que van a la escuela de la vuelta y sus familias. Cocinamos entre vecinas y vecinos que se turnan cada semana, con lo que llega de las donaciones y de una huerta chica que armamos en el patio. Los sábados abrimos para la merienda y para el apoyo escolar, y una vez por mes hacemos una feria de ropa a precio simbólico para sostener los gastos de gas y de luz.',
+         emergencia: 'El 3 de octubre un temporal tiró abajo casas enteras del barrio. Esta colecta es para que las familias estén abrigadas mientras se reconstruyen sus casas.'},
+       escuela: {cubiertas: 1,
+         mision: 'Somos una escuela primaria pública con 380 alumnas y alumnos de jornada completa. Este año abrimos un aula más de primer grado y la estamos equipando con lo que nos hace falta para empezar el ciclo que viene. La cooperadora junta lo que llega y lo reparte entre los grados según lo que pide cada maestra.',
+         emergencia: ''},
+       merendero: {cubiertas: 2,
+         mision: 'Damos la merienda de lunes a viernes a unos 60 chicos del barrio, después de la escuela. Además de la leche y algo para comer, hay un espacio de juegos y de lectura que coordinan dos maestras jubiladas, y los viernes una vecina enseña a tejer a quien quiera aprender.',
+         emergencia: ''},
+       hogar: {cubiertas: 3,
+         mision: 'Somos un hogar convivencial para 14 adolescentes. Acompañamos su escolaridad, su salud y sus proyectos hasta que puedan vivir por su cuenta, junto con un equipo de educadores que está presente todos los días del año.',
+         emergencia: ''},
+       club: {cubiertas: 0,
+         mision: 'Somos un club de barrio con fútbol infantil, vóley y patín para más de 200 chicas y chicos. La cuota es simbólica y nadie se queda afuera por no poder pagarla; la sostenemos entre las familias, una rifa anual y lo que se dona.',
+         emergencia: ''},
+       biblioteca: {cubiertas: 2,
+         mision: 'Somos una biblioteca popular con más de 6.000 libros y una sala de lectura infantil. Hacemos talleres de lectura y escritura para chicos y grandes, prestamos libros sin cargo y abrimos la sala para que las escuelas de la zona vengan con sus grados.',
+         emergencia: ''} } }">
   <th:block th:each="g, vuelta : ${grupos}" th:with="suyas=${visibles.?[#lists.contains(#root.g.tipos, tipo)]}">
   <section th:unless="${suyas.isEmpty()}" class="pila" data-espacio="2" th:attr="aria-labelledby=${'grupo-' + vuelta.count}">
     <h2 th:id="${'grupo-' + vuelta.count}" class="racimo">
       <th:block th:text="${g.titulo}">Comedores y merenderos</th:block>
       <span class="texto-chico" data-tono="suave"
             th:text="${#lists.size(suyas) == 1 ? '1 entidad' : #lists.size(suyas) + ' entidades'}">2 entidades</span></h2>
-    <ul class="pila" data-espacio="1" role="list">
+    <ul class="pila" data-espacio="2" role="list">
       <li th:each="e : ${suyas}"
-          th:with="pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
-                   total=${#lists.size(pedidos)}">
-        <details class="plegable">
+          th:with="f=${fichas.get(e.clave)},
+                   pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
+                   delMes=${f.cubiertas + #lists.size(e.pedidos)},
+                   porcentaje=${(f.cubiertas * 100 + delMes / 2) / delMes},
+                   urgentes=${pedidos.?[emergencia]},
+                   recurrentes=${pedidos.?[tipo == 'recurrente' and !emergencia]},
+                   conFecha=${pedidos.?[tipo != 'recurrente' and !emergencia]}">
+        <details class="plegable" th:open="${param.abrir != null and param.abrir[0] == e.clave}">
           <summary>
+            <span class="plegable-foto"><svg viewBox="-14 -14 128 128" aria-hidden="true"
+                focusable="false"><use width="100" height="100" href="#cat-alimentos" th:href="${'#cat-' + e.cat}"/></svg></span>
             <span class="plegable-titulo">
               <b th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
-              <span th:text="|${e.tipo} · ${e.barrio}|">Comedor · Barrio Ejemplo</span>
+              <span th:replace="~{publico-entidades :: chips(${pedidos})}"></span>
             </span>
-            <span th:replace="~{publico-entidades :: chips(${pedidos})}"></span>
-            <span class="plegable-ver"
-                  th:text="${total == 1 ? 'Ver el pedido' : 'Ver los ' + total + ' pedidos'}">Ver los 5 pedidos</span>
+            <span class="plegable-medida">
+              <b th:text="|Necesidades satisfechas: ${porcentaje} %|">Necesidades satisfechas: 38 %</b>
+              <progress class="progreso" max="8" value="3" th:max="${delMes}" th:value="${f.cubiertas}"
+                        th:aria-label="|Necesidades satisfechas: ${f.cubiertas} de ${delMes}, de las que publicó para octubre de 2026|"
+                        aria-label="Necesidades satisfechas: 3 de 8, de las que publicó para octubre de 2026"></progress>
+              <span th:text="|Cubiertas: ${f.cubiertas} de ${delMes}, en octubre|">Cubiertas: 3 de 8, en octubre</span>
+            </span>
+            <span class="plegable-ver">Ver todas las necesidades</span>
           </summary>
           <div class="plegable-cuerpo">
-            <ul class="pedidos" role="list">
-              <li th:each="p : ${pedidos}"><th:block th:replace="~{publico-entidades :: pedido(${p})}"></th:block></li>
-            </ul>
-            <a th:if="${e.numero != null}" class="boton" data-tamano="chico" href="/publico-mapa#entidad-comedor"
-               th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
-               th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
+            <!--/* La misión, recortada a tres renglones; «Leer más.» la muestra entera (details, sin JavaScript). */-->
+            <div class="recorte">
+              <p class="recorte-texto"><b>Misión:</b> <th:block th:text="${f.mision}">Damos el almuerzo de lunes a
+                viernes a unas 120 personas del barrio.</th:block></p>
+              <details class="recorte-mas">
+                <summary><span>Leer más.</span><span>Leer menos.</span></summary>
+              </details>
+            </div>
+
+            <th:block th:unless="${urgentes.isEmpty()}">
+              <hr>
+              <section class="pila" data-espacio="3" th:attr="aria-labelledby=${'emergencia-' + e.clave}">
+                <p><b th:id="${'emergencia-' + e.clave}" data-tono="error">Emergencia:</b>
+                  <th:block th:text="${f.emergencia}">El 3 de octubre un temporal tiró abajo casas enteras del
+                    barrio.</th:block></p>
+                <ul class="necesidades" role="list">
+                  <li th:each="p : ${urgentes}" class="necesidad" data-tono="emergencia"><th:block
+                      th:replace="~{publico-entidades :: necesidad(${p})}"></th:block></li>
+                </ul>
+              </section>
+            </th:block>
+
+            <th:block th:unless="${recurrentes.isEmpty()}">
+              <hr>
+              <section class="pila" data-espacio="3" th:attr="aria-labelledby=${'recurrentes-' + e.clave}">
+                <h3 class="racimo" data-espacio="1" data-tono="acento"><span th:id="${'recurrentes-' + e.clave}">Necesidades
+                  recurrentes</span><span th:replace="~{componentes/info :: info(${'info-recurrentes-' + e.clave},
+                    'Qué es una necesidad recurrente', 'Necesidades recurrentes',
+                    'Las necesita todos los meses. La barra muestra lo que ya llegó este mes; el 1 del mes que viene vuelve a empezar.',
+                    null, null)}"></span></h3>
+                <ul class="necesidades" role="list">
+                  <li th:each="p : ${recurrentes}" class="necesidad"><th:block
+                      th:replace="~{publico-entidades :: necesidad(${p})}"></th:block></li>
+                </ul>
+              </section>
+            </th:block>
+
+            <th:block th:unless="${conFecha.isEmpty()}">
+              <hr>
+              <section class="pila" data-espacio="3" th:attr="aria-labelledby=${'con-fecha-' + e.clave}">
+                <h3 class="racimo" data-espacio="1" data-tono="acento"><span th:id="${'con-fecha-' + e.clave}">Con
+                  fecha límite</span><span th:replace="~{componentes/info :: info(${'info-con-fecha-' + e.clave},
+                    'Qué es una necesidad con fecha límite', 'Con fecha límite',
+                    'Las necesita una sola vez, hasta la fecha que dice. Cuando se cubre, deja de aparecer.',
+                    null, null)}"></span></h3>
+                <ul class="necesidades" role="list">
+                  <li th:each="p : ${conFecha}" class="necesidad"><th:block
+                      th:replace="~{publico-entidades :: necesidad(${p})}"></th:block></li>
+                </ul>
+              </section>
+            </th:block>
+
+            <p th:if="${e.numero != null}" class="racimo" data-alinea="centro">
+              <a class="boton" data-tono="secundario" href="/publico-mapa#entidad-comedor"
+                 th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
+                 th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a></p>
           </div>
         </details>
       </li>
@@ -190,24 +282,25 @@
   <span th:unless="${pedidos.?[emergencia].isEmpty()}" class="chip" data-tono="emergencia">Emergencia</span>
 </span>
 
-<!--/* Un pedido: el ícono, qué es, la barra de lo que ya llegó y, en palabras, lo que falta, hasta
-       cuándo o si se repite, y por qué. Lo pendiente, pendiente: "faltan", no "recibió". Sin total, sin
-       barra: solo el texto. */-->
-<th:block th:fragment="pedido(p)">
-  <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
-      width="100" height="100" href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
-  <div class="pila" data-espacio="1">
-    <p class="racimo" data-espacio="1"><b th:text="${p.que}">Lentejas secas</b>
-      <span th:if="${p.emergencia}" class="estado" data-estado="con-problema"><th:block
-          th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><span>Emergencia</span></span></p>
-    <progress th:if="${p.total != null}" class="progreso" max="40" value="10"
-              th:max="${p.total}" th:value="${p.total - p.faltan}"
-              th:aria-label="|${p.que}: ya llegó una parte; ${#strings.toLowerCase(p.falta)}|"
-              aria-label="Lentejas secas: ya llegó una parte; faltan 30 de 40 kg este mes"></progress>
-    <p><b th:text="${p.falta}">Faltan 30 de 40 kg este mes</b> · <th:block th:text="${p.cuando}">Se repite
-      cada mes</th:block></p>
-    <p class="pedido-porque" th:text="|Por qué: ${p.porque}|">Por qué: para el almuerzo de lunes a viernes.</p>
-  </div>
+<!--/* Una necesidad: el ícono en su caja (el de alerta, si es una emergencia), qué es y, en palabras, lo
+       que falta y hasta cuándo o si se repite; debajo, la barra de lo que ya llegó. Lo pendiente,
+       pendiente: "faltan", no "recibió". Sin total, sin barra: solo el texto. */-->
+<th:block th:fragment="necesidad(p)">
+  <span class="necesidad-icono">
+    <svg th:if="${p.emergencia}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+        d="M12 3.5 2.5 20h19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path
+        d="M12 9.5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.1"
+        fill="currentColor"/></svg>
+    <svg th:unless="${p.emergencia}" viewBox="-14 -14 128 128" aria-hidden="true"
+         focusable="false"><use width="100" height="100" href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
+  </span>
+  <p class="necesidad-texto"><b th:text="${p.que}">Lentejas secas</b>
+    <span><th:block th:text="${p.falta}">Faltan 30 de 40 kg este mes</th:block> · <th:block
+        th:text="${p.cuando}">Se repite cada mes</th:block></span></p>
+  <progress th:if="${p.total != null}" class="progreso" max="40" value="10"
+            th:max="${p.total}" th:value="${p.total - p.faltan}"
+            th:aria-label="|${p.que}: ya llegó una parte; ${#strings.toLowerCase(p.falta)}|"
+            aria-label="Lentejas secas: ya llegó una parte; faltan 30 de 40 kg este mes"></progress>
 </th:block>
 </body>
 </html>

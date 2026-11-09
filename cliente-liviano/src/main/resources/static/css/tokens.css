@@ -57,6 +57,8 @@
   --p-acento-claro: #e4efc9;
   --p-tallo: #2a7035;
   --p-hoja: #8fcb4a;
+  /* El agua del mapa (MapLibre): un verde agua apagado, del mismo papel que el resto. */
+  --p-agua: #cfe1d4;
   --p-suelo: #3b3527;
   --p-suelo-medio: #34301f;
   --p-suelo-hondo: #2a2a22;
@@ -131,6 +133,7 @@
   --color-acento-claro: var(--p-acento-claro);
   --color-tallo: var(--p-tallo);
   --color-hoja: var(--p-hoja);
+  --color-agua: var(--p-agua);
   --color-suelo: var(--p-suelo);
   --color-suelo-medio: var(--p-suelo-medio);
   --color-suelo-hondo: var(--p-suelo-hondo);

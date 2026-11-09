@@ -278,3 +278,151 @@ Martina Ruiz, se entra con `?cuenta=persona` (queda en la sesión).
   centrados en sus círculos.
 - Verificado: las URLs dan 200 (la de `dashboard-persona-b`, 404); 1280 y 375 px sin desborde;
   `InterfazFitnessTest` y `SitioControllerTest` en verde. Sin `revision-ui`.
+
+## Tercera ronda (2026-11-09 noche)
+
+### Portada, Entidades
+
+**La tarjeta de entidad que dibujó la usuaria** (`Asset 21.svg`), ahora la pantalla base
+([plegada](http://localhost:8091/publico-entidades),
+[desplegada](http://localhost:8091/publico-entidades?abrir=comedor)). Las variantes `entidades-a|b`
+se borraron (plantilla y hoja, también en `target/classes`; `?variante=entidades-a|b` da 404).
+
+- Plegada, una fila en papel claro sin filete: la foto (por ahora, el ícono de la categoría centrado
+  en una caja de salvia), el nombre en la letra de títulos, los chips de lo que pide (y
+  «Emergencia»), «Necesidades satisfechas: X %» con su barra y «Ver todas las necesidades ⌄». En el
+  celular se apila: foto con nombre y chips, la barra debajo y el enlace debajo.
+- Desplegada: «**Misión:** …» recortada a tres renglones con desvanecido y «Leer más.» (un `details`,
+  sin JavaScript); filete; «**Emergencia:**» con su contexto y el pedido (ícono de alerta en caja roja
+  suave, lo que falta, hasta cuándo y la barra); filete; «Necesidades recurrentes» en verde con su
+  `info`, en dos columnas (una en el celular); «Con fecha límite» igual, para los pedidos sin
+  emergencia que no se repiten (el dibujo no los mostraba, pero «Ver todas» no puede esconderlos);
+  al pie, centrado, «Ver sus entregas en el mapa» (`/publico-mapa#entidad-<clave>`, solo las que
+  tienen entregas en el mapa).
+- **Respaldo del %:** necesidades cubiertas del todo en octubre de 2026 sobre el total de ese mes (las
+  cubiertas más las vigentes). Cuenta necesidades, nunca promedia kilos con litros. Se dice en una
+  línea arriba de la lista, debajo de cada barra («Cubiertas: 3 de 8, en octubre») y en el nombre
+  accesible de la barra. Datos de ejemplo en `fichas` (dentro de la plantilla, para no tocar
+  `datos-publicos`, que comparten Mapa y Entregas): la misión, el contexto de la emergencia y las
+  cubiertas por entidad (comedor 3 de 8, merendero 2 de 4, escuela 1 de 3, biblioteca 2 de 3, hogar 3
+  de 4, club 0 de 1). Las necesidades son las de la maqueta, distintas por entidad.
+- `?abrir=<clave>` abre una tarjeta (revisión y enlaces desde afuera).
+- Componentes, en el catálogo y en `/estilos`: `.plegable` suma `.plegable-foto` y `.plegable-medida`
+  (y queda sin filete, que aparece al pasar); nuevos `.necesidad` (`componentes/necesidad.css`, con
+  `.necesidades`, `.necesidad-icono`, `.necesidad-texto`; `data-tono="emergencia"`) y `.recorte`
+  (`componentes/recorte.css`, el «Leer más.» con `:has()` sobre el `details` abierto).
+
+Verificado a 1280 y 375 px, plegada y desplegada, sin desborde horizontal; los estados vacío, lento
+y error, y la búsqueda sin resultados dan 200. `InterfazFitnessTest` y `SitioControllerTest` pasan.
+
+Pendiente: la foto real de cada entidad (hoy, el ícono); «Leer más.» no se vio abierto en captura
+(headless sin clic); el espacio entre un grupo y el título del siguiente quedó justo.
+
+### Huerta
+
+La huerta de la diseñadora (`DonaTrack_Huerta*.svg`) reemplaza al invernadero de **misiones-b**.
+
+- [Huerta](http://localhost:8091/donante-misiones?cuenta=persona&variante=misiones-b),
+  [detalle de una planta](http://localhost:8091/donante-misiones?cuenta=persona&variante=misiones-b&lugar=estante-izq),
+  [detalle de una maceta "?"](http://localhost:8091/donante-misiones?cuenta=persona&variante=misiones-b&lugar=mesada-medio)
+  y [vacía](http://localhost:8091/donante-misiones?cuenta=persona&variante=misiones-b&escenario=vacio).
+  El invernadero vacío de fondo y 8 lugares: la bienvenida (el jazmín de la mesada, llega con la
+  cuenta), las 6 misiones (Racha Inicial, estante izquierdo; Explorador, piso izquierdo; Gran Aporte,
+  Constancia, en la mesada; Impacto Real, estante derecho; Diversidad Solidaria, piso derecho) y la
+  planta colgante de la huerta completa. Lo conseguido muestra su planta; lo que falta, la maceta
+  negra con "?".
+- Cada lugar es un enlace `?lugar=<clave>` (sin JavaScript), con nombre «planta: misión, conseguida»
+  o «Maceta sin planta todavía: misión». Al elegirlo, el resto del dibujo se atenúa (sin borde de
+  selección) y la ficha (a la derecha; debajo en el celular) dice qué hiciste, 3 hitos (llevaste al
+  depósito, llegó, la entidad confirmó, con fechas de `persona/datos-persona`), «Ver la donación» y el
+  mensaje de la entidad en un globo (`details`). La maceta "?" dice qué falta, con la barra si está en
+  curso; la de una categoría que no se abre no se nombra. Sin elegir, la ficha resume y muestra la
+  próxima en crecer.
+- Capas separadas por script (fuera del repo) en `static/img/ilustraciones/huerta/`: `invernadero.svg`
+  (21 KB), una planta y una maceta por lugar recortadas a su caja (las macetas, < 1 KB; las plantas, 3 a
+  18 KB, salvo `colgante.svg`, 88 KB), `abejas.svg` (6 KB, con al menos una misión completa) y
+  `acceso.svg` (106 KB). Metadatos fuera, decimales a 1, estilos solo de las clases usadas. Se borró
+  `img/ilustraciones/invernadero.svg` (también en `target/classes`).
+- Inicio de la persona: tarjeta «Tu huerta» con el invernadero lleno (sin el botón dibujado) y el
+  botón real «Ver mi huerta» encima, a `misiones-b`.
+- Sin clases nuevas: ids y `data-`. Verificado: 200 en todas las URLs, 1280 y 375 px sin desborde,
+  `InterfazFitnessTest` y `SitioControllerTest` en verde. Sin `revision-ui`.
+- Pendiente: decidir si la bienvenida y la planta colgante son logros reales (hoy solo de maqueta);
+  en el celular los lugares chicos de la mesada miden unos 24 × 48 px; el globo del mensaje no se vio
+  abierto en captura.
+
+### Admin, Asignaciones (lote y conflictos)
+
+Pedido: acceso directo al stock y a los rankings completos, propuestas en dos grupos (sin conflictos y
+con conflictos), aceptar en lote las sin conflictos y llegar al detalle de la necesidad y de la entidad
+de cada propuesta. Aplicado a las tres variantes (la **a** sigue siendo la recomendada).
+
+**Supuestos.**
+
+- La usuaria escribió "aceptar todas las conflictivas de una"; por contexto se tomó como **las sin
+  conflictos**: aceptar en lote solo es seguro donde no hay choque. Las con conflictos se resuelven de
+  a una.
+- Una **propuesta** lleva una donación a la mejor candidata en común (menor puesto sumado; a igual suma,
+  la de mejor puesto en Compatibilidad semántica). Si la necesidad pide más de lo que trae la donación,
+  la propuesta suma stock del mismo bien que está en el depósito.
+- Dos propuestas están **en conflicto** si se pisan: usan el mismo stock y no alcanza para las dos, o
+  usan las mismas unidades (dos candidatas empatadas para una sola donación). "Elegir esta" **no
+  asigna**: la ganadora pasa a Sin conflictos y la otra se vuelve a calcular con lo que queda o queda
+  sin propuesta (su pedido sigue abierto). En la maqueta lo elegido viaja en la dirección
+  (`&gana=<propuesta>`, se acumulan), por GET.
+- El admin no tiene pantalla de necesidades: la necesidad se ve en un diálogo (qué pide, para qué,
+  cuánto llegó, cuánto falta, hasta cuándo y cuánto cubre la propuesta), con enlace a la ficha de la
+  entidad en Entidades (`/admin-entidades?entidad=<clave>`), que lista sus pedidos. La entidad, igual:
+  diálogo con tipo, lugar y donaciones recibidas de agosto a octubre, y el enlace a su ficha cuando la
+  tiene en la maqueta (Comedor Ejemplo Centro, Huerta, Cooperativa, Refugio y Parroquia no la tienen).
+- Los envíos reales siguen yendo a `admin-asignaciones-aprobada` (no conservan la variante); el lote
+  manda un `propuesta` por cada una. Lo que pasa después se ve con `&accion=lote` y `&accion=asignada`.
+
+**Datos de ejemplo** (coherentes con Entidades del admin): 9 donaciones en depósito de 8 bienes. Sin
+conflictos, 5: lentejas → Comedor Barrio Ejemplo, leche en polvo → Escuela Ejemplo N.º 12, aceite →
+Cooperativa Ejemplo Este, frazadas → Hogar Casa Ejemplo y cuadernos → Biblioteca Popular Ejemplo. Con
+conflictos, 2 pares: **arroz** (50 kg en dos donaciones; 25 kg para Comedor Barrio y 40 kg para Comedor
+Ejemplo Centro suman 65 kg: "Si aceptás esta, quedan 25 kg de arroz en el depósito: no alcanzan los
+40 kg de la propuesta para Comedor Ejemplo Centro") y **mesas plegables** (una donación de 4, Escuela
+Ejemplo N.º 3 y Club Ejemplo Norte empatan: las dos usan las mismas 4 mesas). Sin coincidencias:
+Camperas de abrigo. Los rankings de Compatibilidad semántica tienen hasta 10 puestos (menos cuando
+pocas entidades piden ese bien, y lo dice); el de Prioridad a sub-atendidas, 10.
+
+**Variantes.**
+
+- [a](http://localhost:8091/admin-asignaciones?variante=asignaciones-a), recomendada. Selector de
+  vistas tras el título (`.segmentos`): **Propuestas** (de partida; Sin conflictos con «Aceptar las 5
+  sin conflictos» y su confirmación con la lista, Con conflictos de a pares con el porqué y «Elegir
+  esta», Sin propuesta), **Por donación** (la bandeja de antes, con un renglón «Propuesta: a …» y «Ver
+  los rankings completos»), **[Stock en depósito](http://localhost:8091/admin-asignaciones?variante=asignaciones-a&vista=stock)**
+  (por categoría y bien: cuánto hay, de qué donaciones, cuántos días lleva cada una y qué propuesta lo
+  usa o si se lo disputan dos) y **[Rankings](http://localhost:8091/admin-asignaciones?variante=asignaciones-a&vista=rankings&donacion=arroz-ana)**
+  (elegir la donación; cada ejecución completa con el porqué, las en común y la propuesta marcadas).
+  Después de elegir: [arroz para Comedor Ejemplo Centro y mesas para el Club](http://localhost:8091/admin-asignaciones?variante=asignaciones-a&gana=arroz-ccentro&gana=mesas-club).
+- [b](http://localhost:8091/admin-asignaciones?variante=asignaciones-b). Todo en una página, con un
+  índice de accesos arriba (5 sin conflictos · 2 conflictos · 9 en el stock · Rankings por donación):
+  las sin conflictos en una **tabla** para compararlas, los pares en conflicto, el stock y una tarjeta
+  por donación con su tabla de posiciones; «Ver los rankings» abre la de esa donación
+  (`&abrir=<clave>#donacion-<clave>`).
+- [c](http://localhost:8091/admin-asignaciones?variante=asignaciones-c). Empieza por «¿Qué querés
+  hacer?»: [aceptar las 5 sin conflictos](http://localhost:8091/admin-asignaciones?variante=asignaciones-c&tramite=lote)
+  (la página es la confirmación, sin diálogo), [resolver 2 conflictos](http://localhost:8091/admin-asignaciones?variante=asignaciones-c&tramite=conflictos)
+  (uno por página, «Conflicto 1 de 2»; al terminar lleva al lote), elegir el destino de una donación
+  (los tres pasos de antes, `&tramite=donacion`) y, como atajos, el stock (`&vista=stock`) y los
+  rankings (`&vista=rankings`).
+- Estados: `&accion=lote`, `&accion=asignada&donacion=<clave>&entidad=<k>`, `?escenario=vacio|error`.
+
+Archivos: `templates/variantes/asignaciones-a|b|c.html`, `templates/variantes/comun/asignaciones-datos.html`
+(datos y fragmentos nuevos: `vistas`, `entidad`, `necesidad`, `propuesta`, `lote`, `conflicto`, `stock`,
+`elegirDonacion`, `rankings`), `static/css/variantes/asignaciones-a|b|c.css` y
+`static/css/variantes/comun/asignaciones.css`. Sin clases nuevas (lo propio va por `data-`), sin
+cambios en Java. Sin borde ni anillo verde: los conflictos van en fondo de advertencia, las propuestas
+en lámina con sombra, todo redondeado. Verificado con curl (63 combinaciones, 200 y página completa) y
+con capturas sin cabeza a 1280 y 375 px, sin desborde (a 375 se midió dentro de un `iframe` de 375 px:
+la ventana sin cabeza de Chrome no baja de unos 500 px). `InterfazFitnessTest` y `SitioControllerTest`
+en verde (59 pruebas).
+
+Pendientes: las hojas de las variantes usaban `--medida-toque-minimo`, que no existe en `tokens.css`
+(se cambió por `3rem` en las tres de Asignaciones); el número de propuestas en conflicto de la vista
+Por donación no se recalcula si se asigna suelta una donación de un par (caso borde de la maqueta).
+Sin `revision-ui`.

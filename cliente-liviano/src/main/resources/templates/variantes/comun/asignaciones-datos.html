@@ -1,30 +1,47 @@
 <!DOCTYPE html>
-<!--/* Lo que comparten las tres variantes de Asignar donaciones (ronda 2026-11-09 tarde: "rehechas según
-       el enunciado del matchmaking"). Por cada donación En depósito corre cada algoritmo (hoy dos:
-       Compatibilidad semántica y Prioridad a sub-atendidas; pueden sumarse más) y arma un ranking de
-       hasta 10 entidades con el porqué según su criterio. Las que aparecen en todos los rankings son
-       las candidatas en común y van primero; si no hay ninguna, se muestran las ejecuciones completas.
-       La persona admin confirma el destino. Se borra con las variantes al decidir.
+<!--/* Lo que comparten las tres variantes de Asignar donaciones. Ronda 2026-11-09 tarde: "rehechas según
+       el enunciado del matchmaking". Ronda 2026-11-09 noche: propuestas en dos grupos (sin conflictos y
+       con conflictos), aceptar en lote las sin conflictos, el stock en depósito, los rankings completos
+       y el detalle de la necesidad y de la entidad de cada propuesta. Se borra con las variantes al decidir.
 
-       Datos de ejemplo (sintéticos): cuatro donaciones; Arroz y Cuadernos con 3 en común, Mesas con 1
-       y Camperas sin coincidencias. El ranking de sub-atendidas es el mismo para todas (cuenta las
-       donaciones recibidas de agosto a octubre, no mira qué se donó).
+       Cómo se arma (maqueta):
+       - Por cada donación En depósito corre cada algoritmo (hoy dos: Compatibilidad semántica y
+         Prioridad a sub-atendidas; pueden sumarse más) y arma un ranking de hasta 10 entidades con su
+         porqué. Las que están en todos los rankings son las candidatas en común (comunes, ordenadas por
+         puesto sumado; a igual suma, la de mejor puesto en Compatibilidad semántica).
+       - Una propuesta lleva la donación a la mejor candidata en común. Si la necesidad pide más de lo
+         que trae la donación, la propuesta suma stock del mismo bien que está en el depósito (usa).
+       - Dos propuestas están en conflicto si se pisan: usan el mismo stock y no alcanza para las dos
+         (arroz), o usan las mismas unidades (mesas, dos candidatas empatadas). Se resuelven de a una
+         eligiendo cuál gana (?gana=<propuesta>, se acumulan): la ganadora pasa a Sin conflictos y la otra
+         se vuelve a calcular con lo que queda (recalc) o queda sin propuesta (sinStock).
+       - Si una donación no tiene candidatas en común, no hay propuesta: se elige en las ejecuciones.
+
+       Datos de ejemplo (sintéticos, coherentes con Entidades del admin: ficha = su clave allá): 9
+       donaciones; 5 propuestas sin conflictos, 2 pares en conflicto y Camperas sin coincidencias.
 
        Fragmentos:
-       - datos(pantalla): define escenario (?escenario=vacio|error), accion (?accion=asignada, con
-         &donacion y &entidad: la asignada sale de la cola), los filtros (buscar, categoria,
-         antiguedad, cruce), donaciones (las que esperan), cola (las filtradas) y algoritmos.
+       - datos(pantalla): define escenario, accion (asignada | lote), vista, los filtros, ent (las
+         entidades), donaciones, cola, algoritmos, bienes (el stock), propuestas, conflictos y los grupos
+         que dependen de lo elegido: libres, conConflicto, pendientes, descartadas y sinCoincidencias.
+       - vistas(variante, vista): el selector de vistas (.segmentos).
        - buscar(variante): la búsqueda con los filtros al lado.
-       - estados(variante): la cola vacía y el error de carga.
-       - asignar(d, p, id): el botón "Asignar" y su diálogo de confirmación; p es un puesto
-         ({k, e, tipo, por}) e id, lo que distingue al diálogo.
-       - posiciones(d, k): en qué puesto quedó la entidad k en cada ejecución, con el porqué.
-       - aviso(d, e): lo que pasó después de asignar. */-->
+       - estados(variante), aviso: la cola vacía, el error y lo que pasó.
+       - entidad(k, id), necesidad(pr, id): el detalle en un diálogo, con el enlace a la ficha.
+       - propuesta(pr, variante, id): una propuesta (donación → entidad) con sus accesos.
+       - lote(variante): "Aceptar las N sin conflictos" y su confirmación con la lista.
+       - conflicto(c, variante): un par que se pisa, por qué y "Elegir esta" en cada lado.
+       - stock(variante): el stock en depósito por categoría y bien.
+       - rankings(d, variante), elegirDonacion(variante, d): cada ejecución completa con el porqué.
+       - posiciones(d, k), asignar(d, p, id): los puestos de una entidad y "Asignar" con confirmación. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="datos(pantalla)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             accion=${param.accion != null and param.accion[0] == 'asignada' ? 'asignada' : ''},
+             accion=${param.accion != null and #lists.contains({'asignada', 'lote'}, param.accion[0]) ? param.accion[0] : ''},
+             vista=${param.vista != null and #lists.contains({'propuestas', 'donaciones', 'stock', 'rankings'}, param.vista[0]) ? param.vista[0] : ''},
+             ganaTxt=${'|' + (param.gana != null ? #strings.arrayJoin(param.gana, '|') : '') + '|'},
+             gv=${param.containsKey('gana') ? param.gana : null},
              q=${param.buscar != null ? #strings.toLowerCase(#strings.trim(param.buscar[0])) : ''},
              fCategoria=${param.categoria != null ? param.categoria[0] : ''},
              fAntiguedad=${param.antiguedad != null ? param.antiguedad[0] : ''},
@@ -34,59 +51,217 @@
              algoritmos=${ {
       {nombre: semantica, criterio: 'Qué tanto coincide lo donado con lo que pide cada entidad.'},
       {nombre: subatendidas, criterio: 'Primero las que recibieron menos donaciones de agosto a octubre.'} } },
+             ent=${ {
+      comedor: {e: 'Comedor Barrio Ejemplo', tipo: 'Comedor', lugar: 'Barrio Ejemplo', ficha: 'comedor', recibidas: 'Ninguna donación'},
+      ccentro: {e: 'Comedor Ejemplo Centro', tipo: 'Comedor', lugar: 'Localidad Ejemplo', ficha: null, recibidas: '2 donaciones'},
+      merendero: {e: 'Merendero Ejemplo Sur', tipo: 'Merendero', lugar: 'Ejemplo Sur', ficha: 'merendero', recibidas: '3 donaciones'},
+      escuela: {e: 'Escuela Ejemplo N.º 12', tipo: 'Escuela', lugar: 'Centro Ejemplo', ficha: 'escuela', recibidas: '1 donación'},
+      escuela3: {e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', lugar: 'Localidad Ejemplo', ficha: 'escuela3', recibidas: '1 donación'},
+      hogar: {e: 'Hogar Ejemplo Norte', tipo: 'Hogar', lugar: 'Localidad Ejemplo', ficha: 'hogar', recibidas: 'Ninguna donación'},
+      hogarcasa: {e: 'Hogar Casa Ejemplo', tipo: 'Hogar', lugar: 'Parque Ejemplo', ficha: 'hogar-casa', recibidas: 'Ninguna donación'},
+      club: {e: 'Club Ejemplo Norte', tipo: 'Club', lugar: 'Ejemplo Norte', ficha: 'club', recibidas: 'Ninguna donación'},
+      biblioteca: {e: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', lugar: 'Villa Ejemplo', ficha: 'biblioteca', recibidas: 'Ninguna donación'},
+      centro: {e: 'Centro Vecinal Ejemplo', tipo: 'Centro comunitario', lugar: 'Localidad Ejemplo', ficha: 'centro', recibidas: '1 donación'},
+      huerta: {e: 'Huerta Comunitaria Ejemplo', tipo: 'Huerta', lugar: 'Ejemplo Oeste', ficha: null, recibidas: '4 donaciones'},
+      coop: {e: 'Cooperativa Ejemplo Este', tipo: 'Cooperativa', lugar: 'Ejemplo Este', ficha: null, recibidas: '2 donaciones'},
+      refugio: {e: 'Refugio Ejemplo Este', tipo: 'Hogar', lugar: 'Ejemplo Este', ficha: null, recibidas: '5 donaciones'},
+      parroquia: {e: 'Parroquia Ejemplo', tipo: 'Centro comunitario', lugar: 'Villa Ejemplo', ficha: null, recibidas: '6 donaciones'} } },
              rankingSub=${ {
-      {n: 1, k: 'mnorte', e: 'Merendero Ejemplo Norte', tipo: 'Merendero', por: 'Ninguna donación de agosto a octubre'},
-      {n: 2, k: 'club', e: 'Club Barrial Ejemplo', tipo: 'Club barrial', por: 'Ninguna donación de agosto a octubre'},
-      {n: 3, k: 'comunitario', e: 'Centro Comunitario Ejemplo', tipo: 'Centro comunitario', por: '1 donación de agosto a octubre'},
-      {n: 4, k: 'biblio', e: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', por: '1 donación de agosto a octubre'},
-      {n: 5, k: 'oeste', e: 'Comedor Ejemplo Oeste', tipo: 'Comedor', por: '2 donaciones de agosto a octubre'},
-      {n: 6, k: 'huerta', e: 'Huerta Comunitaria Ejemplo', tipo: 'Huerta', por: '3 donaciones de agosto a octubre'} } },
+      {n: 1, k: 'hogar', por: 'Ninguna donación de agosto a octubre'},
+      {n: 2, k: 'comedor', por: 'Ninguna donación de agosto a octubre'},
+      {n: 3, k: 'hogarcasa', por: 'Ninguna donación de agosto a octubre'},
+      {n: 4, k: 'club', por: 'Ninguna donación de agosto a octubre'},
+      {n: 5, k: 'biblioteca', por: 'Ninguna donación de agosto a octubre'},
+      {n: 6, k: 'escuela', por: '1 donación de agosto a octubre'},
+      {n: 7, k: 'escuela3', por: '1 donación de agosto a octubre'},
+      {n: 8, k: 'centro', por: '1 donación de agosto a octubre'},
+      {n: 9, k: 'ccentro', por: '2 donaciones de agosto a octubre'},
+      {n: 10, k: 'coop', por: '2 donaciones de agosto a octubre'} } },
              todas=${ {
-      {clave: 'arroz', cat: 'alimentos', categoria: 'Alimentos', dona: 'Arroz', cuanto: '25 kg', donante: 'Ana Ejemplo',
-       deposito: 'Depósito Central', desde: '2 de noviembre', dias: 7, comunes: {'oeste', 'comunitario', 'mnorte'},
+      {clave: 'arroz-ana', cat: 'alimentos', categoria: 'Alimentos', bien: 'Arroz', dona: 'Arroz', cuanto: '25 kg', donante: 'Ana Ejemplo',
+       deposito: 'Depósito Central', desde: '2 de noviembre', dias: 7, comunes: {'comedor', 'hogar', 'ccentro', 'hogarcasa', 'centro', 'escuela', 'coop', 'escuela3'},
        ejecuciones: {
          {nombre: semantica, puestos: {
-           {n: 1, k: 'barrio', e: 'Comedor Barrio Ejemplo', tipo: 'Comedor', por: 'Pide arroz, 30 kg, para el almuerzo'},
-           {n: 2, k: 'oeste', e: 'Comedor Ejemplo Oeste', tipo: 'Comedor', por: 'Pide arroz y fideos, 40 kg'},
-           {n: 3, k: 'sur', e: 'Merendero Ejemplo Sur', tipo: 'Merendero', por: 'Pide cereales y arroz, 15 kg'},
-           {n: 4, k: 'centro', e: 'Hogar Ejemplo Centro', tipo: 'Hogar', por: 'Pide alimentos secos'},
-           {n: 5, k: 'comunitario', e: 'Centro Comunitario Ejemplo', tipo: 'Centro comunitario', por: 'Pide legumbres y arroz'},
-           {n: 6, k: 'mnorte', e: 'Merendero Ejemplo Norte', tipo: 'Merendero', por: 'Pide alimentos no perecederos'} } },
+           {n: 1, k: 'comedor', por: 'Pide arroz: faltan 25 de 40 kg este mes'},
+           {n: 2, k: 'ccentro', por: 'Pide arroz: faltan 40 kg, hasta el 30 de noviembre'},
+           {n: 3, k: 'merendero', por: 'Pide cereales y arroz para la merienda'},
+           {n: 4, k: 'huerta', por: 'Pide alimentos secos para la olla popular'},
+           {n: 5, k: 'centro', por: 'Pide legumbres y arroz'},
+           {n: 6, k: 'coop', por: 'Pide alimentos para la cocina comunitaria'},
+           {n: 7, k: 'escuela', por: 'Pide alimentos para el comedor escolar'},
+           {n: 8, k: 'hogar', por: 'Pide alimentos no perecederos'},
+           {n: 9, k: 'hogarcasa', por: 'Pide alimentos no perecederos'},
+           {n: 10, k: 'escuela3', por: 'Pide alimentos para la merienda'} } },
          {nombre: subatendidas, puestos: rankingSub} } },
-      {clave: 'camperas', cat: 'ropa', categoria: 'Ropa', dona: 'Camperas de abrigo', cuanto: '12 prendas',
+      {clave: 'arroz-almacen', cat: 'alimentos', categoria: 'Alimentos', bien: 'Arroz', dona: 'Arroz en bolsa', cuanto: '25 kg', donante: 'Almacén Ejemplo SRL',
+       deposito: 'Depósito Central', desde: '5 de noviembre', dias: 4, comunes: {'ccentro', 'hogarcasa', 'comedor', 'hogar', 'escuela', 'centro', 'coop', 'escuela3'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'ccentro', por: 'Pide arroz: faltan 40 kg, hasta el 30 de noviembre'},
+           {n: 2, k: 'huerta', por: 'Pide alimentos secos para la olla popular'},
+           {n: 3, k: 'merendero', por: 'Pide cereales y arroz para la merienda'},
+           {n: 4, k: 'coop', por: 'Pide alimentos para la cocina comunitaria'},
+           {n: 5, k: 'centro', por: 'Pide legumbres y arroz'},
+           {n: 6, k: 'escuela', por: 'Pide alimentos para el comedor escolar'},
+           {n: 7, k: 'escuela3', por: 'Pide alimentos para la merienda'},
+           {n: 8, k: 'hogarcasa', por: 'Pide alimentos no perecederos'},
+           {n: 9, k: 'comedor', por: 'Pide arroz en paquetes de 1 kg, para repartir'},
+           {n: 10, k: 'hogar', por: 'Pide alimentos no perecederos'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'lentejas', cat: 'alimentos', categoria: 'Alimentos', bien: 'Lentejas secas', dona: 'Lentejas secas', cuanto: '30 kg', donante: 'Juan Ejemplo',
+       deposito: 'Depósito Sur', desde: '6 de noviembre', dias: 3, comunes: {'comedor', 'hogar', 'centro', 'ccentro', 'hogarcasa', 'escuela', 'coop', 'escuela3'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'comedor', por: 'Pide lentejas: faltan 30 de 40 kg este mes'},
+           {n: 2, k: 'centro', por: 'Pide legumbres y arroz'},
+           {n: 3, k: 'ccentro', por: 'Pide legumbres para el guiso'},
+           {n: 4, k: 'merendero', por: 'Pide alimentos secos'},
+           {n: 5, k: 'huerta', por: 'Pide alimentos secos para la olla popular'},
+           {n: 6, k: 'coop', por: 'Pide alimentos para la cocina comunitaria'},
+           {n: 7, k: 'hogar', por: 'Pide alimentos no perecederos'},
+           {n: 8, k: 'escuela', por: 'Pide alimentos para el comedor escolar'},
+           {n: 9, k: 'hogarcasa', por: 'Pide alimentos no perecederos'},
+           {n: 10, k: 'escuela3', por: 'Pide alimentos para la merienda'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'leche', cat: 'alimentos', categoria: 'Alimentos', bien: 'Leche en polvo', dona: 'Leche en polvo', cuanto: '24 unidades', donante: 'Distribuidora Ejemplo SA',
+       deposito: 'Depósito Central', desde: '4 de noviembre', dias: 5, comunes: {'escuela', 'hogar', 'hogarcasa', 'comedor', 'ccentro', 'centro', 'escuela3', 'coop'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'escuela', por: 'Pide leche en polvo para la merienda: 24 unidades'},
+           {n: 2, k: 'merendero', por: 'Pide leche en polvo: faltan 20 unidades'},
+           {n: 3, k: 'ccentro', por: 'Pide leche para el desayuno'},
+           {n: 4, k: 'huerta', por: 'Pide alimentos secos'},
+           {n: 5, k: 'centro', por: 'Pide alimentos para la merienda'},
+           {n: 6, k: 'hogarcasa', por: 'Pide leche para los chicos del hogar'},
+           {n: 7, k: 'hogar', por: 'Pide alimentos no perecederos'},
+           {n: 8, k: 'comedor', por: 'Pidió leche en polvo hasta el 25 de octubre (vencido)'},
+           {n: 9, k: 'coop', por: 'Pide alimentos para la cocina comunitaria'},
+           {n: 10, k: 'escuela3', por: 'Pide alimentos para la merienda'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'aceite', cat: 'alimentos', categoria: 'Alimentos', bien: 'Aceite de girasol', dona: 'Aceite de girasol', cuanto: '20 litros', donante: 'Almacén Ejemplo SRL',
+       deposito: 'Depósito Central', desde: '5 de noviembre', dias: 4, comunes: {'coop', 'ccentro', 'centro', 'escuela3', 'escuela'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'coop', por: 'Pide aceite: 20 litros para la cocina comunitaria'},
+           {n: 2, k: 'huerta', por: 'Pide aceite y alimentos secos'},
+           {n: 3, k: 'merendero', por: 'Pide alimentos secos'},
+           {n: 4, k: 'ccentro', por: 'Pide aceite para la cocina'},
+           {n: 5, k: 'centro', por: 'Pide alimentos para el comedor'},
+           {n: 6, k: 'escuela3', por: 'Pide alimentos para la merienda'},
+           {n: 7, k: 'escuela', por: 'Pide alimentos para el comedor escolar'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'frazadas', cat: 'ropa', categoria: 'Ropa', bien: 'Frazadas', dona: 'Frazadas', cuanto: '10 unidades', donante: 'Lucía Ejemplo',
+       deposito: 'Depósito Sur', desde: '3 de noviembre', dias: 6, comunes: {'hogarcasa', 'hogar', 'comedor', 'centro', 'escuela', 'club', 'coop'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'hogarcasa', por: 'Pide frazadas: faltan 10 de 20, hasta el 15 de noviembre'},
+           {n: 2, k: 'coop', por: 'Pide ropa de cama'},
+           {n: 3, k: 'centro', por: 'Pide abrigo para el invierno'},
+           {n: 4, k: 'hogar', por: 'Pide ropa de cama y abrigo'},
+           {n: 5, k: 'escuela', por: 'Pide abrigo para los chicos'},
+           {n: 6, k: 'comedor', por: 'Pide ropa de invierno'},
+           {n: 7, k: 'club', por: 'Pide ropa para el club'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'camperas', cat: 'ropa', categoria: 'Ropa', bien: 'Camperas de abrigo', dona: 'Camperas de abrigo', cuanto: '12 prendas',
        donante: 'Distribuidora Ejemplo SA', deposito: 'Depósito Central', desde: '28 de octubre', dias: 12, comunes: {},
        ejecuciones: {
          {nombre: semantica, puestos: {
-           {n: 1, k: 'hnorte', e: 'Hogar Ejemplo Norte', tipo: 'Hogar', por: 'Pide ropa de abrigo para adultos, 20 prendas'},
-           {n: 2, k: 'centro', e: 'Hogar Ejemplo Centro', tipo: 'Hogar', por: 'Pide camperas y frazadas'},
-           {n: 3, k: 'escuela', e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', por: 'Pide abrigos para chicos'},
-           {n: 4, k: 'barrio', e: 'Comedor Barrio Ejemplo', tipo: 'Comedor', por: 'Pide ropa de invierno'},
-           {n: 5, k: 'coop', e: 'Cooperativa Ejemplo Este', tipo: 'Cooperativa', por: 'Pide ropa en general'} } },
+           {n: 1, k: 'refugio', por: 'Pide camperas para adultos: 20 prendas'},
+           {n: 2, k: 'parroquia', por: 'Pide ropa de abrigo para el ropero'},
+           {n: 3, k: 'merendero', por: 'Pide abrigo para las familias'},
+           {n: 4, k: 'huerta', por: 'Pide ropa de trabajo y abrigo'} } },
          {nombre: subatendidas, puestos: rankingSub} } },
-      {clave: 'cuadernos', cat: 'escolares', categoria: 'Útiles escolares', dona: 'Cuadernos', cuanto: '40 unidades',
-       donante: 'Juan Ejemplo', deposito: 'Depósito Sur', desde: '6 de noviembre', dias: 3, comunes: {'club', 'comunitario', 'biblio'},
+      {clave: 'cuadernos', cat: 'escolares', categoria: 'Útiles escolares', bien: 'Cuadernos', dona: 'Cuadernos', cuanto: '40 unidades', donante: 'Librería Ejemplo',
+       deposito: 'Depósito Sur', desde: '6 de noviembre', dias: 3, comunes: {'biblioteca', 'escuela', 'club', 'hogarcasa', 'escuela3', 'centro'},
        ejecuciones: {
          {nombre: semantica, puestos: {
-           {n: 1, k: 'escuela', e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', por: 'Pide cuadernos, 60 unidades'},
-           {n: 2, k: 'biblio', e: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', por: 'Pide cuadernos para el apoyo escolar'},
-           {n: 3, k: 'club', e: 'Club Barrial Ejemplo', tipo: 'Club barrial', por: 'Pide útiles para el taller de los sábados'},
-           {n: 4, k: 'comunitario', e: 'Centro Comunitario Ejemplo', tipo: 'Centro comunitario', por: 'Pide útiles escolares'} } },
+           {n: 1, k: 'biblioteca', por: 'Pide cuadernos para el apoyo escolar: 60 unidades'},
+           {n: 2, k: 'escuela', por: 'Pide útiles escolares: faltan 4 cajas'},
+           {n: 3, k: 'escuela3', por: 'Pide cuadernos y lápices'},
+           {n: 4, k: 'club', por: 'Pide útiles para el taller de los sábados'},
+           {n: 5, k: 'centro', por: 'Pide útiles para el apoyo escolar'},
+           {n: 6, k: 'hogarcasa', por: 'Pide útiles para los chicos del hogar'} } },
          {nombre: subatendidas, puestos: rankingSub} } },
-      {clave: 'mesas', cat: 'muebles', categoria: 'Muebles', dona: 'Mesas plegables', cuanto: '4 unidades',
-       donante: 'Fundación Ejemplo Sur', deposito: 'Depósito Central', desde: '5 de noviembre', dias: 4, comunes: {'club'},
+      {clave: 'mesas', cat: 'muebles', categoria: 'Muebles', bien: 'Mesas plegables', dona: 'Mesas plegables', cuanto: '4 unidades', donante: 'Fundación Ejemplo Sur',
+       deposito: 'Depósito Central', desde: '5 de noviembre', dias: 4, comunes: {'escuela3', 'club', 'escuela', 'biblioteca', 'centro'},
        ejecuciones: {
          {nombre: semantica, puestos: {
-           {n: 1, k: 'escuela', e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', por: 'Pide mesas para el aula, 6 unidades'},
-           {n: 2, k: 'centro', e: 'Hogar Ejemplo Centro', tipo: 'Hogar', por: 'Pide muebles para el comedor'},
-           {n: 3, k: 'club', e: 'Club Barrial Ejemplo', tipo: 'Club barrial', por: 'Pide mesas y sillas'} } },
+           {n: 1, k: 'escuela3', por: 'Pide mesas para el aula: faltan 4 de 6'},
+           {n: 2, k: 'parroquia', por: 'Pide mesas para el comedor'},
+           {n: 3, k: 'escuela', por: 'Pide muebles para el aula'},
+           {n: 4, k: 'club', por: 'Pide 4 mesas para el salón'},
+           {n: 5, k: 'biblioteca', por: 'Pide sillas y mesas de lectura'},
+           {n: 6, k: 'centro', por: 'Pide muebles para el salón'} } },
          {nombre: subatendidas, puestos: rankingSub} } } } },
-             asignada=${accion == 'asignada' ? (param.donacion != null ? param.donacion[0] : 'arroz') : ''},
-             donaciones=${escenario == 'vacio' or escenario == 'error' ? {} : todas.?[clave != #root.asignada]},
+             propuestas=${ {
+      {id: 'lentejas-comedor', d: 'lentejas', k: 'comedor', cuanto: '30 kg', origen: 'La donación de Juan Ejemplo', usa: {'lentejas'},
+       nec: {que: 'Lentejas secas', pide: '40 kg por mes', llego: '10 kg', falta: '30 kg', vence: '30 de noviembre', para: 'El guiso de los martes y jueves'},
+       cubre: 'Cubre los 30 kg que faltan', conflicto: null, contra: null},
+      {id: 'leche-escuela', d: 'leche', k: 'escuela', cuanto: '24 unidades', origen: 'La donación de Distribuidora Ejemplo SA', usa: {'leche'},
+       nec: {que: 'Leche en polvo', pide: '24 unidades', llego: 'Nada todavía', falta: '24 unidades', vence: '30 de noviembre', para: 'La merienda del turno tarde'},
+       cubre: 'Cubre las 24 unidades', conflicto: null, contra: null},
+      {id: 'aceite-coop', d: 'aceite', k: 'coop', cuanto: '20 litros', origen: 'La donación de Almacén Ejemplo SRL', usa: {'aceite'},
+       nec: {que: 'Aceite de girasol', pide: '20 litros', llego: 'Nada todavía', falta: '20 litros', vence: '15 de diciembre', para: 'La cocina comunitaria'},
+       cubre: 'Cubre los 20 litros', conflicto: null, contra: null},
+      {id: 'frazadas-hogarcasa', d: 'frazadas', k: 'hogarcasa', cuanto: '10 unidades', origen: 'La donación de Lucía Ejemplo', usa: {'frazadas'},
+       nec: {que: 'Frazadas', pide: '20 unidades', llego: '10 unidades', falta: '10 unidades', vence: '15 de noviembre', para: 'Las camas del hogar'},
+       cubre: 'Cubre las 10 que faltan', conflicto: null, contra: null},
+      {id: 'cuadernos-biblioteca', d: 'cuadernos', k: 'biblioteca', cuanto: '40 unidades', origen: 'La donación de Librería Ejemplo', usa: {'cuadernos'},
+       nec: {que: 'Cuadernos', pide: '60 unidades', llego: 'Nada todavía', falta: '60 unidades', vence: '15 de marzo', para: 'El apoyo escolar'},
+       cubre: 'Cubre 40 de las 60 que faltan', conflicto: null, contra: null},
+      {id: 'arroz-comedor', d: 'arroz-ana', k: 'comedor', cuanto: '25 kg', origen: 'La donación de Ana Ejemplo', usa: {'arroz-ana'},
+       nec: {que: 'Arroz', pide: '40 kg por mes', llego: '15 kg', falta: '25 kg', vence: '30 de noviembre', para: 'El almuerzo de lunes a viernes'},
+       cubre: 'Cubre los 25 kg que faltan', conflicto: 'arroz', contra: 'arroz-ccentro',
+       choque: 'Si aceptás esta, quedan 25 kg de arroz en el depósito: no alcanzan los 40 kg de la propuesta para Comedor Ejemplo Centro.',
+       recalc: {cuanto: '10 kg', origen: 'Lo que queda de la donación de Ana Ejemplo', cubre: 'Cubre 10 de los 25 kg que faltan'}},
+      {id: 'arroz-ccentro', d: 'arroz-almacen', k: 'ccentro', cuanto: '40 kg', origen: 'La donación de Almacén Ejemplo SRL (25 kg) y 15 kg de la de Ana Ejemplo',
+       usa: {'arroz-almacen', 'arroz-ana'},
+       nec: {que: 'Arroz', pide: '40 kg', llego: 'Nada todavía', falta: '40 kg', vence: '30 de noviembre', para: 'La olla de los sábados'},
+       cubre: 'Cubre los 40 kg', conflicto: 'arroz', contra: 'arroz-comedor',
+       choque: 'Si aceptás esta, quedan 10 kg de arroz en el depósito: no alcanzan los 25 kg de la propuesta para Comedor Barrio Ejemplo.',
+       recalc: {cuanto: '25 kg', origen: 'La donación de Almacén Ejemplo SRL', cubre: 'Cubre 25 de los 40 kg que faltan'}},
+      {id: 'mesas-escuela3', d: 'mesas', k: 'escuela3', cuanto: '4 unidades', origen: 'La donación de Fundación Ejemplo Sur', usa: {'mesas'},
+       nec: {que: 'Mesas', pide: '6 unidades', llego: '2 unidades', falta: '4 unidades', vence: '1 de marzo', para: 'El aula de primer grado'},
+       cubre: 'Cubre las 4 que faltan', conflicto: 'mesas', contra: 'mesas-club',
+       choque: 'Si aceptás esta, no quedan mesas plegables para la propuesta de Club Ejemplo Norte: las dos usan las mismas 4 mesas.',
+       recalc: null, sinStock: 'Escuela Ejemplo N.º 3 queda sin propuesta: no hay más mesas plegables en el depósito. Su pedido sigue abierto.'},
+      {id: 'mesas-club', d: 'mesas', k: 'club', cuanto: '4 unidades', origen: 'La donación de Fundación Ejemplo Sur', usa: {'mesas'},
+       nec: {que: 'Mesas', pide: '4 unidades', llego: 'Nada todavía', falta: '4 unidades', vence: '31 de diciembre', para: 'El salón de los talleres'},
+       cubre: 'Cubre las 4', conflicto: 'mesas', contra: 'mesas-escuela3',
+       choque: 'Si aceptás esta, no quedan mesas plegables para la propuesta de Escuela Ejemplo N.º 3: las dos usan las mismas 4 mesas.',
+       recalc: null, sinStock: 'Club Ejemplo Norte queda sin propuesta: no hay más mesas plegables en el depósito. Su pedido sigue abierto.'} } },
+             conflictos=${ {
+      {id: 'arroz', a: 'arroz-comedor', b: 'arroz-ccentro', bien: 'Arroz', titulo: 'Arroz: no alcanza para las dos',
+       explica: 'Hay 50 kg de arroz en el depósito (dos donaciones de 25 kg) y las dos propuestas suman 65 kg. Las dos usan el arroz de Ana Ejemplo.'},
+      {id: 'mesas', a: 'mesas-escuela3', b: 'mesas-club', bien: 'Mesas plegables', titulo: 'Las mismas 4 mesas plegables',
+       explica: 'Hay una sola donación de mesas y las dos entidades empatan como mejor candidata en común (8 puestos sumados). Las dos propuestas usan las mismas 4 mesas.'} } },
+             bienes=${ {
+      {bien: 'Arroz', cat: 'alimentos', categoria: 'Alimentos', total: '50 kg', lotes: {'arroz-ana', 'arroz-almacen'}},
+      {bien: 'Lentejas secas', cat: 'alimentos', categoria: 'Alimentos', total: '30 kg', lotes: {'lentejas'}},
+      {bien: 'Leche en polvo', cat: 'alimentos', categoria: 'Alimentos', total: '24 unidades', lotes: {'leche'}},
+      {bien: 'Aceite de girasol', cat: 'alimentos', categoria: 'Alimentos', total: '20 litros', lotes: {'aceite'}},
+      {bien: 'Frazadas', cat: 'ropa', categoria: 'Ropa', total: '10 unidades', lotes: {'frazadas'}},
+      {bien: 'Camperas de abrigo', cat: 'ropa', categoria: 'Ropa', total: '12 prendas', lotes: {'camperas'}},
+      {bien: 'Cuadernos', cat: 'escolares', categoria: 'Útiles escolares', total: '40 unidades', lotes: {'cuadernos'}},
+      {bien: 'Mesas plegables', cat: 'muebles', categoria: 'Muebles', total: '4 unidades', lotes: {'mesas'}} } },
+             asignada=${accion == 'asignada' ? (param.donacion != null ? param.donacion[0] : 'arroz-ana') : ''},
+             vivas=${escenario == 'vacio' or escenario == 'error' ? {} : propuestas.?[d != #root.asignada]},
+             libresTodas=${vivas.?[conflicto == null or #strings.contains(#root.ganaTxt, '|' + id + '|')
+                 or (#strings.contains(#root.ganaTxt, '|' + contra + '|') and recalc != null)]},
+             libres=${accion == 'lote' ? {} : libresTodas},
+             loteD=${accion == 'lote' ? libresTodas.![d] : {}},
+             donaciones=${escenario == 'vacio' or escenario == 'error' ? {} : todas.?[clave != #root.asignada and !#root.loteD.contains(clave)]},
              cola=${donaciones.?[(#root.q == '' or #strings.containsIgnoreCase(dona, #root.q))
                  and (#root.fCategoria == '' or cat == #root.fCategoria)
                  and (#root.fAntiguedad == '' or (#root.fAntiguedad == 'semana' ? dias >= 7 : dias < 7))
                  and (#root.fCruce == '' or (#root.fCruce == 'con' ? !comunes.isEmpty() : comunes.isEmpty()))]},
              filtrado=${q != '' or fCategoria != '' or fAntiguedad != '' or fCruce != ''},
+             conConflicto=${vivas.?[conflicto != null and !#strings.contains(#root.ganaTxt, '|' + id + '|')
+                 and !#strings.contains(#root.ganaTxt, '|' + contra + '|')]},
+             pendientes=${escenario == 'vacio' or escenario == 'error' ? {} : conflictos.?[!#strings.contains(#root.ganaTxt, '|' + a + '|')
+                 and !#strings.contains(#root.ganaTxt, '|' + b + '|')]},
+             descartadas=${vivas.?[conflicto != null and recalc == null and #strings.contains(#root.ganaTxt, '|' + contra + '|')]},
+             sinCoincidencias=${donaciones.?[comunes.isEmpty()]},
              opCategoria=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'alimentos', texto: 'Alimentos'},
                  {valor: 'ropa', texto: 'Ropa'}, {valor: 'escolares', texto: 'Útiles escolares'}, {valor: 'muebles', texto: 'Muebles'}} },
              opAntiguedad=${ {{valor: '', texto: 'Cualquier antigüedad'}, {valor: 'semana', texto: 'Una semana o más en el depósito'},
@@ -97,11 +272,27 @@
   <th:block th:insert="${pantalla}"></th:block>
 </th:block>
 
+<!--/* El selector de vistas (.segmentos): propuestas, por donación, stock y rankings. Conserva lo elegido
+       en los conflictos (gana). */-->
+<nav th:fragment="vistas(variante, vista)" class="segmentos" aria-label="Qué ver">
+  <a href="#" th:href="@{/admin-asignaciones(variante=${variante}, gana=${gv})}"
+     th:aria-current="${vista == 'propuestas'} ? 'page' : null"
+     th:text="|Propuestas · ${#lists.size(libres) + #lists.size(conConflicto)}|">Propuestas · 9</a>
+  <a href="#" th:href="@{/admin-asignaciones(variante=${variante}, vista='donaciones', gana=${gv})}"
+     th:aria-current="${vista == 'donaciones'} ? 'page' : null"
+     th:text="|Por donación · ${#lists.size(donaciones)}|">Por donación · 9</a>
+  <a href="#" th:href="@{/admin-asignaciones(variante=${variante}, vista='stock', gana=${gv})}"
+     th:aria-current="${vista == 'stock'} ? 'page' : null">Stock en depósito</a>
+  <a href="#" th:href="@{/admin-asignaciones(variante=${variante}, vista='rankings', gana=${gv})}"
+     th:aria-current="${vista == 'rankings'} ? 'page' : null">Rankings</a>
+</nav>
+
 <!--/* La búsqueda y los filtros (componentes/filtros): en pantalla ancha, en la misma fila; en el
        celular, los filtros debajo. variante es lo que el formulario conserva. */-->
 <form th:fragment="buscar(variante)" class="filtros-barra"
       action="/admin-asignaciones" th:action="@{/admin-asignaciones}" method="get" role="search">
   <input type="hidden" name="variante" th:value="${variante}" value="asignaciones-a">
+  <input th:if="${vista != ''}" type="hidden" name="vista" th:value="${vista}" value="donaciones">
   <div class="campo filtro-buscar">
     <label th:for="|buscar-${variante}|" for="buscar">Buscar una donación</label>
     <div class="filtro-buscar-fila">
@@ -115,9 +306,272 @@
     <details th:replace="~{componentes/filtros :: menu('antiguedad', 'Tiempo en el depósito', ${fAntiguedad}, ${opAntiguedad})}"></details>
     <details th:replace="~{componentes/filtros :: menu('cruce', 'Coincidencias', ${fCruce}, ${opCruce})}"></details>
     <a th:if="${filtrado}" class="filtros-sacar" href="/admin-asignaciones"
-       th:href="@{/admin-asignaciones(variante=${variante})}">Sacar los filtros</a>
+       th:href="@{/admin-asignaciones(variante=${variante}, vista=${vista != '' ? vista : null})}">Sacar los filtros</a>
   </div>
 </form>
+
+<!--/* El detalle de una entidad en un diálogo: quién es, dónde está, cuánto recibió en el trimestre y el
+       enlace a su ficha en Entidades (si la tiene en la maqueta). */-->
+<th:block th:fragment="entidad(k, id)">
+  <th:block th:with="en=${ent.get(k)}">
+    <button type="button" data-forma="enlace" th:popovertarget="|${id}|" popovertarget="ent-comedor"
+            th:text="${en.e}" th:aria-label="|${en.e}: ver el detalle de la entidad|">Comedor Barrio Ejemplo</button>
+    <dialog class="dialogo" th:id="${id}" id="ent-comedor" popover th:aria-labelledby="|${id}-titulo|">
+      <h3 class="dialogo-titulo" th:id="|${id}-titulo|" th:text="${en.e}">Comedor Barrio Ejemplo</h3>
+      <dl data-lista="detalle">
+        <div><dt>Tipo</dt><dd th:text="${en.tipo}">Comedor</dd></div>
+        <div><dt>Dónde</dt><dd th:text="${en.lugar}">Barrio Ejemplo</dd></div>
+        <div><dt>Recibió de agosto a octubre</dt><dd th:text="${en.recibidas}">Ninguna donación</dd></div>
+      </dl>
+      <div class="racimo">
+        <a th:if="${en.ficha != null}" class="boton" data-tono="secundario" href="/admin-entidades"
+           th:href="@{/admin-entidades(entidad=${en.ficha})} + |#entidad-${en.ficha}|">Ver su ficha en Entidades</a>
+        <button type="button" class="boton" data-tono="secundario" th:popovertarget="${id}"
+                popovertargetaction="hide">Cerrar</button>
+      </div>
+    </dialog>
+  </th:block>
+</th:block>
+
+<!--/* El detalle de la necesidad de una propuesta: qué pide, cuánto, cuánto llegó, cuánto falta, hasta
+       cuándo y para qué, y cuánto cubre la propuesta. El admin no tiene pantalla de necesidades: el
+       enlace lleva a la ficha de la entidad, que lista sus pedidos. */-->
+<th:block th:fragment="necesidad(pr, id)">
+  <th:block th:with="en=${ent.get(pr.k)}">
+    <button type="button" data-forma="enlace" th:popovertarget="${id}" popovertarget="nec-arroz"
+            th:aria-label="|Ver la necesidad de ${en.e}: ${pr.nec.que}|">Ver la necesidad</button>
+    <dialog class="dialogo" th:id="${id}" id="nec-arroz" popover th:aria-labelledby="|${id}-titulo|">
+      <h3 class="dialogo-titulo" th:id="|${id}-titulo|" th:text="|${pr.nec.que} para ${en.e}|">Arroz para Comedor Barrio Ejemplo</h3>
+      <dl data-lista="detalle">
+        <div><dt>Pide</dt><dd th:text="${pr.nec.pide}">40 kg por mes</dd></div>
+        <div><dt>Para qué</dt><dd th:text="${pr.nec.para}">El almuerzo de lunes a viernes</dd></div>
+        <div><dt>Ya llegó</dt><dd th:text="${pr.nec.llego}">15 kg</dd></div>
+        <div><dt>Falta</dt><dd th:text="${pr.nec.falta}">25 kg</dd></div>
+        <div><dt>Hasta</dt><dd th:text="${pr.nec.vence}">30 de noviembre</dd></div>
+      </dl>
+      <p th:text="|Esta propuesta: ${pr.cubre}.|">Esta propuesta: cubre los 25 kg que faltan.</p>
+      <div class="racimo">
+        <a th:if="${en.ficha != null}" class="boton" data-tono="secundario" href="/admin-entidades"
+           th:href="@{/admin-entidades(entidad=${en.ficha})} + |#entidad-${en.ficha}|">Ver sus pedidos en Entidades</a>
+        <button type="button" class="boton" data-tono="secundario" th:popovertarget="${id}"
+                popovertargetaction="hide">Cerrar</button>
+      </div>
+    </dialog>
+  </th:block>
+</th:block>
+
+<!--/* Una propuesta: la donación (lo que lleva y de dónde sale) y la entidad sugerida, cuánto cubre de su
+       necesidad, sus puestos y los accesos: la necesidad, la entidad, los rankings y, si no está en
+       conflicto, "Asignar". Si se volvió a calcular después de un conflicto, lo dice. */-->
+<article th:fragment="propuesta(pr, variante, id)" data-propuesta th:id="|propuesta-${id}|"
+         th:with="d=${todas.^[clave == #root.pr.d]},
+                  en=${ent.get(pr.k)},
+                  perdio=${pr.conflicto != null and #strings.contains(ganaTxt, '|' + pr.contra + '|')},
+                  gano=${pr.conflicto != null and #strings.contains(ganaTxt, '|' + pr.id + '|')},
+                  rc=${perdio ? pr.recalc : null},
+                  cuanto=${rc != null ? rc.cuanto : pr.cuanto},
+                  libre=${pr.conflicto == null or gano or rc != null}"
+         th:aria-labelledby="|propuesta-${id}-titulo|">
+  <div data-forma="flujo">
+    <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+        th:href="|#cat-${d.cat}|" href="#cat-alimentos"/></svg>
+    <div>
+      <h3 th:id="|propuesta-${id}-titulo|"><span th:text="|${d.bien}, ${cuanto}|">Arroz, 25 kg</span>
+        <span data-forma="hacia" aria-hidden="true">→</span><span class="solo-lectores">para</span>
+        <th:block th:replace="~{variantes/comun/asignaciones-datos :: entidad(${pr.k}, |${id}-ent|)}"></th:block></h3>
+      <p><small th:text="|${rc != null ? rc.origen : pr.origen} · ${d.deposito}, ${d.dias} días|">La donación de Ana Ejemplo
+        · Depósito Central, 7 días</small></p>
+    </div>
+  </div>
+  <p data-forma="cubre">
+    <span th:text="|${pr.nec.que}: faltan ${pr.nec.falta}, hasta el ${pr.nec.vence}.|">Arroz: faltan 25 kg, hasta el 30 de noviembre.</span>
+    <b th:text="|${rc != null ? rc.cubre : pr.cubre}.|">Cubre los 25 kg que faltan.</b>
+  </p>
+  <p th:if="${gano}" data-marca="gano">Elegiste esta en el conflicto.</p>
+  <p th:if="${rc != null}" data-marca="recalculada">Se volvió a calcular con lo que quedó en el depósito.</p>
+  <p><small th:text="${#strings.listJoin(d.ejecuciones.![puestos.^[k == #root.pr.k].n + '.º en ' + nombre], ' · ')}">1.º en
+    Compatibilidad semántica · 2.º en Prioridad a sub-atendidas</small></p>
+  <div class="racimo" data-espacio="2" data-forma="accesos">
+    <th:block th:replace="~{variantes/comun/asignaciones-datos :: necesidad(${pr}, |${id}-nec|)}"></th:block>
+    <a href="#" th:href="${variante == 'asignaciones-b'} ? @{/admin-asignaciones(variante=${variante}, abrir=${d.clave}, gana=${gv})} + |#donacion-${d.clave}|
+                         : @{/admin-asignaciones(variante=${variante}, vista='rankings', donacion=${d.clave}, gana=${gv})}"
+       th:aria-label="|Ver los rankings de ${d.bien}, ${d.cuanto}|">Ver los rankings</a>
+    <th:block th:if="${libre and accion != 'lote' and variante != 'asignaciones-c'}"
+              th:with="p=${ {k: pr.k, e: en.e} }"><th:block
+        th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |${id}-asignar|)}"></th:block></th:block>
+  </div>
+</article>
+
+<!--/* "Aceptar las N sin conflictos": la confirmación lista lo que se va a asignar. */-->
+<th:block th:fragment="lote(variante)">
+  <th:block th:unless="${#lists.isEmpty(libres)}">
+    <button type="button" class="boton" data-tono="principal" popovertarget="lote"
+            th:text="${#lists.size(libres) == 1} ? 'Aceptar la propuesta sin conflictos' : |Aceptar las ${#lists.size(libres)} sin conflictos|">Aceptar
+      las 5 sin conflictos</button>
+    <dialog class="dialogo" id="lote" popover aria-labelledby="lote-titulo">
+      <h3 class="dialogo-titulo" id="lote-titulo"
+          th:text="${#lists.size(libres) == 1} ? '¿Asignar esta donación?' : |¿Asignar estas ${#lists.size(libres)} donaciones?|">¿Asignar
+        estas 5 donaciones?</h3>
+      <ul class="lista" data-lista="lote" role="list">
+        <li th:each="pr : ${libres}"
+            th:with="d=${todas.^[clave == #root.pr.d]},
+                     rc=${pr.conflicto != null and #strings.contains(ganaTxt, '|' + pr.contra + '|') ? pr.recalc : null}">
+          <b th:text="|${d.bien}, ${rc != null ? rc.cuanto : pr.cuanto}|">Lentejas secas, 30 kg</b>
+          <span th:text="|a ${ent.get(pr.k).e}|">a Comedor Barrio Ejemplo</span>
+        </li>
+      </ul>
+      <p>Cada una queda con ese destino y sale del depósito cuando se arme la ruta. Las propuestas con
+        conflictos no se tocan: las resolvés de a una.</p>
+      <form class="racimo" action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}" method="post">
+        <input th:each="pr : ${libres}" type="hidden" name="propuesta" th:value="${pr.id}" value="lentejas-comedor">
+        <button class="boton" data-tono="principal" type="submit"
+                th:text="${#lists.size(libres) == 1} ? 'Sí, asignar' : |Sí, asignar las ${#lists.size(libres)}|">Sí, asignar las 5</button>
+        <button type="button" class="boton" data-tono="secundario" popovertarget="lote"
+                popovertargetaction="hide" autofocus>No, volver</button>
+      </form>
+    </dialog>
+  </th:block>
+</th:block>
+
+<!--/* Un par de propuestas que se pisan: el porqué y, en cada lado, qué pasa si gana ("Elegir esta",
+       con confirmación). Elegir no asigna: la ganadora pasa a Sin conflictos y la otra se recalcula. */-->
+<section th:fragment="conflicto(c, variante)" data-conflicto th:id="|conflicto-${c.id}|"
+         th:aria-labelledby="|conflicto-${c.id}-titulo|">
+  <h3 th:id="|conflicto-${c.id}-titulo|" th:text="${c.titulo}">Arroz: no alcanza para las dos</h3>
+  <p th:text="${c.explica}">Hay 50 kg de arroz en el depósito…</p>
+  <div data-forma="par">
+    <div th:each="pid, i : ${ {c.a, c.b} }" data-lado
+         th:with="pr=${propuestas.^[id == #root.pid]},
+                  otra=${propuestas.^[id == #root.pr.contra]},
+                  pid2=|${variante}-${pr.id}|">
+      <article th:replace="~{variantes/comun/asignaciones-datos :: propuesta(${pr}, ${variante}, ${pid2})}"></article>
+      <p data-forma="choque" th:text="${pr.choque}">Si aceptás esta, quedan 25 kg de arroz…</p>
+      <button type="button" class="boton" data-tono="principal" data-tamano="chico"
+              th:popovertarget="|elegir-${pid2}|" popovertarget="elegir-arroz-comedor"
+              th:aria-label="|Elegir la propuesta para ${ent.get(pr.k).e}|">Elegir esta</button>
+      <dialog class="dialogo" th:id="|elegir-${pid2}|" id="elegir-arroz-comedor" popover
+              th:aria-labelledby="|elegir-${pid2}-titulo|">
+        <h3 class="dialogo-titulo" th:id="|elegir-${pid2}-titulo|"
+            th:text="|¿Elegir ${c.bien}, ${pr.cuanto}, para ${ent.get(pr.k).e}?|">¿Elegir Arroz, 25 kg, para Comedor Barrio Ejemplo?</h3>
+        <p>Esta pasa a Sin conflictos, para que la aceptes con las demás o sola.</p>
+        <p th:text="${otra.recalc != null} ? |La de ${ent.get(otra.k).e} se vuelve a calcular: ${otra.recalc.cuanto} (${#strings.toLowerCase(otra.recalc.cubre)})| : ${otra.sinStock}">La
+          de Comedor Ejemplo Centro se vuelve a calcular: 25 kg.</p>
+        <p>Todavía no se asigna nada.</p>
+        <form class="racimo" action="/admin-asignaciones" th:action="@{/admin-asignaciones}" method="get">
+          <input type="hidden" name="variante" th:value="${variante}" value="asignaciones-a">
+          <input th:if="${vista != ''}" type="hidden" name="vista" th:value="${vista}" value="propuestas">
+          <input th:if="${param.tramite != null}" type="hidden" name="tramite" th:value="${param.tramite[0]}" value="conflictos">
+          <input th:each="g : ${param.gana}" th:if="${param.gana != null}" type="hidden" name="gana" th:value="${g}">
+          <button class="boton" data-tono="principal" type="submit" name="gana" th:value="${pr.id}"
+                  value="arroz-comedor">Sí, elegir esta</button>
+          <button type="button" class="boton" data-tono="secundario" th:popovertarget="|elegir-${pid2}|"
+                  popovertargetaction="hide" autofocus>No, volver</button>
+        </form>
+      </dialog>
+    </div>
+  </div>
+</section>
+
+<!--/* El stock en depósito: las donaciones independientes que esperan destino, por categoría y bien, con
+       cuánto hay, de qué donaciones, cuánto lleva cada una y qué propuesta las usa. */-->
+<th:block th:fragment="stock(variante)">
+  <p th:with="enDep=${donaciones.![clave]}"
+     th:text="|${#lists.size(donaciones)} donaciones independientes en el depósito, de ${#lists.size(bienes.?[!lotes.?[#root.enDep.contains(#this)].isEmpty()])} bienes. Al 9 de noviembre, 0:00.|">9
+    donaciones independientes en el depósito, de 8 bienes. Al 9 de noviembre, 0:00.</p>
+  <th:block th:each="cat : ${ {'alimentos', 'ropa', 'escolares', 'muebles'} }"
+            th:with="enDep=${donaciones.![clave]}, deCat=${bienes.?[cat == #root.cat and !lotes.?[#root.enDep.contains(#this)].isEmpty()]}">
+  <section th:unless="${#lists.isEmpty(deCat)}" data-stock th:aria-labelledby="|stock-${cat}|">
+    <h3 th:id="|stock-${cat}|" class="racimo" data-espacio="2">
+      <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+          th:href="|#cat-${cat}|" href="#cat-alimentos"/></svg>
+      <span th:text="${deCat[0].categoria}">Alimentos</span>
+    </h3>
+    <table class="tabla">
+      <caption class="solo-lectores" th:text="|Stock de ${deCat[0].categoria} en el depósito|">Stock de Alimentos en el depósito</caption>
+      <thead>
+      <tr>
+        <th scope="col">Bien</th>
+        <th scope="col">Hay</th>
+        <th scope="col">Donaciones</th>
+        <th scope="col">Qué lo usa</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="b : ${deCat}"
+          th:with="usan=${vivas.?[!#lists.isEmpty(usa.?[#lists.contains(#root.b.lotes, #this)])]},
+                   choca=${!#lists.isEmpty(pendientes.?[bien == #root.b.bien])}">
+        <th scope="row" th:text="${b.bien}">Arroz</th>
+        <td data-rotulo="Hay"><b th:text="${b.total}">50 kg</b></td>
+        <td data-rotulo="Donaciones">
+          <ul class="lista" role="list">
+            <li th:each="lk : ${b.lotes}" th:with="l=${todas.^[clave == #root.lk]}">
+              <span th:text="|${l.cuanto} de ${l.donante}|">25 kg de Ana Ejemplo</span>
+              <small th:text="|${l.deposito}, ${l.dias} días (desde el ${l.desde})|">Depósito Central, 7 días (desde el 2 de noviembre)</small>
+            </li>
+          </ul>
+        </td>
+        <td data-rotulo="Qué lo usa">
+          <p th:if="${choca}" data-marca="conflicto">Dos propuestas se lo disputan: no alcanza para las dos.</p>
+          <ul th:unless="${#lists.isEmpty(usan)}" class="lista" role="list">
+            <li th:each="pr : ${usan}"
+                th:with="rc=${pr.conflicto != null and #strings.contains(ganaTxt, '|' + pr.contra + '|') ? pr.recalc : null}">
+              <a href="#" th:with="enConf=${!#lists.isEmpty(conConflicto.?[id == #root.pr.id])}"
+                 th:href="${variante == 'asignaciones-c'} ? @{/admin-asignaciones(variante=${variante}, tramite=${enConf ? 'conflictos' : 'lote'}, gana=${gv})}
+                          : @{/admin-asignaciones(variante=${variante}, gana=${gv})} + |#propuesta-${variante}-${pr.id}|"
+                 th:text="|Propuesta: ${rc != null ? rc.cuanto : pr.cuanto} a ${ent.get(pr.k).e}|">Propuesta: 25 kg a Comedor Barrio Ejemplo</a>
+            </li>
+          </ul>
+          <p th:if="${#lists.isEmpty(usan)}">Sin propuesta: ninguna entidad está en los dos rankings.
+            <a href="#" th:href="${variante == 'asignaciones-b'} ? @{/admin-asignaciones(variante=${variante}, abrir=${b.lotes[0]})} + |#donacion-${b.lotes[0]}|
+                                 : @{/admin-asignaciones(variante=${variante}, vista='rankings', donacion=${b.lotes[0]})}">Elegir en los rankings</a></p>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+  </th:block>
+</th:block>
+
+<!--/* Elegir de qué donación ver los rankings: un formulario real (anda sin JavaScript). */-->
+<form th:fragment="elegirDonacion(variante, d)" class="racimo" data-espacio="2" data-forma="elegir"
+      action="/admin-asignaciones" th:action="@{/admin-asignaciones}" method="get">
+  <input type="hidden" name="variante" th:value="${variante}" value="asignaciones-a">
+  <input type="hidden" name="vista" value="rankings">
+  <input th:each="g : ${param.gana}" th:if="${param.gana != null}" type="hidden" name="gana" th:value="${g}">
+  <div class="campo">
+    <label th:for="|elegir-${variante}|" for="elegir">Donación</label>
+    <select th:id="|elegir-${variante}|" id="elegir" name="donacion">
+      <option th:each="x : ${donaciones}" th:value="${x.clave}" th:selected="${d != null and x.clave == d.clave}"
+              th:text="|${x.dona}, ${x.cuanto} (de ${x.donante})|">Arroz, 25 kg (de Ana Ejemplo)</option>
+    </select>
+  </div>
+  <button class="boton" data-tono="secundario" type="submit">Ver sus rankings</button>
+</form>
+
+<!--/* Cada ejecución completa de una donación: hasta 10 puestos con el porqué, las en común marcadas y
+       la que va en la propuesta. Con más algoritmos, suma bloques. */-->
+<div th:fragment="rankings(d, variante)" class="grilla" data-espacio="3" data-forma="rankings"
+     th:with="propuesta=${vivas.^[d == #root.d.clave]}">
+  <section th:each="ej, i : ${d.ejecuciones}" class="pila" data-espacio="2"
+           th:aria-labelledby="|rk-${variante}-${i.index}|" th:with="alg=${algoritmos.^[nombre == #root.ej.nombre]}">
+    <h3 th:id="|rk-${variante}-${i.index}|" th:text="${ej.nombre}">Compatibilidad semántica</h3>
+    <p><small th:text="${alg.criterio}">Qué tanto coincide lo donado con lo que pide cada entidad.</small>
+      <small th:if="${#lists.size(ej.puestos) < 10}"
+             th:text="|Hasta 10 puestos: hay ${#lists.size(ej.puestos)} porque solo esas entidades tienen un pedido que coincide.|">Hasta
+        10 puestos.</small></p>
+    <ol class="lista" data-lista="ranking" role="list">
+      <li th:each="p : ${ej.puestos}" th:attr="data-comun=${#lists.contains(d.comunes, p.k)} ? 'si' : null">
+        <b th:text="|${p.n}.º|">1.º</b>
+        <span><span th:text="${ent.get(p.k).e}">Comedor Barrio Ejemplo</span>
+          <small th:text="${p.por}">Pide arroz: faltan 25 de 40 kg este mes</small>
+          <small th:if="${propuesta != null and propuesta.k == p.k}"><b>Propuesta</b> · en común</small>
+          <small th:if="${#lists.contains(d.comunes, p.k) and (propuesta == null or propuesta.k != p.k)}"><b>En común</b></small></span>
+        <th:block th:if="${d.comunes.isEmpty()}" th:with="pp=${ {k: p.k, e: ent.get(p.k).e} }"><th:block
+            th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${pp}, |rk-${variante}-${i.index}-${p.k}|)}"></th:block></th:block>
+      </li>
+    </ol>
+  </section>
+</div>
 
 <!--/* En qué puesto quedó la entidad k en cada ejecución, con el porqué. */-->
 <ul th:fragment="posiciones(d, k)" class="lista" data-lista="posiciones" role="list">
@@ -128,7 +582,7 @@
   </li>
 </ul>
 
-<!--/* "Asignar" y su diálogo: la confirmación explícita antes de fijar el destino. */-->
+<!--/* "Asignar" y su diálogo: la confirmación explícita antes de fijar el destino. p es {k, e}. */-->
 <th:block th:fragment="asignar(d, p, id)">
   <button type="button" class="boton" data-tono="principal" data-tamano="chico"
           th:popovertarget="|asignar-${id}|" popovertarget="asignar-arroz-oeste"
@@ -136,12 +590,12 @@
   <dialog class="dialogo" th:id="|asignar-${id}|" id="asignar-arroz-oeste" popover
           th:aria-labelledby="|asignar-${id}-titulo|">
     <h3 class="dialogo-titulo" th:id="|asignar-${id}-titulo|"
-        th:text="|¿Asignar ${d.dona}, ${d.cuanto}, a ${p.e}?|">¿Asignar Arroz, 25 kg, a Comedor Ejemplo Oeste?</h3>
+        th:text="|¿Asignar ${d.dona}, ${d.cuanto}, a ${p.e}?|">¿Asignar Arroz, 25 kg, a Comedor Barrio Ejemplo?</h3>
     <ul th:replace="~{variantes/comun/asignaciones-datos :: posiciones(${d}, ${p.k})}"></ul>
     <p>Queda como su destino y sale del depósito cuando se arme la ruta. Las demás candidatas no la reciben.</p>
     <form class="racimo" action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}" method="post">
-      <input type="hidden" name="donacion" th:value="${d.clave}" value="arroz">
-      <input type="hidden" name="entidad" th:value="${p.k}" value="oeste">
+      <input type="hidden" name="donacion" th:value="${d.clave}" value="arroz-ana">
+      <input type="hidden" name="entidad" th:value="${p.k}" value="comedor">
       <button class="boton" data-tono="principal" type="submit">Sí, asignar</button>
       <button type="button" class="boton" data-tono="secundario" th:popovertarget="|asignar-${id}|"
               popovertargetaction="hide" autofocus>No, volver</button>
@@ -149,17 +603,26 @@
   </dialog>
 </th:block>
 
-<!--/* Lo que pasó después de asignar (?accion=asignada&donacion=<clave>&entidad=<k>). */-->
-<p th:fragment="aviso" th:if="${accion == 'asignada'}" class="aviso-breve" data-estado="hecho" role="status"
-   tabindex="-1" autofocus
-   th:with="pd=${param.donacion != null ? param.donacion[0] : 'arroz'},
-            ad=${todas.^[clave == #root.pd] ?: todas[0]},
-            ak=${param.entidad != null ? param.entidad[0] : 'oeste'},
-            ae=${#lists.isEmpty(ad.ejecuciones[0].puestos.?[k == #root.ak]) ? ad.ejecuciones[1].puestos.^[k == #root.ak] : ad.ejecuciones[0].puestos.^[k == #root.ak]}"
-   th:text="|Asignaste ${ad.dona}, ${ad.cuanto}, a ${ae != null ? ae.e : 'la entidad elegida'}. Sale del depósito cuando se arme la ruta.|">Asignaste
-  Arroz, 25 kg, a Comedor Ejemplo Oeste. Sale del depósito cuando se arme la ruta.</p>
+<!--/* Lo que pasó: después de asignar una (?accion=asignada&donacion=<clave>&entidad=<k>), de aceptar el
+       lote (?accion=lote) o de elegir en un conflicto (el último ?gana=). */-->
+<th:block th:fragment="aviso">
+  <p th:if="${accion == 'asignada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+     th:with="ad=${todas.^[clave == #root.asignada] ?: todas[0]},
+              ak=${param.entidad != null and ent.containsKey(param.entidad[0]) ? param.entidad[0] : 'comedor'}"
+     th:text="|Asignaste ${ad.dona}, ${ad.cuanto}, a ${ent.get(ak).e}. Sale del depósito cuando se arme la ruta.|">Asignaste
+    Arroz, 25 kg, a Comedor Barrio Ejemplo. Sale del depósito cuando se arme la ruta.</p>
+  <p th:if="${accion == 'lote'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+     th:text="|Asignaste las ${#lists.size(libresTodas)} propuestas sin conflictos. Salen del depósito cuando se arme la ruta. ${#lists.isEmpty(pendientes) ? '' : 'Los conflictos siguen esperando que elijas.'}|">Asignaste
+    las 5 propuestas sin conflictos. Salen del depósito cuando se arme la ruta.</p>
+  <p th:if="${accion == '' and param.gana != null}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+     th:with="uid=${param.gana[param.gana.length - 1]},
+              ultima=${propuestas.^[id == #root.uid]},
+              otra=${ultima != null ? propuestas.^[id == #root.ultima.contra] : null}"
+     th:text="${ultima == null} ? 'Elegiste una propuesta.' : (|Elegiste ${ultima.cuanto} de ${#strings.toLowerCase(ultima.nec.que)} para ${ent.get(ultima.k).e}: pasó a Sin conflictos. | + (${otra.recalc != null} ? |La de ${ent.get(otra.k).e} se volvió a calcular: ${otra.recalc.cuanto}.| : ${otra.sinStock}))">Elegiste
+    25 kg de arroz para Comedor Barrio Ejemplo: pasó a Sin conflictos.</p>
+</th:block>
 
-<!--/* La cola vacía, el error de carga y la lista filtrada sin resultados. */-->
+<!--/* La cola vacía y el error de carga. */-->
 <th:block th:fragment="estados(variante)">
   <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
     <h2 id="vacio-titulo">No hay donaciones en el depósito esperando destino.</h2>

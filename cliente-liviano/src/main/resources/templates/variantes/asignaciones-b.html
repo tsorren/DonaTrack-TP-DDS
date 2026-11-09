@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<!--/* Variante B de Asignar donaciones (ronda 2026-11-09 tarde). Eje: una tarjeta por donación, todas a la
-       vista. Cada tarjeta dice la donación y, en línea, sus candidatas en común con el puesto en cada
-       algoritmo y "Asignar" (pide confirmación). Debajo, la tabla de posiciones: una fila por puesto y
-       una columna por algoritmo, para comparar los rankings de un vistazo; las que están en todos van
-       marcadas. Si no hubo coincidencias, la tabla se abre y cada entidad tiene su "Asignar". La tabla
-       suma una columna por algoritmo nuevo; en el celular, cada puesto es una tarjeta con un renglón por
-       algoritmo. Se ve con /admin-asignaciones?variante=asignaciones-b (&accion=asignada&donacion=
-       <clave>&entidad=<k>; ?escenario=vacio|error). */-->
+<!--/* Variante B de Asignar donaciones. Ronda 2026-11-09 tarde: una tarjeta por donación, todas a la
+       vista, con la tabla de posiciones. Ronda 2026-11-09 noche: todo en una página larga, con un índice
+       de accesos directos arriba (enlaces a cada parte):
+       1. Propuestas sin conflictos, en una tabla para comparar (donación, para quién, cuánto cubre,
+          puestos y accesos), con "Aceptar las N sin conflictos".
+       2. Con conflictos, de a pares, con el porqué y "Elegir esta" (&gana=<id>).
+       3. Stock en depósito, por categoría y bien.
+       4. Cada donación con su tabla de posiciones (los rankings completos); "Ver los rankings" abre la
+          de esa donación (&abrir=<clave>#donacion-<clave>).
+       Estados: &accion=asignada|lote, ?escenario=vacio|error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -18,97 +20,179 @@
 </th:block>
 
 <th:block th:fragment="pantalla">
+<th:block th:with="abrir=${param.abrir != null ? param.abrir[0] : ''}">
   <div class="mesa" data-variante="asignaciones-b">
     <header class="mesa-cabecera">
-      <div>
+      <div class="pila" data-espacio="2">
         <p class="rotulo">Administración</p>
         <h1>Asignar donaciones</h1>
-        <p>Cada donación del depósito tiene un ranking por algoritmo. Las entidades que aparecen en todos
-          son las candidatas en común; vos confirmás el destino.</p>
+        <p>Cada donación del depósito tiene un ranking por algoritmo. La propuesta la lleva a la mejor
+          candidata en común; vos confirmás el destino.</p>
         <p th:unless="${escenario == 'error'}"><small th:text="|Última ejecución: hoy, 9 de noviembre, 0:00 · ${#lists.size(donaciones)} donaciones esperan destino.|">Última
-          ejecución: hoy, 9 de noviembre, 0:00 · 4 donaciones esperan destino.</small></p>
+          ejecución: hoy, 9 de noviembre, 0:00 · 9 donaciones esperan destino.</small></p>
       </div>
     </header>
 
-    <p th:replace="~{variantes/comun/asignaciones-datos :: aviso}"></p>
+    <th:block th:replace="~{variantes/comun/asignaciones-datos :: aviso}"></th:block>
     <th:block th:replace="~{variantes/comun/asignaciones-datos :: estados('asignaciones-b')}"></th:block>
 
     <th:block th:unless="${#lists.isEmpty(donaciones)}">
-      <form th:replace="~{variantes/comun/asignaciones-datos :: buscar('asignaciones-b')}"></form>
-      <p th:if="${filtrado}" th:text="|Coinciden ${#lists.size(cola)} de ${#lists.size(donaciones)} donaciones.|">Coinciden
-        1 de 4 donaciones.</p>
-      <p th:if="${#lists.isEmpty(cola)}">Ninguna donación coincide con lo que buscaste.</p>
+      <!--/* El índice: accesos directos a cada parte de la página. */-->
+      <nav aria-label="En esta página">
+        <ul class="lista" data-lista="indice" role="list">
+          <li><a href="#libres"><b th:text="${#lists.size(libres)}">5</b> sin conflictos</a></li>
+          <li><a href="#conflictos"><b th:text="${#lists.size(pendientes)}">2</b> conflictos</a></li>
+          <li><a href="#stock"><b th:text="${#lists.size(donaciones)}">9</b> en el stock</a></li>
+          <li><a href="#donaciones">Rankings por donación</a></li>
+        </ul>
+      </nav>
 
-      <ul class="lista pila" data-espacio="4" role="list">
-        <li th:each="d : ${cola}">
-          <article class="tarjeta pila" data-espacio="3" th:id="|donacion-${d.clave}|"
-                   th:aria-labelledby="|donacion-${d.clave}-titulo|"
-                   th:with="tamanos=${#lists.sort(d.ejecuciones.![puestos.size()])},
-                            filas=${tamanos[#lists.size(tamanos) - 1]}">
-            <div class="racimo" data-espacio="3" data-forma="cabeza">
-              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
-                  th:href="|#cat-${d.cat}|" href="#cat-alimentos"/></svg>
-              <div>
-                <h2 th:id="|donacion-${d.clave}-titulo|" th:text="|${d.dona}, ${d.cuanto}|">Arroz, 25 kg</h2>
-                <p><small th:text="|${d.categoria} · de ${d.donante} · en el ${d.deposito} desde el ${d.desde} (${d.dias} días)|">Alimentos
-                  · de Ana Ejemplo · en el Depósito Central desde el 2 de noviembre (7 días)</small></p>
+      <!--/* 1. Sin conflictos, en tabla. */-->
+      <section id="libres" class="tarjeta pila" data-espacio="3" aria-labelledby="libres-titulo">
+        <div class="racimo" data-alinea="entre" data-espacio="3">
+          <div>
+            <h2 id="libres-titulo" th:text="|Propuestas sin conflictos · ${#lists.size(libres)}|">Propuestas sin conflictos · 5</h2>
+            <p><small>No usan el stock de ninguna otra propuesta: podés aceptarlas juntas.</small></p>
+          </div>
+          <th:block th:replace="~{variantes/comun/asignaciones-datos :: lote('asignaciones-b')}"></th:block>
+        </div>
+        <p th:if="${#lists.isEmpty(libres)}">No quedan propuestas sin conflictos.</p>
+        <table th:unless="${#lists.isEmpty(libres)}" class="tabla">
+          <caption class="solo-lectores">Propuestas sin conflictos</caption>
+          <thead>
+          <tr>
+            <th scope="col">Donación</th>
+            <th scope="col">Para</th>
+            <th scope="col">Cuánto cubre</th>
+            <th scope="col">Puestos</th>
+            <th scope="col">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="pr : ${libres}" th:id="|propuesta-asignaciones-b-${pr.id}|"
+              th:with="d=${todas.^[clave == #root.pr.d]},
+                       perdio=${pr.conflicto != null and #strings.contains(ganaTxt, '|' + pr.contra + '|')},
+                       rc=${perdio ? pr.recalc : null},
+                       id=|b-${pr.id}|">
+            <th scope="row">
+              <span th:text="|${d.bien}, ${rc != null ? rc.cuanto : pr.cuanto}|">Lentejas secas, 30 kg</span>
+              <small th:text="${rc != null ? rc.origen : pr.origen}">La donación de Juan Ejemplo</small>
+              <small th:if="${rc != null}" data-marca="recalculada">Recalculada</small>
+              <small th:if="${pr.conflicto != null and rc == null}" data-marca="gano">Elegida en un conflicto</small>
+            </th>
+            <td data-rotulo="Para"><th:block
+                th:replace="~{variantes/comun/asignaciones-datos :: entidad(${pr.k}, |${id}-ent|)}"></th:block></td>
+            <td data-rotulo="Cuánto cubre">
+              <span th:text="${rc != null ? rc.cubre : pr.cubre}">Cubre los 30 kg que faltan</span>
+              <th:block th:replace="~{variantes/comun/asignaciones-datos :: necesidad(${pr}, |${id}-nec|)}"></th:block>
+            </td>
+            <td data-rotulo="Puestos"><small
+                th:text="${#strings.listJoin(d.ejecuciones.![puestos.^[k == #root.pr.k].n + '.º ' + (nombre == #root.semantica ? 'semántica' : 'sub-atendidas')], ' · ')}">1.º
+              semántica · 2.º sub-atendidas</small>
+              <a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-b', abrir=${d.clave}, gana=${gv})} + |#donacion-${d.clave}|">Ver los rankings</a></td>
+            <td data-rotulo="Acciones" th:with="p=${ {k: pr.k, e: ent.get(pr.k).e} }"><th:block
+                th:if="${accion != 'lote'}"><th:block
+                th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |${id}-asignar|)}"></th:block></th:block></td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!--/* 2. Con conflictos. */-->
+      <section id="conflictos" class="pila" data-espacio="3" aria-labelledby="conflictos-titulo">
+        <div>
+          <h2 id="conflictos-titulo" th:text="|Propuestas con conflictos · ${#lists.size(pendientes)} pares|">Propuestas con conflictos
+            · 2 pares</h2>
+          <p><small>Se pisan de a dos: elegí cuál gana en cada par. La otra se vuelve a calcular con lo que queda.</small></p>
+        </div>
+        <p th:if="${#lists.isEmpty(pendientes)}">No hay conflictos para resolver.</p>
+        <th:block th:each="c : ${pendientes}"><section
+            th:replace="~{variantes/comun/asignaciones-datos :: conflicto(${c}, 'asignaciones-b')}"></section></th:block>
+        <ul th:unless="${#lists.isEmpty(descartadas)}" class="lista pila" data-espacio="2" role="list">
+          <li th:each="pr : ${descartadas}" data-forma="sin">
+            <span><b th:text="|${pr.nec.que} para ${ent.get(pr.k).e}|">Mesas para Club Ejemplo Norte</b>
+              <small th:text="${pr.sinStock}">Queda sin propuesta.</small></span>
+          </li>
+        </ul>
+      </section>
+
+      <!--/* 3. Stock en depósito. */-->
+      <section id="stock" class="tarjeta pila" data-espacio="3" aria-labelledby="stock-titulo">
+        <h2 id="stock-titulo">Stock en depósito</h2>
+        <th:block th:replace="~{variantes/comun/asignaciones-datos :: stock('asignaciones-b')}"></th:block>
+      </section>
+
+      <!--/* 4. Cada donación con su tabla de posiciones. */-->
+      <section id="donaciones" class="pila" data-espacio="3" aria-labelledby="donaciones-titulo">
+        <h2 id="donaciones-titulo">Rankings por donación</h2>
+        <form th:replace="~{variantes/comun/asignaciones-datos :: buscar('asignaciones-b')}"></form>
+        <p th:if="${filtrado}" th:text="|Coinciden ${#lists.size(cola)} de ${#lists.size(donaciones)} donaciones.|">Coinciden
+          1 de 9 donaciones.</p>
+        <p th:if="${#lists.isEmpty(cola)}">Ninguna donación coincide con lo que buscaste.</p>
+
+        <ul class="lista pila" data-espacio="4" role="list">
+          <li th:each="d : ${cola}">
+            <article class="tarjeta pila" data-espacio="3" th:id="|donacion-${d.clave}|"
+                     th:aria-labelledby="|donacion-${d.clave}-titulo|"
+                     th:with="tamanos=${#lists.sort(d.ejecuciones.![puestos.size()])},
+                              filas=${tamanos[#lists.size(tamanos) - 1]},
+                              suya=${vivas.?[d == #root.d.clave]}">
+              <div class="racimo" data-espacio="3" data-forma="cabeza">
+                <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                    th:href="|#cat-${d.cat}|" href="#cat-alimentos"/></svg>
+                <div>
+                  <h3 th:id="|donacion-${d.clave}-titulo|" th:text="|${d.dona}, ${d.cuanto}|">Arroz, 25 kg</h3>
+                  <p><small th:text="|${d.categoria} · de ${d.donante} · en el ${d.deposito} desde el ${d.desde} (${d.dias} días)|">Alimentos
+                    · de Ana Ejemplo · en el Depósito Central desde el 2 de noviembre (7 días)</small></p>
+                </div>
+                <span th:data-cuenta="${d.comunes.isEmpty()} ? 'sin' : 'con'"
+                      th:text="${d.comunes.isEmpty()} ? 'Sin coincidencias' : (${#lists.size(d.comunes) == 1} ? '1 en común' : |${#lists.size(d.comunes)} en común|)">8
+                  en común</span>
               </div>
-              <span th:data-cuenta="${d.comunes.isEmpty()} ? 'sin' : 'con'"
-                    th:text="${d.comunes.isEmpty()} ? 'Sin coincidencias' : (${#lists.size(d.comunes) == 1} ? '1 en común' : |${#lists.size(d.comunes)} en común|)">3
-                en común</span>
-            </div>
 
-            <!--/* Las candidatas en común, en línea. */-->
-            <section th:unless="${d.comunes.isEmpty()}" class="pila" data-espacio="2"
-                     th:aria-labelledby="|comunes-${d.clave}|">
-              <h3 th:id="|comunes-${d.clave}|">Candidatas en común</h3>
-              <ul class="lista" data-lista="en-linea" role="list">
-                <li th:each="ck : ${d.comunes}" th:with="p=${d.ejecuciones[0].puestos.^[k == #root.ck]}">
-                  <span><b th:text="${p.e}">Comedor Ejemplo Oeste</b>
-                    <small th:text="${#strings.listJoin(d.ejecuciones.![puestos.^[k == #root.ck].n + '.º en ' + nombre], ' · ')}">2.º
-                      en Compatibilidad semántica · 5.º en Prioridad a sub-atendidas</small></span>
-                  <th:block th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |b-${d.clave}-${ck}|)}"></th:block>
-                </li>
-              </ul>
-            </section>
-            <p th:if="${d.comunes.isEmpty()}"><b>Ninguna entidad aparece en los dos rankings.</b> Elegí el destino en la
-              tabla de posiciones.</p>
+              <p th:each="pr : ${suya}" th:with="enConf=${!#lists.isEmpty(conConflicto.?[id == #root.pr.id])}">
+                <span th:text="|Propuesta: a ${ent.get(pr.k).e}${enConf ? ', con conflicto' : ''}.|">Propuesta: a Comedor Barrio Ejemplo, con conflicto.</span>
+                <a href="#" th:href="${enConf} ? |#conflicto-${pr.conflicto}| : |#propuesta-asignaciones-b-${pr.id}|">Ver la propuesta</a>
+              </p>
+              <p th:if="${d.comunes.isEmpty()}"><b>Ninguna entidad aparece en los dos rankings.</b> Elegí el destino en la
+                tabla de posiciones.</p>
 
-            <!--/* La tabla de posiciones: una fila por puesto, una columna por algoritmo. */-->
-            <details th:open="${d.comunes.isEmpty()}">
-              <summary>Tabla de posiciones</summary>
-              <table class="tabla">
-                <caption th:text="|Posiciones de cada algoritmo para ${d.dona}|">Posiciones de cada algoritmo para Arroz</caption>
-                <thead>
-                <tr>
-                  <th scope="col">Puesto</th>
-                  <th scope="col" th:each="ej : ${d.ejecuciones}" th:text="${ej.nombre}">Compatibilidad semántica</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="n : ${#numbers.sequence(1, filas)}">
-                  <th scope="row" th:text="|${n}.º|">1.º</th>
-                  <td th:each="ej, i : ${d.ejecuciones}" th:data-rotulo="${ej.nombre}"
-                      th:with="p=${ej.puestos.size() >= n ? ej.puestos[n - 1] : null}"
-                      th:attr="data-comun=${p != null and #lists.contains(d.comunes, p.k)} ? 'si' : null">
-                    <th:block th:if="${p != null}">
-                      <span><b th:text="${p.e}">Comedor Barrio Ejemplo</b>
-                        <small th:text="${p.por}">Pide arroz, 30 kg, para el almuerzo</small>
-                        <small th:if="${#lists.contains(d.comunes, p.k)}"><b>En común</b></small></span>
-                      <th:block th:if="${d.comunes.isEmpty()}"><th:block
-                          th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |b-${d.clave}-${i.index}-${p.k}|)}"></th:block></th:block>
-                    </th:block>
-                    <span th:if="${p == null}">—</span>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </details>
-          </article>
-        </li>
-      </ul>
+              <details th:open="${d.comunes.isEmpty() or abrir == d.clave}">
+                <summary>Tabla de posiciones (los rankings completos)</summary>
+                <table class="tabla">
+                  <caption th:text="|Posiciones de cada algoritmo para ${d.dona}|">Posiciones de cada algoritmo para Arroz</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Puesto</th>
+                    <th scope="col" th:each="ej : ${d.ejecuciones}" th:text="${ej.nombre}">Compatibilidad semántica</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="n : ${#numbers.sequence(1, filas)}">
+                    <th scope="row" th:text="|${n}.º|">1.º</th>
+                    <td th:each="ej, i : ${d.ejecuciones}" th:data-rotulo="${ej.nombre}"
+                        th:with="p=${ej.puestos.size() >= n ? ej.puestos[n - 1] : null}"
+                        th:attr="data-comun=${p != null and #lists.contains(d.comunes, p.k)} ? 'si' : null">
+                      <th:block th:if="${p != null}">
+                        <span><b th:text="${ent.get(p.k).e}">Comedor Barrio Ejemplo</b>
+                          <small th:text="${p.por}">Pide arroz, 25 kg</small>
+                          <small th:if="${#lists.contains(d.comunes, p.k)}"><b th:text="${!#lists.isEmpty(suya.?[k == #root.p.k])} ? 'Propuesta' : 'En común'">En común</b></small></span>
+                        <th:block th:if="${d.comunes.isEmpty()}" th:with="pp=${ {k: p.k, e: ent.get(p.k).e} }"><th:block
+                            th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${pp}, |b-${d.clave}-${i.index}-${p.k}|)}"></th:block></th:block>
+                      </th:block>
+                      <span th:if="${p == null}">—</span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </details>
+            </article>
+          </li>
+        </ul>
+      </section>
     </th:block>
   </div>
+</th:block>
 </th:block>
 </body>
 </html>

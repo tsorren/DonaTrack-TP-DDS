@@ -1,0 +1,58 @@
+/* Bloque recorte (2026-11-09, noche): un texto largo recortado a tres renglones, que se desvanece abajo,
+   con «Leer más.» para verlo entero. Sin JavaScript: «Leer más.» es un `<details class="recorte-mas">`
+   vacío, después del texto; abierto, el texto se ve entero y dice «Leer menos.». El recorte es solo
+   visual: los lectores de pantalla leen el texto completo. Donde no hay `:has()`, queda recortado. Nació
+   con la misión de la tarjeta de Entidades. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. */
+.recorte {
+  display: grid;
+  gap: var(--espacio-1);
+  justify-items: start;
+}
+
+.recorte-texto {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  mask-image: linear-gradient(to bottom, var(--color-tinta) 55%, transparent);
+}
+
+.recorte:has(> .recorte-mas[open]) > .recorte-texto {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+  mask-image: none;
+}
+
+.recorte-mas > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  list-style: none;
+}
+
+.recorte-mas > summary::-webkit-details-marker {
+  display: none;
+}
+
+.recorte-mas > summary:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.recorte-mas > summary > span + span,
+.recorte-mas[open] > summary > span:first-child {
+  display: none;
+}
+
+.recorte-mas[open] > summary > span + span {
+  display: inline;
+}

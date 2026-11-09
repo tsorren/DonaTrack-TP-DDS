@@ -36,6 +36,8 @@
 @import url("componentes/registro.css") layer(bloques);
 @import url("componentes/plegable.css") layer(bloques);
 @import url("componentes/chip.css") layer(bloques);
+@import url("componentes/necesidad.css") layer(bloques);
+@import url("componentes/recorte.css") layer(bloques);
 @import url("componentes/segmentos.css") layer(bloques);
 @import url("componentes/maestro.css") layer(bloques);
 

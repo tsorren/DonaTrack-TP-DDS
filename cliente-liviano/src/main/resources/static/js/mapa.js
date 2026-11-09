@@ -59,6 +59,50 @@
     return null;
   }
 
+  /* El mapa base con la paleta del sitio: se leen los tokens de uso (tokens.css) y se repintan las
+     capas de OpenFreeMap Positron por tipo. Así el mapa cambia junto con la paleta y no hay colores
+     escritos acá. Papel de fondo, parques en verde claro, agua en verde agua, edificios en el tono de
+     "pendiente", calles en papel claro con borde de filete y textos en tinta con halo de papel. */
+  function pintar(mapa) {
+    const tokens = getComputedStyle(contenedor);
+    const color = function (nombre) {
+      return tokens.getPropertyValue("--color-" + nombre).trim();
+    };
+    const papel = color("papel");
+    const claro = color("campo");
+    const tinta = color("tinta");
+    const suave = color("tinta-suave");
+    const reglas = [
+      [/^background$/, "background-color", papel],
+      [/^(park|landcover_wood|landuse_residential)$/, "fill-color", color("acento-claro")],
+      [/^water$/, "fill-color", color("agua")],
+      [/^waterway$/, "line-color", color("agua")],
+      [/^building$/, "fill-color", color("pendiente-fondo")],
+      [/^aeroway-area$/, "fill-color", color("pendiente-fondo")],
+      [/casing$/, "line-color", color("pendiente-fondo")],
+      [/^(highway_(minor|path)|.*_inner|.*_subtle|road_pier|aeroway-(taxiway|runway))$/, "line-color", claro],
+      [/^highway_(major|motorway)_inner$/, "line-color", color("en-camino-fondo")],
+      [/^railway/, "line-color", suave],
+      [/^boundary/, "line-color", suave],
+    ];
+    mapa.getStyle().layers.forEach(function (capa) {
+      reglas.forEach(function (regla) {
+        if (regla[0].test(capa.id) && capa.type === regla[1].split("-")[0]) {
+          mapa.setPaintProperty(capa.id, regla[1], regla[2]);
+        }
+      });
+      if (/^boundary/.test(capa.id)) {
+        mapa.setPaintProperty(capa.id, "line-opacity", 0.35);
+      }
+      if (capa.type === "symbol") {
+        const textoSuave = /^(water|waterway|highway)/.test(capa.id);
+        mapa.setPaintProperty(capa.id, "text-color", textoSuave ? suave : tinta);
+        mapa.setPaintProperty(capa.id, "text-halo-color", papel);
+        mapa.setPaintProperty(capa.id, "text-halo-width", 1.5);
+      }
+    });
+  }
+
   function armar(maplibregl) {
     const puntos = fichas.map(function (ficha) {
       return {
@@ -90,6 +134,9 @@
         "NavigationControl.ZoomOut": "Alejar",
         "Popup.Close": "Cerrar",
       },
+    });
+    mapa.on("style.load", function () {
+      pintar(mapa);
     });
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     mapa.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");

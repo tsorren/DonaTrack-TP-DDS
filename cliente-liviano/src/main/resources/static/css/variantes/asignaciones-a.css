@@ -1,6 +1,6 @@
-/* Variante A de Asignar donaciones (ronda 2026-11-09 tarde): bandeja y detalle. La cola de donaciones
-   En depósito a la izquierda y la elegida a la derecha, con las candidatas en común primero y cada
-   ejecución plegada. Solo tokens de uso. Se borra al decidir. */
+/* Variante A de Asignar donaciones (ronda 2026-11-09 tarde y noche): cuatro vistas tras el título
+   (propuestas, por donación, stock y rankings). Por donación es la bandeja: la cola a la izquierda y la
+   elegida a la derecha. Solo tokens de uso. Se borra al decidir. */
 @import url("comun/asignaciones.css");
 
 [data-variante="asignaciones-a"] [data-forma="detalle"] {
@@ -88,11 +88,25 @@
   gap: var(--espacio-2);
 }
 
-[data-variante="asignaciones-a"] [data-forma="ejecuciones"] .grilla {
-  --medida-grilla: 17rem;
-  margin-top: var(--espacio-2);
+
+[data-variante="asignaciones-a"] [data-forma="su-propuesta"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
 }
 
-[data-variante="asignaciones-a"] [data-forma="ejecuciones"] h4 {
-  font-size: var(--tamano-base);
+/* Propuestas: los grupos con aire entre sí; las sin conflictos, de a dos en pantalla ancha. */
+[data-variante="asignaciones-a"] [data-grupo] {
+  margin-top: var(--espacio-4);
+}
+
+@media (min-width: 53.75em) {
+  [data-variante="asignaciones-a"] [data-grupo="libres"] [data-lista="propuestas"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 }

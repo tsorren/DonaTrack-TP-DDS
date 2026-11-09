@@ -243,3 +243,39 @@ figure.mapa-dibujo {
     transition: var(--movimiento-transicion-atenua);
   }
 }
+
+/* Los controles, el globo y la atribución de MapLibre, con la estética del sitio: papel, tinta,
+   esquinas redondeadas y la sombra plana de los botones. Son clases de la biblioteca (maplibregl-*),
+   no del catálogo: se nombran por atributo para dejar claro que no son nuestras. */
+.mapa-real [class~="maplibregl-ctrl-group"] {
+  overflow: hidden;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+}
+
+.mapa-real [class~="maplibregl-ctrl-group"] button + button {
+  border-top: 1px solid var(--color-filete);
+}
+
+.mapa-real [class~="maplibregl-popup-content"] {
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+  color: var(--color-tinta);
+  font: inherit;
+}
+
+.mapa-real [class~="maplibregl-popup-tip"] {
+  display: none;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] {
+  border-radius: var(--radio-boton) 0 0;
+  background: var(--color-campo);
+  color: var(--color-tinta-suave);
+  font-size: 0.75rem;
+}
