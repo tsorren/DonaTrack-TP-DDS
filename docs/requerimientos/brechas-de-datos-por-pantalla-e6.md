@@ -38,7 +38,7 @@ el de los datos.
 
 | Pantalla | Endpoints | Estado | Qué falta o se deriva | HB |
 |---|---|---|---|---|
-| Entidades y necesidades (`publico-entidades`) | `/api/entidades/publicas`, `/api/necesidades/publicas`, `/api/subcategorias` | 🟡 | 🔁 categoría y **unidad**: la subcategoría trae su categoría, y la categoría su `unidad`. ❌ barrio. ❌ "qué es" (solo `rubro`, texto libre). ❌ lo recibido ("faltan 30 de 40"). ❌ período de las recurrentes. HB-18 (rama `E6_HB18_ciclo_de_vida_necesidad`) no cambió `NecesidadPublicaDTO`: solo saca las vencidas | HB-18 |
+| Entidades y necesidades (`publico-entidades`) | `/api/entidades/publicas`, `/api/necesidades/publicas`, `/api/subcategorias` | 🟡 | 🔁 categoría y **unidad**: la subcategoría trae su categoría, y la categoría su `unidad`. ❌ barrio. ❌ "qué es" (solo `rubro`, texto libre). ❌ lo recibido ("faltan 30 de 40"). ❌ período de las recurrentes. HB-18 ([PR #957](https://github.com/tsorren/DonaTrack-TP-DDS/pull/957)) no cambió `NecesidadPublicaDTO`: solo saca las vencidas | HB-18 |
 | Portada | `/api/entregas/mapa`, `/api/entidades/publicas` (cabecera `X-Total-Count`) | 🟡 | 🔁 total de entidades. ❌ destacadas con foto. ❌ contadores de donantes y donaciones. ❌ qué entidades confirmaron | HB-01, HB-02 |
 | Mapa de entregadas | `/api/entregas/mapa` | 🟡 | ✅ coordenadas exactas y fecha. 🔁 barrio con `localidad`. ❌ categoría, entidad, qué y foto. El dibujo usa posiciones `x, y`, no coordenadas | HB-01 |
 | Donaciones realizadas | `/api/entregas/mapa` | 🔴 | El DTO excluye a propósito qué, categoría, entidad y foto | HB-01 |
