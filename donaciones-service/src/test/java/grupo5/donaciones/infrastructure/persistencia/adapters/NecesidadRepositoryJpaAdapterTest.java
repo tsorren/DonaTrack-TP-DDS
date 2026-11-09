@@ -3,6 +3,7 @@ package grupo5.donaciones.infrastructure.persistencia.adapters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,6 +13,7 @@ import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.infrastructure.persistencia.mapper.NecesidadesPersistenciaMapper;
+import grupo5.donaciones.models.entities.necesidades.EstadoNecesidad;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
@@ -374,6 +376,24 @@ class NecesidadRepositoryJpaAdapterTest {
     assertEquals(NecesidadMother.FECHA_LIMITE, leida.getFechaLimite());
     assertEquals(80, leida.getCantidadAnterior());
     assertEquals(original.getFechaUltimoCambio(), leida.getFechaUltimoCambio());
+  }
+
+  @Test
+  void leer_extraordinariaConFechaLimiteNula_quedaVigenteYAdmiteAsignaciones() {
+    NecesidadExtraordinaria original =
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
+    repository.save(original);
+    // Una fila anterior a V17: la columna queda nula
+    jdbc.update(
+        "UPDATE donaciones.necesidad SET fecha_limite = NULL WHERE id = ?", original.getId());
+
+    NecesidadExtraordinaria leida =
+        (NecesidadExtraordinaria) repository.findById(original.getId()).orElseThrow();
+
+    assertNull(leida.getFechaLimite());
+    LocalDate dentroDeUnAnio = LocalDate.now().plusYears(1);
+    assertEquals(EstadoNecesidad.VIGENTE, leida.estado(0, dentroDeUnAnio));
+    assertTrue(leida.admiteAsignaciones(dentroDeUnAnio));
   }
 
   @Test

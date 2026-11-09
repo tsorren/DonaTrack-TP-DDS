@@ -435,8 +435,53 @@ class NecesidadesServiceTest {
     assertEquals(
         new NecesidadDTO.UltimoCambio(5, LocalDate.now(ZoneId.systemDefault())),
         resultado.ultimoCambio());
-    assertNotNull(necesidadesService.actualizar(necesidad.getId(), conVersion(null)));
+    NecesidadDTO sinVersion = necesidadesService.actualizar(necesidad.getId(), conVersion(null));
+    assertEquals(9, sinVersion.cantidadNecesitada());
+    assertEquals("Mantas", sinVersion.descripcion());
     verify(necesidadRepositoryMock, times(2)).save(necesidad);
+  }
+
+  @Test
+  void guardar_recurrenteConPeriodicidadYFechaFin_ignoraLaFechaFin() {
+    NecesidadDTO dto =
+        new NecesidadDTO(
+            null,
+            "RECURRENTE",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            10,
+            "Leche",
+            null,
+            null,
+            LocalDate.now(ZoneId.systemDefault()).plusYears(1),
+            null,
+            null,
+            null,
+            Periodicidad.SEMANAL,
+            null,
+            null);
+    conEntidadYSubcategoriaValidas(dto);
+
+    NecesidadDTO resultado = necesidadesService.guardar(dto);
+
+    assertEquals(LocalDate.now(ZoneId.systemDefault()).plusDays(7), resultado.fechaFin());
+  }
+
+  @Test
+  void obtenerPorId_recurrenteGuardadaConOtroLargo_devuelvePeriodicidadNula() {
+    NecesidadRecurrente anual =
+        new NecesidadRecurrente(
+            UUID.randomUUID(),
+            4,
+            "Anual",
+            java.time.Period.ofYears(1),
+            LocalDate.now(ZoneId.systemDefault()));
+    when(necesidadRepositoryMock.findById(anual.getId())).thenReturn(Optional.of(anual));
+
+    NecesidadDTO resultado = necesidadesService.obtenerPorId(anual.getId());
+
+    assertNull(resultado.periodicidad());
+    assertEquals(EstadoNecesidad.VIGENTE, resultado.estado());
   }
 
   private static NecesidadDTO conVersion(Long version) {

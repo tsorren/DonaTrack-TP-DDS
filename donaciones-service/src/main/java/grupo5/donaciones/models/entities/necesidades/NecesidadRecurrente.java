@@ -165,8 +165,8 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   /** Empieza donde terminó el anterior; el primero, el día de la publicación. */
-  public LocalDate inicioDe(PeriodoNecesidad periodo) {
-    int i = periodos.indexOf(periodo);
+  public LocalDate inicioDe(PeriodoNecesidad unPeriodo) {
+    int i = periodos.indexOf(unPeriodo);
     return i <= 0 ? getFechaInicio() : periodos.get(i - 1).fechaFin();
   }
 

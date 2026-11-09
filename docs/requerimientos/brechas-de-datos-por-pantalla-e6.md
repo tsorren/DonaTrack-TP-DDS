@@ -56,7 +56,7 @@ el de los datos.
 | Detalle de una donación | `/donaciones-independientes/{id}`, seguimiento, `/api/entregas/{id}` | 🟡 | ✅ etapas y fechas (historial propio de la donación). 🔁 fotos con `fotosRecepcion` de la entrega. 🔁 causa del problema, con la justificación del cambio. ❌ nueva salida. ❌ nombre visible. Conectada el 2026-11-07: el número y la pertenencia salen del listado del donante | HB-20 |
 | Inicio | Donaciones, seguimiento por donación, conteo de notificaciones | 🟡 | 🔁 entidades que confirmaron, con una llamada por entidad. ❌ nueva fecha de salida | HB-16 |
 | Seguimiento | Seguimiento por donación (una llamada por donación) | 🟡 | ✅ estado, paradas, patente y última actualización. ❌ posición del camión. ❌ nombre del destino | HB-05, HB-06, HB-16 |
-| Entidades | `/api/entidades?nombre&page&size`, `/api/necesidades?entidadId` | 🟡 | ✅ HB-18: filtro `estado` y `periodicidad` en la salida. ❌ lo recibido de una extraordinaria: el contrato da su `estado`, no la cantidad (en las recurrentes sale de `/periodos`) | HB-18 |
+| Entidades | `/api/entidades?nombre&page&size`, `/api/necesidades?entidadId` | 🟡 | ✅ HB-18: filtro por `estado`; la salida suma `estado` y `periodicidad`. ❌ lo recibido de una extraordinaria: el contrato da su `estado`, no la cantidad (en las recurrentes sale de `/periodos`) | HB-18 |
 | Mi perfil | `GET /api/personas`, `PUT /api/personas/{id}` | 🟡 | ✅ datos de la cuenta y medios. ❌ nombre visible. ❌ "Qué te avisamos". Sin `/me` | HB-11, HB-20 |
 
 ## 4. Entidad
