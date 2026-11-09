@@ -30,7 +30,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
-| `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada) `desde`/`hasta` (fecha de registro ISO, inclusivas) y `necesidadId` (las que cubren esa necesidad, HB-18). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
+| `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada), `desde`/`hasta` (fecha de registro ISO, inclusivas) y `necesidadId` (las que cubren esa necesidad, HB-18). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
 | `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja). **HB-18, incompatible:** una `EXTRAORDINARIA` exige `fechaLimite` futura y una `RECURRENTE` exige `periodicidad` (`SEMANAL`, `QUINCENAL`, `MENSUAL`); `fechaFin` deprecado como entrada | `NecesidadDTO` | `201`, `400`, `409` |
@@ -64,7 +64,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/subcategorias` | Alta de subcategoría (`unidad` opcional: sin ella hereda la de su categoría, HB-18) | `SubcategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/subcategorias` | Listado de subcategorías | — | `200` |
 | `GET` | `/api/subcategorias/{id}` | Consulta de subcategoría por ID | — | `200`, `404` |
-| `PUT` | `/api/subcategorias/{id}` | Actualización de subcategoría existente | `SubcategoriaInputDTO` | `200`, `400`, `404` |
+| `PUT` | `/api/subcategorias/{id}` | Actualización de subcategoría existente (sin `unidad`, vuelve a heredar la de su categoría, HB-18) | `SubcategoriaInputDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/subcategorias/{id}` | Baja de subcategoría (retorna entidad eliminada en el cuerpo) | — | `200`, `404` |
 | `POST` | `/api/subcategorias/{id}/aliases` | Agregar alias semántico a una subcategoría | `AliasSubcategoriaInputDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/subcategorias/{id}/aliases/{alias}` | Quitar alias semántico de una subcategoría | — | `200`, `404` |

@@ -36,6 +36,12 @@ public class NecesidadTestDataBuilder {
     return this;
   }
 
+  /** Obligatoria en una RECURRENTE: SEMANAL, QUINCENAL o MENSUAL (HB-18). */
+  public NecesidadTestDataBuilder conPeriodicidad(String periodicidad) {
+    this.periodicidad = periodicidad;
+    return this;
+  }
+
   public NecesidadTestDTO build() {
     return new NecesidadTestDTO(
         tipo,
