@@ -80,7 +80,7 @@ el de los datos.
 | Camiones | `/api/camiones`, `PATCH .../estado` | 🟡 | 🔁 capacidad. ❌ los deshabilitados (el listado trae solo activos). ❌ motivo y fecha del último cambio | — |
 | Donaciones | `/donaciones-independientes`, `/api/donaciones` | 🟡 | 🔁 donante y estado, uniendo las dos listas. ❌ depósito, entidad, filtro por vencimiento | — |
 | Asignar donaciones | `/api/asignaciones/...` | 🟡 | 🔁 entidad del pedido (3 llamadas) y donante. ❌ algoritmo y puntaje. ❌ motivo y fecha de la decisión (se reciben, no se guardan) | — |
-| Donantes (registrar, importar CSV) | `/api/donantes`, `/api/personas`, `/api/donantes/archivos` | 🟡 | ❌ búsqueda y fecha de alta. ✅ avance y resultado por fila del CSV (contadores en `GET /api/donantes/archivos/{id}` y `GET .../filas-con-error`, rama `E6_HB14_progreso_csv_donantes`) | HB-14 |
+| Donantes (registrar, importar CSV) | `/api/donantes`, `/api/personas`, `/api/donantes/archivos` | 🟡 | ❌ búsqueda y fecha de alta. ✅ avance y resultado por fila del CSV (contadores en `GET /api/donantes/archivos/{id}` y `GET .../filas-con-error`, PR #956) | HB-14 |
 | Inicio | Varias listas y `/api/incentivos/admin/resumen` | 🟡 | ✅ total de donantes. ❌ entidades por aprobar. 🔁 el resto de las cifras, contando listas | HB-12 |
 | Entidades (registrar y aprobar) | `/api/entidades`, `/api/personas` | 🔴 | ❌ estado pendiente, aprobar, pedir corrección y rechazar | HB-12, RF-21 |
 

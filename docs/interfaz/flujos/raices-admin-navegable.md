@@ -498,7 +498,7 @@ Los marcados "nuevo" salieron de esta ficha: se suman a
 | Pantalla | Qué falta | Hueco |
 |---|---|---|
 | `admin-entidades` | El estado "pendiente de aprobación", el endpoint para aprobar y asignar el rol en el IdP. Pedir corrección y rechazar con motivo tampoco existen | HB-12, RI-AUTH-05 (pedir corrección y rechazar se suman a HB-12) |
-| `admin-donantes-importando` e `-importado` | El avance y el resultado por fila: el backend ya los guarda y los sirve (contadores en `GET /api/donantes/archivos/{id}` y filas con error en `GET .../filas-con-error`, rama `E6_HB14_progreso_csv_donantes`); falta conectarlos | HB-14 |
+| `admin-donantes-importando` e `-importado` | El avance y el resultado por fila: el backend ya los guarda y los sirve (contadores en `GET /api/donantes/archivos/{id}` y filas con error en `GET .../filas-con-error`, PR #956); falta conectarlos | HB-14 |
 | `admin-donantes-registrado`, `-importado`, `admin-entidades-registrada` | El alta del usuario y el envío de su acceso | RF-AUTH-14, RF-AUTH-15, D12 |
 | `admin-asignaciones` | La entidad del pedido, sin buscarla aparte (la propuesta trae la necesidad sin la entidad); el nombre del algoritmo y su puntaje no se exponen | Nuevo (F3) |
 | `admin-asignaciones` | Guardar y devolver el motivo y la fecha de la decisión: el controlador recibe la justificación pero no la pasa, y la propuesta no la guarda | Nuevo (F3) |

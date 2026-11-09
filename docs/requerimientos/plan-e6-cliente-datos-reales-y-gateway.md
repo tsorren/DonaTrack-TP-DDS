@@ -52,7 +52,7 @@ Huecos de backend (§8 de los [requerimientos](requerimientos-e6.md)) y las pant
 | HB-01, HB-02 destacadas y contadores | Pendiente | Landing (RF-01) |
 | HB-05, HB-06, HB-16 camión y entregas activas | Pendiente | Seguir entregas del donante y de la entidad (RF-09, RF-14) |
 | HB-10 fotos multipart | Pendiente | Confirmar recepción (RF-12) |
-| HB-14 progreso del CSV | En la rama `E6_HB14_progreso_csv_donantes` | Importar CSV (RF-20) |
+| HB-14 progreso del CSV | En el PR #956 | Importar CSV (RF-20) |
 | HB-11, HB-12, HB-13 | Esperan la autenticación | Mi perfil, Aprobar entidades, autorización |
 | HB-17 a HB-20 | Pendientes, con ADRs `proposed` | Remito y problemas, necesidades, nombre visible |
 | HB-21 | Por decidir, sin ADR propio (DTI-33) | Contacto |
