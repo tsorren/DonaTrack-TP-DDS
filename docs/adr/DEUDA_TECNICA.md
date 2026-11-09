@@ -488,7 +488,7 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 | ADR | [20261102-baja-de-una-necesidad-con-entregas-en-curso](./20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |
 | ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) · cómo se implementa: [20261109-cancelacion-de-entregas-que-no-salieron](./20261109-cancelacion-de-entregas-que-no-salieron.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] partial` — HB-19 (rama `E6_HB19_cancelar_entregas_baja_necesidad`) implementa los ítems 1 a 5. Queda pendiente lo de abajo |
+| Implementation status | `[OBSERVED] partial` — HB-19 ([PR #958](https://github.com/tsorren/DonaTrack-TP-DDS/pull/958)) implementa los ítems 1 a 5. Queda pendiente lo de abajo |
 | Target | `donaciones-service` (baja, broker, procesador de eventos de vuelta) · `logistica-service` (`Entrega.cancelar`, listener del comando, salida de la ruta) · `schemas/` (comando `entrega.cancelada.<proveedorId>.v1` y evento `entrega.cancelada`) |
 | Cuándo se saldará | Antes de habilitar la baja de necesidades en el cliente con datos reales |
 
