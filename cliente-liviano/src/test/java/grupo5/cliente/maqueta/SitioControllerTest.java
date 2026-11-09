@@ -42,6 +42,7 @@ import org.springframework.test.web.servlet.MvcResult;
   RankingController.class,
   MisDonacionesController.class,
   NotificacionesDonanteController.class,
+  NotificacionesEntidadController.class,
   RecibidasController.class
 })
 @Import({
@@ -51,7 +52,8 @@ import org.springframework.test.web.servlet.MvcResult;
   RecibidasMaqueta.class,
   CuentaMaqueta.class,
   SitioControllerTest.PaginasDeError.class,
-  NotificacionesDonanteMaqueta.class
+  NotificacionesDonanteMaqueta.class,
+  NotificacionesEntidadMaqueta.class
 })
 @ActiveProfiles("maqueta")
 class SitioControllerTest {
