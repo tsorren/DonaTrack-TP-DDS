@@ -54,7 +54,8 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
 | `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |
 | `POST` | `/api/donantes/archivos` | Carga asíncrona del padrón CSV de donantes: `multipart/form-data` con la parte `archivo`, guardado en MinIO | `multipart: archivo` | `202`, `400`, `413`, `415` |
-| `GET` | `/api/donantes/archivos/{id}` | Consulta de estado de procesamiento de archivo | — | `200`, `404` |
+| `GET` | `/api/donantes/archivos/{id}` | Consulta de estado y progreso del procesamiento: `totalFilas`, `procesadas`, `creadas`, `actualizadas` y `conError` (HB-14, aditivo) | — | `200`, `404` |
+| `GET` | `/api/donantes/archivos/{id}/filas-con-error` | Filas del padrón que no se importaron (línea, motivo y código, sin datos de la persona), ordenadas por línea; paginado con `page` y `size` y el total en `X-Total-Count` (HB-14) | — | `200`, `400`, `404` |
 | `POST` | `/api/categorias` | Alta de categoría de donación | `CategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/categorias` | Listado de categorías de donación | — | `200` |
 | `GET` | `/api/categorias/{id}` | Consulta de categoría por ID | — | `200`, `404` |

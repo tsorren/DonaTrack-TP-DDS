@@ -63,7 +63,7 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 - Admin · admin-inicio · donaciones que vencen en los próximos días · GET /donaciones-independientes no filtra por vencimiento.
 - Admin · admin-donantes · buscar por nombre o documento y paginar · GET /api/donantes lista todos y solo filtra por canal (como HB-15 en entidades). Sumado en F2 del roadmap de vistas.
 - Admin · admin-donantes-registrar · no duplicar a una persona ya registrada · POST /api/personas no busca por documento (solo la importación lo hace). Sumado en F2.
-- Admin · admin-donantes-importando e -importado · el avance y el resultado por fila · el backend guarda solo el estado del archivo (HB-14).
+- Admin · admin-donantes-importando e -importado · el avance y el resultado por fila · el backend ya los sirve en la rama `E6_HB14_progreso_csv_donantes` (HB-14); falta conectarlos.
 - Admin · admin-entidades · pedir corrección y rechazar con motivo, y el estado pendiente de aprobación · no existen (HB-12, RI-AUTH-05).
 - Admin · admin-donaciones · una sola lista con estado, donante, depósito y vencimiento · el estado viene de GET /donaciones-independientes (solo trae donacionOriginalId) y el resto de GET /api/donaciones, con otro estado (EstadoDonacion); hoy hay que unirlas por donacionOriginalId. Sumado en F3.
 - Admin · admin-donaciones?vence=pronto · filtrar por fecha de vencimiento · no existe el filtro. Sumado en F3.

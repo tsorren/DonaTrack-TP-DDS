@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.0.0
+  version: 1.4.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -610,6 +610,54 @@ paths:
                 $ref: '#/components/schemas/ArchivoDonantesResponse'
         '404':
           description: Archivo no encontrado
+  /api/donantes/archivos/{id}/filas-con-error:
+    get:
+      summary: Listar las filas del padrón que no se importaron
+      description: >
+        Resultado por fila del padrón (HB-14): solo las filas con error, ordenadas por línea del
+        CSV (el encabezado es la línea 1). Sin datos de la persona: línea, motivo y código. El
+        total va en el header `X-Total-Count` y coincide con `conError` del archivo, salvo que el
+        archivo haya terminado en ERROR porque no se pudieron guardar sus filas. Mientras el
+        archivo se procesa, la lista crece por tandas de 500 filas.
+      operationId: listarFilasConErrorDelArchivo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: page
+          in: query
+          required: false
+          description: Número de página, desde 0. Por defecto 0.
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          description: Tamaño de página. Por defecto 20.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Tramo de las filas con error
+          headers:
+            X-Total-Count:
+              description: Cantidad total de filas con error del archivo.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FilaConErrorResponse'
+        '400':
+          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
+        '404':
+          description: Archivo no encontrado
   /api/categorias:
     get:
       summary: Listar categorías de donación
@@ -982,7 +1030,7 @@ components:
           format: date-time
     ArchivoDonantesResponse:
       type: object
-      required: [id, path, estado]
+      required: [id, path, estado, procesadas, creadas, actualizadas, conError]
       properties:
         id: { type: string, format: uuid }
         path:
@@ -991,6 +1039,40 @@ components:
         estado:
           type: string
           enum: [PENDIENTE, PROCESANDO, PROCESADO, PROCESADO_CON_ERRORES, ERROR]
+        totalFilas:
+          type: integer
+          nullable: true
+          description: >
+            Filas del padrón sin el encabezado ni las líneas en blanco (HB-14). Null hasta que
+            el servicio lee el padrón.
+        procesadas:
+          type: integer
+          description: Filas ya resueltas; es creadas + actualizadas + conError (HB-14)
+        creadas:
+          type: integer
+          description: Filas que dieron de alta una persona y su donante (HB-14)
+        actualizadas:
+          type: integer
+          description: Filas que actualizaron una persona existente (HB-14)
+        conError:
+          type: integer
+          description: >
+            Filas que no se importaron, también las mal formadas (HB-14). El detalle está en
+            GET /api/donantes/archivos/{id}/filas-con-error
+    FilaConErrorResponse:
+      type: object
+      required: [linea, motivo]
+      properties:
+        linea:
+          type: integer
+          description: Línea del CSV, contando el encabezado como línea 1
+        motivo:
+          type: string
+          enum: [FORMATO_INVALIDO, DATOS_INVALIDOS, DONANTE_DADO_DE_BAJA, PERSONA_DUPLICADA_EN_CONFLICTO, ERROR_INESPERADO]
+        codigo:
+          type: string
+          nullable: true
+          description: Código del catálogo de errores (por ejemplo ERR-EST-113), si la causa lo trae
     # Personas (DTI-27, ítem 3): PersonaInputDTO y PersonaOutputDTO son polimórficos por "tipo"
     # (HumanaInputDTO/JuridicaInputDTO y sus Output). Los campos opcionales de salida admiten null.
     PersonaInputDTO:
