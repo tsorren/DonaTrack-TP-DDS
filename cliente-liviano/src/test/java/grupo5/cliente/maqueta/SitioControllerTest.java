@@ -12,10 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import grupo5.cliente.web.MisDonacionesController;
-import grupo5.cliente.web.RankingController;
-import grupo5.cliente.web.RecibidasController;
-import grupo5.cliente.web.TraceIdFiltro;
+import grupo5.cliente.web.*;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
 import java.util.ArrayDeque;
@@ -44,6 +41,7 @@ import org.springframework.test.web.servlet.MvcResult;
   SitioController.class,
   RankingController.class,
   MisDonacionesController.class,
+  NotificacionesDonanteController.class,
   RecibidasController.class
 })
 @Import({
@@ -52,7 +50,8 @@ import org.springframework.test.web.servlet.MvcResult;
   DonacionesMaqueta.class,
   RecibidasMaqueta.class,
   CuentaMaqueta.class,
-  SitioControllerTest.PaginasDeError.class
+  SitioControllerTest.PaginasDeError.class,
+  NotificacionesDonanteMaqueta.class
 })
 @ActiveProfiles("maqueta")
 class SitioControllerTest {

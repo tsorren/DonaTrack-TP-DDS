@@ -22,7 +22,9 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="sinLeerAhora=${leidas ? 0 : sinLeer}, conDatos=${escenario == ''}">
+          th:with="sinLeerAhora=${leidas ? 0 : notificaciones.cantidadSinLeer()},
+             vacia=${escenario == 'vacio' or (escenario == '' and notificaciones.vacia())},
+             conDatos=${escenario == '' and !vacia}">
   <div class="notificaciones">
     <header class="notificaciones-cabecera">
       <div>
@@ -32,7 +34,7 @@
       <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
          th:text="'Listo: marcaste todas como leídas.'">Listo: marcaste todas como leídas.</p>
       <p th:if="${conDatos}" class="bajada"
-         th:text="${leidas} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.|">4
+         th:text="${leidas or sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.|">4
         sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.</p>
       <form th:if="${conDatos and sinLeerAhora > 0}" class="marcar"
             action="/donante-notificaciones-leidas"
@@ -41,7 +43,7 @@
       </form>
     </header>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
       <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la
         entidad confirme la entrega.</p>
@@ -66,21 +68,36 @@
                aria-labelledby="sin-leer-titulo">
         <h2 id="sin-leer-titulo" th:text="|Sin leer (${sinLeerAhora})|">Sin leer (4)</h2>
         <ol class="noticias" role="list">
-          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < sinLeerAhora}">
-            <li th:replace="~{datos-donante :: aviso(${a}, true)}"></li>
+          <th:block th:each="n : ${notificaciones.sinLeer}">
+            <li th:replace="~{donante-notificaciones :: noticia(${n}, true)}"></li>
           </th:block>
         </ol>
       </section>
-      <section class="grupo-avisos" aria-labelledby="leidas-titulo">
-        <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(avisos) - sinLeerAhora})|">Leídas (13)</h2>
+      <section th:unless="${#lists.isEmpty(notificaciones.leidas)}" class="grupo-avisos" aria-labelledby="leidas-titulo">
+        <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(notificaciones.leidas)})|">Leídas (13)</h2>
         <ol class="noticias" data-forma="libro" role="list">
-          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index >= sinLeerAhora}">
-            <li th:replace="~{datos-donante :: aviso(${a}, false)}"></li>
+          <th:block th:each="n : ${notificaciones.leidas}">
+            <li th:replace="~{donante-notificaciones :: noticia(${n}, false)}"></li>
           </th:block>
         </ol>
       </section>
     </div>
   </div>
 </th:block>
+
+<li th:fragment="noticia(n, sinLeer)" class="noticia" th:classappend="${sinLeer} ? 'noticia--sin-leer'">
+  <span class="noticia-marca" th:text="${sinLeer} ? 'Sin leer' : 'Leída'">Sin leer</span>
+  <span th:if="${n.estado != null}" class="estado noticia-estado" th:data-estado="${n.estado.tono}">
+    <th:block th:replace="~{componentes/sello :: sello(${n.estado.tono})}"></th:block>
+    <span th:text="${n.estado.texto}">En camino</span>
+  </span>
+  <a th:if="${n.claveDonacion != null}" class="noticia-texto" href="/donante-donaciones-detalle"
+     th:href="@{/donante-donaciones-detalle(donacion=${n.claveDonacion})}"
+     th:text="${n.texto}">El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</a>
+  <span th:if="${n.claveDonacion == null}" class="noticia-texto" th:text="${n.texto}">El camión
+    salió a entregar tus lentejas a Comedor Barrio Ejemplo.</span>
+  <time class="noticia-cuando" th:datetime="${n.fecha}" th:text="${n.cuando}">Hoy, 14:30</time>
+  <span th:if="${n.donacion != null}" class="noticia-donacion" th:text="${n.donacion}">Lentejas secas, 15 kg</span>
+</li>
 </body>
 </html>

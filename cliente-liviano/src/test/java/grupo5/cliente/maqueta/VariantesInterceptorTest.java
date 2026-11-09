@@ -24,7 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
   RankingMaqueta.class,
   DonacionesMaqueta.class,
   RecibidasMaqueta.class,
-  CuentaMaqueta.class
+  CuentaMaqueta.class,
+  NotificacionesDonanteMaqueta.class
 })
 @ActiveProfiles("maqueta")
 class VariantesInterceptorTest {

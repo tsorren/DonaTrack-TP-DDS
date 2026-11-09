@@ -21,7 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(
     properties = {
       "cliente.api.incentivos.url=http://localhost:1",
-      "cliente.api.donaciones.url=http://localhost:1"
+      "cliente.api.donaciones.url=http://localhost:1",
+      "cliente.api.notificaciones.url=http://localhost:1"
     })
 @AutoConfigureMockMvc
 class SitioConApisTest {
@@ -60,5 +61,10 @@ class SitioConApisTest {
     mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/publico-ingresar"));
     mvc.perform(get("/entidad-recibidas?entidad=00000000-0000-0000-0000-000000000003"))
         .andExpect(status().isBadGateway());
+  }
+
+  @Test
+  void notificacionesSinDonanteMandaAIngresar() throws Exception {
+    mvc.perform(get("/donante-notificaciones")).andExpect(redirectedUrl("/publico-ingresar"));
   }
 }
