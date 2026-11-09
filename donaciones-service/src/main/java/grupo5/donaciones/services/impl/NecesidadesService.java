@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NecesidadesService implements INecesidadesService {
@@ -37,18 +38,21 @@ public class NecesidadesService implements INecesidadesService {
   private final ISubcategoriasRepository subcategoriaRepository;
   private final ICategoriasRepository categoriasRepository;
   private final AcumuladosDeAsignacion acumulados;
+  private final CancelacionDeEntregas cancelacionDeEntregas;
 
   public NecesidadesService(
       INecesidadesRepository necesidadRepository,
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
       ISubcategoriasRepository subcategoriaRepository,
       ICategoriasRepository categoriasRepository,
-      AcumuladosDeAsignacion acumulados) {
+      AcumuladosDeAsignacion acumulados,
+      CancelacionDeEntregas cancelacionDeEntregas) {
     this.necesidadRepository = necesidadRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.subcategoriaRepository = subcategoriaRepository;
     this.categoriasRepository = categoriasRepository;
     this.acumulados = acumulados;
+    this.cancelacionDeEntregas = cancelacionDeEntregas;
   }
 
   private NecesidadDTO toDTO(Necesidad necesidad) {
@@ -212,10 +216,12 @@ public class NecesidadesService implements INecesidadesService {
   }
 
   @Override
+  @Transactional
   public void eliminar(UUID id) {
     Necesidad necesidad = buscar(id);
     necesidad.desactivar();
     necesidadRepository.save(necesidad);
+    cancelacionDeEntregas.cancelarLasQueNoSalieron(id);
   }
 
   private Necesidad buscar(UUID id) {

@@ -13,4 +13,30 @@ public record DonacionIndependienteResponseDTO(
     List<CambioEstadoDIResponseDTO> historial,
     List<ItemDonacionIndependienteResponseDTO> items,
     int cantidad,
-    UUID entidadBeneficiariaId) {}
+    UUID entidadBeneficiariaId,
+    boolean cancelacionPedida) {
+
+  /** Sin la marca de HB-19 (la necesidad no se dio de baja). */
+  public DonacionIndependienteResponseDTO(
+      UUID id,
+      UUID donacionOriginalId,
+      String descripcion,
+      String estadoActual,
+      LocalDateTime fechaRegistro,
+      List<CambioEstadoDIResponseDTO> historial,
+      List<ItemDonacionIndependienteResponseDTO> items,
+      int cantidad,
+      UUID entidadBeneficiariaId) {
+    this(
+        id,
+        donacionOriginalId,
+        descripcion,
+        estadoActual,
+        fechaRegistro,
+        historial,
+        items,
+        cantidad,
+        entidadBeneficiariaId,
+        false);
+  }
+}

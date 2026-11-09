@@ -31,7 +31,8 @@
         "EN_TRASLADO",
         "ENTREGADA",
         "NO_RECIBIDA",
-        "REVISION"
+        "REVISION",
+        "CANCELADA"
       ]
     },
     "horaSalida": {

@@ -12,6 +12,12 @@ public interface IDonacionesIndependientesRepository extends CrudRepository<Dona
   List<DonacionIndependiente> findEnDeposito();
 
   /**
+   * Las donaciones asignadas a la necesidad que todavía no salieron ({@code ASIGNACION_REALIZADA} o
+   * {@code LISTA_PARA_ENTREGAR}): las que se cancelan al darla de baja (HB-19).
+   */
+  List<DonacionIndependiente> findCancelablesPorNecesidad(UUID necesidadId);
+
+  /**
    * Cantidad asignada a una necesidad: la suma de las donaciones con ese destino. {@code periodoId}
    * es el período en las recurrentes y {@code null} en las extraordinarias (DTI-06).
    */

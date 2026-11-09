@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.5.0
+  version: 1.6.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -131,7 +131,11 @@ paths:
         '400':
           description: Transición inválida para el estado actual
         '409':
-          description: Otra operación guardó la donación después de que se leyó (DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista); releer y reintentar
+          description: >-
+            Otra operación guardó la donación después de que se leyó
+            (DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista; releer y
+            reintentar), o la asignación (estado ASIGNACION_REALIZADA con necesidadId) apunta a una
+            necesidad que ya no admite asignaciones (NECESIDAD_INACTIVA, ERR-EST-521, HB-19)
   /api/donaciones:
     post:
       summary: Registrar donación (donación general con ítems)
@@ -346,6 +350,13 @@ paths:
           description: Otra operación guardó la necesidad después de que se leyó (NECESIDAD_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista); releer y reintentar
     delete:
       summary: Baja de necesidad
+      description: >-
+        Baja lógica. Además (HB-19, ADR 20261109-cancelacion-de-entregas-que-no-salieron), las
+        donaciones asignadas a la necesidad que todavía no salieron (ASIGNACION_REALIZADA o
+        LISTA_PARA_ENTREGAR) se cancelan: quedan con cancelacionPedida = true hasta que el proveedor
+        de logística confirma, y entonces vuelven a EN_DEPOSITO sin destino. Si ningún proveedor tiene
+        la entrega, vuelven en el acto. Las que ya salieron (EN_TRASLADO) llegan igual. Repetir la
+        baja vuelve a pedir las cancelaciones pendientes.
       operationId: eliminarNecesidad
       parameters:
         - name: id
@@ -1387,6 +1398,12 @@ components:
           format: uuid
           nullable: true
           description: Entidad a la que se asignó la donación; null mientras no tiene destino
+        cancelacionPedida:
+          type: boolean
+          description: >-
+            HB-19: su necesidad se dio de baja y se espera que el proveedor de logística confirme la
+            cancelación de la entrega; mientras tanto la donación sigue asignada ("vuelve al
+            depósito"). Se limpia al volver al depósito o si la entrega sale antes.
     DonacionInputDTO:
       type: object
       required:

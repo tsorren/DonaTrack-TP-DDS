@@ -2,6 +2,7 @@ package grupo5.donaciones.infrastructure.logistica;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -167,5 +168,14 @@ class ProveedorLogisticaHttpTest {
         .andRespond(withException(new SocketTimeoutException("Read timed out")));
 
     assertThrows(EnvioInciertoException.class, () -> proveedor.enviar(ENVIO_ID, DATOS, TRACE_ID));
+  }
+
+  @Test
+  void noCancelaEntregas_HB19() {
+    assertFalse(proveedor.admiteCancelacion());
+    UUID donacionId = UUID.randomUUID();
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> proveedor.cancelar(UUID.randomUUID(), donacionId, "t"));
   }
 }

@@ -46,6 +46,10 @@ public class DonacionIndependienteEntity {
   @Column(name = "id_beneficiario_asignado")
   private UUID entidadBeneficiariaId;
 
+  // HB-19: espera la confirmación de la cancelación de su entrega
+  @Column(name = "cancelacion_pedida", nullable = false)
+  private boolean cancelacionPedida;
+
   // A2: sube en cada guardado (lo fuerza el adapter, porque agregar o quitar ítems no la cambia)
   @Version
   @Column(name = "version", nullable = false)

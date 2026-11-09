@@ -335,6 +335,7 @@ package DONACIONES_INDEPENDIENTES {
   class AsignacionRealizada <<entity>> {
     --
     + planificarRuta(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + liberarPorCancelacion(donacion: DonacionIndependiente, actor: String): void
   }
 
   class EnTraslado <<entity>> {
@@ -346,6 +347,7 @@ package DONACIONES_INDEPENDIENTES {
   class ListaParaEntregar <<entity>> {
     --
     + iniciarRecorrido(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + liberarPorCancelacion(donacion: DonacionIndependiente, actor: String): void
   }
 
   class Entregada <<entity>> {
@@ -401,6 +403,7 @@ package DONACIONES_INDEPENDIENTES {
     - necesidadId: UUID
     - periodoId: UUID
     - entidadBeneficiariaId: UUID
+    - cancelacionPedida: boolean
     - eventos: List<EventoDonacionIndependiente>
     --
     + DonacionIndependiente(donacionOriginalId: UUID, items: List<ItemDonacionIndependiente>)
@@ -408,6 +411,9 @@ package DONACIONES_INDEPENDIENTES {
     + cambiarEstado(solicitud: SolicitudCambioEstadoDonacionIndependiente): void
     + asignar(actor: String, destino: DestinoAsignacion): void
     + asignarDestino(destino: DestinoAsignacion): void
+    + esCancelable(): boolean
+    + pedirCancelacion(): void
+    + liberarPorCancelacion(actor: String): void
     + getCantidad(): int
     + fragmentarse(cantidadNecesitada: int): DonacionIndependiente
     + tieneSubcategoria(subcategoria: SubCategoria): boolean

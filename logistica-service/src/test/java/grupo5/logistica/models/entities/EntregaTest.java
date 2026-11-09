@@ -7,6 +7,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
@@ -14,6 +15,7 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -452,5 +454,32 @@ class EntregaTest {
             EstadoEntrega.EN_TRASLADO, EstadoEntrega.ENTREGADA, timestamp, "Receptor Pedro"));
 
     assertEquals(1, entrega.getHistorialEstado().size());
+  }
+
+  @Test
+  void cancelarDesdePendienteQuedaCanceladaSinRutaYEmiteEvento() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(UUID.randomUUID());
+
+    entrega.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.CANCELADA, entrega.getEstadoActual());
+    assertNull(entrega.getIdRuta());
+    assertEquals(EstadoEntrega.CANCELADA, entrega.getHistorialEstado().getLast().estadoNuevo());
+    assertInstanceOf(EntregaCancelada.class, entrega.getDomainEvents().getFirst());
+  }
+
+  @Test
+  void cancelarFueraDePendienteLanzaExcepcionYEsFinal() {
+    Entrega enTraslado = EntregaMother.pendiente();
+    enTraslado.iniciarRuta("Chofer");
+    assertThrows(
+        ValidationException.class, () -> enTraslado.cancelar("broker-donaciones", "motivo"));
+
+    Entrega cancelada = EntregaMother.pendiente();
+    cancelada.cancelar("broker-donaciones", "motivo");
+    assertThrows(
+        ValidationException.class, () -> cancelada.cancelar("broker-donaciones", "motivo"));
+    assertThrows(ValidationException.class, () -> cancelada.asignarRuta(UUID.randomUUID()));
   }
 }

@@ -291,7 +291,8 @@ class RepositoriosMongoAdaptersTest {
   @Test
   void entregasMongoAdapter_existsByIdDonacion_consultaPorLaDonacion() {
     UUID idDonacion = UUID.randomUUID();
-    when(entregaRepo.existsByIdDonacion(idDonacion)).thenReturn(true);
+    when(entregaRepo.existsByIdDonacionAndEstadoNot(idDonacion, EstadoEntrega.CANCELADA))
+        .thenReturn(true);
 
     assertTrue(entregas.existsByIdDonacion(idDonacion));
   }
@@ -301,7 +302,8 @@ class RepositoriosMongoAdaptersTest {
     Entrega entrega = EntregaMother.pendiente();
     UUID idDonacion = entrega.getIdDonacion();
     EntregaDocument doc = entregaMapper.toDocument(entrega);
-    when(entregaRepo.findByIdDonacion(idDonacion)).thenReturn(Optional.of(doc));
+    when(entregaRepo.findFirstByIdDonacionAndEstadoNot(idDonacion, EstadoEntrega.CANCELADA))
+        .thenReturn(Optional.of(doc));
 
     assertEquals(entrega.getId(), entregas.findByIdDonacion(idDonacion).orElseThrow().getId());
   }

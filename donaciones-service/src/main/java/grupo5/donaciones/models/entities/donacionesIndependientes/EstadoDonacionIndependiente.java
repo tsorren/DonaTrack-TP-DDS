@@ -59,6 +59,11 @@ public interface EstadoDonacionIndependiente {
         solicitud != null ? solicitud.getActor() : "SISTEMA");
   }
 
+  /** HB-19: solo desde lo que todavía no salió (asignada, con o sin ruta planificada). */
+  default void liberarPorCancelacion(DonacionIndependiente d, String actor) {
+    lanzarTransicionInvalida();
+  }
+
   default void retornar(DonacionIndependiente d, String actor) {
     lanzarTransicionInvalida();
   }

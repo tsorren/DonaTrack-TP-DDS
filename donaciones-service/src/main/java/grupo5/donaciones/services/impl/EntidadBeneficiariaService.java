@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
@@ -32,17 +33,20 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   private final IPersonasRepository personasRepository;
   private final INecesidadesRepository necesidadesRepository;
   private final EntidadBeneficiariaMapper mapper;
+  private final CancelacionDeEntregas cancelacionDeEntregas;
 
   public EntidadBeneficiariaService(
       IEntidadesBeneficiariasRepository repository,
       IPersonasRepository personasRepository,
       INecesidadesRepository necesidadesRepository,
-      EntidadBeneficiariaMapper mapper) {
+      EntidadBeneficiariaMapper mapper,
+      CancelacionDeEntregas cancelacionDeEntregas) {
 
     this.repository = repository;
     this.personasRepository = personasRepository;
     this.necesidadesRepository = necesidadesRepository;
     this.mapper = mapper;
+    this.cancelacionDeEntregas = cancelacionDeEntregas;
   }
 
   @Override
@@ -170,6 +174,7 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   @Override
+  @Transactional
   public void eliminarEntidad(UUID id) {
     EntidadBeneficiaria entidad =
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
@@ -182,6 +187,7 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   @Override
+  @Transactional
   public void darDeBajaSiExiste(UUID juridicaId) {
     repository.findById(juridicaId).ifPresent(this::darDeBaja);
   }
@@ -195,6 +201,7 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
               necesidad -> {
                 necesidad.desactivar();
                 necesidadesRepository.save(necesidad);
+                cancelacionDeEntregas.cancelarLasQueNoSalieron(necesidad.getId());
               });
     }
   }

@@ -22,7 +22,7 @@
     },
     "justificacion": {
       "type": "string",
-      "description": "Motivo obligatorio cuando el estado es NO_RECIBIDA o CANCELADA"
+      "description": "Motivo obligatorio cuando el estado es NO_RECIBIDA. CANCELADA no entra por este pedido: llega solo por el comando del broker (HB-19)"
     },
     "replanificable": {
       "type": "boolean",

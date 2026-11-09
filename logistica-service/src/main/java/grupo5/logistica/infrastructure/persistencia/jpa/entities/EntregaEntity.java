@@ -47,7 +47,7 @@ public class EntregaEntity {
   @JoinColumn(name = "id_direccion", nullable = false)
   private DireccionEntity direccion;
 
-  @Column(name = "id_donacion", nullable = false, unique = true)
+  @Column(name = "id_donacion", nullable = false)
   private UUID idDonacion;
 
   @Column(name = "id_beneficiario", nullable = false)

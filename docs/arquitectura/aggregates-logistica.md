@@ -54,6 +54,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Responsabilidad**: Planificar y rastrear la ruta operativa de reparto para un vehículo y conductor específicos. Garantiza que la ruta no se pueda iniciar si no tiene entregas asignadas y emite eventos de dominio (`EventoRutaAsignada`, `EventoRutaIniciada`).
 *   **Métodos de Negocio**:
     *   `agregarEntrega(UUID entregaId)` (valida no duplicados y estado PENDIENTE).
+    *   `quitarEntrega(UUID entregaId)` (HB-19: solo en PENDIENTE; las demás paradas conservan su orden; una ruta vacía no se puede iniciar).
     *   `iniciarRuta()` (valida existencia de entregas).
     *   `completarRuta()`
 *   **Paquete**: `grupo5.logistica.models.entities.rutas`
@@ -69,8 +70,8 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `idRuta` (UUID nulable de la ruta asignada).
     *   `idDonacion` (UUID de la donación independiente correspondiente en `donaciones-service`).
     *   `idBeneficiaria` (UUID de la entidad beneficiaria destinataria).
-*   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *ENTREGADA*, *NO_RECIBIDA*, *REVISION* (Enum `EstadoEntrega`).
-*   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado y emitiendo eventos (`EntregaConfirmada`, `EntregaFallida`).
+*   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *ENTREGADA*, *NO_RECIBIDA*, *REVISION*, *CANCELADA* (Enum `EstadoEntrega`). *CANCELADA* (HB-19) es final: una donación tiene a lo sumo una entrega **activa** (no cancelada); las canceladas quedan como historia.
+*   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado y emitiendo eventos (`EntregaConfirmada`, `EntregaFallida`, `EntregaCancelada`).
 *   **Métodos de Negocio**:
     *   `asignarRuta(UUID idRuta)`
     *   `iniciarRuta(String chofer)`
@@ -78,4 +79,5 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `adjuntarFotoRecepcion(String fotoURL)`
     *   `negarEntrega(String entidad, String justificacion, boolean replanificable)`
     *   `regresarAlDeposito(String administrador)`
+    *   `cancelar(String actor, String motivo)` (HB-19: solo desde PENDIENTE; deja `idRuta` en nulo y emite `EntregaCancelada`; quien llama saca la parada de la `Ruta`)
 *   **Paquete**: `grupo5.logistica.models.entities.entregas`

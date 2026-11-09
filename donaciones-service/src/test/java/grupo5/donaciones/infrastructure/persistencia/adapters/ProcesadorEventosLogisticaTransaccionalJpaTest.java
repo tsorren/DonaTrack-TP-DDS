@@ -35,6 +35,7 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -98,6 +99,7 @@ class ProcesadorEventosLogisticaTransaccionalJpaTest {
 
   // Aplica el cambio de estado sobre la base real, como lo hace el servicio de verdad
   @MockitoBean private IDonacionesIndependientesService servicio;
+  @MockitoBean private ILogisticaBroker broker;
   @MockitoSpyBean private EventosConsumidosRepositoryJpaAdapter eventosConsumidos;
 
   private UUID donacionId;

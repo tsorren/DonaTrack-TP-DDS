@@ -3,6 +3,7 @@ package grupo5.logistica.models.entities.entregas;
 import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
@@ -243,6 +244,22 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.horaArribo = null;
     this.horaSalida = null;
     this.idRuta = null;
+  }
+
+  /**
+   * Cancela una entrega que todavía no salió (HB-19): solo desde {@code PENDIENTE}, con o sin ruta
+   * sin iniciar. Deja la ruta: quien llama la saca de la {@code Ruta}. {@code CANCELADA} es final.
+   */
+  public void cancelar(String actor, String motivo) {
+    validarActor(actor);
+
+    if (this.estadoActual != EstadoEntrega.PENDIENTE) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+    }
+
+    actualizarEstado(EstadoEntrega.CANCELADA, actor);
+    this.idRuta = null;
+    registrarEvento(new EntregaCancelada(this.id, this.idDonacion, motivo));
   }
 
   public List<CambioEstadoEntrega> getHistorialEstado() {

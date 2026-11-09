@@ -81,7 +81,7 @@ public class EntregasRepositoryMongoAdapter
     if (idDonacion == null) {
       return false;
     }
-    return springDataRepo.existsByIdDonacion(idDonacion);
+    return springDataRepo.existsByIdDonacionAndEstadoNot(idDonacion, EstadoEntrega.CANCELADA);
   }
 
   @Override
@@ -89,7 +89,16 @@ public class EntregasRepositoryMongoAdapter
     if (idDonacion == null) {
       return Optional.empty();
     }
-    return springDataRepo.findByIdDonacion(idDonacion).map(toDomain);
+    return springDataRepo
+        .findFirstByIdDonacionAndEstadoNot(idDonacion, EstadoEntrega.CANCELADA)
+        .map(toDomain);
+  }
+
+  @Override
+  public List<Entrega> findCanceladasByIdDonacion(UUID idDonacion) {
+    return springDataRepo.findByIdDonacionAndEstado(idDonacion, EstadoEntrega.CANCELADA).stream()
+        .map(toDomain)
+        .toList();
   }
 
   @Override

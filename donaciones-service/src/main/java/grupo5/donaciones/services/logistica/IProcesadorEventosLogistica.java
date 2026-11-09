@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.logistica;
 
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -20,4 +21,7 @@ public interface IProcesadorEventosLogistica {
   void procesarEntregaExitosa(EventoEntregaExitosa evento, String origen);
 
   void procesarEntregaFallida(EventoEntregaFallida evento, String origen);
+
+  /** HB-19: el proveedor canceló la entrega; la donación vuelve al depósito sin destino. */
+  void procesarEntregaCancelada(EventoEntregaCancelada evento, String origen);
 }

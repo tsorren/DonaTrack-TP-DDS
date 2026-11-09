@@ -12,6 +12,8 @@ import grupo5.donaciones.services.logistica.IProveedorLogistica;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -54,7 +56,28 @@ public class LogisticaOutboxRelay {
     String traceIdPrevio = MDC.get(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
     MDC.put(FeignTraceRequestInterceptor.MDC_TRACE_KEY, entrada.getTraceId());
     try {
-      broker.registrarResultado(entrada.getId(), enviar(entrada));
+      if (entrada.esCancelacion()) {
+        // HB-19: el broker dice a quién (con la solicitud ya ENVIADA) o que todavía no
+        Optional<String> destino = broker.destinoDeCancelacion(entrada.getId());
+        if (destino.isPresent()) {
+          broker.registrarResultado(
+              entrada.getId(),
+              ejecutar(
+                  destino.get(),
+                  proveedor ->
+                      proveedor.cancelar(
+                          entrada.getId(),
+                          entrada.getDatos().donacionIndependienteId(),
+                          entrada.getTraceId())));
+        }
+      } else {
+        broker.registrarResultado(
+            entrada.getId(),
+            ejecutar(
+                entrada.getProveedorId(),
+                proveedor ->
+                    proveedor.enviar(entrada.getId(), entrada.getDatos(), entrada.getTraceId())));
+      }
     } catch (RuntimeException e) {
       log.error(
           "[OUTBOX-LOGISTICA] No se pudo registrar el resultado de la entrada {}: {}",
@@ -70,16 +93,16 @@ public class LogisticaOutboxRelay {
     }
   }
 
-  private ResultadoEnvio enviar(EntradaOutboxLogistica entrada) {
-    IProveedorLogistica proveedor = proveedores.buscar(entrada.getProveedorId()).orElse(null);
+  private ResultadoEnvio ejecutar(String proveedorId, Consumer<IProveedorLogistica> envio) {
+    IProveedorLogistica proveedor = proveedores.buscar(proveedorId).orElse(null);
     if (proveedor == null) {
       log.warn(
           "[OUTBOX-LOGISTICA] El proveedor {} no tiene adapter registrado; se trata como rechazo",
-          entrada.getProveedorId());
+          proveedorId);
       return ResultadoEnvio.RECHAZADO;
     }
     try {
-      proveedor.enviar(entrada.getId(), entrada.getDatos(), entrada.getTraceId());
+      envio.accept(proveedor);
       return ResultadoEnvio.PUBLICADO;
     } catch (EnvioRechazadoException e) {
       log.warn("[OUTBOX-LOGISTICA] Envío rechazado: {}", e.getMessage());
@@ -87,14 +110,15 @@ public class LogisticaOutboxRelay {
     } catch (EnvioInciertoException e) {
       log.warn("[OUTBOX-LOGISTICA] Envío incierto: {}", e.getMessage());
       return ResultadoEnvio.INCIERTO;
-    } catch (ErrorContratoProveedorException e) {
+    } catch (ErrorContratoProveedorException | UnsupportedOperationException e) {
+      // UnsupportedOperationException: el proveedor no cancela entregas (HB-19)
       log.error("[OUTBOX-LOGISTICA] Error de contrato: {}", e.getMessage(), e);
       return ResultadoEnvio.ERROR_CONTRATO;
     } catch (RuntimeException e) {
       log.error(
           "[OUTBOX-LOGISTICA] Excepción no clasificada del proveedor {}; se trata como envío"
               + " incierto",
-          entrada.getProveedorId(),
+          proveedorId,
           e);
       return ResultadoEnvio.INCIERTO;
     }

@@ -18,6 +18,9 @@ public interface SpringDataDonacionIndependienteRepository
 
   List<DonacionIndependienteEntity> findByEstadoActual(TipoEstadoDonacion estadoActual);
 
+  List<DonacionIndependienteEntity> findByNecesidadIdAndEstadoActualIn(
+      UUID necesidadId, Collection<TipoEstadoDonacion> estados);
+
   // Dos consultas en vez de una con «:periodoId is null»: Postgres no infiere el tipo de un
   // parámetro nulo
   @Query(

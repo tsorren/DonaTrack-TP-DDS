@@ -21,3 +21,10 @@ POST /api/donantes/archivos added required request body
 # flujos 2, 4, 8 y 9 de Postman) se migraron en el mismo PR.
 POST /api/necesidades added required request body
 PUT /api/necesidades/{id} added required request body
+
+# HB-19 (DTI-31, 2026-11-09; ADR 20261109-cancelacion-de-entregas-que-no-salieron): Logística suma
+# CANCELADA al estado de la entrega que devuelve (EntregaResponseDTO, seguimiento, historial). Un
+# consumidor estricto del enum puede romperse; los del repo (cliente liviano, integration-tests) no
+# lo enumeran. oasdiff v1.34 clasifica "enum value added" en una respuesta como aviso (WARN), no
+# como error, así que no hace falta una línea para --err-ignore. [INFERRED] Se confirma con la
+# salida del job de contratos del PR; si lo marca como error, la línea va acá.

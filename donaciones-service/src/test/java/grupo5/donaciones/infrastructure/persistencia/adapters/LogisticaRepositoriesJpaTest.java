@@ -21,6 +21,7 @@ import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
 import grupo5.donaciones.services.impl.LogisticaBroker;
 import grupo5.donaciones.services.logistica.EntradaOutboxLogistica;
 import grupo5.donaciones.services.logistica.EstadoEntradaOutbox;
+import grupo5.donaciones.services.logistica.ICatalogoProveedoresLogistica;
 import grupo5.donaciones.services.logistica.IEstrategiaSeleccionProveedor;
 import grupo5.donaciones.services.logistica.ILogisticaOutbox;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
@@ -73,6 +74,7 @@ class LogisticaRepositoriesJpaTest {
   @Autowired private JdbcTemplate jdbc;
 
   @MockitoBean private IEstrategiaSeleccionProveedor estrategia;
+  @MockitoBean private ICatalogoProveedoresLogistica catalogo;
   @MockitoSpyBean private LogisticaOutboxJpaAdapter outboxEspiado;
 
   private UUID donacionId;
@@ -161,6 +163,48 @@ class LogisticaRepositoriesJpaTest {
         nueva.getId(), solicitudes.findActivaPorDonacion(donacionId).orElseThrow().getId());
     assertEquals(
         nueva.getId(), solicitudes.findMasRecientePorDonacion(donacionId).orElseThrow().getId());
+  }
+
+  @Test
+  void solicitudCancelada_noCuentaComoActivaYDejaPedirOtra_HB19() {
+    SolicitudEntrega cancelada =
+        new SolicitudEntrega(donacionId, LocalDateTime.now().minusHours(1));
+    cancelada.asignarProveedor("donatrack");
+    cancelada.marcarEnviada();
+    cancelada.marcarCancelada();
+    solicitudes.save(cancelada);
+
+    assertTrue(solicitudes.findActivaPorDonacion(donacionId).isEmpty());
+    assertEquals(
+        EstadoSolicitudEntrega.CANCELADA,
+        solicitudes.findById(cancelada.getId()).orElseThrow().getEstado());
+    SolicitudEntrega nueva =
+        solicitudes.save(new SolicitudEntrega(donacionId, LocalDateTime.now()));
+    assertEquals(
+        nueva.getId(), solicitudes.findActivaPorDonacion(donacionId).orElseThrow().getId());
+  }
+
+  @Test
+  void entradaDeCancelacion_conservaSuTipo_HB19() {
+    SolicitudEntrega solicitud =
+        solicitudes.save(new SolicitudEntrega(donacionId, LocalDateTime.now()));
+    EntradaOutboxLogistica cancelacion =
+        EntradaOutboxLogistica.cancelacion(
+            solicitud.getId(),
+            "donatrack",
+            DatosEntregaLogistica.soloDonacion(donacionId),
+            "trace-baja",
+            5,
+            LocalDateTime.now());
+
+    outbox.guardar(cancelacion);
+    EntradaOutboxLogistica leida = outbox.buscarPorId(cancelacion.getId()).orElseThrow();
+
+    assertTrue(leida.esCancelacion());
+    assertEquals(donacionId, leida.getDatos().donacionIndependienteId());
+    assertEquals(
+        "CANCELACION",
+        jdbc.queryForObject("SELECT tipo FROM donaciones.outbox_logistica", String.class));
   }
 
   @Test

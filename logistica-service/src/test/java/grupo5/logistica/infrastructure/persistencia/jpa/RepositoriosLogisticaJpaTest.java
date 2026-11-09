@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.jpa;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -342,6 +343,80 @@ class RepositoriosLogisticaJpaTest {
     Chofer choferDisponible = choferesRepository.findById(chofer.getId()).orElseThrow();
     assertNull(camionDisponible.getRutaId());
     assertNull(choferDisponible.getRutaId());
+  }
+
+  @Test
+  void cancelarEntregaConRutaLaSacaDeLaParadaYPermiteOtraEntregaActivaDeLaMismaDonacion() {
+    Camion camion = camionRepository.save(new Camion("HB19AA", 80.0f, 4000.0f, 3.5f));
+    Chofer chofer = choferesRepository.save(new Chofer("Ana", "Paz", "LIC-919", "1100000019"));
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID idDonacion = UUID.randomUUID();
+    Entrega cancelable =
+        entregasRepository.save(
+            new Entrega(
+                idDonacion,
+                UUID.randomUUID(),
+                new Direccion("Medrano", 951, null, null, "1179", caba),
+                10.0f,
+                1.0f));
+    Entrega otra =
+        entregasRepository.save(
+            new Entrega(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                new Direccion("Mozart", 2300, null, null, "1407", caba),
+                10.0f,
+                1.0f));
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 20), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, cancelable);
+    GestorDeRutas.agregarEntrega(ruta, otra);
+    rutasRepository.save(ruta);
+    entregasRepository.save(cancelable);
+    entregasRepository.save(otra);
+
+    Entrega leida = entregasRepository.findByIdDonacion(idDonacion).orElseThrow();
+    Ruta rutaLeida = rutasRepository.findById(ruta.getId()).orElseThrow();
+    leida.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    rutaLeida.quitarEntrega(leida.getId());
+    rutasRepository.save(rutaLeida);
+    entregasRepository.save(leida);
+
+    assertEquals(
+        List.of(otra.getId()),
+        rutasRepository.findById(ruta.getId()).orElseThrow().getEntregaIds());
+    Entrega cancelada = entregasRepository.findById(leida.getId()).orElseThrow();
+    assertEquals(EstadoEntrega.CANCELADA, cancelada.getEstadoActual());
+    assertNull(cancelada.getIdRuta());
+    assertFalse(entregasRepository.existsByIdDonacion(idDonacion));
+    assertTrue(entregasRepository.findByIdDonacion(idDonacion).isEmpty());
+
+    Entrega nueva =
+        entregasRepository.save(
+            new Entrega(
+                idDonacion,
+                UUID.randomUUID(),
+                new Direccion("Av. Rivadavia", 1200, null, null, "1033", caba),
+                10.0f,
+                1.0f));
+    assertEquals(
+        nueva.getId(), entregasRepository.findByIdDonacion(idDonacion).orElseThrow().getId());
+    assertEquals(
+        List.of(leida.getId()),
+        entregasRepository.findCanceladasByIdDonacion(idDonacion).stream()
+            .map(Entrega::getId)
+            .toList());
+
+    // Dos entregas activas de la misma donación siguen prohibidas (D7, índice parcial de V8)
+    Entrega duplicada =
+        new Entrega(
+            idDonacion,
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1300, null, null, "1033", caba),
+            10.0f,
+            1.0f);
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () -> entregasRepository.save(duplicada));
   }
 
   @Test

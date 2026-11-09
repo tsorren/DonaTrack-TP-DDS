@@ -14,4 +14,10 @@ public record DatosEntregaLogistica(
     DestinoEventoDTO destino,
     Double pesoTotalKG,
     Double volumenTotalM3,
-    LocalDateTime fecha) {}
+    LocalDateTime fecha) {
+
+  /** Solo la donación: lo que lleva una cancelación en el outbox (HB-19). */
+  public static DatosEntregaLogistica soloDonacion(UUID donacionIndependienteId) {
+    return new DatosEntregaLogistica(donacionIndependienteId, null, null, null, null, null);
+  }
+}
