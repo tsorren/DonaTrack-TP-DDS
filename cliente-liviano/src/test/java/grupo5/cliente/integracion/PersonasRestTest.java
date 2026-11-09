@@ -21,14 +21,14 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
-class DonacionesRestTest {
+class PersonasRestTest {
 
   private static final String BASE = "http://donaciones";
   private static final UUID PERSONA = UUID.randomUUID();
 
   private final RestClient.Builder base = RestClient.builder().baseUrl(BASE);
   private final MockRestServiceServer servidor = MockRestServiceServer.bindTo(base).build();
-  private final DonacionesRest donaciones = new DonacionesRest(base.build());
+  private final PersonasRest donaciones = new PersonasRest(base.build());
 
   @Test
   void crearUnaJuridicaEnviaLosDatosQueDonacionesPideYDevuelveElId() {

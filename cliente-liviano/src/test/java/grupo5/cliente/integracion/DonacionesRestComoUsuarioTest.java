@@ -9,10 +9,8 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import grupo5.cliente.puertos.DonacionesComoUsuario.DonacionDelDonante;
 import grupo5.cliente.puertos.DonacionesComoUsuario.Juridica;
 import grupo5.cliente.puertos.DonacionesComoUsuario.NecesidadDeEntidad;
-import grupo5.cliente.vistas.EstadoEntrega;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -28,31 +26,6 @@ class DonacionesRestComoUsuarioTest {
   private final RestClient.Builder base = RestClient.builder().baseUrl(BASE);
   private final MockRestServiceServer servidor = MockRestServiceServer.bindTo(base).build();
   private final DonacionesRestComoUsuario donaciones = new DonacionesRestComoUsuario(base.build());
-
-  @Test
-  void lasDonacionesDelDonanteSeFiltranPorSuPersonaYSeLeenConSuEstado() {
-    String json =
-        """
-        [{"id":"%s","descripcion":"Arroz","estadoActual":"EN_TRASLADO",
-          "fechaRegistro":"2026-10-14T10:00:00","cantidad":10,"historial":[],"items":[]}]"""
-            .formatted(UUID.randomUUID());
-    servidor
-        .expect(requestTo(BASE + "/donaciones-independientes?donanteId=" + PERSONA))
-        .andRespond(withSuccess(json, APPLICATION_JSON));
-
-    DonacionDelDonante donacion = donaciones.donacionesDe(PERSONA).get(0);
-
-    assertThat(donacion.descripcion()).isEqualTo("Arroz");
-    assertThat(donacion.cantidad()).isEqualTo(10);
-    assertThat(donacion.estado()).isEqualTo(EstadoEntrega.EN_CAMINO);
-  }
-
-  @Test
-  void unEstadoSinCaminoNiResultadoEsPendiente() {
-    var donacion = new DonacionDelDonante(PERSONA, "Arroz", "EN_DEPOSITO", null, 1);
-
-    assertThat(donacion.estado()).isEqualTo(EstadoEntrega.PENDIENTE);
-  }
 
   @Test
   void lasNecesidadesDeLaEntidadSeFiltranPorSuPersona() {

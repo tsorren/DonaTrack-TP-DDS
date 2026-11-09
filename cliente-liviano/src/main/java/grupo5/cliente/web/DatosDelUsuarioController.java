@@ -11,9 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Las pantallas del donante y de la entidad con los datos reales de Donaciones, de la persona en
- * cuyo nombre opera la cuenta. Al ser más específicas que {@code /{pantalla}}, reemplazan a las de
- * ejemplo.
+ * Las necesidades de la entidad con los datos reales de Donaciones, de la persona en cuyo nombre
+ * opera la cuenta. Al ser más específica que {@code /{pantalla}}, reemplaza a la de ejemplo.
  */
 @Controller
 @Profile("!maqueta")
@@ -25,12 +24,6 @@ public class DatosDelUsuarioController {
   DatosDelUsuarioController(Pantallas pantallas, DonacionesComoUsuario donaciones) {
     this.pantallas = pantallas;
     this.donaciones = donaciones;
-  }
-
-  @GetMapping("/donante-donaciones")
-  String donaciones(@AuthenticationPrincipal OidcUser usuario, Model model) {
-    model.addAttribute("donaciones", donaciones.donacionesDe(personaDe(usuario)));
-    return pantallas.mostrarReal("donante-donaciones", model);
   }
 
   @GetMapping("/entidad-necesidades")

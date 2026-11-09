@@ -113,6 +113,8 @@ indicados bastan para repartirlas.
 - HB-11, HB-12 y HB-13, que dependen de `sub` y del resource server.
 - Estilos, tokens e identidad visual (Raíces cálida).
 
+Cómo se conectan el cliente, el gateway y el login alrededor de las tareas 11, 12 y 23: [plan del cliente con datos reales y gateway](plan-e6-cliente-datos-reales-y-gateway.md) (2026-11-07).
+
 ## 7. Evidencia y límites
 
 - `[OBSERVED]` Los estados de §2 salen de `git ls-tree`, `grep` sobre `origin/ENTREGA_6` y la lectura de `requerimientos-e6.md`, `backlog-migracion-componentes.md` y SPEC-06 en sus ramas. No se ejecutó ningún test ni se levantó el compose.

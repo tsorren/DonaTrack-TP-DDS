@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--/* Raíces, Para entidades (la "Landing beneficiario" del mapa del sitio; ficha
+       docs/interfaz/flujos/raices-conocer-y-activar.md, 4.3; sin boceto): cómo se suma una entidad, qué
+       hace con su cuenta, qué datos se muestran y las preguntas de siempre, con la salida al registro.
+       Se llega desde el pie y desde "Quiénes reciben" de la portada. "Entidad", no "beneficiario"
+       (tono). Sin estados: es texto fijo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-conocer', ~{::contenido})}">
+<head>
+  <title>Para entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="pila" data-espacio="5">
+    <header class="lectura pila" data-espacio="2">
+      <p class="rotulo">Para entidades</p>
+      <h1>Sumá tu entidad y recibí <em>lo que necesita</em></h1>
+      <p class="lectura-bajada">Comedores, escuelas, parroquias y otras organizaciones de la comunidad
+        publican lo que necesitan y reciben donaciones del depósito.</p>
+      <div class="racimo" data-espacio="2">
+        <a class="boton" data-tono="principal" href="/publico-registro-entidad"
+           th:href="@{/publico-registro-entidad}">Sumar mi entidad</a>
+        <a class="boton" data-tono="secundario" href="/publico-entidades"
+           th:href="@{/publico-entidades}">Ver lo que piden otras entidades</a>
+      </div>
+    </header>
+
+    <section aria-labelledby="sumarse-titulo" class="pila" data-espacio="3">
+      <h2 id="sumarse-titulo">Cómo se suma</h2>
+      <ol class="grilla" data-espacio="3" role="list">
+        <li class="tarjeta pila" data-espacio="2">
+          <h3>1. Completás los datos</h3>
+          <p>De la entidad y de quien la representa.</p>
+        </li>
+        <li class="tarjeta pila" data-espacio="2">
+          <h3>2. El equipo los revisa</h3>
+          <p>Si falta algo, te escribimos.</p>
+        </li>
+        <li class="tarjeta pila" data-espacio="2">
+          <h3>3. Publicás lo que necesitás</h3>
+          <p>Con la entidad aprobada.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="cuenta-titulo" class="lectura">
+      <h2 id="cuenta-titulo">Qué hacés con tu cuenta</h2>
+      <ul class="lista" role="list">
+        <li>Publicar lo que necesitás, por categoría y cantidad.</li>
+        <li>Seguir las entregas que van hacia tu entidad.</li>
+        <li>Confirmar lo que llega, con una foto.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="datos-titulo" class="lectura">
+      <h2 id="datos-titulo">Qué datos se muestran</h2>
+      <ul class="lista" role="list">
+        <li>Se muestran el nombre, el barrio y lo que la entidad necesita.</li>
+        <li>No se muestran el teléfono, el correo ni la dirección exacta: solo los ve el equipo que
+          organiza las entregas.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="preguntas-titulo" class="lectura pila" data-espacio="2">
+      <h2 id="preguntas-titulo">Preguntas frecuentes</h2>
+      <details>
+        <summary>¿Cuesta algo?</summary>
+        <p>No.</p>
+      </details>
+      <details>
+        <summary>¿Cuánto tarda la revisión?</summary>
+        <p>Depende de cuántas entidades estén en revisión; te avisamos por correo.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si una entrega llega con un problema?</summary>
+        <p>Lo contás al confirmarla y el equipo lo revisa.</p>
+      </details>
+    </section>
+
+    <div class="racimo" data-espacio="2">
+      <a class="boton" data-tono="principal" href="/publico-registro-entidad"
+         th:href="@{/publico-registro-entidad}">Sumar mi entidad</a>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

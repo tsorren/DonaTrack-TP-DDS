@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <!--/* El pie de todas las páginas de Raíces (ficha docs/interfaz/flujos/raices-legales.md; usuario,
-       2026-11-02: un pie corto en todas, también en las privadas): términos y privacidad, contacto y
+       2026-11-02: un pie corto en todas, también en las privadas): Nosotros y las dos landings (F6,
+       ficha raices-conocer-y-activar.md, usuario 2026-11-07), términos y privacidad, contacto y
        la firma del proyecto. No es una pantalla: su nombre no empieza con un rol, así que
        SitioController no la muestra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <footer class="raices-pie" th:fragment="pie">
-  <nav aria-label="Legales y contacto">
+  <nav aria-label="Sobre DonaTrack">
     <ul role="list">
+      <li><a href="/publico-nosotros"
+             th:href="@{/publico-nosotros}">Nosotros</a></li>
+      <li><a href="/publico-para-donantes"
+             th:href="@{/publico-para-donantes}">Para donantes</a></li>
+      <li><a href="/publico-para-entidades"
+             th:href="@{/publico-para-entidades}">Para entidades</a></li>
       <li><a href="/publico-legales"
              th:href="@{/publico-legales}">Términos y privacidad</a></li>
       <li><a href="/publico-contacto"

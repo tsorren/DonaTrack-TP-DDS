@@ -30,6 +30,9 @@ class SitioController {
   private static final String VOLVER =
       "/" + Pantallas.NOMBRE + "(?:\\?[a-z]+=[a-z0-9-]+(?:&[a-z]+=[a-z0-9-]+)*)?";
 
+  /** Los motivos de Llegó con un problema, los del reporte del contrato de entregas. */
+  private static final String MOTIVOS = "incompleta|danada|otro";
+
   private final Pantallas pantallas;
 
   SitioController(Pantallas pantallas) {
@@ -52,14 +55,17 @@ class SitioController {
    * son lo escrito: a qué pantalla volver después ({@code ?volver=}, en Contacto, solo si es una
    * pantalla del sitio), la elección de Mi perfil ({@code mostrar=si}) y la sección de Mi perfil
    * que se guardó ({@code seccion=datos} o {@code avisos}), para que el aviso diga lo que se
-   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección.
+   * eligió. La pestaña ({@code #datos}) la conserva el navegador al seguir la redirección. Llegó
+   * con un problema manda el motivo ({@code incompleta}, {@code danada} u {@code otro}), que vuelve
+   * como {@code ?problema=} para que Recepción confirmada muestre el problema asentado.
    */
   @PostMapping("/{pantalla:" + Pantallas.NOMBRE + "}")
   String enviar(
       @PathVariable String pantalla,
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar,
-      @RequestParam(required = false) String seccion) {
+      @RequestParam(required = false) String seccion,
+      @RequestParam(required = false) String motivo) {
     if (!pantallas.existe(pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
     }
@@ -72,6 +78,9 @@ class SitioController {
     }
     if ("datos".equals(seccion) || "avisos".equals(seccion)) {
       consulta.add("seccion=" + seccion);
+    }
+    if (motivo != null && motivo.matches(MOTIVOS)) {
+      consulta.add("problema=" + motivo);
     }
     String destino = "redirect:/" + pantalla;
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);

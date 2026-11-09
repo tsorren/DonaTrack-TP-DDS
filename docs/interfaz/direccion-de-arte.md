@@ -1,8 +1,8 @@
 # Dirección de arte
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 3 · 2026-10-31 (suma "Libertad creativa", "Oficio" y el tono común) · parte del
-> [proceso de diseño](README.md)**
+> **Versión 4 · 2026-11-06 (la libertad creativa rige en toda exploración, con bocetos sin piso
+> entre vueltas) · parte del [proceso de diseño](README.md)**
 
 La meta es una interfaz **con carácter propio**: que alguien la vea y no pueda confundirla con una
 plantilla. La ambición tiene reglas, y debajo hay un piso que no se negocia.
@@ -17,7 +17,9 @@ plantilla. La ambición tiene reglas, y debajo hay un piso que no se negocia.
 - Toda imagen con contenido tiene texto alternativo.
 - El color nunca es la única señal: siempre va con texto o con ícono.
 
-Una propuesta que rompe el piso no se le muestra al usuario. Se corrige antes.
+Una propuesta que rompe el piso no se le muestra al usuario. Se corrige antes. Única excepción: las
+vueltas de boceto de una exploración A/B (skill `iteracion-ab`) se muestran sin comprobarlo; la
+opción elegida lo pasa antes de aplicarse, con un arreglo que conserva la idea.
 
 ## Cómo se arma una dirección
 
@@ -58,11 +60,15 @@ Rasgos de interfaz genérica que se ven en todas partes:
 - emojis en lugar de íconos;
 - Pico.css sin tematizar: si se nota que es Pico, falta trabajo.
 
-Si el usuario pide algo de esta lista, se respeta: es su decisión.
+Si el usuario pide algo de esta lista, se respeta: es su decisión. Mientras se explora, la lista es
+un aviso, no un veto: una opción puede rozarla si tiene un motivo propio, lo dice en su descripción
+y se revisa al aplicar la elegida.
 
 ## Autocrítica con capturas
 
-Antes de mostrar una propuesta, el agente mira sus capturas en los 3 anchos y se pregunta:
+Antes de mostrar una propuesta, el agente mira sus capturas en los 3 anchos y se pregunta lo que
+sigue. En un boceto de exploración solo hay 1280 px: las preguntas de celular se responden al
+comprobar la opción elegida.
 
 - ¿Podría ser la interfaz de cualquier otro producto? Si sí, falta concepto.
 - ¿Cuál es la audacia de esta pantalla? Si no hay una, o hay tres, se ajusta.
@@ -76,7 +82,9 @@ Antes de mostrar una propuesta, el agente mira sus capturas en los 3 anchos y se
 ## Libertad creativa
 
 Cuando el usuario pide algo nuevo y creativo (un concepto, un rediseño o una identidad desde
-cero), la libertad es real. Lo que es libre y lo que no:
+cero), y en toda exploración A/B (dirección, paleta, estilo, tipografía, forma o imagen), la
+libertad es real. Las reglas de cambio mínimo y de superficie mínima, y la skill ponytail, rigen
+el código, nunca la idea. Lo que es libre y lo que no:
 
 | Libre | Fijo |
 |---|---|

@@ -48,7 +48,10 @@ public class RankingService implements IRankingService {
             .map(
                 existente ->
                     RankingMensual.reconstituir(
-                        existente.getId(), periodo, calculado.getEntradas()))
+                        existente.getId(),
+                        periodo,
+                        calculado.getEntradas(),
+                        calculado.getCalculadoEn()))
             .orElse(calculado);
 
     rankingRepository.save(ranking);

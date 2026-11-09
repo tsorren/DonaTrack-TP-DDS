@@ -95,7 +95,8 @@ class DonacionesIndependientesServiceTest {
                                   c.getActor()))
                       .toList(),
                   List.of(),
-                  don.getCantidad());
+                  don.getCantidad(),
+                  don.getEntidadBeneficiariaId());
             });
 
     service =

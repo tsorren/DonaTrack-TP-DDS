@@ -40,7 +40,15 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 - Donante · donante-perfil · "Qué te avisamos" (todo o solo cuando la entidad confirma) · notificaciones-service no tiene preferencia de qué avisar · agregado el 2026-11-04; la maqueta no guarda.
 - Donante · donante-notificaciones · avisos "recibida en el depósito" y "lista para entregar" · no están en EventoNotificableDTO; RF-08 pide asignación y recepción (HB-09).
 
+- Donante · donante-misiones · desde cuándo está en su categoría · `.../ascensos` lo da, `DonantePerfilDTO` no. Sumado en F5.
+- Donante · donante-misiones · cuál es la misión en curso y qué donación fue la más grande en Gran Aporte · `MisionDTO` no trae el número de misión ni el detalle del progreso. Sumado en F5.
+- Donante · donante-misiones · la fecha del ascenso puede no coincidir con la de la misión que lo produjo (`CambioCategoria` guarda la fecha de proceso). Sumado en F5.
+
 ## Entidad
+
+- Entidad · entidad-seguimiento · todas las entregas activas de la entidad en una llamada, con las pendientes de salir y las que esperan confirmación · GET /api/entregas/seguimiento/beneficiarios/{id} existe, sin verificar qué trae (HB-16). Sumado en F5.
+- Entidad · entidad-seguimiento · la posición aproximada del camión · HB-05 y HB-06. Sumado en F5.
+- Entidad · entidad-perfil · editar los datos y los medios de contacto de la entidad · HB-11, como en el donante. Sumado en F5.
 
 - Entidad · entidad-inicio, entidad-recibidas · estado de la entrega (en la puerta, en camino, con problema) de todas las de la entidad en una llamada · Logística lo da por donación (HB-16).
 - Entidad · entidad-recibidas · donaciones asignadas a la entidad, con filtro por estado y rango de fechas · GET /donaciones-independientes no filtra por entidad asignada (HB-04).
@@ -53,4 +61,16 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 
 - Admin · admin-inicio · entidades que piden sumarse · falta el estado pendiente de aprobación (HB-12).
 - Admin · admin-inicio · donaciones que vencen en los próximos días · GET /donaciones-independientes no filtra por vencimiento.
+- Admin · admin-donantes · buscar por nombre o documento y paginar · GET /api/donantes lista todos y solo filtra por canal (como HB-15 en entidades). Sumado en F2 del roadmap de vistas.
+- Admin · admin-donantes-registrar · no duplicar a una persona ya registrada · POST /api/personas no busca por documento (solo la importación lo hace). Sumado en F2.
+- Admin · admin-donantes-importando e -importado · el avance y el resultado por fila · el backend guarda solo el estado del archivo (HB-14).
+- Admin · admin-entidades · pedir corrección y rechazar con motivo, y el estado pendiente de aprobación · no existen (HB-12, RI-AUTH-05).
+- Admin · admin-donaciones · una sola lista con estado, donante, depósito y vencimiento · el estado viene de GET /donaciones-independientes (solo trae donacionOriginalId) y el resto de GET /api/donaciones, con otro estado (EstadoDonacion); hoy hay que unirlas por donacionOriginalId. Sumado en F3.
+- Admin · admin-donaciones?vence=pronto · filtrar por fecha de vencimiento · no existe el filtro. Sumado en F3.
+- Admin · admin-donaciones · paginar (HB-04).
+- Admin · admin-donaciones-registrar · la lista de depósitos para elegir · el DTO recibe nombreDeposito y una dirección, sin catálogo. Sumado en F3.
+- Admin · admin-donaciones-registrar · divergencia contrato-código: openapi-donaciones.yaml (línea 1027) pide donanteId y DonacionesService lee dto.idDonante(). Reportada en F3, sin corregir (fuera del alcance del cliente liviano).
+- Admin · admin-asignaciones · la entidad del pedido sin buscarla aparte (la propuesta trae la necesidad sin la entidad); el nombre del algoritmo y su puntaje no se exponen. Sumado en F3.
+- Admin · admin-asignaciones · guardar y devolver el motivo y la fecha de la decisión: el controlador recibe la justificación pero no la pasa, y la propuesta no la guarda. Sumado en F3.
+- Admin · admin-camiones · listar también los deshabilitados (GET /api/camiones usa solo los activos), para poder volver a habilitarlos, y devolver el motivo y la fecha del último cambio de estado (el PATCH recibe el motivo, pero CamionResponseDTO no lo trae). Sumado en F4.
 - Admin · admin-inicio · las cifras de "Cómo está todo" (donaciones en depósito, asignadas y en camino, entregas confirmadas del mes, donantes, camiones en ruta y libres) · no hay un resumen agregado; contarlas obliga a traer las listas enteras de Donaciones, Logística y Usuarios en cada carga.

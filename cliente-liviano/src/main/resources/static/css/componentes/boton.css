@@ -10,7 +10,7 @@
   min-height: 3rem;
   padding: 0.75rem 1.5rem;
   border: 2px solid var(--color-acento);
-  /* Esquinas rectas (A/B de paleta y acabado, 2026-11-05). */
+  /* Esquinas suaves (A/B de Raíces cálida, 2026-11-06; antes, rectas). */
   border-radius: var(--radio-boton);
   box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
   /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */

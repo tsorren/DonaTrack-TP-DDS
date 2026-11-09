@@ -21,11 +21,6 @@ class DonacionesRestComoUsuario implements DonacionesComoUsuario {
   }
 
   @Override
-  public List<DonacionDelDonante> donacionesDe(UUID donanteId) {
-    return listar("/donaciones-independientes?donanteId={id}", new Donaciones(), donanteId);
-  }
-
-  @Override
   public List<NecesidadDeEntidad> necesidadesDe(UUID entidadId) {
     return listar("/api/necesidades?entidadId={id}", new Necesidades(), entidadId);
   }
@@ -47,8 +42,6 @@ class DonacionesRestComoUsuario implements DonacionesComoUsuario {
   }
 
   private static class Juridicas extends ParameterizedTypeReference<List<Juridica>> {}
-
-  private static class Donaciones extends ParameterizedTypeReference<List<DonacionDelDonante>> {}
 
   private static class Necesidades extends ParameterizedTypeReference<List<NecesidadDeEntidad>> {}
 }

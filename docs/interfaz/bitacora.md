@@ -25,7 +25,422 @@ identidad, Raíces; los documentos y la evidencia de las otras dos están en el
 - **Evidencia:** capturas o enlace (si hay).
 ```
 
+Una decisión A/B (skill `iteracion-ab`) usa el mismo formato, en 15 líneas o menos: en
+**Alternativas**, una línea por vuelta, con las opciones y lo que dijo el usuario; en **Costo**, solo
+lo que queda pendiente. El detalle de valores va en el código y en las capturas, no acá.
+
 ## Decisiones
+
+### 2026-11-07 · pantalla · F7 construida: Llegó con un problema, páginas de error y el recorrido sin "sin dibujar"
+
+- **Decisión:** Llegó con un problema es el fragmento del acta con un parámetro más,
+  `acta(conError, problema)`, y una hoja nueva, `entidad-seguimiento-problema.css`, que solo ubica
+  «Qué pasó» debajo de las pruebas en pantalla grande. El formulario manda `motivo` y la vuelta trae
+  `?problema=`, que suma «El problema» a lo asentado y quita la cifra del pedido. Las páginas de
+  error son `templates/error/404`, `403` y `5xx` (Spring Boot las elige por el código), con una
+  pieza compartida, `pagina-error`, y la hoja `publico-error.css`; en la maqueta,
+  `?respuesta=404`, `403` o `500` en cualquier pantalla. El dibujo usa las piezas del bloque pasos;
+  el viento de las hojas quedó limitado a `.paso`, porque fuera de la lámina se mecía sin fin y sin
+  pausa (bloqueo de `revision-ui`). El recorrido de `SitioControllerTest` falla si una vista es
+  `sin-dibujar`, y el piso visual acepta el código de `?respuesta=`.
+- **Alternativas:** una plantilla propia para el problema (duplicaba el acta); dejar Mi perfil en el
+  menú del admin con su "sin dibujar" (rompía el criterio de hecho).
+- **Por qué:** lo mínimo que cumple las dos fichas aprobadas sin clases nuevas fuera del catálogo.
+  Mi perfil salió del menú del admin porque el mapa del sitio lo da solo al donante y a la entidad.
+- **Costo:** en pantalla grande queda aire entre el remito y la firma, y el foco recorre por
+  columnas (avisos de `revision-ui`). Las fotos de una entrega con problema no se publican: se
+  aparta del ADR del contrato de entregas (`proposed`), anotado en DTI-29.
+- **Quién decidió:** agente, dentro de las fichas aprobadas por el usuario; Mi perfil del admin,
+  agente, por el mapa del sitio.
+- **Evidencia:** `SitioControllerTest` (44 tests, 6 nuevos o cambiados), módulo 69/69, `-Pvisual`
+  de las rutas de F7 y `revision-ui` en modo pantalla, con el bloqueo corregido.
+
+### 2026-11-07 · flujo · Fichas de F7: Llegó con un problema y páginas de error
+
+- **Decisión:** [Llegó con un problema](flujos/raices-llego-con-un-problema.md) es el acta de
+  Confirmar recepción con el grupo «Qué pasó» (motivo, cuánto llegó si llegó menos y un detalle);
+  un botón confirma y reporta a la vez. Quien donó ve el motivo y el detalle; el equipo, todo. Las
+  fotos de una entrega con problema no se publican. [Las páginas de error](flujos/raices-paginas-de-error.md)
+  van con el marco público y un corte de suelo chico, con el código para soporte y Contacto.
+- **Alternativas:** el reporte en una página aparte y la confirmación después (dos pasos); el
+  detalle siempre obligatorio; solo el equipo ve el reporte; las fotos publicables como las demás;
+  el marco de cada área en las páginas de error; solo texto, sin dibujo.
+- **Por qué:** el contrato confirma y reporta en un solo envío; una foto de algo dañado no va a la
+  portada; las páginas de error tienen que andar sin saber quién entró.
+- **Costo:** se aparta de una consecuencia del ADR del contrato de entregas (la foto llega a la
+  portada); queda para el grupo, con qué hace Donaciones con una cantidad menor.
+- **Quién decidió:** usuario (2026-11-07), en tres rondas de preguntas; las fichas, aprobadas.
+- **Evidencia:** `revision-ui` en modo flujo, con sus dos bloqueos corregidos antes de aprobar.
+
+### 2026-11-07 · pantalla · F6 construida: Nosotros, Para donantes, Para entidades y Activar cuenta
+
+- **Decisión:** las tres de lectura comparten una hoja nueva, `publico-conocer.css`, que solo dispone
+  (relleno de tarjetas, ritmo de 40 px entre secciones, 48 px de toque en las preguntas) sobre
+  `publico-paginas.css`; el resto son piezas del catálogo (`.pila`, `.grilla`, `.racimo`, `.tarjeta`,
+  `.lista`, `.frutos`). Las cifras de Nosotros usan una variante nueva de `.frutos`,
+  `data-cosecha="completa"`, porque las tres están cumplidas y el tercer fruto no debía leerse "en
+  camino". Activar cuenta copia las piezas de Ingresar y Recuperar, marca "Ingresar" en la
+  navegación y, con el enlace vencido, cambia el título a "Activá tu cuenta". Las preguntas
+  frecuentes son `<details>` nativos.
+- **Alternativas:** envolver cada sección en otra pila (más marcado para lo mismo); dejar el tercer
+  fruto punteado (contradecía su significado).
+- **Por qué:** lo mínimo que cumple la ficha aprobada sin clases nuevas fuera del catálogo.
+- **Costo:** en 360 px el texto de cada categoría de Para donantes baja debajo del ícono; el
+  `data-espacio` de la cabecera de las landings no rige entre rótulo, título y bajada (ganan sus
+  márgenes, como en el resto del sitio). Avisos de `revision-ui`, sin corregir.
+- **Quién decidió:** agente, dentro de la ficha aprobada por el usuario.
+- **Evidencia:** `SitioControllerTest` (2 tests nuevos), `-Pvisual` de las 17 rutas de F6 y
+  `revision-ui` PASS en la ronda 3.
+
+### 2026-11-07 · flujo · Ficha de F6: Nosotros, Para donantes, Para entidades y Activar cuenta
+
+- **Decisión:** una ficha para las cuatro públicas que faltan
+  ([`raices-conocer-y-activar`](flujos/raices-conocer-y-activar.md)). Se enlazan desde el pie de
+  todas las páginas y desde la portada; el menú público no cambia. "Landing donante" y "Landing
+  beneficiario" se llaman "Para donantes" y "Para entidades". Nosotros conserva lo del boceto (pág.
+  3): cifras, ahora con período y fecha; "Quiénes somos" con una lámina en lugar de una foto;
+  "Nuestra solución" pasa a "Cómo trabajamos", sin "en tiempo real" ni "automático"; "¡Unirse a la
+  Comunidad!" pasa a dos salidas, una por público. Activar cuenta sale del correo: elegir la
+  contraseña, cuenta activada y, si el enlace venció o se usó, "Pedir otro enlace", que también está
+  en Ingresar.
+- **Alternativas:** Nosotros en el menú público (seis opciones en el celular); solo el pie;
+  Nosotros sin cifras; Activar como un solo pedido de enlace, con la contraseña en el IdP.
+- **Por qué:** el menú del celular ya está lleno; las cifras con fecha dan confianza; el correo es
+  lo que la maqueta ya promete al registrar un donante en el depósito.
+- **Costo:** las cifras esperan HB-02; los textos de Activar dependen de D12.
+- **Quién decidió:** usuario (enlaces, Activar y cifras); agente (nombres y forma de cada página).
+- **Evidencia:** revisión de la ficha con `revision-ui` en modo flujo.
+
+### 2026-11-07 · pantalla · F5 construida: Misiones, Seguir entregas y Mi perfil de la entidad
+
+- **Decisión:** la cuenta persona va en la sesión (`?cuenta=persona`, `?cuenta=empresa` vuelve) y
+  `SitioController` le muestra un aviso (`aviso-persona`) en las otras pantallas del donante, sin
+  tocar las de la empresa; su bandeja no muestra cuenta sin leer. Las insignias son el sello de
+  Raíces (lleno la obtenida, hueco la que falta), no un pictograma propio por insignia. La barra de
+  progreso es un bloque nuevo, `.progreso`, sobre el `<progress>` nativo. Seguir entregas de la
+  entidad usa el bloque `.mapa-cuerpo` (hasta 6 líneas con resalte cruzado) y las piezas del dibujo
+  del donante; sus cifras van debajo del dibujo, como leyenda, porque a la derecha va la lista (la
+  ficha las ponía a la derecha). En el menú, la sección se llama "Misiones" (§2 de la ficha): con
+  "Misiones e insignias" la cabecera desbordaba a 1100 px; el rótulo y el título dicen el nombre
+  entero. Con 5 secciones, la barra del celular usa la letra angosta de la del admin.
+- **Alternativas:** guardar la cuenta en la dirección de cada enlace (se pierde al usar el menú);
+  un pictograma por insignia (más dibujo sin ficha que lo pida); la red del donante con sus clases
+  propias (resalta solo 3 líneas).
+- **Por qué:** lo mínimo que cumple las fichas aprobadas con piezas del catálogo.
+- **Costo:** "Llegó con un problema" (Confirmar recepción) sigue en `sin-dibujar`; las insignias
+  propias quedan para cuando exista el perfil público que las muestre.
+- **Quién decidió:** agente, dentro de las fichas aprobadas por el usuario.
+- **Evidencia:** `SitioControllerTest` y las capturas de `-Pvisual`.
+
+### 2026-11-07 · flujo · Fichas de F5: Seguir entregas de la entidad, su perfil y Misiones
+
+- **Decisión:** Seguir entregas de la entidad es la red radial del donante dada vuelta, con la puerta
+  de la entidad al centro y una línea por entrega; confirmar sigue en su pantalla, de a una. Mi
+  perfil de la entidad copia la forma del perfil del donante (Datos y Avisos en pestañas), sin
+  "Cómo te ven" y con la dirección de entrega fija. Misiones e insignias muestra las 6 misiones,
+  las de la categoría siguiente cerradas, con una barra de progreso y la cuenta en texto en lugar
+  de la torta del boceto (pág. 18), y sin el detalle de misión (págs. 20 a 22). Para verla, una
+  segunda cuenta de ejemplo, una persona (Martina Ruiz); con ella, las demás pantallas del donante
+  muestran un aviso. Del boceto de la pág. 28 salen los botones "<Estado>" y "Reportar problema": el
+  estado va en cada entrega y lo que llega con un problema se informa en Confirmar recepción
+  ("Llegó con un problema"). Las misiones avanzan de a una, como en Incentivos: la siguiente de la
+  categoría queda "en espera".
+- **Alternativas:** una sola línea del depósito a la puerta; solo la categoría actual de misiones;
+  un perfil de la entidad sin pestañas ni avisos; que la persona vea las pantallas de la empresa, o
+  adaptar sus textos para las dos cuentas.
+- **Por qué:** la red es la misma pieza del donante y cada entrega tiene su línea; la barra deja
+  leer cuánto falta, y el detalle de misión ya entra en su tarjeta (un nivel menos); la dirección la
+  revisa la administración al aprobar la entidad (RF-21, con la constancia de domicilio de la ficha del admin); el aviso no toca pantallas aprobadas de la
+  empresa.
+- **Costo:** las insignias pierden la ilustración en color del boceto (van como pictogramas
+  impresos de Raíces); la persona de ejemplo solo ve Misiones.
+- **Quién decidió:** usuario (la red, las 6 misiones, el perfil, la segunda cuenta y el aviso);
+  agente (la barra en lugar de la torta, el detalle de misión dentro de la tarjeta, las insignias
+  como pictogramas, la dirección fija y sacar los botones de la pág. 28).
+
+### 2026-11-07 · flujo · Una solicitud que espera corrección no muestra acciones
+
+- **Decisión:** mientras una entidad corrige su solicitud ("Esperando corrección"), se ocultan
+  Aprobar, Pedir corrección y Rechazar; vuelven cuando la entidad la reenvía.
+- **Alternativas:** dejar las tres acciones a la vista (la ficha no lo prohibía).
+- **Por qué:** no hay nada que decidir hasta que la entidad corrija.
+- **Costo:** ninguno en la maqueta; en el sistema depende del estado de la solicitud (HB-12).
+- **Quién decidió:** usuario, a partir de un aviso de `revision-ui`.
+
+### 2026-11-07 · vistas · Camiones y Ranking del admin (F4)
+
+- **Decisión:** se construyen Camiones (la flota en la tabla adaptable con sus cifras y su fecha,
+  "Agregar camión" plegado arriba, "Deshabilitar" en un diálogo con el motivo opcional y "Volver a
+  habilitar"; "En ruta" sin botón) y Ranking (el último mes, "Ver otro mes" como formulario GET y
+  el criterio con la fecha del cálculo arriba de la tabla), según la ficha
+  [`raices-admin-navegable`](flujos/raices-admin-navegable.md) §4.8 y §4.9. Sin componentes ni
+  estilos nuevos. Con esto, todo el menú del admin está dibujado.
+- **Alternativas:** la ficha nombra solo los resultados de agregar y deshabilitar; se suman
+  `admin-camiones-habilitado` ("Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las
+  próximas rutas.") y `admin-camiones-agregar-error` (capacidad y altura mayores que 0, como valida
+  `CamionRequestDTO`), porque cada acción lleva su aviso (RNF-UI-05). En el diálogo, el foco entra
+  en "Cancelar", como en F3; la ficha (§3 y §7) se ajustó a esto.
+- **Revisión:** `revision-ui` PASS sin bloqueantes. De sus avisos, se arreglaron la hora de las
+  cifras después de una acción (18:35), el motivo de ejemplo del camión deshabilitado y la ficha.
+  El criterio del ranking dejó de nombrar el servicio ("según Incentivos"): ahora dice "Ordenado por la
+  cantidad de misiones que cada donante completó en el mes." (decisión del usuario).
+- **Por qué:** cumplir RF-18 y RF-19 con el mismo patrón lista → acción → aviso de F2 y F3.
+- **Costo:** la maqueta muestra un motivo de ejemplo, no el escrito al deshabilitar (el POST
+  vuelve sin lo escrito); el hueco de los deshabilitados y del motivo, en
+  [`raices-ab-huecos-backend`](flujos/raices-ab-huecos-backend.md).
+- **Quién decidió:** agente, dentro de la ficha aprobada.
+
+### 2026-11-07 · vistas · Donaciones y Asignar donaciones del admin (F3)
+
+- **Decisión:** se construyen Donaciones (lista con filtro por estado y "vencen en los próximos 7
+  días", detalle con su historial, marcar como vencida en un diálogo, registrar en tres pasos) y
+  Asignar donaciones (propuestas con Aprobar y Descartar, las decididas plegadas, correr la
+  asignación a mano), según la ficha [`raices-admin-navegable`](flujos/raices-admin-navegable.md)
+  §4.5 a §4.7. Sin componentes nuevos: `.tabla`, `.tarjeta`, `.dialogo` y el sello de estado.
+- **Alternativas:** el filtro "vencen pronto" como casilla (la ficha lo dibuja como botón): no
+  llegaba al tamaño de toque, así que es un `select` "Vence" junto al de Estado. El donante dado
+  de baja del ejemplo es Pedro Ejemplo (la ficha decía Ana), para que coincida con la lista de
+  Donantes. Correr la asignación vuelve a `admin-asignaciones-corrida`, una pantalla que la ficha
+  nombra como estado pero no como página. En "Marcar como vencida", el foco entra en "Cancelar",
+  como pide el catálogo para `.dialogo` con tono quitar (la ficha, §7, decía "al primer campo").
+  El error del servidor de Registrar donación no tiene "Volver a cargar": dice "Probá de nuevo con
+  «Registrar donación»", para no perder lo escrito (igual que Registrar donante).
+- **Revisión:** `revision-ui` dio CHANGES_REQUIRED con 2 bloqueantes: los resultados de la búsqueda
+  de donante (nombre accesible distinto del texto y 19 px de alto) y el detalle sin la lista de sus
+  bienes. Los dos se arreglaron y se volvieron a comprobar con la verificación visual de las 29
+  rutas de F3 y el test del controller; también la alineación de las filas, la fecha de la donación
+  vencida y el sello neutro de las propuestas decididas.
+- **Por qué:** cumplir RF-15 a RF-17 con el mismo patrón lista → acción → aviso de F2.
+- **Costo:** "Sumar otro bien" recarga sin lo escrito en la maqueta (con Alpine, queda para
+  después); en el inicio, "En el depósito" pasa de 3 a 7 (decisión de la ficha). Huecos de backend
+  nuevos y la divergencia `donanteId`/`idDonante`, en
+  [`raices-ab-huecos-backend`](flujos/raices-ab-huecos-backend.md).
+- **Quién decidió:** agente, dentro de la ficha aprobada.
+
+### 2026-11-07 · vistas · Donantes y Entidades del admin (F2), con la tabla adaptable
+
+- **Decisión:** se construyen Donantes (lista, registrar, importar CSV con su avance y su resultado
+  en la misma pantalla) y Entidades (pestañas Piden sumarse y Activas; aprobar, pedir corrección,
+  rechazar y registrar), según la ficha [`raices-admin-navegable`](flujos/raices-admin-navegable.md).
+  Las listas usan un bloque nuevo, `.tabla`: tabla desde 53,75 em y una tarjeta por fila en el
+  celular ([catálogo](componentes.md)).
+- **Alternativas:** las pestañas de Entidades como `?vista=` (la ficha) o como el bloque
+  `.pestanas` con `#solicitudes` y `#activas`; "Quién dona" con Alpine o con un formulario aparte y
+  "Cambiar".
+- **Por qué:** el bloque `.pestanas` ya existe y anda sin JavaScript; "Cambiar" es lo que la ficha
+  pide sin JavaScript, y alcanza.
+- **Costo:** el cambio de campos en el momento con Alpine queda para después; sin él, "Cambiar"
+  recarga y pierde lo escrito. Sin JavaScript, las pestañas no dicen cuál está activa a un lector de
+  pantalla (`:target`, sin `aria-current`). El error de Registrar entidad muestra solo "Falta la
+  dirección": "Una empresa no puede ser entidad" no se alcanza, porque el tipo no ofrece Empresa.
+  "Descargar las filas con error" vuelve a la misma pantalla en la maqueta. La búsqueda de
+  Donantes y Entidades no filtra en la maqueta. Los huecos del backend de F2 quedan en
+  [`raices-ab-huecos-backend`](flujos/raices-ab-huecos-backend.md).
+- **Quién decidió:** agente, dentro de la ficha aprobada por el usuario.
+
+### 2026-11-07 · flujo · Admin en una sola ficha, con tres reglas de trabajo
+
+- **Decisión:** el recorrido del admin va en una sola ficha,
+  [`raices-admin-navegable`](flujos/raices-admin-navegable.md), con importar CSV y asignar adentro.
+  Ante una entidad que pide sumarse, el admin aprueba, pide corrección o rechaza; corregir y
+  rechazar llevan un texto que le llega a la entidad. El motivo para descartar una propuesta es
+  opcional. En Camiones, el admin solo pasa entre disponible y deshabilitado.
+- **Alternativas:** una ficha por sección, o fichas aparte para el CSV y para asignar; solo aprobar
+  entidades; motivo obligatorio al descartar; que el admin cambie los tres estados del camión.
+- **Por qué:** una ficha, como las de donante y entidad, mantiene el mismo patrón en las seis
+  secciones. Pedir corrección evita rechazar a una entidad a la que le falta un papel. "En ruta" lo
+  pone la logística, así no queda una ruta falsa.
+- **Costo:** pedir corrección y rechazar se suman a HB-12, que todavía no existe en el backend.
+  El motivo de descartar y volver a habilitar un camión necesitan huecos nuevos de backend
+  (ficha, Huecos).
+- **Quién decidió:** usuario. Además, el agente fijó dos cosas: el correo del donante es
+  obligatorio en el registro, porque por ahí le llega su acceso (RF-15, D12), y el inicio del
+  admin pasa a "7 en el depósito" en F3, porque solo pueden vencer las donaciones del depósito.
+- **Evidencia:** la ficha, §4 y §9.
+
+### 2026-11-07 · proceso · Roadmap de las vistas del enunciado: el admin primero
+
+- **Decisión:** las vistas que faltan se terminan en 7 fases, según el
+  [roadmap](roadmap-vistas-enunciado.md): primero el admin (ficha y tres tandas de pantallas),
+  después entidad y donante, después lo público y al final las páginas de error y el cierre.
+- **Alternativas:** empezar por lo público o por entidad y donante, que ya tienen casi todo.
+- **Por qué:** el admin tiene 6 de los 20 requerimientos mínimos (RF-15 a RF-20) y ninguna
+  sección dibujada.
+- **Costo:** quedan afuera la autenticación real y los datos de las APIs. Hay tres decisiones
+  abiertas, que se piden al empezar F1, F2 y F5.
+- **Quién decidió:** usuario (alcance: los cuatro roles, sin auth); el orden de las fases es una
+  propuesta del agente.
+- **Evidencia:** la matriz requerimiento → vista del roadmap.
+
+### 2026-11-06 · revisión del usuario (Raíces cálida): vuelve la versión de la etapa 1; de la corrida queda solo el estrato de las barras
+
+- **Decisión:** el sitio vuelve a como estaba al cerrar la etapa 1 (`49b46ab4`: tierra humus, marco
+  casi negro, esquinas suaves y Fraunces). De la corrida creativa se conserva solo el estrato: la
+  línea de paja y la franja de humus donde la cabecera, el pie y la barra del menú tocan la página
+  (`--color-estrato`, `--color-horizonte` y `--medida-estrato` en `tokens.css`).
+- **Alternativas:** quedarse con el resultado de la corrida (el recorrido de concepto-b, las abejas
+  y la herencia), descartado por el usuario.
+- **Por qué:** lo dijo el usuario al ver el resultado: "Prefiero la versión de antes, lo único que
+  quiero mantener del estilo nuevo son las lineas en las barras".
+- **Costo:** se pierden el recorrido, la firma de las abejas, la planta por donación y la voz nueva
+  de los títulos. Las dos entradas de abajo (iteraciones 1 y 2) y su evidencia en
+  `evidencia/raices-calida-*` quedan como registro de lo que se probó. Reemplaza: las decisiones de
+  las iteraciones 1 y 2 de la corrida (corrida creativa desatendida).
+- **Quién decidió:** el usuario, 2026-11-06.
+
+### 2026-11-06 · sistema (Raíces cálida) · Iteración 2: el camino de la donación pasa al sitio, con un marco de suelo y paja y la firma de dos abejas
+
+- **Decisión:** las tres zonas de la iteración se quedan, porque en sistema son partes del mismo
+  sitio y no compiten. (1) **recorrido:** el inicio del donante es el camino de concepto-b en tres
+  tramos ("Lo que espera destino", "Lo que está viajando", "Lo que ya recibieron"), con una planta
+  por donación sacada de los datos, un solo botón relleno ("Ver seguimiento"), cada cifra con el
+  signo de su etapa y pegada a su frase, y el aviso de problema tomado de los datos. Está
+  hecho como bloque del catálogo (`componentes/recorrido`). (2) **casa:** un estrato de paja y humus
+  bajo la cabecera, la barra del menú de humus con nombres y la firma de la casa: dos abejas con su
+  vuelo punteado, decorativas, de tamaño fijo, pegadas a la marca, una sola por pantalla y solo en
+  cabecera, portada y estados vacíos. (3) **herencia:** el resto del sitio retoma el material y la
+  voz sin cambiar su composición: frutos en lo entregado, raíces en "En tu puerta" y "Sin leer",
+  títulos que encadenan con la ancla ("Conocé a quienes reciben", "A quién le llegó cada una") y los
+  `role="status"` de los vacíos que no son vacíos reales. Las variantes de concepto se borran.
+- **Alternativas:** elegir una sola zona y descartar las otras `[REJECTED]`. Rehacer la herencia con
+  más dibujo `[REJECTED]`: el encargo fija la composición de las demás pantallas. Un solo orden de
+  los tres tramos del celular con el dibujo antes de la acción `[REJECTED]`: sacaba "Ver
+  seguimiento" de la primera pantalla de 360 × 640; se toma el objetivo con la acción antes del
+  dibujo. Pasar la cabecera a humus, la cabecera de una sola línea y bajar la opacidad de las raíces
+  de "Sin leer" `[REJECTED]`. Plantas por destino en el mapa de seguimiento, el vacío de Mis
+  donaciones con el corte de suelo y corregir el calendario de la entidad: no se hicieron
+  (ver Costo). Volver "Entidades, donantes y camiones" a "La red" `[REJECTED]`.
+- **Por qué:** la ancla es la que mejor cuenta el mensaje ("lo que donás llega y se ve; detrás hay
+  personas") y su patrón sirve para el resto: ponderado 420 de 500 contra 360 de la casa y 330 de la
+  herencia. La casa ata el marco de noche de la etapa 1 al suelo y firma sin ruido. La herencia
+  extiende la voz y el material con la disciplina de no tocar la composición. Sin `BLOQUEA` en las
+  críticas y con el piso en `[]`.
+- **Costo:** (1) la herencia queda tímida frente a la ancla: `entidad-inicio`, `admin-inicio` y
+  `donante-donaciones` casi no cambian; la distancia es de la iteración de flujo. (2) Quedan
+  anotados para el flujo: el mapa de seguimiento dibujado desde los datos con plantas, el vacío de
+  Mis donaciones, "Confirmar recepción" en la primera pantalla de la entidad, el calendario único
+  (el de la entidad dice 18:20 y 18:30 contra "hoy, 16:25") y el nombre del estado de una donación
+  sin destino, que hoy se llama igual que el de una asignada. (3) Las fichas de `docs/interfaz/flujos/`
+  (`raices-seguir-entregas`, `raices-entidad-navegable`, `raices-necesidades`) mostraban los títulos
+  viejos: se actualizaron en los arreglos de la auditoría de cierre (ronda 1), junto con
+  `raices-donante-navegable`, `raices-publico-navegable`, el brief (que suma la etapa 2) y
+  `docs/ESTADO_DOCUMENTACION.md`. `docs/README.md` no cambia: solo enlaza a `interfaz/README.md`,
+  que ya lista las carpetas de evidencia. (4) Sin `escenario=muchas`: el caso grande (30 plantas) se probó
+  en el navegador, no en las capturas. **Reemplaza:** el inicio del donante de la etapa 1 (decidido
+  por el usuario), los títulos y rótulos de las pantallas del donante, la entidad y el admin que se
+  reescribieron con la voz nueva ("Tus entregas en curso", "Lo asignado a tu entidad", "Tus
+  pedidos", entre otros, de la etapa 1 y de las entradas de Seguir entregas y Necesidades) y las
+  variantes `concepto-a|b|c` de la iteración 1 (de la corrida).
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** `evidencia/raices-calida-sistema/` (360 y 1280 de cada ruta, con los estados vacío,
+  error y lento del inicio del donante, y la primera pantalla de 360 × 640 de la ancla).
+
+### 2026-11-06 · concepto (Raíces cálida) · Iteración 1: el inicio del donante es el camino de la donación, en tres tramos (concepto-b, El recorrido)
+
+- **Decisión:** ganó concepto-b sobre `/donante-inicio`: la pantalla es el camino de la donación, del
+  depósito a la entidad, en tres tramos ("Lo que espera destino", "Lo que está viajando", "Lo que ya
+  recibieron"). Cada tramo lleva una planta por donación, su cifra apoyada en el suelo y su acción;
+  quien dona está al principio y quien recibe, al final. En escritorio va de izquierda a derecha y en
+  el celular baja. Se tomó de a el corte de suelo con raíces y el signo de "espera destino", y de c la
+  cifra que sale del suelo y "Ver seguimiento" como único botón relleno. Abejas solo en la cabecera.
+  Los tres conceptos quedan como variantes en la rama (`?variante=concepto-a|b|c`); el sitio no cambia.
+- **Alternativas:** concepto-a, La lámina (una escena grande a todo el ancho, con el campo leído al
+  revés, abejas sin pausa y el único bloqueo de piso): `[REJECTED]`, pero su corte de suelo pasa a b.
+  concepto-c, Las cifras que crecen (el número es la punta del tallo): `[REJECTED]`, mezcla unidades
+  y en el celular pierde la calidez; pasan a b la cifra desde la planta y el botón relleno. También
+  descartadas: llenar el hueco de la primera columna con datos nuevos, duplicar "Ver seguimiento",
+  subir las cifras en banda al celular, mover el tramo "viajando" al principio y sacar la tierra en
+  el celular.
+- **Por qué:** es el que mejor cuenta el mensaje ("lo que donás llega y se ve; detrás hay
+  personas"): lo que donás va de vos a una entidad y se ve en qué tramo está; el problema vive en su
+  tramo, junto a "Ver seguimiento". Ponderado 440 de 500, contra 365 de a y 340 de c. Su patrón (tramo
+  con rótulo, título, cuenta, tierra y acción) sirve para seguimiento y Mis donaciones en la
+  iteración 2.
+- **Costo:** (1) en 360 × 640 "Ver seguimiento" no entra en la primera pantalla: la cabecera ocupa
+  unos 190 px y el tramo del depósito llena el resto; queda para la iteración 2, que rehace la
+  cabecera. (2) En 1280 quedan huecos bajo "Ver Mis donaciones" y "7 donaciones registradas". (3) La
+  verificación con filtro de páginas falla `lasPantallasConMovimientoDejanSuVideoYRespetanReducirMovimiento`
+  porque deja afuera la portada y `/estilos`; sin filtro pasa, y el piso (`reporte.json`) da `[]`. (4)
+  Los arreglos de a y c no se aplicaron. No reemplaza nada: las variantes conviven con el
+  inicio del donante actual (etapa 1, decidida por el usuario) hasta que la iteración 2 lleve el
+  ganador al sitio.
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** `evidencia/raices-calida-concepto-donante-inicio/` (las cuatro capturas de a, b y c y
+  del antes; estados vacío, error y lento de b en 360 y 1280).
+
+### 2026-11-06 · color-y-acabado (Raíces) · La tierra humus, un paso más honda
+
+- **Decisión:** B, Humus hondo: `--p-suelo` `#46301f` y `--p-suelo-medio` `#3b2819`. Reemplaza el
+  humus de la entrada siguiente (`#5a3d28` y `#4d3322`); el marco casi negro no cambia.
+- **Alternativas:** una vuelta, en la portada y Seguir entregas: A, Humus (control); B, Humus hondo;
+  C, Café tostado (`#36251a`, la recomendada); D, Negro tibio (`#2a1f17`).
+- **Por qué:** el usuario pidió la tierra más oscura; B lo es sin dejar de leerse marrón.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/calida-etapa-1/tierra-*.jpg`.
+
+### 2026-11-06 · color-y-acabado y tipografia (Raíces) · Tierra humus con marco de noche, esquinas suaves y títulos en Fraunces
+
+- **Decisión:** E, etapa 1 de [Raíces cálida](encargos/raices-calida.md). La tierra humus en
+  `--p-suelo` y `--p-suelo-medio` (`#5a3d28`, `#4d3322`) y el casi negro en el más hondo (cabecera, pie
+  y cifras). Esquinas suaves (0,75 y 0,5 rem). Fraunces en títulos y marca; las cifras y los
+  numerales, en Archivo con el token nuevo `--fuente-cifra` (22 reglas de números).
+- **Alternativas:**
+  - Vuelta 1, tierra: A, Huerta de noche (control); B, Humus; C, Kraft de día; D, Monte tibio (la
+    primera D, Horizontes, se rehízo por parecerse a B). Letra: Fraunces, Literata y Young Serif.
+    El usuario pidió una mezcla de A y B, como D, y eligió Fraunces.
+  - Vuelta 2: E y F, la mezcla con esquinas suaves o rectas; eligió E (la recomendada).
+- **Por qué:** suma calidez sin perder el negro que gusta para la empresa.
+- **Costo:** se borraron Literata y Young Serif; Fraunces suma 82 KB. Falta la etapa 2 (la corrida).
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/raices/calida-etapa-1/`.
+
+### 2026-11-06 · proceso (raices-calida) · Encargo creativo: Raíces más cálida para quien dona solo, en dos etapas
+
+- **Decisión:** el [encargo `raices-calida`](encargos/raices-calida.md), en la rama
+  `E6_raices_calida`, para todo el sitio. Etapa 1: un A/B de tierra más tibia y clara (con el negro
+  de hoy como control), esquinas suaves y serif cálida en los títulos. Etapa 2: una corrida de dos
+  vueltas con la huerta de cada donante en `/donante-inicio`, las abejas como firma y más personas
+  en la ilustración.
+- **Alternativas:** dos registros, de día para la persona y de noche para la empresa (pedía un ADR
+  y el doble de contraste que comprobar); solo las pantallas de la persona; ir bien lejos, que
+  reabría las fichas aprobadas; las estaciones; las abejas atadas a un dato.
+- **Por qué:** Huerta de noche gusta para la empresa, pero perdió la calidez que pedía la encuesta
+  "Huerta con abejas" (calidez 25 y ganas de sumarse 15) y no atrae a quien dona solo.
+- **Costo:** la empresa pierde el aspecto de Huerta de noche si en el A/B no gana el control.
+- **Quién decidió:** usuario, con la encuesta de una integrante del equipo.
+- **Evidencia:** el encargo.
+
+### 2026-11-06 · proceso · iteracion-ab: modo exploración con eje de divergencia y vueltas en boceto
+
+- **Decisión:** la skill `iteracion-ab` distingue exploración (buscar un aspecto nuevo) de ajuste
+  (retocar uno elegido). En exploración:
+  - cada opción declara su eje de divergencia; en paleta, qué color domina, claro u oscuro,
+    temperatura o saturación, y no solo el tono de cada color en su rol;
+  - desde la segunda vuelta, una opción sale de la familia elegida;
+  - "cambio mínimo", superficie mínima y ponytail rigen el código, no la idea; la skill lee la
+    intensidad del brief, y "Lo que evitamos" es un aviso;
+  - las vueltas van en boceto: `-Dverificacion.boceto=true` captura solo a 1280 px, sin axe, toque,
+    desborde ni anchos intermedios. El piso, la evidencia y la bitácora, una vez, para la elegida.
+  Además: el tema `color-y-acabado` (color dominante, radios, bordes, sombras y grano juntos);
+  una variante puede crear un token de uso nuevo para mover un rol que no lo tenía (como la sombra
+  antes de `--color-sombra`); y las decisiones A/B van a la bitácora en 15 líneas o menos.
+  Cambian la skill, su plantilla, el catálogo de temas (versión 2), la dirección de arte (versión
+  4), el proceso (versión 3), las reglas del módulo, `VerificacionVisualTest`, una nota en el ADR
+  de verificación visual (`proposed`) y una línea de `identidad-visual` y de `revision-ui`.
+- **Alternativas:** constructores en paralelo con encargos opuestos; cargar la skill
+  `frontend-design`; una ficha corta de exploración; tope de 7 vueltas. Quedan sin aplicar.
+- **Por qué:** el 2026-11-05 las vueltas de solo paleta dieron opciones muy parecidas: la skill
+  pedía cambiar solo tokens en la misma estructura, y la diversidad apareció recién al cambiar qué
+  color domina y el acabado. Las reglas de minimalismo, pensadas para el código, recortaban la
+  idea. Cada vuelta corría la comprobación completa (3 anchos, 6 intermedios, axe, video y otros
+  tests), y el modo rápido se armó a mano.
+- **Costo:** una opción en boceto puede llegar al usuario con un problema de contraste o de celular;
+  se descubre al aplicar, y el arreglo tiene que conservar la idea. Las capturas de boceto no traen
+  360 px.
+- **Quién decidió:** usuario.
+- **Evidencia:** las entradas del 2026-11-05 de esta bitácora (siete vueltas de paleta y acabado) y
+  la versión anterior de la skill, `temas-ab.md` y `VerificacionVisualTest` en el historial de git.
 
 ### 2026-11-05 · paleta y acabado (Raíces) · Huerta de noche aplicada; "con problema" en negro y rojo vivo
 

@@ -62,7 +62,9 @@ sola pregunta.
 
 Armar dos direcciones con las 7 piezas de la dirección de arte: concepto, audacia, tipografía,
 color, forma, imagen y movimiento. Tienen que ser **dos mundos distintos**, no dos tonos del mismo.
-Antes de construirlas, revisar la lista "Lo que evitamos" y reemplazar todo lo genérico.
+Antes de construirlas, revisar la lista "Lo que evitamos" y reemplazar todo lo genérico. Es una
+exploración: lo que roce la lista con un motivo propio se puede proponer, como dice la dirección
+de arte, y se revisa al aplicar la elegida.
 
 ## 4. Comparar
 

@@ -225,7 +225,8 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
         .thenReturn(new DonacionOutputDTO(original, resumen, null, null, null, null, null, null));
     when(donacionesIndependientesService.obtener(id))
         .thenReturn(
-            new DonacionIndependienteResponseDTO(id, original, null, null, null, null, null, 0));
+            new DonacionIndependienteResponseDTO(
+                id, original, null, null, null, null, null, 0, null));
     return id;
   }
 

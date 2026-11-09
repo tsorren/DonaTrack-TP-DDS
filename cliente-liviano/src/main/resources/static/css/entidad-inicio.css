@@ -195,7 +195,7 @@ main .puerta h2 {
   background: var(--color-fruto);
   box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
   color: var(--color-tinta);
-  font: 900 2.5rem / 1 var(--fuente-titulo);
+  font: 900 2.5rem / 1 var(--fuente-cifra);
   font-stretch: 112%;
   letter-spacing: -0.03em;
 }

@@ -7,6 +7,8 @@
 > **Ajustada:** 2026-11-04, con la nota de Nico ("faltan más campos"): suma "Datos de tu cuenta" y
 > "Cómo te avisamos", y las tres secciones van en pestañas (A/B `layout:perfil`, usuario; bitácora,
 > "Mi perfil con pestañas"). Las secciones nuevas son maqueta: no guardan hasta el perfil real (RI-AUTH-02, HB-11); ver los [huecos de backend](raices-ab-huecos-backend.md).
+> **Ampliada:** 2026-11-07 (F5 del roadmap de las vistas), con
+> [Mi perfil de la entidad](#mi-perfil-de-la-entidad), aprobada por el usuario el 2026-11-07 (`revision-ui` PASS en la ronda 2).
 > Plantilla de la skill `ux-flujo`. Pantalla nueva de Raíces, en el sitio
 > ([ADR aceptado](../../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)):
 > `/donante-perfil`, que hasta hoy abría "todavía no está dibujada". Es un perfil
@@ -197,4 +199,152 @@ Decisiones tomadas:
 Preguntas abiertas, para el equipo (no cambian el prototipo):
 
 - La entidad también tiene Mi perfil (mapa del sitio), pero su nombre es público por RF-06: no
-  lleva esta opción. Se dibuja con el perfil completo.
+  lleva esta opción. **Resuelta el 2026-11-07:** se dibuja en la sección siguiente, sin "Cómo te
+  ven".
+
+## Mi perfil de la entidad
+
+> Ampliación del 2026-11-07, fase F5 del [roadmap de las vistas](../roadmap-vistas-enunciado.md):
+> `/entidad-perfil` (y su estado `entidad-perfil-guardado`), que hasta hoy caía en `sin-dibujar`.
+> Sigue la forma del perfil del donante (decisión del usuario, 2026-11-07): pestañas con los datos
+> y los avisos, y la constancia de los legales debajo. Sin "Cómo te ven": el nombre de la entidad es
+> público (RF-06, RF-22). Lo de arriba, del donante, no cambia.
+
+### 1. Para quién y para qué
+
+| | |
+|---|---|
+| Quién | La persona que organiza lo que recibe la entidad (en el ejemplo, Marta, del Comedor Barrio Ejemplo). Entra pocas veces: al empezar, o cuando cambia quién la representa o por dónde quiere los avisos |
+| Tono | Pantallas de trabajo: claro, útil, tranquilizador |
+| Qué quiere lograr | "Tener al día los datos de mi entidad y elegir cómo me avisan" |
+| Dispositivo principal | La computadora de la entidad, también el celular |
+| Requerimientos | RI-AUTH-02 (perfil). RNF-UI-05 (cada acción con su mensaje de éxito y de error). RNF-CL-02 (sin JavaScript, igual funciona) |
+| Datos que usa | Los del registro de la entidad (`publico-registro-entidad`: nombre, qué es, tipo de organización, dirección de entrega y quién la representa) y los medios de contacto (`MedioDeContactoInputDTO`). Editarlos: HB-11, como en el donante. En la maqueta, el formulario va a `entidad-perfil-guardado` |
+| Boceto de E1 | Página 14, menú de usuario: "Mi perfil" |
+
+### 2. Dónde está en el sitio
+
+Entidad → cuenta (arriba, junto al nombre) → **Mi perfil**, nivel 2. No está en el menú de
+secciones, como en el donante.
+
+### 3. Recorrido
+
+```mermaid
+flowchart TD
+  cuenta([Cuenta: Mi perfil]) --> perfil[Mi perfil: Datos de la entidad]
+  perfil -->|pestaña| avisos[Avisos]
+  perfil -->|guarda los datos| servidor{¿Se guardó?}
+  avisos -->|guarda los avisos| servidor
+  servidor -->|sí| guardado[Aviso: listo, en la misma pestaña]
+  servidor -->|error| error[No pudimos guardar: sigue como antes]
+  servidor -->|sin conexión| sinConexion[No sabemos si se guardó]
+  perfil -->|La dirección: escribinos| contacto([Contacto])
+  perfil -->|Términos y privacidad| legales([Legales])
+```
+
+Desvíos: no guardar (se va con el menú y no cambia nada), error del servidor y sin conexión, como
+en el donante.
+
+### 4. Pantallas
+
+```text
+MI PERFIL (rótulo)
+Comedor Barrio Ejemplo
+Comedor · Marta, comedor@ejemplo.org
+
+ [Datos de la entidad] [Avisos]
+┌ Datos de la entidad ──────────────────────────┐
+│ Nombre de la entidad · Qué es · Tipo de        │
+│ organización                                   │
+│ Dirección de entrega (fija):                   │
+│   Calle Ejemplo 450, Localidad Ejemplo,        │
+│   Buenos Aires. "No se cambia desde acá…"      │
+│ Quién la representa: nombre y apellido, correo │
+│ [Guardar los datos]                            │
+└────────────────────────────────────────────────┘
+┌ Cómo te avisamos ─────────────────────────────┐
+│ Correo · WhatsApp (opcional) · Teléfono (opc.) │
+│ Por dónde: correo / WhatsApp / mensaje de texto│
+│ Qué: todo / solo cuando llega a tu puerta      │
+│ [Guardar los avisos]                           │
+└────────────────────────────────────────────────┘
+
+Términos y privacidad
+Aceptaste la versión 1 el 1 de noviembre de 2026
+Leer los términos y la política de privacidad →
+```
+
+- **Las mismas piezas que el perfil del donante:** las pestañas (enlaces a `#datos` y
+  `#como-te-avisamos`, sin JavaScript y con "atrás"), los campos y la constancia. La primera
+  pestaña es Datos de la entidad.
+- **La dirección de entrega no se cambia desde acá.** Es a donde van los camiones, y la
+  administración la revisó con la constancia de domicilio al aprobar la entidad (RF-21, con la
+  constancia de la [ficha del admin](raices-admin-navegable.md)). Se muestra
+  fija, con el enlace a Contacto, como el CUIT del donante.
+- **Avisos:** los de la bandeja de la entidad: asignación y llegada a la puerta (RF-13), y salida y
+  problema, que la bandeja aprobada suma del contrato de Notificaciones.
+
+### 5. Estados
+
+| Pantalla | Estado | Qué se ve | Texto |
+|---|---|---|---|
+| Mi perfil | Con datos | La pestaña Datos de la entidad, con los datos de ejemplo | — |
+| Mi perfil | Guardando (`?escenario=lento`) | El botón dice "Guardando…" y queda desactivado | "Guardando…" |
+| Guardado (`entidad-perfil-guardado?seccion=datos#datos`) | Éxito, datos | Aviso arriba, en la pestaña Datos | "Listo. Guardamos los datos de tu entidad." |
+| Guardado (`entidad-perfil-guardado?seccion=avisos#como-te-avisamos`) | Éxito, avisos | Aviso arriba, en la pestaña Avisos | "Listo. Guardamos cómo te avisamos." |
+| Mi perfil | Error del servidor (`?escenario=error`) | Aviso arriba | "No pudimos guardar los cambios. Es un problema nuestro: siguen como estaban. Probá de nuevo en unos minutos; si sigue, escribinos con este código." + código y enlace a Contacto |
+| Mi perfil | Sin conexión (`?escenario=sin-conexion`) | Aviso arriba | "Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó guardado." |
+| Mi perfil | Error de datos | Un campo obligatorio vacío: el navegador lo marca (`required`) y no envía. En el sistema, el error por campo de `.campo-error`. Se describe, no se dibuja | El texto de cada campo, el del registro de la entidad |
+| Mi perfil | Cargando | No aplica en la maqueta: la página llega armada del servidor | — |
+
+### 6. Textos
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Rótulo y título | "Mi perfil" · "Comedor Barrio Ejemplo" | — |
+| Debajo del título | "Comedor · Marta, comedor@ejemplo.org" | Qué es y quién la representa |
+| Pestañas | "Datos de la entidad" · "Avisos" | `nav` "Secciones de tu perfil" |
+| Datos | "Datos de la entidad" · "Todos los datos son obligatorios, salvo los que dicen «opcional»." · "Nombre de la entidad" · "Qué es" (Merendero, Comedor, Escuela, Hogar, Club, Biblioteca, Otra) · "Tipo de organización" (los tres del registro) · "Dirección de entrega": "Calle Ejemplo 450, Localidad Ejemplo, Buenos Aires" y "No se cambia desde acá: es a donde van los camiones. Para cambiarla, escribinos y la revisamos como cuando sumaste tu entidad." · "Quién la representa": "Nombre y apellido", "Correo electrónico" · "Guardar los datos" | Las etiquetas del registro de la entidad |
+| Avisos | "Cómo te avisamos" · "Te avisamos cuando se asigna una donación a tu entidad, cuando sale hacia vos, si tiene un problema y cuando llega a tu puerta. Los avisos también quedan en Notificaciones." · "Correo", "WhatsApp (opcional)", "Teléfono (opcional)" · "Por dónde te avisamos": "Por correo", "Por WhatsApp", "Por mensaje de texto al teléfono" · "Qué te avisamos": "Todo: cuando se asigna, cuando sale, si tiene un problema y cuando llega", "Solo cuando llega a tu puerta" · "Guardar los avisos" | Los de la bandeja aprobada: RF-13 más salida y problema |
+| Legales | "Aceptaste la versión 1 el 1 de noviembre de 2026." · "Leer los términos y la política de privacidad" | Igual que el donante |
+| Cuenta | Marta · Comedor Barrio Ejemplo | La de la entidad |
+
+### 7. Accesibilidad
+
+Como el perfil del donante: un solo `h1`, las pestañas en un `nav` con nombre, cada grupo de
+opciones en un `fieldset` con `legend`, el aviso de guardado con `role="status"` y foco, el de
+error con `role="alert"`. La dirección fija es texto, no un campo desactivado: se lee entera y no
+parece un error.
+
+### 8. Revisión de usabilidad
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | Aviso al guardar, en la misma pestaña | — |
+| 2 | Lenguaje del usuario | Las etiquetas del registro de la entidad | — |
+| 3 | Control y libertad | Se cambia cuantas veces se quiera; la dirección, por Contacto | Cambiar la dirección no es inmediato |
+| 4 | Consistencia | Las mismas pestañas, campos y constancia que el donante | — |
+| 5 | Prevención de errores | La dirección no se cambia por error: va por Contacto | — |
+| 6 | Reconocer antes que recordar | Lo guardado se ve en los campos | — |
+| 7 | Flexibilidad | — | — |
+| 8 | Diseño minimalista | Dos pestañas y la constancia | — |
+| 9 | Recuperarse de errores | Error y sin conexión dicen qué quedó | — |
+| 10 | Ayuda | La nota de la dirección dice por qué no se cambia acá | — |
+
+Factores de Morville: útil (los datos y los avisos al día), usable (dos pestañas), deseable (las
+láminas de Raíces), valioso (los camiones van a la dirección revisada), ubicable (la cuenta de la
+cabecera), accesible (AA, sin JavaScript), creíble (muestra la constancia de los legales). Probar
+con personas: si se entiende por qué la dirección va por Contacto y el nombre no, aunque los dos
+los revisó la administración al aprobar la entidad.
+
+### 9. Decisiones y preguntas
+
+- Como el perfil del donante, con Datos de la entidad y Avisos en pestañas, y sin "Cómo te ven"
+  (usuario, 2026-11-07).
+- La dirección de entrega se muestra fija y se cambia por Contacto, porque la administración la
+  revisa al aprobar la entidad (RF-21; la constancia sale de la ficha del admin) (agente,
+  propuesto).
+- Los datos de ejemplo son sintéticos: Calle Ejemplo 450 y comedor@ejemplo.org (agente).
+
+Preguntas abiertas, para el equipo: si cambiar la dirección de entrega vuelve a pedir la constancia
+de domicilio (RF-21 no lo dice).

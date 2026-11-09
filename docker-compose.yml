@@ -172,6 +172,36 @@ services:
     networks:
       - donatrack-network
 
+  api-gateway:
+    # Entrada única del cliente a los servicios (ADR-E6-02, etapa 1): rutas sin reescritura y
+    # X-Trace-Id, sin JWT todavía (etapa 2, F5).
+    image: donatrack/api-gateway:local
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      target: local
+    ports:
+      - "8086:8086"
+    environment:
+      - PORT=8086
+      - DONACIONES_SERVICE_URL=http://donaciones-service:8080
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+      - LOGISTICA_SERVICE_URL=http://logistica-service:8083
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - donatrack-network
+
   keycloak:
     # IdP de DonaTrack (SPEC-06 A1-01, ADR 20261104): Keycloak fijado por digest, con el realm y el
     # tema ya construidos (kc.sh build). Sus datos viven en la base `keycloak` de Postgres.

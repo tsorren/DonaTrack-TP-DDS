@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--/* Raíces, la página 404 (docs/interfaz/flujos/raices-paginas-de-error.md): una dirección que no
+       existe. Spring Boot la elige por el código de estado; el contenido es pagina-error. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-error', ~{::contenido})}">
+<head>
+  <title>Página no encontrada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{pagina-error :: pagina('No encontramos esta', 'página',
+            'Puede que la dirección esté mal escrita o que la página ya no exista.',
+            'Ir al inicio', '/', false,
+            'Si llegaste desde un enlace de DonaTrack, escribinos con este código.',
+            'Si llegaste desde un enlace de DonaTrack, escribinos y contanos desde dónde.')}"></th:block>
+</th:block>
+</body>
+</html>

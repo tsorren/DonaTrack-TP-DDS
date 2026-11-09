@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!--/* Raíces, Ranking de donantes del admin (RF-19), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.9). De partida, el último ranking
+       (el primero de ${ranking.meses}); "Ver otro mes" es un formulario GET con ?mes=2026-08. Los datos
+       los pone RankingController (de la maqueta o de Incentivos); sin meses, el vacío (el 204). El criterio va
+       arriba de la tabla, con la fecha en que se calculó. El admin ve el nombre de cada donante.
+       En la maqueta, ?escenario=vacio, lento y error. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Ranking - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             meses=${ranking.meses},
+             conDatos=${!meses.isEmpty() and escenario != 'error' and escenario != 'lento'},
+             elegido=${param.mes != null ? param.mes[0] : ''},
+             m=${meses.isEmpty() ? null : (meses.^[clave == #root.elegido] ?: meses[0])}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo">Administración</p>
+      <h1>Ranking de donantes</h1>
+      <p th:if="${conDatos}" th:text="${m.nombre}">Septiembre de 2026</p>
+    </header>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el ranking…</p>
+
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar el ranking.</h2>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-ranking')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-ranking" th:href="@{/admin-ranking}">Volver a
+        cargar</a>
+    </section>
+
+    <section th:if="${meses.isEmpty() and escenario != 'error' and escenario != 'lento'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay ningún ranking: se arma al cerrar el primer mes con misiones.</h2>
+    </section>
+
+    <form th:if="${conDatos}" class="racimo" action="/admin-ranking" th:action="@{/admin-ranking}" method="get">
+      <div class="campo">
+        <label for="mes">Ver otro mes</label>
+        <select id="mes" name="mes">
+          <option th:each="x : ${meses}" th:value="${x.clave}" th:text="${x.nombre}"
+                  th:selected="${x.clave == m.clave}">Septiembre de 2026</option>
+        </select>
+      </div>
+      <button class="boton" data-tono="secundario" type="submit">Ver</button>
+    </form>
+
+    <section th:if="${escenario == 'lento' or conDatos}" class="pila" data-espacio="3"
+             aria-labelledby="ranking-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <h2 id="ranking-titulo" th:text="${conDatos} ? |El ranking de ${#strings.toLowerCase(m.nombre)}| : 'El ranking'">El
+        ranking de septiembre de 2026</h2>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+      <th:block th:if="${conDatos}">
+        <p>Ordenado por la cantidad de misiones que cada donante completó en el mes.
+          <th:block th:if="${m.calculado}" th:text="|Calculado el ${m.calculado}.|">Calculado el 30 de
+            septiembre de 2026, 23:59.</th:block>
+          <th:block th:text="|El de ${ranking.proximo} se calcula al cerrar el mes.|">El de octubre se
+            calcula al cerrar el mes.</th:block></p>
+        <table class="tabla">
+          <caption th:text="|Donantes de ${#strings.toLowerCase(m.nombre)}, del que más misiones completó al que menos.|">Donantes
+            de septiembre de 2026, del que más misiones completó al que menos.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Puesto</th>
+              <th scope="col">Donante</th>
+              <th scope="col">Misiones completadas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="p, i : ${m.puestos}">
+              <td data-rotulo="Puesto" th:text="${i.count}">1</td>
+              <th scope="row" th:text="${p.donante}">Ana Ejemplo</th>
+              <td data-rotulo="Misiones completadas" th:text="${p.misiones}">5</td>
+            </tr>
+          </tbody>
+        </table>
+      </th:block>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

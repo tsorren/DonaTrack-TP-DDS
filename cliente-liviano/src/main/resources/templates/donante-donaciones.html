@@ -6,7 +6,8 @@
        más reciente arriba. Su número es la estación: impresa (paja) si ya llegó, de papel si tiene
        destino y hueca si todavía no (lo que falta todavía no se imprimió); el texto dice lo mismo.
        En pantalla grande, cada asiento es un renglón con columnas, como un libro de registro.
-       ?escenario=vacio (cuenta nueva), error y lento. */-->
+       Los datos vienen del controller (misDonaciones: de la maqueta o de Donaciones), no de
+       viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones', ~{::contenido})}">
 <head>
@@ -21,17 +22,19 @@
     th:with="pedidoEstado=${param.estado != null ? param.estado[0] : ''},
              pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
              fEstado=${ {'pendiente', 'en-camino', 'entregada', 'con-problema'}.contains(pedidoEstado) ? pedidoEstado : ''},
-             fCategoria=${ {'alimentos', 'ropa', 'escolares'}.contains(pedidaCategoria) ? pedidaCategoria : ''},
+             categorias=${misDonaciones.categorias},
+             fCategoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
              filtrado=${fEstado != '' or fCategoria != ''},
-             lista=${donaciones.?[(#root.fEstado == '' or estado.tono == #root.fEstado)
-                     and (#root.fCategoria == '' or (categoria == 'cat-vestimenta' ? 'ropa' : categoria.substring(4)) == #root.fCategoria)]}">
+             vacia=${escenario == 'vacio' or misDonaciones.donaciones.isEmpty()},
+             lista=${misDonaciones.donaciones.?[(#root.fEstado == '' or estado.tono == #root.fEstado)
+                     and (#root.fCategoria == '' or categoria == #root.fCategoria)]}">
   <div class="donaciones">
     <header>
       <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
       <h1>Lo que donó <em>tu empresa</em></h1>
     </header>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${vacia and escenario != 'error'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Tu empresa todavía no tiene donaciones registradas.</h2>
       <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
         con su estado.</p>
@@ -43,7 +46,7 @@
       <section th:replace="~{datos-donante :: error('No pudimos cargar tus donaciones.', '/donante-donaciones')}"></section>
     </th:block>
 
-    <th:block th:unless="${escenario == 'vacio' or escenario == 'error'}">
+    <th:block th:unless="${vacia or escenario == 'error'}">
       <form class="filtro" action="/donante-donaciones"
             th:action="@{/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
         <div class="campo">
@@ -60,9 +63,8 @@
           <label for="categoria">Categoría</label>
           <select id="categoria" name="categoria">
             <option value="" th:selected="${fCategoria == ''}">Todas</option>
-            <option value="alimentos" th:selected="${fCategoria == 'alimentos'}">Alimentos</option>
-            <option value="ropa" th:selected="${fCategoria == 'ropa'}">Ropa</option>
-            <option value="escolares" th:selected="${fCategoria == 'escolares'}">Útiles escolares</option>
+            <option th:each="c : ${categorias}" th:value="${c.valor}"
+                    th:selected="${fCategoria == c.valor}" th:text="${c.texto}">Alimentos</option>
           </select>
         </div>
         <button class="boton" data-tono="principal" type="submit">Filtrar</button>
@@ -71,16 +73,16 @@
       </form>
     </th:block>
 
-    <th:block th:if="${escenario == 'lento'}">
-      <p class="cargando">Cargando tus donaciones…</p>
+    <th:block th:if="${escenario == 'lento' and !vacia}">
+      <p class="cargando" role="status">Cargando tus donaciones…</p>
       <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
     </th:block>
 
-    <th:block th:if="${escenario == ''}">
+    <th:block th:if="${escenario == '' and !vacia}">
       <p th:unless="${filtrado and lista.isEmpty()}" class="bajada" role="status"
          th:text="${filtrado}
            ? |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'} con esos filtros.|
-           : |${#lists.size(lista)} donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.|">7
+           : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'}, de la más reciente a la primera. Actualizado ${misDonaciones.actualizado}.|">7
         donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.</p>
 
       <section th:if="${filtrado and lista.isEmpty()}" class="vacio" role="status"
@@ -99,10 +101,7 @@
         </div>
         <ol class="libro" role="list">
           <li th:each="d : ${lista}" class="asiento"
-              th:classappend="|asiento--${d.estado.tono}${d.destino == null ? ' asiento--sin-destino' : ''}|"
-              th:with="destino=${d.destino == null ? null : #strings.replace(d.destino, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')},
-                       icono=${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria},
-                       categoriaTexto=${d.categoriaTexto == 'Vestimenta' ? 'Ropa' : d.categoriaTexto}">
+              th:classappend="|asiento--${d.estado.tono}${d.destino == null ? ' asiento--sin-destino' : ''}|">
             <p class="asiento-numero">
               <span aria-hidden="true"><small>N.º</small> <b th:text="${d.numero}">7</b></span>
               <span class="solo-lectores" th:text="|Donación número ${d.numero}|">Donación número 7</span>
@@ -111,16 +110,16 @@
               <h2><a href="/donante-donaciones-detalle?donacion=arroz"
                      th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
                      th:text="${d.titulo}">Arroz largo fino</a></h2>
-              <p class="categoria">
-                <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                  <use href="#cat-alimentos" th:href="|#${icono}|"/>
+              <p class="categoria" th:if="${d.categoriaTexto}">
+                <svg th:if="${d.icono}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                  <use href="#cat-alimentos" th:href="|#${d.icono}|"/>
                 </svg>
-                <span th:text="${categoriaTexto}">Alimentos</span>
+                <span th:text="${d.categoriaTexto}">Alimentos</span>
               </p>
             </div>
             <p class="asiento-para">
               <b th:text="${d.cantidad}">10 kg</b>
-              <span th:text="${destino == null} ? 'Todavía sin destino' : |Para ${destino}|">Todavía sin
+              <span th:text="${d.destino == null} ? 'Todavía sin destino' : |Para ${d.destino}|">Todavía sin
                 destino</span>
             </p>
             <p class="asiento-donada" th:text="|Donada el ${d.donada}|">Donada el 14 de octubre de 2026</p>
@@ -129,8 +128,7 @@
                 <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
                 <span th:text="${d.estado.texto}">Pendiente</span>
               </span>
-              <span class="asiento-nota"
-                    th:text="${d.estado.tono == 'entregada'} ? |Entrega confirmada el ${#strings.substringBefore(d.llego, ' de 2026')}, con foto de la entidad| : ${d.nota}">En
+              <span class="asiento-nota" th:text="${d.nota}">En
                 el depósito, espera destino</span>
             </p>
           </li>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--/* Raíces, las páginas de error propias (RF-CL-08), según su ficha de flujo
+       (docs/interfaz/flujos/raices-paginas-de-error.md). Pieza compartida: no se sirve como pantalla.
+       La usan error/404, error/403 y error/5xx, que Spring Boot elige por el código de estado; las
+       tres van con el marco de las públicas (usuario, 2026-11-07). Spring pone en el modelo status
+       (el código) y path (la dirección pedida).
+       El código para soporte es el traceId del pedido (TraceIdFiltro, ADR-E6-02), el mismo que viaja
+       a las APIs en X-Trace-Id; con ?escenario=sin-codigo, ninguno.
+       Fragmento pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto,
+       contactoSin): el título con su parte en cursiva, la frase, la acción principal, si suma "Ir al
+       inicio" y el texto del enlace a Contacto con código y sin él. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto, contactoSin)"
+    th:with="codigo=${param.escenario != null and param.escenario[0] == 'sin-codigo' ? null : traceId}">
+  <div class="grilla" data-espacio="5">
+    <div class="lectura">
+      <p class="rotulo" th:text="|Error ${status}|">Error 404</p>
+      <h1><th:block th:text="${tituloAntes}">No encontramos esta</th:block>
+        <em th:text="${tituloResaltado}">página</em></h1>
+      <p class="lectura-bajada" th:text="${texto}">Puede que la dirección esté mal escrita o que la
+        página ya no exista.</p>
+      <div class="racimo">
+        <a class="boton" data-tono="principal" href="/" th:href="${accionHref}"
+           th:text="${accion}">Ir al inicio</a>
+        <a th:if="${conInicio}" class="boton" data-tono="secundario" href="/" th:href="@{/}">Ir al
+          inicio</a>
+      </div>
+      <p th:if="${codigo}" class="aviso-codigo">Código para soporte: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
+      <p th:if="${codigo}"><a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+         th:href="@{/publico-contacto(codigo=${codigo})}" th:text="${contacto}">Si sigue, escribinos
+        con este código.</a></p>
+      <p th:unless="${codigo}"><a href="/publico-contacto" th:href="@{/publico-contacto}"
+         th:text="${contactoSin}">Si sigue, escribinos y contanos qué estabas haciendo.</a></p>
+    </div>
+    <!--/* El corte de suelo de la portada, en chico (usuario, 2026-11-07): el brote, la línea de
+           tierra y una raíz que baja y se corta antes de llegar, sin la punta que en la portada
+           marca que llegó. Decorativo: el texto dice todo. */-->
+    <div data-dibujo="error">
+    <svg class="paso-dibujo" viewBox="60 20 280 300" width="280" height="300" aria-hidden="true"
+         focusable="false">
+      <path class="paso-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
+      <rect class="paso-suelo" x="0" y="170" width="400" height="350"/>
+      <g class="paso-brote" transform="translate(140 30) scale(2)">
+        <path class="tallo" d="M30 70V28"/>
+        <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
+        <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
+        <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
+      </g>
+      <path class="paso-horizonte" d="M0 170H400"/>
+      <path class="raiz" pathLength="1" d="M200 172C200 210 198 240 202 262"/>
+      <path class="raicilla" pathLength="1" d="M200 214C188 220 180 228 176 240"/>
+    </svg>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

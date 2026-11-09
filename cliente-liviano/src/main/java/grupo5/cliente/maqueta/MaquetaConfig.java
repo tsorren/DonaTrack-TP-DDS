@@ -21,7 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 @Profile("maqueta")
-class MaquetaConfig implements WebMvcConfigurer {
+public class MaquetaConfig implements WebMvcConfigurer {
 
   /** La cuenta de ejemplo del donante es una empresa. */
   private static final Map<Area, CuentaVista> CUENTAS =
@@ -40,6 +40,8 @@ class MaquetaConfig implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(
         new VariantesInterceptor(ResourcePatternUtils.getResourcePatternResolver(recursos)));
+    registry.addInterceptor(new RespuestaDeEjemplo());
+    registry.addInterceptor(new CuentaDeEjemplo());
   }
 
   @Bean

@@ -192,7 +192,7 @@ o
 [Continuar con Google]
 ¿Primera vez? Crear una cuenta
 ── Solo en la maqueta ──
-Cuentas de ejemplo: Distribuidora Ejemplo SA · Comedor Barrio Ejemplo · Administración
+Cuentas de ejemplo: Distribuidora Ejemplo SA · Martina Ruiz · Comedor Barrio Ejemplo · Administración
 ```
 
 Respecto del boceto (pág. 4): "Correo electrónico" en lugar de "Usuario" (el IdP usa el correo) y
@@ -372,7 +372,7 @@ y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comun
 | | Campos | "Correo electrónico" · "Contraseña" · "Mostrar" / "Ocultar" | "Mostrar", con JavaScript |
 | | Enlaces | "¿Olvidaste tu contraseña?" · "¿Primera vez? Crear una cuenta" | |
 | | Acciones | "Ingresar" · "o" · "Continuar con Google" | |
-| | Cuentas de ejemplo | "Cuentas de ejemplo" · "Es un prototipo: no se guarda nada. Entrá con una cuenta de ejemplo." · "Distribuidora Ejemplo SA, empresa donante" · "Comedor Barrio Ejemplo, entidad" · "Administración" | Solo en la maqueta |
+| | Cuentas de ejemplo | "Cuentas de ejemplo" · "Es un prototipo: no se guarda nada. Entrá con una cuenta de ejemplo." · "Distribuidora Ejemplo SA, empresa donante" · "Martina Ruiz, persona donante" · "Comedor Barrio Ejemplo, entidad" · "Administración" | Solo en la maqueta |
 | Recuperar la contraseña | Rótulo y título | "Ingresar" · "Pedí una contraseña nueva" | El rótulo es la sección: se llega desde Ingresar |
 | | Bajada | "Escribí el correo de tu cuenta y te mandamos un enlace para crear una contraseña nueva." | |
 | | Campo y acción | "Correo electrónico" · "Mandame el enlace" | Verbo y resultado |
@@ -466,11 +466,14 @@ Necesidades](raices-necesidades.md), sin el de fideos (lo publica la maqueta de 
 ([ficha del donante](raices-donante-navegable.md)) muestra los mismos pedidos, con las mismas
 cantidades y unidades.
 
-**Cuentas de ejemplo** (Ingresar, de `SitioController`):
+**Cuentas de ejemplo** (Ingresar, de `SitioController`). Desde el 2026-11-07 (F5) son cuatro: la
+segunda, "Martina Ruiz, persona donante", va a `donante-misiones?cuenta=persona`, y la de la empresa,
+a `donante-inicio?cuenta=empresa` ([ficha de Misiones](raices-misiones.md#2-dónde-está-en-el-sitio)):
 
 | Enlace | Lleva a | Cuenta |
 |---|---|---|
-| "Distribuidora Ejemplo SA, empresa donante" | `donante-inicio` | Distribuidora Ejemplo SA · Empresa donante |
+| "Distribuidora Ejemplo SA, empresa donante" | `donante-inicio?cuenta=empresa` | Distribuidora Ejemplo SA · Empresa donante |
+| "Martina Ruiz, persona donante" (desde 2026-11-07) | `donante-misiones?cuenta=persona` | Martina Ruiz · Persona donante |
 | "Comedor Barrio Ejemplo, entidad" | `entidad-inicio` | Marta · Comedor Barrio Ejemplo |
 | "Administración" | `admin-inicio` | Leo · Administración |
 

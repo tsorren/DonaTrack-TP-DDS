@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--/* Raíces, el aviso de la maqueta para la persona que dona (docs/interfaz/flujos/raices-misiones.md,
+       sección 2 y estado "Aviso de la maqueta"): las pantallas del donante están dibujadas para la
+       empresa, así que con la cuenta de la persona (?cuenta=persona, en la sesión) SitioController
+       muestra esto en lugar de sus datos, con el menú de la persona y el rótulo de la sección. Dos
+       salidas: Misiones e insignias, o entrar como la empresa. No es una pantalla: su nombre no
+       empieza con un rol. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'privado', ~{::contenido})}">
+<head>
+  <title th:text="|${seccion} - DonaTrack|">Sección - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="sin-dibujar">
+    <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
+    <h1>Con la cuenta de una persona, la maqueta solo muestra Misiones e insignias.</h1>
+    <p>Las demás pantallas del donante están dibujadas para la cuenta de ejemplo de la empresa.</p>
+    <div class="racimo">
+      <a class="boton" data-tono="principal" href="/donante-misiones"
+         th:href="@{/donante-misiones}">Ir a Misiones e insignias</a>
+      <a class="boton" data-tono="secundario" href="/donante-inicio?cuenta=empresa"
+         th:href="@{/donante-inicio(cuenta='empresa')}">Entrar como la empresa</a>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

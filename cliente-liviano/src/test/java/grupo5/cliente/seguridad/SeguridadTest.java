@@ -22,7 +22,6 @@ import grupo5.cliente.cuentas.PerfilService;
 import grupo5.cliente.cuentas.SolicitudesDeEntidad;
 import grupo5.cliente.cuentas.SolicitudesDeEntidad.Pendiente;
 import grupo5.cliente.puertos.DonacionesComoUsuario;
-import grupo5.cliente.puertos.DonacionesComoUsuario.DonacionDelDonante;
 import grupo5.cliente.puertos.DonacionesComoUsuario.NecesidadDeEntidad;
 import grupo5.cliente.web.AccesoController;
 import grupo5.cliente.web.DatosDelUsuarioController;
@@ -31,7 +30,6 @@ import grupo5.cliente.web.PantallasController;
 import grupo5.cliente.web.SolicitudesDeEntidadController;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -158,19 +156,6 @@ class SeguridadTest {
     mvc.perform(get("/admin-inicio").with(como("ADMIN")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/admin-donantes\"")));
-  }
-
-  @Test
-  void misDonacionesMuestraLasDeSuPersonaEnDonaciones() throws Exception {
-    LocalDateTime registro = LocalDateTime.of(2026, 10, 14, 10, 0);
-    var arroz = new DonacionDelDonante(UUID.randomUUID(), "Arroz largo", "ENTREGADA", registro, 10);
-    when(donaciones.donacionesDe(PERSONA)).thenReturn(List.of(arroz));
-
-    mvc.perform(get("/donante-donaciones").with(como("DONANTE")))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Arroz largo")))
-        .andExpect(content().string(containsString("14/10/2026")))
-        .andExpect(content().string(containsString("Entregada")));
   }
 
   @Test

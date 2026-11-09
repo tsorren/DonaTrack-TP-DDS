@@ -53,14 +53,14 @@ class IntegracionConfig {
   @Bean
   RestClient donacionesComoServicio(
       OAuth2ClientHttpRequestInterceptor tokenDeServicio,
-      @Value("${donatrack.donaciones.url}") String url) {
+      @Value("${cliente.api.donaciones.url}") String url) {
     return conToken(url, tokenDeServicio);
   }
 
   @Bean
   RestClient donacionesComoUsuario(
       OAuth2ClientHttpRequestInterceptor tokenDelUsuario,
-      @Value("${donatrack.donaciones.url}") String url) {
+      @Value("${cliente.api.donaciones.url}") String url) {
     return conToken(url, tokenDelUsuario);
   }
 

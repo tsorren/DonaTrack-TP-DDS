@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--/* Raíces, Para donantes (la "Landing donante" del mapa del sitio; ficha
+       docs/interfaz/flujos/raices-conocer-y-activar.md, 4.2; sin boceto): qué podés donar, qué ves con
+       tu cuenta y las preguntas de siempre, con la salida al registro. Se llega desde el pie y desde
+       "Cómo funciona" de la portada. Solo promete lo que el sitio ya le muestra al donante. Sin estados:
+       es texto fijo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-conocer', ~{::contenido})}">
+<head>
+  <title>Para donantes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <svg th:replace="~{iconos :: categorias}"></svg>
+  <div class="pila" data-espacio="5">
+    <header class="lectura pila" data-espacio="2">
+      <p class="rotulo">Para donantes</p>
+      <h1>Doná y seguí tu donación <em>hasta que llega</em></h1>
+      <p class="lectura-bajada">Podés donar como persona o con tu empresa. Con tu cuenta ves dónde está
+        cada donación y quién la recibió.</p>
+      <div class="racimo" data-espacio="2">
+        <a class="boton" data-tono="principal" href="/publico-registro-donante"
+           th:href="@{/publico-registro-donante}">Crear mi cuenta de donante</a>
+      </div>
+      <p class="cuenta-salida">¿Ya tenés cuenta? <a href="/publico-ingresar"
+         th:href="@{/publico-ingresar}">Ingresar</a></p>
+    </header>
+
+    <section aria-labelledby="que-donar-titulo" class="pila" data-espacio="3">
+      <h2 id="que-donar-titulo">Qué podés donar</h2>
+      <ul class="grilla" data-espacio="3" role="list">
+        <li class="tarjeta racimo" data-espacio="2">
+          <svg width="48" height="48" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
+          <p><b>Alimentos:</b> envasados y sin vencer.</p>
+        </li>
+        <li class="tarjeta racimo" data-espacio="2">
+          <svg width="48" height="48" aria-hidden="true" focusable="false"><use href="#cat-ropa"/></svg>
+          <p><b>Ropa:</b> limpia y en buen estado.</p>
+        </li>
+        <li class="tarjeta racimo" data-espacio="2">
+          <svg width="48" height="48" aria-hidden="true" focusable="false"><use href="#cat-muebles"/></svg>
+          <p><b>Muebles:</b> que se puedan usar.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="cuenta-titulo" class="lectura">
+      <h2 id="cuenta-titulo">Qué ves con tu cuenta</h2>
+      <ul class="lista" role="list">
+        <li>Tus donaciones y en qué estado está cada una.</li>
+        <li>Por dónde va el camión, con la hora de la última actualización.</li>
+        <li>Qué entidad la recibió, cuando lo confirma.</li>
+        <li>Las entidades del mapa y lo que piden.</li>
+      </ul>
+      <p>Si donás como persona, también tenés misiones: metas para sumar donaciones con otras personas.</p>
+    </section>
+
+    <section aria-labelledby="preguntas-titulo" class="lectura pila" data-espacio="2">
+      <h2 id="preguntas-titulo">Preguntas frecuentes</h2>
+      <details>
+        <summary>¿Cuesta algo?</summary>
+        <p>No.</p>
+      </details>
+      <details>
+        <summary>¿Dónde dejo lo que dono?</summary>
+        <p>En el depósito; el equipo lo registra y lo vas a ver en tu cuenta.</p>
+      </details>
+      <details>
+        <summary>¿Puedo donar sin que se vea mi nombre?</summary>
+        <p>Sí: lo elegís en tu perfil.</p>
+      </details>
+      <details>
+        <summary>¿Cómo sé que llegó?</summary>
+        <p>La entidad confirma la entrega con una foto y te avisamos.</p>
+      </details>
+    </section>
+
+    <div class="racimo" data-espacio="2">
+      <a class="boton" data-tono="principal" href="/publico-registro-donante"
+         th:href="@{/publico-registro-donante}">Crear mi cuenta de donante</a>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

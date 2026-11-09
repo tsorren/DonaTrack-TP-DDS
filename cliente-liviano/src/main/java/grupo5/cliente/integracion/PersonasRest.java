@@ -11,13 +11,13 @@ import org.springframework.web.client.RestClient;
 
 @Component
 @Profile("!maqueta")
-class DonacionesRest implements PersonasDeDonaciones {
+class PersonasRest implements PersonasDeDonaciones {
 
   private record Creada(UUID id) {}
 
   private final RestClient donaciones;
 
-  DonacionesRest(@Qualifier("donacionesComoServicio") RestClient donaciones) {
+  PersonasRest(@Qualifier("donacionesComoServicio") RestClient donaciones) {
     this.donaciones = donaciones;
   }
 

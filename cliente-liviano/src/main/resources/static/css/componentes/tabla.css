@@ -1,0 +1,91 @@
+/* Bloque de tabla adaptable (D33, F2 del roadmap de vistas): una tabla de datos (`table` con
+   `caption` y `th scope`) que en pantalla grande es una tabla y en el celular, una tarjeta por fila
+   que repite el rótulo de cada dato (`data-rotulo` en cada `td`). La primera celda de la fila
+   (`th scope="row"`) es el título de la tarjeta. Se carga en la capa `bloques` desde app.css.
+   Catálogo: docs/interfaz/componentes.md. */
+
+.tabla {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.tabla caption {
+  padding: 0 0 var(--espacio-2);
+  font-weight: 700;
+  text-align: left;
+}
+
+/* En el celular, los encabezados solo para lectores: cada dato ya lleva su rótulo. */
+.tabla thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tabla tr {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0 0 var(--espacio-3);
+  padding: var(--espacio-3);
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+}
+
+.tabla :is(th, td) {
+  display: block;
+  padding: 0;
+  text-align: left;
+}
+
+.tabla tbody th {
+  font-size: var(--tamano-grande);
+}
+
+.tabla td[data-rotulo]::before {
+  content: attr(data-rotulo) ": ";
+  color: var(--color-texto-suave);
+}
+
+@media (min-width: 53.75em) {
+  .tabla thead {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .tabla tr {
+    display: table-row;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .tabla :is(th, td) {
+    display: table-cell;
+    padding: var(--espacio-2) var(--espacio-3) var(--espacio-2) 0;
+    border-bottom: 1px solid var(--color-tinta);
+    vertical-align: top;
+  }
+
+  .tabla thead th {
+    border-bottom-width: 2px;
+    color: var(--color-texto-suave);
+    font-size: var(--tamano-chico);
+  }
+
+  .tabla tbody th {
+    font-size: var(--tamano-base);
+  }
+
+  .tabla td[data-rotulo]::before {
+    content: none;
+  }
+}

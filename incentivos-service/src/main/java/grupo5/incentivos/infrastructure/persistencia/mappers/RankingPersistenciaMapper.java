@@ -18,6 +18,7 @@ public class RankingPersistenciaMapper {
     RankingMensualEntity entity = new RankingMensualEntity();
     entity.setId(ranking.getId());
     entity.setPeriodo(ranking.getPeriodo());
+    entity.setCalculadoEn(ranking.getCalculadoEn());
     ranking
         .getEntradas()
         .forEach(
@@ -48,6 +49,7 @@ public class RankingPersistenciaMapper {
                         e.getNombreDonante(),
                         e.getMisionesCompletadas()))
             .toList();
-    return RankingMensual.reconstituir(entity.getId(), entity.getPeriodo(), entradas);
+    return RankingMensual.reconstituir(
+        entity.getId(), entity.getPeriodo(), entradas, entity.getCalculadoEn());
   }
 }

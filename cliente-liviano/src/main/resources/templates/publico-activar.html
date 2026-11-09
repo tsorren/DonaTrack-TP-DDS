@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--/* Raíces, Activar cuenta (ficha docs/interfaz/flujos/raices-conocer-y-activar.md, 4.4): la abre el
+       enlace del correo de bienvenida que recibe un donante registrado por el admin o importado por el
+       CSV (D12, en consulta con la cátedra). Las piezas de Ingresar: su cabecera y el formulario en su
+       lámina. El correo viene en el enlace y se muestra sin editar; un solo campo de contraseña con
+       "Mostrar", como el registro. Es un formulario real (POST) que va a publico-activar-lista.
+       Estados: ?escenario=lento, error, sin-conexion y vencido (el enlace venció o ya se usó: no dice
+       si la cuenta existe, RNF-AUTH-10); el error de datos es publico-activar-error.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Activar cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-activar :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''}">
+  <div class="publica cuenta">
+    <div class="cuenta-principal">
+      <header class="publica-cabeza">
+        <p class="rotulo">Activar cuenta</p>
+        <h1 th:unless="${escenario == 'vencido'}">Elegí <em>tu contraseña</em></h1>
+        <h1 th:if="${escenario == 'vencido'}">Activá <em>tu cuenta</em></h1>
+        <p class="lectura-bajada" th:unless="${escenario == 'vencido'}">El equipo de DonaTrack creó tu cuenta
+          de donante con este correo. Elegí una contraseña para entrar.</p>
+      </header>
+
+      <section th:if="${escenario == 'vencido'}" class="banner" data-estado="error" role="alert" tabindex="-1"
+               autofocus aria-labelledby="vencido-titulo">
+        <h2 id="vencido-titulo">Este enlace ya no sirve.</h2>
+        <p>Los enlaces sirven una sola vez y por tiempo limitado. Si ya activaste tu cuenta, ingresá con tu
+          contraseña; si no, pedí otro enlace.</p>
+        <div class="aviso-acciones">
+          <a class="boton" data-tono="principal" href="/publico-activar-pedir"
+             th:href="@{/publico-activar-pedir}">Pedir otro enlace</a>
+          <a class="boton" data-tono="secundario" href="/publico-ingresar"
+             th:href="@{/publico-ingresar}">Ir a Ingresar</a>
+        </div>
+      </section>
+
+      <th:block th:unless="${escenario == 'vencido'}">
+        <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+                 autofocus aria-labelledby="resumen-titulo">
+          <h2 id="resumen-titulo">Revisá la contraseña</h2>
+          <ul>
+            <li><a href="#clave">La contraseña es corta: tiene que tener al menos 8 caracteres.</a></li>
+          </ul>
+        </section>
+        <th:block th:if="${escenario == 'error'}">
+          <section th:replace="~{datos-publicos :: avisoError('No pudimos activar tu cuenta.',
+              'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-activar', false)}"></section>
+        </th:block>
+        <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+                 aria-labelledby="red-titulo">
+          <h2 id="red-titulo">Se cortó la conexión.</h2>
+          <p>No sabemos si tu cuenta quedó activada. Probá ingresar; si no podés, volvé a abrir el enlace del
+            correo.</p>
+        </section>
+
+        <form class="formulario" action="/publico-activar-lista" th:action="@{/publico-activar-lista}"
+              method="post" data-enviando="Activando…" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+          <div class="campo">
+            <label for="correo">Correo</label>
+            <small id="correo-ayuda">Viene en el enlace del correo; no se cambia.</small>
+            <input id="correo" name="correo" type="email" readonly value="martina.ruiz@ejemplo.test"
+                   autocomplete="username" aria-describedby="correo-ayuda">
+          </div>
+          <div class="campo" th:data-estado="${conError} ? 'error'">
+            <label for="clave">Contraseña</label>
+            <small id="clave-ayuda">Al menos 8 caracteres.</small>
+            <p th:if="${conError}" id="clave-error" class="campo-error">La contraseña es corta: tiene que tener
+              al menos 8 caracteres.</p>
+            <div class="clave-fila">
+              <input id="clave" name="clave" type="password" required minlength="8" autocomplete="new-password"
+                     th:attr="aria-describedby=${conError} ? 'clave-error clave-ayuda' : 'clave-ayuda',aria-invalid=${conError} ? 'true' : null">
+              <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
+                      aria-pressed="false" hidden>Mostrar</button>
+            </div>
+          </div>
+          <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+                  th:text="${escenario == 'lento'} ? 'Activando…' : 'Activar mi cuenta'">Activar mi cuenta</button>
+          <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Activando…</p>
+          <p class="cuenta-salida">¿No pediste esta cuenta? <a href="/publico-contacto"
+             th:href="@{/publico-contacto(volver='/publico-activar')}">Escribinos</a></p>
+        </form>
+      </th:block>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

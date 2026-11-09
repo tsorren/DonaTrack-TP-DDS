@@ -133,7 +133,7 @@
   background: var(--color-fruto);
   box-shadow: 0.3rem 0.3rem 0 var(--color-fruto-hondo);
   color: var(--color-tinta);
-  font: 900 2.5rem / 1 var(--fuente-titulo);
+  font: 900 2.5rem / 1 var(--fuente-cifra);
   font-stretch: 110%;
   letter-spacing: -0.03em;
 }

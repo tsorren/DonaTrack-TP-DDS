@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--/* Raíces, la página 403 (docs/interfaz/flujos/raices-paginas-de-error.md): la cuenta con la que
+       se entró no puede ver la página. En la maqueta, ?respuesta=403 en cualquier pantalla. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-error', ~{::contenido})}">
+<head>
+  <title>Sin permiso - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{pagina-error :: pagina('Esta página no es para tu', 'cuenta',
+            'La cuenta con la que entraste no puede ver esta página.',
+            'Ir al inicio', '/', false,
+            'Si creés que deberías poder verla, escribinos con este código.',
+            'Si creés que deberías poder verla, escribinos y contanos qué estabas buscando.')}"></th:block>
+</th:block>
+</body>
+</html>

@@ -302,6 +302,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Para quién | "Para Comedor Barrio Ejemplo" · "Todavía sin destino" | — |
 | Fecha | "Donada el 12 de octubre de 2026" | — |
 | Estado y nota | El sello y la nota de `viaje-datos`; en las entregadas, "Entrega confirmada el 5 de octubre, con foto de la entidad" en lugar de "Llegó el 5 de octubre" | Lo confirmado dice qué lo respalda |
+| Estado y nota con datos reales | En depósito: "En el depósito, espera destino" · Asignada: "Asignada, espera el camión" · Lista para entregar: "Lista para entregar, espera el camión" (las tres, sello Pendiente) · En camino: "Salió el 15 de octubre, 14:30" · Entregada: "Entrega confirmada el 5 de octubre" · No pudo llegar: "No pudo llegar el 11 de octubre" · Vencida: "Venció en el depósito el 1 de octubre" (las dos, sello Con problema) | Aprobadas por el usuario el 2026-11-07, al conectar la pantalla con Donaciones (`DonacionesRest`). La fecha es la del último cambio a ese estado. Sin "con foto de la entidad": el listado no dice si la entrega tiene foto |
 | Pie | "Las que están en curso también se ven en Seguimiento, con dónde va el camión." · "Ver seguimiento" | — |
 
 ### donante-donaciones-detalle
@@ -320,6 +321,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Datos | "Donación" (N.º 5) · "Qué" · "Cuánto" · "Categoría" · "Para" · "Donada" · "Entregada" (si llegó) · "Figura como": "Distribuidora Ejemplo SA" con "Cambialo en Mi perfil" | "Figura como" es lo que ve la entidad (HB-20) |
 | Noticias: título | Noticias de esta donación | "De la más nueva a la primera" |
 | Acción | "Ver dónde está" → `donante-seguimiento` | Solo en curso (con destino y sin entregar) |
+| Con datos reales | Noticias, una por cambio de estado: "Recibimos tu donación en el depósito." · "Asignamos tu donación a una necesidad de <entidad>." · "Tu donación quedó lista para entregar." · "El camión salió a entregar tu donación a <entidad>." · "<Entidad> confirmó que recibió tu donación y sumó una foto." (sin foto, "<Entidad> confirmó que recibió tu donación.") · "El camión no pudo llegar a <entidad>: <motivo>." · "Tu donación venció en el depósito." Aviso: "No pudo llegar a <entidad>." con "<Motivo>. Última noticia: 11 de octubre, 16:10.", o "Venció en el depósito.". Entregada sin foto (o con Logística sin responder): "<Entidad> confirmó la entrega el 5 de octubre.". Alt de la foto: "Foto de la entrega que subió <entidad>" Etapas: "11 de octubre: no pudo llegar" · "1 de octubre: venció" | Aprobados por el usuario el 2026-11-07, al conectar el detalle con Donaciones y Logística. Las noticias salen del historial de la donación (Notificaciones no dice a qué donación es cada aviso, HB-09); el motivo, de la justificación del cambio; la nueva salida no existe en la API. "Figura como" no se muestra hasta HB-20. Una donación de otro donante dice "No encontramos esa donación" |
 
 ### donante-entidades
 

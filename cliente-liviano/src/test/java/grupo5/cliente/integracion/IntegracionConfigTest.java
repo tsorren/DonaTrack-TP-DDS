@@ -37,7 +37,7 @@ class IntegracionConfigTest {
   private final AtomicInteger pedidosDeToken = new AtomicInteger();
   private HttpServer servidor;
   private String url;
-  private DonacionesRest donaciones;
+  private PersonasRest donaciones;
 
   @BeforeEach
   void levantarServidor() throws IOException {
@@ -76,7 +76,7 @@ class IntegracionConfigTest {
                 .build());
     var config = new IntegracionConfig();
     var interceptor = config.tokenDeServicio(clientes);
-    donaciones = new DonacionesRest(config.donacionesComoServicio(interceptor, url));
+    donaciones = new PersonasRest(config.donacionesComoServicio(interceptor, url));
   }
 
   @AfterEach

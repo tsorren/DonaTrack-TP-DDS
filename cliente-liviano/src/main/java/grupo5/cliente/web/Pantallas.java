@@ -127,6 +127,7 @@ public class Pantallas {
     }
     model.addAttribute("completarPerfil", model.containsAttribute("completarPerfil"));
     model.addAttribute("sesionPendiente", model.containsAttribute("sesionPendiente"));
+    model.addAttribute("persona", false);
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("pasos", PASOS);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
@@ -143,7 +144,9 @@ public class Pantallas {
                         seccion.equals(actual)))
             .toList());
     model.addAttribute("cuenta", cuentas.de(prefijo).orElse(null));
-    model.addAttribute("perfil", area.map(a -> "/" + a.prefijo() + "-perfil").orElse(null));
+    model.addAttribute(
+        "perfil",
+        area.filter(Area::requierePersona).map(a -> "/" + a.prefijo() + "-perfil").orElse(null));
     return dibujada ? pantalla : SIN_DIBUJAR;
   }
 }
