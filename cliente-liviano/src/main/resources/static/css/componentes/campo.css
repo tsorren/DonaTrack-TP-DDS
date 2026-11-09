@@ -15,17 +15,38 @@
   font-size: 0.9375rem;
 }
 
-/* Los radios no: van en su grupo de opciones, con su propio tamaño. */
-.campo :is(input:not([type="radio"]), select, textarea) {
+/* Los radios no: van en su grupo de opciones, con su propio tamaño. Un campo para escribir se
+   distingue del papel (usuario, 2026-11-08): fondo más claro, borde suave, esquinas redondeadas y un
+   texto de ejemplo atenuado (placeholder). Al enfocarlo, el borde y el anillo verdes. */
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea) {
   min-height: 3rem;
-  padding: 0.625rem 0.75rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: 0;
-  background: var(--color-papel);
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--color-borde-control);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: inset 0 1px 2px var(--color-filete);
   color: var(--color-tinta);
   font: inherit;
   min-width: 0;
   max-width: 100%;
+}
+
+.campo :is(input, textarea)::placeholder {
+  color: var(--color-tinta-suave);
+  opacity: 0.75;
+}
+
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea):focus {
+  border-color: var(--color-acento);
+}
+
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea):focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.campo :is(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--color-acento);
 }
 
 .campo input[type="number"] {
@@ -44,4 +65,25 @@
   margin: 0;
   color: var(--color-problema-texto);
   font-weight: 700;
+}
+
+/* La flecha de los desplegables (usuario, 2026-11-09: "agregar padding en la flecha, no debería
+   quedar pegada a la derecha"). El relleno general de arriba pisaba el de Pico, que deja lugar para
+   la flecha; acá se le devuelve el aire, en todos los desplegables, estén o no dentro de un campo. */
+select:not([multiple], [size]),
+.campo select:not([multiple], [size]) {
+  appearance: none;
+  padding-inline-end: 3rem;
+  /* La flecha nativa no se mueve con el relleno: se dibuja con dos triángulos de tinta, a 1 rem
+     del borde (el mismo dibujo que los filtros del donante). */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-tinta) 50%),
+    linear-gradient(135deg, var(--color-tinta) 50%, transparent 50%);
+  background-position:
+    right 1.375rem center,
+    right 1rem center;
+  background-size: 0.375rem 0.375rem;
+  background-repeat: no-repeat;
+  border-radius: var(--radio-boton);
+  cursor: pointer;
 }

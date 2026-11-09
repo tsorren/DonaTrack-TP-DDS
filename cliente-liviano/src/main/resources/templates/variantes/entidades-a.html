@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--/* Prueba A/B/C de Entidades (ronda del 2026-11-09, docs/interfaz/plan-ronda-2026-11-09.md), opción A,
+       la recomendada. Eje: cuánto falta, a la vista. Cada entidad es una lámina como las de la
+       portada: arriba, la maceta de siempre con la planta en la etapa de sus pedidos (en la maceta
+       si llegó menos de un cuarto de lo que pide, brote hasta la mitad, planta desde ahí); abajo,
+       cada pedido con su barra redondeada de lo que ya llegó y, en palabras, lo que falta. El resto
+       de la pantalla (cabeza, filtros, estados y salidas) es el de publico-entidades.html. Se borra
+       al decidir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido" th:with="vistaEntidades=~{variantes/entidades-a :: vista}">
+  <th:block th:replace="~{datos-publicos :: datos(~{publico-entidades :: pantalla})}"></th:block>
+</th:block>
+
+<div th:fragment="vista" data-v="entidades-laminas">
+  <p data-v="entidades-laminas-clave">La planta crece con lo que ya llegó: en la maceta, cuando recién
+    empieza; brote, hasta la mitad; planta, de la mitad en adelante. La barra muestra lo que llegó este
+    período y el texto, lo que falta.</p>
+  <ul data-v="entidades-laminas-lista" role="list">
+    <li th:each="e : ${visibles}" class="tarjeta" data-v="entidades-lamina"
+        th:with="pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
+                 conTotal=${e.pedidos.?[total != null]},
+                 pide=${conTotal.isEmpty() ? 0 : #aggregates.sum(conTotal.![total])},
+                 falta=${conTotal.isEmpty() ? 0 : #aggregates.sum(conTotal.![faltan])},
+                 avance=${pide == 0 ? 0 : (pide - falta) * 100 / pide},
+                 planta=${e.cat == 'alimentos' ? 'planta-naranjo' : (e.cat == 'ropa' ? 'planta-algodon' : (e.cat == 'muebles' ? 'planta-pino' : 'planta-menta'))},
+                 dibujo=${avance < 25 ? 'paso-2-maceta' : (avance < 50 ? 'como-paso-3' : planta)},
+                 total=${#lists.size(pedidos)}">
+      <div class="huerta-marco" aria-hidden="true">
+        <img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/{p}.svg(p=${dibujo})}"
+             th:data-dibujo="${dibujo}" data-dibujo="paso-2-maceta" alt="" width="97" height="92">
+      </div>
+      <article data-v="entidades-lamina-cuerpo" th:attr="aria-labelledby=${'entidad-' + e.clave}">
+        <p class="etiqueta-tipo" th:text="|${e.tipo} · ${e.barrio}|">Comedor · Barrio Ejemplo</p>
+        <h2 th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>
+        <ul data-v="entidades-lamina-pedidos" role="list">
+          <li th:each="p : ${pedidos}" th:if="${pStat.count <= 3}">
+            <th:block th:replace="~{variantes/entidades-a :: pedido(${p})}"></th:block>
+          </li>
+        </ul>
+        <details th:if="${total > 3}" class="pedidos-mas">
+          <summary><span class="pedidos-ver" th:text="|Ver los ${total} pedidos|">Ver los 5 pedidos</span><span
+              class="pedidos-menos">Ver menos</span></summary>
+          <ul data-v="entidades-lamina-pedidos" role="list">
+            <li th:each="p : ${pedidos}" th:if="${pStat.count > 3}">
+              <th:block th:replace="~{variantes/entidades-a :: pedido(${p})}"></th:block>
+            </li>
+          </ul>
+        </details>
+        <a th:if="${e.numero != null}" class="boton" data-tamano="chico" href="/publico-mapa#entidad-comedor"
+           th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
+           th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
+      </article>
+    </li>
+  </ul>
+</div>
+
+<!--/* Un pedido: el ícono, qué es y, con su barra, lo que falta. Sin total, sin barra: solo el texto. */-->
+<th:block th:fragment="pedido(p)">
+  <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
+      href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
+  <div data-v="entidades-lamina-pedido">
+    <p><b th:text="${p.que}">Lentejas secas</b>
+      <span th:if="${p.emergencia}" class="estado" data-estado="con-problema"><th:block
+          th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><span>Emergencia</span></span></p>
+    <progress th:if="${p.total != null}" class="progreso" max="40" value="10"
+              th:max="${p.total}" th:value="${p.total - p.faltan}"
+              th:aria-label="|${p.que}: ya llegó una parte; ${#strings.toLowerCase(p.falta)}|"
+              aria-label="Lentejas secas: ya llegó una parte; faltan 30 de 40 kg este mes"></progress>
+    <p data-v="entidades-lamina-falta" th:text="|${p.falta} · ${p.cuando}|">Faltan 30 de 40 kg este mes · Se repite cada mes</p>
+    <p data-v="entidades-lamina-porque" th:text="|Por qué: ${p.porque}|">Por qué: para el almuerzo de lunes a viernes.</p>
+  </div>
+</th:block>
+</body>
+</html>

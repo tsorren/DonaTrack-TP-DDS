@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!--/* Raíces, Notificaciones de la administración (usuario, ronda 2026-11-09: "agregá la bell de
+       notificaciones"). La campana de la cabecera (layout-privado) lleva acá. Una bandeja sencilla, con
+       el bloque noticias del catálogo: arriba las sin leer (las entidades que piden sumarse, la
+       importación de un CSV que terminó y un camión deshabilitado), debajo las leídas, cada una con
+       su estado en palabras, su fecha y a dónde ir. "Marcar todas como leídas" es un formulario real
+       (POST) que lleva a admin-notificaciones-leidas. Leer no decide nada: las solicitudes siguen
+       esperando en Entidades. ?escenario=vacio, lento y error.
+       Fragmentos:
+       - hoja(accion): la pantalla entera; accion es '' (la bandeja) o 'leidas'.
+       - aviso(a, sinLeer): una noticia. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-notificaciones :: hoja('')}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(accion)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
+             avisos=${ {
+      {tono: 'recibida', estado: 'Terminada', fecha: '2026-10-15T18:42', cuando: 'Hoy, 18:42', sobre: 'Donantes',
+       texto: 'Terminó la importación de donantes-octubre.csv: 19.100 donantes nuevos, 754 actualizados y 126 filas con error.',
+       destino: '/admin-donantes-importado'},
+      {tono: 'pendiente', estado: 'Por revisar', fecha: '2026-10-15T18:20', cuando: 'Hoy, 18:20', sobre: 'Entidades',
+       texto: '3 entidades piden sumarse: Hogar Ejemplo Norte, Merendero Ejemplo Este y Comedor Ejemplo Oeste.',
+       destino: '/admin-entidades'},
+      {tono: 'problema', estado: 'Deshabilitado', fecha: '2026-10-12T09:10', cuando: '12 de octubre, 9:10', sobre: 'Camiones',
+       texto: 'Se deshabilitó el camión AA 999 ZZ (Furgón Este): está en el taller.',
+       destino: '/admin-camiones?estado=deshabilitado'},
+      {tono: 'salir', estado: 'Propuestas', fecha: '2026-10-15T00:00', cuando: 'Hoy, 0:00', sobre: 'Asignar donaciones',
+       texto: 'La asignación de esta noche generó 2 propuestas que esperan tu decisión.',
+       destino: '/admin-asignaciones'},
+      {tono: 'camino', estado: 'Vence pronto', fecha: '2026-10-14T08:00', cuando: 'Ayer, 8:00', sobre: 'Donaciones',
+       texto: '4 donaciones del depósito vencen en los próximos 7 días.',
+       destino: '/admin-donaciones?vence=pronto'},
+      {tono: 'recibida', estado: 'Calculado', fecha: '2026-09-30T23:59', cuando: '30 de septiembre, 23:59', sobre: 'Ranking',
+       texto: 'Se calculó el ranking de donantes de septiembre de 2026.',
+       destino: '/admin-ranking'} } },
+             sinLeer=${accion == 'leidas' ? 0 : 3}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Notificaciones</h1>
+        <p th:if="${conDatos}" th:text="${sinLeer > 0} ? |${sinLeer} sin leer. Al 15 de octubre de 2026, 18:45.| : 'No tenés notificaciones sin leer. Al 15 de octubre de 2026, 18:45.'">3
+          sin leer. Al 15 de octubre de 2026, 18:45.</p>
+      </div>
+      <!--/* Un formulario real; en el sistema, con CSRF y hx-post con hx-indicator ("Marcando…"). */-->
+      <form th:if="${conDatos and sinLeer > 0}" class="racimo" action="/admin-notificaciones-leidas"
+            th:action="@{/admin-notificaciones-leidas}" method="post">
+        <button class="boton" data-tono="secundario" type="submit">Marcar todas como leídas</button>
+      </form>
+    </header>
+
+    <p th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+       autofocus>Marcaste las 3 como leídas. Las entidades que piden sumarse siguen esperando tu decisión.</p>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las notificaciones…</p>
+    <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" aria-busy="true"></div>
+
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos cargar las notificaciones.</h2>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-notificaciones')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-notificaciones"
+         th:href="@{/admin-notificaciones}">Volver a cargar</a>
+    </section>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay notificaciones.</h2>
+      <p>Te avisamos acá cuando una entidad pida sumarse, cuando termine una importación, cuando la
+        asignación genere propuestas y cuando cambie el estado de un camión.</p>
+    </section>
+
+    <th:block th:if="${conDatos}">
+      <section th:if="${sinLeer > 0}" class="pila" data-espacio="3" aria-labelledby="sin-leer-titulo">
+        <h2 id="sin-leer-titulo" th:text="|Sin leer (${sinLeer})|">Sin leer (3)</h2>
+        <ol class="noticias" role="list">
+          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < sinLeer}">
+            <li th:replace="~{admin-notificaciones :: aviso(${a}, true)}"></li>
+          </th:block>
+        </ol>
+      </section>
+      <section class="pila" data-espacio="3" aria-labelledby="leidas-titulo">
+        <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(avisos) - sinLeer})|">Leídas (3)</h2>
+        <ol class="noticias" data-forma="libro" role="list">
+          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index >= sinLeer}">
+            <li th:replace="~{admin-notificaciones :: aviso(${a}, false)}"></li>
+          </th:block>
+        </ol>
+      </section>
+    </th:block>
+  </div>
+</th:block>
+
+<li th:fragment="aviso(a, sinLeer)" class="noticia" th:classappend="${sinLeer} ? 'noticia--sin-leer'">
+  <span class="noticia-marca" th:text="${sinLeer} ? 'Sin leer' : 'Leída'">Sin leer</span>
+  <span class="estado noticia-estado" th:data-estado="${a.tono}">
+    <th:block th:replace="~{componentes/sello :: sello(${a.tono})}"></th:block>
+    <span th:text="${a.estado}">Por revisar</span>
+  </span>
+  <a class="noticia-texto" href="/admin-entidades" th:href="${a.destino}" th:text="${a.texto}">3 entidades piden
+    sumarse.</a>
+  <time class="noticia-cuando" th:datetime="${a.fecha}" th:text="${a.cuando}">Hoy, 18:20</time>
+  <span class="noticia-donacion" th:text="${a.sobre}">Entidades</span>
+</li>
+</body>
+</html>

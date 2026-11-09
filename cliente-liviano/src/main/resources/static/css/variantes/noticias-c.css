@@ -1,0 +1,91 @@
+/* Prueba A/B/C de la tile "Últimas noticias" del inicio de la empresa (usuario, 2026-11-09).
+   Eje: cómo se lee lo último que pasó.
+   C, las fichas: cada noticia es una ficha redondeada sobre el papel, con una franja del color de
+   su estado a la izquierda; arriba la donación (qué) y la hora (cuándo), abajo el texto en dos
+   renglones. Las tres fichas se reparten el alto de la tile, que es el de las raíces.
+   Solo CSS sobre el mismo HTML: ?variante=noticias-c. Se borra al decidir. */
+
+.noticias-inicio .noticias {
+  grid-auto-rows: 1fr;
+  align-content: stretch;
+  gap: 0.625rem;
+}
+
+.noticias-inicio .noticia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 0.125rem 0.75rem;
+  padding: 0.625rem 0.875rem 0.625rem 1.25rem;
+  overflow: hidden;
+  border-bottom: 0;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+}
+
+/* La franja del estado, en el borde izquierdo de la ficha. */
+.noticias-inicio .noticia::before,
+.noticias-inicio .noticia--sin-leer::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.375rem;
+  height: auto;
+  border-radius: 0;
+  background: var(--color-pendiente-texto);
+}
+
+.noticias-inicio .noticia:has([data-estado="en-camino"])::before {
+  background: var(--color-en-camino-sello);
+}
+
+.noticias-inicio .noticia:has([data-estado="entregada"])::before {
+  background: var(--color-acento);
+}
+
+.noticias-inicio .noticia:has([data-estado="con-problema"])::before {
+  background: var(--color-problema-sello);
+}
+
+.noticias-inicio .noticia > * {
+  order: 0;
+}
+
+.noticias-inicio .noticia-donacion {
+  grid-column: 1;
+  grid-row: 1;
+  color: var(--color-tinta);
+  font-weight: 800;
+}
+
+.noticias-inicio .noticia-donacion::before {
+  content: none;
+}
+
+.noticias-inicio .noticia-cuando {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+}
+
+.noticias-inicio .noticia-texto {
+  display: -webkit-box;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-height: 3rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.noticias-inicio .noticia--sin-leer .noticia-texto {
+  font-weight: 700;
+}
+
+.noticias-inicio .noticia :is(.noticia-marca, .noticia-estado) {
+  display: none;
+}

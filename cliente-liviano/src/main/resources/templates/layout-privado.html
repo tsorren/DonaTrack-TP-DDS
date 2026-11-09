@@ -62,11 +62,11 @@
          pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
          Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
          recepción, que la corrida A/B había dejado sin tocar. Con la cuenta de la persona que dona
-         (F5), sin cuenta: su bandeja muestra el aviso de la maqueta. */-->
+         (F5), las 3 sin leer de su bandeja (templates/persona/donante-notificaciones.html). */-->
   <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
      th:with="pantalla=${#execInfo.processedTemplateName},
               avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
-              sinLeer=${persona == true or #strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : (persona == true ? 3 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3))}"
      class="armazon-avisos" href="/donante-notificaciones"
      th:href="${avisos}"
      th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
@@ -76,6 +76,22 @@
     </svg>
     <span class="armazon-avisos-texto">Notificaciones</span>
     <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
+  </a>
+  <!--/* La campana de la administración (usuario, ronda 2026-11-09: "agregá la bell de notificaciones"):
+         la misma pieza, hacia admin-notificaciones, con 3 sin leer en la maqueta y ninguna después de
+         marcarlas como leídas. La administración no tiene Mi perfil, así que se reconoce por su cuenta.
+         Un agregado: no cambia la de los otros roles ni el controlador. */-->
+  <a th:if="${perfil == null and cuenta != null and cuenta.rol == 'Administración'}"
+     th:with="pantalla=${#execInfo.processedTemplateName},
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : 3}"
+     class="armazon-avisos" href="/admin-notificaciones" th:href="@{/admin-notificaciones}"
+     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
+     th:aria-current="${#strings.contains(pantalla, 'admin-notificaciones')} ? 'page' : null">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+    </svg>
+    <span class="armazon-avisos-texto">Notificaciones</span>
+    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">3</b>
   </a>
   <!--/* La cuenta, como en K (usuario, 2026-11-08): un menú que se despliega al tocar la foto de perfil,
          con el nombre y el rol, Mi perfil y Salir. La foto por defecto es una planta. Es un <details>:

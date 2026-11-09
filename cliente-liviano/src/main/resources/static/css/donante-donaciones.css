@@ -16,12 +16,17 @@
   column-gap: 1rem;
 }
 
+/* El pie, centrado y en el 80 % del ancho, con aire sobre las láminas (usuario, 2026-11-09). */
 .donaciones-pie {
-  max-width: 38rem;
+  display: grid;
+  justify-items: center;
+  width: 80%;
+  margin: 3.5rem auto 0;
+  text-align: center;
 }
 
 .donaciones-pie p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
 }
 
 /* En pantalla grande, el libro de registro: un renglón por donación, con sus columnas a la vista y

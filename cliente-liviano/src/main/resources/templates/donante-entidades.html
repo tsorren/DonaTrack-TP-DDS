@@ -70,7 +70,7 @@
           method="get" aria-label="Buscar entidades">
       <div class="campo">
         <label for="nombre">Buscar por nombre</label>
-        <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}">
+        <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}" placeholder="Por ejemplo: Ana Ejemplo">
       </div>
       <button class="boton" data-tono="principal" type="submit">Buscar</button>
       <a th:if="${busca != ''}" class="filtro-sacar" href="/donante-entidades"

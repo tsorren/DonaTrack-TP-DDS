@@ -18,21 +18,6 @@ main > .centro:last-child {
   padding-top: 4rem;
 }
 
-/* Las entregas del mes, en su tarjeta, como la tabla de K. */
-main .tarjeta {
-  --espacio-relleno: 1.25rem;
-  display: grid;
-  gap: 1rem;
-}
-
-main .tarjeta > :is(header, p) {
-  margin: 0;
-}
-
-main .tarjeta h2 {
-  margin: 0;
-}
-
 @media (min-width: 53.75em) {
   main > .centro {
     --espacio-entre: 6rem;

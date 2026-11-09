@@ -74,13 +74,13 @@
         <p th:if="${conError}" id="mensaje-error" class="campo-error">Falta contarnos qué pasó.</p>
         <textarea id="mensaje" name="mensaje" rows="5" required
                   th:attr="aria-describedby=${conError} ? 'mensaje-error mensaje-ayuda' : 'mensaje-ayuda',aria-invalid=${conError} ? 'true' : null"
-                  th:text="${escrito and !conError} ? 'Quise dar de baja el aceite y me dio un error.' : null"></textarea>
+                  th:text="${escrito and !conError} ? 'Quise dar de baja el aceite y me dio un error.' : null" placeholder="Contanos en qué te podemos ayudar"></textarea>
       </div>
       <div class="campo">
         <label for="codigo">Código del error</label>
         <small id="codigo-ayuda">Opcional. Está en el aviso de error, debajo del mensaje.</small>
         <input id="codigo" name="codigo" type="text" autocomplete="off" aria-describedby="codigo-ayuda"
-               th:value="${codigo}">
+               th:value="${codigo}" placeholder="Por ejemplo: a1b2c3d4e5f6">
       </div>
       <p th:if="${conSesion}" class="contacto-cuenta">Te respondemos a
         <b>contacto@distribuidora-ejemplo.test</b>, el correo de tu cuenta.</p>
@@ -91,7 +91,7 @@
           la @.</p>
         <input id="correo" name="correo" type="email" required autocomplete="email"
                th:value="${conError} ? 'marta.comedor-ejemplo.test' : (${escrito} ? 'marta@comedor-ejemplo.test' : null)"
-               th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
+               th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="nombre@ejemplo.com">
       </div>
       <button id="enviar" class="boton" data-tono="principal" type="submit"
               th:disabled="${escenario == 'lento'}"

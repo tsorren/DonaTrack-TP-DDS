@@ -1,0 +1,133 @@
+/* Prueba A/B/C del inicio de la empresa (usuario, 2026-11-09). A (recomendada): el mes en cuatro
+   preguntas, de arriba abajo (qué dio fruto, qué está en curso, por dónde va, qué se acumuló).
+   Solo con ?variante=inicio-empresa-a, sobre templates/variantes/inicio-empresa-a.html. Se borra
+   al decidir. */
+
+[data-v="inicio-a"] .inicio-cuerpo {
+  gap: 3rem;
+}
+
+/* 1. Las cifras con su dibujo, plantadas en la misma línea de suelo. */
+[data-v="frutos"] {
+  display: grid;
+  gap: 1.25rem;
+}
+
+[data-v="frutos"] .huerta-cifras {
+  gap: 1.5rem 2rem;
+}
+
+[data-v="frutos"] .huerta-cifra {
+  padding-right: 0;
+}
+
+[data-v="frutos"] .huerta-cifra img {
+  height: 10rem;
+}
+
+/* 2. El tablero: tres columnas, cada una con el color de su estado en la cabeza. */
+[data-v="tablero"] {
+  display: grid;
+  gap: 1rem;
+}
+
+[data-v="tablero"] .grilla {
+  --medida-grilla: 18rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+[data-v="columna"] {
+  --espacio-relleno: 1.25rem;
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+[data-v="columna"] h3 {
+  justify-self: start;
+  margin: 0;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
+  font: 800 1rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+[data-v="columna"][data-estado="entregada"] h3 {
+  background: var(--color-entregada-fondo);
+  color: var(--color-entregada-texto);
+}
+
+[data-v="columna"][data-estado="en-camino"] h3 {
+  background: var(--color-en-camino-fondo);
+  color: var(--color-en-camino-texto);
+}
+
+[data-v="columna"][data-estado="con-problema"] h3 {
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}
+
+[data-v="columna"] ul {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada donación: su dibujo en un marco redondeado a la izquierda, el nombre y qué pasó. */
+[data-v="columna"] li {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.875rem;
+  align-items: center;
+}
+
+[data-v="columna"] li + li {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-filete);
+}
+
+[data-v="columna"] li img {
+  grid-row: 1 / span 2;
+  width: 3.75rem;
+  height: 4.5rem;
+  padding: 0.25rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  object-fit: contain;
+  object-position: bottom;
+}
+
+[data-v="columna"] li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-tinta);
+  font-weight: 800;
+  text-underline-offset: 0.2em;
+}
+
+[data-v="columna"] li span {
+  align-self: start;
+  font-size: 0.9375rem;
+}
+
+/* 4. Lo acumulado: las raíces y las noticias, siempre del mismo alto. */
+[data-v="acumulado"] {
+  --medida-grilla: 22rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+[data-v="acumulado"] > .huerta-tierra--caja {
+  align-content: space-between;
+}
+
+[data-v="inicio-a"] > .inicio-cabecera {
+  margin-bottom: 2.5rem;
+}

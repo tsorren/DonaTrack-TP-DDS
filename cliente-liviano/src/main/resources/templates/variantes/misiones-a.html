@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!--/* Prueba A/B de la ronda del 2026-11-09, Misiones e insignias de la persona (usuaria: "explorar un
+       sistema de colección de álbum de figuritas o una huerta"). Opción A, la recomendada: el álbum
+       de figuritas. Eje: coleccionar. Cada misión es una figurita numerada; cada categoría, una página
+       del álbum. Pegada: la misión completa, con su fecha. Hueco con la silueta: la que falta, con lo
+       que pide y, la que está en curso, su barra y la cuenta. La página completa queda plegada en un
+       desplegable; la que sigue es un sobre cerrado que no muestra sus figuritas. Usa los datos y los
+       estados de donante-misiones (datos(vista)); el dibujo de cada figurita es decorativo.
+       ?variante=misiones-a, también con ?escenario=vacio, lento y error. Se borra al decidir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
+<head>
+  <title>Misiones e insignias - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{donante-misiones :: datos(~{::album})}"></th:block>
+</th:block>
+
+<th:block th:fragment="album"
+    th:with="dibujos=${ {'Racha Inicial': 'paso-1-semillas', 'Explorador': 'planta-hojas-al-viento',
+                         'Gran Aporte': 'planta-naranjo', 'Constancia': 'arbol-2',
+                         'Impacto Real': 'abeja-paquete', 'Diversidad Solidaria': 'planta-orejas'} },
+             numeros=${ {'Racha Inicial': 1, 'Explorador': 2, 'Gran Aporte': 3, 'Constancia': 4,
+                         'Impacto Real': 5, 'Diversidad Solidaria': 6} }">
+  <!--/* La tapa: cuántas figuritas lleva pegadas, con una fila de seis casilleros que repite el dato. */-->
+  <section id="album-tapa" aria-labelledby="album-titulo">
+    <div>
+      <h2 id="album-titulo">Tu álbum de misiones</h2>
+      <p th:text="|${#lists.size(obtenidas)} de 6 figuritas pegadas. Cada misión completa es una figurita: el hueco dice qué pide.|">2
+        de 6 figuritas pegadas. Cada misión completa es una figurita: el hueco dice qué pide.</p>
+    </div>
+    <ol id="album-casilleros" role="list" aria-hidden="true">
+      <li th:each="m : ${misiones}"
+          th:data-casillero="${m.estado == 'completa'} ? 'pegada' : (${visibles.contains(m.categoria)} ? 'hueco' : 'sobre')"
+          th:text="${numeros[m.nombre]}">1</li>
+    </ol>
+  </section>
+
+  <!--/* Las páginas completas, plegadas. */-->
+  <details th:each="c, vuelta : ${completas}" class="tarjeta" data-pagina="completa">
+    <summary>
+      <span data-pagina-numero th:text="|Página ${categorias.indexOf(c) + 1}|">Página 1</span>
+      <span><b th:text="|${c.nombre} · completa|">Colaborador · completa</b>
+        <small th:text="|${#lists.size(misiones.?[categoria == #root.c.nombre])} de ${#lists.size(misiones.?[categoria == #root.c.nombre])} figuritas pegadas. Ver la página|">2
+          de 2 figuritas pegadas. Ver la página</small></span>
+      <span data-miniaturas aria-hidden="true">
+        <img th:each="m : ${misiones.?[categoria == #root.c.nombre]}" src="/img/ilustraciones/paso-1-semillas.svg"
+             th:src="@{/img/ilustraciones/{d}.svg(d=${dibujos[m.nombre]})}" alt="" width="40" height="52">
+      </span>
+    </summary>
+    <ul class="lista" role="list" th:aria-label="|Figuritas de ${c.nombre}|">
+      <th:block th:each="m : ${misiones.?[categoria == #root.c.nombre]}">
+        <li th:replace="~{:: figurita(${m}, ${dibujos[m.nombre]}, ${numeros[m.nombre]})}"></li>
+      </th:block>
+    </ul>
+  </details>
+
+  <!--/* La página abierta: la categoría actual. */-->
+  <section th:if="${actual}" th:with="c=${actual}" class="tarjeta" data-pagina="actual"
+           th:aria-labelledby="|pagina-${c.nombre}|">
+    <header>
+      <span data-pagina-numero th:text="|Página ${categorias.indexOf(c) + 1}|">Página 2</span>
+      <h2 th:id="|pagina-${c.nombre}|" th:text="|${c.nombre} · tu categoría|">Sostenedor · tu categoría</h2>
+      <p th:text="|${#lists.size(misiones.?[categoria == #root.c.nombre and estado == 'completa'])} de ${#lists.size(misiones.?[categoria == #root.c.nombre])} figuritas pegadas. Las misiones avanzan de a una, en orden; al completar la página, pasás a ${c['siguiente'] ?: 'la última categoría'}.|">0
+        de 2 figuritas pegadas. Las misiones avanzan de a una, en orden; al completar la página, pasás a
+        Transformador.</p>
+    </header>
+    <ul class="lista" role="list" th:aria-label="|Figuritas de ${c.nombre}|">
+      <th:block th:each="m : ${misiones.?[categoria == #root.c.nombre]}">
+        <li th:replace="~{:: figurita(${m}, ${dibujos[m.nombre]}, ${numeros[m.nombre]})}"></li>
+      </th:block>
+    </ul>
+  </section>
+
+  <!--/* Las páginas que siguen: un sobre cerrado, sin mostrar sus figuritas. */-->
+  <section th:each="c : ${siguientes}" class="tarjeta" data-pagina="sobre"
+           th:aria-labelledby="|pagina-${c.nombre}|">
+    <span data-pagina-numero th:text="|Página ${categorias.indexOf(c) + 1}|">Página 3</span>
+    <div>
+      <h2 th:id="|pagina-${c.nombre}|" th:text="|${c.nombre} · se abre después|">Transformador · se abre después</h2>
+      <p th:text="|${#lists.size(misiones.?[categoria == #root.c.nombre])} figuritas más. El sobre se abre cuando completes la página de ${c['anterior']}.|">2
+        figuritas más. El sobre se abre cuando completes la página de Sostenedor.</p>
+    </div>
+  </section>
+
+  <p>Las misiones cuentan tus donaciones: las que entregás en el depósito y, en Impacto Real, las que
+    la entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+</th:block>
+
+<!--/* Una figurita: pegada (la misión completa) o el hueco con su silueta (la que falta). El número y el
+       nombre van siempre; el dibujo es decorativo. */-->
+<li th:fragment="figurita(m, dibujo, numero)"
+    th:data-figurita="${m.estado == 'completa'} ? 'pegada' : 'hueco'" data-figurita="pegada"
+    th:with="id=|figurita-${numero}|">
+  <article th:aria-labelledby="${id}">
+    <figure aria-hidden="true">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/{d}.svg(d=${dibujo})}"
+           alt="" width="90" height="120">
+      <span data-numero th:text="|N.º ${numero}|">N.º 1</span>
+    </figure>
+    <h3 th:id="${id}" th:text="${m.nombre}">Racha Inicial</h3>
+    <p th:text="${m.pide}">3 meses seguidos donando</p>
+    <p th:if="${m.estado == 'completa'}"><span class="estado" data-estado="entregada"><th:block
+        th:replace="~{componentes/sello :: sello('hecho')}"></th:block><span
+        th:text="|Pegada el ${m.fecha}|">Pegada el 3 de agosto de 2026</span></span></p>
+    <th:block th:if="${m.estado == 'curso'}">
+      <p><span class="estado" data-estado="en-camino"><th:block
+          th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En curso</span></p>
+      <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
+                th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
+      <p><b th:text="${m.cuenta}">12 de 50 bienes</b></p>
+      <p th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de septiembre.</p>
+    </th:block>
+    <th:block th:if="${m.estado == 'espera'}">
+      <p><span class="estado" data-estado="pendiente"><th:block
+          th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>En espera</span></p>
+      <p th:text="|Empieza a contar cuando completes ${m.espera}.|">Empieza a contar cuando completes
+        Gran Aporte.</p>
+    </th:block>
+  </article>
+</li>
+</body>
+</html>

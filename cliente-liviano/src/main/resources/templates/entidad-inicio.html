@@ -79,10 +79,7 @@
                   </svg>
                   <span th:text="|${d.nombre} · ${d.cuanto}|">Lentejas secas · 15 kg</span>
                 </h3>
-                <p class="estado acta-estado">
-                  <svg th:replace="~{componentes/sello :: sello('puerta')}"></svg>
-                  Espera tu confirmación
-                </p>
+                <!--/* Sin el estado "Espera tu confirmación": ya lo dice la parte (ronda del 2026-11-09). */-->
                 <p class="acta-texto" th:text="|${d.llego} Para tu pedido de ${d.pedidoNombre}.|">Llegó hoy,
                   18:20, desde el Depósito Central. Para tu pedido de lentejas secas.</p>
                 <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
@@ -141,7 +138,7 @@
               <span class="renglon-que"><b th:text="${n.nombre}">Lentejas secas</b>
                 <small th:text="${n.plazo}">Octubre, hasta el 31</small></span>
               <span class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
-                <progress th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
+                <progress class="progreso" th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
             </li>
           </ul>
           <p class="salidas">

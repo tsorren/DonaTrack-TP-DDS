@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--/* Prueba A/B/C del inicio de la empresa donante (usuario, 2026-11-09). Eje: cómo se ordena lo
+       que la empresa necesita saber al entrar.
+       C, la huerta en una sola lámina: un cantero grande, partido en tres (dio fruto, va creciendo y
+       en el depósito), con una cifra grande arriba de cada parte y las plantas de cada donación
+       paradas sobre la misma línea de tierra; debajo de esa línea, en la tierra, las raíces hasta
+       cada entidad (lo acumulado). Lo que conviene mirar va en una nota pegada con cinta, y las
+       noticias, en una fila al final.
+       ?variante=inicio-empresa-c; su hoja, static/css/variantes/inicio-empresa-c.css. Lo propio de
+       la prueba va con data-v. Se borra al decidir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-inicio', ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{datos-donante :: donante(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="conDatos=${escenario == ''},
+             canteros=${ {
+               {clave: 'fruto', rotulo: 'Dieron fruto', bajada: 'la entidad confirmó la entrega',
+                lista: donaciones.?[estado.tono == 'entregada']},
+               {clave: 'crece', rotulo: 'Van creciendo', bajada: 'tienen destino y están en curso',
+                lista: donaciones.?[destino != null and estado.tono != 'entregada']},
+               {clave: 'deposito', rotulo: 'En el depósito', bajada: 'esperan que una entidad pida algo así',
+                lista: donaciones.?[destino == null]} } },
+             conProblema=${donaciones.?[estado.tono == 'con-problema']}">
+  <div class="inicio" data-v="inicio-c">
+    <header class="inicio-cabecera">
+      <p class="rotulo" th:text="${seccion}">Inicio</p>
+      <h1>Hola, <em th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</em></h1>
+      <p class="bajada">Tu huerta de octubre de 2026: cada planta es una donación. Actualizado hoy,
+        15 de octubre, 16:25.</p>
+      <div class="racimo" th:if="${conDatos}">
+        <a class="boton" data-tono="secundario" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Mis donaciones</a>
+        <a class="boton" data-tono="principal" href="/donante-seguimiento"
+           th:href="@{/donante-seguimiento}">Ver seguimiento</a>
+      </div>
+    </header>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando tu inicio…</p>
+      <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
+    </th:block>
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
+    </th:block>
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
+      <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
+        hasta que la entidad confirme la entrega.</p>
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
+         th:href="@{/donante-entidades}">Conocer las entidades</a>
+    </section>
+
+    <div th:if="${conDatos}" class="inicio-cuerpo">
+      <!--/* Lo que conviene mirar: una nota pegada con cinta, arriba de la huerta. */-->
+      <aside th:unless="${conProblema.isEmpty()}" data-v="nota" aria-labelledby="nota-titulo"
+             th:with="d=${conProblema[0]}">
+        <img src="/img/ilustraciones/reintentar.svg" th:src="@{/img/ilustraciones/reintentar.svg}" alt=""
+             width="90" height="230">
+        <div>
+          <h2 id="nota-titulo">Para tener en cuenta</h2>
+          <p><a href="/donante-donaciones-detalle?donacion=utiles"
+                th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+                th:text="|${d.titulo}, ${d.cantidad}|">Útiles escolares, 2 cajas</a>:
+            <span th:text="|${#strings.toLowerCase(d.nota.substring(0, 1))}${d.nota.substring(1)}.|">no pudo llegar; sale de
+              nuevo el 17 de octubre.</span> No hace falta que hagas nada.</p>
+        </div>
+      </aside>
+
+      <!--/* La huerta: tres canteros sobre la misma línea de tierra y, abajo, las raíces. */-->
+      <section class="tarjeta" data-v="huerta" aria-labelledby="huerta-titulo">
+        <h2 id="huerta-titulo" class="huerta-rotulo">Tu huerta, por estado</h2>
+        <div data-v="canteros">
+          <section th:each="c : ${canteros}" data-v="cantero" th:data-cantero="${c.clave}"
+                   th:aria-labelledby="|cantero-${c.clave}|">
+            <h3 th:id="|cantero-${c.clave}|"><b th:text="${#lists.size(c.lista)}">2</b>
+              <span th:text="${c.rotulo}">Dieron fruto</span></h3>
+            <p th:text="${c.bajada}">la entidad confirmó la entrega</p>
+            <ul role="list">
+              <li th:each="d : ${c.lista}"
+                  th:with="tono=${d.estado.tono},
+                           planta=${d.categoria == 'cat-alimentos' ? 'naranjo'
+                                   : (d.categoria == 'cat-ropa' or d.categoria == 'cat-vestimenta' ? 'algodon'
+                                   : (d.categoria == 'cat-escolares' ? 'menta' : 'orejas'))},
+                           dibujo=${tono == 'entregada' ? 'planta-' + planta
+                                   : (tono == 'en-camino' ? 'paso-3-brote'
+                                   : (tono == 'con-problema' ? 'reintentar' : 'paso-2-maceta'))}">
+                <img th:if="${tono == 'en-camino'}" class="huerta-recorrido-abeja"
+                     src="/img/ilustraciones/abeja-paquete.svg" th:src="@{/img/ilustraciones/abeja-paquete.svg}"
+                     alt="" width="26" height="30">
+                <img src="/img/ilustraciones/planta-naranjo.svg" alt="" width="90" height="230"
+                     th:src="@{/img/ilustraciones/{p}.svg(p=${dibujo})}">
+                <a href="/donante-donaciones-detalle?donacion=fideos"
+                   th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}" th:text="${d.titulo}">Fideos secos</a>
+                <span class="estado" th:data-estado="${tono}" data-estado="entregada">
+                  <th:block th:replace="~{componentes/sello :: sello(${tono})}"></th:block>
+                  <span th:text="${d.nota}">Llegó el 5 de octubre</span></span>
+              </li>
+            </ul>
+          </section>
+        </div>
+        <!--/* Bajo tierra: las raíces de lo donado hasta cada entidad. */-->
+        <section th:replace="~{componentes/huerta :: raices-donante(${donaciones})}"></section>
+      </section>
+
+      <!--/* Las noticias, en una fila de tres. */-->
+      <section data-v="noticias" aria-labelledby="noticias-titulo">
+        <header class="huerta-cabeza">
+          <h2 id="noticias-titulo">Últimas noticias</h2>
+          <a class="noticias-todas" href="/donante-notificaciones"
+             th:href="@{/donante-notificaciones}"
+             th:text="|Ver todas (${sinLeer} sin leer)|">Ver todas (4 sin leer)</a>
+        </header>
+        <ol class="noticias" role="list">
+          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < 3}">
+            <li th:replace="~{datos-donante :: aviso(${a}, ${vuelta.index < sinLeer})}"></li>
+          </th:block>
+        </ol>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

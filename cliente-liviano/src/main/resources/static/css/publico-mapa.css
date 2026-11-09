@@ -1,9 +1,9 @@
 @import url("publico-listas.css");
 
 /* Raíces, sitio A: Mapa (publico-mapa.html). El marco, el reparto en dos columnas, la lista de fichas
-   y el resalte cruzado son el bloque `.mapa-cuerpo` (componentes/mapa.css). Acá queda lo del dibujo de
-   esta pantalla, el de Seguir entregas: la línea de tierra, las estaciones numeradas, los rótulos y un
-   fruto mandarina por entrega confirmada. Va sin capa porque compite con `.dibujo-rotulo` (sellos.css)
+   y el resalte cruzado son el bloque `.mapa-cuerpo` (componentes/mapa.css). Desde el 2026-11-09 el
+   mapa es MapLibre (componentes/mapa.css, static/js/mapa.js); acá queda el esqueleto de la carga y el
+   número de las estaciones de la lista. Va sin capa porque compite con `.dibujo-rotulo` (sellos.css)
    y con el `.esqueleto` de las páginas públicas (publico-listas.css). */
 
 figure.mapa-dibujo.esqueleto {
@@ -23,12 +23,3 @@ figure.mapa-dibujo.esqueleto {
   font-size: 20px;
 }
 
-.mapa-dibujo .dibujo-rotulo {
-  font-size: 19px;
-}
-
-.mapa-fruto {
-  fill: var(--color-fruto);
-  stroke: var(--color-fruto-hondo);
-  stroke-width: 2;
-}

@@ -1,0 +1,88 @@
+/* Prueba A/B/C de Necesidades de la entidad (usuario, 2026-11-09). B, el tablero por categoría: un
+   cantero por categoría, con su pictograma grande y sus cifras, y las tarjetas compactas adentro (de
+   a tres en pantalla grande). Solo con ?variante=necesidades-b, sobre
+   templates/variantes/necesidades-b.html. Se borra al decidir. */
+
+[data-v="canteros"] {
+  display: grid;
+  gap: 2rem;
+}
+
+[data-v="cantero"] {
+  padding: 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-acento-claro);
+}
+
+[data-v="cantero-cabeza"] {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 0.125rem 1rem;
+  align-items: center;
+  margin: 0 0 1.25rem;
+}
+
+[data-v="cantero-cabeza"] .categoria-icono {
+  grid-row: span 2;
+  width: 4rem;
+  height: 4rem;
+  padding: 0.375rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-superficie);
+}
+
+main [data-v="cantero-cabeza"] h3 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 850 1.625rem/1.1 var(--fuente-titulo);
+  font-stretch: 120%;
+}
+
+[data-v="cantero-cabeza"] p {
+  margin: 0;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* Las tarjetas, compactas: sin la caja de la cifra, con la cifra y la barra más chicas. */
+[data-v="cantero"] .pedido-resumen {
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+[data-v="cantero"] .pedido-que {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-v="cantero"] .pedido-que .categoria-icono {
+  display: none;
+}
+
+[data-v="cantero"] .pedido-marca {
+  grid-column: 1;
+}
+
+[data-v="cantero"] .pedido-va {
+  padding: 0;
+  background: none;
+}
+
+[data-v="cantero"] .pedido-falta b {
+  font-size: 1.625rem;
+}
+
+@media (min-width: 53.75em) {
+  [data-v="cantero"] {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 68.75em) {
+  [data-v="cantero"] .pedidos-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  [data-v="cantero"] .pedido[open] .pedido-que {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

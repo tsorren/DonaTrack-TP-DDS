@@ -1,0 +1,132 @@
+/* Prueba A/B/C de Entidades, opción C: el vivero, una parcela por entidad y una maceta por pedido.
+   Las macetas usan la escala común de la portada (data-dibujo, --medida-alto). Solo disposición. Se
+   borra al decidir. */
+[data-v="vivero"] {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem 1rem 2rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+[data-v="vivero-clave"] {
+  max-width: 70ch;
+  margin: 0;
+}
+
+[data-v="vivero-parcelas"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* La parcela: un cantero de papel con su cartel arriba. */
+[data-v="vivero-parcela"] article {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 1rem;
+  border: 2px dashed var(--color-raiz);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  color: var(--color-tinta);
+}
+
+[data-v="vivero-cartel"] {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-raiz);
+  color: var(--color-suelo-hondo);
+}
+
+[data-v="vivero-cartel"] p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+[data-v="vivero-cartel"] p:first-child {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[data-v="vivero-cartel"] h2 {
+  margin: 0;
+  color: inherit;
+  font-size: 1.125rem;
+}
+
+/* Las macetas, apoyadas en la misma línea, a la escala de la portada. */
+[data-v="vivero-macetas"] {
+  --medida-escala: 0.46px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 0.25rem;
+  min-height: 7.25rem;
+  margin: 0;
+  padding: 0 0 0.25rem;
+  border-bottom: 2px solid var(--color-tinta);
+  list-style: none;
+}
+
+[data-v="vivero-macetas"] img {
+  display: block;
+  width: auto;
+  height: calc(var(--medida-alto) * var(--medida-escala));
+}
+
+/* El pedido de emergencia, con el punto del color del problema arriba de la maceta (el texto lo dice
+   abajo, en la cuenta). */
+[data-v="vivero-macetas"] li[data-emergencia] {
+  position: relative;
+}
+
+[data-v="vivero-macetas"] li[data-emergencia]::after {
+  content: "";
+  position: absolute;
+  top: -0.25rem;
+  right: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-problema-sello);
+}
+
+[data-v="vivero-cuenta"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+[data-v="vivero-parcela"] .boton {
+  margin-top: auto;
+}
+
+[data-v="vivero"] .dialogo {
+  color: var(--color-tinta-suave);
+}
+
+[data-v="vivero-ventana-acciones"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 53.75em) {
+  [data-v="vivero"] {
+    padding: 2rem 2rem 2.5rem;
+  }
+}

@@ -260,6 +260,12 @@ Decisiones tomadas:
   (usuario, 2026-11-07, decisión 2 del roadmap).
 - Se ven las 6 misiones: las hechas, las de su categoría con el progreso y las de la siguiente
   cerradas (usuario, 2026-11-07).
+- Cambia lo anterior (usuaria, 2026-11-09): las categorías completas van plegadas en un desplegable
+  cerrado y las de las categorías que todavía no se abren no se muestran (ni sus insignias por
+  nombre): solo el nombre de la categoría y cuándo se abre. Con la persona, las demás pantallas del
+  donante ya están dibujadas (`templates/persona/`); el aviso de la maqueta queda solo para una
+  pantalla de la persona que falte. Prueba A/B en curso: álbum de figuritas (`misiones-a`) o huerta
+  (`misiones-b`), ver `docs/interfaz/plan-ronda-2026-11-09.md`.
 - Con la persona, las otras pantallas del donante muestran un aviso con dos salidas, sin tocar las
   pantallas aprobadas de la empresa (usuario, 2026-11-07).
 - La persona es Martina Ruiz, la donante del arroz de 5 kg del Comedor Barrio Ejemplo (agente,

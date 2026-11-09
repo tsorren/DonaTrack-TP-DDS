@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--/* Prueba A/B/C de Necesidades de la entidad (usuario, 2026-11-09: "Me gustaría ver una sección de
+       necesidades más visual. Lo que tenemos ahora es puro texto"). Eje: cómo se ve el avance de
+       cada pedido.
+       B, el tablero por categoría: los pedidos agrupados en un cantero por categoría (Alimentos, Ropa),
+       cada uno con su pictograma grande, cuántos pedidos tiene y cuántas entregas esperan; adentro,
+       las tarjetas compactas, de a tres en pantalla grande. La tarjeta es la misma de la pantalla
+       (entidad-necesidades :: pedido), con su detalle y sus acciones.
+       ?variante=necesidades-b; su hoja, static/css/variantes/necesidades-b.css. Las clases son las
+       del catálogo y las heredadas; lo propio de la prueba va con data-v. Se borra al decidir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-necesidades', ~{::contenido})}">
+<head>
+  <title>Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:with="listaVariante=~{variantes/necesidades-b :: lista}">
+    <th:block th:replace="~{entidad-necesidades :: hoja('')}"></th:block>
+  </th:block>
+</th:block>
+
+<!--/* La lista en canteros: se arma dentro de hoja(accion), con sus variables (vigentes, pedida…). */-->
+<th:block th:fragment="lista">
+  <div data-v="canteros"
+       th:with="rubros=${ { {nombre: 'Alimentos', icono: 'cat-alimentos'}, {nombre: 'Ropa', icono: 'cat-ropa'},
+                            {nombre: 'Muebles', icono: 'cat-muebles'}, {nombre: 'Útiles escolares', icono: 'cat-escolares'} } }">
+    <th:block th:each="r : ${rubros}" th:with="deEste=${vigentes.?[rubro == #root.r.nombre]}">
+      <section th:unless="${#lists.isEmpty(deEste)}" class="grupo" data-v="cantero"
+               th:aria-labelledby="|cantero-${r.icono}|">
+        <header data-v="cantero-cabeza">
+          <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <use href="#cat-alimentos" th:href="|#${r.icono}|"/>
+          </svg>
+          <h3 th:id="|cantero-${r.icono}|" th:text="${r.nombre}">Alimentos</h3>
+          <p th:with="puerta=${#aggregates.sum(deEste.![puerta])}"
+             th:text="|${#lists.size(deEste) == 1 ? '1 necesidad vigente' : #lists.size(deEste) + ' necesidades vigentes'}${puerta > 0 ? (puerta == 1 ? ' · 1 entrega espera tu confirmación' : ' · ' + puerta + ' entregas esperan tu confirmación') : ''}|">5
+            necesidades vigentes · 1 entrega espera tu confirmación</p>
+        </header>
+        <ul class="pedidos-lista" role="list">
+          <li th:each="n : ${deEste}" th:id="${n.clave}">
+            <details th:replace="~{entidad-necesidades :: pedido(${n})}"></details>
+          </li>
+        </ul>
+      </section>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

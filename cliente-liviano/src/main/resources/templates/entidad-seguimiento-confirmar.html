@@ -246,13 +246,13 @@
               <p th:if="${revisar}" id="cantidad-error" class="campo-error"
                  th:text="|Escribí cuánto llegó, en ${e.unidad}.|">Escribí cuánto llegó, en kg.</p>
               <input id="cantidad" name="cantidadRecibida" type="number"
-                     th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null">
+                     th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null" placeholder="Por ejemplo: 10">
             </div>
             <div class="campo">
               <label for="detalle">Contanos más</label>
               <small id="detalle-ayuda">Opcional, salvo si elegiste Otra cosa. Hasta 500 caracteres.</small>
               <textarea id="detalle" name="detalle" rows="3" maxlength="500"
-                        aria-describedby="detalle-ayuda"></textarea>
+                        aria-describedby="detalle-ayuda" placeholder="Contanos qué pasó"></textarea>
             </div>
             <p class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver lo que contás junto con tus fotos, y el equipo de DonaTrack también. No se publica.|">Distribuidora
               Ejemplo SA va a ver lo que contás junto con tus fotos, y el equipo de DonaTrack también.
@@ -266,7 +266,7 @@
               <small id="remito-ayuda">Está arriba a la derecha del papel.</small>
               <p th:if="${conError or revisar}" id="remito-error" class="campo-error">Falta el número de remito.</p>
               <input id="remito" name="remito" type="text" required autocomplete="off"
-                     th:attr="aria-describedby=${conError or revisar} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError or revisar} ? 'true' : null">
+                     th:attr="aria-describedby=${conError or revisar} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError or revisar} ? 'true' : null" placeholder="Por ejemplo: 0001-00004521">
             </div>
           </fieldset>
 

@@ -256,7 +256,7 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-necesidades"))
         .andExpect(status().isOk())
         .andExpect(model().attribute("seccion", "Necesidades"))
-        .andExpect(content().string(containsString("10 de 40 kg recibidos")))
+        .andExpect(content().string(containsString("de 40 kg recibidos")))
         .andExpect(content().string(containsString("Llegó una parte")))
         .andExpect(content().string(containsString("aria-current=\"true\"")))
         .andExpect(content().string(containsString("popover")))
@@ -300,7 +300,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")))
         .andExpect(content().string(containsString("Cambiada hoy")))
         .andExpect(content().string(containsString("Hoy pasó de 40 a 45 kg por mes.")))
-        .andExpect(content().string(containsString("10 de 45 kg recibidos")));
+        .andExpect(content().string(containsString("de 45 kg recibidos")));
   }
 
   @Test
@@ -317,7 +317,7 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-necesidades?necesidad=ropa"))
         .andExpect(content().string(containsString("Donante Sostenedor · 5 unidades")))
         .andExpect(content().string(containsString("Ver los anteriores")))
-        .andExpect(content().string(containsString("0 de 20 litros recibidos")))
+        .andExpect(content().string(containsString("de 20 litros recibidos")))
         .andExpect(content().string(containsString("Hasta el 20 de octubre")))
         .andExpect(content().string(not(containsString("20 litros · hasta"))))
         .andExpect(content().string(containsString("Desde junio de 2026")));
@@ -561,7 +561,8 @@ class SitioControllerTest {
           .andExpect(content().string(containsString("href=\"/publico-para-entidades\"")));
     }
     mvc.perform(get("/publico-portada"))
-        .andExpect(content().string(containsString("Qué ganás si donás")))
+        // El enlace a la landing de donantes, en la tarjeta de quien dona (usuario, 2026-11-08).
+        .andExpect(content().string(containsString("Qué podés donar")))
         .andExpect(content().string(containsString("Cómo se suma una entidad")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
@@ -728,11 +729,17 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donantes"))
         .andExpect(
             content().string(containsString("86 donantes activos, al 15 de octubre de 2026")))
-        .andExpect(content().string(containsString("<caption>")))
+        .andExpect(
+            content().string(containsString("<caption class=\"solo-lectores\">Donantes</caption>")))
         .andExpect(content().string(containsString("scope=\"row\"")))
         .andExpect(content().string(containsString("data-rotulo=\"Documento\"")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donantes?importar=abrir#importar\"")));
+    // Importar queda plegado; "Importar CSV" lo abre sin dejar la lista (RF-20).
+    mvc.perform(get("/admin-donantes?importar=abrir"))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
-        .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")));
+        .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")))
+        .andExpect(content().string(containsString("scope=\"row\"")));
     mvc.perform(get("/admin-donantes?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay donantes registrados.")));
     mvc.perform(get("/admin-donantes?escenario=lento"))
@@ -996,7 +1003,9 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Completa el 3 de agosto de 2026")))
         .andExpect(
             content().string(containsString("Empieza a contar cuando completes Gran Aporte.")))
-        .andExpect(content().string(containsString("Se abre cuando completes las misiones de")))
+        .andExpect(
+            content()
+                .string(containsString("Sus misiones se ven cuando completes las de Sostenedor.")))
         .andExpect(content().string(containsString("aria-label=\"Tus insignias\"")))
         .andExpect(content().string(containsString("(2 de 6)")))
         .andExpect(content().string(not(containsString("Notificaciones, 4 sin leer"))));
@@ -1020,19 +1029,24 @@ class SitioControllerTest {
   }
 
   @Test
-  void conLaPersonaLasOtrasDelDonanteMuestranElAviso() throws Exception {
+  void conLaPersonaLasOtrasDelDonanteMuestranSuVersionOElAviso() throws Exception {
     mvc.perform(get("/donante-donaciones").sessionAttr("cuenta", "persona"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("persona/donante-donaciones"))
+        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(content().string(containsString("Martina Ruiz")));
+    mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
+        .andExpect(view().name("persona/donante-notificaciones"));
+    mvc.perform(get("/donante-perfil").sessionAttr("cuenta", "persona"))
+        .andExpect(view().name("persona/donante-perfil"))
+        .andExpect(model().attribute("seccion", "Mi perfil"));
+    // Una pantalla del donante sin versión de la persona sigue mostrando el aviso.
+    mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("aviso-persona"))
         .andExpect(model().attribute("seccion", "Mis donaciones"))
         .andExpect(content().string(containsString("la maqueta solo muestra Misiones e insignias")))
         .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")));
-    mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
-        .andExpect(view().name("aviso-persona"))
-        .andExpect(model().attribute("seccion", "Notificaciones"));
-    mvc.perform(get("/donante-perfil").sessionAttr("cuenta", "persona"))
-        .andExpect(view().name("aviso-persona"))
-        .andExpect(model().attribute("seccion", "Mi perfil"));
     mvc.perform(get("/donante-inicio?cuenta=empresa").sessionAttr("cuenta", "persona"))
         .andExpect(view().name("donante-inicio"))
         .andExpect(content().string(containsString("Distribuidora Ejemplo SA")));

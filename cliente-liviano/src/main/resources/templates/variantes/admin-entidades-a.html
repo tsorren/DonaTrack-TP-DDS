@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!--/* Variante A de Entidades del admin (recomendada; ronda 2026-11-09). Eje: una bandeja de decisiones
+       arriba y un directorio de láminas abajo. Arriba, las tres cifras (piden sumarse, activas, con
+       pedidos vigentes); después, las solicitudes que esperan tu decisión, una lámina por entidad con
+       lo que mandó (tildes y cruces), cuánto hace que espera y sus tres acciones a la vista; al final,
+       las activas como láminas con el ícono de lo que más piden, su estado en un sello y sus pedidos
+       vigentes como etiquetas, con búsqueda y filtros (GET real). Se ve con
+       /admin-entidades?variante=admin-entidades-a; ?escenario=vacio (nadie pide sumarse). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{variantes/comun/admin-entidades-datos :: datos(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla">
+  <div class="mesa" data-variante="entidades-a">
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Entidades</h1>
+        <p>Las organizaciones que reciben donaciones: primero, las que piden sumarse y esperan tu decisión;
+          debajo, las activas y lo que piden. Al 15 de octubre de 2026, 18:30.</p>
+      </div>
+      <div class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
+           th:href="@{/admin-entidades-registrar}">Registrar entidad</a>
+      </div>
+    </header>
+
+    <dl class="cifras" data-forma="tira">
+      <div data-tono="pendiente"><dt>Piden sumarse</dt><dd th:text="${#lists.size(solicitudes)}">3</dd></div>
+      <div><dt>Activas</dt><dd>46</dd></div>
+      <div><dt>Con pedidos vigentes</dt><dd>6 <small>· 11 pedidos</small></dd></div>
+    </dl>
+
+    <section class="pila" data-espacio="3" aria-labelledby="solicitudes-titulo">
+      <h2 id="solicitudes-titulo" th:text="|Esperan tu decisión · ${#lists.size(solicitudes)}|">Esperan tu decisión · 3</h2>
+      <section th:if="${#lists.isEmpty(solicitudes)}" class="vacio" aria-labelledby="vacio-titulo">
+        <h3 id="vacio-titulo">Ninguna entidad pide sumarse por ahora.</h3>
+        <p>Cuando una lo pida, aparece acá con lo que mandó.</p>
+      </section>
+      <p th:unless="${#lists.isEmpty(solicitudes)}">La que espera hace más tiempo, primero. Revisá lo que
+        mandó cada una y decidí.</p>
+      <ul th:unless="${#lists.isEmpty(solicitudes)}" class="lista" data-forma="solicitudes" role="list">
+        <li th:each="e : ${solicitudes}">
+          <article class="tarjeta pila" data-espacio="3" th:id="|solicitud-${e.clave}|"
+                   th:aria-labelledby="|solicitud-${e.clave}-titulo|">
+            <div class="racimo" data-alinea="entre">
+              <span class="estado" th:data-estado="${e.falta != null} ? 'camino' : 'pendiente'"><svg
+                  th:replace="~{componentes/sello :: sello(${e.falta != null} ? 'camino' : 'pendiente')}"></svg><th:block
+                  th:text="${e.falta != null} ? 'Le falta un dato' : 'Lista para revisar'">Lista para revisar</th:block></span>
+              <small th:text="|${e.espera} · ${e.cuando}|">Hace 6 días · 9 de octubre</small>
+            </div>
+            <div class="racimo" data-espacio="2">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                  th:href="|#cat-${e.cat}|" href="#cat-ropa"/></svg>
+              <div>
+                <h3 th:id="|solicitud-${e.clave}-titulo|" th:text="${e.nombre}">Hogar Ejemplo Norte</h3>
+                <p th:text="|${e.tipo} · ${e.localidad}|">Hogar · Localidad Ejemplo</p>
+              </div>
+            </div>
+            <ul th:replace="~{variantes/comun/admin-entidades-datos :: documentos(${e})}"></ul>
+            <details>
+              <summary>Ver todos los datos</summary>
+              <dl class="pila" data-espacio="2">
+                <div><dt>Razón social</dt><dd th:text="${e.razon}">Asociación Civil</dd></div>
+                <div><dt>Dirección</dt><dd th:text="${e.direccion}">Calle Ejemplo 1234</dd></div>
+                <div><dt>Responsable</dt><dd th:text="|${e.responsable} · ${e.correo}|">Rosa Ejemplo</dd></div>
+                <div><dt>Constancia de domicilio</dt><dd th:text="${e.constancia} ?: 'No la envió'">constancia.pdf</dd></div>
+              </dl>
+            </details>
+            <th:block th:replace="~{variantes/comun/admin-entidades-datos :: acciones(${e})}"></th:block>
+          </article>
+        </li>
+      </ul>
+    </section>
+
+    <section class="pila" data-espacio="3" aria-labelledby="activas-titulo">
+      <h2 id="activas-titulo">Activas · 46</h2>
+      <form class="filtro filtro--buscar pila" data-espacio="2" action="/admin-entidades"
+            th:action="@{/admin-entidades}" method="get" role="search">
+        <input type="hidden" name="variante" value="admin-entidades-a">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por nombre o localidad</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
+                   placeholder="Por ejemplo: comedor">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <div class="filtros" role="group" aria-label="Filtrar las entidades activas">
+          <details th:replace="~{componentes/filtros :: menu('pedidos', 'Pedidos', ${fPedidos}, ${conPedidosOpciones})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('tipo', 'Tipo de entidad', ${fTipo}, ${tipos})}"></details>
+          <a th:if="${filtrado}" class="filtros-sacar" href="/admin-entidades?variante=admin-entidades-a"
+             th:href="@{/admin-entidades(variante='admin-entidades-a')}">Sacar los filtros</a>
+        </div>
+      </form>
+      <p role="status" th:text="${filtrado} ? |Coinciden ${#lists.size(activas)} de las 46. Se ven las de ejemplo.| : 'Se ven 8 de las 46: primero, las que tienen pedidos vigentes.'">Se
+        ven 8 de las 46: primero, las que tienen pedidos vigentes.</p>
+      <ul class="lista" data-forma="directorio" role="list">
+        <th:block th:each="grupo : ${ {conPedidos, sinPedidos} }">
+        <li th:each="e : ${grupo}">
+          <article class="tarjeta pila" data-espacio="2" th:attr="data-pedidos=${e.pedidos.isEmpty()} ? 'sin' : 'con'"
+                   th:aria-labelledby="|activa-${e.clave}-titulo|">
+            <div class="racimo" data-espacio="2">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                  th:href="|#cat-${e.cat}|" href="#cat-alimentos"/></svg>
+              <div>
+                <h3 th:id="|activa-${e.clave}-titulo|" th:text="${e.nombre}">Comedor Barrio Ejemplo</h3>
+                <p th:text="|${e.tipo} · ${e.localidad} · activa desde el ${e.alta}|">Comedor · Barrio Ejemplo</p>
+              </div>
+            </div>
+            <p><span class="estado" th:data-estado="${e.pedidos.isEmpty()} ? 'falta' : 'recibida'"><svg
+                th:replace="~{componentes/sello :: sello(${e.pedidos.isEmpty()} ? 'falta' : 'hecho')}"></svg><th:block
+                th:text="${e.pedidos.isEmpty()} ? 'Sin pedidos vigentes' : (${#lists.size(e.pedidos) == 1} ? '1 pedido vigente' : |${#lists.size(e.pedidos)} pedidos vigentes|)">4
+                pedidos vigentes</th:block></span></p>
+            <ul th:unless="${e.pedidos.isEmpty()}" class="racimo" data-espacio="1" data-lista="pedidos" role="list"
+                th:aria-label="|Lo que pide ${e.nombre}|">
+              <li th:each="p : ${e.pedidos}" th:title="${p.falta}"><svg class="categoria-icono" viewBox="0 0 100 100"
+                  aria-hidden="true" focusable="false"><use th:href="|#cat-${p.cat}|" href="#cat-alimentos"/></svg><th:block
+                  th:text="${p.que}">Arroz</th:block></li>
+            </ul>
+            <p th:text="${e.entregas == 1} ? '1 entrega confirmada en octubre.' : |${e.entregas} entregas confirmadas en octubre.|">5
+              entregas confirmadas en octubre.</p>
+          </article>
+        </li>
+        </th:block>
+      </ul>
+      <section th:if="${#lists.isEmpty(activas)}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo">Ninguna entidad activa coincide con lo que buscaste.</h3>
+        <p>Probá con otra parte del nombre o sacá los filtros.</p>
+      </section>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

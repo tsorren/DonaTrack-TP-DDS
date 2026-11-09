@@ -1,0 +1,98 @@
+/* Variante A de las propuestas (ronda 2026-11-09): cada propuesta como un recorrido donación →
+   entidad, agrupadas por estado. Solo tokens de uso. Se borra al decidir. */
+
+[data-variante^="propuestas"] h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+[data-variante^="propuestas"] h2 b {
+  font: 800 1.5rem / 1 var(--fuente-cifra);
+}
+
+[data-variante^="propuestas"] .tarjeta {
+  --espacio-relleno: var(--espacio-4);
+}
+
+[data-variante^="propuestas"] .tarjeta p,
+[data-variante^="propuestas"] .tarjeta ul {
+  margin: 0;
+}
+
+[data-variante^="propuestas"] small {
+  color: var(--color-tinta-suave);
+}
+
+[data-variante^="propuestas"] .categoria-icono {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  padding: var(--espacio-1);
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  fill: var(--color-acento);
+}
+
+/* El recorrido: en el celular, uno debajo del otro con la flecha hacia abajo; desde la tableta, en
+   fila. */
+[data-variante="propuestas-a"] [data-forma="recorrido"] {
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+[data-variante="propuestas-a"] [data-lado] {
+  padding: var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+}
+
+[data-variante="propuestas-a"] [data-lado="entidad"] {
+  background: var(--color-acento-claro);
+}
+
+[data-variante="propuestas-a"] [data-lado="flecha"] {
+  padding: 0;
+  background: none;
+  color: var(--color-acento);
+  font: 800 2rem / 1 var(--fuente-titulo);
+  text-align: center;
+  rotate: 90deg;
+}
+
+[data-variante="propuestas-a"] [data-forma="motivos"] ul {
+  padding-inline-start: 1.25rem;
+}
+
+/* Las decididas: dos columnas de renglones cortos. */
+[data-variante="propuestas-a"] [data-forma="decididas"] {
+  --medida-grilla: 20rem;
+  align-items: start;
+  gap: var(--espacio-4);
+}
+
+[data-variante^="propuestas"] [data-lista="decididas"] {
+  gap: var(--espacio-1);
+}
+
+[data-variante^="propuestas"] [data-lista="decididas"] li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-boton);
+  background: var(--color-superficie);
+}
+
+@media (min-width: 53.75em) {
+  [data-variante="propuestas-a"] [data-forma="recorrido"] {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  [data-variante="propuestas-a"] [data-lado="flecha"] {
+    rotate: none;
+  }
+}

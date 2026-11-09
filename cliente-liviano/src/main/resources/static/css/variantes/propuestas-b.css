@@ -1,0 +1,40 @@
+/* Variante B de las propuestas (ronda 2026-11-09): pestañas por estado y una tabla para comparar.
+   Toma los títulos, los íconos y los renglones de decididas de la variante A. Se borra al decidir. */
+@import url("propuestas-a.css");
+
+[data-variante="propuestas-b"] .pestanas-panel {
+  padding-block-start: var(--espacio-3);
+}
+
+[data-variante="propuestas-b"] .tabla ul {
+  margin: 0;
+  padding-inline-start: 1.125rem;
+}
+
+[data-variante="propuestas-b"] .tabla .categoria-icono {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+[data-variante="propuestas-b"] .tabla th .estado {
+  margin-block-start: var(--espacio-1);
+}
+
+[data-variante="propuestas-b"] .tabla .progreso {
+  min-width: 8rem;
+  margin-block-end: var(--espacio-1);
+}
+
+[data-variante="propuestas-b"] .tabla td:last-child .racimo {
+  flex-wrap: nowrap;
+}
+
+@media (min-width: 53.75em) {
+  [data-variante="propuestas-b"] .tabla tbody th {
+    min-width: 14rem;
+  }
+}
+
+[data-variante="propuestas-b"] .tabla tbody th > .racimo {
+  flex-wrap: nowrap;
+}

@@ -78,13 +78,13 @@
           <label for="correo">Correo electrónico</label>
           <input id="correo" name="correo" type="email" required autocomplete="email"
                  th:value="${escrito} ? 'contacto@distribuidora-ejemplo.test' : null"
-                 th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null">
+                 th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null" placeholder="nombre@ejemplo.com">
         </div>
         <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="clave">Contraseña</label>
           <div class="clave-fila">
             <input id="clave" name="clave" type="password" required autocomplete="current-password"
-                   th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null">
+                   th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null" placeholder="Al menos 8 caracteres">
             <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
                     aria-pressed="false" hidden>Mostrar</button>
           </div>

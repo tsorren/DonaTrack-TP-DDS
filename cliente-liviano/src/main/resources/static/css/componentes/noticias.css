@@ -108,7 +108,7 @@ span.noticia-texto {
 
   .noticias[data-forma="libro"] .noticia {
     display: grid;
-    grid-template-columns: 10.5rem minmax(0, 1fr) 15rem;
+    grid-template-columns: minmax(0, 10.5rem) minmax(0, 1fr) minmax(0, 15rem);
     grid-template-areas:
       "cuando texto estado"
       "cuando texto donacion";

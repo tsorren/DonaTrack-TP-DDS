@@ -1,0 +1,283 @@
+/* Prueba A/B/C del inicio de la empresa (usuario, 2026-11-09). B: el mes como línea de tiempo,
+   con un dibujo por cosa que pasó y lo programado después de "Hoy". Solo con
+   ?variante=inicio-empresa-b, sobre templates/variantes/inicio-empresa-b.html. Se borra al
+   decidir. */
+
+[data-v="inicio-b"] .inicio-cuerpo {
+  gap: 3rem;
+}
+
+[data-v="inicio-b"] > .inicio-cabecera {
+  margin-bottom: 2rem;
+}
+
+/* La franja de cifras: tres números grandes en pastillas del color de su estado. */
+[data-v="franja"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-v="franja"] li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-pendiente-fondo);
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+[data-v="franja"] [data-estado="entregada"] {
+  background: var(--color-entregada-fondo);
+}
+
+[data-v="franja"] [data-estado="en-camino"] {
+  background: var(--color-en-camino-fondo);
+}
+
+[data-v="franja"] b {
+  font: 850 3rem/1 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+}
+
+/* La línea de tiempo. En el celular, de arriba abajo: la fecha, el punto sobre el hilo y el suceso. */
+[data-v="tiempo"] {
+  display: grid;
+  gap: 1.5rem;
+}
+
+[data-v="tiempo"] ol {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* El hilo: lleno hasta hoy, punteado lo que viene. */
+[data-v="tiempo"] ol::before {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 4.6rem;
+  border-left: 3px dotted var(--color-tinta-suave);
+}
+
+[data-v="tiempo"] li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem 2.25rem minmax(0, 1fr);
+  align-items: start;
+}
+
+[data-v="tiempo"] time {
+  display: grid;
+  justify-items: end;
+  padding-top: 0.25rem;
+  color: var(--color-tinta);
+  line-height: 1;
+}
+
+[data-v="tiempo"] time b {
+  font: 850 1.75rem/1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+[data-v="tiempo"] time span {
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+[data-v="punto"] {
+  justify-self: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-acento);
+  box-shadow: 0 0 0 0.25rem var(--color-fondo-pagina);
+}
+
+[data-v="tiempo"] [data-estado="con-problema"] [data-v="punto"] {
+  background: var(--color-problema-sello);
+}
+
+[data-v="tiempo"] [data-cuando="hoy"] [data-v="punto"] {
+  background: var(--color-en-camino-sello);
+  box-shadow: 0 0 0 0.25rem var(--color-fondo-pagina), 0 0 0 0.5rem var(--color-en-camino-sello);
+}
+
+[data-v="tiempo"] [data-cuando="programado"] [data-v="punto"] {
+  background: var(--color-fondo-pagina);
+  box-shadow: inset 0 0 0 2px var(--color-tinta-suave), 0 0 0 0.25rem var(--color-fondo-pagina);
+}
+
+/* El suceso: el dibujo a la izquierda, el qué y el estado a la derecha. */
+[data-v="suceso"] {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.25rem 0.875rem;
+  margin-left: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+[data-v="suceso"] > img:first-child {
+  grid-row: 1 / span 3;
+  width: 3.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+[data-v="suceso"] .huerta-recorrido-abeja {
+  position: absolute;
+  top: 0.25rem;
+  left: 2.75rem;
+  width: 1.5rem;
+}
+
+[data-v="suceso"] h3 {
+  margin: 0;
+  font: 800 1rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+[data-v="suceso"] h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-tinta);
+}
+
+[data-v="suceso"] p {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+[data-v="suceso"] .estado {
+  justify-self: start;
+}
+
+/* Lo programado: todavía no pasó, el papel con un borde punteado y el dibujo más suave. */
+[data-cuando="programado"] [data-v="suceso"] {
+  outline: 2px dashed var(--color-tinta-suave);
+  outline-offset: -2px;
+}
+
+[data-cuando="programado"] [data-v="suceso"]::before {
+  content: none;
+}
+
+[data-cuando="programado"] [data-v="suceso"] > img {
+  opacity: 0.7;
+}
+
+/* Las que esperan destino, sin fecha, aparte. */
+[data-v="sin-fecha"] {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0.875rem 1.25rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-pendiente-fondo);
+}
+
+[data-v="sin-fecha"] img {
+  grid-row: 1 / span 2;
+  width: 3rem;
+  height: 3.5rem;
+  object-fit: contain;
+}
+
+[data-v="sin-fecha"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+/* Lo acumulado, del mismo alto. */
+[data-v="acumulado"] {
+  --medida-grilla: 22rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+[data-v="acumulado"] > .huerta-tierra--caja {
+  align-content: space-between;
+}
+
+/* En pantalla grande, la línea de tiempo acostada: las fechas arriba, el hilo y los sucesos debajo,
+   un día por columna. */
+@media (min-width: 68.75em) {
+  [data-v="tiempo"] ol {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  [data-v="tiempo"] ol::before {
+    top: 4.15rem;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    border-top: 3px dotted var(--color-tinta-suave);
+    border-left: 0;
+  }
+
+  [data-v="tiempo"] li {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 3.25rem 1.75rem auto;
+    justify-items: center;
+    row-gap: 0.75rem;
+  }
+
+  [data-v="tiempo"] time {
+    justify-items: center;
+  }
+
+  [data-v="punto"] {
+    margin-top: 0;
+  }
+
+  [data-v="suceso"] {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-self: stretch;
+    width: 100%;
+    margin-left: 0;
+    padding: 1rem 0.875rem;
+    text-align: center;
+  }
+
+  [data-v="suceso"] > img:first-child {
+    grid-row: auto;
+    width: 100%;
+    height: 6rem;
+    padding-top: 0.5rem;
+    border-radius: var(--radio-boton);
+    background: var(--color-papel);
+  }
+
+  [data-v="suceso"] .huerta-recorrido-abeja {
+    top: 1rem;
+    left: auto;
+    right: 1.25rem;
+  }
+
+  [data-v="suceso"] .estado {
+    justify-self: center;
+  }
+}

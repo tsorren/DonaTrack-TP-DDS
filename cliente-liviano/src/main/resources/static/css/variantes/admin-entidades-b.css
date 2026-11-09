@@ -1,0 +1,69 @@
+/* Variante B de Entidades del admin (ronda 2026-11-09): el tablero en tres columnas por estado. Toma
+   las láminas, las etiquetas y la lista de lo que mandó de la variante A. Se borra al decidir. */
+@import url("admin-entidades-a.css");
+
+[data-variante="entidades-b"] [data-forma="tablero"] {
+  --medida-grilla: 18rem;
+  align-items: start;
+  gap: var(--espacio-3);
+}
+
+/* Cada columna: un carril de papel con esquinas redondeadas. */
+[data-variante="entidades-b"] [data-columna] {
+  padding: var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  box-shadow: inset 0 0 0 1.5px var(--color-filete);
+}
+
+[data-variante="entidades-b"] [data-columna="solicitudes"] {
+  background: var(--color-en-camino-fondo);
+  box-shadow: none;
+}
+
+[data-variante="entidades-b"] [data-columna] > h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  margin: 0;
+  font-size: var(--tamano-grande);
+}
+
+[data-variante="entidades-b"] [data-columna] > h2 b {
+  font: 800 1.75rem / 1 var(--fuente-cifra);
+}
+
+[data-variante="entidades-b"] [data-columna] > p {
+  margin: 0;
+  color: var(--color-tinta-suave);
+}
+
+[data-variante="entidades-b"] .tarjeta h3 {
+  font-size: var(--tamano-base);
+}
+
+[data-variante="entidades-b"] .tarjeta > .racimo > .categoria-icono {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+[data-variante="entidades-b"] [data-ok="si"] {
+  color: var(--color-exito-texto);
+  font-weight: 700;
+}
+
+[data-variante="entidades-b"] [data-ok="no"] {
+  color: var(--color-problema-texto);
+  font-weight: 700;
+}
+
+/* En una columna angosta, las tres acciones una debajo de la otra, a todo el ancho. */
+[data-variante="entidades-b"] [data-columna="solicitudes"] .racimo:has(> form) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+[data-variante="entidades-b"] [data-columna="solicitudes"] .racimo:has(> form) .boton {
+  width: 100%;
+}

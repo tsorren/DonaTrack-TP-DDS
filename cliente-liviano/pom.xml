@@ -18,6 +18,8 @@
         <pico.version>2.1.1</pico.version>
         <!-- Alpine.js, build CSP (D31): sin eval, expresiones solo con nombres. Sin plugins. -->
         <alpine.version>3.17.5</alpine.version>
+        <!-- MapLibre GL solo en las pantallas con mapa (D21). static/js/mapa.js carga la misma versión desde unpkg si el WebJar no responde: al cambiarla, cambiar las dos. -->
+        <maplibre.version>5.9.0</maplibre.version>
         <!-- La misma versión que usa axe-core-playwright. -->
         <playwright.version>1.63.0</playwright.version>
         <axe-core-playwright.version>4.14.0</axe-core-playwright.version>
@@ -82,6 +84,19 @@
             <groupId>org.webjars.npm</groupId>
             <artifactId>alpinejs__csp</artifactId>
             <version>${alpine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>maplibre-gl</artifactId>
+            <version>${maplibre.version}</version>
+            <!-- Solo se sirve dist/ (ya empaquetado): sus dependencias npm no hacen falta y sus
+                 rangos de versión chocan entre sí. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- URLs de WebJars sin versión (/webjars/htmx.org/...): la versión vive solo acá. -->
         <dependency>

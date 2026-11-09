@@ -143,7 +143,7 @@
                   <input type="hidden" name="propuesta" th:value="${p.clave}" value="arroz">
                   <div class="campo">
                     <label th:for="|motivo-${p.clave}|" for="motivo-arroz">Motivo (opcional)</label>
-                    <textarea th:id="|motivo-${p.clave}|" id="motivo-arroz" name="motivo" rows="3"></textarea>
+                    <textarea th:id="|motivo-${p.clave}|" id="motivo-arroz" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
                   </div>
                   <button class="boton" data-tono="quitar" type="submit">Descartar propuesta</button>
                 </form>

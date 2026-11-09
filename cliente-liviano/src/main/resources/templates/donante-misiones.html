@@ -2,9 +2,10 @@
 <!--/* Raíces, Misiones e insignias de la persona que dona (RF-07), según su ficha de flujo
        (docs/interfaz/flujos/raices-misiones.md). Solo para la cuenta de la persona (?cuenta=persona,
        en la sesión); la empresa ve "Sin permiso". Arriba, la categoría y la fecha del dato; después,
-       las insignias (las obtenidas, con su sello lleno; las que faltan, huecas) y el camino entero de
-       misiones por categoría: lo hecho, lo que tiene abierto (una en curso, con su barra) y lo que
-       viene. Las 6 misiones son las de MisionFactory (incentivos-service). Estados de la maqueta:
+       las insignias (las obtenidas, con su sello lleno; las que faltan, huecas) y el camino de
+       misiones por categoría: lo hecho, plegado en un desplegable; lo que tiene abierto (una en curso,
+       con su barra), y lo que viene, solo con su nombre (usuaria, 2026-11-09). Pruebas A/B de la
+       ronda del 2026-11-09: ?variante=misiones-a (álbum de figuritas) y misiones-b (huerta). Las 6 misiones son las de MisionFactory (incentivos-service). Estados de la maqueta:
        ?escenario=vacio (recién empieza), lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
@@ -12,7 +13,14 @@
   <title>Misiones e insignias - DonaTrack</title>
 </head>
 <body>
-<th:block th:fragment="contenido"
+<!--/* La pantalla: los datos, el encabezado y los estados de datos(vista), con el camino de misiones
+       de cuerpo. Las variantes misiones-a y misiones-b (templates/variantes/) usan los mismos datos
+       con su propio cuerpo. */-->
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{donante-misiones :: datos(~{donante-misiones :: cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="datos(vista)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              nueva=${escenario == 'vacio'},
              misiones=${nueva ? { {categoria: 'Colaborador', nombre: 'Racha Inicial', pide: '3 meses seguidos donando', estado: 'curso', progreso: 0, objetivo: 3, cuenta: '0 de 3 meses'},
@@ -75,63 +83,102 @@
       </div>
     </section>
 
-    <th:block th:if="${escenario == '' or nueva}">
-    <!--/* Las insignias: una por misión. La obtenida, el sello lleno con su fecha; la que falta, hueca y
-           con su nombre: se ve qué hay para ganar sin que parezca una falta. */-->
-    <section aria-labelledby="insignias-titulo">
-      <h2 id="insignias-titulo">Tus insignias <small th:text="|(${#lists.size(obtenidas)} de 6)|">(2 de 6)</small></h2>
-      <p th:if="${nueva}">Todavía no tenés insignias. Cada misión completa te da una.</p>
-      <ul id="insignias" class="racimo" data-espacio="3" role="list" aria-label="Tus insignias">
-        <li th:each="m : ${misiones}">
-          <th:block th:replace="~{componentes/sello :: sello(${m.estado == 'completa'} ? 'hecho' : 'falta')}"></th:block>
-          <p><b th:text="${m.nombre}">Racha Inicial</b></p>
-          <p th:text="${m.estado == 'completa'} ? |Obtenida el ${m.fecha}| : 'Todavía no'">Obtenida el 3 de agosto de 2026</p>
-        </li>
-      </ul>
-    </section>
-
-    <!--/* El camino entero, de la primera categoría a la última. Una misión a la vez: Incentivos evalúa
-           solo la de número más bajo sin completar de la categoría actual; las demás esperan. */-->
-    <section th:each="c : ${categorias}" th:aria-labelledby="|cat-${c.nombre}|">
-      <h2 th:id="|cat-${c.nombre}|" th:text="|${c.nombre} · ${c.estado}|">Sostenedor · tu categoría</h2>
-      <ul class="lista" role="list">
-        <li th:each="m : ${misiones.?[categoria == #root.c.nombre]}">
-          <article class="tarjeta" th:aria-labelledby="|mision-${mStat.count}-${c.nombre}|">
-            <h3 th:id="|mision-${mStat.count}-${c.nombre}|" th:text="${m.nombre}">Gran Aporte</h3>
-            <p th:text="${m.pide}">Una donación con al menos 50 bienes</p>
-            <p th:if="${m.estado == 'completa'}"><span class="estado" data-estado="entregada"><th:block
-                th:replace="~{componentes/sello :: sello('hecho')}"></th:block><span
-                th:text="|Completa el ${m.fecha}|">Completa el 3 de agosto de 2026</span></span></p>
-            <th:block th:if="${m.estado == 'curso'}">
-              <p><span class="estado" data-estado="en-camino"><th:block
-                  th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En curso</span></p>
-              <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
-                        th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
-              <p><b th:text="${m.cuenta}">12 de 50 bienes</b></p>
-              <p th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de septiembre.</p>
-            </th:block>
-            <th:block th:if="${m.estado == 'espera'}">
-              <p><span class="estado" data-estado="pendiente"><th:block
-                  th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>En espera</span></p>
-              <p th:text="|Empieza a contar cuando completes ${m.espera}.|">Empieza a contar cuando completes
-                Gran Aporte.</p>
-            </th:block>
-            <p th:if="${m.estado == 'cerrada'}"><span class="estado"><th:block
-                th:replace="~{componentes/sello :: sello('falta')}"></th:block>Se abre después</span></p>
-          </article>
-        </li>
-      </ul>
-      <p th:if="${c['siguiente'] != null}" th:text="|Las misiones avanzan de a una, en orden. Al completar las 2, pasás a ${c['siguiente']}.|">Las
-        misiones avanzan de a una, en orden. Al completar las 2, pasás a Transformador.</p>
-      <p th:if="${c['anterior'] != null}" th:text="|Se abre cuando completes las misiones de ${c['anterior']}.|">Se abre
-        cuando completes las misiones de Sostenedor.</p>
-    </section>
-
-    <p>Las misiones cuentan tus donaciones: las que entregás en el depósito y, en Impacto Real, las que
-      la entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+    <th:block th:if="${escenario == '' or nueva}"
+              th:with="visibles=${categorias.?[estado != 'se abre después'].![nombre]},
+                       completas=${categorias.?[estado == 'completa']},
+                       actual=${categorias.^[estado == 'tu categoría']},
+                       siguientes=${categorias.?[estado == 'se abre después']}">
+      <th:block th:replace="${vista}"></th:block>
     </th:block>
     </th:block>
   </div>
 </th:block>
+<th:block th:fragment="cuerpo">
+    <!--/* Las insignias: una por misión de las categorías a la vista. La obtenida, el sello lleno con su
+           fecha; la que falta, hueca y con su nombre. Las de las categorías que todavía no se abren no
+           se nombran (usuaria, 2026-11-09: "no deberían ser visibles hasta que se complete la
+           anterior"): un solo sello hueco dice cuántas hay más adelante. */-->
+    <section aria-labelledby="insignias-titulo">
+      <h2 id="insignias-titulo">Tus insignias <small th:text="|(${#lists.size(obtenidas)} de 6)|">(2 de 6)</small></h2>
+      <p th:if="${nueva}">Todavía no tenés insignias. Cada misión completa te da una.</p>
+      <ul id="insignias" class="racimo" data-espacio="3" role="list" aria-label="Tus insignias">
+        <li th:each="m : ${misiones}" th:if="${visibles.contains(m.categoria)}">
+          <th:block th:replace="~{componentes/sello :: sello(${m.estado == 'completa'} ? 'hecho' : 'falta')}"></th:block>
+          <p><b th:text="${m.nombre}">Racha Inicial</b></p>
+          <p th:text="${m.estado == 'completa'} ? |Obtenida el ${m.fecha}| : 'Todavía no'">Obtenida el 3 de agosto de 2026</p>
+        </li>
+        <li th:each="c : ${siguientes}" data-insignia="mas-adelante">
+          <th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>
+          <p><b th:text="|${#lists.size(misiones.?[categoria == #root.c.nombre])} más|">2 más</b></p>
+          <p th:text="|En ${c.nombre}|">En Transformador</p>
+        </li>
+      </ul>
+    </section>
+
+    <!--/* El camino, de la primera categoría a la última (usuaria, 2026-11-09): las completas, plegadas
+           en un desplegable cerrado; la actual, abierta, con sus misiones (Incentivos evalúa solo la
+           de número más bajo sin completar; las demás esperan); las que vienen, solo con su nombre y
+           cuándo se abren, sin mostrar sus misiones. */-->
+    <details th:each="c : ${completas}" class="tarjeta" data-categoria="completa">
+      <summary>
+        <span><b th:text="|${c.nombre} · completa|">Colaborador · completa</b>
+          <small th:text="|${#lists.size(misiones.?[categoria == #root.c.nombre])} de ${#lists.size(misiones.?[categoria == #root.c.nombre])} misiones completas. Ver las misiones|">2 de 2
+            misiones completas. Ver las misiones</small></span>
+      </summary>
+      <ul class="lista" role="list" th:aria-label="|Misiones de ${c.nombre}|">
+        <li th:each="m, v : ${misiones.?[categoria == #root.c.nombre]}">
+          <article th:replace="~{:: mision(${m}, |mision-${c.nombre}-${v.count}|)}"></article>
+        </li>
+      </ul>
+    </details>
+
+    <section th:if="${actual}" th:aria-labelledby="|cat-${actual.nombre}|" th:with="c=${actual}">
+      <h2 th:id="|cat-${c.nombre}|" th:text="|${c.nombre} · ${c.estado}|">Sostenedor · tu categoría</h2>
+      <ul class="lista" role="list">
+        <li th:each="m, v : ${misiones.?[categoria == #root.c.nombre]}">
+          <article th:replace="~{:: mision(${m}, |mision-${c.nombre}-${v.count}|)}"></article>
+        </li>
+      </ul>
+      <p th:if="${c['siguiente'] != null}" th:text="|Las misiones avanzan de a una, en orden. Al completar las 2, pasás a ${c['siguiente']}.|">Las
+        misiones avanzan de a una, en orden. Al completar las 2, pasás a Transformador.</p>
+    </section>
+
+    <section th:each="c : ${siguientes}" class="tarjeta" data-categoria="despues"
+             th:aria-labelledby="|cat-${c.nombre}|">
+      <th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>
+      <div>
+        <h2 th:id="|cat-${c.nombre}|" th:text="|${c.nombre} · se abre después|">Transformador · se abre después</h2>
+        <p th:text="|Sus misiones se ven cuando completes las de ${c['anterior']}.|">Sus misiones se ven cuando
+          completes las de Sostenedor.</p>
+      </div>
+    </section>
+
+    <p>Las misiones cuentan tus donaciones: las que entregás en el depósito y, en Impacto Real, las que
+      la entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+</th:block>
+
+<!--/* Una misión: su nombre, qué pide y cómo está (completa con su fecha, en curso con su barra y la
+       cuenta, o en espera de la anterior). */-->
+<article th:fragment="mision(m, id)" class="tarjeta" th:aria-labelledby="${id}">
+  <h3 th:id="${id}" th:text="${m.nombre}">Gran Aporte</h3>
+  <p th:text="${m.pide}">Una donación con al menos 50 bienes</p>
+  <p th:if="${m.estado == 'completa'}"><span class="estado" data-estado="entregada"><th:block
+      th:replace="~{componentes/sello :: sello('hecho')}"></th:block><span
+      th:text="|Completa el ${m.fecha}|">Completa el 3 de agosto de 2026</span></span></p>
+  <th:block th:if="${m.estado == 'curso'}">
+    <p><span class="estado" data-estado="en-camino"><th:block
+        th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En curso</span></p>
+    <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
+              th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
+    <p><b th:text="${m.cuenta}">12 de 50 bienes</b></p>
+    <p th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de septiembre.</p>
+  </th:block>
+  <th:block th:if="${m.estado == 'espera'}">
+    <p><span class="estado" data-estado="pendiente"><th:block
+        th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>En espera</span></p>
+    <p th:text="|Empieza a contar cuando completes ${m.espera}.|">Empieza a contar cuando completes
+      Gran Aporte.</p>
+  </th:block>
+</article>
 </body>
 </html>

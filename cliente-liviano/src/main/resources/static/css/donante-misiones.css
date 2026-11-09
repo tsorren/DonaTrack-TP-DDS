@@ -4,12 +4,10 @@
    (.tarjeta, .lista, .estado, .progreso, .racimo, .pila). */
 @import url("privado.css");
 
-#misiones {
-  max-width: 64rem;
-}
-
+/* El encabezado ocupa todo el ancho (regla general de la ronda del 2026-11-09); la bajada conserva
+   un largo de línea legible. */
 #misiones > header p {
-  max-width: 38rem;
+  max-width: 42rem;
 }
 
 #misiones h2 {
@@ -40,8 +38,12 @@
   margin: 0;
 }
 
+/* Las misiones de una categoría, con aire entre las tarjetas (usuaria, 2026-11-09: "no tienen
+   gutter en el medio"). */
 #misiones .lista {
   --medida-columna: 22rem;
+  gap: var(--espacio-3);
+  margin-block-start: var(--espacio-3);
 }
 
 #misiones .lista .tarjeta {
@@ -54,5 +56,43 @@
 }
 
 #misiones .tarjeta :is(h3, p) {
+  margin: 0;
+}
+
+/* La categoría completa, plegada: el desplegable es una tarjeta con su resumen como renglón tocable;
+   abierto, las misiones adentro. */
+#misiones details[data-categoria="completa"] {
+  --espacio-relleno: var(--espacio-3);
+}
+
+#misiones details[data-categoria="completa"] > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 3rem;
+  cursor: pointer;
+}
+
+#misiones details[data-categoria="completa"] > summary span {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+/* Lo que viene: solo el nombre y cuándo se abre, junto al sello pendiente. */
+#misiones section[data-categoria="despues"] {
+  --espacio-relleno: var(--espacio-3);
+
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+#misiones section[data-categoria="despues"] .estado-sello {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+#misiones section[data-categoria="despues"] :is(h2, p) {
   margin: 0;
 }

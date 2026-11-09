@@ -76,6 +76,8 @@
 .categoria-icono {
   width: 1.75rem;
   height: 1.75rem;
+  /* Redondeado, como el resto de las cajas (ronda del 2026-11-09, regla general 4). */
+  border-radius: var(--radio-boton);
   background: var(--color-acento-claro);
   color: var(--color-tinta);
   fill: var(--color-tinta);

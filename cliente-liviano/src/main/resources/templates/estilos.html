@@ -176,11 +176,11 @@
             <div class="pila" data-espacio="3">
               <div class="campo">
                 <label for="muestra-nombre">Nombre <small>(como figura en el cartel)</small></label>
-                <input id="muestra-nombre" type="text" value="Distribuidora Ejemplo">
+                <input id="muestra-nombre" type="text" value="Distribuidora Ejemplo" placeholder="Por ejemplo: Distribuidora Ejemplo SA">
               </div>
               <div class="campo" data-estado="error">
                 <label for="muestra-correo">Correo electrónico</label>
-                <input id="muestra-correo" type="email" value="contacto@ejemplo" aria-invalid="true" aria-describedby="muestra-correo-error">
+                <input id="muestra-correo" type="email" value="contacto@ejemplo" aria-invalid="true" aria-describedby="muestra-correo-error" placeholder="nombre@ejemplo.com">
                 <p id="muestra-correo-error" class="campo-error">Falta el dominio, por ejemplo @ejemplo.test.</p>
               </div>
             </div>
@@ -285,6 +285,13 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.info', 'El ícono de información: un botón de 48 px que abre un globo (popover nativo) con más información y el enlace a la página completa. Anda con toque y teclado, sin JavaScript; con posicionamiento por ancla sale arriba del botón.', ~{::demo-info})}">
+          <th:block th:fragment="demo-info">
+            <p>Qué podés donar <span th:replace="~{componentes/info :: info('info-de-muestra', 'Qué podés donar', 'Qué podés donar',
+                'Alimentos envasados y sin vencer, ropa limpia y en buen estado, y muebles que se puedan usar.',
+                '/publico-para-donantes', 'Ver todo para donantes')}"></span></p>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.navegacion', 'La barra de secciones: en el celular, fija abajo; desde la tableta, horizontal en la cabecera (acá, dentro de una caja). La sección actual lleva aria-current=&quot;page&quot;. data-zona=&quot;publica&quot; para las páginas públicas, con .navegacion-largo (lo que solo se lee en la barra del celular), .navegacion-aparte (va a la derecha) y .navegacion-destacado (el botón principal). Con más de 5 secciones, .navegacion-mas abre .navegacion-hoja (un popover) con todas, en el celular.', ~{::demo-navegacion})}">
           <th:block th:fragment="demo-navegacion">
             <div class="pila" data-espacio="3">
@@ -351,6 +358,36 @@
             </details>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.filtros', 'Una fila de filtros como la de LinkedIn: cada filtro con opciones es una pastilla que abre su menú (componentes/filtros :: menu) y uno de sí o no es una pastilla que se prende (componentes/filtros :: interruptor). Con un filtro elegido, la pastilla va llena de verde y dice lo elegido; .filtros-sacar los saca todos.', ~{::demo-filtros})}">
+          <th:block th:fragment="demo-filtros">
+            <form action="/estilos" th:action="@{/estilos}" method="get">
+              <div class="filtros" role="group" aria-label="Filtros de muestra">
+                <details th:replace="~{componentes/filtros :: menu('muestra-categoria', 'Categoría', 'ropa', ${ {
+                    {valor: '', texto: 'Todas las categorías'}, {valor: 'ropa', texto: 'Ropa'}, {valor: 'muebles', texto: 'Muebles'} } })}"></details>
+                <details th:replace="~{componentes/filtros :: menu('muestra-tipo', 'Tipo de pedido', '', ${ {
+                    {valor: '', texto: 'Todos los pedidos'}, {valor: 'recurrente', texto: 'Recurrentes'} } })}"></details>
+                <label th:replace="~{componentes/filtros :: interruptor('muestra-emergencia', 'si', 'Emergencias', false)}"></label>
+                <a class="filtros-sacar" href="/estilos" th:href="@{/estilos}">Sacar los filtros</a>
+              </div>
+            </form>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.registro', 'El registro en una sola página (componentes/registro): la cabeza, el tipo de cuenta (registro :: tipos), el índice (registro :: indice) y el formulario en una tarjeta (.registro-formulario) con una .registro-seccion por paso; .registro-salida, la salida a Ingresar.', ~{::demo-registro})}">
+          <th:block th:fragment="demo-registro">
+            <div class="registro">
+              <div class="registro-cuerpo">
+                <nav th:replace="~{componentes/registro :: indice(${ { {id: 'muestra-datos', titulo: 'Tus datos', detalle: 'Quién se registra'} } })}"></nav>
+                <div class="tarjeta registro-formulario">
+                  <section class="registro-seccion" id="muestra-datos" aria-labelledby="muestra-datos-titulo">
+                    <h2 id="muestra-datos-titulo">Tus datos</h2>
+                    <p>Todos los datos son obligatorios.</p>
+                  </section>
+                </div>
+              </div>
+              <p class="registro-salida">¿Ya tenés cuenta? <a href="/publico-ingresar" th:href="@{/publico-ingresar}">Ingresar</a></p>
+            </div>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.tarjeta', 'Una parte con papel propio: filete de tinta, esquinas suaves y sombra plana paja. Es solo el papel; el relleno es --espacio-relleno y la disposición de lo de adentro la pone la pantalla. data-filete: sin él, simple; doble (la etiqueta de herbario: Mis entidades, las actas, los pedidos) o contorno (el filete por fuera, sin borde). .tarjeta-cabeza es la cabeza de una lámina: el título en cursiva y su rótulo sobre un filete fino.', ~{::demo-tarjeta})}">
           <th:block th:fragment="demo-tarjeta">
             <div class="grilla">
@@ -387,13 +424,14 @@
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.huerta-planta', 'La lámina de una donación, como en la variante K (componentes/huerta :: planta(d)), dentro de una .lista con la clase huerta-lista. El dibujo sale del estado: entregada, la planta crecida de su categoría; en camino, el brote con la abeja que lo lleva; pendiente, la maceta en el depósito; con problema, la maceta de reintentar. Las demás piezas de la estética de K (la portada, cómo funciona, las raíces, las cifras en árboles, quién participa, las preguntas, el cierre, la fila de cifras del donante y su recorrido) son fragmentos del mismo componente.', ~{::demo-huerta})}">
           <th:block th:fragment="demo-huerta">
+            <svg th:replace="~{iconos :: categorias}"></svg>
             <ul class="lista huerta-lista" role="list"
                 th:with="entregada=${ {tono: 'entregada', texto: 'Entregada'} }, enCamino=${ {tono: 'en-camino', texto: 'En camino'} },
                          pendiente=${ {tono: 'pendiente', texto: 'Pendiente'} }, conProblema=${ {tono: 'con-problema', texto: 'Con problema'} }">
-              <li th:replace="~{componentes/huerta :: planta(${ {numero: 1, titulo: 'Fideos secos', cantidad: '8 kg', categoria: 'cat-alimentos', destino: 'Comedor Barrio Ejemplo', nota: 'Llegó el 5 de octubre', clave: 'fideos', estado: entregada} })}"></li>
-              <li th:replace="~{componentes/huerta :: planta(${ {numero: 5, titulo: 'Lentejas secas', cantidad: '15 kg', categoria: 'cat-alimentos', destino: 'Comedor Barrio Ejemplo', nota: 'Salió hoy a las 14:30', clave: 'lentejas', estado: enCamino} })}"></li>
-              <li th:replace="~{componentes/huerta :: planta(${ {numero: 7, titulo: 'Arroz largo fino', cantidad: '10 kg', categoria: 'cat-alimentos', destino: null, nota: 'En el depósito, espera destino', clave: 'arroz', estado: pendiente} })}"></li>
-              <li th:replace="~{componentes/huerta :: planta(${ {numero: 4, titulo: 'Útiles escolares', cantidad: '2 cajas', categoria: 'cat-escolares', destino: 'Escuela Ejemplo 12', nota: 'No pudo llegar; sale de nuevo el 17 de octubre', clave: 'utiles', estado: conProblema} })}"></li>
+              <li th:replace="~{componentes/huerta :: planta(${ {numero: 1, titulo: 'Fideos secos', cantidad: '8 kg', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo', nota: 'Llegó el 5 de octubre', clave: 'fideos', estado: entregada} })}"></li>
+              <li th:replace="~{componentes/huerta :: planta(${ {numero: 5, titulo: 'Lentejas secas', cantidad: '15 kg', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo', nota: 'Salió hoy a las 14:30', clave: 'lentejas', estado: enCamino} })}"></li>
+              <li th:replace="~{componentes/huerta :: planta(${ {numero: 7, titulo: 'Arroz largo fino', cantidad: '10 kg', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: null, nota: 'En el depósito, espera destino', clave: 'arroz', estado: pendiente} })}"></li>
+              <li th:replace="~{componentes/huerta :: planta(${ {numero: 4, titulo: 'Útiles escolares', cantidad: '2 cajas', categoria: 'cat-escolares', categoriaTexto: 'Útiles escolares', destino: 'Escuela Ejemplo 12', nota: 'No pudo llegar; sale de nuevo el 17 de octubre', clave: 'utiles', estado: conProblema} })}"></li>
             </ul>
           </th:block>
         </div>
@@ -500,6 +538,22 @@
                   </li>
                 </ol>
               </section>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.mapa-real', 'El mapa real (D21): un div.mapa-dibujo.mapa-real con data-mapa, que static/js/mapa.js llena con MapLibre y OpenFreeMap. Sin JavaScript queda .mapa-real-aviso. Cada ficha de la lista con data-lat y data-lng pone un button.mapa-marcador numerado, y su template data-mapa-globo trae el globo (.mapa-globo-cuerpo con .mapa-globo-nombre). Acá, sin el mapa: el aviso, un marcador y un globo.', ~{::demo-mapa-real})}">
+          <th:block th:fragment="demo-mapa-real">
+            <div class="mapa-dibujo mapa-real" role="region" aria-label="Muestra del mapa">
+              <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En la lista están las mismas
+                entidades, con sus entregas.</p>
+              <div class="racimo">
+                <button type="button" class="mapa-marcador" aria-label="1. Comedor Barrio Ejemplo">1</button>
+                <div class="mapa-globo-cuerpo">
+                  <p class="mapa-globo-nombre">Comedor Barrio Ejemplo</p>
+                  <p>Barrio Ejemplo · 6 entregas confirmadas en el último mes</p>
+                  <a href="#muestra-entidad-1">Ver sus entregas en la lista</a>
+                </div>
+              </div>
             </div>
           </th:block>
         </div>

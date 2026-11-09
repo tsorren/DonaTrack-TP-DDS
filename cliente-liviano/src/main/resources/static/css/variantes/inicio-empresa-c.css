@@ -1,0 +1,247 @@
+/* Prueba A/B/C del inicio de la empresa (usuario, 2026-11-09). C: la huerta en una sola lámina,
+   tres canteros sobre la misma línea de tierra y las raíces debajo. Solo con
+   ?variante=inicio-empresa-c, sobre templates/variantes/inicio-empresa-c.html. Se borra al decidir. */
+
+[data-v="inicio-c"] .inicio-cuerpo {
+  gap: 2.5rem;
+}
+
+[data-v="inicio-c"] > .inicio-cabecera {
+  margin-bottom: 2rem;
+}
+
+/* La nota pegada con cinta: lo que conviene mirar. */
+[data-v="nota"] {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  max-width: 44rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-problema-fondo);
+  rotate: -0.6deg;
+}
+
+[data-v="nota"]::before {
+  content: "";
+  position: absolute;
+  top: -0.75rem;
+  left: 2rem;
+  width: 4rem;
+  height: 1.25rem;
+  rotate: 3deg;
+  border-radius: 0.1875rem;
+  background: var(--color-raiz);
+  opacity: 0.85;
+}
+
+[data-v="nota"] img {
+  width: 3.5rem;
+  height: 4rem;
+  object-fit: contain;
+}
+
+[data-v="nota"] h2 {
+  margin: 0 0 0.25rem;
+  color: var(--color-problema-texto);
+  font: 800 1.0625rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+[data-v="nota"] p {
+  margin: 0;
+  color: var(--color-tinta);
+}
+
+[data-v="nota"] a {
+  color: var(--color-tinta);
+  font-weight: 800;
+}
+
+/* La lámina grande. */
+[data-v="huerta"] {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem 1.25rem 0;
+  overflow: hidden;
+}
+
+/* Los canteros, uno debajo del otro en el celular y en tres columnas desde la tableta. */
+[data-v="canteros"] {
+  display: grid;
+  gap: 2rem;
+}
+
+[data-v="cantero"] {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.25rem;
+}
+
+[data-v="cantero"] h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  margin: 0;
+  color: var(--color-tinta);
+  font: 850 1.375rem/1.1 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+[data-v="cantero"] h3 b {
+  color: var(--color-acento);
+  font: 850 3.5rem/0.9 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+}
+
+[data-cantero="crece"] h3 b {
+  color: var(--color-en-camino-texto);
+}
+
+[data-cantero="deposito"] h3 b {
+  color: var(--color-pendiente-texto);
+}
+
+[data-v="cantero"] > p {
+  margin: 0 0 0.75rem;
+  color: var(--color-tinta-suave);
+}
+
+/* Las plantas, paradas sobre la línea de tierra del fondo del cantero. */
+[data-v="cantero"] ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0 0 1rem;
+  list-style: none;
+}
+
+[data-v="cantero"] li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: end;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+[data-v="cantero"] li > img:not(.huerta-recorrido-abeja) {
+  width: 100%;
+  height: 7.5rem;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+[data-v="cantero"] .huerta-recorrido-abeja {
+  position: absolute;
+  top: 1rem;
+  right: 0.75rem;
+  width: 1.5rem;
+}
+
+[data-v="cantero"] li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-tinta);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+[data-v="cantero"] li .estado {
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radio-boton);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+[data-v="cantero"] li .estado .estado-sello,
+[data-v="cantero"] li .estado::before {
+  display: none;
+}
+
+/* Las raíces, la tierra al pie de la lámina, de borde a borde. */
+[data-v="huerta"] > .huerta-tierra--caja {
+  margin: 0 -1.25rem;
+  padding: 1.5rem 1.25rem 2rem;
+  border-radius: 0;
+  border-top: 3px solid var(--color-tinta);
+}
+
+/* Las noticias, en una fila de fichas. */
+[data-v="noticias"] {
+  display: grid;
+  gap: 1rem;
+}
+
+[data-v="noticias"] .huerta-cabeza {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+[data-v="noticias"] h2 {
+  color: var(--color-tinta);
+  font: 850 1.375rem/1.15 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+[data-v="noticias"] .noticias {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+[data-v="noticias"] .noticia {
+  align-content: start;
+  padding: 1rem 1rem 1rem 1.75rem;
+  border-bottom: 0;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+[data-v="noticias"] .noticia--sin-leer::before {
+  top: 1.5rem;
+  left: 0.875rem;
+}
+
+@media (min-width: 53.75em) {
+  [data-v="canteros"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  [data-v="cantero"] {
+    padding: 0 1.25rem;
+  }
+
+  [data-v="cantero"] + [data-v="cantero"] {
+    border-left: 1px dashed var(--color-filete);
+  }
+
+  [data-v="cantero"]:first-child {
+    padding-left: 0;
+  }
+
+  [data-v="cantero"]:last-child {
+    padding-right: 0;
+  }
+
+  [data-v="huerta"] > .huerta-tierra--caja {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 2.5rem;
+  }
+}
+
+/* Las macetas sin planta, a la escala de las que crecieron. */
+[data-v="cantero"] li > img:is([src*="maceta"], [src*="reintentar"]) {
+  height: 4.75rem;
+}

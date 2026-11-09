@@ -111,7 +111,8 @@
           <!--/* Cada entrega, en su grupo: la línea, su sello de estado y la estación de su entidad,
                  con el número y, debajo, el nombre. Al pasar o enfocar una entrega de la lista, su
                  grupo queda lleno y el resto se apaga. */-->
-          <!--/* 1, Lentejas secas: en camino, impresa hasta el camión y hueca lo que falta. */-->
+          <!--/* 1, Lentejas secas: en camino, impresa hasta el camión y hueca lo que falta. Sin abeja: el
+                 dibujo es bajo tierra (usuario, 2026-11-09). */-->
           <g class="linea linea--1">
             <path class="subte-hueco" d="M110 251V300"/>
             <path class="subte-hueco-centro" d="M110 251V300"/>
@@ -120,8 +121,6 @@
             <g class="camion" transform="translate(110 233)">
               <circle r="18"/>
               <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
-              <image href="/img/ilustraciones/abeja-arriba.svg" th:href="@{/img/ilustraciones/abeja-arriba.svg}"
-                   x="-4" y="-46" width="44" height="44"/>
             </g>
             <g class="nodo" transform="translate(110 318)">
               <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
@@ -189,45 +188,55 @@
   </div>
 </th:block>
 
-<!--/* Una entrega de la lista: número, nombre (enlace al detalle), categoría, cantidad y entidad,
-       estado con su nota, las cinco etapas con su detalle y la última noticia. */-->
+<!--/* Una entrega de la lista (usuario, 2026-11-09: "menos margen a la izquierda, más gráfica, con
+       íconos y que se entienda qué está agrupado"). Tres grupos, de arriba abajo: qué es (el número,
+       el nombre, que lleva al detalle, y la cantidad); a dónde va (la categoría y la entidad, con sus
+       íconos); y cómo va (el estado con su fecha, las cinco etapas y la última noticia), sobre un
+       fondo propio. */-->
 <li th:fragment="entrega(d, numero)" class="entrega" th:classappend="|entrega--${d.estado.tono}|">
-  <span class="entrega-numero" aria-hidden="true" th:text="${numero}">1</span>
-  <h3><a href="/donante-donaciones-detalle"
-         th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-         th:text="${d.titulo}">Lentejas secas</a></h3>
+  <header>
+    <span class="entrega-numero" aria-hidden="true" th:text="${numero}">1</span>
+    <h3><a href="/donante-donaciones-detalle"
+           th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+           th:text="${d.titulo}">Lentejas secas</a></h3>
+    <span data-dato="cantidad" th:text="${d.cantidad}">15 kg</span>
+  </header>
   <p class="entrega-categoria">
-    <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>
+    <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <use href="#cat-alimentos" th:href="|#${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria}|"/>
     </svg>
-    <span th:text="${d.categoriaTexto}">Alimentos</span>
+    <span th:text="${d.categoriaTexto == 'Vestimenta' ? 'Ropa' : d.categoriaTexto}">Alimentos</span>
   </p>
-  <p class="entrega-destino" th:text="|${d.cantidad} para ${d.destino}|">15 kg para Comedor Barrio
-    Ejemplo</p>
-  <!--/* Las etapas: lo hecho, un disco paja con el tilde calado; la actual, el sello del estado de
-         la entrega; lo que falta, un círculo hueco. Sus nombres, solo para el lector de pantalla:
-         a la vista, debajo de la barra, el estado con su nota (decisión del usuario, 2026-11-01,
-         para no repetir el estado en la tarjeta). */-->
-  <ol class="etapas" role="list" th:aria-label="|Etapas de ${d.titulo}|">
-    <li th:each="p : ${d.pasos}" class="etapa" th:classappend="|etapa--${p.avance.tono()}|"
-        th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
-      <th:block th:if="${p.avance.tono() == 'hecho'}"><th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block></th:block>
-      <th:block th:if="${p.avance.tono() == 'actual'}">
+  <p class="entrega-destino">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10l8-6 8 6v10z"/><path
+         d="M10 20v-5h4v5"/></svg>
+    <span th:text="|Para ${d.destino}|">Para Comedor Barrio Ejemplo</span>
+  </p>
+  <div data-grupo="estado">
+    <p class="entrega-estado">
+      <span class="estado" th:data-estado="${d.estado.tono}">
         <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-      </th:block>
-      <th:block th:if="${p.avance.tono() == 'pendiente'}"><th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block></th:block>
-      <span class="etapa-nombre" th:text="${p.nombre}">En camino</span>
-      <span class="etapa-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
-    </li>
-  </ol>
-  <p class="entrega-estado">
-    <span class="estado" th:data-estado="${d.estado.tono}">
-      <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-      <span th:text="${d.estado.texto}">En camino</span>
-    </span>
-    <span th:text="${d.nota}">Salió hoy a las 14:30</span>
-  </p>
-  <p class="entrega-noticia" th:text="${d['seguimiento']}">Posición aproximada.</p>
+        <span th:text="${d.estado.texto}">En camino</span>
+      </span>
+      <span data-dato="cuando"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12"
+           cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span th:text="${d.nota}">Salió hoy a las 14:30</span></span>
+    </p>
+    <!--/* Las etapas: lo hecho, un disco paja con el tilde calado; la actual, el sello del estado de
+           la entrega; lo que falta, un círculo hueco. Sus nombres, solo para el lector de pantalla. */-->
+    <ol class="etapas" role="list" th:aria-label="|Etapas de ${d.titulo}|">
+      <li th:each="p : ${d.pasos}" class="etapa" th:classappend="|etapa--${p.avance.tono()}|"
+          th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
+        <th:block th:if="${p.avance.tono() == 'hecho'}"><th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block></th:block>
+        <th:block th:if="${p.avance.tono() == 'actual'}">
+          <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+        </th:block>
+        <th:block th:if="${p.avance.tono() == 'pendiente'}"><th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block></th:block>
+        <span class="etapa-nombre" th:text="${p.nombre}">En camino</span>
+        <span class="etapa-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
+      </li>
+    </ol>
+    <p class="entrega-noticia" th:text="${d['seguimiento']}">Posición aproximada.</p>
+  </div>
 </li>
 
 </body>

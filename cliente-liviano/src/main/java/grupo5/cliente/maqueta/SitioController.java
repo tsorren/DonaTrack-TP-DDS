@@ -228,7 +228,8 @@ class SitioController {
         "perfil",
         menu.isEmpty() || PUBLICO.equals(rol) || ADMIN.equals(rol) ? null : "/" + rol + "-perfil");
     if (persona && !MISIONES.equals(pantalla)) {
-      return avisoDeLaPersona(model);
+      // Las pantallas de la persona viven en templates/persona/; las que faltan, con el aviso.
+      return existe(PERSONA + "/" + pantalla) ? PERSONA + "/" + pantalla : avisoDeLaPersona(model);
     }
     return dibujada ? pantalla : SIN_DIBUJAR;
   }

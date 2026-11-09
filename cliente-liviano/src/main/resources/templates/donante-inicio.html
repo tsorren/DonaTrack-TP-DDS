@@ -64,18 +64,15 @@
 
     <div th:if="${conDatos}" class="inicio-cuerpo"
          th:with="enCamino=${donaciones.^[estado.tono == 'en-camino']}">
-      <div>
-        <dl th:replace="~{componentes/huerta :: resumen(${donaciones})}"></dl>
-        <p class="confirmado-alcance">Desde el 1 de octubre de 2026, según las confirmaciones de las
-          entidades. Actualizado hoy, 15 de octubre, 16:25.</p>
-        <!--/* El hito de lo acumulado (brief: el juego se insinúa). */-->
-        <p th:if="${primera}" class="hito"
-           th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
-          entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
-      </div>
+      <section th:replace="~{componentes/huerta :: resumen(${donaciones})}"></section>
+      <!--/* El hito de lo acumulado (brief: el juego se insinúa). */-->
+      <p th:if="${primera}" class="hito"
+         th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
+        entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
 
       <!--/* La huerta, como en K: una lámina por donación. La planta es decoración; el estado lo dicen
              la pastilla y la nota. Cuando la entidad confirma la entrega, la planta da su fruto. */-->
+      <svg th:replace="~{iconos :: categorias}"></svg>
       <section class="huerta" aria-labelledby="huerta-titulo">
         <header class="huerta-cabeza">
           <h2 id="huerta-titulo">Lo que <em>ya dio fruto.</em></h2>

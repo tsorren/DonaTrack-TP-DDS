@@ -20,38 +20,48 @@
   <th:block th:replace="~{admin-camiones :: hoja('')}"></th:block>
 </th:block>
 
+<!--/* Ronda del 2026-11-09: los deshabilitados, apagados en gris (con el estado también en palabras), y
+       la flota se filtra con un formulario GET: ?buscar= (patente o nombre), ?estado=habilitado|disponible|
+       ruta|deshabilitado y ?capacidad=chico|mediano|grande. Cada valor se valida contra su lista antes de
+       entrar en una expresión; lo escrito en la búsqueda se compara como texto. */-->
 <th:block th:fragment="hoja(accion)"
+    th:with="fEstado=${param.estado != null and #lists.contains({'habilitado', 'disponible', 'ruta', 'deshabilitado'}, param.estado[0]) ? param.estado[0] : ''},
+             fCapacidad=${param.capacidad != null and #lists.contains({'chico', 'mediano', 'grande'}, param.capacidad[0]) ? param.capacidad[0] : ''}">
+<th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
              conError=${accion == 'error'},
              palabras=${ {ruta: 'En ruta', disponible: 'Disponible', deshabilitado: 'Deshabilitado'} },
-             sellos=${ {ruta: 'camino', disponible: 'hecho', deshabilitado: 'falta'} },
+             sellos=${ {ruta: 'camino', disponible: 'recibida', deshabilitado: 'falta'} },
              todos=${ {
-      {clave: 'ab123cd', patente: 'AB 123 CD', capacidad: '3.500 kg · 18 m³', estado: 'ruta'},
-      {clave: 'ac456ef', patente: 'AC 456 EF', capacidad: '3.500 kg · 18 m³',
+      {clave: 'ab123cd', patente: 'AB 123 CD', nombre: 'Camión Norte', capacidad: '3.500 kg · 18 m³', tamano: 'grande', estado: 'ruta'},
+      {clave: 'ac456ef', patente: 'AC 456 EF', nombre: 'Camión Sur', capacidad: '3.500 kg · 18 m³', tamano: 'grande',
        estado: accion == 'deshabilitado' ? 'deshabilitado' : 'disponible',
        motivo: accion == 'deshabilitado' ? 'Service de frenos. Desde hoy, 18:35.' : null},
-      {clave: 'ad789gh', patente: 'AD 789 GH', capacidad: '1.500 kg · 9 m³', estado: 'disponible'},
-      {clave: 'ae012ij', patente: 'AE 012 IJ', capacidad: '1.500 kg · 9 m³', estado: 'disponible'},
-      {clave: 'aa999zz', patente: 'AA 999 ZZ', capacidad: '1.500 kg · 9 m³',
+      {clave: 'ad789gh', patente: 'AD 789 GH', nombre: 'Furgón Centro', capacidad: '1.500 kg · 9 m³', tamano: 'chico', estado: 'disponible'},
+      {clave: 'ae012ij', patente: 'AE 012 IJ', nombre: 'Furgón Oeste', capacidad: '1.500 kg · 9 m³', tamano: 'chico', estado: 'disponible'},
+      {clave: 'aa999zz', patente: 'AA 999 ZZ', nombre: 'Furgón Este', capacidad: '1.500 kg · 9 m³', tamano: 'chico',
        estado: accion == 'habilitado' ? 'disponible' : 'deshabilitado',
        motivo: accion == 'habilitado' ? null : 'En el taller desde el 12 de octubre.'},
-      {clave: 'af345kl', patente: 'AF 345 KL', capacidad: '2.000 kg · 12 m³', estado: 'disponible',
+      {clave: 'af345kl', patente: 'AF 345 KL', nombre: 'Camión Mediano', capacidad: '2.000 kg · 12 m³', tamano: 'mediano', estado: 'disponible',
        nuevo: true} } },
              camiones=${escenario == 'vacio' ? {} : todos.?[#this['nuevo'] == null or #root.accion == 'agregado']},
              enRuta=${#lists.size(camiones.?[estado == 'ruta'])},
              libres=${#lists.size(camiones.?[estado == 'disponible'])},
-             parados=${#lists.size(camiones.?[estado == 'deshabilitado'])}">
+             parados=${#lists.size(camiones.?[estado == 'deshabilitado'])},
+             q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+             qJunto=${#strings.replace(q, ' ', '')},
+             porFiltros=${camiones.?[('__${fEstado}__' == '' or estado == '__${fEstado}__' or ('__${fEstado}__' == 'habilitado' and estado != 'deshabilitado'))
+                 and ('__${fCapacidad}__' == '' or tamano == '__${fCapacidad}__')]},
+             visibles=${q == '' ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(#strings.replace(patente, ' ', ''), #root.qJunto) or #strings.containsIgnoreCase(nombre, #root.q)]},
+             filtrado=${fEstado != '' or fCapacidad != '' or q != ''},
+             n=${#lists.size(visibles)}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo">Administración</p>
       <h1>Camiones</h1>
-      <th:block th:if="${conDatos}">
-        <p th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}|">5
-          camiones: 1 en ruta · 3 disponibles · 1 deshabilitado</p>
-        <p th:text="${accion == '' or conError} ? 'Al 15 de octubre de 2026, 18:30.' : 'Al 15 de octubre de 2026, 18:35.'">Al
-          15 de octubre de 2026, 18:30.</p>
-      </th:block>
+      <p th:if="${conDatos}" th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}. ${accion == '' or conError ? 'Al 15 de octubre de 2026, 18:30.' : 'Al 15 de octubre de 2026, 18:35.'}|">5
+        camiones: 1 en ruta · 3 disponibles · 1 deshabilitado. Al 15 de octubre de 2026, 18:30.</p>
     </header>
 
     <p th:if="${accion == 'agregado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
@@ -96,7 +106,7 @@
             <label for="patente">Patente *</label>
             <small id="patente-ayuda">Por ejemplo: AF 345 KL.</small>
             <input id="patente" name="patente" type="text" required autocomplete="off"
-                   aria-describedby="patente-ayuda" th:value="${conError} ? 'AF 345 KL' : null">
+                   aria-describedby="patente-ayuda" th:value="${conError} ? 'AF 345 KL' : null" placeholder="Por ejemplo: AB 123 CD">
           </div>
           <div class="campo" th:data-estado="${conError} ? 'error'">
             <label for="capacidad">Capacidad en kg *</label>
@@ -104,12 +114,12 @@
               carga. Por ejemplo: 2000.</p>
             <input id="capacidad" name="capacidadKG" type="number" min="1" step="any" inputmode="decimal"
                    required autocomplete="off"
-                   th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null">
+                   th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 3500">
           </div>
           <div class="campo">
             <label for="volumen">Volumen en m³ *</label>
             <input id="volumen" name="capacidadVolumen" type="number" min="0.1" step="any" inputmode="decimal"
-                   required autocomplete="off" th:value="${conError} ? '12' : null">
+                   required autocomplete="off" th:value="${conError} ? '12' : null" placeholder="Por ejemplo: 20">
           </div>
           <div class="campo" th:data-estado="${conError} ? 'error'">
             <label for="altura">Altura en m *</label>
@@ -117,7 +127,7 @@
               Por ejemplo: 2,8.</p>
             <input id="altura" name="altura" type="number" min="0.1" step="any" inputmode="decimal"
                    required autocomplete="off" th:value="${conError} ? '0' : null"
-                   th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null">
+                   th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 4500">
           </div>
         </div>
         <div class="racimo">
@@ -137,7 +147,39 @@
         <p>Agregá el primero para poder armar rutas.</p>
       </section>
 
-      <table th:if="${conDatos}" class="tabla">
+      <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros). */-->
+      <form th:if="${conDatos}" class="filtro filtro--buscar pila" data-espacio="2" action="/admin-camiones"
+            th:action="@{/admin-camiones}" method="get" role="search">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por patente o nombre</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
+                   placeholder="Por ejemplo: AB 123 CD o Norte">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <div class="filtros" role="group" aria-label="Filtrar los camiones">
+          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${fEstado}, ${ {
+              {valor: '', texto: 'Todos los estados'}, {valor: 'habilitado', texto: 'Habilitados (disponibles y en ruta)'},
+              {valor: 'disponible', texto: 'Disponibles'}, {valor: 'ruta', texto: 'En ruta'},
+              {valor: 'deshabilitado', texto: 'Deshabilitados'} } })}"></details>
+          <details th:replace="~{componentes/filtros :: menu('capacidad', 'Capacidad', ${fCapacidad}, ${ {
+              {valor: '', texto: 'Todas las capacidades'}, {valor: 'chico', texto: 'Hasta 1.500 kg'},
+              {valor: 'mediano', texto: 'De 1.500 a 3.000 kg'}, {valor: 'grande', texto: 'Más de 3.000 kg'} } })}"></details>
+          <a th:if="${filtrado}" class="filtros-sacar" href="/admin-camiones" th:href="@{/admin-camiones}">Sacar
+            los filtros</a>
+        </div>
+      </form>
+      <p th:if="${conDatos and filtrado and n > 0}" role="status"
+         th:text="|${n == 1 ? 'Coincide 1 camión' : 'Coinciden ' + n + ' camiones'} de ${#lists.size(camiones)}.|">Coinciden
+        2 camiones de 5.</p>
+      <section th:if="${conDatos and n == 0}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo">Ningún camión coincide con lo que buscaste.</h3>
+        <p>Probá con otra patente o sacá los filtros.</p>
+        <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Ver todos</a>
+      </section>
+
+      <table th:if="${conDatos and n > 0}" class="tabla">
         <caption>Los camiones de la red y su estado. "En ruta" lo pone la logística al armar la ruta.</caption>
         <thead>
           <tr>
@@ -148,8 +190,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr th:each="c : ${camiones}">
-            <th scope="row" th:text="${c.patente}">AB 123 CD</th>
+          <tr th:each="c : ${visibles}" th:attr="data-atenuada=${c.estado == 'deshabilitado'} ? 'si' : null">
+            <th scope="row"><th:block th:text="${c.patente}">AB 123 CD</th:block><br><small
+                th:text="${c.nombre}">Camión Norte</small></th>
             <td data-rotulo="Capacidad" th:text="${c.capacidad}">3.500 kg · 18 m³</td>
             <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[c.estado]}"><svg
                 th:replace="~{componentes/sello :: sello(${sellos[c.estado]})}"></svg><th:block
@@ -171,7 +214,7 @@
                     <input type="hidden" name="camion" th:value="${c.clave}">
                     <div class="campo">
                       <label th:for="|motivo-${c.clave}|">Motivo (opcional)</label>
-                      <textarea th:id="|motivo-${c.clave}|" name="motivo" rows="3"></textarea>
+                      <textarea th:id="|motivo-${c.clave}|" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
                     </div>
                     <div class="racimo">
                       <button class="boton" data-tono="quitar" type="submit">Deshabilitar</button>
@@ -194,6 +237,7 @@
       </table>
     </section>
   </div>
+</th:block>
 </th:block>
 </body>
 </html>

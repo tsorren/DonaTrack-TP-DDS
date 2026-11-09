@@ -1,0 +1,199 @@
+/* Prueba A/B de Misiones (ronda del 2026-11-09), opción B: la huerta
+   (templates/variantes/misiones-b.html). La franja de las cuatro etapas sobre la tierra, los canteros
+   por categoría (el completo plegado, el actual abierto, el siguiente sin sembrar) y cada misión como
+   una planta parada sobre su porción de tierra. Solo tokens de uso. Se borra al decidir. */
+
+/* --- Las etapas, sobre la tierra ----------------------------------------------------------- */
+#huerta-etapas {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  border-radius: var(--radio-lamina);
+  background: url("../../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+#huerta-etapas h2 {
+  margin: 0 0 var(--espacio-1);
+  color: inherit;
+  font: 850 clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) / 1 var(--fuente-titulo);
+  font-stretch: 120%;
+  letter-spacing: -0.02em;
+}
+
+#huerta-etapas p {
+  max-width: 42rem;
+  margin: 0;
+}
+
+#huerta-etapas ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#huerta-etapas li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-2);
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+#huerta-etapas li img {
+  width: 2rem;
+  height: 2.75rem;
+  object-fit: contain;
+}
+
+/* --- Los canteros ------------------------------------------------------------------------- */
+#misiones [data-cantero="completo"],
+#misiones [data-cantero="actual"] {
+  --espacio-relleno: var(--espacio-4);
+}
+
+#misiones [data-cantero] :is(h2, p) {
+  margin: 0;
+}
+
+#misiones [data-cantero="actual"] > header {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+#misiones [data-cantero="actual"] > header p {
+  max-width: 42rem;
+}
+
+#misiones details[data-cantero] > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  min-height: 3rem;
+  cursor: pointer;
+}
+
+#misiones details[data-cantero] > summary > span:first-child {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+[data-miniaturas] {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espacio-1);
+  margin-inline-start: auto;
+  padding: 0 var(--espacio-2);
+  border-radius: 0 0 var(--radio-boton) var(--radio-boton);
+  box-shadow: inset 0 -0.5rem 0 var(--color-suelo);
+}
+
+[data-miniaturas] img {
+  width: auto;
+  height: 3.5rem;
+}
+
+/* El cantero sin sembrar: la tierra pareja, sin plantas. */
+#misiones [data-cantero="sin-sembrar"] {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-4);
+  border-radius: var(--radio-lamina);
+  background: url("../../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo-medio);
+  color: var(--color-texto-suelo);
+}
+
+#misiones [data-cantero="sin-sembrar"] h2 {
+  color: inherit;
+}
+
+/* --- Las plantas, cada una sobre su porción de tierra ------------------------------------- */
+#misiones [data-cantero] ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: var(--espacio-4) var(--espacio-3);
+  margin: var(--espacio-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-etapa] article {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  height: 100%;
+  padding-bottom: var(--espacio-3);
+  border-radius: var(--radio-boton);
+}
+
+[data-etapa] :is(h3, p) {
+  margin: 0;
+  padding-inline: var(--espacio-3);
+}
+
+[data-etapa] .progreso {
+  width: auto;
+  margin-inline: var(--espacio-3);
+}
+
+[data-etapa] h3 {
+  font: 850 1.125rem/1.1 var(--fuente-titulo);
+  font-stretch: 115%;
+}
+
+[data-etapa] figure {
+  display: grid;
+  place-items: end center;
+  height: 10rem;
+  margin: 0;
+  padding-top: var(--espacio-2);
+  border-radius: var(--radio-boton) var(--radio-boton) 0 0;
+  background: linear-gradient(to bottom, var(--color-superficie) 82%, var(--color-suelo) 82%);
+  overflow: hidden;
+}
+
+[data-etapa] figure img {
+  width: auto;
+  max-width: 100%;
+  height: 8.5rem;
+  margin-bottom: 0.5rem;
+}
+
+[data-etapa="semilla"] figure img,
+[data-etapa="maceta"] figure img {
+  height: 5rem;
+}
+
+[data-etapa="brote"] figure img {
+  height: 6.75rem;
+}
+
+[data-etapa] article {
+  background: var(--color-papel);
+  box-shadow: inset 0 0 0 1.5px var(--color-filete);
+}
+
+[data-etapa="planta"] figure {
+  background: linear-gradient(to bottom, var(--color-acento-claro) 82%, var(--color-suelo) 82%);
+}
+
+[data-etapa="semilla"] article {
+  box-shadow: inset 0 0 0 2px var(--color-filete);
+  outline: 2px dashed var(--color-tinta-suave);
+  outline-offset: -2px;
+}
+
+@media (min-width: 53.75em) {
+  #huerta-etapas {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: center;
+  }
+}

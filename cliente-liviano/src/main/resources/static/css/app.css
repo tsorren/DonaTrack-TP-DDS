@@ -23,6 +23,7 @@
 @import url("componentes/aviso.css") layer(bloques);
 @import url("componentes/carga.css") layer(bloques);
 @import url("componentes/dialogo.css") layer(bloques);
+@import url("componentes/info.css") layer(bloques);
 @import url("componentes/navegacion.css") layer(bloques);
 @import url("componentes/tarjeta.css") layer(bloques);
 @import url("componentes/lista.css") layer(bloques);
@@ -30,6 +31,8 @@
 @import url("componentes/noticias.css") layer(bloques);
 @import url("componentes/progreso.css") layer(bloques);
 @import url("componentes/huerta.css") layer(bloques);
+@import url("componentes/filtros.css") layer(bloques);
+@import url("componentes/registro.css") layer(bloques);
 
 *,
 *::before,

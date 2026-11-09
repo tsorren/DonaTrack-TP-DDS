@@ -31,6 +31,34 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-08 · ux · Revisión de UX: portada, entidades, registro e inicio del donante
+
+- **Decisión:** a pedido del usuario, como revisión de UX/UI:
+  - General: las abejas son las de los assets; los títulos de sección ya no se equilibran en
+    renglones cortos y la bajada llega a 48 rem; los campos para escribir llevan texto de ejemplo,
+    esquinas redondeadas y un fondo más claro (`--color-campo`).
+  - Portada: la pausa es un ícono ‖ en un círculo, en la esquina inferior derecha de las láminas; las
+    abejas vuelan en loop por los dos recorridos que dibujó el usuario; el árbol de cómo funciona
+    queda plantado sobre la tierra en todos los anchos; «Qué ganás si donás» pasa a «Qué podés
+    donar», en la tarjeta de quien dona; las acciones de quién participa quedan alineadas al pie; las
+    preguntas tienen respuestas completas y cercanas; el cierre dice «Mirá hasta dónde llega lo que
+    donás»; lo que viajó este mes es una galería de fotos.
+  - Entidades: el buscador con «Por ejemplo: comedor.» adentro; filtros como los de LinkedIn
+    (categoría, tipo de pedido recurrente o extraordinario, emergencias); la cuenta con el árbol, en
+    el hero.
+  - Registro: en una sola página, centrado, como el de frontend-donatrack; el enlace a los términos,
+    dentro de la casilla; validación en castellano.
+  - Inicio del donante: el estado de las donaciones en una barra con su leyenda; las macetas a
+    escala; la tarjeta de cada donación entera como enlace, con el estado arriba y los datos con
+    íconos (sin el número interno).
+- **Alternativas:** para el cierre, «Sumate a la huerta» y «Empezá a ver dónde llega lo que donás».
+  Para quién participa, pestañas como en K: se descartaron porque esconden dos de las tres opciones.
+- **Por qué:** los problemas que el usuario fue encontrando al usar el sitio.
+- **Costo:** la validación en castellano necesita JavaScript; sin él, valida el navegador en su
+  idioma. Los pedidos de ejemplo tienen tipo y emergencia en la maqueta; con backend, HB pendiente.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/piel-huerta/`](evidencia/piel-huerta/).
+
 ### 2026-11-08 · componente:navegacion · La campana y el menú de la cuenta en la foto de perfil
 
 - **Decisión:** en las pantallas internas, Notificaciones es una campana (antes, un sobre) y la cuenta

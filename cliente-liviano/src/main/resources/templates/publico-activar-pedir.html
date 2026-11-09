@@ -47,7 +47,7 @@
           <div class="campo">
             <label for="correo">Correo electrónico</label>
             <input id="correo" name="correo" type="email" required autocomplete="email"
-                   th:value="${escenario == 'error' or escenario == 'sin-conexion'} ? 'martina.ruiz@ejemplo.test' : null">
+                   th:value="${escenario == 'error' or escenario == 'sin-conexion'} ? 'martina.ruiz@ejemplo.test' : null" placeholder="nombre@ejemplo.com">
           </div>
           <button class="boton" data-tono="principal" type="submit">Mandame el enlace</button>
           <p class="cuenta-salida">¿Ya tenés contraseña? <a href="/publico-ingresar"

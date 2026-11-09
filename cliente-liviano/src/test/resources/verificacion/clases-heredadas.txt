@@ -4,7 +4,6 @@ acciones
 acta
 acta-cuanto
 acta-entrega
-acta-estado
 acta-formulario
 acta-paso
 acta-texto
@@ -19,7 +18,6 @@ asentado-pedido
 asiento
 asiento-fecha
 asiento-texto
-aviso--nombre
 aviso-acciones
 aviso-codigo
 bajada
@@ -29,10 +27,8 @@ cambiar
 cambio
 camion
 campo--corto
-campo-rotulo
 campos-par
 casilla
-casilla-enlace
 categoria-icono
 ciclo-entidad
 ciclo-raiz
@@ -49,7 +45,6 @@ como-donar
 como-sigue
 confirmada
 confirmada--recien
-confirmado-alcance
 confirmar
 confirmar-bajada
 confirmar-cabecera
@@ -60,12 +55,10 @@ cuaderno-novedades
 cuaderno-novedades--sin-leer
 cuaderno-recibidas
 cuenta
-cuenta--entidad
 cuenta--enviada
 cuenta--ingresar
 cuenta-principal
 cuenta-salida
-cuenta-salidas
 datos-figura
 decision
 decision-nombres
@@ -99,7 +92,6 @@ ejemplares-reserva
 ejemplo-inicial
 ejemplos
 ejemplos-lista
-eleccion
 enlace
 enlace-campo
 entidades
@@ -110,7 +102,6 @@ entrega-estado
 entrega-noticia
 entrega-numero
 entregas
-estacion--
 estacion-ficha--
 estacion-numero
 etapa
@@ -131,7 +122,6 @@ filtro--buscar
 filtro-buscar
 filtro-buscar-fila
 filtro-icono
-filtro-linea
 filtro-opcion
 filtro-opciones
 filtro-sacar
@@ -166,13 +156,11 @@ lectura-bajada
 legales
 legales-indice
 legales-version
-lento
 linea
 linea--1
 linea--2
 linea--3
 mapa
-mapa-fruto
 marca
 marcar
 mesa
@@ -199,18 +187,7 @@ novedad-texto
 novedad-tipo
 novedades-lista
 obligatorios
-opcion-cuenta
-opcion-cuenta--entidad
-opcion-dibujo
-opcion-hoja
-opcion-hoja--tinta
-opcion-hueco
-opcion-pedimos
-opcion-raiz
-opcion-sol
-opcion-tallo
 opciones
-opciones-cuenta
 paginas
 parte
 parte--periodos

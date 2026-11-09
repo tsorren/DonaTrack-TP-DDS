@@ -7,7 +7,7 @@
          Inicio y Donaciones recibidas, sección 6 de la ficha) y sus grupos por estado; inserta cuerpo
          con esas variables. ?escenario=vacio las vacía; sin-puerta saca las que esperan en la puerta y
          sin-resultados, la del aceite (para el filtro sin resultados).
-       - novedades(cuantas): el acceso a Notificaciones, con cuántas hay sin leer.
+       - novedades(cuantas): el acceso a Notificaciones, con cuántas urgentes hay sin leer.
        - error(titulo, texto, recargar): el aviso de error del servidor, con el código para escribir. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
@@ -70,7 +70,7 @@
 <a th:fragment="novedades(cuantas)" class="novedades" href="/entidad-notificaciones"
    th:href="@{/entidad-notificaciones}">
   <span class="novedades-cuenta" th:text="${cuantas}">3</span>
-  <span th:text="${cuantas == 1} ? 'novedad sin leer' : 'novedades sin leer'">novedades sin leer</span>
+  <span th:text="${cuantas == 1} ? 'novedad urgente sin leer' : 'novedades urgentes sin leer'">novedades urgentes sin leer</span>
 </a>
 
 <!--/* El error del servidor al cargar: qué pasó, que no cambió nada, volver a cargar y el código. */-->

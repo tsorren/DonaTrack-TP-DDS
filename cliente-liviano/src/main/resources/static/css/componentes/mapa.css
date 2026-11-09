@@ -38,6 +38,102 @@ figure.mapa-dibujo {
   opacity: 1;
 }
 
+/* --- El mapa real (MapLibre, D21; desde el 2026-11-09) --------------------------------------------
+   `<div class="mapa-dibujo mapa-real" data-mapa>`: static/js/mapa.js lo llena con MapLibre y un
+   `button.mapa-marcador` por ficha; sin JavaScript queda `.mapa-real-aviso` y la lista. */
+.mapa-real {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  background: var(--color-papel);
+}
+
+.mapa-real[data-listo="no"] {
+  display: none;
+}
+
+.mapa-real-aviso {
+  margin: 0;
+  padding: 1.25rem;
+  color: var(--color-tinta-suave);
+}
+
+/* El marcador: el sello numerado de las estaciones, del tamaño de un toque. */
+.mapa-marcador {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+  color: var(--color-tinta);
+  font: 800 1.25rem/1 var(--fuente-cifra);
+  cursor: pointer;
+}
+
+.mapa-marcador:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.mapa-real[data-destacado] .mapa-marcador {
+  opacity: 0.45;
+}
+
+.mapa-real[data-destacado] .mapa-marcador[data-activo] {
+  z-index: 1;
+  opacity: 1;
+  background: var(--color-acento);
+  color: var(--color-papel);
+}
+
+/* El globo de MapLibre, con el papel y las esquinas de las tarjetas. */
+.mapa-real [class~="maplibregl-popup-content"] {
+  padding: 0.875rem 2.25rem 0.875rem 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta-suave);
+  font: 0.9375rem/1.4 var(--fuente-texto);
+}
+
+.mapa-real [class~="maplibregl-popup-close-button"] {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radio-boton);
+  font-size: 1.25rem;
+}
+
+.mapa-globo-cuerpo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mapa-globo-cuerpo p {
+  margin: 0;
+}
+
+.mapa-globo-nombre {
+  color: var(--color-tinta);
+  font: 800 1.0625rem/1.2 var(--fuente-titulo);
+}
+
+.mapa-globo-cuerpo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] {
+  border-radius: var(--radio-boton) 0 0 0;
+  font-size: 0.75rem;
+}
+
 /* --- La lista ---------------------------------------------------------------------------------- */
 
 .mapa-lista :is(h2, h3) {
@@ -130,9 +226,18 @@ figure.mapa-dibujo {
     position: sticky;
     top: 1rem;
   }
+
+  .mapa-real {
+    aspect-ratio: auto;
+    height: min(40rem, 100vh - 2rem);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .mapa-marcador {
+    transition: var(--movimiento-transicion-atenua);
+  }
+
   .estacion {
     transition: var(--movimiento-transicion-atenua);
   }

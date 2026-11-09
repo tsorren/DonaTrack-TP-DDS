@@ -98,7 +98,7 @@
       <div class="campo">
         <label for="razon-social">Razón social</label>
         <input id="razon-social" name="razonSocial" type="text" required autocomplete="organization"
-               th:value="${nombre}" value="Distribuidora Ejemplo SA">
+               th:value="${nombre}" value="Distribuidora Ejemplo SA" placeholder="Por ejemplo: Distribuidora Ejemplo SA">
       </div>
       <div class="perfil-par">
         <div class="campo">
@@ -112,14 +112,14 @@
         </div>
         <div class="campo">
           <label for="rubro">Rubro <small>(opcional)</small></label>
-          <input id="rubro" name="rubro" type="text" value="Distribución de alimentos">
+          <input id="rubro" name="rubro" type="text" value="Distribución de alimentos" placeholder="Por ejemplo: alimentos">
         </div>
       </div>
       <div class="campo">
         <label for="cuit">CUIT</label>
         <small id="cuit-ayuda">No se cambia desde acá. Si está mal,
           <a href="/publico-contacto" th:href="@{/publico-contacto(volver='/donante-perfil')}">escribinos</a>.</small>
-        <input id="cuit" name="cuit" type="text" value="30-00000000-0" readonly aria-describedby="cuit-ayuda">
+        <input id="cuit" name="cuit" type="text" value="30-00000000-0" readonly aria-describedby="cuit-ayuda" placeholder="Por ejemplo: 30-12345678-9">
       </div>
       <fieldset class="perfil-grupo">
         <legend>Dirección</legend>
@@ -127,34 +127,34 @@
           <div class="campo">
             <label for="calle">Calle</label>
             <input id="calle" name="calle" type="text" required autocomplete="address-line1"
-                   value="Avenida Ejemplo">
+                   value="Avenida Ejemplo" placeholder="Por ejemplo: Av. Rivadavia">
           </div>
           <div class="campo">
             <label for="altura">Número <small>(opcional)</small></label>
-            <input id="altura" name="altura" type="text" inputmode="numeric" value="1234">
+            <input id="altura" name="altura" type="text" inputmode="numeric" value="1234" placeholder="Por ejemplo: 4500">
           </div>
         </div>
         <div class="perfil-par">
           <div class="campo">
             <label for="piso">Piso y departamento <small>(opcional)</small></label>
-            <input id="piso" name="piso" type="text" value="3.º B">
+            <input id="piso" name="piso" type="text" value="3.º B" placeholder="Por ejemplo: 3.º B">
           </div>
           <div class="campo">
             <label for="codigo-postal">Código postal <small>(opcional)</small></label>
             <input id="codigo-postal" name="codigoPostal" type="text" autocomplete="postal-code"
-                   value="C1000">
+                   value="C1000" placeholder="Por ejemplo: C1406">
           </div>
         </div>
         <div class="perfil-par">
           <div class="campo">
             <label for="localidad">Localidad</label>
             <input id="localidad" name="localidad" type="text" required autocomplete="address-level2"
-                   value="Ciudad de Buenos Aires">
+                   value="Ciudad de Buenos Aires" placeholder="Por ejemplo: Caballito">
           </div>
           <div class="campo">
             <label for="provincia">Provincia</label>
             <input id="provincia" name="provincia" type="text" required autocomplete="address-level1"
-                   value="Ciudad de Buenos Aires">
+                   value="Ciudad de Buenos Aires" placeholder="Por ejemplo: Buenos Aires">
           </div>
         </div>
       </fieldset>
@@ -172,16 +172,16 @@
       <div class="campo">
         <label for="correo">Correo</label>
         <input id="correo" name="correo" type="email" required autocomplete="email"
-               value="contacto@distribuidora-ejemplo.test">
+               value="contacto@distribuidora-ejemplo.test" placeholder="nombre@ejemplo.com">
       </div>
       <div class="perfil-par">
         <div class="campo">
           <label for="whatsapp">WhatsApp <small>(opcional)</small></label>
-          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="11 5555-0100">
+          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="11 5555-0100" placeholder="Por ejemplo: 11 5555 5555">
         </div>
         <div class="campo">
           <label for="telefono">Teléfono <small>(opcional)</small></label>
-          <input id="telefono" name="telefono" type="tel" autocomplete="tel">
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel" placeholder="Por ejemplo: 11 5555 5555">
         </div>
       </div>
       <fieldset class="opciones">

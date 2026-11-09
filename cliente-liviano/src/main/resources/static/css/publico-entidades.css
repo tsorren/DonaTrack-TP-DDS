@@ -269,3 +269,39 @@
     left: calc(100% + 2.5rem - 0.5625rem);
   }
 }
+
+/* El hero a todo el ancho (regla general de la ronda del 2026-11-09: sin ilustración al lado, la
+   cabeza ocupa la página; antes, topada en 46 rem, la cifra quedaba apretada en una columna angosta):
+   el título y la bajada a la izquierda, con su largo de línea legible; la cifra con su árbol a la
+   derecha, con lugar para leerse en dos o tres renglones. */
+.entidades > .publica-cabeza {
+  display: grid;
+  gap: 1.5rem 3rem;
+  align-items: end;
+  max-width: none;
+}
+
+.entidades > .publica-cabeza .lectura-bajada {
+  max-width: 70ch;
+}
+
+.entidades .cifra-fruto > p:first-child {
+  max-width: 30rem;
+}
+
+.entidades > .filtro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.entidades .filtro-buscar {
+  max-width: 36rem;
+}
+
+@media (min-width: 53.75em) {
+  .entidades > .publica-cabeza {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+  }
+}

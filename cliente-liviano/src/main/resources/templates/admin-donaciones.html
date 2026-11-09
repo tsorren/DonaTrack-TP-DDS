@@ -89,13 +89,19 @@
 
     <!--/* La lista. */-->
     <th:block th:if="${accion == ''}">
+    <!--/* El encabezado a todo el ancho (ronda 2026-11-09, regla general 1), con "Registrar donación" al
+           costado; en el celular, debajo. */-->
     <header class="mesa-cabecera">
-      <p class="rotulo">Administración</p>
-      <h1>Donaciones</h1>
-      <th:block th:if="${conDatos}">
-        <p>7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre</p>
-        <p>Al 15 de octubre de 2026, 18:30.</p>
-      </th:block>
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Donaciones</h1>
+        <p th:if="${conDatos}">7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en
+          octubre. Al 15 de octubre de 2026, 18:30.</p>
+      </div>
+      <div th:if="${escenario != 'error'}" class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-donaciones-registrar"
+           th:href="@{/admin-donaciones-registrar}">Registrar donación</a>
+      </div>
     </header>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las donaciones…</p>
@@ -111,11 +117,6 @@
       <a class="boton" data-tono="secundario" href="/admin-donaciones"
          th:href="@{/admin-donaciones}">Volver a cargar</a>
     </section>
-
-    <div th:if="${escenario != 'error'}" class="racimo">
-      <a class="boton" data-tono="principal" href="/admin-donaciones-registrar"
-         th:href="@{/admin-donaciones-registrar}">Registrar donación</a>
-    </div>
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
@@ -267,7 +268,7 @@
           <input type="hidden" name="donacion" th:value="${d.clave}" value="leche">
           <div class="campo">
             <label for="motivo">Motivo (opcional)</label>
-            <textarea id="motivo" name="motivo" rows="3"></textarea>
+            <textarea id="motivo" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
           </div>
           <div class="racimo">
             <button class="boton" data-tono="quitar" type="submit">Marcar como vencida</button>

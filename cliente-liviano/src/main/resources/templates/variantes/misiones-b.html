@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!--/* Prueba A/B de la ronda del 2026-11-09, Misiones e insignias de la persona. Opción B: la huerta.
+       Eje: hacer crecer. Cada misión es una planta que pasa por cuatro etapas (semilla, maceta, brote y
+       planta) y cada categoría, un cantero. Completa: la planta crecida, con su fecha. En curso: el
+       brote o la maceta, según cuánto avanzó, con la barra y la cuenta. En espera: la semilla, que
+       empieza cuando se complete la anterior. El cantero completo queda plegado en un desplegable; el
+       que sigue es tierra sin sembrar, sin mostrar sus misiones. Usa los datos y los estados de
+       donante-misiones (datos(vista)); los dibujos son decorativos: el texto dice todo.
+       ?variante=misiones-b, también con ?escenario=vacio, lento y error. Se borra al decidir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
+<head>
+  <title>Misiones e insignias - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{donante-misiones :: datos(~{::huerta})}"></th:block>
+</th:block>
+
+<th:block th:fragment="huerta"
+    th:with="plantas=${ {'Racha Inicial': 'planta-menta', 'Explorador': 'planta-hojas-al-viento',
+                         'Gran Aporte': 'planta-naranjo', 'Constancia': 'planta-pino',
+                         'Impacto Real': 'planta-algodon', 'Diversidad Solidaria': 'planta-orejas'} }">
+  <!--/* Cómo crece una misión: las cuatro etapas, una vez, para leer el resto de la página. */-->
+  <section id="huerta-etapas" aria-labelledby="etapas-titulo">
+    <div>
+      <h2 id="etapas-titulo">Tu huerta de misiones</h2>
+      <p th:text="|${#lists.size(obtenidas)} de 6 plantas crecidas. Cada misión es una planta y cada categoría, un cantero: la planta crece a medida que avanzás.|">2
+        de 6 plantas crecidas. Cada misión es una planta y cada categoría, un cantero: la planta crece a
+        medida que avanzás.</p>
+    </div>
+    <ol role="list" aria-label="Las etapas de una misión">
+      <li><img src="/img/ilustraciones/paso-1-semillas.svg" th:src="@{/img/ilustraciones/paso-1-semillas.svg}" alt="" width="40" height="52"><span>Semilla: en espera</span></li>
+      <li><img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}" alt="" width="40" height="52"><span>Maceta: empezó a contar</span></li>
+      <li><img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}" alt="" width="40" height="52"><span>Brote: en curso</span></li>
+      <li><img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}" alt="" width="40" height="52"><span>Planta: completa</span></li>
+    </ol>
+  </section>
+
+  <!--/* Los canteros completos, plegados, con sus plantas en miniatura. */-->
+  <details th:each="c : ${completas}" class="tarjeta" data-cantero="completo">
+    <summary>
+      <span><b th:text="|Cantero ${c.nombre} · completo|">Cantero Colaborador · completo</b>
+        <small th:text="|${#lists.size(misiones.?[categoria == #root.c.nombre])} de ${#lists.size(misiones.?[categoria == #root.c.nombre])} plantas crecidas. Ver el cantero|">2
+          de 2 plantas crecidas. Ver el cantero</small></span>
+      <span data-miniaturas aria-hidden="true">
+        <img th:each="m : ${misiones.?[categoria == #root.c.nombre]}" src="/img/ilustraciones/planta-menta.svg"
+             th:src="@{/img/ilustraciones/{p}.svg(p=${plantas[m.nombre]})}" alt="" width="36" height="56">
+      </span>
+    </summary>
+    <ul role="list" th:aria-label="|Misiones de ${c.nombre}|">
+      <th:block th:each="m : ${misiones.?[categoria == #root.c.nombre]}">
+        <li th:replace="~{:: planta(${m}, ${plantas[m.nombre]})}"></li>
+      </th:block>
+    </ul>
+  </details>
+
+  <!--/* El cantero de la categoría actual, abierto. */-->
+  <section th:if="${actual}" th:with="c=${actual}" class="tarjeta" data-cantero="actual"
+           th:aria-labelledby="|cantero-${c.nombre}|">
+    <header>
+      <h2 th:id="|cantero-${c.nombre}|" th:text="|Cantero ${c.nombre} · tu categoría|">Cantero Sostenedor · tu categoría</h2>
+      <p th:text="|Las misiones crecen de a una, en orden. Cuando crezcan las ${#lists.size(misiones.?[categoria == #root.c.nombre])}, pasás a ${c['siguiente'] ?: 'la última categoría'}.|">Las
+        misiones crecen de a una, en orden. Cuando crezcan las 2, pasás a Transformador.</p>
+    </header>
+    <ul role="list" th:aria-label="|Misiones de ${c.nombre}|">
+      <th:block th:each="m : ${misiones.?[categoria == #root.c.nombre]}">
+        <li th:replace="~{:: planta(${m}, ${plantas[m.nombre]})}"></li>
+      </th:block>
+    </ul>
+  </section>
+
+  <!--/* Los canteros que siguen: tierra sin sembrar, sin sus misiones. */-->
+  <section th:each="c : ${siguientes}" data-cantero="sin-sembrar" th:aria-labelledby="|cantero-${c.nombre}|">
+    <h2 th:id="|cantero-${c.nombre}|" th:text="|Cantero ${c.nombre} · se abre después|">Cantero Transformador · se abre después</h2>
+    <p th:text="|Todavía sin sembrar: sus misiones se ven cuando completes las de ${c['anterior']}.|">Todavía
+      sin sembrar: sus misiones se ven cuando completes las de Sostenedor.</p>
+  </section>
+
+  <p>Las misiones cuentan tus donaciones: las que entregás en el depósito y, en Impacto Real, las que
+    la entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+</th:block>
+
+<!--/* Una misión como planta: el dibujo de su etapa, su nombre, qué pide y cómo está. */-->
+<li th:fragment="planta(m, planta)"
+    th:with="etapa=${m.estado == 'completa' ? 'planta' : (m.estado == 'curso' ? (m.progreso > 0 ? 'brote' : 'maceta') : 'semilla')},
+             dibujo=${etapa == 'planta' ? planta : (etapa == 'brote' ? 'paso-3-brote' : (etapa == 'maceta' ? 'paso-2-maceta' : 'paso-1-semillas'))},
+             id=|planta-${#strings.replace(m.nombre, ' ', '-')}|"
+    th:data-etapa="${etapa}" data-etapa="planta">
+  <article th:aria-labelledby="${id}">
+    <figure aria-hidden="true">
+      <img src="/img/ilustraciones/planta-menta.svg" th:src="@{/img/ilustraciones/{d}.svg(d=${dibujo})}"
+           alt="" width="90" height="160">
+    </figure>
+    <h3 th:id="${id}" th:text="${m.nombre}">Racha Inicial</h3>
+    <p th:text="${m.pide}">3 meses seguidos donando</p>
+    <p th:if="${m.estado == 'completa'}"><span class="estado" data-estado="entregada"><th:block
+        th:replace="~{componentes/sello :: sello('hecho')}"></th:block><span
+        th:text="|Creció el ${m.fecha}|">Creció el 3 de agosto de 2026</span></span></p>
+    <th:block th:if="${m.estado == 'curso'}">
+      <p><span class="estado" data-estado="en-camino"><th:block
+          th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>Creciendo</span></p>
+      <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
+                th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
+      <p><b th:text="${m.cuenta}">12 de 50 bienes</b></p>
+      <p th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de septiembre.</p>
+    </th:block>
+    <th:block th:if="${m.estado == 'espera'}">
+      <p><span class="estado" data-estado="pendiente"><th:block
+          th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>En espera</span></p>
+      <p th:text="|Se siembra cuando completes ${m.espera}.|">Se siembra cuando completes Gran Aporte.</p>
+    </th:block>
+  </article>
+</li>
+</body>
+</html>

@@ -89,3 +89,42 @@
     content: none;
   }
 }
+
+/* Una fila apagada (`tr data-atenuada="si"`; agente admin, ronda 2026-11-09: un camión
+   deshabilitado): sobre un papel gris, sin el color de su sello y con el texto en la tinta suave
+   (5:1 sobre ese gris, AA); en el celular, la tarjeta con borde punteado; en la tabla, la fila es una
+   franja de esquinas redondeadas. La última celda (sus acciones, como "Volver a habilitar") conserva
+   su color. El estado va siempre también en palabras. */
+.tabla tr[data-atenuada] {
+  border-style: dashed;
+  background: var(--color-pendiente-fondo);
+}
+
+.tabla tr[data-atenuada] > :not(:last-child) {
+  color: var(--color-tinta-suave);
+}
+
+.tabla tr[data-atenuada] > :not(:last-child) :is(.estado, svg, img) {
+  filter: grayscale(1);
+}
+
+@media (min-width: 53.75em) {
+  .tabla tr[data-atenuada] {
+    background: none;
+  }
+
+  .tabla tr[data-atenuada] > * {
+    background: var(--color-pendiente-fondo);
+  }
+
+  .tabla tr[data-atenuada] > :first-child {
+    padding-inline-start: var(--espacio-3);
+    border-start-start-radius: var(--radio-boton);
+    border-end-start-radius: var(--radio-boton);
+  }
+
+  .tabla tr[data-atenuada] > :last-child {
+    border-start-end-radius: var(--radio-boton);
+    border-end-end-radius: var(--radio-boton);
+  }
+}

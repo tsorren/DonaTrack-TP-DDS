@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--/* El inicio de la persona que dona (Martina Ruiz), repensado en la ronda del 2026-11-09 (usuaria:
+       "no me gusta el dashboard de donante"). Es la opción A de la prueba dashboard-persona, la
+       recomendada: su huerta como protagonista. Arriba, el saludo; después, la huerta, una planta por
+       donación de la primera a la última (crecida si la entidad confirmó la entrega, brote si va en
+       camino, maceta si espera en el depósito), cada una enlazada a su detalle; lo que donó este mes y
+       a dónde llegó, con la foto de la entidad; su próxima misión; la donación que va en camino, con la
+       abeja en su etapa, y las últimas noticias. Los datos son los de persona/datos-persona; las
+       piezas, del componente huerta. ?escenario=vacio, error y lento. La opción B es
+       templates/variantes/dashboard-persona-b.html (?variante=dashboard-persona-b). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'persona-inicio', ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/datos-persona :: persona(~{persona/donante-inicio :: cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="conDatos=${escenario == ''},
+             entregadas=${donaciones.?[estado.tono == 'entregada']},
+             delMes=${donaciones.?[donada.endsWith('octubre de 2026')]},
+             llegoEsteMes=${donaciones.^[llego != null and llego.endsWith('octubre de 2026')]},
+             enCamino=${donaciones.^[estado.tono == 'en-camino']},
+             entidades=${#sets.toSet(entregadas.![destino])}">
+  <div class="inicio" id="persona-inicio">
+    <header class="inicio-cabecera">
+      <p class="rotulo" th:text="${seccion}">Inicio</p>
+      <h1>Hola, <em>Martina</em></h1>
+      <p class="bajada">Gracias por donar. Acá ves tu huerta: lo que donaste, a dónde llegó y lo que
+        está en camino.</p>
+      <div class="racimo" th:if="${conDatos}">
+        <a class="boton" data-tono="secundario" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Mis donaciones</a>
+        <a class="boton" data-tono="principal" href="/donante-seguimiento"
+           th:href="@{/donante-seguimiento}">Ver seguimiento</a>
+      </div>
+    </header>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando tu inicio…</p>
+      <div class="inicio-cuerpo" aria-busy="true">
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
+        <div class="esqueleto" data-forma="punteado"></div>
+      </div>
+    </th:block>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés donaciones.</h2>
+      <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
+        hasta que la entidad confirme la entrega. También empieza a contar tu primera misión.</p>
+      <div class="racimo">
+        <a class="boton" data-tono="secundario" href="/donante-entidades"
+           th:href="@{/donante-entidades}">Conocer las entidades</a>
+        <a class="boton" data-tono="secundario" href="/donante-misiones"
+           th:href="@{/donante-misiones}">Ver tus misiones</a>
+      </div>
+    </section>
+
+    <div th:if="${conDatos}" class="inicio-cuerpo">
+      <!--/* La huerta: una planta por donación, de la primera (junio) a la última. El dibujo es
+             decorativo; el nombre y el estado van en texto, y cada una lleva a su detalle. */-->
+      <section id="mi-huerta" class="huerta-tierra huerta-tierra--caja" aria-labelledby="huerta-titulo">
+        <div class="huerta-tierra-texto">
+          <p class="huerta-rotulo">Tu huerta</p>
+          <h2 id="huerta-titulo"
+              th:text="|${#lists.size(entregadas)} entregas confirmadas en ${#sets.size(entidades)} entidades.|">5
+            entregas confirmadas en 4 entidades.</h2>
+          <p th:text="|Una planta por donación, desde junio de 2026: crece cuando la entidad confirma la entrega. Ahora tenés 1 en camino y 2 en el depósito. Actualizado hoy, 15 de octubre, 16:25.|">Una
+            planta por donación, desde junio de 2026: crece cuando la entidad confirma la entrega. Ahora
+            tenés 1 en camino y 2 en el depósito. Actualizado hoy, 15 de octubre, 16:25.</p>
+        </div>
+        <ol id="huerta-plantas" role="list" aria-label="Tus donaciones, de la primera a la última">
+          <li th:each="i : ${#numbers.sequence(#lists.size(donaciones) - 1, 0, -1)}"
+              th:with="d=${donaciones[i]}, tono=${d.estado.tono},
+                       planta=${d.categoria == 'cat-alimentos' ? 'naranjo' : (d.categoria == 'cat-ropa' ? 'algodon' : (d.categoria == 'cat-escolares' ? 'menta' : 'orejas'))},
+                       dibujo=${tono == 'entregada' ? 'planta-' + planta : (tono == 'en-camino' ? 'paso-3-brote' : 'paso-2-maceta')}"
+              th:data-estado="${tono}">
+            <a href="/donante-donaciones-detalle" th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}">
+              <span class="huerta-marco">
+                <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/{p}.svg(p=${dibujo})}"
+                     alt="" width="90" height="230">
+                <img th:if="${tono == 'en-camino'}" class="huerta-marco-abeja"
+                     src="/img/ilustraciones/abeja-arriba.svg" th:src="@{/img/ilustraciones/abeja-arriba.svg}"
+                     alt="" width="26" height="29">
+              </span>
+              <b th:text="${d.titulo}">Lentejas secas</b>
+              <small th:text="${tono == 'entregada'} ? |Llegó el ${#strings.substringBefore(d.llego, ' de 2026')}| : ${d.estado.texto}">Llegó
+                el 9 de junio</small>
+            </a>
+          </li>
+        </ol>
+      </section>
+
+      <!--/* Este mes: lo que donó en octubre y lo que ya llegó, con la foto de la entidad. */-->
+      <section id="este-mes" class="tarjeta huerta-caja" aria-labelledby="mes-titulo">
+        <header class="huerta-cabeza">
+          <p class="huerta-rotulo">Octubre de 2026</p>
+          <h2 id="mes-titulo" th:text="|Este mes donaste ${#lists.size(delMes)} veces.|">Este mes donaste 4 veces.</h2>
+        </header>
+        <ul class="pila" data-espacio="2" role="list">
+          <li th:each="d : ${delMes}">
+            <span class="estado" th:data-estado="${d.estado.tono}">
+              <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+              <span th:text="${d.estado.texto}">En camino</span>
+            </span>
+            <a href="/donante-donaciones-detalle" th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+               th:text="|${d.titulo}, ${d.cantidad}|">Ropa de abrigo, 12 prendas</a>
+            <span th:text="${d.destino != null} ? |para ${d.destino}| : 'todavía sin destino'">para Merendero Ejemplo Sur</span>
+          </li>
+        </ul>
+        <figure th:if="${llegoEsteMes}" class="foto">
+          <img src="/img/ejemplo-entrega.svg" th:src="@{${llegoEsteMes.foto}}" th:alt="${llegoEsteMes.fotoAlt}"
+               alt="Los paquetes de arroz sobre la mesa de la cocina del comedor" width="640" height="400">
+          <figcaption th:text="|${llegoEsteMes.destino} confirmó la entrega de tu ${#strings.toLowerCase(llegoEsteMes.titulo)} el ${#strings.substringBefore(llegoEsteMes.llego, ' de 2026')} y subió esta foto.|">Comedor
+            Barrio Ejemplo confirmó la entrega de tu arroz el 9 de octubre y subió esta foto.</figcaption>
+        </figure>
+      </section>
+
+      <!--/* La próxima misión: la que está en curso, con su barra y la cuenta en texto. */-->
+      <section id="proxima-mision" class="tarjeta huerta-caja" aria-labelledby="mision-titulo">
+        <header class="huerta-cabeza">
+          <p class="huerta-rotulo">Tu próxima misión</p>
+          <h2 id="mision-titulo" th:text="${proxima.nombre}">Gran Aporte</h2>
+        </header>
+        <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
+             alt="" width="95" height="166">
+        <p th:text="${proxima.pide}">Una donación con al menos 50 bienes</p>
+        <progress class="progreso" th:value="${proxima.progreso}" th:max="${proxima.objetivo}" value="12" max="50"
+                  th:aria-label="|${proxima.nombre}: ${proxima.cuenta}|"></progress>
+        <p><b th:text="${proxima.cuenta}">12 de 50 bienes</b></p>
+        <p th:text="${proxima.nota}">Tu ropa de abrigo, la donación más grande desde el 2 de septiembre.</p>
+        <a href="/donante-misiones" th:href="@{/donante-misiones}">Ver tus misiones</a>
+      </section>
+
+      <th:block th:if="${enCamino}">
+        <section th:replace="~{componentes/huerta :: recorrido(${enCamino})}"></section>
+      </th:block>
+
+      <section id="noticias-persona" class="tarjeta huerta-caja" aria-labelledby="noticias-titulo">
+        <header class="huerta-cabeza">
+          <h2 id="noticias-titulo">Últimas noticias</h2>
+          <a href="/donante-notificaciones" th:href="@{/donante-notificaciones}"
+             th:text="|Ver todas (${sinLeer} sin leer)|">Ver todas (3 sin leer)</a>
+        </header>
+        <ol class="noticias" role="list">
+          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < 3}">
+            <li th:replace="~{persona/datos-persona :: aviso(${a}, ${vuelta.index < sinLeer})}"></li>
+          </th:block>
+        </ol>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

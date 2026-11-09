@@ -45,6 +45,8 @@
   --p-letra-texto: "DM Sans", system-ui, sans-serif;
   --p-papel: #fbf2d3;
   --p-claro: #fffaea;
+  /* El fondo de un campo para escribir: más claro que el papel y que las tarjetas (usuario, 2026-11-08). */
+  --p-campo: #fffefa;
   --p-tinta: #2a2a22;
   --p-tinta-suave: #5d5c4c;
   --p-filete: #2a2a2229;
@@ -153,6 +155,7 @@
   --color-fondo: var(--p-papel);
   --color-superficie: var(--p-claro);
   --color-filete: var(--p-filete);
+  --color-campo: var(--p-campo);
   --color-texto: var(--p-tinta);
   --color-texto-suave: var(--p-tinta-suave);
   --color-titulo: var(--p-acento);

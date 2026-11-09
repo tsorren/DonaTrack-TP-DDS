@@ -146,7 +146,7 @@
                     <small th:id="|correccion-${e.clave}-ayuda|" id="correccion-hogar-ayuda">Le llega a la entidad.
                       Por ejemplo: "Falta la constancia de domicilio".</small>
                     <textarea th:id="|correccion-${e.clave}|" id="correccion-hogar" name="correccion" rows="3" required
-                              th:aria-describedby="|correccion-${e.clave}-ayuda|"></textarea>
+                              th:aria-describedby="|correccion-${e.clave}-ayuda|" placeholder="Por ejemplo: 11 5555 5555"></textarea>
                   </div>
                   <button class="boton" data-tono="principal" type="submit">Pedir corrección</button>
                 </form>
@@ -163,7 +163,7 @@
                   <div class="campo">
                     <label th:for="|motivo-${e.clave}|" for="motivo-hogar">Motivo, que le llega a la entidad *</label>
                     <textarea th:id="|motivo-${e.clave}|" id="motivo-hogar" name="motivo" rows="3" required
-                              autofocus></textarea>
+                              autofocus placeholder="Contanos el motivo"></textarea>
                   </div>
                   <div class="racimo">
                     <button class="boton" data-tono="quitar" type="submit">Rechazar solicitud</button>
@@ -185,7 +185,7 @@
               role="search">
           <div class="campo">
             <label for="buscar">Buscar por nombre</label>
-            <input id="buscar" name="buscar" type="search" autocomplete="off">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" placeholder="Por ejemplo: comedor">
           </div>
           <button class="boton" data-tono="secundario" type="submit">Buscar</button>
         </form>

@@ -190,3 +190,11 @@ main h1 {
     margin-left: 0;
   }
 }
+
+/* La campana de la administración (ronda 2026-11-09): con el menú en su propia fila, la campana va a
+   la derecha, junto a la cuenta, y no en el medio de la primera fila. */
+@media (min-width: 68.75em) {
+  .armazon:has(.navegacion li:nth-child(6)) .armazon-avisos {
+    margin-left: auto;
+  }
+}

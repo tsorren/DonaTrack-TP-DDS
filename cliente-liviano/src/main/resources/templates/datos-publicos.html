@@ -8,7 +8,10 @@
        - entregas: las 10 confirmadas del último mes, la más reciente primero (semana: entra en la
          última semana).
        - entidades: las 6 con pedidos vigentes, en el orden de la portada; numero es su estación en
-         el mapa (null si no confirmó entregas en el período) y x, y, su barrio en el dibujo.
+         el mapa (null si no confirmó entregas en el período), x, y, su barrio en el dibujo, y lat, lng,
+         un punto sintético en su barrio (CABA) para el mapa de MapLibre: nunca una dirección. Cada
+         pedido trae faltan y total en números (total null si el pedido no dice de cuánto) para la
+         barra de avance.
        - categorias: las del catálogo, con su nombre y cómo se dice dentro de una frase.
        - categoria: la elegida en ?categoria=, solo si es una de esas; si no, ''.
        ponytail: datos fijos del caso de ejemplo; en el sistema salen del modelo (HB-01, HB-07,
@@ -51,41 +54,41 @@
        dia: '22 de septiembre', fecha: '2026-09-22', semana: false, foto: fotoSillas,
        alt: 'Sillas apiladas en la sala de lectura'} } },
              entidades=${ {
-      {clave: 'comedor', numero: 1, tipo: 'Comedor', nombre: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
+      {clave: 'comedor', numero: 1, lat: -34.6418, lng: -58.4291, tipo: 'Comedor', nombre: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
        cat: 'alimentos', x: 230, y: 380,
-       pedidos: { {que: 'Lentejas secas', cat: 'alimentos', falta: 'Faltan 30 de 40 kg este mes', cuando: 'Se repite cada mes',
+       pedidos: { {que: 'Lentejas secas', cat: 'alimentos', falta: 'Faltan 30 de 40 kg este mes', cuando: 'Se repite cada mes', faltan: 30, total: 40, tipo: 'recurrente', emergencia: false,
                    porque: 'para el almuerzo de lunes a viernes.'},
-                  {que: 'Arroz', cat: 'alimentos', falta: 'Faltan 25 de 40 kg este mes', cuando: 'Se repite cada mes',
+                  {que: 'Arroz', cat: 'alimentos', falta: 'Faltan 25 de 40 kg este mes', cuando: 'Se repite cada mes', faltan: 25, total: 40, tipo: 'recurrente', emergencia: false,
                    porque: 'para el almuerzo de lunes a viernes.'},
-                  {que: 'Aceite de girasol', cat: 'alimentos', falta: 'Faltan 20 litros', cuando: 'Hasta el 20 de octubre',
+                  {que: 'Aceite de girasol', cat: 'alimentos', falta: 'Faltan 20 litros', cuando: 'Hasta el 20 de octubre', faltan: 20, total: null, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para cocinar el almuerzo.'},
-                  {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 12 de 24 unidades', cuando: 'Hasta el 25 de octubre',
+                  {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 12 de 24 unidades', cuando: 'Hasta el 25 de octubre', faltan: 12, total: 24, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para la merienda de los más chicos.'},
-                  {que: 'Ropa de abrigo', cat: 'ropa', falta: 'Faltan 25 de 30 unidades', cuando: 'Hasta el 15 de noviembre',
+                  {que: 'Ropa de abrigo', cat: 'ropa', falta: 'Faltan 25 de 30 unidades', cuando: 'Hasta el 15 de noviembre', faltan: 25, total: 30, tipo: 'extraordinaria', emergencia: true,
                    porque: 'para las familias del barrio que perdieron ropa en el temporal del 3 de octubre.'} } },
-      {clave: 'escuela', numero: 2, tipo: 'Escuela', nombre: 'Escuela Ejemplo N.º 12', barrio: 'Centro Ejemplo',
+      {clave: 'escuela', numero: 2, lat: -34.6052, lng: -58.3846, tipo: 'Escuela', nombre: 'Escuela Ejemplo N.º 12', barrio: 'Centro Ejemplo',
        cat: 'muebles', x: 470, y: 250,
-       pedidos: { {que: 'Sillas', cat: 'muebles', falta: 'Faltan 14 de 20 unidades', cuando: 'Hasta el 30 de noviembre',
+       pedidos: { {que: 'Sillas', cat: 'muebles', falta: 'Faltan 14 de 20 unidades', cuando: 'Hasta el 30 de noviembre', faltan: 14, total: 20, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para el aula nueva de primer grado.'},
-                  {que: 'Útiles escolares', cat: 'escolares', falta: 'Faltan 4 cajas', cuando: 'Hasta el 30 de noviembre',
+                  {que: 'Útiles escolares', cat: 'escolares', falta: 'Faltan 4 cajas', cuando: 'Hasta el 30 de noviembre', faltan: 4, total: null, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para los chicos de primer grado.'} } },
-      {clave: 'merendero', numero: 3, tipo: 'Merendero', nombre: 'Merendero Ejemplo Sur', barrio: 'Ejemplo Sur',
+      {clave: 'merendero', numero: 3, lat: -34.6683, lng: -58.4067, tipo: 'Merendero', nombre: 'Merendero Ejemplo Sur', barrio: 'Ejemplo Sur',
        cat: 'alimentos', x: 340, y: 480,
-       pedidos: { {que: 'Galletitas', cat: 'alimentos', falta: 'Faltan 10 de 20 kg este mes', cuando: 'Se repite cada mes',
+       pedidos: { {que: 'Galletitas', cat: 'alimentos', falta: 'Faltan 10 de 20 kg este mes', cuando: 'Se repite cada mes', faltan: 10, total: 20, tipo: 'recurrente', emergencia: false,
                    porque: 'para la merienda de la tarde.'},
-                  {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 20 unidades', cuando: 'Hasta el 31 de octubre',
+                  {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 20 unidades', cuando: 'Hasta el 31 de octubre', faltan: 20, total: null, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para la merienda de la tarde.'} } },
-      {clave: 'hogar', numero: 4, tipo: 'Hogar', nombre: 'Hogar Casa Ejemplo', barrio: 'Parque Ejemplo',
+      {clave: 'hogar', numero: 4, lat: -34.6287, lng: -58.4622, tipo: 'Hogar', nombre: 'Hogar Casa Ejemplo', barrio: 'Parque Ejemplo',
        cat: 'ropa', x: 640, y: 400,
-       pedidos: { {que: 'Frazadas', cat: 'ropa', falta: 'Faltan 10 de 20 unidades', cuando: 'Hasta el 15 de noviembre',
+       pedidos: { {que: 'Frazadas', cat: 'ropa', falta: 'Faltan 10 de 20 unidades', cuando: 'Hasta el 15 de noviembre', faltan: 10, total: 20, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para las camas del hogar.'} } },
-      {clave: 'club', numero: null, tipo: 'Club', nombre: 'Club Ejemplo Norte', barrio: 'Ejemplo Norte',
+      {clave: 'club', numero: null, lat: -34.5627, lng: -58.4588, tipo: 'Club', nombre: 'Club Ejemplo Norte', barrio: 'Ejemplo Norte',
        cat: 'ropa', x: null, y: null,
-       pedidos: { {que: 'Camisetas deportivas', cat: 'ropa', falta: 'Faltan 15 unidades', cuando: 'Hasta el 30 de noviembre',
+       pedidos: { {que: 'Camisetas deportivas', cat: 'ropa', falta: 'Faltan 15 unidades', cuando: 'Hasta el 30 de noviembre', faltan: 15, total: null, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para el equipo infantil de fútbol.'} } },
-      {clave: 'biblioteca', numero: 5, tipo: 'Biblioteca', nombre: 'Biblioteca Popular Ejemplo', barrio: 'Villa Ejemplo',
+      {clave: 'biblioteca', numero: 5, lat: -34.6561, lng: -58.4935, tipo: 'Biblioteca', nombre: 'Biblioteca Popular Ejemplo', barrio: 'Villa Ejemplo',
        cat: 'muebles', x: 90, y: 480,
-       pedidos: { {que: 'Sillas', cat: 'muebles', falta: 'Faltan 4 de 8 unidades', cuando: 'Hasta el 31 de diciembre',
+       pedidos: { {que: 'Sillas', cat: 'muebles', falta: 'Faltan 4 de 8 unidades', cuando: 'Hasta el 31 de diciembre', faltan: 4, total: 8, tipo: 'extraordinaria', emergencia: false,
                    porque: 'para la sala de lectura infantil.'} } } } }">
   <th:block th:insert="${pantalla}"></th:block>
 </th:block>

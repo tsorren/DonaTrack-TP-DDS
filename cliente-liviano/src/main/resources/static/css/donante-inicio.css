@@ -8,7 +8,7 @@
   gap: 2.5rem;
 }
 
-.inicio-cuerpo > div > p {
+.hito {
   margin: 0.75rem 0 0;
   font-size: 0.9375rem;
 }
@@ -19,11 +19,22 @@
   column-gap: 1rem;
 }
 
-/* Las raíces y las noticias, lado a lado cuando entran. */
+/* Las raíces y las noticias, lado a lado cuando entran, siempre del mismo alto (usuario,
+   2026-11-09): la fila se estira a la más alta y las dos la llenan. */
 .inicio-cuerpo > .grilla {
   --medida-grilla: 22rem;
   gap: 1.75rem;
-  align-items: start;
+  align-items: stretch;
+}
+
+.noticias-inicio {
+  grid-template-rows: auto 1fr;
+  align-content: stretch;
+}
+
+.noticias-inicio .noticias {
+  align-content: start;
+  margin: 0;
 }
 
 .noticias-todas {
@@ -38,4 +49,26 @@
     --medida-columna: 12rem;
     column-gap: 1.5rem;
   }
+}
+
+/* El saludo a la izquierda y las acciones a la derecha (usuario, 2026-11-08). */
+@media (min-width: 53.75em) {
+  .inicio-cabecera {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    align-items: end;
+  }
+
+  .inicio-cabecera > .racimo {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: end;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Con la fila estirada, el dibujo de las raíces arriba y su texto abajo. */
+.inicio-cuerpo > .grilla > .huerta-tierra--caja {
+  align-content: space-between;
 }

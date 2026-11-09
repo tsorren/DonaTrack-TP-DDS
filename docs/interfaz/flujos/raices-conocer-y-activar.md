@@ -27,7 +27,7 @@ beneficiario y Activar cuenta.
 | Pantalla | Dirección | Se llega desde |
 |---|---|---|
 | Nosotros | `/publico-nosotros` | El pie de todas las páginas |
-| Para donantes | `/publico-para-donantes` | El pie y la lámina "Cómo funciona" de la portada ("Qué ganás si donás") |
+| Para donantes | `/publico-para-donantes` | El pie y la tarjeta de quien dona en «Quién participa» de la portada («Qué podés donar»; antes, «Qué ganás si donás» bajo «Cómo funciona», usuario, 2026-11-08) |
 | Para entidades | `/publico-para-entidades` | El pie y la sección "Quiénes reciben" de la portada ("Cómo se suma una entidad") |
 | Activar cuenta | `/publico-activar` | El enlace del correo de bienvenida (D12) |
 | Pedir otro enlace | `/publico-activar-pedir` | Activar cuenta con el enlace vencido o usado, e Ingresar ("¿Te crearon una cuenta?") |

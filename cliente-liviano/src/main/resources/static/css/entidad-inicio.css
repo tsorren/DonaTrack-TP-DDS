@@ -104,28 +104,31 @@ main .puerta h2 {
   background: var(--color-papel);
 }
 
-/* --- Tus pedidos: un renglón por pedido, con su regla de tinta ----------------------------------- */
+/* --- Tus pedidos: un renglón por pedido, en su caja redondeada, con la barra redondeada de
+   Necesidades (ronda del 2026-11-09: nada de cajas ni barras rígidas). ------------------------- */
 .pedidos-renglones {
   display: grid;
+  gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--color-tinta);
 }
 
 .pedidos-renglones li {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  gap: 0.25rem 0.875rem;
-  align-items: start;
-  padding: 0.75rem 0;
-  border-bottom: 1px dotted var(--color-tinta-suave);
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.5rem 0.875rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-superficie);
 }
 
 .pedidos-renglones .categoria-icono {
-  grid-row: span 2;
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.25rem;
+  border-radius: var(--radio-boton);
 }
 
 .renglon-que {
@@ -143,33 +146,12 @@ main .puerta h2 {
 .renglon-va {
   display: grid;
   grid-column: 2;
-  gap: 0.25rem;
+  gap: 0.375rem;
   font-weight: 700;
 }
 
-/* La regla de tinta que se llena, la de Necesidades: decorativa, el texto dice lo mismo. */
-.pedidos-inicio progress {
-  appearance: none;
-  display: block;
-  width: 100%;
-  max-width: 12rem;
-  height: 0.625rem;
-  border: 1.5px solid var(--color-tinta);
-  border-radius: 0;
-  background: var(--color-papel);
-  color: var(--color-raiz);
-}
-
-.pedidos-inicio progress::-webkit-progress-bar {
-  background: var(--color-papel);
-}
-
-.pedidos-inicio progress::-webkit-progress-value {
-  background: var(--color-raiz);
-}
-
-.pedidos-inicio progress::-moz-progress-bar {
-  background: var(--color-raiz);
+.pedidos-inicio .progreso {
+  height: 0.75rem;
 }
 
 /* --- Lo recibido en el mes: un fruto que cuelga de la rama paja, con la cifra adentro ------------ */
@@ -275,7 +257,7 @@ main .puerta h2 {
   }
 
   .pedidos-renglones li {
-    grid-template-columns: 2rem minmax(0, 1fr) 11rem;
+    grid-template-columns: 2.5rem minmax(0, 1fr) 11rem;
   }
 
   .renglon-va {

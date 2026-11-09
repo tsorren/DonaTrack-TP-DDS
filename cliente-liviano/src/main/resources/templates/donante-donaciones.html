@@ -91,6 +91,7 @@
 
       <!--/* La huerta, como Mis donaciones de K (estética de K, 2026-11-08; antes, un libro de asientos):
              una lámina por donación, de la más reciente a la primera, con el dibujo según su estado. */-->
+      <svg th:replace="~{iconos :: categorias}"></svg>
       <ul th:unless="${lista.isEmpty()}" class="lista huerta-lista" role="list">
         <th:block th:each="d : ${lista}">
           <li th:replace="~{componentes/huerta :: planta(${d})}"></li>

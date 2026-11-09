@@ -20,6 +20,7 @@
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <th:block th:replace="~{interaccion :: cargar}"></th:block>
+  <script src="/js/abejas.js" th:src="@{/js/abejas.js}" defer></script>
 </head>
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -28,6 +29,7 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
+  <label th:replace="~{componentes/huerta :: pausa}"></label>
   <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás públicas. */-->
   <nav th:replace="~{navegacion-publica :: navegacion('')}"></nav>
 </header>
@@ -48,75 +50,7 @@
         {n: '46', t: 'Entidades en el mapa'},
         {n: '32', t: 'Donaciones en camino ahora'} } })}"></section>
 
-    <!--/* Las entregas del mes, como la tabla de K: una fila por entrega, con su foto. */-->
-    <section class="tarjeta" aria-labelledby="viajo-titulo">
-      <header class="huerta-cabeza">
-        <h2 id="viajo-titulo">Lo que viajó <em>este mes.</em></h2>
-        <a href="/publico-donaciones" th:href="@{/publico-donaciones}">Ver todas las entregas confirmadas</a>
-      </header>
-      <p th:if="${conDatos}">Las últimas entregas de octubre de 2026. La entidad sube la foto cuando confirma la entrega.</p>
-      <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este mes. Cuando una
-        entidad confirme una entrega, aparece acá con su foto.</p>
-      <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
-      <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
-        <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
-        <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
-      </div>
-      <table class="tabla" th:if="${conDatos}">
-        <caption class="solo-lectores">Las entregas de octubre de 2026</caption>
-        <thead>
-          <tr><th scope="col">Fecha</th><th scope="col">Entrega</th><th scope="col">Entidad</th><th scope="col">Estado</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td data-rotulo="Fecha"><time datetime="2026-10-15">15/10, hoy</time></td>
-            <th scope="row">Lentejas secas, 15 kg</th>
-            <td data-rotulo="Entidad">Comedor Barrio Ejemplo</td>
-            <td data-rotulo="Estado"><span class="estado" data-estado="en-camino"><th:block
-                th:replace="~{componentes/sello :: sello('en-camino')}"></th:block><span>En camino, salió a las 14:30</span></span></td>
-          </tr>
-          <tr>
-            <td data-rotulo="Fecha"><time datetime="2026-10-14">14/10</time></td>
-            <th scope="row" id="asiento-3">Sillas, 6 unidades</th>
-            <td data-rotulo="Entidad">Escuela Ejemplo N.º 12</td>
-            <td data-rotulo="Estado"><button type="button" class="boton" data-tamano="chico"
-                popovertarget="foto-3" aria-describedby="asiento-3">Ver la foto de la entrega</button>
-              <dialog class="dialogo" id="foto-3" popover aria-labelledby="foto-3-titulo">
-                <img src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="Sillas apiladas en un aula" width="640" height="400">
-                <p class="dialogo-titulo" id="foto-3-titulo">Sillas, 6 unidades</p>
-                <p>Escuela Ejemplo N.º 12 confirmó la entrega el <time datetime="2026-10-14">14 de octubre de 2026</time> y subió esta foto.</p>
-                <button type="button" class="boton" data-tono="secundario" popovertarget="foto-3" popovertargetaction="hide">Cerrar</button>
-              </dialog></td>
-          </tr>
-          <tr>
-            <td data-rotulo="Fecha"><time datetime="2026-10-09">09/10</time></td>
-            <th scope="row" id="asiento-2">Ropa de abrigo, 12 prendas</th>
-            <td data-rotulo="Entidad">Merendero Ejemplo Sur</td>
-            <td data-rotulo="Estado"><button type="button" class="boton" data-tamano="chico"
-                popovertarget="foto-2" aria-describedby="asiento-2">Ver la foto de la entrega</button>
-              <dialog class="dialogo" id="foto-2" popover aria-labelledby="foto-2-titulo">
-                <img src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640" height="400">
-                <p class="dialogo-titulo" id="foto-2-titulo">Ropa de abrigo, 12 prendas</p>
-                <p>Merendero Ejemplo Sur confirmó la entrega el <time datetime="2026-10-09">9 de octubre de 2026</time> y subió esta foto.</p>
-                <button type="button" class="boton" data-tono="secundario" popovertarget="foto-2" popovertargetaction="hide">Cerrar</button>
-              </dialog></td>
-          </tr>
-          <tr>
-            <td data-rotulo="Fecha"><time datetime="2026-10-05">05/10</time></td>
-            <th scope="row" id="asiento-1">Fideos secos, 8 kg</th>
-            <td data-rotulo="Entidad">Comedor Barrio Ejemplo</td>
-            <td data-rotulo="Estado"><button type="button" class="boton" data-tamano="chico"
-                popovertarget="foto-1" aria-describedby="asiento-1">Ver la foto de la entrega</button>
-              <dialog class="dialogo" id="foto-1" popover aria-labelledby="foto-1-titulo">
-                <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="Cajas con la donación junto a la puerta del comedor" width="640" height="400">
-                <p class="dialogo-titulo" id="foto-1-titulo">Fideos secos, 8 kg</p>
-                <p>Comedor Barrio Ejemplo confirmó la entrega el <time datetime="2026-10-05">5 de octubre de 2026</time> y subió esta foto.</p>
-                <button type="button" class="boton" data-tono="secundario" popovertarget="foto-1" popovertargetaction="hide">Cerrar</button>
-              </dialog></td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <section th:replace="~{componentes/huerta :: mes(${estado})}"></section>
 
     <section th:replace="~{componentes/huerta :: participa}"></section>
     <section th:replace="~{componentes/huerta :: preguntas}"></section>

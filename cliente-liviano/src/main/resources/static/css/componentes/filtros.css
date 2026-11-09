@@ -1,0 +1,175 @@
+/* Bloque filtros (usuario, 2026-11-08, como la barra de LinkedIn): una fila de pastillas que baja de
+   renglón. Un filtro con opciones (`details.filtros-pildora`) abre su menú (`.filtros-menu`) debajo;
+   uno de sí o no (`label.filtros-pildora.filtros-interruptor`) se prende. Con un filtro elegido
+   (`data-activa="si"`), la pastilla va llena de verde. Los fragmentos están en
+   templates/componentes/filtros.html. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filtros-pildora {
+  position: relative;
+}
+
+/* La pastilla: el resumen de un menú o la etiqueta del interruptor. */
+.filtros-pildora > summary,
+.filtros-interruptor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 1.125rem;
+  border-radius: 999px;
+  background: var(--color-campo);
+  box-shadow: inset 0 0 0 1.5px var(--color-borde-control);
+  color: var(--color-tinta);
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filtros-pildora > summary::-webkit-details-marker {
+  display: none;
+}
+
+.filtros-pildora > summary svg {
+  width: 0.75rem;
+  height: 0.5rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.filtros-pildora[open] > summary svg {
+  rotate: 180deg;
+}
+
+.filtros-pildora > summary:hover,
+.filtros-interruptor:hover {
+  box-shadow: inset 0 0 0 2px var(--color-tinta);
+}
+
+/* Con un filtro elegido: llena de verde, como "Jobs" en la referencia. */
+.filtros-pildora[data-activa="si"] > summary,
+.filtros-interruptor[data-activa="si"],
+.filtros-interruptor:has(:checked) {
+  background: var(--color-acento);
+  box-shadow: none;
+  color: var(--color-texto-sobre-accion);
+}
+
+.filtros-pildora > summary:focus-visible,
+.filtros-interruptor:has(:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* El interruptor: la casilla cubre toda la pastilla, invisible. */
+.filtros-interruptor {
+  position: relative;
+}
+
+.filtros-interruptor input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* El menú de opciones, debajo de su pastilla. */
+.filtros-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 4;
+  display: grid;
+  gap: 0.125rem;
+  min-width: 15rem;
+  margin: 0;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel), 0 0 0 1px var(--color-filete);
+}
+
+.filtros-menu legend {
+  float: left;
+  margin-bottom: 0.25rem;
+  padding: 0 0.5rem;
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.filtros-opcion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3rem;
+  padding: 0 0.5rem;
+  border-radius: 0.5rem;
+  color: var(--color-tinta);
+  cursor: pointer;
+}
+
+.filtros-opcion:hover {
+  background: var(--color-acento-claro);
+}
+
+/* El radio cubre todo el renglón (invisible): el toque es del tamaño de la opción. El círculo se
+   dibuja al lado del texto. */
+.filtros-opcion input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.filtros-opcion span::before {
+  content: "";
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.625rem;
+  vertical-align: -0.15rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--color-borde-control);
+}
+
+.filtros-opcion:has(:checked) span::before {
+  box-shadow: inset 0 0 0 0.3rem var(--color-acento);
+}
+
+.filtros-opcion:has(:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: -3px;
+}
+
+.filtros-menu .boton {
+  justify-self: start;
+  margin-top: 0.5rem;
+}
+
+.filtros-sacar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0 0.5rem;
+  font-weight: 700;
+}

@@ -71,7 +71,7 @@
           <div class="campo">
             <label for="nombre">Nombre *</label>
             <input id="nombre" name="nombre" type="text" required autocomplete="off"
-                   th:value="${escrito} ? 'Ana' : null">
+                   th:value="${escrito} ? 'Ana' : null" placeholder="Por ejemplo: Ana Ejemplo">
           </div>
           <div class="campo" th:data-estado="${conError} ? 'error'">
             <label for="apellido">Apellido *</label>
@@ -79,7 +79,7 @@
               Ejemplo.</p>
             <input id="apellido" name="apellido" type="text" required autocomplete="off"
                    th:value="${escrito and !conError} ? 'Ejemplo' : null"
-                   th:attr="aria-describedby=${conError} ? 'apellido-error' : null,aria-invalid=${conError} ? 'true' : null">
+                   th:attr="aria-describedby=${conError} ? 'apellido-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: Ejemplo">
           </div>
           <div class="campo">
             <label for="tipo-documento">Tipo de documento</label>
@@ -93,7 +93,7 @@
             <label for="documento">Número de documento</label>
             <small id="documento-ayuda">Sin puntos. Por ejemplo: 20000001.</small>
             <input id="documento" name="documento" type="text" inputmode="numeric" autocomplete="off"
-                   aria-describedby="documento-ayuda" th:value="${escrito} ? '20000001' : null">
+                   aria-describedby="documento-ayuda" th:value="${escrito} ? '20000001' : null" placeholder="Sin puntos ni espacios">
           </div>
           <div class="campo">
             <label for="nacimiento">Fecha de nacimiento</label>
@@ -116,7 +116,7 @@
         <div class="grilla" data-espacio="3">
           <div class="campo">
             <label for="razon-social">Razón social *</label>
-            <input id="razon-social" name="razonSocial" type="text" required autocomplete="off">
+            <input id="razon-social" name="razonSocial" type="text" required autocomplete="off" placeholder="Por ejemplo: Distribuidora Ejemplo SA">
           </div>
           <div class="campo">
             <label for="tipo-organizacion">Tipo *</label>
@@ -130,11 +130,11 @@
           <div class="campo">
             <label for="cuit">CUIT</label>
             <small id="cuit-ayuda">Con guiones. Por ejemplo: 30-00000001-0.</small>
-            <input id="cuit" name="cuit" type="text" autocomplete="off" aria-describedby="cuit-ayuda">
+            <input id="cuit" name="cuit" type="text" autocomplete="off" aria-describedby="cuit-ayuda" placeholder="Por ejemplo: 30-12345678-9">
           </div>
           <div class="campo">
             <label for="rubro">Rubro</label>
-            <input id="rubro" name="rubro" type="text" autocomplete="off">
+            <input id="rubro" name="rubro" type="text" autocomplete="off" placeholder="Por ejemplo: alimentos">
           </div>
         </div>
       </th:block>
@@ -149,11 +149,11 @@
             @. Por ejemplo: ana@ejemplo.org.</p>
           <input id="correo" name="correo" type="email" required autocomplete="off"
                  th:value="${conError} ? 'ana.ejemplo.org' : (${escrito} ? 'ana@ejemplo.org' : null)"
-                 th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
+                 th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="nombre@ejemplo.com">
         </div>
         <div class="campo">
           <label for="telefono">Teléfono</label>
-          <input id="telefono" name="telefono" type="tel" autocomplete="off">
+          <input id="telefono" name="telefono" type="tel" autocomplete="off" placeholder="Por ejemplo: 11 5555 5555">
         </div>
       </div>
 
@@ -161,17 +161,17 @@
         <summary class="boton" data-tono="secundario">Dirección (opcional)</summary>
         <div class="grilla" data-espacio="3">
           <div class="campo"><label for="calle">Calle</label>
-            <input id="calle" name="calle" type="text" autocomplete="off"></div>
+            <input id="calle" name="calle" type="text" autocomplete="off" placeholder="Por ejemplo: Av. Rivadavia"></div>
           <div class="campo"><label for="altura">Altura</label>
-            <input id="altura" name="altura" type="text" inputmode="numeric" autocomplete="off"></div>
+            <input id="altura" name="altura" type="text" inputmode="numeric" autocomplete="off" placeholder="Por ejemplo: 4500"></div>
           <div class="campo"><label for="localidad">Localidad</label>
-            <input id="localidad" name="localidad" type="text" autocomplete="off"></div>
+            <input id="localidad" name="localidad" type="text" autocomplete="off" placeholder="Por ejemplo: Caballito"></div>
           <div class="campo"><label for="provincia">Provincia</label>
-            <input id="provincia" name="provincia" type="text" autocomplete="off"></div>
+            <input id="provincia" name="provincia" type="text" autocomplete="off" placeholder="Por ejemplo: Buenos Aires"></div>
           <div class="campo"><label for="pais">País</label>
-            <input id="pais" name="pais" type="text" value="Argentina" autocomplete="off"></div>
+            <input id="pais" name="pais" type="text" value="Argentina" autocomplete="off" placeholder="Argentina"></div>
           <div class="campo"><label for="postal">Código postal</label>
-            <input id="postal" name="postal" type="text" autocomplete="off"></div>
+            <input id="postal" name="postal" type="text" autocomplete="off" placeholder="Por ejemplo: C1406"></div>
         </div>
       </details>
 
