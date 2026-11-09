@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.0.0
+  version: 1.5.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -65,6 +65,13 @@ paths:
           schema:
             type: string
             format: date
+        - name: necesidadId
+          in: query
+          required: false
+          description: Las donaciones que cubren esa necesidad, en cualquier período (HB-18). Su estado dice si están en camino o entregadas.
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Lista de donaciones independientes
@@ -203,14 +210,36 @@ paths:
   /api/necesidades:
     post:
       summary: Registrar necesidad de entidad beneficiaria
+      description: >
+        HB-18 (ADR 20261102 del ciclo de vida de la necesidad). Una `EXTRAORDINARIA` exige
+        `fechaLimite`, posterior a hoy. Una `RECURRENTE` exige `periodicidad` (`SEMANAL`, `QUINCENAL`
+        o `MENSUAL`); su primer período empieza el día de la publicación y `fechaFin` ya no se lee.
+        Los dos son cambios incompatibles, registrados en `cambios-incompatibles-aceptados.txt`.
       operationId: registrarNecesidad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NecesidadDTO'
       responses:
         '201':
           description: Necesidad registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NecesidadDTO'
+        '400':
+          description: >
+            Datos inválidos. Entre otros: `FECHA_LIMITE_NULA` (ERR-VAL-524), `FECHA_LIMITE_NO_FUTURA`
+            (ERR-VAL-525) y `NECESIDAD_RECURRENTE_SIN_PERIODO` (ERR-VAL-512, falta `periodicidad`).
         '409':
           description: La entidad beneficiaria está dada de baja (ENTIDAD_BENEFICIARIA_INACTIVA)
     get:
-      summary: Listar necesidades activas
+      summary: Listar necesidades
+      description: >
+        Sin `estado` devuelve todas, también las dadas de baja (HB-18). Cada una trae su `estado`
+        calculado.
       operationId: listarNecesidades
       parameters:
         - name: entidadId
@@ -221,15 +250,34 @@ paths:
           in: query
           required: false
           schema: { type: string }
+        - name: estado
+          in: query
+          required: false
+          description: Uno o varios estados separados por coma (`VIGENTE,CUMPLIDA`). Un valor que no existe responde 400.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EstadoNecesidad'
       responses:
         '200':
           description: Listado de necesidades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NecesidadDTO'
+        '400':
+          description: Un `estado` que no existe
   /api/necesidades/publicas:
     get:
       summary: Listar necesidades vigentes (ruta pública)
       description: >
-        Ruta pública (D26, HB-08): necesidades activas y no satisfechas, con un DTO propio, sin
-        datos internos. Las de una entidad dada de baja no aparecen (la baja las desactiva).
+        Ruta pública (D26, HB-08): necesidades activas, sin vencer y no satisfechas, con un DTO
+        propio, sin datos internos. Las de una entidad dada de baja no aparecen (la baja las
+        desactiva) y una extraordinaria con la fecha límite pasada tampoco (HB-18).
       operationId: listarNecesidadesPublicas
       parameters:
         - name: entidadId
@@ -259,19 +307,37 @@ paths:
       responses:
         '200':
           description: Detalle de la necesidad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NecesidadDTO'
         '404':
           description: Necesidad no encontrada
     put:
       summary: Actualizar necesidad existente
+      description: >
+        Cambia `descripcion` y `cantidadNecesitada`. En una recurrente, la cantidad nueva vale
+        también para el período en curso (HB-18). Si llega `version` y no coincide con la guardada,
+        responde 409; sin `version` no se compara (opcional mientras dure la migración del contrato).
       operationId: actualizarNecesidad
       parameters:
         - name: id
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NecesidadDTO'
       responses:
         '200':
           description: Necesidad actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NecesidadDTO'
         '400':
           description: Datos inválidos
         '404':
@@ -289,6 +355,30 @@ paths:
       responses:
         '204':
           description: Necesidad eliminada exitosamente
+        '404':
+          description: Necesidad no encontrada
+  /api/necesidades/{id}/periodos:
+    get:
+      summary: Historia de períodos de una necesidad recurrente
+      description: >
+        HB-18. Por período: inicio, fin, objetivo, lo asignado, lo recibido (donaciones `ENTREGADA`)
+        y el resultado. Una extraordinaria devuelve la lista vacía. Las donaciones que cubren la
+        necesidad salen de `GET /donaciones-independientes?necesidadId=`.
+      operationId: listarPeriodosDeNecesidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Los períodos, del más viejo al en curso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PeriodoNecesidadDTO'
         '404':
           description: Necesidad no encontrada
   /api/asignaciones/ejecuciones:
@@ -666,6 +756,7 @@ paths:
         '200': { description: Listado de subcategorías }
     post:
       summary: Crear subcategoría
+      description: El body acepta `unidad` opcional (HB-18); sin ella, la subcategoría hereda la de su categoría.
       operationId: crearSubcategoria
       responses:
         '201': { description: Subcategoría creada }
@@ -683,6 +774,7 @@ paths:
         '404': { description: Subcategoría no encontrada }
     put:
       summary: Actualizar subcategoría
+      description: El body acepta `unidad` opcional (HB-18); sin ella, la subcategoría vuelve a heredar la de su categoría.
       operationId: actualizarSubcategoria
       parameters:
         - name: id
@@ -928,6 +1020,113 @@ components:
           type: string
         rubro:
           type: string
+    Unidad:
+      type: string
+      enum: [UNIDADES, KILOGRAMO, LITROS, METRO, METRO_CUADRADO, METRO_CUBICO]
+    EstadoNecesidad:
+      type: string
+      description: >
+        Calculado en cada lectura (HB-18). `VIGENTE`: activa y, si es extraordinaria, sin cumplir ni
+        vencer. `CUMPLIDA`: extraordinaria cuyo recibido llegó a la cantidad. `TERMINADA`:
+        extraordinaria con la fecha límite pasada sin cumplirse. `DADA_DE_BAJA`: la entidad la dio de
+        baja. Una recurrente solo está `VIGENTE` o `DADA_DE_BAJA`.
+      enum: [VIGENTE, CUMPLIDA, TERMINADA, DADA_DE_BAJA]
+    NecesidadDTO:
+      type: object
+      description: >
+        Entrada y salida de `/api/necesidades` (HB-18, ADR 20261102). `estaSatisfecha`, `estado`,
+        `unidad` y `ultimoCambio` son solo de salida: si llegan, se ignoran. `fechaFin` está
+        deprecado como entrada (se ignora); en la salida es el fin del período en curso.
+      required: [tipo, idSubcategoria, cantidadNecesitada, descripcion]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tipo:
+          type: string
+          enum: [EXTRAORDINARIA, RECURRENTE]
+        idEntidad:
+          type: string
+          format: uuid
+        idSubcategoria:
+          type: string
+          format: uuid
+        cantidadNecesitada:
+          type: integer
+          minimum: 1
+        descripcion:
+          type: string
+        estaSatisfecha:
+          type: boolean
+          description: Solo salida. Lo asignado (al período en curso, en las recurrentes) llegó a la cantidad.
+        fechaInicio:
+          type: string
+          format: date
+          nullable: true
+          description: Día de la publicación. En una recurrente se puede mandar (no futura); si falta, hoy.
+        fechaFin:
+          type: string
+          format: date
+          nullable: true
+          deprecated: true
+          description: Deprecado como entrada. En la salida, el fin del período en curso de una recurrente.
+        estado:
+          $ref: '#/components/schemas/EstadoNecesidad'
+        version:
+          type: integer
+          format: int64
+          nullable: true
+          description: Versión de la fila. En el `PUT`, si llega y no coincide, responde 409.
+        fechaLimite:
+          type: string
+          format: date
+          nullable: true
+          description: Obligatoria y posterior a hoy al crear una `EXTRAORDINARIA`. Nula en las creadas antes de exigirla y en las recurrentes.
+        periodicidad:
+          type: string
+          enum: [SEMANAL, QUINCENAL, MENSUAL]
+          nullable: true
+          description: Obligatoria al crear una `RECURRENTE` (7 días, 15 días o un mes). Nula en la salida de una recurrente creada antes con otro largo.
+        unidad:
+          type: string
+          enum: [UNIDADES, KILOGRAMO, LITROS, METRO, METRO_CUADRADO, METRO_CUBICO]
+          nullable: true
+          description: Solo salida. La unidad de su subcategoría.
+        ultimoCambio:
+          type: object
+          nullable: true
+          description: Solo salida. El último cambio de cantidad; en una recurrente, solo mientras dure el período en que se hizo.
+          properties:
+            cantidadAnterior:
+              type: integer
+            fecha:
+              type: string
+              format: date
+    PeriodoNecesidadDTO:
+      type: object
+      required: [id, inicio, fin, objetivo, asignado, recibido, resultado]
+      properties:
+        id:
+          type: string
+          format: uuid
+        inicio:
+          type: string
+          format: date
+        fin:
+          type: string
+          format: date
+        objetivo:
+          type: integer
+        asignado:
+          type: integer
+          description: Las donaciones con destino en el período.
+        recibido:
+          type: integer
+          description: Las donaciones del período que llegaron (`ENTREGADA`).
+        resultado:
+          type: string
+          enum: [EN_CURSO, CUMPLIDO, INCOMPLETO]
+          description: '`CUMPLIDO` apenas lo recibido llega al objetivo, también en el período en curso.'
     NecesidadPublicaDTO:
       type: object
       description: Necesidad vigente para rutas públicas (D26). `fechaFin` es el fin del período actual en las recurrentes y nulo en las extraordinarias.
@@ -1255,6 +1454,10 @@ components:
           type: array
           items:
             type: object
+        unidad:
+          allOf:
+            - $ref: '#/components/schemas/Unidad'
+          description: La unidad en que se pide (HB-18). La propia de la subcategoría o, si no tiene, la de su categoría.
     ItemDonacionNormalizadoOutputDTO:
       type: object
       required:

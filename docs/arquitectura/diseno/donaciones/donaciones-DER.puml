@@ -121,6 +121,7 @@ package "Catálogo" {
     --
     * id_categoria : UUID <<FK>>
     * nombre : TEXT
+    CAMBIO(unidad : VARCHAR(20))
   }
 
   entity alias {
@@ -146,6 +147,9 @@ package "Necesidades" {
     * activa : BOOLEAN
     periodo : CAMBIO(VARCHAR(20) ISO-8601)
     * CAMBIO(version : BIGINT)
+    CAMBIO(fecha_limite : DATE)
+    CAMBIO(cantidad_anterior : BIGINT)
+    CAMBIO(fecha_ultimo_cambio : DATE)
   }
 
   entity periodo_necesidad {

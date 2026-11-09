@@ -184,8 +184,11 @@ package CATEGORIAS {
     - categoria: Categoria
     - nombre: String
     - aliases: List<AliasSubcategoria> {final}
+    - unidad: Unidad
     --
     + Subcategoria(categoria: Categoria, nombre: String)
+    + asignarUnidad(unidad: Unidad): void
+    + unidadCon(deLaCategoria: Unidad): Unidad
     + agregarAlias(alias: String): void
     + removerAlias(alias: String): void
     + tieneAlias(alias: String): boolean
@@ -449,6 +452,8 @@ package NECESIDADES {
     - fechaInicio: LocalDate {final}
     - entidadId: UUID
     - version: Long
+    - cantidadAnterior: Integer
+    - fechaUltimoCambio: LocalDate
     --
     # Necesidad(subcategoriaId: UUID, cantidadNecesitada: Integer, descripcion: String)
     # Necesidad(datos: DatosNecesidad) <<reconstitución>>
@@ -456,7 +461,11 @@ package NECESIDADES {
     + {abstract} periodoActualId(): UUID
     + {abstract} estaSatisfechaCon(cantidadAcumulada: int): boolean
     + cantidadRestante(cantidadAcumulada: int): int
-    + {abstract} toDTO(cantidadAcumulada: int): NecesidadDTO
+    + actualizarCantidadNecesitada(cantidad: Integer): void
+    + {abstract} estado(recibido: int, hoy: LocalDate): EstadoNecesidad
+    + admiteAsignaciones(hoy: LocalDate): boolean
+    + muestraUltimoCambio(): boolean
+    + finDelPeriodoActual(): LocalDate
     + {abstract} isActiva(): boolean
     + {abstract} desactivar(): void
   }
@@ -474,9 +483,29 @@ package NECESIDADES {
 
   class NecesidadExtraordinaria <<entity>> {
     - activa: boolean
+    - fechaLimite: LocalDate {final}
     --
+    + NecesidadExtraordinaria(subcategoriaId: UUID, cantidadNecesitada: Integer, descripcion: String, fechaLimite: LocalDate)
     + destinoDeAsignacion(): DestinoAsignacion
     + estaSatisfechaCon(cantidadAcumulada: int): boolean
+    + estado(recibido: int, hoy: LocalDate): EstadoNecesidad
+    + admiteAsignaciones(hoy: LocalDate): boolean
+  }
+
+  enum EstadoNecesidad {
+    VIGENTE
+    CUMPLIDA
+    TERMINADA
+    DADA_DE_BAJA
+  }
+
+  enum Periodicidad {
+    SEMANAL
+    QUINCENAL
+    MENSUAL
+    --
+    + periodo(): Period
+    + {static} de(periodo: Period): Periodicidad
   }
 
   class PeriodoNecesidad <<value>> {
@@ -501,6 +530,10 @@ package NECESIDADES {
     + hayQueGenerarNuevo(fechaActual: LocalDate): boolean
     + renovarPeriodoSiCorresponde(fechaActual: LocalDate, acumuladoDelPeriodoActual: int): boolean
     + generarNuevoPeriodo(): void
+    + getPeriodicidad(): Periodicidad
+    + inicioDe(periodo: PeriodoNecesidad): LocalDate
+    + actualizarCantidadNecesitada(cantidad: Integer): void
+    + estado(recibido: int, hoy: LocalDate): EstadoNecesidad
   }
 
   class GestorNecesidades <<service>> {
@@ -516,6 +549,8 @@ package NECESIDADES {
   Necesidad ..> EntidadBeneficiaria : entidadId
   Necesidad ..> DestinoAsignacion
   NecesidadRecurrente *-- PeriodoNecesidad : "*"
+  NecesidadRecurrente ..> Periodicidad
+  Necesidad ..> EstadoNecesidad
   GestorNecesidades --> NecesidadRecurrente
 }
 

@@ -73,6 +73,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     TipoEstadoDonacion estado = filtro.estado();
     UUID subcategoriaId = filtro.subcategoriaId();
     UUID entidadId = filtro.entidadId();
+    UUID necesidadId = filtro.necesidadId();
 
     // ponytail: filtra en memoria sobre findAll(), como hacía este listado; pasar a una consulta
     // cuando el volumen lo pida.
@@ -85,6 +86,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         .filter(di -> subcategoriaId == null || tieneSubcategoria(di, Set.of(subcategoriaId)))
         .filter(deLaCategoria(filtro.categoriaId()))
         .filter(di -> entidadId == null || entidadId.equals(di.getEntidadBeneficiariaId()))
+        .filter(di -> necesidadId == null || necesidadId.equals(di.getNecesidadId()))
         .filter(di -> desde == null || !di.getFechaRegistro().toLocalDate().isBefore(desde))
         .filter(di -> hasta == null || !di.getFechaRegistro().toLocalDate().isAfter(hasta))
         .map(donacionIndependienteMapper::toDTO)

@@ -512,4 +512,25 @@ class DonacionesIndependientesRepositoryJpaTest {
                 necesidad.periodoActualId(),
                 donacion.getId()));
   }
+
+  @Test
+  void sumarCantidadRecibida_cuentaSoloLasEntregadas() {
+    NecesidadExtraordinaria extraordinaria =
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
+    necesidades.save(extraordinaria);
+    DonacionIndependiente entregada = nueva(6);
+    entregada.asignar(ACTOR, extraordinaria.destinoDeAsignacion());
+    entregada.planificarRuta(ACTOR);
+    entregada.iniciarRecorrido(ACTOR);
+    entregada.confirmarEntrega(ACTOR);
+    DonacionIndependiente enCamino = nueva(4);
+    enCamino.asignar(ACTOR, extraordinaria.destinoDeAsignacion());
+    independientes.saveAll(List.of(entregada, enCamino));
+    Map<UUID, UUID> periodos = new HashMap<>();
+    periodos.put(extraordinaria.getId(), null);
+
+    assertEquals(6, independientes.sumarCantidadRecibida(extraordinaria.getId(), null));
+    assertEquals(10, independientes.sumarCantidadAsignada(extraordinaria.getId(), null));
+    assertEquals(Map.of(extraordinaria.getId(), 6), independientes.sumarCantidadRecibida(periodos));
+  }
 }

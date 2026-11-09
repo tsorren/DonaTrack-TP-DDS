@@ -30,14 +30,15 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
-| `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada) y `desde`/`hasta` (fecha de registro ISO, inclusivas). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
+| `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada) `desde`/`hasta` (fecha de registro ISO, inclusivas) y `necesidadId` (las que cubren esa necesidad, HB-18). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
-| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
-| `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
-| `GET` | `/api/necesidades/publicas` | **Ruta pública** (D26, HB-08): necesidades activas y no satisfechas con `NecesidadPublicaDTO` (sin datos internos); filtro opcional `entidadId` | — | `200` |
+| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja). **HB-18, incompatible:** una `EXTRAORDINARIA` exige `fechaLimite` futura y una `RECURRENTE` exige `periodicidad` (`SEMANAL`, `QUINCENAL`, `MENSUAL`); `fechaFin` deprecado como entrada | `NecesidadDTO` | `201`, `400`, `409` |
+| `GET` | `/api/necesidades` | Listado de necesidades (filtros `entidadId`, `tipo` y `estado`, uno o varios separados por coma). Sin `estado` devuelve todas, también las dadas de baja. La salida suma `estado`, `version`, `fechaLimite`, `periodicidad`, `unidad` y `ultimoCambio` (HB-18) | — | `200`, `400` |
+| `GET` | `/api/necesidades/publicas` | **Ruta pública** (D26, HB-08): necesidades activas, sin vencer (HB-18) y no satisfechas con `NecesidadPublicaDTO` (sin datos internos); filtro opcional `entidadId` | — | `200` |
 | `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
-| `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente | `NecesidadDTO` | `200`, `400`, `404` |
+| `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente. Con `version` distinta de la guardada responde `409`; en una recurrente la cantidad nueva vale para el período en curso (HB-18) | `NecesidadDTO` | `200`, `400`, `404`, `409` |
+| `GET` | `/api/necesidades/{id}/periodos` | Historia de períodos de una recurrente: inicio, fin, objetivo, asignado, recibido y resultado (`EN_CURSO`, `CUMPLIDO`, `INCOMPLETO`); vacía en una extraordinaria (HB-18) | — | `200`, `404` |
 | `DELETE` | `/api/necesidades/{id}` | Baja de necesidad registrada | — | `204`, `404` |
 | `POST` | `/api/asignaciones/ejecuciones` | Ejecución del algoritmo de asignación | — | `201`, `400` |
 | `GET` | `/api/asignaciones/ejecuciones` | Historial de ejecuciones de asignación | — | `200` |
@@ -60,7 +61,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/categorias/{id}` | Consulta de categoría por ID | — | `200`, `404` |
 | `PUT` | `/api/categorias/{id}` | Actualización de categoría existente | `CategoriaInputDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/categorias/{id}` | Baja de categoría (retorna entidad eliminada en el cuerpo) | — | `200`, `404` |
-| `POST` | `/api/subcategorias` | Alta de subcategoría | `SubcategoriaInputDTO` | `201`, `400` |
+| `POST` | `/api/subcategorias` | Alta de subcategoría (`unidad` opcional: sin ella hereda la de su categoría, HB-18) | `SubcategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/subcategorias` | Listado de subcategorías | — | `200` |
 | `GET` | `/api/subcategorias/{id}` | Consulta de subcategoría por ID | — | `200`, `404` |
 | `PUT` | `/api/subcategorias/{id}` | Actualización de subcategoría existente | `SubcategoriaInputDTO` | `200`, `400`, `404` |

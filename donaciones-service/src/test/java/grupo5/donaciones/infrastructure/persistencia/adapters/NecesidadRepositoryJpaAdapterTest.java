@@ -358,4 +358,40 @@ class NecesidadRepositoryJpaAdapterTest {
     assertEquals(30, acumulados.asignadoA(leida));
     assertFalse(acumulados.estaSatisfecha(leida));
   }
+
+  // ===================== HB-18 (V17) =====================
+
+  @Test
+  void guardarYLeer_extraordinaria_conservaFechaLimiteYUltimoCambio() {
+    NecesidadExtraordinaria original =
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
+    original.actualizar(null, 90);
+
+    repository.save(original);
+    NecesidadExtraordinaria leida =
+        (NecesidadExtraordinaria) repository.findById(original.getId()).orElseThrow();
+
+    assertEquals(NecesidadMother.FECHA_LIMITE, leida.getFechaLimite());
+    assertEquals(80, leida.getCantidadAnterior());
+    assertEquals(original.getFechaUltimoCambio(), leida.getFechaUltimoCambio());
+  }
+
+  @Test
+  void guardar_cambioDeCantidadEnUnaRecurrente_actualizaSoloElObjetivoDelPeriodoEnCurso() {
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 40);
+    original.generarNuevoPeriodo();
+    repository.save(original);
+    NecesidadRecurrente leida =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+
+    leida.actualizar(null, 45);
+    repository.save(leida);
+    NecesidadRecurrente releida =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+
+    assertEquals(
+        List.of(40, 45),
+        releida.getPeriodos().stream().map(PeriodoNecesidad::cantidadObjetivo).toList());
+    assertEquals(40, releida.getCantidadAnterior());
+  }
 }

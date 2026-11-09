@@ -21,7 +21,7 @@
 | # | Archivo | Requests | Servicio(s) | Descripción |
 |---|---------|----------|-------------|-------------|
 | 1 | `flujo-1-catalogo-personas.json` | 8 | donaciones (8080) | Crea Categoría → Subcategoría → Persona Humana (donante) → Donante → Persona Jurídica → Entidad Beneficiaria |
-| 2 | `flujo-2-necesidades.json` | 11 | donaciones (8080) | Crea Necesidad Extraordinaria y Recurrente; documenta bug conocido (RECURRENTE sin fechas → 500 en lugar de 400) |
+| 2 | `flujo-2-necesidades.json` | 11 | donaciones (8080) | Crea Necesidad Extraordinaria (con `fechaLimite`) y Recurrente (con `periodicidad`); una RECURRENTE sin `periodicidad` responde 400 (HB-18) |
 | 3 | `flujo-3-donacion-normalizacion-segmentacion.json` | 12 | donaciones (8080) | Normalización auto-semántica vs. resolución manual; normalización y segmentación son **asíncronas** |
 | 4 | `flujo-4-matching-asignacion-estados.json` | 30 | donaciones (8080) | Matching, aprobación de propuesta y **7 transiciones** completas de la máquina de estados de `DonacionIndependiente` |
 | 5 | `flujo-5-misiones-insignias-ranking.json` | 40 | incentivos (8082) | 6 misiones/insignias en orden obligatorio; progresión COLABORADOR → SOSTENEDOR → TRANSFORMADOR; IDs con `{{$guid}}` |
@@ -111,7 +111,7 @@ flujo-8  → requiere los 4 servicios corriendo simultáneamente
 
 ## Notas de comportamiento por servicio
 
-- **donaciones-service (8080):** errores de negocio devuelven `400` con body descriptivo. Bug documentado en flujo-2: `RECURRENTE` sin `fechaInicio`/`fechaFin` devuelve `500` (NPE no controlada). [OBSERVED]
+- **donaciones-service (8080):** errores de negocio devuelven `400` con body descriptivo. El flujo-2 documentaba que una `RECURRENTE` sin `fechaInicio`/`fechaFin` devolvía `500` (NPE no controlada); desde HB-18 sin `periodicidad` responde `400`. [OBSERVED]
 - **notificaciones-service (8081):** "recurso no encontrado" siempre es `400`, nunca `404`. [OBSERVED]
 - **incentivos-service (8082):** categoría inicial del donante es `COLABORADOR`; ascensos a `SOSTENEDOR` y `TRANSFORMADOR` se disparan por cumplimiento de misiones en orden estricto. [OBSERVED]
 - **logistica-service (8083):** Camión nace en estado `DISPONIBLE`. Estados camión: `DISPONIBLE | EN_RUTA | DESHABILITADO` [OBSERVED]. Estados entrega: `PENDIENTE | EN_TRASLADO | ENTREGADA | NO_RECIBIDA | REVISION` [OBSERVED].
