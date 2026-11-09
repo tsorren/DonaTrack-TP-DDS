@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!--/* Variante A de Asignar donaciones (recomendada; ronda 2026-11-09 tarde). Eje: bandeja y detalle.
+       Arriba, la búsqueda con los filtros al lado (debajo en el celular). A la izquierda, la cola de
+       donaciones En depósito, cada una con cuántas candidatas en común tiene; a la derecha, la elegida
+       (?donacion=<clave>, de partida la primera): primero las candidatas en común, con su puesto y su
+       porqué en cada algoritmo y "Asignar" (pide confirmación); debajo, cada ejecución completa,
+       plegada. Si no hubo coincidencias, lo dice y abre las ejecuciones, cada puesto con "Asignar".
+       Las ejecuciones van en una grilla: con más algoritmos, suman columnas o bajan de renglón.
+       Se ve con /admin-asignaciones?variante=asignaciones-a (&donacion=camperas para el caso sin
+       coincidencias; &accion=asignada; ?escenario=vacio|error). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{variantes/comun/asignaciones-datos :: datos(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla">
+<th:block th:with="pedida=${param.donacion != null ? param.donacion[0] : ''},
+                   d=${cola.^[clave == #root.pedida] ?: (#lists.isEmpty(cola) ? null : cola[0])}">
+  <div class="mesa" data-variante="asignaciones-a">
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Asignar donaciones</h1>
+        <p>Por cada donación en el depósito, cada algoritmo propone hasta 10 entidades. Primero ves las que
+          aparecen en todos los rankings; vos confirmás el destino.</p>
+        <p th:unless="${escenario == 'error'}"><small th:text="|Última ejecución: hoy, 9 de noviembre, 0:00 · ${#lists.size(donaciones)} donaciones esperan destino.|">Última
+          ejecución: hoy, 9 de noviembre, 0:00 · 4 donaciones esperan destino.</small></p>
+      </div>
+    </header>
+
+    <p th:replace="~{variantes/comun/asignaciones-datos :: aviso}"></p>
+    <th:block th:replace="~{variantes/comun/asignaciones-datos :: estados('asignaciones-a')}"></th:block>
+
+    <th:block th:unless="${#lists.isEmpty(donaciones)}">
+      <form th:replace="~{variantes/comun/asignaciones-datos :: buscar('asignaciones-a')}"></form>
+
+      <div class="barra-lateral" data-forma="detalle">
+        <nav class="pila" data-espacio="2" aria-labelledby="cola-titulo">
+          <h2 id="cola-titulo" th:text="${filtrado} ? |En depósito · coinciden ${#lists.size(cola)} de ${#lists.size(donaciones)}| : |En depósito · ${#lists.size(cola)}|">En
+            depósito · 4</h2>
+          <p th:if="${#lists.isEmpty(cola)}">Ninguna donación coincide con lo que buscaste.</p>
+          <ul class="lista" data-lista="cola" role="list">
+            <li th:each="x : ${cola}">
+              <a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', donacion=${x.clave}, buscar=${param.buscar}, categoria=${param.categoria}, antiguedad=${param.antiguedad}, cruce=${param.cruce})} + '#donacion'"
+                 th:aria-current="${d != null and x.clave == d.clave} ? 'true' : null">
+                <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                    th:href="|#cat-${x.cat}|" href="#cat-alimentos"/></svg>
+                <span><b th:text="|${x.dona}, ${x.cuanto}|">Arroz, 25 kg</b>
+                  <small th:text="|${x.dias} días en el depósito|">7 días en el depósito</small>
+                <span th:data-cuenta="${x.comunes.isEmpty()} ? 'sin' : 'con'"
+                      th:text="${x.comunes.isEmpty()} ? 'Sin coincidencias' : (${#lists.size(x.comunes) == 1} ? '1 en común' : |${#lists.size(x.comunes)} en común|)">3
+                  en común</span></span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <section id="donacion" class="tarjeta pila" data-espacio="4" tabindex="-1" aria-labelledby="donacion-titulo">
+          <th:block th:if="${d != null}">
+            <div class="racimo" data-espacio="3">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                  th:href="|#cat-${d.cat}|" href="#cat-alimentos"/></svg>
+              <div>
+                <p><span class="estado" data-estado="pendiente"><svg
+                    th:replace="~{componentes/sello :: sello('pendiente')}"></svg>En depósito</span></p>
+                <h2 id="donacion-titulo" th:text="|${d.dona}, ${d.cuanto}|">Arroz, 25 kg</h2>
+                <p th:text="|${d.categoria} · de ${d.donante} · en el ${d.deposito} desde el ${d.desde} (${d.dias} días)|">Alimentos
+                  · de Ana Ejemplo · en el Depósito Central desde el 2 de noviembre (7 días)</p>
+              </div>
+            </div>
+
+            <!--/* Las candidatas en común. */-->
+            <section th:unless="${d.comunes.isEmpty()}" class="pila" data-espacio="2" aria-labelledby="comunes-titulo">
+              <h3 id="comunes-titulo" th:text="${#lists.size(d.comunes) == 1} ? 'Candidata en común · 1' : |Candidatas en común · ${#lists.size(d.comunes)}|">Candidatas
+                en común · 3</h3>
+              <p><small th:text="|Aparecen en los ${#lists.size(d.ejecuciones)} rankings. Elegí a cuál va.|">Aparecen
+                en los 2 rankings. Elegí a cuál va.</small></p>
+              <ul class="lista pila" data-espacio="2" data-lista="candidatas" role="list">
+                <li th:each="ck : ${d.comunes}"
+                    th:with="p=${d.ejecuciones[0].puestos.^[k == #root.ck]}">
+                  <div>
+                    <p><b th:text="${p.e}">Comedor Ejemplo Oeste</b> <small th:text="${p.tipo}">Comedor</small></p>
+                    <ul th:replace="~{variantes/comun/asignaciones-datos :: posiciones(${d}, ${ck})}"></ul>
+                  </div>
+                  <th:block th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |a-${d.clave}-${ck}|)}"></th:block>
+                </li>
+              </ul>
+            </section>
+
+            <section th:if="${d.comunes.isEmpty()}" class="banner" aria-labelledby="sin-titulo">
+              <h3 id="sin-titulo">Ninguna entidad aparece en los dos rankings.</h3>
+              <p>Te mostramos las dos ejecuciones completas: elegí el destino en cualquiera de ellas.</p>
+            </section>
+
+            <!--/* Cada ejecución completa: plegada si hay candidatas en común. */-->
+            <details class="pila" data-espacio="3" data-forma="ejecuciones" th:open="${d.comunes.isEmpty()}">
+              <summary th:text="|Ver cada ejecución (${#lists.size(d.ejecuciones)})|">Ver cada ejecución (2)</summary>
+              <div class="grilla" data-espacio="3">
+                <section th:each="ej, i : ${d.ejecuciones}" class="pila" data-espacio="2"
+                         th:aria-labelledby="|ej-${i.index}|"
+                         th:with="alg=${algoritmos.^[nombre == #root.ej.nombre]}">
+                  <h4 th:id="|ej-${i.index}|" th:text="${ej.nombre}">Compatibilidad semántica</h4>
+                  <p><small th:text="${alg.criterio}">Qué tanto coincide lo donado con lo que pide cada entidad.</small></p>
+                  <ol class="lista" data-lista="ranking" role="list">
+                    <li th:each="p : ${ej.puestos}" th:attr="data-comun=${#lists.contains(d.comunes, p.k)} ? 'si' : null">
+                      <b th:text="|${p.n}.º|">1.º</b>
+                      <span><span th:text="${p.e}">Comedor Barrio Ejemplo</span>
+                        <small th:text="${p.por}">Pide arroz, 30 kg, para el almuerzo</small>
+                        <small th:if="${#lists.contains(d.comunes, p.k)}"><b>En común</b></small></span>
+                      <th:block th:if="${d.comunes.isEmpty()}"><th:block
+                          th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |a-${d.clave}-${i.index}-${p.k}|)}"></th:block></th:block>
+                    </li>
+                  </ol>
+                </section>
+              </div>
+            </details>
+          </th:block>
+          <p th:if="${d == null}" id="donacion-titulo">Elegí otra búsqueda o sacá los filtros para ver las donaciones.</p>
+        </section>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+</th:block>
+</body>
+</html>

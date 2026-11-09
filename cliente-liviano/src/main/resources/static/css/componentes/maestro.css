@@ -1,0 +1,116 @@
+/* Bloque maestro (ronda del 2026-11-09, tarde): una lista para elegir de a un elemento y su ficha
+   (Material: List-detail). `ul.maestro` con un `li` por elemento y, en él, el enlace real que lo
+   elige (`a`, con `aria-current="true"` el elegido); la ficha (`.maestro-ficha`) va dentro del `li`
+   elegido, después del enlace. En el celular queda justo debajo del ítem que se eligió; desde
+   53,75 em, a la derecha de la lista, arriba. El elegido se marca con el papel claro, la sombra suave
+   y un indicador redondeado a la izquierda: sin borde ni anillo verde. Se carga en la capa `bloques`
+   desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.maestro {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.maestro > li > a {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--espacio-2);
+  align-items: center;
+  min-height: 3.5rem;
+  margin-block-end: var(--espacio-1);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-boton);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+.maestro > li > a:hover {
+  background: var(--color-acento-claro);
+}
+
+.maestro > li > a[aria-current] {
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+.maestro > li > a[aria-current]::before {
+  content: "";
+  position: absolute;
+  top: var(--espacio-2);
+  bottom: var(--espacio-2);
+  left: 0.375rem;
+  width: 0.25rem;
+  border-radius: 999px;
+  background: var(--color-tinta);
+}
+
+.maestro > li > a > span:not(.estado) {
+  display: grid;
+}
+
+.maestro small {
+  color: var(--color-tinta-suave);
+}
+
+/* El pictograma, centrado en su caja redondeada. */
+:is(.maestro, .maestro-ficha) .categoria-icono {
+  display: block;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  fill: var(--color-acento);
+}
+
+.maestro-ficha .categoria-icono[data-tamano="grande"] {
+  width: 4rem;
+  height: 4rem;
+  padding: 0.5rem;
+}
+
+.maestro-ficha {
+  --espacio-relleno: var(--espacio-3);
+  margin-block: 0 var(--espacio-3);
+}
+
+.maestro-ficha :is(h2, h3, p, dd) {
+  margin: 0;
+}
+
+.maestro-ficha dt {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* Desde la tableta: la lista a la izquierda y la ficha a la derecha. El `li` elegido se disuelve
+   (display: contents) para que su enlace siga en la lista y su ficha ocupe la otra columna, de arriba
+   abajo: la última fila (1fr) toma lo que la ficha mide de más, sin separar los renglones. */
+@media (min-width: 53.75em) {
+  .maestro {
+    grid-template-columns: minmax(18rem, 27rem) minmax(0, 1fr);
+    grid-template-rows: repeat(40, auto) 1fr;
+    column-gap: var(--espacio-4);
+    align-items: start;
+  }
+
+  .maestro > li,
+  .maestro > li > a {
+    grid-column: 1;
+  }
+
+  .maestro > li:has(> .maestro-ficha) {
+    display: contents;
+  }
+
+  .maestro-ficha {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    --espacio-relleno: var(--espacio-4);
+    margin: 0;
+  }
+}

@@ -194,6 +194,9 @@
               <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block>Entregada</span>
               <span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span>
               <span class="estado" data-estado="puerta"><th:block th:replace="~{componentes/sello :: sello('puerta')}"></th:block>En tu puerta</span>
+              <span class="estado" data-forma="punto" data-estado="recibida">Activa (data-forma="punto")</span>
+              <span class="estado" data-forma="punto" data-estado="pendiente">Pendiente</span>
+              <span class="estado" data-forma="punto" data-estado="inactiva">Inactiva</span>
             </div>
           </th:block>
         </div>
@@ -358,9 +361,16 @@
             </details>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.filtros', 'Una fila de filtros como la de LinkedIn: cada filtro con opciones es una pastilla que abre su menú (componentes/filtros :: menu) y uno de sí o no es una pastilla que se prende (componentes/filtros :: interruptor). Con un filtro elegido, la pastilla va llena de verde y dice lo elegido; .filtros-sacar los saca todos.', ~{::demo-filtros})}">
+        <div th:replace="~{componentes/muestra :: muestra('.filtros', 'Una fila de filtros como la de LinkedIn: cada filtro con opciones es una pastilla que abre su menú (componentes/filtros :: menu) y uno de sí o no es una pastilla que se prende (componentes/filtros :: interruptor). Con un filtro elegido, la pastilla va llena de verde y dice lo elegido; .filtros-sacar los saca todos. Con búsqueda, el formulario es la barra (form.filtros-barra): .filtro-buscar con su .filtro-buscar-fila (el campo y Buscar) y, al lado en pantalla ancha o debajo en el celular, los filtros.', ~{::demo-filtros})}">
           <th:block th:fragment="demo-filtros">
-            <form action="/estilos" th:action="@{/estilos}" method="get">
+            <form class="filtros-barra" action="/estilos" th:action="@{/estilos}" method="get" role="search">
+              <div class="campo filtro-buscar">
+                <label for="muestra-buscar">Buscar por nombre</label>
+                <div class="filtro-buscar-fila">
+                  <input id="muestra-buscar" name="muestra-buscar" type="search" placeholder="Por ejemplo: comedor">
+                  <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+                </div>
+              </div>
               <div class="filtros" role="group" aria-label="Filtros de muestra">
                 <details th:replace="~{componentes/filtros :: menu('muestra-categoria', 'Categoría', 'ropa', ${ {
                     {valor: '', texto: 'Todas las categorías'}, {valor: 'ropa', texto: 'Ropa'}, {valor: 'muebles', texto: 'Muebles'} } })}"></details>
@@ -591,6 +601,80 @@
           <th:block th:fragment="demo-progreso">
             <progress class="progreso" max="50" value="12" aria-label="Ejemplo: 12 de 50 bienes"></progress>
             <p>12 de 50 bienes</p>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.almanaque', 'Un año mes a mes, para la persona que dona. El mes con donaciones (data-mes=&quot;con&quot;) es un enlace a su lista, con la cuenta y una planta por donación; el mes sin donaciones (sin) y el que viene (por-venir) se ven neutros, nunca como falta. El mes actual lleva data-hoy y la marca Este mes.', ~{::demo-almanaque})}">
+          <th:block th:fragment="demo-almanaque">
+            <ol class="almanaque" role="list" aria-label="Ejemplo: donaciones por mes">
+              <li data-mes="sin"><div><b>Julio</b><span class="solo-lectores">Sin donaciones</span></div></li>
+              <li data-mes="con"><a href="#componentes"><b>Agosto</b><span>1 donación</span>
+                <span data-plantas aria-hidden="true"><img src="/img/ilustraciones/planta-naranjo.svg"
+                  th:src="@{/img/ilustraciones/planta-naranjo.svg}" alt="" width="24" height="52"></span></a></li>
+              <li data-mes="con" data-hoy="si"><a href="#componentes"><b>Septiembre</b><small data-hoy>Este mes</small><span>2 donaciones</span>
+                <span data-plantas aria-hidden="true"><img src="/img/ilustraciones/paso-3-brote.svg"
+                  th:src="@{/img/ilustraciones/paso-3-brote.svg}" alt="" width="24" height="52"><img
+                  src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}" alt=""
+                  width="24" height="52"></span></a></li>
+              <li data-mes="por-venir"><div><b>Octubre</b><span class="solo-lectores">Todavía no llegó</span></div></li>
+            </ol>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.plegable', 'Una tarjeta que se despliega en el lugar (details nativo, sin JavaScript): plegada, el título, lo que la pantalla quiera mostrar y «Ver …»; desplegada, el cuerpo debajo. Abierta no lleva borde verde: la flecha sube.', ~{::demo-plegable})}">
+          <th:block th:fragment="demo-plegable">
+            <details class="plegable">
+              <summary>
+                <span class="plegable-titulo"><b>Comedor de ejemplo</b><span>Comedor · Barrio de ejemplo</span></span>
+                <span class="plegable-ver">Ver los 2 pedidos</span>
+              </summary>
+              <div class="plegable-cuerpo">
+                <p>Lentejas secas: faltan 30 de 40 kg este mes.</p>
+                <p>Arroz: faltan 25 de 40 kg este mes.</p>
+              </div>
+            </details>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.chip', 'Una pastilla chica que nombra algo, con el ícono de su categoría adelante. No es un botón ni un filtro. Con data-tono=&quot;emergencia&quot;, en los colores del problema y sin ícono.', ~{::demo-chip})}">
+          <th:block th:fragment="demo-chip">
+            <p class="racimo" data-espacio="1">
+              <span class="chip"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                  href="#cat-alimentos"/></svg>Alimentos</span>
+              <span class="chip"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                  href="#cat-ropa"/></svg>Ropa</span>
+              <span class="chip" data-tono="emergencia">Emergencia</span>
+            </p>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.segmentos', 'Un selector de pocas vistas de la misma lista: enlaces reales, la que se ve con aria-current=&quot;page&quot;, una pastilla de papel sin borde verde. En el celular ocupa el ancho.', ~{::demo-segmentos})}">
+          <th:block th:fragment="demo-segmentos">
+            <nav class="segmentos" aria-label="Qué entidades ver (muestra)">
+              <a href="/estilos" th:href="@{/estilos}" aria-current="page">Activas · 46</a>
+              <a href="/estilos" th:href="@{/estilos}">Pendientes · 3</a>
+              <a href="/estilos" th:href="@{/estilos}">Inactivas · 3</a>
+            </nav>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.maestro', 'Una lista para elegir de a uno y su ficha (.maestro-ficha), dentro del renglón elegido: en el celular, justo debajo; desde la tableta, a la derecha. El elegido, con papel claro, sombra suave y un indicador redondeado a la izquierda, sin borde verde.', ~{::demo-maestro})}">
+          <th:block th:fragment="demo-maestro">
+            <ul class="maestro" role="list">
+              <li>
+                <a href="/estilos" th:href="@{/estilos}" aria-current="true">
+                  <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
+                  <span><b>Comedor Barrio Ejemplo</b> <small>4 pedidos vigentes</small></span>
+                  <span class="estado" data-forma="punto" data-estado="recibida">Activa</span>
+                </a>
+                <section class="tarjeta pila maestro-ficha" data-espacio="2" aria-labelledby="muestra-ficha">
+                  <h3 id="muestra-ficha">Comedor Barrio Ejemplo</h3>
+                  <p>La ficha del elegido.</p>
+                </section>
+              </li>
+              <li>
+                <a href="/estilos" th:href="@{/estilos}">
+                  <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-ropa"/></svg>
+                  <span><b>Hogar Casa Ejemplo</b> <small>1 pedido vigente</small></span>
+                  <span class="estado" data-forma="punto" data-estado="recibida">Activa</span>
+                </a>
+              </li>
+            </ul>
           </th:block>
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">

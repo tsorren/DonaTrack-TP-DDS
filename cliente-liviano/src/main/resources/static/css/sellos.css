@@ -72,7 +72,10 @@
   stroke-width: 3;
 }
 
-/* El pictograma de categoría, impreso en un cuadro salvia, como en el cuaderno de la portada. */
+/* El pictograma de categoría, impreso en un cuadro salvia, como en el cuaderno de la portada. Con
+   aire alrededor (viewBox="-14 -14 128 128"), el `use` lleva width="100" height="100": sin eso, el
+   símbolo ocupa el 100 % del viewBox desde el 0 y queda corrido abajo y a la derecha (2026-11-09,
+   tarde: íconos centrados en su caja). */
 .categoria-icono {
   width: 1.75rem;
   height: 1.75rem;

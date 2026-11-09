@@ -1,169 +1,77 @@
-/* Prueba A/B/C de Entidades, opción B: la lista compacta por tipo de entidad, con chips de categoría.
-   Solo disposición y los chips (con tokens). Se borra al decidir. */
-[data-v="entidades-grupos"] {
+/* Prueba A/B de Entidades (tarde del 2026-11-09), opción B: plegado, la barra como pie de la tarjeta,
+   en un tramo por pedido; desplegado, el pie se va y los pedidos van en filas compactas (qué, su barra
+   y lo que falta). Solo disposición, con tokens. Se borra al decidir. */
+[data-v="entidades-b-pie"] {
+  grid-column: 1 / -1;
   display: grid;
-  gap: 2rem;
-}
-
-[data-v="entidades-grupo"] {
-  display: grid;
-  gap: 0.75rem;
-}
-
-[data-v="entidades-grupo-titulo"] {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 0.75rem;
-  margin: 0;
-  font-size: 1.375rem;
-}
-
-[data-v="entidades-grupo-titulo"] span {
+  gap: 0.375rem;
+  margin: var(--espacio-1) calc(-1 * var(--espacio-3)) calc(-1 * var(--espacio-3));
+  padding: var(--espacio-2) var(--espacio-3);
+  border-top: 1px solid var(--color-filete);
+  border-radius: 0 0 var(--radio-lamina) var(--radio-lamina);
+  background: var(--color-papel);
   color: var(--color-tinta-suave);
-  font: 700 0.9375rem var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
 }
 
-[data-v="entidades-renglones"] {
-  display: grid;
-  gap: 0.625rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+[data-v="entidades-b-tramos"] {
+  display: flex;
+  gap: 0.25rem;
 }
 
-[data-v="entidades-renglon"] {
-  border: 1px solid var(--color-filete);
-  border-radius: var(--radio-lamina);
-  background: var(--color-superficie);
+[data-v="entidades-b-tramos"] .progreso {
+  flex: 1;
+  height: 0.5rem;
+  border-width: 1px;
 }
 
-[data-v="entidades-renglon"]:has(summary:hover) {
-  border-color: var(--color-tinta);
-}
-
-[data-v="entidades-renglon-pliegue"] > summary {
-  display: grid;
-  gap: 0.625rem 1.25rem;
-  align-items: center;
-  min-height: 3rem;
-  padding: 0.875rem 1rem;
-  border-radius: var(--radio-lamina);
-  cursor: pointer;
-  list-style: none;
-}
-
-[data-v="entidades-renglon-pliegue"] > summary::-webkit-details-marker {
+.plegable[open] [data-v="entidades-b-pie"] {
   display: none;
 }
 
-[data-v="entidades-renglon-pliegue"] > summary:focus-visible {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 2px;
-}
-
-[data-v="entidades-renglon-nombre"] {
+/* Desplegado: una fila por pedido. En el celular, el ícono y, al lado, qué y cuánto, uno sobre otro;
+   en ancho, en columnas, como una tabla. */
+[data-v="entidades-b-filas"] {
   display: grid;
-  gap: 0.125rem;
-}
-
-[data-v="entidades-renglon-nombre"] b {
-  color: var(--color-tinta);
-  font: 850 1.125rem/1.2 var(--fuente-titulo);
-}
-
-[data-v="entidades-renglon-nombre"] span {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
-}
-
-[data-v="entidades-chips"] {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-[data-v="entidades-chip"] {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.75rem 0.25rem 0.5rem;
-  border-radius: 999px;
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-[data-v="entidades-chip"] svg {
-  width: 1.25rem;
-  height: 1.25rem;
-  fill: currentcolor;
-}
-
-[data-v="entidades-chip"][data-tono="emergencia"] {
-  padding-left: 0.75rem;
-  background: var(--color-problema-fondo);
-  color: var(--color-problema-texto);
-}
-
-/* Lo que se despliega: la flecha dice si está abierto. */
-[data-v="entidades-renglon-cuenta"] {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-acento);
-  font-weight: 700;
-}
-
-[data-v="entidades-renglon-cuenta"]::after {
-  content: "";
-  width: 0.5rem;
-  height: 0.5rem;
-  border-right: 2.5px solid currentcolor;
-  border-bottom: 2.5px solid currentcolor;
-  rotate: 45deg;
-  translate: 0 -0.15rem;
-}
-
-[data-v="entidades-renglon-pliegue"][open] [data-v="entidades-renglon-cuenta"]::after {
-  rotate: 225deg;
-  translate: 0 0.15rem;
-}
-
-[data-v="entidades-renglon-pedidos"] {
-  display: grid;
-  gap: 0.75rem;
   margin: 0;
-  padding: 0.25rem 1rem 1rem;
+  padding: 0;
+  border-top: 1px solid var(--color-filete);
   list-style: none;
 }
 
-[data-v="entidades-renglon-pedidos"] > li {
+[data-v="entidades-b-filas"] > li {
   display: grid;
   grid-template-columns: 1.75rem minmax(0, 1fr);
-  gap: 0 0.625rem;
+  gap: var(--espacio-1) 0.625rem;
+  padding: var(--espacio-2) 0;
+  border-bottom: 1px solid var(--color-filete);
 }
 
-[data-v="entidades-renglon-pedidos"] .categoria-icono {
-  grid-row: span 2;
+[data-v="entidades-b-que"],
+[data-v="entidades-b-cuanto"] {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  grid-column: 2;
 }
 
-[data-v="entidades-renglon-pedidos"] p {
-  margin: 0;
+[data-v="entidades-b-filas"] .categoria-icono {
+  grid-row: 1;
 }
 
-[data-v="entidades-renglon-porque"] {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
-}
-
-[data-v="entidades-renglon-pliegue"] > .boton {
-  margin: 0 1rem 1rem;
+[data-v="entidades-b-que"] {
+  grid-row: 1;
 }
 
 @media (min-width: 53.75em) {
-  [data-v="entidades-renglon-pliegue"] > summary {
-    grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.4fr) auto;
+  [data-v="entidades-b-filas"] > li {
+    grid-template-columns: 1.75rem minmax(0, 1.3fr) minmax(14rem, 1fr);
+    column-gap: 1.25rem;
+  }
+
+  [data-v="entidades-b-cuanto"] {
+    grid-column: 3;
+    grid-row: 1;
   }
 }

@@ -1,0 +1,63 @@
+/* Variante B de Asignar donaciones (ronda 2026-11-09 tarde): una tarjeta por donación con las
+   candidatas en común en línea y la tabla de posiciones por algoritmo. Solo tokens de uso. Se borra
+   al decidir. */
+@import url("comun/asignaciones.css");
+
+[data-variante="asignaciones-b"] .tarjeta {
+  --espacio-relleno: var(--espacio-4);
+}
+
+[data-variante="asignaciones-b"] [data-forma="cabeza"] > div {
+  flex: 1 1 14rem;
+}
+
+[data-variante="asignaciones-b"] h2 {
+  font-size: var(--tamano-grande);
+}
+
+[data-variante="asignaciones-b"] h3 {
+  font-size: var(--tamano-base);
+}
+
+/* Las candidatas en común: fichas redondeadas que bajan de renglón, cada una con su "Asignar". */
+[data-variante="asignaciones-b"] [data-lista="en-linea"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+[data-variante="asignaciones-b"] [data-lista="en-linea"] > li {
+  display: flex;
+  flex: 1 1 18rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-entregada-fondo);
+}
+
+[data-variante="asignaciones-b"] [data-lista="en-linea"] > li > span,
+[data-variante="asignaciones-b"] .tabla td > span {
+  display: grid;
+  min-width: 0;
+}
+
+/* La tabla de posiciones: las que están en todos los rankings, con fondo. */
+[data-variante="asignaciones-b"] .tabla td[data-comun] {
+  background: var(--color-entregada-fondo);
+}
+
+[data-variante="asignaciones-b"] .tabla td .boton {
+  margin-top: var(--espacio-1);
+}
+
+@media (min-width: 53.75em) {
+  [data-variante="asignaciones-b"] .tabla td[data-comun] {
+    border-radius: var(--radio-boton);
+  }
+
+  [data-variante="asignaciones-b"] .tabla tbody th {
+    width: 4rem;
+  }
+}

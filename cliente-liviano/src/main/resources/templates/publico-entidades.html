@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!--/* Raíces, sitio A: Entidades (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.3). Las
-       etiquetas de herbario de la portada, tal cual (el sello con el ícono de lo que pide, el tipo,
-       el nombre y lo que pide), colgadas de la espina en espejo del celular de la portada: un tronco
-       paja en la tierra y las entidades de a una a cada lado, cada una con su rama y su cruce. Más de
-       3 pedidos: los demás, plegados. Sin datos de contacto ni dirección (RF-22, D24) y sin un botón
-       por entidad: la asignación la decide DonaTrack (RF-17). Estados: ?q= (búsqueda),
-       ?categoria=, los dos juntos (?q=biblioteca&categoria=alimentos, sin resultados),
+<!--/* Raíces, sitio A: Entidades (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.3). Desde la
+       ronda del 2026-11-09 (tarde), la lista compacta de la prueba (la «b»), agrupada por tipo de
+       entidad: un renglón plegable por entidad (.plegable) con el nombre, el tipo y el barrio, las
+       categorías que pide (.chip) y, desplegado, cada pedido con su barra redondeada de lo que ya
+       llegó (.progreso, la de la «a») y, en palabras, lo que falta. Sin datos de contacto ni dirección
+       (RF-22, D24) y sin un botón por entidad: la asignación la decide DonaTrack (RF-17). Estados: ?q=
+       (búsqueda), ?categoria=, los dos juntos (?q=biblioteca&categoria=alimentos, sin resultados),
        ?escenario=vacio, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
@@ -51,7 +51,7 @@
       </div>
     </header>
 
-    <form th:if="${escenario == ''}" class="filtro filtro--buscar" action="/publico-entidades"
+    <form th:if="${escenario == ''}" class="filtros-barra" action="/publico-entidades"
           th:action="@{/publico-entidades}" method="get" role="search" data-al-cambiar>
       <div class="campo filtro-buscar">
         <label for="q">Buscar por nombre</label>
@@ -113,17 +113,15 @@
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando" role="status">Cargando las entidades…</p>
-      <div class="herbario tierra-impresa" aria-busy="true">
-        <ul class="herbario-lista" role="list">
-          <li th:each="i : ${#numbers.sequence(1, 4)}" class="esqueleto etiqueta-entidad"></li>
-        </ul>
-      </div>
+      <ul class="pila" data-espacio="2" role="list" aria-busy="true">
+        <li th:each="i : ${#numbers.sequence(1, 4)}" class="esqueleto"></li>
+      </ul>
     </th:block>
 
-    <!--/* La vista de las entidades: el herbario, o la de una prueba A/B/C (ronda del 2026-11-09:
-           templates/variantes/entidades-a|b|c.html la pasan en vistaEntidades y reusan el resto). */-->
+    <!--/* La vista de las entidades: la lista por tipo, o la de una prueba A/B (ronda del 2026-11-09,
+           tarde: templates/variantes/entidades-a|b.html la pasan en vistaEntidades y reusan el resto). */-->
     <th:block th:if="${escenario == '' and n > 0}">
-      <th:block th:if="${vistaEntidades == null}"><div th:replace="~{publico-entidades :: herbario}"></div></th:block>
+      <th:block th:if="${vistaEntidades == null}"><div th:replace="~{publico-entidades :: grupos}"></div></th:block>
       <th:block th:unless="${vistaEntidades == null}"><div th:replace="${vistaEntidades}"></div></th:block>
     </th:block>
 
@@ -139,51 +137,77 @@
 </th:block>
 </th:block>
 
-<!--/* El herbario (la vista de siempre): un tronco paja en la tierra; cada entidad cuelga de su rama. */-->
-    <div th:fragment="herbario" class="herbario tierra-impresa">
-      <ul class="herbario-lista" role="list">
-        <li th:each="e : ${visibles}" class="etiqueta-entidad"
-            th:with="pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
-                     total=${#lists.size(pedidos)}">
-          <article th:attr="aria-labelledby=${'entidad-' + e.clave}">
-            <svg class="etiqueta-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle
-                class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><use
-                href="#cat-alimentos" th:href="${'#cat-' + (categoria == '' ? e.cat : categoria)}" x="4" y="4"
-                width="34" height="34"/></svg>
-            <p class="etiqueta-tipo" th:text="${e.tipo}">Comedor</p>
-            <h2 th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>
-            <p class="etiqueta-barrio" th:text="${e.barrio}">Barrio Ejemplo</p>
-            <h3 class="etiqueta-pide">Pide</h3>
+<!--/* La lista por tipo de entidad: un renglón plegable por entidad. Plegado, el nombre, las
+       categorías que pide y cuántos pedidos tiene; desplegado, cada pedido con su barra. Los grupos y
+       el filtro de los pedidos los usan también las variantes (fragmentos grupos-de y pedidos-de). */-->
+<div th:fragment="grupos" class="pila" data-espacio="5"
+     th:with="grupos=${ {
+       {titulo: 'Comedores y merenderos', tipos: {'Comedor', 'Merendero'}},
+       {titulo: 'Escuelas y bibliotecas', tipos: {'Escuela', 'Biblioteca'}},
+       {titulo: 'Hogares', tipos: {'Hogar'}},
+       {titulo: 'Clubes', tipos: {'Club'}} } }">
+  <th:block th:each="g, vuelta : ${grupos}" th:with="suyas=${visibles.?[#lists.contains(#root.g.tipos, tipo)]}">
+  <section th:unless="${suyas.isEmpty()}" class="pila" data-espacio="2" th:attr="aria-labelledby=${'grupo-' + vuelta.count}">
+    <h2 th:id="${'grupo-' + vuelta.count}" class="racimo">
+      <th:block th:text="${g.titulo}">Comedores y merenderos</th:block>
+      <span class="texto-chico" data-tono="suave"
+            th:text="${#lists.size(suyas) == 1 ? '1 entidad' : #lists.size(suyas) + ' entidades'}">2 entidades</span></h2>
+    <ul class="pila" data-espacio="1" role="list">
+      <li th:each="e : ${suyas}"
+          th:with="pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
+                   total=${#lists.size(pedidos)}">
+        <details class="plegable">
+          <summary>
+            <span class="plegable-titulo">
+              <b th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
+              <span th:text="|${e.tipo} · ${e.barrio}|">Comedor · Barrio Ejemplo</span>
+            </span>
+            <span th:replace="~{publico-entidades :: chips(${pedidos})}"></span>
+            <span class="plegable-ver"
+                  th:text="${total == 1 ? 'Ver el pedido' : 'Ver los ' + total + ' pedidos'}">Ver los 5 pedidos</span>
+          </summary>
+          <div class="plegable-cuerpo">
             <ul class="pedidos" role="list">
-              <li th:each="p : ${pedidos}" th:if="${pStat.count <= 3}"
-><th:block th:replace="~{:: pedido(${p})}"></th:block></li>
+              <li th:each="p : ${pedidos}"><th:block th:replace="~{publico-entidades :: pedido(${p})}"></th:block></li>
             </ul>
-            <details th:if="${total > 3}" class="pedidos-mas">
-              <summary><span class="pedidos-ver" th:text="|Ver los ${total} pedidos|">Ver los 5 pedidos</span><span
-                  class="pedidos-menos">Ver menos</span></summary>
-              <ul class="pedidos" role="list">
-                <li th:each="p : ${pedidos}" th:if="${pStat.count > 3}"><th:block th:replace="~{:: pedido(${p})}"></th:block></li>
-              </ul>
-            </details>
             <a th:if="${e.numero != null}" class="boton" data-tamano="chico" href="/publico-mapa#entidad-comedor"
                th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
                th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
-          </article>
-        </li>
-      </ul>
-    </div>
+          </div>
+        </details>
+      </li>
+    </ul>
+  </section>
+  </th:block>
+</div>
 
+<!--/* Las categorías que pide una entidad, como chips con su ícono, y «Emergencia» si tiene una. */-->
+<span th:fragment="chips(pedidos)" class="racimo" data-espacio="1"
+      th:with="cats=${#lists.toList(#sets.toSet(pedidos.![cat]))}">
+  <span th:each="c : ${categorias}" th:if="${#lists.contains(cats, c.clave)}" class="chip"><svg
+      viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"
+      th:href="${'#cat-' + c.clave}"/></svg><th:block th:text="${c.texto}">Alimentos</th:block></span>
+  <span th:unless="${pedidos.?[emergencia].isEmpty()}" class="chip" data-tono="emergencia">Emergencia</span>
+</span>
 
-<!--/* Un pedido: qué, cuánto falta, hasta cuándo o si se repite, y por qué. Lo pendiente, pendiente:
-       "faltan", no "recibió". */-->
+<!--/* Un pedido: el ícono, qué es, la barra de lo que ya llegó y, en palabras, lo que falta, hasta
+       cuándo o si se repite, y por qué. Lo pendiente, pendiente: "faltan", no "recibió". Sin total, sin
+       barra: solo el texto. */-->
 <th:block th:fragment="pedido(p)">
   <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
-      href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
-  <p><b th:text="${p.que}">Lentejas secas</b> · <th:block th:text="${p.falta}">Faltan 30 de 40 kg este
-    mes</th:block> · <th:block th:text="${p.cuando}">Se repite cada mes</th:block></p>
-  <span th:if="${p.emergencia}" class="estado" data-estado="con-problema"><th:block
-      th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><span>Emergencia</span></span>
-  <p class="pedido-porque" th:text="|Por qué: ${p.porque}|">Por qué: para el almuerzo de lunes a viernes.</p>
+      width="100" height="100" href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
+  <div class="pila" data-espacio="1">
+    <p class="racimo" data-espacio="1"><b th:text="${p.que}">Lentejas secas</b>
+      <span th:if="${p.emergencia}" class="estado" data-estado="con-problema"><th:block
+          th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><span>Emergencia</span></span></p>
+    <progress th:if="${p.total != null}" class="progreso" max="40" value="10"
+              th:max="${p.total}" th:value="${p.total - p.faltan}"
+              th:aria-label="|${p.que}: ya llegó una parte; ${#strings.toLowerCase(p.falta)}|"
+              aria-label="Lentejas secas: ya llegó una parte; faltan 30 de 40 kg este mes"></progress>
+    <p><b th:text="${p.falta}">Faltan 30 de 40 kg este mes</b> · <th:block th:text="${p.cuando}">Se repite
+      cada mes</th:block></p>
+    <p class="pedido-porque" th:text="|Por qué: ${p.porque}|">Por qué: para el almuerzo de lunes a viernes.</p>
+  </div>
 </th:block>
 </body>
 </html>

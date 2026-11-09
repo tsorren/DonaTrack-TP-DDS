@@ -3,7 +3,66 @@
    uno de sí o no (`label.filtros-pildora.filtros-interruptor`) se prende. Con un filtro elegido
    (`data-activa="si"`), la pastilla va llena de verde. Los fragmentos están en
    templates/componentes/filtros.html. Se carga en la capa `bloques` desde app.css. Catálogo:
-   docs/interfaz/componentes.md. */
+   docs/interfaz/componentes.md.
+   La barra (`form.filtros-barra`, ronda del 2026-11-09, regla general 1): la búsqueda
+   (`.campo.filtro-buscar` con su `.filtro-buscar-fila`, el campo y "Buscar") y la fila de filtros
+   (`.filtros`) en un solo formulario get. En el celular, los filtros bajan debajo de la búsqueda;
+   desde 53,75 em van en la misma fila, a la derecha, centrados con el campo. */
+
+/* --- La barra: búsqueda y filtros ---------------------------------------------------------------- */
+.filtros-barra {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+
+.filtro-buscar {
+  min-width: 0;
+}
+
+/* El campo y "Buscar" en la misma fila, con el mismo alto. */
+.filtro-buscar-fila {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.filtro-buscar-fila input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.filtro-buscar-fila .boton {
+  flex: none;
+}
+
+@media (min-width: 53.75em) {
+  /* Abajo de todo: las pastillas y el campo miden 3 rem, así quedan centrados entre sí (el rótulo
+     de la búsqueda queda arriba, fuera de la fila). */
+  .filtros-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem 1.5rem;
+  }
+
+  .filtros-barra > .filtro-buscar {
+    flex: 1 1 20rem;
+    max-width: 34rem;
+  }
+
+  .filtros-barra > .filtros {
+    flex: 0 1 auto;
+  }
+
+  /* El menú de la última pastilla se abre hacia la izquierda: no se sale de la página. */
+  .filtros-barra .filtros-pildora:last-of-type .filtros-menu {
+    right: 0;
+    left: auto;
+  }
+}
 
 .filtros {
   display: flex;

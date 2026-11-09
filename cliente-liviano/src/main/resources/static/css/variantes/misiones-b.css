@@ -1,199 +1,202 @@
-/* Prueba A/B de Misiones (ronda del 2026-11-09), opción B: la huerta
-   (templates/variantes/misiones-b.html). La franja de las cuatro etapas sobre la tierra, los canteros
-   por categoría (el completo plegado, el actual abierto, el siguiente sin sembrar) y cada misión como
-   una planta parada sobre su porción de tierra. Solo tokens de uso. Se borra al decidir. */
+/* Prueba A/B de Misiones, segunda ronda del 2026-11-09 (tarde), opción B: el invernadero
+   (templates/variantes/misiones-b.html). El dibujo del invernadero de fondo y, encima, un lugar por
+   misión ubicado en su estante o en la mesada (posiciones en % del dibujo, 1000 x 640): la planta,
+   el brote o el lugar vacío con contorno punteado. Debajo (al costado en pantalla ancha), qué hay en
+   cada lugar y qué falta. Sin borde verde de selección. Solo tokens de uso. Se borra al decidir. */
 
-/* --- Las etapas, sobre la tierra ----------------------------------------------------------- */
-#huerta-etapas {
+#invernadero {
   display: grid;
-  gap: var(--espacio-3);
-  padding: var(--espacio-4);
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+#invernadero header {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+#invernadero :is(h2, h3, p) {
+  margin: 0;
+}
+
+#invernadero header p {
+  max-width: 46rem;
+}
+
+/* --- La escena -------------------------------------------------------------------------------- */
+#invernadero-escena {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1000 / 640;
   border-radius: var(--radio-lamina);
-  background: url("../../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo);
-  color: var(--color-texto-suelo);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
 }
 
-#huerta-etapas h2 {
-  margin: 0 0 var(--espacio-1);
-  color: inherit;
-  font: 850 clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) / 1 var(--fuente-titulo);
-  font-stretch: 120%;
-  letter-spacing: -0.02em;
+#invernadero-escena > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-#huerta-etapas p {
-  max-width: 42rem;
-  margin: 0;
-}
-
-#huerta-etapas ol {
+/* Cada lugar: una caja parada sobre su estante, con la planta apoyada abajo. */
+#invernadero-escena [data-lugar] {
+  position: absolute;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--espacio-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  place-items: end center;
+  width: 11%;
+  height: 27%;
+  translate: -50% 0;
 }
 
-#huerta-etapas li {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-2);
-  padding: var(--espacio-1) var(--espacio-2);
-  border-radius: var(--radio-boton);
-  background: var(--color-papel);
-  color: var(--color-tinta);
-  font-size: 0.875rem;
-  font-weight: 700;
+#invernadero-escena [data-lugar="1"] { left: 12.5%; bottom: 43.75%; }
+#invernadero-escena [data-lugar="2"] { left: 25.5%; bottom: 43.75%; }
+#invernadero-escena [data-lugar="3"] { left: 44%; bottom: 19%; }
+#invernadero-escena [data-lugar="4"] { left: 56%; bottom: 19%; }
+#invernadero-escena [data-lugar="5"] { left: 74.5%; bottom: 43.75%; }
+#invernadero-escena [data-lugar="6"] { left: 87.5%; bottom: 43.75%; }
+
+/* La mesada es más baja: sus plantas se apoyan sobre la tabla (y = 500 de 640). */
+#invernadero-escena :is([data-lugar="3"], [data-lugar="4"]) {
+  bottom: 21.9%;
 }
 
-#huerta-etapas li img {
-  width: 2rem;
-  height: 2.75rem;
+#invernadero-escena [data-lugar] img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  object-position: bottom center;
 }
 
-/* --- Los canteros ------------------------------------------------------------------------- */
-#misiones [data-cantero="completo"],
-#misiones [data-cantero="actual"] {
-  --espacio-relleno: var(--espacio-4);
+#invernadero-escena [data-estado="brote"] img {
+  top: 38%;
+  height: 62%;
 }
 
-#misiones [data-cantero] :is(h2, p) {
-  margin: 0;
+#invernadero-escena [data-estado="brote"] [data-chapa] {
+  top: 38%;
 }
 
-#misiones [data-cantero="actual"] > header {
+/* El lugar vacío: contorno punteado redondeado, con el número al centro. */
+#invernadero-escena [data-estado="vacio"] {
+  place-items: center;
+  border: 2px dashed var(--color-tinta-suave);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+  opacity: 0.85;
+}
+
+#invernadero-escena [data-chapa] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  translate: -30% -30%;
+}
+
+#invernadero-escena [data-estado="vacio"] [data-chapa] {
+  position: static;
+  translate: none;
+}
+
+[data-chapa] {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--color-destacado);
+  color: var(--color-tinta);
+  font: 850 0.9375rem/1 var(--fuente-titulo);
+}
+
+#invernadero-escena [data-estado="vacio"] [data-chapa],
+#invernadero-lista [data-estado="vacio"] [data-chapa] {
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
+}
+
+/* --- Qué hay en cada lugar -------------------------------------------------------------------- */
+#invernadero-lista :is(details, section) {
   display: grid;
-  gap: var(--espacio-1);
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-3);
+  border: 0;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
 }
 
-#misiones [data-cantero="actual"] > header p {
-  max-width: 42rem;
-}
-
-#misiones details[data-cantero] > summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--espacio-2) var(--espacio-3);
-  min-height: 3rem;
+#invernadero-lista summary {
+  display: grid;
+  gap: 0.125rem;
   cursor: pointer;
 }
 
-#misiones details[data-cantero] > summary > span:first-child {
+#invernadero-lista summary small,
+#invernadero-lista li small {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+#invernadero-lista h3 {
+  font-size: 1.125rem;
+}
+
+#invernadero-lista [data-estante="despues"] {
+  background: var(--color-papel);
+}
+
+#invernadero-lista ol {
   display: grid;
-  gap: var(--espacio-1);
-}
-
-[data-miniaturas] {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--espacio-1);
-  margin-inline-start: auto;
-  padding: 0 var(--espacio-2);
-  border-radius: 0 0 var(--radio-boton) var(--radio-boton);
-  box-shadow: inset 0 -0.5rem 0 var(--color-suelo);
-}
-
-[data-miniaturas] img {
-  width: auto;
-  height: 3.5rem;
-}
-
-/* El cantero sin sembrar: la tierra pareja, sin plantas. */
-#misiones [data-cantero="sin-sembrar"] {
-  display: grid;
-  gap: var(--espacio-1);
-  padding: var(--espacio-4);
-  border-radius: var(--radio-lamina);
-  background: url("../../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo-medio);
-  color: var(--color-texto-suelo);
-}
-
-#misiones [data-cantero="sin-sembrar"] h2 {
-  color: inherit;
-}
-
-/* --- Las plantas, cada una sobre su porción de tierra ------------------------------------- */
-#misiones [data-cantero] ul {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
-  gap: var(--espacio-4) var(--espacio-3);
-  margin: var(--espacio-3) 0 0;
+  gap: var(--espacio-2);
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-[data-etapa] article {
+#invernadero-lista li {
   display: grid;
-  align-content: start;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--espacio-2);
-  height: 100%;
-  padding-bottom: var(--espacio-3);
-  border-radius: var(--radio-boton);
-}
-
-[data-etapa] :is(h3, p) {
+  align-items: start;
   margin: 0;
-  padding-inline: var(--espacio-3);
 }
 
-[data-etapa] .progreso {
-  width: auto;
-  margin-inline: var(--espacio-3);
-}
-
-[data-etapa] h3 {
-  font: 850 1.125rem/1.1 var(--fuente-titulo);
-  font-stretch: 115%;
-}
-
-[data-etapa] figure {
+#invernadero-lista li > span:last-child {
   display: grid;
-  place-items: end center;
-  height: 10rem;
-  margin: 0;
-  padding-top: var(--espacio-2);
-  border-radius: var(--radio-boton) var(--radio-boton) 0 0;
-  background: linear-gradient(to bottom, var(--color-superficie) 82%, var(--color-suelo) 82%);
-  overflow: hidden;
+  gap: 0.125rem;
 }
 
-[data-etapa] figure img {
-  width: auto;
-  max-width: 100%;
-  height: 8.5rem;
-  margin-bottom: 0.5rem;
+#invernadero-lista .progreso {
+  margin: var(--espacio-1) 0 0;
 }
 
-[data-etapa="semilla"] figure img,
-[data-etapa="maceta"] figure img {
-  height: 5rem;
+/* En el celular, el dibujo es chico: los números de los lugares, más chicos; desde 37,5 em, como
+   los de la lista. */
+#invernadero-escena [data-chapa] {
+  width: 1.375rem;
+  height: 1.375rem;
+  font-size: 0.75rem;
 }
 
-[data-etapa="brote"] figure img {
-  height: 6.75rem;
+@media (min-width: 37.5em) {
+  #invernadero-escena [data-chapa] {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.9375rem;
+  }
 }
 
-[data-etapa] article {
-  background: var(--color-papel);
-  box-shadow: inset 0 0 0 1.5px var(--color-filete);
-}
-
-[data-etapa="planta"] figure {
-  background: linear-gradient(to bottom, var(--color-acento-claro) 82%, var(--color-suelo) 82%);
-}
-
-[data-etapa="semilla"] article {
-  box-shadow: inset 0 0 0 2px var(--color-filete);
-  outline: 2px dashed var(--color-tinta-suave);
-  outline-offset: -2px;
-}
-
+/* En pantalla ancha, el invernadero a la izquierda y los lugares al costado. */
 @media (min-width: 53.75em) {
-  #huerta-etapas {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    align-items: center;
+  #invernadero {
+    grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+  }
+
+  #invernadero header {
+    grid-column: 1 / -1;
   }
 }

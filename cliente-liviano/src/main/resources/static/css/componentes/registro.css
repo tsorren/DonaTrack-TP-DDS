@@ -1,5 +1,5 @@
 /* Bloque registro (usuario, 2026-11-08): el registro en una sola página, centrado. La cabeza; las
-   tres tarjetas del tipo de cuenta (la elegida, con el borde verde y su marca); el índice de pasos,
+   tres tarjetas del tipo de cuenta (la elegida, con el fondo verde claro y su tilde); el índice de pasos,
    fijo al bajar desde la tableta; y el formulario en una tarjeta, con una sección por paso
    (`.registro-seccion`). Los fragmentos están en templates/componentes/registro.html. Se carga en la
    capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
@@ -68,9 +68,11 @@
   box-shadow: inset 0 0 0 2px var(--color-filete);
 }
 
+/* La elegida: el fondo verde claro y el tilde, sin el anillo verde (regla general de la ronda del
+   2026-11-09, tarde: "se ve super genérico"). */
 .registro-tipo[aria-current] {
   background: var(--color-acento-claro);
-  box-shadow: inset 0 0 0 2px var(--color-acento);
+  box-shadow: none;
 }
 
 .registro-tipo[aria-current] b::after {

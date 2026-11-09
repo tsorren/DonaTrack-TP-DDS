@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--/* Lo que comparten las tres variantes de Asignar donaciones (ronda 2026-11-09 tarde: "rehechas según
+       el enunciado del matchmaking"). Por cada donación En depósito corre cada algoritmo (hoy dos:
+       Compatibilidad semántica y Prioridad a sub-atendidas; pueden sumarse más) y arma un ranking de
+       hasta 10 entidades con el porqué según su criterio. Las que aparecen en todos los rankings son
+       las candidatas en común y van primero; si no hay ninguna, se muestran las ejecuciones completas.
+       La persona admin confirma el destino. Se borra con las variantes al decidir.
+
+       Datos de ejemplo (sintéticos): cuatro donaciones; Arroz y Cuadernos con 3 en común, Mesas con 1
+       y Camperas sin coincidencias. El ranking de sub-atendidas es el mismo para todas (cuenta las
+       donaciones recibidas de agosto a octubre, no mira qué se donó).
+
+       Fragmentos:
+       - datos(pantalla): define escenario (?escenario=vacio|error), accion (?accion=asignada, con
+         &donacion y &entidad: la asignada sale de la cola), los filtros (buscar, categoria,
+         antiguedad, cruce), donaciones (las que esperan), cola (las filtradas) y algoritmos.
+       - buscar(variante): la búsqueda con los filtros al lado.
+       - estados(variante): la cola vacía y el error de carga.
+       - asignar(d, p, id): el botón "Asignar" y su diálogo de confirmación; p es un puesto
+         ({k, e, tipo, por}) e id, lo que distingue al diálogo.
+       - posiciones(d, k): en qué puesto quedó la entidad k en cada ejecución, con el porqué.
+       - aviso(d, e): lo que pasó después de asignar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="datos(pantalla)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             accion=${param.accion != null and param.accion[0] == 'asignada' ? 'asignada' : ''},
+             q=${param.buscar != null ? #strings.toLowerCase(#strings.trim(param.buscar[0])) : ''},
+             fCategoria=${param.categoria != null ? param.categoria[0] : ''},
+             fAntiguedad=${param.antiguedad != null ? param.antiguedad[0] : ''},
+             fCruce=${param.cruce != null ? param.cruce[0] : ''},
+             semantica='Compatibilidad semántica',
+             subatendidas='Prioridad a sub-atendidas',
+             algoritmos=${ {
+      {nombre: semantica, criterio: 'Qué tanto coincide lo donado con lo que pide cada entidad.'},
+      {nombre: subatendidas, criterio: 'Primero las que recibieron menos donaciones de agosto a octubre.'} } },
+             rankingSub=${ {
+      {n: 1, k: 'mnorte', e: 'Merendero Ejemplo Norte', tipo: 'Merendero', por: 'Ninguna donación de agosto a octubre'},
+      {n: 2, k: 'club', e: 'Club Barrial Ejemplo', tipo: 'Club barrial', por: 'Ninguna donación de agosto a octubre'},
+      {n: 3, k: 'comunitario', e: 'Centro Comunitario Ejemplo', tipo: 'Centro comunitario', por: '1 donación de agosto a octubre'},
+      {n: 4, k: 'biblio', e: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', por: '1 donación de agosto a octubre'},
+      {n: 5, k: 'oeste', e: 'Comedor Ejemplo Oeste', tipo: 'Comedor', por: '2 donaciones de agosto a octubre'},
+      {n: 6, k: 'huerta', e: 'Huerta Comunitaria Ejemplo', tipo: 'Huerta', por: '3 donaciones de agosto a octubre'} } },
+             todas=${ {
+      {clave: 'arroz', cat: 'alimentos', categoria: 'Alimentos', dona: 'Arroz', cuanto: '25 kg', donante: 'Ana Ejemplo',
+       deposito: 'Depósito Central', desde: '2 de noviembre', dias: 7, comunes: {'oeste', 'comunitario', 'mnorte'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'barrio', e: 'Comedor Barrio Ejemplo', tipo: 'Comedor', por: 'Pide arroz, 30 kg, para el almuerzo'},
+           {n: 2, k: 'oeste', e: 'Comedor Ejemplo Oeste', tipo: 'Comedor', por: 'Pide arroz y fideos, 40 kg'},
+           {n: 3, k: 'sur', e: 'Merendero Ejemplo Sur', tipo: 'Merendero', por: 'Pide cereales y arroz, 15 kg'},
+           {n: 4, k: 'centro', e: 'Hogar Ejemplo Centro', tipo: 'Hogar', por: 'Pide alimentos secos'},
+           {n: 5, k: 'comunitario', e: 'Centro Comunitario Ejemplo', tipo: 'Centro comunitario', por: 'Pide legumbres y arroz'},
+           {n: 6, k: 'mnorte', e: 'Merendero Ejemplo Norte', tipo: 'Merendero', por: 'Pide alimentos no perecederos'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'camperas', cat: 'ropa', categoria: 'Ropa', dona: 'Camperas de abrigo', cuanto: '12 prendas',
+       donante: 'Distribuidora Ejemplo SA', deposito: 'Depósito Central', desde: '28 de octubre', dias: 12, comunes: {},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'hnorte', e: 'Hogar Ejemplo Norte', tipo: 'Hogar', por: 'Pide ropa de abrigo para adultos, 20 prendas'},
+           {n: 2, k: 'centro', e: 'Hogar Ejemplo Centro', tipo: 'Hogar', por: 'Pide camperas y frazadas'},
+           {n: 3, k: 'escuela', e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', por: 'Pide abrigos para chicos'},
+           {n: 4, k: 'barrio', e: 'Comedor Barrio Ejemplo', tipo: 'Comedor', por: 'Pide ropa de invierno'},
+           {n: 5, k: 'coop', e: 'Cooperativa Ejemplo Este', tipo: 'Cooperativa', por: 'Pide ropa en general'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'cuadernos', cat: 'escolares', categoria: 'Útiles escolares', dona: 'Cuadernos', cuanto: '40 unidades',
+       donante: 'Juan Ejemplo', deposito: 'Depósito Sur', desde: '6 de noviembre', dias: 3, comunes: {'club', 'comunitario', 'biblio'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'escuela', e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', por: 'Pide cuadernos, 60 unidades'},
+           {n: 2, k: 'biblio', e: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', por: 'Pide cuadernos para el apoyo escolar'},
+           {n: 3, k: 'club', e: 'Club Barrial Ejemplo', tipo: 'Club barrial', por: 'Pide útiles para el taller de los sábados'},
+           {n: 4, k: 'comunitario', e: 'Centro Comunitario Ejemplo', tipo: 'Centro comunitario', por: 'Pide útiles escolares'} } },
+         {nombre: subatendidas, puestos: rankingSub} } },
+      {clave: 'mesas', cat: 'muebles', categoria: 'Muebles', dona: 'Mesas plegables', cuanto: '4 unidades',
+       donante: 'Fundación Ejemplo Sur', deposito: 'Depósito Central', desde: '5 de noviembre', dias: 4, comunes: {'club'},
+       ejecuciones: {
+         {nombre: semantica, puestos: {
+           {n: 1, k: 'escuela', e: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', por: 'Pide mesas para el aula, 6 unidades'},
+           {n: 2, k: 'centro', e: 'Hogar Ejemplo Centro', tipo: 'Hogar', por: 'Pide muebles para el comedor'},
+           {n: 3, k: 'club', e: 'Club Barrial Ejemplo', tipo: 'Club barrial', por: 'Pide mesas y sillas'} } },
+         {nombre: subatendidas, puestos: rankingSub} } } } },
+             asignada=${accion == 'asignada' ? (param.donacion != null ? param.donacion[0] : 'arroz') : ''},
+             donaciones=${escenario == 'vacio' or escenario == 'error' ? {} : todas.?[clave != #root.asignada]},
+             cola=${donaciones.?[(#root.q == '' or #strings.containsIgnoreCase(dona, #root.q))
+                 and (#root.fCategoria == '' or cat == #root.fCategoria)
+                 and (#root.fAntiguedad == '' or (#root.fAntiguedad == 'semana' ? dias >= 7 : dias < 7))
+                 and (#root.fCruce == '' or (#root.fCruce == 'con' ? !comunes.isEmpty() : comunes.isEmpty()))]},
+             filtrado=${q != '' or fCategoria != '' or fAntiguedad != '' or fCruce != ''},
+             opCategoria=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'alimentos', texto: 'Alimentos'},
+                 {valor: 'ropa', texto: 'Ropa'}, {valor: 'escolares', texto: 'Útiles escolares'}, {valor: 'muebles', texto: 'Muebles'}} },
+             opAntiguedad=${ {{valor: '', texto: 'Cualquier antigüedad'}, {valor: 'semana', texto: 'Una semana o más en el depósito'},
+                 {valor: 'reciente', texto: 'Menos de una semana'}} },
+             opCruce=${ {{valor: '', texto: 'Con y sin coincidencias'}, {valor: 'con', texto: 'Con candidatas en común'},
+                 {valor: 'sin', texto: 'Sin coincidencias'}} }">
+  <svg th:replace="~{iconos :: categorias}"></svg>
+  <th:block th:insert="${pantalla}"></th:block>
+</th:block>
+
+<!--/* La búsqueda y los filtros (componentes/filtros): en pantalla ancha, en la misma fila; en el
+       celular, los filtros debajo. variante es lo que el formulario conserva. */-->
+<form th:fragment="buscar(variante)" class="filtros-barra"
+      action="/admin-asignaciones" th:action="@{/admin-asignaciones}" method="get" role="search">
+  <input type="hidden" name="variante" th:value="${variante}" value="asignaciones-a">
+  <div class="campo filtro-buscar">
+    <label th:for="|buscar-${variante}|" for="buscar">Buscar una donación</label>
+    <div class="filtro-buscar-fila">
+      <input th:id="|buscar-${variante}|" id="buscar" name="buscar" type="search" autocomplete="off"
+             th:value="${param.buscar != null ? param.buscar[0] : ''}" placeholder="Por ejemplo: arroz">
+      <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+    </div>
+  </div>
+  <div class="filtros" role="group" aria-label="Filtrar las donaciones">
+    <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${fCategoria}, ${opCategoria})}"></details>
+    <details th:replace="~{componentes/filtros :: menu('antiguedad', 'Tiempo en el depósito', ${fAntiguedad}, ${opAntiguedad})}"></details>
+    <details th:replace="~{componentes/filtros :: menu('cruce', 'Coincidencias', ${fCruce}, ${opCruce})}"></details>
+    <a th:if="${filtrado}" class="filtros-sacar" href="/admin-asignaciones"
+       th:href="@{/admin-asignaciones(variante=${variante})}">Sacar los filtros</a>
+  </div>
+</form>
+
+<!--/* En qué puesto quedó la entidad k en cada ejecución, con el porqué. */-->
+<ul th:fragment="posiciones(d, k)" class="lista" data-lista="posiciones" role="list">
+  <li th:each="ej : ${d.ejecuciones}" th:with="p=${ej.puestos.^[k == '__${k}__']}">
+    <b th:text="${p != null} ? |${p.n}.º| : '—'">2.º</b>
+    <span><small th:text="${ej.nombre}">Compatibilidad semántica</small>
+      <span th:text="${p != null} ? ${p.por} : 'No quedó en este ranking'">Pide arroz y fideos, 40 kg</span></span>
+  </li>
+</ul>
+
+<!--/* "Asignar" y su diálogo: la confirmación explícita antes de fijar el destino. */-->
+<th:block th:fragment="asignar(d, p, id)">
+  <button type="button" class="boton" data-tono="principal" data-tamano="chico"
+          th:popovertarget="|asignar-${id}|" popovertarget="asignar-arroz-oeste"
+          th:aria-label="|Asignar ${d.dona} a ${p.e}|">Asignar</button>
+  <dialog class="dialogo" th:id="|asignar-${id}|" id="asignar-arroz-oeste" popover
+          th:aria-labelledby="|asignar-${id}-titulo|">
+    <h3 class="dialogo-titulo" th:id="|asignar-${id}-titulo|"
+        th:text="|¿Asignar ${d.dona}, ${d.cuanto}, a ${p.e}?|">¿Asignar Arroz, 25 kg, a Comedor Ejemplo Oeste?</h3>
+    <ul th:replace="~{variantes/comun/asignaciones-datos :: posiciones(${d}, ${p.k})}"></ul>
+    <p>Queda como su destino y sale del depósito cuando se arme la ruta. Las demás candidatas no la reciben.</p>
+    <form class="racimo" action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}" method="post">
+      <input type="hidden" name="donacion" th:value="${d.clave}" value="arroz">
+      <input type="hidden" name="entidad" th:value="${p.k}" value="oeste">
+      <button class="boton" data-tono="principal" type="submit">Sí, asignar</button>
+      <button type="button" class="boton" data-tono="secundario" th:popovertarget="|asignar-${id}|"
+              popovertargetaction="hide" autofocus>No, volver</button>
+    </form>
+  </dialog>
+</th:block>
+
+<!--/* Lo que pasó después de asignar (?accion=asignada&donacion=<clave>&entidad=<k>). */-->
+<p th:fragment="aviso" th:if="${accion == 'asignada'}" class="aviso-breve" data-estado="hecho" role="status"
+   tabindex="-1" autofocus
+   th:with="pd=${param.donacion != null ? param.donacion[0] : 'arroz'},
+            ad=${todas.^[clave == #root.pd] ?: todas[0]},
+            ak=${param.entidad != null ? param.entidad[0] : 'oeste'},
+            ae=${#lists.isEmpty(ad.ejecuciones[0].puestos.?[k == #root.ak]) ? ad.ejecuciones[1].puestos.^[k == #root.ak] : ad.ejecuciones[0].puestos.^[k == #root.ak]}"
+   th:text="|Asignaste ${ad.dona}, ${ad.cuanto}, a ${ae != null ? ae.e : 'la entidad elegida'}. Sale del depósito cuando se arme la ruta.|">Asignaste
+  Arroz, 25 kg, a Comedor Ejemplo Oeste. Sale del depósito cuando se arme la ruta.</p>
+
+<!--/* La cola vacía, el error de carga y la lista filtrada sin resultados. */-->
+<th:block th:fragment="estados(variante)">
+  <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <h2 id="vacio-titulo">No hay donaciones en el depósito esperando destino.</h2>
+    <p>Cuando una donación llegue al depósito, el matchmaking arma sus rankings esa noche, a las 0:00.</p>
+  </section>
+  <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert" aria-labelledby="error-titulo">
+    <h2 id="error-titulo">No pudimos cargar las donaciones del depósito.</h2>
+    <p>Es un problema nuestro: no cambió ningún destino. Probá de nuevo en unos minutos.</p>
+    <a class="boton" data-tono="secundario" href="/admin-asignaciones"
+       th:href="@{/admin-asignaciones(variante=${variante})}">Volver a cargar</a>
+  </section>
+</th:block>
+</body>
+</html>

@@ -265,9 +265,13 @@
     <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
   </div>
   <ul class="huerta-cifras" role="list" th:if="${estado == ''}">
-    <li th:each="c, vuelta : ${valores}" class="huerta-cifra">
-      <img src="/img/ilustraciones/arbol-1.svg"
-           th:src="@{/img/ilustraciones/arbol-{n}.svg(n=${vuelta.index % 4 + 1})}" alt="" width="120" height="150">
+    <!--/* Los tres árboles a la misma escala (el pino, el más alto, mide 10 rem) y apoyados en la línea
+           de suelo: el ancho y el alto de cada uno salen de su viewBox (redondo 231,87 × 260,42,
+           triangular 133,84 × 278,42, ovalado 101,24 × 230,98). */-->
+    <li th:each="c, vuelta : ${valores}" class="huerta-cifra" th:with="i=${vuelta.index % 3}">
+      <img src="/img/ilustraciones/arbol-redondo.svg" alt="" width="133" height="150"
+           th:src="@{/img/ilustraciones/arbol-{n}.svg(n=${ {'redondo','triangular','ovalado'}[i] })}"
+           th:width="${ {133, 77, 58}[i] }" th:height="${ {150, 160, 133}[i] }">
       <b th:text="${c.n}">1.284</b> <span th:text="${c.t}">entregas confirmadas desde marzo de 2026</span>
     </li>
   </ul>

@@ -97,7 +97,7 @@
             </header>
             <ul class="estacion-entregas" role="list">
               <li th:each="f : ${suyas}" th:with="id=${'foto-' + e.clave + '-' + fStat.count}">
-                <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
+                <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use width="100" height="100"
                     href="#cat-alimentos" th:href="${'#cat-' + f.cat}"/></svg>
                 <p th:id="${id + '-que'}" th:text="|${f.que} · ${categorias.^[clave == '__${f.cat}__'].texto} · ${f.dia}|">Lentejas
                   secas, 10 kg · Alimentos · 10 de octubre</p>

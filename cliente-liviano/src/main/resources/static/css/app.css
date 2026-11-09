@@ -30,9 +30,14 @@
 @import url("componentes/tabla.css") layer(bloques);
 @import url("componentes/noticias.css") layer(bloques);
 @import url("componentes/progreso.css") layer(bloques);
+@import url("componentes/almanaque.css") layer(bloques);
 @import url("componentes/huerta.css") layer(bloques);
 @import url("componentes/filtros.css") layer(bloques);
 @import url("componentes/registro.css") layer(bloques);
+@import url("componentes/plegable.css") layer(bloques);
+@import url("componentes/chip.css") layer(bloques);
+@import url("componentes/segmentos.css") layer(bloques);
+@import url("componentes/maestro.css") layer(bloques);
 
 *,
 *::before,

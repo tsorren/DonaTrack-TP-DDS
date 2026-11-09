@@ -135,9 +135,11 @@
 
 .fruto::before {
   content: "";
-  width: 3.5rem;
+  /* El manzano con su proporción (viewBox 231,87 × 260,42), apoyado abajo, junto a la cifra. */
+  flex: none;
   height: 4.375rem;
-  background: url("../img/ilustraciones/arbol-1.svg") bottom / contain no-repeat;
+  aspect-ratio: 231.87 / 260.42;
+  background: url("../img/ilustraciones/arbol-redondo.svg") bottom / contain no-repeat;
 }
 
 /* --- Las salidas, lo que carga, los botones y la foto ------------------------------------------ */

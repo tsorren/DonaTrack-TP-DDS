@@ -1,0 +1,98 @@
+/* Variante A de Asignar donaciones (ronda 2026-11-09 tarde): bandeja y detalle. La cola de donaciones
+   En depósito a la izquierda y la elegida a la derecha, con las candidatas en común primero y cada
+   ejecución plegada. Solo tokens de uso. Se borra al decidir. */
+@import url("comun/asignaciones.css");
+
+[data-variante="asignaciones-a"] [data-forma="detalle"] {
+  --medida-barra: 20rem;
+  align-items: flex-start;
+  gap: var(--espacio-4);
+}
+
+[data-variante="asignaciones-a"] nav h2 {
+  font-size: var(--tamano-grande);
+}
+
+/* La cola: cada donación es un renglón-enlace; la elegida, con fondo de papel y sombra (sin borde). */
+[data-variante="asignaciones-a"] [data-lista="cola"] {
+  gap: var(--espacio-1);
+}
+
+[data-variante="asignaciones-a"] [data-lista="cola"] a {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 3.5rem;
+  padding: var(--espacio-2);
+  border-radius: var(--radio-lamina);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+[data-variante="asignaciones-a"] [data-lista="cola"] a:hover {
+  background: var(--color-acento-claro);
+}
+
+[data-variante="asignaciones-a"] [data-lista="cola"] a[aria-current] {
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+[data-variante="asignaciones-a"] [data-lista="cola"] a[aria-current] b {
+  font-weight: 800;
+}
+
+[data-variante="asignaciones-a"] [data-lista="cola"] a > span {
+  display: grid;
+  justify-items: start;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+[data-variante="asignaciones-a"] [data-lista="cola"] .categoria-icono {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* La donación elegida. */
+[data-variante="asignaciones-a"] #donacion {
+  --espacio-relleno: var(--espacio-4);
+}
+
+[data-variante="asignaciones-a"] #donacion > .racimo > .categoria-icono {
+  width: 4rem;
+  height: 4rem;
+}
+
+[data-variante="asignaciones-a"] #donacion h3 {
+  font-size: var(--tamano-grande);
+}
+
+/* Cada candidata en común: sus puestos a la izquierda y "Asignar" a la derecha (debajo en el
+   celular). */
+[data-variante="asignaciones-a"] [data-lista="candidatas"] > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-papel);
+}
+
+[data-variante="asignaciones-a"] [data-lista="candidatas"] > li > div {
+  display: grid;
+  flex: 1 1 18rem;
+  gap: var(--espacio-2);
+}
+
+[data-variante="asignaciones-a"] [data-forma="ejecuciones"] .grilla {
+  --medida-grilla: 17rem;
+  margin-top: var(--espacio-2);
+}
+
+[data-variante="asignaciones-a"] [data-forma="ejecuciones"] h4 {
+  font-size: var(--tamano-base);
+}

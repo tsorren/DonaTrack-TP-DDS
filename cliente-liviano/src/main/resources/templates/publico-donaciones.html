@@ -89,7 +89,7 @@
         <div class="lamina-texto">
           <h2 th:id="${id + '-que'}" th:text="${e.que}">Sillas, 6 unidades</h2>
           <p class="lamina-categoria"><svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true"
-              focusable="false"><use href="#cat-muebles" th:href="${'#cat-' + e.cat}"/></svg><span
+              focusable="false"><use width="100" height="100" href="#cat-muebles" th:href="${'#cat-' + e.cat}"/></svg><span
               th:text="${categorias.^[clave == '__${e.cat}__'].texto}">Muebles</span></p>
           <p th:text="|${e.entidad} · ${e.barrio}|">Escuela Ejemplo N.º 12 · Centro Ejemplo</p>
           <p class="lamina-fecha">Entrega confirmada el <time th:datetime="${e.fecha}"

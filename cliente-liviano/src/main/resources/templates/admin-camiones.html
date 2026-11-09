@@ -148,7 +148,7 @@
       </section>
 
       <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros). */-->
-      <form th:if="${conDatos}" class="filtro filtro--buscar pila" data-espacio="2" action="/admin-camiones"
+      <form th:if="${conDatos}" class="filtros-barra" action="/admin-camiones"
             th:action="@{/admin-camiones}" method="get" role="search">
         <div class="campo filtro-buscar">
           <label for="buscar">Buscar por patente o nombre</label>

@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <!--/* Raíces, Entidades del admin (RF-21 y RF-15), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.3). Dos pestañas: las que piden
-       sumarse y las activas. Sin JavaScript, cada pestaña es un enlace a su sección (#solicitudes y
-       #activas, el bloque .pestanas); con Alpine, el patrón de pestañas. Cada solicitud se despliega
-       en la lista, como el detalle de Necesidades, con sus tres acciones: Aprobar (sin pregunta
-       extra), Pedir corrección (un campo obligatorio, plegado) y Rechazar (un diálogo del navegador,
-       popover, con el motivo obligatorio). Cada acción es un formulario real (POST) que lleva a
-       admin-entidades-aprobada, -correccion o -rechazada.
-       ?entidad=<clave> abre esa solicitud (de partida, la primera). ?escenario=vacio (nadie pide
-       sumarse), lento y error.
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.3). Una entidad a la vez: es la prueba
+       admin-entidades-c, elegida en la ronda del 2026-11-09 (tarde), con sus pedidos:
+       - Justo después del título, un selector de tres segmentos (.segmentos, enlaces con aria-current):
+         Activas, Pendientes (las que piden sumarse) e Inactivas. ?ver=activas|pendientes|inactivas;
+         de partida, activas.
+       - La lista del segmento (.maestro): cada renglón es un enlace real con su ícono, el nombre y el
+         estado como bolita (círculo con anillo y punto, y la palabra; .estado data-forma="punto").
+         La elegida (?entidad=<clave>, de partida la primera) se marca con fondo, sombra y un
+         indicador redondeado a la izquierda, sin borde verde.
+       - La ficha de la elegida va dentro de su renglón: en el celular queda justo debajo del ítem; en
+         pantalla ancha, a la derecha de la lista.
+       Para una pendiente, lo que mandó y sus tres acciones: Aprobar (POST, sin pregunta extra), Pedir
+       corrección y Rechazar (diálogos del navegador, popover, con su campo obligatorio). Cada acción
+       lleva a admin-entidades-aprobada, -correccion o -rechazada. Las activas se buscan por nombre o
+       localidad y se filtran por pedidos y tipo (form.filtros-barra, GET).
+       ?escenario=vacio (nadie pide sumarse), lento y error.
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'correccion' o
-         'rechazada'. */-->
+         'rechazada'.
+       - acciones(e): las tres acciones de una pendiente.
+       - documentos(e): lo que mandó, cada dato con su tilde o su cruz y la palabra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -22,36 +31,103 @@
   <th:block th:replace="~{admin-entidades :: hoja('')}"></th:block>
 </th:block>
 
+<!--/* Los datos: 3 piden sumarse, 46 activas (se ven 8; 6 con pedidos vigentes) y 3 inactivas,
+       coherentes con la ficha y con las páginas públicas. */-->
 <th:block th:fragment="hoja(accion)"
+    th:with="fPedidos=${param.pedidos != null and #lists.contains({'con', 'sin'}, param.pedidos[0]) ? param.pedidos[0] : ''},
+             fTipo=${param.tipo != null and #lists.contains({'Comedor', 'Merendero', 'Escuela', 'Hogar', 'Club', 'Biblioteca', 'Centro comunitario'}, param.tipo[0]) ? param.tipo[0] : ''}">
+<th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento'},
+             q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
              todas=${ {
-      {clave: 'hogar', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar', cuando: '9 de octubre', falta: null,
-       razon: 'Asociación Civil Hogar Ejemplo Norte', cuit: '30-00000011-0',
+      {clave: 'hogar', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar', cat: 'ropa', localidad: 'Localidad Ejemplo', cuando: '9 de octubre',
+       espera: 'Hace 6 días', falta: null, razon: 'Asociación Civil Hogar Ejemplo Norte', cuit: '30-00000011-0',
        direccion: 'Calle Ejemplo 1234, Localidad Ejemplo, Buenos Aires', responsable: 'Rosa Ejemplo',
        correo: 'hogar@ejemplo.org', constancia: 'constancia-domicilio.pdf'},
-      {clave: 'merendero', nombre: 'Merendero Ejemplo Este', tipo: 'Merendero', cuando: '12 de octubre',
-       falta: 'Le falta la constancia de domicilio', razon: 'Merendero Ejemplo Este Asociación Civil',
-       cuit: '30-00000012-0', direccion: 'Pasaje Ejemplo 56, Localidad Ejemplo, Buenos Aires',
-       responsable: 'Luis Ejemplo', correo: 'merendero@ejemplo.org', constancia: null},
-      {clave: 'comedor', nombre: 'Comedor Ejemplo Oeste', tipo: 'Comedor', cuando: '14 de octubre', falta: null,
-       razon: 'Comedor Comunitario Ejemplo Oeste', cuit: '30-00000013-0',
-       direccion: 'Avenida Ejemplo 789, Localidad Ejemplo, Buenos Aires', responsable: 'Marta Ejemplo',
-       correo: 'comedor@ejemplo.org', constancia: 'constancia.pdf'} } },
-             solicitudes=${escenario == 'vacio' ? {} : todas.?[(clave != 'hogar' or #root.accion != 'aprobada') and (clave != 'comedor' or #root.accion != 'rechazada')]},
-             abierta=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero' : (#lists.isEmpty(solicitudes) ? '' : solicitudes[0].clave))},
-             activas=${accion == 'aprobada' ? 47 : 46},
-             entidades=${ {
-      {nombre: 'Comedor Barrio Ejemplo', tipo: 'Comedor', localidad: 'Localidad Ejemplo', alta: '4 de febrero'},
-      {nombre: 'Merendero Ejemplo Sur', tipo: 'Merendero', localidad: 'Localidad Ejemplo', alta: '18 de marzo'},
-      {nombre: 'Hogar Ejemplo Centro', tipo: 'Hogar', localidad: 'Localidad Ejemplo', alta: '2 de mayo'},
-      {nombre: 'Escuela Ejemplo N.º 3', tipo: 'Institución', localidad: 'Localidad Ejemplo', alta: '30 de junio'} } }">
+      {clave: 'merendero-este', nombre: 'Merendero Ejemplo Este', tipo: 'Merendero', cat: 'alimentos', localidad: 'Localidad Ejemplo',
+       cuando: '12 de octubre', espera: 'Hace 3 días', falta: 'Le falta la constancia de domicilio',
+       razon: 'Merendero Ejemplo Este Asociación Civil', cuit: '30-00000012-0',
+       direccion: 'Pasaje Ejemplo 56, Localidad Ejemplo, Buenos Aires', responsable: 'Luis Ejemplo',
+       correo: 'merendero@ejemplo.org', constancia: null},
+      {clave: 'comedor-oeste', nombre: 'Comedor Ejemplo Oeste', tipo: 'Comedor', cat: 'alimentos', localidad: 'Localidad Ejemplo',
+       cuando: '14 de octubre', espera: 'Ayer', falta: null, razon: 'Comedor Comunitario Ejemplo Oeste',
+       cuit: '30-00000013-0', direccion: 'Avenida Ejemplo 789, Localidad Ejemplo, Buenos Aires',
+       responsable: 'Marta Ejemplo', correo: 'comedor@ejemplo.org', constancia: 'constancia.pdf'} } },
+             solicitudes=${escenario == 'vacio' ? {} : todas.?[(clave != 'hogar' or #root.accion != 'aprobada') and (clave != 'comedor-oeste' or #root.accion != 'rechazada')]},
+             todasActivas=${ {
+      {clave: 'hogar', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar', cat: 'ropa', localidad: 'Localidad Ejemplo',
+       alta: '15 de octubre', entregas: 0, responsable: 'Rosa Ejemplo', correo: 'hogar@ejemplo.org', pedidos: {} },
+      {clave: 'comedor', nombre: 'Comedor Barrio Ejemplo', tipo: 'Comedor', cat: 'alimentos', localidad: 'Barrio Ejemplo',
+       alta: '4 de febrero', entregas: 5, responsable: 'Carmen Ejemplo', correo: 'comedor.barrio@ejemplo.org', pedidos: {
+         {que: 'Lentejas secas', cat: 'alimentos', falta: 'Faltan 30 de 40 kg este mes'},
+         {que: 'Arroz', cat: 'alimentos', falta: 'Faltan 25 de 40 kg este mes'},
+         {que: 'Aceite de girasol', cat: 'alimentos', falta: 'Faltan 20 litros, hasta el 20 de octubre'},
+         {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 12 de 24 unidades, hasta el 25 de octubre'} } },
+      {clave: 'escuela', nombre: 'Escuela Ejemplo N.º 12', tipo: 'Escuela', cat: 'escolares', localidad: 'Centro Ejemplo',
+       alta: '30 de junio', entregas: 1, responsable: 'Inés Ejemplo', correo: 'escuela12@ejemplo.org', pedidos: {
+         {que: 'Sillas', cat: 'muebles', falta: 'Faltan 14 de 20 unidades, hasta el 30 de noviembre'},
+         {que: 'Útiles escolares', cat: 'escolares', falta: 'Faltan 4 cajas, hasta el 30 de noviembre'} } },
+      {clave: 'merendero', nombre: 'Merendero Ejemplo Sur', tipo: 'Merendero', cat: 'alimentos', localidad: 'Ejemplo Sur',
+       alta: '18 de marzo', entregas: 3, responsable: 'Raúl Ejemplo', correo: 'merendero.sur@ejemplo.org', pedidos: {
+         {que: 'Galletitas', cat: 'alimentos', falta: 'Faltan 10 de 20 kg este mes'},
+         {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 20 unidades, hasta el 31 de octubre'} } },
+      {clave: 'hogar-casa', nombre: 'Hogar Casa Ejemplo', tipo: 'Hogar', cat: 'ropa', localidad: 'Parque Ejemplo',
+       alta: '2 de mayo', entregas: 0, responsable: 'Elena Ejemplo', correo: 'hogar.casa@ejemplo.org', pedidos: {
+         {que: 'Frazadas', cat: 'ropa', falta: 'Faltan 10 de 20 unidades, hasta el 15 de noviembre'} } },
+      {clave: 'club', nombre: 'Club Ejemplo Norte', tipo: 'Club', cat: 'ropa', localidad: 'Ejemplo Norte',
+       alta: '9 de agosto', entregas: 0, responsable: 'Diego Ejemplo', correo: 'club.norte@ejemplo.org', pedidos: {
+         {que: 'Camisetas deportivas', cat: 'ropa', falta: 'Faltan 15 unidades, hasta el 30 de noviembre'} } },
+      {clave: 'biblioteca', nombre: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', cat: 'muebles', localidad: 'Villa Ejemplo',
+       alta: '12 de septiembre', entregas: 0, responsable: 'Pablo Ejemplo', correo: 'biblioteca@ejemplo.org', pedidos: {
+         {que: 'Sillas', cat: 'muebles', falta: 'Faltan 4 de 8 unidades, hasta el 31 de diciembre'} } },
+      {clave: 'centro', nombre: 'Centro Vecinal Ejemplo', tipo: 'Centro comunitario', cat: 'alimentos', localidad: 'Localidad Ejemplo',
+       alta: '21 de abril', entregas: 2, responsable: 'Sara Ejemplo', correo: 'centro@ejemplo.org', pedidos: {} },
+      {clave: 'escuela3', nombre: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', cat: 'escolares', localidad: 'Localidad Ejemplo',
+       alta: '30 de junio', entregas: 1, responsable: 'Tomás Ejemplo', correo: 'escuela3@ejemplo.org', pedidos: {} } } },
+             cuantasActivas=${accion == 'aprobada' ? 47 : 46},
+             porFiltros=${todasActivas.?[(clave != 'hogar' or #root.accion == 'aprobada') and ('__${fPedidos}__' == '' or ('__${fPedidos}__' == 'con') == !pedidos.isEmpty()) and ('__${fTipo}__' == '' or tipo == '__${fTipo}__')]},
+             activas=${q == '' ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(nombre, #root.q) or #strings.containsIgnoreCase(localidad, #root.q)]},
+             filtrado=${fPedidos != '' or fTipo != '' or q != ''},
+             inactivas=${ {
+      {clave: 'merendero-norte', nombre: 'Merendero Ejemplo Norte', tipo: 'Merendero', cat: 'alimentos', localidad: 'Ejemplo Norte',
+       alta: '3 de marzo', baja: '20 de agosto', motivo: 'La entidad pidió la baja: cerró el merendero.',
+       responsable: 'Nora Ejemplo', correo: 'merendero.norte@ejemplo.org'},
+      {clave: 'hogar-oeste', nombre: 'Hogar Ejemplo Oeste', tipo: 'Hogar', cat: 'ropa', localidad: 'Ejemplo Oeste',
+       alta: '11 de enero', baja: '1 de octubre', motivo: 'La entidad pidió la baja: se mudó a otra localidad.',
+       responsable: 'Julio Ejemplo', correo: 'hogar.oeste@ejemplo.org'},
+      {clave: 'club-sur', nombre: 'Club Ejemplo Sur', tipo: 'Club', cat: 'ropa', localidad: 'Ejemplo Sur',
+       alta: '5 de abril', baja: '3 de julio', motivo: 'La dimos de baja: no confirmó sus datos en tres meses.',
+       responsable: 'Ana Ejemplo', correo: 'club.sur@ejemplo.org'} } },
+             verPedido=${param.ver != null and #lists.contains({'activas', 'pendientes', 'inactivas'}, param.ver[0]) ? param.ver[0] : ''},
+             ver=${verPedido != '' ? verPedido : (accion == 'correccion' or accion == 'rechazada' ? 'pendientes' : 'activas')},
+             lista=${ver == 'pendientes' ? solicitudes : (ver == 'inactivas' ? inactivas : activas)},
+             pedida=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero-este' : '')},
+             elegida=${lista.^[clave == #root.pedida] != null ? pedida : (#lists.isEmpty(lista) ? '' : lista[0].clave)},
+             segmentos=${ {
+      {valor: 'activas', texto: 'Activas', cuantas: cuantasActivas},
+      {valor: 'pendientes', texto: 'Pendientes', cuantas: #lists.size(solicitudes)},
+      {valor: 'inactivas', texto: 'Inactivas', cuantas: #lists.size(inactivas)} } }">
+  <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="mesa">
     <header class="mesa-cabecera">
-      <p class="rotulo">Administración</p>
-      <h1>Entidades</h1>
-      <p th:if="${conDatos}" th:text="|${#lists.size(solicitudes)} piden sumarse y ${activas} están activas, al 15 de octubre de 2026, 18:30.|">3
-        piden sumarse y 46 están activas, al 15 de octubre de 2026, 18:30.</p>
+      <div class="pila" data-espacio="3">
+        <div>
+          <p class="rotulo">Administración</p>
+          <h1>Entidades</h1>
+        </div>
+        <!--/* El selector, justo después del título (ronda del 2026-11-09, tarde). */-->
+        <nav th:if="${escenario != 'error'}" class="segmentos" aria-label="Qué entidades ver">
+          <a th:each="s : ${segmentos}" href="/admin-entidades" th:href="@{/admin-entidades(ver=${s.valor})}"
+             th:aria-current="${s.valor == ver} ? 'page' : null"
+             th:text="${conDatos} ? |${s.texto} · ${s.cuantas}| : ${s.texto}">Activas · 46</a>
+        </nav>
+        <p th:if="${conDatos}">Elegí una para ver su ficha. Al 15 de octubre de 2026, 18:30.</p>
+      </div>
+      <div class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
+           th:href="@{/admin-entidades-registrar}">Registrar entidad</a>
+      </div>
     </header>
 
     <p th:if="${accion == 'aprobada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
@@ -62,8 +138,6 @@
       la vuelva a enviar.</p>
     <p th:if="${accion == 'rechazada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Rechazaste la solicitud de Comedor Ejemplo Oeste. Le enviamos el motivo por correo.</p>
-
-    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las entidades…</p>
 
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
@@ -77,148 +151,213 @@
          th:href="@{/admin-entidades}">Volver a cargar</a>
     </section>
 
-    <div th:if="${escenario != 'error'}" class="racimo">
-      <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
-         th:href="@{/admin-entidades-registrar}">Registrar entidad</a>
-    </div>
+    <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
+             th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <h2 id="lista-titulo" class="solo-lectores"
+          th:text="${ver == 'pendientes'} ? 'Piden sumarse' : (${ver == 'inactivas'} ? 'Inactivas' : 'Activas')">Activas</h2>
 
-    <div th:if="${escenario != 'error'}" class="pestanas" x-data="pestanas"
-         x-on:hashchange.window="desdeLaDireccion" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <nav class="pestanas-lista" aria-label="Entidades" x-on:keydown="teclear">
-        <a class="pestana" id="pestana-solicitudes" href="#solicitudes" x-on:click="elegir"
-           th:text="${conDatos} ? |Piden sumarse · ${#lists.size(solicitudes)}| : 'Piden sumarse'">Piden sumarse · 3</a>
-        <a class="pestana" id="pestana-activas" href="#activas" x-on:click="elegir"
-           th:text="${conDatos} ? |Activas · ${activas}| : 'Activas'">Activas · 46</a>
-      </nav>
+      <th:block th:if="${escenario == 'lento'}">
+        <p class="cargando" role="status">Cargando las entidades…</p>
+        <div class="esqueleto" data-forma="hueco"></div>
+      </th:block>
 
-      <section class="pestanas-panel tarjeta pila" data-espacio="3" id="solicitudes"
-               aria-labelledby="solicitudes-titulo">
-        <h2 id="solicitudes-titulo">Piden sumarse</h2>
-        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
-        <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-          <h3 id="vacio-titulo">Ninguna entidad pide sumarse por ahora.</h3>
-        </section>
-        <ul th:if="${conDatos and !#lists.isEmpty(solicitudes)}" class="lista pila" data-espacio="3" role="list">
-          <li th:each="e : ${solicitudes}">
-            <details class="tarjeta pila" data-filete="doble" data-espacio="3" th:open="${e.clave == abierta}"
-                     th:id="|solicitud-${e.clave}|">
-              <summary>
-                <b th:text="${e.nombre}">Hogar Ejemplo Norte</b>
-                · <span th:text="${e.tipo}">Hogar</span>
-                · <span th:text="|pidió sumarse el ${e.cuando}|">pidió sumarse el 9 de octubre</span>
-                <th:block th:if="${e.falta != null and !(accion == 'correccion' and e.clave == 'merendero')}">
-                  · <span th:text="${e.falta}">Le falta la constancia de domicilio</span></th:block>
-                <span th:if="${accion == 'correccion' and e.clave == 'merendero'}" class="estado"
-                      data-estado="pendiente"><svg th:replace="~{componentes/sello :: sello('pendiente')}"></svg>Esperando
-                  corrección</span>
-                · <span data-tono="acento">Revisar</span>
-              </summary>
+      <!--/* Las activas se buscan y se filtran: la búsqueda y los filtros en un solo formulario GET. */-->
+      <form th:if="${conDatos and ver == 'activas'}" class="filtros-barra" action="/admin-entidades"
+            th:action="@{/admin-entidades}" method="get" role="search">
+        <input type="hidden" name="ver" value="activas">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por nombre o localidad</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
+                   placeholder="Por ejemplo: comedor">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <div class="filtros" role="group" aria-label="Filtrar las activas">
+          <details th:replace="~{componentes/filtros :: menu('pedidos', 'Pedidos', ${fPedidos}, ${ {
+              {valor: '', texto: 'Con y sin pedidos'}, {valor: 'con', texto: 'Con pedidos vigentes'},
+              {valor: 'sin', texto: 'Sin pedidos vigentes'} } })}"></details>
+          <details th:replace="~{componentes/filtros :: menu('tipo', 'Tipo', ${fTipo}, ${ {
+              {valor: '', texto: 'Todos los tipos'}, {valor: 'Comedor', texto: 'Comedores'},
+              {valor: 'Merendero', texto: 'Merenderos'}, {valor: 'Escuela', texto: 'Escuelas'},
+              {valor: 'Hogar', texto: 'Hogares'}, {valor: 'Club', texto: 'Clubes'},
+              {valor: 'Biblioteca', texto: 'Bibliotecas'}, {valor: 'Centro comunitario', texto: 'Centros comunitarios'} } })}"></details>
+          <a th:if="${filtrado}" class="filtros-sacar" href="/admin-entidades" th:href="@{/admin-entidades}">Sacar
+            los filtros</a>
+        </div>
+      </form>
+
+      <p th:if="${conDatos and ver == 'activas' and !#lists.isEmpty(activas)}" role="status"
+         th:text="${filtrado} ? |Coinciden ${#lists.size(activas)} de ${cuantasActivas}.| : |Se ven ${#lists.size(activas)} de las ${cuantasActivas}, las más recientes primero.|">Se
+        ven 8 de las 46, las más recientes primero.</p>
+
+      <section th:if="${conDatos and #lists.isEmpty(lista)}" class="vacio" aria-labelledby="vacio-titulo">
+        <h3 id="vacio-titulo"
+            th:text="${ver == 'pendientes'} ? 'Ninguna entidad pide sumarse por ahora.' : (${ver == 'inactivas'} ? 'No hay entidades inactivas.' : 'Ninguna entidad activa coincide con lo que buscaste.')">Ninguna
+          entidad pide sumarse por ahora.</h3>
+        <p th:if="${ver == 'pendientes'}">Cuando una entidad se registre, aparece acá para que la revises.</p>
+        <a th:if="${ver == 'activas'}" class="boton" data-tono="secundario" href="/admin-entidades"
+           th:href="@{/admin-entidades}">Ver todas</a>
+      </section>
+
+      <ul th:if="${conDatos and !#lists.isEmpty(lista)}" class="maestro" role="list">
+        <li th:each="e : ${lista}" th:id="|entidad-${e.clave}|">
+          <a href="#" th:href="@{/admin-entidades(ver=${ver}, entidad=${e.clave})} + |#entidad-${e.clave}|"
+             th:aria-current="${e.clave == elegida} ? 'true' : null">
+            <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                th:href="|#cat-${e.cat}|" href="#cat-alimentos"/></svg>
+            <span><b th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
+              <small th:if="${ver == 'activas'}"
+                     th:text="${e.pedidos.isEmpty()} ? 'Sin pedidos vigentes' : (${#lists.size(e.pedidos) == 1} ? '1 pedido vigente' : |${#lists.size(e.pedidos)} pedidos vigentes|)">4
+                pedidos vigentes</small>
+              <small th:if="${ver == 'pendientes'}" th:text="|${e.tipo} · ${e.espera}|">Hogar · Hace 6 días</small>
+              <small th:if="${ver == 'inactivas'}" th:text="|${e.tipo} · desde el ${e.baja}|">Merendero · desde el 20
+                de agosto</small></span>
+            <th:block th:replace="~{:: estado(${ver}, ${e})}"></th:block>
+          </a>
+
+          <!--/* La ficha de la elegida, dentro de su renglón. */-->
+          <section th:if="${e.clave == elegida}" id="ficha" class="tarjeta pila maestro-ficha" data-espacio="3"
+                   aria-labelledby="ficha-titulo">
+            <div class="racimo" data-espacio="3">
+              <svg class="categoria-icono" data-tamano="grande" viewBox="0 0 100 100" aria-hidden="true"
+                   focusable="false"><use th:href="|#cat-${e.cat}|" href="#cat-alimentos"/></svg>
+              <div>
+                <h2 id="ficha-titulo" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>
+                <p th:text="|${e.tipo} · ${e.localidad}|">Comedor · Barrio Ejemplo</p>
+              </div>
+            </div>
+
+            <th:block th:if="${ver == 'pendientes'}"
+                      th:with="enCorreccion=${accion == 'correccion' and e.clave == 'merendero-este'}">
+              <p th:if="${enCorreccion}"><span class="estado" data-forma="punto" data-estado="pendiente">Esperando
+                corrección</span></p>
+              <p th:unless="${enCorreccion}"><span class="estado" data-forma="punto"
+                  th:data-estado="${e.falta != null} ? 'camino' : 'pendiente'"
+                  th:text="|Pendiente de aprobación desde el ${e.cuando}|">Pendiente de aprobación desde el 9 de
+                octubre</span></p>
               <dl class="grilla" data-espacio="2">
                 <div><dt>Razón social</dt><dd th:text="${e.razon}">Asociación Civil</dd></div>
-                <div><dt>CUIT</dt><dd th:text="${e.cuit}">30-00000011-0</dd></div>
                 <div><dt>Dirección</dt><dd th:text="${e.direccion}">Calle Ejemplo 1234</dd></div>
                 <div><dt>Responsable</dt><dd th:text="|${e.responsable} · ${e.correo}|">Rosa Ejemplo</dd></div>
-                <div><dt>Constancia de domicilio</dt><dd th:text="${e.constancia != null} ? ${e.constancia} : 'No la envió'">constancia.pdf</dd></div>
+                <div><dt>Constancia de domicilio</dt><dd th:text="${e.constancia} ?: 'No la envió'">constancia.pdf</dd></div>
               </dl>
-              <p th:text="${e.falta != null} ? |${e.falta}.| : 'Le falta: nada.'">Le falta: nada.</p>
-
-              <p th:if="${accion == 'correccion' and e.clave == 'merendero'}">Le pedimos que corrija su solicitud. Las
-                acciones vuelven cuando la entidad la reenvíe.</p>
-              <th:block th:unless="${accion == 'correccion' and e.clave == 'merendero'}">
-              <div class="racimo">
-                <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post">
-                  <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
-                  <button class="boton" data-tono="principal" type="submit"
-                          th:aria-label="|Aprobar: ${e.nombre}|">Aprobar</button>
-                </form>
-                <button type="button" class="boton" data-tono="quitar" th:popovertarget="|rechazar-${e.clave}|"
-                        popovertarget="rechazar-hogar" th:aria-label="|Rechazar: ${e.nombre}|">Rechazar</button>
-              </div>
-
-              <details>
-                <summary class="boton" data-tono="secundario" th:aria-label="|Pedir corrección: ${e.nombre}|">Pedir
-                  corrección</summary>
-                <form class="formulario" action="/admin-entidades-correccion"
-                      th:action="@{/admin-entidades-correccion}" method="post">
-                  <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
-                  <div class="campo">
-                    <label th:for="|correccion-${e.clave}|" for="correccion-hogar">Qué tiene que corregir *</label>
-                    <small th:id="|correccion-${e.clave}-ayuda|" id="correccion-hogar-ayuda">Le llega a la entidad.
-                      Por ejemplo: "Falta la constancia de domicilio".</small>
-                    <textarea th:id="|correccion-${e.clave}|" id="correccion-hogar" name="correccion" rows="3" required
-                              th:aria-describedby="|correccion-${e.clave}-ayuda|" placeholder="Por ejemplo: 11 5555 5555"></textarea>
-                  </div>
-                  <button class="boton" data-tono="principal" type="submit">Pedir corrección</button>
-                </form>
-              </details>
-
-              <dialog class="dialogo" data-tono="quitar" th:id="|rechazar-${e.clave}|" id="rechazar-hogar" popover
-                      th:aria-labelledby="|rechazar-${e.clave}-titulo|">
-                <h3 class="dialogo-titulo" th:id="|rechazar-${e.clave}-titulo|"
-                    th:text="|¿Rechazar la solicitud de ${e.nombre}?|">¿Rechazar la solicitud de Hogar Ejemplo
-                  Norte?</h3>
-                <form class="pila" data-espacio="3" action="/admin-entidades-rechazada"
-                      th:action="@{/admin-entidades-rechazada}" method="post">
-                  <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
-                  <div class="campo">
-                    <label th:for="|motivo-${e.clave}|" for="motivo-hogar">Motivo, que le llega a la entidad *</label>
-                    <textarea th:id="|motivo-${e.clave}|" id="motivo-hogar" name="motivo" rows="3" required
-                              autofocus placeholder="Contanos el motivo"></textarea>
-                  </div>
-                  <div class="racimo">
-                    <button class="boton" data-tono="quitar" type="submit">Rechazar solicitud</button>
-                    <button type="button" class="boton" data-tono="secundario"
-                            th:popovertarget="|rechazar-${e.clave}|" popovertarget="rechazar-hogar"
-                            popovertargetaction="hide">Cancelar</button>
-                  </div>
-                </form>
-              </dialog>
+              <h3>Lo que mandó</h3>
+              <ul th:replace="~{:: documentos(${e})}"></ul>
+              <p th:if="${enCorreccion}">Le pedimos que corrija su solicitud.
+                Las acciones vuelven cuando la entidad la reenvíe.</p>
+              <th:block th:unless="${enCorreccion}">
+                <th:block th:replace="~{:: acciones(${e})}"></th:block>
               </th:block>
-            </details>
-          </li>
-        </ul>
-      </section>
+            </th:block>
 
-      <section class="pestanas-panel tarjeta pila" data-espacio="3" id="activas" aria-labelledby="activas-titulo">
-        <h2 id="activas-titulo">Activas</h2>
-        <form class="racimo" action="/admin-entidades#activas" th:action="|@{/admin-entidades}#activas|" method="get"
-              role="search">
-          <div class="campo">
-            <label for="buscar">Buscar por nombre</label>
-            <input id="buscar" name="buscar" type="search" autocomplete="off" placeholder="Por ejemplo: comedor">
-          </div>
-          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-        </form>
-        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
-        <table th:if="${conDatos}" class="tabla">
-          <caption th:text="|Entidades activas: ${activas}. Se ven las ${accion == 'aprobada' ? 5 : 4} más recientes.|">Entidades activas: 46. Se
-            ven las 4 más recientes.</caption>
-          <thead>
-            <tr>
-              <th scope="col">Nombre</th>
-              <th scope="col">Tipo</th>
-              <th scope="col">Localidad</th>
-              <th scope="col">Activa desde</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:if="${accion == 'aprobada'}">
-              <th scope="row">Hogar Ejemplo Norte</th>
-              <td data-rotulo="Tipo">Hogar</td>
-              <td data-rotulo="Localidad">Localidad Ejemplo</td>
-              <td data-rotulo="Activa desde">15 de octubre</td>
-            </tr>
-            <tr th:each="e : ${entidades}">
-              <th scope="row" th:text="${e.nombre}">Comedor Barrio Ejemplo</th>
-              <td data-rotulo="Tipo" th:text="${e.tipo}">Comedor</td>
-              <td data-rotulo="Localidad" th:text="${e.localidad}">Localidad Ejemplo</td>
-              <td data-rotulo="Activa desde" th:text="${e.alta}">4 de febrero</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
+            <th:block th:if="${ver == 'activas'}">
+              <p><span class="estado" data-forma="punto" data-estado="recibida"
+                       th:text="|Activa desde el ${e.alta}|">Activa desde el 4 de febrero</span></p>
+              <dl class="grilla" data-espacio="2">
+                <div><dt>Responsable</dt><dd th:text="|${e.responsable} · ${e.correo}|">Carmen Ejemplo</dd></div>
+                <div><dt>Entregas confirmadas en octubre</dt><dd th:text="${e.entregas}">5</dd></div>
+              </dl>
+              <h3 th:text="${e.pedidos.isEmpty()} ? 'Sin pedidos vigentes' : |Pedidos vigentes · ${#lists.size(e.pedidos)}|">Pedidos
+                vigentes · 4</h3>
+              <p th:if="${e.pedidos.isEmpty()}">No tiene nada pedido ahora. Cuando publique un pedido, aparece acá.</p>
+              <ul th:unless="${e.pedidos.isEmpty()}" class="pila" data-espacio="2" data-lista="pedidos-ficha" role="list">
+                <li th:each="p : ${e.pedidos}">
+                  <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
+                      th:href="|#cat-${p.cat}|" href="#cat-alimentos"/></svg>
+                  <span><b th:text="${p.que}">Lentejas secas</b> <small th:text="${p.falta}">Faltan 30 de 40 kg este
+                    mes</small></span>
+                </li>
+              </ul>
+            </th:block>
+
+            <th:block th:if="${ver == 'inactivas'}">
+              <p><span class="estado" data-forma="punto" data-estado="inactiva"
+                       th:text="|Inactiva desde el ${e.baja}|">Inactiva desde el 20 de agosto</span></p>
+              <dl class="grilla" data-espacio="2">
+                <div><dt>Motivo de la baja</dt><dd th:text="${e.motivo}">La entidad pidió la baja.</dd></div>
+                <div><dt>Estuvo activa</dt><dd th:text="|Del ${e.alta} al ${e.baja}|">Del 3 de marzo al 20 de agosto</dd></div>
+                <div><dt>Responsable</dt><dd th:text="|${e.responsable} · ${e.correo}|">Nora Ejemplo</dd></div>
+              </dl>
+              <p>No publica pedidos ni recibe donaciones.</p>
+            </th:block>
+          </section>
+        </li>
+      </ul>
+    </section>
   </div>
 </th:block>
+</th:block>
+
+<!--/* El estado de un renglón: la bolita (círculo con anillo y punto) y la palabra. */-->
+<span th:fragment="estado(ver, e)" class="estado" data-forma="punto"
+      th:data-estado="${ver == 'pendientes'} ? (${e.falta != null} ? 'camino' : 'pendiente') : (${ver == 'inactivas'} ? 'inactiva' : 'recibida')"
+      th:text="${ver == 'pendientes'} ? (${e.falta != null} ? 'Le falta un dato' : 'Pendiente') : (${ver == 'inactivas'} ? 'Inactiva' : 'Activa')">Activa</span>
+
+<!--/* Las tres acciones de una pendiente. Aprobar no pregunta (ficha, 4.3); Pedir corrección y
+       Rechazar abren un diálogo con su campo obligatorio. */-->
+<th:block th:fragment="acciones(e)">
+  <div class="racimo">
+    <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post">
+      <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
+      <button class="boton" data-tono="principal" type="submit" th:aria-label="|Aprobar: ${e.nombre}|">Aprobar</button>
+    </form>
+    <button type="button" class="boton" data-tono="secundario" th:popovertarget="|corregir-${e.clave}|"
+            popovertarget="corregir-hogar" th:aria-label="|Pedir corrección: ${e.nombre}|">Pedir corrección</button>
+    <button type="button" class="boton" data-tono="quitar" th:popovertarget="|rechazar-${e.clave}|"
+            popovertarget="rechazar-hogar" th:aria-label="|Rechazar: ${e.nombre}|">Rechazar</button>
+  </div>
+  <dialog class="dialogo" th:id="|corregir-${e.clave}|" id="corregir-hogar" popover
+          th:aria-labelledby="|corregir-${e.clave}-titulo|">
+    <h3 class="dialogo-titulo" th:id="|corregir-${e.clave}-titulo|"
+        th:text="|¿Qué tiene que corregir ${e.nombre}?|">¿Qué tiene que corregir Hogar Ejemplo Norte?</h3>
+    <form class="pila" data-espacio="3" action="/admin-entidades-correccion"
+          th:action="@{/admin-entidades-correccion}" method="post">
+      <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
+      <div class="campo">
+        <label th:for="|correccion-${e.clave}|" for="correccion-hogar">Qué tiene que corregir *</label>
+        <small th:id="|correccion-${e.clave}-ayuda|" id="correccion-hogar-ayuda">Le llega a la entidad. Por
+          ejemplo: "Falta la constancia de domicilio".</small>
+        <textarea th:id="|correccion-${e.clave}|" id="correccion-hogar" name="correccion" rows="3" required autofocus
+                  th:aria-describedby="|correccion-${e.clave}-ayuda|"
+                  th:text="${e.falta != null} ? 'Falta la constancia de domicilio.' : ''"></textarea>
+      </div>
+      <div class="racimo">
+        <button class="boton" data-tono="principal" type="submit">Pedir corrección</button>
+        <button type="button" class="boton" data-tono="secundario" th:popovertarget="|corregir-${e.clave}|"
+                popovertarget="corregir-hogar" popovertargetaction="hide">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="dialogo" data-tono="quitar" th:id="|rechazar-${e.clave}|" id="rechazar-hogar" popover
+          th:aria-labelledby="|rechazar-${e.clave}-titulo|">
+    <h3 class="dialogo-titulo" th:id="|rechazar-${e.clave}-titulo|"
+        th:text="|¿Rechazar la solicitud de ${e.nombre}?|">¿Rechazar la solicitud de Hogar Ejemplo Norte?</h3>
+    <form class="pila" data-espacio="3" action="/admin-entidades-rechazada"
+          th:action="@{/admin-entidades-rechazada}" method="post">
+      <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
+      <div class="campo">
+        <label th:for="|motivo-${e.clave}|" for="motivo-hogar">Motivo, que le llega a la entidad *</label>
+        <textarea th:id="|motivo-${e.clave}|" id="motivo-hogar" name="motivo" rows="3" required
+                  placeholder="Contanos el motivo"></textarea>
+      </div>
+      <div class="racimo">
+        <button class="boton" data-tono="quitar" type="submit">Rechazar solicitud</button>
+        <button type="button" class="boton" data-tono="secundario" th:popovertarget="|rechazar-${e.clave}|"
+                popovertarget="rechazar-hogar" popovertargetaction="hide" autofocus>Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+</th:block>
+
+<!--/* Lo que mandó la entidad: cada dato con su tilde o su cruz, y la palabra. */-->
+<ul th:fragment="documentos(e)" class="pila" data-espacio="1" data-lista="documentos" role="list">
+  <li><span aria-hidden="true" data-tono="exito">✓</span> CUIT <th:block th:text="${e.cuit}">30-00000011-0</th:block></li>
+  <li><span aria-hidden="true" data-tono="exito">✓</span> Dirección</li>
+  <li><span aria-hidden="true" data-tono="exito">✓</span> Responsable y correo</li>
+  <li th:if="${e.constancia != null}"><span aria-hidden="true" data-tono="exito">✓</span> Constancia de domicilio</li>
+  <li th:if="${e.constancia == null}" data-tono="error"><span aria-hidden="true">✗</span> Falta la constancia de
+    domicilio</li>
+</ul>
 </body>
 </html>

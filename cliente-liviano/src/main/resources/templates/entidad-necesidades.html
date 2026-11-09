@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--/* Raíces, Necesidades de la entidad (RF-10), según su ficha de flujo
        (docs/interfaz/flujos/raices-necesidades.md). Arriba, el registro de cifras y "Publicar otra
-       necesidad" plegado; la lista de los pedidos vigentes, cada uno plegado con su resumen y,
+       necesidad" plegado; la lista de los pedidos vigentes, en un cantero plegable por categoría
+       (con su resumen: cuántas, cuántas cubiertas y cuántas entregas esperan), cada uno plegado con su resumen y,
        abierto, su detalle: por qué hace falta, las entregas para ese pedido, quién donó, la historia
        de los períodos en barras (si se repite) y las acciones (cambiar y dar de baja, con su confirmación en un
        diálogo del navegador, sin JavaScript); al pie, las cumplidas y terminadas. Los datos de
@@ -202,16 +203,37 @@
     <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="pedidos"
              aria-labelledby="pedidos-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="pedidos-titulo">Tus necesidades vigentes</h2>
-      <!--/* Una variante de estructura (templates/variantes/necesidades-*.html) puede armar la lista a su
-             manera con el mismo fragmento pedido(n); se borra al decidir. */-->
-      <th:block th:if="${listaVariante != null}">
-        <th:block th:replace="${listaVariante}"></th:block>
-      </th:block>
-      <ul th:if="${listaVariante == null}" class="pedidos-lista" role="list">
-        <li th:each="n : ${vigentes}" th:id="${n.clave}">
-          <details th:replace="~{entidad-necesidades :: pedido(${n})}"></details>
-        </li>
-      </ul>
+      <!--/* Un cantero por categoría (prueba necesidades-b, elegida en la ronda del 2026-11-09, tarde):
+             el pictograma grande, cuántas necesidades tiene, cuántas están cubiertas y cuántas entregas
+             esperan; adentro, las tarjetas compactas. La categoría también se pliega ("que se pueda
+             plegar la categoría también"): es un details abierto de partida, y plegado deja a la vista
+             ese resumen. */-->
+      <div class="pila" data-espacio="4"
+           th:with="rubros=${ { {nombre: 'Alimentos', icono: 'cat-alimentos'}, {nombre: 'Ropa', icono: 'cat-ropa'},
+                                {nombre: 'Muebles', icono: 'cat-muebles'}, {nombre: 'Útiles escolares', icono: 'cat-escolares'} } }">
+        <th:block th:each="r : ${rubros}" th:with="deEste=${vigentes.?[rubro == #root.r.nombre]}">
+          <details th:unless="${#lists.isEmpty(deEste)}" data-cantero open th:id="|cantero-${r.icono}|">
+            <summary th:with="cuantas=${#lists.size(deEste)},
+                              cubiertas=${#lists.size(deEste.?[valor >= max])},
+                              puerta=${#aggregates.sum(deEste.![puerta])}">
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-alimentos" th:href="|#${r.icono}|"/>
+              </svg>
+              <span>
+                <h3 th:text="${r.nombre}">Alimentos</h3>
+                <span th:text="|${cuantas == 1 ? '1 necesidad' : cuantas + ' necesidades'} · ${cubiertas == 0 ? (cuantas == 1 ? 'todavía no está cubierta' : 'ninguna cubierta todavía') : (cubiertas == cuantas ? (cuantas == 1 ? 'cubierta' : 'todas cubiertas') : cubiertas + ' de ' + cuantas + ' cubiertas')}${puerta > 0 ? (puerta == 1 ? ' · 1 entrega espera tu confirmación' : ' · ' + puerta + ' entregas esperan tu confirmación') : ''}|">5
+                  necesidades · ninguna cubierta todavía · 1 entrega espera tu confirmación</span>
+              </span>
+              <span data-cantero-ver aria-hidden="true"><span>Plegar</span><span>Mostrar</span></span>
+            </summary>
+            <ul class="pedidos-lista" role="list">
+              <li th:each="n : ${deEste}" th:id="${n.clave}">
+                <details th:replace="~{entidad-necesidades :: pedido(${n})}"></details>
+              </li>
+            </ul>
+          </details>
+        </th:block>
+      </div>
     </section>
 
     <!--/* Las cumplidas y terminadas, aparte y plegadas (usuario, 2026-11-01): cómo terminó cada una,
@@ -231,11 +253,9 @@
   </div>
 </th:block>
 
-<!--/* Un pedido: su resumen y, abierto, su detalle. Lo usan la lista y las variantes de estructura.
-       data-avance (de 0 a 100, de a 10) y data-etapa (de 1 a 4) son el avance para las variantes de
-       estilo, que no pueden poner un style. */-->
+<!--/* Un pedido: su resumen y, abierto, su detalle, dentro del cantero de su categoría. */-->
 <details th:fragment="pedido(n)" class="tarjeta pedido" th:open="${n.clave == pedida}"
-         th:attr="data-avance=${n.valor * 10 / n.max * 10},data-etapa=${n.valor * 4 / n.max >= 3 ? 4 : n.valor * 4 / n.max + 1},data-categoria=${n.categoria}"
+         th:attr="data-categoria=${n.categoria}"
          th:classappend="${mostrarNueva and n.clave == 'fideos'} ? 'pedido--nuevo'">
   <!--/* El resumen dice todo lo necesario para recorrer la lista sin abrir nada, en tres grupos
          (ronda del 2026-11-09): qué hace falta (con la categoría y si se repite), cuánto llegó (la

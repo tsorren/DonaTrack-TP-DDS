@@ -157,9 +157,10 @@ figure.mapa-dibujo {
   scroll-margin-top: 1rem;
 }
 
+/* La ficha a la que se llegó con #entidad-<clave>: el fondo verde claro, sin el recuadro verde (regla
+   general de la ronda del 2026-11-09, tarde). */
 .estacion-ficha:target {
-  outline: 3px solid var(--color-acento);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-raiz);
+  background: var(--color-acento-claro);
 }
 
 .estacion-cabeza {

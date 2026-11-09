@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!--/* Prueba A/B/C de Entidades (ronda del 2026-11-09), opción B. Eje: recorrer rápido. Las entidades
-       en una lista compacta, agrupadas por tipo (comedores y merenderos, escuelas y bibliotecas,
-       hogares, clubes), un renglón por entidad: el nombre y el barrio, las categorías que pide como
-       chips con su ícono (y "Emergencia", si tiene una) y cuántos pedidos tiene; los pedidos se
-       despliegan en el mismo renglón (details, sin JavaScript). El resto de la pantalla es el de
+<!--/* Prueba A/B de Entidades (ronda del 2026-11-09, tarde; docs/interfaz/plan-ronda-2026-11-09-tarde.md),
+       opción B. Eje: cómo entra la barra de progreso en el renglón plegado y cómo se ve desplegado. B:
+       plegado, la barra como pie de la tarjeta, partida en un tramo por pedido con cantidad, y debajo
+       en cuántos ya llegó una parte; desplegado, el pie se va y los pedidos quedan en filas compactas,
+       como una tabla: qué, hasta cuándo, su barra y lo que falta. El resto de la pantalla es el de
        publico-entidades.html. Se borra al decidir. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
@@ -15,51 +15,70 @@
   <th:block th:replace="~{datos-publicos :: datos(~{publico-entidades :: pantalla})}"></th:block>
 </th:block>
 
-<div th:fragment="vista" data-v="entidades-grupos"
+<div th:fragment="vista" class="pila" data-espacio="5" data-v="entidades-b"
      th:with="grupos=${ {
        {titulo: 'Comedores y merenderos', tipos: {'Comedor', 'Merendero'}},
        {titulo: 'Escuelas y bibliotecas', tipos: {'Escuela', 'Biblioteca'}},
        {titulo: 'Hogares', tipos: {'Hogar'}},
        {titulo: 'Clubes', tipos: {'Club'}} } }">
   <th:block th:each="g, vuelta : ${grupos}" th:with="suyas=${visibles.?[#lists.contains(#root.g.tipos, tipo)]}">
-  <section th:unless="${suyas.isEmpty()}" data-v="entidades-grupo" th:attr="aria-labelledby=${'grupo-' + vuelta.count}">
-    <h2 th:id="${'grupo-' + vuelta.count}" data-v="entidades-grupo-titulo">
+  <section th:unless="${suyas.isEmpty()}" class="pila" data-espacio="2" th:attr="aria-labelledby=${'grupo-' + vuelta.count}">
+    <h2 th:id="${'grupo-' + vuelta.count}" class="racimo">
       <th:block th:text="${g.titulo}">Comedores y merenderos</th:block>
-      <span th:text="${#lists.size(suyas) == 1 ? '1 entidad' : #lists.size(suyas) + ' entidades'}">2 entidades</span></h2>
-    <ul data-v="entidades-renglones" role="list">
-      <li th:each="e : ${suyas}" data-v="entidades-renglon"
+      <span class="texto-chico" data-tono="suave"
+            th:text="${#lists.size(suyas) == 1 ? '1 entidad' : #lists.size(suyas) + ' entidades'}">2 entidades</span></h2>
+    <ul class="pila" data-espacio="1" role="list">
+      <li th:each="e : ${suyas}"
           th:with="pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
-                   cats=${#lists.toList(#sets.toSet(pedidos.![cat]))},
+                   conTotal=${pedidos.?[total != null]},
+                   llegaron=${#lists.size(conTotal.?[faltan < total])},
                    total=${#lists.size(pedidos)}">
-        <details data-v="entidades-renglon-pliegue">
+        <details class="plegable">
           <summary>
-            <span data-v="entidades-renglon-nombre">
+            <span class="plegable-titulo">
               <b th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
               <span th:text="|${e.tipo} · ${e.barrio}|">Comedor · Barrio Ejemplo</span>
             </span>
-            <span data-v="entidades-chips">
-              <span th:each="c : ${categorias}" th:if="${#lists.contains(cats, c.clave)}" data-v="entidades-chip">
-                <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"
-                     th:href="${'#cat-' + c.clave}"/></svg><th:block th:text="${c.texto}">Alimentos</th:block></span>
-              <span th:unless="${pedidos.?[emergencia].isEmpty()}" data-v="entidades-chip" data-tono="emergencia">Emergencia</span>
-            </span>
-            <span data-v="entidades-renglon-cuenta"
+            <span th:replace="~{publico-entidades :: chips(${pedidos})}"></span>
+            <span class="plegable-ver"
                   th:text="${total == 1 ? 'Ver el pedido' : 'Ver los ' + total + ' pedidos'}">Ver los 5 pedidos</span>
+            <!--/* El pie: un tramo por pedido con cantidad; la cuenta, en palabras. */-->
+            <span th:unless="${conTotal.isEmpty()}" data-v="entidades-b-pie">
+              <span data-v="entidades-b-tramos">
+                <progress th:each="p : ${conTotal}" class="progreso" max="40" value="10"
+                          th:max="${p.total}" th:value="${p.total - p.faltan}" aria-hidden="true"></progress>
+              </span>
+              <span th:text="${#lists.size(conTotal) == 1}
+                  ? (${llegaron == 1} ? 'De su pedido con cantidad ya llegó una parte.' : 'De su pedido con cantidad todavía no llegó nada.')
+                  : |Ya llegó una parte en ${llegaron} de sus ${#lists.size(conTotal)} pedidos con cantidad.|">Ya llegó
+                una parte en 4 de sus 4 pedidos con cantidad.</span>
+            </span>
           </summary>
-          <ul data-v="entidades-renglon-pedidos" role="list">
-            <li th:each="p : ${pedidos}">
-              <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
-                  href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
-              <p><b th:text="${p.que}">Lentejas secas</b> · <th:block th:text="${p.falta}">Faltan 30 de 40 kg este
-                mes</th:block> · <th:block th:text="${p.cuando}">Se repite cada mes</th:block><th:block
-                th:if="${p.emergencia}"> · <span class="estado" data-estado="con-problema"><th:block
-                th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><span>Emergencia</span></span></th:block></p>
-              <p data-v="entidades-renglon-porque" th:text="|Por qué: ${p.porque}|">Por qué: para el almuerzo.</p>
-            </li>
-          </ul>
-          <a th:if="${e.numero != null}" class="boton" data-tamano="chico" href="/publico-mapa#entidad-comedor"
-             th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
-             th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
+          <div class="plegable-cuerpo">
+            <ul data-v="entidades-b-filas" role="list">
+              <li th:each="p : ${pedidos}">
+                <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use
+                    width="100" height="100" href="#cat-alimentos" th:href="${'#cat-' + p.cat}"/></svg>
+                <div data-v="entidades-b-que">
+                  <p class="racimo" data-espacio="1"><b th:text="${p.que}">Lentejas secas</b>
+                    <span th:if="${p.emergencia}" class="estado" data-estado="con-problema"><th:block
+                        th:replace="~{componentes/sello :: sello('con-problema')}"></th:block><span>Emergencia</span></span></p>
+                  <p class="pedido-porque" th:text="|${p.cuando}. Por qué: ${p.porque}|">Se repite cada mes. Por qué:
+                    para el almuerzo de lunes a viernes.</p>
+                </div>
+                <div data-v="entidades-b-cuanto">
+                  <progress th:if="${p.total != null}" class="progreso" max="40" value="10"
+                            th:max="${p.total}" th:value="${p.total - p.faltan}"
+                            th:aria-label="|${p.que}: ya llegó una parte; ${#strings.toLowerCase(p.falta)}|"
+                            aria-label="Lentejas secas: ya llegó una parte; faltan 30 de 40 kg este mes"></progress>
+                  <p><b th:text="${p.falta}">Faltan 30 de 40 kg este mes</b></p>
+                </div>
+              </li>
+            </ul>
+            <a th:if="${e.numero != null}" class="boton" data-tamano="chico" href="/publico-mapa#entidad-comedor"
+               th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
+               th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a>
+          </div>
         </details>
       </li>
     </ul>

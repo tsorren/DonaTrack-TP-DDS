@@ -1,138 +1,118 @@
-/* El inicio de la persona que dona (templates/persona/donante-inicio.html, ronda del 2026-11-09):
-   la huerta a lo ancho, este mes junto a la próxima misión, el recorrido y las noticias. Hoja nueva:
-   solo disposición, por id y sin clases propias; el papel, la tierra y los colores vienen de las
-   piezas del donante (donante-inicio.css) y del componente huerta. */
+/* El inicio de la persona que dona (templates/persona/donante-inicio.html, segunda ronda del
+   2026-11-09): su 2026 mes a mes (componente .almanaque) con la lista de cada mes debajo y, al
+   costado, el año en cifras, la próxima misión y las noticias. Hoja nueva: solo disposición, por id y
+   sin clases propias; el papel, la tierra y los colores vienen de las piezas del donante
+   (donante-inicio.css), del componente huerta y del almanaque. */
 @import url("donante-inicio.css");
 
-#persona-inicio .inicio-cuerpo {
-  grid-template-columns: minmax(0, 1fr);
+#persona-inicio > .inicio-cabecera {
+  margin-bottom: var(--espacio-4);
 }
 
-/* La huerta: las plantas en fila, de la primera a la última; en el celular, la fila se desliza. */
-#huerta-plantas {
+#anio {
   display: grid;
-  grid-auto-columns: 7.5rem;
-  grid-auto-flow: column;
-  gap: var(--espacio-3);
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+#anio-meses {
+  --espacio-relleno: var(--espacio-4);
+
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+#anio-meses :is(h2, h3, p) {
   margin: 0;
-  padding: var(--espacio-2) 0 var(--espacio-3);
-  overflow-x: auto;
-  list-style: none;
-  scroll-snap-type: x mandatory;
 }
 
-#huerta-plantas li {
-  scroll-snap-align: start;
-}
-
-#huerta-plantas a {
+#anio-meses > header {
   display: grid;
   gap: var(--espacio-1);
-  min-height: 3rem;
-  border-radius: var(--radio-boton);
-  text-decoration: none;
 }
 
-#huerta-plantas .huerta-marco {
-  height: 8.5rem;
-  margin: var(--espacio-3) 0 0;
-}
-
-#huerta-plantas .huerta-marco img:first-child {
-  width: auto;
-  max-width: 100%;
-  height: 7rem;
-}
-
-#huerta-plantas [data-estado="pendiente"] .huerta-marco img:first-child {
-  height: 3.75rem;
-}
-
-#huerta-plantas [data-estado="en-camino"] .huerta-marco img:first-child {
-  height: 5.25rem;
-}
-
-#huerta-plantas small {
-  line-height: 1.3;
-}
-
-/* Este mes y la próxima misión: la cabeza en una columna, el rótulo arriba del título. */
-:is(#este-mes, #proxima-mision) > .huerta-cabeza {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-#mi-huerta .huerta-tierra-texto p {
+#anio-meses > header p:last-child {
   max-width: 42rem;
 }
 
-/* Este mes y la próxima misión. */
-#este-mes ul {
+/* Mes por mes. */
+#anio-lista section {
+  display: grid;
+  gap: var(--espacio-2);
+  scroll-margin-top: var(--espacio-5);
+}
+
+#anio-lista h3 {
+  font-size: 1.125rem;
+}
+
+#anio-lista ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-#este-mes li {
+#anio-lista li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--espacio-1) var(--espacio-2);
 }
 
-#este-mes figure {
+#anio-lista figure {
+  max-width: 28rem;
   margin: 0;
 }
 
-#este-mes figure img {
+#anio-lista figure img {
   width: 100%;
   height: auto;
   border-radius: var(--radio-boton);
 }
 
-#proxima-mision > img {
-  justify-self: center;
-  width: auto;
-  height: 7rem;
+/* La columna del costado. */
+#anio-lado .huerta-cabeza {
+  grid-template-columns: minmax(0, 1fr);
 }
 
-#proxima-mision p {
+#anio-lado p {
   margin: 0;
 }
 
-#proxima-mision > a,
-#noticias-persona .huerta-cabeza > a {
+#anio-lado a:not(.noticia-texto) {
   display: inline-flex;
   align-items: center;
   min-height: 3rem;
   font-weight: 700;
 }
 
-@media (min-width: 53.75em) {
-  #persona-inicio .inicio-cuerpo {
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-    align-items: start;
-  }
-
-  #mi-huerta,
-  #persona-inicio .inicio-cuerpo > .huerta-caja:not(#este-mes, #proxima-mision, #noticias-persona) {
-    grid-column: 1 / -1;
-  }
-
-  #este-mes {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-
-  #este-mes > header {
-    grid-column: 1 / -1;
-  }
-
-  #noticias-persona {
-    grid-column: 1 / -1;
-  }
+#anio-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-2);
+  margin: 0;
 }
 
-/* Aire entre el saludo y la huerta, también en el celular. */
-#persona-inicio > .inicio-cabecera {
-  margin-bottom: var(--espacio-4);
+#anio-cifras div {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+#anio-cifras dt {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+#anio-cifras dd {
+  order: -1;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+@media (min-width: 53.75em) {
+  #anio {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
 }

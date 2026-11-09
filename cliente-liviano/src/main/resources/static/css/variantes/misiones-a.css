@@ -1,238 +1,218 @@
-/* Prueba A/B de Misiones (ronda del 2026-11-09), opción A: el álbum de figuritas
-   (templates/variantes/misiones-a.html). La tapa con sus seis casilleros, las páginas por categoría
-   (la completa plegada, la actual abierta, la siguiente como sobre cerrado) y cada figurita: pegada,
-   con borde de papel, un leve giro y sombra; o el hueco punteado con la silueta del dibujo. Solo
-   tokens de uso. Se borra al decidir. */
+/* Prueba A/B de Misiones, segunda ronda del 2026-11-09 (tarde), opción A: figuritas literal
+   (templates/variantes/misiones-a.html). Una huerta armada en 4 piezas: cada botón muestra un
+   cuadrante del mismo dibujo (la imagen al doble de tamaño, corrida dentro de un recorte). La pieza
+   que falta, en gris y apagada, con su número al centro. La lista de abajo dice lo mismo en texto.
+   Sin borde verde de selección: el diálogo es lo que se abre. Solo tokens de uso. Se borra al decidir. */
 
-/* --- La tapa --------------------------------------------------------------------------------- */
-#album-tapa {
+#huerta-figuritas {
   display: grid;
-  gap: var(--espacio-3);
-  padding: var(--espacio-4);
-  border-radius: var(--radio-lamina);
-  background: var(--color-acento);
-  color: var(--color-texto-sobre-accion);
+  gap: var(--espacio-4);
+  align-items: start;
 }
 
-#album-tapa h2 {
-  margin: 0 0 var(--espacio-1);
-  color: inherit;
-  font: 850 clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem) / 1 var(--fuente-titulo);
-  font-stretch: 120%;
-  letter-spacing: -0.02em;
+#huerta-figuritas header {
+  display: grid;
+  gap: var(--espacio-2);
 }
 
-#album-tapa p {
-  max-width: 42rem;
+#huerta-figuritas :is(h2, p) {
   margin: 0;
 }
 
-#album-casilleros {
+#huerta-figuritas header p {
+  max-width: 44rem;
+}
+
+/* --- La imagen en 4 piezas -------------------------------------------------------------------- */
+#huerta-piezas {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 3.25rem));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-1);
+  width: 100%;
+  max-width: 46rem;
+  margin: 0;
+  padding: var(--espacio-1);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  list-style: none;
+}
+
+#huerta-piezas li {
+  margin: 0;
+}
+
+#huerta-piezas button {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-boton);
+  background: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* Las esquinas que dan al borde de la imagen, más redondeadas, como un solo dibujo. */
+#huerta-piezas [data-pieza="1"] :is(button, [data-recorte]) {
+  border-top-left-radius: var(--radio-lamina);
+}
+
+#huerta-piezas [data-pieza="2"] :is(button, [data-recorte]) {
+  border-top-right-radius: var(--radio-lamina);
+}
+
+#huerta-piezas [data-pieza="3"] :is(button, [data-recorte]) {
+  border-bottom-left-radius: var(--radio-lamina);
+}
+
+#huerta-piezas [data-pieza="4"] :is(button, [data-recorte]) {
+  border-bottom-right-radius: var(--radio-lamina);
+}
+
+/* El recorte: un cuadrante de 4:3 con la imagen al doble, corrida según la pieza. */
+[data-recorte] {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+}
+
+[data-recorte] img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  max-width: none;
+  height: 200%;
+  border: 0;
+}
+
+[data-pieza="2"] [data-recorte] img {
+  left: -100%;
+}
+
+[data-pieza="3"] [data-recorte] img {
+  top: -100%;
+}
+
+[data-pieza="4"] [data-recorte] img {
+  top: -100%;
+  left: -100%;
+}
+
+/* La que falta: la silueta en gris, apagada. */
+[data-estado="falta"] [data-recorte] img {
+  filter: grayscale(1) contrast(0.55) brightness(1.18);
+  opacity: 0.45;
+}
+
+#huerta-piezas button:hover [data-recorte] img {
+  scale: 1.02;
+}
+
+/* El número de la pieza: abajo a la izquierda si la tenés; al centro, grande, si falta. */
+[data-chapa] {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-destacado);
+  color: var(--color-tinta);
+  font: 850 1rem/1 var(--fuente-titulo);
+}
+
+#huerta-piezas [data-chapa] {
+  position: absolute;
+  bottom: var(--espacio-2);
+  left: var(--espacio-2);
+}
+
+#huerta-piezas [data-estado="falta"] [data-chapa] {
+  inset: 0;
+  width: 3rem;
+  height: 3rem;
+  margin: auto;
+  background: var(--color-superficie);
+  font-size: 1.375rem;
+  box-shadow: var(--sombra-papel);
+}
+
+/* --- Las piezas en texto ---------------------------------------------------------------------- */
+#piezas-estado {
+  display: grid;
   gap: var(--espacio-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-#album-casilleros li {
+#piezas-estado li {
   display: grid;
-  place-items: center;
-  aspect-ratio: 3 / 4;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espacio-2);
+  align-items: center;
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-3);
   border-radius: var(--radio-boton);
-  font: 850 1.125rem/1 var(--fuente-titulo);
+  background: var(--color-superficie);
 }
 
-#album-casilleros [data-casillero="pegada"] {
-  background: var(--color-destacado);
-  color: var(--color-tinta);
-  rotate: -3deg;
+#piezas-estado li > span:last-child {
+  display: grid;
+  gap: 0.125rem;
 }
 
-#album-casilleros [data-casillero="hueco"] {
-  border: 2px dashed var(--color-texto-sobre-accion);
+#piezas-estado small {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
 }
 
-#album-casilleros [data-casillero="sobre"] {
-  border: 2px solid var(--color-texto-sobre-accion);
-  opacity: 0.55;
-  font-size: 0;
+#piezas-estado [data-estado="falta"] {
+  background: var(--color-papel);
 }
 
-/* --- Las páginas ----------------------------------------------------------------------------- */
-#misiones [data-pagina] {
-  --espacio-relleno: var(--espacio-4);
+#piezas-estado [data-estado="falta"] [data-chapa] {
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
 }
 
-[data-pagina-numero] {
-  display: inline-block;
-  padding: 0.125rem 0.625rem;
-  border-radius: 999px;
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font: 700 0.78rem/1.5 var(--fuente-titulo);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* --- El diálogo de cada pieza ----------------------------------------------------------------- */
+dialog[id^="pieza-"] [data-recorte] {
+  width: min(16rem, 100%);
 }
 
-#misiones [data-pagina] h2 {
+dialog[id^="pieza-"] ul {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+dialog[id^="pieza-"] li {
+  margin: 0;
+}
+
+dialog[id^="pieza-"] .progreso {
   margin: var(--espacio-1) 0;
 }
 
-#misiones [data-pagina="actual"] > header p {
-  max-width: 42rem;
-  margin: 0;
+dialog[id^="pieza-"] .boton {
+  margin-top: var(--espacio-2);
 }
 
-#misiones details[data-pagina] > summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--espacio-2) var(--espacio-3);
-  min-height: 3rem;
-  cursor: pointer;
-}
+/* En pantalla ancha, la imagen a la izquierda y las piezas en texto al lado. */
+@media (min-width: 53.75em) {
+  #huerta-figuritas {
+    grid-template-columns: minmax(0, 46rem) minmax(16rem, 1fr);
+  }
 
-#misiones details[data-pagina] > summary > span:nth-child(2) {
-  display: grid;
-  gap: var(--espacio-1);
-}
-
-#misiones [data-pagina="sobre"] {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--espacio-2) var(--espacio-3);
-  outline: 2px dashed var(--color-filete);
-  outline-offset: -0.5rem;
-}
-
-#misiones [data-pagina="sobre"] :is(h2, p) {
-  margin: 0;
-}
-
-/* Las figuritas de la página plegada, en miniatura, pegadas en el resumen. */
-[data-miniaturas] {
-  display: flex;
-  gap: var(--espacio-2);
-  margin-inline-start: auto;
-}
-
-[data-miniaturas] img {
-  width: 2.5rem;
-  height: 3.25rem;
-  padding: 0.25rem;
-  border-radius: 0.375rem;
-  background: var(--color-acento-claro);
-  box-shadow: 0 0 0 0.1875rem var(--color-papel), 0.1875rem 0.25rem 0 0.1875rem var(--color-sombra);
-  object-fit: contain;
-  rotate: -3deg;
-}
-
-[data-miniaturas] img + img {
-  rotate: 2deg;
-}
-
-/* --- Las figuritas --------------------------------------------------------------------------- */
-#misiones [data-pagina] .lista {
-  --medida-columna: 13rem;
-  gap: var(--espacio-4) var(--espacio-3);
-  margin-block-start: var(--espacio-3);
-}
-
-[data-figurita] article {
-  display: grid;
-  align-content: start;
-  gap: var(--espacio-2);
-  height: 100%;
-  padding: var(--espacio-2) var(--espacio-2) var(--espacio-3);
-  border-radius: var(--radio-boton);
-}
-
-[data-figurita] :is(h3, p) {
-  margin: 0;
-}
-
-[data-figurita] h3 {
-  font: 850 1.125rem/1.1 var(--fuente-titulo);
-  font-stretch: 115%;
-}
-
-[data-figurita] figure {
-  position: relative;
-  display: grid;
-  place-items: end center;
-  height: 9rem;
-  margin: 0;
-  padding: var(--espacio-2);
-  border-radius: var(--radio-boton);
-  overflow: hidden;
-}
-
-[data-figurita] figure img {
-  width: auto;
-  max-width: 100%;
-  height: 100%;
-}
-
-[data-numero] {
-  position: absolute;
-  top: var(--espacio-1);
-  left: var(--espacio-1);
-  padding: 0 0.5rem;
-  border-radius: 999px;
-  font: 700 0.75rem/1.6 var(--fuente-titulo);
-}
-
-/* Pegada: papel blanco con borde, sombra y un leve giro, como recién pegada. */
-[data-figurita="pegada"] article {
-  background: var(--color-superficie);
-  box-shadow: 0 0 0 0.375rem var(--color-papel), 0.375rem 0.5rem 0 0.375rem var(--color-sombra);
-}
-
-[data-figurita="pegada"]:nth-child(odd) article {
-  rotate: -1.5deg;
-}
-
-[data-figurita="pegada"]:nth-child(even) article {
-  rotate: 1.5deg;
-}
-
-[data-figurita="pegada"] figure {
-  background: radial-gradient(120% 90% at 50% 85%, var(--color-acento-claro), var(--color-superficie));
-}
-
-[data-figurita="pegada"] [data-numero] {
-  background: var(--color-destacado);
-  color: var(--color-tinta);
-}
-
-/* El hueco: el lugar punteado y la silueta del dibujo, sin color. */
-[data-figurita="hueco"] article {
-  outline: 2px dashed var(--color-tinta-suave);
-  outline-offset: -2px;
-  background: var(--color-papel);
-}
-
-[data-figurita="hueco"] figure {
-  background: var(--color-filete);
-}
-
-[data-figurita="hueco"] figure img {
-  filter: brightness(0);
-  opacity: 0.2;
-}
-
-[data-figurita="hueco"] [data-numero] {
-  background: var(--color-papel);
-  color: var(--color-tinta);
-}
-
-@media (min-width: 37.5em) {
-  #album-tapa {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+  #huerta-figuritas header {
+    grid-column: 1 / -1;
   }
 }
-

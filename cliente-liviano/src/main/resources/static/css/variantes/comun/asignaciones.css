@@ -1,0 +1,107 @@
+/* Lo que comparten las variantes de Asignar donaciones (ronda 2026-11-09 tarde): la búsqueda con los
+   filtros al lado, los íconos de categoría, la cuenta de coincidencias, los puestos de una entidad en
+   cada algoritmo y el ranking de una ejecución. Solo tokens de uso. Se borra al decidir. */
+
+[data-variante^="asignaciones"] :is(h2, h3, h4, p, ol, ul, dl, dd) {
+  margin: 0;
+}
+
+[data-variante^="asignaciones"] small {
+  color: var(--color-tinta-suave);
+}
+
+/* La búsqueda y los filtros van con la barra compartida (componentes/filtros, .filtros-barra). */
+
+/* El ícono de la categoría, centrado en su caja redondeada. */
+[data-variante^="asignaciones"] .categoria-icono {
+  flex: none;
+  box-sizing: border-box;
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  padding: var(--espacio-1);
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  fill: var(--color-acento);
+}
+
+/* Cuántas candidatas en común: una pastilla redonda con el color de su estado. */
+[data-variante^="asignaciones"] [data-cuenta] {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--espacio-2);
+  border-radius: 999px;
+  font-size: var(--tamano-chico);
+  white-space: nowrap;
+}
+
+[data-variante^="asignaciones"] [data-cuenta="con"] {
+  background: var(--color-entregada-fondo);
+  color: var(--color-entregada-texto);
+}
+
+[data-variante^="asignaciones"] [data-cuenta="sin"] {
+  background: var(--color-en-camino-fondo);
+  color: var(--color-en-camino-texto);
+}
+
+/* Los puestos de una entidad en cada algoritmo: el número grande y el porqué al lado. */
+[data-variante^="asignaciones"] [data-lista="posiciones"] {
+  gap: var(--espacio-1);
+}
+
+[data-variante^="asignaciones"] [data-lista="posiciones"] li {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+[data-variante^="asignaciones"] [data-lista="posiciones"] li > b {
+  display: grid;
+  place-items: center;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  font: 800 var(--tamano-base) / 1 var(--fuente-cifra);
+}
+
+[data-variante^="asignaciones"] [data-lista="posiciones"] li > span {
+  display: grid;
+}
+
+/* El ranking de una ejecución: un renglón por puesto; las que están en todos, con fondo. */
+[data-variante^="asignaciones"] [data-lista="ranking"] {
+  gap: var(--espacio-1);
+}
+
+[data-variante^="asignaciones"] [data-lista="ranking"] li {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 3rem;
+  padding: var(--espacio-1) var(--espacio-2);
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+}
+
+[data-variante^="asignaciones"] [data-lista="ranking"] li[data-comun] {
+  background: var(--color-entregada-fondo);
+}
+
+[data-variante^="asignaciones"] [data-lista="ranking"] li > b {
+  font: 800 var(--tamano-base) / 1 var(--fuente-cifra);
+  text-align: center;
+}
+
+[data-variante^="asignaciones"] [data-lista="ranking"] li > span {
+  display: grid;
+  min-width: 0;
+}
+
+[data-variante^="asignaciones"] details > summary {
+  padding-block: var(--espacio-2);
+  font-weight: 700;
+  cursor: pointer;
+}

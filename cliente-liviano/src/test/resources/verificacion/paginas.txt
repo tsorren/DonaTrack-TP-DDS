@@ -187,7 +187,9 @@
 /admin-donantes-registrado
 /admin-donantes-registrado?escenario=ya-era
 /admin-entidades
-/admin-entidades?escenario=vacio
+/admin-entidades?ver=pendientes
+/admin-entidades?ver=inactivas
+/admin-entidades?escenario=vacio&ver=pendientes
 /admin-entidades?escenario=lento
 /admin-entidades?escenario=error
 /admin-entidades-aprobada

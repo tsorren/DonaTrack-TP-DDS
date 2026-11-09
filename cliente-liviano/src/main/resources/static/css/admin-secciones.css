@@ -81,23 +81,39 @@
   padding-block: 0;
 }
 
-/* La búsqueda: el campo y "Buscar" en la misma fila, con el mismo alto. */
+/* La búsqueda: el campo y "Buscar" en la misma fila, con el mismo alto (componentes/filtros.css). */
 .filtro-buscar {
   max-width: 40rem;
 }
 
-.filtro-buscar-fila {
+/* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla) -- */
+
+/* Lo que mandó una pendiente y los pedidos de una activa, dentro de la ficha (.maestro-ficha): sin
+   viñetas; cada pedido, su pictograma y el texto al lado. */
+:is([data-lista="documentos"], [data-lista="pedidos-ficha"]) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-lista="pedidos-ficha"] li {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: var(--espacio-2);
 }
 
-.filtro-buscar-fila input {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0;
+[data-lista="pedidos-ficha"] li > span {
+  display: grid;
 }
 
-.filtro-buscar-fila .boton {
-  flex: none;
+/* El pictograma de la lista y de la ficha, a su medida: sellos.css (sin capa, por entidad-comun.css)
+   le gana al bloque maestro con su 1,75 rem. */
+.maestro .categoria-icono {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.maestro-ficha .categoria-icono[data-tamano="grande"] {
+  width: 4rem;
+  height: 4rem;
 }

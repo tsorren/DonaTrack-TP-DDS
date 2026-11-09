@@ -293,6 +293,10 @@
 [data-dibujo="planta-pino"] { --medida-alto: 251.6; }
 [data-dibujo="planta-menta"] { --medida-alto: 175.9; }
 [data-dibujo="planta-orejas"] { --medida-alto: 245.5; }
+/* Los árboles de las cifras (2026-11-09, tarde): sin maceta y más altos que las plantas. */
+[data-dibujo="arbol-redondo"] { --medida-alto: 260.4; }
+[data-dibujo="arbol-triangular"] { --medida-alto: 278.4; }
+[data-dibujo="arbol-ovalado"] { --medida-alto: 231; }
 
 /* --- La portada: el texto y las tres láminas con el enjambre ------------------------------------- */
 .huerta-hero {
@@ -682,12 +686,20 @@
   background: linear-gradient(var(--color-tinta), var(--color-tinta)) 0 9.875rem / 100% 2px no-repeat;
 }
 
+/* Cada árbol con su tamaño propio (width y height de la plantilla, a la misma escala), apoyado en la
+   línea de suelo: la primera fila mide 10 rem y el árbol va abajo. */
+.huerta-cifra {
+  grid-template-rows: 10rem;
+}
+
 .huerta-cifra img {
-  width: 8rem;
-  height: 10rem;
-  margin-bottom: 0.75rem;
-  object-fit: contain;
-  object-position: bottom left;
+  align-self: end;
+  max-width: 100%;
+  height: auto;
+}
+
+.huerta-cifra img + b {
+  margin-top: 0.75rem;
 }
 
 .huerta-cifra b {
