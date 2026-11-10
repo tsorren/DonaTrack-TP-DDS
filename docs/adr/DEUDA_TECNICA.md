@@ -539,16 +539,17 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 
 | Campo | Valor |
 |---|---|
-| ADR | Sin ADR propio. Si el contacto termina en un servicio nuevo o en un canal nuevo entre servicios, lo pide (AGENTS.md §9.1) |
+| ADR | [20261110-recepcion-de-mensajes-de-contacto-en-notificaciones](./notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md) (HB-21) |
 | Decision status | `proposed` |
-| Decidido por | Usuario (2026-11-02, pregunta 17 del artifact de Raíces): formulario dentro de DonaTrack |
-| Implementation status | `[OBSERVED] deferred` — ningún servicio tiene mensajes de contacto. El prototipo de Raíces tiene la pantalla de Contacto, y los avisos de error enlazan a ella con el código del error |
-| Target | Por decidir: `notificaciones-service` (ya tiene una bandeja de notificaciones) o `donaciones-service` |
+| Decidido por | Usuario (2026-11-02, pregunta 17 del artifact de Raíces): formulario dentro de DonaTrack. Usuario (2026-11-10, HB-21): Notificaciones como dueño, sobre la matriz del ADR |
+| Implementation status | `[OBSERVED] deferred` — ningún servicio tiene mensajes de contacto. El prototipo de Raíces tiene la pantalla de Contacto, y los avisos de error enlazan a ella con el código del error. La decisión está tomada; el código va en un hueco aparte |
+| Target | `notificaciones-service` (`POST /api/contacto`, `GET /api/contacto`, `GET /api/contacto/{numero}`, `POST /api/contacto/{numero}/respuesta`, tabla con Flyway, OpenAPI) · `api-gateway` (ruta pública) · `cliente-liviano` (clave de envío, campo trampa e IP del navegador) |
 | Cuándo se saldará | Antes de publicar el sitio. Hasta entonces, la pantalla es maqueta |
 
-1. **Dueño.** Decidir qué servicio recibe el mensaje (`POST /api/contacto`: tema, mensaje, código de error opcional, y correo si no hay sesión) y dónde lo lee el administrador.
-2. **Abuso y repetidos.** Límite de envíos por persona o dirección, porque el formulario es público; y detectar el mismo mensaje enviado dos veces (la pantalla sin conexión pide mandarlo de nuevo).
-3. **Respuesta.** Por correo, desde Notificaciones, con el número del mensaje.
+1. **Dueño.** Decidido: Notificaciones recibe `POST /api/contacto` (tema, texto, código de error opcional, correo si no hay sesión y clave de envío) y responde con el número del mensaje. El administrador recibe un aviso en su bandeja (persona Administración de id fijo) y lee los mensajes en `GET /api/contacto`, solo con `ADMIN` desde HB-13.
+2. **Abuso y repetidos.** Decidido: una clave de envío única por formulario devuelve el mismo número si se reenvía (el caso "sin conexión"); un límite contado en la tabla (5 por hora por correo y 20 por día por IP, configurables) responde `429`; campo trampa y largo máximo. El límite en el gateway y el CAPTCHA quedan descartados.
+3. **Respuesta.** Decidido: `POST /api/contacto/{numero}/respuesta` la manda por correo con `NotificacionRouter` y "Respuesta a tu mensaje Nº …"; estados `RECIBIDO`, `RESPONDIDO` y `ENVIO_FALLIDO`. Sin acuse de recibo por correo.
+4. **Pendiente del grupo.** Confirmar los 180 días de retención de los mensajes de personas sin cuenta.
 
 ## DTI-34 — El cliente liviano no tiene catálogo, tokens de movimiento ni cerco de componentes
 <a id="dti-34"></a>
