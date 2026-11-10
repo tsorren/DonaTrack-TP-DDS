@@ -56,8 +56,7 @@
     <div th:unless="${escenario == 'error'}" class="mapa-cuerpo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <!--/* El mapa real (usuaria, 2026-11-09: "que sea literalmente un mapa"; D21 del ADR del stack:
              MapLibre GL con el estilo de OpenFreeMap, solo en las pantallas con mapa y con su
-             atribución). Es una mejora: static/js/mapa.js carga MapLibre (el WebJar y, si no responde,
-             unpkg) y pone un marcador por cada ficha de la lista, con su globo; sin JavaScript queda
+             atribución). Es una mejora: static/js/mapa.js carga MapLibre (del WebJar; sin CDN) y pone un marcador por cada ficha de la lista, con su globo; sin JavaScript queda
              el aviso y la lista de al lado, con los mismos datos (RF-CL-06). Los puntos son
              sintéticos, uno por barrio: nunca una dirección. Antes, el dibujo de la red de subte. */-->
       <figure th:if="${escenario == 'lento'}" class="mapa-dibujo tierra-impresa esqueleto" aria-hidden="true"></figure>

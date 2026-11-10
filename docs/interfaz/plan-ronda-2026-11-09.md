@@ -75,7 +75,7 @@ Pantallas: `/publico-registro`, `/publico-registro-donante` (y `?tipo=persona`),
 
 ### Abejas y pausa (sesión principal)
 
-- **Abejas, opción B.** Las abejas del hero siguen los recorridos nuevos de `assets/DonaTrack_Abeja1, 2
+- **Abejas, opción B.** Las abejas del hero siguen los recorridos nuevos de `docs/interfaz/identidad/fuentes/DonaTrack_Abeja1, 2
   y 3.svg`, una por ciclo. Van por delante de las tres láminas en los tramos llenos del dibujo y por
   detrás en los punteados (`static/js/abejas.js`).
   - Las láminas se ubican con el mismo encuadre del dibujo (`componentes/huerta.css`).
@@ -194,6 +194,8 @@ Arreglos sin prueba (se ven sin `?variante=`):
     `https://unpkg.com/maplibre-gl@5.9.0/dist/` (js y css).
   - Hasta que se reinicie el servidor, el WebJar da 404 (se ve en la consola) y el mapa sale de unpkg.
   - Al cambiar la versión, hay que cambiar las dos: el `pom.xml` y `VERSION` en `mapa.js`.
+  - Actualización del 2026-11-10 (revisión de la PR 959): se quitó el respaldo de unpkg, porque
+    ADR-E6-06 descarta el CDN. `mapa.js` carga solo el WebJar y, si falla, queda la lista.
 
 Prueba A/B/C de Entidades, de estructura (la **a** es la recomendada). Cada variante cambia solo
 cómo se muestran las entidades. La cabeza, los filtros, los estados y las salidas son los de

@@ -4,7 +4,7 @@
    y el Seguimiento del donante (las entregas en curso, de la empresa y de la persona).
 
    - El contenedor es [data-mapa]; data-maplibre dice dónde está el WebJar (/webjars/maplibre-gl/dist/).
-     Si el WebJar no responde, carga la misma versión desde unpkg.
+     Si el WebJar no responde, no hay mapa y queda la lista (ADR-E6-06 descarta el CDN).
    - Los puntos salen de la página: cada ficha de la lista trae su punto (data-lat, data-lng), su número
      y su nombre, y un <template data-mapa-globo> con el globo que armó el servidor. Las fichas son las
      que elige data-mapa-puntos del contenedor (de partida, .estacion-ficha[data-lat][data-lng]).
@@ -34,10 +34,8 @@
     return;
   }
 
-  const VERSION = "5.9.0";
   const ESTILO = "https://tiles.openfreemap.org/styles/positron";
   const webjar = contenedor.dataset.maplibre || "/webjars/maplibre-gl/dist/";
-  const fuentes = [webjar, "https://unpkg.com/maplibre-gl@" + VERSION + "/dist/"];
   const quieto = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   function cargarScript(src) {
@@ -61,18 +59,16 @@
     if (window.maplibregl) {
       return window.maplibregl;
     }
-    for (const base of fuentes) {
-      try {
-        await cargarScript(base + "maplibre-gl.js");
-        if (window.maplibregl) {
-          cargarEstilos(base + "maplibre-gl.css");
-          return window.maplibregl;
-        }
-      } catch (error) {
-        // Sigue con la fuente siguiente.
-      }
+    try {
+      await cargarScript(webjar + "maplibre-gl.js");
+    } catch {
+      // Sin el WebJar no hay mapa: queda la lista con los mismos datos.
+      return null;
     }
-    return null;
+    if (window.maplibregl) {
+      cargarEstilos(webjar + "maplibre-gl.css");
+    }
+    return window.maplibregl || null;
   }
 
   const tokens = getComputedStyle(contenedor);

@@ -83,9 +83,12 @@
 
 /* Con 5 celdas (las 4 y "Más" de la administración, o las 5 de la persona que dona), a 360 px cada
    una mide 72 px y "Donaciones" o "Seguimiento" no entraban: en esa barra la letra va angosta, el
-   mismo tamaño. Con :where, pesa lo mismo que ".navegacion a" y la tableta lo pisa. */
+   mismo tamaño. La letra de la piel Huerta no tiene ancho variable y seguía sin entrar (80 px en
+   75 a 375 px, PR 959): va además a 12 px. Con :where, pesa lo mismo que ".navegacion a" y la
+   tableta lo pisa. */
 .navegacion :where(ul:has(> li:nth-child(5)) > li) > a {
   padding-inline: 0.125rem;
+  font-size: 0.75rem;
   font-stretch: 75%;
 }
 

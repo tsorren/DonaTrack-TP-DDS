@@ -2,7 +2,7 @@
 // de maceta en maceta por los cuatro pasos.
 // - Hero (opción B de la prueba de abejas, elegida el 2026-11-09): cada abeja recorre un ciclo cerrado
 //   entre las tres láminas. Pasa por delante de las láminas en los tramos que el diseño dibuja llenos
-//   y por detrás en los punteados. Recorridos: assets/DonaTrack_Abeja1, 2 y 3.svg (línea media de cada
+//   y por detrás en los punteados. Recorridos: docs/interfaz/identidad/fuentes/DonaTrack_Abeja1, 2 y 3.svg (línea media de cada
 //   tramo lleno, encadenada con los punteados, suavizada, remuestreada cada 2 unidades y llevada al
 //   encuadre de Abeja1: x de 4 a 254, y de 2 a 152, el de las láminas en componentes/huerta.css).
 //   Formato: `d` son las diferencias en décimas de unidad, de a pares x y; `adelante` son los rangos de

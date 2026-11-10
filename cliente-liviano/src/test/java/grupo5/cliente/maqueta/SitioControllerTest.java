@@ -828,7 +828,7 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("aria-label=\"Aprobar: Merendero Ejemplo Este\"")))
         .andExpect(content().string(containsString("popover")))
-        .andExpect(content().string(containsString("Falta la constancia de")));
+        .andExpect(content().string(matchesPattern("(?s).*Falta la constancia de\\s+domicilio.*")));
     mvc.perform(get("/admin-entidades?ver=inactivas"))
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))
@@ -850,7 +850,8 @@ class SitioControllerTest {
     mvc.perform(get("/admin-entidades-rechazada"))
         .andExpect(
             content().string(containsString("Rechazaste la solicitud de Comedor Ejemplo Oeste.")))
-        .andExpect(content().string(not(containsString("Comedor Ejemplo Oeste</b>"))));
+        .andExpect(content().string(not(containsString("Comedor Ejemplo Oeste</b>"))))
+        .andExpect(content().string(not(containsString("pidió sumarse el 14 de octubre"))));
     mvc.perform(post("/admin-entidades-rechazada"))
         .andExpect(redirectedUrl("/admin-entidades-rechazada"));
     mvc.perform(get("/admin-entidades-registrar-error"))
