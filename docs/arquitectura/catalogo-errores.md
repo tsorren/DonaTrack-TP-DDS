@@ -78,6 +78,7 @@
 | `ERR-VAL-109` | `DIRECCION_ALTURA_INVALIDA` | Altura de dirección inválida | `400` |
 | `ERR-VAL-110` | `DIRECCION_CODIGO_POSTAL_VACIO` | Código postal vacío o nulo | `400` |
 | `ERR-VAL-111` | `DIRECCION_LOCALIDAD_NULA` | Localidad de dirección nula | `400` |
+| `ERR-VAL-114` | `LEGALES_VERSION_NO_VIGENTE` | La versión de los legales que se acepta no es la vigente (HB-20) | `400` |
 
 ### Donantes y Donaciones (2xx)
 

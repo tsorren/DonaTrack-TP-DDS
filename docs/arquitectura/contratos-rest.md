@@ -56,6 +56,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`: con él, solo activos y no anonimizados) | — | `200` |
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
 | `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |
+| `PATCH` | `/api/donantes/{id}/preferencias` | Si la entidad ve el nombre del donante (HB-20); vale también para sus donaciones pasadas | `PreferenciasDonanteDTO` | `200`, `400`, `403`, `404` |
 | `POST` | `/api/donantes/archivos` | Carga asíncrona del padrón CSV de donantes: `multipart/form-data` con la parte `archivo`, guardado en MinIO | `multipart: archivo` | `202`, `400`, `413`, `415` |
 | `GET` | `/api/donantes/archivos/{id}` | Consulta de estado y progreso del procesamiento: `totalFilas`, `procesadas`, `creadas`, `actualizadas` y `conError` (HB-14, aditivo) | — | `200`, `404` |
 | `GET` | `/api/donantes/archivos/{id}/filas-con-error` | Filas del padrón que no se importaron (línea, motivo y código, sin datos de la persona), ordenadas por línea; paginado con `page` y `size` y el total en `X-Total-Count` (HB-14) | — | `200`, `400`, `404` |
@@ -78,6 +79,8 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/personas` | Listado de personas (filtro opcional por `?tipo=HUMANA|JURIDICA`) | — | `200` |
 | `PUT` | `/api/personas/{id}` | Actualización de datos de persona (`400` si una jurídica con entidad activa pasaría a EMPRESA o sin dirección; `409` si la persona fue anonimizada) | `PersonaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/personas/{id}` | Baja y supresión de persona (da de baja sus roles de donante y entidad) | — | `204`, `404` |
+| `GET` | `/api/personas/{id}/legales` | Constancia de los legales: versión aceptada, fecha y si aceptó la vigente (HB-20) | — | `200`, `403`, `404` |
+| `PUT` | `/api/personas/{id}/legales` | Aceptar la versión vigente de los legales; idempotente (HB-20). El alta de persona no la exige | `AceptarLegalesDTO` | `200`, `400`, `403`, `404` |
 | `GET` | `/api/logistica/proveedores` | Broker de logística: proveedores configurados, transporte, disponibilidad y preferido (header `X-API-Key` de administración) | — | `200`, `401` |
 | `PUT` | `/api/logistica/proveedor-preferido` | Broker de logística: cambia en caliente el proveedor preferido (header `X-API-Key` de administración) | `PreferenciaProveedorRequestDTO` | `200`, `400`, `401` |
 

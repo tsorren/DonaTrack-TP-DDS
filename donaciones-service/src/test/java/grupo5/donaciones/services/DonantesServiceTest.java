@@ -358,4 +358,25 @@ class DonantesServiceTest {
           donantesService.obtenerPorId(idInexistente);
         });
   }
+
+  @Test
+  void actualizarPreferencias_guardaLaPreferenciaYLaDevuelve() {
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
+    when(donantesRepository.save(donante)).thenReturn(donante);
+
+    DonanteOutputDTO salida = donantesService.actualizarPreferencias(donanteId, false);
+
+    assertFalse(salida.mostrarNombre());
+    assertFalse(donante.muestraNombre());
+    verify(donantesRepository).save(donante);
+  }
+
+  @Test
+  void actualizarPreferencias_deUnDonanteQueNoExiste_responde404() {
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        RecursoNoEncontradoException.class,
+        () -> donantesService.actualizarPreferencias(donanteId, false));
+  }
 }

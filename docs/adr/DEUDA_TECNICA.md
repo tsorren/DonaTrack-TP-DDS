@@ -519,15 +519,15 @@ Pendiente después de HB-19 (ADR 20261109, "Trabajo futuro" y "Consecuencias neg
 |---|---|
 | ADR | [20261102-nombre-visible-del-donante-y-constancia-de-los-legales](./20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `Donante` sin preferencia; `DonanteResumenDTO` devuelve la persona entera (documento, dirección, contactos); sin términos ni constancia de aceptación. El prototipo de Raíces ya muestra el nombre, la opción en Mi perfil, los legales en el pie y la casilla en la ficha |
+| Implementation status | `[OBSERVED] partial` (HB-20, 2026-11-10, rama `E6_HB20_nombre_visible_y_legales`, Donaciones V19 y OpenAPI 1.7.0) — hechos los ítems 1, 2, 3 (ajustado) y 5; pendientes el 4 (texto), el 6 (categoría, del lado del cliente) y conectar el cliente liviano: el registro no llama todavía a `PUT /api/personas/{id}/legales`, Mi perfil no cambia la preferencia y Recibidas sigue pidiendo `/api/donaciones/{id}`, que desde #955 la entidad no puede leer |
 | Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `POST /api/personas`, `GET /api/personas/me`) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
 | Cuándo se saldará | Con el registro y el perfil reales (RF-03, RI-AUTH-02, HB-11) |
 
-1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias.
-2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`.
-3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Incompatible.**
+1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias. **Hecho** (`PATCH /api/donantes/{id}/preferencias`).
+2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`. **Hecho** como `quienDono` en `DonacionIndependienteResponseDTO`, el listado que lee la entidad; `DonanteResumenDTO` no lo leía la entidad.
+3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Hecho con ajuste**: la constancia va en `GET` y `PUT /api/personas/{id}/legales`, y el alta no la exige (aditivo). El sitio la pide al completar el perfil. Riesgo abierto: la constancia es de la persona (la organización), no de cada miembro invitado.
 4. **Texto de los legales:** lo escribe el equipo.
-5. **`mostrarNombre` en la donación** (opcional; solo oculta) para "Esta vez, sin mi nombre" al registrarla (review de Sofía, 2026-11-02).
+5. **`mostrarNombre` en la donación** (opcional; solo oculta) para "Esta vez, sin mi nombre" al registrarla (review de Sofía, 2026-11-02). **Hecho** en `DonacionInputDTO` (columna `donacion.nombre_oculto`).
 6. **Categoría del ranking** con el nombre oculto (en el prototipo, dato fijo de la maqueta; `cliente-liviano` no tiene todavía un cliente de Incentivos): el cliente liviano la pide a Incentivos (`GET /api/incentivos/donantes/{donanteId}`, `DonantePerfilDTO.categoria`) con el `donanteId`, que `QuienDonoDTO` suma también con el nombre oculto; el cliente liviano lo usa en el servidor y a la entidad le muestra solo la categoría, nunca el id. Falta decidir con qué credencial lo pide el cliente liviano (`[INFERRED]` el perfil de incentivos es del propio donante, no de la entidad).
 
 Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de-usuarios.md): ocultar el nombre no reemplaza la anonimización.

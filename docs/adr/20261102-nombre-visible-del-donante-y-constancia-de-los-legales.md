@@ -14,6 +14,10 @@
 > **Ajuste del 2026-11-02 (review de Sofía Deane, la diseñadora del grupo):** el nombre oculto se
 > reemplaza por la categoría del donante en el ranking, y el donante puede ocultarlo también en una
 > sola donación. Ver [Ajuste por la review de la diseñadora](#ajuste-por-la-review-de-la-diseñadora).
+>
+> **Ajuste del 2026-11-10 (implementación, HB-20):** la constancia de los legales va en un endpoint
+> propio y no en el alta de persona, y quién donó se suma al listado que ya lee la entidad. Ver
+> [Ajuste al implementarlo](#ajuste-al-implementarlo-hb-20).
 
 ## Contexto y Problema
 
@@ -188,6 +192,53 @@ Riesgos y preguntas que quedan para el grupo (`[INFERRED]`, de la revisión de l
 `[INFERRED]` C2 suma un consumidor nuevo en Donaciones y una copia que puede quedar vieja. C1 hace
 una llamada por donante distinto en la pantalla; con pocos donantes por necesidad alcanza, y si no,
 se suma una consulta por lote.
+
+## Ajuste al implementarlo (HB-20)
+
+Decidido por el usuario el 2026-11-10, al aprobar el plan de HB-20. Con la autenticación ya
+integrada (#955), dos premisas de este ADR cambiaron:
+
+- `[OBSERVED]` La entidad no lee `DonanteResumenDTO`: `GET /api/donaciones/{id}` solo lo piden el
+  donante dueño y el administrador. Sus donaciones recibidas salen de
+  `GET /donaciones-independientes?entidadId=`, que no decía quién donó.
+- `[OBSERVED]` `POST /api/personas` lo llaman el sitio con su token técnico, el administrador,
+  Postman, `integration-tests` y k6. La importación por CSV crea personas que no aceptaron nada.
+
+### Dónde se deja la constancia (reemplaza el punto 4)
+
+Constancia 30 · compatibilidad 25 · que nadie acepte en nombre de otro 25 · costo 20.
+
+| Alternativa | Constancia | Compat. | No acepta por otro | Costo | **Total** |
+|---|:-:|:-:|:-:|:-:|:-:|
+| **A2. Opcional en el alta; `GET` y `PUT /api/personas/{id}/legales`; el sitio exige la casilla** | 4 | 5 | 5 | 4 | **4,5** |
+| A3. Obligatorio solo si llama el token técnico | 4 | 3 | 4 | 4 | 3,75 |
+| A1. `legalesAceptados` obligatorio en `POST /api/personas` (punto 4 original) | 5 | 1 | 2 | 2 | 2,65 |
+
+Se elige **A2**. A1 obliga al administrador y al CSV a aceptar en nombre de la persona, y rompe a
+todos los llamadores. A3 cambia la semántica según quién llama (M-05 de la matriz de permisos). El
+endpoint hacía falta igual para el punto 5 (versión nueva). `[PROPOSED]` Al completar el perfil,
+el sitio va a crear la persona y llamar a `PUT /api/personas/{id}/legales`; si falla, la
+compensación que ya tiene borra la persona. Esa parte del cliente liviano queda para la tarea que
+conecte las pantallas. El alta no suma ningún campo: el cambio queda **aditivo** y no va a
+`cambios-incompatibles-aceptados.txt`. Para el punto 5, `GET /api/personas/{id}/legales` dice si la
+persona aceptó la vigente (`donatrack.legales.version-vigente`); `GET /api/personas/me` queda con
+HB-11.
+
+### Dónde ve la entidad quién donó (reemplaza el punto 3)
+
+| Alternativa | Superficie | Encaje con Recibidas | **Elegida** |
+|---|---|---|:-:|
+| **B1. `quienDono` (`tipo`, `nombreVisible`, `donanteId`) en `DonacionIndependienteResponseDTO`** | 1 campo | Va en el listado que ya pide Recibidas (falta usarlo en el cliente) | ✔ |
+| B2. Endpoint nuevo `/api/necesidades/{id}/donantes` | Ruta, permisos y gateway | Otra llamada | |
+
+`DonanteResumenDTO` queda como está, para el donante y el administrador. El donante también ve
+`quienDono` en sus donaciones ("Figura como").
+
+### Pregunta abierta
+
+`[INFERRED]` El `personaId` del token es el de la organización: la constancia queda por persona,
+no por cada miembro que se invita a una entidad o empresa. Si cada miembro tiene que aceptar, la
+constancia suma la cuenta (`sub`) que aceptó.
 
 ## Trabajo futuro
 

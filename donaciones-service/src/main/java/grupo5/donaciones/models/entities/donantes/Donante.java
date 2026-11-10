@@ -11,6 +11,7 @@ import java.util.UUID;
 public class Donante implements Anonimizable, AggregateRoot {
   private final UUID id;
   private boolean activo;
+  private boolean mostrarNombre = true;
 
   public Donante(UUID personaId) {
     if (personaId == null) {
@@ -26,8 +27,24 @@ public class Donante implements Anonimizable, AggregateRoot {
 
   /** Constructor de reconstitución para el adaptador JPA */
   public Donante(UUID personaId, boolean activo) {
+    this(personaId, activo, true);
+  }
+
+  public Donante(UUID personaId, boolean activo, boolean mostrarNombre) {
     this(personaId);
     this.activo = activo;
+    this.mostrarNombre = mostrarNombre;
+  }
+
+  /**
+   * Si la entidad que recibe sus donaciones ve su nombre (HB-20). Vale también para las pasadas.
+   */
+  public boolean muestraNombre() {
+    return this.mostrarNombre;
+  }
+
+  public void mostrarNombre(boolean mostrar) {
+    this.mostrarNombre = mostrar;
   }
 
   public UUID personaId() {

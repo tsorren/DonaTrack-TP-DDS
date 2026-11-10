@@ -12,6 +12,7 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.ResultadoRegistro;
@@ -26,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -71,6 +73,14 @@ public class DonantesController implements IDonantesController {
   public ResponseEntity<DonanteOutputDTO> obtenerDonante(@PathVariable("id") UUID id) {
     DonanteOutputDTO donante = donantesService.obtenerPorId(id);
     return ResponseEntity.ok(donante);
+  }
+
+  @Override
+  @PreAuthorize(DONANTE + SU_ID)
+  @PatchMapping("/{id}/preferencias")
+  public ResponseEntity<DonanteOutputDTO> actualizarPreferencias(
+      @PathVariable("id") UUID id, @Valid @RequestBody PreferenciasDonanteDTO dto) {
+    return ResponseEntity.ok(donantesService.actualizarPreferencias(id, dto.mostrarNombre()));
   }
 
   @Override

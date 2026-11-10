@@ -135,6 +135,14 @@ public class DonantesService implements IDonantesService {
   }
 
   @Override
+  public DonanteOutputDTO actualizarPreferencias(UUID id, boolean mostrarNombre) {
+    Donante donante =
+        donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    donante.mostrarNombre(mostrarNombre);
+    return donanteMapper.toOutputDTO(donantesRepository.save(donante));
+  }
+
+  @Override
   public EstadoRegistroDonante registrarSiNoExiste(UUID personaId) {
     Optional<Donante> existente = donantesRepository.findById(personaId);
     if (existente.isPresent()) {

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.6.0
+  version: 1.7.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -693,7 +693,7 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Detalle del donante (incluye `activo`)
+          description: Detalle del donante (incluye `activo` y, desde HB-20, `mostrarNombre`)
         '404':
           description: Donante no encontrado
     delete:
@@ -712,6 +712,30 @@ paths:
           description: Donante dado de baja (o ya lo estaba)
         '404':
           description: Donante no encontrado
+  /api/donantes/{id}/preferencias:
+    patch:
+      summary: Cambiar si la entidad ve el nombre del donante
+      description: >
+        HB-20 (ADR 20261102-nombre-visible-del-donante-y-constancia-de-los-legales). Vale desde ya
+        para todas sus donaciones, también las pasadas, porque el nombre se calcula al leer. Solo el
+        propio donante o el administrador.
+      operationId: actualizarPreferenciasDonante
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PreferenciasDonanteDTO' }
+      responses:
+        '200':
+          description: Donante con la preferencia guardada (`mostrarNombre`)
+        '400': { description: Falta mostrarNombre }
+        '403': { description: El donante no es el del token }
+        '404': { description: Donante no encontrado }
   /api/donantes/archivos:
     post:
       summary: Cargar archivo/padrón de donantes para procesamiento asíncrono
@@ -1083,6 +1107,53 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '204': { description: Persona eliminada }
+        '404': { description: Persona no encontrada }
+  /api/personas/{id}/legales:
+    get:
+      summary: Consultar la constancia de los legales de una persona
+      description: >
+        HB-20. Dice qué versión aceptó, cuándo, y si aceptó la vigente. Si no la aceptó, el sitio
+        se la pide al entrar (alta por el administrador o por CSV, o versión nueva). La propia
+        persona, el sitio con su token técnico o el administrador.
+      operationId: consultarLegales
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Constancia de la persona
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegalesDTO' }
+        '403': { description: La persona no es la del token }
+        '404': { description: Persona no encontrada }
+    put:
+      summary: Aceptar la versión vigente de los legales
+      description: >
+        HB-20. Guarda persona, versión y fecha, sin IP ni navegador. Idempotente: aceptar de nuevo la
+        misma versión conserva la primera constancia. El sitio la llama al completar el perfil, con
+        la casilla marcada; el alta de persona no la exige (ajuste del 2026-11-10 al ADR).
+      operationId: aceptarLegales
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AceptarLegalesDTO' }
+      responses:
+        '200':
+          description: Constancia guardada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegalesDTO' }
+        '400': { description: Falta la versión o no es la vigente (ERR-VAL-114) }
+        '403': { description: La persona no es la del token }
         '404': { description: Persona no encontrada }
   /api/logistica/proveedores:
     get:
@@ -1611,6 +1682,62 @@ components:
             HB-19: su necesidad se dio de baja y se espera que el proveedor de logística confirme la
             cancelación de la entrega; mientras tanto la donación sigue asignada ("vuelve al
             depósito"). Se limpia al volver al depósito o si la entrega sale antes.
+        quienDono:
+          type: object
+          nullable: true
+          description: >
+            Quién donó, sin documento, dirección ni contactos (HB-20, ADR 20261102). Lo lee la
+            entidad en sus donaciones recibidas. null solo si la donación original, su donante o su
+            persona ya no existen.
+          required:
+            - tipo
+            - donanteId
+          properties:
+            tipo:
+              type: string
+              enum: [PERSONA, EMPRESA]
+            nombreVisible:
+              type: string
+              nullable: true
+              description: >
+                "Nombre Apellido" o la razón social; null si el donante lo ocultó en su perfil o en
+                esa donación, o si fue anonimizado
+            donanteId:
+              type: string
+              format: uuid
+              description: >
+                Va también con el nombre oculto: el cliente liviano lo usa del lado del servidor
+                para pedir la categoría a Incentivos y nunca lo escribe en el HTML
+    PreferenciasDonanteDTO:
+      type: object
+      required: [mostrarNombre]
+      properties:
+        mostrarNombre:
+          type: boolean
+          description: Si la entidad que recibe sus donaciones ve su nombre (por defecto, true)
+    AceptarLegalesDTO:
+      type: object
+      required: [version]
+      properties:
+        version:
+          type: integer
+          description: Versión de los legales que se acepta; tiene que ser la vigente
+    LegalesDTO:
+      type: object
+      required: [versionVigente, vigenteAceptada]
+      properties:
+        versionAceptada:
+          type: integer
+          nullable: true
+          description: La versión más alta que aceptó; null si nunca aceptó
+        aceptadaEn:
+          type: string
+          format: date-time
+          nullable: true
+        versionVigente:
+          type: integer
+        vigenteAceptada:
+          type: boolean
     DonacionInputDTO:
       type: object
       required:
@@ -1626,6 +1753,12 @@ components:
           description: >
             Descripción general de lo que se dona. Obligatoria (400 si falta o está vacía). Cambio
             no aditivo del contrato (D-32): antes era opcional y la base la exige NOT NULL.
+        mostrarNombre:
+          type: boolean
+          nullable: true
+          description: >
+            HB-20, "Esta vez, sin mi nombre". false oculta el nombre del donante en esta donación;
+            null o true siguen a su perfil (nunca muestra lo que el perfil oculta)
         items:
           type: array
           items:
