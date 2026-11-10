@@ -426,3 +426,63 @@ Pendientes: las hojas de las variantes usaban `--medida-toque-minimo`, que no ex
 (se cambió por `3rem` en las tres de Asignaciones); el número de propuestas en conflicto de la vista
 Por donación no se recalcula si se asigna suelta una donación de un par (caso borde de la maqueta).
 Sin `revision-ui`.
+
+## Cuarta ronda (2026-11-10)
+
+### Portada, Entidades (plegada)
+
+[Plegada](http://localhost:8091/publico-entidades), [desplegada](http://localhost:8091/publico-entidades?abrir=comedor).
+
+- **Plegada, como la marcó la usuaria** (`entidades-plegada.png`): en ancho (desde 68,75 em) cuatro
+  columnas centradas en alto, de ancho fijo salvo la del nombre (foto de 7,5 rem, barra de 17 rem,
+  enlace de 10 rem), así la barra y el enlace quedan alineados entre tarjetas; foto más grande en su
+  caja de salvia; el enlace dice «Ver necesidades ⌄». Entre 53,75 y 68,75 em sigue la fila flexible;
+  en el celular, apilada como antes. Más aire entre tarjetas (`data-espacio="3"`) y entre un grupo y
+  el título del siguiente (`--espacio-5`: el `data-espacio` de cada sección redefinía
+  `--espacio-entre` y la pila de afuera tomaba el chico).
+- **El %**: ya variaba por entidad y sale de «Cubiertas: X de Y» (comedor 3 de 8 = 38 %, merendero
+  2 de 4 = 50 %, escuela 1 de 3 = 33 %, biblioteca 2 de 3 = 67 %, hogar 3 de 4 = 75 %, club 0 de 1 =
+  0 %); el 50 % parejo era del dibujo. Se deja la línea «Cubiertas: …» debajo de la barra.
+- **Desplegada, más aire**: el cuerpo pasa a `--espacio-4` arriba y a los costados y `--espacio-5`
+  abajo en el celular; `--espacio-5` a los costados en ancho.
+- **Cabecera**: la cifra va al lado del manzano, nunca encima (el árbol con ancho y alto propios,
+  5,5 rem de alto; la cifra a 3,5 rem, centrada con él). No se reprodujo el «6» tapado de la captura
+  en Chrome a 900, 1280 ni 1920 px: puede ser una hoja vieja en caché del navegador.
+- **La nota de «Necesidades satisfechas»**: una línea («las de octubre de 2026 ya cubiertas del todo.
+  Al 15 de octubre de 2026.») con un `info` que tiene la explicación larga; pegada a los filtros (se
+  sacó el margen de 2 rem). En el celular el `info` baja a su renglón. No va dentro de la tarjeta: un
+  botón dentro del `summary` no se puede usar.
+
+Solo `publico-entidades.html` y `publico-entidades.css`; sin clases nuevas. Verificado a 1280 y 375
+px, plegada y desplegada; vacío, lento, error y búsqueda sin resultados dan 200.
+`InterfazFitnessTest` y `SitioControllerTest` pasan.
+
+### Bajo tierra
+
+Portada, sección `huerta :: raices` (`componentes/huerta.html`, `componentes/huerta.css`), con el
+dibujo de la diseñadora (`Bajo tierra.svg`). Ver en [/](http://localhost:8091/) y en
+[/estilos](http://localhost:8091/estilos) (muestra `.huerta-bajo`).
+
+- **Raíces del dibujo, sin textos ni textura.** Se sacaron del SVG original (1,9 MB, con el bitmap de
+  la tierra y los rótulos en contornos) solo las raíces, los nudos y el tallo, con los decimales
+  redondeados: quedó un SVG decorativo inline de unos 8 KB, pintado con los tokens de la tierra
+  (`--color-raiz`, `--color-suelo-hondo`). La textura es la de siempre (`img/tierra-textura.svg`) y los
+  estratos son líneas finas cada 8,5 rem en CSS.
+- **Los rótulos son HTML real** encima del dibujo, en porcentajes (`data-lugar`), con la letra a escala
+  del ancho (nunca menor de 14 px): una lista de categorías (amarillo, letra de títulos) con sus tipos
+  de entidad (crema). Alimentos: comedores (antes decía "Comederos"), merenderos y organizaciones
+  religiosas. Ropa: clubes y hogares. Muebles y útiles: escuelas y centros comunitarios. Los lectores
+  de pantalla leen esa misma lista; el dibujo va oculto para ellos.
+- **"Tu entidad"**, al final de la raicilla punteada, es un enlace al registro de entidad
+  (`/publico-registro-entidad`; para los lectores de pantalla, "Tu entidad: sumala a DonaTrack").
+- **Celular (menos de 37,5 em).** Sin dibujo: primero el título y el texto, después la misma lista como
+  tres raíces apiladas, cada una con su nudo, su línea que baja y una rama corta por tipo de entidad, y
+  "Tu entidad" al final de una línea punteada. Sin desborde a 375 px.
+- **Desde 37,5 em** el tallo sale del borde de arriba de la tierra, debajo del árbol de "Cómo funciona".
+- **Raíces de lo donado (`raices-donante`)**, coherentes con el dibujo nuevo: raíces más gruesas y el
+  nudo con el anillo de tierra honda. El resto de esa pieza no cambió.
+- Se borraron los estilos que ya no usa nadie (raicillas, carteles de herbario, raíces de tercer y
+  cuarto nivel).
+
+Pendiente: el texto de los tipos por categoría es una muestra del dibujo, no sale de datos; cuando haya
+backend, conviene que salga de las categorías y tipos reales.

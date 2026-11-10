@@ -445,6 +445,11 @@
             </ul>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.huerta-bajo', 'Bajo tierra (componentes/huerta :: raices, cuarta ronda): las raíces del dibujo de la diseñadora como SVG decorativo (.huerta-bajo-dibujo, con .huerta-bajo-raiz, -trazo, -punteada, -nudo y -halo pintados con los tokens de la tierra) y, encima, la lista real de categorías (.huerta-bajo-categoria) y tipos de entidad (.huerta-bajo-entidad), puesta con data-lugar en porcentajes del dibujo. .huerta-bajo-tu es la invitación «Tu entidad», que lleva al registro. Por debajo de 37,5 em el dibujo se oculta y la misma lista se ve como tres raíces apiladas. Achicá la ventana para verlo.', ~{::demo-huerta-bajo})}">
+          <th:block th:fragment="demo-huerta-bajo">
+            <section th:replace="~{componentes/huerta :: raices}"></section>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.subida', 'La zona para subir fotos: un campo con el control nativo de archivos (la cámara o la galería del celular; sin JavaScript anda igual y manda lo elegido) y, con JavaScript, la vista previa de cada imagen con su nombre y un botón Quitar. data-estado=&quot;error&quot; pone el recuadro en el color del problema. Probala: elegí una imagen.', ~{::demo-subida})}">
           <th:block th:fragment="demo-subida">
             <div class="campo subida" x-data="subidaFotos">

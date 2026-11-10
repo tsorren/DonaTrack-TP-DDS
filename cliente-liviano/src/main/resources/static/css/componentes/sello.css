@@ -98,6 +98,23 @@ span.estado[data-forma="punto"]::before {
   box-shadow: inset 0 0 0 0.125rem currentcolor;
 }
 
+/* El estado de la cuenta de un donante (planilla del admin, 2026-11-10): verde si está activa,
+   amarillo si todavía no la activó y rojo si se dio de baja. La palabra va siempre al lado. */
+span.estado[data-estado="cuenta-activo"] {
+  background: var(--color-entregada-fondo);
+  color: var(--color-entregada-texto);
+}
+
+span.estado[data-estado="cuenta-pendiente"] {
+  background: var(--color-en-camino-fondo);
+  color: var(--color-en-camino-texto);
+}
+
+span.estado[data-estado="cuenta-baja"] {
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}
+
 /* Una entidad inactiva (dada de baja): en la tinta suave. */
 .estado[data-estado="inactiva"] {
   color: var(--color-tinta-suave);

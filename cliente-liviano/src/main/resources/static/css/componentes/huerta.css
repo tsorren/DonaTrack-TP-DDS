@@ -390,16 +390,17 @@
   pointer-events: none;
 }
 
-/* Las dos poses de las alas, una sobre otra. abejas.js funde una en otra según hacia dónde se
-   curva el recorrido: alas arriba cuando la curva se abre hacia arriba, abajo cuando se cierra. */
-.huerta-abeja img {
-  position: absolute;
-  inset: 0;
+/* La abeja en partes (img/ilustraciones/abeja-partes.svg): las alas fijas y el cuerpo en sus dos
+   poses. abejas.js inclina el cuerpo según hacia dónde se curva el recorrido y funde una pose en la
+   otra; sin JavaScript queda la pose de arriba. */
+.huerta-abeja svg {
+  display: block;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
-.huerta-abeja img[data-ala="abajo"] {
+.huerta-abeja [data-cuerpo="abajo"] {
   opacity: 0;
 }
 
@@ -420,6 +421,22 @@
 
 .huerta-abeja[data-capa="detras"] {
   z-index: 0;
+}
+
+/* Las abejas de "Cómo funciona": van de maceta en maceta (abejas.js las ubica en píxeles dentro de
+   la sección). Solo se ven en vuelo. */
+[data-abejas-camino] {
+  position: relative;
+  overflow-x: clip;
+}
+
+[data-abejas-camino] .huerta-abeja {
+  display: none;
+  width: 2.5rem;
+}
+
+[data-abejas-camino][data-abejas="vuelan"] .huerta-abeja {
+  display: block;
 }
 
 /* Que las abejas que salen de las láminas no agranden la página. */
@@ -521,6 +538,15 @@
   color: var(--color-texto-suelo);
 }
 
+/* La tierra de la portada lleva los estratos del dibujo de la diseñadora: líneas finas y claras. */
+.huerta-tierra:not(.huerta-tierra--caja) {
+  background:
+    url("../../img/tierra-textura.svg") 0 0 / 260px,
+    repeating-linear-gradient(to bottom, transparent 0 8.5rem,
+      color-mix(in srgb, var(--color-texto-suelo) 16%, transparent) 8.5rem calc(8.5rem + 1px)),
+    var(--color-suelo);
+}
+
 .huerta-tierra-grilla {
   display: grid;
   gap: 1.5rem 3rem;
@@ -587,22 +613,14 @@
   stroke-linecap: butt;
 }
 
+/* Más gruesa, como las raíces del dibujo de la portada (cuarta ronda, 2026-11-10). */
 .huerta-raiz--1 {
-  stroke-width: 5;
-}
-
-.huerta-raiz--2 {
-  stroke-width: 3;
-}
-
-.huerta-raiz--3 {
-  stroke-width: 1.4;
-  opacity: 0.6;
+  stroke-width: 7;
 }
 
 .huerta-nudo {
   fill: var(--color-raiz);
-  stroke: var(--color-suelo);
+  stroke: var(--color-suelo-hondo);
   stroke-width: 3;
 }
 
@@ -623,52 +641,214 @@
   stroke-linejoin: round;
 }
 
-/* Las raicillas: finas y más tenues, se desprenden de las raíces principales y secundarias. */
-.huerta-raicilla {
+/* Bajo tierra (cuarta ronda, 2026-11-10): el dibujo de la diseñadora. Las raíces son un SVG decorativo;
+   los rótulos, la lista real (`.huerta-bajo-ramas`). En el celular la lista se ve como tres raíces
+   apiladas: la línea de cada categoría baja y se abre en una rama corta por tipo de entidad. Desde el
+   punto de quiebre chico, el dibujo aparece y cada rótulo se pone sobre su raíz con los porcentajes del
+   dibujo (`data-lugar`), con la letra a escala del ancho (`cqi`), nunca menor de 14 px. */
+.huerta-bajo {
+  position: relative;
+  container-type: inline-size;
+}
+
+/* En el celular, sin el dibujo, primero el título y después las raíces apiladas. */
+.huerta-tierra-grilla > .huerta-bajo {
+  order: 1;
+}
+
+.huerta-bajo-dibujo {
+  display: none;
+}
+
+.huerta-bajo-raiz {
+  fill: var(--color-raiz);
+}
+
+.huerta-bajo-trazo {
   fill: none;
   stroke: var(--color-raiz);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  opacity: 0.85;
+  stroke-width: 22;
 }
 
-.huerta-raicilla--fina {
-  stroke-width: 1.1;
-  opacity: 0.7;
-}
-
-/* Las categorías, carteles de herbario colgados de su nudo con un hilo: el ícono y el nombre en tinta
-   sobre el amarillo de la raíz. La raíz sigue desde el pie del cartel. */
-.huerta-tierra-grilla > svg[aria-hidden="true"]:not([role]) {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-
-.huerta-cartel-hilo {
+.huerta-bajo-punteada {
+  fill: none;
   stroke: var(--color-raiz);
-  stroke-width: 1.5;
+  stroke-width: 4;
+  stroke-dasharray: 6 12;
+  stroke-linecap: round;
 }
 
-.huerta-cartel-fondo {
+.huerta-bajo-nudo {
   fill: var(--color-raiz);
   stroke: var(--color-suelo-hondo);
-  stroke-width: 1.5;
+  stroke-width: 10;
 }
 
-.huerta-cartel-ojal {
-  fill: var(--color-suelo);
-}
-
-.huerta-cartel-icono {
+.huerta-bajo-halo {
   fill: var(--color-suelo-hondo);
-  color: var(--color-suelo-hondo);
+  opacity: 0.45;
 }
 
-.huerta-cartel-texto {
-  fill: var(--color-suelo-hondo);
-  font: 800 14px var(--fuente-titulo);
-  letter-spacing: 0.02em;
+.huerta-bajo-ramas,
+.huerta-bajo-ramas ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-bajo-ramas {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.huerta-bajo-ramas li {
+  margin: 0;
+}
+
+.huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad, .huerta-bajo-tu) {
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.huerta-bajo-categoria {
+  position: relative;
+  display: block;
+  padding-left: 2rem;
+  color: var(--color-raiz);
+  font-size: 1.25rem;
+}
+
+/* El nudo de cada categoría, como en el dibujo. */
+.huerta-bajo-categoria::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid var(--color-suelo-hondo);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  content: "";
+  translate: 0 -50%;
+}
+
+/* La raíz de la categoría baja desde su nudo y se abre en una rama por entidad. */
+.huerta-bajo-ramas ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.25rem 0 0 0.5rem;
+  padding: 0.75rem 0 0 1.5rem;
+  border-left: 4px solid var(--color-raiz);
+  border-bottom-left-radius: 1rem;
+}
+
+.huerta-bajo-entidad {
+  position: relative;
+  color: var(--color-texto-suelo);
+  font-size: 1rem;
+}
+
+.huerta-bajo-entidad::before {
+  position: absolute;
+  top: 50%;
+  left: -1.5rem;
+  width: 1.125rem;
+  border-top: 3px solid var(--color-raiz);
+  border-top-right-radius: 1rem;
+  content: "";
+}
+
+/* Tu entidad: amarilla con contorno de tierra, al final de una raicilla punteada. */
+.huerta-bajo-tu {
+  margin: 0.25rem 0 0 0.5rem;
+  padding: 0.75rem 0 0 1.5rem;
+  border-left: 3px dashed var(--color-raiz);
+  font-size: 1.25rem;
+}
+
+.huerta-tierra .huerta-bajo-tu a {
+  color: var(--color-raiz);
+  font-weight: 800;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.14em var(--color-suelo-hondo);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+@media (min-width: 37.5em) {
+  /* El tallo sale del borde de arriba, debajo del árbol de "Cómo funciona". */
+  .huerta-tierra-grilla > .huerta-bajo {
+    order: 0;
+    margin-top: -2.5rem;
+  }
+
+  .huerta-bajo-dibujo {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .huerta-bajo-ramas {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  .huerta-bajo-ramas ul {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad, .huerta-bajo-tu) {
+    position: absolute;
+    top: var(--medida-bajo-y);
+    left: var(--medida-bajo-x);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: max(0.875rem, 3.13cqi);
+    line-height: 1;
+    translate: var(--medida-bajo-ancla, 0 0);
+  }
+
+  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-tu) {
+    white-space: nowrap;
+  }
+
+  /* Los rótulos de dos palabras largas van en dos renglones, como en el dibujo. */
+  .huerta-bajo-entidad {
+    width: min-content;
+    text-align: center;
+  }
+
+  .huerta-bajo-entidad[data-lugar="comunitarios"] {
+    text-align: right;
+  }
+
+  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad)::before {
+    content: none;
+  }
+
+  .huerta-bajo-entidad {
+    paint-order: stroke fill;
+    -webkit-text-stroke: 0.12em var(--color-suelo);
+  }
+
+  /* Dónde va cada rótulo, en porcentajes del dibujo (viewBox 60 14 1650 1146). */
+  .huerta-bajo [data-lugar="alimentos"] { --medida-bajo-x: 2.8%; --medida-bajo-y: 27.7%; }
+  .huerta-bajo [data-lugar="ropa"] { --medida-bajo-x: 47.2%; --medida-bajo-y: 39.1%; --medida-bajo-ancla: -100% 0; }
+  .huerta-bajo [data-lugar="muebles"] { --medida-bajo-x: 66.5%; --medida-bajo-y: 26.9%; }
+  .huerta-bajo [data-lugar="comedores"] { --medida-bajo-x: 9.5%; --medida-bajo-y: 64.9%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="merenderos"] { --medida-bajo-x: 23.7%; --medida-bajo-y: 80.5%; }
+  .huerta-bajo [data-lugar="religiosas"] { --medida-bajo-x: 36.1%; --medida-bajo-y: 57.2%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="hogares"] { --medida-bajo-x: 48.6%; --medida-bajo-y: 66.2%; }
+  .huerta-bajo [data-lugar="clubes"] { --medida-bajo-x: 57.9%; --medida-bajo-y: 51.4%; }
+  .huerta-bajo [data-lugar="escuelas"] { --medida-bajo-x: 60.5%; --medida-bajo-y: 81.3%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="comunitarios"] { --medida-bajo-x: 97.7%; --medida-bajo-y: 74.5%; --medida-bajo-ancla: -100% 0; }
+  .huerta-bajo [data-lugar="tu-entidad"] { --medida-bajo-x: 73.5%; --medida-bajo-y: 95.7%; --medida-bajo-ancla: -50% -50%; }
 }
 
 /* --- Las cifras: cada una, un árbol plantado en la misma línea de suelo ------------------------ */

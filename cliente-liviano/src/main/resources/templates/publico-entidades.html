@@ -2,7 +2,7 @@
 <!--/* Raíces, sitio A: Entidades (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.3). Desde la
        ronda del 2026-11-09 (noche), la tarjeta de entidad que dibujó la usuaria, agrupada por tipo de
        entidad: plegada, la foto, el nombre, las categorías que pide (.chip), «Necesidades satisfechas»
-       con su barra (.progreso) y «Ver todas las necesidades»; desplegada, la misión, la emergencia y
+       con su barra (.progreso) y «Ver necesidades»; desplegada, la misión, la emergencia y
        cada necesidad con su barra (.necesidad). Sin datos de contacto ni dirección
        (RF-22, D24) y sin un botón por entidad: la asignación la decide DonaTrack (RF-17). Estados: ?q=
        (búsqueda), ?categoria=, los dos juntos (?q=biblioteca&categoria=alimentos, sin resultados),
@@ -120,9 +120,13 @@
 
     <!--/* La lista por tipo de entidad, con la tarjeta de cada una (ronda del 2026-11-09, noche). */-->
     <th:block th:if="${escenario == '' and n > 0}">
-      <p class="texto-chico" data-tono="suave">«Necesidades satisfechas» cuenta cuántas de las necesidades que
-        cada entidad publicó para octubre de 2026 ya se cubrieron del todo, sobre el total de ese mes. Cuenta
-        necesidades, no kilos ni litros. Al 15 de octubre de 2026.</p>
+      <!--/* La nota de «Necesidades satisfechas», en una línea; lo largo, en su info (cuarta ronda, 2026-11-10). */-->
+      <p class="texto-chico" data-tono="suave">«Necesidades satisfechas»: las de octubre de 2026 ya cubiertas
+        del todo. Al 15 de octubre de 2026. <span
+        th:replace="~{componentes/info :: info('info-satisfechas', 'Cómo se cuenta «Necesidades satisfechas»',
+          'Necesidades satisfechas',
+          'Cuenta cuántas de las necesidades que cada entidad publicó para octubre de 2026 ya se cubrieron del todo, sobre el total de ese mes. Cuenta necesidades, no kilos ni litros.',
+          null, null)}"></span></p>
       <div th:replace="~{publico-entidades :: grupos}"></div>
     </th:block>
 
@@ -141,7 +145,7 @@
 <!--/* La lista por tipo de entidad: una tarjeta plegable por entidad (.plegable), como la dibujó la
        usuaria (ronda del 2026-11-09, noche).
        - Plegada: la foto (por ahora, el ícono de su categoría en una caja de salvia), el nombre, los
-         chips de lo que pide, «Necesidades satisfechas» con su barra y «Ver todas las necesidades».
+         chips de lo que pide, «Necesidades satisfechas» con su barra y «Ver necesidades».
        - Desplegada: la misión (recortada a tres renglones, con «Leer más.»), la emergencia con su
          contexto y su pedido, las necesidades recurrentes y las que tienen fecha límite, cada una con su
          barra (.necesidad), y el enlace a sus entregas en el mapa.
@@ -182,7 +186,7 @@
       <th:block th:text="${g.titulo}">Comedores y merenderos</th:block>
       <span class="texto-chico" data-tono="suave"
             th:text="${#lists.size(suyas) == 1 ? '1 entidad' : #lists.size(suyas) + ' entidades'}">2 entidades</span></h2>
-    <ul class="pila" data-espacio="2" role="list">
+    <ul class="pila" data-espacio="3" role="list">
       <li th:each="e : ${suyas}"
           th:with="f=${fichas.get(e.clave)},
                    pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},
@@ -206,7 +210,7 @@
                         aria-label="Necesidades satisfechas: 3 de 8, de las que publicó para octubre de 2026"></progress>
               <span th:text="|Cubiertas: ${f.cubiertas} de ${delMes}, en octubre|">Cubiertas: 3 de 8, en octubre</span>
             </span>
-            <span class="plegable-ver">Ver todas las necesidades</span>
+            <span class="plegable-ver">Ver necesidades</span>
           </summary>
           <div class="plegable-cuerpo">
             <!--/* La misión, recortada a tres renglones; «Leer más.» la muestra entera (details, sin JavaScript). */-->

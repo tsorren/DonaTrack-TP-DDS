@@ -223,7 +223,7 @@
                 <td data-rotulo="Qué dona" th:text="${d.donaTexto}">Alimentos</td>
                 <td data-rotulo="Documento" th:text="${d.documento}">DNI 20.000.001</td>
                 <td data-rotulo="Alta" th:text="${d.alta}">14 de octubre</td>
-                <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[d.estado]}"><svg
+                <td data-rotulo="Estado"><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
                     th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
                     th:text="${estados[d.estado]}">Activo</th:block></span></td>
               </tr>
