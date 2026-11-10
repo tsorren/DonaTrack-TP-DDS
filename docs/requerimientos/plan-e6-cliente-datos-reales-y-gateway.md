@@ -54,7 +54,7 @@ Huecos de backend (§8 de los [requerimientos](requerimientos-e6.md)) y las pant
 | HB-10 fotos multipart | Pendiente | Confirmar recepción (RF-12) |
 | HB-14 progreso del CSV | En el PR #956 | Importar CSV (RF-20) |
 | HB-11, HB-12, HB-13 | Esperan la autenticación | Mi perfil, Aprobar entidades, autorización |
-| HB-17 a HB-20 | Hechos: HB-17 a HB-19 mergeados (#951, #957, #958); HB-20 en la rama `E6_HB20_nombre_visible_y_legales` | Remito y problemas, necesidades, nombre visible |
+| HB-17 a HB-20 | Hechos: HB-17 a HB-19 mergeados (#951, #957, #958); HB-20 en el [PR #960](https://github.com/tsorren/DonaTrack-TP-DDS/pull/960) | Remito y problemas, necesidades, nombre visible |
 | HB-21 | Por decidir, sin ADR propio (DTI-33) | Contacto |
 
 Sin hueco: las pantallas del admin (RF-15 a RF-19: donaciones, asignaciones, camiones, ranking) y
