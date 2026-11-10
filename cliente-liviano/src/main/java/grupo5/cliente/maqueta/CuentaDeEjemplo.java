@@ -38,6 +38,10 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
           "donante-perfil",
           "donante-perfil-guardado",
           "donante-seguimiento");
+
+  /** Las sin leer de la bandeja de la persona (templates/persona/donante-notificaciones.html). */
+  private static final long SIN_LEER_PERSONA = 3;
+
   private static final CuentaVista CUENTA_PERSONA =
       new CuentaVista("Martina Ruiz", "Persona donante");
 
@@ -64,6 +68,7 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
             .map(OpcionNavegacion::texto)
             .orElse((String) vista.getModel().get("seccion"));
     vista.addObject("navegacion", menu).addObject(CUENTA, CUENTA_PERSONA).addObject(PERSONA, true);
+    vista.addObject("sinLeer", SIN_LEER_PERSONA);
     vista.addObject("seccion", seccion);
     if (MISIONES.equals(ruta)) {
       return;

@@ -5,9 +5,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.oauth2.core.AuthorizationGrantType.AUTHORIZATION_CODE;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
@@ -19,17 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.cuentas.PerfilService;
-import grupo5.cliente.cuentas.SolicitudesDeEntidad;
-import grupo5.cliente.cuentas.SolicitudesDeEntidad.Pendiente;
-import grupo5.cliente.puertos.DonacionesComoUsuario;
-import grupo5.cliente.puertos.DonacionesComoUsuario.NecesidadDeEntidad;
 import grupo5.cliente.web.AccesoController;
-import grupo5.cliente.web.DatosDelUsuarioController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
-import grupo5.cliente.web.SolicitudesDeEntidadController;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,14 +39,15 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-@WebMvcTest({
-  PantallasController.class,
-  AccesoController.class,
-  DatosDelUsuarioController.class,
-  SolicitudesDeEntidadController.class
-})
+/**
+ * La cadena de seguridad fuera de la maqueta. Pide pantallas que no dependen de los datos de las
+ * APIs (las públicas sin datos y secciones sin dibujar, que muestran el menú y la cuenta): las
+ * pantallas con datos las prueba cada una con su controller (conexión de pantallas, SPEC-08). Las
+ * necesidades y las solicitudes de entidad, con ingreso, están en {@link NecesidadesConIngresoTest}
+ * y {@link SolicitudesConIngresoTest}.
+ */
+@WebMvcTest({PantallasController.class, AccesoController.class})
 @Import({SeguridadConfig.class, Pantallas.class})
 @TestPropertySource(
     properties = {
@@ -67,6 +58,9 @@ class SeguridadTest {
 
   private static final String INGRESAR = "/oauth2/authorization/keycloak";
   private static final UUID PERSONA = UUID.fromString("5f0c9a1e-2b7d-4c3a-9e11-6d2f8b4a7c10");
+
+  /** Una sección del donante sin dibujar: el menú y la cuenta, sin datos de las APIs. */
+  private static final String DE_PRUEBA = "/donante-seguimiento-prueba";
 
   @TestConfiguration
   static class Keycloak {
@@ -88,8 +82,6 @@ class SeguridadTest {
   }
 
   @MockitoBean private PerfilService perfiles;
-  @MockitoBean private DonacionesComoUsuario donaciones;
-  @MockitoBean private SolicitudesDeEntidad solicitudes;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 
@@ -103,8 +95,12 @@ class SeguridadTest {
 
   @Test
   void laPortadaYLasPantallasPublicasNoPidenIngresar() throws Exception {
-    mvc.perform(get("/")).andExpect(status().isOk());
-    mvc.perform(get("/publico-donaciones")).andExpect(status().isOk());
+    // La portada la sirve PublicoPortadaController, que no está en este corte: basta con que la
+    // cadena no la mande a ingresar.
+    mvc.perform(get("/"))
+        .andExpect(result -> assertThat(result.getResponse().getRedirectedUrl()).isNull());
+    mvc.perform(get("/publico-legales")).andExpect(status().isOk());
+    mvc.perform(get("/publico-para-donantes")).andExpect(status().isOk());
     mvc.perform(get("/css/tokens.css")).andExpect(status().isOk());
   }
 
@@ -146,56 +142,16 @@ class SeguridadTest {
   }
 
   @Test
-  void cadaAreaLlegaASuInicioYVeSuMenu() throws Exception {
-    mvc.perform(get("/donante-inicio").with(como("DONANTE")))
+  void cadaAreaEntraASusPantallasYVeSuMenu() throws Exception {
+    mvc.perform(get(DE_PRUEBA).with(como("DONANTE")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/donante-donaciones\"")));
-    mvc.perform(get("/entidad-inicio").with(como("ENTIDAD")))
+    mvc.perform(get("/entidad-necesidades-prueba").with(como("ENTIDAD")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/entidad-necesidades\"")));
-    mvc.perform(get("/admin-inicio").with(como("ADMIN")))
+    mvc.perform(get("/admin-donantes-prueba").with(como("ADMIN")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/admin-donantes\"")));
-  }
-
-  @Test
-  void lasNecesidadesMuestranLasDeLaEntidad() throws Exception {
-    LocalDate fin = LocalDate.of(2026, 10, 31);
-    var lentejas =
-        new NecesidadDeEntidad(UUID.randomUUID(), "RECURRENTE", 40, "Lentejas", false, null, fin);
-    when(donaciones.necesidadesDe(PERSONA)).thenReturn(List.of(lentejas));
-
-    mvc.perform(get("/entidad-necesidades").with(como("ENTIDAD")))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Lentejas")))
-        .andExpect(content().string(containsString("Hasta el 31/10/2026")));
-  }
-
-  @Test
-  void elAdminVeLasSolicitudesYLasApruebaConCsrf() throws Exception {
-    var rosa = new Pendiente("cuenta-1", "Merendero Oeste", "rosa@ejemplo.test");
-    when(solicitudes.pendientes()).thenReturn(List.of(rosa));
-
-    mvc.perform(get("/admin-entidades").with(como("ADMIN")))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Merendero Oeste")))
-        .andExpect(content().string(containsString("rosa@ejemplo.test")))
-        .andExpect(content().string(containsString("name=\"cuenta\" value=\"cuenta-1\"")));
-    mvc.perform(aprobar("ADMIN")).andExpect(redirectedUrl("/admin-entidades"));
-    verify(solicitudes).aprobar("cuenta-1");
-  }
-
-  private MockHttpServletRequestBuilder aprobar(String rol) {
-    return post("/admin-entidades-aprobar")
-        .param("cuenta", "cuenta-1")
-        .with(como(rol))
-        .with(csrf());
-  }
-
-  @Test
-  void soloElAdminApruebaEntidades() throws Exception {
-    mvc.perform(aprobar("ENTIDAD")).andExpect(status().isForbidden());
-    verifyNoInteractions(solicitudes);
   }
 
   @Test
@@ -218,7 +174,7 @@ class SeguridadTest {
 
   @Test
   void elMenuDeLaCuentaOfreceCerrarSesionConCsrfYCambiarLaContrasena() throws Exception {
-    mvc.perform(get("/donante-inicio").with(como("DONANTE")))
+    mvc.perform(get(DE_PRUEBA).with(como("DONANTE")))
         .andExpect(content().string(containsString("action=\"/logout\"")))
         .andExpect(content().string(containsString("name=\"_csrf\"")))
         .andExpect(content().string(containsString("Cerrar sesión")))

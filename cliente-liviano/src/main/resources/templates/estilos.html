@@ -270,6 +270,11 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.htmx-indicator (indicador de envío)', 'El indicador de un formulario que guarda de verdad (envio :: indicador). Oculto hasta que HTMX le pone .htmx-request mientras dura el pedido; entonces se ve como un .cargando. El formulario lleva hx-boost, hx-indicator con su id y hx-select-oob=&quot;#avisos&quot;, y el aviso del servidor llega a la región de avisos. Acá, como se ve durante el pedido.', ~{::demo-envio})}">
+          <th:block th:fragment="demo-envio">
+            <p class="cargando htmx-indicator htmx-request" role="status">Guardando…</p>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.dialogo', 'Una ventana para confirmar algo irreversible o ver algo grande. Es un dialog con popover: se abre con popovertarget y se cierra con Esc, tocando afuera o con su botón, sin JavaScript. El foco entra y vuelve al botón. data-tono=&quot;quitar&quot; para dar de baja; .dialogo-titulo es el título.', ~{::demo-dialogo})}">
           <th:block th:fragment="demo-dialogo">
             <div class="racimo">

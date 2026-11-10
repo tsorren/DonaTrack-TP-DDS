@@ -1,9 +1,11 @@
 package grupo5.cliente.maqueta;
 
+import grupo5.cliente.puertos.AvisosSinLeer;
 import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.seguridad.Area;
 import grupo5.cliente.vistas.CuentaVista;
 import java.util.Map;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -30,6 +32,9 @@ public class MaquetaConfig implements WebMvcConfigurer {
           Area.ENTIDAD, new CuentaVista("Marta", "Comedor Barrio Ejemplo"),
           Area.ADMIN, new CuentaVista("Leo", "Administración"));
 
+  private static final Map<String, Long> SIN_LEER =
+      Map.of("donante", 4L, "entidad", 3L, "admin", 3L);
+
   private final ResourceLoader recursos;
 
   MaquetaConfig(ResourceLoader recursos) {
@@ -55,5 +60,18 @@ public class MaquetaConfig implements WebMvcConfigurer {
   @Bean
   CuentasDelMenu cuentasDelMenu() {
     return prefijo -> Area.deRuta(prefijo).map(CUENTAS::get);
+  }
+
+  /**
+   * Las sin leer de la cuenta de ejemplo de cada área, las de su bandeja de ejemplo (la persona que
+   * dona tiene las suyas: las pone {@link CuentaDeEjemplo}).
+   */
+  @Bean
+  @ConditionalOnProperty(
+      name = "cliente.datos.avisos",
+      havingValue = "maqueta",
+      matchIfMissing = true)
+  AvisosSinLeer avisosSinLeer() {
+    return (prefijo, pedido) -> SIN_LEER.getOrDefault(prefijo, 0L);
   }
 }

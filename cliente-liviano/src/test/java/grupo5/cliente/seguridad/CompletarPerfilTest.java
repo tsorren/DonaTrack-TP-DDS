@@ -99,7 +99,9 @@ class CompletarPerfilTest {
   @Test
   void elAdminDeLaPlataformaEntraSinCompletarPerfil() throws Exception {
     OidcLoginRequestPostProcessor admin = como(Map.of("roles", List.of("ADMIN")));
-    mvc.perform(get("/admin-entidades").with(admin)).andExpect(status().isOk());
+    // Una sección sin dibujar: no depende de los datos de las APIs (conexión de pantallas,
+    // SPEC-08).
+    mvc.perform(get("/admin-donantes-prueba").with(admin)).andExpect(status().isOk());
     mvc.perform(get("/inicio").with(admin)).andExpect(redirectedUrl("/admin-inicio"));
     mvc.perform(get(DONANTE).with(admin)).andExpect(redirectedUrl("/inicio"));
   }

@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * {@code /} es la portada y {@code /<pantalla>} muestra {@code templates/<pantalla>.html}. Una
- * pantalla de nivel 3 lleva el nombre de su sección adelante ({@code donante-donaciones-detalle}):
- * el menú marca esa sección.
+ * {@code /<pantalla>} muestra {@code templates/<pantalla>.html} (la portada, {@code /}, la sirve
+ * {@link PublicoPortadaController}). Una pantalla de nivel 3 lleva el nombre de su sección adelante
+ * ({@code donante-donaciones-detalle}): el menú marca esa sección.
  */
 @Controller
 public class PantallasController {
@@ -17,11 +17,6 @@ public class PantallasController {
 
   PantallasController(Pantallas pantallas) {
     this.pantallas = pantallas;
-  }
-
-  @GetMapping("/")
-  String portada(Model model) {
-    return pantallas.mostrar("publico-portada", model);
   }
 
   @GetMapping("/{pantalla:" + Pantallas.NOMBRE + "}")

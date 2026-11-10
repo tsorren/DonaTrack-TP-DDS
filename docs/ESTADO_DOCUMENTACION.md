@@ -100,7 +100,7 @@ docs/
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-07)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-08)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -168,6 +168,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md`](specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) | Especificación SDD | Rediseño del roadmap de preprod fiel (D1–D5) e implementación de RM-01 a RM-08. `APPROVED_BY_USER`. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-06-auth-mvp-keycloak.md`](specs/active/SPEC-06-auth-mvp-keycloak.md) | Especificación SDD | MVP de autenticación con Keycloak (login, registro de donante, menú por rol y logout) y backlog ordenado de las etapas siguientes. `APPROVED_BY_USER`. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-07-api-gateway-etapa-1.md`](specs/active/SPEC-07-api-gateway-etapa-1.md) | Especificación SDD | API gateway, etapa 1 (F1 del plan, ADR-E6-02): Spring Cloud Gateway WebMVC con `common-lib`, tabla de rutas como allowlist, rutas públicas escritas sin aplicar, `X-Trace-Id` y servicio en el compose. `APPROVED_BY_USER`. | 🟢 Sincronizado |
+| [`docs/specs/active/SPEC-08-conexion-de-pantallas.md`](specs/active/SPEC-08-conexion-de-pantallas.md) | Especificación SDD | Conexión de pantallas del cliente liviano a las APIs (F2 y F3 del plan del cliente): esqueleto compartido (contrato del cliente con los cuatro servicios, claves de los puertos, conteo de sin leer, pieza común de envío con aviso en `#avisos` e indicador), cinco frentes por rol con lista cerrada de archivos, huecos HB-21 (Contacto) y HB-23 (camiones deshabilitados) y lo que queda fuera. `PROPOSED` (la aprobación es el merge). | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
 | [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |

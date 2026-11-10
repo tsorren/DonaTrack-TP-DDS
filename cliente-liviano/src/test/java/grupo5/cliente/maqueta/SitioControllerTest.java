@@ -13,11 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import grupo5.cliente.web.MisDonacionesController;
-import grupo5.cliente.web.Pantallas;
-import grupo5.cliente.web.PantallasController;
-import grupo5.cliente.web.RankingController;
-import grupo5.cliente.web.RecibidasController;
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
@@ -31,9 +26,10 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.WebProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.autoconfigure.error.DefaultErrorViewResolver;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -43,29 +39,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
-/** La pantalla de prueba está en src/test/resources/templates/. */
-@WebMvcTest({
-  SitioController.class,
-  PantallasController.class,
-  RankingController.class,
-  MisDonacionesController.class,
-  RecibidasController.class
-})
-@Import({
-  MaquetaConfig.class,
-  Pantallas.class,
-  RankingMaqueta.class,
-  DonacionesMaqueta.class,
-  RecibidasMaqueta.class,
-  CuentaMaqueta.class,
-  SitioControllerTest.PaginasDeError.class
-})
+/**
+ * Con el contexto entero del perfil maqueta: todos los controllers y los adaptadores de maqueta de
+ * cada puerto, también los que suma la conexión de pantallas (SPEC-08), sin listarlos acá. La
+ * pantalla de prueba está en src/test/resources/templates/.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(SitioControllerTest.PaginasDeError.class)
 @ActiveProfiles("maqueta")
 class SitioControllerTest {
 
   /**
-   * En @WebMvcTest no hay DispatcherServlet de verdad, y Spring Boot no registra el resolvedor que
-   * elige templates/error/&lt;código&gt;: se registra acá, igual que en la aplicación.
+   * Con MockMvc no hay DispatcherServlet de verdad que despache el error, y el resolvedor que elige
+   * templates/error/&lt;código&gt; se registra acá, igual que en la aplicación.
    */
   @TestConfiguration
   static class PaginasDeError {

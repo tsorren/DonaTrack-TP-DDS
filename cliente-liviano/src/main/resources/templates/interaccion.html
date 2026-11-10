@@ -13,11 +13,15 @@
        Alpine.js, con defer. El orden importa: /js/interfaz.js registra los
        componentes (Alpine.data) cuando Alpine avisa con alpine:init, así que se carga antes que
        Alpine. Alpine viene del WebJar alpinejs__csp (build CSP, sin versión en la dirección: la
-       versión vive en el pom.xml). */-->
+       versión vive en el pom.xml).
+       responseHandling (conexión de pantallas, SPEC-08): una respuesta 4xx o 5xx también se muestra.
+       Sin esto, HTMX descarta la página de error (502, 404, 403) de un envío o un filtro con
+       hx-boost y la persona no ve nada; con esto, el main#contenido de la página de error reemplaza
+       al de la pantalla, como sin JavaScript. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="cargar">
-  <meta name="htmx-config" content='{"globalViewTransitions": false, "scrollIntoViewOnBoost": false, "defaultFocusScroll": false}'>
+  <meta name="htmx-config" content='{"globalViewTransitions": false, "scrollIntoViewOnBoost": false, "defaultFocusScroll": false, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "[45]..", "swap": true, "error": true}]}'>
   <script src="/webjars/htmx.org/dist/htmx.min.js" th:src="@{/webjars/htmx.org/dist/htmx.min.js}" defer></script>
   <script src="/js/paneles.js" th:src="@{/js/paneles.js}" defer></script>
   <script src="/js/interfaz.js" th:src="@{/js/interfaz.js}" defer></script>

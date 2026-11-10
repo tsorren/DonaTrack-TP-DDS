@@ -48,6 +48,11 @@ class ClientesHttp {
     return cliente(RestClient.builder(), url, LogisticaApi.class);
   }
 
+  @Bean
+  NotificacionesApi notificacionesApi(@Value("${cliente.api.notificaciones.url}") String url) {
+    return cliente(RestClient.builder(), url, NotificacionesApi.class);
+  }
+
   /** Arma el proxy de una API; los tests le pasan el builder atado a MockRestServiceServer. */
   static <T> T cliente(
       RestClient.Builder builder,
