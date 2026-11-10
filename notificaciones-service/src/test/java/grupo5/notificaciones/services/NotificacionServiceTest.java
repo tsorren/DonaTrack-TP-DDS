@@ -233,6 +233,26 @@ class NotificacionServiceTest {
     verify(personasService, never()).sincronizar(any());
   }
 
+  // ==================== Dueño de la notificación (pertenencia) ====================
+
+  @Test
+  void personaDe_cuandoExiste_deberiaDevolverLaPersonaDestinataria() {
+    UUID notifId = UUID.randomUUID();
+    Persona destinataria = personaConCorreoQueSiempreEnvia("Juan");
+    when(repository.findById(notifId))
+        .thenReturn(Optional.of(NotificacionMother.pendiente(destinataria)));
+
+    assertEquals(Optional.of(destinataria.getId()), service.personaDe(notifId));
+  }
+
+  @Test
+  void personaDe_cuandoNoExiste_deberiaDevolverVacio() {
+    UUID notifId = UUID.randomUUID();
+    when(repository.findById(notifId)).thenReturn(Optional.empty());
+
+    assertTrue(service.personaDe(notifId).isEmpty());
+  }
+
   // ==================== Ciclo de Lectura In-App ====================
 
   @Test

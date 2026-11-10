@@ -1,6 +1,6 @@
 # Matriz de permisos — DonaTrack (E6)
 
-> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Donaciones e Incentivos aplican la matriz (`@PreAuthorize`, `PermisoDonaciones` y `PermisoIncentivos`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas; Logística y Notificaciones todavía no tienen seguridad. En Incentivos sí comparé las 19 reglas del §7 contra los controllers (`scripts/tests/test_incentivos_seguridad.py`); en Donaciones no. La aprobación del equipo sigue pendiente.
+> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Donaciones, Incentivos y Notificaciones aplican la matriz (`@PreAuthorize`, `PermisoDonaciones`, `PermisoIncentivos` y `PermisoNotificaciones`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas; Logística todavía no tiene seguridad. En Incentivos y en Notificaciones sí comparé las reglas (19 del §7 y 12 del §8) contra los controllers (`scripts/tests/test_incentivos_seguridad.py` y `test_notificaciones_seguridad.py`); en Donaciones no. La aprobación del equipo sigue pendiente.
 > **Origen:** RX-09 del plan de autenticación del sitio; cubre la "matriz de §6" que cita RI-SVC-02 de los [requerimientos de E6](../../requerimientos/requerimientos-e6.md) y que no existía.
 > **Base:** endpoints de [`contratos-rest.md`](../contratos-rest.md), contrastados con los `@*Mapping` de los controllers en `ENTREGA_6` (`e43e50a9`).
 
@@ -188,6 +188,8 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `GET` | `/notificaciones/persona/{personaId}` (alias QA) | ADMIN | — | — | |
 | `PUT`, `GET`, `DELETE` | `/api/notificaciones/personas/**` | `SERVICIO`, ADMIN | — | — | Réplica de personas |
 
+`[OBSERVED]` (2026-11-10, al implementar Notificaciones) El alias `GET /notificaciones/persona/{personaId}` compartía método con la ruta `/api/…`, y la matriz les da reglas distintas (ADMIN y dueño): pasó a ser un método propio, que solo entra el ADMIN. La pertenencia de `PATCH /{id}/leida` se resuelve con `NotificacionService.personaDe` (la notificación guarda su `personaId`, el DTO no): una notificación inexistente no tiene dueño, así que quien no es admin recibe `403` y no puede averiguar qué ids existen. Con `NOTIFICACIONES_SEGURIDAD_HABILITADA=true`, `NotificacionesFeignClient` de Incentivos, los flujos 7 y 8 de Postman y los clientes de `integration-tests` llaman sin token y recibirían `401`; se adaptan en E2-07 (M-07).
+
 ## 9. Decisiones para aprobar
 
 | # | Decisión propuesta | Alternativa |
@@ -207,3 +209,4 @@ Provisorio: ya está implementado en Donaciones y falta la revisión de Tadeo. N
 1. `GET /donaciones-independientes/{id}`: solo `DONANTE` (pertenencia por la donación original) y `ADMIN`. El DTO no expone la entidad asignada; la entidad las ve con el listado filtrado por `entidadId`.
 2. Un recurso inexistente responde `404` antes de evaluar la pertenencia, así que quien no es admin puede saber si un id existe.
 3. `/api/logistica/proveedores` y `/api/logistica/proveedor-preferido`: `ADMIN` con la seguridad activa, además de `X-API-Key` (M-06).
+4. Orden de las respuestas: `@PreAuthorize` se evalúa al invocar el método, después de validar el cuerpo. Un pedido con cuerpo inválido responde `400` aunque quien llama no tenga permiso; el `403` solo aparece con un cuerpo válido.

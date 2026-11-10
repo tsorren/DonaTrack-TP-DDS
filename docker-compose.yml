@@ -20,6 +20,10 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada por defecto, Postman, integration-tests y k6 llaman sin token
+      - NOTIFICACIONES_SEGURIDAD_HABILITADA=${NOTIFICACIONES_SEGURIDAD_HABILITADA:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       postgres:
         condition: service_healthy
