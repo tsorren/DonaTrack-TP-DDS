@@ -19,7 +19,7 @@
 | Qué quiere lograr | "Contarle a alguien qué me pasó y saber que lo recibieron" |
 | Dispositivo principal | Ambos |
 | Requerimientos | Se cuelga de RF-01 (la portada lleva legales; HB-21). Ningún criterio de E6 pide un formulario: lo decidió el usuario el 2026-11-02 |
-| Datos que usa | Ninguno todavía: HB-21 y [DTI-33](../../adr/DEUDA_TECNICA.md#dti-33) (endpoint y bandeja, sin dueño decidido). En la maqueta, el formulario va a `publico-contacto-enviado` |
+| Datos que usa | Ninguno todavía: el dueño está decidido (Notificaciones, `POST /api/contacto`, [ADR `proposed`](../../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md), 2026-11-10), pero no hay código (HB-21, [DTI-33](../../adr/DEUDA_TECNICA.md#dti-33)). En la maqueta, el formulario va a `publico-contacto-enviado` |
 | Boceto de E1 | Sin boceto |
 
 ## 2. Dónde está en el sitio
@@ -161,8 +161,12 @@ Decisiones tomadas:
   (agente, propuesto; aprobado al elegir "Cualquiera").
 - Sin plazo de respuesta en los textos: no hay uno acordado (agente, por el tono).
 
-Preguntas abiertas, para el equipo (no cambian el prototipo):
+Preguntas que eran abiertas, decididas el 2026-11-10 en el [ADR de HB-21](../../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md)
+(`proposed`, [DTI-33](../../adr/DEUDA_TECNICA.md#dti-33)); no cambian el prototipo:
 
-- Qué servicio recibe los mensajes ([DTI-33](../../adr/DEUDA_TECNICA.md#dti-33)).
-- Dónde los lee y los responde el administrador (DTI-33).
-- Cómo se evita el abuso de un formulario público (límite de envíos).
+- Qué servicio recibe los mensajes: Notificaciones, con `POST /api/contacto`.
+- Dónde los lee y los responde el administrador: un aviso en su bandeja, `GET /api/contacto` y la
+  respuesta por correo con el número del mensaje.
+- Cómo se evita el abuso: una clave de envío oculta (reenviar devuelve el mismo número), un límite
+  por correo y por IP, un campo trampa y un largo máximo. Para la pantalla: el formulario lleva la
+  clave y el campo trampa ocultos, y la clave tiene que sobrevivir al reenvío.
