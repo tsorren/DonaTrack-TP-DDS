@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.core.io.ClassPathResource;
+import java.util.Set;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,6 +25,19 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
   private static final String PREFIJO = "/donante-";
   private static final String MISIONES = PREFIJO + "misiones";
   private static final String ENTIDADES = PREFIJO + "entidades";
+  // Las pantallas con versión propia en templates/persona/. Lista fija: la vista sale de esta
+  // lista y no de la URL del pedido.
+  private static final Set<String> PANTALLAS_PERSONA =
+      Set.of(
+          "donante-donaciones",
+          "donante-donaciones-detalle",
+          "donante-entidades",
+          "donante-inicio",
+          "donante-notificaciones",
+          "donante-notificaciones-leidas",
+          "donante-perfil",
+          "donante-perfil-guardado",
+          "donante-seguimiento");
   private static final CuentaVista CUENTA_PERSONA =
       new CuentaVista("Martina Ruiz", "Persona donante");
 
@@ -55,8 +68,9 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
     if (MISIONES.equals(ruta)) {
       return;
     }
-    String pantalla = ruta.substring(1);
-    if (new ClassPathResource("templates/" + PERSONA + "/" + pantalla + ".html").exists()) {
+    String pantalla =
+        PANTALLAS_PERSONA.stream().filter(ruta.substring(1)::equals).findFirst().orElse(null);
+    if (pantalla != null) {
       vista.setViewName(PERSONA + "/" + pantalla);
     } else if (!ENTIDADES.equals(ruta)) {
       vista.addObject("seccion", seccion == null ? "Notificaciones" : seccion);
