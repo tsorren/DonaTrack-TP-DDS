@@ -202,6 +202,18 @@ Recibidas en octubre (6)
   maqueta lo dice en el nombre del grupo, "Recibidas en octubre".
 - Respecto del boceto (pág. 27): se mantienen las tarjetas con donante y fecha; se suman el estado,
   el filtro (RF-11) y el pedido que cubre cada una.
+- **Con los datos de Donaciones (2026-11-08):** la entidad llega por `?entidad=<id>` hasta el login.
+  Las recibidas son las entregadas en el mes en curso, y el grupo lleva ese mes ("Recibidas en
+  noviembre"). Lo que no llega se omite, sin inventarlo: el pedido que cubre (HB-17), "Ver tu
+  pedido", el aviso de novedades (HB-09) y "Esperan tu confirmación", porque la que llegó a la puerta
+  sigue en traslado (HB-22): va a "En camino", sin el botón. Por eso, desde la lista todavía no se
+  llega a Confirmar recepción, que sigue con la maqueta (HB-10). Textos del próximo paso, aprobados
+  por el usuario el 2026-11-08: "Asignada el 13 de octubre. Espera el camión." · "Lista para
+  entregar desde el 13 de octubre. Espera el camión." · "Salió del depósito el 14 de octubre a las
+  9:15." · "El camión no pudo llegar el 14 de octubre." · "Venció en el depósito el 14 de octubre."
+  Quién donó va siempre con su nombre (razón social, o nombre y apellido): ocultarlo llega con
+  HB-20. Si no llega, "Donó un donante". Salen "Sale del depósito el 17", "Llega mañana" y "Te
+  avisamos la nueva fecha": el sistema todavía no sabe esas fechas.
 
 ### 4.3 `entidad-notificaciones` y `entidad-notificaciones-leidas`
 

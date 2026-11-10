@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.web.MisDonacionesController;
 import grupo5.cliente.web.RankingController;
+import grupo5.cliente.web.RecibidasController;
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
@@ -39,11 +40,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /** La pantalla de prueba está en src/test/resources/templates/. */
-@WebMvcTest({SitioController.class, RankingController.class, MisDonacionesController.class})
+@WebMvcTest({
+  SitioController.class,
+  RankingController.class,
+  MisDonacionesController.class,
+  RecibidasController.class
+})
 @Import({
   MaquetaConfig.class,
   RankingMaqueta.class,
   DonacionesMaqueta.class,
+  RecibidasMaqueta.class,
   CuentaMaqueta.class,
   SitioControllerTest.PaginasDeError.class
 })

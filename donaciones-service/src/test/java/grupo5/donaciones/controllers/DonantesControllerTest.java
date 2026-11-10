@@ -12,10 +12,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donantes.ArchivoDonantesSubido;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
@@ -136,7 +141,8 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
         new MockMultipartFile(
             "archivo", "padron.csv", "text/csv", "TipoPersona,Nombre\nHumana,Ana\n".getBytes());
     ArchivoOutputDTO output =
-        new ArchivoOutputDTO(UUID.randomUUID(), UUID.randomUUID() + ".csv", "PENDIENTE");
+        new ArchivoOutputDTO(
+            UUID.randomUUID(), UUID.randomUUID() + ".csv", "PENDIENTE", null, 0, 0, 0, 0);
 
     when(archivoDonantesService.cargarArchivoDonantes(any(ArchivoDonantesSubido.class)))
         .thenReturn(output);
@@ -144,7 +150,9 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
     mockMvc
         .perform(multipart("/api/donantes/archivos").file(archivo))
         .andExpect(status().isAccepted())
-        .andExpect(jsonPath("$.estado").value("PENDIENTE"));
+        .andExpect(jsonPath("$.estado").value("PENDIENTE"))
+        .andExpect(jsonPath("$.totalFilas").doesNotExist())
+        .andExpect(jsonPath("$.procesadas").value(0));
   }
 
   @Test
@@ -173,7 +181,9 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
   @Test
   void obtenerArchivoDonantes_DeberiaRetornarOkYDto() throws Exception {
     UUID archivoId = UUID.randomUUID();
-    ArchivoOutputDTO output = new ArchivoOutputDTO(archivoId, "/ruta/donantes.csv", "PROCESADO");
+    ArchivoOutputDTO output =
+        new ArchivoOutputDTO(
+            archivoId, "/ruta/donantes.csv", "PROCESADO_CON_ERRORES", 10, 10, 6, 3, 1);
 
     when(archivoDonantesService.obtenerPorId(archivoId)).thenReturn(output);
 
@@ -181,6 +191,51 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
         .perform(get("/api/donantes/archivos/{id}", archivoId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(archivoId.toString()))
-        .andExpect(jsonPath("$.estado").value("PROCESADO"));
+        .andExpect(jsonPath("$.estado").value("PROCESADO_CON_ERRORES"))
+        .andExpect(jsonPath("$.totalFilas").value(10))
+        .andExpect(jsonPath("$.procesadas").value(10))
+        .andExpect(jsonPath("$.creadas").value(6))
+        .andExpect(jsonPath("$.actualizadas").value(3))
+        .andExpect(jsonPath("$.conError").value(1));
+  }
+
+  @Test
+  void obtenerFilasConError_DeberiaRetornarLaPaginaConElTotalEnElHeader() throws Exception {
+    UUID archivoId = UUID.randomUUID();
+    when(archivoDonantesService.obtenerFilasConError(archivoId, 1, 2))
+        .thenReturn(new Pagina<>(List.of(new FilaConErrorDTO(9, "FORMATO_INVALIDO", null)), 3));
+
+    mockMvc
+        .perform(
+            get("/api/donantes/archivos/{id}/filas-con-error", archivoId)
+                .param("page", "1")
+                .param("size", "2"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "3"))
+        .andExpect(jsonPath("$[0].linea").value(9))
+        .andExpect(jsonPath("$[0].motivo").value("FORMATO_INVALIDO"));
+  }
+
+  @Test
+  void obtenerFilasConError_deUnArchivoQueNoExiste_DeberiaRetornarNotFound() throws Exception {
+    UUID archivoId = UUID.randomUUID();
+    when(archivoDonantesService.obtenerFilasConError(archivoId, null, null))
+        .thenThrow(new RecursoNoEncontradoException(archivoId));
+
+    mockMvc
+        .perform(get("/api/donantes/archivos/{id}/filas-con-error", archivoId))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void obtenerFilasConError_conTamanioFueraDeRango_DeberiaRetornarBadRequest() throws Exception {
+    UUID archivoId = UUID.randomUUID();
+    when(archivoDonantesService.obtenerFilasConError(archivoId, null, 101))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get("/api/donantes/archivos/{id}/filas-con-error", archivoId).param("size", "101"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
   }
 }

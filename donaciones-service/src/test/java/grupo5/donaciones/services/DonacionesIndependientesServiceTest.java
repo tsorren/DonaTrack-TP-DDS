@@ -110,6 +110,27 @@ class DonacionesIndependientesServiceTest {
   }
 
   @Test
+  void registrarCantidadRecibida_guardaLoQueNoLlego() {
+    DonacionIndependiente donacion = mock(DonacionIndependiente.class);
+    UUID id = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+
+    service.registrarCantidadRecibida(id, 7.0);
+
+    verify(donacion).registrarCantidadRecibida(7.0);
+    verify(repositoryMock).save(donacion);
+  }
+
+  @Test
+  void registrarCantidadRecibida_sinDonacion_lanzaRecursoNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(
+        RecursoNoEncontradoException.class, () -> service.registrarCantidadRecibida(id, 7.0));
+  }
+
+  @Test
   void cambiarEstado_DeberiaLanzarRecursoNoEncontradoException_CuandoNoExisteDonacion() {
     UUID id = UUID.randomUUID();
     when(repositoryMock.findById(id)).thenReturn(Optional.empty());

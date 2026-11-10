@@ -35,6 +35,19 @@ class EntregaMapperTest {
     assertEquals(dto.idBeneficiaria(), response.idBeneficiaria());
     assertEquals(direccion, response.destino());
     assertEquals(dto.pesoTotalKG(), response.pesoTotalKG());
+    assertNull(entrega.getDonanteId());
+  }
+
+  @Test
+  void mapeaElDonanteDelPedidoALaEntrega() {
+    DireccionDTO direccion =
+        new DireccionDTO("Calle", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    UUID donanteId = UUID.randomUUID();
+    CrearEntregaRequestDTO dto =
+        new CrearEntregaRequestDTO(
+            UUID.randomUUID(), UUID.randomUUID(), direccion, 10f, 2f, donanteId);
+
+    assertEquals(donanteId, mapper.toEntity(dto).getDonanteId());
   }
 
   @Test

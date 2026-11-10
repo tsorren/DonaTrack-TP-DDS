@@ -20,6 +20,7 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -130,6 +131,22 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     DonacionIndependiente donacion =
         repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
     return donacionIndependienteMapper.toDTO(donacion);
+  }
+
+  @Override
+  public void registrarCantidadRecibida(UUID id, double cantidadRecibida) {
+    DonacionIndependiente donacion =
+        repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    donacion.registrarCantidadRecibida(cantidadRecibida);
+    repositorio.save(donacion);
+  }
+
+  @Override
+  public void registrarFotosDeRecepcion(UUID id, LocalDateTime fechaEntrega, List<String> fotos) {
+    DonacionIndependiente donacion =
+        repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    donacion.registrarFotosDeRecepcion(fechaEntrega, fotos);
+    repositorio.save(donacion);
   }
 
   @Override

@@ -706,19 +706,45 @@ package CARGA_MASIVA {
     ERROR
   }
 
+  enum MotivoErrorFila <<enum>> {
+    FORMATO_INVALIDO
+    DATOS_INVALIDOS
+    DONANTE_DADO_DE_BAJA
+    PERSONA_DUPLICADA_EN_CONFLICTO
+    ERROR_INESPERADO
+  }
+
   class Archivo <<entity>> {
     - id: UUID {final}
     - path: String
     - estado: EstadoArchivo
+    - totalFilas: Integer
+    - creadas: Int
+    - actualizadas: Int
+    - conError: Int
     --
     + marcarComoProcesando(): void
+    + iniciarConteo(totalFilas: Int): void
+    + registrarCreada(): void
+    + registrarActualizada(): void
+    + registrarError(): void
+    + getProcesadas(): Int
     + marcarComoProcesado(): void
     + marcarComoError(): void
     + marcarComoCompletadoConErrores(): void
-    + finalizarProcesamiento(erroresNegocio: Int): void
+    + finalizarProcesamiento(): void
+  }
+
+  class FilaConError <<record>> {
+    + archivoId: UUID
+    + linea: Int
+    + motivo: MotivoErrorFila
+    + codigo: String
   }
 
   Archivo --> EstadoArchivo
+  FilaConError ..> Archivo : archivoId
+  FilaConError --> MotivoErrorFila
 }
 
 @enduml

@@ -1,6 +1,7 @@
 package grupo5.donaciones.controllers;
 
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import java.util.List;
 import java.util.UUID;
@@ -12,4 +13,6 @@ public interface IDonacionesController {
   ResponseEntity<List<DonacionOutputDTO>> listarDonaciones();
 
   ResponseEntity<DonacionOutputDTO> obtenerDonacion(UUID id);
+
+  ResponseEntity<ContadoresPublicosDTO> obtenerContadoresPublicos();
 }

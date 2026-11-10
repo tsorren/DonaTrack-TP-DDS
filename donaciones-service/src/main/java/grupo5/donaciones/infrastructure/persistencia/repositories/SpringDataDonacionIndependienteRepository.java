@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,16 @@ public interface SpringDataDonacionIndependienteRepository
     extends JpaRepository<DonacionIndependienteEntity, UUID> {
 
   List<DonacionIndependienteEntity> findByEstadoActual(TipoEstadoDonacion estadoActual);
+
+  long countByEstadoActual(TipoEstadoDonacion estadoActual);
+
+  // HB-01: fecha_entrega solo se guarda junto con fotos publicables (V15)
+  List<DonacionIndependienteEntity>
+      findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(
+          TipoEstadoDonacion estadoActual, LocalDateTime desde, Limit limite);
+
+  long countByEstadoActualAndFechaEntregaGreaterThanEqual(
+      TipoEstadoDonacion estadoActual, LocalDateTime desde);
 
   // Dos consultas en vez de una con «:periodoId is null»: Postgres no infiere el tipo de un
   // parámetro nulo
@@ -30,6 +41,27 @@ public interface SpringDataDonacionIndependienteRepository
       "select coalesce(sum(i.cantidad), 0) from DonacionIndependienteEntity d join d.items i"
           + " where d.necesidadId = :necesidadId and d.periodoId is null")
   long sumarCantidadAsignadaSinPeriodo(@Param("necesidadId") UUID necesidadId);
+
+  // Lo que no llegó (HB-17) va aparte: sumado junto a los ítems se contaría una vez por ítem
+  @Query(
+      "select coalesce(sum(d.cantidadNoRecibida), 0) from DonacionIndependienteEntity d"
+          + " where d.necesidadId = :necesidadId and d.periodoId = :periodoId")
+  long sumarNoRecibidoEnPeriodo(
+      @Param("necesidadId") UUID necesidadId, @Param("periodoId") UUID periodoId);
+
+  @Query(
+      "select coalesce(sum(d.cantidadNoRecibida), 0) from DonacionIndependienteEntity d"
+          + " where d.necesidadId = :necesidadId and d.periodoId is null")
+  long sumarNoRecibidoSinPeriodo(@Param("necesidadId") UUID necesidadId);
+
+  @Query(
+      "select d.necesidadId as necesidadId, d.periodoId as periodoId,"
+          + " sum(d.cantidadNoRecibida) as cantidad"
+          + " from DonacionIndependienteEntity d"
+          + " where d.necesidadId in :necesidadIds and d.cantidadNoRecibida is not null"
+          + " group by d.necesidadId, d.periodoId")
+  List<SumaPorDestino> sumarNoRecibidoPorDestino(
+      @Param("necesidadIds") Collection<UUID> necesidadIds);
 
   @Query(
       "select d.entidadBeneficiariaId as entidadId, count(d) as cantidad"

@@ -103,7 +103,8 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
         pagina.total());
   }
 
-  private static void validarPaginado(Integer page, Integer size) {
+  /** También lo usa {@link ArchivoDonantesService} para las filas con error del padrón. */
+  static void validarPaginado(Integer page, Integer size) {
     if ((page != null && page < 0)
         || (size != null && (size < 1 || size > TAMANIO_PAGINA_MAXIMO))) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);

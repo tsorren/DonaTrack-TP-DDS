@@ -35,13 +35,16 @@ import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataP
 import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataSolicitudTransicionEntregaRepository;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
@@ -221,6 +224,27 @@ class RepositoriosLogisticaJpaTest {
   }
 
   @Test
+  void deberiaPersistirYRecuperarRemitoYReporteDeRecepcion() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Belgrano", 900, null, null, "1092", caba),
+            15.0f,
+            1.5f);
+    entrega.iniciarRuta("Chofer Juan");
+    ReporteRecepcion reporte = new ReporteRecepcion(MotivoReporte.INCOMPLETA, "Faltó una", 12.5);
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), "R-77", reporte);
+
+    entregasRepository.save(entrega);
+    Entrega recuperada = entregasRepository.findById(entrega.getId()).orElseThrow();
+
+    assertEquals("R-77", recuperada.getNumeroRemito());
+    assertEquals(reporte, recuperada.getReporteRecepcion());
+  }
+
+  @Test
   void deberiaPersistirEntregaReutilizandoPaisProvinciaLocalidadSinDuplicarDireccion() {
     Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
     Direccion dir1 = new Direccion("Av. Rivadavia", 1200, 1, "A", "1033", caba);
@@ -254,6 +278,34 @@ class RepositoriosLogisticaJpaTest {
     EntregaEntity entityActualizada =
         springDataEntregaRepo.findById(guardada1.getId()).orElseThrow();
     assertEquals(idDireccionOriginal, entityActualizada.getDireccion().getIdDireccion());
+  }
+
+  @Test
+  void deberiaListarLasEntregasDeUnDonanteYDejarSinDonanteLasQueNoLoTraen() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID donanteId = UUID.randomUUID();
+    Entrega delDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1200, null, null, "1033", caba),
+            15.0f,
+            1.5f);
+    delDonante.registrarDonante(donanteId);
+    Entrega sinDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Corrientes", 3400, null, null, "1194", caba),
+            20.0f,
+            2.0f);
+    entregasRepository.save(delDonante);
+    entregasRepository.save(sinDonante);
+
+    List<Entrega> resultado = entregasRepository.findByDonanteId(donanteId);
+
+    assertEquals(List.of(delDonante.getId()), resultado.stream().map(Entrega::getId).toList());
+    assertNull(entregasRepository.findById(sinDonante.getId()).orElseThrow().getDonanteId());
   }
 
   @Test
@@ -521,5 +573,16 @@ class RepositoriosLogisticaJpaTest {
             "https://minio/foto_adicional_1.jpg",
             "https://minio/foto_adicional_2.jpg"),
         fotosFinalesEnDb);
+  }
+
+  @Test
+  void deberiaPersistirYRecuperarLaPosicionDelCamion() {
+    Camion camion = camionRepository.save(new Camion("GH789IJ", 50.0f, 2000.0f, 3.2f));
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6037, -58.3816, Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+    camionRepository.save(camion);
+
+    assertEquals(posicion, camionRepository.findById(camion.getId()).orElseThrow().getPosicion());
   }
 }

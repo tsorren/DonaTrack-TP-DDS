@@ -14,4 +14,27 @@ public record DatosEntregaLogistica(
     DestinoEventoDTO destino,
     Double pesoTotalKG,
     Double volumenTotalM3,
-    LocalDateTime fecha) {}
+    LocalDateTime fecha,
+    UUID donanteId) {
+
+  /**
+   * Pedido sin donante. El {@code donanteId} es opcional: una entrada vieja del outbox lo trae en
+   * {@code null} (ADR de réplicas por evento, HB-16).
+   */
+  public DatosEntregaLogistica(
+      UUID donacionIndependienteId,
+      UUID personaBeneficiariaId,
+      DestinoEventoDTO destino,
+      Double pesoTotalKG,
+      Double volumenTotalM3,
+      LocalDateTime fecha) {
+    this(
+        donacionIndependienteId,
+        personaBeneficiariaId,
+        destino,
+        pesoTotalKG,
+        volumenTotalM3,
+        fecha,
+        null);
+  }
+}

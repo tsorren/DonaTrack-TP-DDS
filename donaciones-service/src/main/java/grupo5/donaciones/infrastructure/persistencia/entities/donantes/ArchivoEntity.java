@@ -24,4 +24,16 @@ public class ArchivoEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "estado_archivo", nullable = false, length = 30)
   private EstadoArchivo estado;
+
+  @Column(name = "total_filas")
+  private Integer totalFilas;
+
+  @Column(name = "creadas", nullable = false)
+  private int creadas;
+
+  @Column(name = "actualizadas", nullable = false)
+  private int actualizadas;
+
+  @Column(name = "con_error", nullable = false)
+  private int conError;
 }

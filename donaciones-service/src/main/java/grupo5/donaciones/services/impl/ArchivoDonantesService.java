@@ -4,8 +4,10 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.config.AlmacenamientoProperties;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donantes.ArchivoDonantesSubido;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
+import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import grupo5.donaciones.models.entities.donantes.Archivo;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
@@ -68,6 +70,20 @@ public class ArchivoDonantesService implements IArchivoDonantesService {
     return toOutputDTO(archivo);
   }
 
+  @Override
+  public Pagina<FilaConErrorDTO> obtenerFilasConError(UUID id, Integer page, Integer size) {
+    EntidadBeneficiariaService.validarPaginado(page, size);
+    Archivo archivo =
+        archivoRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    int pagina = page == null ? 0 : page;
+    int tamanio = size == null ? EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO : size;
+    return new Pagina<>(
+        archivoRepository.buscarFilasConError(id, pagina, tamanio).stream()
+            .map(f -> new FilaConErrorDTO(f.linea(), f.motivo().name(), f.codigo()))
+            .toList(),
+        archivo.getConError());
+  }
+
   private void validar(ArchivoDonantesSubido subido) {
     String nombre = subido.nombreOriginal();
     if (subido.tamanio() <= 0
@@ -81,6 +97,14 @@ public class ArchivoDonantesService implements IArchivoDonantesService {
   }
 
   private static ArchivoOutputDTO toOutputDTO(Archivo archivo) {
-    return new ArchivoOutputDTO(archivo.getId(), archivo.getPath(), archivo.getEstado().toString());
+    return new ArchivoOutputDTO(
+        archivo.getId(),
+        archivo.getPath(),
+        archivo.getEstado().toString(),
+        archivo.getTotalFilas(),
+        archivo.getProcesadas(),
+        archivo.getCreadas(),
+        archivo.getActualizadas(),
+        archivo.getConError());
   }
 }
