@@ -54,4 +54,11 @@ class SitioConApisTest {
     mvc.perform(get("/donante-donaciones?donante=00000000-0000-0000-0000-000000000002"))
         .andExpect(status().isBadGateway());
   }
+
+  @Test
+  void recibidasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
+    mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/publico-ingresar"));
+    mvc.perform(get("/entidad-recibidas?entidad=00000000-0000-0000-0000-000000000003"))
+        .andExpect(status().isBadGateway());
+  }
 }

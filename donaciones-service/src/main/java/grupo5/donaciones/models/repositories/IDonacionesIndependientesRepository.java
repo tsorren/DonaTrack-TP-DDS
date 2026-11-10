@@ -2,6 +2,7 @@ package grupo5.donaciones.models.repositories;
 
 import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,9 @@ public interface IDonacionesIndependientesRepository extends CrudRepository<Dona
 
   /** Cuántas donaciones asignadas a cada entidad se registraron después de {@code desde}. */
   Map<UUID, Integer> contarPorEntidadRegistradasDesde(LocalDateTime desde);
+
+  /** Cuántas donaciones están hoy en {@code estado} (contadores públicos, HB-02). */
+  long contarEnEstado(TipoEstadoDonacion estado);
 
   /**
    * Destacadas (HB-01, D28): entregadas desde {@code desde} con fotos replicadas, de la más nueva a

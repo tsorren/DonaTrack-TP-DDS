@@ -7,11 +7,21 @@ import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.Request;
 import com.atlassian.oai.validator.model.SimpleResponse;
 import com.atlassian.oai.validator.report.ValidationReport;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import grupo5.common.testutils.OpenApiTestUtils;
+import grupo5.logistica.dto.entregas.PosicionCamionDTO;
+import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import grupo5.logistica.dto.rutas.DireccionDTO;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.lang.reflect.RecordComponent;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -77,6 +87,57 @@ class OpenApiContractDriftTest {
       if ("piso".equals(rc.getName()) || "departamento".equals(rc.getName())) {
         assertFalse(hasNotNull, rc.getName() + " debe ser opcional (sin @NotNull/@NotBlank)");
       }
+    }
+  }
+
+  @Test
+  void seguimiento_conYSinPosicionDelCamion_cumpleElContrato() throws Exception {
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
+    ObjectMapper jackson =
+        new ObjectMapper()
+            .findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    Instant ahora = Instant.parse("2026-11-08T12:00:30Z");
+    PosicionCamionDTO posicion = new PosicionCamionDTO(-34.6, -58.4, ahora);
+
+    for (PosicionCamionDTO valor : java.util.Arrays.asList(posicion, null)) {
+      SeguimientoEntregaResponseDTO dto =
+          new SeguimientoEntregaResponseDTO(
+              UUID.randomUUID(),
+              UUID.randomUUID(),
+              EstadoEntrega.EN_TRASLADO,
+              true,
+              UUID.randomUUID(),
+              LocalDate.of(2026, 11, 8),
+              EstadoRuta.EN_TRASLADO,
+              "AB123CD",
+              1,
+              1,
+              0,
+              0,
+              ahora,
+              null,
+              ahora,
+              List.of(),
+              valor);
+      SimpleResponse response =
+          SimpleResponse.Builder.status(200)
+              .withContentType("application/json")
+              .withBody(jackson.writeValueAsString(dto))
+              .build();
+
+      ValidationReport report =
+          validator.validateResponse(
+              "/api/entregas/seguimiento/donaciones/" + UUID.randomUUID(),
+              Request.Method.GET,
+              response);
+      assertFalse(
+          report.hasErrors(),
+          "El seguimiento con posicionCamion="
+              + valor
+              + " debe cumplir el contrato: "
+              + report.getMessages());
     }
   }
 }

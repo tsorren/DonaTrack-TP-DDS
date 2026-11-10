@@ -63,6 +63,11 @@ public class DonacionesIndependientesRepositoryEnMemoria
   }
 
   @Override
+  public long contarEnEstado(TipoEstadoDonacion estado) {
+    return storage.values().stream().filter(d -> d.getEstadoActual().getTipo() == estado).count();
+  }
+
+  @Override
   public List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite) {
     return destacadasDesde(desde)
         .sorted(

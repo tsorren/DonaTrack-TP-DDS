@@ -14,10 +14,13 @@ import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -121,5 +124,21 @@ class DonacionesControllerTest extends AbstractDonacionesWebMvcTest {
     when(donacionesService.obtenerDonacion(id)).thenReturn(output);
 
     mockMvc.perform(get("/api/donaciones/{id}", id)).andExpect(status().isOk());
+  }
+
+  @Test
+  void obtenerContadoresPublicos_devuelveLosTresTotalesYLaFecha() throws Exception {
+    when(contadoresPublicosService.calcular())
+        .thenReturn(
+            new ContadoresPublicosDTO(
+                86, 412, 23, OffsetDateTime.of(2026, 11, 8, 18, 30, 0, 0, ZoneOffset.ofHours(-3))));
+
+    mockMvc
+        .perform(get("/api/donaciones/contadores"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.donantesActivos").value(86))
+        .andExpect(jsonPath("$.donacionesRealizadas").value(412))
+        .andExpect(jsonPath("$.beneficiariosActivos").value(23))
+        .andExpect(jsonPath("$.calculadoEn").value("2026-11-08T18:30:00-03:00"));
   }
 }

@@ -443,7 +443,7 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 |---|---|
 | ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) y su ajuste [20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md) |
 | Decision status | `proposed` (los dos) |
-| Implementation status | `[OBSERVED] partial` (HB-17, 2026-11-08) — ítems 1 a 3 implementados: `numeroRemito` y `reporte` en la confirmación y en `EntregaResponseDTO` (Flyway V7 de Logística, también en Mongo), `reporte` en `entrega.exitosa`, `necesidadId` en `DonacionIndependienteResponseDTO`, y Donaciones cuenta lo recibido (Flyway V14). Excluir de las destacadas las entregas con reporte (HB-01): implementado en la rama `E6_HB01_destacadas`, la pertenencia (HB-13) y conectar la pantalla |
+| Implementation status | `[OBSERVED] partial` (HB-17, 2026-11-08) — ítems 1 a 3 implementados: `numeroRemito` y `reporte` en la confirmación y en `EntregaResponseDTO` (Flyway V7 de Logística, también en Mongo), `reporte` en `entrega.exitosa`, `necesidadId` en `DonacionIndependienteResponseDTO`, y Donaciones cuenta lo recibido (Flyway V14). Excluir de las destacadas las entregas con reporte (HB-01): implementado en el PR #954, la pertenencia (HB-13) y conectar la pantalla |
 | Target | `logistica-service` (`Entrega`, DTOs de entregas, `entrega.exitosa`) · `donaciones-service` (`DonacionIndependienteResponseDTO`) · `openapi-logistica.yaml`, `openapi-donaciones.yaml` y `schemas/evento-entrega-exitosa.schema.json` |
 | Cuándo se saldará | Cuando `cliente-liviano` consuma Logística para Confirmar recepción (RF-12). Pide antes HB-13 (pertenencia) |
 
@@ -554,16 +554,16 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
 2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.
 
-## DTI-35 — El seguimiento no tiene posición del camión y los textos del cliente todavía dicen "ubicación aproximada"
+## DTI-35 — El cliente no muestra la posición del camión y sus textos todavía dicen "ubicación aproximada"
 <a id="dti-35"></a>
 
 | Campo | Valor |
 |---|---|
 | ADR | [ADR-E6-07 — Posición del camión: fuente, privacidad y actualización](./20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `Camion` no tiene posición; no existen `PosicionCamion` ni `FuentePosicionCamion`; `SeguimientoEntregaResponseDTO` no tiene `posicionCamion`; el cliente liviano no tiene el fragmento con polling. Las plantillas `donante-seguimiento`, `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-confirmar-recepcion`, `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es aproximada |
+| Implementation status | `[OBSERVED] partial` — **Logística (puntos 1 y 2), hecho el 2026-11-08 (HB-05 y HB-06):** `PosicionCamion` en `Camion` con `registrarPosicion` idempotente, puerto `FuentePosicionCamion` con `FuentePosicionCamionSimulada` y `ActualizadorPosicionCamiones` cada 30 s sobre las rutas `EN_TRASLADO` (el ADR las llama `EN_CURSO`), persistencia en Mongo, JPA (`V6__camion_posicion.sql`) y memoria, y `posicionCamion` en `SeguimientoEntregaResponseDTO` y en `openapi-logistica.yaml` 1.3.0. **Pendiente:** el cliente liviano no tiene el fragmento con polling (punto 3) y las plantillas `donante-seguimiento`, `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-confirmar-recepcion`, `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es aproximada |
 | Target | `logistica-service` (`Camion`, puerto y adaptador simulado, `SeguimientoEntregaResponseDTO`, `openapi-logistica.yaml`) · `cliente-liviano` (fragmento del marcador y textos de ubicación) · `docs/interfaz/flujos/` |
-| Cuándo se saldará | Entrega 6: tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06) para Logística; los textos, con la sesión que conecte el cliente a Logística |
+| Cuándo se saldará | Entrega 6: la parte de Logística quedó hecha con la tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06, 2026-11-08); el fragmento y los textos, con la sesión que conecte el cliente a Logística |
 
 1. **Posición del camión.** Value object `PosicionCamion(latitud, longitud, registradaEn)` en `Camion`, puerto `FuentePosicionCamion` y adaptador simulado que avanza cada 30 s; descarta la posición más vieja que la guardada.
 2. **Seguimiento.** Campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO` y en el contrato OpenAPI.
@@ -577,12 +577,12 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 |---|---|
 | ADR | [Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega](./20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] partial` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06). **Fotos (punto 1):** implementado en la rama `E6_HB01_destacadas` (HB-01): `EntregaConfirmada` y `EventoEntregaExitosa` de Logística llevan `fotosRecepcion`; Donaciones las guarda en la donación (V15) y sirve `GET /api/donaciones/destacadas`. **Donante (punto 2):** HB-16, PR #949 |
+| Implementation status | `[OBSERVED] partial` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06). **Donante (punto 2), hecho el 2026-11-08 (HB-16):** `EventoEntregaSolicitadaV1` de los dos servicios, `DatosEntregaLogistica`, el pedido HTTP, `Entrega`, `EntregaDocument`, `EntregaEntity` (`V5__entrega_donante_id.sql`) y `CrearEntregaRequestDTO` llevan `donanteId`, y `GET /api/entregas/seguimiento/donantes/{donanteId}` lista las activas. **Fotos (punto 1), hecho el 2026-11-08 (HB-01, PR #954):** `EntregaConfirmada` y `EventoEntregaExitosa` de Logística llevan `fotosRecepcion`; Donaciones las guarda en la donación (V15) y sirve `GET /api/donaciones/destacadas` |
 | Target | `logistica-service` (`EventoEntregaExitosa`, `EventoEntregaSolicitadaV1`, `Entrega`, `EntregaDocument`, `CrearEntregaRequestDTO`, `openapi-logistica.yaml`) · `donaciones-service` (los dos records, `ProveedorLogisticaAmqp`, `ProcesadorEventosLogistica`, la donación independiente) |
-| Cuándo se saldará | Entrega 6: tareas 5 (HB-16) y 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md); la URL estable de las fotos depende de ADR-E6-08 (HB-10) |
+| Cuándo se saldará | Entrega 6: tarea 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md), la que queda; la URL estable de las fotos depende de ADR-E6-08 (HB-10). La tarea 5 (HB-16) quedó hecha el 2026-11-08 |
 
-1. **Fotos.** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
-2. **Donante.** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
+1. **Fotos (pendiente).** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
+2. **Donante (hecho, 2026-11-08).** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
 3. **Datos viejos.** Sin backfill: las entregas y donaciones previas no aparecen en el listado por donante ni en destacadas.
 
 ## DTI-37 — Logística no recibe fotos: solo acepta URLs, sin validar tipo, tamaño ni metadatos

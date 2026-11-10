@@ -19,6 +19,8 @@ public interface SpringDataDonacionIndependienteRepository
 
   List<DonacionIndependienteEntity> findByEstadoActual(TipoEstadoDonacion estadoActual);
 
+  long countByEstadoActual(TipoEstadoDonacion estadoActual);
+
   // HB-01: fecha_entrega solo se guarda junto con fotos publicables (V15)
   List<DonacionIndependienteEntity>
       findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(

@@ -50,6 +50,7 @@ public class EntregaPersistenciaMapper {
     entity.setIdRuta(domain.getIdRuta());
     entity.setIdDonacion(domain.getIdDonacion());
     entity.setIdBeneficiario(domain.getIdBeneficiaria());
+    entity.setDonanteId(domain.getDonanteId());
     entity.setEstado(domain.getEstadoActual());
     entity.setNumeroRemito(domain.getNumeroRemito());
     ReporteRecepcion reporte = domain.getReporteRecepcion();
@@ -136,6 +137,7 @@ public class EntregaPersistenciaMapper {
                 entity.getReporteDetalle(),
                 entity.getReporteCantidadRecibida())
             : null);
+    entrega.registrarDonante(entity.getDonanteId());
     return entrega;
   }
 

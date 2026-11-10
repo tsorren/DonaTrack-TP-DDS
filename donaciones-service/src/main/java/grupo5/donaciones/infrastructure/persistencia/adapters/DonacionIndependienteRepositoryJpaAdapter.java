@@ -142,6 +142,11 @@ public class DonacionIndependienteRepositoryJpaAdapter
     return conteo;
   }
 
+  @Override
+  public long contarEnEstado(TipoEstadoDonacion estado) {
+    return springDataRepo.countByEstadoActual(estado);
+  }
+
   // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta
   @Override
   @Transactional(readOnly = true)

@@ -6,11 +6,13 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.*;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -160,6 +162,23 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId) {
+    if (donanteId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    return entregasRepository.findByDonanteId(donanteId).stream()
+        .filter(EntregasService::estaActiva)
+        .map(this::construirSeguimiento)
+        .toList();
+  }
+
+  private static boolean estaActiva(Entrega entrega) {
+    return entrega.getEstadoActual() == EstadoEntrega.PENDIENTE
+        || entrega.getEstadoActual() == EstadoEntrega.EN_TRASLADO;
+  }
+
+  @Override
   @Transactional
   public EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto) {
     if (dto == null) {
@@ -233,10 +252,11 @@ public class EntregasService implements IEntregasService {
           List.of());
     }
 
-    String patenteCamion =
+    Camion camion =
         ruta.getCamionId() != null
-            ? camionRepository.findById(ruta.getCamionId()).map(Camion::getPatente).orElse(null)
+            ? camionRepository.findById(ruta.getCamionId()).orElse(null)
             : null;
+    String patenteCamion = camion != null ? camion.getPatente() : null;
 
     List<UUID> idsParadas = ruta.getEntregaIds();
     List<ParadaSeguimientoDTO> paradas = new ArrayList<>(idsParadas.size());
@@ -293,7 +313,23 @@ public class EntregasService implements IEntregasService {
         aInstantUtc(entrega.getHoraSalida()),
         aInstantUtc(entrega.getHoraArribo()),
         ultimaActualizacion,
-        List.copyOf(paradas));
+        List.copyOf(paradas),
+        posicionCamion(ruta, camion));
+  }
+
+  private static PosicionCamionDTO posicionCamion(Ruta ruta, @Nullable Camion camion) {
+    if (ruta.getEstado() != EstadoRuta.EN_TRASLADO || camion == null) {
+      return null;
+    }
+    PosicionCamion posicion = camion.getPosicion();
+    // Una posición anterior al inicio de esta ruta es de la ruta previa del camión.
+    boolean esDeEstaRuta =
+        posicion != null
+            && ruta.getHoraInicioReal() != null
+            && !posicion.registradaEn().isBefore(aInstantUtc(ruta.getHoraInicioReal()));
+    return esDeEstaRuta
+        ? new PosicionCamionDTO(posicion.latitud(), posicion.longitud(), posicion.registradaEn())
+        : null;
   }
 
   private static Instant calcularUltimaActualizacion(

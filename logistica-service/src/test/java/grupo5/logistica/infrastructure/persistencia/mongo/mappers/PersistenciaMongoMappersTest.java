@@ -16,6 +16,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudPlanificacionDocument;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -167,9 +168,12 @@ class PersistenciaMongoMappersTest {
     Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
 
     Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
     entrega.iniciarRuta("Chofer");
 
     EntregaDocument doc = entregaMapper.toDocument(entrega);
+    assertEquals(donanteId, doc.getDonanteId());
     assertNull(doc.getVersion());
     doc.setVersion(0L);
 
@@ -184,6 +188,7 @@ class PersistenciaMongoMappersTest {
 
     Entrega reconstituida = entregaMapper.toDomain(doc);
     assertEquals(entrega.getId(), reconstituida.getId());
+    assertEquals(donanteId, reconstituida.getDonanteId());
     assertEquals("Av. Cordoba", reconstituida.getDestino().calle());
     assertEquals(0L, reconstituida.getVersion());
 
@@ -196,6 +201,14 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(9L);
     assertFallaPorVersion(() -> entregaMapper.toDocument(reconstituida, doc));
+  }
+
+  @Test
+  void entregaMapper_sinDonante_loDejaEnNullDeIdaYVuelta() {
+    EntregaDocument doc = entregaMapper.toDocument(EntregaMother.pendiente());
+
+    assertNull(doc.getDonanteId());
+    assertNull(entregaMapper.toDomain(doc).getDonanteId());
   }
 
   @Test
@@ -329,5 +342,20 @@ class PersistenciaMongoMappersTest {
     entrega.iniciarRuta("Chofer");
     entrega.confirmarEntrega("Entidad", List.of("f1", "f2", "f3"));
     return entrega;
+  }
+
+  @Test
+  void camionMapper_deberiaMapearLaPosicionIdaYVuelta() {
+    Camion camion = new Camion("AB123CD", 45.0f, 1500.0f, 3.0f);
+    CamionDocument sinPosicion = camionMapper.toDocument(camion);
+    assertNull(sinPosicion.getPosicion());
+    assertNull(camionMapper.toDomain(sinPosicion).getPosicion());
+
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6, -58.4, Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+
+    CamionDocument doc = camionMapper.toDocument(camion);
+    assertEquals(posicion, camionMapper.toDomain(doc).getPosicion());
   }
 }

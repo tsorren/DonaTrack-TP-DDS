@@ -8,6 +8,7 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -55,5 +56,10 @@ public class DonacionRepositoryJpaAdapter
   @Transactional(readOnly = true)
   public List<Donacion> findAll() {
     return super.findAll();
+  }
+
+  @Override
+  public Set<UUID> idsDeDonantes() {
+    return springDataRepo.findIdsDeDonantes();
   }
 }
