@@ -1,5 +1,6 @@
 package grupo5.logistica.infrastructure;
 
+import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.models.entities.camiones.Camion;
@@ -70,7 +71,9 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             evento.getDonacionId(),
             camion.getId(),
             camion.getPatente(),
-            evento.getTimestamp()));
+            evento.getTimestamp(),
+            ReporteRecepcionDTO.de(evento.getReporte()),
+            evento.getFotosRecepcion()));
     if (eventosEntregaRepository != null) {
       eventosEntregaRepository.registrarEntregaExitosa(evento);
     }

@@ -189,7 +189,7 @@ Los RF se numeran como los requerimientos mínimos de UI/UX del enunciado (págs
 
 | ID | Actor | Requerimiento | Criterio de aceptación `[PROPOSED]` | Endpoints | Cob. | Hueco (§8) |
 |---|---|---|---|---|:-:|---|
-| RF-01 | Público | Landing: propósito, destacadas del último mes, links a fotos, registro/login, legales | La landing carga sin login y muestra propósito, hasta N destacadas del último mes y los links de RF-01 | `GET /donaciones-independientes` | 🟡 | HB-01, HB-02 |
+| RF-01 | Público | Landing: propósito, destacadas del último mes, links a fotos, registro/login, legales | La landing carga sin login y muestra propósito, hasta N destacadas del último mes y los links de RF-01 | `GET /donaciones-independientes`; destacadas en `GET /api/donaciones/destacadas` (PR #954) | 🟡 | HB-01, HB-02 |
 | RF-02 | Público | Mapa de donaciones entregadas con detalle por marcador | Sin login; cada marcador abre el detalle (fecha, categoría, foto); coordenadas exactas, sin el texto de la dirección (D24) | `GET /api/entregas/mapa` | 🟡 | HB-07 |
 | RF-03 | Público | Registro de donantes y entidades | Un donante queda operativo al completar el perfil; una entidad queda pendiente de aprobación | IdP + `POST /api/personas`, `/api/donantes`, `/api/entidades` | 🟡 | RI-AUTH-02 |
 | RF-04 | Todos | Login de donantes, entidades y admins | Los 3 roles inician sesión y llegan a su inicio; credenciales inválidas dan error genérico | IdP | ❌ | §4 |
@@ -288,12 +288,12 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 
 | ID | Servicio | Cambio `[PROPOSED]` | Para | Origen |
 |---|---|---|---|---|
-| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo`. Las fotos llegan a Donaciones por `entrega.exitosa` (ver la nota) | RF-01 | D28, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
-| HB-02 | Donaciones / Incentivos | Contadores públicos de la landing (donantes activos, donaciones realizadas, beneficiarios activos) en un endpoint agregado | RF-01 (boceto) | Boceto E1 |
+| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo`. Las fotos llegan a Donaciones por `entrega.exitosa` (ver la nota). **Avance:** `GET /api/donaciones/destacadas` implementado en la el PR #954, con la réplica de las fotos ([DTI-36](../adr/DEUDA_TECNICA.md#dti-36)) y la exclusión de las entregas con reporte | RF-01 | D28, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
+| HB-02 | Donaciones / Incentivos | Contadores públicos de la landing (donantes activos, donaciones realizadas, beneficiarios activos) en un endpoint agregado. **Avance:** `GET /api/donaciones/contadores` implementado en el PR #953, solo en Donaciones (Incentivos no aporta datos), y sumado a la allowlist del gateway | RF-01 (boceto) | Boceto E1 |
 | HB-03 | Donaciones | Filtro por `categoriaId` en `GET /donaciones-independientes` | RF-05 | D28 |
 | HB-04 | Donaciones | Filtro por entidad asignada y rango de fechas | RF-11, RF-01 | D28 |
-| HB-05 | Logística | VO `PosicionCamion` (coordenadas + timestamp de origen) y puerto `FuentePosicionCamion` con un adaptador simulado que avanza por las paradas de la ruta | RF-09, RF-14 | D23 |
-| HB-06 | Logística | Exponer la posición del camión en el seguimiento: campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO`, exacta para todos (RNF-PRIV-01) | RF-09, RF-14 | D23, D24 |
+| HB-05 | Logística | VO `PosicionCamion` (coordenadas + timestamp de origen) y puerto `FuentePosicionCamion` con un adaptador simulado que avanza por las paradas de la ruta. **Hecho (2026-11-08):** `FuentePosicionCamionSimulada` y `ActualizadorPosicionCamiones` cada 30 s | RF-09, RF-14 | D23 |
+| HB-06 | Logística | Exponer la posición del camión en el seguimiento: campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO`, exacta para todos (RNF-PRIV-01). **Hecho (2026-11-08):** OpenAPI de Logística 1.3.0 | RF-09, RF-14 | D23, D24 |
 | HB-07 | Logística | ~~`GET /api/entregas/mapa` con coordenadas aproximadas~~ Con la D24 revisada las coordenadas quedan exactas: solo se corrige el Javadoc de `EntregaMapaPublicoResponseDTO` (tarea 22 del [plan sin auth](plan-e6-trabajo-sin-auth.md)) | RF-02 | D24 |
 | HB-08 | Donaciones | DTOs públicos de entidades y necesidades | RF-06, RF-22 | D26 |
 | HB-09 | Notificaciones | Verificar que los 4 eventos del donante y los 2 de la entidad generan notificación | RF-08, RF-13 | — |
@@ -303,14 +303,15 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-13 | Los 4 servicios | Resource server JWT, `@PreAuthorize` y chequeos de pertenencia | RI-SVC-01..03 | D2, D13 |
 | HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error). **Avance:** la subida multipart → MinIO está implementada en la rama `E4_donaciones_minio`; el progreso (`totalFilas`, `procesadas`, `creadas`, `actualizadas`, `conError` en `ArchivoOutputDTO`) y el resultado por fila (`GET /api/donantes/archivos/{id}/filas-con-error`) están en el PR #956 | RF-20 | Auditoría `[OBSERVED]` |
 | HB-15 | Donaciones | Paginado y búsqueda por nombre en `GET /api/entidades` (hoy devuelve todo, sin parámetros) | RF-06, RF-22 | Auditoría `[OBSERVED]` |
-| HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación). Para el donante, `donanteId` opcional en `entrega.solicitada.v1` y en `Entrega` | RF-09, RF-14 | Auditoría `[OBSERVED]`, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
-| HB-17 | Logística + Donaciones | Remito y reporte de problemas al confirmar; `necesidadId` en la donación independiente | RF-12 | [DTI-29](../adr/DEUDA_TECNICA.md#dti-29) |
+| HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación). Para el donante, `donanteId` opcional en `entrega.solicitada.v1` y en `Entrega`. **Hecho (2026-11-08):** `GET /api/entregas/seguimiento/donantes/{donanteId}`, solo pendientes y en traslado; la entidad ya tenía `/seguimiento/beneficiarios/{id}` | RF-09, RF-14 | Auditoría `[OBSERVED]`, [réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
+| HB-17 | Logística + Donaciones | Remito y reporte de problemas al confirmar; `necesidadId` en la donación independiente. **Contrato hecho (2026-11-08); DTI-29 sigue `partial` hasta HB-01 y HB-13:** remito y reporte en `PATCH /api/entregas/{id}/estado` y en `EntregaResponseDTO`, `reporte` en `entrega.exitosa`, `necesidadId` en la donación, y la necesidad cuenta lo recibido ([ajuste del ADR](../adr/20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md)) | RF-12 | [DTI-29](../adr/DEUDA_TECNICA.md#dti-29) |
 | HB-18 | Donaciones | Necesidad con estado y filtro, versión, unidad, fecha límite, períodos de semana, quincena o mes, y su historia en otra llamada. **Dos cambios incompatibles** | RF-10, RF-22 | [DTI-30](../adr/DEUDA_TECNICA.md#dti-30) |
 | HB-19 | Donaciones + Logística | Cancelar las entregas que no salieron cuando se da de baja su necesidad. **Valor nuevo del enum de entregas** | RF-10 | [DTI-31](../adr/DEUDA_TECNICA.md#dti-31) |
 | HB-20 | Donaciones | Nombre visible del donante con preferencia de ocultarlo, y constancia de los legales en el alta. **Campo obligatorio nuevo** | RF-12, RF-03, RF-01 | [DTI-32](../adr/DEUDA_TECNICA.md#dti-32) |
 | HB-21 | Por decidir | Recibir los mensajes del formulario de contacto | RF-01 | [DTI-33](../adr/DEUDA_TECNICA.md#dti-33) |
+| HB-22 | Donaciones + Logística | Distinguir la entrega que llegó a la puerta y espera la confirmación de la entidad de la que todavía viene en camino: hoy las dos están en traslado | RF-11, RF-12, RF-14 | Conexión de Donaciones recibidas, 2026-11-08 `[OBSERVED]` en `TipoEstadoDonacion` y `EstadoEntrega` de Logística |
 
-HB-17 a HB-21 salen de las preguntas abiertas de Raíces, que el usuario decidió el 2026-11-02. Los
+HB-22 salió al conectar Donaciones recibidas (2026-11-08) y todavía no tiene DTI ni dueño. HB-17 a HB-21 salen de las preguntas abiertas de Raíces, que el usuario decidió el 2026-11-02. Los
 marcados en negrita no son aditivos y se registran según la
 [política de evolución de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md).
 

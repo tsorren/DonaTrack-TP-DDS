@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +102,9 @@ public class DonacionIndependienteRepositoryJpaAdapter
     long suma =
         periodoId != null
             ? springDataRepo.sumarCantidadAsignadaEnPeriodo(necesidadId, periodoId)
-            : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId);
+                - springDataRepo.sumarNoRecibidoEnPeriodo(necesidadId, periodoId)
+            : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId)
+                - springDataRepo.sumarNoRecibidoSinPeriodo(necesidadId);
     return Math.toIntExact(suma);
   }
 
@@ -119,6 +122,12 @@ public class DonacionIndependienteRepositoryJpaAdapter
         sumas.put(fila.getNecesidadId(), Math.toIntExact(fila.getCantidad()));
       }
     }
+    for (SumaPorDestino fila :
+        springDataRepo.sumarNoRecibidoPorDestino(periodoPorNecesidad.keySet())) {
+      if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
+        sumas.merge(fila.getNecesidadId(), -Math.toIntExact(fila.getCantidad()), Integer::sum);
+      }
+    }
     return sumas;
   }
 
@@ -131,5 +140,28 @@ public class DonacionIndependienteRepositoryJpaAdapter
     Map<UUID, Integer> conteo = new HashMap<>();
     filas.forEach(f -> conteo.put(f.getEntidadId(), Math.toIntExact(f.getCantidad())));
     return conteo;
+  }
+
+  @Override
+  public long contarEnEstado(TipoEstadoDonacion estado) {
+    return springDataRepo.countByEstadoActual(estado);
+  }
+
+  // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta
+  @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite) {
+    return springDataRepo
+        .findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(
+            TipoEstadoDonacion.ENTREGADA, desde, Limit.of(limite))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  public long contarDestacadasDesde(LocalDateTime desde) {
+    return springDataRepo.countByEstadoActualAndFechaEntregaGreaterThanEqual(
+        TipoEstadoDonacion.ENTREGADA, desde);
   }
 }

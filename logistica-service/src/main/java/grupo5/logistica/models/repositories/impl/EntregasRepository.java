@@ -129,6 +129,17 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
         .toList();
   }
 
+  @Override
+  public List<Entrega> findByDonanteId(UUID donanteId) {
+    if (donanteId == null) {
+      return List.of();
+    }
+    return storage.values().stream()
+        .filter(entrega -> Objects.equals(entrega.getDonanteId(), donanteId))
+        .sorted(Comparator.comparingInt(e -> indiceOrdenInsercion(e.getId())))
+        .toList();
+  }
+
   private void registrarOrdenInsercion(UUID id) {
     if (id != null && !ordenInsercion.contains(id)) {
       ordenInsercion.add(id);

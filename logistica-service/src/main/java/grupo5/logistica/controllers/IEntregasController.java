@@ -29,6 +29,9 @@ public interface IEntregasController {
   ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorBeneficiaria(
       @PathVariable("idBeneficiaria") UUID idBeneficiaria);
 
+  ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorDonante(
+      @PathVariable("donanteId") UUID donanteId);
+
   ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @Valid @RequestBody AdjuntarFotoRecepcionRequestDTO dto);
 

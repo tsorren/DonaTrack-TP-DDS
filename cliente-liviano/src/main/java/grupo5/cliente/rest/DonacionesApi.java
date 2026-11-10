@@ -16,6 +16,14 @@ interface DonacionesApi {
   @GetExchange("/donaciones-independientes")
   List<Donacion> donaciones(@RequestParam UUID donanteId);
 
+  /** Las asignadas a una entidad beneficiaria. */
+  @GetExchange("/donaciones-independientes")
+  List<Donacion> asignadas(@RequestParam UUID entidadId);
+
+  /** La donación original, para saber quién donó. */
+  @GetExchange("/api/donaciones/{id}")
+  Original donacion(@PathVariable UUID id);
+
   @GetExchange("/api/categorias")
   List<Categoria> categorias();
 
@@ -31,7 +39,8 @@ interface DonacionesApi {
       List<Cambio> historial,
       List<Item> items,
       int cantidad,
-      UUID entidadBeneficiariaId) {}
+      UUID entidadBeneficiariaId,
+      UUID donacionOriginalId) {}
 
   record Cambio(String estadoNuevo, LocalDateTime timestamp, String justificacion) {}
 
@@ -44,4 +53,13 @@ interface DonacionesApi {
   record Entidad(Juridica juridica) {}
 
   record Juridica(String razonSocial) {}
+
+  record Original(Donante donante) {}
+
+  record Donante(Persona persona) {}
+
+  /**
+   * Una persona jurídica trae {@code razonSocial}; una humana, {@code nombre} y {@code apellido}.
+   */
+  record Persona(String razonSocial, String nombre, String apellido) {}
 }
