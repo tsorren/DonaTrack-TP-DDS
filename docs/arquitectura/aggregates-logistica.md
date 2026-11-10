@@ -34,13 +34,15 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Aggregate Root**: `Camion` (implements `AggregateRoot`).
 *   **Referencias Externas (por ID)**: `rutaId` (UUID nulable de la ruta activa asignada).
 *   **Estados de Ciclo de Vida**: *DISPONIBLE*, *EN_RUTA*, *DESHABILITADO* (Enum `EstadoCamion`).
-*   **Componentes Internos**: `CambioEstadoCamion` (Java record de auditoría inmutable de estados).
+*   **Componentes Internos**: `CambioEstadoCamion` (Java record de auditoría inmutable de estados) y `PosicionCamion` (value object con la última posición conocida: `latitud`, `longitud` y `registradaEn`, la hora de origen del dato; ADR-E6-07).
 *   **Responsabilidad**: Modelar cada vehículo de la flota de distribución, validando sus dimensiones físicas y capacidades de carga (volumen, peso, altura) en su constructor, y controlando consistentemente la asignación a rutas y deshabilitación.
 *   **Métodos de Negocio**:
     *   `asignarARuta(UUID rutaId)`
     *   `completarRuta()`
     *   `habilitar()`
     *   `deshabilitar()`
+    *   `registrarPosicion(PosicionCamion)`: guarda la posición solo si es más nueva que la guardada; una igual o anterior se descarta (idempotencia ante reintentos o mensajes desordenados).
+*   **Posición del camión (HB-05)**: el puerto de salida `FuentePosicionCamion` (`services/`) da la posición del camión de una ruta `EN_TRASLADO`. Hoy lo implementa `FuentePosicionCamionSimulada` (`infrastructure/clients/`), que recorre en línea recta las coordenadas de las paradas en el orden de visita, un sub-paso por intervalo desde `horaInicioReal`, sin estado propio. `ActualizadorPosicionCamiones` (`schedulers/`) la pide cada `logistica.posicion.intervalo-ms` (30 s por defecto) y la guarda en el camión; `logistica.posicion.pasos-por-tramo` (10 por defecto) fija en cuántos sub-pasos se divide el tramo entre dos paradas; con `logistica.posicion.simulada.habilitada=false` no corre. Persistencia: subdocumento `posicion` en `camiones` (Mongo) y columnas `posicion_*` en `camion` (JPA, `V6__camion_posicion.sql`).
 *   **Paquete**: `grupo5.logistica.models.entities.camiones`
 
 ### 2.3. Agregado: Ruta

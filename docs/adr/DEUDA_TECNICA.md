@@ -553,16 +553,16 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
 2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.
 
-## DTI-35 — El seguimiento no tiene posición del camión y los textos del cliente todavía dicen "ubicación aproximada"
+## DTI-35 — El cliente no muestra la posición del camión y sus textos todavía dicen "ubicación aproximada"
 <a id="dti-35"></a>
 
 | Campo | Valor |
 |---|---|
 | ADR | [ADR-E6-07 — Posición del camión: fuente, privacidad y actualización](./20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `Camion` no tiene posición; no existen `PosicionCamion` ni `FuentePosicionCamion`; `SeguimientoEntregaResponseDTO` no tiene `posicionCamion`; el cliente liviano no tiene el fragmento con polling. Las plantillas `donante-seguimiento`, `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-confirmar-recepcion`, `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es aproximada |
+| Implementation status | `[OBSERVED] partial` — **Logística (puntos 1 y 2), hecho el 2026-11-08 (HB-05 y HB-06):** `PosicionCamion` en `Camion` con `registrarPosicion` idempotente, puerto `FuentePosicionCamion` con `FuentePosicionCamionSimulada` y `ActualizadorPosicionCamiones` cada 30 s sobre las rutas `EN_TRASLADO` (el ADR las llama `EN_CURSO`), persistencia en Mongo, JPA (`V6__camion_posicion.sql`) y memoria, y `posicionCamion` en `SeguimientoEntregaResponseDTO` y en `openapi-logistica.yaml` 1.3.0. **Pendiente:** el cliente liviano no tiene el fragmento con polling (punto 3) y las plantillas `donante-seguimiento`, `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-confirmar-recepcion`, `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es aproximada |
 | Target | `logistica-service` (`Camion`, puerto y adaptador simulado, `SeguimientoEntregaResponseDTO`, `openapi-logistica.yaml`) · `cliente-liviano` (fragmento del marcador y textos de ubicación) · `docs/interfaz/flujos/` |
-| Cuándo se saldará | Entrega 6: tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06) para Logística; los textos, con la sesión que conecte el cliente a Logística |
+| Cuándo se saldará | Entrega 6: la parte de Logística quedó hecha con la tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06, 2026-11-08); el fragmento y los textos, con la sesión que conecte el cliente a Logística |
 
 1. **Posición del camión.** Value object `PosicionCamion(latitud, longitud, registradaEn)` en `Camion`, puerto `FuentePosicionCamion` y adaptador simulado que avanza cada 30 s; descarta la posición más vieja que la guardada.
 2. **Seguimiento.** Campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO` y en el contrato OpenAPI.

@@ -20,6 +20,7 @@ import grupo5.logistica.infrastructure.persistencia.jpa.mappers.RutaPersistencia
 import grupo5.logistica.infrastructure.persistencia.jpa.mappers.SolicitudPlanificacionPersistenciaMapper;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -210,5 +211,20 @@ class PersistenciaMappersTest {
     assertThrows(
         ObjectOptimisticLockingFailureException.class,
         () -> solicitudMapper.toEntity(reconstituida, entity));
+  }
+
+  @Test
+  void camionMapper_deberiaMapearLaPosicionIdaYVuelta() {
+    Camion camion = new Camion("AB123CD", 45.0f, 1500.0f, 3.0f);
+    CamionEntity sinPosicion = camionMapper.toEntity(camion);
+    assertNull(sinPosicion.getPosicionLatitud());
+    assertNull(camionMapper.toDomain(sinPosicion).getPosicion());
+
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+
+    CamionEntity entity = camionMapper.toEntity(camion);
+    assertEquals(posicion, camionMapper.toDomain(entity).getPosicion());
   }
 }

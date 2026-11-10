@@ -16,6 +16,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudPlanificacionDocument;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -321,5 +322,20 @@ class PersistenciaMongoMappersTest {
     entrega.iniciarRuta("Chofer");
     entrega.confirmarEntrega("Entidad", List.of("f1", "f2", "f3"));
     return entrega;
+  }
+
+  @Test
+  void camionMapper_deberiaMapearLaPosicionIdaYVuelta() {
+    Camion camion = new Camion("AB123CD", 45.0f, 1500.0f, 3.0f);
+    CamionDocument sinPosicion = camionMapper.toDocument(camion);
+    assertNull(sinPosicion.getPosicion());
+    assertNull(camionMapper.toDomain(sinPosicion).getPosicion());
+
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6, -58.4, Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+
+    CamionDocument doc = camionMapper.toDocument(camion);
+    assertEquals(posicion, camionMapper.toDomain(doc).getPosicion());
   }
 }
