@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -144,5 +145,23 @@ public class DonacionIndependienteRepositoryJpaAdapter
   @Override
   public long contarEnEstado(TipoEstadoDonacion estado) {
     return springDataRepo.countByEstadoActual(estado);
+  }
+
+  // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta
+  @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite) {
+    return springDataRepo
+        .findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(
+            TipoEstadoDonacion.ENTREGADA, desde, Limit.of(limite))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  public long contarDestacadasDesde(LocalDateTime desde) {
+    return springDataRepo.countByEstadoActualAndFechaEntregaGreaterThanEqual(
+        TipoEstadoDonacion.ENTREGADA, desde);
   }
 }

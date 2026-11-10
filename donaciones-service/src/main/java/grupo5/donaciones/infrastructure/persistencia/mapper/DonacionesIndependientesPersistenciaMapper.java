@@ -56,6 +56,9 @@ public class DonacionesIndependientesPersistenciaMapper {
     entity.setPeriodoId(domain.getPeriodoId());
     entity.setEntidadBeneficiariaId(domain.getEntidadBeneficiariaId());
     entity.setCantidadNoRecibida(domain.getCantidadNoRecibida());
+    entity.setFechaEntrega(domain.getFechaEntrega());
+    entity.getFotosRecepcion().clear();
+    entity.getFotosRecepcion().addAll(domain.getFotosRecepcion());
     reemplazarItems(domain, entity);
     agregarCambiosNuevos(domain, entity);
     return entity;
@@ -95,6 +98,7 @@ public class DonacionesIndependientesPersistenciaMapper {
         entity.getItems().stream().map(this::itemToDomain).toList();
     DonacionIndependiente donacion = new DonacionIndependiente(datos, items, historial);
     donacion.reconstituirCantidadNoRecibida(entity.getCantidadNoRecibida());
+    donacion.reconstituirFotosDeRecepcion(entity.getFechaEntrega(), entity.getFotosRecepcion());
     return donacion;
   }
 

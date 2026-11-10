@@ -552,4 +552,52 @@ class DonacionesIndependientesRepositoryJpaTest {
     UUID donanteId = jdbc.queryForObject("SELECT id_donante FROM donaciones.donacion", UUID.class);
     assertEquals(Set.of(donanteId), donaciones.idsDeDonantes());
   }
+
+  // HB-01: réplica de las fotos de recepción y consulta de destacadas
+
+  private DonacionIndependiente entregadaCon(LocalDateTime fecha, List<String> fotos) {
+    DonacionIndependiente donacion = nueva(10);
+    donacion.asignar(ACTOR, recurrente().destinoDeAsignacion());
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    donacion.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR));
+    donacion.registrarFotosDeRecepcion(fecha, fotos);
+    independientes.save(donacion);
+    return donacion;
+  }
+
+  @Test
+  void guardarYLeer_fotosDeRecepcion_conservaFechaYOrden() {
+    LocalDateTime fecha = LocalDateTime.of(2026, 11, 8, 13, 0);
+    List<String> fotos = List.of("https://ejemplo.org/b.jpg", "https://ejemplo.org/a.jpg");
+    DonacionIndependiente donacion = entregadaCon(fecha, fotos);
+
+    DonacionIndependiente leida = independientes.findById(donacion.getId()).orElseThrow();
+
+    assertEquals(fecha, leida.getFechaEntrega());
+    assertEquals(fotos, leida.getFotosRecepcion());
+    assertEquals(2, contar("foto_recepcion_donacion_independiente"));
+  }
+
+  @Test
+  void destacadas_filtranPorFechaOrdenanYLimitan() {
+    LocalDateTime ahora = LocalDateTime.of(2026, 11, 8, 12, 0);
+    List<String> fotos = List.of("https://ejemplo.org/a.jpg");
+    DonacionIndependiente vieja = entregadaCon(ahora.minusDays(10), fotos);
+    DonacionIndependiente nueva = entregadaCon(ahora.minusDays(1), fotos);
+    entregadaCon(ahora.minusDays(40), fotos);
+    entregadaCon(ahora.minusDays(2), List.of());
+
+    LocalDateTime desde = ahora.minusDays(30);
+    List<DonacionIndependiente> destacadas = independientes.findDestacadasDesde(desde, 5);
+
+    assertEquals(
+        List.of(nueva.getId(), vieja.getId()),
+        destacadas.stream().map(DonacionIndependiente::getId).toList());
+    assertEquals(fotos, destacadas.getFirst().getFotosRecepcion());
+    assertEquals(2, independientes.contarDestacadasDesde(desde));
+    assertEquals(1, independientes.findDestacadasDesde(desde, 1).size());
+  }
 }

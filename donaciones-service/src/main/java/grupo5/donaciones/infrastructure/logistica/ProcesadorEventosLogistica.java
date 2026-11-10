@@ -15,6 +15,7 @@ import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,19 +100,38 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
         evento.donacionIndependienteId(),
         evento.patenteCamion());
 
+    UUID donacionId = evento.donacionIndependienteId();
     Double cantidadRecibida = evento.reporte() != null ? evento.reporte().cantidadRecibida() : null;
+    List<String> fotosPublicables = fotosPublicables(evento);
     aplicarCambioEstado(
-        evento.donacionIndependienteId(),
+        donacionId,
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGADA, null, null, null, evento.patenteCamion(), null),
         "EntregaExitosa",
         origen,
         evento.entregaId(),
-        cantidadRecibida == null
-            ? NADA
-            : () ->
-                donacionesIndependientesService.registrarCantidadRecibida(
-                    evento.donacionIndependienteId(), cantidadRecibida));
+        () -> {
+          if (cantidadRecibida != null) {
+            donacionesIndependientesService.registrarCantidadRecibida(donacionId, cantidadRecibida);
+          }
+          if (!fotosPublicables.isEmpty()) {
+            donacionesIndependientesService.registrarFotosDeRecepcion(
+                donacionId, evento.fechaEntrega(), fotosPublicables);
+          }
+        });
+  }
+
+  /**
+   * Fotos que pueden salir en las destacadas (HB-01): ninguna si la entrega llegó con reporte (ADR
+   * de entregas con problema, 2026-11-08) o si el mensaje no trae fecha.
+   */
+  private static List<String> fotosPublicables(EventoEntregaExitosa evento) {
+    if (evento.reporte() != null
+        || evento.fechaEntrega() == null
+        || evento.fotosRecepcion() == null) {
+      return List.of();
+    }
+    return evento.fotosRecepcion().stream().filter(f -> f != null && !f.isBlank()).toList();
   }
 
   @Override

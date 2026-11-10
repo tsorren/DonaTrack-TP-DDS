@@ -56,6 +56,22 @@ class ComunicadorEventosLogisticaRabbitTest {
   }
 
   @Test
+  void entregaExitosaLlevaLasFotosDeRecepcionEnElPayload() {
+    List<String> fotos = List.of("http://localhost:8086/api/entregas/1/fotos/a");
+    EntregaConfirmada evento =
+        new EntregaConfirmada(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null, fotos);
+    Camion camion = mock(Camion.class);
+    when(camion.getId()).thenReturn(UUID.randomUUID());
+
+    comunicador.comunicarEntregaExitosa(evento, camion);
+
+    ArgumentCaptor<EventoEntregaExitosa> captor =
+        ArgumentCaptor.forClass(EventoEntregaExitosa.class);
+    verify(eventPublisher).publicarEntregaExitosa(captor.capture());
+    assertEquals(fotos, captor.getValue().fotosRecepcion());
+  }
+
+  @Test
   void entregaExitosaConReporteLoLlevaEnElPayload() {
     EntregaConfirmada evento =
         new EntregaConfirmada(

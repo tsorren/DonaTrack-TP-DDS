@@ -72,7 +72,8 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             camion.getId(),
             camion.getPatente(),
             evento.getTimestamp(),
-            ReporteRecepcionDTO.de(evento.getReporte())));
+            ReporteRecepcionDTO.de(evento.getReporte()),
+            evento.getFotosRecepcion()));
     if (eventosEntregaRepository != null) {
       eventosEntregaRepository.registrarEntregaExitosa(evento);
     }

@@ -30,4 +30,13 @@ public interface IDonacionesIndependientesRepository extends CrudRepository<Dona
 
   /** Cuántas donaciones están hoy en {@code estado} (contadores públicos, HB-02). */
   long contarEnEstado(TipoEstadoDonacion estado);
+
+  /**
+   * Destacadas (HB-01, D28): entregadas desde {@code desde} con fotos replicadas, de la más nueva a
+   * la más vieja, hasta {@code limite}.
+   */
+  List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite);
+
+  /** Cuántas destacadas hay desde {@code desde}, sin el límite. */
+  long contarDestacadasDesde(LocalDateTime desde);
 }

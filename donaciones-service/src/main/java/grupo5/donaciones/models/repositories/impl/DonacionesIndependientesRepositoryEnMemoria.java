@@ -5,11 +5,13 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -63,5 +65,27 @@ public class DonacionesIndependientesRepositoryEnMemoria
   @Override
   public long contarEnEstado(TipoEstadoDonacion estado) {
     return storage.values().stream().filter(d -> d.getEstadoActual().getTipo() == estado).count();
+  }
+
+  @Override
+  public List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite) {
+    return destacadasDesde(desde)
+        .sorted(
+            Comparator.comparing(DonacionIndependiente::getFechaEntrega)
+                .reversed()
+                .thenComparing(DonacionIndependiente::getId))
+        .limit(limite)
+        .toList();
+  }
+
+  @Override
+  public long contarDestacadasDesde(LocalDateTime desde) {
+    return destacadasDesde(desde).count();
+  }
+
+  private Stream<DonacionIndependiente> destacadasDesde(LocalDateTime desde) {
+    return storage.values().stream()
+        .filter(d -> d.getEstadoActual().getTipo() == TipoEstadoDonacion.ENTREGADA)
+        .filter(d -> d.getFechaEntrega() != null && !d.getFechaEntrega().isBefore(desde));
   }
 }

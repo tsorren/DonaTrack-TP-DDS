@@ -292,7 +292,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 > que el paso a `ENTREGADA`. El remito no viaja. Ver el [ajuste del ADR del contrato de
 > entregas](../adr/20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md).
 
-> **`fotosRecepcion` (opcional, en el schema desde el 2026-11-06; implementación pendiente en DTI-36, `[PROPOSED]`):** URLs estables de las fotos, que redirigen a una URL firmada de vida corta. Donaciones las va a replicar en la donación para servir `GET /donaciones/destacadas` sin llamar a Logística (HB-01). Un proveedor que no las manda sigue siendo válido; sus entregas no aportan destacadas. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
+> **`fotosRecepcion` (opcional, en el schema desde el 2026-11-06; implementado en HB-01, PR #954):** URLs de las fotos de la entrega, en su orden; las de una subida a MinIO (HB-10, PR #952) son estables y redirigen a una URL firmada de vida corta; las cargadas por URL viajan tal cual. Logística no manda el campo si la entrega no tiene fotos. Donaciones las replica en la donación al pasar a `ENTREGADA`, en la misma transacción idempotente, solo si no hay `reporte`, y sirve `GET /api/donaciones/destacadas` sin llamar a Logística (HB-01). Un proveedor que no las manda sigue siendo válido; sus entregas no aportan destacadas. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 
 #### Entrega Fallida (`entrega.fallida`)
 ```json
