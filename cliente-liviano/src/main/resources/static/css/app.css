@@ -40,6 +40,8 @@
 @import url("componentes/recorte.css") layer(bloques);
 @import url("componentes/segmentos.css") layer(bloques);
 @import url("componentes/maestro.css") layer(bloques);
+@import url("componentes/buzon.css") layer(bloques);
+@import url("componentes/flota.css") layer(bloques);
 
 *,
 *::before,

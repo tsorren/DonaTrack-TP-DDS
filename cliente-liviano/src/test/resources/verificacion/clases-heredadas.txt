@@ -21,7 +21,6 @@ asiento-texto
 aviso-acciones
 aviso-codigo
 bajada
-bandeja
 boton--google
 cambiar
 cambio
@@ -51,8 +50,6 @@ confirmar-cabecera
 contacto
 contacto-cuenta
 contacto-lamina
-cuaderno-novedades
-cuaderno-novedades--sin-leer
 cuaderno-recibidas
 cuenta
 cuenta--enviada
@@ -124,8 +121,6 @@ foto
 foto-falta
 fruto
 grupo
-grupo-avisos
-grupo-avisos--sin-leer
 grupos
 hito
 iconos
@@ -147,7 +142,6 @@ legales-indice
 legales-version
 mapa
 marca
-marcar
 mesa
 mesa-cabecera
 mesa-fecha
@@ -159,17 +153,6 @@ nodo-numero
 nota
 noticias-inicio
 noticias-todas
-notificaciones
-notificaciones-cabecera
-notificaciones-grupos
-novedad
-novedad--leida
-novedad--sin-leer
-novedad-cuando
-novedad-enlace
-novedad-texto
-novedad-tipo
-novedades-lista
 obligatorios
 opciones
 paginas

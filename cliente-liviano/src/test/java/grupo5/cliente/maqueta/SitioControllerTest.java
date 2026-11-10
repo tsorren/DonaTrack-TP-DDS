@@ -946,12 +946,14 @@ class SitioControllerTest {
             content()
                 .string(containsString("5 camiones: 1 en ruta · 3 disponibles · 1 deshabilitado")))
         .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
-        .andExpect(content().string(containsString("¿Deshabilitar el camión AC 456 EF?")))
-        .andExpect(
-            content().string(containsString("aria-label=\"Deshabilitar: camión AC 456 EF\"")))
         .andExpect(content().string(containsString("En el taller desde el 12 de octubre.")))
         .andExpect(content().string(containsString("action=\"/admin-camiones-agregado\"")))
         .andExpect(content().string(not(containsString("Deshabilitar: camión AB 123 CD"))));
+    // La ficha de un camión disponible trae su "Deshabilitar" con el diálogo del motivo.
+    mvc.perform(get("/admin-camiones?camion=ac456ef"))
+        .andExpect(content().string(containsString("¿Deshabilitar el camión AC 456 EF?")))
+        .andExpect(
+            content().string(containsString("aria-label=\"Deshabilitar: camión AC 456 EF\"")));
     mvc.perform(get("/admin-camiones?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay camiones.")));
     mvc.perform(get("/admin-camiones?escenario=lento"))

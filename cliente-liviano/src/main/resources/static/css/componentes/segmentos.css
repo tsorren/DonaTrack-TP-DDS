@@ -50,3 +50,33 @@
     border-radius: 999px;
   }
 }
+
+/* data-forma="desliza" (2026-11-10, Camiones del admin): con vistas de nombre largo, en el celular la
+   franja no reparte el ancho: cada vista mide lo que su texto y la franja se desliza de costado, como
+   una tira de pastillas. Desde el celular grande es igual que la base. */
+.segmentos[data-forma="desliza"] {
+  min-width: 0;
+  max-width: 100%;
+  grid-auto-columns: max-content;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmentos[data-forma="desliza"] a {
+  padding-inline: 1rem;
+  white-space: nowrap;
+}
+
+/* La cuenta de una vista, en una pastilla al lado del nombre: «Disponibles <b>4</b>». */
+.segmentos a b {
+  margin-inline-start: 0.375rem;
+  padding: 0 0.4375rem;
+  border-radius: 999px;
+  background: var(--color-superficie);
+  font-family: var(--fuente-cifra);
+}
+
+.segmentos a[aria-current] b {
+  background: var(--color-tinta);
+  color: var(--color-superficie);
+}

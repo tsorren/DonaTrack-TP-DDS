@@ -1,0 +1,262 @@
+/* Bloque buzón (usuario, 2026-11-10, con la bandeja de notificaciones de GitHub de referencia): la
+   bandeja de notificaciones de los tres roles, una lámina de papel (`form.buzon`) con su cabecera
+   (`.buzon-cabeza`: «Seleccionar todas» y «Marcar todas como leídas»), los títulos de las columnas
+   (`.buzon-columnas`, solo en la computadora), los grupos por fecha (`.buzon-grupo`, con su `h2` y
+   su `ol`) y una fila por notificación (`.buzon-fila`, `data-leida="no|si"`): el punto de la sin
+   leer, la casilla (`.buzon-casilla`), el mensaje (`.buzon-mensaje`), la categoría y hace cuánto
+   (`.buzon-meta`, con el `.buzon-icono`, un `.chip` y un `time`) y el tilde de «Marcar como leída»
+   (`.buzon-accion`). En el celular cada fila se apila (el mensaje y, debajo, categoría · hace
+   cuánto); desde 53,75 em es una grilla de columnas. El tilde aparece al pasar o enfocar la fila
+   donde hay puntero. Fragmentos: templates/componentes/buzon.html. Se carga en la capa `bloques`
+   desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.buzon {
+  margin: 0;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+.buzon-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  min-height: 4rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-filete);
+  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
+  background: var(--color-papel);
+}
+
+.buzon-cabeza label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  margin: 0;
+  padding-left: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.buzon-cabeza label[hidden] {
+  display: none;
+}
+
+.buzon-cabeza p {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.buzon-cabeza .boton {
+  margin-left: auto;
+}
+
+.buzon-cabeza input,
+.buzon-casilla input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  cursor: pointer;
+}
+
+.buzon-columnas {
+  display: none;
+}
+
+.buzon-grupo > h2 {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-filete);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.buzon-grupo > ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Una fila. En el celular: el punto y la casilla a la izquierda, el mensaje y debajo la categoría
+   y hace cuánto, el tilde a la derecha. */
+.buzon-fila {
+  display: grid;
+  grid-template-areas:
+    "punto casilla mensaje accion"
+    "punto casilla meta accion";
+  grid-template-columns: 0.5rem 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+  margin: 0;
+  padding: 0.625rem 0.5rem 0.625rem 0.625rem;
+  border-bottom: 1px solid var(--color-filete);
+}
+
+.buzon-grupo:last-child li:last-child {
+  border-bottom: 0;
+  border-radius: 0 0 var(--radio-lamina) var(--radio-lamina);
+}
+
+.buzon-fila:hover,
+.buzon-fila:focus-within {
+  background: var(--color-acento-claro);
+}
+
+/* Lo que no se leyó: un punto verde al margen y el mensaje en negrita. "Sin leer" va en texto para
+   los lectores de pantalla. */
+.buzon-fila[data-leida="no"]::before {
+  content: "";
+  grid-area: punto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-acento);
+}
+
+.buzon-casilla {
+  display: flex;
+  grid-area: casilla;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  cursor: pointer;
+}
+
+.buzon-mensaje {
+  display: grid;
+  grid-area: mensaje;
+  justify-items: start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.buzon-mensaje > a:not(.boton),
+.buzon-mensaje > p {
+  margin: 0;
+  color: var(--color-tinta);
+  overflow-wrap: anywhere;
+}
+
+.buzon-fila[data-leida="no"] .buzon-mensaje > a:not(.boton),
+.buzon-fila[data-leida="no"] .buzon-mensaje > p:not(.texto-chico) {
+  font-weight: 700;
+}
+
+.buzon-mensaje > .texto-chico {
+  color: var(--color-texto-suave);
+}
+
+.buzon-meta {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: meta;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.buzon-meta > time::before {
+  content: "·" / "";
+  margin-right: 0.5rem;
+}
+
+.buzon-icono {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.buzon-accion {
+  display: inline-flex;
+  grid-area: accion;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-boton);
+  background: transparent;
+  color: var(--color-tinta);
+  cursor: pointer;
+}
+
+.buzon-accion:hover {
+  background: var(--color-superficie);
+}
+
+.buzon-accion:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: -3px;
+}
+
+/* La computadora: una grilla de columnas (punto, casilla, ícono, mensaje, a qué está asociada, hace
+   cuánto y el tilde), con sus títulos arriba. */
+@media (min-width: 53.75em) {
+  .buzon-fila,
+  .buzon-columnas {
+    grid-template-areas: "punto casilla icono mensaje tema cuando accion";
+    grid-template-columns: 0.5rem 3rem 1.25rem minmax(0, 1fr) 13rem 9rem 3rem;
+    column-gap: 0.75rem;
+  }
+
+  .buzon-columnas {
+    display: grid;
+    padding: 0.5rem 0.5rem 0.5rem 0.625rem;
+    border-bottom: 1px solid var(--color-filete);
+    color: var(--color-texto-suave);
+    font-size: var(--tamano-chico);
+    font-weight: 700;
+  }
+
+  .buzon-columnas > :nth-child(1) {
+    grid-area: mensaje;
+  }
+
+  .buzon-columnas > :nth-child(2) {
+    grid-area: tema;
+  }
+
+  .buzon-columnas > :nth-child(3) {
+    grid-area: cuando;
+  }
+
+  .buzon-meta {
+    display: contents;
+  }
+
+  .buzon-meta > .buzon-icono {
+    grid-area: icono;
+  }
+
+  .buzon-meta > .chip {
+    grid-area: tema;
+    justify-self: start;
+  }
+
+  .buzon-meta > time {
+    grid-area: cuando;
+  }
+
+  .buzon-meta > time::before {
+    content: none;
+  }
+}
+
+/* Donde hay puntero, el tilde aparece al pasar o enfocar la fila, como en la referencia. */
+@media (min-width: 53.75em) and (hover: hover) {
+  .buzon-fila:not(:hover, :focus-within) .buzon-accion {
+    opacity: 0;
+  }
+}

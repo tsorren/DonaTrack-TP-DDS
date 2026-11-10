@@ -689,12 +689,45 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.buzon', 'La bandeja de notificaciones de los tres roles (componentes/buzon :: buzon, con la barra de «Todas | Sin leer», la búsqueda y las pastillas). Una lámina con la cabecera (.buzon-cabeza: «Seleccionar todas», que muestra Alpine, y «Marcar todas como leídas»), los títulos de las columnas (.buzon-columnas, en la computadora), los grupos por fecha (.buzon-grupo) y una fila por notificación (.buzon-fila, data-leida): el punto, la casilla (.buzon-casilla), el ícono (.buzon-icono), el mensaje (.buzon-mensaje), a qué está asociada y hace cuánto (.buzon-meta, un .chip y un time) y el tilde de marcar como leída (.buzon-accion), que aparece al pasar o enfocar donde hay puntero. En el celular, cada fila se apila.', ~{::demo-buzon})}">
+          <th:block th:fragment="demo-buzon"
+              th:with="temasMuestra=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'camino', texto: 'Entregas en camino', icono: 'camion'},
+                       {valor: 'recibidas', texto: 'Donaciones recibidas', icono: 'tilde'}} },
+                       relojMuestra=${#temporals.createDateTime('2026-10-15T18:30')}">
+            <form class="buzon" action="/entidad-notificaciones-leidas" th:action="@{/entidad-notificaciones-leidas}"
+                  method="post" x-data="buzon" x-on:change="cambiar">
+              <div class="buzon-cabeza">
+                <label hidden x-bind:hidden="sinCasillas"><input type="checkbox" x-ref="todas"> Seleccionar todas</label>
+                <button class="boton" data-tono="secundario" data-tamano="chico" type="submit" x-text="rotulo">Marcar
+                  todas como leídas</button>
+              </div>
+              <div class="buzon-columnas" aria-hidden="true"><span>Mensaje</span><span>Asociada a</span><span>Hace
+                cuánto</span></div>
+              <section class="buzon-grupo" aria-labelledby="muestra-buzon-hoy">
+                <h2 id="muestra-buzon-hoy">Hoy</h2>
+                <ol role="list">
+                  <li th:replace="~{componentes/buzon :: fila(${ {id: 'm1', fecha: '2026-10-15T18:20', tema: 'camino', leida: false,
+                      texto: 'Arroz, 20 kg, salió del depósito. Llega mañana.', destino: '/estilos'} }, ${relojMuestra}, ${temasMuestra}, false)}"></li>
+                  <li th:replace="~{componentes/buzon :: fila(${ {id: 'm2', fecha: '2026-09-28T12:00', tema: 'recibidas', leida: true,
+                      texto: 'Fideos secos, 10 kg, llegó a tu puerta.', nota: 'Confirmaste la recepción el 28 de septiembre.',
+                      destino: '/estilos'} }, ${relojMuestra}, ${temasMuestra}, false)}"></li>
+                </ol>
+              </section>
+            </form>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.segmentos', 'Un selector de pocas vistas de la misma lista: enlaces reales, la que se ve con aria-current=&quot;page&quot;, una pastilla de papel sin borde verde. En el celular ocupa el ancho.', ~{::demo-segmentos})}">
           <th:block th:fragment="demo-segmentos">
             <nav class="segmentos" aria-label="Qué entidades ver (muestra)">
               <a href="/estilos" th:href="@{/estilos}" aria-current="page">Activas · 46</a>
               <a href="/estilos" th:href="@{/estilos}">Pendientes · 3</a>
               <a href="/estilos" th:href="@{/estilos}">Inactivas · 3</a>
+            </nav>
+            <nav class="segmentos" data-forma="desliza" aria-label="Camiones por estado (muestra, data-forma=&quot;desliza&quot; y la cuenta en b)">
+              <a href="/estilos" th:href="@{/estilos}" aria-current="page">Todos <b>5</b></a>
+              <a href="/estilos" th:href="@{/estilos}">En ruta <b>1</b></a>
+              <a href="/estilos" th:href="@{/estilos}">Disponibles <b>3</b></a>
+              <a href="/estilos" th:href="@{/estilos}">Deshabilitados <b>1</b></a>
             </nav>
           </th:block>
         </div>
@@ -737,6 +770,75 @@
                   <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-ropa"/></svg>
                   <span><b>Hogar Casa Ejemplo</b> <small>Hogar · 1 necesidad vigente</small></span>
                   <span class="estado" data-forma="punto" data-estado="recibida">Activa</span>
+                </a>
+              </li>
+            </ul>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.flota', 'Una grilla de tarjetas para elegir de a un camión y su ficha (.flota-ficha), dentro del elegido: en el celular, justo debajo; desde la tableta, a la derecha de las tarjetas. Cada tarjeta: la patente grande, el estado en su pastilla, los datos y el dibujo (componentes/flota :: dibujo). La ficha: las etapas (.flota-etapas, data-paso), el tablero de cajas (data-parte: viaje, carga, mapa y rendimiento con .flota-barras), las paradas como puntos y el chofer. Arriba, las cifras (.flota-resumen).', ~{::demo-flota})}">
+          <th:block th:fragment="demo-flota">
+            <dl class="flota-resumen">
+              <div><dt>Capacidad de la flota</dt> <dd>11.500 kg</dd></div>
+              <div><dt>Disponible ahora</dt> <dd>6.500 kg</dd></div>
+            </dl>
+            <ul class="flota" role="list">
+              <li>
+                <a href="/estilos" th:href="@{/estilos}" aria-current="true" data-estado="ruta">
+                  <span data-parte="cabeza"><span><b data-parte="patente">AB 123 CD</b>
+                    <span data-parte="nombre">Camión Norte</span></span>
+                    <span class="estado" data-estado="camino">En ruta</span></span>
+                  <dl>
+                    <div><dt>Capacidad</dt> <dd>3.500 kg · 18 m³</dd></div>
+                    <div><dt>Ahora</dt> <dd>En ruta a Comedor Barrio Ejemplo</dd></div>
+                  </dl>
+                  <svg th:replace="~{componentes/flota :: dibujo('camion')}"></svg>
+                </a>
+                <section class="flota-ficha" aria-labelledby="muestra-flota" data-estado="ruta">
+                  <div data-parte="identidad">
+                    <div>
+                      <h2 id="muestra-flota">AB 123 CD</h2>
+                      <span class="estado" data-estado="camino">En ruta</span>
+                      <p>Camión Norte · 3.500 kg · 18 m³</p>
+                    </div>
+                    <svg th:replace="~{componentes/flota :: dibujo('camion')}"></svg>
+                  </div>
+                  <ol class="flota-etapas" aria-label="Etapas del recorrido (muestra)">
+                    <li data-paso="hecho">En el depósito</li>
+                    <li data-paso="hecho">Cargando</li>
+                    <li data-paso="actual" aria-current="step">En ruta</li>
+                    <li data-paso="falta">Entregando</li>
+                    <li data-paso="falta">De vuelta</li>
+                  </ol>
+                  <div data-parte="tablero">
+                    <section aria-labelledby="muestra-flota-viaje">
+                      <h3 id="muestra-flota-viaje">Datos del viaje</h3>
+                      <dl><div><dt>Paradas</dt> <dd><span data-lista="paradas" aria-hidden="true"><span data-hecha="si"></span><span data-hecha="si"></span><span></span><span></span></span>
+                        Quedan 2 de 4</dd></div></dl>
+                    </section>
+                    <section aria-labelledby="muestra-flota-carga">
+                      <h3 id="muestra-flota-carga">Carga</h3>
+                      <p><span data-parte="cifra">75 %</span> de la capacidad</p>
+                      <progress class="progreso" max="100" value="75" aria-label="Carga: 75 % de la capacidad">75 %</progress>
+                    </section>
+                    <section data-parte="rendimiento" aria-labelledby="muestra-flota-rendimiento">
+                      <h3 id="muestra-flota-rendimiento">Rendimiento <small>(del 16 de septiembre al 15 de octubre)</small></h3>
+                      <svg th:replace="~{componentes/flota :: barras(${ {3, 5, 4, 6, 2, 5, 7, 4, 6, 5, 3, 6, 7, 5, 8} })}"></svg>
+                      <dl data-forma="renglones"><div><dt>Entregas completas</dt> <dd>38</dd></div></dl>
+                    </section>
+                  </div>
+                  <div data-parte="chofer">
+                    <span data-parte="iniciales" aria-hidden="true">ME</span>
+                    <div><b>Martín Ejemplo</b> <small>Chofer de la ruta de hoy</small></div>
+                  </div>
+                </section>
+              </li>
+              <li>
+                <a href="/estilos" th:href="@{/estilos}" data-estado="deshabilitado">
+                  <span data-parte="cabeza"><span><b data-parte="patente">AA 999 ZZ</b>
+                    <span data-parte="nombre">Furgón Este</span></span>
+                    <span class="estado" data-estado="inactiva">Deshabilitado</span></span>
+                  <dl><div><dt>Motivo</dt> <dd>En el taller desde el 12 de octubre.</dd></div></dl>
+                  <svg th:replace="~{componentes/flota :: dibujo('furgon')}"></svg>
                 </a>
               </li>
             </ul>
