@@ -1,6 +1,6 @@
 # Matriz de permisos — DonaTrack (E6)
 
-> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Donaciones, Incentivos y Notificaciones aplican la matriz (`@PreAuthorize`, `PermisoDonaciones`, `PermisoIncentivos` y `PermisoNotificaciones`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas; Logística todavía no tiene seguridad. En Incentivos y en Notificaciones sí comparé las reglas (19 del §7 y 12 del §8) contra los controllers (`scripts/tests/test_incentivos_seguridad.py` y `test_notificaciones_seguridad.py`); en Donaciones no. La aprobación del equipo sigue pendiente.
+> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Los cuatro servicios aplican la matriz (`@PreAuthorize`, `PermisoDonaciones`, `PermisoLogistica`, `PermisoIncentivos` y `PermisoNotificaciones`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas. En Logística, Incentivos y Notificaciones sí comparé las reglas (§6, §7 y §8) contra los controllers (`scripts/tests/test_logistica_seguridad.py`, `test_incentivos_seguridad.py` y `test_notificaciones_seguridad.py`); en Donaciones no. La aprobación del equipo sigue pendiente.
 > **Origen:** RX-09 del plan de autenticación del sitio; cubre la "matriz de §6" que cita RI-SVC-02 de los [requerimientos de E6](../../requerimientos/requerimientos-e6.md) y que no existía.
 > **Base:** endpoints de [`contratos-rest.md`](../contratos-rest.md), contrastados con los `@*Mapping` de los controllers en `ENTREGA_6` (`e43e50a9`).
 
@@ -148,6 +148,9 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `PATCH` | `/api/entregas/{id}/estado` | `ENTIDAD` | `CONFIRMAR_RECEPCION` | dueño (`idBeneficiaria`) | Entidad (confirmar recepción) |
 | `PATCH` | `/api/entregas/{id}/fotos` | `ENTIDAD` | `CONFIRMAR_RECEPCION` | dueño (`idBeneficiaria`) | Entidad (fotos) |
 | `GET` | `/api/entregas/{id}/historial` | `ENTIDAD` | `VER_ENTREGAS` | dueño (`idBeneficiaria`) | Entidad |
+| `GET` | `/api/entregas/seguimiento/donantes/{donanteId}` | `DONANTE` | `VER_ENTREGAS` | id | Donante (seguimiento, HB-16) `[PROPOSED]` |
+| `POST` | `/api/entregas/{id}/fotos` | `ENTIDAD` | `CONFIRMAR_RECEPCION` | dueño (`idBeneficiaria`) | Entidad (subir las fotos de recepción, HB-10) `[PROPOSED]` |
+| `GET` | `/api/entregas/{id}/fotos/{fotoId}` | `ENTIDAD` | `VER_ENTREGAS` | dueño (`idBeneficiaria`) | Entidad (ver la foto, HB-10) `[PROPOSED]` |
 | `GET` | `/api/rutas/{id}` | `DONANTE`, `ENTIDAD` | `VER_RUTAS` | dueño (la ruta lleva una entrega de su organización) | Seguimiento con mapa |
 | `POST` | `/api/entregas` | ADMIN, `SERVICIO` | — | — | |
 | `GET` | `/api/entregas` | ADMIN | — | — | |
@@ -155,6 +158,10 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `POST` | `/api/logistica/planificaciones/ejecuciones` | ADMIN | — | — | |
 | `GET` | `/api/logistica/planificaciones/{id}` | ADMIN | — | — | |
 | todos | `/api/rutas` (resto), `/api/camiones/**`, `/api/choferes/**` | ADMIN | — | — | |
+
+`[PROPOSED]` (2026-11-10, al implementar Logística) Las tres filas marcadas no estaban cuando se escribió la matriz: HB-16 y HB-10 son posteriores. Se les dio la regla de su par (`seguimiento/donaciones` y `PATCH /fotos`) para que no queden en el ADMIN por defecto. Falta decidir si el donante puede ver la foto de recepción de su donación.
+
+`[OBSERVED]` El dueño sale de la propia entrega (`beneficiariaDe`, `donanteDeDonacion`) y de las entregas de una ruta (`organizacionesDe`); un recurso inexistente no tiene dueño, así que quien no es admin recibe `403` y no puede averiguar qué ids existen. El donante de una entrega solo se conoce si ella llegó por mensajería: una entrega creada por `POST /api/entregas` no lo tiene y solo la ve el ADMIN. `GET /api/entregas/{id}/fotos/{fotoId}` responde `302` a una URL firmada: un `<img>` del navegador no manda el token, así que el cliente liviano tiene que pedirla por el servidor. Con `LOGISTICA_SEGURIDAD_HABILITADA=true`, `ProveedorLogisticaHttp` de Donaciones, los flujos 6, 8 y 9 de Postman y `LogisticaApiClient` de `integration-tests` llaman sin token y recibirían `401`; se adaptan en E2-07 (M-07).
 
 ## 7. Incentivos (lo que usa la UI y lo técnico)
 
@@ -200,7 +207,7 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | M-04 | Categorías y subcategorías son legibles por cualquier usuario con sesión | Hacerlas públicas: hoy no las usa ninguna pantalla pública |
 | M-05 | Los listados con filtro de dueño exigen el filtro a quien no es admin (regla 5 de §1) | Que el servicio complete el filtro con el `personaId` del token: es más cómodo, pero cambia la semántica del endpoint según quién llame |
 | M-06 | Los endpoints `X-API-Key` del broker se marcan `ADMIN` en la matriz, pero se cambian recién en E2-07 | Cortarlos en E6, como dice D25: queda fuera del alcance de este plan |
-| M-07 | En el compose, la validación de Donaciones y de Incentivos se activa con `DONACIONES_SEGURIDAD_HABILITADA` y `INCENTIVOS_SEGURIDAD_HABILITADA` (por defecto `false`). Postman, `integration-tests` y k6 llaman a Donaciones sin token y siguen andando hasta que pidan uno por client credentials | Activarla siempre y adaptar ya Postman, `integration-tests` y k6: suma trabajo fuera del alcance del 13/11 |
+| M-07 | En el compose, la validación se activa con `DONACIONES_SEGURIDAD_HABILITADA`, `INCENTIVOS_SEGURIDAD_HABILITADA`, `NOTIFICACIONES_SEGURIDAD_HABILITADA` y `LOGISTICA_SEGURIDAD_HABILITADA` (por defecto `false`). Postman, `integration-tests` y k6 llaman a Donaciones sin token y siguen andando hasta que pidan uno por client credentials | Activarla siempre y adaptar ya Postman, `integration-tests` y k6: suma trabajo fuera del alcance del 13/11 |
 
 ## 10. Pendiente de revisión
 

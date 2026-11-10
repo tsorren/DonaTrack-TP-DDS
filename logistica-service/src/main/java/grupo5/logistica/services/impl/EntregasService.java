@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +141,18 @@ public class EntregasService implements IEntregasService {
   @Transactional(readOnly = true)
   public EntregaResponseDTO obtenerPorId(UUID id) {
     return entregaMapper.toResponseDTO(buscarEntrega(id));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<UUID> beneficiariaDe(UUID id) {
+    return entregasRepository.findById(id).map(Entrega::getIdBeneficiaria);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<UUID> donanteDeDonacion(UUID idDonacion) {
+    return entregasRepository.findByIdDonacion(idDonacion).map(Entrega::getDonanteId);
   }
 
   @Override

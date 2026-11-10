@@ -172,6 +172,10 @@ services:
       - LOGISTICA_MINIO_ACCESS_KEY=logistica-service
       - LOGISTICA_MINIO_SECRET_KEY=${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
       - LOGISTICA_FOTOS_URL_PUBLICA_BASE=http://localhost:8086
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada por defecto, Postman, integration-tests y k6 llaman sin token
+      - LOGISTICA_SEGURIDAD_HABILITADA=${LOGISTICA_SEGURIDAD_HABILITADA:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       mongodb:
         condition: service_healthy
