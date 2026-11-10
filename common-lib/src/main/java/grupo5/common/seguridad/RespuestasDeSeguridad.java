@@ -7,6 +7,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.responses.ErrorResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,14 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** 401 y 403 con el {@link ErrorResponse} común, antes que el manejador genérico de errores. */
+/**
+ * 401 y 403 con el {@link ErrorResponse} común, antes que el manejador genérico de errores.
+ *
+ * <p>Los servicios escanean {@code grupo5}, así que la condición por nombre evita registrarla donde
+ * no está Spring Security.
+ */
 @RestControllerAdvice
+@ConditionalOnClass(name = "org.springframework.security.core.AuthenticationException")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class RespuestasDeSeguridad {
 
