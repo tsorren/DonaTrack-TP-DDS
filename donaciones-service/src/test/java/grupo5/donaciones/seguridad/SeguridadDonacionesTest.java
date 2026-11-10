@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -19,6 +20,8 @@ import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
+import grupo5.donaciones.dto.personas.AceptarLegalesDTO;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -269,5 +272,47 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   void lasCategoriasPidenSesionPeroNingunRolEnParticular() throws Exception {
     pedir(get("/api/categorias"), null).andExpect(status().isUnauthorized());
     pedir(get("/api/categorias"), "donante").andExpect(status().isOk());
+  }
+
+  @Test
+  void elDonanteCambiaSoloSusPreferencias() throws Exception {
+    PreferenciasDonanteDTO ocultar = new PreferenciasDonanteDTO(false);
+
+    pedir(conCuerpo(patch("/api/donantes/" + DONANTE + "/preferencias"), ocultar), "donante")
+        .andExpect(status().isOk());
+    pedir(conCuerpo(patch("/api/donantes/" + AJENO + "/preferencias"), ocultar), "donante")
+        .andExpect(status().isForbidden());
+    pedir(conCuerpo(patch("/api/donantes/" + DONANTE + "/preferencias"), ocultar), "servicio")
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void losLegalesLosAceptaLaPropiaPersonaOElSitioAlCompletarElPerfil() throws Exception {
+    AceptarLegalesDTO version = new AceptarLegalesDTO(1);
+
+    pedir(conCuerpo(put("/api/personas/" + DONANTE + "/legales"), version), "donante")
+        .andExpect(status().isOk());
+    pedir(conCuerpo(put("/api/personas/" + AJENO + "/legales"), version), "servicio")
+        .andExpect(status().isOk());
+    pedir(get("/api/personas/" + ENTIDAD + "/legales"), "entidad-sin-permisos")
+        .andExpect(status().isOk());
+    pedir(get("/api/personas/" + AJENO + "/legales"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/personas/" + DONANTE + "/legales"), null).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void sinElCampoObligatorio_preferenciasYLegalesResponden400() throws Exception {
+    pedir(
+            patch("/api/donantes/" + DONANTE + "/preferencias")
+                .contentType(APPLICATION_JSON)
+                .content("{}"),
+            "donante")
+        .andExpect(status().isBadRequest());
+    pedir(
+            put("/api/personas/" + DONANTE + "/legales")
+                .contentType(APPLICATION_JSON)
+                .content("{}"),
+            "donante")
+        .andExpect(status().isBadRequest());
   }
 }

@@ -143,15 +143,25 @@ package PERSONAS {
   class Donante <<entity>> {
     - id: UUID {final} // = personaId (identidad compartida)
     - activo: boolean
+    - mostrarNombre: boolean // HB-20, true por defecto
     --
     + personaId(): UUID
     + estaActivo(): boolean
+    + muestraNombre(): boolean
+    + mostrarNombre(mostrar: boolean): void
     + darDeBaja(): boolean
     + reactivar(): boolean
     + anonimizar(): void
   }
 
   Persona <|-- Humana
+  class AceptacionLegales <<record>> {
+    - id: UUID
+    - personaId: UUID
+    - version: int
+    - aceptadaEn: LocalDateTime
+  }
+  AceptacionLegales ..> Persona : personaId (HB-20)
   Persona <|-- Juridica
   MedioDeContacto <|-- Correo
   MedioDeContacto <|-- Telefono
@@ -263,7 +273,10 @@ package DONACIONES {
     - estadoActual: EstadoDonacion
     - historialEstados: List<CambioEstadoDonacion> {final}
     - eventos: List<EventoDonacion>
+    - nombreOculto: boolean // HB-20, "Esta vez, sin mi nombre"
     --
+    + ocultarNombre(): void
+    + muestraNombreDe(donante: Donante): boolean
     + marcarNormalizada(): void
     + marcarSegmentada(): void
     - avanzarEstado(nuevoEstado: EstadoDonacion): void

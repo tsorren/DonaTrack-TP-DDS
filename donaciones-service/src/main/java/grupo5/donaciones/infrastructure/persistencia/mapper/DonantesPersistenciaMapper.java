@@ -16,6 +16,7 @@ public class DonantesPersistenciaMapper {
     DonanteEntity entity = new DonanteEntity();
     entity.setId(domain.getId());
     entity.setActivo(domain.estaActivo());
+    entity.setMostrarNombre(domain.muestraNombre());
     return entity;
   }
 
@@ -23,6 +24,6 @@ public class DonantesPersistenciaMapper {
     if (entity == null) {
       return null;
     }
-    return new Donante(entity.getId(), entity.isActivo());
+    return new Donante(entity.getId(), entity.isActivo(), entity.isMostrarNombre());
   }
 }

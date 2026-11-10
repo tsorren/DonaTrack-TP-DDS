@@ -30,6 +30,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Identidad**: el `id` del donante **es el `personaId`** de su persona (identidad compartida, ver ADR `20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria`, `proposed`). Por eso una persona no puede quedar registrada como donante dos veces.
 *   **Estado**: `activo` (baja lógica). `darDeBaja()` y `reactivar()` devuelven `true` solo si hubo transición, para que el servicio publique el evento una única vez. Un donante dado de baja no puede cargar donaciones (`DONANTE_INACTIVO`) y su historial se conserva.
 *   **Responsabilidad**: Modelar el perfil del donante para gamificación, historial de aportes y canal de contacto predeterminado.
+*   **Nombre visible** (HB-20): `mostrarNombre` (por defecto `true`) decide si la entidad ve su nombre; vale también para sus donaciones pasadas, porque `quienDono` se calcula al leer. Una `Donacion` puede ocultarlo solo para sí (`nombreOculto`), nunca mostrar lo que el perfil oculta. La constancia de los legales es `AceptacionLegales` (persona, versión y fecha), fuera del agregado.
 *   **Paquete**: `grupo5.donaciones.models.entities.donantes`
 
 ### 2.3. Agregado: Donación (Carga Histórica)

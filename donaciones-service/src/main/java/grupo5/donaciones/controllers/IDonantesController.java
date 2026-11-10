@@ -4,6 +4,7 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,8 @@ public interface IDonantesController {
   ResponseEntity<List<DonanteOutputDTO>> listarDonantes(String canal);
 
   ResponseEntity<DonanteOutputDTO> obtenerDonante(UUID id);
+
+  ResponseEntity<DonanteOutputDTO> actualizarPreferencias(UUID id, PreferenciasDonanteDTO dto);
 
   ResponseEntity<Void> eliminarDonante(UUID id);
 
