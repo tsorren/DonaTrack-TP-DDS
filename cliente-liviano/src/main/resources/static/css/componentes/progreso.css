@@ -7,20 +7,25 @@
   display: block;
   width: 100%;
   height: 0.75rem;
+  overflow: hidden;
   border: 1.5px solid var(--color-tinta);
-  border-radius: 0;
+  /* Redondeada, como el resto de las cajas (ronda del 2026-11-09, regla general 4). */
+  border-radius: 999px;
   background: var(--color-papel);
   color: var(--color-raiz);
 }
 
 .progreso::-webkit-progress-bar {
+  border-radius: 999px;
   background: var(--color-papel);
 }
 
 .progreso::-webkit-progress-value {
+  border-radius: 999px;
   background: var(--color-raiz);
 }
 
 .progreso::-moz-progress-bar {
+  border-radius: 999px;
   background: var(--color-raiz);
 }

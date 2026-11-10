@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <!--/* Raíces A, Notificaciones del donante (RF-08), según la ficha
-       docs/interfaz/flujos/raices-donante-navegable.md. Las noticias cuelgan de la raíz por fecha, la
-       más nueva arriba, como el cuaderno del mes de la portada: la estación de cada una, impresa si
-       está sin leer y hueca si ya se leyó, con "Sin leer" o "Leída" en texto. Cada una lleva el sello
-       del estado actual de su donación y enlaza a su detalle. "Marcar todas como leídas" es un
-       formulario post real que va a donante-notificaciones-leidas (el patrón de Mi perfil).
+       docs/interfaz/flujos/raices-donante-navegable.md, con la estructura de la bandeja de GitHub
+       (usuario, ronda 2026-11-10): arriba, la cuenta de sin leer; debajo, la bandeja del componente
+       buzón (componentes/buzon): «Todas | Sin leer», la búsqueda, Categoría, Ordenar y Agrupar (get
+       con hx-boost), y la lista con «Seleccionar todas», «Marcar todas como leídas» y una fila por
+       aviso: qué pasó (enlaza al detalle de la donación), a qué está asociado y hace cuánto.
+       Los avisos de las donaciones salen de datos-donante (avisos: la donación y su carta); su
+       categoría se deduce del texto de la carta: salió a entregar o quedó lista, Donaciones en camino;
+       confirmó que recibió, Donaciones entregadas; asignamos, Donaciones asignadas; recibimos, En el
+       depósito; no pudo llegar, Problemas en la entrega. Se suman dos avisos de Necesidades (una
+       necesidad nueva de una entidad), que no son de una donación. "Ahora" es el 15 de octubre de
+       2026, 16:25 (el de las demás pantallas del donante); sin leer, los 4 más nuevos (la campana
+       dice 4). Marcar es un formulario post real que va a donante-notificaciones-leidas.
        ?escenario=vacio, error y lento.
        Fragmento hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -21,24 +28,50 @@
   <th:block th:replace="~{datos-donante :: donante(~{donante-notificaciones :: cuerpo})}"></th:block>
 </th:block>
 
-<th:block th:fragment="cuerpo"
-    th:with="sinLeerAhora=${leidas ? 0 : sinLeer}, conDatos=${escenario == ''}">
-  <div class="notificaciones">
-    <header class="notificaciones-cabecera">
-      <div>
-        <p class="rotulo">Notificaciones</p>
-        <h1>Noticias de <em>tus donaciones</em></h1>
-      </div>
+<!--/* limite: la fecha del tercer aviso de una donación, el más viejo de los sin leer. */-->
+<th:block th:fragment="cuerpo" th:with="limite=${avisos[2].d.cartas[avisos[2].i].fecha}">
+<th:block
+    th:with="conDatos=${escenario == ''},
+             marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
+             noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
+             temas=${ {
+      {valor: '', texto: 'Todas las categorías'},
+      {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
+      {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'},
+      {valor: 'asignadas', texto: 'Donaciones asignadas', icono: 'asigna'},
+      {valor: 'deposito', texto: 'En el depósito', icono: 'caja'},
+      {valor: 'necesidades', texto: 'Necesidades', icono: 'necesidad'},
+      {valor: 'problemas', texto: 'Problemas en la entrega', icono: 'problema'} } },
+             deDonaciones=${avisos.![ {id: d.clave + '-' + i, fecha: d.cartas.get(i).fecha,
+                 texto: #strings.replace(d.cartas.get(i).texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12'),
+                 tema: (#strings.contains(d.cartas.get(i).texto, 'no pudo llegar') ? 'problemas'
+                     : (#strings.contains(d.cartas.get(i).texto, 'confirmó que recibió') ? 'entregadas'
+                     : (#strings.contains(d.cartas.get(i).texto, 'salió a entregar') or #strings.contains(d.cartas.get(i).texto, 'quedó lista') ? 'camino'
+                     : (#strings.startsWith(d.cartas.get(i).texto, 'Asignamos') ? 'asignadas' : 'deposito')))),
+                 destino: '/donante-donaciones-detalle?donacion=' + d.clave,
+                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), d.clave + '-' + i)
+                     and (d.cartas.get(i).fecha < '__${limite}__'
+                     or #root.marcadas == 'todas'
+                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), d.clave + '-' + i))} ]},
+             otras=${ {
+      {id: 'x1', fecha: '2026-10-15T16:02', tema: 'necesidades',
+       leida: !#lists.contains(#strings.listSplit(noLeidas, ','), 'x1')
+           and (marcadas == 'todas' or #lists.contains(#strings.listSplit(marcadas, ','), 'x1')), destino: '/donante-entidades',
+       texto: 'Comedor Barrio Ejemplo publicó una necesidad nueva: 30 kg de arroz para el 25 de octubre.'},
+      {id: 'x2', fecha: '2026-09-28T11:00', tema: 'necesidades',
+       leida: !#lists.contains(#strings.listSplit(noLeidas, ','), 'x2')
+           and (true or marcadas == 'todas' or #lists.contains(#strings.listSplit(marcadas, ','), 'x2')), destino: '/donante-entidades',
+       texto: 'Escuela Ejemplo N.º 12 publicó una necesidad de útiles escolares para el inicio de octubre.'} } },
+             sinLeerAhora=${#lists.size(deDonaciones.?[!leida]) + #lists.size(otras.?[!leida])}">
+  <div class="pila" data-espacio="4">
+    <header class="pila" data-espacio="2">
+      <p class="rotulo">Notificaciones</p>
+      <h1>Noticias de <em>tus donaciones</em></h1>
       <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
-         th:text="'Listo: marcaste todas como leídas.'">Listo: marcaste todas como leídas.</p>
+         th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo: marcaste la notificación.</p>
       <p th:if="${conDatos}" class="bajada"
-         th:text="${leidas} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.|">4
-        sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa.</p>
-      <form th:if="${conDatos and sinLeerAhora > 0}" class="marcar"
-            action="/donante-notificaciones-leidas"
-            th:action="@{/donante-notificaciones-leidas}" method="post">
-        <button class="boton" data-tono="secundario" type="submit">Marcar todas como leídas</button>
-      </form>
+         th:text="${sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.|">4
+        sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
     </header>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
@@ -55,32 +88,18 @@
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando" role="status">Cargando tus notificaciones…</p>
-      <div class="notificaciones-grupos" aria-busy="true">
+      <div class="pila" data-espacio="3" aria-busy="true">
         <div class="esqueleto" data-forma="punteado"></div>
         <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
       </div>
     </th:block>
 
-    <div th:if="${conDatos}" class="notificaciones-grupos">
-      <section th:if="${sinLeerAhora > 0}" class="grupo-avisos grupo-avisos--sin-leer tierra-impresa"
-               aria-labelledby="sin-leer-titulo">
-        <h2 id="sin-leer-titulo" th:text="|Sin leer (${sinLeerAhora})|">Sin leer (4)</h2>
-        <ol class="noticias" role="list">
-          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < sinLeerAhora}">
-            <li th:replace="~{datos-donante :: aviso(${a}, true)}"></li>
-          </th:block>
-        </ol>
-      </section>
-      <section class="grupo-avisos" aria-labelledby="leidas-titulo">
-        <h2 id="leidas-titulo" th:text="|Leídas (${#lists.size(avisos) - sinLeerAhora})|">Leídas (13)</h2>
-        <ol class="noticias" data-forma="libro" role="list">
-          <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index >= sinLeerAhora}">
-            <li th:replace="~{datos-donante :: aviso(${a}, false)}"></li>
-          </th:block>
-        </ol>
-      </section>
-    </div>
+    <th:block th:if="${conDatos}">
+      <div th:replace="~{componentes/buzon :: buzon(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
+           '/donante-notificaciones-leidas', '2026-10-15T16:25', ${ {deDonaciones, otras} }, ${temas}, ${marcadas == 'todas'})}"></div>
+    </th:block>
   </div>
+</th:block>
 </th:block>
 </body>
 </html>

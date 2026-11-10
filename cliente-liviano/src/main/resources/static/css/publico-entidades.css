@@ -1,271 +1,131 @@
-/* Raíces, sitio A: Entidades (publico-entidades.html). El herbario de la portada en la tierra: un
-   tronco paja y, colgada de su rama, la etiqueta de cada entidad, de papel con la sombra plana salvia
-   y el sello de lo que pide en la punta. En el celular, el tronco va al costado; desde la tableta,
-   al centro, con las entidades de a una a cada lado (la espina en espejo de la portada). */
+/* Raíces, sitio A: Entidades (publico-entidades.html). Desde la ronda del 2026-11-09 (tarde), la lista
+   compacta por tipo de entidad; desde la del 2026-11-09 (noche), la tarjeta que dibujó la usuaria: un
+   plegable por entidad (.plegable) con su foto, sus categorías (.chip) y «Necesidades satisfechas»
+   (.progreso) y, desplegado, la misión (.recorte) y cada necesidad (.necesidad). Acá, solo la disposición de la pantalla. */
 @import url("publico-listas.css");
 
-/* --- El buscador ------------------------------------------------------------------------------- */
+/* --- El hero a todo el ancho ------------------------------------------------------------------- */
 
-.filtro--buscar {
+/* Sin ilustración al lado, la cabeza ocupa la página: el título y la bajada a la izquierda, con su
+   largo de línea legible; la cifra con su árbol a la derecha, en dos o tres renglones. */
+.entidades > .publica-cabeza {
   display: grid;
-  gap: 1.25rem;
-  align-items: start;
+  gap: 1.5rem 3rem;
+  align-items: end;
+  max-width: none;
 }
 
-.filtro-buscar-fila {
-  display: flex;
-  gap: 0.5rem;
+.entidades > .publica-cabeza .lectura-bajada {
+  max-width: 70ch;
 }
 
-.filtro-buscar-fila input {
-  flex: 1;
-  width: 100%;
+.entidades .cifra-fruto > p:first-child {
+  align-items: center;
+  max-width: 32rem;
 }
 
-.filtro--buscar > .boton {
-  justify-self: start;
+/* La cifra al lado de su manzano, nunca encima (cuarta ronda, 2026-11-10: el «6» quedaba tapado por
+   el árbol). El árbol lleva ancho y alto propios, así ocupa su lugar aunque falte aspect-ratio. */
+.entidades .fruto {
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: 3.5rem;
 }
 
-/* --- El herbario ------------------------------------------------------------------------------- */
-
-.herbario {
-  padding: 2.5rem 1rem 2rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-suelo);
+.entidades .fruto::before {
+  width: 4.9rem;
+  height: 5.5rem;
 }
 
-.herbario-lista {
-  position: relative;
-  display: grid;
-  gap: 2.75rem;
-  margin: 0;
-  padding: 0 0 0 2rem;
-  list-style: none;
-}
+/* --- El buscador y los filtros: la barra compartida (.filtros-barra); debajo, la nota de una línea
+   con su info, pegada a la barra (cuarta ronda, 2026-11-10). ------------------------------------- */
 
-/* El tronco. */
-.herbario-lista::before {
-  content: "";
-  position: absolute;
-  top: -2.5rem;
-  bottom: 0;
-  left: 0.25rem;
-  width: 6px;
-  background: var(--color-raiz);
-}
-
-.etiqueta-entidad {
-  position: relative;
-}
-
-/* La rama, del tronco a la etiqueta, y el cruce sobre el tronco. */
-.etiqueta-entidad::before {
-  content: "";
-  position: absolute;
-  top: 1.5rem;
-  right: 100%;
-  width: 1.75rem;
-  height: 5px;
-  background: var(--color-raiz);
-}
-
-.etiqueta-entidad::after {
-  content: "";
-  position: absolute;
-  top: calc(1.5rem + 2.5px - 0.5625rem);
-  left: calc(-2rem + 0.25rem + 3px - 0.5625rem);
-  width: 1.125rem;
-  height: 1.125rem;
-  border: 2.5px solid var(--color-texto-suelo);
-  border-radius: 50%;
-  background: var(--color-suelo);
-}
-
-.etiqueta-entidad.esqueleto {
-  min-height: 14rem;
-}
-
-.etiqueta-entidad article {
-  position: relative;
-  display: grid;
-  justify-items: start;
-  gap: 0.125rem;
-  padding: 1.875rem 1rem 1rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-sombra);
-  color: var(--color-tinta);
-}
-
-.etiqueta-sello {
-  position: absolute;
-  top: -1.375rem;
-  left: 1rem;
-  width: 2.75rem;
-  height: 2.75rem;
-  color: var(--color-suelo-hondo);
-  fill: currentcolor;
-}
-
-.etiqueta-entidad p {
+.entidades > p.texto-chico {
   margin: 0;
 }
 
-.etiqueta-tipo {
-  color: var(--color-acento);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  font-stretch: 112%;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+/* --- La lista por tipo de entidad, una tarjeta plegable por entidad ------------------------------- */
 
-.etiqueta-entidad h2 {
-  margin: 0;
-  font-size: 1.3125rem;
-}
-
-.etiqueta-barrio {
-  color: var(--color-tinta-suave);
-}
-
-.etiqueta-pide {
-  justify-self: stretch;
-  margin: 0.75rem 0 0.25rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--color-tinta-suave);
-  color: var(--color-acento);
-  font: 700 0.875rem/1.2 var(--fuente-texto);
-  font-stretch: 112%;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.pedidos {
-  display: grid;
-  gap: 0.75rem;
+.entidades ul.pila {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.pedidos > li {
-  display: grid;
-  grid-template-columns: 1.75rem minmax(0, 1fr);
-  gap: 0 0.625rem;
+/* Entre un grupo y el título del siguiente, más aire que entre tarjetas: el data-espacio de cada
+   sección redefine --espacio-entre y la pila de afuera tomaba el chico. */
+.entidades > .pila > section + section {
+  margin-block-start: var(--espacio-5);
 }
 
-.pedidos .categoria-icono {
-  grid-row: span 2;
+.entidades section > h2.racimo {
+  align-items: baseline;
+  margin: 0;
+  font-size: 1.375rem;
 }
 
-.pedido-porque {
-  grid-column: 2;
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
+.entidades .plegable p,
+.entidades .plegable h3 {
+  margin: 0;
 }
 
-.pedidos-mas {
-  justify-self: stretch;
-}
-
-.pedidos-mas[open] .pedidos {
-  margin-top: 0.75rem;
-}
-
-.pedidos-mas summary {
-  display: inline-flex;
+.entidades .plegable h3 {
   align-items: center;
-  gap: 0.5rem;
-  min-height: 3rem;
-  color: var(--color-acento);
-  font-weight: 700;
-  cursor: pointer;
+  font-size: var(--tamano-grande);
 }
 
-.pedidos-mas summary::-webkit-details-marker {
-  display: none;
+/* La cabecera de la tarjeta. En el celular, la foto con el nombre y los chips al lado; la barra y
+   «Ver todas las necesidades», debajo, a todo el ancho. */
+.entidades .plegable > summary {
+  grid-template-columns: auto minmax(0, 1fr);
 }
 
-.pedidos-mas summary {
-  list-style: none;
+.entidades .plegable-medida,
+.entidades .plegable-ver {
+  grid-column: 1 / -1;
 }
 
-/* La flecha que dice si está plegado. */
-.pedidos-mas summary::before {
-  content: "";
-  width: 0.5rem;
-  height: 0.5rem;
-  border-right: 2.5px solid currentcolor;
-  border-bottom: 2.5px solid currentcolor;
-  rotate: 45deg;
-  translate: 0 -0.15rem;
-}
-
-.pedidos-mas[open] summary::before {
-  rotate: 225deg;
-  translate: 0 0.15rem;
-}
-
-.pedidos-mas[open] .pedidos-ver,
-.pedidos-mas:not([open]) .pedidos-menos {
-  display: none;
-}
-
-.etiqueta-entidad .boton[data-tamano="chico"] {
-  margin-top: 0.75rem;
-}
-
-/* El buscador y el filtro ocupan el ancho; la cifra, debajo. */
-.entidades .publica-barra {
-  grid-template-columns: minmax(0, 1fr);
+/* Desplegada, más aire en los cuatro lados (cuarta ronda, 2026-11-10). */
+.entidades .plegable-cuerpo {
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-5);
 }
 
 @media (min-width: 53.75em) {
-  .filtro--buscar {
-    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
-    align-items: end;
+  .entidades > .publica-cabeza {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
   }
 
-  .filtro--buscar > .boton {
-    grid-column: 2;
+  /* En ancho medio, en una fila: la foto, el nombre con los chips, la barra y el enlace. */
+  .entidades .plegable > summary {
+    grid-template-columns: auto minmax(0, 1.3fr) minmax(12rem, 1fr) auto;
+    gap: var(--espacio-3) var(--espacio-4);
   }
 
-  .herbario {
-    padding: 3rem 2rem 2.5rem;
+  .entidades .plegable-medida,
+  .entidades .plegable-ver {
+    grid-column: auto;
   }
 
-  /* El tronco al centro; las entidades de a una a cada lado, la de la derecha más abajo. */
-  .herbario-lista {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2.75rem 5rem;
-    padding: 0;
+  .entidades .plegable-foto {
+    width: 6.5rem;
   }
 
-  .herbario-lista::before {
-    top: -3rem;
-    left: calc(50% - 3px);
+  .entidades .plegable-cuerpo {
+    padding: var(--espacio-4) var(--espacio-5) var(--espacio-5);
+  }
+}
+
+@media (min-width: 68.75em) {
+  /* En ancho (cuarta ronda, 2026-11-10, el dibujo de la usuaria): las cuatro columnas centradas en
+     alto, con ancho fijo salvo la del nombre, así la barra y el enlace quedan alineados de una
+     tarjeta a la otra. */
+  .entidades .plegable > summary {
+    grid-template-columns: 7.5rem minmax(0, 1fr) 17rem 10rem;
+    gap: var(--espacio-3) var(--espacio-5);
+    padding: var(--espacio-3) var(--espacio-4) var(--espacio-3) var(--espacio-3);
   }
 
-  .etiqueta-entidad:nth-child(even) {
-    margin-top: 3rem;
-  }
-
-  .etiqueta-entidad:nth-child(even)::before {
-    width: 2.5rem;
-  }
-
-  .etiqueta-entidad:nth-child(odd)::before {
-    right: auto;
-    left: 100%;
-    width: 2.5rem;
-  }
-
-  .etiqueta-entidad:nth-child(even)::after {
-    left: calc(-2.5rem - 0.5625rem);
-  }
-
-  .etiqueta-entidad:nth-child(odd)::after {
-    left: calc(100% + 2.5rem - 0.5625rem);
+  .entidades .plegable-foto {
+    width: 7.5rem;
   }
 }

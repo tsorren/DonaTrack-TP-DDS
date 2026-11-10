@@ -1,0 +1,28 @@
+/* Bloque chip (2026-11-09): una pastilla chica que nombra algo, con su ícono de categoría adelante
+   (sprite `iconos :: categorias`). No es un botón ni un filtro (para eso, `.filtros`). Con
+   `data-tono="emergencia"`, en los colores del problema y sin ícono. Se carga en la capa `bloques`
+   desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.chip > svg {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: currentcolor;
+}
+
+.chip[data-tono="emergencia"] {
+  padding-left: 0.75rem;
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}

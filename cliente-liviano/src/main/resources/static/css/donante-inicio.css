@@ -1,292 +1,378 @@
-/* El inicio de la empresa donante en Raíces A: lo que está confirmado en la tierra, como la rama de
-   frutos de la portada, con el hito colgado como etiqueta; debajo, en papel, lo que está en curso,
-   la que se demoró y las últimas noticias. */
+/* El inicio de la empresa donante, con la composición de la variante K (2026-11-08): las piezas son
+   del componente huerta (la fila de cifras, las láminas, la tierra con las raíces y el recorrido) y
+   de noticias; acá, solo dónde va cada una. */
 @import url("donante-comun.css");
 
 .inicio-cuerpo {
   display: grid;
-  gap: 1.75rem;
+  gap: 2.5rem;
 }
 
-/* --- Lo que está confirmado: la rama de frutos en la tierra ------------------------------------ */
-.confirmado {
-  display: grid;
-  gap: 1.5rem;
-  padding: 1.5rem 1.25rem 1.75rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-suelo-hondo);
-  color: var(--color-texto-suelo);
-}
-
-main .confirmado h2 {
-  margin: 0 0 0.5rem;
-  color: var(--color-texto-suelo);
-  font: 800 clamp(1.75rem, 3.4vw, 2.5rem) / 1.05 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: -0.02em;
-}
-
-.confirmado h2 em {
-  color: var(--color-raiz);
-}
-
-.confirmado-alcance {
-  max-width: 34rem;
-  margin: 0;
+.hito {
+  margin: 0.75rem 0 0;
   font-size: 0.9375rem;
 }
 
-/* La rama baja por el costado y los frutos salen de ella, cada uno con su etiqueta de papel. */
-.rama {
-  display: grid;
-  gap: 1.5rem;
-  margin: 0 0 0 0.5rem;
-  padding: 0.5rem 0 0.5rem 2rem;
-  border-left: 0.4rem solid var(--color-raiz);
+/* Las láminas, de a dos en el celular y de al menos 12 rem desde la tableta. */
+.huerta .lista {
+  --medida-columna: 9rem;
+  column-gap: 1rem;
 }
 
-.fruto {
-  position: relative;
+/* Las raíces y las noticias, lado a lado cuando entran, siempre del mismo alto (usuario,
+   2026-11-09): la fila se estira a la más alta y las dos la llenan. */
+.inicio-cuerpo > .grilla {
+  --medida-grilla: 22rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+
+@media (min-width: 37.5em) {
+  .huerta .lista {
+    --medida-columna: 12rem;
+    column-gap: 1.5rem;
+  }
+}
+
+/* El saludo a la izquierda y las acciones a la derecha (usuario, 2026-11-08). */
+@media (min-width: 53.75em) {
+  .inicio-cabecera {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    align-items: end;
+  }
+
+  .inicio-cabecera > .racimo {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: end;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Con la fila estirada, el dibujo de las raíces arriba y su texto abajo. */
+.inicio-cuerpo > .grilla > .huerta-tierra--caja {
+  align-content: space-between;
+}
+
+/* --- La empresa: el mes en cuatro preguntas (era la prueba inicio-empresa-a, elegida el
+   2026-11-09) ------------------------------------------------------------------------------------ */
+[data-v="inicio-empresa"] .inicio-cuerpo {
+  gap: 3rem;
+}
+
+/* 1. Las cifras con su dibujo, plantadas en la misma línea de suelo. */
+[data-v="frutos"] {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+[data-v="frutos"] .huerta-cifras {
+  gap: 1.5rem 2rem;
+}
+
+[data-v="frutos"] .huerta-cifra {
+  grid-template-columns: minmax(4.5rem, 6.5rem) minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-items: center;
+  min-height: 10rem;
+  padding: 0 0 1.375rem;
+  background-position: 0 100%;
+}
+
+/* Los dibujos a escala, como las láminas (2026-11-09, tarde): el alto sale de sus unidades
+   (--medida-alto, del componente huerta) por una misma escala; el dibujo apoya en la línea de suelo
+   (a 10 rem). El árbol, el más alto, mide 278 unidades: entra justo. */
+[data-v="frutos"] {
+  --medida-escala: 0.56px;
+}
+
+[data-v="frutos"] .huerta-cifra img[data-dibujo] {
+  grid-row: 1 / span 2;
+  width: auto;
+  max-width: 100%;
+  height: calc(var(--medida-alto) * var(--medida-escala));
+  margin: 0 auto;
+}
+
+[data-v="frutos"] .huerta-cifra img + b {
+  margin-top: 0;
+}
+
+#inicio-misiones {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+#inicio-misiones-dibujo {
+  position: relative;
+  max-width: 42rem;
+}
+
+#inicio-misiones-dibujo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#inicio-misiones-dibujo .boton {
+  position: absolute;
+  top: 62%;
+  left: 52%;
+  translate: -50% -50%;
+  white-space: nowrap;
+}
+
+/* 2. El tablero: tres columnas, cada una con el color de su estado en la cabeza. */
+[data-v="tablero"] {
+  display: grid;
   gap: 1rem;
 }
 
-/* El cabo, de la rama al fruto. */
-.fruto::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -2rem;
-  width: 2rem;
-  border-bottom: 0.25rem solid var(--color-raiz);
+[data-v="tablero"] .grilla {
+  --medida-grilla: 18rem;
+  gap: 1.75rem;
+  align-items: stretch;
 }
 
-.fruto dt {
-  order: 2;
-  justify-self: start;
-  padding: 0.45rem 0.7rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-suelo);
-  color: var(--color-tinta);
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.fruto dd {
-  position: relative;
-  z-index: 1;
+[data-v="columna"] {
+  --espacio-relleno: 1.25rem;
   display: grid;
-  order: 1;
-  place-items: center;
-  width: 6.5rem;
-  aspect-ratio: 1;
+  align-content: start;
+  gap: 1rem;
+}
+
+[data-v="columna"] h3 {
+  justify-self: start;
   margin: 0;
-  border-radius: 50%;
-  background: var(--color-fruto);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
-  color: var(--color-tinta);
-  font: 900 2.25rem / 1 var(--fuente-cifra);
-  font-stretch: 110%;
-  letter-spacing: -0.03em;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
+  font: 800 1rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
 }
 
-.fruto--paja dd {
-  width: 5.5rem;
-  background: var(--color-raiz);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
-  font-size: 1.9rem;
+[data-v="columna"][data-estado="entregada"] h3 {
+  background: var(--color-entregada-fondo);
+  color: var(--color-entregada-texto);
 }
 
-/* La hoja de cada fruto. */
-.fruto dd::before {
-  content: "";
-  position: absolute;
-  top: -0.45rem;
-  right: 0.6rem;
-  width: 1.6rem;
-  height: 0.9rem;
-  border-radius: 0 100%;
-  background: var(--color-hoja);
-  rotate: -18deg;
+[data-v="columna"][data-estado="en-camino"] h3 {
+  background: var(--color-en-camino-fondo);
+  color: var(--color-en-camino-texto);
 }
 
-/* El hito, la etiqueta de un ejemplar: papel con doble filete, colgado del pie de la rama con su
-   hilo paja. */
-.hito {
-  position: relative;
-  max-width: 24rem;
+[data-v="columna"][data-estado="con-problema"] h3 {
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}
+
+[data-v="columna"] ul {
+  display: grid;
+  gap: 0.875rem;
   margin: 0;
-  padding: 0.75rem 1rem;
-  border: 1.5px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: -6px;
-  background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-suelo);
-  color: var(--color-tinta);
-  font-weight: 700;
-  line-height: 1.4;
-}
-
-.hito::before {
-  content: "";
-  position: absolute;
-  bottom: calc(100% + 1.5px);
-  left: calc(0.5rem - 1.5px);
-  height: 1.5rem;
-  border-left: 0.4rem solid var(--color-raiz);
-}
-
-/* La actividad, aparte y más chica: no es un resultado. */
-.actividad {
-  margin: 0;
-  font-size: 0.9375rem;
-}
-
-.actividad b {
-  font: 900 1.25rem / 1 var(--fuente-cifra);
-  font-stretch: 118%;
-}
-
-/* --- En curso y la que se demoró ---------------------------------------------------------------- */
-.sellos-curso {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin: 0 0 1rem;
   padding: 0;
   list-style: none;
 }
 
-.sellos-curso .estado-sello {
-  width: 2rem;
-  height: 2rem;
+/* Cada donación: su dibujo en un marco redondeado a la izquierda, el nombre y qué pasó. */
+[data-v="columna"] li {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.875rem;
+  align-items: center;
 }
 
-.sellos-curso b {
-  font: 900 2rem / 1 var(--fuente-cifra);
-  font-stretch: 118%;
+[data-v="columna"] li + li {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-filete);
 }
 
-.en-curso-destino {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 2px dotted var(--color-tinta-suave);
+/* El marco mide siempre 3,75 × 4,5 rem; el dibujo, a escala (la misma para todos), apoya abajo:
+   la maceta queda igual en todas y la planta crece. */
+[data-v="columna"] {
+  --medida-escala: 0.26px;
 }
 
-.en-curso-destino p {
-  margin: 0;
+[data-v="columna"] li img {
+  grid-row: 1 / span 2;
+  width: 3.75rem;
+  height: 4.5rem;
+  padding: calc(4.25rem - var(--medida-alto, 230) * var(--medida-escala)) 0.25rem 0.25rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  object-fit: contain;
+  object-position: bottom;
 }
 
-.en-curso-destino a,
-.demora a,
-.noticias-todas {
+[data-v="columna"] li a {
   display: inline-flex;
   align-items: center;
   min-height: 3rem;
-  font-weight: 700;
+  color: var(--color-tinta);
+  font-weight: 800;
+  text-underline-offset: 0.2em;
 }
 
-.demora {
-  border-color: var(--color-problema-texto);
-  box-shadow: 0.4rem 0.4rem 0 var(--color-problema-fondo);
+[data-v="columna"] li span {
+  align-self: start;
+  font-size: 0.9375rem;
 }
 
-.demora-texto {
+/* 4. Lo acumulado: las raíces y las noticias, siempre del mismo alto. */
+[data-v="acumulado"] {
+  --medida-grilla: 22rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+[data-v="acumulado"] > .huerta-tierra--caja {
+  align-content: space-between;
+}
+
+[data-v="inicio-empresa"] > .inicio-cabecera {
+  margin-bottom: 2.5rem;
+}
+
+[data-v="frutos"] .hito {
+  margin: 0;
+}
+
+/* --- Últimas noticias: una línea de tiempo (era la prueba noticias-a, rehecha el 2026-11-09) -----
+   La bolita de cada noticia va a la altura de la primera línea del título (el título tiene
+   interlineado fijo de 1,5 rem y la bolita, 1 rem: 0,25 rem más abajo que el renglón). Debajo del
+   título, discretos y en un solo renglón: "Sin leer" (solo si lo está; la leída lo dice para el
+   lector), cuándo y de qué donación. "Ver todas", al final de la tile. */
+.noticias-inicio {
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+}
+
+.noticias-inicio .noticias {
+  align-self: start;
+  gap: 1.75rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.75rem;
+}
+
+/* El hilo, de cada bolita a la siguiente: termina en la última. */
+.noticias-inicio .noticia:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  bottom: -2rem;
+  left: calc(-1.75rem + 0.4375rem);
+  border-left: 2px dotted var(--color-tinta-suave);
+}
+
+.noticias-inicio .noticia {
   display: flex;
-  gap: 0.625rem;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem 0;
+  padding: 0;
+  border-bottom: 0;
 }
 
-.demora-texto .estado-sello {
-  flex: none;
-  margin-top: 0.15rem;
+/* La bolita: llena con su anillo si está sin leer; hueca si ya se leyó. */
+.noticias-inicio .noticia::before,
+.noticias-inicio .noticia--sin-leer::before {
+  content: "";
+  position: absolute;
+  top: 0.25rem;
+  left: -1.75rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 2px var(--color-tinta-suave), 0 0 0 0.25rem var(--color-superficie);
 }
 
-.noticias-inicio h2 {
-  margin: 0 0 1rem;
+.noticias-inicio .noticia--sin-leer::before {
+  background: var(--color-acento);
+  box-shadow: 0 0 0 0.25rem var(--color-superficie), 0 0 0 0.375rem var(--color-acento-claro);
 }
 
-/* Desde la tableta, la rama a la derecha; a la izquierda, la cabeza, la actividad y el hito, como
-   nota al pie (variante B del pulido, 2026-11-03: llena el hueco de la izquierda). */
-@media (min-width: 53.75em) {
-  .confirmado {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      "cabeza rama"
-      "actividad rama"
-      "hito rama";
-    grid-template-rows: auto auto 1fr;
-    align-items: start;
-    gap: 1.25rem 3rem;
-    padding: 2rem 2.25rem 2.25rem;
-  }
-
-  .confirmado-cabeza {
-    grid-area: cabeza;
-  }
-
-  .rama {
-    grid-area: rama;
-  }
-
-  .hito {
-    grid-area: hito;
-    align-self: end;
-  }
-
-  .hito::before {
-    content: none;
-  }
-
-  .actividad {
-    grid-area: actividad;
-  }
+.noticias-inicio .noticia-texto {
+  display: -webkit-box;
+  flex: 1 1 100%;
+  order: 1;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  text-underline-offset: 0.3em;
 }
 
-/* En pantalla grande, dos columnas: lo que está en curso y la demora a la izquierda, las noticias
-   a la derecha. */
-@media (min-width: 68.75em) {
-  .inicio-panel {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      "confirmado confirmado"
-      "curso noticias"
-      "demora noticias"
-      "acciones acciones";
-    align-items: start;
-    gap: 2rem 2.5rem;
-  }
+/* Toda la noticia es el toque del enlace (al menos 3 rem de alto). */
+.noticias-inicio .noticia {
+  min-height: 3rem;
+}
 
-  .confirmado {
-    grid-area: confirmado;
-  }
+.noticias-inicio .noticia-texto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
 
-  .en-curso {
-    grid-area: curso;
-  }
+.noticias-inicio .noticia-estado {
+  display: none;
+}
 
-  .demora {
-    grid-area: demora;
-  }
+/* El renglón de abajo: "Sin leer", cuándo y de qué donación, separados por un punto. */
+.noticias-inicio :is(.noticia-marca, .noticia-cuando, .noticia-donacion) {
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
 
-  .noticias-inicio {
-    grid-area: noticias;
-  }
+.noticias-inicio .noticia-marca {
+  order: 2;
+  padding: 0;
+  background: none;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
 
-  .inicio-panel > .acciones {
-    grid-area: acciones;
-  }
+.noticias-inicio .noticia--sin-leer .noticia-marca {
+  background: none;
+  color: var(--color-acento-hondo);
+}
 
-  .inicio-cuerpo:not(.inicio-panel) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
+.noticias-inicio .noticia:not(.noticia--sin-leer) .noticia-marca {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
-  .inicio-ancho {
-    grid-column: 1 / -1;
-  }
+.noticias-inicio .noticia-cuando {
+  order: 3;
+}
+
+.noticias-inicio .noticia--sin-leer .noticia-cuando::before,
+.noticias-inicio .noticia-donacion::before {
+  content: "\00a0·\00a0";
+}
+
+.noticias-inicio .noticia-donacion {
+  order: 4;
+}
+
+.noticias-todas {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 3rem;
+  font-weight: 700;
 }

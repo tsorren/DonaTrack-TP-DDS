@@ -81,6 +81,12 @@ Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio
   `a` con `action` o `href` reales (RNF-CL-02).
 - Si el request trae `HX-Request`, el controller devuelve el fragmento; si no, la página completa.
 - Toda petición que pueda tardar más de 300 ms lleva `hx-indicator` (RNF-UI-06).
+- Cambiar de panel sin recargar ni volver arriba (usuario, 2026-11-10): un formulario GET o un
+  enlace que filtra, cambia de pestaña o abre una ficha en la misma pantalla lleva `hx-boost="true"`.
+  El `main#contenido` de cada layout ya trae `hx-target`, `hx-select` y `hx-swap="outerHTML
+  show:none"`: HTMX toma solo el main de la respuesta, no mueve el scroll y deja la dirección con
+  `pushState`. No se usa en enlaces a otra pantalla. Los scripts de página que viven dentro del main
+  se vuelven a ejecutar en cada cambio: van protegidos para registrarse una sola vez.
 - Los avisos se agregan a la región `aria-live` del layout.
 - JavaScript propio, solo como mejora (aclaración del usuario, 2026-10-30: "está permitido usar
   javascript mientras se siga considerando Server Side Rendering"). Las páginas se arman en el

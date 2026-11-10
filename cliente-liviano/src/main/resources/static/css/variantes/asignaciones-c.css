@@ -1,0 +1,149 @@
+/* Variante C de Asignar donaciones (ronda 2026-11-09 tarde y noche): paso a paso, pensada para el
+   celular. Empieza por "¿Qué querés hacer?" y cada trámite es una página. Solo tokens de uso. Se borra
+   al decidir. */
+@import url("comun/asignaciones.css");
+
+[data-variante="asignaciones-c"] > :not(header) {
+  max-width: 44rem;
+}
+
+[data-variante="asignaciones-c"] h2 {
+  font-size: var(--tamano-grande);
+}
+
+[data-variante="asignaciones-c"] h3 {
+  font-size: var(--tamano-base);
+}
+
+/* Los pasos: tres círculos numerados en fila; el actual, lleno; los hechos, enlaces. */
+[data-variante="asignaciones-c"] [data-lista="pasos"] {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--espacio-2);
+}
+
+[data-variante="asignaciones-c"] [data-lista="pasos"] > li,
+[data-variante="asignaciones-c"] [data-lista="pasos"] > li > a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-1);
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+  text-align: center;
+}
+
+[data-variante="asignaciones-c"] [data-lista="pasos"] > li > a {
+  min-height: 3rem;
+  color: var(--color-tinta);
+}
+
+[data-variante="asignaciones-c"] [data-lista="pasos"] b {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--color-papel);
+  box-shadow: inset 0 0 0 2px var(--color-filete);
+  font: 800 var(--tamano-base) / 1 var(--fuente-cifra);
+}
+
+[data-variante="asignaciones-c"] [data-lista="pasos"] > li[data-hecho] b {
+  background: var(--color-acento-claro);
+  box-shadow: none;
+}
+
+[data-variante="asignaciones-c"] [data-lista="pasos"] > li[aria-current] {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+[data-variante="asignaciones-c"] [data-lista="pasos"] > li[aria-current] b {
+  background: var(--color-acento);
+  box-shadow: none;
+  color: var(--color-texto-sobre-accion);
+}
+
+/* Las opciones grandes (donaciones y candidatas): láminas-enlace con la flecha a la derecha. */
+[data-variante="asignaciones-c"] [data-lista="opciones"],
+[data-variante="asignaciones-c"] [data-lista="candidatas"] {
+  gap: var(--espacio-2);
+}
+
+[data-variante="asignaciones-c"] :is([data-lista="opciones"], [data-lista="candidatas"]) a {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: 4rem;
+  padding: var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+[data-variante="asignaciones-c"] [data-lista="candidatas"] a {
+  grid-template-columns: 1fr auto;
+}
+
+[data-variante="asignaciones-c"] :is([data-lista="opciones"], [data-lista="candidatas"]) a:hover {
+  background: var(--color-acento-claro);
+}
+
+[data-variante="asignaciones-c"] [data-lista="opciones"] a > span {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-1);
+  min-width: 0;
+}
+
+[data-variante="asignaciones-c"] [data-forma="flecha"] {
+  width: 0.875rem;
+  height: 0.625rem;
+  rotate: -90deg;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-variante="asignaciones-c"] [data-forma="resumen"] > div {
+  flex: 1 1 12rem;
+}
+
+[data-variante="asignaciones-c"] [data-forma="resumen"] > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+[data-variante="asignaciones-c"] [data-lista="ranking"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+[data-variante="asignaciones-c"] section.tarjeta {
+  --espacio-relleno: var(--espacio-4);
+}
+
+/* Volver al inicio y los atajos de consulta: enlaces con la altura de toque. */
+[data-variante="asignaciones-c"] [data-forma="volver"],
+[data-variante="asignaciones-c"] [data-forma="atajos"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+[data-variante="asignaciones-c"] [data-forma="atajos"] a {
+  padding: 0 var(--espacio-3);
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  text-decoration: none;
+}

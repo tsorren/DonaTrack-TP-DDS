@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--/* Estructura de las pantallas privadas: la marca, el
-       menú del rol y la cuenta en una sola cabecera de tierra honda; el contenido debajo. En el
+       menú del rol, la campana de notificaciones y la foto de perfil con el menú de la cuenta en una sola cabecera de papel (piel Huerta, 2026-11-08); el contenido debajo. En el
        celular, el menú es una barra inferior; desde la tableta, va horizontal en la cabecera
        (privado.css; usuario, 2026-11-03). La usan todas las pantallas privadas.
        Uso: <html th:replace="~{layout-privado :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
@@ -16,6 +16,8 @@
         th:href="@{/css/{hoja}.css(hoja=${hoja})}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <link th:if="${hoja == 'donante-misiones'}" rel="stylesheet"
+        href="/css/variantes/misiones-b.css">
   <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
 <body class="raices-privado">
@@ -26,7 +28,7 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <nav id="menu" class="navegacion tierra-impresa" aria-label="Secciones">
+  <nav id="menu" class="navegacion" aria-label="Secciones">
     <ul role="list">
       <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
           th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
@@ -62,40 +64,58 @@
          pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
          Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
          recepción, que la corrida A/B había dejado sin tocar. Con la cuenta de la persona que dona
-         (F5), sin cuenta: su bandeja muestra el aviso de la maqueta. */-->
+         (F5), las 3 sin leer de su bandeja (templates/persona/donante-notificaciones.html). */-->
   <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
      th:with="pantalla=${#execInfo.processedTemplateName},
               avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
-              sinLeer=${persona == true or #strings.endsWith(pantalla, '-leidas') ? 0 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3)}"
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : (persona == true ? 3 : (#strings.endsWith(perfil, '/donante-perfil') ? 4 : 3))}"
      class="armazon-avisos" href="/donante-notificaciones"
      th:href="${avisos}"
      th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
      th:aria-current="${#strings.contains(pantalla, #strings.substringAfter(avisos, '/'))} ? 'page' : null">
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-      <path d="M3 6h18v12H3z"/><path d="M3 6l9 7 9-7"/>
+      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
     </svg>
     <span class="armazon-avisos-texto">Notificaciones</span>
     <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
   </a>
-  <div class="armazon-cuenta">
-    <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
-    <button class="boton" data-tamano="chico" data-zona="suelo-hondo" type="button"
-            popovertarget="menu-cuenta">Cuenta</button>
-    <!--/* Mi perfil, el cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y
-           Cerrar sesión (POST con CSRF) van juntos en un diálogo del catálogo: sueltos no entran en la
-           cabecera de una fila (1100 a 1280 px). Anda sin JavaScript. */-->
-    <dialog id="menu-cuenta" class="dialogo" popover aria-labelledby="menu-cuenta-titulo">
-      <p id="menu-cuenta-titulo" class="dialogo-titulo">Tu cuenta</p>
-      <p th:if="${perfil}"><a href="/donante-perfil" th:href="${perfil}"
-         th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a></p>
-      <p th:if="${cuenta.cambiarClave}"><a href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a></p>
+  <!--/* La campana de la administración (usuario, ronda 2026-11-09: "agregá la bell de notificaciones"):
+         la misma pieza, hacia admin-notificaciones, con 3 sin leer en la maqueta y ninguna después de
+         marcarlas como leídas. La administración no tiene Mi perfil, así que se reconoce por su cuenta.
+         Un agregado: no cambia la de los otros roles ni el controlador. */-->
+  <a th:if="${perfil == null and cuenta != null and cuenta.rol == 'Administración'}"
+     th:with="pantalla=${#execInfo.processedTemplateName},
+              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : 3}"
+     class="armazon-avisos" href="/admin-notificaciones" th:href="@{/admin-notificaciones}"
+     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
+     th:aria-current="${#strings.contains(pantalla, 'admin-notificaciones')} ? 'page' : null">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+    </svg>
+    <span class="armazon-avisos-texto">Notificaciones</span>
+    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">3</b>
+  </a>
+  <!--/* La cuenta, como en K (usuario, 2026-11-08): un menú que se despliega al tocar la foto de perfil,
+         con el nombre y el rol, Mi perfil, Cambiar contraseña y Cerrar sesión. La foto por defecto es una planta. Es un <details>:
+         anda sin JavaScript. */-->
+  <details class="navegacion-cuenta">
+    <summary class="navegacion-cuenta-foto" th:aria-label="|Cuenta de ${cuenta.nombre}|"
+             aria-label="Cuenta de Nombre">
+      <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}"
+           alt="" width="48" height="48">
+    </summary>
+    <div class="navegacion-cuenta-menu">
+      <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+      <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
+         th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
+      <!--/* El cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y Cerrar
+             sesión (POST con CSRF), de #955. */-->
+      <a th:if="${cuenta.cambiarClave}" href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a>
       <form th:replace="~{cerrar-sesion :: boton}"></form>
-      <button type="button" class="boton" data-tono="secundario" popovertarget="menu-cuenta"
-              popovertargetaction="hide">Cerrar</button>
-    </dialog>
-  </div>
+    </div>
+  </details>
 </header>
-<main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>
 <!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian, y la cola de Alpine
        (avisos, static/js/interfaz.js) deja ver tres a la vez y los quita a los 6 segundos. */-->

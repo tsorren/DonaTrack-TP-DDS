@@ -2,7 +2,11 @@
 <!--/* Raíces, Donantes del admin (RF-15 y RF-20), según su ficha de flujo
        (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.1). Arriba, la cifra con su fecha y
        "Registrar donante"; debajo, importar donantes desde un archivo, plegado (se abre con "Importar
-       CSV"); al final, la búsqueda y la lista en la tabla adaptable. La importación vive en la misma
+       CSV"); al final, la búsqueda y la lista en la tabla adaptable. Ronda del 2026-11-09: las dos
+       acciones van al costado del encabezado (en el celular, debajo); "Importar CSV" es un enlace real
+       (?importar=abrir) que abre el bloque de importar; la lista se filtra con un formulario GET
+       (?buscar=, ?tipo=persona|empresa|organizacion, ?dona=alimentos|ropa|escolares|muebles,
+       ?estado=activo|pendiente|baja y ?orden=antiguo|nombre), con las pastillas de componentes/filtros. La importación vive en la misma
        pantalla, para no pasar de 3 niveles (decisión 3 del roadmap): su avance y su resultado quedan
        en el bloque de importar, y la lista sigue debajo (RF-20: sin bloquear la pantalla).
        ?escenario=vacio, lento y error. Importar es un formulario real (POST, multipart) que lleva a
@@ -22,21 +26,54 @@
   <th:block th:replace="~{admin-donantes :: hoja('')}"></th:block>
 </th:block>
 
+<!--/* Los filtros (ronda 2026-11-09: "agregar un sistema de filtrado"): cada valor se valida contra su
+       lista antes de entrar en una expresión; lo que se escribe en la búsqueda se compara como texto. */-->
 <th:block th:fragment="hoja(accion)"
+    th:with="fTipo=${param.tipo != null and #lists.contains({'persona', 'empresa', 'organizacion'}, param.tipo[0]) ? param.tipo[0] : ''},
+             fDona=${param.dona != null and #lists.contains({'alimentos', 'ropa', 'escolares', 'muebles'}, param.dona[0]) ? param.dona[0] : ''},
+             fEstado=${param.estado != null and #lists.contains({'activo', 'pendiente', 'baja'}, param.estado[0]) ? param.estado[0] : ''},
+             fOrden=${param.orden != null and #lists.contains({'antiguo', 'nombre'}, param.orden[0]) ? param.orden[0] : ''}">
+<th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
              importa=${accion != ''},
-             donantes=${ {
-      {nombre: 'Distribuidora Ejemplo SA', tipo: 'Empresa', documento: 'CUIT 30-00000001-0', alta: '2 de marzo', estado: 'Activo'},
-      {nombre: 'Ana Ejemplo', tipo: 'Persona', documento: 'DNI 20.000.001', alta: '14 de octubre', estado: 'Activo'},
-      {nombre: 'Juan Ejemplo', tipo: 'Persona', documento: 'DNI 20.000.002', alta: '3 de septiembre', estado: 'Activo'},
-      {nombre: 'Fundación Ejemplo Sur', tipo: 'Organización', documento: 'CUIT 30-00000002-0', alta: '21 de julio', estado: 'Activo'},
-      {nombre: 'Pedro Ejemplo', tipo: 'Persona', documento: 'DNI 20.000.003', alta: '5 de mayo', estado: 'Dado de baja'} } }">
+             abrirImportar=${importa or escenario == 'vacio' or (param.importar != null and param.importar[0] == 'abrir')},
+             q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+             estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
+             sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} },
+             todos=${ {
+      {clave: 'lucia', nombre: 'Lucía Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.004', alta: '15 de octubre', estado: 'pendiente', dona: 'alimentos', donaTexto: 'Alimentos'},
+      {clave: 'ana', nombre: 'Ana Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.001', alta: '14 de octubre', estado: 'activo', dona: 'alimentos', donaTexto: 'Alimentos'},
+      {clave: 'club', nombre: 'Asociación Vecinal Ejemplo', tipo: 'organizacion', tipoTexto: 'Organización', documento: 'CUIT 30-00000005-0', alta: '12 de octubre', estado: 'pendiente', dona: 'muebles', donaTexto: 'Muebles'},
+      {clave: 'juan', nombre: 'Juan Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.002', alta: '3 de septiembre', estado: 'activo', dona: 'escolares', donaTexto: 'Útiles escolares'},
+      {clave: 'super', nombre: 'Supermercado Ejemplo SRL', tipo: 'empresa', tipoTexto: 'Empresa', documento: 'CUIT 30-00000003-0', alta: '28 de agosto', estado: 'activo', dona: 'alimentos', donaTexto: 'Alimentos'},
+      {clave: 'fundacion', nombre: 'Fundación Ejemplo Sur', tipo: 'organizacion', tipoTexto: 'Organización', documento: 'CUIT 30-00000002-0', alta: '21 de julio', estado: 'activo', dona: 'ropa', donaTexto: 'Ropa'},
+      {clave: 'libreria', nombre: 'Librería Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', documento: 'CUIT 30-00000004-0', alta: '9 de junio', estado: 'activo', dona: 'escolares', donaTexto: 'Útiles escolares'},
+      {clave: 'pedro', nombre: 'Pedro Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.003', alta: '5 de mayo', estado: 'baja', dona: 'ropa', donaTexto: 'Ropa'},
+      {clave: 'carla', nombre: 'Carla Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.005', alta: '1 de abril', estado: 'activo', dona: 'muebles', donaTexto: 'Muebles'},
+      {clave: 'distribuidora', nombre: 'Distribuidora Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', documento: 'CUIT 30-00000001-0', alta: '2 de marzo', estado: 'activo', dona: 'alimentos', donaTexto: 'Alimentos'} } },
+             porFiltros=${todos.?[('__${fTipo}__' == '' or tipo == '__${fTipo}__') and ('__${fDona}__' == '' or dona == '__${fDona}__') and ('__${fEstado}__' == '' or estado == '__${fEstado}__')]},
+             donantes=${q == '' ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(nombre, #root.q) or #strings.containsIgnoreCase(documento, #root.q)]},
+             orden=${fOrden == 'nombre' ? {'ana', 'club', 'carla', 'distribuidora', 'fundacion', 'juan', 'libreria', 'lucia', 'pedro', 'super'}
+                 : (fOrden == 'antiguo' ? {'distribuidora', 'carla', 'pedro', 'libreria', 'fundacion', 'super', 'juan', 'club', 'ana', 'lucia'}
+                 : {'lucia', 'ana', 'club', 'juan', 'super', 'fundacion', 'libreria', 'pedro', 'carla', 'distribuidora'})},
+             filtrado=${fTipo != '' or fDona != '' or fEstado != '' or q != ''},
+             n=${#lists.size(donantes)}">
   <div class="mesa">
+    <!--/* El encabezado a todo el ancho, con las dos acciones al costado (ronda 2026-11-09); en el celular,
+           debajo. */-->
     <header class="mesa-cabecera">
-      <p class="rotulo">Administración</p>
-      <h1>Donantes</h1>
-      <p th:if="${conDatos}">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Donantes</h1>
+        <p th:if="${conDatos}">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
+      </div>
+      <div th:if="${escenario != 'error'}" class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-donantes-registrar"
+           th:href="@{/admin-donantes-registrar}">Registrar donante</a>
+        <a class="boton" data-tono="secundario" href="/admin-donantes?importar=abrir#importar"
+           th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
+      </div>
     </header>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando los donantes…</p>
@@ -58,17 +95,11 @@
       <p>Registrá el primero o importá un archivo con muchos.</p>
     </section>
 
-    <div th:if="${escenario != 'error'}" class="racimo">
-      <a class="boton" data-tono="principal" href="/admin-donantes-registrar"
-         th:href="@{/admin-donantes-registrar}">Registrar donante</a>
-    </div>
-
-    <!--/* Importar: plegado; abierto mientras hay una importación o su resultado. */-->
-    <details th:if="${escenario != 'error'}" id="importar" class="pila" data-espacio="3"
-             th:open="${importa or escenario == 'vacio'}">
-      <summary class="boton" data-tono="secundario">Importar CSV</summary>
-      <div class="tarjeta pila" data-espacio="3">
-      <h2>Importar donantes desde un archivo</h2>
+    <!--/* Importar: se abre con "Importar CSV" (un enlace real, ?importar=abrir) y queda abierto mientras
+           hay una importación o su resultado. */-->
+    <section th:if="${escenario != 'error' and abrirImportar}" id="importar" class="tarjeta pila"
+             data-espacio="3" aria-labelledby="importar-titulo">
+      <h2 id="importar-titulo">Importar donantes desde un archivo</h2>
 
       <th:block th:if="${accion == 'importando'}">
         <p><b>donantes-octubre.csv · 20.000 filas</b></p>
@@ -121,46 +152,88 @@
                  aria-describedby="archivo-ayuda"
                  th:attr="aria-invalid=${accion == 'importar-error'} ? 'true' : null">
         </div>
-        <button class="boton" data-tono="principal" type="submit">Importar</button>
+        <div class="racimo">
+          <button class="boton" data-tono="principal" type="submit">Importar</button>
+          <a th:if="${!importa and escenario != 'vacio'}" class="boton" data-tono="secundario"
+             href="/admin-donantes" th:href="@{/admin-donantes}">Cerrar</a>
+        </div>
       </form>
-      </div>
-    </details>
+    </section>
 
     <section th:if="${escenario != 'error' and escenario != 'vacio'}" class="pila" data-espacio="3"
              aria-labelledby="lista-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="lista-titulo">Todos los donantes</h2>
-      <form class="racimo" action="/admin-donantes" th:action="@{/admin-donantes}" method="get"
-            role="search">
-        <div class="campo">
+      <!--/* La búsqueda y los filtros, un solo formulario GET: el campo y "Buscar" en la misma línea, y
+             las pastillas al lado (debajo en el celular; componentes/filtros, la barra). */-->
+      <form hx-boost="true" class="filtros-barra" action="/admin-donantes"
+            th:action="@{/admin-donantes}" method="get" role="search">
+        <div class="campo filtro-buscar">
           <label for="buscar">Buscar por nombre o documento</label>
-          <input id="buscar" name="buscar" type="search" autocomplete="off">
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
+                   placeholder="Por ejemplo: Ana o 20.000.001">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
         </div>
-        <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+        <div class="filtros" role="group" aria-label="Filtrar los donantes">
+          <details th:replace="~{componentes/filtros :: menu('tipo', 'Tipo de donante', ${fTipo}, ${ {
+              {valor: '', texto: 'Todos los tipos'}, {valor: 'persona', texto: 'Personas'},
+              {valor: 'empresa', texto: 'Empresas'}, {valor: 'organizacion', texto: 'Organizaciones'} } })}"></details>
+          <details th:replace="~{componentes/filtros :: menu('dona', 'Qué dona', ${fDona}, ${ {
+              {valor: '', texto: 'Todas las categorías'}, {valor: 'alimentos', texto: 'Alimentos'},
+              {valor: 'ropa', texto: 'Ropa'}, {valor: 'escolares', texto: 'Útiles escolares'},
+              {valor: 'muebles', texto: 'Muebles'} } })}"></details>
+          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado de la cuenta', ${fEstado}, ${ {
+              {valor: '', texto: 'Todos los estados'}, {valor: 'activo', texto: 'Activos'},
+              {valor: 'pendiente', texto: 'Sin activar su cuenta'}, {valor: 'baja', texto: 'Dados de baja'} } })}"></details>
+          <details th:replace="~{componentes/filtros :: menu('orden', 'Más nuevos primero', ${fOrden}, ${ {
+              {valor: '', texto: 'Más nuevos primero'}, {valor: 'antiguo', texto: 'Más antiguos primero'},
+              {valor: 'nombre', texto: 'Por nombre, de la A a la Z'} } })}"></details>
+          <a th:if="${filtrado or fOrden != ''}" class="filtros-sacar" href="/admin-donantes"
+             th:href="@{/admin-donantes}">Sacar los filtros</a>
+        </div>
       </form>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
-      <table th:if="${conDatos}" class="tabla">
-        <caption>Donantes, del más nuevo al más antiguo</caption>
+      <p th:if="${conDatos and filtrado and n > 0}" role="status"
+         th:text="|${n == 1 ? 'Coincide 1 donante' : 'Coinciden ' + n + ' donantes'} de la lista de ejemplo.|">Coinciden
+        3 donantes de la lista de ejemplo.</p>
+      <section th:if="${conDatos and n == 0}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo">Ningún donante coincide con lo que buscaste.</h3>
+        <p>Probá con otra parte del nombre o del documento, o sacá los filtros.</p>
+        <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Ver todos</a>
+      </section>
+      <table th:if="${conDatos and n > 0}" class="tabla">
+        <caption class="solo-lectores">Donantes</caption>
         <thead>
           <tr>
             <th scope="col">Nombre</th>
             <th scope="col">Tipo</th>
+            <th scope="col">Qué dona</th>
             <th scope="col">Documento</th>
             <th scope="col">Alta</th>
             <th scope="col">Estado</th>
           </tr>
         </thead>
         <tbody>
-          <tr th:each="d : ${donantes}">
-            <th scope="row" th:text="${d.nombre}">Ana Ejemplo</th>
-            <td data-rotulo="Tipo" th:text="${d.tipo}">Persona</td>
-            <td data-rotulo="Documento" th:text="${d.documento}">DNI 20.000.001</td>
-            <td data-rotulo="Alta" th:text="${d.alta}">14 de octubre</td>
-            <td data-rotulo="Estado" th:text="${d.estado}">Activo</td>
-          </tr>
+          <th:block th:each="k : ${orden}">
+            <th:block th:with="d=${donantes.^[clave == '__${k}__']}">
+              <tr th:if="${d != null}">
+                <th scope="row" th:text="${d.nombre}">Ana Ejemplo</th>
+                <td data-rotulo="Tipo" th:text="${d.tipoTexto}">Persona</td>
+                <td data-rotulo="Qué dona" th:text="${d.donaTexto}">Alimentos</td>
+                <td data-rotulo="Documento" th:text="${d.documento}">DNI 20.000.001</td>
+                <td data-rotulo="Alta" th:text="${d.alta}">14 de octubre</td>
+                <td data-rotulo="Estado"><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
+                    th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
+                    th:text="${estados[d.estado]}">Activo</th:block></span></td>
+              </tr>
+            </th:block>
+          </th:block>
         </tbody>
       </table>
     </section>
   </div>
+</th:block>
 </th:block>
 </body>
 </html>

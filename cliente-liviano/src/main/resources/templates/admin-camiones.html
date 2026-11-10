@@ -1,15 +1,37 @@
 <!DOCTYPE html>
 <!--/* Raíces, Camiones del admin (RF-18), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.8). Arriba, las cifras con su fecha
-       y "Agregar camión" (el formulario plegado, POST real, que lleva a admin-camiones-agregado);
-       debajo, la lista en la tabla adaptable. El admin solo pasa un camión entre disponible y
-       deshabilitado: "En ruta" lo pone la logística y no tiene botón. "Deshabilitar" abre un diálogo
-       del navegador (popover) con el motivo opcional y lleva a admin-camiones-deshabilitado;
-       "Volver a habilitar" es un formulario real que lleva a admin-camiones-habilitado.
-       ?escenario=vacio, lento y error. El error de datos del alta es admin-camiones-agregar-error.
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.8). Ronda del 2026-11-10: un tablero de
+       logística (referencias 19 y 20 del usuario, con la identidad del sitio) en lugar de la tabla:
+       - Arriba, el título, las cifras con su fecha y "Agregar camión", que abre un diálogo del navegador
+         (popover) con el formulario (POST real a admin-camiones-agregado). Debajo, las cifras de la
+         flota (capacidad total, disponible ahora y entregas de los últimos 30 días; .flota-resumen).
+       - La búsqueda (patente o nombre) y el filtro de capacidad, en un formulario GET con hx-boost; el
+         estado, en pestañas con su cuenta (.segmentos data-forma="desliza": Todos · En ruta ·
+         Disponibles · Deshabilitados), enlaces con hx-boost. Las cuentas son de lo que deja la búsqueda
+         y la capacidad.
+       - La flota, una grilla de tarjetas (.flota, componentes/flota): la patente grande, el estado en su
+         pastilla, la capacidad, qué hace ahora (la ruta, el depósito o el motivo de la baja), el chofer
+         o la última ruta, y el dibujo del camión. Cada tarjeta es un enlace real
+         (?camion=<clave>#camion-<clave>) con hx-get sin el ancla y hx-push-url: la ficha cambia sin
+         recargar ni mover la página. De partida se elige el que está en ruta (si no, el primero); en
+         los resultados, el camión del que habla el aviso.
+       - La ficha del elegido (.flota-ficha): patente, estado y dibujo; las etapas del recorrido (En el
+         depósito → Cargando → En ruta → Entregando → De vuelta); "Datos del viaje" (recorrido,
+         dónde está, paradas como puntos), el mapa chico (static/js/mapa.js: el depósito, el camión y
+         su próxima parada; solo en ruta, con los mismos datos en "Datos del viaje"), "Carga" (barra,
+         peso, volumen, bultos y categorías) y "Rendimiento (últimos 30 días)" (barras y cifras); el
+         chofer con sus enlaces para llamar y escribir; y lo que se puede hacer.
+       - El admin solo pasa un camión entre disponible y deshabilitado: "En ruta" lo pone la logística y
+         no tiene botón. "Deshabilitar" abre un diálogo (popover) con el motivo opcional y lleva a
+         admin-camiones-deshabilitado; "Volver a habilitar" es un formulario real que lleva a
+         admin-camiones-habilitado.
+       ?escenario=vacio, lento y error. El error de datos del alta es admin-camiones-agregar-error: el
+       formulario, abierto debajo del encabezado (no en el diálogo), con el resumen arriba.
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'agregado', 'deshabilitado',
-         'habilitado' o 'error'. */-->
+         'habilitado' o 'error'.
+       - formulario(conError, enDialogo): el alta de un camión.
+       - ficha(c, accion): la ficha del elegido. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -20,49 +42,89 @@
   <th:block th:replace="~{admin-camiones :: hoja('')}"></th:block>
 </th:block>
 
+<!--/* Los filtros: ?buscar= (patente o nombre), ?estado=ruta|disponible|deshabilitado y
+       ?capacidad=chico|mediano|grande; ?camion=<clave> elige la ficha. Cada valor se valida contra su
+       lista antes de entrar en una expresión; lo escrito en la búsqueda se compara como texto. */-->
 <th:block th:fragment="hoja(accion)"
+    th:with="fEstado=${param.estado != null and #lists.contains({'disponible', 'ruta', 'deshabilitado'}, param.estado[0]) ? param.estado[0] : ''},
+             fCapacidad=${param.capacidad != null and #lists.contains({'chico', 'mediano', 'grande'}, param.capacidad[0]) ? param.capacidad[0] : ''}">
+<th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
              conError=${accion == 'error'},
-             palabras=${ {ruta: 'En ruta', disponible: 'Disponible', deshabilitado: 'Deshabilitado'} },
-             sellos=${ {ruta: 'camino', disponible: 'hecho', deshabilitado: 'falta'} },
+             base=${accion == 'agregado' or accion == 'deshabilitado' or accion == 'habilitado' ? '/admin-camiones-' + accion : '/admin-camiones'},
              todos=${ {
-      {clave: 'ab123cd', patente: 'AB 123 CD', capacidad: '3.500 kg · 18 m³', estado: 'ruta'},
-      {clave: 'ac456ef', patente: 'AC 456 EF', capacidad: '3.500 kg · 18 m³',
-       estado: accion == 'deshabilitado' ? 'deshabilitado' : 'disponible',
-       motivo: accion == 'deshabilitado' ? 'Service de frenos. Desde hoy, 18:35.' : null},
-      {clave: 'ad789gh', patente: 'AD 789 GH', capacidad: '1.500 kg · 9 m³', estado: 'disponible'},
-      {clave: 'ae012ij', patente: 'AE 012 IJ', capacidad: '1.500 kg · 9 m³', estado: 'disponible'},
-      {clave: 'aa999zz', patente: 'AA 999 ZZ', capacidad: '1.500 kg · 9 m³',
-       estado: accion == 'habilitado' ? 'disponible' : 'deshabilitado',
-       motivo: accion == 'habilitado' ? null : 'En el taller desde el 12 de octubre.'},
-      {clave: 'af345kl', patente: 'AF 345 KL', capacidad: '2.000 kg · 12 m³', estado: 'disponible',
-       nuevo: true} } },
+      {clave: 'ab123cd', patente: 'AB 123 CD', nombre: 'Camión Norte', forma: 'camion', capacidad: '3.500 kg · 18 m³', kg: 3500,
+       tamano: 'grande', estado: 'ruta', ahora: 'En ruta a Comedor Barrio Ejemplo', chofer: 'Martín Ejemplo', iniciales: 'ME',
+       tel: '+541155550101', telTexto: '11 5555-0101', correo: 'martin.chofer@ejemplo.org', ultima: null,
+       etapa: 2, km: 18, kmTotal: 42, salio: 'Salió del depósito hoy a las 14:30', donde: 'Av. Ejemplo al 2300',
+       hacia: 'Comedor Barrio Ejemplo', paradas: 4, hechas: 2, lat: -34.6215, lng: -58.4342, dLat: -34.6092, dLng: -58.4588,
+       carga: 75, cargaKg: '2.625 de 3.500 kg', cargaM3: '13 de 18 m³', bultos: 54, cats: {'alimentos', 'ropa', 'escolares'},
+       entregas: 38, aTiempo: '94 %', demora: '12 min', problemas: 1, barras: {3, 5, 4, 6, 2, 5, 7, 4, 6, 5, 3, 6, 7, 5, 8} },
+      {clave: 'ac456ef', patente: 'AC 456 EF', nombre: 'Camión Sur', forma: 'camion', capacidad: '3.500 kg · 18 m³', kg: 3500,
+       tamano: 'grande', estado: accion == 'deshabilitado' ? 'deshabilitado' : 'disponible',
+       motivo: accion == 'deshabilitado' ? 'Service de frenos. Desde hoy, 18:35.' : null,
+       ahora: 'En el depósito desde ayer, 17:10', chofer: 'Lucía Ejemplo', iniciales: 'LE', tel: '+541155550102',
+       telTexto: '11 5555-0102', correo: 'lucia.chofer@ejemplo.org', ultima: '14 de octubre · 5 paradas · 36 km',
+       entregas: 41, aTiempo: '97 %', demora: '6 min', problemas: 0, barras: {4, 6, 5, 7, 6, 4, 5, 8, 6, 7, 5, 6, 4, 7, 6} },
+      {clave: 'ad789gh', patente: 'AD 789 GH', nombre: 'Furgón Centro', forma: 'furgon', capacidad: '1.500 kg · 9 m³', kg: 1500,
+       tamano: 'chico', estado: 'disponible', ahora: 'En el depósito desde hoy, 12:40', chofer: 'Sofía Ejemplo', iniciales: 'SE',
+       tel: '+541155550103', telTexto: '11 5555-0103', correo: 'sofia.chofer@ejemplo.org', ultima: '15 de octubre · 3 paradas · 14 km',
+       entregas: 22, aTiempo: '91 %', demora: '15 min', problemas: 1, barras: {2, 3, 4, 2, 5, 3, 4, 3, 2, 4, 5, 3, 4, 2, 4} },
+      {clave: 'ae012ij', patente: 'AE 012 IJ', nombre: 'Furgón Oeste', forma: 'furgon', capacidad: '1.500 kg · 9 m³', kg: 1500,
+       tamano: 'chico', estado: 'disponible', ahora: 'En el depósito desde el 13 de octubre', chofer: 'Diego Ejemplo', iniciales: 'DE',
+       tel: '+541155550104', telTexto: '11 5555-0104', correo: 'diego.chofer@ejemplo.org', ultima: '13 de octubre · 4 paradas · 21 km',
+       entregas: 17, aTiempo: '100 %', demora: '0 min', problemas: 0, barras: {1, 2, 3, 2, 3, 1, 2, 4, 3, 2, 3, 2, 1, 3, 2} },
+      {clave: 'aa999zz', patente: 'AA 999 ZZ', nombre: 'Furgón Este', forma: 'furgon', capacidad: '1.500 kg · 9 m³', kg: 1500,
+       tamano: 'chico', estado: accion == 'habilitado' ? 'disponible' : 'deshabilitado',
+       motivo: accion == 'habilitado' ? null : 'En el taller desde el 12 de octubre.',
+       ahora: 'En el depósito desde hoy, 18:35', chofer: 'Carla Ejemplo', iniciales: 'CE', tel: '+541155550105',
+       telTexto: '11 5555-0105', correo: 'carla.chofer@ejemplo.org', ultima: '11 de octubre · 2 paradas · 9 km',
+       entregas: 9, aTiempo: '89 %', demora: '18 min', problemas: 2, barras: {3, 2, 4, 3, 2, 3, 4, 2, 3, 1, 0, 0, 0, 0, 0} },
+      {clave: 'af345kl', patente: 'AF 345 KL', nombre: 'Camión Mediano', forma: 'camion', capacidad: '2.000 kg · 12 m³', kg: 2000,
+       tamano: 'mediano', estado: 'disponible', ahora: 'En el depósito, recién agregado', chofer: null, ultima: null,
+       entregas: 0, nuevo: true} } },
              camiones=${escenario == 'vacio' ? {} : todos.?[#this['nuevo'] == null or #root.accion == 'agregado']},
              enRuta=${#lists.size(camiones.?[estado == 'ruta'])},
              libres=${#lists.size(camiones.?[estado == 'disponible'])},
-             parados=${#lists.size(camiones.?[estado == 'deshabilitado'])}">
+             parados=${#lists.size(camiones.?[estado == 'deshabilitado'])},
+             q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+             qJunto=${#strings.replace(q, ' ', '')},
+             porCapacidad=${camiones.?['__${fCapacidad}__' == '' or tamano == '__${fCapacidad}__']},
+             buscados=${q == '' ? porCapacidad : porCapacidad.?[#strings.containsIgnoreCase(#strings.replace(patente, ' ', ''), #root.qJunto) or #strings.containsIgnoreCase(nombre, #root.q)]},
+             visibles=${buscados.?['__${fEstado}__' == '' or estado == '__${fEstado}__']},
+             filtrado=${fEstado != '' or fCapacidad != '' or q != ''},
+             n=${#lists.size(visibles)},
+             pedido=${param.camion != null ? param.camion[0] : (accion == 'deshabilitado' ? 'ac456ef' : (accion == 'habilitado' ? 'aa999zz' : (accion == 'agregado' ? 'af345kl' : '')))},
+             elegido=${visibles.^[clave == #root.pedido] != null ? pedido : (visibles.^[estado == 'ruta'] != null ? visibles.^[estado == 'ruta'].clave : (n > 0 ? visibles[0].clave : ''))},
+             filtros=${(fCapacidad != '' ? '&capacidad=' + fCapacidad : '') + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')},
+             consulta=${(fEstado != '' ? '&estado=' + fEstado : '') + filtros},
+             conAviso=${param.camion == null and !filtrado}">
+  <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="mesa">
     <header class="mesa-cabecera">
-      <p class="rotulo">Administración</p>
-      <h1>Camiones</h1>
-      <th:block th:if="${conDatos}">
-        <p th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}|">5
-          camiones: 1 en ruta · 3 disponibles · 1 deshabilitado</p>
-        <p th:text="${accion == '' or conError} ? 'Al 15 de octubre de 2026, 18:30.' : 'Al 15 de octubre de 2026, 18:35.'">Al
-          15 de octubre de 2026, 18:30.</p>
-      </th:block>
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Camiones</h1>
+        <p th:if="${conDatos}" th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}. ${accion == '' or conError ? 'Al 15 de octubre de 2026, 18:30.' : 'Al 15 de octubre de 2026, 18:35.'}|">5
+          camiones: 1 en ruta · 3 disponibles · 1 deshabilitado. Al 15 de octubre de 2026, 18:30.</p>
+        <p th:if="${escenario == 'vacio'}">Todavía no cargaste ningún camión.</p>
+      </div>
+      <div th:if="${escenario != 'error' and escenario != 'lento' and !conError}" class="racimo">
+        <button type="button" class="boton" data-tono="principal" popovertarget="agregar-camion">Agregar
+          camión</button>
+      </div>
     </header>
 
-    <p th:if="${accion == 'agregado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Agregaste el camión AF 345 KL. Queda disponible para las próximas rutas.</p>
-    <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Deshabilitaste el camión AC 456 EF. No se le van a asignar rutas hasta que lo vuelvas a
-      habilitar.</p>
-    <p th:if="${accion == 'habilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las próximas rutas.</p>
-
-    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando los camiones…</p>
+    <th:block th:if="${conAviso}">
+      <p th:if="${accion == 'agregado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+         autofocus>Agregaste el camión AF 345 KL. Queda disponible para las próximas rutas.</p>
+      <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+         autofocus>Deshabilitaste el camión AC 456 EF. No se le van a asignar rutas hasta que lo vuelvas a
+        habilitar.</p>
+      <p th:if="${accion == 'habilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+         autofocus>Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las próximas rutas.</p>
+    </th:block>
 
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
@@ -76,124 +138,348 @@
         cargar</a>
     </section>
 
-    <!--/* Agregar camión: el formulario plegado; abierto cuando vuelve con el error de datos. */-->
-    <details th:if="${escenario != 'error' and escenario != 'lento'}" class="pila" data-espacio="3"
-             th:open="${conError}">
-      <summary class="boton" data-tono="principal">Agregar camión</summary>
-      <form class="formulario tarjeta" data-filete="doble" action="/admin-camiones-agregado"
-            th:action="@{/admin-camiones-agregado}" method="post">
-        <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
-                 autofocus aria-labelledby="resumen-titulo">
-          <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
-          <ul>
-            <li><a href="#capacidad">Falta la capacidad en kg</a></li>
-            <li><a href="#altura">La altura tiene que ser mayor que 0</a></li>
-          </ul>
-        </section>
-        <p class="obligatorios">* obligatorio</p>
-        <div class="grilla" data-espacio="3">
-          <div class="campo">
-            <label for="patente">Patente *</label>
-            <small id="patente-ayuda">Por ejemplo: AF 345 KL.</small>
-            <input id="patente" name="patente" type="text" required autocomplete="off"
-                   aria-describedby="patente-ayuda" th:value="${conError} ? 'AF 345 KL' : null">
-          </div>
-          <div class="campo" th:data-estado="${conError} ? 'error'">
-            <label for="capacidad">Capacidad en kg *</label>
-            <p th:if="${conError}" id="capacidad-error" class="campo-error">Falta la capacidad: cuántos kg
-              carga. Por ejemplo: 2000.</p>
-            <input id="capacidad" name="capacidadKG" type="number" min="1" step="any" inputmode="decimal"
-                   required autocomplete="off"
-                   th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null">
-          </div>
-          <div class="campo">
-            <label for="volumen">Volumen en m³ *</label>
-            <input id="volumen" name="capacidadVolumen" type="number" min="0.1" step="any" inputmode="decimal"
-                   required autocomplete="off" th:value="${conError} ? '12' : null">
-          </div>
-          <div class="campo" th:data-estado="${conError} ? 'error'">
-            <label for="altura">Altura en m *</label>
-            <p th:if="${conError}" id="altura-error" class="campo-error">La altura tiene que ser mayor que 0.
-              Por ejemplo: 2,8.</p>
-            <input id="altura" name="altura" type="number" min="0.1" step="any" inputmode="decimal"
-                   required autocomplete="off" th:value="${conError} ? '0' : null"
-                   th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null">
-          </div>
-        </div>
-        <div class="racimo">
-          <button class="boton" data-tono="principal" type="submit">Agregar camión</button>
-          <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Cancelar</a>
-        </div>
-      </form>
-    </details>
+    <!--/* El alta: en un diálogo del navegador; con el error de datos, abierta debajo del encabezado. */-->
+    <dialog th:if="${escenario != 'error' and escenario != 'lento' and !conError}" class="dialogo"
+            id="agregar-camion" popover aria-labelledby="agregar-titulo">
+      <h2 class="dialogo-titulo" id="agregar-titulo">Agregar camión</h2>
+      <th:block th:replace="~{:: formulario(false, true)}"></th:block>
+    </dialog>
+    <section th:if="${conError}" class="pila" data-espacio="3" aria-labelledby="agregar-titulo">
+      <h2 id="agregar-titulo">Agregar camión</h2>
+      <th:block th:replace="~{:: formulario(true, false)}"></th:block>
+    </section>
+
+    <!--/* Las cifras de la flota: la capacidad total, la de los disponibles y las entregas del mes. */-->
+    <dl th:if="${conDatos}" class="flota-resumen">
+      <div><dt>Capacidad de la flota</dt>
+        <dd th:text="|${#numbers.formatInteger(#aggregates.sum(camiones.![kg]), 1, 'POINT')} kg|">11.500 kg</dd></div>
+      <div><dt>Disponible ahora</dt>
+        <dd th:text="${libres == 0} ? '0 kg' : |${#numbers.formatInteger(#aggregates.sum(camiones.?[estado == 'disponible'].![kg]), 1, 'POINT')} kg|">6.500
+          kg</dd></div>
+      <div><dt>Entregas del 16 de septiembre al 15 de octubre</dt>
+        <dd th:text="${#aggregates.sum(camiones.![entregas])}">127</dd></div>
+    </dl>
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="lista-titulo">La flota</h2>
-      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
+      <h2 id="lista-titulo" class="solo-lectores">La flota</h2>
+
+      <th:block th:if="${escenario == 'lento'}">
+        <p class="cargando" role="status">Cargando los camiones…</p>
+        <div class="esqueleto" data-forma="hueco"></div>
+      </th:block>
 
       <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
         <h3 id="vacio-titulo">Todavía no hay camiones.</h3>
         <p>Agregá el primero para poder armar rutas.</p>
       </section>
 
-      <table th:if="${conDatos}" class="tabla">
-        <caption>Los camiones de la red y su estado. "En ruta" lo pone la logística al armar la ruta.</caption>
-        <thead>
-          <tr>
-            <th scope="col">Patente</th>
-            <th scope="col">Capacidad</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Qué podés hacer</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="c : ${camiones}">
-            <th scope="row" th:text="${c.patente}">AB 123 CD</th>
-            <td data-rotulo="Capacidad" th:text="${c.capacidad}">3.500 kg · 18 m³</td>
-            <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[c.estado]}"><svg
-                th:replace="~{componentes/sello :: sello(${sellos[c.estado]})}"></svg><th:block
-                th:text="${palabras[c.estado]}">En ruta</th:block></span>
-              <th:block th:if="${c['motivo'] != null}"><br><small th:text="${c.motivo}">En el taller desde el 12
-                de octubre.</small></th:block></td>
-            <td data-rotulo="Qué podés hacer" th:switch="${c.estado}">
-              <th:block th:case="'ruta'">Vuelve a estar disponible cuando termina la ruta.</th:block>
-              <th:block th:case="'disponible'">
-                <button type="button" class="boton" data-tono="quitar" th:popovertarget="|deshabilitar-${c.clave}|"
-                        th:aria-label="|Deshabilitar: camión ${c.patente}|">Deshabilitar</button>
-                <dialog class="dialogo" data-tono="quitar" th:id="|deshabilitar-${c.clave}|" popover
-                        th:aria-labelledby="|deshabilitar-${c.clave}-titulo|">
-                  <h2 class="dialogo-titulo" th:id="|deshabilitar-${c.clave}-titulo|"
-                      th:text="|¿Deshabilitar el camión ${c.patente}?|">¿Deshabilitar el camión AC 456 EF?</h2>
-                  <p>No se le van a asignar rutas hasta que lo vuelvas a habilitar.</p>
-                  <form class="pila" data-espacio="3" action="/admin-camiones-deshabilitado"
-                        th:action="@{/admin-camiones-deshabilitado}" method="post">
-                    <input type="hidden" name="camion" th:value="${c.clave}">
-                    <div class="campo">
-                      <label th:for="|motivo-${c.clave}|">Motivo (opcional)</label>
-                      <textarea th:id="|motivo-${c.clave}|" name="motivo" rows="3"></textarea>
-                    </div>
-                    <div class="racimo">
-                      <button class="boton" data-tono="quitar" type="submit">Deshabilitar</button>
-                      <button type="button" class="boton" data-tono="secundario"
-                              th:popovertarget="|deshabilitar-${c.clave}|" popovertargetaction="hide"
-                              autofocus>Cancelar</button>
-                    </div>
-                  </form>
-                </dialog>
-              </th:block>
-              <form th:case="*" action="/admin-camiones-habilitado" th:action="@{/admin-camiones-habilitado}"
-                    method="post">
-                <input type="hidden" name="camion" th:value="${c.clave}">
-                <button class="boton" data-tono="secundario" type="submit"
-                        th:aria-label="|Volver a habilitar: camión ${c.patente}|">Volver a habilitar</button>
-              </form>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!--/* La búsqueda y la capacidad, un solo formulario GET (componentes/filtros). Con HTMX (hx-boost),
+             filtrar cambia el panel sin recargar; tocar una opción ya filtra (data-al-cambiar). */-->
+      <form th:if="${conDatos}" hx-boost="true" class="filtros-barra" action="/admin-camiones"
+            th:action="@{${base}}" method="get" role="search" data-al-cambiar>
+        <input th:if="${fEstado != ''}" type="hidden" name="estado" th:value="${fEstado}">
+        <input th:if="${elegido != ''}" type="hidden" name="camion" th:value="${elegido}">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por patente o nombre</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
+                   placeholder="Por ejemplo: AB 123 CD o Norte">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <div class="filtros" role="group" aria-label="Filtrar los camiones">
+          <details th:replace="~{componentes/filtros :: menu('capacidad', 'Capacidad', ${fCapacidad}, ${ {
+              {valor: '', texto: 'Todas las capacidades'}, {valor: 'chico', texto: 'Hasta 1.500 kg'},
+              {valor: 'mediano', texto: 'De 1.500 a 3.000 kg'}, {valor: 'grande', texto: 'Más de 3.000 kg'} } })}"></details>
+          <a th:if="${filtrado}" class="filtros-sacar" href="/admin-camiones" th:href="@{${base}}">Sacar
+            los filtros</a>
+        </div>
+      </form>
+
+      <!--/* El estado, en pestañas con su cuenta: enlaces reales con hx-boost (la página no se mueve). */-->
+      <nav th:if="${conDatos}" class="segmentos" data-forma="desliza" aria-label="Camiones por estado"
+           hx-boost="true">
+        <a th:each="t : ${ {
+              {valor: '', texto: 'Todos', n: #lists.size(buscados)},
+              {valor: 'ruta', texto: 'En ruta', n: #lists.size(buscados.?[estado == 'ruta'])},
+              {valor: 'disponible', texto: 'Disponibles', n: #lists.size(buscados.?[estado == 'disponible'])},
+              {valor: 'deshabilitado', texto: 'Deshabilitados', n: #lists.size(buscados.?[estado == 'deshabilitado'])} } }"
+           href="/admin-camiones"
+           th:href="@{|${base}?camion=${elegido}${t.valor != '' ? '&estado=' + t.valor : ''}${filtros}|}"
+           th:aria-current="${t.valor == fEstado} ? 'page' : null"><th:block th:text="${t.texto}">Todos</th:block>
+          <b th:text="${t.n}">5</b></a>
+      </nav>
+
+      <p th:if="${conDatos and filtrado and n > 0}" role="status"
+         th:text="|${n == 1 ? 'Coincide 1 camión' : 'Coinciden ' + n + ' camiones'} de ${#lists.size(camiones)}. Elegí uno para ver su ficha.|">Coinciden
+        2 camiones de 5. Elegí uno para ver su ficha.</p>
+      <section th:if="${conDatos and n == 0}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo">Ningún camión coincide con lo que buscaste.</h3>
+        <p>Probá con otra patente o sacá los filtros.</p>
+        <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{${base}}">Ver todos</a>
+      </section>
+
+      <ul th:if="${conDatos and n > 0}" class="flota" role="list">
+        <li th:each="c : ${visibles}" th:id="|camion-${c.clave}|">
+          <!--/* Sin JavaScript, el enlace recarga y el ancla lleva a la tarjeta; con HTMX, hx-get pide la
+                 misma dirección sin el ancla, así la página no se mueve. */-->
+          <a href="#" th:href="@{|${base}?camion=${c.clave}${consulta}|} + |#camion-${c.clave}|"
+             th:hx-get="@{|${base}?camion=${c.clave}${consulta}|}" hx-push-url="true"
+             th:aria-current="${c.clave == elegido} ? 'true' : null" th:data-estado="${c.estado}">
+            <span data-parte="cabeza">
+              <span><b data-parte="patente" th:text="${c.patente}">AB 123 CD</b>
+                <span data-parte="nombre" th:text="${c.nombre}">Camión Norte</span></span>
+              <span th:replace="~{:: estado(${c.estado})}"></span>
+            </span>
+            <dl>
+              <div><dt>Capacidad</dt> <dd th:text="${c.capacidad}">3.500 kg · 18 m³</dd></div>
+              <div><dt th:text="${c.estado == 'deshabilitado'} ? 'Motivo' : 'Ahora'">Ahora</dt>
+                <dd th:text="${c.estado == 'deshabilitado'} ? (${c.motivo != null} ? ${c.motivo} : 'Sin motivo cargado.') : ${c.ahora}">En
+                  ruta a Comedor Barrio Ejemplo</dd></div>
+              <div th:if="${c.estado == 'ruta'}"><dt>Chofer</dt> <dd th:text="${c.chofer}">Martín Ejemplo</dd></div>
+              <div th:if="${c.estado != 'ruta'}"><dt>Última ruta</dt>
+                <dd th:text="${c.ultima != null} ? ${c.ultima} : 'Todavía no hizo rutas'">14 de octubre · 5 paradas ·
+                  36 km</dd></div>
+            </dl>
+            <svg th:replace="~{componentes/flota :: dibujo(${c.forma})}"></svg>
+          </a>
+
+          <th:block th:if="${c.clave == elegido}">
+            <section th:replace="~{:: ficha(${c}, ${accion})}"></section>
+          </th:block>
+        </li>
+      </ul>
     </section>
   </div>
 </th:block>
+</th:block>
+
+<!--/* El estado de un camión: la pastilla con su punto y la palabra. */-->
+<span th:fragment="estado(estado)" class="estado"
+      th:data-estado="${estado == 'ruta'} ? 'camino' : (${estado == 'disponible'} ? 'recibida' : 'inactiva')"
+      th:text="${estado == 'ruta'} ? 'En ruta' : (${estado == 'disponible'} ? 'Disponible' : 'Deshabilitado')">En
+  ruta</span>
+
+<!--/* La ficha del elegido. Las etapas, el viaje y el mapa dependen del estado: en ruta, el recorrido de
+       hoy; disponible, en el depósito; deshabilitado, el motivo y "Volver a habilitar". */-->
+<section th:fragment="ficha(c, accion)" id="ficha" class="flota-ficha" aria-labelledby="ficha-titulo"
+         th:data-estado="${c.estado}">
+  <div data-parte="identidad">
+    <div>
+      <h2 id="ficha-titulo" th:text="${c.patente}">AB 123 CD</h2>
+      <span th:replace="~{:: estado(${c.estado})}"></span>
+      <p th:text="|${c.nombre} · ${c.capacidad}|">Camión Norte · 3.500 kg · 18 m³</p>
+    </div>
+    <svg th:replace="~{componentes/flota :: dibujo(${c.forma})}"></svg>
+  </div>
+
+  <ol th:if="${c.estado != 'deshabilitado'}" class="flota-etapas" aria-label="Etapas del recorrido"
+      th:with="actual=${c.estado == 'ruta' ? c.etapa : 0}">
+    <li th:each="e, i : ${ {'En el depósito', 'Cargando', 'En ruta', 'Entregando', 'De vuelta'} }"
+        th:data-paso="${i.index < actual} ? 'hecho' : (${i.index == actual} ? 'actual' : 'falta')"
+        th:aria-current="${i.index == actual} ? 'step' : null" th:text="${e}">En el depósito</li>
+  </ol>
+
+  <div data-parte="tablero">
+    <!--/* Los datos del viaje: en ruta, lo mismo que dice el mapa (de dónde salió, dónde está y a dónde
+           va), y es el punto que mapa.js pone en el mapa. */-->
+    <section aria-labelledby="ficha-viaje" th:attr="data-lat=${c.estado == 'ruta' ? c.lat : null},
+               data-lng=${c.estado == 'ruta' ? c.lng : null},data-destino-lat=${c.estado == 'ruta' ? c.dLat : null},
+               data-destino-lng=${c.estado == 'ruta' ? c.dLng : null},data-numero='',
+               data-nombre=${c.estado == 'ruta' ? 'Camión ' + c.patente + ', en ' + c.donde : null},
+               data-destino-nombre=${c.estado == 'ruta' ? c.hacia + ', próxima parada' : null}"
+             th:data-camion-punto="${c.estado == 'ruta'} ? 'si' : null">
+      <h3 id="ficha-viaje">Datos del viaje</h3>
+      <dl th:if="${c.estado == 'ruta'}">
+        <div><dt>Recorrido</dt>
+          <dd><span data-parte="cifra" th:text="|${c.km} km|">18 km</span>
+            <th:block th:text="|de ${c.kmTotal} km (${c.km * 100 / c.kmTotal} %)|">de 42 km (42 %)</th:block></dd></div>
+        <div><dt th:text="${c.salio}">Salió del depósito hoy a las 14:30</dt>
+          <dd th:text="|Ahora en ${c.donde}, hacia ${c.hacia}|">Ahora en Av. Ejemplo al 2300, hacia Comedor Barrio
+            Ejemplo</dd></div>
+        <div><dt>Paradas</dt>
+          <dd><span data-lista="paradas" aria-hidden="true"><span th:each="p : ${#numbers.sequence(1, c.paradas)}"
+                th:attr="data-hecha=${p <= c.hechas} ? 'si' : null"></span></span>
+            <th:block th:text="|Quedan ${c.paradas - c.hechas} de ${c.paradas}|">Quedan 2 de 4</th:block></dd></div>
+      </dl>
+      <dl th:if="${c.estado == 'disponible'}">
+        <div><dt>Dónde está</dt> <dd th:text="${c.ahora}">En el depósito desde ayer, 17:10</dd></div>
+        <div><dt>Última ruta</dt>
+          <dd th:text="${c.ultima != null} ? ${c.ultima} : 'Todavía no hizo rutas'">14 de octubre · 5 paradas · 36
+            km</dd></div>
+        <div><dt>Próxima ruta</dt> <dd>La arma la logística cuando haya entregas para su capacidad.</dd></div>
+      </dl>
+      <dl th:if="${c.estado == 'deshabilitado'}">
+        <div><dt>Motivo</dt> <dd th:text="${c.motivo != null} ? ${c.motivo} : 'Sin motivo cargado.'">En el taller
+          desde el 12 de octubre.</dd></div>
+        <div><dt>Última ruta</dt> <dd th:text="${c.ultima}">11 de octubre · 2 paradas · 9 km</dd></div>
+        <div><dt>Rutas</dt> <dd>No se le asignan hasta que lo vuelvas a habilitar.</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="ficha-carga">
+      <h3 id="ficha-carga">Carga</h3>
+      <th:block th:if="${c.estado == 'ruta'}">
+        <p><span data-parte="cifra" th:text="|${c.carga} %|">75 %</span> de la capacidad</p>
+        <progress class="progreso" max="100" th:value="${c.carga}" value="75"
+                  th:aria-label="|Carga: ${c.carga} % de la capacidad|">75 %</progress>
+        <dl>
+          <div><dt>Peso</dt> <dd th:text="${c.cargaKg}">2.625 de 3.500 kg</dd></div>
+          <div><dt>Volumen</dt> <dd th:text="${c.cargaM3}">13 de 18 m³</dd></div>
+          <div><dt>Bultos</dt> <dd th:text="${c.bultos}">54</dd></div>
+          <div><dt>Qué lleva</dt>
+            <dd class="racimo" data-espacio="1"><span th:each="cat : ${c.cats}" class="chip"><svg viewBox="0 0 100 100"
+                aria-hidden="true" focusable="false"><use th:href="|#cat-${cat}|" href="#cat-alimentos"/></svg><th:block
+                th:text="${cat == 'alimentos'} ? 'Alimentos' : (${cat == 'ropa'} ? 'Ropa' : (${cat == 'muebles'} ? 'Muebles' : 'Útiles escolares'))">Alimentos</th:block></span></dd></div>
+        </dl>
+      </th:block>
+      <th:block th:unless="${c.estado == 'ruta'}">
+        <p><span data-parte="cifra">0 %</span> de la capacidad</p>
+        <progress class="progreso" max="100" value="0" aria-label="Carga: 0 % de la capacidad">0 %</progress>
+        <p th:text="|Vacío. Puede llevar hasta ${c.capacidad}.|">Vacío. Puede llevar hasta 3.500 kg · 18 m³.</p>
+      </th:block>
+    </section>
+
+    <!--/* El mapa chico, solo en ruta: el depósito, el camión y su próxima parada (static/js/mapa.js). */-->
+    <section th:if="${c.estado == 'ruta'}" data-parte="mapa" aria-labelledby="ficha-mapa">
+      <h3 id="ficha-mapa">En el mapa</h3>
+      <div class="mapa-real" data-mapa data-mapa-puntos="[data-camion-punto]" role="region"
+           th:aria-label="|Mapa del camión ${c.patente}: el depósito, dónde está y su próxima parada. Datos del viaje tiene lo mismo.|"
+           data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
+           data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack">
+        <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En Datos del viaje está lo mismo.</p>
+        <template data-mapa-icono="deposito"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+            d="M3 20V9l9-5 9 5v11"/><path d="M7 20v-7h10v7M7 16.5h10"/></svg></template>
+        <template data-mapa-icono="destino"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+            d="M4 20V10l8-6 8 6v10z"/><path d="M10 20v-5h4v5"/></svg></template>
+        <template data-mapa-globo-deposito>
+          <div class="mapa-globo-cuerpo">
+            <p class="mapa-globo-nombre">Depósito de DonaTrack</p>
+            <p th:text="${c.salio} + '.'">Salió del depósito hoy a las 14:30.</p>
+          </div>
+        </template>
+      </div>
+      <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
+    </section>
+
+    <section data-parte="rendimiento" aria-labelledby="ficha-rendimiento">
+      <h3 id="ficha-rendimiento">Rendimiento <small>(del 16 de septiembre al 15 de octubre)</small></h3>
+      <p th:if="${c['nuevo'] != null}">Todavía no hizo rutas. Las cifras aparecen después de la primera.</p>
+      <th:block th:if="${c['nuevo'] == null}">
+        <svg th:replace="~{componentes/flota :: barras(${c.barras})}"></svg>
+        <dl data-forma="renglones">
+          <div><dt>Entregas completas</dt> <dd th:text="${c.entregas}">38</dd></div>
+          <div><dt>A tiempo</dt> <dd th:text="${c.aTiempo}">94 %</dd></div>
+          <div><dt>Demora promedio</dt> <dd th:text="${c.demora}">12 min</dd></div>
+          <div><dt>Problemas reportados</dt> <dd th:text="${c.problemas}">1</dd></div>
+        </dl>
+      </th:block>
+    </section>
+  </div>
+
+  <div th:if="${c.chofer != null}" data-parte="chofer">
+    <span data-parte="iniciales" aria-hidden="true" th:text="${c.iniciales}">ME</span>
+    <div>
+      <b th:text="${c.chofer}">Martín Ejemplo</b>
+      <small th:text="${c.estado == 'ruta'} ? 'Chofer de la ruta de hoy' : 'Manejó la última ruta'">Chofer de la ruta
+        de hoy</small>
+    </div>
+    <div class="racimo" data-espacio="2">
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="tel:+541155550101" th:href="|tel:${c.tel}|"
+         th:aria-label="|Llamar a ${c.chofer} al ${c.telTexto}|">Llamar</a>
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="mailto:martin.chofer@ejemplo.org"
+         th:href="|mailto:${c.correo}|" th:aria-label="|Escribir a ${c.chofer} a ${c.correo}|">Escribir</a>
+    </div>
+  </div>
+
+  <div data-parte="acciones" th:switch="${c.estado}">
+    <p th:case="'ruta'">Vuelve a estar disponible cuando termina la ruta. "En ruta" lo pone la logística al
+      armarla.</p>
+    <th:block th:case="'disponible'">
+      <button type="button" class="boton" data-tono="quitar" th:popovertarget="|deshabilitar-${c.clave}|"
+              th:aria-label="|Deshabilitar: camión ${c.patente}|">Deshabilitar</button>
+      <dialog class="dialogo" data-tono="quitar" th:id="|deshabilitar-${c.clave}|" popover
+              th:aria-labelledby="|deshabilitar-${c.clave}-titulo|">
+        <h2 class="dialogo-titulo" th:id="|deshabilitar-${c.clave}-titulo|"
+            th:text="|¿Deshabilitar el camión ${c.patente}?|">¿Deshabilitar el camión AC 456 EF?</h2>
+        <p>No se le van a asignar rutas hasta que lo vuelvas a habilitar.</p>
+        <form class="pila" data-espacio="3" action="/admin-camiones-deshabilitado"
+              th:action="@{/admin-camiones-deshabilitado}" method="post">
+          <input type="hidden" name="camion" th:value="${c.clave}">
+          <div class="campo">
+            <label th:for="|motivo-${c.clave}|">Motivo (opcional)</label>
+            <textarea th:id="|motivo-${c.clave}|" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
+          </div>
+          <div class="racimo">
+            <button class="boton" data-tono="quitar" type="submit">Deshabilitar</button>
+            <button type="button" class="boton" data-tono="secundario"
+                    th:popovertarget="|deshabilitar-${c.clave}|" popovertargetaction="hide"
+                    autofocus>Cancelar</button>
+          </div>
+        </form>
+      </dialog>
+    </th:block>
+    <form th:case="*" action="/admin-camiones-habilitado" th:action="@{/admin-camiones-habilitado}"
+          method="post">
+      <input type="hidden" name="camion" th:value="${c.clave}">
+      <button class="boton" data-tono="secundario" type="submit"
+              th:aria-label="|Volver a habilitar: camión ${c.patente}|">Volver a habilitar</button>
+    </form>
+  </div>
+</section>
+
+<!--/* El alta de un camión. conError: vuelve con el error de datos (el 400 del contrato: capacidad y
+       altura positivas), el resumen arriba recibe el foco y enlaza a cada campo; lo escrito sigue.
+       enDialogo: "Cancelar" cierra el diálogo; si no, vuelve a la lista. */-->
+<form th:fragment="formulario(conError, enDialogo)" class="pila" data-espacio="3"
+      th:classappend="${enDialogo} ? '' : 'formulario tarjeta'"
+      action="/admin-camiones-agregado" th:action="@{/admin-camiones-agregado}" method="post">
+  <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+           autofocus aria-labelledby="resumen-titulo">
+    <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
+    <ul>
+      <li><a href="#capacidad">Falta la capacidad en kg</a></li>
+      <li><a href="#altura">La altura tiene que ser mayor que 0</a></li>
+    </ul>
+  </section>
+  <p class="obligatorios">* obligatorio</p>
+  <div class="grilla" data-espacio="3">
+    <div class="campo">
+      <label for="patente">Patente *</label>
+      <small id="patente-ayuda">Por ejemplo: AF 345 KL.</small>
+      <input id="patente" name="patente" type="text" required autocomplete="off"
+             aria-describedby="patente-ayuda" th:value="${conError} ? 'AF 345 KL' : null" placeholder="Por ejemplo: AB 123 CD">
+    </div>
+    <div class="campo" th:data-estado="${conError} ? 'error'">
+      <label for="capacidad">Capacidad en kg *</label>
+      <p th:if="${conError}" id="capacidad-error" class="campo-error">Falta la capacidad: cuántos kg
+        carga. Por ejemplo: 2000.</p>
+      <input id="capacidad" name="capacidadKG" type="number" min="1" step="any" inputmode="decimal"
+             required autocomplete="off"
+             th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 3500">
+    </div>
+    <div class="campo">
+      <label for="volumen">Volumen en m³ *</label>
+      <input id="volumen" name="capacidadVolumen" type="number" min="0.1" step="any" inputmode="decimal"
+             required autocomplete="off" th:value="${conError} ? '12' : null" placeholder="Por ejemplo: 20">
+    </div>
+    <div class="campo" th:data-estado="${conError} ? 'error'">
+      <label for="altura">Altura en m *</label>
+      <p th:if="${conError}" id="altura-error" class="campo-error">La altura tiene que ser mayor que 0.
+        Por ejemplo: 2,8.</p>
+      <input id="altura" name="altura" type="number" min="0.1" step="any" inputmode="decimal"
+             required autocomplete="off" th:value="${conError} ? '0' : null"
+             th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 2,8">
+    </div>
+  </div>
+  <div class="racimo">
+    <button class="boton" data-tono="principal" type="submit">Agregar camión</button>
+    <button th:if="${enDialogo}" type="button" class="boton" data-tono="secundario" popovertarget="agregar-camion"
+            popovertargetaction="hide">Cancelar</button>
+    <a th:unless="${enDialogo}" class="boton" data-tono="secundario" href="/admin-camiones"
+       th:href="@{/admin-camiones}">Cancelar</a>
+  </div>
+</form>
 </body>
 </html>

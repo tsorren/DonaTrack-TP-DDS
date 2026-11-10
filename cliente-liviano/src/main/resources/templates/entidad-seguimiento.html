@@ -2,9 +2,12 @@
 <!--/* Raíces, Seguir entregas de la entidad (RF-14), según su ficha de flujo
        (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.5): las entregas asignadas al
        Comedor Barrio Ejemplo que todavía no confirmó, en el orden de lo que hay que hacer (en la
-       puerta, con problema, en camino y pendiente). Es la red del donante dada vuelta: la puerta de
-       la entidad al centro, con su dirección exacta, y una línea de subte por entrega que llega desde
-       el depósito, con el sello de su estado donde va y el camión en una posición aproximada. El
+       puerta, con problema, en camino y pendiente). Es un sistema de raíces: la puerta de la entidad
+       arriba, en la línea de tierra, con su dirección exacta, y una raíz por entrega que baja hasta
+       el depósito de donde viene, con el sello de su estado donde va y la abeja en una posición
+       aproximada (ronda del 2026-11-09: antes, la puerta al centro). Las cifras por estado y el dibujo
+       van juntos en un bloque que en pantalla grande queda fijo arriba mientras la lista se mueve al
+       lado; cada cifra lleva a la primera entrega de su estado. El
        dibujo es fijo para las 5 del ejemplo (en el sistema, MapLibre, D21) y va oculto a los
        lectores: la lista dice todo, con el mismo número (RF-CL-06). Las donaciones salen de
        piezas-entidad.html (datos), las mismas de Inicio y Donaciones recibidas.
@@ -62,109 +65,118 @@
   <svg th:replace="~{iconos :: categorias}"></svg>
 
   <div class="mapa-cuerpo">
-    <!--/* El dibujo, fijo para las 5 del ejemplo: la puerta de la entidad al centro (360, 360) y, en
-           la punta de cada línea, el depósito de donde viene su entrega. Lo recorrido, impreso; lo que
-           falta, hueco. 1 y 2 (lentejas y ropa) llegaron: impresas hasta la puerta, con su sello junto
-           al centro. 3 (aceite), con problema: impresa hasta donde se cortó. 4 (arroz), en camino:
-           impresa hasta el camión, a mitad de camino. 5 (leche), pendiente: hueca, con su sello en la
-           punta del depósito. Los números son los de la lista. */-->
+    <!--/* El bloque fijo: las cifras por estado y el dibujo, juntos (en pantalla grande, sticky). */-->
     <div>
-    <figure class="mapa-dibujo tierra-impresa" aria-hidden="true">
-      <svg class="dibujo" viewBox="0 0 720 590" aria-hidden="true" focusable="false">
-        <path class="dibujo-tierra" d="M0 80H720"/>
-
-        <g class="estacion estacion--1">
-          <path class="subte-borde" d="M60 150H130Q150 150 164 164L360 360"/>
-          <path class="subte-linea" d="M60 150H130Q150 150 164 164L360 360"/>
-          <g transform="translate(316 316)">
-            <circle class="sello-tinta" cx="2" cy="2" r="13"/><circle class="sello-hecho" r="13"/>
-          </g>
-          <g transform="translate(60 150)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">1</text>
-          </g>
-          <text class="dibujo-rotulo" x="60" y="198">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--2">
-          <path class="subte-borde" d="M660 150H590Q570 150 556 164L360 360"/>
-          <path class="subte-linea" d="M660 150H590Q570 150 556 164L360 360"/>
-          <g transform="translate(404 316)">
-            <circle class="sello-tinta" cx="2" cy="2" r="13"/><circle class="sello-hecho" r="13"/>
-          </g>
-          <g transform="translate(660 150)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">2</text>
-          </g>
-          <text class="dibujo-rotulo" x="660" y="198">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--3">
-          <path class="subte-hueco" d="M224 360H360"/>
-          <path class="subte-hueco-centro" d="M224 360H360"/>
-          <path class="subte-borde" d="M60 360H196"/>
-          <path class="subte-linea" d="M60 360H196"/>
-          <g transform="translate(210 360)">
-            <circle class="sello-problema" r="13"/>
-            <path class="sello-calado" d="M0 -6V2M0 6V6.5"/>
-          </g>
-          <g transform="translate(60 360)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">3</text>
-          </g>
-          <text class="dibujo-rotulo" x="60" y="408">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--4">
-          <path class="subte-hueco" d="M492 360H360"/>
-          <path class="subte-hueco-centro" d="M492 360H360"/>
-          <path class="subte-borde" d="M660 360H528"/>
-          <path class="subte-linea" d="M660 360H528"/>
-          <g class="camion" transform="translate(510 360)">
-            <circle r="18"/>
-            <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
-            <path class="camion-icono" transform="translate(-12 -12)" d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/>
-          </g>
-          <g transform="translate(660 360)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">4</text>
-          </g>
-          <text class="dibujo-rotulo" x="660" y="408">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--5">
-          <path class="subte-hueco" d="M360 130V338"/>
-          <path class="subte-hueco-centro" d="M360 130V338"/>
-          <g transform="translate(360 176)">
-            <circle class="sello-contorno sello-contorno--punteado" r="12"/>
-          </g>
-          <g transform="translate(360 130)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">5</text>
-          </g>
-          <text class="dibujo-rotulo" x="360" y="104">Depósito</text>
-        </g>
-
-        <!--/* La puerta de la entidad: la estación del centro, con su nombre y su dirección exacta. */-->
-        <circle class="subte-estacion" cx="360" cy="360" r="22"/>
-        <text class="dibujo-rotulo" x="360" y="414">Tu puerta</text>
-        <text class="dibujo-rotulo" x="360" y="440" th:text="${cuenta.rol}">Comedor Barrio Ejemplo</text>
-        <text class="dibujo-rotulo" x="360" y="466">Calle Ejemplo 450</text>
-      </svg>
-    </figure>
-
-    <!--/* Las cifras por estado, la leyenda del dibujo, debajo de él (a la derecha va la lista): un registro como el del donante. */-->
+    <!--/* Las cifras por estado: el agrupador de la lista. Cada una lleva a la primera entrega de su
+           estado, que queda resaltada en el dibujo y en la lista. */-->
     <section class="cifras" aria-labelledby="cifras-titulo">
       <h2 id="cifras-titulo" class="cifras-titulo">Tus entregas, por estado</h2>
       <dl>
-        <div class="cifra" th:each="g : ${grupos.?[clave != 'recibida']}">
-          <dt><span class="estado" th:data-estado="${g.clave}"><th:block
+        <div class="cifra" th:each="g : ${grupos.?[clave != 'recibida']}"
+             th:with="primera=${vienen.^[grupo == #root.g.clave]}">
+          <dt><a th:if="${primera != null}" href="#entrega-lentejas" th:href="|#entrega-${primera.clave}|"><span
+              class="estado" th:data-estado="${g.clave}"><th:block
+              th:replace="~{componentes/sello :: sello(${g.clave})}"></th:block><th:block
+              th:text="${g.nombre}">Esperan tu confirmación</th:block></span></a><span th:if="${primera == null}"
+              class="estado" th:data-estado="${g.clave}"><th:block
               th:replace="~{componentes/sello :: sello(${g.clave})}"></th:block><th:block
               th:text="${g.nombre}">Esperan tu confirmación</th:block></span></dt>
           <dd th:text="${#lists.size(vienen.?[grupo == #root.g.clave])}">2</dd>
         </div>
       </dl>
     </section>
+
+    <!--/* El dibujo, fijo para las 5 del ejemplo: la puerta de la entidad arriba, en la línea de tierra
+           (450, 80), y una raíz por entrega que baja hasta su depósito, al pie. Lo recorrido, impreso;
+           lo que falta, punteado. 1 y 2 (lentejas y ropa) llegaron: impresas hasta la puerta, con su
+           sello junto a ella. 3 (aceite), con problema: impresa hasta donde se cortó. 4 (arroz), en
+           camino: impresa hasta la abeja, a mitad de camino. 5 (leche), pendiente: punteada, con su
+           sello junto al depósito. Los números son los de la lista. */-->
+    <figure class="mapa-dibujo tierra-impresa" aria-hidden="true">
+      <svg class="dibujo" viewBox="0 0 900 590" aria-hidden="true" focusable="false">
+        <path class="dibujo-tierra" d="M0 80H900"/>
+
+        <g class="estacion estacion--1">
+          <path class="subte-borde" d="M90 500V300L450 80"/>
+          <path class="subte-linea" d="M90 500V300L450 80"/>
+          <g transform="translate(399 111)">
+            <circle class="sello-tinta" cx="2" cy="2" r="13"/><circle class="sello-hecho" r="13"/>
+          </g>
+          <g transform="translate(90 500)">
+            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+            <text class="nodo-numero" y="7">1</text>
+          </g>
+          <text class="dibujo-rotulo" x="90" y="548">Depósito</text>
+        </g>
+
+        <g class="estacion estacion--2">
+          <path class="subte-borde" d="M270 500V300L450 80"/>
+          <path class="subte-linea" d="M270 500V300L450 80"/>
+          <g transform="translate(390 154)">
+            <circle class="sello-tinta" cx="2" cy="2" r="13"/><circle class="sello-hecho" r="13"/>
+          </g>
+          <g transform="translate(270 500)">
+            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+            <text class="nodo-numero" y="7">2</text>
+          </g>
+          <text class="dibujo-rotulo" x="270" y="548">Depósito</text>
+        </g>
+
+        <g class="estacion estacion--3">
+          <path class="subte-hueco" d="M450 288V102"/>
+          <path class="subte-hueco-centro" d="M450 288V102"/>
+          <path class="subte-borde" d="M450 500V316"/>
+          <path class="subte-linea" d="M450 500V316"/>
+          <g transform="translate(450 302)">
+            <circle class="sello-problema" r="13"/>
+            <path class="sello-calado" d="M0 -6V2M0 6V6.5"/>
+          </g>
+          <g transform="translate(450 500)">
+            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+            <text class="nodo-numero" y="7">3</text>
+          </g>
+          <text class="dibujo-rotulo" x="450" y="548">Depósito</text>
+        </g>
+
+        <g class="estacion estacion--4">
+          <path class="subte-hueco" d="M617 285L450 80"/>
+          <path class="subte-hueco-centro" d="M617 285L450 80"/>
+          <path class="subte-borde" d="M630 500V318"/>
+          <path class="subte-linea" d="M630 500V318"/>
+          <g class="camion" transform="translate(630 300)">
+            <circle r="18"/>
+            <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
+            <image href="/img/ilustraciones/abeja-arriba.svg" th:href="@{/img/ilustraciones/abeja-arriba.svg}"
+                   x="-4" y="-46" width="44" height="44"/>
+          </g>
+          <g transform="translate(630 500)">
+            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+            <text class="nodo-numero" y="7">4</text>
+          </g>
+          <text class="dibujo-rotulo" x="630" y="548">Depósito</text>
+        </g>
+
+        <g class="estacion estacion--5">
+          <path class="subte-hueco" d="M810 482V300L450 80"/>
+          <path class="subte-hueco-centro" d="M810 482V300L450 80"/>
+          <g transform="translate(810 452)">
+            <circle class="sello-contorno sello-contorno--punteado" r="12"/>
+          </g>
+          <g transform="translate(810 500)">
+            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
+            <text class="nodo-numero" y="7">5</text>
+          </g>
+          <text class="dibujo-rotulo" x="810" y="548">Depósito</text>
+        </g>
+
+        <!--/* La puerta de la entidad: el nodo principal, arriba, en la línea de tierra, con su nombre y
+               su dirección exacta sobre la tierra. */-->
+        <circle class="subte-estacion" cx="450" cy="80" r="22"/>
+        <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="38"
+              th:text="|Tu puerta · ${cuenta.rol}|">Tu puerta · Comedor Barrio Ejemplo</text>
+        <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="62">Calle Ejemplo 450</text>
+      </svg>
+    </figure>
     </div>
 
     <!--/* La lista: lo mismo que el dibujo, con el mismo número. Al pasar o enfocar una entrega, su
@@ -199,7 +211,7 @@
             recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
           <a th:if="${d.grupo == 'problema'}" class="boton" data-tono="secundario"
              href="/entidad-necesidades?necesidad=aceite"
-             th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu pedido</a>
+             th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
         </li>
       </ol>
       <p>Las que ya recibiste, con su foto, están en Donaciones recibidas.

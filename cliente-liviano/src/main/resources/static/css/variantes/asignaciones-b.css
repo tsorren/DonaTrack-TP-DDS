@@ -1,0 +1,118 @@
+/* Variante B de Asignar donaciones (ronda 2026-11-09 tarde y noche): todo en una página, con un índice
+   de accesos arriba; las propuestas sin conflictos en una tabla, los conflictos de a pares, el stock y
+   una tarjeta por donación con su tabla de posiciones. Solo tokens de uso. Se borra al decidir. */
+@import url("comun/asignaciones.css");
+
+[data-variante="asignaciones-b"] .tarjeta {
+  --espacio-relleno: var(--espacio-4);
+}
+
+[data-variante="asignaciones-b"] [data-forma="cabeza"] > div {
+  flex: 1 1 14rem;
+}
+
+[data-variante="asignaciones-b"] h2 {
+  font-size: var(--tamano-grande);
+}
+
+[data-variante="asignaciones-b"] h3 {
+  font-size: var(--tamano-base);
+}
+
+/* Las candidatas en común: fichas redondeadas que bajan de renglón, cada una con su "Asignar". */
+[data-variante="asignaciones-b"] [data-lista="en-linea"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+[data-variante="asignaciones-b"] [data-lista="en-linea"] > li {
+  display: flex;
+  flex: 1 1 18rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-entregada-fondo);
+}
+
+[data-variante="asignaciones-b"] [data-lista="en-linea"] > li > span,
+[data-variante="asignaciones-b"] .tabla td > span {
+  display: grid;
+  min-width: 0;
+}
+
+/* La tabla de posiciones: las que están en todos los rankings, con fondo. */
+[data-variante="asignaciones-b"] .tabla td[data-comun] {
+  background: var(--color-entregada-fondo);
+}
+
+[data-variante="asignaciones-b"] .tabla td .boton {
+  margin-top: var(--espacio-1);
+}
+
+@media (min-width: 53.75em) {
+  [data-variante="asignaciones-b"] .tabla td[data-comun] {
+    border-radius: var(--radio-boton);
+  }
+
+  [data-variante="asignaciones-b"] .tabla tbody th {
+    width: 4rem;
+  }
+}
+
+/* El índice: pastillas redondas con la cuenta, que bajan de renglón. */
+[data-variante="asignaciones-b"] [data-lista="indice"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+[data-variante="asignaciones-b"] [data-lista="indice"] a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-height: 3rem;
+  padding: 0 var(--espacio-3);
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+[data-variante="asignaciones-b"] [data-lista="indice"] b {
+  font: 800 var(--tamano-base) / 1 var(--fuente-cifra);
+}
+
+[data-variante="asignaciones-b"] > section,
+[data-variante="asignaciones-b"] > nav {
+  margin-top: var(--espacio-4);
+}
+
+[data-variante="asignaciones-b"] #libres .tabla th[scope="row"] {
+  display: grid;
+  justify-items: start;
+  gap: 0.125rem;
+}
+
+[data-variante="asignaciones-b"] #libres .tabla td {
+  overflow-wrap: anywhere;
+}
+
+[data-variante="asignaciones-b"] #libres .tabla td > a,
+[data-variante="asignaciones-b"] #libres .tabla td > small {
+  display: block;
+}
+
+[data-variante="asignaciones-b"] #libres .tabla td > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+@media (min-width: 53.75em) {
+  [data-variante="asignaciones-b"] #libres .tabla th[scope="row"] {
+    min-width: 14rem;
+  }
+}

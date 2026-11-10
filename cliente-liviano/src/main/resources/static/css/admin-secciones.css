@@ -41,3 +41,81 @@
 :is(#solicitudes, .mesa .tarjeta) dd {
   margin: 0;
 }
+
+/* --- Ronda del 2026-11-09 (docs/interfaz/plan-ronda-2026-11-09.md) ------------------------------ */
+
+/* Regla general 1: el encabezado ocupa todo el ancho de la mesa; la bajada conserva un largo de línea
+   legible. Si lleva acciones (un .racimo al lado del texto), van a la derecha y, cuando no entran
+   (el celular), bajan debajo del texto. */
+.mesa-cabecera:has(> .racimo) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.mesa-cabecera > div:first-child {
+  flex: 1 1 28rem;
+  min-width: 0;
+}
+
+.mesa-cabecera > .racimo {
+  flex: 0 1 auto;
+}
+
+/* Regla general 2: el desplegable (o la búsqueda) y su botón, centrados entre sí, no con el rótulo.
+   El botón se alinea al pie del campo y los dos miden un toque de alto. */
+.mesa form.racimo:has(> .campo) {
+  align-items: flex-end;
+}
+
+.mesa form.racimo > .campo :is(input, select),
+.mesa form.racimo > .boton {
+  box-sizing: border-box;
+  height: 3rem;
+  min-height: 3rem;
+}
+
+.mesa form.racimo > .boton {
+  padding-block: 0;
+}
+
+/* La búsqueda: el campo y "Buscar" en la misma fila, con el mismo alto (componentes/filtros.css). */
+.filtro-buscar {
+  max-width: 40rem;
+}
+
+/* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla;
+   ronda del 2026-11-10: una sola lista y la ficha de la maqueta 15, en componentes/maestro.css) -- */
+
+/* Lo que mandó una pendiente, dentro de la ficha (.maestro-ficha): sin viñetas. */
+[data-lista="documentos"] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Los pictogramas de la lista y de la ficha, a su medida: sellos.css (sin capa, por entidad-comun.css)
+   le gana al bloque maestro con su 1,75 rem. */
+.maestro .categoria-icono {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.maestro-ficha .categoria-icono[data-tamano="grande"] {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.maestro-ficha [data-lista="necesidades-ficha"] .categoria-icono {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+/* Desde la tableta, la ficha con el relleno grande (.mesa .tarjeta le pone el chico). */
+@media (min-width: 53.75em) {
+  .mesa .maestro-ficha {
+    --espacio-relleno: var(--espacio-4);
+  }
+}

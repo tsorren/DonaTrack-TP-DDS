@@ -74,13 +74,13 @@
         <p th:if="${conError}" id="mensaje-error" class="campo-error">Falta contarnos qué pasó.</p>
         <textarea id="mensaje" name="mensaje" rows="5" required
                   th:attr="aria-describedby=${conError} ? 'mensaje-error mensaje-ayuda' : 'mensaje-ayuda',aria-invalid=${conError} ? 'true' : null"
-                  th:text="${escrito and !conError} ? 'Quise dar de baja el aceite y me dio un error.' : null"></textarea>
+                  th:text="${escrito and !conError} ? 'Quise dar de baja el aceite y me dio un error.' : null" placeholder="Contanos en qué te podemos ayudar"></textarea>
       </div>
       <div class="campo">
         <label for="codigo">Código del error</label>
         <small id="codigo-ayuda">Opcional. Está en el aviso de error, debajo del mensaje.</small>
         <input id="codigo" name="codigo" type="text" autocomplete="off" aria-describedby="codigo-ayuda"
-               th:value="${codigo}">
+               th:value="${codigo}" placeholder="Por ejemplo: a1b2c3d4e5f6">
       </div>
       <p th:if="${conSesion}" class="contacto-cuenta">Te respondemos a
         <b>contacto@distribuidora-ejemplo.test</b>, el correo de tu cuenta.</p>
@@ -91,7 +91,7 @@
           la @.</p>
         <input id="correo" name="correo" type="email" required autocomplete="email"
                th:value="${conError} ? 'marta.comedor-ejemplo.test' : (${escrito} ? 'marta@comedor-ejemplo.test' : null)"
-               th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null">
+               th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="nombre@ejemplo.com">
       </div>
       <button id="enviar" class="boton" data-tono="principal" type="submit"
               th:disabled="${escenario == 'lento'}"
@@ -99,31 +99,11 @@
     </form>
 
     <!--/* A la derecha del formulario, a su altura (A/B layout:contacto, A, 2026-11-04; nota de Nico):
-           una lámina como "Cómo funciona" de la portada, con la raíz que llega a un sobre, y cuándo
-           escribirnos. En el celular, debajo del formulario. */-->
+           una lámina con el sobre de semillas (ilustración de diseño, estética de K, 2026-11-08), y
+           cuándo escribirnos. En el celular, debajo del formulario. */-->
     <aside class="contacto-lamina" aria-labelledby="lamina-titulo">
-      <p class="lamina-cabeza">Lámina 2, de la raíz al correo</p>
-      <svg class="lamina-dibujo" viewBox="60 40 280 470" aria-hidden="true" focusable="false">
-        <path class="dib-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
-        <rect class="dib-suelo" x="0" y="170" width="400" height="400"/>
-        <g transform="translate(140 30) scale(2)">
-          <path class="dib-tallo" d="M30 70V28"/>
-          <path class="dib-hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
-          <path class="dib-hoja dib-hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
-          <path class="dib-hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
-        </g>
-        <path class="dib-horizonte" d="M0 170H400"/>
-        <path class="dib-raiz" pathLength="1" d="M200 172C200 240 196 300 200 360C203 390 200 410 200 420"/>
-        <path class="dib-raiz" pathLength="1" d="M200 232C170 250 140 256 112 288C98 306 92 326 90 348"/>
-        <path class="dib-raiz" pathLength="1" d="M200 232C230 250 262 258 290 292C304 310 310 330 312 350"/>
-        <path class="dib-raicilla" pathLength="1" d="M126 274C112 268 100 270 84 262M290 292C300 280 314 276 330 278M200 290C188 296 182 304 178 316M200 330C214 340 224 352 230 366"/>
-        <circle class="dib-cruce" cx="200" cy="232" r="7"/>
-        <g transform="translate(150 420)">
-          <rect class="dib-sobre-tinta" x="6" y="6" width="100" height="66" rx="4"/>
-          <rect class="dib-sobre" x="0" y="0" width="100" height="66" rx="4"/>
-          <path class="dib-sobre-linea" d="M2 4L50 40L98 4"/>
-        </g>
-      </svg>
+      <div class="huerta-marco" aria-hidden="true"><img src="/img/ilustraciones/paso-1-semillas.svg"
+           th:src="@{/img/ilustraciones/paso-1-semillas.svg}" alt="" width="94" height="104"></div>
       <h2 id="lamina-titulo">Cuándo escribirnos</h2>
       <ul>
         <li>Querés sumar tu entidad al mapa.</li>

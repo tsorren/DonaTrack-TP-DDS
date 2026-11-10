@@ -13,11 +13,15 @@ import grupo5.donaciones.infrastructure.persistencia.mapper.EntidadesBeneficiari
 import grupo5.donaciones.infrastructure.persistencia.mapper.PersonasPersistenciaMapper;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.personas.AceptacionLegales;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.repositories.IAceptacionesLegalesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +50,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
   DonantesPersistenciaMapper.class,
   DonanteRepositoryJpaAdapter.class,
   EntidadesBeneficiariasPersistenciaMapper.class,
-  EntidadBeneficiariaRepositoryJpaAdapter.class
+  EntidadBeneficiariaRepositoryJpaAdapter.class,
+  AceptacionesLegalesRepositoryJpaAdapter.class
 })
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @Testcontainers
@@ -59,11 +64,13 @@ class RolesRepositoriesJpaTest {
   @Autowired private IPersonasRepository personas;
   @Autowired private IDonantesRepository donantes;
   @Autowired private IEntidadesBeneficiariasRepository entidades;
+  @Autowired private IAceptacionesLegalesRepository aceptaciones;
   @Autowired private JdbcTemplate jdbc;
 
   @BeforeEach
   void limpiar() {
     // Con RESTRICT, los roles se borran antes que las personas
+    aceptaciones.deleteAll();
     donantes.deleteAll();
     entidades.deleteAll();
     personas.deleteAll();
@@ -80,6 +87,33 @@ class RolesRepositoriesJpaTest {
 
     assertEquals(juan.getId(), leido.personaId());
     assertTrue(leido.estaActivo());
+  }
+
+  @Test
+  void guardar_donanteQueOcultaSuNombre_persisteLaPreferencia() {
+    Humana juan = PersonaMother.juanPerez();
+    personas.save(juan);
+    Donante donante = new Donante(juan.getId());
+    donantes.save(donante);
+    assertTrue(donantes.findById(juan.getId()).orElseThrow().muestraNombre());
+
+    donante.mostrarNombre(false);
+    donantes.save(donante);
+
+    assertFalse(donantes.findById(juan.getId()).orElseThrow().muestraNombre());
+  }
+
+  @Test
+  void ultimaDe_devuelveLaVersionMasAltaQueAceptoLaPersona() {
+    Humana juan = PersonaMother.juanPerez();
+    personas.save(juan);
+    LocalDateTime ayer = LocalDateTime.of(2026, 11, 9, 10, 0);
+    aceptaciones.save(new AceptacionLegales(juan.getId(), 1, ayer));
+    AceptacionLegales nueva = new AceptacionLegales(juan.getId(), 2, ayer.plusDays(1));
+    aceptaciones.save(nueva);
+
+    assertEquals(Optional.of(nueva), aceptaciones.ultimaDe(juan.getId()));
+    assertEquals(Optional.empty(), aceptaciones.ultimaDe(UUID.randomUUID()));
   }
 
   @Test

@@ -1,0 +1,1468 @@
+/* Bloque huerta: las piezas de la estética de la variante K ("Huerta con abejas", adoptada para todo
+   el sitio el 2026-11-08). Los fragmentos están en templates/componentes/huerta.html: la lámina de una
+   donación (`.huerta-planta`, sobre el papel de `.tarjeta`), la cabeza de una sección, la portada con
+   sus láminas y el enjambre, la escalera de cómo funciona, la tierra con sus raíces, las cifras en
+   árboles, quién participa, las preguntas y el cierre. Las ilustraciones son decorativas. Se carga en
+   la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+/* --- La cabeza de una sección: rótulo, título y bajada ------------------------------------------ */
+.huerta-cabeza {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.huerta-cabeza :is(h2, p) {
+  margin: 0;
+}
+
+.huerta-cabeza > a {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+/* Los títulos de sección de K: anchos y pesados, más chicos que el de la portada. */
+:is(.huerta-cabeza, .huerta-tierra-texto, .huerta-cierre) h2 {
+  color: var(--color-tinta);
+  font: 850 clamp(1.8rem, 1.2rem + 2vw, 2.8rem) / 1 var(--fuente-titulo);
+  font-stretch: 122%;
+  letter-spacing: -0.03em;
+}
+
+:is(.huerta-cabeza, .huerta-cierre) h2 em {
+  color: var(--color-acento);
+}
+
+.huerta-rotulo {
+  margin: 0;
+  color: var(--color-acento);
+  font: 700 0.78rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.huerta-bajada {
+  max-width: 48rem;
+  color: var(--color-tinta-suave);
+  font-size: clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);
+}
+
+.huerta-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* La parte que junta las láminas de una persona: el título, la bajada y la lista. */
+.huerta {
+  display: grid;
+  gap: 1rem;
+}
+
+/* La pausa del movimiento: un ícono chico (‖ en un círculo) en la cabecera, junto a la marca
+   (usuaria, 2026-11-09; antes, en la esquina de las láminas). Es una casilla: su área de toque
+   cubre todo el círculo. */
+.huerta-pausa {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 1.5px var(--color-filete);
+  color: var(--color-tinta-suave);
+  cursor: pointer;
+}
+
+.huerta-pausa svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+
+.huerta-pausa:hover,
+.huerta-pausa:has(:checked) {
+  box-shadow: inset 0 0 0 1.5px var(--color-tinta);
+  color: var(--color-tinta);
+}
+
+.huerta-pausa:has(:checked) {
+  background: var(--color-acento-claro);
+}
+
+.huerta-pausa-casilla {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.huerta-pausa:has(:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .huerta-pausa {
+    display: none;
+  }
+}
+
+/* --- La lámina de una donación ------------------------------------------------------------------- */
+.huerta-lista {
+  gap: 2.25rem 1.25rem;
+  padding-top: 1rem;
+}
+
+.huerta-planta {
+  display: grid;
+  align-content: start;
+}
+
+/* El marco: papel de la página, la ilustración apoyada abajo y la cinta paja que la sujeta arriba. */
+.huerta-marco {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  height: 11.5rem;
+  margin: 0.75rem 0.75rem 0;
+  padding: 1rem 0.5rem 0.25rem;
+  border-radius: var(--radio-boton);
+  background: radial-gradient(120% 90% at 50% 80%, var(--color-superficie), var(--color-papel));
+}
+
+.huerta-marco::before {
+  content: "";
+  position: absolute;
+  top: -1.25rem;
+  left: 50%;
+  width: 3.75rem;
+  height: 1.375rem;
+  translate: -50% 0;
+  rotate: -2deg;
+  border-radius: 0.1875rem;
+  background: var(--color-raiz);
+  opacity: 0.85;
+}
+
+.huerta-marco img {
+  width: 100%;
+  height: 8rem;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+/* La abeja que lleva la entrega, o que se va cuando llegó, arriba a la derecha. */
+.huerta-marco .huerta-marco-abeja {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+  width: 1.75rem;
+  height: auto;
+}
+
+/* La vuelta de la abeja (usuario, 2026-11-09): cruza más de la mitad del marco y baja hasta la copa
+   de la planta, sea cual sea el ancho de la lámina. */
+.huerta-marco:has(.huerta-marco-abeja) {
+  container-type: inline-size;
+}
+
+.huerta-marco-abeja {
+  --medida-vuelo-ancho: 55cqi;
+  --medida-vuelo-alto: 3.5rem;
+}
+
+.huerta-pie {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem 1rem;
+}
+
+.huerta-pie h3 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 850 1.0625rem/1.15 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+/* Toda la tarjeta lleva al detalle: el enlace del título la cubre entera. */
+.huerta-enlace {
+  padding-block: 0.9375rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.huerta-enlace::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--radio-lamina);
+}
+
+.huerta-planta:has(.huerta-enlace) {
+  transition: translate var(--movimiento-duracion-corta) var(--movimiento-curva-salida);
+}
+
+.huerta-planta:has(.huerta-enlace:hover) {
+  translate: 0 -0.25rem;
+}
+
+.huerta-planta:has(.huerta-enlace:hover) h3 {
+  color: var(--color-acento);
+}
+
+.huerta-enlace:focus-visible {
+  outline: none;
+}
+
+.huerta-planta:has(.huerta-enlace:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+/* Los datos, con íconos: la categoría y cuánto, a quién va y qué pasó último. */
+.huerta-datos {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.huerta-datos li {
+  display: grid;
+  grid-template-columns: 1.125rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.huerta-datos svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.huerta-datos svg:has(use) {
+  fill: currentcolor;
+  stroke: none;
+}
+
+/* El estado, arriba a la izquierda del dibujo: lo primero que se lee. */
+.huerta-marco > .estado {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+}
+
+/* Las macetas a escala (usuario, 2026-11-08): cada dibujo mide su alto en unidades por una misma
+   escala, y la maceta, igual en todos, queda del mismo tamaño; lo que crece es la planta. */
+.huerta-marco img[data-dibujo] {
+  width: auto;
+  max-width: 100%;
+  height: calc(var(--medida-alto) * var(--medida-escala, 0.62px));
+}
+
+[data-dibujo="como-paso-1"] { --medida-alto: 132.1; }
+[data-dibujo="paso-2-maceta"] { --medida-alto: 92.1; }
+[data-dibujo="como-paso-3"] { --medida-alto: 137; }
+[data-dibujo="paso-3-brote"] { --medida-alto: 166.4; }
+[data-dibujo="reintentar"] { --medida-alto: 120.9; }
+[data-dibujo="planta-naranjo"] { --medida-alto: 230.5; }
+[data-dibujo="planta-algodon"] { --medida-alto: 228.5; }
+[data-dibujo="planta-pino"] { --medida-alto: 251.6; }
+[data-dibujo="planta-menta"] { --medida-alto: 175.9; }
+[data-dibujo="planta-orejas"] { --medida-alto: 245.5; }
+/* Los árboles de las cifras (2026-11-09, tarde): sin maceta y más altos que las plantas. */
+[data-dibujo="arbol-redondo"] { --medida-alto: 260.4; }
+[data-dibujo="arbol-triangular"] { --medida-alto: 278.4; }
+[data-dibujo="arbol-ovalado"] { --medida-alto: 231; }
+
+/* --- La portada: el texto y las tres láminas con el enjambre ------------------------------------- */
+.huerta-hero {
+  position: relative;
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.huerta-hero-texto {
+  display: grid;
+  gap: 1.375rem;
+}
+
+.huerta-hero h1 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 850 var(--tamano-titulo-portada) / 0.94 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.huerta-hero h1 em {
+  color: var(--color-acento);
+}
+
+.huerta-hero-texto > p:not(.huerta-rotulo) {
+  margin: 0;
+}
+
+.huerta-hero > .huerta-pausa {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* Las láminas con el encuadre de los recorridos (x de 4 a 254 y y de 2 a 152 en el dibujo de
+   docs/interfaz/identidad/fuentes/DonaTrack_Abeja1.svg): cada lámina mide 62,77 × 78,47 y va donde la dibujó el diseño. Se
+   apilan como en el dibujo: la derecha abajo, la izquierda en el medio y la del centro arriba. Las
+   abejas van en la capa 0 (detrás de todas) o 4 (delante de todas); las mueve static/js/abejas.js. */
+.huerta-laminas {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 250 / 150;
+  margin-top: 1.5rem;
+}
+
+.huerta-laminas > .huerta-planta {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: 25.108%;
+  height: 52.313%;
+}
+
+.huerta-laminas .huerta-marco {
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr);
+  height: auto;
+  min-height: 0;
+  margin-bottom: 0.75rem;
+}
+
+.huerta-laminas .huerta-marco img {
+  height: 100%;
+  min-height: 0;
+}
+
+.huerta-laminas > :nth-child(1) {
+  top: 26.52%;
+  left: 13.996%;
+  z-index: 2;
+  rotate: -3.22deg;
+}
+
+.huerta-laminas > :nth-child(2) {
+  top: 21.36%;
+  left: 38.34%;
+  z-index: 3;
+}
+
+.huerta-laminas > :nth-child(3) {
+  top: 27.507%;
+  left: 62.032%;
+  z-index: 1;
+  rotate: 2.45deg;
+}
+
+/* Quietas (sin JavaScript, con la pausa o con "reducir movimiento"): adelante, en un tramo lleno
+   de su recorrido. Volando, el script les da la posición, el giro y la capa en cada cuadro. */
+.huerta-abeja {
+  position: absolute;
+  z-index: 4;
+  display: block;
+  width: 5.6%;
+  aspect-ratio: 34 / 37;
+  pointer-events: none;
+}
+
+/* La abeja en partes (img/ilustraciones/abeja-partes.svg): las alas fijas y el cuerpo en sus dos
+   poses. abejas.js inclina el cuerpo según hacia dónde se curva el recorrido y funde una pose en la
+   otra; sin JavaScript queda la pose de arriba. */
+.huerta-abeja svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.huerta-abeja [data-cuerpo="abajo"] {
+  opacity: 0;
+}
+
+.huerta-abeja:nth-of-type(1) {
+  top: 30%;
+  left: 3%;
+}
+
+.huerta-abeja:nth-of-type(2) {
+  top: 2%;
+  left: 74%;
+}
+
+.huerta-abeja:nth-of-type(3) {
+  top: 84%;
+  left: 62%;
+}
+
+.huerta-abeja[data-capa="detras"] {
+  z-index: 0;
+}
+
+/* Las abejas de "Cómo funciona": van de maceta en maceta (abejas.js las ubica en píxeles dentro de
+   la sección). Solo se ven en vuelo. */
+[data-abejas-camino] {
+  position: relative;
+  overflow-x: clip;
+}
+
+[data-abejas-camino] .huerta-abeja {
+  display: none;
+  width: 0.833rem;
+}
+
+[data-abejas-camino][data-abejas="vuelan"] .huerta-abeja {
+  display: block;
+}
+
+/* Que las abejas que salen de las láminas no agranden la página. */
+.huerta-hero {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* --- Cómo funciona: la escalera de pasos y el árbol del final ------------------------------------ */
+.huerta-como {
+  display: grid;
+  gap: 1.75rem;
+}
+
+/* El árbol queda plantado: último en el celular, justo sobre la tierra de la sección que sigue, con
+   su tronco sobre la raíz principal (el tronco está corrido a la derecha en el dibujo). */
+.huerta-como-arbol {
+  order: 3;
+  justify-self: center;
+  width: min(70%, 16rem);
+  height: auto;
+  margin-bottom: -1px;
+  translate: -2% 0;
+}
+
+.huerta-pasos {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+/* La ruta punteada de las abejas une los dibujos de arriba abajo. */
+.huerta-paso::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: -1.5rem;
+  left: calc(2.625rem - 1px);
+  border-left: 2px dashed var(--color-tinta);
+  opacity: 0.35;
+}
+
+.huerta-paso:first-child::before {
+  top: 50%;
+}
+
+.huerta-paso:last-child::before {
+  bottom: 50%;
+}
+
+/* Los dibujos de los pasos van a escala, como las láminas: el alto sale de sus unidades por una misma
+   escala, así la maceta queda igual en los cuatro y la planta crece de paso en paso. */
+.huerta-paso > img {
+  justify-self: center;
+  width: auto;
+  max-width: 100%;
+  height: calc(var(--medida-alto) * var(--medida-escala-paso, 0.62px));
+  background: var(--color-papel);
+}
+
+.huerta-paso h3 {
+  margin: 0.25rem 0;
+  color: var(--color-tinta);
+  font: 850 1.15rem/1.15 var(--fuente-titulo);
+  font-stretch: 115%;
+}
+
+.huerta-paso p {
+  margin: 0;
+  color: var(--color-tinta-suave);
+  font-size: 0.95rem;
+}
+
+.huerta-paso .huerta-paso-numero {
+  color: var(--color-tinta-suave);
+  font: 700 0.75rem/1 var(--fuente-titulo);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+
+/* --- Bajo tierra: un corte de la tierra con sus raíces ------------------------------------------ */
+.huerta-tierra {
+  padding: 2.5rem max(1rem, (100% - 73rem) / 2);
+  background: url("../../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+/* La tierra de la portada lleva los estratos del dibujo de la diseñadora: líneas finas y claras. */
+.huerta-tierra:not(.huerta-tierra--caja) {
+  background:
+    url("../../img/tierra-textura.svg") 0 0 / 260px,
+    var(--color-suelo);
+}
+
+.huerta-tierra-grilla {
+  display: grid;
+  gap: 1.5rem 3rem;
+  align-items: start;
+}
+
+.huerta-tierra-texto {
+  display: grid;
+  gap: 1rem;
+}
+
+.huerta-tierra-texto :is(h2, p) {
+  margin: 0;
+}
+
+/* Un texto de renglones fijos (usuario, 2026-11-09: las raíces de lo donado, en dos): ocupa siempre
+   ese alto y, si no entra, se recorta con puntos suspensivos. */
+.huerta-tierra-texto [data-renglones="2"] {
+  display: -webkit-box;
+  min-height: 2lh;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.huerta-tierra .huerta-tierra-texto h2 {
+  color: var(--color-texto-suelo);
+}
+
+.huerta-tierra :is(.huerta-rotulo, h2 em, a) {
+  color: var(--color-raiz);
+}
+
+.huerta-tierra a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.huerta-tierra :focus-visible {
+  outline-color: var(--color-raiz);
+}
+
+.huerta-raices {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.huerta-raiz {
+  fill: none;
+  stroke: var(--color-raiz);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* La raíz principal sigue el tronco del árbol que queda arriba. */
+.huerta-raiz--0 {
+  stroke: var(--color-tinta);
+  stroke-width: 14;
+  stroke-linecap: butt;
+}
+
+/* Más gruesa, como las raíces del dibujo de la portada (cuarta ronda, 2026-11-10). */
+.huerta-raiz--1 {
+  stroke-width: 7;
+}
+
+.huerta-nudo {
+  fill: var(--color-raiz);
+  stroke: var(--color-suelo-hondo);
+  stroke-width: 3;
+}
+
+.huerta-nudo--hueco {
+  fill: var(--color-suelo);
+  stroke: var(--color-raiz);
+  stroke-width: 2.5;
+  stroke-dasharray: 3 3;
+}
+
+/* En el celular el dibujo se achica a la mitad: los rótulos van más grandes para que se lean. */
+.huerta-rotulo-raiz {
+  fill: var(--color-texto-suelo);
+  font: 700 18px var(--fuente-titulo);
+  paint-order: stroke;
+  stroke: var(--color-suelo);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+/* Bajo tierra (cuarta ronda, 2026-11-10): el dibujo de la diseñadora. Las raíces son un SVG decorativo;
+   los rótulos, la lista real (`.huerta-bajo-ramas`). En el celular la lista se ve como tres raíces
+   apiladas: la línea de cada categoría baja y se abre en una rama corta por tipo de entidad. Desde el
+   punto de quiebre chico, el dibujo aparece y cada rótulo se pone sobre su raíz con los porcentajes del
+   dibujo (`data-lugar`), con la letra a escala del ancho (`cqi`), nunca menor de 14 px. */
+.huerta-bajo {
+  position: relative;
+  container-type: inline-size;
+}
+
+/* En el celular, sin el dibujo, primero el título y después las raíces apiladas. */
+.huerta-tierra-grilla > .huerta-bajo {
+  order: 1;
+}
+
+.huerta-bajo-dibujo {
+  display: none;
+}
+
+.huerta-bajo-raiz {
+  fill: var(--color-raiz);
+}
+
+.huerta-bajo-trazo {
+  fill: none;
+  stroke: var(--color-raiz);
+  stroke-width: 22;
+}
+
+.huerta-bajo-punteada {
+  fill: none;
+  stroke: var(--color-raiz);
+  stroke-width: 4;
+  stroke-dasharray: 6 12;
+  stroke-linecap: round;
+}
+
+.huerta-bajo-nudo {
+  fill: var(--color-raiz);
+  stroke: var(--color-suelo-hondo);
+  stroke-width: 10;
+}
+
+.huerta-bajo-halo {
+  fill: var(--color-suelo-hondo);
+  opacity: 0.45;
+}
+
+.huerta-bajo-ramas,
+.huerta-bajo-ramas ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-bajo-ramas {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.huerta-bajo-ramas li {
+  margin: 0;
+}
+
+.huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad, .huerta-bajo-tu) {
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.huerta-bajo-categoria {
+  position: relative;
+  display: block;
+  padding-left: 2rem;
+  color: var(--color-raiz);
+  font-size: 1.25rem;
+}
+
+/* El nudo de cada categoría, como en el dibujo. */
+.huerta-bajo-categoria::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid var(--color-suelo-hondo);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  content: "";
+  translate: 0 -50%;
+}
+
+/* La raíz de la categoría baja desde su nudo y se abre en una rama por entidad. */
+.huerta-bajo-ramas ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.25rem 0 0 0.5rem;
+  padding: 0.75rem 0 0 1.5rem;
+  border-left: 4px solid var(--color-raiz);
+  border-bottom-left-radius: 1rem;
+}
+
+.huerta-bajo-entidad {
+  position: relative;
+  color: var(--color-texto-suelo);
+  font-size: 1rem;
+}
+
+.huerta-bajo-entidad::before {
+  position: absolute;
+  top: 50%;
+  left: -1.5rem;
+  width: 1.125rem;
+  border-top: 3px solid var(--color-raiz);
+  border-top-right-radius: 1rem;
+  content: "";
+}
+
+/* Tu entidad: amarilla con contorno de tierra, al final de una raicilla punteada. */
+.huerta-bajo-tu {
+  margin: 0.25rem 0 0 0.5rem;
+  padding: 0.75rem 0 0 1.5rem;
+  border-left: 3px dashed var(--color-raiz);
+  font-size: 1.25rem;
+}
+
+.huerta-tierra .huerta-bajo-tu a {
+  color: var(--color-raiz);
+  font-weight: 800;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.14em var(--color-suelo-hondo);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+@media (min-width: 37.5em) {
+  /* El tallo sale del borde de arriba, debajo del árbol de "Cómo funciona". */
+  .huerta-tierra-grilla > .huerta-bajo {
+    order: 0;
+    margin-top: -2.5rem;
+  }
+
+  .huerta-bajo-dibujo {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .huerta-bajo-ramas {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  .huerta-bajo-ramas ul {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad, .huerta-bajo-tu) {
+    position: absolute;
+    top: var(--medida-bajo-y);
+    left: var(--medida-bajo-x);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: max(0.875rem, 3.13cqi);
+    line-height: 1;
+    translate: var(--medida-bajo-ancla, 0 0);
+  }
+
+  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-tu) {
+    white-space: nowrap;
+  }
+
+  /* Los rótulos de dos palabras largas van en dos renglones, como en el dibujo. */
+  .huerta-bajo-entidad {
+    width: min-content;
+    text-align: center;
+  }
+
+  .huerta-bajo-entidad[data-lugar="comunitarios"] {
+    text-align: right;
+  }
+
+  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad)::before {
+    content: none;
+  }
+
+  .huerta-bajo-entidad {
+    paint-order: stroke fill;
+    -webkit-text-stroke: 0.12em var(--color-suelo);
+  }
+
+  /* Dónde va cada rótulo, en porcentajes del dibujo (viewBox 60 14 1650 1146). */
+  .huerta-bajo [data-lugar="alimentos"] { --medida-bajo-x: 2.8%; --medida-bajo-y: 27.7%; }
+  .huerta-bajo [data-lugar="ropa"] { --medida-bajo-x: 47.2%; --medida-bajo-y: 39.1%; --medida-bajo-ancla: -100% 0; }
+  .huerta-bajo [data-lugar="muebles"] { --medida-bajo-x: 66.5%; --medida-bajo-y: 26.9%; }
+  .huerta-bajo [data-lugar="comedores"] { --medida-bajo-x: 9.5%; --medida-bajo-y: 64.9%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="merenderos"] { --medida-bajo-x: 23.7%; --medida-bajo-y: 80.5%; }
+  .huerta-bajo [data-lugar="religiosas"] { --medida-bajo-x: 36.1%; --medida-bajo-y: 57.2%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="hogares"] { --medida-bajo-x: 48.6%; --medida-bajo-y: 66.2%; }
+  .huerta-bajo [data-lugar="clubes"] { --medida-bajo-x: 57.9%; --medida-bajo-y: 51.4%; }
+  .huerta-bajo [data-lugar="escuelas"] { --medida-bajo-x: 60.5%; --medida-bajo-y: 81.3%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="comunitarios"] { --medida-bajo-x: 97.7%; --medida-bajo-y: 74.5%; --medida-bajo-ancla: -100% 0; }
+  .huerta-bajo [data-lugar="tu-entidad"] { --medida-bajo-x: 73.5%; --medida-bajo-y: 95.7%; --medida-bajo-ancla: -50% -50%; }
+}
+
+/* --- Las cifras: cada una, un árbol plantado en la misma línea de suelo ------------------------ */
+.huerta-impacto,
+.huerta-participa,
+.huerta-preguntas {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.huerta-impacto > p {
+  margin: 0;
+}
+
+.huerta-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-cifra {
+  display: grid;
+  align-content: start;
+  gap: 0.375rem;
+  padding: 0 1.25rem 1.375rem 0;
+  border-bottom: 1px solid var(--color-filete);
+  background: linear-gradient(var(--color-tinta), var(--color-tinta)) 0 9.875rem / 100% 2px no-repeat;
+}
+
+/* Cada árbol con su tamaño propio (width y height de la plantilla, a la misma escala), apoyado en la
+   línea de suelo: la primera fila mide 10 rem y el árbol va abajo. */
+.huerta-cifra {
+  grid-template-rows: 10rem;
+}
+
+.huerta-cifra img {
+  align-self: end;
+  max-width: 100%;
+  height: auto;
+}
+
+.huerta-cifra img + b {
+  margin-top: 0.75rem;
+}
+
+.huerta-cifra b {
+  color: var(--color-tinta);
+  font: 850 clamp(2.4rem, 1.8rem + 2vw, 3.6rem) / 0.9 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.huerta-cifra span {
+  font-weight: 700;
+}
+
+/* --- Lo que viajó este mes: una galería de fotos como polaroids ------------------------------------ */
+.huerta-mes {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.huerta-fotos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 2rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-foto:nth-child(odd) {
+  rotate: -1deg;
+}
+
+.huerta-foto:nth-child(even) {
+  rotate: 1.2deg;
+}
+
+.huerta-foto-boton {
+  display: block;
+  width: calc(100% - 1.5rem);
+  margin: 0.75rem 0.75rem 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  cursor: zoom-in;
+}
+
+.huerta-foto-boton img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  transition: scale var(--movimiento-duracion-media) var(--movimiento-curva-salida);
+}
+
+.huerta-foto-boton:hover img {
+  scale: 1.04;
+}
+
+/* La que va en camino: el lugar de la foto, punteado, con la abeja que la lleva. */
+.huerta-foto-espera {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0.75rem 0;
+  padding: 1rem;
+  aspect-ratio: 16 / 10;
+  border: 2px dashed var(--color-filete);
+  border-radius: var(--radio-boton);
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.huerta-foto-espera img {
+  width: 2.5rem;
+  height: auto;
+}
+
+.huerta-foto-espera p {
+  margin: 0;
+}
+
+.huerta-foto .huerta-foto-fecha {
+  color: var(--color-acento);
+  font: 850 1.25rem/1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .huerta-foto-boton img {
+    transition: none;
+  }
+}
+
+/* --- Quién participa: una tarjeta por planta ------------------------------------------------------ */
+.huerta-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-opcion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem;
+}
+
+/* Las acciones van siempre al pie de la tarjeta: quedan alineadas aunque las listas difieran. */
+.huerta-opcion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.huerta-opcion-acciones > a:not(.boton) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.huerta-opcion > img {
+  align-self: center;
+  width: auto;
+  height: 9rem;
+}
+
+.huerta-opcion > p {
+  margin: 0;
+}
+
+.huerta-opcion h3 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 850 clamp(1.35rem, 1.15rem + 0.8vw, 1.75rem) / 1.1 var(--fuente-titulo);
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+}
+
+/* La lista con hojas como viñetas, como en K. */
+.huerta-hojas {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-hojas li {
+  position: relative;
+  padding-left: 1.625rem;
+}
+
+.huerta-hojas li::before {
+  content: "";
+  position: absolute;
+  top: 0.42em;
+  left: 0.125rem;
+  width: 0.875rem;
+  height: 0.5625rem;
+  border-radius: 0 100% 0 100%;
+  background: var(--color-hoja);
+  box-shadow: inset 0 0 0 1.5px var(--color-tinta);
+  rotate: -20deg;
+}
+
+/* --- Las preguntas --------------------------------------------------------------------------------- */
+.huerta-preguntas-lista {
+  border-top: 2px solid var(--color-tinta);
+}
+
+.huerta-preguntas details {
+  border-bottom: 1px solid var(--color-filete);
+}
+
+.huerta-preguntas summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3rem;
+  padding: 0.75rem 0;
+  color: var(--color-tinta);
+  font-size: 1.05rem;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.huerta-preguntas summary::-webkit-details-marker {
+  display: none;
+}
+
+.huerta-preguntas summary::after {
+  content: "+";
+  color: var(--color-acento);
+  font: 700 1.4rem/1 var(--fuente-titulo);
+}
+
+.huerta-preguntas details[open] summary::after {
+  content: "−";
+}
+
+.huerta-preguntas details p {
+  margin: 0;
+  padding: 0 0 1.125rem;
+}
+
+/* --- El cierre ------------------------------------------------------------------------------------- */
+.huerta-cierre {
+  display: grid;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.huerta-cierre > img {
+  display: none;
+}
+
+.huerta-cierre h2 {
+  margin: 0;
+}
+
+/* --- El inicio del donante: las cifras en fila, la caja de raíces y el recorrido ------------------- */
+.huerta-resumen {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.huerta-resumen h2 {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 850 1.375rem/1.1 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.huerta-resumen h2 b {
+  font-size: 2.25rem;
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+}
+
+.huerta-resumen-alcance {
+  margin: 0;
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+}
+
+/* La barra: un tramo por estado, del largo de su cantidad (hasta 10). */
+.huerta-barra {
+  display: flex;
+  gap: 0.25rem;
+  height: 0.875rem;
+}
+
+.huerta-barra span {
+  flex: 1;
+  border-radius: 999px;
+  background: var(--color-pendiente-fondo);
+  box-shadow: inset 0 0 0 1.5px var(--color-pendiente-texto);
+}
+
+.huerta-barra [data-n="2"] { flex-grow: 2; }
+.huerta-barra [data-n="3"] { flex-grow: 3; }
+.huerta-barra [data-n="4"] { flex-grow: 4; }
+.huerta-barra [data-n="5"] { flex-grow: 5; }
+.huerta-barra [data-n="6"] { flex-grow: 6; }
+.huerta-barra [data-n="7"] { flex-grow: 7; }
+.huerta-barra [data-n="8"] { flex-grow: 8; }
+.huerta-barra [data-n="9"] { flex-grow: 9; }
+.huerta-barra [data-n="10"] { flex-grow: 10; }
+
+.huerta-barra [data-estado="entregada"] {
+  background: var(--color-acento);
+  box-shadow: none;
+}
+
+.huerta-barra [data-estado="en-camino"] {
+  background: var(--color-raiz);
+  box-shadow: none;
+}
+
+.huerta-barra [data-estado="con-problema"] {
+  background: var(--color-problema-sello);
+  box-shadow: none;
+}
+
+.huerta-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+.huerta-leyenda li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+}
+
+/* El punto de cada estado, del color de su tramo. */
+.huerta-leyenda li::before {
+  content: "";
+  align-self: center;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-pendiente-fondo);
+  box-shadow: inset 0 0 0 1.5px var(--color-pendiente-texto);
+}
+
+.huerta-leyenda [data-estado="entregada"]::before {
+  background: var(--color-acento);
+  box-shadow: none;
+}
+
+.huerta-leyenda [data-estado="en-camino"]::before {
+  background: var(--color-raiz);
+  box-shadow: none;
+}
+
+.huerta-leyenda [data-estado="con-problema"]::before {
+  background: var(--color-problema-sello);
+  box-shadow: none;
+}
+
+.huerta-leyenda b {
+  color: var(--color-tinta);
+  font: 850 1.25rem/1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+/* La tierra en una caja, con las esquinas de las tarjetas. */
+.huerta-tierra--caja {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem 1.25rem;
+  border-radius: var(--radio-lamina);
+}
+
+.huerta-raiz--camino {
+  stroke-dasharray: 2 7;
+}
+
+.huerta-caja {
+  --espacio-relleno: 1.375rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.huerta-caja h2 {
+  color: var(--color-tinta);
+  font: 850 1.375rem/1.15 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.huerta-caja .huerta-cabeza {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.huerta-caja .huerta-cabeza > a {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+/* El recorrido: un punto por etapa sobre una línea punteada; la abeja, sobre la etapa actual. */
+.huerta-recorrido {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-recorrido::before {
+  content: "";
+  position: absolute;
+  top: 2.625rem;
+  right: 10%;
+  left: 10%;
+  border-top: 2px dotted var(--color-tinta-suave);
+}
+
+.huerta-recorrido li {
+  position: relative;
+  display: grid;
+  grid-template-rows: 2rem auto auto auto;
+  justify-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.huerta-recorrido-abeja {
+  grid-row: 1;
+  width: 1.75rem;
+  height: auto;
+}
+
+.huerta-recorrido-punto {
+  grid-row: 2;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 2px var(--color-tinta-suave);
+}
+
+.huerta-recorrido [data-avance="hecho"] .huerta-recorrido-punto {
+  background: var(--color-acento);
+  box-shadow: none;
+}
+
+.huerta-recorrido [data-avance="actual"] .huerta-recorrido-punto {
+  background: var(--color-raiz);
+  box-shadow: 0 0 0 0.25rem var(--color-acento-claro);
+}
+
+.huerta-recorrido b {
+  grid-row: 3;
+  color: var(--color-tinta);
+}
+
+.huerta-recorrido li > span:last-child {
+  grid-row: 4;
+  color: var(--color-tinta-suave);
+}
+
+/* --- Con más lugar --------------------------------------------------------------------------------- */
+@media (min-width: 37.5em) {
+  .huerta-marco {
+    --medida-escala: 0.8px;
+    height: 14.5rem;
+  }
+
+  .huerta-marco img {
+    height: 10.5rem;
+  }
+
+  .huerta-paso {
+    grid-template-columns: 7.75rem minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .huerta-paso::before {
+    left: calc(3.875rem - 1px);
+  }
+
+  .huerta-paso {
+    --medida-escala-paso: 0.78px;
+  }
+
+  .huerta-rotulo-raiz {
+    font-size: 15px;
+  }
+
+  .huerta-cierre {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .huerta-cierre > img {
+    display: block;
+    width: auto;
+    height: 11rem;
+    margin-bottom: -2rem;
+  }
+}
+
+@media (min-width: 53.75em) {
+  .huerta-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  }
+
+  .huerta-tierra-grilla {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+  }
+
+  .huerta-tierra-texto {
+    padding-top: 2rem;
+  }
+
+  /* El título y el árbol a la izquierda, los pasos a la derecha, como en K: el árbol queda sobre la
+     tierra de la sección que sigue. */
+  .huerta-como {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+    grid-template-rows: auto 1fr;
+    gap: 1.75rem 3rem;
+  }
+
+  .huerta-como > .huerta-cabeza {
+    grid-column: 1;
+    grid-row: 1;
+    align-content: start;
+  }
+
+  .huerta-como-arbol {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: end;
+    order: 0;
+    width: min(100%, 18rem);
+  }
+
+  .huerta-pasos {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    padding-bottom: 2rem;
+  }
+
+
+
+  .huerta-preguntas {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+
+/* --- Movimiento ------------------------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .huerta-marco img:first-child {
+    transform-origin: bottom;
+    animation: var(--movimiento-animacion-brota);
+  }
+
+  body:has(.huerta-pausa-casilla:checked) :is(.huerta-marco img, .huerta-recorrido-abeja) {
+    animation: none;
+  }
+
+  .huerta-recorrido-abeja {
+    animation: var(--movimiento-animacion-vuelo);
+  }
+
+  /* La de la lámina da una vuelta alrededor de su planta y vuelve a su esquina; las láminas pares
+     salen un poco después, para que no vuelen todas a la par. */
+  .huerta-marco .huerta-marco-abeja {
+    animation: var(--movimiento-animacion-ronda);
+  }
+
+  .huerta-planta:nth-child(even) .huerta-marco-abeja {
+    animation-delay: var(--movimiento-retraso-trazo);
+  }
+}

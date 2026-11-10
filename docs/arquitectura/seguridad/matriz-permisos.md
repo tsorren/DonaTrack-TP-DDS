@@ -121,12 +121,15 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `GET` | `/api/donantes` | ADMIN | — | — | |
 | `GET` | `/api/donantes/{id}` | `DONANTE` | — | id | Donante (perfil) |
 | `DELETE` | `/api/donantes/{id}` | ADMIN | — | — | |
+| `PATCH` | `/api/donantes/{id}/preferencias` | `DONANTE` | — | id | Donante (Mi perfil, HB-20) |
 | `POST` | `/api/donantes/archivos` | ADMIN | — | — | Admin (CSV) |
 | `GET` | `/api/donantes/archivos/{id}` | ADMIN | — | — | Admin (CSV) |
 | `POST` | `/api/personas` | `SERVICIO` | — | — | Registro (Fase 7, token técnico) |
 | `GET` | `/api/personas` | ADMIN | — | — | |
 | `PUT` | `/api/personas/{id}` | `DONANTE`, `ENTIDAD` | `EDITAR_DATOS_ORGANIZACION` | id | Donante (perfil) |
 | `DELETE` | `/api/personas/{id}` | ADMIN, `SERVICIO` | — | — | `SERVICIO`: compensación del registro si falla (Fase 7) |
+| `GET` | `/api/personas/{id}/legales` | `DONANTE`, `ENTIDAD`, `SERVICIO` | — | id (`SERVICIO` sin pertenencia) | Registro y entrada al sitio (HB-20) |
+| `PUT` | `/api/personas/{id}/legales` | `DONANTE`, `ENTIDAD`, `SERVICIO` | — | id (`SERVICIO` sin pertenencia) | `SERVICIO`: al completar el perfil, con la casilla marcada; la persona: al cambiar la versión vigente (HB-20) |
 | `GET` | `/api/categorias`, `/api/categorias/{id}` | cualquier rol | — | — | Formularios de donación y necesidad |
 | `POST`, `PUT`, `DELETE` | `/api/categorias/**` | ADMIN | — | — | |
 | `GET` | `/api/subcategorias`, `/api/subcategorias/{id}` | cualquier rol | — | — | Formularios de donación y necesidad |

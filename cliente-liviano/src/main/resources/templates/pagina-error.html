@@ -33,24 +33,11 @@
       <p th:unless="${codigo}"><a href="/publico-contacto" th:href="@{/publico-contacto}"
          th:text="${contactoSin}">Si sigue, escribinos y contanos qué estabas haciendo.</a></p>
     </div>
-    <!--/* El corte de suelo de la portada, en chico (usuario, 2026-11-07): el brote, la línea de
-           tierra y una raíz que baja y se corta antes de llegar, sin la punta que en la portada
-           marca que llegó. Decorativo: el texto dice todo. */-->
+    <!--/* La maceta de reintentar (ilustración de diseño, 2026-11-08; antes, el corte de suelo con la
+           raíz cortada). Decorativa: el texto dice todo. */-->
     <div data-dibujo="error">
-    <svg class="paso-dibujo" viewBox="60 20 280 300" width="280" height="300" aria-hidden="true"
-         focusable="false">
-      <path class="paso-sol" d="M80 170A120 120 0 0 1 320 170Z"/>
-      <rect class="paso-suelo" x="0" y="170" width="400" height="350"/>
-      <g class="paso-brote" transform="translate(140 30) scale(2)">
-        <path class="tallo" d="M30 70V28"/>
-        <path class="hoja" d="M32 42C22 42 10 35 8 24C20 24 30 31 32 42Z"/>
-        <path class="hoja hoja--tinta" d="M30 40C20 40 8 33 6 22C18 22 28 29 30 40Z"/>
-        <path class="hoja" d="M30 40C40 40 52 33 54 22C42 22 32 29 30 40Z"/>
-      </g>
-      <path class="paso-horizonte" d="M0 170H400"/>
-      <path class="raiz" pathLength="1" d="M200 172C200 210 198 240 202 262"/>
-      <path class="raicilla" pathLength="1" d="M200 214C188 220 180 228 176 240"/>
-    </svg>
+      <img src="/img/ilustraciones/reintentar.svg" th:src="@{/img/ilustraciones/reintentar.svg}" alt=""
+           width="117" height="121">
     </div>
   </div>
 </th:block>

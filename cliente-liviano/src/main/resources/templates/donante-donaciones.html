@@ -2,10 +2,8 @@
 <!--/* Raíces A, Mis donaciones de la empresa (RF-05), según la ficha
        docs/interfaz/flujos/raices-donante-navegable.md. El filtro por estado y categoría es un
        formulario get real; un valor desconocido se ignora y ese filtro queda en "Todos" o "Todas".
-       La lista es el libro de la empresa: cada donación, un asiento colgado de la raíz por fecha, la
-       más reciente arriba. Su número es la estación: impresa (paja) si ya llegó, de papel si tiene
-       destino y hueca si todavía no (lo que falta todavía no se imprimió); el texto dice lo mismo.
-       En pantalla grande, cada asiento es un renglón con columnas, como un libro de registro.
+       La lista es la huerta de la empresa, como Mis donaciones de K (2026-11-08): una lámina por
+       donación, la más reciente primero, con el dibujo según su estado; el texto dice lo mismo.
        Los datos vienen del controller (misDonaciones: de la maqueta o de Donaciones), no de
        viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -47,7 +45,7 @@
     </th:block>
 
     <th:block th:unless="${vacia or escenario == 'error'}">
-      <form class="filtro" action="/donante-donaciones"
+      <form hx-boost="true" class="filtro" action="/donante-donaciones"
             th:action="@{/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
         <div class="campo">
           <label for="estado">Estado</label>
@@ -93,47 +91,16 @@
            th:href="@{/donante-donaciones}">Sacar los filtros</a>
       </section>
 
+      <!--/* La huerta, como Mis donaciones de K (estética de K, 2026-11-08; antes, un libro de asientos):
+             una lámina por donación, de la más reciente a la primera, con el dibujo según su estado. */-->
       <svg th:replace="~{iconos :: categorias}"></svg>
-
-      <th:block th:unless="${lista.isEmpty()}">
-        <div class="libro-columnas" aria-hidden="true">
-          <span>N.º</span><span>Donación</span><span>Cuánto y para quién</span><span>Donada</span><span>Estado</span>
-        </div>
-        <ol class="libro" role="list">
-          <li th:each="d : ${lista}" class="asiento"
-              th:classappend="|asiento--${d.estado.tono}${d.destino == null ? ' asiento--sin-destino' : ''}|">
-            <p class="asiento-numero">
-              <span aria-hidden="true"><small>N.º</small> <b th:text="${d.numero}">7</b></span>
-              <span class="solo-lectores" th:text="|Donación número ${d.numero}|">Donación número 7</span>
-            </p>
-            <div class="asiento-que">
-              <h2><a href="/donante-donaciones-detalle?donacion=arroz"
-                     th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-                     th:text="${d.titulo}">Arroz largo fino</a></h2>
-              <p class="categoria" th:if="${d.categoriaTexto}">
-                <svg th:if="${d.icono}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                  <use href="#cat-alimentos" th:href="|#${d.icono}|"/>
-                </svg>
-                <span th:text="${d.categoriaTexto}">Alimentos</span>
-              </p>
-            </div>
-            <p class="asiento-para">
-              <b th:text="${d.cantidad}">10 kg</b>
-              <span th:text="${d.destino == null} ? 'Todavía sin destino' : |Para ${d.destino}|">Todavía sin
-                destino</span>
-            </p>
-            <p class="asiento-donada" th:text="|Donada el ${d.donada}|">Donada el 14 de octubre de 2026</p>
-            <p class="asiento-estado">
-              <span class="estado" th:data-estado="${d.estado.tono}">
-                <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-                <span th:text="${d.estado.texto}">Pendiente</span>
-              </span>
-              <span class="asiento-nota" th:text="${d.nota}">En
-                el depósito, espera destino</span>
-            </p>
-          </li>
-        </ol>
-      </th:block>
+      <ul th:unless="${lista.isEmpty()}" class="lista huerta-lista" role="list">
+        <th:block th:each="d : ${lista}">
+          <!--/* La planta lee la categoría como ícono del sprite: con los datos reales, es d.icono. */-->
+          <li th:replace="~{componentes/huerta :: planta(${ {clave: d.clave, titulo: d.titulo, cantidad: d.cantidad,
+              categoria: d.icono, categoriaTexto: d.categoriaTexto, destino: d.destino, nota: d.nota, estado: d.estado} })}"></li>
+        </th:block>
+      </ul>
 
       <div class="donaciones-pie">
         <p>Las que están en curso también se ven en Seguimiento, con dónde va el camión.</p>

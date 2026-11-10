@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <!--/* Raíces, Ranking de donantes del admin (RF-19), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.9). De partida, el último ranking
-       (el primero de ${ranking.meses}); "Ver otro mes" es un formulario GET con ?mes=2026-08. Los datos
-       los pone RankingController (de la maqueta o de Incentivos); sin meses, el vacío (el 204). El criterio va
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.9). Los datos los pone
+       RankingController (de la maqueta o de Incentivos): los meses ya calculados, del más reciente al
+       más viejo; sin meses, el vacío (el 204). Arriba de la tabla, la barra de filtros de la ronda del
+       2026-11-10 (form.filtros-barra, GET, componentes/filtros) con una pastilla "Mes" armada con esos
+       meses (?mes=2026-08; sin elegir, el más reciente). La barra lleva hx-boost: filtrar cambia la
+       tabla sin recargar ni volver arriba; tocar una opción ya filtra (data-al-cambiar). El criterio va
        arriba de la tabla, con la fecha en que se calculó. El admin ve el nombre de cada donante.
-       En la maqueta, ?escenario=vacio, lento y error. */-->
+       Los filtros "Tipo de donante" y "Período" (año, desde siempre) del rediseño quedan pendientes:
+       Incentivos todavía no da el tipo de cada donante ni rankings más largos que un mes (decisión del
+       2026-11-10 al resolver la PR 959). En la maqueta, ?escenario=vacio, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
   <title>Ranking - DonaTrack</title>
 </head>
 <body>
+<!--/* El mes pedido se busca en la lista, no entra en una expresión; el que va al menú de filtros sale
+       de los datos y se valida con su forma (2026-09) antes de entrar. */-->
 <th:block th:fragment="contenido"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              meses=${ranking.meses},
              conDatos=${!meses.isEmpty() and escenario != 'error' and escenario != 'lento'},
-             elegido=${param.mes != null ? param.mes[0] : ''},
-             m=${meses.isEmpty() ? null : (meses.^[clave == #root.elegido] ?: meses[0])}">
+             pedido=${param.mes != null ? param.mes[0] : ''},
+             m=${meses.isEmpty() ? null : (meses.^[clave == #root.pedido] ?: meses[0])},
+             fMes=${m != null and m.clave matches '[0-9]{4}-[0-9]{2}' ? m.clave : ''},
+             filtrado=${!meses.?[clave == #root.pedido].isEmpty()}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo">Administración</p>
@@ -38,19 +47,20 @@
         cargar</a>
     </section>
 
-    <section th:if="${meses.isEmpty() and escenario != 'error' and escenario != 'lento'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${meses.isEmpty() and escenario != 'error' and escenario != 'lento'}" class="vacio"
+             aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay ningún ranking: se arma al cerrar el primer mes con misiones.</h2>
     </section>
 
-    <form th:if="${conDatos}" class="racimo" action="/admin-ranking" th:action="@{/admin-ranking}" method="get">
-      <div class="campo">
-        <label for="mes">Ver otro mes</label>
-        <select id="mes" name="mes">
-          <option th:each="x : ${meses}" th:value="${x.clave}" th:text="${x.nombre}"
-                  th:selected="${x.clave == m.clave}">Septiembre de 2026</option>
-        </select>
+    <!--/* El filtro: el mes, un formulario GET (componentes/filtros). */-->
+    <form th:if="${conDatos}" hx-boost="true" class="filtros-barra" action="/admin-ranking"
+          th:action="@{/admin-ranking}" method="get" data-al-cambiar>
+      <div class="filtros" role="group" aria-label="Filtrar el ranking">
+        <details th:replace="~{componentes/filtros :: menu('mes', 'Mes', ${fMes},
+            ${meses.![{valor: clave, texto: nombre}]})}"></details>
+        <a th:if="${filtrado}" hx-boost="true" class="filtros-sacar" href="/admin-ranking"
+           th:href="@{/admin-ranking}">Sacar los filtros</a>
       </div>
-      <button class="boton" data-tono="secundario" type="submit">Ver</button>
     </form>
 
     <section th:if="${escenario == 'lento' or conDatos}" class="pila" data-espacio="3"
@@ -58,7 +68,7 @@
       <h2 id="ranking-titulo" th:text="${conDatos} ? |El ranking de ${#strings.toLowerCase(m.nombre)}| : 'El ranking'">El
         ranking de septiembre de 2026</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
-      <th:block th:if="${conDatos}">
+      <th:block th:if="${conDatos and !m.puestos.isEmpty()}">
         <p>Ordenado por la cantidad de misiones que cada donante completó en el mes.
           <th:block th:if="${m.calculado}" th:text="|Calculado el ${m.calculado}.|">Calculado el 30 de
             septiembre de 2026, 23:59.</th:block>
@@ -83,6 +93,12 @@
           </tbody>
         </table>
       </th:block>
+
+      <!--/* Un mes calculado sin donantes. */-->
+      <section th:if="${conDatos and m.puestos.isEmpty()}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo" th:text="|Ningún donante completó misiones en ${#strings.toLowerCase(m.nombre)}.|">Ningún
+          donante completó misiones en septiembre de 2026.</h3>
+      </section>
     </section>
   </div>
 </th:block>

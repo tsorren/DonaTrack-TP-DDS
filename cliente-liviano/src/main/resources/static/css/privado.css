@@ -17,42 +17,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
-  padding: 0.75rem 1rem calc(0.75rem + var(--medida-estrato));
+  padding: 0.75rem 1rem;
 }
 
-.armazon-cuenta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.armazon-cuenta p {
-  display: grid;
-  margin: 0;
-  line-height: 1.25;
-}
-
-.armazon-cuenta b {
-  color: var(--color-texto-suelo);
-}
-
-.armazon-cuenta small {
-  font-size: 0.875rem;
-}
-
-.armazon-cuenta a {
-  display: inline-flex;
-  align-items: center;
-  min-width: 3rem;
-  min-height: 3rem;
-  padding: 0 0.5rem;
-  color: var(--color-raiz);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* El acceso a Notificaciones del donante: en el celular, la carta sola con la cantidad sin leer en
-   un sello paja; igual desde la tableta, en la cabecera, junto a la cuenta. */
+/* El acceso a Notificaciones: la campana con la cantidad sin leer en un disco verde, junto a la foto
+   de perfil (usuario, 2026-11-08; antes, una carta). */
 .armazon-avisos {
   position: relative;
   display: inline-flex;
@@ -62,7 +31,7 @@
   min-width: 3rem;
   min-height: 3rem;
   margin-left: auto;
-  color: var(--color-texto-suelo);
+  color: var(--color-tinta);
   font-weight: 700;
   text-decoration: none;
 }
@@ -93,27 +62,21 @@
   min-width: 1.375rem;
   height: 1.375rem;
   padding: 0 0.25rem;
-  border: 1.5px solid var(--color-tinta);
   border-radius: 50%;
-  background: var(--color-raiz);
-  box-shadow: 0.125rem 0.125rem 0 var(--color-hoja);
-  color: var(--color-tinta);
+  background: var(--color-acento);
+  color: var(--color-texto-sobre-accion);
   font-size: 0.8125rem;
   line-height: 1;
 }
 
 .armazon-avisos[aria-current="page"] {
-  color: var(--color-raiz);
+  color: var(--color-acento);
 }
 
 main {
   max-width: 82rem;
   margin-inline: auto;
   padding: 1rem 1rem 3rem;
-}
-
-.raices-privado .raices-pie {
-  max-width: 82rem;
 }
 
 main:focus {
@@ -123,19 +86,18 @@ main:focus {
 .rotulo {
   margin: 0 0 0.25rem;
   color: var(--color-acento);
-  font-weight: 700;
+  font: 700 0.78rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.875rem;
+  letter-spacing: 0.13em;
 }
 
 main h1 {
   margin: 0 0 0.5rem;
   color: var(--color-tinta);
-  font: 800 clamp(2rem, 5vw, 3.5rem) / 1 var(--fuente-titulo);
+  font: 850 clamp(2rem, 5vw, 3.5rem) / 0.94 var(--fuente-titulo);
   font-stretch: 125%;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
@@ -144,8 +106,9 @@ main h1 {
 @layer pico {
   main h2 {
     color: var(--color-tinta);
-    font: 800 1.375rem/1.2 var(--fuente-titulo);
-    font-stretch: 118%;
+    font: 850 1.375rem/1.2 var(--fuente-titulo);
+    font-stretch: 120%;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -155,23 +118,13 @@ main h1 {
   font-weight: 700;
 }
 
-/* Lo que solo leen los lectores de pantalla. */
-.solo-lectores {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .sin-dibujar {
   max-width: 38rem;
 }
 
 @media (min-width: 37.5em) {
   .armazon {
-    padding: 0.75rem 2rem calc(0.75rem + var(--medida-estrato));
+    padding: 0.75rem 2rem;
   }
 
   main {
@@ -235,5 +188,13 @@ main h1 {
 
   .armazon-avisos {
     margin-left: 0;
+  }
+}
+
+/* La campana de la administración (ronda 2026-11-09): con el menú en su propia fila, la campana va a
+   la derecha, junto a la cuenta, y no en el medio de la primera fila. */
+@media (min-width: 68.75em) {
+  .armazon:has(.navegacion li:nth-child(6)) .armazon-avisos {
+    margin-left: auto;
   }
 }

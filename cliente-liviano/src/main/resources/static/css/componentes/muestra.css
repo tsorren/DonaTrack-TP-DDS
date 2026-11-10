@@ -52,7 +52,8 @@
   padding: var(--espacio-2);
   transform: translate(0);
   border-radius: var(--radio-boton);
-  background: var(--color-suelo-hondo);
+  outline: 1px solid var(--color-filete);
+  background: var(--color-papel);
 }
 
 /* Desde la tableta, la barra es horizontal y entra en la ficha. */

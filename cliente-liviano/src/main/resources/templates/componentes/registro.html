@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--/* Componente registro (usuario, 2026-11-08, como el registro de frontend-donatrack con la piel de
+       K): la cabeza centrada, las tres tarjetas del tipo de cuenta y, debajo, el índice de pasos (fijo
+       arriba al bajar: en fila en el celular, a la izquierda desde la tableta; con JavaScript, cada punto
+       se llena con lo completado de su sección) y el formulario en secciones, todo en una sola página. Su
+       hoja es static/css/componentes/registro.css. Catálogo: docs/interfaz/componentes.md.
+
+       Fragmentos:
+       - cabeza: el rótulo, "Creá tu cuenta" y la bajada, centrados.
+       - tipos(actual): las tres tarjetas (persona, empresa, entidad). Son enlaces: cambian el formulario
+         sin JavaScript. actual: 'persona', 'empresa', 'entidad' o '' (ninguna elegida).
+       - indice(pasos): el índice de las secciones del formulario; pasos es una lista de {id, titulo,
+         detalle}. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="cabeza" class="registro-cabeza">
+  <p class="huerta-rotulo" th:text="${completarPerfil} ? 'Completá tu perfil' : 'Sumate a DonaTrack'">Sumate a DonaTrack</p>
+  <h1>Creá tu <em>cuenta</em></h1>
+  <p class="huerta-bajada">Elegí cómo vas a participar. Después completás tus datos en una sola página.</p>
+</header>
+
+<nav th:fragment="tipos(actual)" class="registro-tipos" aria-label="Tipo de cuenta">
+  <ul role="list">
+    <li><a href="/publico-registro-donante?tipo=persona" th:href="@{/publico-registro-donante(tipo='persona')}"
+           class="tarjeta registro-tipo" th:aria-current="${actual == 'persona'} ? 'page' : null">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}" alt=""
+           width="90" height="230">
+      <span><b>Persona donante</b> Donás a título personal y seguís cada donación.</span></a></li>
+    <li><a href="/publico-registro-donante" th:href="@{/publico-registro-donante}"
+           class="tarjeta registro-tipo" th:aria-current="${actual == 'empresa'} ? 'page' : null">
+      <img src="/img/ilustraciones/planta-algodon.svg" th:src="@{/img/ilustraciones/planta-algodon.svg}" alt=""
+           width="90" height="228">
+      <span><b>Empresa u organización donante</b> Donás a nombre de la empresa, con constancia de cada entrega.</span></a></li>
+    <li><a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
+           class="tarjeta registro-tipo" th:aria-current="${actual == 'entidad'} ? 'page' : null">
+      <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}" alt=""
+           width="144" height="245">
+      <span><b>Entidad beneficiaria</b> Comedores, escuelas y hogares que reciben donaciones.</span></a></li>
+  </ul>
+</nav>
+
+<nav th:fragment="indice(pasos)" class="registro-indice" aria-label="Secciones del formulario">
+  <ol role="list">
+    <li th:each="p : ${pasos}"><a href="#datos" th:href="|#${p.id}|"><b th:text="${p.titulo}">Datos</b>
+      <span th:text="${p.detalle}">Quién se registra</span></a></li>
+  </ol>
+</nav>
+</body>
+</html>

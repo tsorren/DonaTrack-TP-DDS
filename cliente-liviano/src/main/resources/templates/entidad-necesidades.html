@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--/* Raíces, Necesidades de la entidad (RF-10), según su ficha de flujo
        (docs/interfaz/flujos/raices-necesidades.md). Arriba, el registro de cifras y "Publicar otra
-       necesidad" plegado; la lista de los pedidos vigentes, cada uno plegado con su resumen y,
-       abierto, su detalle: por qué hace falta, las entregas para ese pedido, quién donó, la historia
+       necesidad" plegado; la lista de las necesidades vigentes, en un cantero plegable por categoría
+       (con su resumen: cuántas, cuántas cubiertas y cuántas entregas esperan), cada uno plegado con su resumen y,
+       abierto, su detalle: por qué hace falta, las entregas para esa necesidad, quién donó, la historia
        de los períodos en barras (si se repite) y las acciones (cambiar y dar de baja, con su confirmación en un
        diálogo del navegador, sin JavaScript); al pie, las cumplidas y terminadas. Los datos de
        partida son los del primer prototipo de Necesidades, con las
@@ -10,12 +11,16 @@
        se repite cada semana, quincena o mes, el cambio de cantidad vale para el período en curso, la
        baja dice qué pasa con cada entrega según si salió, y el nombre de quien donó se ve salvo que
        lo haya ocultado.
-       ?necesidad=<clave> abre ese pedido (de partida, lentejas); una clave que no está, o
+       ?necesidad=<clave> abre esa necesidad (de partida, lentejas); una clave que no está, o
        ?escenario=no-existe, muestra "No encontramos esa necesidad". ?escenario=vacio, lento, error,
        error-publicar, error-cambiar, error-baja, sin-conexion, conflicto, cambiar-datos,
        ya-no-vigente y entidad-inactiva. Cada acción es un formulario real (POST) que lleva a
        entidad-necesidades-publicada, -cambiada o -baja; el error de datos al publicar es
        entidad-necesidades-publicar-error.
+       El envoltorio .necesidades se llama igual que la lista del bloque necesidad: la hoja de la
+       pantalla lo deja en display: block para que la lista vigente ocupe todo el ancho (2026-11-10).
+       "Con un problema" del registro de cifras abre esa necesidad en la misma pantalla con hx-boost.
+       En pantalla se dice "necesidades", nunca "pedidos" (las clases pedido-* quedan como están).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'publicada', 'publicar-error',
          'cambiada' o 'baja'.
@@ -40,14 +45,14 @@
              mostrarNueva=${accion == 'publicada'},
              sinAceite=${accion == 'baja' or escenario == 'ya-no-vigente'},
              todas=${ {
-      {clave: 'aceite', nombre: 'Aceite de girasol', categoria: 'cat-alimentos', unidad: 'litros',
+      {clave: 'aceite', nombre: 'Aceite de girasol', categoria: 'cat-alimentos', rubro: 'Alimentos', unidad: 'litros',
        plazo: 'Hasta el 20 de octubre', faltan: 'faltan 5 días', repite: 'Una sola vez',
        recibido: '0 de 20 litros recibidos', valor: 0, max: 20, motivo: 'Para cocinar el almuerzo.',
        puerta: 0, camino: 0, problema: 1,
        entregas: { {cuanto: '10 litros', tono: 'con-problema',
                     texto: 'El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.'} },
        donaron: {}, periodos: {}},
-      {clave: 'leche', nombre: 'Leche en polvo', categoria: 'cat-alimentos', unidad: 'unidades',
+      {clave: 'leche', nombre: 'Leche en polvo', categoria: 'cat-alimentos', rubro: 'Alimentos', unidad: 'unidades',
        plazo: 'Hasta el 25 de octubre', faltan: 'faltan 10 días', repite: 'Una sola vez',
        recibido: '12 de 24 unidades recibidas', valor: 12, max: 24,
        motivo: 'Para la merienda de los más chicos.', puerta: 0, camino: 1, problema: 0,
@@ -55,12 +60,12 @@
                     texto: 'Sale del depósito el 17 de octubre.'} },
        donaron: { {quien: 'Lácteos Ejemplo SA', cuanto: '12 unidades', cuando: '6 de octubre'} },
        periodos: {}},
-      {clave: 'fideos', nombre: 'Fideos secos', categoria: 'cat-alimentos', unidad: 'kg',
+      {clave: 'fideos', nombre: 'Fideos secos', categoria: 'cat-alimentos', rubro: 'Alimentos', unidad: 'kg',
        plazo: 'Hasta el 30 de octubre', faltan: 'faltan 15 días', repite: 'Una sola vez',
        recibido: '0 de 30 kg recibidos', valor: 0, max: 30,
        motivo: 'Para la cena de los viernes.', puerta: 0, camino: 0, problema: 0,
        entregas: {}, donaron: {}, periodos: {}},
-      {clave: 'lentejas', nombre: 'Lentejas secas', categoria: 'cat-alimentos', unidad: 'kg',
+      {clave: 'lentejas', nombre: 'Lentejas secas', categoria: 'cat-alimentos', rubro: 'Alimentos', unidad: 'kg',
        plazo: 'Octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
        recibido: (accion == 'cambiada' ? '10 de 45 kg recibidos' : '10 de 40 kg recibidos'), valor: 10,
        max: (accion == 'cambiada' ? 45 : 40),
@@ -76,7 +81,7 @@
                    {nombre: 'Agosto', recibido: '22 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 22, max: 40},
                    {nombre: 'Julio', recibido: '0 de 40 kg', tono: 'nada', estado: 'No llegó nada', valor: 0, max: 40},
                    {nombre: 'Junio', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40, max: 40} }},
-      {clave: 'arroz', nombre: 'Arroz', categoria: 'cat-alimentos', unidad: 'kg',
+      {clave: 'arroz', nombre: 'Arroz', categoria: 'cat-alimentos', rubro: 'Alimentos', unidad: 'kg',
        plazo: 'Octubre, hasta el 31', faltan: 'faltan 16 días', repite: 'Cada mes',
        recibido: '15 de 40 kg recibidos', valor: 15, max: 40,
        motivo: 'Para el almuerzo de lunes a viernes.', puerta: 0, camino: 1, problema: 0,
@@ -88,7 +93,7 @@
        periodos: { {nombre: 'Octubre', fechas: 'del 1 al 31', recibido: '15 de 40 kg', tono: 'curso', estado: 'En curso', valor: 15},
                    {nombre: 'Septiembre', recibido: '40 de 40 kg', tono: 'todo', estado: 'Llegó todo', valor: 40, max: 40},
                    {nombre: 'Agosto', recibido: '31 de 40 kg', tono: 'parte', estado: 'Llegó una parte', valor: 31} }},
-      {clave: 'ropa', nombre: 'Ropa de abrigo', categoria: 'cat-ropa', unidad: 'unidades',
+      {clave: 'ropa', nombre: 'Ropa de abrigo', categoria: 'cat-ropa', rubro: 'Ropa', unidad: 'unidades',
        plazo: 'Hasta el 15 de noviembre', faltan: 'falta un mes', repite: 'Una sola vez',
        recibido: '5 de 30 unidades recibidas', valor: 5, max: 30,
        motivo: 'Para las familias del barrio que perdieron ropa en el temporal del 3 de octubre.',
@@ -106,7 +111,7 @@
     <header>
       <p class="rotulo" th:text="${seccion}">Necesidades</p>
       <h1>Lo que <em>hace falta</em></h1>
-      <p class="necesidades-bajada">Tus pedidos vigentes. Los ven los donantes y el catálogo público,
+      <p class="necesidades-bajada">Tus necesidades vigentes. Las ven los donantes y el catálogo público,
         sin tus datos de contacto.</p>
     </header>
 
@@ -142,7 +147,7 @@
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos cargar tus necesidades.</h2>
-      <p>Es un problema nuestro: no cambió nada en tus pedidos. Probá de nuevo en unos minutos; si
+      <p>Es un problema nuestro: no cambió nada en tus necesidades. Probá de nuevo en unos minutos; si
         sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
           con este código</a>.</p>
@@ -152,7 +157,7 @@
     </section>
 
     <!--/* El registro de cifras, con fecha, como el de Seguir entregas; se cuentan las entregas de los
-           pedidos vigentes. */-->
+           necesidades vigentes. */-->
     <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="cifras"
              aria-labelledby="cifras-titulo">
       <h2 id="cifras-titulo" class="cifras-titulo">Al 15 de octubre de 2026</h2>
@@ -172,8 +177,9 @@
           <dd th:text="${#aggregates.sum(vigentes.![camino])}">2</dd>
         </div>
         <div class="cifra">
-          <dt th:if="${#aggregates.sum(vigentes.![problema]) > 0}"><a href="/entidad-necesidades?necesidad=aceite"
-                 th:href="@{/entidad-necesidades(necesidad=aceite)}">Con un
+          <dt th:if="${#aggregates.sum(vigentes.![problema]) > 0}"><a href="/entidad-necesidades?necesidad=aceite#aceite"
+                 th:href="@{/entidad-necesidades(necesidad=aceite)} + '#aceite'" hx-boost="true"
+                 hx-swap="outerHTML show:#aceite:top">Con un
             problema</a></dt>
           <dt th:unless="${#aggregates.sum(vigentes.![problema]) > 0}">Con un problema</dt>
           <dd th:text="${#aggregates.sum(vigentes.![problema])}">1</dd>
@@ -181,7 +187,7 @@
       </dl>
     </section>
 
-    <!--/* Sin pedidos vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
+    <!--/* Sin necesidades vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">No tenés necesidades vigentes.</h2>
       <p>Publicá lo que le hace falta a tu entidad: lo ven los donantes y el catálogo público.</p>
@@ -202,210 +208,37 @@
     <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="pedidos"
              aria-labelledby="pedidos-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="pedidos-titulo">Tus necesidades vigentes</h2>
-      <ul class="pedidos-lista" role="list">
-        <li th:each="n : ${vigentes}" th:id="${n.clave}">
-          <details class="tarjeta pedido" data-filete="doble" th:open="${n.clave == pedida}"
-                   th:classappend="${mostrarNueva and n.clave == 'fideos'} ? 'pedido--nuevo'">
-            <!--/* El resumen dice todo lo necesario para recorrer la lista sin abrir nada. */-->
-            <summary class="pedido-resumen">
+      <!--/* Un cantero por categoría (prueba necesidades-b, elegida en la ronda del 2026-11-09, tarde):
+             el pictograma grande, cuántas necesidades tiene, cuántas están cubiertas y cuántas entregas
+             esperan; adentro, las tarjetas compactas. La categoría también se pliega ("que se pueda
+             plegar la categoría también"): es un details abierto de partida, y plegado deja a la vista
+             ese resumen. */-->
+      <div class="pila" data-espacio="4"
+           th:with="rubros=${ { {nombre: 'Alimentos', icono: 'cat-alimentos'}, {nombre: 'Ropa', icono: 'cat-ropa'},
+                                {nombre: 'Muebles', icono: 'cat-muebles'}, {nombre: 'Útiles escolares', icono: 'cat-escolares'} } }">
+        <th:block th:each="r : ${rubros}" th:with="deEste=${vigentes.?[rubro == #root.r.nombre]}">
+          <details th:unless="${#lists.isEmpty(deEste)}" data-cantero open th:id="|cantero-${r.icono}|">
+            <summary th:with="cuantas=${#lists.size(deEste)},
+                              cubiertas=${#lists.size(deEste.?[valor >= max])},
+                              puerta=${#aggregates.sum(deEste.![puerta])}">
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
+                <use href="#cat-alimentos" th:href="|#${r.icono}|"/>
               </svg>
-              <span class="pedido-que">
-                <b th:text="${n.nombre}">Lentejas secas</b>
-                <span th:if="${mostrarNueva and n.clave == 'fideos'}" class="pedido-marca">Nueva</span>
-                <span th:if="${n['cambiada']}" class="pedido-marca" th:text="${n.cambiada}">Cambiada hoy</span>
-                <span class="pedido-repite" th:text="${n.repite}">Cada mes</span>
+              <span>
+                <h3 th:text="${r.nombre}">Alimentos</h3>
+                <span th:text="|${cuantas == 1 ? '1 necesidad' : cuantas + ' necesidades'} · ${cubiertas == 0 ? (cuantas == 1 ? 'todavía no está cubierta' : 'ninguna cubierta todavía') : (cubiertas == cuantas ? (cuantas == 1 ? 'cubierta' : 'todas cubiertas') : cubiertas + ' de ' + cuantas + ' cubiertas')}${puerta > 0 ? (puerta == 1 ? ' · 1 entrega espera tu confirmación' : ' · ' + puerta + ' entregas esperan tu confirmación') : ''}|">5
+                  necesidades · ninguna cubierta todavía · 1 entrega espera tu confirmación</span>
               </span>
-              <!--/* Cuánto pide va una sola vez, en la barra («10 de 40 kg»); acá, solo hasta cuándo
-                     (review de Sofía, 2026-11-02). */-->
-              <span class="pedido-cuanto"><span th:text="${n.plazo}">Octubre, hasta el 31</span>
-                <small th:text="|(${n.faltan})|">(faltan 16 días)</small></span>
-              <span class="pedido-va"
-                    th:with="otra=${escenario == 'conflicto' and n.clave == pedida}">
-                <span th:text="${otra} ? '10 de 45 kg recibidos' : ${n.recibido}">10 de 40 kg recibidos</span>
-                <progress th:value="${n.valor}" th:max="${otra} ? 45 : ${n.max}" value="10" max="40"
-                          aria-hidden="true"></progress>
-              </span>
+              <span data-cantero-ver aria-hidden="true"><span>Plegar</span><span>Mostrar</span></span>
             </summary>
-
-            <div class="pedido-detalle">
-              <!--/* El cartel del cambio de cantidad, para quienes administran la necesidad, hasta que
-                     termina el período en curso (review de Sofía, 2026-11-02). */-->
-              <p th:if="${n['cambio']}" class="cambio" th:text="${n.cambio}">Hoy pasó de 40 a 45 kg por
-                mes. Vale desde octubre: lo que ya llegó cuenta.</p>
-              <div class="pedido-partes">
-                <section class="parte" th:aria-labelledby="|${n.clave}-porque|">
-                  <h3 th:id="|${n.clave}-porque|">Por qué hace falta</h3>
-                  <p th:text="${n.motivo}">Para el almuerzo de lunes a viernes.</p>
-                </section>
-
-                <section class="parte" th:aria-labelledby="|${n.clave}-entregas|">
-                  <h3 th:id="|${n.clave}-entregas|">Entregas para este pedido</h3>
-                  <p th:if="${#lists.isEmpty(n.entregas)}">No hay entregas pendientes para este
-                    pedido.</p>
-                  <ul th:unless="${#lists.isEmpty(n.entregas)}" class="entregas" role="list">
-                    <li th:each="en : ${n.entregas}">
-                      <th:block th:replace="~{componentes/sello :: sello(${en.tono})}"></th:block>
-                      <span><b th:text="${en.cuanto}">15 kg</b> <span th:text="${en.texto}">Llegaron a
-                        tu puerta hoy a las 18:20 y esperan tu confirmación.</span></span>
-                      <a th:if="${en['confirmar']}" class="boton" data-tono="principal" data-tamano="chico"
-                         href="/entidad-seguimiento-confirmar?entrega=lentejas"
-                         th:href="@{/entidad-seguimiento-confirmar(entrega=${en.confirmar})}">Confirmar
-                        recepción</a>
-                    </li>
-                  </ul>
-                  <a class="enlace" href="/entidad-seguimiento"
-                     th:href="@{/entidad-seguimiento}">Ver en Seguir entregas</a>
-                </section>
-
-                <section class="parte" th:aria-labelledby="|${n.clave}-donaron|">
-                  <h3 th:id="|${n.clave}-donaron|">Quién donó</h3>
-                  <p th:if="${#lists.isEmpty(n.donaron)}">Todavía no llegó nada.</p>
-                  <ul th:unless="${#lists.isEmpty(n.donaron)}" class="donaron" role="list">
-                    <!--/* Con el nombre oculto, la categoría del ranking; si no llega
-                           (?escenario=sin-categoria), «Un donante» o «Una empresa donante». */-->
-                    <li th:each="d : ${n.donaron}"
-                        th:with="cat=${escenario == 'sin-categoria' ? null : d['categoriaDonante']},
-                                 empresa=${d['tipo'] == 'empresa'}"
-                        th:text="|${d.quien ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)} · ${d.cuanto} · ${d.cuando}|">Distribuidora
-                      Ejemplo SA · 10 kg · 10 de octubre</li>
-                  </ul>
-                </section>
-              </div>
-
-              <!--/* La historia de los períodos, del que está en curso hacia atrás: una barra por
-                     período (A/B 2, usuario, 2026-11-01). El estado va en palabras; la barra es
-                     decorativa. */-->
-              <section th:unless="${#lists.isEmpty(n.periodos)}" class="parte parte--periodos"
-                       th:aria-labelledby="|${n.clave}-periodos|">
-                <h3 th:id="|${n.clave}-periodos|" th:text="${n.repite}">Cada mes</h3>
-                <!--/* A la vista, los cuatro últimos; los anteriores, plegados (review de Sofía,
-                       2026-11-02: con más barras, los nombres no entran en el gráfico). El 4 se
-                       repite en el orden del gráfico de entidad-necesidades.css (nth-child 1 a 4). */-->
-                <ol class="periodos" role="list" th:aria-label="|Períodos de ${n.nombre}|">
-                  <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index < 4}">
-                    <li th:replace="~{:: periodo(${p}, ${p['max'] ?: n.max})}"></li>
-                  </th:block>
-                </ol>
-                <details th:if="${#lists.size(n.periodos) > 4}" class="periodos-anteriores">
-                  <summary class="enlace">Ver los anteriores</summary>
-                  <ol class="periodos periodos--lista" role="list"
-                      th:aria-label="|Períodos anteriores de ${n.nombre}|">
-                    <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index >= 4}">
-                      <li th:replace="~{:: periodo(${p}, ${p['max'] ?: n.max})}"></li>
-                    </th:block>
-                  </ol>
-                </details>
-                <p class="periodos-desde" th:text="${n.desde}">Desde julio de 2026</p>
-              </section>
-
-              <div class="pedido-acciones">
-                <section th:if="${escenario == 'error-cambiar' and n.clave == pedida}"
-                         class="banner" data-estado="error" role="alert" aria-labelledby="errorcambio-titulo">
-                  <h3 id="errorcambio-titulo">No pudimos guardar los cambios.</h3>
-                  <p>Es un problema nuestro: el pedido sigue como estaba. Probá de nuevo en unos
-                    minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
-           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
-          con este código</a>.</p>
-                  <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-                  <a class="boton" data-tono="secundario" th:href="|#${n.clave}-cuanto|"
-                     href="#lentejas-cuanto">Revisar y guardar de nuevo</a>
-                </section>
-                <section th:if="${escenario == 'conflicto' and n.clave == pedida}" class="banner"
-                         role="alert" aria-labelledby="conflicto-titulo">
-                  <h3 id="conflicto-titulo">Otra persona de tu entidad cambió este pedido mientras lo
-                    editabas.</h3>
-                  <p>Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo.</p>
-                </section>
-                <section th:if="${escenario == 'cambiar-datos' and n.clave == pedida}"
-                         class="banner resumen" data-estado="error" role="alert" tabindex="-1" autofocus
-                         aria-labelledby="cambiardatos-titulo">
-                  <h3 id="cambiardatos-titulo">Revisá una cosa antes de guardar</h3>
-                  <ul>
-                    <li><a th:href="|#${n.clave}-cuanto|" href="#lentejas-cuanto">Falta cuánto</a></li>
-                  </ul>
-                </section>
-
-                <details class="cambiar" th:open="${cambiando and n.clave == pedida}">
-                  <summary class="boton" data-tono="secundario">Cambiar cantidad o motivo</summary>
-                  <form action="/entidad-necesidades-cambiada"
-                        th:action="@{/entidad-necesidades-cambiada}" method="post"
-                        class="formulario">
-                    <p class="nota">Qué hace falta y si se repite no se pueden cambiar: si cambiaron,
-                      dala de baja y publicá otra.</p>
-                    <th:block th:with="conError=${escenario == 'cambiar-datos' and n.clave == pedida}">
-                      <div class="campo" th:data-estado="${conError} ? 'error'">
-                        <label th:for="|${n.clave}-cuanto|" for="lentejas-cuanto"
-                               th:text="|Cuánto, en ${n.unidad}|">Cuánto, en kg</label>
-                        <small th:id="|${n.clave}-cuanto-ayuda|"
-                               th:text="${n.repite == 'Una sola vez'} ? 'Si ya llegó más que lo nuevo, el pedido queda cumplido.' : |Vale desde este período, ${#strings.toLowerCase(n.periodos[0].nombre)}: si ya llegó más que lo nuevo, este período queda cumplido.|">Vale
-                          desde este período, octubre: si ya llegó más que lo nuevo, este período queda
-                          cumplido.</small>
-                        <p th:if="${conError}" th:id="|${n.clave}-cuanto-error|" class="campo-error"
-                           th:text="|Escribí cuánto, en ${n.unidad}. Por ejemplo: 40.|">Escribí cuánto,
-                          en kg. Por ejemplo: 40.</p>
-                        <input th:id="|${n.clave}-cuanto|" name="cuanto" type="number" min="1"
-                               inputmode="numeric" required
-                               th:value="${conError} ? '' : (${escenario == 'conflicto' and n.clave == pedida} ? '50' : ${n.max})"
-                               th:attr="aria-describedby=${conError} ? |${n.clave}-cuanto-error ${n.clave}-cuanto-ayuda| : |${n.clave}-cuanto-ayuda|,aria-invalid=${conError} ? 'true' : null">
-                      </div>
-                    </th:block>
-                    <div class="campo">
-                      <label th:for="|${n.clave}-motivo|" for="lentejas-motivo">Por qué hace falta</label>
-                      <small th:id="|${n.clave}-motivo-ayuda|">Lo ven los donantes.</small>
-                      <textarea th:id="|${n.clave}-motivo|" name="motivo" rows="2" required
-                                th:attr="aria-describedby=|${n.clave}-motivo-ayuda|"
-                                th:text="${n.motivo}">Para el almuerzo de lunes a viernes.</textarea>
-                    </div>
-                    <button class="boton" data-tono="principal" type="submit">Guardar cambios</button>
-                  </form>
-                </details>
-
-                <!--/* La confirmación de la baja, en un diálogo del navegador (popover): se abre y se
-                       cierra sin JavaScript, con Esc o tocando afuera; el foco entra en "No, dejarla". */-->
-                <button type="button" class="boton" data-tono="quitar" th:popovertarget="|baja-${n.clave}|"
-                        popovertarget="baja-lentejas">Dar de baja</button>
-                <dialog class="dialogo" data-tono="quitar" th:id="|baja-${n.clave}|" id="baja-lentejas" popover
-                        th:aria-labelledby="|baja-${n.clave}-titulo|">
-                  <h3 class="dialogo-titulo" th:id="|baja-${n.clave}-titulo|" th:text="|¿Dar de baja ${n.nombre}?|">¿Dar de
-                    baja Lentejas secas?</h3>
-                  <p>Deja de verse para los donantes y en el catálogo público. Lo que ya recibiste queda
-                    asentado.</p>
-                  <p th:if="${n.puerta == 1}">Tiene 1 entrega en tu puerta que espera tu confirmación:
-                    confirmala antes de darla de baja.</p>
-                  <!--/* Según si salió (usuario, 2026-11-02): lo que salió llega igual; lo que no,
-                         vuelve al depósito y se asigna a otra entidad. */-->
-                  <th:block th:with="salieron=${#lists.size(n.entregas.?[tono == 'en-camino'])},
-                                     noSalieron=${#lists.size(n.entregas.?[tono == 'pendiente'])},
-                                     noLlegaron=${#lists.size(n.entregas.?[tono == 'con-problema'])}">
-                    <p th:if="${salieron > 0}"
-                       th:text="${salieron == 1} ? '1 entrega ya salió del depósito: llega igual y queda asentado lo que recibas.' : |${salieron} entregas ya salieron del depósito: llegan igual y queda asentado lo que recibas.|">1
-                      entrega ya salió del depósito: llega igual y queda asentado lo que recibas.</p>
-                    <p th:if="${noSalieron > 0}"
-                       th:text="${noSalieron == 1} ? '1 entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noSalieron} entregas todavía no salieron: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
-                      entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la
-                      necesite.</p>
-                    <p th:if="${noLlegaron > 0}"
-                       th:text="${noLlegaron == 1} ? '1 entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noLlegaron} entregas no pudieron llegar: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
-                      entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la
-                      necesite.</p>
-                  </th:block>
-                  <div class="acciones">
-                    <button type="button" class="boton" data-tono="secundario" autofocus
-                            th:popovertarget="|baja-${n.clave}|" popovertarget="baja-lentejas"
-                            popovertargetaction="hide">No, dejarla</button>
-                    <form action="/entidad-necesidades-baja"
-                          th:action="@{/entidad-necesidades-baja}" method="post">
-                      <button class="boton" data-tono="quitar" type="submit">Dar de baja</button>
-                    </form>
-                  </div>
-                </dialog>
-              </div>
-            </div>
+            <ul class="pedidos-lista" role="list">
+              <li th:each="n : ${deEste}" th:id="${n.clave}">
+                <details th:replace="~{entidad-necesidades :: pedido(${n})}"></details>
+              </li>
+            </ul>
           </details>
-        </li>
-      </ul>
+        </th:block>
+      </div>
     </section>
 
     <!--/* Las cumplidas y terminadas, aparte y plegadas (usuario, 2026-11-01): cómo terminó cada una,
@@ -424,6 +257,229 @@
     </details>
   </div>
 </th:block>
+
+<!--/* Un pedido: su resumen y, abierto, su detalle, dentro del cantero de su categoría. */-->
+<details th:fragment="pedido(n)" class="tarjeta pedido" th:open="${n.clave == pedida}"
+         th:attr="data-categoria=${n.categoria}"
+         th:classappend="${mostrarNueva and n.clave == 'fideos'} ? 'pedido--nuevo'">
+  <!--/* El resumen dice todo lo necesario para recorrer la lista sin abrir nada, en tres grupos
+         (ronda del 2026-11-09): qué hace falta (con la categoría y si se repite), cuánto llegó (la
+         cifra y la barra) y hasta cuándo con el estado de sus entregas; al pie, "Ver el detalle".
+         Cuánto pide va una sola vez, en la cifra («10 de 40 kg»). */-->
+  <summary class="pedido-resumen"
+           th:with="otra=${escenario == 'conflicto' and n.clave == pedida},
+                    meta=${otra ? 45 : n.max}">
+    <span class="pedido-que">
+      <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
+      </svg>
+      <span>
+        <b th:text="${n.nombre}">Lentejas secas</b>
+        <span class="pedido-repite" th:text="|${n.rubro} · ${n.repite}|">Alimentos · Cada mes</span>
+      </span>
+      <span th:if="${mostrarNueva and n.clave == 'fideos'}" class="pedido-marca">Nueva</span>
+      <span th:if="${n['cambiada']}" class="pedido-marca" th:text="${n.cambiada}">Cambiada hoy</span>
+    </span>
+    <span class="pedido-va">
+      <span class="pedido-falta"><b th:text="${n.valor}">10</b>
+        <span th:text="|de ${meta} ${n.unidad} ${n.unidad == 'unidades' ? 'recibidas' : 'recibidos'}|">de
+          40 kg recibidos</span></span>
+      <progress class="progreso" th:value="${n.valor}" th:max="${meta}" value="10" max="40"
+                aria-hidden="true"></progress>
+    </span>
+    <span class="pedido-cuanto">
+      <span class="pedido-porque"><span th:text="${n.plazo}">Octubre, hasta el 31</span>
+        <small th:text="|(${n.faltan})|">(faltan 16 días)</small></span>
+      <span th:if="${n.problema > 0}" class="estado" data-estado="problema"
+            th:text="${n.problema == 1} ? '1 entrega con un problema' : |${n.problema} entregas con un problema|">1
+        entrega con un problema</span>
+      <span th:if="${n.puerta > 0}" class="estado" data-estado="puerta"
+            th:text="${n.puerta == 1} ? '1 entrega espera tu confirmación' : |${n.puerta} entregas esperan tu confirmación|">1
+        entrega espera tu confirmación</span>
+      <span th:if="${n.camino > 0}" class="estado" data-estado="camino"
+            th:text="${n.camino == 1} ? '1 entrega en camino o por salir' : |${n.camino} entregas en camino o por salir|">1
+        entrega en camino o por salir</span>
+      <span th:if="${n.problema + n.puerta + n.camino == 0}" class="estado" data-estado="pendiente">Sin
+        entregas en curso</span>
+    </span>
+    <span class="pedidos-ver" aria-hidden="true"><span>Ver el detalle</span><span>Cerrar</span></span>
+  </summary>
+
+  <div class="pedido-detalle">
+    <!--/* El cartel del cambio de cantidad, para quienes administran la necesidad, hasta que
+           termina el período en curso (review de Sofía, 2026-11-02). */-->
+    <p th:if="${n['cambio']}" class="cambio" th:text="${n.cambio}">Hoy pasó de 40 a 45 kg por
+      mes. Vale desde octubre: lo que ya llegó cuenta.</p>
+    <div class="pedido-partes">
+      <section class="parte" th:aria-labelledby="|${n.clave}-porque|">
+        <h3 th:id="|${n.clave}-porque|">Por qué hace falta</h3>
+        <p th:text="${n.motivo}">Para el almuerzo de lunes a viernes.</p>
+      </section>
+
+      <section class="parte" th:aria-labelledby="|${n.clave}-entregas|">
+        <h3 th:id="|${n.clave}-entregas|">Entregas para esta necesidad</h3>
+        <p th:if="${#lists.isEmpty(n.entregas)}">No hay entregas pendientes para esta
+          necesidad.</p>
+        <ul th:unless="${#lists.isEmpty(n.entregas)}" class="entregas" role="list">
+          <li th:each="en : ${n.entregas}">
+            <th:block th:replace="~{componentes/sello :: sello(${en.tono})}"></th:block>
+            <span><b th:text="${en.cuanto}">15 kg</b> <span th:text="${en.texto}">Llegaron a
+              tu puerta hoy a las 18:20 y esperan tu confirmación.</span></span>
+            <a th:if="${en['confirmar']}" class="boton" data-tono="principal" data-tamano="chico"
+               href="/entidad-seguimiento-confirmar?entrega=lentejas"
+               th:href="@{/entidad-seguimiento-confirmar(entrega=${en.confirmar})}">Confirmar
+              recepción</a>
+          </li>
+        </ul>
+        <a class="enlace" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Ver en Seguir entregas</a>
+      </section>
+
+      <section class="parte" th:aria-labelledby="|${n.clave}-donaron|">
+        <h3 th:id="|${n.clave}-donaron|">Quién donó</h3>
+        <p th:if="${#lists.isEmpty(n.donaron)}">Todavía no llegó nada.</p>
+        <ul th:unless="${#lists.isEmpty(n.donaron)}" class="donaron" role="list">
+          <!--/* Con el nombre oculto, la categoría del ranking; si no llega
+                 (?escenario=sin-categoria), «Un donante» o «Una empresa donante». */-->
+          <li th:each="d : ${n.donaron}"
+              th:with="cat=${escenario == 'sin-categoria' ? null : d['categoriaDonante']},
+                       empresa=${d['tipo'] == 'empresa'}"
+              th:text="|${d.quien ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)} · ${d.cuanto} · ${d.cuando}|">Distribuidora
+            Ejemplo SA · 10 kg · 10 de octubre</li>
+        </ul>
+      </section>
+    </div>
+
+    <!--/* La historia de los períodos, del que está en curso hacia atrás: una barra por
+           período (A/B 2, usuario, 2026-11-01). El estado va en palabras; la barra es
+           decorativa. */-->
+    <section th:unless="${#lists.isEmpty(n.periodos)}" class="parte parte--periodos"
+             th:aria-labelledby="|${n.clave}-periodos|">
+      <h3 th:id="|${n.clave}-periodos|" th:text="${n.repite}">Cada mes</h3>
+      <!--/* A la vista, los cuatro últimos; los anteriores, plegados (review de Sofía,
+             2026-11-02: con más barras, los nombres no entran en el gráfico). El 4 se
+             repite en el orden del gráfico de entidad-necesidades.css (nth-child 1 a 4). */-->
+      <ol class="periodos" role="list" th:aria-label="|Períodos de ${n.nombre}|">
+        <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index < 4}">
+          <li th:replace="~{:: periodo(${p}, ${p['max'] ?: n.max})}"></li>
+        </th:block>
+      </ol>
+      <details th:if="${#lists.size(n.periodos) > 4}" class="periodos-anteriores">
+        <summary class="enlace">Ver los anteriores</summary>
+        <ol class="periodos periodos--lista" role="list"
+            th:aria-label="|Períodos anteriores de ${n.nombre}|">
+          <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index >= 4}">
+            <li th:replace="~{:: periodo(${p}, ${p['max'] ?: n.max})}"></li>
+          </th:block>
+        </ol>
+      </details>
+      <p class="periodos-desde" th:text="${n.desde}">Desde julio de 2026</p>
+    </section>
+
+    <div class="pedido-acciones">
+      <section th:if="${escenario == 'error-cambiar' and n.clave == pedida}"
+               class="banner" data-estado="error" role="alert" aria-labelledby="errorcambio-titulo">
+        <h3 id="errorcambio-titulo">No pudimos guardar los cambios.</h3>
+        <p>Es un problema nuestro: la necesidad sigue como estaba. Probá de nuevo en unos
+          minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+ th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
+con este código</a>.</p>
+        <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+        <a class="boton" data-tono="secundario" th:href="|#${n.clave}-cuanto|"
+           href="#lentejas-cuanto">Revisar y guardar de nuevo</a>
+      </section>
+      <section th:if="${escenario == 'conflicto' and n.clave == pedida}" class="banner"
+               role="alert" aria-labelledby="conflicto-titulo">
+        <h3 id="conflicto-titulo">Otra persona de tu entidad cambió esta necesidad mientras la
+          editabas.</h3>
+        <p>Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo.</p>
+      </section>
+      <section th:if="${escenario == 'cambiar-datos' and n.clave == pedida}"
+               class="banner resumen" data-estado="error" role="alert" tabindex="-1" autofocus
+               aria-labelledby="cambiardatos-titulo">
+        <h3 id="cambiardatos-titulo">Revisá una cosa antes de guardar</h3>
+        <ul>
+          <li><a th:href="|#${n.clave}-cuanto|" href="#lentejas-cuanto">Falta cuánto</a></li>
+        </ul>
+      </section>
+
+      <details class="cambiar" th:open="${cambiando and n.clave == pedida}">
+        <summary class="boton" data-tono="secundario">Cambiar cantidad o motivo</summary>
+        <form action="/entidad-necesidades-cambiada"
+              th:action="@{/entidad-necesidades-cambiada}" method="post"
+              class="formulario">
+          <p class="nota">Qué hace falta y si se repite no se pueden cambiar: si cambiaron,
+            dala de baja y publicá otra.</p>
+          <th:block th:with="conError=${escenario == 'cambiar-datos' and n.clave == pedida}">
+            <div class="campo" th:data-estado="${conError} ? 'error'">
+              <label th:for="|${n.clave}-cuanto|" for="lentejas-cuanto"
+                     th:text="|Cuánto, en ${n.unidad}|">Cuánto, en kg</label>
+              <small th:id="|${n.clave}-cuanto-ayuda|"
+                     th:text="${n.repite == 'Una sola vez'} ? 'Si ya llegó más que lo nuevo, la necesidad queda cumplida.' : |Vale desde este período, ${#strings.toLowerCase(n.periodos[0].nombre)}: si ya llegó más que lo nuevo, este período queda cumplido.|">Vale
+                desde este período, octubre: si ya llegó más que lo nuevo, este período queda
+                cumplido.</small>
+              <p th:if="${conError}" th:id="|${n.clave}-cuanto-error|" class="campo-error"
+                 th:text="|Escribí cuánto, en ${n.unidad}. Por ejemplo: 40.|">Escribí cuánto,
+                en kg. Por ejemplo: 40.</p>
+              <input th:id="|${n.clave}-cuanto|" name="cuanto" type="number" min="1"
+                     inputmode="numeric" required
+                     th:value="${conError} ? '' : (${escenario == 'conflicto' and n.clave == pedida} ? '50' : ${n.max})"
+                     th:attr="aria-describedby=${conError} ? |${n.clave}-cuanto-error ${n.clave}-cuanto-ayuda| : |${n.clave}-cuanto-ayuda|,aria-invalid=${conError} ? 'true' : null">
+            </div>
+          </th:block>
+          <div class="campo">
+            <label th:for="|${n.clave}-motivo|" for="lentejas-motivo">Por qué hace falta</label>
+            <small th:id="|${n.clave}-motivo-ayuda|">Lo ven los donantes.</small>
+            <textarea th:id="|${n.clave}-motivo|" name="motivo" rows="2" required
+                      th:attr="aria-describedby=|${n.clave}-motivo-ayuda|"
+                      th:text="${n.motivo}">Para el almuerzo de lunes a viernes.</textarea>
+          </div>
+          <button class="boton" data-tono="principal" type="submit">Guardar cambios</button>
+        </form>
+      </details>
+
+      <!--/* La confirmación de la baja, en un diálogo del navegador (popover): se abre y se
+             cierra sin JavaScript, con Esc o tocando afuera; el foco entra en "No, dejarla". */-->
+      <button type="button" class="boton" data-tono="quitar" th:popovertarget="|baja-${n.clave}|"
+              popovertarget="baja-lentejas">Dar de baja</button>
+      <dialog class="dialogo" data-tono="quitar" th:id="|baja-${n.clave}|" id="baja-lentejas" popover
+              th:aria-labelledby="|baja-${n.clave}-titulo|">
+        <h3 class="dialogo-titulo" th:id="|baja-${n.clave}-titulo|" th:text="|¿Dar de baja ${n.nombre}?|">¿Dar de
+          baja Lentejas secas?</h3>
+        <p>Deja de verse para los donantes y en el catálogo público. Lo que ya recibiste queda
+          asentado.</p>
+        <p th:if="${n.puerta == 1}">Tiene 1 entrega en tu puerta que espera tu confirmación:
+          confirmala antes de darla de baja.</p>
+        <!--/* Según si salió (usuario, 2026-11-02): lo que salió llega igual; lo que no,
+               vuelve al depósito y se asigna a otra entidad. */-->
+        <th:block th:with="salieron=${#lists.size(n.entregas.?[tono == 'en-camino'])},
+                           noSalieron=${#lists.size(n.entregas.?[tono == 'pendiente'])},
+                           noLlegaron=${#lists.size(n.entregas.?[tono == 'con-problema'])}">
+          <p th:if="${salieron > 0}"
+             th:text="${salieron == 1} ? '1 entrega ya salió del depósito: llega igual y queda asentado lo que recibas.' : |${salieron} entregas ya salieron del depósito: llegan igual y queda asentado lo que recibas.|">1
+            entrega ya salió del depósito: llega igual y queda asentado lo que recibas.</p>
+          <p th:if="${noSalieron > 0}"
+             th:text="${noSalieron == 1} ? '1 entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noSalieron} entregas todavía no salieron: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
+            entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la
+            necesite.</p>
+          <p th:if="${noLlegaron > 0}"
+             th:text="${noLlegaron == 1} ? '1 entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noLlegaron} entregas no pudieron llegar: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
+            entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la
+            necesite.</p>
+        </th:block>
+        <div class="acciones">
+          <button type="button" class="boton" data-tono="secundario" autofocus
+                  th:popovertarget="|baja-${n.clave}|" popovertarget="baja-lentejas"
+                  popovertargetaction="hide">No, dejarla</button>
+          <form action="/entidad-necesidades-baja"
+                th:action="@{/entidad-necesidades-baja}" method="post">
+            <button class="boton" data-tono="quitar" type="submit">Dar de baja</button>
+          </form>
+        </div>
+      </dialog>
+    </div>
+  </div>
+</details>
 
 <!--/* Publicar otra necesidad: plegado; con los datos que pide el contrato. Con
        conError, el error de datos de entidad-necesidades-publicar-error (cuánto y la fecha). */-->
@@ -494,7 +550,7 @@
         ejemplo: 30.</p>
       <input id="cuanto" name="cuanto" type="number" min="1" inputmode="numeric" required
              th:value="${escrito} ? '30' : null"
-             th:attr="aria-describedby=${conError} ? 'cuanto-error cuanto-ayuda' : 'cuanto-ayuda',aria-invalid=${conError} ? 'true' : null">
+             th:attr="aria-describedby=${conError} ? 'cuanto-error cuanto-ayuda' : 'cuanto-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 10">
     </div>
     <fieldset class="campo opciones" aria-describedby="repite-ayuda">
       <legend>¿Se repite?</legend>
@@ -520,7 +576,7 @@
       <small id="motivo-ayuda">Lo ven los donantes. Por ejemplo: para el almuerzo de lunes a
         viernes.</small>
       <textarea id="motivo" name="motivo" rows="2" required aria-describedby="motivo-ayuda"
-                th:text="${conError or escrito} ? 'Para la cena de los viernes.' : null"></textarea>
+                th:text="${conError or escrito} ? 'Para la cena de los viernes.' : null" placeholder="Contanos el motivo"></textarea>
     </div>
     <button class="boton" data-tono="principal" type="submit">Publicar necesidad</button>
   </form>
@@ -533,7 +589,7 @@
   <span class="periodo-nombre"><b th:text="${p.nombre}">Octubre</b>
     <span th:if="${p['fechas']}" th:text="${p.fechas}">del 1 al 31</span></span>
   <span class="periodo-cuanto" th:text="|${p.recibido} · ${p.estado}|">10 de 40 kg · En curso</span>
-  <progress th:value="${p.valor}" th:max="${max}" value="10" max="40" aria-hidden="true"></progress>
+  <progress class="progreso" th:value="${p.valor}" th:max="${max}" value="10" max="40" aria-hidden="true"></progress>
 </li>
 
 </body>

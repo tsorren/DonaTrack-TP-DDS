@@ -104,6 +104,7 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
           bajada
 [Lo que está confirmado]  2 entregas confirmadas · 2 entidades · 7 donaciones registradas
                           período y fuente · primera entrega confirmada
+[Lo que ya dio fruto]     una planta por entrega confirmada: qué fue, a quién, cuándo → detalle
 [En curso]                3 entregas en curso (1 en camino, 1 con problema, 1 pendiente) → Seguimiento
                           2 esperan destino → Mis donaciones
 [La que se demoró]        Útiles escolares: qué pasó y la nueva salida → detalle
@@ -281,6 +282,9 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Cifras | "2 entregas confirmadas" · "2 entidades confirmaron lo que recibieron" · "7 donaciones registradas" | Fideos (Comedor Barrio Ejemplo) y ropa (Merendero Ejemplo Sur). La tercera es actividad, no resultado: va aparte o más chica |
 | Cifras: alcance | "Desde el 1 de octubre de 2026, según las confirmaciones de las entidades. Actualizado hoy, 15 de octubre, 16:25." | Período, fuente y fecha |
 | Hito | "Primera entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo." | Lo acumulado, sin medalla ni "¡felicitaciones!" |
+| Huerta: título | Lo que ya dio fruto | Ilustraciones de diseño, 2026-11-08 (usuario: "una planta por donación confirmada"). Sin entregas confirmadas, la parte no se muestra |
+| Huerta: bajada | "Una planta por cada entrega que confirmó la entidad, desde el 1 de octubre de 2026." | Período; solo lo confirmado |
+| Huerta: cada lámina | "Fideos secos" · "8 kg para Comedor Barrio Ejemplo" · "Entregada el 5 de octubre" · "Ver el detalle y la foto" | La planta sale de la categoría y es decorativa: el texto dice todo |
 | En curso: título | En curso | — |
 | En curso | "3 entregas en curso: 1 en camino, 1 con problema y 1 pendiente." · "Ver seguimiento" | Los mismos números que Seguimiento |
 | Esperan destino | "2 donaciones esperan destino en el depósito." · "Ver Mis donaciones" | Arroz y zapatillas; lo pendiente se dice pendiente |

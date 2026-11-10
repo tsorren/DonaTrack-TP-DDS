@@ -34,7 +34,7 @@
   </a>
   <nav th:replace="~{navegacion-publica :: navegacion(${hoja})}"></nav>
 </header>
-<main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>
 <!--/* La región de los avisos breves, igual que en layout-privado. */-->
 <div id="avisos" class="avisos" aria-live="polite" x-data="avisos" x-on:click="cerrar"

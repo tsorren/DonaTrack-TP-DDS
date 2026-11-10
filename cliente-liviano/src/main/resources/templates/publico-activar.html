@@ -68,7 +68,7 @@
             <label for="correo">Correo</label>
             <small id="correo-ayuda">Viene en el enlace del correo; no se cambia.</small>
             <input id="correo" name="correo" type="email" readonly value="martina.ruiz@ejemplo.test"
-                   autocomplete="username" aria-describedby="correo-ayuda">
+                   autocomplete="username" aria-describedby="correo-ayuda" placeholder="nombre@ejemplo.com">
           </div>
           <div class="campo" th:data-estado="${conError} ? 'error'">
             <label for="clave">Contraseña</label>
@@ -77,7 +77,7 @@
               al menos 8 caracteres.</p>
             <div class="clave-fila">
               <input id="clave" name="clave" type="password" required minlength="8" autocomplete="new-password"
-                     th:attr="aria-describedby=${conError} ? 'clave-error clave-ayuda' : 'clave-ayuda',aria-invalid=${conError} ? 'true' : null">
+                     th:attr="aria-describedby=${conError} ? 'clave-error clave-ayuda' : 'clave-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="Al menos 8 caracteres">
               <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
                       aria-pressed="false" hidden>Mostrar</button>
             </div>

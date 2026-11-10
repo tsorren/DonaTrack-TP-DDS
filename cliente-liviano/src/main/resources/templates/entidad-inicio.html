@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <!--/* Raíces, Inicio de la entidad (RF-11, RF-12, RF-13, RF-04), según su ficha de flujo
        (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.1). Ordenado por lo que hay que
-       hacer: lo que espera en la puerta, en la tierra, con un acta por entrega y su botón para
-       confirmar; lo que viene, en una raíz de sellos como el último tramo de Confirmar recepción;
-       los pedidos con su regla de tinta, como en Necesidades; y lo recibido en el mes, un fruto de
-       la rama de la portada. Las donaciones salen de piezas-entidad.html (datos), las mismas de
-       Donaciones recibidas; los pedidos, de Necesidades.
+       hacer: arriba y a todo el ancho, lo que espera en la puerta, en la tierra, con un acta por
+       entrega y su botón para confirmar. Debajo, en dos columnas desde el quiebre ancho (una en el
+       celular), como el mockup 18 de la ronda del 2026-11-10: a la izquierda, lo que viene (un panel
+       cálido con la abeja de la huerta y la lista con su barra de tinta, cada entrega con su pastilla
+       de estado) y lo recibido en el mes (un fruto con la cifra, en una tarjeta clara); a la derecha,
+       tus necesidades vigentes, un renglón por necesidad con su barra de .progreso. Las donaciones
+       salen de piezas-entidad.html (datos), las mismas de Donaciones recibidas; las necesidades, de
+       Necesidades. En pantalla se dice "necesidades", nunca "pedidos".
        ?escenario=vacio (entidad recién aprobada), sin-puerta, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-inicio', ~{::contenido})}">
@@ -22,7 +25,7 @@
              conDatos=${conPartes and escenario != 'lento'},
              puerta=${asignadas.?[grupo == 'puerta']},
              recibidas=${asignadas.?[grupo == 'recibida']},
-             pedidos=${ {
+             necesidades=${ {
       {nombre: 'Aceite de girasol', categoria: 'cat-alimentos', recibido: '0 de 20 litros', valor: 0, max: 20, plazo: 'Hasta el 20 de octubre'},
       {nombre: 'Leche en polvo', categoria: 'cat-alimentos', recibido: '12 de 24 unidades', valor: 12, max: 24, plazo: 'Hasta el 25 de octubre'},
       {nombre: 'Lentejas secas', categoria: 'cat-alimentos', recibido: '10 de 40 kg', valor: 10, max: 40, plazo: 'Octubre, hasta el 31'},
@@ -43,7 +46,7 @@
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{piezas-entidad :: error('No pudimos cargar tu inicio.',
-               'Es un problema nuestro: no cambió nada en tus entregas ni en tus pedidos. Probá de nuevo en unos minutos; si sigue,',
+               'Es un problema nuestro: no cambió nada en tus entregas ni en tus necesidades. Probá de nuevo en unos minutos; si sigue,',
                '/entidad-inicio')}"></section>
     </th:block>
 
@@ -79,12 +82,9 @@
                   </svg>
                   <span th:text="|${d.nombre} · ${d.cuanto}|">Lentejas secas · 15 kg</span>
                 </h3>
-                <p class="estado acta-estado">
-                  <svg th:replace="~{componentes/sello :: sello('puerta')}"></svg>
-                  Espera tu confirmación
-                </p>
-                <p class="acta-texto" th:text="|${d.llego} Para tu pedido de ${d.pedidoNombre}.|">Llegó hoy,
-                  18:20, desde el Depósito Central. Para tu pedido de lentejas secas.</p>
+                <!--/* Sin el estado "Espera tu confirmación": ya lo dice la parte (ronda del 2026-11-09). */-->
+                <p class="acta-texto" th:text="|${d.llego} Para tu necesidad de ${d.pedidoNombre}.|">Llegó hoy,
+                  18:20, desde el Depósito Central. Para tu necesidad de lentejas secas.</p>
                 <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
                    th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
                   recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
@@ -94,9 +94,16 @@
         </th:block>
       </section>
 
-      <!--/* Lo que viene: una raíz de sellos, de lo que está más cerca de llegar a lo que no pudo. */-->
+      <!--/* Lo que viene (ronda del 2026-11-10, mockup 18): un panel cálido, con la abeja quieta de la
+             huerta (static/img/ilustraciones/abeja-partes.svg) al lado del título, y la lista con una
+             barra de tinta a la izquierda; cada entrega, en negrita, y debajo su estado en la pastilla
+             de .estado y cuándo llega. De lo que está más cerca de llegar a lo que no pudo. */-->
       <section class="viene" aria-labelledby="viene-titulo">
-        <h2 id="viene-titulo">Lo que viene</h2>
+        <h2 id="viene-titulo"><svg viewBox="0 0 11.82 12.99" aria-hidden="true" focusable="false">
+            <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
+            <use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use>
+            <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg>
+          Lo que viene</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}"
             th:with="lista=${asignadas.?[grupo == 'camino' or grupo == 'salir' or grupo == 'problema']}">
@@ -107,13 +114,11 @@
             <ol class="viene-lista" role="list">
               <th:block th:each="g : ${ {'camino', 'salir', 'problema'} }">
                 <li th:each="d : ${lista.?[grupo == #root.g]}" class="viene-paso"
-                    th:classappend="|viene-paso--${d.grupo}|"
                     th:with="estado=${grupos.?[clave == #root.d.grupo][0]}">
-                  <svg th:replace="~{componentes/sello :: sello(${d.grupo})}"></svg>
                   <b th:text="|${d.nombre}, ${d.cuanto}|">Arroz, 20 kg</b>
                   <span class="viene-detalle"><span class="estado" th:data-estado="${d.grupo}"
-                        th:text="${estado.estado}">En camino</span>, <th:block th:text="${d.breve}">llega
-                    mañana</th:block></span>
+                        data-estado="camino" th:text="${estado.estado}">En camino</span>, <th:block
+                        th:text="${d.breve}">llega mañana</th:block></span>
                 </li>
               </th:block>
             </ol>
@@ -127,21 +132,23 @@
         </th:block>
       </section>
 
-      <!--/* Los pedidos vigentes de Necesidades, con cuánto llegó de cuánto en su regla de tinta. */-->
-      <section class="pedidos-inicio" aria-labelledby="pedidos-titulo">
-        <h2 id="pedidos-titulo">Tus pedidos</h2>
+      <!--/* Tus necesidades: las vigentes de Necesidades, un renglón claro por necesidad con el ícono de
+             su categoría en su caja, hasta cuándo y, a la derecha, cuánto llegó sobre la barra de
+             .progreso (la misma de Necesidades). */-->
+      <section class="pedidos-inicio" aria-labelledby="necesidades-titulo">
+        <h2 id="necesidades-titulo">Tus necesidades</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
-          <p th:text="|${#lists.size(pedidos)} necesidades vigentes.|">5 necesidades vigentes.</p>
+          <p th:text="|${#lists.size(necesidades)} necesidades vigentes.|">5 necesidades vigentes.</p>
           <ul class="pedidos-renglones" role="list">
-            <li th:each="n : ${pedidos}">
+            <li th:each="n : ${necesidades}">
               <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
               </svg>
               <span class="renglon-que"><b th:text="${n.nombre}">Lentejas secas</b>
                 <small th:text="${n.plazo}">Octubre, hasta el 31</small></span>
               <span class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
-                <progress th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
+                <progress class="progreso" th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
             </li>
           </ul>
           <p class="salidas">
@@ -153,8 +160,9 @@
         </th:block>
       </section>
 
-      <!--/* Lo recibido en el mes: un fruto de la rama de la portada ("Lo que está confirmado"), con la
-             cifra adentro y su período y fecha al lado. Es un resultado registrado, no un efecto. */-->
+      <!--/* Lo recibido en el mes: en una tarjeta clara, un fruto de la rama de la portada ("Lo que está
+             confirmado"), con la cifra adentro y su período y fecha al lado. Es un resultado
+             registrado, no un efecto. */-->
       <section class="recibido" aria-labelledby="recibido-titulo">
         <h2 id="recibido-titulo">Lo recibido en octubre</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>

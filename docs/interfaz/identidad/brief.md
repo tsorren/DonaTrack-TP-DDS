@@ -184,6 +184,46 @@ arriba de la lista, y las cumplidas y terminadas, plegadas al pie. Ver la [bitá
 Se insinúa (usuario): el crecimiento es el avance, dibujado con los datos; sin medallas. Para la
 empresa, hitos de lo acumulado.
 
+## Piel Huerta (usuario, 2026-11-08)
+
+El usuario adoptó para todo el sitio la piel de la variante K, "Huerta con abejas", del prototipo
+`frontend-donatrack`, sobre la estructura de Raíces: cada pantalla conserva su composición, la
+tierra, las raíces y los frutos. Cambian la paleta (la tinta, un verde oliva casi negro; el verde
+`#2a7035`, el de K apenas más hondo para que el texto verde pase AA sobre los fondos de estado; la tierra, un humus más gris), la letra (títulos en Archivo bien ancho, texto en DM Sans),
+la cabecera (una barra de papel con un filete fino, en vez de la franja de tierra), las tarjetas
+(papel más claro, sin filete, con la sombra granulada de una impresión riso), los botones (el
+principal, verde con sombra plana de hoja; los demás, en contorno de tinta) y las esquinas (16 px y
+10 px). La parte destacada de un título va derecha y en otro color, sin la segunda tinta corrida. Las
+raíces de impacto de K quedan fuera; las abejas y las láminas por donación entraron después, con las
+ilustraciones de diseño (abajo). Donde esta sección choca con las de abajo, manda esta. Ver la [bitácora](../bitacora.md).
+
+## La composición de K en todo el sitio (usuario, 2026-11-08)
+
+Después de ver la piel, el usuario pidió la estética de K entera: la composición y las piezas de K
+reemplazan a las de Raíces en todo el sitio. Tres metáforas, cada una con un trabajo: las plantas en
+láminas muestran el fruto (una lámina por donación), las raíces en la tierra muestran hasta dónde
+llegó y las abejas son la logística. La tierra se usa solo para las raíces (el bajo tierra de la
+portada, las raíces del donante, los mapas de las entregas) y el pie. Todo lo demás va en papel
+claro. Las secciones de Raíces que siguen describen la versión anterior: donde chocan, manda esta.
+Detalle en la [bitácora](../bitacora.md) y en el componente `huerta` del
+[catálogo](../componentes.md).
+
+## Ilustraciones de diseño (usuario, 2026-11-08)
+
+El usuario trajo las ilustraciones de la variante K (versión clara; el sitio no tiene modo oscuro),
+en `static/img/ilustraciones/`, y eligió dónde va cada una. Todas son decorativas (`alt=""`): el texto
+dice todo.
+
+| Ilustración | Dónde va | Qué significa |
+|---|---|---|
+| Los 4 pasos: el sobre de semillas, la maceta, el brote y el árbol con frutos | La lámina «Cómo funciona» de la portada, que pasa a 4 pasos: registrás, se asigna, viaja y la entidad confirma (antes, 3 pasos en franjas de un solo dibujo) | El recorrido de una donación, de la semilla al fruto |
+| Las plantas: naranjo, algodón, pino, menta y oreja de elefante | «Lo que ya dio fruto», en el inicio del donante: una planta por entrega confirmada, según la categoría (Alimentos, Ropa y Vestimenta, Muebles, Útiles escolares y lo demás) | Lo que dio fruto, contado con los datos |
+| La abeja (arriba, abajo y dormida) | Dormida en los vacíos; volando mientras algo carga, en la lámina (el paso del viaje) y sobre la entrega en camino del mapa de seguimiento, en lugar del camión | La espera y la logística |
+| La maceta de reintentar | Los avisos de error y las páginas de error (antes, la raíz cortada) | Algo no salió y se puede volver a probar |
+
+La planta de las hojas al viento (`planta-hojas-al-viento.svg`) quedó guardada, sin uso. Ver la
+[bitácora](../bitacora.md).
+
 ## Color (usuario, A/B de paleta y acabado; Huerta de noche desde el 2026-11-05, con la tierra humus desde el 2026-11-06)
 
 **Huerta de noche** (antes, Oliva, y antes, Bosque). Es un afiche a dos tintas sobre papel de cera:
@@ -257,17 +297,18 @@ usuario eligió el ciclo contra una sola ráfaga, la recomendada). Las entregas 
 mes" aparecen de a una al bajar (línea de tiempo de scroll; sin ella, quietas). Un botón "Pausar el
 movimiento", bajo la lámina, frena el viento (WCAG 2.2.2).
 
-**Letra (usuario, quinto A/B y A/B de Raíces cálida, 2026-11-06): serif de libro en los títulos y
-grotesca ancha de afiche en lo demás.** Fraunces (OFL), una serif de libro de jardinería, firme y
+**Letra (piel Huerta, 2026-11-08): Archivo bien ancho y pesado en los títulos y la marca; DM Sans
+en el texto.** Antes (quinto A/B y A/B de Raíces cálida, 2026-11-06): serif de libro en los títulos y
+grotesca ancha de afiche en lo demás. Fraunces (OFL), una serif de libro de jardinería, firme y
 tibia, en los títulos y la marca; Archivo (Omnibus-Type, Buenos Aires) en el texto, los datos, los
 numerales y las cifras (`--fuente-cifra`). Se descartaron Literata (la más sobria) y Young Serif (la
 más redonda). Detalle en la [bitácora](../bitacora.md).
 
 | Pieza | Cómo es | Qué significa |
 |---|---|---|
-| Títulos y marca | Fraunces, pesada; la parte cálida del título, en su cursiva | Un libro de jardinería: cálido y profesional |
+| Títulos y marca | Archivo, ancho al 125 % y muy pesado; la parte destacada, derecha y en verde (piel Huerta; antes, Fraunces con su cursiva) | Un afiche de huerta: firme y cercano |
 | Numerales y cifras | Archivo, anchos y pesados | Las letras gigantes de un afiche (referencia 02): firme, se recuerda |
-| Texto, botones y datos | Ancho normal (los botones, apenas anchos) | Clara y neutra: deja hablar al título |
+| Texto, botones y datos | DM Sans (piel Huerta; antes, Archivo de ancho normal) | Clara y neutra: deja hablar al título |
 
 ## Libertades (usuario)
 

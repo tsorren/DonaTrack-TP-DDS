@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--/* Prueba A/B de Misiones, segunda ronda del 2026-11-09 (tarde). Opción A, la recomendada: figuritas
+       literal. Una huerta ya armada (img/ilustraciones/huerta-armada.svg) partida en 4 piezas, los
+       cuatro cuadrantes del mismo dibujo. La primera se gana al crear la cuenta; las otras tres, al
+       completar las misiones de cada categoría (subir de nivel): Colaborador, Sostenedor y
+       Transformador. Con las 4 se completa la imagen. La pieza que falta se ve en gris. Cada pieza es un
+       botón que abre su diálogo (popover nativo, sin JavaScript): la obtenida dice qué hiciste para
+       ganarla; la que falta, qué te falta. Las misiones de una categoría que todavía no se abre no se
+       nombran (usuaria, 2026-11-09). Usa los datos y los estados de donante-misiones (datos(vista)).
+       ?variante=misiones-a, también con ?escenario=vacio, lento y error. Se borra al decidir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
+<head>
+  <title>Misiones e insignias - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{donante-misiones :: datos(~{::figuritas})}"></th:block>
+</th:block>
+
+<th:block th:fragment="figuritas"
+    th:with="alta=${nueva ? '15 de octubre de 2026' : '1 de junio de 2026'},
+             nombres=${ {'Bienvenida', categorias[0].nombre, categorias[1].nombre, categorias[2].nombre} },
+             ganadas=${1 + #lists.size(completas)}">
+  <section id="huerta-figuritas" aria-labelledby="figuritas-titulo">
+    <header>
+      <h2 id="figuritas-titulo">Tu huerta, pieza por pieza</h2>
+      <p th:text="|Tenés ${ganadas} de las 4 piezas. La primera llegó con tu cuenta; las otras tres se ganan al completar las misiones de cada categoría. Tocá una pieza para ver cómo la ganaste o qué te falta.|">Tenés
+        2 de las 4 piezas. La primera llegó con tu cuenta; las otras tres se ganan al completar las
+        misiones de cada categoría. Tocá una pieza para ver cómo la ganaste o qué te falta.</p>
+    </header>
+
+    <!--/* La imagen, en 4 botones. Cada uno muestra su cuadrante del mismo dibujo. */-->
+    <ul id="huerta-piezas" role="list" aria-label="Las 4 piezas de tu huerta">
+      <li th:each="p : ${#numbers.sequence(1, 4)}"
+          th:with="c=${p > 1 ? categorias[p - 2] : null},
+                   tiene=${p == 1 or c.estado == 'completa'}"
+          th:data-pieza="${p}" th:data-estado="${tiene} ? 'obtenida' : 'falta'">
+        <button type="button" th:popovertarget="|pieza-${p}|"
+                th:aria-label="${tiene} ? |Pieza ${p}, ${nombres[p - 1]}: la tenés. Ver cómo la ganaste| : |Pieza ${p}, ${nombres[p - 1]}: te falta. Ver qué necesitás|">
+          <span data-recorte>
+            <img src="/img/ilustraciones/huerta-armada.svg" th:src="@{/img/ilustraciones/huerta-armada.svg}"
+                 alt="" width="800" height="600">
+          </span>
+          <span data-chapa aria-hidden="true" th:text="${p}">1</span>
+        </button>
+      </li>
+    </ul>
+
+    <!--/* Las piezas en texto: lo mismo que la imagen, para leer de un vistazo. */-->
+    <ol id="piezas-estado" role="list" aria-label="Estado de cada pieza">
+      <li th:each="p : ${#numbers.sequence(1, 4)}"
+          th:with="c=${p > 1 ? categorias[p - 2] : null},
+                   tiene=${p == 1 or c.estado == 'completa'},
+                   enCurso=${p > 1 ? misiones.^[categoria == #root.c.nombre and estado == 'curso'] : null}"
+          th:data-estado="${tiene} ? 'obtenida' : 'falta'">
+        <span data-chapa aria-hidden="true" th:text="${p}">1</span>
+        <span>
+          <b th:text="|Pieza ${p} · ${nombres[p - 1]}|">Pieza 1 · Bienvenida</b>
+          <small th:if="${p == 1}" th:text="|La tenés desde el ${alta}, cuando creaste tu cuenta.|">La tenés desde
+            el 1 de junio de 2026, cuando creaste tu cuenta.</small>
+          <small th:if="${p > 1 and tiene}"
+                 th:text="|La tenés desde el ${misiones.?[categoria == #root.c.nombre].$[true].fecha}.|">La tenés desde el
+            2 de septiembre de 2026.</small>
+          <small th:if="${p > 1 and !tiene and enCurso != null}"
+                 th:text="|En curso: ${enCurso.nombre}, ${enCurso.cuenta}.|">En curso: Gran Aporte, 12 de 50 bienes.</small>
+          <small th:if="${p > 1 and !tiene and enCurso == null}"
+                 th:text="|Se abre cuando completes ${c['anterior']}.|">Se abre cuando completes Sostenedor.</small>
+        </span>
+      </li>
+    </ol>
+  </section>
+
+  <!--/* Los diálogos de cada pieza: se abren con su botón, sin JavaScript (popover). */-->
+  <dialog th:each="p : ${#numbers.sequence(1, 4)}" class="dialogo" popover
+          th:id="|pieza-${p}|" th:aria-labelledby="|pieza-${p}-titulo|"
+          th:with="c=${p > 1 ? categorias[p - 2] : null},
+                   tiene=${p == 1 or c.estado == 'completa'},
+                   suyas=${p > 1 ? misiones.?[categoria == #root.c.nombre] : null}"
+          th:data-pieza="${p}" th:data-estado="${tiene} ? 'obtenida' : 'falta'">
+    <span data-recorte aria-hidden="true">
+      <img src="/img/ilustraciones/huerta-armada.svg" th:src="@{/img/ilustraciones/huerta-armada.svg}"
+           alt="" width="800" height="600">
+    </span>
+    <p class="dialogo-titulo" th:id="|pieza-${p}-titulo|"
+       th:text="${tiene} ? |Pieza ${p} · ${nombres[p - 1]}: la tenés| : |Pieza ${p} · ${nombres[p - 1]}: te falta|">Pieza
+      1 · Bienvenida: la tenés</p>
+
+    <th:block th:if="${p == 1}">
+      <p th:text="|La ganaste al crear tu cuenta, el ${alta}. Es la primera de las 4 piezas de tu huerta.|">La
+        ganaste al crear tu cuenta, el 1 de junio de 2026. Es la primera de las 4 piezas de tu huerta.</p>
+    </th:block>
+
+    <!--/* Obtenida: las misiones que completó, con su fecha. */-->
+    <th:block th:if="${p > 1 and tiene}">
+      <p th:text="|La ganaste al completar las ${#lists.size(suyas)} misiones de ${c.nombre}:|">La ganaste al
+        completar las 2 misiones de Colaborador:</p>
+      <ul role="list">
+        <li th:each="m : ${suyas}" th:text="|${m.nombre} (${m.pide}), el ${m.fecha}.|">Racha Inicial (3 meses
+          seguidos donando), el 3 de agosto de 2026.</li>
+      </ul>
+    </th:block>
+
+    <!--/* La que falta, de la categoría actual: sus misiones, una en curso con su barra. */-->
+    <th:block th:if="${p > 1 and !tiene and c.estado == 'tu categoría'}">
+      <p th:text="|Se gana al completar las ${#lists.size(suyas)} misiones de ${c.nombre}. Avanzan de a una, en orden:|">Se
+        gana al completar las 2 misiones de Sostenedor. Avanzan de a una, en orden:</p>
+      <ul role="list">
+        <li th:each="m : ${suyas}">
+          <b th:text="${m.nombre}">Gran Aporte</b>: <span th:text="${m.pide}">Una donación con al menos 50 bienes</span>.
+          <th:block th:if="${m.estado == 'curso'}">
+            <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
+                      th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
+            <span th:text="|Llevás ${m.cuenta}.|">Llevás 12 de 50 bienes.</span>
+          </th:block>
+          <span th:if="${m.estado == 'espera'}" th:text="|Empieza a contar cuando completes ${m.espera}.|">Empieza a
+            contar cuando completes Gran Aporte.</span>
+        </li>
+      </ul>
+    </th:block>
+
+    <!--/* La que falta, de una categoría que todavía no se abre: sin nombrar sus misiones. */-->
+    <p th:if="${p > 1 and !tiene and c.estado == 'se abre después'}"
+       th:text="|Se gana al completar las ${#lists.size(suyas)} misiones de ${c.nombre}. Las vas a ver cuando completes las de ${c['anterior']}.|">Se
+      gana al completar las 2 misiones de Transformador. Las vas a ver cuando completes las de Sostenedor.</p>
+
+    <button type="button" class="boton" data-tono="secundario" th:popovertarget="|pieza-${p}|"
+            popovertargetaction="hide">Cerrar</button>
+  </dialog>
+
+  <p>Las misiones cuentan tus donaciones: las que llevás al depósito y, en Impacto Real, las que la
+    entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+</th:block>
+</body>
+</html>

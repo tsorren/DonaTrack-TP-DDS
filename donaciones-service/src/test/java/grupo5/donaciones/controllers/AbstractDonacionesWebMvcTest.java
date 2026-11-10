@@ -9,6 +9,7 @@ import grupo5.donaciones.controllers.impl.DonantesController;
 import grupo5.donaciones.controllers.impl.EntidadBeneficiariaController;
 import grupo5.donaciones.controllers.impl.FotosBienesController;
 import grupo5.donaciones.controllers.impl.ItemDonacionNormalizadoController;
+import grupo5.donaciones.controllers.impl.LegalesController;
 import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
@@ -21,6 +22,7 @@ import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.IFotosBienesService;
 import grupo5.donaciones.services.IItemDonacionNormalizadoService;
+import grupo5.donaciones.services.ILegalesService;
 import grupo5.donaciones.services.INecesidadesService;
 import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
@@ -43,6 +45,7 @@ import org.springframework.test.web.servlet.MockMvc;
   EntidadBeneficiariaController.class,
   FotosBienesController.class,
   ItemDonacionNormalizadoController.class,
+  LegalesController.class,
   NecesidadesController.class,
   PersonasController.class,
   PropuestaDeAsignacionController.class,
@@ -70,6 +73,8 @@ public abstract class AbstractDonacionesWebMvcTest {
   @MockitoBean protected IFotosBienesService fotosBienesService;
 
   @MockitoBean protected IItemDonacionNormalizadoService itemDonacionNormalizadoService;
+
+  @MockitoBean protected ILegalesService legalesService;
 
   @MockitoBean protected INecesidadesService necesidadesService;
 

@@ -5,6 +5,10 @@
        7 días") y la lista en la tabla adaptable. Primero van las del depósito que vencen antes.
        ?vence=pronto (desde el inicio): solo las del depósito que vencen en 7 días, con su título.
        ?estado=deposito|asignada|camino|entregada|vencida filtra por estado.
+       ?orden=reciente|antigua|nombre|donante ordena la lista (usuario, 2026-11-10: "permitir ordenar
+       según distintos criterios"); sin orden, primero las del depósito que vencen antes. Cada orden es
+       la lista de claves en ese orden (ordenes), porque la plantilla no ordena: el sistema lo hará
+       en la consulta. El formulario lleva hx-boost: filtra y ordena sin recargar ni volver arriba.
        ?escenario=vacio, lento y error.
        El detalle es la misma hoja: admin-donaciones-detalle?donacion=<clave> (de partida, la leche en
        polvo, que está en el depósito y vence en 2 días). "Marcar como vencida" abre un diálogo del
@@ -83,19 +87,41 @@
          {que: 'Aceite', cantidad: '10 litros', bien: 'Nuevo', vence: null} } } } },
              donaciones=${escenario == 'vacio' ? {} : todas.?[#this['nueva'] == null
                  and (!#root.pronto or vence != null) and (#root.filtro == '' or estado == #root.filtro)]},
+             orden=${param.orden != null and #lists.contains({'reciente', 'antigua', 'nombre', 'donante'}, param.orden[0]) ? param.orden[0] : ''},
+             ordenes=${ {
+               reciente: {'pan', 'yogur', 'queso', 'arroz', 'leche', 'frazadas', 'fideos', 'utiles', 'aceite',
+                          'azucar', 'cuadernos', 'abrigo', 'lentejas', 'panales'},
+               antigua: {'panales', 'lentejas', 'abrigo', 'cuadernos', 'azucar', 'aceite', 'utiles', 'fideos',
+                         'frazadas', 'leche', 'arroz', 'queso', 'yogur', 'pan'},
+               nombre: {'aceite', 'arroz', 'azucar', 'cuadernos', 'fideos', 'frazadas', 'leche', 'lentejas', 'pan',
+                        'panales', 'queso', 'abrigo', 'utiles', 'yogur'},
+               donante: {'arroz', 'aceite', 'abrigo', 'leche', 'queso', 'fideos', 'lentejas', 'yogur', 'frazadas',
+                         'azucar', 'panales', 'pan', 'utiles', 'cuadernos'} } },
+             criterios=${ {
+               {valor: '', texto: 'Vencen antes', caption: 'Primero, las del depósito que vencen antes.'},
+               {valor: 'reciente', texto: 'Registradas más recientes', caption: 'Primero, las registradas más recientemente.'},
+               {valor: 'antigua', texto: 'Registradas más antiguas', caption: 'Primero, las registradas hace más tiempo.'},
+               {valor: 'nombre', texto: 'Donación, de la A a la Z', caption: 'Por el nombre de la donación, de la A a la Z.'},
+               {valor: 'donante', texto: 'Donante, de la A a la Z', caption: 'Por el nombre de quien donó, de la A a la Z.'} } },
              elegida=${param.donacion != null ? param.donacion[0] : 'leche'},
              d=${accion == '' ? null : (todas.^[clave == #root.elegida] ?: todas[0])}">
   <div class="mesa">
 
     <!--/* La lista. */-->
     <th:block th:if="${accion == ''}">
+    <!--/* El encabezado a todo el ancho (ronda 2026-11-09, regla general 1), con "Registrar donación" al
+           costado; en el celular, debajo. */-->
     <header class="mesa-cabecera">
-      <p class="rotulo">Administración</p>
-      <h1>Donaciones</h1>
-      <th:block th:if="${conDatos}">
-        <p>7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre</p>
-        <p>Al 15 de octubre de 2026, 18:30.</p>
-      </th:block>
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Donaciones</h1>
+        <p th:if="${conDatos}">7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en
+          octubre. Al 15 de octubre de 2026, 18:30.</p>
+      </div>
+      <div th:if="${escenario != 'error'}" class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-donaciones-registrar"
+           th:href="@{/admin-donaciones-registrar}">Registrar donación</a>
+      </div>
     </header>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las donaciones…</p>
@@ -112,16 +138,11 @@
          th:href="@{/admin-donaciones}">Volver a cargar</a>
     </section>
 
-    <div th:if="${escenario != 'error'}" class="racimo">
-      <a class="boton" data-tono="principal" href="/admin-donaciones-registrar"
-         th:href="@{/admin-donaciones-registrar}">Registrar donación</a>
-    </div>
-
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="lista-titulo" th:text="${pronto} ? 'Vencen en los próximos 7 días' : 'Todas las donaciones'">Todas
         las donaciones</h2>
-      <form class="racimo" action="/admin-donaciones" th:action="@{/admin-donaciones}" method="get"
+      <form hx-boost="true" class="racimo" action="/admin-donaciones" th:action="@{/admin-donaciones}" method="get"
             role="search">
         <div class="campo">
           <label for="estado">Estado</label>
@@ -138,7 +159,14 @@
             <option value="pronto" th:selected="${pronto}">En los próximos 7 días</option>
           </select>
         </div>
-        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
+        <div class="campo">
+          <label for="orden">Ordenar por</label>
+          <select id="orden" name="orden">
+            <option th:each="c : ${criterios}" th:value="${c.valor}" th:text="${c.texto}"
+                    th:selected="${orden == c.valor}" value="">Vencen antes</option>
+          </select>
+        </div>
+        <button class="boton" data-tono="secundario" type="submit">Aplicar</button>
       </form>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
 
@@ -157,7 +185,7 @@
       </section>
 
       <table th:if="${conDatos and !#lists.isEmpty(donaciones)}" class="tabla">
-        <caption th:text="${pronto} ? 'Las del depósito que vencen en los próximos 7 días, la más próxima primero.' : 'Primero, las del depósito que vencen antes.'">Primero,
+        <caption th:text="${pronto and orden == ''} ? 'Las del depósito que vencen en los próximos 7 días, la más próxima primero.' : (${pronto} ? 'Las del depósito que vencen en los próximos 7 días. ' : '') + ${criterios.^[valor == #root.orden].caption}">Primero,
           las del depósito que vencen antes.</caption>
         <thead>
           <tr>
@@ -169,17 +197,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr th:each="x : ${donaciones}">
-            <th scope="row"><a href="/admin-donaciones-detalle?donacion=leche"
-                               th:href="@{/admin-donaciones-detalle(donacion=${x.clave})}"
-                               th:text="|${x.que} · ${x.corto}|">Leche en polvo · 10 u</a></th>
-            <td data-rotulo="Donante" th:text="${x.donante}">Distribuidora Ejemplo SA</td>
-            <td data-rotulo="Registrada" th:text="${x.registrada}">10 de octubre</td>
-            <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[x.estado]}"><svg
-                th:replace="~{componentes/sello :: sello(${sellos[x.estado]})}"></svg><th:block
-                th:text="${palabras[x.estado]}">En el depósito</th:block></span></td>
-            <td data-rotulo="Vence" th:text="${x.vence} ?: '—'">17 de octubre, en 2 días</td>
-          </tr>
+          <th:block th:each="k : ${orden == '' ? donaciones.![clave] : ordenes.get(orden)}"
+                    th:with="x=${#root.donaciones.^[clave == #root.k]}">
+            <tr th:if="${x != null}">
+              <th scope="row"><a href="/admin-donaciones-detalle?donacion=leche"
+                                 th:href="@{/admin-donaciones-detalle(donacion=${x.clave})}"
+                                 th:text="|${x.que} · ${x.corto}|">Leche en polvo · 10 u</a></th>
+              <td data-rotulo="Donante" th:text="${x.donante}">Distribuidora Ejemplo SA</td>
+              <td data-rotulo="Registrada" th:text="${x.registrada}">10 de octubre</td>
+              <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[x.estado]}"><svg
+                  th:replace="~{componentes/sello :: sello(${sellos[x.estado]})}"></svg><th:block
+                  th:text="${palabras[x.estado]}">En el depósito</th:block></span></td>
+              <td data-rotulo="Vence" th:text="${x.vence} ?: '—'">17 de octubre, en 2 días</td>
+            </tr>
+          </th:block>
         </tbody>
       </table>
     </section>
@@ -267,7 +298,7 @@
           <input type="hidden" name="donacion" th:value="${d.clave}" value="leche">
           <div class="campo">
             <label for="motivo">Motivo (opcional)</label>
-            <textarea id="motivo" name="motivo" rows="3"></textarea>
+            <textarea id="motivo" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
           </div>
           <div class="racimo">
             <button class="boton" data-tono="quitar" type="submit">Marcar como vencida</button>

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <!--/* Raíces, Donaciones recibidas de la entidad (RF-11), según su ficha de flujo
        (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.2): todo lo asignado a la entidad,
-       agrupado por estado, de la que espera en la puerta a la que ya se recibió. El filtro es una
-       línea de subte: cada estado, una estación (la elegida, impresa); funciona sin JavaScript, con un
-       formulario GET (?estado=todas, en-tu-puerta, en-camino, por-salir, con-problema o recibidas; un
-       valor desconocido muestra todas). Lo que espera, en actas de papel con su botón; lo recibido,
+       agrupado por estado, de la que espera en la puerta a la que ya se recibió. El filtro es el
+       componente de filtros (componentes/filtros.html, como en Entidades): una pastilla por estado,
+       con su cantidad, que se prende; se pueden prender varias (ronda del 2026-11-09: los estados son
+       filtros, no una progresión). Funciona sin JavaScript, con un formulario GET
+       (?estado=en-tu-puerta, en-camino, por-salir, con-problema o recibidas, repetido si son varios;
+       todas o un valor desconocido no filtran). Lo que espera, en actas de papel con su botón; lo recibido,
        en el cuaderno de la portada, una fila por fecha. Las donaciones vienen del controller
        (recibidas: de la maqueta o de Donaciones); de piezas-entidad.html (datos) salen los grupos.
        ?escenario=vacio, lento, error y sin-resultados (el aceite ya no está y el filtro
@@ -22,19 +24,20 @@
 <th:block th:fragment="cuerpo"
     th:with="asignadas=${escenario == 'vacio' ? {} : recibidas.asignadas.?[clave != 'aceite' or #root.escenario != 'sin-resultados']},
              nombreRecibidas=${'Recibidas en ' + recibidas.mes},
-             pedido=${param.estado != null ? param.estado[0] : (escenario == 'sin-resultados' ? 'con-problema' : 'todas')},
+             pedidos=${param.estado != null ? ',' + #strings.arrayJoin(param.estado, ',') + ',' : (escenario == 'sin-resultados' ? ',con-problema,' : '')},
              filtros=${ {
-      {valor: 'todas', nombre: 'Todas'},
       {valor: 'en-tu-puerta', nombre: 'Esperan tu confirmación', grupo: 'puerta'},
       {valor: 'en-camino', nombre: 'En camino', grupo: 'camino'},
       {valor: 'por-salir', nombre: 'Pendientes', grupo: 'salir'},
       {valor: 'con-problema', nombre: 'Con problema', grupo: 'problema'},
       {valor: 'recibidas', nombre: nombreRecibidas, grupo: 'recibida'} } },
-             filtro=${#lists.isEmpty(filtros.?[valor == #root.pedido]) ? filtros[0] : filtros.?[valor == #root.pedido][0]},
-             filtrada=${filtro.valor != 'todas'},
+             elegidos=${filtros.?[#root.pedidos.contains(',' + valor + ',')]},
+             claves=${elegidos.![grupo]},
+             filtrada=${!#lists.isEmpty(elegidos)},
              conLista=${escenario != 'vacio' and escenario != 'error'},
              conDatos=${conLista and escenario != 'lento'},
-             mostrados=${filtrada ? grupos.?[clave == #root.filtro.grupo] : grupos}">
+             mostrados=${filtrada ? grupos.?[#root.claves.contains(clave)] : grupos},
+             encontradas=${asignadas.?[#root.claves.contains(grupo)]}">
   <div class="recibidas">
     <header class="cabecera-entidad">
       <p class="rotulo" th:text="${seccion}">Donaciones recibidas</p>
@@ -59,20 +62,21 @@
          th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
     </section>
 
-    <!--/* El filtro: una línea de subte con una estación por estado. Cada opción dice su cantidad. */-->
-    <form th:if="${conLista}" class="filtro" action="/entidad-recibidas"
-          th:action="@{/entidad-recibidas}" method="get">
+    <!--/* El filtro: una pastilla por estado, con su cantidad (el componente de filtros). Sin
+           JavaScript, se prenden las que hagan falta y se envía con "Filtrar". */-->
+    <form hx-boost="true" th:if="${conLista}" class="filtro" action="/entidad-recibidas"
+          th:action="@{/entidad-recibidas}" method="get" aria-label="Filtrar por estado">
       <input th:if="${escenario == 'sin-resultados'}" type="hidden" name="escenario" value="sin-resultados">
-      <fieldset class="opciones filtro-linea">
-        <legend>Estado</legend>
-        <label th:each="f : ${filtros}">
-          <input type="radio" name="estado" th:value="${f.valor}" value="todas"
-                 th:checked="${f.valor == filtro.valor}">
-          <span th:text="|${f.nombre} (${f.valor == 'todas' ? #lists.size(asignadas) : #lists.size(asignadas.?[grupo == #root.f.grupo])})|">Todas
-            (11)</span>
-        </label>
-      </fieldset>
-      <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
+      <div class="filtros" role="group" aria-label="Estado">
+        <th:block th:each="f : ${filtros}"
+                  th:with="rotulo=|${f.nombre} (${#lists.size(asignadas.?[grupo == #root.f.grupo])})|,
+                           prendido=${claves.contains(f.grupo)}">
+          <label th:replace="~{componentes/filtros :: interruptor('estado', ${f.valor}, ${rotulo}, ${prendido})}"></label>
+        </th:block>
+        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
+        <a th:if="${filtrada}" class="filtros-sacar" href="/entidad-recibidas"
+           th:href="@{/entidad-recibidas}">Sacar los filtros</a>
+      </div>
     </form>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus donaciones…</p>
@@ -80,14 +84,14 @@
 
     <th:block th:if="${conDatos}">
       <!--/* Con un filtro puesto: cuál es y "Ver todas". */-->
-      <p th:if="${filtrada and !#lists.isEmpty(asignadas.?[grupo == #root.filtro.grupo])}" class="mostrando">
-        <span th:text="|Mostrando: ${filtro.nombre} (${#lists.size(asignadas.?[grupo == #root.filtro.grupo])}).|">Mostrando:
+      <p th:if="${filtrada and !#lists.isEmpty(encontradas)}" class="mostrando">
+        <span th:text="|Mostrando: ${#strings.listJoin(elegidos.![nombre], ', ')} (${#lists.size(encontradas)}).|">Mostrando:
           En camino (1).</span>
         <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver todas</a>
       </p>
-      <section th:if="${filtrada and #lists.isEmpty(asignadas.?[grupo == #root.filtro.grupo])}" class="vacio"
+      <section th:if="${filtrada and #lists.isEmpty(encontradas)}" class="vacio"
                aria-labelledby="sinres-titulo" tabindex="-1" autofocus>
-        <h2 id="sinres-titulo">No hay donaciones en ese estado.</h2>
+        <h2 id="sinres-titulo" th:text="${#lists.size(elegidos) == 1} ? 'No hay donaciones en ese estado.' : 'No hay donaciones en esos estados.'">No hay donaciones en ese estado.</h2>
         <p>Probá con otro estado o mirá todas.</p>
         <a class="boton" data-tono="secundario" href="/entidad-recibidas"
            th:href="@{/entidad-recibidas}">Ver todas</a>
@@ -115,12 +119,15 @@
                 <p th:text="|Donó ${d.dono}|">Donó Distribuidora Ejemplo SA</p>
                 <p th:if="${d.pedido}"><a href="/entidad-necesidades?necesidad=lentejas"
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
-                   th:text="|Para tu pedido de ${d.pedidoNombre}|">Para tu pedido de lentejas secas</a></p>
+                   th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de lentejas secas</a></p>
+                <!--/* Bajo "Esperan tu confirmación", sin el estado: ya lo dice el grupo (ronda del
+                       2026-11-09); solo el paso. Los datos reales no traen "cuándo llegó" aparte: va el paso. */-->
                 <p class="acta-paso">
-                  <span class="estado" th:data-estado="${d.grupo}">
+                  <span th:unless="${d.grupo == 'puerta'}" class="estado" th:data-estado="${d.grupo}">
                     <svg th:replace="~{componentes/sello :: sello(${d.grupo})}"></svg>
-                    <th:block th:text="${g.estado}">Espera tu confirmación</th:block></span>
-                  <span th:text="${d.paso}">Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.</span>
+                    <th:block th:text="${g.estado}">En camino</th:block></span>
+                  <span th:text="${d.paso}">Llegó hoy, 18:20, desde el
+                    Depósito Central.</span>
                 </p>
                 <a th:if="${d.grupo == 'puerta'}" class="boton" data-tono="principal"
                    href="/entidad-seguimiento-confirmar?entrega=lentejas"
@@ -128,7 +135,7 @@
                   recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
                 <a th:if="${d.grupo == 'problema' and d.pedido != null}" class="boton" data-tono="secundario"
                    href="/entidad-necesidades?necesidad=aceite"
-                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu pedido</a>
+                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
               </article>
             </li>
           </ul>
@@ -147,7 +154,7 @@
                     SRL</th:block><th:block th:if="${d.pedido}"> · <a
                       href="/entidad-necesidades?necesidad=lentejas"
                       th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
-                      th:text="|Para tu pedido de ${d.pedidoNombre}|">Para tu pedido de lentejas secas</a></th:block></p>
+                      th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de lentejas secas</a></th:block></p>
                   <p class="estado" data-estado="recibida" th:text="${d.paso}">Confirmaste la recepción el 10 de
                     octubre.</p>
                 </div>

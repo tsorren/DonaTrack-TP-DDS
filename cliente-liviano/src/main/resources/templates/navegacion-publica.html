@@ -8,7 +8,7 @@
        la portada, Contacto y Términos. No es una pantalla: su nombre no empieza con un rol. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="navegacion(actual)" class="navegacion tierra-impresa" data-zona="publica" aria-label="Secciones">
+<nav th:fragment="navegacion(actual)" class="navegacion" data-zona="publica" aria-label="Secciones">
   <ul role="list">
     <li><a href="/publico-donaciones" th:href="@{/publico-donaciones}"
            th:aria-current="${actual == 'publico-donaciones'} ? 'page' : null"><span>Entregas<span

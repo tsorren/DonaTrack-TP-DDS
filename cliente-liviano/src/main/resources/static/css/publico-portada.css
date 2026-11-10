@@ -1,146 +1,26 @@
-/* Portada de Raíces, segunda iteración (2026-11-01): D, la mezcla de A y C elegida por el usuario.
-   El título de A con la lámina "Cómo funciona" de C; debajo, el rótulo y un brote con su sol sobre
-   la tierra, del que sale la red radial de A hasta las etiquetas de herbario, con la vacía de tu
-   entidad al centro. Las cifras, frutos colgados de una rama; el mes, una libreta de entregas.
-   La hoja solo dispone (fase 3 del backlog, B3-01): cada pieza es un bloque de componentes/ (la
-   lámina, una `.tarjeta` con `.pasos`; `.planta`, `.frutos`, `.libreta`, `.tierra-*`, `.red` y `.pausa`)
-   y acá queda dónde va cada una. */
+/* La portada con la composición de la variante K (2026-11-08): las piezas son del componente huerta
+   (componentes/huerta.css); acá, solo dónde va cada una. El papel de arriba (la portada y cómo
+   funciona) y el de abajo (las cifras, las entregas del mes, quién participa, las preguntas y el
+   cierre) van centrados; la tierra con las raíces, a todo el ancho entre los dos. */
 @import url("app.css");
 
-/* --- La portada y la lámina ------------------------------------------------------------------- */
-
-.portada-grilla {
-  position: relative;
-  display: grid;
-  gap: 2.5rem;
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+main > .centro {
+  --espacio-entre: 4.5rem;
+  padding-block: 2rem 1rem;
 }
 
-/* La lámina: una tarjeta de filete doble con su cabeza (`.tarjeta`, `.tarjeta-cabeza`), como la ficha
-   de campo (referencia 05). */
-.ficha {
-  position: relative;
-  margin: 0;
-  padding: 1rem;
+/* El árbol de cómo funciona queda apoyado sobre la tierra. */
+main > .centro:first-child {
+  padding-bottom: 0;
 }
 
-/* --- La tierra ------------------------------------------------------------------------------------ */
-
-/* La planta con su sol (`.planta-sol`), detrás, medio hundido en la línea de tierra. */
-.tierra-superficie > :not(.planta-sol) {
-  position: relative;
-}
-
-.tierra-superficie .planta-sol {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  z-index: -1;
-  translate: -50% 50%;
-}
-
-/* El rótulo va aparte de la escena (planta y red), que en la computadora queda fija al bajar. */
-.escena .tierra-superficie {
-  padding-top: 0;
-}
-
-/* Sin lugar para la red, su dibujo queda presente pero invisible: así el trazado ya terminó si la
-   ventana se agranda, en vez de empezar de nuevo. Va acá y no en el bloque `red`: le tiene que ganar a
-   `.dibujo` de app.css, que no tiene capa. */
-.red-dibujo {
-  position: absolute;
-  width: 0;
-  height: 0;
-  visibility: hidden;
-}
-
-/* --- El mes --------------------------------------------------------------------------------------- */
-
-/* El sprite de los íconos de lo donado, que usa la libreta del mes. */
-.iconos {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-
-/* El botón chico no se parte en dos renglones. */
-.boton[data-tamano="chico"] {
-  white-space: nowrap;
-}
-
-/* En la tierra, el botón chico (`data-zona="suelo"` o `"suelo-hondo"`) toma aire arriba. */
-.tierra-suelo .boton[data-tamano="chico"] {
-  margin-top: 1rem;
-}
-
-/* --- Estados: vacío, cargando y error -------------------------------------------------------- */
-
-/* El aviso ocupa el lugar de los datos: qué pasa y, si hace falta, qué hacer
-   (`.vacio[data-forma="filetes"]`). En la tierra, centrado y con aire abajo. */
-.vacio[data-forma="filetes"][data-zona="suelo"] {
-  margin: 0 auto 1.5rem;
-}
-
-/* --- Con más lugar ----------------------------------------------------------------------------- */
-
-@media (min-width: 37.5em) {
-  .portada-grilla {
-    padding-inline: 2rem;
-  }
+main > .centro:last-child {
+  padding-top: 4rem;
 }
 
 @media (min-width: 53.75em) {
-  .portada-grilla {
-    padding-top: 2.5rem;
-    padding-bottom: 4rem;
-  }
-
-  .ficha {
-    max-width: 46rem;
-  }
-}
-
-@media (min-width: 68.75em) {
-  .portada-grilla {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    align-items: center;
-    gap: 3rem;
-  }
-
-  /* Con lugar para la red: el dibujo a todo el ancho. */
-  .red-dibujo {
-    position: static;
-    width: 100%;
-    height: auto;
-    visibility: visible;
-  }
-}
-
-/* Al entrar, una vez, el texto de la portada se imprime. La pausa (bloque `pausa`), marcada, detiene el
-   viento de los pasos y de la planta en reposo. Sin movimiento si la persona lo pidió así. */
-@media (prefers-reduced-motion: no-preference) {
-  .portada-texto {
-    animation: var(--movimiento-animacion-registro);
-  }
-
-  body:has(#pausar-movimiento:checked) :is(.paso-brote .hoja, .planta-dibujo .hoja, .planta-dibujo .fruto) {
-    animation: none;
-  }
-}
-
-/* La escena fija (bloque `red`): en la computadora, la planta más chica y el suelo llenando lo que queda
-   de la pantalla. */
-@media (min-width: 68.75em) and (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .escena .planta-dibujo {
-      width: min(10rem, 18dvh);
-    }
-
-    .escena .tierra-suelo {
-      flex: 1;
-      overflow: clip;
-    }
+  main > .centro {
+    --espacio-entre: 6rem;
+    padding-top: 3.5rem;
   }
 }
