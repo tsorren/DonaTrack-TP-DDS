@@ -12,5 +12,11 @@ public interface PersonasDeDonaciones {
 
   void registrarDonante(UUID personaId);
 
+  /**
+   * Deja la constancia de que la persona aceptó los legales vigentes (HB-20): el registro los pide
+   * con una casilla obligatoria.
+   */
+  void aceptarLegalesVigentes(UUID personaId);
+
   void eliminar(UUID personaId);
 }
