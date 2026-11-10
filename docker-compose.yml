@@ -153,11 +153,20 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      # Fotos de recepción en MinIO (ADR-E6-08, HB-10)
+      - LOGISTICA_MINIO_ENABLED=true
+      - LOGISTICA_MINIO_ENDPOINT=http://minio:9000
+      - LOGISTICA_MINIO_PUBLIC_ENDPOINT=http://localhost:9000
+      - LOGISTICA_MINIO_ACCESS_KEY=logistica-service
+      - LOGISTICA_MINIO_SECRET_KEY=${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
+      - LOGISTICA_FOTOS_URL_PUBLICA_BASE=http://localhost:8086
     depends_on:
       mongodb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 5s
@@ -383,7 +392,7 @@ services:
       - minio_data:/data
 
   minio-init:
-    # Crea un usuario de MinIO por servicio (incentivos-service, donaciones-service) con acceso solo
+    # Crea un usuario de MinIO por servicio (incentivos, donaciones y logistica-service) con acceso solo
     # a sus buckets. Misma imagen que minio: trae sh y mc. Corre en cada `up` y termina.
     image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
     entrypoint: ["sh", "/opt/donatrack/minio/init-usuarios.sh"]
@@ -392,6 +401,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?ver .env.example}
       INCENTIVOS_MINIO_PASSWORD: ${INCENTIVOS_MINIO_PASSWORD:?ver .env.example}
       DONACIONES_MINIO_PASSWORD: ${DONACIONES_MINIO_PASSWORD:?ver .env.example}
+      LOGISTICA_MINIO_PASSWORD: ${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
     volumes:
       - ./persistencia/minio:/opt/donatrack/minio:ro
     depends_on:
