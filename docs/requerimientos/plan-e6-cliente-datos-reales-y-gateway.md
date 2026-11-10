@@ -49,8 +49,8 @@ Huecos de backend (§8 de los [requerimientos](requerimientos-e6.md)) y las pant
 | HB-09 notificaciones por evento | Hecho (#936) | Notificaciones (RF-08, RF-13) |
 | HB-15 paginado y búsqueda de entidades | Hecho (#934) | Beneficiarios (RF-06), RF-22 |
 | HB-07 mapa de entregadas | El endpoint existe; con la D24 revisada solo quedaba el Javadoc (tarea 22, hecha) | Mapa de entregadas (RF-02) |
-| HB-01, HB-02 destacadas y contadores | Pendiente | Landing (RF-01) |
-| HB-05, HB-06, HB-16 camión y entregas activas | HB-16 hecho (2026-11-08, `GET /api/entregas/seguimiento/donantes/{id}`); HB-05 y HB-06 pendientes | Seguir entregas del donante y de la entidad (RF-09, RF-14) |
+| HB-01, HB-02 destacadas y contadores | HB-02 hecho (2026-11-08); HB-01 pendiente | Landing (RF-01) |
+| HB-05, HB-06, HB-16 camión y entregas activas | Hechos (2026-11-08): HB-16 con `GET /api/entregas/seguimiento/donantes/{id}`, HB-05 y HB-06 con `posicionCamion` en el seguimiento | Seguir entregas del donante y de la entidad (RF-09, RF-14) |
 | HB-10 fotos multipart | Pendiente | Confirmar recepción (RF-12) |
 | HB-14 progreso del CSV | Pendiente | Importar CSV (RF-20) |
 | HB-11, HB-12, HB-13 | Esperan la autenticación | Mi perfil, Aprobar entidades, autorización |

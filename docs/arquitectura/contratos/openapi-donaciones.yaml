@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.1.0
+  version: 1.2.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -182,6 +182,23 @@ paths:
                 $ref: '#/components/schemas/SubidaFotoOutputDTO'
         '400':
           description: Falta el tipo de contenido (ERR-CSR-003) o no está permitido (ERR-VAL-318)
+  /api/donaciones/contadores:
+    get:
+      summary: Contadores públicos de la landing
+      description: >
+        Ruta pública (RF-01, HB-02): sin token cuando el gateway aplique la allowlist (D26). Totales
+        desde el inicio, sin datos personales. donantesActivos cuenta los donantes activos con al
+        menos una donación; donacionesRealizadas, las donaciones independientes en ENTREGADA (la
+        entidad confirmó la recepción); beneficiariosActivos, las entidades de
+        GET /api/entidades/publicas.
+      operationId: obtenerContadoresPublicos
+      responses:
+        '200':
+          description: Contadores y momento del cálculo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContadoresPublicosDTO'
   /api/donaciones/{id}:
     get:
       summary: Consultar donación por ID
@@ -917,6 +934,27 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    ContadoresPublicosDTO:
+      type: object
+      description: Contadores públicos de la landing (HB-02).
+      required: [donantesActivos, donacionesRealizadas, beneficiariosActivos, calculadoEn]
+      properties:
+        donantesActivos:
+          type: integer
+          format: int64
+          minimum: 0
+        donacionesRealizadas:
+          type: integer
+          format: int64
+          minimum: 0
+        beneficiariosActivos:
+          type: integer
+          format: int64
+          minimum: 0
+        calculadoEn:
+          type: string
+          format: date-time
+          description: Momento del cálculo, con su desplazamiento horario
     EntidadPublicaDTO:
       type: object
       description: Entidad beneficiaria para rutas públicas (D26).

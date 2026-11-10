@@ -28,6 +28,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 |---|---|---|---|:---:|
 | `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems (`409` si el donante está dado de baja) | `DonacionInputDTO` | `201`, `400`, `409` |
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
+| `GET` | `/api/donaciones/contadores` | **Ruta pública** (RF-01, HB-02): `ContadoresPublicosDTO` con `donantesActivos` (activos con al menos una donación), `donacionesRealizadas` (donaciones independientes en `ENTREGADA`), `beneficiariosActivos` (las entidades de `/api/entidades/publicas`) y `calculadoEn`. Totales desde el inicio, sin datos personales | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
 | `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada) y `desde`/`hasta` (fecha de registro ISO, inclusivas). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |

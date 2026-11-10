@@ -39,12 +39,12 @@ el de los datos.
 | Pantalla | Endpoints | Estado | Qué falta o se deriva | HB |
 |---|---|---|---|---|
 | Entidades y necesidades (`publico-entidades`) | `/api/entidades/publicas`, `/api/necesidades/publicas`, `/api/subcategorias` | 🟡 | 🔁 categoría y **unidad**: la subcategoría trae su categoría, y la categoría su `unidad`. ❌ barrio. ❌ "qué es" (solo `rubro`, texto libre). ❌ lo recibido ("faltan 30 de 40"). ❌ período de las recurrentes | HB-18 |
-| Portada | `/api/entregas/mapa`, `/api/entidades/publicas` (cabecera `X-Total-Count`) | 🟡 | 🔁 total de entidades. ❌ destacadas con foto. ❌ contadores de donantes y donaciones. ❌ qué entidades confirmaron | HB-01, HB-02 |
+| Portada | `/api/entregas/mapa`, `/api/entidades/publicas` (cabecera `X-Total-Count`) | 🟡 | 🔁 total de entidades. ❌ destacadas con foto. ✅ contadores de donantes y donaciones (`GET /api/donaciones/contadores`, PR #953). ❌ qué entidades confirmaron | HB-01, HB-02 |
 | Mapa de entregadas | `/api/entregas/mapa` | 🟡 | ✅ coordenadas exactas y fecha. 🔁 barrio con `localidad`. ❌ categoría, entidad, qué y foto. El dibujo usa posiciones `x, y`, no coordenadas | HB-01 |
 | Donaciones realizadas | `/api/entregas/mapa` | 🔴 | El DTO excluye a propósito qué, categoría, entidad y foto | HB-01 |
 | Ingresar, Recuperar, Activar, Registro de donante y de entidad | IdP | 🔴 | Dependen del login (SPEC-06). La entidad, además, del estado pendiente | HB-11, HB-12, HB-20 |
 | Contacto | Ninguno | 🔴 | No hay dónde mandar el mensaje | HB-21 |
-| Registrarse, Legales, Nosotros, Para donantes, Para entidades | Ninguno | ⚪ | Las cifras de Nosotros son fijas | HB-02 (cifras) |
+| Registrarse, Legales, Nosotros, Para donantes, Para entidades | Ninguno | ⚪ | Las cifras de Nosotros son fijas; `GET /api/donaciones/contadores` ya las da (PR #953) | HB-02 (cifras) |
 
 ## 3. Donante
 
@@ -96,7 +96,7 @@ Huecos que se repiten en varias pantallas, de más a menos pantallas:
 | Posición del camión | Seguimiento del donante, Seguir entregas de la entidad | HB-05, HB-06 |
 | ~~Pedido que cubre cada donación (`necesidadId` en el DTO)~~ Hecho (2026-11-08) | Donaciones recibidas, Confirmar recepción | HB-17 |
 | La entrega que llegó a la puerta y espera confirmación | Donaciones recibidas, Inicio y Seguir entregas de la entidad | HB-22 |
-| Destacadas con foto y contadores | Portada, Donaciones realizadas | HB-01, HB-02 |
+| Destacadas con foto y contadores | Portada, Donaciones realizadas | HB-01 (HB-02 hecho el 2026-11-08) |
 | "Qué es" la entidad como lista fija | Entidades y necesidades, Registro de entidad, Mi perfil de la entidad | **No** |
 
 Huecos nuevos que no estaban en la ficha: período y recibido de las necesidades (el período sí

@@ -32,7 +32,7 @@ Que el cliente liviano tenga **una sola URL base** para los cuatro servicios (RI
 
 - Validación del JWT y aplicación de la allowlist: etapa 2 (F5, E2-01).
 - Gateway en el preprod y el cliente apuntando al gateway en el compose: E2-12 y F6. El CI ya lo construye y publica su imagen solo, porque arma la lista de servicios desde `*/pom.xml` con `Dockerfile`. `scripts/resolver-imagenes-ghcr.sh` lo saltea, como a `auth-service`, porque no está en `docker-compose.preprod.yml`.
-- Destacadas y contadores de la landing: no tienen endpoint todavía (HB-01, HB-02).
+- Destacadas de la landing: no tienen endpoint todavía (HB-01). Los contadores (`GET /api/donaciones/contadores`, HB-02) ya están en `rutas-publicas`.
 - Alias sin `/api` de Notificaciones y `/donaciones-independientes`: el ADR los deja afuera.
 
 ## 3. Decisiones Acordadas y Trade-offs

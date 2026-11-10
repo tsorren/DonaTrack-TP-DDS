@@ -59,4 +59,9 @@ public class DonacionesIndependientesRepositoryEnMemoria
         .forEach(d -> conteo.merge(d.getEntidadBeneficiariaId(), 1, Integer::sum));
     return conteo;
   }
+
+  @Override
+  public long contarEnEstado(TipoEstadoDonacion estado) {
+    return storage.values().stream().filter(d -> d.getEstadoActual().getTipo() == estado).count();
+  }
 }

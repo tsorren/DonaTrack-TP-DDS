@@ -37,6 +37,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -530,5 +531,25 @@ class DonacionesIndependientesRepositoryJpaTest {
                 "UPDATE donaciones.donacion_independiente SET id_periodo = ? WHERE id = ?",
                 necesidad.periodoActualId(),
                 donacion.getId()));
+  }
+
+  @Test
+  void contadores_cuentanPorEstadoYDevuelvenLosDonantesConDonaciones() {
+    assertEquals(0, independientes.contarEnEstado(TipoEstadoDonacion.ENTREGADA));
+    DonacionIndependiente entregada = nueva(10);
+    entregada.asignar(ACTOR, recurrente().destinoDeAsignacion());
+    entregada.planificarRuta(ACTOR);
+    entregada.iniciarRecorrido(ACTOR);
+    entregada.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR));
+    independientes.save(entregada);
+    independientes.save(nueva(5));
+
+    assertEquals(1, independientes.contarEnEstado(TipoEstadoDonacion.ENTREGADA));
+    assertEquals(1, independientes.contarEnEstado(TipoEstadoDonacion.EN_DEPOSITO));
+    assertEquals(0, independientes.contarEnEstado(TipoEstadoDonacion.VENCIDA));
+    UUID donanteId = jdbc.queryForObject("SELECT id_donante FROM donaciones.donacion", UUID.class);
+    assertEquals(Set.of(donanteId), donaciones.idsDeDonantes());
   }
 }

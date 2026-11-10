@@ -23,8 +23,9 @@ donatrack:
       logistica: ${LOGISTICA_SERVICE_URL:http://localhost:8083}
     # Allowlist pública (D26, RI-GW-03): pasan sin token en la etapa 2 (F5). En la etapa 1 no se
     # aplica. Si una pantalla pública suma una llamada, su ruta entra acá en el mismo cambio.
-    # Pendientes: destacadas y contadores de la landing (HB-01, HB-02), sin endpoint todavía.
+    # Pendiente: destacadas de la landing (HB-01), sin endpoint todavía.
     rutas-publicas:
+      - GET /api/donaciones/contadores
       - GET /api/entidades/publicas
       - GET /api/necesidades/publicas
       - GET /api/entregas/mapa
