@@ -20,6 +20,7 @@ import grupo5.logistica.infrastructure.persistencia.jpa.mappers.RutaPersistencia
 import grupo5.logistica.infrastructure.persistencia.jpa.mappers.SolicitudPlanificacionPersistenciaMapper;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -186,15 +187,19 @@ class PersistenciaMappersTest {
     DireccionEntity dirEntity = entregaMapper.construirDireccionNueva(dir, localidadEntity);
 
     Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
     entrega.iniciarRuta("Chofer");
 
     EntregaEntity entity = entregaMapper.toEntity(entrega, null, dirEntity);
+    assertEquals(donanteId, entity.getDonanteId());
     entity.setVersion(0L);
     UUID idDireccion = entity.getDireccion().getIdDireccion();
     UUID idCambioInicial = entity.getHistorialEstado().getFirst().getIdCambioEstadoEntrega();
 
     Entrega reconstituida = entregaMapper.toDomain(entity);
     assertEquals(entrega.getId(), reconstituida.getId());
+    assertEquals(donanteId, reconstituida.getDonanteId());
     assertEquals("Av. Cordoba", reconstituida.getDestino().calle());
     assertEquals(0L, reconstituida.getVersion());
 
@@ -237,5 +242,20 @@ class PersistenciaMappersTest {
     assertThrows(
         ObjectOptimisticLockingFailureException.class,
         () -> solicitudMapper.toEntity(reconstituida, entity));
+  }
+
+  @Test
+  void camionMapper_deberiaMapearLaPosicionIdaYVuelta() {
+    Camion camion = new Camion("AB123CD", 45.0f, 1500.0f, 3.0f);
+    CamionEntity sinPosicion = camionMapper.toEntity(camion);
+    assertNull(sinPosicion.getPosicionLatitud());
+    assertNull(camionMapper.toDomain(sinPosicion).getPosicion());
+
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+
+    CamionEntity entity = camionMapper.toEntity(camion);
+    assertEquals(posicion, camionMapper.toDomain(entity).getPosicion());
   }
 }

@@ -1,5 +1,6 @@
 package grupo5.donaciones.infrastructure.logistica;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
@@ -118,16 +119,19 @@ public class ProveedorLogisticaHttp implements IProveedorLogistica {
         datos.personaBeneficiariaId(),
         datos.destino(),
         datos.pesoTotalKG(),
-        datos.volumenTotalM3());
+        datos.volumenTotalM3(),
+        datos.donanteId());
   }
 
   /**
    * Contrato REST de {@code POST /api/entregas} de logística; los nombres son los del proveedor.
    */
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   record PedidoEntregaHttp(
       UUID idDonacion,
       UUID idBeneficiaria,
       DestinoEventoDTO destino,
       Double pesoTotalKG,
-      Double volumenTotalM3) {}
+      Double volumenTotalM3,
+      UUID donanteId) {}
 }

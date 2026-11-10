@@ -27,6 +27,14 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   private UUID idRuta;
   private final UUID idDonacion;
   private final UUID idBeneficiaria;
+
+  /**
+   * Donante de la donación original: referencia opaca replicada desde Donaciones, sin datos
+   * personales. Es opcional: las entregas creadas antes del cambio o por un emisor que no lo manda
+   * no la tienen (ADR de réplicas por evento, HB-16).
+   */
+  private UUID donanteId;
+
   private final Direccion destino;
   private EstadoEntrega estadoActual;
 
@@ -159,6 +167,11 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   public void reconstituirRecepcion(String numeroRemito, ReporteRecepcion reporte) {
     this.numeroRemito = numeroRemito;
     this.reporteRecepcion = reporte;
+  }
+
+  /** Registra el donante al crear o reconstituir la entrega; {@code null} la deja sin donante. */
+  public void registrarDonante(UUID donanteId) {
+    this.donanteId = donanteId;
   }
 
   public void asignarRuta(UUID idRuta) {

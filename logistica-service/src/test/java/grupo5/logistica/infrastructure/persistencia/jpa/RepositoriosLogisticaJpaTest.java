@@ -35,6 +35,7 @@ import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataP
 import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataSolicitudTransicionEntregaRepository;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
@@ -277,6 +278,34 @@ class RepositoriosLogisticaJpaTest {
     EntregaEntity entityActualizada =
         springDataEntregaRepo.findById(guardada1.getId()).orElseThrow();
     assertEquals(idDireccionOriginal, entityActualizada.getDireccion().getIdDireccion());
+  }
+
+  @Test
+  void deberiaListarLasEntregasDeUnDonanteYDejarSinDonanteLasQueNoLoTraen() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID donanteId = UUID.randomUUID();
+    Entrega delDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1200, null, null, "1033", caba),
+            15.0f,
+            1.5f);
+    delDonante.registrarDonante(donanteId);
+    Entrega sinDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Corrientes", 3400, null, null, "1194", caba),
+            20.0f,
+            2.0f);
+    entregasRepository.save(delDonante);
+    entregasRepository.save(sinDonante);
+
+    List<Entrega> resultado = entregasRepository.findByDonanteId(donanteId);
+
+    assertEquals(List.of(delDonante.getId()), resultado.stream().map(Entrega::getId).toList());
+    assertNull(entregasRepository.findById(sinDonante.getId()).orElseThrow().getDonanteId());
   }
 
   @Test
@@ -544,5 +573,16 @@ class RepositoriosLogisticaJpaTest {
             "https://minio/foto_adicional_1.jpg",
             "https://minio/foto_adicional_2.jpg"),
         fotosFinalesEnDb);
+  }
+
+  @Test
+  void deberiaPersistirYRecuperarLaPosicionDelCamion() {
+    Camion camion = camionRepository.save(new Camion("GH789IJ", 50.0f, 2000.0f, 3.2f));
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6037, -58.3816, Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+    camionRepository.save(camion);
+
+    assertEquals(posicion, camionRepository.findById(camion.getId()).orElseThrow().getPosicion());
   }
 }

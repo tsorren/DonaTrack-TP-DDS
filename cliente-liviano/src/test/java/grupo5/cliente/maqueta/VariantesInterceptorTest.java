@@ -19,7 +19,13 @@ import org.springframework.test.web.servlet.MockMvc;
  * Las variantes de prueba están en src/test/resources: prueba-a (estilo) y prueba-b (estructura).
  */
 @WebMvcTest
-@Import({MaquetaConfig.class, RankingMaqueta.class, DonacionesMaqueta.class, CuentaMaqueta.class})
+@Import({
+  MaquetaConfig.class,
+  RankingMaqueta.class,
+  DonacionesMaqueta.class,
+  RecibidasMaqueta.class,
+  CuentaMaqueta.class
+})
 @ActiveProfiles("maqueta")
 class VariantesInterceptorTest {
 

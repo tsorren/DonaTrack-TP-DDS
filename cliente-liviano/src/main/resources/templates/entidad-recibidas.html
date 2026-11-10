@@ -5,8 +5,8 @@
        línea de subte: cada estado, una estación (la elegida, impresa); funciona sin JavaScript, con un
        formulario GET (?estado=todas, en-tu-puerta, en-camino, por-salir, con-problema o recibidas; un
        valor desconocido muestra todas). Lo que espera, en actas de papel con su botón; lo recibido,
-       en el cuaderno de la portada, una fila por fecha. Las donaciones salen de piezas-entidad.html
-       (datos), las mismas del Inicio.
+       en el cuaderno de la portada, una fila por fecha. Las donaciones vienen del controller
+       (recibidas: de la maqueta o de Donaciones); de piezas-entidad.html (datos) salen los grupos.
        ?escenario=vacio, lento, error y sin-resultados (el aceite ya no está y el filtro
        queda en Con problema: el filtro sin resultados). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -20,14 +20,16 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="pedido=${param.estado != null ? param.estado[0] : (escenario == 'sin-resultados' ? 'con-problema' : 'todas')},
+    th:with="asignadas=${escenario == 'vacio' ? {} : recibidas.asignadas.?[clave != 'aceite' or #root.escenario != 'sin-resultados']},
+             nombreRecibidas=${'Recibidas en ' + recibidas.mes},
+             pedido=${param.estado != null ? param.estado[0] : (escenario == 'sin-resultados' ? 'con-problema' : 'todas')},
              filtros=${ {
       {valor: 'todas', nombre: 'Todas'},
       {valor: 'en-tu-puerta', nombre: 'Esperan tu confirmación', grupo: 'puerta'},
       {valor: 'en-camino', nombre: 'En camino', grupo: 'camino'},
       {valor: 'por-salir', nombre: 'Pendientes', grupo: 'salir'},
       {valor: 'con-problema', nombre: 'Con problema', grupo: 'problema'},
-      {valor: 'recibidas', nombre: 'Recibidas en octubre', grupo: 'recibida'} } },
+      {valor: 'recibidas', nombre: nombreRecibidas, grupo: 'recibida'} } },
              filtro=${#lists.isEmpty(filtros.?[valor == #root.pedido]) ? filtros[0] : filtros.?[valor == #root.pedido][0]},
              filtrada=${filtro.valor != 'todas'},
              conLista=${escenario != 'vacio' and escenario != 'error'},
@@ -38,9 +40,9 @@
       <p class="rotulo" th:text="${seccion}">Donaciones recibidas</p>
       <h1>Lo asignado a <em>tu entidad</em></h1>
       <p>Las donaciones asignadas al <th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block>,
-        de la que está en tu puerta a la que ya recibiste. Al 15 de octubre de 2026, 18:30.</p>
-      <th:block th:if="${conDatos}">
-        <a th:replace="~{piezas-entidad :: novedades(3)}"></a>
+        de la que está en tu puerta a la que ya recibiste. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
+      <th:block th:if="${conDatos and recibidas.novedades != null}">
+        <a th:replace="~{piezas-entidad :: novedades(${recibidas.novedades})}"></a>
       </th:block>
     </header>
 
@@ -97,19 +99,19 @@
                  th:aria-labelledby="|grupo-${g.clave}|">
           <!--/* Al filtrar, el foco va al título del grupo mostrado. */-->
           <h2 th:id="|grupo-${g.clave}|" th:attr="tabindex=${filtrada} ? '-1' : null, autofocus=${filtrada} ? 'autofocus' : null"
-              th:text="|${g.nombre} (${#lists.size(lista)})|">Esperan tu confirmación (2)</h2>
+              th:text="|${g.clave == 'recibida' ? nombreRecibidas : g.nombre} (${#lists.size(lista)})|">Esperan tu confirmación (2)</h2>
 
           <!--/* Lo que todavía no se recibió: un acta por donación, con su estado y su próximo paso. */-->
           <ul th:if="${g.clave != 'recibida'}" class="lista actas" role="list">
             <li th:each="d : ${lista}">
               <article class="tarjeta acta" data-filete="doble" th:aria-labelledby="|don-${d.clave}|">
                 <h3 th:id="|don-${d.clave}|" class="acta-titulo">
-                  <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                  <svg th:if="${d.categoria}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                     <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>
                   </svg>
                   <span th:text="${d.nombre}">Lentejas secas</span>
                 </h3>
-                <p class="acta-cuanto" th:text="|${d.categoriaNombre} · ${d.cuanto}|">Alimentos · 15 kg</p>
+                <p class="acta-cuanto" th:text="${d.categoriaNombre == null ? d.cuanto : d.categoriaNombre + ' · ' + d.cuanto}">Alimentos · 15 kg</p>
                 <p th:text="|Donó ${d.dono}|">Donó Distribuidora Ejemplo SA</p>
                 <p th:if="${d.pedido}"><a href="/entidad-necesidades?necesidad=lentejas"
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
@@ -124,7 +126,7 @@
                    href="/entidad-seguimiento-confirmar?entrega=lentejas"
                    th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
                   recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
-                <a th:if="${d.grupo == 'problema'}" class="boton" data-tono="secundario"
+                <a th:if="${d.grupo == 'problema' and d.pedido != null}" class="boton" data-tono="secundario"
                    href="/entidad-necesidades?necesidad=aceite"
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu pedido</a>
               </article>
@@ -137,11 +139,11 @@
             <li th:each="d : ${lista}">
               <article class="asiento" th:aria-labelledby="|don-${d.clave}|">
                 <p class="asiento-fecha"><time datetime="2026-10-10" th:datetime="${d.fecha}"><b
-                    th:text="${d.dia}">10</b> de octubre</time></p>
+                    th:text="${d.dia}">10</b><th:block th:text="| de ${recibidas.mes}|"> de octubre</th:block></time></p>
                 <svg th:replace="~{componentes/sello :: sello('recibida')}"></svg>
                 <div class="asiento-texto">
                   <h3 th:id="|don-${d.clave}|" th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 10 kg</h3>
-                  <p><th:block th:text="|${d.categoriaNombre} · Donó ${d.dono}|">Alimentos · Donó Almacén Ejemplo
+                  <p><th:block th:text="${(d.categoriaNombre == null ? '' : d.categoriaNombre + ' · ') + 'Donó ' + d.dono}">Alimentos · Donó Almacén Ejemplo
                     SRL</th:block><th:block th:if="${d.pedido}"> · <a
                       href="/entidad-necesidades?necesidad=lentejas"
                       th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
