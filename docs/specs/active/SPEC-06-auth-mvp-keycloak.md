@@ -5,6 +5,7 @@
 > **Fecha:** 2026-11-04
 > **Base:** `ENTREGA_6` (`8962906f`). Rama del PR: `E6_auth-service`, hacia `ENTREGA_6`. Ojo: no es `E6_auth_service`, que tiene un IdP propio con Spring Authorization Server y queda como referencia.
 > **ADR:** [Proveedor de identidad: Keycloak configurado](../../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md) (`proposed`).
+> **ADR del vínculo (2026-11-10):** [`personaId` como atributo de Keycloak](../../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md) (`proposed`), que enmienda D9 y cierra E2-03.
 > **Requerimientos:** [requerimientos de E6](../../requerimientos/requerimientos-e6.md), §4 (IdP) y §9–§10 (decisiones).
 
 ---
@@ -40,7 +41,7 @@ En lenguaje llano:
 Queda fuera del MVP. Va a la etapa 2 en adelante (§4):
 - Gateway y validación del token en los 4 servicios.
 - Spring Session JDBC (D5).
-- `sub` en `Persona` y "completar perfil".
+- ~~`sub` en `Persona` y "completar perfil"~~ (E2-03: resuelto con el `personaId` en Keycloak, ver el [ADR del vínculo](../../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md)).
 - Registro de entidad con aprobación.
 - Google (D3, D4).
 - Recuperación de la clave y verificación del email (D8).
@@ -63,6 +64,7 @@ También queda fuera:
 | M2 | En el MVP, la pantalla de login es la de Keycloak con logo y colores mínimos; el tema Raíces completo, en la etapa 2 | Formulario propio con *password grant* (ROPC): OAuth 2.1 lo elimina, el sitio vería la clave y se pierde el SSO |
 | M3 | Rama nueva `E6_auth-service` desde `ENTREGA_6`, sin el código de `E6_auth_service` | Traerlo dejaría código muerto. Sus reglas (bloqueo tras 5 intentos en 15 min; clave de 10 a 128 caracteres y distinta del email) pasan al realm |
 | M4 | La parte A del MVP (Keycloak) arranca ya; la parte B (el sitio) espera los PR del cliente liviano | Empezar B sobre `ENTREGA_6`: el módulo `cliente-liviano` todavía no existe ahí (PR 920, 924 y 926 abiertos) |
+| M5 | El vínculo entre la cuenta y la `Persona` es el atributo `personaId` en Keycloak, no el `sub` guardado en `Persona` (decisión del usuario, 2026-11-10; enmienda D9) | `sub` en `Persona` con `GET /api/personas/me` (D9 original): obliga a Incentivos, Logística y Notificaciones a consultar a Donaciones para cada pertenencia `[INFERRED]`. Ver el [ADR del vínculo](../../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md) |
 
 ## 4. Backlog
 
@@ -83,14 +85,16 @@ También queda fuera:
 ### Etapa 1 — MVP. Parte B: el sitio
 
 > **Depende de que se mergeen los PR 920 y 924 (hacia `ENTREGA_6`) y 926 (hacia `E6_corrida_creativa`).** En `ENTREGA_6`, `cliente-liviano` todavía no es módulo de Maven. Si la parte B no puede esperar, va en un PR apilado sobre `E6_raices`, y eso se declara en el PR.
+>
+> **Actualización 2026-11-10:** en esta rama `cliente-liviano` ya es módulo de Maven y la parte B está en el código (filas B1-01 a B1-04). La condición de los PR dejó de bloquear.
 
 | ID | Ítem | Depende de | Hecho cuando | Estado |
 |---|---|---|---|---|
-| B1-01 | **Cliente OIDC.** `spring-boot-starter-security` y `spring-boot-starter-security-oauth2-client` (nombres de Spring Boot 4.0.7; el test usa `spring-boot-starter-security-oauth2-client-test`). Registro `keycloak` con el `issuer-uri` por variable. Un `GrantedAuthoritiesMapper` arma `ROLE_*` desde el claim `roles` del ID token. Reglas por ruta: las páginas públicas abiertas; `/donante*`, `/entidad*` y `/admin*`, cada una con su rol. Con el perfil `maqueta`, todo abierto, para que la maqueta y sus capturas sigan iguales | A1-02, PR del cliente | Tests con MockMvc y `oidcLogin()`. `SitioControllerTest` y `-Pvisual` siguen en verde | Pendiente |
-| B1-02 | **Ingresar y registrarse.** "Ingresar" lleva a `/oauth2/authorization/keycloak`. "Registrarse" agrega `prompt=create` con un `OAuth2AuthorizationRequestResolver` propio (el endpoint `/registrations` está deprecado). `publico-ingresar` y `publico-registro-donante` quedan solo en la maqueta | B1-01 | Test del redirect: "Registrarse" lleva `prompt=create` | Pendiente |
-| B1-03 | **Navegación según el rol.** Los menús por rol (`MENUS` de `SitioController`, perfil `maqueta`) pasan a un componente compartido. Un controller real en `grupo5.cliente.web` llena `navegacion`, `cuenta` y `perfil` desde el `OidcUser`. El inicio depende del rol, con precedencia `ADMIN` > `ENTIDAD` > `DONANTE`; el cambio de rol (RI-AUTH-04) queda para la etapa 2 | B1-01 | Un test por rol: cada uno llega a su inicio y ve su menú; el donante recibe 403 en `/admin*` | Pendiente |
-| B1-04 | **Cerrar sesión.** Botón con un formulario POST `/logout` (con CSRF) en `layout-privado.html`. `OidcClientInitiatedLogoutSuccessHandler` con `post_logout_redirect_uri` a la portada, para cerrar también la sesión SSO de Keycloak | B1-01 | Test del logout. De punta a punta: después de salir, volver a entrar pide la clave | Pendiente |
-| B1-05 | **Punta a punta y documentación.** Test con Playwright contra Keycloak en un contenedor, en un perfil propio (no corre en el `mvn test` por defecto). Recorrido: registro de donante, inicio y logout; login del admin. `auth-service/README.md` explica cómo levantarlo, las variables y los usuarios; el README del cliente explica cómo correrlo con Keycloak | B1-02, B1-03, B1-04, A1-04 | El recorrido pasa y queda grabado (video del perfil `visual`) | Pendiente |
+| B1-01 | **Cliente OIDC.** `spring-boot-starter-security` y `spring-boot-starter-security-oauth2-client` (nombres de Spring Boot 4.0.7; el test usa `spring-boot-starter-security-oauth2-client-test`). Registro `keycloak` con el `issuer-uri` por variable. Un `GrantedAuthoritiesMapper` arma `ROLE_*` desde el claim `roles` del ID token. Reglas por ruta: las páginas públicas abiertas; `/donante*`, `/entidad*` y `/admin*`, cada una con su rol. Con el perfil `maqueta`, todo abierto, para que la maqueta y sus capturas sigan iguales | A1-02, PR del cliente | Tests con MockMvc y `oidcLogin()`. `SitioControllerTest` y `-Pvisual` siguen en verde | **Implementado en el código (verificado por lectura, 2026-11-10).** `SeguridadConfig` (`oauth2Login`, reglas por área, `GrantedAuthoritiesMapper` desde `roles` y `permisos`, solo fuera del perfil `maqueta`). Tests: `SeguridadTest` (pantallas públicas abiertas, privada sin sesión → ingresar, área ajena → 403, roles y permisos del ID token como autoridades). **Tests no corridos:** la sesión de verificación no tenía Java ni Maven |
+| B1-02 | **Ingresar y registrarse.** "Ingresar" lleva a `/oauth2/authorization/keycloak`. "Registrarse" agrega `prompt=create` con un `OAuth2AuthorizationRequestResolver` propio (el endpoint `/registrations` está deprecado). `publico-ingresar` y `publico-registro-donante` quedan solo en la maqueta | B1-01 | Test del redirect: "Registrarse" lleva `prompt=create` | **Implementado en el código (verificado por lectura, 2026-11-10).** `SolicitudDeAutorizacion` agrega `prompt=create` y también `kc_idp_hint=google` (adelanta parte de E2-05); cualquier otro valor se ignora. Test: `SeguridadTest.crearUnaCuentaLePideAKeycloakElRegistro` y `ingresarSinPedidos…`. **Tests no corridos** |
+| B1-03 | **Navegación según el rol.** Los menús por rol (`MENUS` de `SitioController`, perfil `maqueta`) pasan a un componente compartido. Un controller real en `grupo5.cliente.web` llena `navegacion`, `cuenta` y `perfil` desde el `OidcUser`. El inicio depende del rol, con precedencia `ADMIN` > `ENTIDAD` > `DONANTE`; el cambio de rol (RI-AUTH-04) queda para la etapa 2 | B1-01 | Un test por rol: cada uno llega a su inicio y ve su menú; el donante recibe 403 en `/admin*` | **Implementado en el código (verificado por lectura, 2026-11-10).** Tests: `cadaAreaLlegaASuInicioYVeSuMenu`, `elInicioDependeDelAreaDeMasPrecedencia`, `unaAreaAjenaResponde403`. Va más allá de la spec: `PerfilPendiente` y `EstadoDeCuenta` (cuenta sin perfil o con solicitud de entidad solo ve sus pantallas). **Tests no corridos** |
+| B1-04 | **Cerrar sesión.** Botón con un formulario POST `/logout` (con CSRF) en `layout-privado.html`. `OidcClientInitiatedLogoutSuccessHandler` con `post_logout_redirect_uri` a la portada, para cerrar también la sesión SSO de Keycloak | B1-01 | Test del logout. De punta a punta: después de salir, volver a entrar pide la clave | **Implementado en el código (verificado por lectura, 2026-11-10).** `OidcClientInitiatedLogoutSuccessHandler` con `post_logout_redirect_uri={baseUrl}/`. Tests: `cerrarSesionCierraTambienLaDeKeycloakYVuelveALaPortada` y `cerrarSesionSinElTokenCsrfResponde403`. **Sin probar** el "de punta a punta" (volver a entrar pide la clave): necesita un Keycloak real. **Tests no corridos** |
+| B1-05 | **Punta a punta y documentación.** Test con Playwright contra Keycloak en un contenedor, en un perfil propio (no corre en el `mvn test` por defecto). Recorrido: registro de donante, inicio y logout; login del admin. `auth-service/README.md` explica cómo levantarlo, las variables y los usuarios; el README del cliente explica cómo correrlo con Keycloak | B1-02, B1-03, B1-04, A1-04 | El recorrido pasa y queda grabado (video del perfil `visual`) | **Pendiente.** No hay recorrido contra un Keycloak real: los tests del cliente usan MockMvc y un Keycloak simulado (`DirectorioKeycloakTest`). Playwright solo está en el perfil `visual` |
 
 ### Etapa 2 en adelante — en orden, sin detalle
 
@@ -98,7 +102,7 @@ También queda fuera:
 |---|---|---|
 | E2-01 | Gateway (Spring Cloud Gateway) y validación por JWKS en los 4 servicios, con autorización por rol y por pertenencia | RI-GW-01..04, RI-SVC-01..04, D2, D13, D16, [ADR-E6-02](../../adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) (`proposed`) |
 | E2-02 | Sesión del cliente en Spring Session JDBC, con base propia | D5 |
-| E2-03 | `usuarioId` (= `sub`) en `Persona`, `GET /api/personas/me` y "completar perfil" al primer login | RI-AUTH-01..03, HB-11, D9, D11 |
+| E2-03 | ~~`usuarioId` (= `sub`) en `Persona`, `GET /api/personas/me` y "completar perfil" al primer login~~ **Resuelto con otro diseño (decisión 2026-11-10):** el vínculo es el atributo `personaId` del usuario de Keycloak, que viaja en el token; "completar perfil" ya está en el cliente. Queda `GET /api/personas/me` (por el `personaId` del token) y la baja de personas con cuenta. Ver el [ADR del vínculo](../../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md) | RI-AUTH-01..03, HB-11, D9, D11 |
 | E2-04 | Registro de entidad pendiente de aprobación y pantalla de aprobación del admin | RF-AUTH-06, RI-AUTH-05, RF-21, D10 |
 | E2-05 | Login con Google y vinculación por contraseña | RF-AUTH-02..04, D3, D4 |
 | E2-06 | Recuperación de la clave y verificación del email: SPI de Keycloak → RabbitMQ → notificaciones | RF-AUTH-13, RF-AUTH-16, D8 |
@@ -110,11 +114,48 @@ También queda fuera:
 | E2-12a | Keycloak en `docker-compose.preprod.yml` y en el CI. **Hecho 2026-11-10, commit pendiente.** Servicio `keycloak` en preprod (imagen `donatrack/auth-service:preprod`, 8180 solo en loopback, `environment` y healthcheck idénticos a los del compose local) y `KEYCLOAK_DB_PASSWORD` en su Postgres. `auth-service` **no entra a las matrices Java** (no produce un JAR ni está en los `<modules>`): `main.yml` tiene el job `auth-service` (Spotless, contrato del realm con `-Pcontrato-auth` e imagen `pr-<N>`) y `merge.yml` el job `auth-publish` (contrato, candidato `:sha-<7>` y `digest-auth-service`, que entra al manifiesto y a `promote`). El resolver deja de excluirlo; `api-gateway` sigue excluido. **Verificado sin Docker ni GitHub:** `scripts/tests/test_auth_ci_preprod.py` (40 tests, con prueba de mutación) y YAML de los dos workflows. **Sin probar:** que `keycloak` quede `healthy` en el preprod y que los jobs corran en GitHub Actions; se confirma en el primer PR. **Transición:** hasta el primer `promote` con `auth-service`, un PR que no lo toca falla en el preprod porque el manifiesto base no lo trae | — |
 | E2-12b | El cliente liviano en el compose (emisor único para el navegador y el backchannel). **Pendiente:** depende de la parte B (B1-01) | B1-01 |
 
+### Estado verificado de la Etapa 2 y plan de iteraciones (2026-11-10)
+
+> Relevado **leyendo el código** de esta rama, sin compilar ni correr tests: la sesión no tenía Java, Maven ni acceso a Maven Central. Lo marcado como "hecho" significa "el código y sus tests existen", no "los tests pasan". Esta rama avanzó más que la tabla de arriba (que describe `ENTREGA_6`): conviene que el equipo corra `mvn clean test` antes de dar por cerrado cualquier ítem.
+
+| ID | Estado verificado | Qué falta |
+|---|---|---|
+| E2-01 | **Parcial.** Donaciones valida el JWT: resource server en `common-lib` (`SeguridadAutoConfiguration`, activable con `donatrack.seguridad.habilitada`, **apagado por defecto**), `@PreAuthorize` por rol y pertenencia en sus controllers (revisé la anotación de clase o de método, no cada regla contra la matriz de permisos), rutas públicas en `ReglasDeAccesoDonaciones`. El gateway tiene rutas y allowlist escrita, sin validar JWT | Incentivos, Logística y Notificaciones no tienen dependencia ni reglas. Gateway sin JWT (etapa 2 del ADR-E6-02, `proposed`) |
+| E2-02 | **No.** Ningún `pom.xml` tiene Spring Session; los ingresos del cliente quedan en memoria | Todo |
+| E2-03 | **Resuelto (decisión 2026-11-10).** El `personaId` es un atributo del usuario de Keycloak que el cliente escribe por la Admin API y que viaja en el access y el ID token (`Actores`, `Miembro`, `UsuarioActual`, `DirectorioKeycloak`, mappers del realm). Solo el admin lo ve y edita, y un IT contra Keycloak real lo comprueba (`RealmTokenContractIT`). Documentado en el [ADR del vínculo](../../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md) (`proposed`) | `GET /api/personas/me` por el `personaId` del token (lo piden "Mi perfil" y los legales). Baja o anonimización de una persona con cuenta: nada quita el atributo. Confirmar con el equipo las razones del desvío |
+| E2-04 | **Hecho en el cliente.** Atributo `solicitudEntidad`, `SOLICITUD_RECIBIDA`, pantalla del admin y aprobación con CSRF (`SolicitudesDeEntidadController`; tests en `SeguridadTest` y `CompletarPerfilTest`) | HB-12: el estado "pendiente" vive en Keycloak, no en Donaciones. Confirmar si alcanza |
+| E2-05 | **Parcial.** `kc_idp_hint=google` en el cliente y proveedor Google en el realm, con `GOOGLE_CLIENT_*` opcionales | Vinculación por contraseña (RF-AUTH-03/04) sin verificar |
+| E2-06 | **No.** `auth-service` no tiene extensiones (SPI) | Todo |
+| E2-07 | **Parcial.** El cliente pide un token `client_credentials` (cuenta `service-account-cliente-liviano`, rol `SERVICIO`) y reenvía el del usuario. `X-API-Key` sobrevive solo en `ApiKeyFilter` (proveedor de logística) y en el flujo 9 de Postman | n8n, jobs y proveedor externo con client credentials; retirar `X-API-Key` y `X-Actor` |
+| E2-08, E2-09, E2-10, E2-11 | **No** (tema mínimo, sin alta por CSV ni cambio de rol) | Todo |
+| E2-12a | **Hecho** (2026-11-10, ver fila) | Confirmar `healthy` en preprod y los jobs en GitHub |
+| E2-12b | **No.** Ni el cliente ni el gateway están en el preprod; el gateway solo en `docker-compose.yml` (8086) | Cliente y gateway en `docker-compose.preprod.yml`, emisor único |
+
+**Convivencia de `X-API-Key` y JWT (decisión de la Iteración 0).** No hace falta un modo de transición: la seguridad por token es opt-in (`donatrack.seguridad.habilitada=false` por defecto y el preprod no la enciende), así que Postman, los tests de integración y el flujo 9 siguen con `X-API-Key`. El retiro de `X-API-Key` es parte de E2-07 y solo se hace cuando el preprod corra con la seguridad encendida y un token de servicio.
+
+**Plan de iteraciones ajustado.** Cada iteración cierra con su test, la documentación que toca y esta tabla actualizada. Las que tocan Java llevan el comando de verificación para que el equipo lo corra.
+
+| Iter. | Qué | Tipo | Depende de | Estado |
+|---|---|---|---|---|
+| 0 | Auditoría del estado real y ajuste del plan | Solo lectura y docs | — | **Hecha** (2026-11-10) |
+| 1 | E2-12a: Keycloak en preprod y CI | Infra, verificada sin Docker | — | **Hecha** (2026-11-10) |
+| 2 | **Decisión sobre E2-03 / D9** y alineación de la documentación: ADR del vínculo, spec, requerimientos (D9, RNF-AUTH-09, RI-AUTH-01..03, HB-11), ADR de Keycloak, matriz de permisos y README de `auth-service` | Docs | — | **Hecha** (2026-11-10): se alineó con el `personaId` en Keycloak |
+| 3 | E2-01 en Logística, Incentivos y Notificaciones: resource server, reglas por la matriz de permisos y rutas públicas, un servicio por vez. Reusa `common-lib` y la dependencia que ya usa Donaciones (el `pom.xml` pide OK aparte, §5) | Java, sin compilar acá: `mvn clean test -pl <svc> -am` | 2 | Pendiente |
+| 4 | E2-01 en el gateway: validar el JWT y aplicar la allowlist (etapa 2 del ADR-E6-02); gateway en el preprod | Java e infra | 3 | Pendiente |
+| 5 | Preprod con la seguridad encendida: los tests de integración y Postman piden un token de servicio a Keycloak; E2-07 (retiro de `X-API-Key` y `X-Actor`, n8n, proveedor de logística) | Java, infra y tests | 3, 4 y E2-12a | Pendiente |
+| 6 | E2-12b y B1-05: cliente en el compose con emisor único y recorrido Playwright contra un Keycloak real | Infra y tests; necesita Docker | 4 | Pendiente |
+| 7 | E2-02: Spring Session JDBC con base propia | Java e infra | 6 | Pendiente |
+| 8 | E2-06: recuperación de clave y verificación de email (SPI → RabbitMQ → notificaciones) | Java (extensión de Keycloak) | 5 | Pendiente |
+| 9 | E2-05: completar Google (vinculación por contraseña) | Realm y cliente | — | Pendiente |
+| 10 | Lote final: E2-08 (CSV), E2-10 (cambio de rol), E2-11 (jurídica), E2-09 (tema Raíces) | Varios | 2 | Pendiente |
+
+La decisión de la iteración 2 fue alinear la spec con el `personaId` en Keycloak, así que no hace falta una iteración de migración a `sub` en `Persona`. Queda abierto, para una iteración posterior, `GET /api/personas/me` por el `personaId` del token y la baja de personas con cuenta.
+
 ## Invariantes
 
 - Ningún secreto en el repo: clave del admin, secreto del cliente, base y Google van por variables de entorno.
-- El access token no lleva datos personales: solo `sub` y roles (RNF-AUTH-09).
-- Los servicios y el cliente no dependen de claims propios de Keycloak (`realm_access`): solo de `sub`, `roles`, `aud`, `iss` y `exp`.
+- El access token no lleva datos personales (RNF-AUTH-09): ni email ni nombre. Lleva `sub`, `roles`, `permisos` y `personaId`, que son ids y permisos de negocio.
+- Los servicios y el cliente no dependen de claims propios de Keycloak (`realm_access`, `resource_access`): solo de `sub`, `roles`, `permisos`, `personaId`, `aud`, `iss` y `exp`. Los claims propios del sistema son planos.
 - El navegador nunca ve un token: solo la cookie de sesión del cliente liviano.
 - El perfil `maqueta` del cliente liviano sigue andando sin Keycloak.
 
@@ -147,7 +188,7 @@ Escenario: registro de un donante (A1-03, B1-02)
 Escenario: el token no lleva datos personales (A1-02)
   Dado el realm importado
   Cuando el cliente liviano obtiene un access token
-  Entonces trae sub, roles, aud y una vida de 15 minutos
+  Entonces trae sub, roles, aud y una vida de 15 minutos (y permisos y personaId, si la cuenta los tiene)
   Y no trae email ni nombre
 
 Escenario: bloqueo por fuerza bruta (A1-02)
@@ -178,6 +219,7 @@ Escenario: cerrar sesión cierra el SSO (B1-04)
 |---|---|---|---|
 | D1, Keycloak como IdP | Sí | Sí: tecnología nueva y mecanismo de seguridad | ADR nuevo `proposed` |
 | M1 a M4, alcance y orden del MVP | No: alcance de una tarea | — | Sin ADR; quedan en esta spec |
+| M5, `personaId` en Keycloak (enmienda a D9) | Sí | Sí: cambia un contrato entre el IdP y los servicios, y mueve un id de negocio al IdP | ADR nuevo `proposed` ([ADR del vínculo](../../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md)) |
 | Cliente OIDC con *authorization code* y logout RP-initiated | No: implementa D2, D5 y D1 | — | Sin ADR |
 
 **Plan de tests (TDD por ítem):**

@@ -1,6 +1,6 @@
 # Matriz de permisos — DonaTrack (E6)
 
-> **Estado:** borrador para aprobar (2026-11-07). Nada de esto está implementado todavía.
+> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Donaciones aplica la matriz (`@PreAuthorize`, `PermisoDonaciones`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas; Incentivos, Logística y Notificaciones todavía no tienen seguridad. No comparé las reglas una por una contra los controllers. La aprobación del equipo sigue pendiente.
 > **Origen:** RX-09 del plan de autenticación del sitio; cubre la "matriz de §6" que cita RI-SVC-02 de los [requerimientos de E6](../../requerimientos/requerimientos-e6.md) y que no existía.
 > **Base:** endpoints de [`contratos-rest.md`](../contratos-rest.md), contrastados con los `@*Mapping` de los controllers en `ENTREGA_6` (`e43e50a9`).
 

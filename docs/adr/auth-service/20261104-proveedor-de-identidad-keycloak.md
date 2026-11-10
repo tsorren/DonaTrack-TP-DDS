@@ -17,7 +17,7 @@
 - El access token dura 15 minutos (D6) y el refresh rota con detección de reuso (D7).
 - La validación usa JWKS en el gateway y en cada servicio (D2).
 - Los roles son `DONANTE`, `ENTIDAD` y `ADMIN`, y viajan en un claim `roles` plano (D14, RNF-AUTH-08).
-- El negocio guarda el `sub` del IdP (D9).
+- ~~El negocio guarda el `sub` del IdP (D9).~~ *Enmienda 2026-11-10:* el vínculo es el `personaId` en el IdP, según el [ADR del vínculo](20261110-vinculo-cuenta-persona-personaid-en-keycloak.md).
 
 Falta elegir **quién hace de proveedor de identidad (IdP)**: el componente que guarda las cuentas, comprueba la clave y firma los tokens.
 
@@ -104,7 +104,7 @@ Se propone **B: Keycloak configurado como IdP de DonaTrack**.
    - Access token JWT firmado con clave asimétrica. Las claves públicas se publican por JWKS (una URL con la lista de claves para verificar firmas).
    - Claim `roles` plano, `aud` del API.
    - Sin datos personales en el access token: ni email ni nombre (RNF-AUTH-09).
-   - Los servicios no dependen de claims propios de Keycloak (`realm_access`), así que cambiar de IdP sigue siendo barato (D9, RNF-AUTH-08).
+   - Los servicios no dependen de claims propios de Keycloak (`realm_access`), sino de claims planos definidos por el sistema (`roles`, `permisos`, `personaId`). *Enmienda 2026-11-10:* cambiar de IdP exige recrear esos mappers y exportar el atributo `personaId` (RNF-AUTH-08; [ADR del vínculo](20261110-vinculo-cuenta-persona-personaid-en-keycloak.md)).
 4. **Login:** el cliente liviano es un cliente OIDC confidencial con *authorization code*. El registro entra con `prompt=create` y el cierre de sesión es *RP-initiated logout* (el sitio le pide al IdP que cierre también su sesión, para que el próximo ingreso pida la clave).
 5. **`auth-service/`** contiene la configuración de Keycloak, no código Java de un IdP propio. El Key Broker de E7 será un servicio aparte.
 
