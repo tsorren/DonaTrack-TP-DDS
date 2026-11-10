@@ -309,8 +309,9 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-19 | Donaciones + Logística | Cancelar las entregas que no salieron cuando se da de baja su necesidad. **Valor nuevo del enum de entregas** | RF-10 | [DTI-31](../adr/DEUDA_TECNICA.md#dti-31) |
 | HB-20 | Donaciones | Nombre visible del donante con preferencia de ocultarlo, y constancia de los legales en el alta. **Campo obligatorio nuevo** | RF-12, RF-03, RF-01 | [DTI-32](../adr/DEUDA_TECNICA.md#dti-32) |
 | HB-21 | Por decidir | Recibir los mensajes del formulario de contacto | RF-01 | [DTI-33](../adr/DEUDA_TECNICA.md#dti-33) |
+| HB-22 | Donaciones + Logística | Distinguir la entrega que llegó a la puerta y espera la confirmación de la entidad de la que todavía viene en camino: hoy las dos están en traslado | RF-11, RF-12, RF-14 | Conexión de Donaciones recibidas, 2026-11-08 `[OBSERVED]` en `TipoEstadoDonacion` y `EstadoEntrega` de Logística |
 
-HB-17 a HB-21 salen de las preguntas abiertas de Raíces, que el usuario decidió el 2026-11-02. Los
+HB-22 salió al conectar Donaciones recibidas (2026-11-08) y todavía no tiene DTI ni dueño. HB-17 a HB-21 salen de las preguntas abiertas de Raíces, que el usuario decidió el 2026-11-02. Los
 marcados en negrita no son aditivos y se registran según la
 [política de evolución de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md).
 
