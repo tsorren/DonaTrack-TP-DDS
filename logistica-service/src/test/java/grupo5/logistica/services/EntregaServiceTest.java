@@ -334,6 +334,34 @@ class EntregaServiceTest {
     assertEquals(entrega.getId(), resultado.getFirst().idEntrega());
   }
 
+  @Test
+  void listarSeguimientoPorDonante_devuelveSoloLasPendientesYEnTraslado() {
+    UUID donanteId = UUID.randomUUID();
+    Entrega pendiente = EntregaMother.pendiente();
+    Entrega enTraslado = EntregaMother.pendiente();
+    enTraslado.asignarRuta(UUID.randomUUID());
+    enTraslado.iniciarRuta("Chofer");
+    Entrega entregada = EntregaMother.pendiente();
+    entregada.asignarRuta(UUID.randomUUID());
+    entregada.iniciarRuta("Chofer");
+    entregada.confirmarEntrega("Actor", "https://storage.donatrack.org/f.jpg");
+    when(entregasRepository.findByDonanteId(donanteId))
+        .thenReturn(List.of(pendiente, enTraslado, entregada));
+
+    List<SeguimientoEntregaResponseDTO> resultado =
+        entregasService.listarSeguimientoPorDonante(donanteId);
+
+    assertEquals(
+        List.of(pendiente.getId(), enTraslado.getId()),
+        resultado.stream().map(SeguimientoEntregaResponseDTO::idEntrega).toList());
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_sinDonante_lanzaValidacion() {
+    assertThrows(
+        ValidationException.class, () -> entregasService.listarSeguimientoPorDonante(null));
+  }
+
   // ===================== adjuntarFotoRecepcion() =====================
 
   @Test

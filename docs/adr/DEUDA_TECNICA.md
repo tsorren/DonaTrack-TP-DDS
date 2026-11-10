@@ -576,12 +576,12 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 |---|---|
 | ADR | [Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega](./20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06); los records `EventoEntregaExitosa` y `EventoEntregaSolicitadaV1` de los dos servicios, `Entrega`, `EntregaDocument` y `CrearEntregaRequestDTO` todavía no |
+| Implementation status | `[OBSERVED] partial` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06). **Donante (punto 2), hecho el 2026-11-08 (HB-16):** `EventoEntregaSolicitadaV1` de los dos servicios, `DatosEntregaLogistica`, el pedido HTTP, `Entrega`, `EntregaDocument`, `EntregaEntity` (`V5__entrega_donante_id.sql`) y `CrearEntregaRequestDTO` llevan `donanteId`, y `GET /api/entregas/seguimiento/donantes/{donanteId}` lista las activas. **Fotos (punto 1), pendiente:** `EventoEntregaExitosa` de los dos servicios todavía no trae `fotosRecepcion` |
 | Target | `logistica-service` (`EventoEntregaExitosa`, `EventoEntregaSolicitadaV1`, `Entrega`, `EntregaDocument`, `CrearEntregaRequestDTO`, `openapi-logistica.yaml`) · `donaciones-service` (los dos records, `ProveedorLogisticaAmqp`, `ProcesadorEventosLogistica`, la donación independiente) |
-| Cuándo se saldará | Entrega 6: tareas 5 (HB-16) y 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md); la URL estable de las fotos depende de ADR-E6-08 (HB-10) |
+| Cuándo se saldará | Entrega 6: tarea 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md), la que queda; la URL estable de las fotos depende de ADR-E6-08 (HB-10). La tarea 5 (HB-16) quedó hecha el 2026-11-08 |
 
-1. **Fotos.** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
-2. **Donante.** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
+1. **Fotos (pendiente).** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
+2. **Donante (hecho, 2026-11-08).** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
 3. **Datos viejos.** Sin backfill: las entregas y donaciones previas no aparecen en el listado por donante ni en destacadas.
 
 ## DTI-37 — Logística no recibe fotos: solo acepta URLs, sin validar tipo, tamaño ni metadatos

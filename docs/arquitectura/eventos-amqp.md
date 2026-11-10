@@ -240,7 +240,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 }
 ```
 
-> **`donanteId` (opcional, en el schema desde el 2026-11-06; implementación pendiente en DTI-36, `[PROPOSED]`):** Logística lo va a guardar en la entrega para listar las entregas activas de un donante (HB-16). Un broker que no lo manda sigue siendo válido; esa entrega no aparece en el listado por donante. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
+> **`donanteId` (opcional, en el schema desde el 2026-11-06; implementado el 2026-11-08, HB-16):** el broker lo saca de la donación original y Logística lo guarda en la entrega para listar las entregas activas de un donante (`GET /api/entregas/seguimiento/donantes/{donanteId}`). Un broker que no lo manda sigue siendo válido; esa entrega no aparece en el listado por donante. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 
 > **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
 

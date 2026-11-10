@@ -148,9 +148,12 @@ class PersistenciaMongoMappersTest {
     Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
 
     Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
     entrega.iniciarRuta("Chofer");
 
     EntregaDocument doc = entregaMapper.toDocument(entrega);
+    assertEquals(donanteId, doc.getDonanteId());
     assertNull(doc.getVersion());
     doc.setVersion(0L);
 
@@ -165,6 +168,7 @@ class PersistenciaMongoMappersTest {
 
     Entrega reconstituida = entregaMapper.toDomain(doc);
     assertEquals(entrega.getId(), reconstituida.getId());
+    assertEquals(donanteId, reconstituida.getDonanteId());
     assertEquals("Av. Cordoba", reconstituida.getDestino().calle());
     assertEquals(0L, reconstituida.getVersion());
 
@@ -177,6 +181,14 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(9L);
     assertFallaPorVersion(() -> entregaMapper.toDocument(reconstituida, doc));
+  }
+
+  @Test
+  void entregaMapper_sinDonante_loDejaEnNullDeIdaYVuelta() {
+    EntregaDocument doc = entregaMapper.toDocument(EntregaMother.pendiente());
+
+    assertNull(doc.getDonanteId());
+    assertNull(entregaMapper.toDomain(doc).getDonanteId());
   }
 
   @Test

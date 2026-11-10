@@ -506,7 +506,29 @@ class PropuestaDeAsignacionServiceTest {
                         && datos.destino() == destino
                         && datos.pesoTotalKG().equals(12.5)
                         && datos.volumenTotalM3().equals(0.3)
-                        && datos.fecha() != null));
+                        && datos.fecha() != null
+                        && datos.donanteId() == null));
+  }
+
+  @Test
+  void onPropuestaAprobada_debeMandarAlBrokerElDonanteDeLaDonacionOriginal() {
+    Necesidad necesidad = mock(Necesidad.class);
+    UUID necesidadId = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
+    prepararBeneficiario(necesidad, necesidadId, juridicaId, mock(DestinoEventoDTO.class));
+    PosibleFragmentacion fragmentacion = mock(PosibleFragmentacion.class);
+    prepararFragmentacion(fragmentacion, necesidad, UUID.randomUUID(), 12.5, 0.3);
+    UUID donanteId = UUID.randomUUID();
+    Donacion donacion = mock(Donacion.class);
+    when(donacion.getDonanteId()).thenReturn(donanteId);
+    when(donacionesRepository.findById(any())).thenReturn(Optional.of(donacion));
+
+    service.onPropuestaAprobada(
+        new PropuestaAprobada(UUID.randomUUID(), necesidadId, List.of(fragmentacion), "actor"));
+
+    verify(logisticaBroker)
+        .solicitarEntrega(
+            argThat((DatosEntregaLogistica datos) -> donanteId.equals(datos.donanteId())));
   }
 
   @Test

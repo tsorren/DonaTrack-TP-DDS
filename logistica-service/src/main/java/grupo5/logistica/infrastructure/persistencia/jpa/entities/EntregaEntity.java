@@ -53,6 +53,9 @@ public class EntregaEntity {
   @Column(name = "id_beneficiario", nullable = false)
   private UUID idBeneficiario;
 
+  @Column(name = "donante_id")
+  private UUID donanteId;
+
   @Enumerated(EnumType.STRING)
   @JdbcType(PostgreSQLEnumJdbcType.class)
   @Column(name = "estado", nullable = false, columnDefinition = "estado_entrega")
