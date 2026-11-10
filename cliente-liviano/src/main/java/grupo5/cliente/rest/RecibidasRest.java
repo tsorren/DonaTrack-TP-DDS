@@ -22,25 +22,20 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 
 /**
- * Donaciones recibidas desde Donaciones: las asignadas a la entidad, agrupadas por estado, y por
- * cada donación original distinta, quién donó. Las recibidas son las entregadas en el mes en curso.
- * Donaciones no distingue la que llegó a la puerta de la que viene en camino (las dos están en
- * traslado): todas van a "En camino" y "Esperan tu confirmación" queda vacío. El pedido que cubre
- * no llega (HB-17), ni cuántas notificaciones hay sin leer.
+ * Donaciones recibidas desde Donaciones: las asignadas a la entidad, agrupadas por estado, con
+ * quién donó ({@code quienDono} del listado: la entidad no puede leer la donación original). Las
+ * recibidas son las entregadas en el mes en curso. Donaciones no distingue la que llegó a la puerta
+ * de la que viene en camino (las dos están en traslado): todas van a "En camino" y "Esperan tu
+ * confirmación" queda vacío. El pedido que cubre no llega (HB-17), ni cuántas notificaciones hay
+ * sin leer.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -78,7 +73,6 @@ class RecibidasRest implements RecibidasPuerto {
   public RecibidasVista recibidas(UUID entidad) {
     LocalDateTime ahora = LocalDateTime.now(reloj.withZone(ARGENTINA));
     YearMonth mes = YearMonth.from(ahora);
-    Map<UUID, String> donantes = new HashMap<>();
     List<Recibida> asignadas =
         api.asignadas(entidad).stream()
             .map(RecibidasRest::fila)
@@ -86,7 +80,7 @@ class RecibidasRest implements RecibidasPuerto {
             .sorted(
                 Comparator.comparing((Fila f) -> ORDEN.indexOf(f.grupo()))
                     .thenComparing(Fila::desde, Comparator.reverseOrder()))
-            .map(f -> recibida(f, donantes))
+            .map(RecibidasRest::recibida)
             .toList();
     return new RecibidasVista(asignadas, ahora.format(MES), ahora.format(AHORA), null);
   }
@@ -105,12 +99,11 @@ class RecibidasRest implements RecibidasPuerto {
     return new Fila(d, estado, grupo, desde(d, desdeQue));
   }
 
-  private Recibida recibida(Fila f, Map<UUID, String> donantes) {
+  private static Recibida recibida(Fila f) {
     DonacionesApi.Donacion d = f.d();
     Categoria categoria = categoria(d);
     boolean recibida = RECIBIDA.equals(f.grupo());
-    UUID original = d.donacionOriginalId();
-    String dono = original == null ? UN_DONANTE : donantes.computeIfAbsent(original, this::donante);
+    String dono = donante(d);
     return new Recibida(
         d.id().toString(),
         d.descripcion(),
@@ -138,24 +131,9 @@ class RecibidasRest implements RecibidasPuerto {
     };
   }
 
-  /** La razón social o el nombre y apellido; sin donante, sin nombre o sin donación (404), uno. */
-  private String donante(UUID original) {
-    try {
-      DonacionesApi.Original donacion = api.donacion(original);
-      DonacionesApi.Persona persona =
-          donacion == null || donacion.donante() == null ? null : donacion.donante().persona();
-      String nombre =
-          persona == null
-              ? null
-              : Objects.requireNonNullElseGet(
-                  persona.razonSocial(),
-                  () ->
-                      Stream.of(persona.nombre(), persona.apellido())
-                          .filter(Objects::nonNull)
-                          .collect(Collectors.joining(" ")));
-      return nombre == null || nombre.isBlank() ? UN_DONANTE : nombre.strip();
-    } catch (HttpClientErrorException.NotFound yaNoEsta) {
-      return UN_DONANTE;
-    }
+  /** El nombre visible de quien donó; si lo ocultó o no llega, uno. */
+  private static String donante(DonacionesApi.Donacion d) {
+    String nombre = d.quienDono() == null ? null : d.quienDono().nombreVisible();
+    return nombre == null || nombre.isBlank() ? UN_DONANTE : nombre.strip();
   }
 }
