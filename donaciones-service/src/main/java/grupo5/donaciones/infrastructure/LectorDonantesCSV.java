@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,8 +30,8 @@ public class LectorDonantesCSV implements CargadorDonantes {
   }
 
   @Override
-  public List<Map<String, String>> cargarDonantes(InputStream contenido) {
-    List<Map<String, String>> filasMapeadas = new ArrayList<>();
+  public List<FilaPadron> cargarDonantes(InputStream contenido) {
+    List<FilaPadron> filasMapeadas = new ArrayList<>();
 
     // Cerrar el reader cierra también el stream; quien lo abrió puede volver a cerrarlo sin efecto.
     try (BufferedReader reader =
@@ -65,18 +64,17 @@ public class LectorDonantesCSV implements CargadorDonantes {
   }
 
   private void procesarYAgregarLinea(
-      String linea, String[] cabecera, List<Map<String, String>> filasMapeadas, int numeroDeLinea) {
+      String linea, String[] cabecera, List<FilaPadron> filasMapeadas, int numeroDeLinea) {
     if (linea.isBlank()) {
       return;
     }
     try {
-      filasMapeadas.add(donanteParser.procesarLinea(linea, cabecera));
+      filasMapeadas.add(
+          new FilaPadron(numeroDeLinea, donanteParser.procesarLinea(linea, cabecera)));
     } catch (IllegalArgumentException e) {
-      log.warn(
-          "Línea {} ignorada por error de formato: '{}'. Motivo: {}",
-          numeroDeLinea,
-          linea,
-          e.getMessage());
+      // Sin el contenido de la línea: trae datos personales (nombre, documento, email)
+      log.warn("Línea {} con error de formato: {}", numeroDeLinea, e.getMessage());
+      filasMapeadas.add(new FilaPadron(numeroDeLinea, null));
     }
   }
 }

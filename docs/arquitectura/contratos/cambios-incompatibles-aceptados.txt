@@ -13,3 +13,18 @@ POST /api/donaciones the request property `descripcion` became required
 # #908 (2026-10-29): el padrón llega como multipart/form-data; el body {"path"} permitía leer
 # cualquier archivo del contenedor y el front ya mandaba multipart.
 POST /api/donantes/archivos added required request body
+
+# HB-18 (DTI-30, 2026-11-09; ADR 20261102 del ciclo de vida de la necesidad, ajuste de la migración):
+# la spec omitía el body que el servicio siempre exigió. Ahora lo documenta, con dos reglas nuevas
+# que oasdiff no ve porque son condicionales: fechaLimite obligatoria en las EXTRAORDINARIA y
+# periodicidad obligatoria en las RECURRENTE. Los consumidores del repo (integration-tests y los
+# flujos 2, 4, 8 y 9 de Postman) se migraron en el mismo PR.
+POST /api/necesidades added required request body
+PUT /api/necesidades/{id} added required request body
+
+# HB-19 (DTI-31, 2026-11-09; ADR 20261109-cancelacion-de-entregas-que-no-salieron): Logística suma
+# CANCELADA al estado de la entrega que devuelve (EntregaResponseDTO, seguimiento, historial). Un
+# consumidor estricto del enum puede romperse; los del repo (cliente liviano, integration-tests) no
+# lo enumeran. oasdiff v1.34 clasifica "enum value added" en una respuesta como aviso (WARN), no
+# como error, así que no hace falta una línea para --err-ignore. [INFERRED] Se confirma con la
+# salida del job de contratos del PR; si lo marca como error, la línea va acá.

@@ -67,7 +67,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_cuandoDistintaSubcategoria_debeExcluirla() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria.getId(), 3, "silla madera");
+        new NecesidadExtraordinaria(
+            subcategoria.getId(), 3, "silla madera", NecesidadMother.FECHA_LIMITE);
     List<ItemDonacionIndependiente> items =
         List.of(new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizadoOtro, 5));
     DonacionIndependiente donacionOtraCategoria =
@@ -83,7 +84,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_debeOrdenarPorScoreSemanticoDescendente() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria.getId(), 3, "banco escolar madera");
+        new NecesidadExtraordinaria(
+            subcategoria.getId(), 3, "banco escolar madera", NecesidadMother.FECHA_LIMITE);
     DonacionIndependiente donacionConMasScore = crearDonacion(5, "banco madera");
     DonacionIndependiente donacionConMenosScore = crearDonacion(5, "banco plastico");
 
@@ -100,7 +102,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_cuandoTodasSonDiferenteSubcategoria_debeRetornarVacia() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria.getId(), 3, "silla madera");
+        new NecesidadExtraordinaria(
+            subcategoria.getId(), 3, "silla madera", NecesidadMother.FECHA_LIMITE);
     List<ItemDonacionIndependiente> items =
         List.of(new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizadoOtro, 5));
     DonacionIndependiente donacion1 = new DonacionIndependiente(UUID.randomUUID(), items);
@@ -127,7 +130,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_conListaNula_debeLanzarExcepcion() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria.getId(), 3, "silla madera");
+        new NecesidadExtraordinaria(
+            subcategoria.getId(), 3, "silla madera", NecesidadMother.FECHA_LIMITE);
 
     ValidationException exception =
         assertThrows(ValidationException.class, () -> algoritmo.filtrarDonaciones(necesidad, null));

@@ -104,8 +104,7 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     if (idDonacion == null) {
       return false;
     }
-    return storage.values().stream()
-        .anyMatch(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion));
+    return findByIdDonacion(idDonacion).isPresent();
   }
 
   @Override
@@ -115,7 +114,16 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     }
     return storage.values().stream()
         .filter(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion))
+        .filter(entrega -> entrega.getEstadoActual() != EstadoEntrega.CANCELADA)
         .findFirst();
+  }
+
+  @Override
+  public List<Entrega> findCanceladasByIdDonacion(UUID idDonacion) {
+    return storage.values().stream()
+        .filter(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion))
+        .filter(entrega -> entrega.getEstadoActual() == EstadoEntrega.CANCELADA)
+        .toList();
   }
 
   @Override
@@ -125,6 +133,17 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     }
     return storage.values().stream()
         .filter(entrega -> Objects.equals(entrega.getIdBeneficiaria(), idBeneficiaria))
+        .sorted(Comparator.comparingInt(e -> indiceOrdenInsercion(e.getId())))
+        .toList();
+  }
+
+  @Override
+  public List<Entrega> findByDonanteId(UUID donanteId) {
+    if (donanteId == null) {
+      return List.of();
+    }
+    return storage.values().stream()
+        .filter(entrega -> Objects.equals(entrega.getDonanteId(), donanteId))
         .sorted(Comparator.comparingInt(e -> indiceOrdenInsercion(e.getId())))
         .toList();
   }

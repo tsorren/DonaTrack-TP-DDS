@@ -7,6 +7,7 @@ import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataSoli
 import grupo5.donaciones.models.entities.logistica.EstadoSolicitudEntrega;
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
@@ -27,8 +28,9 @@ public class SolicitudEntregaRepositoryJpaAdapter
   @Override
   public Optional<SolicitudEntrega> findActivaPorDonacion(UUID donacionIndependienteId) {
     return springDataRepo
-        .findFirstByDonacionIndependienteIdAndEstadoNot(
-            donacionIndependienteId, EstadoSolicitudEntrega.FALLIDA)
+        .findFirstByDonacionIndependienteIdAndEstadoNotIn(
+            donacionIndependienteId,
+            List.of(EstadoSolicitudEntrega.FALLIDA, EstadoSolicitudEntrega.CANCELADA))
         .map(toDomain);
   }
 

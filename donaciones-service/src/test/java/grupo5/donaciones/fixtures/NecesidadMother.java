@@ -11,18 +11,21 @@ public final class NecesidadMother {
 
   public static final LocalDate FECHA_INICIO = LocalDate.now(ZoneId.systemDefault()).minusDays(5);
 
+  /** Fecha límite de las extraordinarias: obligatoria y futura (HB-18). */
+  public static final LocalDate FECHA_LIMITE = LocalDate.now(ZoneId.systemDefault()).plusDays(30);
+
   private NecesidadMother() {}
 
   public static NecesidadExtraordinaria extraordinaria(UUID subcategoriaId, int cantidad) {
     return new NecesidadExtraordinaria(
-        subcategoriaId, cantidad, "Necesidad de prueba extraordinaria");
+        subcategoriaId, cantidad, "Necesidad de prueba extraordinaria", FECHA_LIMITE);
   }
 
   public static NecesidadExtraordinaria extraordinaria(
       UUID entidadId, UUID subcategoriaId, int cantidad) {
     NecesidadExtraordinaria nec =
         new NecesidadExtraordinaria(
-            subcategoriaId, cantidad, "Necesidad extraordinaria para entidad");
+            subcategoriaId, cantidad, "Necesidad extraordinaria para entidad", FECHA_LIMITE);
     nec.asociarAEntidad(entidadId);
     return nec;
   }

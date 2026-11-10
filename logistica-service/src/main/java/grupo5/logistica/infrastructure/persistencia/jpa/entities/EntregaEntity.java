@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.jpa.entities;
 
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -47,11 +48,14 @@ public class EntregaEntity {
   @JoinColumn(name = "id_direccion", nullable = false)
   private DireccionEntity direccion;
 
-  @Column(name = "id_donacion", nullable = false, unique = true)
+  @Column(name = "id_donacion", nullable = false)
   private UUID idDonacion;
 
   @Column(name = "id_beneficiario", nullable = false)
   private UUID idBeneficiario;
+
+  @Column(name = "donante_id")
+  private UUID donanteId;
 
   @Enumerated(EnumType.STRING)
   @JdbcType(PostgreSQLEnumJdbcType.class)
@@ -76,6 +80,19 @@ public class EntregaEntity {
   @Column(name = "foto_url", nullable = false, columnDefinition = "TEXT")
   @Fetch(FetchMode.SUBSELECT)
   private List<String> fotosRecepcion = new ArrayList<>();
+
+  @Column(name = "numero_remito", length = 40)
+  private String numeroRemito;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "reporte_motivo", length = 20)
+  private MotivoReporte reporteMotivo;
+
+  @Column(name = "reporte_detalle", length = 500)
+  private String reporteDetalle;
+
+  @Column(name = "reporte_cantidad_recibida")
+  private Double reporteCantidadRecibida;
 
   @Column(name = "volumen_total_m3", nullable = false)
   private Double volumenTotalM3;

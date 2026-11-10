@@ -1,12 +1,15 @@
 package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
 import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -105,6 +108,16 @@ class DonacionIndependienteMapperTest {
     donacion.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), UUID.randomUUID(), entidadId));
 
     assertEquals(entidadId, mapper.toDTO(donacion).entidadBeneficiariaId());
+  }
+
+  @Test
+  void toDTO_donacionAsignada_deberiaIncluirLaNecesidad() {
+    DonacionIndependiente donacion = new DonacionIndependiente(UUID.randomUUID(), List.of());
+    UUID necesidadId = UUID.randomUUID();
+    donacion.asignarDestino(new DestinoAsignacion(necesidadId, null, UUID.randomUUID()));
+
+    assertEquals(necesidadId, mapper.toDTO(donacion).necesidadId());
+    assertNull(mapper.toDTO(new DonacionIndependiente(UUID.randomUUID(), List.of())).necesidadId());
   }
 
   @Test
@@ -233,5 +246,17 @@ class DonacionIndependienteMapperTest {
 
     assertNotNull(dto);
     assertEquals(0, dto.historial().size());
+  }
+
+  @Test
+  void toDTO_llevaLaMarcaDeCancelacionPedida_HB19() {
+    DonacionIndependiente donacion =
+        DonacionIndependienteMother.asignada(
+            2, NecesidadMother.extraordinaria(UUID.randomUUID(), 10));
+    assertFalse(mapper.toDTO(donacion).cancelacionPedida());
+
+    donacion.pedirCancelacion();
+
+    assertTrue(mapper.toDTO(donacion).cancelacionPedida());
   }
 }

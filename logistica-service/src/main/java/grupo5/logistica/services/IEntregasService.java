@@ -17,9 +17,14 @@ public interface IEntregasService {
 
   List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria);
 
+  /** Entregas activas (pendientes o en traslado) de un donante (RF-09, HB-16). */
+  List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId);
+
   EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO dto);
 
   EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto);
 
   List<CambioEstadoEntregaResponseDTO> obtenerHistorial(UUID id);
+
+  void cancelarPorDonacion(UUID idDonacion, String motivo);
 }

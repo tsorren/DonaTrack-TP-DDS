@@ -55,6 +55,11 @@ public class DonacionesIndependientesPersistenciaMapper {
     entity.setNecesidadId(domain.getNecesidadId());
     entity.setPeriodoId(domain.getPeriodoId());
     entity.setEntidadBeneficiariaId(domain.getEntidadBeneficiariaId());
+    entity.setCantidadNoRecibida(domain.getCantidadNoRecibida());
+    entity.setFechaEntrega(domain.getFechaEntrega());
+    entity.getFotosRecepcion().clear();
+    entity.getFotosRecepcion().addAll(domain.getFotosRecepcion());
+    entity.setCancelacionPedida(domain.isCancelacionPedida());
     reemplazarItems(domain, entity);
     agregarCambiosNuevos(domain, entity);
     return entity;
@@ -89,10 +94,14 @@ public class DonacionesIndependientesPersistenciaMapper {
             actual,
             entity.getFechaRegistro(),
             destino(entity),
-            entity.getVersion());
+            entity.getVersion(),
+            entity.isCancelacionPedida());
     List<ItemDonacionIndependiente> items =
         entity.getItems().stream().map(this::itemToDomain).toList();
-    return new DonacionIndependiente(datos, items, historial);
+    DonacionIndependiente donacion = new DonacionIndependiente(datos, items, historial);
+    donacion.reconstituirCantidadNoRecibida(entity.getCantidadNoRecibida());
+    donacion.reconstituirFotosDeRecepcion(entity.getFechaEntrega(), entity.getFotosRecepcion());
+    return donacion;
   }
 
   // Los ítems no tienen identidad en el dominio: la fila de cada uno se identifica por su posición

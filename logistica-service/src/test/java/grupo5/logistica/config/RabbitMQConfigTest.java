@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
+import grupo5.logistica.dto.eventos.EventoEntregaCanceladaV1;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
@@ -110,7 +112,8 @@ class RabbitMQConfigTest {
             EventoRutaAsignada.class, "ruta.asignada",
             EventoRutaIniciada.class, "ruta.iniciada",
             EventoEntregaExitosa.class, "entrega.exitosa",
-            EventoEntregaFallida.class, "entrega.fallida");
+            EventoEntregaFallida.class, "entrega.fallida",
+            EventoEntregaCancelada.class, "entrega.cancelada");
 
     esperados.forEach(
         (clase, alias) -> {
@@ -118,5 +121,24 @@ class RabbitMQConfigTest {
           classMapper.fromClass(clase, props);
           assertEquals(alias, props.getHeaders().get("__TypeId__"), clase.getSimpleName());
         });
+  }
+
+  @Test
+  void bindingEntregasCanceladas_usaLaMismaColaQueElPedidoConSuClaveExacta() {
+    Binding binding =
+        config.bindingEntregasCanceladas(
+            config.queueEntregasSolicitadas(), config.donacionesExchange());
+
+    assertEquals(RabbitMQConfig.EXCHANGE_DONACIONES, binding.getExchange());
+    assertEquals("entrega.cancelada.donatrack.v1", binding.getRoutingKey());
+    assertEquals("logistica.donatrack.entregas.solicitadas", binding.getDestination());
+  }
+
+  @Test
+  void classMapper_resuelveElAliasDelComandoDeCancelacion() {
+    MessageProperties props = new MessageProperties();
+    props.getHeaders().put("__TypeId__", RabbitMQConfig.TYPE_ID_ENTREGA_CANCELADA);
+
+    assertEquals(EventoEntregaCanceladaV1.class, config.classMapper().toClass(props));
   }
 }

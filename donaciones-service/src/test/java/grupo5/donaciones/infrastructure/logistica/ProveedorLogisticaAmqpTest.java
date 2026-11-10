@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.logistica;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.config.RabbitMQConfig;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCanceladaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
@@ -89,7 +91,37 @@ class ProveedorLogisticaAmqpTest {
         assertInstanceOf(EventoEntregaSolicitadaV1.class, payload.getValue());
     assertEquals(DATOS.donacionIndependienteId(), comando.donacionIndependienteId());
     assertEquals(DATOS.fecha(), comando.fecha());
+    assertNull(comando.donanteId());
     assertEquals(ENVIO_ID.toString(), correlacion.getValue().getId());
+  }
+
+  @Test
+  void enviar_deberiaMandarElDonanteEnElComando_CuandoLoTiene() {
+    cuandoRabbitResponde(true, false);
+    UUID donanteId = UUID.randomUUID();
+    DatosEntregaLogistica datos =
+        new DatosEntregaLogistica(
+            DATOS.donacionIndependienteId(),
+            DATOS.personaBeneficiariaId(),
+            DATOS.destino(),
+            DATOS.pesoTotalKG(),
+            DATOS.volumenTotalM3(),
+            DATOS.fecha(),
+            donanteId);
+
+    proveedor.enviar(ENVIO_ID, datos, "trace-1");
+
+    ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+    verify(template)
+        .convertAndSend(
+            eq(RabbitMQConfig.EXCHANGE_DONACIONES),
+            eq("entrega.solicitada.donatrack.v1"),
+            payload.capture(),
+            any(MessagePostProcessor.class),
+            any(CorrelationData.class));
+    EventoEntregaSolicitadaV1 comando =
+        assertInstanceOf(EventoEntregaSolicitadaV1.class, payload.getValue());
+    assertEquals(donanteId, comando.donanteId());
   }
 
   @Test
@@ -166,5 +198,44 @@ class ProveedorLogisticaAmqpTest {
             anyString(), anyString(), any(Object.class), any(MessagePostProcessor.class), any());
 
     assertThrows(EnvioInciertoException.class, () -> proveedor.enviar(ENVIO_ID, DATOS, "t"));
+  }
+
+  // ===================== Cancelación (HB-19) =====================
+
+  @Test
+  void cancelar_publicaElComandoConSuClaveYLasMismasGarantias() {
+    cuandoRabbitResponde(true, false);
+    UUID donacionId = UUID.randomUUID();
+
+    assertTrue(proveedor.admiteCancelacion());
+    assertDoesNotThrow(() -> proveedor.cancelar(ENVIO_ID, donacionId, "trace-baja"));
+
+    ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+    ArgumentCaptor<MessagePostProcessor> envelope =
+        ArgumentCaptor.forClass(MessagePostProcessor.class);
+    verify(template)
+        .convertAndSend(
+            eq(RabbitMQConfig.EXCHANGE_DONACIONES),
+            eq("entrega.cancelada.donatrack.v1"),
+            payload.capture(),
+            envelope.capture(),
+            any());
+    EventoEntregaCanceladaV1 comando =
+        assertInstanceOf(EventoEntregaCanceladaV1.class, payload.getValue());
+    assertEquals(donacionId, comando.donacionIndependienteId());
+    assertEquals("NECESIDAD_DADA_DE_BAJA", comando.motivo());
+    Message mensaje =
+        envelope.getValue().postProcessMessage(new Message(new byte[0], new MessageProperties()));
+    assertEquals(
+        "trace-baja",
+        mensaje.getMessageProperties().getHeader(FeignTraceRequestInterceptor.TRACE_HEADER));
+  }
+
+  @Test
+  void cancelar_deberiaRechazar_CuandoNoHayColaParaLaCancelacion() {
+    cuandoRabbitResponde(true, true);
+
+    assertThrows(
+        EnvioRechazadoException.class, () -> proveedor.cancelar(ENVIO_ID, UUID.randomUUID(), "t"));
   }
 }

@@ -54,7 +54,9 @@ public class DonacionIndependienteMapper {
         historialMapped,
         itemsMapped,
         donacion.getCantidad(),
-        donacion.getEntidadBeneficiariaId());
+        donacion.getEntidadBeneficiariaId(),
+        donacion.getNecesidadId(),
+        donacion.isCancelacionPedida());
   }
 
   private List<ItemDonacionIndependienteResponseDTO> mapItems(
