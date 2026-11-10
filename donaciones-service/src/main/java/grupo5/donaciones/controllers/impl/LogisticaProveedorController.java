@@ -1,5 +1,7 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+
 import grupo5.donaciones.controllers.ILogisticaProveedorController;
 import grupo5.donaciones.dto.logistica.PreferenciaProveedorRequestDTO;
 import grupo5.donaciones.dto.logistica.ProveedorLogisticaDTO;
@@ -7,6 +9,7 @@ import grupo5.donaciones.services.IAdministracionProveedoresService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Administración del broker de logística: ver los proveedores y cambiar el preferido en caliente.
  */
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/logistica")
 public class LogisticaProveedorController implements ILogisticaProveedorController {
 

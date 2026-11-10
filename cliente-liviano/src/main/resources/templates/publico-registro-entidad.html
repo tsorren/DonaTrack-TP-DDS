@@ -23,7 +23,7 @@
              escrito=${conError or escenario == 'error'}">
   <div class="publica cuenta cuenta--entidad">
     <header class="publica-cabeza">
-      <p class="rotulo">Crear una cuenta</p>
+      <p class="rotulo" th:text="${completarPerfil} ? 'Completá tu perfil' : 'Crear una cuenta'">Crear una cuenta</p>
       <h1>Sumá <em>tu entidad</em></h1>
       <p class="lectura-bajada">Para comedores, merenderos, escuelas, hogares y otras organizaciones de la
         comunidad. El equipo de DonaTrack revisa cada solicitud antes de sumarla.</p>
@@ -32,7 +32,7 @@
     <section th:replace="~{:: comoSigue(1)}"></section>
 
     <form class="formulario" action="/publico-registro-entidad-enviada"
-          th:action="@{/publico-registro-entidad-enviada}" method="post"
+          th:action="${completarPerfil} ? @{/publico-registro-entidad} : @{/publico-registro-entidad-enviada}" method="post"
           data-enviando="Enviando la solicitud…" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1" autofocus
                aria-labelledby="resumen-titulo">
@@ -41,6 +41,10 @@
           <li><a href="#que-es">Elegí qué es tu entidad</a></li>
           <li><a href="#calle">Falta la calle de la dirección de entrega</a></li>
         </ul>
+      </section>
+      <section th:if="${fallo}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus>
+        <h2>No pudimos enviar la solicitud.</h2>
+        <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo en unos minutos.</p>
       </section>
       <th:block th:if="${escenario == 'error'}">
         <section th:replace="~{datos-publicos :: avisoError('No pudimos enviar la solicitud.',
@@ -55,7 +59,7 @@
           <label for="entidad">Nombre de la entidad</label>
           <small id="entidad-ayuda">Como la conoce el barrio. Es público.</small>
           <input id="entidad" name="entidad" type="text" required autocomplete="organization"
-                 aria-describedby="entidad-ayuda" th:value="${escrito} ? 'Merendero Ejemplo Oeste' : null">
+                 aria-describedby="entidad-ayuda" th:value="${completarPerfil} ? ${param.entidad} : (${escrito} ? 'Merendero Ejemplo Oeste' : null)">
         </div>
         <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="que-es">Qué es</label>
@@ -64,23 +68,21 @@
           <select id="que-es" name="queEs" required
                   th:attr="aria-describedby=${conError} ? 'que-es-error que-es-ayuda' : 'que-es-ayuda',aria-invalid=${conError} ? 'true' : null">
             <option value="">Elegí una</option>
-            <option th:selected="${escenario == 'error'}">Merendero</option>
-            <option>Comedor</option>
-            <option>Escuela</option>
-            <option>Hogar</option>
-            <option>Club</option>
-            <option>Biblioteca</option>
-            <option>Otra</option>
+            <option th:each="opcion : ${ {'Merendero', 'Comedor', 'Escuela', 'Hogar', 'Club', 'Biblioteca', 'Otra'} }"
+                    th:text="${opcion}"
+                    th:selected="${completarPerfil ? (param.queEs != null and param.queEs[0] == opcion) : (escenario == 'error' and opcion == 'Merendero')}">Merendero</option>
           </select>
         </div>
         <fieldset class="opciones">
           <legend>Tipo de organización</legend>
           <small id="tipo-ayuda">Si dudás, elegí la más parecida: el equipo lo revisa.</small>
           <label><input type="radio" name="tipo" value="asociacion" required aria-describedby="tipo-ayuda"
-                 th:checked="${escrito}">Asociación civil u ONG</label>
-          <label><input type="radio" name="tipo" value="institucion" aria-describedby="tipo-ayuda">Institución:
+                 th:checked="${escrito or (completarPerfil and param.tipo != null and param.tipo[0] == 'asociacion')}">Asociación civil u ONG</label>
+          <label><input type="radio" name="tipo" value="institucion" aria-describedby="tipo-ayuda"
+                 th:checked="${completarPerfil and param.tipo != null and param.tipo[0] == 'institucion'}">Institución:
             escuela, club o biblioteca</label>
-          <label><input type="radio" name="tipo" value="organismo" aria-describedby="tipo-ayuda">Organismo
+          <label><input type="radio" name="tipo" value="organismo" aria-describedby="tipo-ayuda"
+                 th:checked="${completarPerfil and param.tipo != null and param.tipo[0] == 'organismo'}">Organismo
             público</label>
         </fieldset>
       </fieldset>
@@ -94,26 +96,31 @@
             <label for="calle">Calle</label>
             <p th:if="${conError}" id="calle-error" class="campo-error">Falta la calle.</p>
             <input id="calle" name="calle" type="text" required autocomplete="address-line1"
-                   th:value="${escenario == 'error'} ? 'Calle Ejemplo' : null"
+                   th:value="${completarPerfil} ? ${param.calle} : (${escenario == 'error'} ? 'Calle Ejemplo' : null)"
                    th:attr="aria-describedby=${conError} ? 'calle-error' : null,aria-invalid=${conError} ? 'true' : null">
           </div>
           <div class="campo campo--corto">
             <label for="altura">Altura</label>
             <input id="altura" name="altura" type="text" inputmode="numeric" required
-                   th:value="${escrito} ? '1234' : null">
+                   th:value="${completarPerfil} ? ${param.altura} : (${escrito} ? '1234' : null)">
           </div>
         </div>
         <div class="campos-par">
           <div class="campo">
             <label for="localidad">Localidad</label>
             <input id="localidad" name="localidad" type="text" required autocomplete="address-level2"
-                   th:value="${escrito} ? 'Localidad Ejemplo' : null">
+                   th:value="${completarPerfil} ? ${param.localidad} : (${escrito} ? 'Localidad Ejemplo' : null)">
           </div>
           <div class="campo">
             <label for="provincia">Provincia</label>
             <input id="provincia" name="provincia" type="text" required autocomplete="address-level1"
-                   th:value="${escrito} ? 'Provincia Ejemplo' : null">
+                   th:value="${completarPerfil} ? ${param.provincia} : (${escrito} ? 'Provincia Ejemplo' : null)">
           </div>
+        </div>
+        <div class="campo campo--corto">
+          <label for="codigo-postal">Código postal</label>
+          <input id="codigo-postal" name="codigoPostal" type="text" required autocomplete="postal-code"
+                 th:value="${completarPerfil} ? ${param.codigoPostal} : (${escrito} ? '1000' : null)">
         </div>
       </fieldset>
 
@@ -122,15 +129,16 @@
         <div class="campo">
           <label for="representante">Nombre y apellido</label>
           <input id="representante" name="representante" type="text" required autocomplete="name"
-                 th:value="${escrito} ? 'Rosa Ejemplo' : null">
+                 pattern="\S+(\s+\S+)+" title="Escribí el nombre y el apellido."
+                 th:value="${completarPerfil} ? ${param.representante} : (${escrito} ? 'Rosa Ejemplo' : null)">
         </div>
-        <div class="campo">
+        <div class="campo" th:unless="${completarPerfil}">
           <label for="correo">Correo electrónico</label>
           <small id="correo-ayuda">Para avisarte cuando la solicitud esté aprobada y para ingresar.</small>
           <input id="correo" name="correo" type="email" required autocomplete="email" aria-describedby="correo-ayuda"
                  th:value="${escrito} ? 'rosa@merendero-ejemplo.test' : null">
         </div>
-        <div class="campo">
+        <div class="campo" th:unless="${completarPerfil}">
           <label for="clave">Contraseña</label>
           <small id="clave-ayuda">Al menos 8 caracteres.</small>
           <div class="clave-fila">
@@ -144,7 +152,7 @@
 
       <div class="campo">
         <label class="casilla" for="terminos"><input id="terminos" name="terminos" type="checkbox" required
-               th:checked="${escrito}">Leí y acepto los términos y la política de privacidad (versión 1)</label>
+               th:checked="${escrito or param.terminos != null}">Leí y acepto los términos y la política de privacidad (versión 1)</label>
         <p class="casilla-enlace"><a href="/publico-legales"
            th:href="@{/publico-legales}">Leer los términos y la política de privacidad</a></p>
       </div>
@@ -155,8 +163,9 @@
       <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Enviando la solicitud…</p>
     </form>
 
-    <p class="cuenta-salida">¿Querés donar? <a href="/publico-registro-donante"
+    <p class="cuenta-salida" th:unless="${completarPerfil}">¿Querés donar? <a href="/publico-registro-donante"
        th:href="@{/publico-registro-donante}">Crear una cuenta de donante</a></p>
+    <div class="cuenta-salida" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 

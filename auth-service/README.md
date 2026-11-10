@@ -43,14 +43,24 @@ Los secretos (clave del admin inicial, secreto del cliente OAuth2, base y Google
 
 ## Contrato de tokens (A1-02a)
 
-El realm `donatrack` define roles `DONANTE`, `ENTIDAD` y `ADMIN`, login por email y un único cliente, `cliente-liviano`: confidencial, solo *authorization code* (sin *password grant*, sin *implicit*, sin cuenta de servicio). Su secreto y sus URLs salen de `CLIENTE_LIVIANO_SECRET` y `CLIENTE_LIVIANO_BASE_URL`, que el realm lee al importarse (`${...}`).
+El realm `donatrack` define roles `DONANTE`, `ENTIDAD` y `ADMIN`, el rol técnico `SERVICIO` y login por email. El cliente `cliente-liviano` es confidencial: *authorization code* para las personas y cuenta de servicio (*client credentials*) para el token técnico, sin *password grant* ni *implicit*. Su secreto y sus URLs salen de `CLIENTE_LIVIANO_SECRET` y `CLIENTE_LIVIANO_BASE_URL`, que el realm lee al importarse (`${...}`).
 
 | Token | Lleva | No lleva |
 |---|---|---|
-| Access token | `sub`, `roles` (plano, multivalor, solo los de negocio), `aud` = `donatrack-api`, `exp`, `iat`, `iss`; vence a los 15 min | `email`, `name`, `given_name`, `family_name`, `preferred_username` (RNF-AUTH-09) |
-| ID token | `sub`, `roles`, `aud` = `cliente-liviano` | los mismos datos personales |
+| Access token | `sub`, `roles` (plano, multivalor, solo los de negocio), `permisos` y `personaId` si la cuenta los tiene, `aud` = `donatrack-api`, `exp`, `iat`, `iss`; vence a los 15 min | `email`, `name`, `given_name`, `family_name`, `preferred_username` (RNF-AUTH-09) |
+| ID token | `sub`, `roles`, `permisos`, `personaId`, `aud` = `cliente-liviano` | los mismos datos personales |
+| Token de servicio | `roles` = `SERVICIO`, `aud` con `donatrack-api` | `permisos`, `personaId` |
 
-El cliente solo recibe el scope `basic` (que trae `sub`): no se le asignan `profile` ni `email`, así que **ningún token lleva datos personales**. Es más estricto que la SPEC, que lo pide solo para el access token; si B1-03 necesita mostrar el email o el nombre, se decide entonces (por ejemplo, un scope propio solo para el ID token). Con `fullScopeAllowed=false` y los tres roles como único *scope mapping*, el claim `roles` no trae `default-roles-donatrack` ni `offline_access`. La sesión (SSO) vence tras 8 h sin actividad.
+El cliente solo recibe el scope `basic` (que trae `sub`): no se le asignan `profile` ni `email`, así que **ningún token lleva datos personales**. Es más estricto que la SPEC, que lo pide solo para el access token; si B1-03 necesita mostrar el email o el nombre, se decide entonces (por ejemplo, un scope propio solo para el ID token). Con `fullScopeAllowed=false` y los cuatro roles como único *scope mapping* de realm, el claim `roles` no trae `default-roles-donatrack`. La sesión (SSO) vence tras 8 h sin actividad.
+
+## Permisos, personaId y cuenta de servicio (E6)
+
+- **Catálogo:** el cliente `donatrack-api` (bearer-only, sin flujos) tiene como roles de cliente los doce permisos y las cuatro plantillas de la [matriz de permisos](../docs/arquitectura/seguridad/matriz-permisos.md) (§2 y §3); las plantillas son roles compuestos. `scripts/tests/test_auth_realm_contract.py` compara el realm con las tablas de la matriz.
+- **Claim `permisos`:** mapper de roles de cliente de `donatrack-api`, sin prefijo. Como `cliente-liviano` tiene `fullScopeAllowed=false`, sus `clientScopeMappings` traen los doce permisos (todos, porque una persona puede tener permisos sueltos) y ninguna plantilla: el claim lleva los permisos efectivos y no el nombre de la plantilla.
+- **`personaId` y `solicitudEntidad`:** atributos declarados en el perfil de usuario, que solo el admin ve y edita. `personaId` viaja en los tokens; `solicitudEntidad` no.
+- **Cuenta de servicio:** `service-account-cliente-liviano`, declarada en el realm para que reciba **solo** `SERVICIO` (sin el rol por defecto, que le daría `DONANTE`) y `manage-users`, `view-users` y `query-users` de `realm-management`. La Admin API además exige que esos roles estén en el scope del cliente, por eso también van en sus `clientScopeMappings`. No puede leer los roles del realm ni los proveedores de identidad. Como tampoco ve los clientes, `donatrack-api` tiene el id fijo `7f3c2a9e-5b1d-4e8a-9c6f-2d4b8a1e0c53`: con él asigna plantillas y permisos desde `/users/{id}/role-mappings/clients/{id}/available`.
+- **Registro (D11, R14):** la cuenta se crea en Keycloak y el sitio pide "Completá tu perfil". Toda cuenta creada por la Admin API recibe el rol por defecto (`DONANTE`): una cuenta de entidad pendiente tiene `DONANTE` pero ningún permiso.
+- **Google:** identity provider `google` con `${GOOGLE_CLIENT_ID}` y `${GOOGLE_CLIENT_SECRET}` (opcionales en el compose: vacías, todo anda menos "Continuar con Google"). El primer ingreso usa el flujo `first broker login`, que pide la clave para vincular una cuenta existente (D4).
 
 ## Políticas de seguridad (A1-02b)
 
@@ -69,11 +79,11 @@ El perfil de usuario va en el realm como un JSON dentro de un string (`component
 |---|---|
 | Admin de DonaTrack | Un único usuario importado con `${AUTH_ADMIN_EMAIL}` y `${AUTH_ADMIN_PASSWORD}`, **solo** con el rol `ADMIN`. No es el admin de la consola de Keycloak (`KC_BOOTSTRAP_ADMIN_*`). |
 | Autorregistro | Habilitado (`registrationAllowed`): "Registrarse" crea una cuenta con email y clave, sin nombre ni apellido. |
-| Rol por defecto | `default-roles-donatrack` = `DONANTE` + los dos roles de sistema de Keycloak (`offline_access`, `uma_authorization`). Lo reciben las cuentas creadas por el registro o por la Admin API. `ENTIDAD` y `ADMIN` no se autoasignan (D10). |
+| Rol por defecto | `default-roles-donatrack` = `DONANTE` + `uma_authorization` en el JSON. **En runtime sigue `offline_access`:** Keycloak crea el rol por defecto con él antes de leer el JSON, y el import solo suma composites. No se usa porque `cliente-liviano` no tiene el scope `offline_access` (lo comprueba el IT); sacarlo del rol exige un paso por la Admin API después del import. Lo reciben las cuentas creadas por el registro o por la Admin API. `ENTIDAD` y `ADMIN` no se autoasignan (D10). |
 
 - **El admin no hereda `DONANTE`:** Keycloak solo asigna el rol por defecto a las cuentas creadas por el registro o por la Admin API; a un usuario importado le da exactamente los roles que se le listan.
 - **La clave del admin tiene que cumplir la política del realm** (10 a 128 caracteres y distinta del email). Se espera que el import la valide y que con una clave corta o igual al email **Keycloak no arranque** (`[INFERRED]`: no hay un test negativo que lo pruebe). Los valores de `.env.example` y los de `generar-env-db.sh` la cumplen.
-- **`[INFERRED]`:** el rol por defecto no incluye los roles del cliente `account` (`view-profile`, `manage-account`), que Keycloak agrega en un realm nuevo. Sin ellos, la consola de cuenta de Keycloak no es accesible para los usuarios; el MVP no la usa. Cambiar la clave desde la sesión (RF-AUTH-12) puede pedir sumarlos.
+- **Consola de cuenta:** en runtime el rol por defecto incluye `manage-account` y `view-profile`, así que el usuario usa la Account API de Keycloak (el IT prueba que no puede cambiar su `personaId`).
 
 ## Tema de login y registro (A1-04)
 
@@ -102,6 +112,15 @@ Qué mirar: el logo se ve completo y con buen contraste en los dos modos, el bot
 - **De runtime, con Docker:** `mvn -f auth-service/pom.xml -Pcontrato-auth verify`. Construye la imagen del `Dockerfile`, la arranca con `start-dev` y la base en memoria (no usa Postgres: eso lo cubre `docker compose up`), crea un donante por la Admin API, inicia sesión contra `cliente-liviano` y lee los claims.
 - **Si Testcontainers dice `Could not find a valid Docker environment` (Windows):** es del entorno, no del realm. Con Docker Desktop abierto, probá `$env:DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine"` antes del `mvn`, y borrá la línea `docker.client.strategy=…` de `%USERPROFILE%\.testcontainers.properties` (Testcontainers cachea ahí la última estrategia que funcionó).
 - El módulo hereda del pom raíz (Spotless, JaCoCo) pero **no está en sus `<modules>`**: el `mvn` general no lo compila. Sumarlo al build y al CI queda para E2-12. Si Spotless se queja del formato, `mvn -f auth-service/pom.xml spotless:apply`.
+
+## Probar el ingreso
+
+1. En el `.env` (de `.env.example`) están `CLIENTE_LIVIANO_SECRET`, `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD`. Con `DONACIONES_SEGURIDAD_HABILITADA=true` en el `.env`, Donaciones valida el token (por defecto es `false` y acepta todo).
+2. Levantar Keycloak y Donaciones: `docker compose up --build -d keycloak donaciones-service` (arrastran Postgres y RabbitMQ).
+3. Levantar el sitio, con el mismo secreto del `.env`: `CLIENTE_LIVIANO_SECRET=<el del .env> mvn -pl cliente-liviano spring-boot:run`. Queda en <http://localhost:8090>; sin el perfil `maqueta` pide ingresar, y `DONACIONES_URL` y `KEYCLOAK_ISSUER_URI` valen `http://localhost:8080` y `http://localhost:8180/realms/donatrack` si no se cambian.
+4. Cuentas de prueba: el admin es `AUTH_ADMIN_EMAIL` con `AUTH_ADMIN_PASSWORD`. El donante y la entidad se crean con "Crear una cuenta" en Keycloak (pide completar el perfil) y la entidad espera la aprobación del admin en "Entidades".
+
+**Keycloak importa el realm solo la primera vez.** Si el realm `donatrack` ya existe en la base, un `donatrack-realm.json` nuevo no se aplica. Para reimportarlo: `docker compose down -v` (borra todos los datos locales) y volver a levantar, o borrar solo el realm en la consola (<http://localhost:8180>, *Manage realms → donatrack → Action → Delete*) y reiniciar con `docker compose restart keycloak`.
 
 ## Cómo levantarlo
 

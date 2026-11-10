@@ -7,15 +7,18 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Sin login todavía, la cuenta llega por {@code ?donante=<id>} o {@code ?entidad=<id>} y la sesión
- * la recuerda (decisión E1 del plan del cliente con datos reales). Un id mal escrito no cambia la
- * cuenta. No controla pertenencia: eso llega con la etapa 2 del gateway (F5).
+ * En la maqueta con las APIs, la cuenta llega por {@code ?donante=<id>} o {@code ?entidad=<id>} y
+ * la sesión la recuerda (decisión E1 del plan del cliente con datos reales); con ingreso, la cuenta
+ * sale del token. Un id mal escrito no cambia la cuenta. No controla pertenencia: eso llega con la
+ * etapa 2 del gateway (F5).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
+@Profile("maqueta")
 @Primary
 @ConditionalOnProperty(name = "cliente.datos.cuenta", havingValue = "parametro")
 class CuentaPorParametro implements CuentaActual {

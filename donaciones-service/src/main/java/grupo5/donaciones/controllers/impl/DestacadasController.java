@@ -1,5 +1,7 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.PUBLICO;
+
 import grupo5.donaciones.controllers.IDestacadasController;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donaciones.PeriodoDestacadas;
@@ -7,6 +9,7 @@ import grupo5.donaciones.dto.donaciones.outputs.DonacionDestacadaDTO;
 import grupo5.donaciones.services.impl.DestacadasService;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +30,7 @@ public class DestacadasController implements IDestacadasController {
   }
 
   @Override
+  @PreAuthorize(PUBLICO)
   @GetMapping("/api/donaciones/destacadas")
   public ResponseEntity<List<DonacionDestacadaDTO>> listarDestacadas(
       @RequestParam(required = false) PeriodoDestacadas periodo,

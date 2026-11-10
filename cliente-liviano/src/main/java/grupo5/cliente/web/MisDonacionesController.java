@@ -1,6 +1,5 @@
 package grupo5.cliente.web;
 
-import grupo5.cliente.maqueta.SitioController;
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.DonacionesPuerto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,24 +24,17 @@ public class MisDonacionesController {
 
   private final DonacionesPuerto donaciones;
   private final CuentaActual cuentas;
-  private final SitioController sitio;
+  private final Pantallas pantallas;
 
-  MisDonacionesController(
-      DonacionesPuerto donaciones, CuentaActual cuentas, SitioController sitio) {
+  MisDonacionesController(DonacionesPuerto donaciones, CuentaActual cuentas, Pantallas pantallas) {
     this.donaciones = donaciones;
     this.cuentas = cuentas;
-    this.sitio = sitio;
+    this.pantallas = pantallas;
   }
 
   @GetMapping("/donante-donaciones")
-  String misDonaciones(
-      @RequestParam(required = false) String respuesta,
-      @RequestParam(required = false) String cuenta,
-      Model model,
-      HttpServletRequest pedido) {
-    // Primero la página: ?respuesta= responde sin llamar a la API.
-    String vista =
-        sitio.pagina("donante-donaciones", respuesta, cuenta, model, pedido.getSession());
+  String misDonaciones(Model model, HttpServletRequest pedido) {
+    String vista = pantallas.mostrar("donante-donaciones", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return INGRESAR;
@@ -53,13 +45,8 @@ public class MisDonacionesController {
 
   @GetMapping("/donante-donaciones-detalle")
   String detalle(
-      @RequestParam(required = false) String donacion,
-      @RequestParam(required = false) String respuesta,
-      @RequestParam(required = false) String cuenta,
-      Model model,
-      HttpServletRequest pedido) {
-    String vista =
-        sitio.pagina("donante-donaciones-detalle", respuesta, cuenta, model, pedido.getSession());
+      @RequestParam(required = false) String donacion, Model model, HttpServletRequest pedido) {
+    String vista = pantallas.mostrar("donante-donaciones-detalle", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return INGRESAR;

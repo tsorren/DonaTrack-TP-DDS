@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--/* Entidades que piden sumarse, con las cuentas reales que esperan aprobación. Usa la hoja y
+       las clases del Inicio del admin. Todavía no se puede rechazar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-inicio', ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo" th:text="${seccion}">Entidades</p>
+      <h1>Entidades que piden sumarse</h1>
+    </header>
+
+    <div th:if="${#lists.isEmpty(solicitudes)}" class="vacio">
+      <p><b>Ninguna entidad espera tu decisión.</b></p>
+    </div>
+
+    <section th:unless="${#lists.isEmpty(solicitudes)}" class="decisiones" aria-labelledby="decisiones-titulo">
+      <h2 id="decisiones-titulo" th:text="|Esperan tu decisión: ${#lists.size(solicitudes)}|">Esperan tu decisión</h2>
+      <div class="decisiones-lista">
+        <section th:each="s, vuelta : ${solicitudes}" class="tarjeta decision" data-filete="doble"
+                 th:aria-labelledby="|solicitud-${vuelta.index}|">
+          <h3 th:id="|solicitud-${vuelta.index}|" th:text="${s.razonSocial}">Merendero Oeste</h3>
+          <p>Pidió sumarse con la cuenta <b th:text="${s.correo}">entidad@ejemplo.test</b>.</p>
+          <form action="/admin-entidades-aprobar" th:action="@{/admin-entidades-aprobar}" method="post">
+            <input type="hidden" name="cuenta" th:value="${s.cuentaId}">
+            <button class="boton" data-tono="principal" type="submit">Aprobar</button>
+          </form>
+        </section>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

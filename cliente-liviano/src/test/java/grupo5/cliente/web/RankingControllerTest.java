@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import grupo5.cliente.maqueta.SitioController;
+import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.RankingPuerto;
 import grupo5.cliente.vistas.RankingVista;
 import grupo5.cliente.vistas.RankingVista.Mes;
@@ -18,11 +18,13 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** La pantalla con lo que da Incentivos y no tiene la maqueta: un ranking sin fecha de cálculo. */
-@WebMvcTest({RankingController.class, SitioController.class})
-@Import(RankingControllerTest.UnRankingSinFecha.class)
+@WebMvcTest({RankingController.class, PantallasController.class})
+@ActiveProfiles("maqueta")
+@Import({MaquetaConfig.class, Pantallas.class, RankingControllerTest.UnRankingSinFecha.class})
 class RankingControllerTest {
 
   @TestConfiguration

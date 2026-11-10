@@ -12,17 +12,25 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Sin el perfil maqueta, el sitio corre con los adaptadores REST: las pantallas sin migrar se
- * siguen sirviendo, y una API que no responde lleva a la página de falla nuestra.
+ * Con el perfil maqueta y los puertos pasados a las APIs, el sitio corre con los adaptadores REST:
+ * las pantallas sin migrar se siguen sirviendo, y una API que no responde lleva a la página de
+ * falla nuestra. Sin ingreso, la cuenta llega por {@code ?donante=} o {@code ?entidad=}.
  */
 @SpringBootTest(
     properties = {
+      "cliente.datos.ranking=rest",
+      "cliente.datos.donaciones=rest",
+      "cliente.datos.recibidas=rest",
+      "cliente.datos.cuenta=parametro",
       "cliente.api.incentivos.url=http://localhost:1",
-      "cliente.api.donaciones.url=http://localhost:1"
+      "cliente.api.donaciones.url=http://localhost:1",
+      "cliente.api.logistica.url=http://localhost:1"
     })
+@ActiveProfiles("maqueta")
 @AutoConfigureMockMvc
 class SitioConApisTest {
 

@@ -239,7 +239,7 @@ Filtro de tono:
 
 - Zonas: el enlace para saltar al contenido, la navegación de la entidad (`nav` con nombre), el
   contenido (`main`) con un `h1`; la etiqueta, el tramo y cada grupo del formulario con su `h2`.
-- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú, el menú, "Salir",
+- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú, el menú, "Cuenta",
   "Seguir entregas", el campo de fotos, el remito, "Confirmar recepción" y "Llegó con un
   problema".
 - Cada campo con su `label` y su ayuda en `aria-describedby`; los obligatorios, `required` y

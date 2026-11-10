@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import grupo5.cliente.maqueta.SitioController;
+import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.DonacionesPuerto;
 import grupo5.cliente.vistas.DetalleDonacionVista;
 import grupo5.cliente.vistas.EstadoEntrega;
@@ -24,6 +24,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -31,9 +32,15 @@ import org.springframework.test.web.servlet.MockMvc;
  * ?donante=}, que la sesión recuerda.
  */
 @WebMvcTest(
-    controllers = {MisDonacionesController.class, SitioController.class},
+    controllers = {MisDonacionesController.class, PantallasController.class},
     properties = "cliente.datos.cuenta=parametro")
-@Import({CuentaPorParametro.class, MisDonacionesControllerTest.DosDonaciones.class})
+@ActiveProfiles("maqueta")
+@Import({
+  MaquetaConfig.class,
+  Pantallas.class,
+  CuentaPorParametro.class,
+  MisDonacionesControllerTest.DosDonaciones.class
+})
 class MisDonacionesControllerTest {
 
   private static final String ALIMENTOS = "6f1c2c1e-0000-4000-8000-0000000000c1";

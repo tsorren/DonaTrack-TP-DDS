@@ -12,7 +12,7 @@
 <th:block th:fragment="contenido">
   <div class="publica cuenta">
     <header class="publica-cabeza">
-      <p class="rotulo">Crear una cuenta</p>
+      <p class="rotulo" th:text="${completarPerfil} ? 'Completá tu perfil' : 'Crear una cuenta'">Crear una cuenta</p>
       <h1>¿Cómo querés <em>sumarte</em>?</h1>
       <p class="lectura-bajada">Según lo que elijas, te pedimos datos distintos.</p>
     </header>
@@ -30,7 +30,7 @@
           <h2 id="donar-titulo">Quiero donar, yo o mi empresa</h2>
           <p>Registrás lo que donás y lo seguís hasta que la entidad confirma la entrega.</p>
           <p>Ves a qué entidad se asignó, en qué estado está y la foto de la entrega.</p>
-          <p class="opcion-pedimos">Te pedimos tu correo, una contraseña y tu nombre o el de tu empresa.</p>
+          <p class="opcion-pedimos" th:text="${completarPerfil} ? 'Te pedimos tu nombre o el de tu empresa.' : 'Te pedimos tu correo, una contraseña y tu nombre o el de tu empresa.'">Te pedimos tu correo, una contraseña y tu nombre o el de tu empresa.</p>
           <a class="boton" data-tono="principal" href="/publico-registro-donante"
              th:href="@{/publico-registro-donante}">Crear mi cuenta de donante</a>
         </section>
@@ -51,8 +51,9 @@
       </li>
     </ul>
 
-    <p class="cuenta-salida">¿Ya tenés cuenta? <a href="/publico-ingresar"
+    <p class="cuenta-salida" th:unless="${completarPerfil}">¿Ya tenés cuenta? <a href="/publico-ingresar"
        th:href="@{/publico-ingresar}">Ingresar</a></p>
+    <div class="cuenta-salida" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 </body>

@@ -219,7 +219,7 @@ por su rol).
 ```text
 Rótulo · Título · Bajada
 Quién dona: [Una empresa u organización ●] [Una persona]     ← ?tipo=persona
-Empresa: Nombre de la empresa · Tu nombre y apellido
+Empresa: Nombre de la empresa · Rubro · Tu nombre y apellido
 Persona: Nombre · Apellido
 Correo electrónico · Contraseña [Mostrar]
 Aviso del nombre visible
@@ -239,7 +239,7 @@ cuenta de Distribuidora Ejemplo SA): el donante queda operativo al completar el 
 Rótulo · Título · Bajada
 Cómo sigue: 1 Completás la solicitud (estás acá) · 2 El equipo la revisa · 3 Publicás lo que necesitás
 La entidad: Nombre · Qué es · Tipo de organización
-Dirección de entrega: Calle · Altura · Localidad · Provincia
+Dirección de entrega: Calle · Altura · Código postal · Localidad · Provincia
 Quién la representa: Nombre y apellido · Correo electrónico · Contraseña [Mostrar]
 [ ] Leí y acepto los términos y la política de privacidad (versión 1)
 [Enviar la solicitud]
@@ -253,6 +253,14 @@ piden" e "Ir a la portada".
 Respecto del boceto (pág. 11): en tres grupos con título, como pedía la nota del boceto ("conviene
 partirlo en secciones claras"). Un solo representante, el que crea la cuenta; el rubro pasa a "Qué
 es", una lista corta. El país no se pregunta: es Argentina.
+
+**En el sitio real** (fuera de la maqueta), `publico-registro`, `publico-registro-donante` y
+`publico-registro-entidad` son el paso "Completá tu perfil" de la cuenta creada en Keycloak (D11,
+RI-AUTH-02). Sin sesión llevan a crear la cuenta; con sesión y sin perfil muestran el formulario
+sin correo, contraseña ni salidas, con el rótulo "Completá tu perfil" y el botón "Guardar mi
+perfil" (la entidad conserva "Enviar la solicitud"). Si Donaciones o Keycloak fallan, el aviso "No
+pudimos guardar tu perfil" (o "No pudimos enviar la solicitud") conserva lo escrito. El nombre y
+apellido de quien representa a la empresa o a la entidad pide al menos dos palabras.
 
 ### 4.8 Recuperar la contraseña (`publico-recuperar`)
 

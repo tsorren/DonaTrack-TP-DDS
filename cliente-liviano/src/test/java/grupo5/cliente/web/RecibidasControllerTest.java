@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import grupo5.cliente.maqueta.SitioController;
+import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
@@ -19,6 +19,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -26,9 +27,15 @@ import org.springframework.test.web.servlet.MockMvc;
  * novedades y con el mes de las recibidas; la entidad llega por {@code ?entidad=}.
  */
 @WebMvcTest(
-    controllers = {RecibidasController.class, SitioController.class},
+    controllers = {RecibidasController.class, PantallasController.class},
     properties = "cliente.datos.cuenta=parametro")
-@Import({CuentaPorParametro.class, RecibidasControllerTest.DosAsignadas.class})
+@ActiveProfiles("maqueta")
+@Import({
+  MaquetaConfig.class,
+  Pantallas.class,
+  CuentaPorParametro.class,
+  RecibidasControllerTest.DosAsignadas.class
+})
 class RecibidasControllerTest {
 
   private static final String PANTALLA = "/entidad-recibidas";

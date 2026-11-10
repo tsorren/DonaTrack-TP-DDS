@@ -79,9 +79,20 @@
   </a>
   <div class="armazon-cuenta">
     <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
-    <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
-       th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
-    <a href="/publico-portada" th:href="@{/publico-portada}">Salir</a>
+    <button class="boton" data-tamano="chico" data-zona="suelo-hondo" type="button"
+            popovertarget="menu-cuenta">Cuenta</button>
+    <!--/* Mi perfil, el cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y
+           Cerrar sesión (POST con CSRF) van juntos en un diálogo del catálogo: sueltos no entran en la
+           cabecera de una fila (1100 a 1280 px). Anda sin JavaScript. */-->
+    <dialog id="menu-cuenta" class="dialogo" popover aria-labelledby="menu-cuenta-titulo">
+      <p id="menu-cuenta-titulo" class="dialogo-titulo">Tu cuenta</p>
+      <p th:if="${perfil}"><a href="/donante-perfil" th:href="${perfil}"
+         th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a></p>
+      <p th:if="${cuenta.cambiarClave}"><a href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a></p>
+      <form th:replace="~{cerrar-sesion :: boton}"></form>
+      <button type="button" class="boton" data-tono="secundario" popovertarget="menu-cuenta"
+              popovertargetaction="hide">Cerrar</button>
+    </dialog>
   </div>
 </header>
 <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>

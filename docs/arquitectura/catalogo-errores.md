@@ -56,6 +56,8 @@
 | `ERR-CSR-001` | `RECURSO_NO_ENCONTRADO` | El recurso solicitado no existe (búsqueda por UUID) | `404` | `RecursoNoEncontradoException` |
 | `ERR-CSR-002` | `ARGUMENTO_NULO` | Argumento obligatorio recibido como `null` | `400` | `ValidationException` |
 | `ERR-CSR-003` | `ARGUMENTO_INVALIDO` | Argumento con valor inválido (también usado por bean validation, headers faltantes, type mismatch, JSON malformado) | `400` | `ValidationException` / Spring MVC |
+| `ERR-CSR-401` | `NO_AUTENTICADO` | Falta el token de acceso o no es válido | `401` | Spring Security |
+| `ERR-CSR-403` | `ACCESO_DENEGADO` | El token no tiene el rol, el permiso o la pertenencia que pide la operación | `403` | Spring Security |
 | `ERR-CSR-500` | `ERROR_INTERNO` | Error interno del servidor (fallback genérico, FeignException) | `500` | `Exception` / `FeignException` |
 
 ---

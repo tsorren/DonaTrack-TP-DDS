@@ -1,5 +1,8 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+import static grupo5.donaciones.seguridad.Acceso.ADMIN_O_SERVICIO;
+
 import grupo5.donaciones.controllers.IPropuestaDeAsignacionController;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
@@ -11,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/asignaciones")
 @RequiredArgsConstructor
 public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionController {
@@ -27,6 +32,7 @@ public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionCo
   private final IPropuestaDeAsignacionService service;
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping("/ejecuciones")
   public ResponseEntity<List<PropuestaDTO>> ejecutar() {
     return ResponseEntity.status(HttpStatus.CREATED).body(service.ejecutarAsignacion());
