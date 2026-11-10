@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<!--/* Mi perfil de la persona que dona (Martina Ruiz): la misma pantalla que la de la empresa
+       (docs/interfaz/flujos/raices-mi-perfil.md), con los datos de una persona humana (nombre,
+       apellido y documento, en vez de razón social y CUIT) y, en los avisos, los de sus misiones.
+       Las entidades que no ven su nombre ven «Persona donante · Sostenedor». ?escenario=oculto,
+       lento, error y sin-conexion, como la de la empresa. Es un formulario real (POST) que va a
+       donante-perfil-guardado.
+       Fragmento hoja(enviado): la pantalla entera; enviado es true en donante-perfil-guardado. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-perfil', ~{::contenido})}">
+<head>
+  <title>Mi perfil - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/donante-perfil :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(enviado)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             seccion=${enviado and param.seccion != null ? param.seccion[0] : ''},
+             guardado=${!enviado or seccion != '' ? '' : (param.mostrar != null ? 'visible' : 'oculto')},
+             oculto=${guardado == 'oculto' or (guardado == '' and escenario == 'oculto')},
+             nombre=${cuenta.nombre},
+             anonimo='Persona donante · Sostenedor'">
+  <div class="perfil" id="persona-perfil">
+    <p class="rotulo">Mi perfil</p>
+    <h1 th:text="${nombre}">Martina Ruiz</h1>
+    <p class="perfil-cuenta">Persona donante · Sostenedor · martina.ruiz@correo-ejemplo.test</p>
+
+    <p th:if="${guardado == 'oculto'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+       th:text="|Listo. Las entidades ya no ven tu nombre: ven «${anonimo}».|">Listo. Las entidades ya no
+      ven tu nombre: ven «Persona donante · Sostenedor».</p>
+    <p th:if="${guardado == 'visible'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+       th:text="|Listo. Las entidades ven tu nombre: «${nombre}».|">Listo. Las entidades ven tu nombre:
+      «Martina Ruiz».</p>
+    <p th:if="${seccion == 'datos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
+      Guardamos los datos de tu cuenta.</p>
+    <p th:if="${seccion == 'avisos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
+      Guardamos cómo te avisamos.</p>
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos guardar tu elección.</h2>
+      <p>Es un problema nuestro: sigue como estaba. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=b2c3d4e5f6a1"
+           th:href="@{/publico-contacto(codigo='b2c3d4e5f6a1',volver='/donante-perfil')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>b2c3d4e5f6a1</code></p>
+    </section>
+    <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="red-titulo">
+      <h2 id="red-titulo">No sabemos si se guardó.</h2>
+      <p>Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó elegido.</p>
+    </section>
+
+    <!--/* Las secciones como pestañas de la misma pantalla (A/B layout:perfil, 2026-11-04, usuario; bloque
+           .pestanas, B2-11): cada pestaña es un enlace a su sección, sin JavaScript; se ve una por vez (la
+           primera al entrar) y al guardar vuelve a la misma. Con JavaScript, Alpine (pestanas) suma los
+           roles, las flechas y el cambio sin recargar. */-->
+    <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
+    <nav class="pestanas-lista" aria-label="Secciones de tu perfil" x-on:keydown="teclear">
+      <a class="pestana" id="pestana-como-te-ven" href="#como-te-ven" x-on:click="elegir">Cómo te ven</a>
+      <a class="pestana" id="pestana-datos" href="#datos" x-on:click="elegir">Datos de la cuenta</a>
+      <a class="pestana" id="pestana-como-te-avisamos" href="#como-te-avisamos" x-on:click="elegir">Avisos</a>
+    </nav>
+
+    <div class="pestanas-panel" id="como-te-ven">
+    <form action="/donante-perfil-guardado"
+          th:action="@{/donante-perfil-guardado}" method="post" class="formulario"
+          th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <fieldset class="opciones" aria-describedby="nombre-ayuda nombre-nota">
+        <legend><h2>Cómo te ven las entidades</h2></legend>
+        <p id="nombre-ayuda">Cuando una entidad recibe lo que donaste, ve quién donó.</p>
+        <label><input type="radio" name="mostrar" value="si" th:checked="${!oculto}">
+          <span>Mostrar mi nombre <small th:text="|Donó: ${nombre}|">Donó: Martina Ruiz</small></span></label>
+        <label><input type="radio" name="mostrar" value="no" th:checked="${oculto}">
+          <span>No mostrarlo <small th:text="|Donó: ${anonimo}|">Donó: Persona donante · Sostenedor</small></span></label>
+        <p id="nombre-nota" class="nota">Sin tu nombre, la entidad ve tu categoría como donante. Vale
+          para todas tus donaciones, también las que ya llegaron. Los avisos que la entidad ya recibió
+          no cambian.</p>
+      </fieldset>
+      <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+              th:text="${escenario == 'lento'} ? 'Guardando…' : 'Guardar mi elección'">Guardar mi
+        elección</button>
+    </form>
+    </div>
+
+    <!--/* Los datos de la cuenta y los avisos (nota de Nico, 2026-11-04: "faltan más campos"): los de la
+           persona jurídica y sus medios de contacto en donaciones-service (JuridicaInputDTO,
+           MedioDeContactoInputDTO). ponytail: maqueta con datos de ejemplo; guardar no cambia nada
+           hasta que haya backend (RI-AUTH-02, HB-11; docs/interfaz/flujos/raices-ab-huecos-backend.md). */-->
+    <div class="pestanas-panel" id="datos">
+    <form action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#datos(seccion='datos')}"
+          method="post" class="formulario perfil-seccion" aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo">Datos de tu cuenta</h2>
+      <p class="obligatorios">Todos los datos son obligatorios, salvo los que dicen «opcional».</p>
+      <div class="perfil-par">
+        <div class="campo">
+          <label for="nombre-persona">Nombre</label>
+          <input id="nombre-persona" name="nombre" type="text" required autocomplete="given-name"
+                 value="Martina" placeholder="Por ejemplo: Ana">
+        </div>
+        <div class="campo">
+          <label for="apellido">Apellido</label>
+          <input id="apellido" name="apellido" type="text" required autocomplete="family-name"
+                 value="Ruiz" placeholder="Por ejemplo: Ejemplo">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="documento">Documento</label>
+        <small id="documento-ayuda">No se cambia desde acá. Si está mal,
+          <a href="/publico-contacto" th:href="@{/publico-contacto(volver='/donante-perfil')}">escribinos</a>.</small>
+        <input id="documento" name="documento" type="text" value="DNI 00.000.000" readonly
+               aria-describedby="documento-ayuda" placeholder="Por ejemplo: DNI 12.345.678">
+      </div>
+      <div class="campo">
+        <label for="nacimiento">Fecha de nacimiento <small>(opcional)</small></label>
+        <input id="nacimiento" name="nacimiento" type="date" autocomplete="bday" value="1994-05-21">
+      </div>
+      <fieldset class="perfil-grupo">
+        <legend>Dirección</legend>
+        <div class="perfil-par perfil-par--calle">
+          <div class="campo">
+            <label for="calle">Calle</label>
+            <input id="calle" name="calle" type="text" required autocomplete="address-line1"
+                   value="Calle Ejemplo" placeholder="Por ejemplo: Av. Rivadavia">
+          </div>
+          <div class="campo">
+            <label for="altura">Número <small>(opcional)</small></label>
+            <input id="altura" name="altura" type="text" inputmode="numeric" value="560" placeholder="Por ejemplo: 4500">
+          </div>
+        </div>
+        <div class="perfil-par">
+          <div class="campo">
+            <label for="piso">Piso y departamento <small>(opcional)</small></label>
+            <input id="piso" name="piso" type="text" value="" placeholder="Por ejemplo: 3.º B">
+          </div>
+          <div class="campo">
+            <label for="codigo-postal">Código postal <small>(opcional)</small></label>
+            <input id="codigo-postal" name="codigoPostal" type="text" autocomplete="postal-code"
+                   value="C1406" placeholder="Por ejemplo: C1406">
+          </div>
+        </div>
+        <div class="perfil-par">
+          <div class="campo">
+            <label for="localidad">Localidad</label>
+            <input id="localidad" name="localidad" type="text" required autocomplete="address-level2"
+                   value="Caballito" placeholder="Por ejemplo: Caballito">
+          </div>
+          <div class="campo">
+            <label for="provincia">Provincia</label>
+            <input id="provincia" name="provincia" type="text" required autocomplete="address-level1"
+                   value="Ciudad de Buenos Aires" placeholder="Por ejemplo: Buenos Aires">
+          </div>
+        </div>
+      </fieldset>
+      <button class="boton" data-tono="principal" type="submit">Guardar los datos</button>
+    </form>
+    </div>
+
+    <div class="pestanas-panel" id="como-te-avisamos">
+    <form action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#como-te-avisamos(seccion='avisos')}"
+          method="post" class="formulario perfil-seccion" aria-labelledby="avisos-titulo">
+      <h2 id="avisos-titulo">Cómo te avisamos</h2>
+      <p>Te avisamos cuando tu donación se asigna a una entidad, cuando sale, cuando la entidad
+        confirma la entrega con la foto y cuando completás una misión. Los avisos también quedan en
+        <a href="/donante-notificaciones" th:href="@{/donante-notificaciones}">Notificaciones</a>.</p>
+      <div class="campo">
+        <label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" required autocomplete="email"
+               value="martina.ruiz@correo-ejemplo.test" placeholder="nombre@ejemplo.com">
+      </div>
+      <div class="perfil-par">
+        <div class="campo">
+          <label for="whatsapp">WhatsApp <small>(opcional)</small></label>
+          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="11 5555-0142" placeholder="Por ejemplo: 11 5555 5555">
+        </div>
+        <div class="campo">
+          <label for="telefono">Teléfono <small>(opcional)</small></label>
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel" placeholder="Por ejemplo: 11 5555 5555">
+        </div>
+      </div>
+      <fieldset class="opciones">
+        <legend>Por dónde te avisamos</legend>
+        <label><input type="radio" name="medio" value="correo" checked>
+          <span>Por correo</span></label>
+        <label><input type="radio" name="medio" value="whatsapp">
+          <span>Por WhatsApp</span></label>
+        <label><input type="radio" name="medio" value="telefono">
+          <span>Por mensaje de texto al teléfono</span></label>
+      </fieldset>
+      <fieldset class="opciones">
+        <legend>Qué te avisamos</legend>
+        <label><input type="radio" name="cuales" value="todos" checked>
+          <span>Todo: cuando se asigna, cuando sale, cuando llega y tus misiones</span></label>
+        <label><input type="radio" name="cuales" value="llegadas">
+          <span>Solo cuando la entidad confirma que llegó</span></label>
+      </fieldset>
+      <button class="boton" data-tono="principal" type="submit">Guardar los avisos</button>
+    </form>
+    </div>
+    </div>
+
+    <section class="perfil-legales" aria-labelledby="legales-titulo">
+      <h2 id="legales-titulo">Términos y privacidad</h2>
+      <p>Aceptaste la versión 1 el 1 de noviembre de 2026.</p>
+      <a href="/publico-legales" th:href="@{/publico-legales}">Leer los
+        términos y la política de privacidad</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

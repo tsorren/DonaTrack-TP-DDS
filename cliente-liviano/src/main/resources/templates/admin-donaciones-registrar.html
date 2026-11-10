@@ -77,11 +77,11 @@
           donante</a></p>
       </th:block>
       <th:block th:if="${donante == null}">
-        <form class="racimo" action="/admin-donaciones-registrar" th:action="@{/admin-donaciones-registrar}"
+        <form hx-boost="true" class="racimo" action="/admin-donaciones-registrar" th:action="@{/admin-donaciones-registrar}"
               method="get" role="search">
           <div class="campo">
             <label for="buscar">Buscar por nombre o documento</label>
-            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${buscado}">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${buscado}" placeholder="Por ejemplo: comedor">
           </div>
           <button class="boton" data-tono="secundario" type="submit">Buscar</button>
         </form>
@@ -89,7 +89,7 @@
           <p role="status">2 donantes coinciden con la búsqueda.</p>
           <ul class="lista pila" data-espacio="2" role="list">
             <li th:each="x : ${donantes.?[clave == 'ana-ejemplo' or clave == 'juan-ejemplo']}">
-              <a class="boton" data-tono="secundario" th:href="@{/admin-donaciones-registrar(donante=${x.clave})}"
+              <a class="boton" data-tono="secundario" hx-boost="true" th:href="@{/admin-donaciones-registrar(donante=${x.clave})}"
                  href="/admin-donaciones-registrar?donante=ana-ejemplo"><b th:text="${x.nombre}">Ana Ejemplo</b> ·
                 <span th:text="${x.documento}">DNI 20.000.001</span></a>
             </li>
@@ -114,7 +114,7 @@
           de alimentos".</p>
         <input id="descripcion" name="descripcion" type="text" required autocomplete="off"
                th:value="${escrito and !datos} ? 'Caja de alimentos' : null"
-               th:attr="aria-describedby=${datos} ? 'descripcion-error descripcion-ayuda' : 'descripcion-ayuda',aria-invalid=${datos} ? 'true' : null">
+               th:attr="aria-describedby=${datos} ? 'descripcion-error descripcion-ayuda' : 'descripcion-ayuda',aria-invalid=${datos} ? 'true' : null" placeholder="Por ejemplo: leche en polvo, 10 cajas">
       </div>
 
       <fieldset th:each="n : ${#numbers.sequence(1, bienes)}" class="tarjeta pila" data-espacio="3">
@@ -125,7 +125,7 @@
           <div class="campo">
             <label th:for="|que-${n}|" for="que-1">Qué es *</label>
             <input th:id="|que-${n}|" id="que-1" th:name="|bienes[${n - 1}].que|" type="text" required
-                   autocomplete="off" th:value="${que}">
+                   autocomplete="off" th:value="${que}" placeholder="Por ejemplo: leche en polvo">
           </div>
           <div class="campo" th:data-estado="${enError} ? 'error'">
             <label th:for="|cantidad-${n}|" for="cantidad-1">Cantidad *</label>
@@ -134,7 +134,7 @@
             <input th:id="|cantidad-${n}|" id="cantidad-1" th:name="|bienes[${n - 1}].cantidad|" type="text"
                    inputmode="numeric" required autocomplete="off"
                    th:value="${escrito} ? (${enError} ? 'veinte' : '10') : null"
-                   th:attr="aria-describedby=${enError} ? |cantidad-${n}-error| : null,aria-invalid=${enError} ? 'true' : null">
+                   th:attr="aria-describedby=${enError} ? |cantidad-${n}-error| : null,aria-invalid=${enError} ? 'true' : null" placeholder="Por ejemplo: 10">
           </div>
           <div class="campo">
             <label th:for="|vence-${n}|" for="vence-1">Vence el</label>
@@ -158,7 +158,7 @@
       <div class="racimo" th:if="${bienes < 3}">
         <button class="boton" data-tono="secundario" type="submit" formaction="/admin-donaciones-registrar"
                 th:formaction="@{/admin-donaciones-registrar}" formmethod="get" formenctype="application/x-www-form-urlencoded"
-                formnovalidate name="bienes" th:value="${bienes + 1}" value="2">Sumar otro bien</button>
+                formnovalidate hx-get="/admin-donaciones-registrar" th:attr="hx-get=@{/admin-donaciones-registrar}" hx-include="closest form" hx-push-url="true" name="bienes" th:value="${bienes + 1}" value="2">Sumar otro bien</button>
       </div>
 
       <h2>3. Dónde quedó</h2>

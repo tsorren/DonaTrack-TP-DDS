@@ -1,16 +1,16 @@
 /* Raíces, las páginas de error propias (docs/interfaz/flujos/raices-paginas-de-error.md): las de
-   las públicas más la disposición del dibujo. Solo disposición; las piezas del dibujo son las del
-   bloque pasos (docs/interfaz/componentes.md). El dibujo, chico y centrado en su columna; fuera de
-   la lámina de pasos, lleva el filete de tinta también arriba y abajo. */
+   las públicas más la disposición de la ilustración de reintentar (2026-11-08), chica y centrada en
+   su columna. */
 @import url("publico-paginas.css");
 
 [data-dibujo="error"] {
   justify-self: center;
   align-self: center;
-  width: min(100%, 18rem);
+  width: min(100%, 14rem);
 }
 
-[data-dibujo="error"] svg {
+[data-dibujo="error"] img {
+  display: block;
+  width: 100%;
   height: auto;
-  border-block: 1.5px solid var(--color-tinta);
 }

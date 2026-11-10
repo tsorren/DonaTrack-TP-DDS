@@ -33,6 +33,9 @@ class SitioController {
   /** Los motivos de Llegó con un problema, los del reporte del contrato de entregas. */
   private static final String MOTIVOS = "incompleta|danada|otro";
 
+  /** IDs de notificaciones que pueden viajar en el formulario de la bandeja. */
+  private static final String NOTIFICACION_ID = "[A-Za-z0-9-]+";
+
   private final Pantallas pantallas;
 
   SitioController(Pantallas pantallas) {
@@ -65,7 +68,10 @@ class SitioController {
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar,
       @RequestParam(required = false) String seccion,
-      @RequestParam(required = false) String motivo) {
+      @RequestParam(required = false) String motivo,
+      @RequestParam(required = false) List<String> elegidas,
+      @RequestParam(required = false) String marcar,
+      @RequestParam(name = "no-leer", required = false) String noLeer) {
     if (!pantallas.existe(pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
     }
@@ -82,7 +88,31 @@ class SitioController {
     if (motivo != null && motivo.matches(MOTIVOS)) {
       consulta.add("problema=" + motivo);
     }
+    if (pantalla.endsWith("-notificaciones-leidas")) {
+      agregarMarcas(consulta, elegidas, marcar, noLeer);
+    }
     String destino = "redirect:/" + pantalla;
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);
+  }
+
+  /**
+   * La bandeja de notificaciones vuelve con las que se marcaron como leídas ({@code ?marcadas=}) y
+   * la que se dejó sin leer ({@code ?noLeidas=}); solo pasan los IDs bien escritos.
+   */
+  private static void agregarMarcas(
+      List<String> consulta, List<String> elegidas, String marcar, String noLeer) {
+    List<String> ids = new ArrayList<>();
+    if (elegidas != null) {
+      ids.addAll(elegidas.stream().filter(id -> id.matches(NOTIFICACION_ID)).toList());
+    }
+    if (marcar != null && marcar.matches(NOTIFICACION_ID)) {
+      ids.add(marcar);
+    }
+    if (elegidas != null || marcar != null || noLeer != null) {
+      consulta.add("marcadas=" + String.join(",", ids));
+    }
+    if (noLeer != null && noLeer.matches(NOTIFICACION_ID)) {
+      consulta.add("noLeidas=" + noLeer);
+    }
   }
 }

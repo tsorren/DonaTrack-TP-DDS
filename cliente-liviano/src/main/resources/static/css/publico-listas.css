@@ -102,16 +102,17 @@
   fill: currentcolor;
 }
 
-/* El fruto: un disco mandarina con su segunda tinta corrida y su hoja, con la cifra adentro. */
+/* La cifra, como las de K (estética de K, 2026-11-08; antes, un fruto mandarina con la cifra adentro):
+   un árbol plano y el número grande en tinta, con lo que cuenta al lado. */
 .cifra-fruto p {
   margin: 0;
 }
 
 .cifra-fruto > p:first-child {
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  max-width: 34rem;
+  align-items: flex-end;
+  gap: 1rem;
+  max-width: 36rem;
   color: var(--color-tinta);
   font-size: 1.0625rem;
   line-height: 1.4;
@@ -119,35 +120,26 @@
 
 .cifra-fruto .nota {
   margin-top: 0.5rem;
-  padding-left: 7.25rem;
 }
 
 .fruto {
-  position: relative;
-  display: grid;
+  display: flex;
   flex: none;
-  place-items: center;
-  width: 6rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-fruto);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-fruto-hondo);
+  align-items: flex-end;
+  gap: 0.5rem;
   color: var(--color-tinta);
-  font: 900 2.5rem / 1 var(--fuente-cifra);
-  font-stretch: 110%;
-  letter-spacing: -0.03em;
+  font: 850 3rem / 0.9 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
 }
 
 .fruto::before {
   content: "";
-  position: absolute;
-  top: -0.5rem;
-  right: 0.35rem;
-  width: 1.6rem;
-  height: 0.85rem;
-  border-radius: 0 100%;
-  background: var(--color-tallo);
-  rotate: -18deg;
+  /* El manzano con su proporción (viewBox 231,87 × 260,42), apoyado abajo, junto a la cifra. */
+  flex: none;
+  height: 4.375rem;
+  aspect-ratio: 231.87 / 260.42;
+  background: url("../img/ilustraciones/arbol-redondo.svg") bottom / contain no-repeat;
 }
 
 /* --- Las salidas, lo que carga, los botones y la foto ------------------------------------------ */

@@ -64,7 +64,7 @@
       <div class="campo">
         <label for="entidad">Nombre de la entidad</label>
         <input id="entidad" name="entidad" type="text" required autocomplete="organization"
-               th:value="${cuenta.rol}" value="Comedor Barrio Ejemplo">
+               th:value="${cuenta.rol}" value="Comedor Barrio Ejemplo" placeholder="Por ejemplo: Comedor Barrio Ejemplo">
       </div>
       <div class="campo">
         <label for="que-es">Qué es</label>
@@ -102,12 +102,12 @@
           <div class="campo">
             <label for="representante">Nombre y apellido</label>
             <input id="representante" name="representante" type="text" required autocomplete="name"
-                   value="Marta Ejemplo">
+                   value="Marta Ejemplo" placeholder="Por ejemplo: Marta Ejemplo">
           </div>
           <div class="campo">
             <label for="correo-representante">Correo electrónico</label>
             <input id="correo-representante" name="correoRepresentante" type="email" required
-                   autocomplete="email" value="comedor@ejemplo.org">
+                   autocomplete="email" value="comedor@ejemplo.org" placeholder="nombre@ejemplo.com">
           </div>
         </div>
       </fieldset>
@@ -126,16 +126,16 @@
       <div class="campo">
         <label for="correo">Correo</label>
         <input id="correo" name="correo" type="email" required autocomplete="email"
-               value="comedor@ejemplo.org">
+               value="comedor@ejemplo.org" placeholder="nombre@ejemplo.com">
       </div>
       <div class="perfil-par">
         <div class="campo">
           <label for="whatsapp">WhatsApp <small>(opcional)</small></label>
-          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="11 5555-0200">
+          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="11 5555-0200" placeholder="Por ejemplo: 11 5555 5555">
         </div>
         <div class="campo">
           <label for="telefono">Teléfono <small>(opcional)</small></label>
-          <input id="telefono" name="telefono" type="tel" autocomplete="tel">
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel" placeholder="Por ejemplo: 11 5555 5555">
         </div>
       </div>
       <fieldset class="opciones">

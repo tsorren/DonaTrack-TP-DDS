@@ -38,6 +38,126 @@ figure.mapa-dibujo {
   opacity: 1;
 }
 
+/* --- El mapa real (MapLibre, D21; desde el 2026-11-09) --------------------------------------------
+   `<div class="mapa-dibujo mapa-real" data-mapa>`: static/js/mapa.js lo llena con MapLibre y un
+   `button.mapa-marcador` por ficha; sin JavaScript queda `.mapa-real-aviso` y la lista. En
+   Seguimiento es `<div class="seguimiento-dibujo mapa-real" data-mapa>` (sin el marco fijo de
+   `.mapa-dibujo`), con el depósito y los destinos (`data-tipo`) y los recorridos. */
+.mapa-real {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  background: var(--color-papel);
+}
+
+.mapa-real[data-listo="no"] {
+  display: none;
+}
+
+.mapa-real-aviso {
+  margin: 0;
+  padding: 1.25rem;
+  color: var(--color-tinta-suave);
+}
+
+/* El marcador: el sello numerado de las estaciones, del tamaño de un toque. */
+.mapa-marcador {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+  color: var(--color-tinta);
+  font: 800 1.25rem/1 var(--fuente-cifra);
+  cursor: pointer;
+}
+
+/* Seguimiento (desde el 2026-11-10): el depósito, un sello de tinta con el ícono en papel; el destino
+   de una entrega, una casa sobre el campo, en un cuadrado redondeado. Los números van encima. */
+.mapa-marcador[data-tipo] svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mapa-marcador[data-tipo="deposito"] {
+  background: var(--color-tinta);
+  color: var(--color-papel);
+}
+
+.mapa-marcador[data-tipo="destino"] {
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+}
+
+.mapa-marcador:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.mapa-real[data-destacado] .mapa-marcador {
+  opacity: 0.45;
+}
+
+.mapa-real[data-destacado] .mapa-marcador[data-activo] {
+  z-index: 1;
+  opacity: 1;
+  background: var(--color-acento);
+  color: var(--color-papel);
+}
+
+/* El globo de MapLibre, con el papel y las esquinas de las tarjetas. */
+.mapa-real [class~="maplibregl-popup-content"] {
+  padding: 0.875rem 2.25rem 0.875rem 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta-suave);
+  font: 0.9375rem/1.4 var(--fuente-texto);
+}
+
+.mapa-real [class~="maplibregl-popup-close-button"] {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radio-boton);
+  font-size: 1.25rem;
+}
+
+.mapa-globo-cuerpo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mapa-globo-cuerpo p {
+  margin: 0;
+}
+
+.mapa-globo-nombre {
+  color: var(--color-tinta);
+  font: 800 1.0625rem/1.2 var(--fuente-titulo);
+}
+
+.mapa-globo-cuerpo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] {
+  border-radius: var(--radio-boton) 0 0 0;
+  font-size: 0.75rem;
+}
+
 /* --- La lista ---------------------------------------------------------------------------------- */
 
 .mapa-lista :is(h2, h3) {
@@ -46,6 +166,7 @@ figure.mapa-dibujo {
 
 .estaciones {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   margin: 0;
   padding: 0;
@@ -55,15 +176,15 @@ figure.mapa-dibujo {
 .estacion-ficha {
   padding: 1rem;
   border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-sombra);
-  outline: 1.5px solid var(--color-tinta);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
   scroll-margin-top: 1rem;
 }
 
+/* La ficha a la que se llegó con #entidad-<clave>: el fondo verde claro, sin el recuadro verde (regla
+   general de la ronda del 2026-11-09, tarde). */
 .estacion-ficha:target {
-  outline: 3px solid var(--color-acento);
-  box-shadow: 0.35rem 0.35rem 0 var(--color-raiz);
+  background: var(--color-acento-claro);
 }
 
 .estacion-cabeza {
@@ -130,10 +251,55 @@ figure.mapa-dibujo {
     position: sticky;
     top: 1rem;
   }
+
+  .mapa-real {
+    aspect-ratio: auto;
+    height: min(40rem, 100vh - 2rem);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .mapa-marcador {
+    transition: var(--movimiento-transicion-atenua);
+  }
+
   .estacion {
     transition: var(--movimiento-transicion-atenua);
   }
+}
+
+/* Los controles, el globo y la atribución de MapLibre, con la estética del sitio: papel, tinta,
+   esquinas redondeadas y la sombra plana de los botones. Son clases de la biblioteca (maplibregl-*),
+   no del catálogo: se nombran por atributo para dejar claro que no son nuestras. */
+.mapa-real [class~="maplibregl-ctrl-group"] {
+  overflow: hidden;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+}
+
+.mapa-real [class~="maplibregl-ctrl-group"] button + button {
+  border-top: 1px solid var(--color-filete);
+}
+
+.mapa-real [class~="maplibregl-popup-content"] {
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+  color: var(--color-tinta);
+  font: inherit;
+}
+
+.mapa-real [class~="maplibregl-popup-tip"] {
+  display: none;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] {
+  border-radius: var(--radio-boton) 0 0;
+  background: var(--color-campo);
+  color: var(--color-tinta-suave);
+  font-size: 0.75rem;
 }

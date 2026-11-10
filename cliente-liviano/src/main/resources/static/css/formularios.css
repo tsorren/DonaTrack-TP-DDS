@@ -5,7 +5,6 @@
 
 main h1 em {
   color: var(--color-acento);
-  text-shadow: 0.035em 0.03em 0 var(--color-hoja);
 }
 
 .obligatorios {

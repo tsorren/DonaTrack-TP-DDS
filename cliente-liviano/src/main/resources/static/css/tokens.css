@@ -1,7 +1,7 @@
-/* Tokens del sitio: valores base --p-* y tokens de uso: paleta Huerta de noche con la tierra
-   humus (A/B de Raíces cálida, 2026-11-06), estilo impreso editorial, un afiche risográfico, títulos
-   en Fraunces y texto y cifras en Archivo (decididos en su A/B), marca, botones, el grano de
-   impresión de la referencia 01 y las cifras. */
+/* Tokens del sitio: valores base --p-* y tokens de uso: la piel Huerta (variante K de
+   frontend-donatrack, adoptada el 2026-11-08: papel crema, verde hoja, títulos en Archivo ancho y
+   texto en DM Sans) sobre la estructura de Raíces (la tierra, las raíces y los frutos), marca,
+   botones, el grano de impresión de la referencia 01 y las cifras. */
 
 @font-face {
   font-family: Archivo;
@@ -21,21 +21,13 @@
   src: url("../fuentes/archivo-cursiva-latin.woff2") format("woff2");
 }
 
-/* Fraunces (Undercase Type, OFL), en los títulos (A/B de Raíces cálida, 2026-11-06). */
+/* DM Sans (The DM Sans Project Authors, OFL), en el texto (piel Huerta, 2026-11-08). */
 @font-face {
-  font-family: Fraunces;
+  font-family: "DM Sans";
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 300 900;
   font-display: swap;
-  src: url("../fuentes/fraunces-latin.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: Fraunces;
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("../fuentes/fraunces-cursiva-latin.woff2") format("woff2");
+  src: url("../fuentes/dm-sans-latin.woff2") format("woff2");
 }
 
 :root {
@@ -44,42 +36,52 @@
      pasos (humus hondo) y casi negra en el más hondo (cabecera, pie y cifras; A/B de Raíces cálida,
      2026-11-06), el verde hoja honda en títulos y botones, raíces paja (también la sombra plana de
      las piezas) y los frutos zanahoria. */
-  /* La letra (A/B de Raíces cálida, 2026-11-06; antes, Archivo en todo): los títulos en Fraunces,
-     una serif de libro de jardinería, firme y tibia, con su cursiva en la parte cálida. El texto,
-     los datos, los numerales y las cifras siguen en Archivo (Omnibus-Type, Buenos Aires), anchos y
-     pesados como un afiche (referencia 02). */
-  --p-letra-titulo: Fraunces, Georgia, serif;
-  --p-letra-texto: Archivo, system-ui, sans-serif;
+  /* La piel Huerta (usuario, 2026-11-08; antes, Huerta de noche y Fraunces en los títulos): los
+     valores de la variante K de frontend-donatrack. Títulos en Archivo (Omnibus-Type, Buenos Aires)
+     bien ancho y pesado, sin cursiva; el texto en DM Sans. La tinta, un verde oliva casi negro; la
+     tierra, un humus más gris; las tarjetas, en un papel más claro (--p-claro) y los filetes, la
+     tinta al 16 % (--p-filete). */
+  --p-letra-titulo: Archivo, "Arial Narrow", system-ui, sans-serif;
+  --p-letra-texto: "DM Sans", system-ui, sans-serif;
   --p-papel: #fbf2d3;
-  --p-tinta: #17140f;
-  --p-tinta-suave: #4a4234;
-  --p-acento: #2d6a1e;
-  --p-acento-hondo: #1f4f14;
-  --p-acento-claro: #d3e98a;
-  --p-tallo: #2d6a1e;
-  --p-hoja: #86b832;
-  --p-suelo: #46301f;
-  --p-suelo-medio: #3b2819;
-  --p-suelo-hondo: #17170f;
+  --p-claro: #fffaea;
+  /* El fondo de un campo para escribir: más claro que el papel y que las tarjetas (usuario, 2026-11-08). */
+  --p-campo: #fffefa;
+  --p-tinta: #2a2a22;
+  --p-tinta-suave: #5d5c4c;
+  --p-filete: #2a2a2229;
+  /* La elevación suave de K: un borde de luz abajo y una sombra corta y difusa. */
+  --p-sombra-papel: 0 1px 0 #2a2a221a, 0 1rem 1.625rem -1.25rem #2a2a2299;
+  --p-acento: #2a7035;
+  --p-acento-hondo: #23602c;
+  --p-acento-claro: #e4efc9;
+  --p-tallo: #2a7035;
+  --p-hoja: #8fcb4a;
+  /* El agua del mapa (MapLibre): un verde agua apagado, del mismo papel que el resto. */
+  --p-agua: #cfe1d4;
+  --p-suelo: #3b3527;
+  --p-suelo-medio: #34301f;
+  --p-suelo-hondo: #2a2a22;
   --p-texto-suelo: #fbf2d3;
   --p-raiz: #f4c844;
   --p-nodo: #f4c844;
   --p-destacado: #f4c844;
   /* Los frutos (A/B de frutos y de paleta, 2026-11-02): cada uno, una entrega confirmada, en
      mandarina; con su segunda tinta, que también dibuja el contorno del que va en camino. */
-  --p-fruto: #f07a12;
+  --p-fruto: #ef7a16;
   --p-fruto-hondo: #a8420a;
-  /* Estados de una entrega: siempre con texto y una forma propia (todavía sin componente). "Con
-     problema" (2026-11-05): el texto en tinta negra y el rojo vivo en la sombra y en el ícono. */
+  /* Estados de una entrega: siempre con texto y una forma propia. "Con problema" (estética de K,
+     2026-11-08; antes, tinta negra sobre rojo vivo): rojo ladrillo sobre rosado; el rojo vivo queda en
+     el sello. */
   --p-pendiente-fondo: #ebe3c4;
   --p-pendiente-texto: #4b4a32;
-  --p-en-camino-fondo: #f8e3a0;
-  --p-en-camino-texto: #6a4f05;
+  --p-en-camino-fondo: #fde3a6;
+  --p-en-camino-texto: #7a4a00;
   --p-en-camino-sello: #d9a514;
-  --p-entregada-fondo: #d3e98a;
-  --p-entregada-texto: #24521a;
-  --p-problema-fondo: #ee3b24;
-  --p-problema-texto: #17140f;
+  --p-entregada-fondo: #d4edbd;
+  --p-entregada-texto: #1f5a2a;
+  --p-problema-fondo: #f6d0c4;
+  --p-problema-texto: #962f16;
   --p-problema-sello: #d12a17;
   /* El movimiento (D32, B0-01): tiempos, esperas, curvas y distancias base. Las hojas usan solo los
      tokens de uso de abajo. Los valores salen de las 28 duraciones literales de la línea de base
@@ -114,7 +116,7 @@
   --p-texto-2: 1.0625rem;
   --p-texto-3: 1.125rem;
   /* El título y la bajada de la portada (B3-01): crecen con el ancho de la pantalla. */
-  --p-texto-portada: clamp(2.5rem, 7vw, 5.75rem);
+  --p-texto-portada: clamp(2.6rem, 1.4rem + 4.4vw, 5rem);
   --p-texto-bajada: clamp(1.0625rem, 1.4vw, 1.2rem);
 }
 
@@ -131,6 +133,7 @@
   --color-acento-claro: var(--p-acento-claro);
   --color-tallo: var(--p-tallo);
   --color-hoja: var(--p-hoja);
+  --color-agua: var(--p-agua);
   --color-suelo: var(--p-suelo);
   --color-suelo-medio: var(--p-suelo-medio);
   --color-suelo-hondo: var(--p-suelo-hondo);
@@ -153,7 +156,9 @@
   /* Los que piden los pares de contraste AA, del sitio. */
   --color-fondo-pagina: var(--p-papel);
   --color-fondo: var(--p-papel);
-  --color-superficie: var(--p-papel);
+  --color-superficie: var(--p-claro);
+  --color-filete: var(--p-filete);
+  --color-campo: var(--p-campo);
   --color-texto: var(--p-tinta);
   --color-texto-suave: var(--p-tinta-suave);
   --color-titulo: var(--p-acento);
@@ -183,12 +188,17 @@
   --color-advertencia-fondo: var(--p-en-camino-fondo);
   --color-borde-control: var(--p-tinta-suave);
   --color-foco: var(--p-acento);
-  /* Los bordes y la sombra: esquinas suaves (A/B de Raíces cálida, 2026-11-06; antes, rectas) y
-     la sombra plana de paja detrás del papel y de los botones (Huerta de noche, 2026-11-05), como
-     un farol sobre la tierra. Una pieza que ya es paja lleva la sombra hoja. */
-  --radio-lamina: 0.75rem;
-  --radio-boton: 0.5rem;
-  --color-sombra: var(--p-raiz);
+  /* Los bordes y la sombra (piel Huerta, 2026-11-08; antes, 0,75 y 0,5 rem con la sombra plana de
+     paja): esquinas de 16 px en las tarjetas y de 10 px en los botones. La sombra plana, de hoja,
+     detrás de los botones y de los paneles; las tarjetas llevan la sombra granulada de una
+     impresión riso (componentes/tarjeta.css), en tinta. */
+  --radio-lamina: 1rem;
+  --radio-boton: 0.625rem;
+  --color-sombra: var(--p-hoja);
+  --color-sombra-grano: var(--p-tinta);
+  /* Los paneles que no son `.tarjeta` (avisos, diálogos, fichas, etiquetas): papel claro sin filete
+     y la elevación suave de K (piel Huerta). */
+  --sombra-papel: var(--p-sombra-papel);
   /* Movimiento (D32): duraciones (corta, media, larga, trazo y ambiente, la de una escena que no
      termina), esperas de una coreografía, curvas (entrada, énfasis, salida, base y ambiente) y las
      distancias que recorre un elemento al entrar. Un movimiento que no es de estos tiene que

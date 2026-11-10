@@ -43,7 +43,7 @@
        llegaron: 'Llegaron hoy a las 18:20.',
        remito: '0001-00004521', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos',
        pedido: 'Lentejas secas, 40 kg, hasta el 31 de octubre.', recibido: 'Van 10 kg recibidos.',
-       pedidoDespues: 'Tu pedido de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre.',
+       pedidoDespues: 'Tu necesidad de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre.',
        dono: 'Distribuidora Ejemplo SA', foto: 'lentejas-1', confirmo: '18:45',
        salida: 15, unidad: 'kg', decimales: true, llegoMenos: '12 de 15 kg', detalle: 'Dos bolsas rotas.'},
       {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo, 10 unidades', cantidad: '10 unidades',
@@ -51,7 +51,7 @@
        llegaron: 'Llegó ayer a las 17:10.',
        remito: '0001-00004498', categoria: 'cat-ropa', categoriaTexto: 'Ropa',
        pedido: 'Ropa de abrigo, 30 unidades, hasta el 15 de noviembre.', recibido: 'Van 5 unidades recibidas.',
-       pedidoDespues: 'Tu pedido de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre.',
+       pedidoDespues: 'Tu necesidad de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre.',
        dono: null, donoCategoria: 'Sostenedor', foto: 'ropa-1', confirmo: '18:50',
        salida: 10, unidad: 'unidades', decimales: false, llegoMenos: '8 de 10 unidades',
        detalle: 'Faltaba una caja.'} } },
@@ -141,7 +141,7 @@
             </h2>
             <dl>
               <div>
-                <dt>Para tu pedido</dt>
+                <dt>Para tu necesidad</dt>
                 <dd><span th:text="${e.pedido}">Lentejas secas, 40 kg, hasta el 31 de octubre.</span>
                   <span th:unless="${escenario == 'confirmada'}" th:text="${e.recibido}">Van 10 kg
                     recibidos.</span></dd>
@@ -246,13 +246,13 @@
               <p th:if="${revisar}" id="cantidad-error" class="campo-error"
                  th:text="|Escribí cuánto llegó, en ${e.unidad}.|">Escribí cuánto llegó, en kg.</p>
               <input id="cantidad" name="cantidadRecibida" type="number"
-                     th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null">
+                     th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null" placeholder="Por ejemplo: 10">
             </div>
             <div class="campo">
               <label for="detalle">Contanos más</label>
               <small id="detalle-ayuda">Opcional, salvo si elegiste Otra cosa. Hasta 500 caracteres.</small>
               <textarea id="detalle" name="detalle" rows="3" maxlength="500"
-                        aria-describedby="detalle-ayuda"></textarea>
+                        aria-describedby="detalle-ayuda" placeholder="Contanos qué pasó"></textarea>
             </div>
             <p class="quien-ve" th:text="|${e.dono ?: 'Quien donó'} va a ver lo que contás junto con tus fotos, y el equipo de DonaTrack también. No se publica.|">Distribuidora
               Ejemplo SA va a ver lo que contás junto con tus fotos, y el equipo de DonaTrack también.
@@ -266,7 +266,7 @@
               <small id="remito-ayuda">Está arriba a la derecha del papel.</small>
               <p th:if="${conError or revisar}" id="remito-error" class="campo-error">Falta el número de remito.</p>
               <input id="remito" name="remito" type="text" required autocomplete="off"
-                     th:attr="aria-describedby=${conError or revisar} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError or revisar} ? 'true' : null">
+                     th:attr="aria-describedby=${conError or revisar} ? 'remito-error remito-ayuda' : 'remito-ayuda',aria-invalid=${conError or revisar} ? 'true' : null" placeholder="Por ejemplo: 0001-00004521">
             </div>
           </fieldset>
 
@@ -283,7 +283,7 @@
             <a th:unless="${problema}" class="problema" href="/entidad-seguimiento-problema?entrega=lentejas"
                th:href="@{/entidad-seguimiento-problema(entrega=${e.clave})}">Llegó con
               un problema</a>
-            <a th:if="${problema}" class="problema" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+            <a th:if="${problema}" class="problema" hx-boost="true" href="/entidad-seguimiento-confirmar?entrega=lentejas"
                th:href="@{/entidad-seguimiento-confirmar(entrega=${e.clave})}"
                aria-describedby="volver-nota">No hubo problema: volver a la confirmación</a>
             <p th:if="${problema}" id="volver-nota" class="nota">Lo que cargaste acá no se guarda.</p>

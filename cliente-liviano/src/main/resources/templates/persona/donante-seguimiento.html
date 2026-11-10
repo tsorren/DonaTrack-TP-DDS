@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--/* Seguimiento de la persona que dona (Martina Ruiz, RF-09): la misma pantalla que la de la empresa
+       (ficha docs/interfaz/flujos/raices-seguir-entregas.md), con sus dos entregas en curso. El mapa de
+       seguimiento es el de la empresa (donante-seguimiento :: mapa, usuario, 2026-11-10: sin el dibujo
+       de subte ni la abeja): el depósito, la entidad de cada entrega y su posición aproximada (puntos,
+       por clave de donación), con el mismo número que la lista (RF-CL-06): 1 ropa de abrigo, en camino,
+       y 2 leche en polvo, pendiente. Cada entrega de la lista es la pieza de la empresa
+       (donante-seguimiento :: entrega). ?escenario=vacio, error y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-seguimiento', ~{::contenido})}">
+<head>
+  <title>Seguimiento - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/datos-persona :: persona(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla"
+    th:with="enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
+             puntos=${ {
+               ropa: {lat: -34.6556, lng: -58.4044, destinoLat: -34.6683, destinoLng: -58.4067},
+               leche: {lat: -34.6400, lng: -58.4065, destinoLat: -34.6418, destinoLng: -58.4291} } },
+             vanEnCamino=${enCurso.?[estado.tono == 'en-camino']},
+             tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
+             esperanSalir=${enCurso.?[estado.tono == 'pendiente']},
+             sinDestino=${donaciones.?[destino == null].![titulo]}">
+  <div class="seguimiento">
+    <header class="seguimiento-cabecera">
+      <p class="rotulo" th:text="${seccion}">Seguimiento</p>
+      <h1>Tus entregas en curso</h1>
+      <p class="seguimiento-bajada" th:if="${escenario == ''}"
+         th:text="|Gracias por donar, Martina. ${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.|">Gracias
+        por donar, Martina. 2 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.</p>
+      <p class="seguimiento-bajada" th:if="${escenario == 'vacio'}">Ninguna entrega en curso.</p>
+    </header>
+
+    <p th:if="${escenario == 'lento'}" class="seguimiento-aviso">Cargando tus entregas en curso…</p>
+    <div th:if="${escenario == 'lento'}" class="seguimiento-cuerpo" aria-busy="true">
+      <div class="seguimiento-dibujo seguimiento-reserva"></div>
+      <div class="seguimiento-lista seguimiento-reserva"></div>
+    </div>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tus entregas en curso.', '/donante-seguimiento')}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
+      <p>Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por
+        dónde va el camión.</p>
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
+         th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+
+    <section th:if="${escenario == ''}" class="cifras" aria-labelledby="cifras-titulo">
+      <h2 id="cifras-titulo" class="cifras-titulo">Tus donaciones, por estado</h2>
+      <dl>
+        <div class="cifra">
+          <dt><span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span></dt>
+          <dd th:text="${#lists.size(vanEnCamino)}">1</dd>
+        </div>
+        <div class="cifra">
+          <dt><span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span></dt>
+          <dd th:text="${#lists.size(tienenProblema)}">0</dd>
+        </div>
+        <div class="cifra">
+          <dt><span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendientes</span></dt>
+          <dd th:text="${#lists.size(esperanSalir)}">1</dd>
+        </div>
+        <div class="cifra cifra--aparte">
+          <dt><a href="/donante-donaciones"
+                 th:href="@{/donante-donaciones}">Esperan destino</a></dt>
+          <dd th:text="${#lists.size(sinDestino)}">1</dd>
+        </div>
+      </dl>
+    </section>
+
+    <div th:if="${escenario == ''}" class="seguimiento-cuerpo">
+      <!--/* El mapa de seguimiento, el mismo de la empresa (donante-seguimiento :: mapa): el depósito,
+             el destino de cada entrega y su posición aproximada, numerada como en la lista. Antes, el
+             dibujo de la red de subte con la abeja (usuario, 2026-11-10: sacarla). */-->
+      <div th:replace="~{donante-seguimiento :: mapa}"></div>
+
+      <svg th:replace="~{iconos :: categorias}"></svg>
+
+      <section class="seguimiento-lista" aria-labelledby="lista-titulo">
+        <h2 id="lista-titulo">Entrega por entrega</h2>
+        <ol class="entregas" role="list">
+          <th:block th:each="d, vuelta : ${vanEnCamino}">
+            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${vuelta.count}, ${puntos.get(d.clave)})}"></li>
+          </th:block>
+          <th:block th:each="d, vuelta : ${tienenProblema}">
+            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
+          </th:block>
+          <th:block th:each="d, vuelta : ${esperanSalir}">
+            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
+          </th:block>
+        </ol>
+        <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
+           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía ${#lists.size(sinDestino) == 1 ? 'espera' : 'esperan'} destino: aparece acá cuando se le asigne una entidad. Las que ya llegaron, con la foto de la entidad, están en Mis donaciones.|">Fideos
+          secos todavía espera destino.</p>
+        <a class="boton" data-tono="secundario" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

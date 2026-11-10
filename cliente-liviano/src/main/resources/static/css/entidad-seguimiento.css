@@ -1,15 +1,27 @@
-/* Seguir entregas de la entidad en Raíces (ficha raices-entidad-navegable, 4.5): la red del donante
-   dada vuelta, con la puerta de la entidad al centro. El marco, las dos columnas, la lista y el
-   resalte cruzado son el bloque `.mapa-cuerpo`; el camión, los números del dibujo y las cifras, los
-   de Seguimiento del donante. Hoja nueva: solo dispone. */
+/* Seguir entregas de la entidad en Raíces (ficha raices-entidad-navegable, 4.5): un sistema de raíces
+   con la puerta de la entidad arriba (ronda del 2026-11-09). El marco, las dos columnas, la lista y el
+   resalte cruzado son el bloque `.mapa-cuerpo`; la abeja, los números del dibujo y las cifras, los de
+   Seguimiento del donante. Las cifras por estado y el dibujo van juntos en el primer hijo de
+   `.mapa-cuerpo`: en pantalla grande es una columna fija arriba (sticky) y la lista se mueve al lado;
+   en el celular y la tableta no queda fijo, porque taparía casi toda la pantalla. Hoja nueva: solo
+   dispone. */
 @import url("donante-seguimiento.css");
 
-/* Las cifras, la leyenda del dibujo: debajo de él, de a dos. */
+/* Las cifras, arriba del dibujo: el agrupador de la lista, de a dos. */
 .mapa-cuerpo .cifras {
   display: block;
   width: 100%;
   max-width: none;
-  margin: var(--espacio-4) 0 0;
+  margin: 0 0 var(--espacio-4);
+}
+
+.mapa-cuerpo .cifras dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* La cifra entera lleva a la primera entrega de su estado. */
+.mapa-cuerpo .cifra dt a {
+  text-decoration: none;
 }
 
 /* El pictograma de la categoría, al lado de su texto. */
@@ -18,14 +30,57 @@
   margin-inline-end: var(--espacio-1);
 }
 
-.mapa-cuerpo .cifras dl {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .estacion-ficha > p {
   margin: var(--espacio-2) 0 0;
 }
 
 .estacion-ficha > .boton {
   margin-top: var(--espacio-3);
+}
+
+/* Al saltar desde una cifra, la entrega no queda pegada al borde de arriba. */
+.estacion-ficha {
+  scroll-margin-top: var(--espacio-4);
+}
+
+/* En pantalla grande, el bloque de las cifras y el dibujo queda fijo arriba mientras la lista se
+   mueve; las cifras, compactas: el estado y el número en un renglón. */
+@media (min-width: 68.75em) {
+  .mapa-cuerpo {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+
+  .mapa-cuerpo > div:first-child {
+    position: sticky;
+    top: var(--espacio-4);
+  }
+
+  .mapa-cuerpo > div:first-child .mapa-dibujo {
+    position: static;
+  }
+
+  .mapa-cuerpo .cifras {
+    grid-area: auto;
+    margin: 0 0 var(--espacio-3);
+  }
+
+  .mapa-cuerpo .cifras dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mapa-cuerpo .cifra:nth-child(n) {
+    flex-direction: row;
+    align-items: center;
+    padding-block: 0.375rem;
+    border-top: 0;
+    border-left: 0;
+  }
+
+  .mapa-cuerpo .cifra:nth-child(n + 3) {
+    border-top: 1px dotted var(--color-tinta-suave);
+  }
+
+  .mapa-cuerpo .cifra:nth-child(even) {
+    border-left: 1px dotted var(--color-tinta-suave);
+  }
 }

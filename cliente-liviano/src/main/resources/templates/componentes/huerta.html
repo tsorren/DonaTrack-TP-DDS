@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<!--/* Componente huerta: las piezas de la estética de la variante K de frontend-donatrack ("Huerta con
+       abejas", adoptada para todo el sitio el 2026-11-08). Tres metáforas con un trabajo cada una: las
+       plantas en láminas muestran el fruto (una lámina por donación), las raíces muestran hasta dónde
+       llegó (las entidades) y las abejas son la logística. Las ilustraciones son de diseño
+       (static/img/ilustraciones/) y decorativas: el texto dice todo. Su hoja es
+       static/css/componentes/huerta.css. Catálogo: docs/interfaz/componentes.md.
+
+       Fragmentos:
+       - planta(d): una donación como lámina, dentro de `<ul class="lista huerta-lista" role="list">`.
+         El dibujo sale del estado: entregada, la planta crecida de su categoría (naranjo para
+         Alimentos, algodón para Ropa y Vestimenta, pino para Muebles, menta para Útiles escolares,
+         oreja de elefante para lo demás); en camino, el brote con la abeja que lo lleva; pendiente, la
+         maceta en el depósito; con problema, la maceta de reintentar. `d` es una donación de
+         viaje-datos (titulo, cantidad, categoria, destino, nota, clave y estado).
+       - cabeza(rotulo, titulo, resaltado, bajada): la cabeza de una sección, como en K.
+       - hero(titulo, resaltado, bajada): la portada, con tres láminas y el enjambre.
+       - como: cómo funciona, la escalera de pasos con la ruta de las abejas y el árbol del final.
+       - raices: bajo tierra, las raíces de lo donado hasta cada tipo de entidad.
+       - cifras(estado, valores): lo que ya dio frutos, una cifra por árbol, con sus estados; valores es
+         una lista de {n, t} (el número y lo que cuenta, con su período).
+       - lamina(ilustracion, ancho, alto): una lámina decorativa con una ilustración de diseño.
+       - participa: quién participa, una tarjeta por planta.
+       - mes(estado): lo que viajó este mes, una galería de fotos de las entregas.
+       - preguntas: las preguntas frecuentes.
+       - cierre: la invitación del final, con su planta.
+       No es una pantalla: SitioController solo sirve nombres con rol. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/* Una donación, una lámina (usuario, 2026-11-08, repensada para elegir rápido): toda la tarjeta es
+       un enlace al detalle. Arriba, el estado sobre el dibujo; debajo, qué es, y con íconos, la
+       categoría y cuánto, a quién va y qué pasó último o qué sigue. El número interno queda en el
+       detalle. Las macetas van a escala: el dibujo mide su alto en unidades (--medida-alto) por una
+       misma escala, y la maceta, igual en todos los dibujos, queda del mismo tamaño. Necesita en la
+       página el sprite de categorías (iconos :: categorias). */-->
+<li th:fragment="planta(d)" class="tarjeta huerta-planta"
+    th:with="tono=${d.estado.tono},
+             planta=${d.categoria == 'cat-alimentos' ? 'naranjo'
+                     : (d.categoria == 'cat-ropa' or d.categoria == 'cat-vestimenta' ? 'algodon'
+                     : (d.categoria == 'cat-muebles' ? 'pino'
+                     : (d.categoria == 'cat-escolares' ? 'menta' : 'orejas')))},
+             dibujo=${tono == 'entregada' ? 'planta-' + planta
+                     : (tono == 'en-camino' ? 'paso-3-brote'
+                     : (tono == 'con-problema' ? 'reintentar' : 'paso-2-maceta'))},
+             icono=${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria},
+             categoriaTexto=${d.categoriaTexto == 'Vestimenta' ? 'Ropa' : d.categoriaTexto}">
+  <div class="huerta-marco">
+    <img src="/img/ilustraciones/planta-naranjo.svg" th:data-dibujo="${dibujo}" data-dibujo="planta-naranjo"
+         th:src="@{/img/ilustraciones/{p}.svg(p=${dibujo})}" alt="" width="90" height="230">
+    <img th:if="${tono == 'en-camino' or tono == 'entregada'}" class="huerta-marco-abeja"
+         src="/img/ilustraciones/abeja-arriba.svg"
+         th:src="@{/img/ilustraciones/{a}.svg(a=${tono == 'en-camino' ? 'abeja-arriba' : 'abeja-abajo'})}"
+         alt="" width="26" height="29">
+    <span class="estado" data-estado="entregada" th:data-estado="${tono}">
+      <th:block th:replace="~{componentes/sello :: sello(${tono})}"></th:block>
+      <span th:text="${d.estado.texto}">Entregada</span>
+    </span>
+  </div>
+  <div class="huerta-pie">
+    <h3><a class="huerta-enlace" href="/donante-donaciones-detalle?donacion=fideos"
+           th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}" th:text="${d.titulo}">Fideos secos</a></h3>
+    <ul class="huerta-datos" role="list">
+      <li><svg th:if="${icono}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"
+           th:href="|#${icono}|"/></svg><span
+           th:text="${categoriaTexto == null ? d.cantidad : categoriaTexto + ' · ' + d.cantidad}">Alimentos · 8 kg</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10l8-6 8 6v10z"/><path
+           d="M10 20v-5h4v5"/></svg><span th:text="${d.destino != null} ? ${d.destino} : 'Todavía sin destino'">Comedor
+        Barrio Ejemplo</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path
+           d="M12 8v4l3 2"/></svg><span th:text="${d.nota}">Llegó el 5 de octubre</span></li>
+    </ul>
+  </div>
+</li>
+
+<!--/* La cabeza de una sección: el rótulo, el título con su parte en verde y la bajada. */-->
+<header th:fragment="cabeza(rotulo, titulo, resaltado, bajada)" class="huerta-cabeza">
+  <p class="huerta-rotulo" th:text="${rotulo}">Cómo funciona</p>
+  <h2><th:block th:text="${titulo}">Las abejas</th:block> <em th:text="${resaltado}">hacen el camino.</em></h2>
+  <p th:if="${bajada}" class="huerta-bajada" th:text="${bajada}">Bajada.</p>
+</header>
+
+<!--/* La portada: el texto y las acciones a la izquierda; tres láminas con el enjambre a la derecha. */-->
+<section th:fragment="hero(titulo, resaltado, bajada)" class="huerta-hero" aria-labelledby="hero-titulo">
+  <div class="huerta-hero-texto">
+    <p class="huerta-rotulo">Trazabilidad de donaciones</p>
+    <h1 id="hero-titulo"><th:block th:text="${titulo}">Lo que donás echa raíces</th:block>
+      <em th:text="${resaltado}">en tu comunidad.</em></h1>
+    <p class="huerta-bajada" th:text="${bajada}">Bajada.</p>
+    <div class="huerta-acciones">
+      <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}"
+         class="boton" data-tono="principal">Quiero donar</a>
+      <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
+         class="boton" data-tono="secundario">Soy una entidad</a>
+    </div>
+  </div>
+  <label th:replace="~{componentes/huerta :: pausa}"></label>
+  <!--/* Las tres láminas con el encuadre de los recorridos de las abejas (docs/interfaz/identidad/fuentes/DonaTrack_Abeja1, 2
+         y 3.svg; opción B, 2026-11-09): cada abeja da su vuelta entre las láminas, por delante en los
+         tramos llenos del dibujo y por detrás en los punteados (static/js/abejas.js). Sin
+         JavaScript, con la pausa o con "reducir movimiento", quedan quietas, adelante. */-->
+  <div class="huerta-laminas" data-abejas="quietas">
+    <div class="tarjeta huerta-planta" aria-hidden="true"><div class="huerta-marco"><img
+         src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}" alt=""
+         width="90" height="230"></div></div>
+    <div class="tarjeta huerta-planta" aria-hidden="true"><div class="huerta-marco"><img
+         src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}" alt=""
+         width="144" height="245"></div></div>
+    <div class="tarjeta huerta-planta" aria-hidden="true"><div class="huerta-marco"><img
+         src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}" alt=""
+         width="95" height="166"></div></div>
+    <span class="huerta-abeja" aria-hidden="true"><svg viewBox="0 0 11.82 12.99" focusable="false">
+        <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
+        <g data-cuerpo="abajo"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-abajo" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-abajo'"></use></g>
+        <g data-cuerpo="arriba"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use></g>
+        <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg></span>
+    <span class="huerta-abeja" aria-hidden="true"><svg viewBox="0 0 11.82 12.99" focusable="false">
+        <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
+        <g data-cuerpo="abajo"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-abajo" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-abajo'"></use></g>
+        <g data-cuerpo="arriba"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use></g>
+        <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg></span>
+    <span class="huerta-abeja" aria-hidden="true"><svg viewBox="0 0 11.82 12.99" focusable="false">
+        <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
+        <g data-cuerpo="abajo"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-abajo" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-abajo'"></use></g>
+        <g data-cuerpo="arriba"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use></g>
+        <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg></span>
+  </div>
+</section>
+
+<!--/* La pausa del movimiento (WCAG 2.2.2), en la cabecera, al principio (usuaria, 2026-11-09): una
+       casilla con forma de botón, sin JavaScript. Con "reducir movimiento" no se muestra. */-->
+<label th:fragment="pausa" class="huerta-pausa" title="Pausar el movimiento">
+  <input class="huerta-pausa-casilla" id="pausar-movimiento" type="checkbox">
+  <span class="solo-lectores">Pausar el movimiento</span>
+  <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M7.5 6v8M12.5 6v8"/></svg>
+</label>
+
+<!--/* Cómo funciona: a la izquierda el título y el árbol del final, que queda sobre la tierra de la
+       sección que sigue; a la derecha, los pasos unidos por la ruta punteada de las abejas. */-->
+<section th:fragment="como" class="huerta-como" id="como" aria-labelledby="como-titulo"
+         data-abejas-camino>
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Cómo funciona</p>
+    <h2 id="como-titulo">Las abejas <em>hacen el camino.</em></h2>
+    <p class="huerta-bajada">Vos donás; la logística la lleva el equipo del depósito. Cada paso queda
+      registrado con su fecha y lo ves en tu cuenta.</p>
+  </header>
+  <img class="huerta-como-arbol" src="/img/ilustraciones/paso-4-arbol.svg"
+       th:src="@{/img/ilustraciones/paso-4-arbol.svg}" alt="" width="173" height="252">
+  <!--/* Las macetas a escala (usuario, 2026-11-09): los cuatro dibujos comparten la misma maceta y se
+         miden con la misma escala (data-dibujo, como en las láminas), así que la maceta queda igual en
+         todos y lo que crece es la planta: semillas, brote, hojas y frutos. */-->
+  <ol class="huerta-pasos" role="list">
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/como-paso-1.svg" th:src="@{/img/ilustraciones/como-paso-1.svg}"
+           data-dibujo="como-paso-1" alt="" width="97" height="132">
+      <div>
+        <p class="huerta-paso-numero">Paso 1</p>
+        <h3>Registrás lo que donás</h3>
+        <p>Alimentos, ropa, útiles o muebles, a tu nombre o al de tu empresa.</p>
+      </div>
+    </li>
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}"
+           data-dibujo="paso-2-maceta" alt="" width="97" height="92">
+      <div>
+        <p class="huerta-paso-numero">Paso 2</p>
+        <h3>Se asigna a una entidad</h3>
+        <p>Un comedor, una escuela o un hogar que lo pidió.</p>
+      </div>
+    </li>
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/como-paso-3.svg" th:src="@{/img/ilustraciones/como-paso-3.svg}"
+           data-dibujo="como-paso-3" alt="" width="97" height="137">
+      <div>
+        <p class="huerta-paso-numero">Paso 3</p>
+        <h3>Las abejas lo llevan</h3>
+        <p>Sale del depósito en camión y ves en qué tramo está, hasta la puerta de la entidad.</p>
+      </div>
+    </li>
+    <li class="huerta-paso">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
+           data-dibujo="planta-naranjo" alt="" width="90" height="230">
+      <div>
+        <p class="huerta-paso-numero">Paso 4</p>
+        <h3>La entidad confirma y echa raíces</h3>
+        <p>Con la fecha y una foto de lo entregado. Abajo se ve hasta dónde llegó.</p>
+      </div>
+    </li>
+  </ol>
+  <!--/* Las abejas hacen el camino (usuario, 2026-11-10): van de maceta en maceta y vuelven
+         (static/js/abejas.js). Sin JavaScript, con la pausa o con "reducir movimiento" no se muestran. */-->
+  <span class="huerta-abeja" aria-hidden="true"><svg viewBox="0 0 11.82 12.99" focusable="false">
+      <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
+      <g data-cuerpo="abajo"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-abajo" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-abajo'"></use></g>
+      <g data-cuerpo="arriba"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use></g>
+      <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg></span>
+  <span class="huerta-abeja" aria-hidden="true"><svg viewBox="0 0 11.82 12.99" focusable="false">
+      <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
+      <g data-cuerpo="abajo"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-abajo" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-abajo'"></use></g>
+      <g data-cuerpo="arriba"><use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use></g>
+      <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg></span>
+</section>
+
+<!--/* Bajo tierra: lo donado se ramifica por categoría hasta cada tipo de entidad. El dibujo es una
+       muestra de los tipos, no datos: el texto lo dice. */-->
+<section th:fragment="raices" class="huerta-tierra" aria-labelledby="raices-titulo">
+  <div class="huerta-tierra-grilla">
+    <!--/* Cuarta ronda (2026-11-10): el dibujo de la diseñadora ("Bajo tierra.svg"). Un tallo que baja
+           hasta el nudo grande y tres raíces gruesas, una por categoría, que se ramifican hasta cada tipo
+           de entidad; una raicilla punteada lleva a "Tu entidad", la invitación a sumarse. Las raíces son
+           un       <path class="huerta-bajo-raiz" d="M287.5 520.8c1.4 4.1 2.7 8.4 3.9 12.6c.6 2.5 1.1 5.2 1.6 7.7c.6 3 1.2 7.5 1.5 10.6c.4 3.3 .7 7.5 .7 10.8c-.3 3.5-1.7 6.9-2.5 10.3c-.9 3.1-2 7.3-3 10.2c-1.1 3-2.5 7.1-3.7 10c-1.3 2.9-2.9 6.9-4.3 9.7c-22.5 48.7-68.8 81.2-91.6 129.1c-5.2 11.1-8.8 22.8-10.7 34.9c-2 4-3.8 9.3-5.3 13.5c0 0-.5 1.1-.5 1.1l-.3 1.2s-.7 2.4-.7 2.4c-.5 1.8-2.4 7.5-2.9 9.6c-.8 3.3-1.6 6.6-2.6 10c-1.5-4-3.1-8.1-4.4-12.3c-2.7-9.4-4.6-19.2-5.1-29c4.2-28 17.6-54.4 34.4-76.5c30.8-40.8 72.3-76.1 81.4-128.5c1.3-2.7 2.8-6.1 3.9-8.8c1.9-4.2 3.7-9.6 5.3-13.9c1.8-4.8 3.1-9.8 4.9-14.7l0 0z"/>
+      <path class="huerta-bajo-trazo" d="M565.7 341.6c-190.8-6-272.2 107.8-281.6 197.7"/>
+      <path class="huerta-bajo-trazo" d="M894.2 149.5c0 279.4-140.1 198.1-328.5 192.1"/>
+      <path class="huerta-bajo-raiz" d="M876.4 596.9c-4.8-15.1-8-30.5-10.8-46.1c-.3-1.2-.5-2.4-.5-3.6c1-21.3 1.6-42.8 3.6-64.2c.6-6.7 1.4-14.8 2.2-21.4c4-29.4 8.4-61.1 9.7-90.6c1.8-36.8 2-75.5 2.3-112.5c.1-8.8 .2-33.8 .2-42.4c-.2-3.5-.5-7.1 .3-10.6c3.2-20 6.5-40 10.8-60.1c4.4 21.3 8.1 42.4 11.1 63.7c-.5 33.9-.3 72.2-1 106.1c-.6 38-1.9 76.3-6.9 114c-.6 4.8-4.1 30.7-4.7 35c-2.9 25.4-4.5 50.9-5.2 76.5c0 3.5 .5 7.1-.5 10.5c0 0-.8 3.5-.8 3.5c-3 13.6-6.3 28.6-9.8 42.2l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M894.2 145.4c3.6 37.2 8.4 74.5 18 110.7c3 11.8 7.2 23.2 11 34.7c34.3 115.9 137.1 109.8 237.4 105.2c50.6-2 102-9.2 152.6-1.1c141.4 23.6 105.8 152.2 113.5 257.1c3.3 42.7 10.6 85.5 25.3 125.8c5.6 17.3 11.3 34.8 19.6 51c10.8 21.6 24.9 42.3 45.5 55.4c10.4 6.6 22.4 10.7 34.8 11.7c-6.3 .5-12.7 .2-19-.9c-32.6-5.9-57.5-31.5-75.3-58c-10.7-16.3-20-33.5-26.9-51.7c-1.6-5-4.1-13.3-5.7-18.5c-14.6-49.1-21.4-100.4-21.6-151.6c-.2-25 .6-50.1-.2-74.9c-.9-23.6-3.3-48-12.7-69.5c-14-33.4-46.6-48.8-80.9-54.2c-17.7-3-36.2-3.7-54.3-3.4c-69.3 1.5-138.8 11.7-208.2 3.7c-76-9.1-121.4-46.5-145.5-119.2c-2.1-6.2-3.3-12.6-4.5-19c-7.7-44-7-89.2-2.9-133.3l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M464 971c-6.3-25.1-14.3-49.2-23.4-72.6c-1.2-2.9-1.9-6-2.5-9c-5.5-21.1-13-41.7-21.4-61.7c-14.8-34.3-33.6-66.7-56.9-95.8c-42.4-49.4-79.9-108-85.5-174.6c-2.4-27 1.5-54.8 11.8-80c3.3-6 7-11.8 11-17.2c11.8-16.1 26.5-29.7 43.1-40.5c-11.7 15.3-21.3 31.2-28.1 48.8c-2.2 5.7-4 11.5-5.5 17.3c-28.9 69.5 3.7 146.4 46.6 203c11.4 15.3 24.6 29.5 35.7 45.1c34.5 47.6 58.5 102.4 73.1 159.2c3.2 25.8 4.7 52 2 78l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M881.3 467.1c3 9.8 4.9 19.9 6.2 30.1c.2 3.4 .5 6.8 .7 10.3c0 1.8-.5 3.4-1.1 5c-.8 2.7-1.7 7.1-2.4 10c-.7 2.4-2.2 7.4-3 9.8c-1.7 4.9-3.5 9.9-5.8 14.6c-.9 1.7-2.5 5.4-3.5 7c-.8 1.4-3.1 5.5-3.9 6.9c-1.9 2.9-3.9 5.9-5.9 8.7c-1.1 1.5-3.8 4.9-4.9 6.3c-10.4 12.4-23.5 23-35.6 32.3c-32.8 24.4-50 46.8-57 87.6c0 0-3.9 8.7-3.9 8.7c-1.8 4.5-3.6 9.1-5.4 13.7c-1.6 4.4-3.5 9.6-5.3 14.1c-1.4-4.6-2.6-10.1-3.8-14.8c-1.6-8.5-2.8-16.9-3.3-25.5c2.6-15 7.1-30.3 14-44.3c.5-1.3 1.7-3.4 2.4-4.6c2.5-4.6 5.5-9.3 8.5-13.5c10.8-15.1 26.3-27.9 40.3-38.7c22.4-16.8 41.4-34.8 50.8-61.3c1-2.5 2-5.9 2.8-8.5c0 0 1.3-4.3 1.3-4.3c.5-2.4 1.6-6.4 2-8.8c.2-1.5 .3-3 .8-4.5l4-8.7c1.8-4.4 3.7-9 5.5-13.5c1.7-4.6 3.6-9.6 5.5-14.1l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M1371.7 431.4c28.5 14.2 42.5 46.6 48.7 76.4c1.3 15.4 1.4 31 .2 46.3c-6.4 74.1-37 155.6-95.4 204.2c-18.6 15.1-41.2 26-65.1 29.3c-60.5 9.6-102.3 38.5-120.5 98.5c-1.8 5.1-2.6 10.3-4.1 15.4c-5.5 15.4-9.8 31-13.6 47.2c-3.4 14.4-6.5 29-9.6 43.6c-2.1-30.1-2.9-60.1 .7-90.3c.4-3.9 1-7.7 2.1-11.4c17.6-64 53.8-103.3 118.7-119.9c7.5-2 15.1-3.5 22.7-4.8c3-.5 7.3-1.2 10.1-1.9c30.2-7.2 55-28.5 73.7-52.8c40.5-52.9 65.2-134.6 57.7-201c-.2-28-5.2-58.5-26.3-78.8l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M351.9 404.7c-11.1 17.2-20.1 35.9-27.1 55c-21.7 38.4-24 80.4 8.6 113.3c21.2 21.6 49.6 35 77.8 45.5c11.1 4.8 22.5 8.7 34.3 12.4c42.9 12.8 73 23.3 96.8 64.8c0 0 2.3 3.8 2.3 3.8c3.3 4.9 4.8 10.7 6.5 16.2c.9 2.8 1.6 5.6 2.4 8.4c4.9 19.2 7.6 39 8.9 58.7c-4.5-10.3-9-20.4-13.8-30.4c-4.8-9.9-9.9-19.6-15.5-28.7c-2.7-4.6-6.1-8.8-8-13.6c-2.2-4.6-5.1-8.9-8-13.1c-5.7-8.1-12.5-15.4-20.5-21.2c-16.7-12.3-37.5-17.5-57.7-23.9c-10.7-3.4-21.5-7-32.1-11.4c-5.1-2.2-10.3-3.9-15.4-6.1c-63.9-25.1-120.3-72.6-101-148.1c3.3-13 8.6-25.3 14.5-37.2c5.9-8.4 13-16 20.2-23.1c8.3-7.9 17-15.4 26.8-21.4l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M544 337.8c-9.1 2.3-17.9 5.7-26.3 10c-29.2 10.4-41.6 29.7-33.5 60.3c1.9 7.4 5 14.8 8.4 21.8c3.5 7.1 7 14.3 11.2 21.2c9.5 15.5 17.6 29.3 15.1 48.5c-.8 5.8-1.6 11.6-4.4 16.6c-4.7 10.2-10.7 19.4-17.5 28.3c3.6-10.4 7-20.7 9-31.1c.6-5.2 2.5-10 3-15c.5-4.9 .4-9.8-.6-14.5c-3.1-14.5-14.8-28.2-21.2-42.4c-7.7-14.9-14.7-30.8-15.4-48c-1.2-26.6 14.9-44.4 38.7-53.7c2.6-1.3 5.5-1.5 8.3-2c2.9-.4 5.7-.6 8.5-.8c5.6-.2 11.2-.1 16.7 .8l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M281.4 524c-.1 0-.1 .2-.1 .4c0 .5 .1 .9 .1 1.4c.1 1.1 .4 4.6 .6 5.7c.2 2.6 .5 5.1 .7 7.7c.3 6.4 1.4 12.9 .1 19.2c-3.8 27.6-10.2 62.9-30.2 83.6c-5.7 6-13.6 10.5-22 12.1c-7.5 1.8-15.2 3.2-23 4c-5.2 .5-10.4 .6-15 1.1c-7 .6-13.6 3.2-20 6.2c-2.2 1.1-4.2 2.5-6.6 3.2c-9.4 3.4-18.8 7.4-28.4 11.1c1.9-1.7 3.8-3.4 5.8-5.1c6.9-5.8 13.7-11.8 21.4-16.5c8.4-4 17.2-8.1 26.7-8.9c5.4-.5 10.3-.6 15.1-1.1c7.3-.7 14.6-2 21.7-3.7c6.7-1.3 12.4-4.5 17.2-9.4c18.1-19.1 23.9-52.4 27.4-77.9c.4-6.3 2.7-12.2 4.1-18.4c0 0 2-7.4 2-7.4l1-3.7l.6-1.9c.2-.5 .4-1.1 .6-1.6c.1 0 .1-.2 .2-.1l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M859 550.5c-.2-.1-.4 .4-.6 .5c-.2 .3-1.1 1.5-1.3 1.9c-1.8 2.7-3.6 5.5-5.4 8.1c-3 4.5-6.1 8.9-9.3 13.2c-2.2 2.4-4.6 4.4-6.9 6.7c-9.2 9-18.6 17.7-28.7 25.8c-15.3 12-38.3 29.2-58.8 26.3c-14.7-1.9-28.3-10.7-35.5-23.7c-.5-.8-1.3-2.1-1.8-3c-.5-1-.7-2.2-1-3.3c-1.4-6.7-1.6-13.7-.4-20.3c1.5 4.1 3.4 7.9 5.6 11.5c1.4 2.7 3.4 5 5 7.5c.3 .9 .7 1.8 1.2 2.6c6.1 10.8 16.9 17.5 29 18.9c16.9 1.6 37.5-14.2 50.4-24.3c9.8-7.8 19.1-16.4 28.1-25.1c3.1-2.8 5.6-6.3 9.2-8.6c5.1-3.9 10.3-7.7 15.6-11.4c0 0 2.7-1.8 2.7-1.8c.5-.3 .9-.6 1.4-.9c.4-.2 .7-.4 1.1-.6c.1 0 .3-.1 .4 0l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M1532.1 639.1c-10.1 3-21.2 1.5-31.2-1.2c-2.6-.6-5.1-1.5-7.4-2.9c-25.6-13.2-46.9-34-60.9-59.1c-6.6-11.7-11.9-27.2-13.7-39.1c-2.2-9-4.1-18.2-5.6-27.3c-1.5-8.9-2.9-17.5-6.3-25.8c-1.5-4-3.4-8.1-5.4-12.1c-1-2-2.4-3.8-3.1-6c-3.9-10-9.2-22-13.2-32c7.7 8.8 15 17.9 21.8 27.3c1.5 1.9 2.2 4.2 3.4 6.2c2.1 4.2 4.1 8.5 5.9 13c3.5 8.8 5.2 18.5 6.7 27.7c1.6 9 3.4 17.9 5.5 26.8c2.2 12.7 6.5 25.1 12.8 36.4c12.5 22.6 31.8 41.8 54.5 53.9c2.8 1.5 5.9 2.6 8.5 4.4c8.6 4.9 17.5 9 27.7 9.8l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M982.8 853.3c-3.4-11.9-8.1-23.3-14.3-33.9c-2-3.4-4.1-6.7-6.3-9.9l-1.7-2.4c-1.9-2.4-2.8-5.1-4-7.8c-29.2-54.7-90.4-96.4-92.1-163.7c.3-33 .8-66.9 1.8-99.8c0-2.1-.4-4.2 .3-6.3c0 0 1.7-6.2 1.7-6.2c2.3-8.3 4.9-16.7 8.4-24.7c1.8-4 3.7-8 6.5-11.4c-.2 2.1-.2 4.2-.1 6.3c.8 12.4 3.4 24.8 5.4 37c-1.2 34-1.7 70.5-2 104.5c1.6 48.9 41.2 83.7 68.5 121.4c9 12 17.2 25 24.3 38.4c6.2 18.7 7.7 39.9 3.6 58.5l0 0z"/>
+      <path class="huerta-bajo-punteada" d="M1402.8 551.4c-.8 0-1.4-.3-1.8-.8c4 58-6.2 119.7-26.4 171.6c-11.2 28.3-26.4 55.8-47.8 77.3c-24.2 24.1-39.1 55.4-49.2 87.3c-14.8 47-19.3 96.2-21.3 145.1c2.1 32.4 6.9 64.6 14.7 96.1c1.3-31.9 4.2-64 7.8-95.6c.1-7.9 .1-15.7 .7-23.6c4.2-64.7 15.9-145.8 62.8-193.7c56.6-58.4 78.5-149.9 81.3-229c.4-11.6 .2-23.2-.5-34.7c-6.7 .6-13.5 0-20.3 0z"/>
+      <circle class="huerta-bajo-nudo" cx="334" cy="422" r="24"/>
+      <circle class="huerta-bajo-nudo" cx="1334" cy="412" r="24"/>
+      <path class="huerta-bajo-raiz" d="M874.8 481.2c2.7 4.9 5.3 9.6 8.1 13.9c2.7 4.3 5.7 8.2 8.8 11.6c.7 .9 1 2 1.3 3c7.1 15.7 20.8 26 36 34.2c32.3 17 72.7 26.2 94.5 58.7c2.5 3.6 4.6 7.6 6.6 11.5c.7 1.3 1.5 2.6 1.7 4.1c1.2 11.4-.2 23.3-4.1 34c-4.7-9.3-9.7-18.4-16.4-25.8c-10.4-27.1-38.6-38.9-64-49.8c-31-13.1-62.1-27.9-76.1-61.3c-1.6-11.4-.3-23.4 3.6-34.1l0 0z"/>
+      <circle class="huerta-bajo-nudo" cx="883" cy="487" r="24"/>
+      <rect class="huerta-bajo-nudo" x="874" y="5" width="37" height="191"/>
+      <circle class="huerta-bajo-halo" cx="892" cy="207" r="61"/>
+      <circle class="huerta-bajo-nudo" cx="892" cy="207" r="41"/>
+      <path class="huerta-bajo-raiz" d="M1067.8 750.4c.9 8.6 6.3 15.3 13 19.8c1.7 1.2 3.5 2 5 3.3c35 24.6 102.5 11.2 141.5 0c1.8-.9 4.4-.9 6.4-1.2c3.7-.4 9.4-1 13.1-1.5c0 0 6.6-.8 6.6-.8c-6.3 4.5-13.2 8.4-20.2 12c-39 12-95.2 22.4-134.6 9.1c-4.3-1.5-8.6-3.3-12.7-5.6c-2.1-1.1-4-2.5-6.1-3.7c-2-1.2-3.6-3.2-5.1-5c-6-7.1-9.8-17.4-6.9-26.4l0 0z"/> decorativo (pasado a trazos con los tokens de la tierra); los rótulos son la lista real,
+           en HTML, puesta encima con porcentajes del dibujo. En el celular, la misma lista se ve como
+           tres raíces apiladas, una debajo de la otra. */-->
+    <div class="huerta-bajo">
+      <svg class="huerta-bajo-dibujo" viewBox="60 14 1650 1146" aria-hidden="true" focusable="false">
+      <path class="huerta-bajo-raiz" d="M287.5 520.8c1.4 4.1 2.7 8.4 3.9 12.6c.6 2.5 1.1 5.2 1.6 7.7c.6 3 1.2 7.5 1.5 10.6c.4 3.3 .7 7.5 .7 10.8c-.3 3.5-1.7 6.9-2.5 10.3c-.9 3.1-2 7.3-3 10.2c-1.1 3-2.5 7.1-3.7 10c-1.3 2.9-2.9 6.9-4.3 9.7c-22.5 48.7-68.8 81.2-91.6 129.1c-5.2 11.1-8.8 22.8-10.7 34.9c-2 4-3.8 9.3-5.3 13.5c0 0-.5 1.1-.5 1.1l-.3 1.2s-.7 2.4-.7 2.4c-.5 1.8-2.4 7.5-2.9 9.6c-.8 3.3-1.6 6.6-2.6 10c-1.5-4-3.1-8.1-4.4-12.3c-2.7-9.4-4.6-19.2-5.1-29c4.2-28 17.6-54.4 34.4-76.5c30.8-40.8 72.3-76.1 81.4-128.5c1.3-2.7 2.8-6.1 3.9-8.8c1.9-4.2 3.7-9.6 5.3-13.9c1.8-4.8 3.1-9.8 4.9-14.7l0 0z"/>
+      <path class="huerta-bajo-trazo" d="M565.7 341.6c-190.8-6-272.2 107.8-281.6 197.7"/>
+      <path class="huerta-bajo-trazo" d="M894.2 149.5c0 279.4-140.1 198.1-328.5 192.1"/>
+      <path class="huerta-bajo-raiz" d="M876.4 596.9c-4.8-15.1-8-30.5-10.8-46.1c-.3-1.2-.5-2.4-.5-3.6c1-21.3 1.6-42.8 3.6-64.2c.6-6.7 1.4-14.8 2.2-21.4c4-29.4 8.4-61.1 9.7-90.6c1.8-36.8 2-75.5 2.3-112.5c.1-8.8 .2-33.8 .2-42.4c-.2-3.5-.5-7.1 .3-10.6c3.2-20 6.5-40 10.8-60.1c4.4 21.3 8.1 42.4 11.1 63.7c-.5 33.9-.3 72.2-1 106.1c-.6 38-1.9 76.3-6.9 114c-.6 4.8-4.1 30.7-4.7 35c-2.9 25.4-4.5 50.9-5.2 76.5c0 3.5 .5 7.1-.5 10.5c0 0-.8 3.5-.8 3.5c-3 13.6-6.3 28.6-9.8 42.2l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M894.2 145.4c3.6 37.2 8.4 74.5 18 110.7c3 11.8 7.2 23.2 11 34.7c34.3 115.9 137.1 109.8 237.4 105.2c50.6-2 102-9.2 152.6-1.1c141.4 23.6 105.8 152.2 113.5 257.1c3.3 42.7 10.6 85.5 25.3 125.8c5.6 17.3 11.3 34.8 19.6 51c10.8 21.6 24.9 42.3 45.5 55.4c10.4 6.6 22.4 10.7 34.8 11.7c-6.3 .5-12.7 .2-19-.9c-32.6-5.9-57.5-31.5-75.3-58c-10.7-16.3-20-33.5-26.9-51.7c-1.6-5-4.1-13.3-5.7-18.5c-14.6-49.1-21.4-100.4-21.6-151.6c-.2-25 .6-50.1-.2-74.9c-.9-23.6-3.3-48-12.7-69.5c-14-33.4-46.6-48.8-80.9-54.2c-17.7-3-36.2-3.7-54.3-3.4c-69.3 1.5-138.8 11.7-208.2 3.7c-76-9.1-121.4-46.5-145.5-119.2c-2.1-6.2-3.3-12.6-4.5-19c-7.7-44-7-89.2-2.9-133.3l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M464 971c-6.3-25.1-14.3-49.2-23.4-72.6c-1.2-2.9-1.9-6-2.5-9c-5.5-21.1-13-41.7-21.4-61.7c-14.8-34.3-33.6-66.7-56.9-95.8c-42.4-49.4-79.9-108-85.5-174.6c-2.4-27 1.5-54.8 11.8-80c3.3-6 7-11.8 11-17.2c11.8-16.1 26.5-29.7 43.1-40.5c-11.7 15.3-21.3 31.2-28.1 48.8c-2.2 5.7-4 11.5-5.5 17.3c-28.9 69.5 3.7 146.4 46.6 203c11.4 15.3 24.6 29.5 35.7 45.1c34.5 47.6 58.5 102.4 73.1 159.2c3.2 25.8 4.7 52 2 78l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M881.3 467.1c3 9.8 4.9 19.9 6.2 30.1c.2 3.4 .5 6.8 .7 10.3c0 1.8-.5 3.4-1.1 5c-.8 2.7-1.7 7.1-2.4 10c-.7 2.4-2.2 7.4-3 9.8c-1.7 4.9-3.5 9.9-5.8 14.6c-.9 1.7-2.5 5.4-3.5 7c-.8 1.4-3.1 5.5-3.9 6.9c-1.9 2.9-3.9 5.9-5.9 8.7c-1.1 1.5-3.8 4.9-4.9 6.3c-10.4 12.4-23.5 23-35.6 32.3c-32.8 24.4-50 46.8-57 87.6c0 0-3.9 8.7-3.9 8.7c-1.8 4.5-3.6 9.1-5.4 13.7c-1.6 4.4-3.5 9.6-5.3 14.1c-1.4-4.6-2.6-10.1-3.8-14.8c-1.6-8.5-2.8-16.9-3.3-25.5c2.6-15 7.1-30.3 14-44.3c.5-1.3 1.7-3.4 2.4-4.6c2.5-4.6 5.5-9.3 8.5-13.5c10.8-15.1 26.3-27.9 40.3-38.7c22.4-16.8 41.4-34.8 50.8-61.3c1-2.5 2-5.9 2.8-8.5c0 0 1.3-4.3 1.3-4.3c.5-2.4 1.6-6.4 2-8.8c.2-1.5 .3-3 .8-4.5l4-8.7c1.8-4.4 3.7-9 5.5-13.5c1.7-4.6 3.6-9.6 5.5-14.1l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M1371.7 431.4c28.5 14.2 42.5 46.6 48.7 76.4c1.3 15.4 1.4 31 .2 46.3c-6.4 74.1-37 155.6-95.4 204.2c-18.6 15.1-41.2 26-65.1 29.3c-60.5 9.6-102.3 38.5-120.5 98.5c-1.8 5.1-2.6 10.3-4.1 15.4c-5.5 15.4-9.8 31-13.6 47.2c-3.4 14.4-6.5 29-9.6 43.6c-2.1-30.1-2.9-60.1 .7-90.3c.4-3.9 1-7.7 2.1-11.4c17.6-64 53.8-103.3 118.7-119.9c7.5-2 15.1-3.5 22.7-4.8c3-.5 7.3-1.2 10.1-1.9c30.2-7.2 55-28.5 73.7-52.8c40.5-52.9 65.2-134.6 57.7-201c-.2-28-5.2-58.5-26.3-78.8l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M351.9 404.7c-11.1 17.2-20.1 35.9-27.1 55c-21.7 38.4-24 80.4 8.6 113.3c21.2 21.6 49.6 35 77.8 45.5c11.1 4.8 22.5 8.7 34.3 12.4c42.9 12.8 73 23.3 96.8 64.8c0 0 2.3 3.8 2.3 3.8c3.3 4.9 4.8 10.7 6.5 16.2c.9 2.8 1.6 5.6 2.4 8.4c4.9 19.2 7.6 39 8.9 58.7c-4.5-10.3-9-20.4-13.8-30.4c-4.8-9.9-9.9-19.6-15.5-28.7c-2.7-4.6-6.1-8.8-8-13.6c-2.2-4.6-5.1-8.9-8-13.1c-5.7-8.1-12.5-15.4-20.5-21.2c-16.7-12.3-37.5-17.5-57.7-23.9c-10.7-3.4-21.5-7-32.1-11.4c-5.1-2.2-10.3-3.9-15.4-6.1c-63.9-25.1-120.3-72.6-101-148.1c3.3-13 8.6-25.3 14.5-37.2c5.9-8.4 13-16 20.2-23.1c8.3-7.9 17-15.4 26.8-21.4l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M544 337.8c-9.1 2.3-17.9 5.7-26.3 10c-29.2 10.4-41.6 29.7-33.5 60.3c1.9 7.4 5 14.8 8.4 21.8c3.5 7.1 7 14.3 11.2 21.2c9.5 15.5 17.6 29.3 15.1 48.5c-.8 5.8-1.6 11.6-4.4 16.6c-4.7 10.2-10.7 19.4-17.5 28.3c3.6-10.4 7-20.7 9-31.1c.6-5.2 2.5-10 3-15c.5-4.9 .4-9.8-.6-14.5c-3.1-14.5-14.8-28.2-21.2-42.4c-7.7-14.9-14.7-30.8-15.4-48c-1.2-26.6 14.9-44.4 38.7-53.7c2.6-1.3 5.5-1.5 8.3-2c2.9-.4 5.7-.6 8.5-.8c5.6-.2 11.2-.1 16.7 .8l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M281.4 524c-.1 0-.1 .2-.1 .4c0 .5 .1 .9 .1 1.4c.1 1.1 .4 4.6 .6 5.7c.2 2.6 .5 5.1 .7 7.7c.3 6.4 1.4 12.9 .1 19.2c-3.8 27.6-10.2 62.9-30.2 83.6c-5.7 6-13.6 10.5-22 12.1c-7.5 1.8-15.2 3.2-23 4c-5.2 .5-10.4 .6-15 1.1c-7 .6-13.6 3.2-20 6.2c-2.2 1.1-4.2 2.5-6.6 3.2c-9.4 3.4-18.8 7.4-28.4 11.1c1.9-1.7 3.8-3.4 5.8-5.1c6.9-5.8 13.7-11.8 21.4-16.5c8.4-4 17.2-8.1 26.7-8.9c5.4-.5 10.3-.6 15.1-1.1c7.3-.7 14.6-2 21.7-3.7c6.7-1.3 12.4-4.5 17.2-9.4c18.1-19.1 23.9-52.4 27.4-77.9c.4-6.3 2.7-12.2 4.1-18.4c0 0 2-7.4 2-7.4l1-3.7l.6-1.9c.2-.5 .4-1.1 .6-1.6c.1 0 .1-.2 .2-.1l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M859 550.5c-.2-.1-.4 .4-.6 .5c-.2 .3-1.1 1.5-1.3 1.9c-1.8 2.7-3.6 5.5-5.4 8.1c-3 4.5-6.1 8.9-9.3 13.2c-2.2 2.4-4.6 4.4-6.9 6.7c-9.2 9-18.6 17.7-28.7 25.8c-15.3 12-38.3 29.2-58.8 26.3c-14.7-1.9-28.3-10.7-35.5-23.7c-.5-.8-1.3-2.1-1.8-3c-.5-1-.7-2.2-1-3.3c-1.4-6.7-1.6-13.7-.4-20.3c1.5 4.1 3.4 7.9 5.6 11.5c1.4 2.7 3.4 5 5 7.5c.3 .9 .7 1.8 1.2 2.6c6.1 10.8 16.9 17.5 29 18.9c16.9 1.6 37.5-14.2 50.4-24.3c9.8-7.8 19.1-16.4 28.1-25.1c3.1-2.8 5.6-6.3 9.2-8.6c5.1-3.9 10.3-7.7 15.6-11.4c0 0 2.7-1.8 2.7-1.8c.5-.3 .9-.6 1.4-.9c.4-.2 .7-.4 1.1-.6c.1 0 .3-.1 .4 0l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M1532.1 639.1c-10.1 3-21.2 1.5-31.2-1.2c-2.6-.6-5.1-1.5-7.4-2.9c-25.6-13.2-46.9-34-60.9-59.1c-6.6-11.7-11.9-27.2-13.7-39.1c-2.2-9-4.1-18.2-5.6-27.3c-1.5-8.9-2.9-17.5-6.3-25.8c-1.5-4-3.4-8.1-5.4-12.1c-1-2-2.4-3.8-3.1-6c-3.9-10-9.2-22-13.2-32c7.7 8.8 15 17.9 21.8 27.3c1.5 1.9 2.2 4.2 3.4 6.2c2.1 4.2 4.1 8.5 5.9 13c3.5 8.8 5.2 18.5 6.7 27.7c1.6 9 3.4 17.9 5.5 26.8c2.2 12.7 6.5 25.1 12.8 36.4c12.5 22.6 31.8 41.8 54.5 53.9c2.8 1.5 5.9 2.6 8.5 4.4c8.6 4.9 17.5 9 27.7 9.8l0 0z"/>
+      <path class="huerta-bajo-raiz" d="M982.8 853.3c-3.4-11.9-8.1-23.3-14.3-33.9c-2-3.4-4.1-6.7-6.3-9.9l-1.7-2.4c-1.9-2.4-2.8-5.1-4-7.8c-29.2-54.7-90.4-96.4-92.1-163.7c.3-33 .8-66.9 1.8-99.8c0-2.1-.4-4.2 .3-6.3c0 0 1.7-6.2 1.7-6.2c2.3-8.3 4.9-16.7 8.4-24.7c1.8-4 3.7-8 6.5-11.4c-.2 2.1-.2 4.2-.1 6.3c.8 12.4 3.4 24.8 5.4 37c-1.2 34-1.7 70.5-2 104.5c1.6 48.9 41.2 83.7 68.5 121.4c9 12 17.2 25 24.3 38.4c6.2 18.7 7.7 39.9 3.6 58.5l0 0z"/>
+      <path class="huerta-bajo-punteada" d="M1402.8 551.4c-.8 0-1.4-.3-1.8-.8c4 58-6.2 119.7-26.4 171.6c-11.2 28.3-26.4 55.8-47.8 77.3c-24.2 24.1-39.1 55.4-49.2 87.3c-14.8 47-19.3 96.2-21.3 145.1c2.1 32.4 6.9 64.6 14.7 96.1c1.3-31.9 4.2-64 7.8-95.6c.1-7.9 .1-15.7 .7-23.6c4.2-64.7 15.9-145.8 62.8-193.7c56.6-58.4 78.5-149.9 81.3-229c.4-11.6 .2-23.2-.5-34.7c-6.7 .6-13.5 0-20.3 0z"/>
+      <circle class="huerta-bajo-nudo" cx="334" cy="422" r="24"/>
+      <circle class="huerta-bajo-nudo" cx="1334" cy="412" r="24"/>
+      <path class="huerta-bajo-raiz" d="M874.8 481.2c2.7 4.9 5.3 9.6 8.1 13.9c2.7 4.3 5.7 8.2 8.8 11.6c.7 .9 1 2 1.3 3c7.1 15.7 20.8 26 36 34.2c32.3 17 72.7 26.2 94.5 58.7c2.5 3.6 4.6 7.6 6.6 11.5c.7 1.3 1.5 2.6 1.7 4.1c1.2 11.4-.2 23.3-4.1 34c-4.7-9.3-9.7-18.4-16.4-25.8c-10.4-27.1-38.6-38.9-64-49.8c-31-13.1-62.1-27.9-76.1-61.3c-1.6-11.4-.3-23.4 3.6-34.1l0 0z"/>
+      <circle class="huerta-bajo-nudo" cx="883" cy="487" r="24"/>
+      <rect class="huerta-bajo-nudo" x="874" y="5" width="37" height="191"/>
+      <circle class="huerta-bajo-halo" cx="892" cy="207" r="61"/>
+      <circle class="huerta-bajo-nudo" cx="892" cy="207" r="41"/>
+      <path class="huerta-bajo-raiz" d="M1067.8 750.4c.9 8.6 6.3 15.3 13 19.8c1.7 1.2 3.5 2 5 3.3c35 24.6 102.5 11.2 141.5 0c1.8-.9 4.4-.9 6.4-1.2c3.7-.4 9.4-1 13.1-1.5c0 0 6.6-.8 6.6-.8c-6.3 4.5-13.2 8.4-20.2 12c-39 12-95.2 22.4-134.6 9.1c-4.3-1.5-8.6-3.3-12.7-5.6c-2.1-1.1-4-2.5-6.1-3.7c-2-1.2-3.6-3.2-5.1-5c-6-7.1-9.8-17.4-6.9-26.4l0 0z"/>
+      </svg>
+      <ul class="huerta-bajo-ramas" role="list" aria-label="Qué tipos de entidad reciben cada categoría">
+        <li>
+          <span class="huerta-bajo-categoria" data-lugar="alimentos">Alimentos</span>
+          <ul role="list">
+            <li class="huerta-bajo-entidad" data-lugar="comedores">Comedores</li>
+            <li class="huerta-bajo-entidad" data-lugar="merenderos">Merenderos</li>
+            <li class="huerta-bajo-entidad" data-lugar="religiosas">Organizaciones religiosas</li>
+          </ul>
+        </li>
+        <li>
+          <span class="huerta-bajo-categoria" data-lugar="ropa">Ropa</span>
+          <ul role="list">
+            <li class="huerta-bajo-entidad" data-lugar="clubes">Clubes</li>
+            <li class="huerta-bajo-entidad" data-lugar="hogares">Hogares</li>
+          </ul>
+        </li>
+        <li>
+          <span class="huerta-bajo-categoria" data-lugar="muebles">Muebles y útiles</span>
+          <ul role="list">
+            <li class="huerta-bajo-entidad" data-lugar="escuelas">Escuelas</li>
+            <li class="huerta-bajo-entidad" data-lugar="comunitarios">Centros comunitarios</li>
+          </ul>
+        </li>
+      </ul>
+      <p class="huerta-bajo-tu" data-lugar="tu-entidad">
+        <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}">Tu entidad<span
+            class="solo-lectores">: sumala a DonaTrack</span></a>
+      </p>
+    </div>
+    <div class="huerta-tierra-texto">
+      <p class="huerta-rotulo">Bajo tierra</p>
+      <h2 id="raices-titulo">Cada entrega <em>echa raíces.</em></h2>
+      <p>Lo que donás se ramifica por categoría y termina en comedores, merenderos, escuelas, clubes,
+        hogares y otras entidades: hoy son 46 en el mapa. Cada una pide lo que necesita y confirma lo que
+        recibe.</p>
+      <p><a href="/publico-entidades" th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a></p>
+    </div>
+  </div>
+</section>
+
+<!--/* Lo que ya dio frutos: una cifra por árbol, todos plantados en la misma línea de suelo. Con
+       ?escenario=vacio, lento o error, el aviso ocupa el lugar de las cifras. */-->
+<section th:fragment="cifras(estado, valores)" class="huerta-impacto" id="impacto" aria-labelledby="impacto-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Impacto</p>
+    <h2 id="impacto-titulo">Lo que ya <em>dio frutos.</em></h2>
+    <p class="huerta-bajada">Se cuenta con la confirmación de cada entidad.<th:block th:if="${estado == ''}">
+      Actualizado el 15 de octubre de 2026, 14:30.</th:block></p>
+  </header>
+  <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas. Se
+    cuentan cuando cada entidad confirma lo que recibe.</p>
+  <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las cifras…</p>
+  <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
+    <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
+    <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
+  </div>
+  <ul class="huerta-cifras" role="list" th:if="${estado == ''}">
+    <!--/* Los tres árboles a la misma escala (el pino, el más alto, mide 10 rem) y apoyados en la línea
+           de suelo: el ancho y el alto de cada uno salen de su viewBox (redondo 231,87 × 260,42,
+           triangular 133,84 × 278,42, ovalado 101,24 × 230,98). */-->
+    <li th:each="c, vuelta : ${valores}" class="huerta-cifra" th:with="i=${vuelta.index % 3}">
+      <img src="/img/ilustraciones/arbol-redondo.svg" alt="" width="133" height="150"
+           th:src="@{/img/ilustraciones/arbol-{n}.svg(n=${ {'redondo','triangular','ovalado'}[i] })}"
+           th:width="${ {133, 77, 58}[i] }" th:height="${ {150, 160, 133}[i] }">
+      <b th:text="${c.n}">1.284</b> <span th:text="${c.t}">entregas confirmadas desde marzo de 2026</span>
+    </li>
+  </ul>
+  <p><a href="/publico-mapa" th:href="@{/publico-mapa}">Ver el mapa de entregas confirmadas</a></p>
+</section>
+
+<!--/* Una lámina decorativa, con una ilustración de diseño en su marco. */-->
+<figure th:fragment="lamina(ilustracion, ancho, alto)" class="tarjeta huerta-planta" aria-hidden="true">
+  <div class="huerta-marco"><img src="/img/ilustraciones/paso-4-arbol.svg"
+       th:src="@{/img/ilustraciones/{i}.svg(i=${ilustracion})}" alt="" width="173" height="252"
+       th:width="${ancho}" th:height="${alto}"></div>
+</figure>
+
+<!--/* Lo que viajó este mes: una galería de fotos, como polaroids, porque la foto de la entidad es la
+       prueba de que llegó (usuario, 2026-11-08: "que genere más impacto"; antes, una tabla). La que va
+       en camino, sin foto todavía, con la abeja que la lleva. Con ?escenario=vacio, lento o error, el
+       aviso ocupa el lugar de las fotos. */-->
+<section th:fragment="mes(estado)" class="huerta-mes" aria-labelledby="viajo-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Octubre de 2026</p>
+    <h2 id="viajo-titulo">Lo que viajó <em>este mes.</em></h2>
+    <p class="huerta-bajada" th:if="${estado == ''}">3 entregas confirmadas con su foto y 1 en camino. Cada
+      foto la sube la entidad cuando recibe la donación.</p>
+    <a href="/publico-donaciones" th:href="@{/publico-donaciones}">Ver todas las entregas confirmadas</a>
+  </header>
+  <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este
+    mes. Cuando una entidad confirme una entrega, aparece acá con su foto.</p>
+  <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
+  <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
+    <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
+    <a href="" class="boton" data-tamano="chico">Volver a cargar</a>
+  </div>
+  <ol class="huerta-fotos" role="list" th:if="${estado == ''}">
+    <li class="tarjeta huerta-foto">
+      <div class="huerta-foto-espera">
+        <img src="/img/ilustraciones/abeja-arriba.svg" th:src="@{/img/ilustraciones/abeja-arriba.svg}" alt=""
+             width="48" height="52">
+        <p>La foto llega cuando el comedor confirme la entrega.</p>
+      </div>
+      <div class="huerta-pie">
+        <p class="huerta-foto-fecha"><time datetime="2026-10-15">Hoy</time></p>
+        <h3>Lentejas secas, 15 kg</h3>
+        <p>Comedor Barrio Ejemplo</p>
+        <span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block><span>En camino, salió a las 14:30</span></span>
+      </div>
+    </li>
+    <li class="tarjeta huerta-foto">
+      <button type="button" class="huerta-foto-boton" popovertarget="foto-3"
+              aria-label="Ver la foto de la entrega: Sillas, 6 unidades">
+        <img src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="" width="320" height="200">
+      </button>
+      <div class="huerta-pie">
+        <p class="huerta-foto-fecha"><time datetime="2026-10-14">14 oct</time></p>
+        <h3>Sillas, 6 unidades</h3>
+        <p>Escuela Ejemplo N.º 12</p>
+        <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block><span>Entrega confirmada</span></span>
+      </div>
+      <dialog class="dialogo" id="foto-3" popover aria-labelledby="foto-3-titulo">
+        <img src="/img/ejemplo-entrega-sillas.svg" th:src="@{/img/ejemplo-entrega-sillas.svg}" alt="Sillas apiladas en un aula" width="640" height="400">
+        <p class="dialogo-titulo" id="foto-3-titulo">Sillas, 6 unidades</p>
+        <p>Escuela Ejemplo N.º 12 confirmó la entrega el <time datetime="2026-10-14">14 de octubre de 2026</time> y subió esta foto.</p>
+        <button type="button" class="boton" data-tono="secundario" popovertarget="foto-3" popovertargetaction="hide">Cerrar</button>
+      </dialog>
+    </li>
+    <li class="tarjeta huerta-foto">
+      <button type="button" class="huerta-foto-boton" popovertarget="foto-2"
+              aria-label="Ver la foto de la entrega: Ropa de abrigo, 12 prendas">
+        <img src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="" width="320" height="200">
+      </button>
+      <div class="huerta-pie">
+        <p class="huerta-foto-fecha"><time datetime="2026-10-09">9 oct</time></p>
+        <h3>Ropa de abrigo, 12 prendas</h3>
+        <p>Merendero Ejemplo Sur</p>
+        <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block><span>Entrega confirmada</span></span>
+      </div>
+      <dialog class="dialogo" id="foto-2" popover aria-labelledby="foto-2-titulo">
+        <img src="/img/ejemplo-entrega-ropa.svg" th:src="@{/img/ejemplo-entrega-ropa.svg}" alt="Bolsas con ropa de abrigo junto a la puerta del merendero" width="640" height="400">
+        <p class="dialogo-titulo" id="foto-2-titulo">Ropa de abrigo, 12 prendas</p>
+        <p>Merendero Ejemplo Sur confirmó la entrega el <time datetime="2026-10-09">9 de octubre de 2026</time> y subió esta foto.</p>
+        <button type="button" class="boton" data-tono="secundario" popovertarget="foto-2" popovertargetaction="hide">Cerrar</button>
+      </dialog>
+    </li>
+    <li class="tarjeta huerta-foto">
+      <button type="button" class="huerta-foto-boton" popovertarget="foto-1"
+              aria-label="Ver la foto de la entrega: Fideos secos, 8 kg">
+        <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="320" height="200">
+      </button>
+      <div class="huerta-pie">
+        <p class="huerta-foto-fecha"><time datetime="2026-10-05">5 oct</time></p>
+        <h3>Fideos secos, 8 kg</h3>
+        <p>Comedor Barrio Ejemplo</p>
+        <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block><span>Entrega confirmada</span></span>
+      </div>
+      <dialog class="dialogo" id="foto-1" popover aria-labelledby="foto-1-titulo">
+        <img src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="Cajas con la donación junto a la puerta del comedor" width="640" height="400">
+        <p class="dialogo-titulo" id="foto-1-titulo">Fideos secos, 8 kg</p>
+        <p>Comedor Barrio Ejemplo confirmó la entrega el <time datetime="2026-10-05">5 de octubre de 2026</time> y subió esta foto.</p>
+        <button type="button" class="boton" data-tono="secundario" popovertarget="foto-1" popovertargetaction="hide">Cerrar</button>
+      </dialog>
+    </li>
+  </ol>
+</section>
+
+<!--/* Quién participa: una tarjeta por forma de sumarse, cada una con su planta. Al lado del botón, el
+       ícono de información abre un globo con lo que se puede donar o cómo se suma una entidad
+       (usuaria, 2026-11-09; antes, un enlace de texto), con el enlace a la página completa. */-->
+<section th:fragment="participa" class="huerta-participa" id="quien" aria-labelledby="quien-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Quién participa</p>
+    <h2 id="quien-titulo">¿Qué planta <em>sos vos?</em></h2>
+    <p class="huerta-bajada">Elegí cómo querés sumarte. Crear la cuenta lleva unos minutos.</p>
+  </header>
+  <ul class="huerta-opciones" role="list">
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
+           alt="" width="90" height="230">
+      <p class="huerta-rotulo">Personas</p>
+      <h3>Donás y ves dónde da fruto.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Llevás lo que tenés al depósito.</li>
+        <li>Seguís cada donación hasta la entidad.</li>
+        <li>Ves la foto cuando la recibe.</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a href="/publico-registro-donante?tipo=persona" th:href="@{/publico-registro-donante(tipo='persona')}"
+           class="boton" data-tono="principal">Quiero donar</a>
+        <span th:replace="~{componentes/info :: info('info-personas', 'Qué podés donar', 'Qué podés donar',
+            'Alimentos envasados y sin vencer, ropa limpia y en buen estado, y muebles que se puedan usar. Lo llevás al depósito y el equipo lo registra.',
+            '/publico-para-donantes', 'Ver todo para donantes')}"></span>
+      </div>
+    </li>
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-algodon.svg" th:src="@{/img/ilustraciones/planta-algodon.svg}"
+           alt="" width="90" height="228">
+      <p class="huerta-rotulo">Empresas</p>
+      <h3>Tu empresa dona con constancia.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Donás a nombre de la empresa.</li>
+        <li>Cada entrega queda con fecha y foto.</li>
+        <li>Lo sumás a tu informe de RSE.</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}" class="boton"
+           data-tono="principal">Registrar mi empresa</a>
+        <span th:replace="~{componentes/info :: info('info-empresas', 'Qué puede donar una empresa', 'Qué puede donar una empresa',
+            'Lo mismo que una persona: alimentos, ropa y muebles, a nombre de la empresa. Cada entrega queda con fecha y foto para tu informe de RSE.',
+            '/publico-para-donantes', 'Ver todo para donantes')}"></span>
+      </div>
+    </li>
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}"
+           alt="" width="144" height="245">
+      <p class="huerta-rotulo">Entidades</p>
+      <h3>Pedís lo que falta y lo recibís.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Cargás lo que necesitás.</li>
+        <li>Ves qué se te asignó y cuándo llega.</li>
+        <li>Confirmás cada entrega con una foto.</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}" class="boton"
+           data-tono="principal">Sumar mi entidad</a>
+        <span th:replace="~{componentes/info :: info('info-entidades', 'Cómo se suma una entidad', 'Cómo se suma una entidad',
+            'Completás los datos de la entidad y de quien la representa, el equipo los revisa y, con la entidad aprobada, publicás lo que necesitás.',
+            '/publico-para-entidades', 'Ver todo para entidades')}"></span>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!--/* Las preguntas frecuentes (ficha raices-conocer-y-activar.md, Preguntas). */-->
+<section th:fragment="preguntas" class="huerta-preguntas" id="preguntas" aria-labelledby="preguntas-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Preguntas frecuentes</p>
+    <h2 id="preguntas-titulo">Lo que <em>más nos preguntan.</em></h2>
+    <p class="huerta-bajada">Si no está acá, <a href="/publico-contacto" th:href="@{/publico-contacto}">escribinos</a>.</p>
+  </header>
+  <div class="huerta-preguntas-lista">
+    <details open><summary>¿DonaTrack cobra algún tipo de comisión o suscripción?</summary>
+      <p>No. DonaTrack fue pensado como una manera de ayudar a la comunidad y lo mantiene un equipo de
+        estudiantes de la UTN-FRBA. Crear tu cuenta, donar y seguir cada entrega no tiene costo, ni para
+        quien dona ni para las entidades.</p></details>
+    <details><summary>¿Dónde entrego lo que quiero donar?</summary>
+      <p>Lo llevás al depósito. El equipo lo registra al recibirlo y, desde ese momento, lo ves en tu
+        cuenta con cada paso: a qué entidad se asigna, cuándo sale y cuándo llega.</p></details>
+    <details><summary>¿Cómo sé que mi donación llegó a destino?</summary>
+      <p>Cuando la entidad la recibe, confirma la entrega con la fecha y una foto de lo entregado. Te
+        avisamos y lo ves en el detalle de la donación.</p></details>
+    <details><summary>¿Puedo donar sin que se muestre mi nombre?</summary>
+      <p>Sí. En tu perfil elegís si las entidades ven tu nombre o el de tu empresa, y lo podés cambiar
+        cuando quieras.</p></details>
+    <details><summary>¿Qué pasa si una entrega no puede llegar?</summary>
+      <p>La donación vuelve al depósito y sale de nuevo. Te contamos qué pasó y cuándo es la nueva
+        salida, sin que tengas que hacer nada.</p></details>
+  </div>
+</section>
+
+<!--/* La invitación del final, con su planta. */-->
+<section th:fragment="cierre" class="huerta-cierre" aria-labelledby="cierre-titulo">
+  <img src="/img/ilustraciones/planta-menta.svg" th:src="@{/img/ilustraciones/planta-menta.svg}" alt=""
+       width="97" height="176">
+  <h2 id="cierre-titulo">Mirá hasta dónde llega <em>lo que donás.</em></h2>
+  <div class="huerta-acciones">
+    <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}" class="boton"
+       data-tono="principal">Quiero donar</a>
+    <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}" class="boton"
+       data-tono="secundario">Soy una entidad</a>
+  </div>
+</section>
+
+<!--/* El estado de las donaciones de una persona (usuario, 2026-11-08: "repensemos los datos
+       destacados"; antes, cinco números en fila): el total, una barra con un tramo por estado, del largo
+       de su cantidad, y la leyenda con cada cantidad en palabras. La barra es decorativa: la leyenda
+       dice lo mismo. */-->
+<section th:fragment="resumen(donaciones)" class="huerta-resumen" aria-labelledby="resumen-titulo"
+         th:with="estados=${ {
+           {tono: 'entregada', uno: 'entregada', varios: 'entregadas'},
+           {tono: 'en-camino', uno: 'en camino', varios: 'en camino'},
+           {tono: 'pendiente', uno: 'en el depósito', varios: 'en el depósito'},
+           {tono: 'con-problema', uno: 'sale de nuevo', varios: 'salen de nuevo'} } }">
+  <h2 id="resumen-titulo"><b th:text="${#lists.size(donaciones)}">7</b> donaciones registradas</h2>
+  <p class="huerta-resumen-alcance">Desde el 1 de octubre de 2026. Actualizado hoy, 15 de octubre, 16:25.</p>
+  <div class="huerta-barra" aria-hidden="true">
+    <th:block th:each="e : ${estados}"
+              th:with="n=${#lists.size(donaciones.?[estado.tono == '__${e.tono}__'])}">
+      <span th:if="${n > 0}" th:data-estado="${e.tono}" th:data-n="${n}" data-estado="entregada" data-n="2"></span>
+    </th:block>
+  </div>
+  <ul class="huerta-leyenda" role="list">
+    <li th:each="e : ${estados}" th:with="n=${#lists.size(donaciones.?[estado.tono == '__${e.tono}__'])}"
+        th:data-estado="${e.tono}" data-estado="entregada">
+      <b th:text="${n}">2</b> <span th:text="${n == 1} ? ${e.uno} : ${e.varios}">entregadas</span>
+    </li>
+  </ul>
+</section>
+
+<!--/* Las raíces de lo donado, en la tierra: una por entidad a la que se asignó algo. Llena y con su
+       nudo, la que ya confirmó una entrega; punteada y con el nudo hueco, la que todavía no. */-->
+<section th:fragment="raices-donante(donaciones)" class="huerta-tierra huerta-tierra--caja"
+         aria-labelledby="raices-titulo"
+         th:with="destinos=${#lists.toList(#sets.toSet(donaciones.?[destino != null].![destino]))},
+                  llegaron=${#sets.toSet(donaciones.?[estado.tono == 'entregada'].![destino])},
+                  n=${#lists.size(destinos)}">
+  <svg th:unless="${n == 0}" class="huerta-raices" viewBox="0 -10 600 250" role="img" focusable="false"
+       th:aria-label="|Raíces desde tus donaciones hasta ${n} entidades|">
+    <path class="huerta-raiz huerta-raiz--0" d="M300 -10V40"/>
+    <th:block th:each="e, vuelta : ${destinos}"
+              th:with="x=${n == 1 ? 300 : 70 + vuelta.index * 460 / (n - 1)}, llego=${llegaron.contains(e)}">
+      <path th:class="${llego} ? 'huerta-raiz huerta-raiz--1' : 'huerta-raiz huerta-raiz--1 huerta-raiz--camino'"
+            class="huerta-raiz huerta-raiz--1" d="M300 40C300 100 70 100 70 170"
+            th:attr="d=|M300 40C300 100 ${x} 100 ${x} 170|"/>
+      <circle th:class="${llego} ? 'huerta-nudo' : 'huerta-nudo huerta-nudo--hueco'" class="huerta-nudo"
+              cx="70" cy="170" r="7" th:attr="cx=${x}"/>
+      <text class="huerta-rotulo-raiz" x="70" y="200" text-anchor="middle" th:attr="x=${x}"
+            th:text="${e}">Comedor Barrio Ejemplo</text>
+    </th:block>
+    <circle class="huerta-nudo" cx="300" cy="40" r="9"/>
+  </svg>
+  <div class="huerta-tierra-texto">
+    <p class="huerta-rotulo">Raíces de lo que donaste</p>
+    <h2 id="raices-titulo" th:text="${#sets.size(llegaron) == 1} ? 'Llegaste a 1 entidad.' : |Llegaste a ${#sets.size(llegaron)} entidades.|">Llegaste
+      a 2 entidades.</h2>
+    <p th:if="${n == 0}">Cuando una de tus donaciones se asigne a una entidad, su raíz va a aparecer acá.</p>
+    <!--/* En dos renglones fijos (usuario, 2026-11-09): el texto corto y, si no entra, recortado. */-->
+    <p th:unless="${n == 0}" data-renglones="2">Desde el 1 de octubre de 2026. Raíz llena: la entidad
+      confirmó la entrega; punteada: todavía la espera.</p>
+  </div>
+</section>
+
+<!--/* El recorrido de una donación: un punto por etapa, la abeja sobre la etapa actual. */-->
+<section th:fragment="recorrido(d)" class="tarjeta huerta-caja" aria-labelledby="recorrido-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Tu donación en camino</p>
+    <h2 id="recorrido-titulo" th:text="|${d.titulo} · ${d.cantidad}|">Lentejas secas · 15 kg</h2>
+    <a href="/donante-donaciones-detalle?donacion=lentejas"
+       th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}">Ver el detalle</a>
+  </header>
+  <ol class="huerta-recorrido" role="list">
+    <li th:each="p : ${d.pasos}" th:data-avance="${#strings.toLowerCase(p.avance)}" data-avance="hecho"
+        th:aria-current="${#strings.toLowerCase(p.avance) == 'actual'} ? 'step' : null">
+      <img th:if="${#strings.toLowerCase(p.avance) == 'actual'}" class="huerta-recorrido-abeja"
+           src="/img/ilustraciones/abeja-paquete.svg" th:src="@{/img/ilustraciones/abeja-paquete.svg}"
+           alt="" width="26" height="30">
+      <span class="huerta-recorrido-punto" aria-hidden="true"></span>
+      <b th:text="${p.nombre}">En depósito</b>
+      <span th:text="${p.detalle}">12 de octubre</span>
+    </li>
+  </ol>
+</section>
+</body>
+</html>

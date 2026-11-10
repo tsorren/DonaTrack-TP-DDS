@@ -52,7 +52,7 @@
         <div class="campo">
           <label for="razon-social">Razón social *</label>
           <input id="razon-social" name="razonSocial" type="text" required autocomplete="off"
-                 th:value="${escrito} ? 'Escuela Ejemplo N.º 5' : null">
+                 th:value="${escrito} ? 'Escuela Ejemplo N.º 5' : null" placeholder="Por ejemplo: Distribuidora Ejemplo SA">
         </div>
         <div class="campo">
           <label for="tipo">Tipo *</label>
@@ -65,7 +65,7 @@
         <div class="campo">
           <label for="cuit">CUIT</label>
           <small id="cuit-ayuda">Con guiones. Por ejemplo: 30-00000001-0.</small>
-          <input id="cuit" name="cuit" type="text" autocomplete="off" aria-describedby="cuit-ayuda">
+          <input id="cuit" name="cuit" type="text" autocomplete="off" aria-describedby="cuit-ayuda" placeholder="Por ejemplo: 30-12345678-9">
         </div>
       </div>
 
@@ -77,16 +77,16 @@
           <div class="campo" th:data-estado="${conError} ? 'error'">
             <label for="calle">Calle *</label>
             <input id="calle" name="calle" type="text" required autocomplete="off"
-                   th:attr="aria-describedby=${conError} ? 'direccion-error' : null,aria-invalid=${conError} ? 'true' : null">
+                   th:attr="aria-describedby=${conError} ? 'direccion-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: Av. Rivadavia">
           </div>
           <div class="campo"><label for="altura">Altura *</label>
-            <input id="altura" name="altura" type="text" inputmode="numeric" required autocomplete="off"></div>
+            <input id="altura" name="altura" type="text" inputmode="numeric" required autocomplete="off" placeholder="Por ejemplo: 4500"></div>
           <div class="campo"><label for="localidad">Localidad *</label>
-            <input id="localidad" name="localidad" type="text" required autocomplete="off"></div>
+            <input id="localidad" name="localidad" type="text" required autocomplete="off" placeholder="Por ejemplo: Caballito"></div>
           <div class="campo"><label for="provincia">Provincia *</label>
-            <input id="provincia" name="provincia" type="text" required autocomplete="off"></div>
+            <input id="provincia" name="provincia" type="text" required autocomplete="off" placeholder="Por ejemplo: Buenos Aires"></div>
           <div class="campo"><label for="pais">País *</label>
-            <input id="pais" name="pais" type="text" value="Argentina" required autocomplete="off"></div>
+            <input id="pais" name="pais" type="text" value="Argentina" required autocomplete="off" placeholder="Argentina"></div>
         </div>
       </section>
 
@@ -95,14 +95,14 @@
         <div class="campo">
           <label for="responsable">Responsable *</label>
           <input id="responsable" name="responsable" type="text" required autocomplete="off"
-                 th:value="${escrito} ? 'Clara Ejemplo' : null">
+                 th:value="${escrito} ? 'Clara Ejemplo' : null" placeholder="Por ejemplo: Marta Ejemplo">
         </div>
         <div class="campo">
           <label for="correo">Correo de contacto *</label>
           <small id="correo-ayuda">Usamos el correo para que su responsable active la cuenta; no lo
             mostramos a los donantes.</small>
           <input id="correo" name="correo" type="email" required autocomplete="off" aria-describedby="correo-ayuda"
-                 th:value="${escrito} ? 'escuela5@ejemplo.org' : null">
+                 th:value="${escrito} ? 'escuela5@ejemplo.org' : null" placeholder="nombre@ejemplo.com">
         </div>
       </div>
 

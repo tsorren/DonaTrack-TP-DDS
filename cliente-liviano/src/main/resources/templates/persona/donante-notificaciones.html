@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--/* Notificaciones de la persona que dona (Martina Ruiz, RF-08): la misma bandeja que la de la
+       empresa (donante-notificaciones, ficha docs/interfaz/flujos/raices-donante-navegable.md; ronda
+       2026-11-10: la estructura de la bandeja de GitHub, componente buzón), con sus avisos
+       (persona/datos-persona): los de sus donaciones, cuya categoría se deduce del texto de la carta
+       como en la empresa, y los de sus misiones (Misiones: misión completa, ascenso de categoría y
+       avance), que la bandeja de la empresa no tiene. Se suma un aviso de Necesidades (una necesidad
+       nueva de una entidad). "Ahora" es el 15 de octubre de 2026, 16:25 (datos-persona); sin leer,
+       los 3 más nuevos (la campana dice 3). Marcar es un formulario post real que va a
+       donante-notificaciones-leidas. ?escenario=vacio, error y lento.
+       Fragmento hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-notificaciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/donante-notificaciones :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(leidas)">
+  <th:block th:replace="~{persona/datos-persona :: persona(~{persona/donante-notificaciones :: cuerpo})}"></th:block>
+</th:block>
+
+<!--/* limite: la fecha del segundo aviso, el más viejo de los sin leer. */-->
+<th:block th:fragment="cuerpo" th:with="limite=${avisos[1].d.cartas[avisos[1].i].fecha}">
+<th:block
+    th:with="conDatos=${escenario == ''},
+             marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
+             noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
+             temas=${ {
+      {valor: '', texto: 'Todas las categorías'},
+      {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
+      {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'},
+      {valor: 'asignadas', texto: 'Donaciones asignadas', icono: 'asigna'},
+      {valor: 'deposito', texto: 'En el depósito', icono: 'caja'},
+      {valor: 'necesidades', texto: 'Necesidades', icono: 'necesidad'},
+      {valor: 'misiones', texto: 'Misiones', icono: 'mision'} } },
+             deDonaciones=${avisos.?[#this['m'] == null].![ {id: d.clave + '-' + i, fecha: d.cartas.get(i).fecha,
+                 texto: #strings.replace(d.cartas.get(i).texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12'),
+                 tema: (#strings.contains(d.cartas.get(i).texto, 'no pudo llegar') ? 'problemas'
+                     : (#strings.contains(d.cartas.get(i).texto, 'confirmó que recibió') ? 'entregadas'
+                     : (#strings.contains(d.cartas.get(i).texto, 'salió a entregar') or #strings.contains(d.cartas.get(i).texto, 'quedó lista') ? 'camino'
+                     : (#strings.startsWith(d.cartas.get(i).texto, 'Asignamos') ? 'asignadas' : 'deposito')))),
+                 destino: '/donante-donaciones-detalle?donacion=' + d.clave,
+                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), d.clave + '-' + i)
+                     and (d.cartas.get(i).fecha < '__${limite}__'
+                     or #root.marcadas == 'todas'
+                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), d.clave + '-' + i))} ]},
+             deMisiones=${avisos.?[#this['m'] != null].![ {id: 'm-' + fecha, fecha: fecha, texto: texto, tema: 'misiones',
+                 destino: '/donante-misiones',
+                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), 'm-' + fecha)
+                     and (fecha < '__${limite}__' or #root.marcadas == 'todas'
+                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), 'm-' + fecha))} ]},
+             otras=${ {
+      {id: 'x1', fecha: '2026-10-15T16:08', tema: 'necesidades',
+       leida: !#lists.contains(#strings.listSplit(noLeidas, ','), 'x1')
+           and (marcadas == 'todas' or #lists.contains(#strings.listSplit(marcadas, ','), 'x1')), destino: '/donante-entidades',
+       texto: 'Merendero Ejemplo Sur publicó una necesidad nueva: 20 frazadas para el 30 de octubre.'} } },
+             sinLeerAhora=${#lists.size(deDonaciones.?[!leida]) + #lists.size(deMisiones.?[!leida]) + #lists.size(otras.?[!leida])}">
+  <div class="pila" data-espacio="4">
+    <header class="pila" data-espacio="2">
+      <p class="rotulo">Notificaciones</p>
+      <h1>Noticias de <em>tus donaciones</em></h1>
+      <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+         th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo: marcaste la notificación.</p>
+      <p th:if="${conDatos}" class="bajada"
+         th:text="${sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con tus donaciones, tus misiones o una necesidad nueva.|">3
+        sin leer. Cada aviso cuenta qué pasó con tus donaciones, tus misiones o una necesidad nueva.</p>
+    </header>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
+      <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión, cuando la
+        entidad confirme la entrega y cuando completes una misión.</p>
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
+         th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tus notificaciones.', '/donante-notificaciones')}"></section>
+    </th:block>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando tus notificaciones…</p>
+      <div class="pila" data-espacio="3" aria-busy="true">
+        <div class="esqueleto" data-forma="punteado"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+      </div>
+    </th:block>
+
+    <th:block th:if="${conDatos}">
+      <div th:replace="~{componentes/buzon :: buzon(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
+           '/donante-notificaciones-leidas', '2026-10-15T16:25', ${ {deDonaciones, deMisiones, otras} }, ${temas}, ${marcadas == 'todas'})}"></div>
+    </th:block>
+  </div>
+</th:block>
+</th:block>
+</body>
+</html>

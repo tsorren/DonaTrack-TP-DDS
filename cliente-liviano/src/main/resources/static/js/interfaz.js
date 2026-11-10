@@ -225,4 +225,42 @@ document.addEventListener("alpine:init", () => {
       if (molde && region) region.appendChild(molde.content.cloneNode(true));
     },
   }));
+
+  // buzon (2026-11-10): las casillas de la bandeja de notificaciones (componentes/buzon). Muestra
+  // «Seleccionar todas» (sin JavaScript queda oculta: no podría marcar las demás), la prende, la
+  // apaga o la deja a medias según las casillas de las filas, y cambia el texto del botón de la
+  // cabecera según cuántas se eligieron. Lo esencial es el formulario post: sin JavaScript, el botón
+  // marca las elegidas o, si no se eligió ninguna, todas.
+  Alpine.data("buzon", () => ({
+    sinCasillas: false,
+    elegidas: 0,
+    casillas() {
+      return Array.from(this.$root.querySelectorAll('input[name="elegidas"]'));
+    },
+    init() {
+      this.contar();
+    },
+    cambiar(evento) {
+      const todas = this.$refs.todas;
+      if (todas && evento.target === todas) {
+        this.casillas().forEach((casilla) => {
+          casilla.checked = todas.checked;
+        });
+      }
+      this.contar();
+    },
+    contar() {
+      const casillas = this.casillas();
+      this.elegidas = casillas.filter((casilla) => casilla.checked).length;
+      const todas = this.$refs.todas;
+      if (todas) {
+        todas.checked = casillas.length > 0 && this.elegidas === casillas.length;
+        todas.indeterminate = this.elegidas > 0 && this.elegidas < casillas.length;
+      }
+    },
+    get rotulo() {
+      if (this.elegidas === 0) return "Marcar todas como leídas";
+      return this.elegidas === 1 ? "Marcar 1 como leída" : `Marcar ${this.elegidas} como leídas`;
+    },
+  }));
 });

@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <!--/* Raíces, Notificaciones de la entidad (RF-13), según su ficha de flujo
-       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.3): la bandeja como un cuaderno de
-       campo, una fila por novedad con su hora, su sello y su tipo en texto, qué pasó y a dónde ir; las
-       sin leer, con la cinta paja al margen. "Marcar todas como leídas" es un formulario real (POST)
-       que lleva a entidad-notificaciones-leidas: la misma bandeja, todas leídas, con el aviso arriba.
-       Leer no confirma nada: las que esperan en la puerta conservan su botón.
+       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.3), con la estructura de la bandeja
+       de GitHub (usuario, ronda 2026-11-10): arriba, la cuenta de sin leer con su fecha; debajo, la
+       bandeja del componente buzón (componentes/buzon): «Todas | Sin leer», la búsqueda, Categoría,
+       Ordenar y Agrupar (get con hx-boost), y la lista con «Seleccionar todas», «Marcar todas como
+       leídas» y una fila por novedad: qué pasó (y a dónde ir), a qué está asociada (Entregas en
+       camino, En tu puerta, Donaciones recibidas, Necesidades, Problemas) y hace cuánto. "Ahora" es
+       el 15 de octubre de 2026, 18:30; los ejemplos cubren minutos, horas, días, semanas y el mes
+       anterior. Marcar es un formulario real (POST) que lleva a entidad-notificaciones-leidas: la
+       misma bandeja, todas leídas, con el aviso arriba. Leer no confirma nada: las que esperan en la
+       puerta conservan su botón «Confirmar recepción».
        ?escenario=vacio, nada-sin-leer, lento y error. Enviando ("Marcando…") y el error al marcar se
        describen en la ficha y no se dibujan.
-       Fragmentos:
-       - hoja(accion): la pantalla entera; accion es '' (la bandeja) o 'leidas'.
-       - novedad(n, leida): una fila del cuaderno. */-->
+       Fragmento hoja(accion): la pantalla entera; accion es '' (la bandeja) o 'leidas'. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-notificaciones', ~{::contenido})}">
 <head>
@@ -20,60 +23,58 @@
   <th:block th:replace="~{entidad-notificaciones :: hoja('')}"></th:block>
 </th:block>
 
-<!--/* tono: el sello de piezas-entidad (puerta, camino, problema; la asignada, por salir). enlace y
-       destino: a dónde lleva; confirmo: la que ya se confirmó, sin botón. */-->
+<!--/* tema: la categoría (temas); boton y que: la que espera en la puerta, con su botón aunque esté
+       leída; nota: lo que ya se confirmó. */-->
 <th:block th:fragment="hoja(accion)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              todasLeidas=${accion == 'leidas' or escenario == 'nada-sin-leer'},
              conDatos=${escenario != 'vacio' and escenario != 'error' and escenario != 'lento'},
-             novedades=${escenario == 'vacio' ? {} : {
-      {clave: 'n1', tipo: 'Llegó a tu puerta', tono: 'puerta', dia: 'Hoy', hora: '18:20', fecha: '2026-10-15T18:20',
+             temas=${ {
+      {valor: '', texto: 'Todas las categorías'},
+      {valor: 'camino', texto: 'Entregas en camino', icono: 'camion'},
+      {valor: 'puerta', texto: 'En tu puerta', icono: 'puerta'},
+      {valor: 'recibidas', texto: 'Donaciones recibidas', icono: 'tilde'},
+      {valor: 'necesidades', texto: 'Necesidades', icono: 'necesidad'},
+      {valor: 'problemas', texto: 'Problemas', icono: 'problema'} } },
+             novedades=${ {
+      {id: 'n1', tema: 'puerta', fecha: '2026-10-15T18:20', leida: false,
        texto: 'Lentejas secas, 15 kg, llegó a tu puerta. Confirmá la recepción con una foto.',
-       enlace: 'Confirmar recepción', destino: '/entidad-seguimiento-confirmar?entrega=lentejas',
-       que: 'lentejas secas', principal: true, leida: false},
-      {clave: 'n2', tipo: 'En camino', tono: 'camino', dia: 'Hoy', hora: '9:15', fecha: '2026-10-15T09:15',
-       texto: 'Arroz, 20 kg, salió del depósito. Llega mañana.',
-       enlace: 'Ver la donación', destino: '/entidad-recibidas?estado=en-camino',
-       que: 'arroz', principal: false, leida: false},
-      {clave: 'n3', tipo: 'Llegó a tu puerta', tono: 'puerta', dia: 'Ayer', hora: '17:10', fecha: '2026-10-14T17:10',
+       boton: 'Confirmar recepción', que: 'lentejas secas', destino: '/entidad-seguimiento-confirmar?entrega=lentejas'},
+      {id: 'n2', tema: 'camino', fecha: '2026-10-15T09:15', leida: false,
+       texto: 'Arroz, 20 kg, salió del depósito. Llega mañana.', destino: '/entidad-recibidas?estado=en-camino'},
+      {id: 'n3', tema: 'puerta', fecha: '2026-10-14T17:10', leida: false,
        texto: 'Ropa de abrigo, 10 unidades, llegó a tu puerta. Confirmá la recepción con una foto.',
-       enlace: 'Confirmar recepción', destino: '/entidad-seguimiento-confirmar?entrega=ropa',
-       que: 'ropa de abrigo', principal: true, leida: false},
-      {clave: 'n4', tipo: 'Con problema', tono: 'problema', dia: '14 de octubre', hora: '16:40', fecha: '2026-10-14T16:40',
+       boton: 'Confirmar recepción', que: 'ropa de abrigo', destino: '/entidad-seguimiento-confirmar?entrega=ropa'},
+      {id: 'n4', tema: 'problemas', fecha: '2026-10-14T16:40', leida: true,
        texto: 'Aceite de girasol, 10 litros: el camión no pudo llegar. Te avisamos la nueva fecha.',
-       enlace: 'Ver tu pedido', destino: '/entidad-necesidades?necesidad=aceite',
-       que: 'aceite de girasol', principal: false, leida: true},
-      {clave: 'n5', tipo: 'Asignada', tono: 'salir', dia: '13 de octubre', hora: '10:05', fecha: '2026-10-13T10:05',
-       texto: 'Se asignó a tu pedido de leche en polvo una donación de 12 unidades. Sale del depósito el 17 de octubre.',
-       enlace: 'Ver la donación', destino: '/entidad-recibidas?estado=por-salir',
-       que: 'leche en polvo', principal: false, leida: true},
-      {clave: 'n6', tipo: 'Llegó a tu puerta', tono: 'recibida', dia: '10 de octubre', hora: '11:05', fecha: '2026-10-10T11:05',
-       texto: 'Lentejas secas, 10 kg, llegó a tu puerta.', confirmo: 'Confirmaste la recepción el 10 de octubre.',
-       enlace: 'Ver la donación', destino: '/entidad-recibidas?estado=recibidas',
-       que: 'lentejas secas, 10 kg', principal: false, leida: true} } },
-             sinLeer=${todasLeidas ? {} : novedades.?[!leida]},
-             leidas=${todasLeidas ? novedades : novedades.?[leida]}">
-  <div class="bandeja">
+       destino: '/entidad-necesidades?necesidad=aceite'},
+      {id: 'n5', tema: 'necesidades', fecha: '2026-10-13T10:05', leida: true,
+       texto: 'Se asignó a tu necesidad de leche en polvo una donación de 12 unidades. Sale del depósito el 17 de octubre.',
+       destino: '/entidad-recibidas?estado=por-salir'},
+      {id: 'n6', tema: 'recibidas', fecha: '2026-10-10T11:05', leida: true,
+       texto: 'Lentejas secas, 10 kg, llegó a tu puerta.', nota: 'Confirmaste la recepción el 10 de octubre.',
+       destino: '/entidad-recibidas?estado=recibidas'},
+      {id: 'n7', tema: 'necesidades', fecha: '2026-10-07T12:00', leida: true,
+       texto: 'Se asignó a tu necesidad de arroz una donación de 20 kg.', destino: '/entidad-recibidas?estado=en-camino'},
+      {id: 'n8', tema: 'recibidas', fecha: '2026-09-28T12:00', leida: true,
+       texto: 'Fideos secos, 10 kg, llegó a tu puerta.', nota: 'Confirmaste la recepción el 28 de septiembre.',
+       destino: '/entidad-recibidas?estado=recibidas'} } },
+             sinLeer=${todasLeidas ? 0 : #lists.size(novedades.?[!leida])}">
+  <div class="pila" data-espacio="4">
     <header class="cabecera-entidad">
       <p class="rotulo">Notificaciones</p>
       <h1>Tus <em>novedades</em></h1>
-      <p th:if="${conDatos and !#lists.isEmpty(sinLeer)}"
-         th:text="|${#lists.size(sinLeer)} sin leer. Al 15 de octubre de 2026, 18:30.|">3 sin leer. Al 15 de
+      <p th:if="${conDatos and sinLeer > 0}"
+         th:text="|${sinLeer} sin leer. Al 15 de octubre de 2026, 18:30.|">3 sin leer. Al 15 de
         octubre de 2026, 18:30.</p>
-      <p th:if="${conDatos and #lists.isEmpty(sinLeer)}">No tenés novedades sin leer. Al 15 de octubre de 2026,
+      <p th:if="${conDatos and sinLeer == 0}">No tenés novedades sin leer. Al 15 de octubre de 2026,
         18:30.</p>
-      <!--/* Un formulario real; en el sistema, con CSRF y hx-post con hx-indicator ("Marcando…"). */-->
-      <form th:if="${conDatos and !#lists.isEmpty(sinLeer)}" class="marcar"
-            action="/entidad-notificaciones-leidas"
-            th:action="@{/entidad-notificaciones-leidas}" method="post">
-        <button class="boton" data-tono="secundario" type="submit">Marcar todas como leídas</button>
-      </form>
     </header>
 
     <!--/* El éxito, con el foco; en el sistema, en la región aria-live del layout. */-->
     <section th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
              aria-labelledby="leidas-titulo">
-      <h2 id="leidas-titulo">Marcaste las 3 como leídas.</h2>
+      <h2 id="leidas-titulo">Marcaste las novedades como leídas.</h2>
       <p>Las entregas que esperan en tu puerta siguen esperando tu confirmación.</p>
     </section>
 
@@ -93,44 +94,10 @@
     </section>
 
     <th:block th:if="${conDatos}">
-      <section th:unless="${#lists.isEmpty(sinLeer)}" class="cuaderno-novedades cuaderno-novedades--sin-leer tierra-impresa"
-               aria-labelledby="sinleer-titulo">
-        <h2 id="sinleer-titulo">Sin leer</h2>
-        <ul class="novedades-lista" role="list">
-          <th:block th:each="n : ${sinLeer}">
-            <li th:replace="~{entidad-notificaciones :: novedad(${n}, false)}"></li>
-          </th:block>
-        </ul>
-      </section>
-      <section th:unless="${#lists.isEmpty(leidas)}" class="cuaderno-novedades" aria-labelledby="leidas-grupo">
-        <h2 id="leidas-grupo">Leídas</h2>
-        <ul class="novedades-lista" role="list">
-          <th:block th:each="n : ${leidas}">
-            <li th:replace="~{entidad-notificaciones :: novedad(${n}, true)}"></li>
-          </th:block>
-        </ul>
-      </section>
+      <div th:replace="~{componentes/buzon :: buzon(${accion == 'leidas' ? '/entidad-notificaciones-leidas' : '/entidad-notificaciones'},
+           '/entidad-notificaciones-leidas', '2026-10-15T18:30', ${ {novedades} }, ${temas}, ${todasLeidas})}"></div>
     </th:block>
   </div>
 </th:block>
-
-<!--/* Una fila: cuándo, el sello, el tipo en texto antes de la fecha para quien escucha, qué pasó y a
-       dónde ir. La que espera en la puerta lleva el botón aunque esté leída. */-->
-<li th:fragment="novedad(n, leida)" class="novedad" th:classappend="${leida} ? 'novedad--leida' : 'novedad--sin-leer'">
-  <p class="novedad-cuando"><b th:text="${n.dia}">Hoy</b> <time th:datetime="${n.fecha}" datetime="2026-10-15T18:20"
-      th:text="${n.hora}">18:20</time></p>
-  <svg th:replace="~{componentes/sello :: sello(${n.tono})}"></svg>
-  <div class="novedad-texto">
-    <p class="estado novedad-tipo" th:data-estado="${n.tono == 'recibida' ? 'puerta' : n.tono}"
-       th:text="${n.tipo}">Llegó a tu puerta</p>
-    <p th:text="${n.texto}">Lentejas secas, 15 kg, llegó a tu puerta. Confirmá la recepción con una foto.</p>
-    <p th:if="${n['confirmo']}" class="estado" data-estado="recibida" th:text="${n.confirmo}">Confirmaste la recepción
-      el 10 de octubre.</p>
-  </div>
-  <a th:if="${n.principal}" class="boton" data-tono="principal" data-tamano="chico" href="#" th:href="${n.destino}">Confirmar
-    recepción<span class="solo-lectores" th:text="|: ${n.que}|">: lentejas secas</span></a>
-  <a th:unless="${n.principal}" class="novedad-enlace" href="#" th:href="${n.destino}"><th:block
-      th:text="${n.enlace}">Ver la donación</th:block><span class="solo-lectores" th:text="|: ${n.que}|">: arroz</span></a>
-</li>
 </body>
 </html>

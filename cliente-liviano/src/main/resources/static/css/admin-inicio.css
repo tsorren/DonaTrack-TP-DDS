@@ -5,15 +5,16 @@
 @import url("entidad-comun.css");
 
 .mesa {
-  max-width: 76rem;
+  max-width: none;
 }
 
 .mesa-cabecera {
   margin: 0 0 2rem;
 }
 
+/* La bajada, a todo el ancho que permite una línea legible (ronda 2026-11-09, regla general 1). */
 .mesa-cabecera p:not(.rotulo) {
-  max-width: 40rem;
+  max-width: 70ch;
   margin: 0;
   font-size: 1.125rem;
 }

@@ -205,9 +205,8 @@
   height: 100%;
   padding: 1.5rem;
   border-radius: var(--radio-lamina);
-  background: var(--color-papel);
-  box-shadow: 0.45rem 0.45rem 0 var(--color-sombra);
-  outline: 1.5px solid var(--color-tinta);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
 }
 
 /* La de la entidad: la etiqueta vacía de la portada, punteada y sin imprimir. */

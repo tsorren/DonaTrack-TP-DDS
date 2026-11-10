@@ -1,0 +1,142 @@
+/* Bloque plegable (2026-11-09; foto y medida, 2026-11-09, noche): una tarjeta que se despliega en el lugar, con `<details>` nativo (anda
+   sin JavaScript). Plegada, el resumen en un renglón (el título, lo que la pantalla quiera mostrar y
+   «Ver …» con su flecha); desplegada, el cuerpo debajo. Abierta no lleva borde ni anillo verde (regla
+   general de la ronda del 2026-11-09): la flecha dice si está abierta. Nació con Entidades de la
+   portada. Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+/* Papel claro sobre el papel de la página, sin filete (ronda del 2026-11-09, noche: la tarjeta que
+   dibujó la usuaria); al pasar, aparece el filete. */
+.plegable {
+  border: 1px solid transparent;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+}
+
+.plegable:has(> summary:hover) {
+  border-color: var(--color-filete);
+}
+
+.plegable > summary {
+  display: grid;
+  gap: var(--espacio-3) var(--espacio-4);
+  align-items: center;
+  min-height: 3rem;
+  padding: var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  cursor: pointer;
+  list-style: none;
+}
+
+.plegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+.plegable > summary:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* El título: el nombre y, debajo, su rótulo. */
+.plegable-titulo {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.plegable-titulo > b {
+  color: var(--color-tinta);
+  font-family: var(--fuente-titulo);
+  font-size: clamp(var(--tamano-grande), 2.2vw, calc(var(--tamano-grande) * 1.4));
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.plegable-titulo > span {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* La foto o el logo (2026-11-09, noche): una caja redondeada de salvia; mientras no hay foto, el
+   ícono de la categoría, centrado. */
+.plegable-foto {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radio-lamina);
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  fill: var(--color-tinta);
+}
+
+.plegable-foto > svg {
+  width: 55%;
+  height: auto;
+  opacity: 0.55;
+}
+
+.plegable-foto > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Una medida con su barra (2026-11-09, noche): el rótulo con la cifra en negrita, la barra (`.progreso`)
+   y, debajo, de dónde sale la cifra, en tinta suave. */
+.plegable-medida {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.plegable-medida > b {
+  color: var(--color-tinta);
+}
+
+.plegable-medida > span {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* «Ver …»: la flecha baja si está plegada y sube si está abierta. */
+.plegable-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--color-acento);
+  font-weight: 700;
+}
+
+.plegable-ver::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2.5px solid currentcolor;
+  border-bottom: 2.5px solid currentcolor;
+  rotate: 45deg;
+  translate: 0 -0.15rem;
+}
+
+.plegable[open] .plegable-ver::after {
+  rotate: 225deg;
+  translate: 0 0.15rem;
+}
+
+.plegable-cuerpo {
+  display: grid;
+  gap: var(--espacio-4);
+  justify-items: start;
+  padding: var(--espacio-2) var(--espacio-3) var(--espacio-4);
+}
+
+.plegable-cuerpo > hr {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--color-filete);
+}
+
+.plegable-cuerpo > * {
+  justify-self: stretch;
+}
+
+.plegable-cuerpo > .boton {
+  justify-self: start;
+}

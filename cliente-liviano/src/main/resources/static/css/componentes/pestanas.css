@@ -15,6 +15,7 @@
   gap: 0.25rem;
   margin: 0 0 -2px;
   overflow-x: auto;
+  flex-wrap: wrap;
 }
 
 .pestana {

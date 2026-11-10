@@ -87,7 +87,7 @@
                   th:text="${problema == 'incompleta' ? 'Llegó menos: ' + e.llegoMenos + '.' : (problema == 'danada' ? 'Llegó dañada.' : 'Otra cosa.')}">Llegó
                   menos: 12 de 15 kg.</th:block><br><th:block th:text="${e.detalle}">Dos bolsas rotas.</th:block></dd></div>
             </dl>
-            <p th:unless="${conProblema}" class="asentado-pedido" th:text="${e.pedidoDespues}">Tu pedido de lentejas secas: 25 de
+            <p th:unless="${conProblema}" class="asentado-pedido" th:text="${e.pedidoDespues}">Tu necesidad de lentejas secas: 25 de
               40 kg recibidos, hasta el 31 de octubre.</p>
             <p class="quien-ve" th:text="|Le avisamos a ${e.dono ?: 'quien donó'}, ${conProblema ? 'con tus fotos, la fecha y el problema' : 'con tus fotos y la fecha'}.|">Le
               avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha.</p>
@@ -123,7 +123,7 @@
             </h2>
             <dl>
               <div>
-                <dt>Para tu pedido</dt>
+                <dt>Para tu necesidad</dt>
                 <dd th:text="${e.pedido}">Lentejas secas, 40 kg, hasta el 31 de octubre.</dd>
               </div>
               <div>

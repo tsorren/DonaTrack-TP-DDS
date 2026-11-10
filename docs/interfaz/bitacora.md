@@ -31,6 +31,103 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-08 · ux · Revisión de UX: portada, entidades, registro e inicio del donante
+
+- **Decisión:** a pedido del usuario, como revisión de UX/UI:
+  - General: las abejas son las de los assets; los títulos de sección ya no se equilibran en
+    renglones cortos y la bajada llega a 48 rem; los campos para escribir llevan texto de ejemplo,
+    esquinas redondeadas y un fondo más claro (`--color-campo`).
+  - Portada: la pausa es un ícono ‖ en un círculo, en la esquina inferior derecha de las láminas; las
+    abejas vuelan en loop por los dos recorridos que dibujó el usuario; el árbol de cómo funciona
+    queda plantado sobre la tierra en todos los anchos; «Qué ganás si donás» pasa a «Qué podés
+    donar», en la tarjeta de quien dona; las acciones de quién participa quedan alineadas al pie; las
+    preguntas tienen respuestas completas y cercanas; el cierre dice «Mirá hasta dónde llega lo que
+    donás»; lo que viajó este mes es una galería de fotos.
+  - Entidades: el buscador con «Por ejemplo: comedor.» adentro; filtros como los de LinkedIn
+    (categoría, tipo de pedido recurrente o extraordinario, emergencias); la cuenta con el árbol, en
+    el hero.
+  - Registro: en una sola página, centrado, como el de frontend-donatrack; el enlace a los términos,
+    dentro de la casilla; validación en castellano.
+  - Inicio del donante: el estado de las donaciones en una barra con su leyenda; las macetas a
+    escala; la tarjeta de cada donación entera como enlace, con el estado arriba y los datos con
+    íconos (sin el número interno).
+- **Alternativas:** para el cierre, «Sumate a la huerta» y «Empezá a ver dónde llega lo que donás».
+  Para quién participa, pestañas como en K: se descartaron porque esconden dos de las tres opciones.
+- **Por qué:** los problemas que el usuario fue encontrando al usar el sitio.
+- **Costo:** la validación en castellano necesita JavaScript; sin él, valida el navegador en su
+  idioma. Los pedidos de ejemplo tienen tipo y emergencia en la maqueta; con backend, HB pendiente.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/piel-huerta/`](evidencia/piel-huerta/).
+
+### 2026-11-08 · componente:navegacion · La campana y el menú de la cuenta en la foto de perfil
+
+- **Decisión:** en las pantallas internas, Notificaciones es una campana (antes, un sobre) y la cuenta
+  es una foto de perfil (una planta por defecto) que despliega un menú con el nombre y el rol, Mi
+  perfil y Salir, como en K. Es un `<details>`: anda sin JavaScript. Mis donaciones pasa a la huerta
+  de K (una lámina por donación).
+- **Alternativas:** la cuenta a la vista en la cabecera, con el nombre y los dos enlaces (lo de antes).
+- **Por qué:** lo pidió el usuario.
+- **Costo:** el menú no se cierra al tocar afuera (sin JavaScript); se cierra con la misma foto.
+- **Quién decidió:** usuario.
+- **Evidencia:** —
+
+### 2026-11-08 · direccion-general · Todo el sitio con la composición de la variante K
+
+- **Decisión:** el sitio deja la composición de Raíces y toma la de K ("Huerta con abejas"): la
+  portada en el orden de K (láminas con enjambre, cómo funciona en escalera, bajo tierra, cifras en
+  árboles con las entregas del mes, quién participa, preguntas y cierre), el inicio del donante como
+  el de K (cifras en fila, una lámina por donación, raíces, noticias y recorrido con la abeja), el
+  pie de tierra con raíces y lema, el estado en pastillas, las noticias en renglones, los mapas con
+  raíces en vez de líneas de subte y las cifras públicas en árboles. Salen los componentes de Raíces
+  (frutos, libreta, red, planta, tierra, pasos y pausa); las piezas de K son el componente `huerta`.
+- **Alternativas:** la piel de K sobre la estructura de Raíces (la entrada de arriba), que el usuario
+  rechazó: "no mantuviste la estética de la variante k, adaptaste el estilo que estaba en el repo".
+  Portada e inicio primero, o todo de una vez: eligió todo. Con las piezas de Raíces: reemplazarlas
+  por las de K o dejarlas donde K no tiene equivalente: eligió reemplazarlas.
+- **Por qué:** el usuario quiere la estética de K, no la de Raíces con otra piel.
+- **Costo:** las raíces de la portada son una muestra de los tipos de entidad, no datos. La prueba
+  de Nosotros que miraba la rama de frutos (`data-cosecha`) ahora mira las cifras en árboles. Las
+  etiquetas de herbario (`data-filete="doble"`) ya no dibujan filete.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/piel-huerta/`](evidencia/piel-huerta/).
+
+### 2026-11-08 · imagen · Ilustraciones de diseño: pasos, plantas, abeja y reintentar
+
+- **Decisión:** el sitio usa las ilustraciones de la variante K (versión clara). La lámina «Cómo
+  funciona» pasa a 4 pasos con sus dibujos (suma «Viaja a la entidad»); el inicio del donante suma
+  «Lo que ya dio fruto», una planta por entrega confirmada según la categoría (componente `huerta`);
+  la abeja duerme en los vacíos, vuela mientras algo carga y lleva la entrega en camino del mapa de
+  seguimiento (antes, el camión); la maceta de reintentar va en los avisos y las páginas de error.
+- **Alternativas:** plantas una por categoría donde se muestre una donación, o solo de adorno; abeja
+  solo para esperas o solo para la logística; 3 pasos sin la maceta. El usuario eligió una planta
+  por entrega confirmada, la abeja para las dos cosas y 4 pasos.
+- **Por qué:** son las ilustraciones de diseño de K y el usuario pidió usarlas.
+- **Costo:** la planta de las hojas al viento quedó sin uso. El vuelo de la abeja dura menos de 5 s
+  (sin pausa); mientras algo carga, vuela en ciclo.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/piel-huerta/`](evidencia/piel-huerta/).
+
+### 2026-11-08 · estilo · Piel Huerta: la estética de la variante K, sobre la estructura de Raíces
+
+- **Decisión:** el sitio toma la piel de la variante K ("Huerta con abejas") de `frontend-donatrack`:
+  paleta de K, títulos en Archivo bien ancho y texto en DM Sans (sale Fraunces), cabecera de papel
+  con un filete fino, tarjetas de papel claro sin filete con sombra granulada riso, botón principal
+  verde con sombra plana de hoja y los demás en contorno, esquinas de 16 y 10 px, y la parte
+  destacada de un título derecha, sin segunda tinta. La estructura de cada pantalla no cambia.
+  El verde de K (`#2f7d3b`) pasa a `#2a7035` y el naranja de las cifras de la planta vuelve a
+  `#a8420a`: con los de K, el texto no llegaba a AA sobre los fondos de estado y el papel.
+- **Alternativas:** vuelta 1 (2026-11-08), la variante `piel-huerta-a` contra lo de hoy en la portada
+  y el inicio del donante; el usuario eligió la piel. Antes descartó "K completa" (abejas, láminas
+  por donación y raíces de impacto) y "solo la paleta", y mantener Fraunces.
+- **Por qué:** al usuario le gusta la estética de K y quiere llevarla a las pantallas armadas.
+  Los paneles que no son `.tarjeta` (avisos, diálogos, fichas del mapa, etiquetas de la red y de
+  entidades, cuadernos de novedades, Contacto y Crear una cuenta) pasan al papel claro sin filete
+  con la elevación suave de K (`--sombra-papel`); el aviso de error y el de "hecho", con una franja
+  de su color a la izquierda.
+- **Costo:** la demora del donante queda con el rojo solo en su sombra plana, sin borde.
+- **Quién decidió:** usuario.
+- **Evidencia:** [`evidencia/piel-huerta/`](evidencia/piel-huerta/).
+
 ### 2026-11-07 · pantalla · F7 construida: Llegó con un problema, páginas de error y el recorrido sin "sin dibujar"
 
 - **Decisión:** Llegó con un problema es el fragmento del acta con un parámetro más,
