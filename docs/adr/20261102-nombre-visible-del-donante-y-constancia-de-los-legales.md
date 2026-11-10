@@ -210,7 +210,7 @@ Constancia 30 · compatibilidad 25 · que nadie acepte en nombre de otro 25 · c
 
 | Alternativa | Constancia | Compat. | No acepta por otro | Costo | **Total** |
 |---|:-:|:-:|:-:|:-:|:-:|
-| **A2. Opcional en el alta; `GET` y `PUT /api/personas/{id}/legales`; el sitio exige la casilla** | 4 | 5 | 5 | 4 | **4,5** |
+| **A2. Fuera del alta: `GET` y `PUT /api/personas/{id}/legales`; el sitio exige la casilla** | 4 | 5 | 5 | 4 | **4,5** |
 | A3. Obligatorio solo si llama el token técnico | 4 | 3 | 4 | 4 | 3,75 |
 | A1. `legalesAceptados` obligatorio en `POST /api/personas` (punto 4 original) | 5 | 1 | 2 | 2 | 2,65 |
 
@@ -239,6 +239,11 @@ HB-11.
 `[INFERRED]` El `personaId` del token es el de la organización: la constancia queda por persona,
 no por cada miembro que se invita a una entidad o empresa. Si cada miembro tiene que aceptar, la
 constancia suma la cuenta (`sub`) que aceptó.
+
+`[INFERRED]` Con `quienDono.donanteId` en el listado, quien lee la respuesta con el token de la
+entidad puede unir las donaciones "sin nombre" del mismo donante. Es el riesgo de "Vinculación por el
+id" del ajuste anterior, ahora sobre el listado: lo acota que solo el cliente liviano lo lee, del
+lado del servidor.
 
 ## Trabajo futuro
 

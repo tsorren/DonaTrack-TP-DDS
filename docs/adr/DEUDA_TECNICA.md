@@ -520,7 +520,7 @@ Pendiente después de HB-19 (ADR 20261109, "Trabajo futuro" y "Consecuencias neg
 | ADR | [20261102-nombre-visible-del-donante-y-constancia-de-los-legales](./20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] partial` (HB-20, 2026-11-10, rama `E6_HB20_nombre_visible_y_legales`, Donaciones V19 y OpenAPI 1.7.0) — hechos los ítems 1, 2, 3 (ajustado) y 5; pendientes el 4 (texto), el 6 (categoría, del lado del cliente) y conectar el cliente liviano: el registro no llama todavía a `PUT /api/personas/{id}/legales`, Mi perfil no cambia la preferencia y Recibidas sigue pidiendo `/api/donaciones/{id}`, que desde #955 la entidad no puede leer |
-| Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `POST /api/personas`, `GET /api/personas/me`) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
+| Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `GET` y `PUT /api/personas/{id}/legales`) · `openapi-donaciones.yaml` · `cliente-liviano` (registro, Mi perfil, Recibidas). Desde el ajuste A2 (2026-11-10) no toca `POST /api/personas` ni `cambios-incompatibles-aceptados.txt`; `GET /api/personas/me` queda con HB-11 |
 | Cuándo se saldará | Con el registro y el perfil reales (RF-03, RI-AUTH-02, HB-11) |
 
 1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias. **Hecho** (`PATCH /api/donantes/{id}/preferencias`).

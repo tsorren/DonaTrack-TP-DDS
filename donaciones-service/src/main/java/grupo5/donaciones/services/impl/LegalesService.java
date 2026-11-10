@@ -46,9 +46,8 @@ public class LegalesService implements ILegalesService {
     if (ultima != null && ultima.version() == version) {
       return aDTO(ultima);
     }
-    // ponytail: leer y después insertar; dos aceptaciones simultáneas de la misma versión chocan
-    // con
-    // el UNIQUE de V19 y una falla. Capturar el choque y releer si pasa en la práctica.
+    // ponytail: leer y después insertar. Dos aceptaciones simultáneas de la misma versión
+    // chocan con el UNIQUE de V19 y una falla; capturar el choque y releer si pasa en la práctica.
     return aDTO(
         aceptaciones.save(
             new AceptacionLegales(personaId, version, LocalDateTime.now(ZoneId.systemDefault()))));
