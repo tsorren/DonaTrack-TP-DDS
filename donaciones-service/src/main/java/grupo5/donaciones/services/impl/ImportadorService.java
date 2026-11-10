@@ -1,5 +1,8 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.DonaTrackException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.config.AlmacenamientoProperties;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
@@ -8,11 +11,14 @@ import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.donantes.Archivo;
+import grupo5.donaciones.models.entities.donantes.FilaConError;
+import grupo5.donaciones.models.entities.donantes.MotivoErrorFila;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
@@ -22,6 +28,8 @@ import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.DateTimeException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +41,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ImportadorService implements IImportadorService {
+
+  /** Cada cuántas filas se guarda el avance (HB-14): ~40 escrituras para 20.000 filas. */
+  public static final int TAMANIO_TANDA_PROGRESO = 500;
 
   private final IArchivoDonantesRepository archivoRepository;
   private final CargadorDonantes lectorCSV;
@@ -78,20 +89,20 @@ public class ImportadorService implements IImportadorService {
       archivo.marcarComoProcesando();
       archivoRepository.save(archivo);
 
-      List<Map<String, String>> filasValidas = leerPadron(archivo);
+      List<FilaPadron> filas = leerPadron(archivo);
+      archivo.iniciarConteo(filas.size());
+      archivoRepository.save(archivo);
 
-      int erroresDeNegocio = 0;
-
-      for (int i = 0; i < filasValidas.size(); i++) {
-        // El número de fila es 1-based y no cuenta el encabezado
-        boolean exito = procesarFilaIndividual(filasValidas.get(i), i + 1);
-        if (!exito) {
-          erroresDeNegocio++;
+      List<FilaConError> errores = new ArrayList<>();
+      for (int i = 0; i < filas.size(); i++) {
+        procesarFila(archivo, filas.get(i)).ifPresent(errores::add);
+        if ((i + 1) % TAMANIO_TANDA_PROGRESO == 0) {
+          guardarAvance(archivo, errores);
         }
       }
 
-      archivo.finalizarProcesamiento(erroresDeNegocio);
-      archivoRepository.save(archivo);
+      archivo.finalizarProcesamiento();
+      guardarAvance(archivo, errores);
 
     } catch (Exception e) {
       log.error("Error fatal durante la importación del archivo {}: {}", archivoId, e.getMessage());
@@ -100,17 +111,35 @@ public class ImportadorService implements IImportadorService {
     }
   }
 
+  /**
+   * Primero las filas con error y después los contadores, para que el total nunca las adelante. Si
+   * falla la escritura de las filas, el archivo termina en ERROR y su {@code conError} puede contar
+   * filas que no llegaron a la tabla.
+   */
+  private void guardarAvance(Archivo archivo, List<FilaConError> errores) {
+    if (!errores.isEmpty()) {
+      archivoRepository.guardarFilasConError(List.copyOf(errores));
+      errores.clear();
+    }
+    archivoRepository.save(archivo);
+  }
+
   /** El path del archivo es la clave del objeto en el bucket de padrones. */
-  private List<Map<String, String>> leerPadron(Archivo archivo) throws IOException {
+  private List<FilaPadron> leerPadron(Archivo archivo) throws IOException {
     try (InputStream contenido =
         storage.abrir(almacenamiento.bucketPadrones(), archivo.getPath())) {
       return lectorCSV.cargarDonantes(contenido);
     }
   }
 
-  private boolean procesarFilaIndividual(Map<String, String> fila, int numeroFila) {
+  /** Aplica una fila y la cuenta en el archivo; si no se importó, devuelve su error. */
+  private Optional<FilaConError> procesarFila(Archivo archivo, FilaPadron fila) {
+    if (!fila.formatoValido()) {
+      return Optional.of(error(archivo, fila, MotivoErrorFila.FORMATO_INVALIDO, null));
+    }
     try {
-      Persona personaClon = personaMapper.mapToPersona(fila);
+      Map<String, String> campos = fila.campos();
+      Persona personaClon = personaMapper.mapToPersona(campos);
 
       Optional<Persona> personaExistenteOpt = validadorDuplicados.buscarDuplicado(personaClon);
 
@@ -120,24 +149,54 @@ public class ImportadorService implements IImportadorService {
           log.warn(
               "La persona {} fue dada de baja como donante: no se la reactiva ni se actualiza",
               personaId);
-          return false;
+          return Optional.of(error(archivo, fila, MotivoErrorFila.DONANTE_DADO_DE_BAJA, null));
         }
         log.info("Actualizando persona existente con ID: {}", personaId);
-        personaService.actualizarParcial(personaId, personaMapper.mapToActualizacionParcial(fila));
+        personaService.actualizarParcial(
+            personaId, personaMapper.mapToActualizacionParcial(campos));
         // Recién con la fila válida y aplicada se registra el rol (y se publica donante.registrado)
         donantesService.registrarSiNoExiste(personaId);
+        archivo.registrarActualizada();
       } else {
         log.info("Creando nueva persona y donante...");
         PersonaOutputDTO personaCreada =
-            personaService.crearPersona(transformarAPersonaInputDTO(personaClon, fila));
+            personaService.crearPersona(transformarAPersonaInputDTO(personaClon, campos));
         donantesService.crearDonante(new DonanteInputDTO(personaCreada.id()));
+        archivo.registrarCreada();
       }
-      return true;
+      return Optional.empty();
     } catch (Exception e) {
-      // Solo el número de fila: la fila trae datos personales (nombre, documento, email)
-      log.error("Error de negocio al procesar la fila {}: {}", numeroFila, e.getMessage());
-      return false;
+      // Sin el mensaje de la excepción: puede citar datos de la fila (por ejemplo, la fecha de
+      // nacimiento que no se pudo leer). Alcanzan la línea, el motivo y el código.
+      String codigo = e instanceof DonaTrackException d ? d.getErrorCode() : null;
+      MotivoErrorFila motivo = motivoDe(e);
+      log.error(
+          "Error de negocio al procesar la línea {}: {} ({}, {})",
+          fila.linea(),
+          motivo,
+          e.getClass().getSimpleName(),
+          codigo);
+      return Optional.of(error(archivo, fila, motivo, codigo));
     }
+  }
+
+  private static FilaConError error(
+      Archivo archivo, FilaPadron fila, MotivoErrorFila motivo, String codigo) {
+    archivo.registrarError();
+    return new FilaConError(archivo.getId(), fila.linea(), motivo, codigo);
+  }
+
+  private static MotivoErrorFila motivoDe(Exception e) {
+    if (e instanceof DonaTrackException d
+        && d.getError() == ErrorCatalog.PERSONA_DUPLICADA_EN_CONFLICTO) {
+      return MotivoErrorFila.PERSONA_DUPLICADA_EN_CONFLICTO;
+    }
+    if (e instanceof ValidationException
+        || e instanceof IllegalArgumentException
+        || e instanceof DateTimeException) {
+      return MotivoErrorFila.DATOS_INVALIDOS;
+    }
+    return MotivoErrorFila.ERROR_INESPERADO;
   }
 
   // lo que esta en null es porque no viene en el csv

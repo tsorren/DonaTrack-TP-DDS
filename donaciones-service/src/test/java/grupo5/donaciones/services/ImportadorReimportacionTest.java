@@ -22,6 +22,7 @@ import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.models.repositories.impl.PersonasRepositoryEnMemoria;
@@ -277,7 +278,8 @@ class ImportadorReimportacionTest {
     UUID archivoId = UUID.randomUUID();
     Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
-    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(List.of(fila));
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(List.of(new FilaPadron(2, fila)));
 
     importador.procesarImportacionAsincronica(archivoId);
     return archivo;

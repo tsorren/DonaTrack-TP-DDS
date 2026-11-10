@@ -3,6 +3,7 @@ package grupo5.donaciones.controllers;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -21,4 +22,6 @@ public interface IDonantesController {
   ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(MultipartFile archivo) throws IOException;
 
   ResponseEntity<ArchivoOutputDTO> obtenerArchivoDonantes(UUID id);
+
+  ResponseEntity<List<FilaConErrorDTO>> obtenerFilasConError(UUID id, Integer page, Integer size);
 }
