@@ -53,12 +53,12 @@ class DonacionesRest implements DonacionesPuerto {
       DateTimeFormatter.ofPattern("d 'de' MMMM, H:mm", ES_AR);
   private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("H:mm", ES_AR);
 
-  private static final String ENTREGADA = "ENTREGADA";
-  private static final String FALLIDA = "ENTREGAFALLIDA";
-  private static final String VENCIDA = "VENCIDA";
-  private static final String TRASLADO = "ENTRASLADO";
-  private static final String ASIGNADA = "ASIGNACIONREALIZADA";
-  private static final String LISTA = "LISTAPARAENTREGAR";
+  static final String ENTREGADA = "ENTREGADA";
+  static final String FALLIDA = "ENTREGAFALLIDA";
+  static final String VENCIDA = "VENCIDA";
+  static final String TRASLADO = "ENTRASLADO";
+  static final String ASIGNADA = "ASIGNACIONREALIZADA";
+  static final String LISTA = "LISTAPARAENTREGAR";
 
   /** Las cinco etapas, en orden, con el estado de Donaciones que las abre. */
   private static final List<String> ETAPAS =
@@ -329,16 +329,7 @@ class DonacionesRest implements DonacionesPuerto {
 
   private static Donacion donacion(
       DonacionesApi.Donacion d, long numero, Map<UUID, String> entidades) {
-    Categoria categoria =
-        d.items() == null
-                || d.items().isEmpty()
-                || d.items().getFirst() == null
-                || d.items().getFirst().bien() == null
-            ? null
-            : d.items().getFirst().bien().categoria();
-    if (categoria != null && (categoria.id() == null || categoria.nombre() == null)) {
-      categoria = null;
-    }
+    Categoria categoria = categoria(d);
     String estado = normalizado(d.estadoActual());
     return new Donacion(
         d.id().toString(),
@@ -354,8 +345,22 @@ class DonacionesRest implements DonacionesPuerto {
         nota(estado, desde(d, estado)));
   }
 
+  /** La categoría del primer ítem, o null si no la tiene completa. */
+  static Categoria categoria(DonacionesApi.Donacion d) {
+    Categoria categoria =
+        d.items() == null
+                || d.items().isEmpty()
+                || d.items().getFirst() == null
+                || d.items().getFirst().bien() == null
+            ? null
+            : d.items().getFirst().bien().categoria();
+    return categoria == null || categoria.id() == null || categoria.nombre() == null
+        ? null
+        : categoria;
+  }
+
   /** "EnDeposito" y "EN_DEPOSITO" (el enum del contrato) quedan iguales: "ENDEPOSITO". */
-  private static String normalizado(String estado) {
+  static String normalizado(String estado) {
     return estado == null ? "" : estado.replace("_", "").toUpperCase(Locale.ROOT);
   }
 
@@ -369,7 +374,7 @@ class DonacionesRest implements DonacionesPuerto {
   }
 
   /** Cuándo entró al estado en el que está: su último cambio a ese estado, o el registro. */
-  private static LocalDateTime desde(DonacionesApi.Donacion d, String estado) {
+  static LocalDateTime desde(DonacionesApi.Donacion d, String estado) {
     return d.historial() == null
         ? d.fechaRegistro()
         : d.historial().stream()
@@ -403,7 +408,7 @@ class DonacionesRest implements DonacionesPuerto {
     }
   }
 
-  private static String cantidad(int cantidad, Categoria categoria) {
+  static String cantidad(int cantidad, Categoria categoria) {
     String unidad =
         categoria == null || categoria.unidad() == null ? null : UNIDADES.get(categoria.unidad());
     if (cantidad == 1 && "unidades".equals(unidad)) {
@@ -412,7 +417,7 @@ class DonacionesRest implements DonacionesPuerto {
     return unidad == null ? String.valueOf(cantidad) : cantidad + " " + unidad;
   }
 
-  private static String icono(String nombre) {
+  static String icono(String nombre) {
     String minusculas = nombre.toLowerCase(Locale.ROOT);
     return ICONOS.entrySet().stream()
         .filter(e -> minusculas.contains(e.getKey()))

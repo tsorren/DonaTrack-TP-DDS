@@ -65,10 +65,10 @@ el de los datos.
 |---|---|---|---|---|
 | Notificaciones | Las mismas del donante | 🟡 | ❌ tipo de evento e id de la donación o la entrega (el botón "Confirmar" no tiene a dónde ir) | HB-09 (nuevo campo) |
 | Seguir entregas | `/api/entregas/seguimiento/beneficiarios/{id}`, `/api/entregas/{id}` | 🟡 | ✅ estado, paradas y patente, en una llamada. 🔁 dirección exacta con la entrega. ❌ posición del camión. El endpoint trae también las entregadas: las filtra el cliente | HB-05, HB-06 |
-| Donaciones recibidas | `/donaciones-independientes?entidadId&estado&desde&hasta` | 🟡 | 🔁 quién donó, con una llamada por donación. ❌ el pedido que cubre (se guarda, pero el DTO no lo devuelve). Las fechas filtran por registro, no por asignación | HB-17, HB-20 |
+| Donaciones recibidas | `/donaciones-independientes?entidadId&estado&desde&hasta`, `/api/donaciones/{id}` | 🟡 | 🔁 quién donó: una llamada a `/api/donaciones/{id}` por donación original distinta (`donacionOriginalId`), con la razón social o el nombre y apellido. 🔁 las recibidas del mes, con la fecha de su cambio a entregada. ❌ el pedido que cubre (se guarda, pero el DTO no lo devuelve). ❌ "Esperan tu confirmación": la que llegó a la puerta y la que viene en camino están las dos en traslado, y van a "En camino". ❌ las novedades sin leer. Las fechas filtran por registro, no por asignación. Conectada el 2026-11-08 | HB-17, HB-20, HB-22, HB-09 |
 | Necesidades | CRUD de `/api/necesidades` | 🟡 | 🔁 nombre y unidad, por la subcategoría. ❌ período, lo recibido y la historia. Cambiar solo toca descripción y cantidad | HB-17, HB-18 |
 | Inicio | Seguimiento, donaciones, necesidades, conteo | 🟡 | ❌ lo recibido por pedido. "Espera confirmación" no es un estado de la entrega | HB-18 |
-| Confirmar recepción (y Llegó con un problema) | `PATCH /api/entregas/{id}/estado`, `PATCH .../fotos` | 🟡 | ✅ fotos por URL. ❌ subir el archivo. ❌ remito y cantidad recibida parcial. ❌ pedido que cubre | HB-10, HB-17 |
+| Confirmar recepción (y Llegó con un problema) | `PATCH /api/entregas/{id}/estado`, `PATCH .../fotos` | 🔴 | ✅ fotos por URL. ❌ subir el archivo: el acta pide la foto y la API solo acepta una URL, así que no se conecta (2026-11-08). ❌ remito y cantidad recibida parcial. ❌ pedido que cubre | HB-10, HB-17 |
 | Mi perfil | `/api/entidades/{id}`, `PUT /api/personas/{id}` | 🟡 | ❌ "qué es" como lista. ❌ "Qué te avisamos". Sin `/me` | HB-11 |
 
 ## 5. Admin
@@ -95,6 +95,7 @@ Huecos que se repiten en varias pantallas, de más a menos pantallas:
 | Tipo de evento e id de la donación o la entrega en `NotificacionDTO` | Notificaciones del donante y de la entidad | **No**. Aditivo en el contrato, pero `Notificacion` tampoco los guarda: toca dominio, esquema y DTO |
 | Posición del camión | Seguimiento del donante, Seguir entregas de la entidad | HB-05, HB-06 |
 | Pedido que cubre cada donación (`necesidadId` en el DTO) | Donaciones recibidas, Confirmar recepción | HB-17 |
+| La entrega que llegó a la puerta y espera confirmación | Donaciones recibidas, Inicio y Seguir entregas de la entidad | HB-22 |
 | Destacadas con foto y contadores | Portada, Donaciones realizadas | HB-01, HB-02 |
 | "Qué es" la entidad como lista fija | Entidades y necesidades, Registro de entidad, Mi perfil de la entidad | **No** |
 
