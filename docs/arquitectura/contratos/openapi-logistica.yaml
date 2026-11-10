@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.1.0
+  version: 1.2.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -90,6 +90,27 @@ paths:
       responses:
         '200':
           description: Listado de seguimientos de entregas del beneficiario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeguimientoEntregaResponseDTO'
+  /api/entregas/seguimiento/donantes/{donanteId}:
+    get:
+      summary: Listar seguimiento de las entregas activas de un donante (RF-09, HB-16)
+      description: Retorna las entregas pendientes o en traslado del donante, con el mismo DTO que el seguimiento por beneficiario. Las entregas creadas sin donanteId no aparecen. Sin autenticación el donante llega por parámetro; con HB-13 se filtrará por la persona del token.
+      operationId: listarSeguimientoPorDonante
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Listado de seguimientos de las entregas activas del donante (vacío si no tiene)
           content:
             application/json:
               schema:
@@ -627,6 +648,10 @@ components:
         volumenTotalM3:
           type: number
           exclusiveMinimum: 0
+        donanteId:
+          type: string
+          format: uuid
+          description: Opcional. Donante de la donación original, para listar sus entregas activas (HB-16)
     CambioEstadoEntregaRequestDTO:
       type: object
       required:

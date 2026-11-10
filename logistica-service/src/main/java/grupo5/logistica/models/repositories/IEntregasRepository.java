@@ -20,4 +20,6 @@ public interface IEntregasRepository extends CrudRepository<Entrega> {
   Optional<Entrega> findByIdDonacion(UUID idDonacion);
 
   List<Entrega> findByIdBeneficiaria(UUID idBeneficiaria);
+
+  List<Entrega> findByDonanteId(UUID donanteId);
 }

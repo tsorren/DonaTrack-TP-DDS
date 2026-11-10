@@ -62,6 +62,7 @@ public class EntregaMongoMapper {
     doc.setId(domain.getId());
     doc.setIdDonacion(domain.getIdDonacion());
     doc.setIdBeneficiaria(domain.getIdBeneficiaria());
+    doc.setDonanteId(domain.getDonanteId());
     doc.setEstado(domain.getEstadoActual());
     doc.setHoraArribo(aInstant(domain.getHoraArribo()));
     doc.setHoraSalida(aInstant(domain.getHoraSalida()));
@@ -127,20 +128,23 @@ public class EntregaMongoMapper {
       return null;
     }
 
-    return new Entrega(
-        doc.getId(),
-        idRutaAsignada(doc),
-        doc.getIdDonacion(),
-        doc.getIdBeneficiaria(),
-        mapearDireccionADominio(doc.getDestino()),
-        doc.getEstado(),
-        mapearHistorialDominio(doc),
-        aLocalDateTime(doc.getHoraArribo()),
-        aLocalDateTime(doc.getHoraSalida()),
-        doc.getFotosRecepcion().stream().map(FotoRecepcionSubdocument::getClave).toList(),
-        doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
-        doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
-        doc.getVersion());
+    Entrega entrega =
+        new Entrega(
+            doc.getId(),
+            idRutaAsignada(doc),
+            doc.getIdDonacion(),
+            doc.getIdBeneficiaria(),
+            mapearDireccionADominio(doc.getDestino()),
+            doc.getEstado(),
+            mapearHistorialDominio(doc),
+            aLocalDateTime(doc.getHoraArribo()),
+            aLocalDateTime(doc.getHoraSalida()),
+            doc.getFotosRecepcion().stream().map(FotoRecepcionSubdocument::getClave).toList(),
+            doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
+            doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
+            doc.getVersion());
+    entrega.registrarDonante(doc.getDonanteId());
+    return entrega;
   }
 
   private static List<CambioEstadoEntrega> mapearHistorialDominio(EntregaDocument doc) {

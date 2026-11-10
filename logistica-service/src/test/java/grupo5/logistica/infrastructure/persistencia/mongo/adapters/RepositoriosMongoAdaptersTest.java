@@ -261,6 +261,7 @@ class RepositoriosMongoAdaptersTest {
     assertFalse(entregas.existsByIdDonacion(null));
     assertTrue(entregas.findByIdDonacion(null).isEmpty());
     assertTrue(entregas.findByIdBeneficiaria(null).isEmpty());
+    assertTrue(entregas.findByDonanteId(null).isEmpty());
   }
 
   @Test
@@ -314,6 +315,17 @@ class RepositoriosMongoAdaptersTest {
     when(entregaRepo.findByIdBeneficiaria(idBeneficiaria)).thenReturn(List.of(doc));
 
     assertEquals(1, entregas.findByIdBeneficiaria(idBeneficiaria).size());
+  }
+
+  @Test
+  void entregasMongoAdapter_findByDonanteId_devuelveLasEntregasDelDonante() {
+    Entrega entrega = EntregaMother.pendiente();
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
+    when(entregaRepo.findByDonanteId(donanteId)).thenReturn(List.of(doc));
+
+    assertEquals(donanteId, entregas.findByDonanteId(donanteId).getFirst().getDonanteId());
   }
 
   @Test

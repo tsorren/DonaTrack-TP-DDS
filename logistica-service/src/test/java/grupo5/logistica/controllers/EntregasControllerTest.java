@@ -35,6 +35,7 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
   private static final UUID ID = UUID.randomUUID();
   private static final UUID DONACION_ID = UUID.randomUUID();
   private static final UUID BENEFICIARIA_ID = UUID.randomUUID();
+  private static final UUID DONANTE_ID = UUID.randomUUID();
   private static final UUID RUTA_ID = UUID.randomUUID();
 
   private static final DireccionDTO DIRECCION =
@@ -308,6 +309,46 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
     OpenApiTestUtils.assertResponseConformsToOpenApi(
         specPath,
         "/api/entregas/seguimiento/beneficiarios/" + BENEFICIARIA_ID,
+        Request.Method.GET,
+        200,
+        result.getResponse().getContentAsString());
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_deberiaRetornar200YCumplirContratoOpenApi() throws Exception {
+    SeguimientoEntregaResponseDTO seguimiento =
+        new SeguimientoEntregaResponseDTO(
+            ID,
+            DONACION_ID,
+            EstadoEntrega.PENDIENTE,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            0,
+            0,
+            null,
+            null,
+            null,
+            List.of());
+
+    when(entregasService.listarSeguimientoPorDonante(DONANTE_ID)).thenReturn(List.of(seguimiento));
+
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/entregas/seguimiento/donantes/" + DONANTE_ID))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].idEntrega").value(ID.toString()))
+            .andExpect(jsonPath("$[0].rutaAsignada").value(false))
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas/seguimiento/donantes/" + DONANTE_ID,
         Request.Method.GET,
         200,
         result.getResponse().getContentAsString());

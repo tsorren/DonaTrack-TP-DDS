@@ -37,12 +37,15 @@ public class EntregaMapper {
     }
 
     validarMagnitudes(dto);
-    return new Entrega(
-        dto.idDonacion(),
-        dto.idBeneficiaria(),
-        direccionMapper.toEntity(dto.destino()),
-        dto.pesoTotalKG(),
-        dto.volumenTotalM3());
+    Entrega entrega =
+        new Entrega(
+            dto.idDonacion(),
+            dto.idBeneficiaria(),
+            direccionMapper.toEntity(dto.destino()),
+            dto.pesoTotalKG(),
+            dto.volumenTotalM3());
+    entrega.registrarDonante(dto.donanteId());
+    return entrega;
   }
 
   public EntregaResponseDTO toResponseDTO(Entrega entrega) {
