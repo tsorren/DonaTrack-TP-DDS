@@ -71,7 +71,7 @@ logistica-service
 |---|---|---|---|---|
 | `ruta.asignada` | `donaciones.ruta.asignada` | `donaciones-service` (`LogisticaEventListener`) | Notifica que una donación fue incluida en una ruta planificada | [`evento-ruta-asignada.schema.json`](./contratos/schemas/evento-ruta-asignada.schema.json) |
 | `ruta.iniciada` | `donaciones.ruta.iniciada` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donaciones a `EN_TRASLADO` y difunde URL de tracking | [`evento-ruta-iniciada.schema.json`](./contratos/schemas/evento-ruta-iniciada.schema.json) |
-| `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA`; con DTI-36 replica además las fotos de recepción (campo opcional, `[PROPOSED]`) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
+| `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA`; si trae `reporte.cantidadRecibida`, guarda lo que no llegó y la necesidad cuenta lo recibido (HB-17); con DTI-36 replica además las fotos de recepción (campo opcional, `[PROPOSED]`) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
 | `entrega.fallida` | `donaciones.entrega.fallida` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGA_FALLIDA` y evalúa replanificación | [`evento-entrega-fallida.schema.json`](./contratos/schemas/evento-entrega-fallida.schema.json) |
 | `entrega.cancelada` | `donaciones.entrega.cancelada` | `donaciones-service` (`LogisticaEventListener`) | HB-19: confirma que el proveedor canceló una entrega que no salió; la donación vuelve a `EN_DEPOSITO` sin destino y la solicitud del broker se cierra (`CANCELADA`) | [`evento-entrega-cancelada.schema.json`](./contratos/schemas/evento-entrega-cancelada.schema.json) |
 
@@ -245,7 +245,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 }
 ```
 
-> **`donanteId` (opcional, en el schema desde el 2026-11-06; implementación pendiente en DTI-36, `[PROPOSED]`):** Logística lo va a guardar en la entrega para listar las entregas activas de un donante (HB-16). Un broker que no lo manda sigue siendo válido; esa entrega no aparece en el listado por donante. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
+> **`donanteId` (opcional, en el schema desde el 2026-11-06; implementado el 2026-11-08, HB-16):** el broker lo saca de la donación original y Logística lo guarda en la entrega para listar las entregas activas de un donante (`GET /api/entregas/seguimiento/donantes/{donanteId}`). Un broker que no lo manda sigue siendo válido; esa entrega no aparece en el listado por donante. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 
 > **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
 
@@ -282,11 +282,22 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "fechaEntrega": "2026-09-16T11:40:00Z",
   "fotosRecepcion": [
     "http://localhost:8083/api/entregas/55667788-99aa-bbcc-ddee-ff0011223344/fotos/0f1e2d3c-4b5a-6978-8a9b-acbdcedf0011"
-  ]
+  ],
+  "reporte": {
+    "motivo": "INCOMPLETA",
+    "detalle": "Llegaron dos cajas de tres",
+    "cantidadRecibida": 10
+  }
 }
 ```
 
-> **`fotosRecepcion` (opcional, en el schema desde el 2026-11-06; implementación pendiente en DTI-36, `[PROPOSED]`):** URLs estables de las fotos, que redirigen a una URL firmada de vida corta. Donaciones las va a replicar en la donación para servir `GET /donaciones/destacadas` sin llamar a Logística (HB-01). Un proveedor que no las manda sigue siendo válido; sus entregas no aportan destacadas. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
+> **`reporte` (opcional, implementado el 2026-11-08, HB-17):** solo viaja si la entidad contó un
+> problema al confirmar. `motivo` es `INCOMPLETA`, `DANADA` u `OTRO`. Donaciones usa
+> `cantidadRecibida` para que la necesidad cuente lo que llegó, en la misma transacción idempotente
+> que el paso a `ENTREGADA`. El remito no viaja. Ver el [ajuste del ADR del contrato de
+> entregas](../adr/20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md).
+
+> **`fotosRecepcion` (opcional, en el schema desde el 2026-11-06; implementado en HB-01, PR #954):** URLs de las fotos de la entrega, en su orden; las de una subida a MinIO (HB-10, PR #952) son estables y redirigen a una URL firmada de vida corta; las cargadas por URL viajan tal cual. Logística no manda el campo si la entrega no tiene fotos. Donaciones las replica en la donación al pasar a `ENTREGADA`, en la misma transacción idempotente, solo si no hay `reporte`, y sirve `GET /api/donaciones/destacadas` sin llamar a Logística (HB-01). Un proveedor que no las manda sigue siendo válido; sus entregas no aportan destacadas. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md).
 
 #### Entrega Fallida (`entrega.fallida`)
 ```json

@@ -137,7 +137,8 @@ public class ProveedorLogisticaAmqp implements IProveedorLogistica {
         datos.destino(),
         datos.pesoTotalKG(),
         datos.volumenTotalM3(),
-        datos.fecha());
+        datos.fecha(),
+        datos.donanteId());
   }
 
   private static MessagePostProcessor envelope(UUID envioId, String traceId) {

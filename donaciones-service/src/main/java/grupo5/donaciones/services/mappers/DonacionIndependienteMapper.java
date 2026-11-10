@@ -55,6 +55,7 @@ public class DonacionIndependienteMapper {
         itemsMapped,
         donacion.getCantidad(),
         donacion.getEntidadBeneficiariaId(),
+        donacion.getNecesidadId(),
         donacion.isCancelacionPedida());
   }
 

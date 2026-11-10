@@ -274,6 +274,8 @@ class EntregaTest {
     assertNotNull(evento.getId());
     assertNotNull(evento.getTimestamp());
     assertEquals(List.of(FOTO_VALIDA_1, FOTO_VALIDA_2), entrega.getFotosRecepcion());
+    // HB-01: el evento lleva las fotos, en el orden de la entrega
+    assertEquals(List.of(FOTO_VALIDA_1, FOTO_VALIDA_2), evento.getFotosRecepcion());
   }
 
   @Test

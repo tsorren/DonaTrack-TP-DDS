@@ -78,9 +78,32 @@ class ProveedorLogisticaHttpTest {
         .andExpect(jsonPath("$.destino.altura").value(742))
         .andExpect(jsonPath("$.pesoTotalKG").value(12.5))
         .andExpect(jsonPath("$.volumenTotalM3").value(0.3))
+        .andExpect(jsonPath("$.donanteId").doesNotExist())
         .andRespond(withStatus(org.springframework.http.HttpStatus.CREATED));
 
     assertDoesNotThrow(() -> proveedor.enviar(ENVIO_ID, DATOS, TRACE_ID));
+
+    servidor.verify();
+  }
+
+  @Test
+  void enviar_mandaElDonanteCuandoLoTiene() {
+    UUID donanteId = UUID.randomUUID();
+    DatosEntregaLogistica datos =
+        new DatosEntregaLogistica(
+            DONACION_ID,
+            BENEFICIARIA_ID,
+            DATOS.destino(),
+            DATOS.pesoTotalKG(),
+            DATOS.volumenTotalM3(),
+            DATOS.fecha(),
+            donanteId);
+    servidor
+        .expect(requestTo(BASE_URL + "/api/entregas"))
+        .andExpect(jsonPath("$.donanteId").value(donanteId.toString()))
+        .andRespond(withStatus(org.springframework.http.HttpStatus.CREATED));
+
+    assertDoesNotThrow(() -> proveedor.enviar(ENVIO_ID, datos, TRACE_ID));
 
     servidor.verify();
   }

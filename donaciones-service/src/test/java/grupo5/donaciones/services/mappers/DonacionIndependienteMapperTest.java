@@ -1,6 +1,7 @@
 package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -107,6 +108,16 @@ class DonacionIndependienteMapperTest {
     donacion.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), UUID.randomUUID(), entidadId));
 
     assertEquals(entidadId, mapper.toDTO(donacion).entidadBeneficiariaId());
+  }
+
+  @Test
+  void toDTO_donacionAsignada_deberiaIncluirLaNecesidad() {
+    DonacionIndependiente donacion = new DonacionIndependiente(UUID.randomUUID(), List.of());
+    UUID necesidadId = UUID.randomUUID();
+    donacion.asignarDestino(new DestinoAsignacion(necesidadId, null, UUID.randomUUID()));
+
+    assertEquals(necesidadId, mapper.toDTO(donacion).necesidadId());
+    assertNull(mapper.toDTO(new DonacionIndependiente(UUID.randomUUID(), List.of())).necesidadId());
   }
 
   @Test

@@ -193,6 +193,65 @@ paths:
                 $ref: '#/components/schemas/SubidaFotoOutputDTO'
         '400':
           description: Falta el tipo de contenido (ERR-CSR-003) o no está permitido (ERR-VAL-318)
+  /api/donaciones/contadores:
+    get:
+      summary: Contadores públicos de la landing
+      description: >
+        Ruta pública (RF-01, HB-02): sin token cuando el gateway aplique la allowlist (D26). Totales
+        desde el inicio, sin datos personales. donantesActivos cuenta los donantes activos con al
+        menos una donación; donacionesRealizadas, las donaciones independientes en ENTREGADA (la
+        entidad confirmó la recepción); beneficiariosActivos, las entidades de
+        GET /api/entidades/publicas.
+      operationId: obtenerContadoresPublicos
+      responses:
+        '200':
+          description: Contadores y momento del cálculo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContadoresPublicosDTO'
+  /api/donaciones/destacadas:
+    get:
+      summary: Donaciones destacadas de la landing
+      description: >
+        Ruta pública (RF-01, HB-01, D28): sin token cuando el gateway aplique la allowlist (D26).
+        Donaciones independientes en ENTREGADA con fotos de recepción replicadas de entrega.exitosa
+        (ADR de réplicas por evento), de la más nueva a la más vieja. Una entrega con reporte no
+        aporta fotos y no sale (ADR de entregas con problema, 2026-11-08). Sin el donante ni la
+        descripción libre del bien. X-Total-Count da el total del período, sin el límite.
+      operationId: listarDestacadas
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          description: Ventana hacia atrás desde ahora; MES (30 días) si se omite.
+          schema:
+            type: string
+            enum: [SEMANA, MES, ANIO]
+        - name: limite
+          in: query
+          required: false
+          description: Cuántas devuelve; 10 si se omite.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Destacadas del período
+          headers:
+            X-Total-Count:
+              description: Total de destacadas del período
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionDestacadaDTO'
+        '400':
+          description: Período desconocido o límite fuera de 1..50
   /api/donaciones/{id}:
     get:
       summary: Consultar donación por ID
@@ -711,6 +770,54 @@ paths:
                 $ref: '#/components/schemas/ArchivoDonantesResponse'
         '404':
           description: Archivo no encontrado
+  /api/donantes/archivos/{id}/filas-con-error:
+    get:
+      summary: Listar las filas del padrón que no se importaron
+      description: >
+        Resultado por fila del padrón (HB-14): solo las filas con error, ordenadas por línea del
+        CSV (el encabezado es la línea 1). Sin datos de la persona: línea, motivo y código. El
+        total va en el header `X-Total-Count` y coincide con `conError` del archivo, salvo que el
+        archivo haya terminado en ERROR porque no se pudieron guardar sus filas. Mientras el
+        archivo se procesa, la lista crece por tandas de 500 filas.
+      operationId: listarFilasConErrorDelArchivo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: page
+          in: query
+          required: false
+          description: Número de página, desde 0. Por defecto 0.
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          description: Tamaño de página. Por defecto 20.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Tramo de las filas con error
+          headers:
+            X-Total-Count:
+              description: Cantidad total de filas con error del archivo.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FilaConErrorResponse'
+        '400':
+          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
+        '404':
+          description: Archivo no encontrado
   /api/categorias:
     get:
       summary: Listar categorías de donación
@@ -1020,6 +1127,67 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    ContadoresPublicosDTO:
+      type: object
+      description: Contadores públicos de la landing (HB-02).
+      required: [donantesActivos, donacionesRealizadas, beneficiariosActivos, calculadoEn]
+      properties:
+        donantesActivos:
+          type: integer
+          format: int64
+          minimum: 0
+        donacionesRealizadas:
+          type: integer
+          format: int64
+          minimum: 0
+        beneficiariosActivos:
+          type: integer
+          format: int64
+          minimum: 0
+        calculadoEn:
+          type: string
+          format: date-time
+          description: Momento del cálculo, con su desplazamiento horario
+    DonacionDestacadaDTO:
+      type: object
+      description: Donación destacada de la landing (HB-01). Sin datos del donante.
+      required: [id, cantidad, fechaEntrega, fotos]
+      properties:
+        id:
+          type: string
+          format: uuid
+        categoria:
+          type: string
+          nullable: true
+        subcategoria:
+          type: string
+          nullable: true
+        cantidad:
+          type: integer
+          minimum: 1
+        unidad:
+          type: string
+          nullable: true
+          description: Unidad de la categoría
+        entidadId:
+          type: string
+          format: uuid
+          nullable: true
+        entidad:
+          type: string
+          nullable: true
+          description: Razón social de la entidad que la recibió
+        fechaEntrega:
+          type: string
+          format: date-time
+          description: En UTC, como la manda Logística
+        fotos:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
+          description: URLs estables de las fotos de recepción, en el orden de la entrega
     EntidadPublicaDTO:
       type: object
       description: Entidad beneficiaria para rutas públicas (D26).
@@ -1192,7 +1360,7 @@ components:
           format: date-time
     ArchivoDonantesResponse:
       type: object
-      required: [id, path, estado]
+      required: [id, path, estado, procesadas, creadas, actualizadas, conError]
       properties:
         id: { type: string, format: uuid }
         path:
@@ -1201,6 +1369,40 @@ components:
         estado:
           type: string
           enum: [PENDIENTE, PROCESANDO, PROCESADO, PROCESADO_CON_ERRORES, ERROR]
+        totalFilas:
+          type: integer
+          nullable: true
+          description: >
+            Filas del padrón sin el encabezado ni las líneas en blanco (HB-14). Null hasta que
+            el servicio lee el padrón.
+        procesadas:
+          type: integer
+          description: Filas ya resueltas; es creadas + actualizadas + conError (HB-14)
+        creadas:
+          type: integer
+          description: Filas que dieron de alta una persona y su donante (HB-14)
+        actualizadas:
+          type: integer
+          description: Filas que actualizaron una persona existente (HB-14)
+        conError:
+          type: integer
+          description: >
+            Filas que no se importaron, también las mal formadas (HB-14). El detalle está en
+            GET /api/donantes/archivos/{id}/filas-con-error
+    FilaConErrorResponse:
+      type: object
+      required: [linea, motivo]
+      properties:
+        linea:
+          type: integer
+          description: Línea del CSV, contando el encabezado como línea 1
+        motivo:
+          type: string
+          enum: [FORMATO_INVALIDO, DATOS_INVALIDOS, DONANTE_DADO_DE_BAJA, PERSONA_DUPLICADA_EN_CONFLICTO, ERROR_INESPERADO]
+        codigo:
+          type: string
+          nullable: true
+          description: Código del catálogo de errores (por ejemplo ERR-EST-113), si la causa lo trae
     # Personas (DTI-27, ítem 3): PersonaInputDTO y PersonaOutputDTO son polimórficos por "tipo"
     # (HumanaInputDTO/JuridicaInputDTO y sus Output). Los campos opcionales de salida admiten null.
     PersonaInputDTO:
@@ -1398,6 +1600,11 @@ components:
           format: uuid
           nullable: true
           description: Entidad a la que se asignó la donación; null mientras no tiene destino
+        necesidadId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Necesidad a la que se asignó la donación (HB-17, DTI-29); null mientras no tiene destino o si se asignó sin necesidad
         cancelacionPedida:
           type: boolean
           description: >-

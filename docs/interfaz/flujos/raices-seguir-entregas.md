@@ -206,7 +206,7 @@ Filtro de tono:
 
 | # | Heurística | Cómo la cumple | Riesgo que queda |
 |---|---|---|---|
-| 1 | Visibilidad del estado | Cada entrega con su estado, su nota y su última noticia; arriba, cuándo se actualizó todo | El simulador de posición todavía no existe (HB-05). "Actualizadas…" cambia al recargar la página: si se refresca sola depende de D22 (pendiente) |
+| 1 | Visibilidad del estado | Cada entrega con su estado, su nota y su última noticia; arriba, cuándo se actualizó todo | El simulador de posición ya existe en Logística (HB-05, 2026-11-08), pero esta pantalla todavía no lo consume. "Actualizadas…" cambia al recargar la página: si se refresca sola depende de D22 (pendiente) |
 | 2 | Lenguaje del usuario | Entrega, depósito, en camino, espera destino; sin códigos de seguimiento | — |
 | 3 | Control y libertad | Solo consulta; menú y Atrás siempre disponibles | — |
 | 4 | Consistencia | Los mismos estados, datos y enlaces que la pantalla del primer prototipo; el sello de estado de la portada de Raíces | No hay catálogo de componentes: el sello se compara a ojo con el de la portada |

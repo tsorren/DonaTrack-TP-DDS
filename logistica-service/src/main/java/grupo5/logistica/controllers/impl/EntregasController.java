@@ -70,6 +70,13 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @GetMapping("/seguimiento/donantes/{donanteId}")
+  public ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorDonante(
+      @PathVariable("donanteId") UUID donanteId) {
+    return ResponseEntity.ok(entregasService.listarSeguimientoPorDonante(donanteId));
+  }
+
+  @Override
   @PatchMapping("/{id}/estado")
   public ResponseEntity<EntregaResponseDTO> cambiarEstado(
       @PathVariable("id") UUID id, @Valid @RequestBody CambioEstadoEntregaRequestDTO request) {

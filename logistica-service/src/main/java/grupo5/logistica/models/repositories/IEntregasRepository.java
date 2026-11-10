@@ -25,4 +25,6 @@ public interface IEntregasRepository extends CrudRepository<Entrega> {
   List<Entrega> findCanceladasByIdDonacion(UUID idDonacion);
 
   List<Entrega> findByIdBeneficiaria(UUID idBeneficiaria);
+
+  List<Entrega> findByDonanteId(UUID donanteId);
 }

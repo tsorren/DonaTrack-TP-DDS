@@ -14,9 +14,11 @@ public record DonacionIndependienteResponseDTO(
     List<ItemDonacionIndependienteResponseDTO> items,
     int cantidad,
     UUID entidadBeneficiariaId,
+    UUID necesidadId,
     boolean cancelacionPedida) {
 
-  /** Sin la marca de HB-19 (la necesidad no se dio de baja). */
+  /** Sin necesidad (o respuesta anterior a HB-17) y sin la marca de HB-19. */
+  @SuppressWarnings("java:S107")
   public DonacionIndependienteResponseDTO(
       UUID id,
       UUID donacionOriginalId,
@@ -37,6 +39,7 @@ public record DonacionIndependienteResponseDTO(
         items,
         cantidad,
         entidadBeneficiariaId,
+        null,
         false);
   }
 }

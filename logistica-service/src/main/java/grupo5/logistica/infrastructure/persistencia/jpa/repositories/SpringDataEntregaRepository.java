@@ -21,4 +21,6 @@ public interface SpringDataEntregaRepository extends JpaRepository<EntregaEntity
   List<EntregaEntity> findByIdDonacionAndEstado(UUID idDonacion, EstadoEntrega estado);
 
   List<EntregaEntity> findByIdBeneficiarioOrderByIdEntregaAsc(UUID idBeneficiario);
+
+  List<EntregaEntity> findByDonanteIdOrderByIdEntregaAsc(UUID donanteId);
 }

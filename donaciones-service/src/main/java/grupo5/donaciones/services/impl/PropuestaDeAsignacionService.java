@@ -274,7 +274,11 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
             datosBeneficiario.destino(),
             donacionAsignar.getPesoTotal(),
             donacionAsignar.getVolumenTotal(),
-            LocalDateTime.now(ZoneId.systemDefault())));
+            LocalDateTime.now(ZoneId.systemDefault()),
+            donacionesRepository
+                .findById(donacionAsignar.getDonacionOriginalId())
+                .map(Donacion::getDonanteId)
+                .orElse(null)));
   }
 
   private EventoDonacionAsignadaV1 construirEventoDonacionAsignada(

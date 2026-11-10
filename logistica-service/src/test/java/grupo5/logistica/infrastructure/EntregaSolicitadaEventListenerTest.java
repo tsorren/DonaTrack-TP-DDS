@@ -80,6 +80,31 @@ class EntregaSolicitadaEventListenerTest {
     assertEquals(0.25f, dto.volumenTotalM3());
     assertEquals("Av. Medrano", dto.destino().calle());
     assertEquals("CABA", dto.destino().localidad());
+    assertNull(dto.donanteId());
+  }
+
+  @Test
+  void onEntregaSolicitada_cuandoComandoTraeDonante_loPasaAlPedidoDeEntrega() {
+    EventoEntregaSolicitadaV1 base = comandoDeEjemplo(UUID.randomUUID());
+    UUID donanteId = UUID.randomUUID();
+    EventoEntregaSolicitadaV1 comando =
+        new EventoEntregaSolicitadaV1(
+            base.donacionIndependienteId(),
+            base.personaBeneficiariaId(),
+            base.destino(),
+            base.pesoTotalKG(),
+            base.volumenTotalM3(),
+            base.fecha(),
+            donanteId);
+    when(entregasRepository.existsByIdDonacion(comando.donacionIndependienteId()))
+        .thenReturn(false);
+
+    listener.onEntregaSolicitada(comando);
+
+    ArgumentCaptor<CrearEntregaRequestDTO> captor =
+        ArgumentCaptor.forClass(CrearEntregaRequestDTO.class);
+    verify(entregasService).crear(captor.capture());
+    assertEquals(donanteId, captor.getValue().donanteId());
   }
 
   @Test

@@ -108,4 +108,12 @@ public class EntregasRepositoryMongoAdapter
     }
     return aDominio(springDataRepo.findByIdBeneficiaria(idBeneficiaria));
   }
+
+  @Override
+  public List<Entrega> findByDonanteId(UUID donanteId) {
+    if (donanteId == null) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findByDonanteId(donanteId));
+  }
 }

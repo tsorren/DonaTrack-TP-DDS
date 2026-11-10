@@ -22,10 +22,20 @@ import lombok.Getter;
 @Getter
 public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
+  static final int MAX_REMITO = 40;
+
   private final UUID id;
   private UUID idRuta;
   private final UUID idDonacion;
   private final UUID idBeneficiaria;
+
+  /**
+   * Donante de la donación original: referencia opaca replicada desde Donaciones, sin datos
+   * personales. Es opcional: las entregas creadas antes del cambio o por un emisor que no lo manda
+   * no la tienen (ADR de réplicas por evento, HB-16).
+   */
+  private UUID donanteId;
+
   private final Direccion destino;
   private EstadoEntrega estadoActual;
 
@@ -37,6 +47,12 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   @Getter(AccessLevel.NONE)
   private final List<String> fotosRecepcion;
+
+  /** Comprobante de la entrega: privado, fuera del mapa y de los eventos (DTI-29). */
+  private String numeroRemito;
+
+  /** Problema contado al confirmar; {@code null} si llegó bien. */
+  private ReporteRecepcion reporteRecepcion;
 
   private final float pesoTotalKG;
   private final float volumenTotalM3;
@@ -148,6 +164,17 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
         version);
   }
 
+  /** Hidrata remito y reporte desde la persistencia, sin validar. */
+  public void reconstituirRecepcion(String numeroRemito, ReporteRecepcion reporte) {
+    this.numeroRemito = numeroRemito;
+    this.reporteRecepcion = reporte;
+  }
+
+  /** Registra el donante al crear o reconstituir la entrega; {@code null} la deja sin donante. */
+  public void registrarDonante(UUID donanteId) {
+    this.donanteId = donanteId;
+  }
+
   public void asignarRuta(UUID idRuta) {
     validarIdentificador(idRuta);
 
@@ -178,8 +205,18 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   }
 
   public void confirmarEntrega(String entidad, List<String> fotosRecepcion) {
+    confirmarEntrega(entidad, fotosRecepcion, null, null);
+  }
+
+  /**
+   * Confirma la recepción con el remito y, si algo estuvo mal, el reporte. Los dos son opcionales
+   * en el contrato mientras dura la migración (DTI-29).
+   */
+  public void confirmarEntrega(
+      String entidad, List<String> fotosRecepcion, String numeroRemito, ReporteRecepcion reporte) {
     validarActor(entidad);
     List<String> fotosNormalizadas = normalizarFotosObligatorias(fotosRecepcion);
+    String remitoNormalizado = normalizarRemito(numeroRemito);
 
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
@@ -187,9 +224,12 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
     this.fotosRecepcion.clear();
     this.fotosRecepcion.addAll(fotosNormalizadas);
+    this.numeroRemito = remitoNormalizado;
+    this.reporteRecepcion = reporte;
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
-    registrarEvento(new EntregaConfirmada(this.id, this.idDonacion, this.idRuta));
+    registrarEvento(
+        new EntregaConfirmada(this.id, this.idDonacion, this.idRuta, reporte, fotosNormalizadas));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
@@ -308,6 +348,17 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     if (Objects.isNull(actor) || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+  }
+
+  private static String normalizarRemito(String numeroRemito) {
+    if (numeroRemito == null) {
+      return null;
+    }
+    String remito = numeroRemito.trim();
+    if (remito.isEmpty() || remito.length() > MAX_REMITO) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    return remito;
   }
 
   private static void validarJustificacion(String justificacion) {

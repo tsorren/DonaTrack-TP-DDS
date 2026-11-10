@@ -91,7 +91,37 @@ class ProveedorLogisticaAmqpTest {
         assertInstanceOf(EventoEntregaSolicitadaV1.class, payload.getValue());
     assertEquals(DATOS.donacionIndependienteId(), comando.donacionIndependienteId());
     assertEquals(DATOS.fecha(), comando.fecha());
+    assertNull(comando.donanteId());
     assertEquals(ENVIO_ID.toString(), correlacion.getValue().getId());
+  }
+
+  @Test
+  void enviar_deberiaMandarElDonanteEnElComando_CuandoLoTiene() {
+    cuandoRabbitResponde(true, false);
+    UUID donanteId = UUID.randomUUID();
+    DatosEntregaLogistica datos =
+        new DatosEntregaLogistica(
+            DATOS.donacionIndependienteId(),
+            DATOS.personaBeneficiariaId(),
+            DATOS.destino(),
+            DATOS.pesoTotalKG(),
+            DATOS.volumenTotalM3(),
+            DATOS.fecha(),
+            donanteId);
+
+    proveedor.enviar(ENVIO_ID, datos, "trace-1");
+
+    ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+    verify(template)
+        .convertAndSend(
+            eq(RabbitMQConfig.EXCHANGE_DONACIONES),
+            eq("entrega.solicitada.donatrack.v1"),
+            payload.capture(),
+            any(MessagePostProcessor.class),
+            any(CorrelationData.class));
+    EventoEntregaSolicitadaV1 comando =
+        assertInstanceOf(EventoEntregaSolicitadaV1.class, payload.getValue());
+    assertEquals(donanteId, comando.donanteId());
   }
 
   @Test

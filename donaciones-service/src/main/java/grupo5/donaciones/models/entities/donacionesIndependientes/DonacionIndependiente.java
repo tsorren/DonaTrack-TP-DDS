@@ -37,6 +37,16 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   private UUID periodoId;
   private UUID entidadBeneficiariaId;
 
+  // Lo que no llegó según el reporte de la entidad al confirmar (HB-17): nulo si llegó todo
+  private Integer cantidadNoRecibida;
+
+  // Réplica de entrega.exitosa para las destacadas (HB-01): fecha y fotos de una entrega sin
+  // reporte. Sin fotos, la fecha queda nula y la donación no es destacada.
+  private LocalDateTime fechaEntrega;
+
+  @Getter(AccessLevel.NONE)
+  private List<String> fotosRecepcion = new ArrayList<>();
+
   // Versión de la fila guardada (bloqueo optimista): nula hasta que se guarda por primera vez
   private Long version;
 
@@ -71,6 +81,53 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     asignarDestino(datos.destino());
     this.version = datos.version();
     this.cancelacionPedida = datos.cancelacionPedida();
+  }
+
+  /**
+   * La entidad contó que llegó menos (HB-17, DTI-29): la necesidad cuenta lo que llegó, no lo que
+   * salió. Una cantidad igual o mayor que la enviada no descuenta nada.
+   */
+  public void registrarCantidadRecibida(double cantidadRecibida) {
+    // ponytail: la cantidad es entera y lo recibido se redondea hacia abajo (14,5 kg cuenta 14);
+    // pasar a cantidades decimales si alguna unidad lo pide
+    int recibida = (int) Math.max(0, Math.floor(cantidadRecibida));
+    int faltante = getCantidad() - recibida;
+    this.cantidadNoRecibida = faltante > 0 ? faltante : null;
+  }
+
+  /** Lo que cuenta para la necesidad: lo enviado menos lo que no llegó. */
+  public int getCantidadContada() {
+    return getCantidad() - (cantidadNoRecibida != null ? cantidadNoRecibida : 0);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirCantidadNoRecibida(Integer cantidadNoRecibida) {
+    this.cantidadNoRecibida = cantidadNoRecibida;
+  }
+
+  public List<String> getFotosRecepcion() {
+    return Collections.unmodifiableList(fotosRecepcion);
+  }
+
+  /**
+   * Fotos de recepción que trajo {@code entrega.exitosa} (HB-01, ADR de réplicas por evento). Solo
+   * las de una entrega sin reporte; una lista vacía no cambia nada.
+   */
+  public void registrarFotosDeRecepcion(LocalDateTime fechaEntrega, List<String> fotos) {
+    if (fotos == null || fotos.isEmpty()) {
+      return;
+    }
+    if (fechaEntrega == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    this.fechaEntrega = fechaEntrega;
+    this.fotosRecepcion = new ArrayList<>(fotos);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirFotosDeRecepcion(LocalDateTime fechaEntrega, List<String> fotos) {
+    this.fechaEntrega = fechaEntrega;
+    this.fotosRecepcion = fotos == null ? new ArrayList<>() : new ArrayList<>(fotos);
   }
 
   /** Lo asigna el adaptador de persistencia después de guardar, con la versión nueva de la fila. */

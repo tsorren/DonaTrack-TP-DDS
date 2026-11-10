@@ -1,6 +1,6 @@
 # Cambios al DER de Donaciones
 
-> Qué hay que cambiar en el DER de Lucid (versión del 19/10/2026) para que coincida con el schema `donaciones` que crean las migraciones Flyway V1 a V13 y V17 (HB-18; V14 a V16 están en PR abiertos). El diagrama completo está en [`donaciones-DER.puml`](donaciones-DER.puml), con estos cambios en rojo.
+> Qué hay que cambiar en el DER de Lucid (versión del 19/10/2026) para que coincida con el schema `donaciones` que crean las migraciones Flyway V1 a V13, V16 y V17 (V14 y V15, de HB-17 y HB-01, todavía no figuran acá). El diagrama completo está en [`donaciones-DER.puml`](donaciones-DER.puml), con estos cambios en rojo.
 >
 > Los códigos (P-n, D-n) remiten a las decisiones de la [bitácora de persistencia](../../../entrega-4/donaciones/bitacora-persistencia.md). Las desnormalizaciones (D1 a D6) están en el [ADR de desnormalización](../../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) y no cambian: ya estaban en el DER.
 
@@ -28,6 +28,8 @@ Salvo que se indique, son **aditivos** (columnas que el dominio usa y el DER no 
 | `juridica` | Valores de `tipo_juridico`: `GUBERNAMENTAL`, `ONG`, `EMPRESA`, `INSTITUCION` | Paso 3 |
 | `donante`, `entidad_beneficiaria` | Suman `activo BOOLEAN NOT NULL` | Baja lógica de los roles (P-16) |
 | `archivo` | `id` en vez de `id_archivo`; suma `estado_archivo` | P-8 |
+| `archivo` (V16) | Suma `total_filas`, `creadas`, `actualizadas` y `con_error`, el progreso del padrón | HB-14 de E6 |
+| `archivo_fila_error` (V16, tabla nueva) | Una fila por línea del padrón que no se importó: `linea`, `motivo` y `codigo`, sin datos de la persona; se borra con su archivo | HB-14 de E6 |
 
 ### Catálogo y necesidades
 

@@ -154,6 +154,16 @@ public class EntregasRepositoryJpaAdapter
         .toList();
   }
 
+  @Override
+  public List<Entrega> findByDonanteId(UUID donanteId) {
+    if (donanteId == null) {
+      return List.of();
+    }
+    return springDataRepo.findByDonanteIdOrderByIdEntregaAsc(donanteId).stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
   private static int indiceEnRuta(UUID idEntrega, List<UUID> ordenVisita) {
     int index = ordenVisita.indexOf(idEntrega);
     return index >= 0 ? index : Integer.MAX_VALUE;
