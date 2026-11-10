@@ -13,12 +13,14 @@ import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.PosicionCamionDTO;
+import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
@@ -421,6 +423,39 @@ class EntregaServiceTest {
         List.of("https://storage.donatrack.org/evidencia-1.jpg"), resultado.fotosRecepcion());
     verify(entregasRepository).save(entrega);
     verify(comunicadorEventos).comunicarEntregaExitosa(any(EntregaConfirmada.class), eq(camion));
+  }
+
+  @Test
+  void cambiarEstado_conRemitoYReporte_losGuardaYLosDevuelve() {
+    UUID rutaId = UUID.randomUUID();
+    UUID camionId = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(rutaId);
+    entrega.iniciarRuta("Chofer");
+    ReporteRecepcionDTO reporte =
+        new ReporteRecepcionDTO(MotivoReporte.DANADA, "Caja mojada", null);
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(
+            EstadoEntrega.ENTREGADA,
+            "actor",
+            null,
+            null,
+            List.of("https://storage.donatrack.org/evidencia-1.jpg"),
+            null,
+            "R-0001",
+            reporte);
+    Ruta ruta = mock(Ruta.class);
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
+    when(ruta.getCamionId()).thenReturn(camionId);
+    when(camionRepository.findById(camionId)).thenReturn(Optional.of(mock(Camion.class)));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    EntregaResponseDTO resultado = entregasService.cambiarEstado(entrega.getId(), request);
+
+    assertEquals("R-0001", resultado.numeroRemito());
+    assertEquals(reporte, resultado.reporte());
+    assertEquals(MotivoReporte.DANADA, entrega.getReporteRecepcion().motivo());
   }
 
   @Test

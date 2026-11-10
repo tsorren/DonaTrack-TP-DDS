@@ -31,7 +31,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
 | `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada) y `desde`/`hasta` (fecha de registro ISO, inclusivas). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
-| `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
+| `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID; devuelve `necesidadId` (opcional, HB-17) para que el cliente pida la necesidad | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
 | `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
 | `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
@@ -99,7 +99,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/entregas/seguimiento/donaciones/{idDonacion}` | Seguimiento de la entrega de una donación para el donante (RF-09): estado, ruta, camión, avance por paradas sin direcciones de otras entregas y, desde 1.3.0, `posicionCamion` (`latitud`, `longitud`, `registradaEn`, exacta; `null` si la ruta no está `EN_TRASLADO`, ADR-E6-07) | — | `200`, `404` |
 | `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | Seguimiento de las entregas de una entidad beneficiaria (RF-14): lista de `SeguimientoEntregaResponseDTO`, el mismo DTO que el anterior | — | `200` |
 | `GET` | `/api/entregas/seguimiento/donantes/{donanteId}` | Seguimiento de las entregas activas (`PENDIENTE` o `EN_TRASLADO`) de un donante, en una llamada (RF-09, HB-16): lista de `SeguimientoEntregaResponseDTO`. Las entregas creadas sin `donanteId` no aparecen. Sin auth, el donante llega por parámetro | — | `200` |
-| `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
+| `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.). Con `ENTREGADA` acepta además `numeroRemito` (1 a 40 caracteres) y `reporte` (`motivo`, `detalle`, `cantidadRecibida`), los dos opcionales; `EntregaResponseDTO` los devuelve (HB-17, DTI-29) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
 | `PATCH` | `/api/entregas/{id}/fotos` | Adjuntar URL de foto de recepción | `AdjuntarFotoRecepcionRequestDTO` | `200`, `400`, `404` |
 | `GET` | `/api/entregas/{id}/historial` | Historial de transiciones de una entrega | — | `200`, `404` |
 | `GET` | `/api/rutas` | Listar rutas planificadas (filtro opcional `camionId`) | — | `200` |

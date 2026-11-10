@@ -37,6 +37,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   private UUID periodoId;
   private UUID entidadBeneficiariaId;
 
+  // Lo que no llegó según el reporte de la entidad al confirmar (HB-17): nulo si llegó todo
+  private Integer cantidadNoRecibida;
+
   // Versión de la fila guardada (bloqueo optimista): nula hasta que se guarda por primera vez
   private Long version;
 
@@ -67,6 +70,28 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.fechaRegistro = datos.fechaRegistro();
     asignarDestino(datos.destino());
     this.version = datos.version();
+  }
+
+  /**
+   * La entidad contó que llegó menos (HB-17, DTI-29): la necesidad cuenta lo que llegó, no lo que
+   * salió. Una cantidad igual o mayor que la enviada no descuenta nada.
+   */
+  public void registrarCantidadRecibida(double cantidadRecibida) {
+    // ponytail: la cantidad es entera y lo recibido se redondea hacia abajo (14,5 kg cuenta 14);
+    // pasar a cantidades decimales si alguna unidad lo pide
+    int recibida = (int) Math.max(0, Math.floor(cantidadRecibida));
+    int faltante = getCantidad() - recibida;
+    this.cantidadNoRecibida = faltante > 0 ? faltante : null;
+  }
+
+  /** Lo que cuenta para la necesidad: lo enviado menos lo que no llegó. */
+  public int getCantidadContada() {
+    return getCantidad() - (cantidadNoRecibida != null ? cantidadNoRecibida : 0);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirCantidadNoRecibida(Integer cantidadNoRecibida) {
+    this.cantidadNoRecibida = cantidadNoRecibida;
   }
 
   /** Lo asigna el adaptador de persistencia después de guardar, con la versión nueva de la fila. */

@@ -25,6 +25,8 @@ import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
@@ -138,6 +140,35 @@ class PersistenciaMappersTest {
     assertThrows(
         ObjectOptimisticLockingFailureException.class,
         () -> rutaMapper.toEntity(reconstituida, entity));
+  }
+
+  @Test
+  void entregaMapper_deberiaMapearIdaYVueltaRemitoYReporte() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
+    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    entrega.iniciarRuta("Chofer");
+    ReporteRecepcion reporte = new ReporteRecepcion(MotivoReporte.INCOMPLETA, "Faltó", 3.5);
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), "R-1", reporte);
+
+    PaisEntity pais = new PaisEntity(UUID.randomUUID(), "Argentina");
+    LocalidadEntity localidad =
+        new LocalidadEntity(
+            UUID.randomUUID(),
+            new ProvinciaEntity(UUID.randomUUID(), pais, "Buenos Aires"),
+            "CABA");
+    EntregaEntity entity =
+        entregaMapper.toEntity(
+            entrega, null, entregaMapper.construirDireccionNueva(dir, localidad));
+    assertEquals("R-1", entity.getNumeroRemito());
+    assertEquals(MotivoReporte.INCOMPLETA, entity.getReporteMotivo());
+
+    Entrega reconstituida = entregaMapper.toDomain(entity);
+    assertEquals("R-1", reconstituida.getNumeroRemito());
+    assertEquals(reporte, reconstituida.getReporteRecepcion());
+
+    entity.setReporteMotivo(null);
+    assertNull(entregaMapper.toDomain(entity).getReporteRecepcion());
   }
 
   @Test

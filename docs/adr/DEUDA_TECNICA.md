@@ -441,19 +441,20 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 
 | Campo | Valor |
 |---|---|
-| ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
-| Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `CambioEstadoEntregaRequestDTO` no acepta remito ni reporte; `EntregaResponseDTO` no los devuelve; `DonacionIndependienteResponseDTO` no devuelve `necesidadId`. El prototipo de Raíces ya pide el remito al confirmar |
+| ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) y su ajuste [20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md) |
+| Decision status | `proposed` (los dos) |
+| Implementation status | `[OBSERVED] partial` (HB-17, 2026-11-08) — ítems 1 a 3 implementados: `numeroRemito` y `reporte` en la confirmación y en `EntregaResponseDTO` (Flyway V7 de Logística, también en Mongo), `reporte` en `entrega.exitosa`, `necesidadId` en `DonacionIndependienteResponseDTO`, y Donaciones cuenta lo recibido (Flyway V14). Falta: excluir de las destacadas las entregas con reporte (HB-01), la pertenencia (HB-13) y conectar la pantalla |
 | Target | `logistica-service` (`Entrega`, DTOs de entregas, `entrega.exitosa`) · `donaciones-service` (`DonacionIndependienteResponseDTO`) · `openapi-logistica.yaml`, `openapi-donaciones.yaml` y `schemas/evento-entrega-exitosa.schema.json` |
 | Cuándo se saldará | Cuando `cliente-liviano` consuma Logística para Confirmar recepción (RF-12). Pide antes HB-13 (pertenencia) |
 
 1. **Remito.** `numeroRemito` en la confirmación (`ENTREGADA`) y en `EntregaResponseDTO`; fuera de las respuestas públicas y de los eventos.
-2. **Reporte.** `reporte` opcional en la confirmación (`motivo`, `detalle`, `cantidadRecibida`), guardado en la entrega y como campo opcional de `entrega.exitosa`. Falta decidir qué hace Donaciones con una cantidad recibida menor (por ejemplo, cuánto cuenta para el período).
+2. **Reporte.** `reporte` opcional en la confirmación (`motivo`, `detalle`, `cantidadRecibida`), guardado en la entrega y como campo opcional de `entrega.exitosa`. Decidido el 2026-11-08 ([ajuste](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md), `proposed`): la necesidad cuenta lo que llegó.
 3. **`necesidadId`** como campo opcional de `DonacionIndependienteResponseDTO`.
 4. **Pantalla "Llegó con un problema":** diseñada y dibujada en el prototipo (2026-11-07,
    [ficha](../interfaz/flujos/raices-llego-con-un-problema.md)). Por decisión del usuario, las fotos
    de una entrega con reporte no se publican en la portada ni en el mapa; el ADR dice que la foto
-   llega igual a la portada. Se ajusta con un ADR sucesor al implementar este ítem.
+   llega igual a la portada. Ajustado en el [ADR de entregas con problema](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md)
+   (`proposed`, 2026-11-08); lo implementa HB-01.
 
 ---
 

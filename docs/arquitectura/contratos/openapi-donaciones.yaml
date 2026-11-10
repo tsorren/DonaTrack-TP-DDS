@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.0.0
+  version: 1.1.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
@@ -1188,6 +1188,11 @@ components:
           format: uuid
           nullable: true
           description: Entidad a la que se asignó la donación; null mientras no tiene destino
+        necesidadId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Necesidad a la que se asignó la donación (HB-17, DTI-29); null mientras no tiene destino o si se asignó sin necesidad
     DonacionInputDTO:
       type: object
       required:

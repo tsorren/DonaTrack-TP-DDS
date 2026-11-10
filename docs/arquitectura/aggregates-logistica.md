@@ -66,6 +66,8 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `CambioEstadoEntrega` (Auditoría inmutable de cambio de estado - Java record).
     *   `Direccion` (Dirección destino - Java record en `grupo5.logistica.models.entities.rutas.direccion`).
     *   `Localidad`, `Provincia`, `Pais` (Records geográficos).
+    *   `ReporteRecepcion` (record con `MotivoReporte` `INCOMPLETA`/`DANADA`/`OTRO`, `detalle` y `cantidadRecibida`; valida que haya motivo, detalle con `OTRO` y cantidad con `INCOMPLETA`). Lo carga la entidad al confirmar si algo estuvo mal; no cambia el estado (HB-17).
+*   **Remito**: `numeroRemito` opcional (1 a 40 caracteres), cargado al confirmar; no sale en el mapa ni en los eventos (HB-17).
 *   **Propiedades Físicas**: `pesoTotalKG` y `volumenTotalM3` (magnitudes positivas validadas para cubicaje).
 *   **Referencias Externas (por ID)**:
     *   `idRuta` (UUID nulable de la ruta asignada).
@@ -78,7 +80,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `registrarDonante(UUID donanteId)` (al crear o reconstituir la entrega; `null` la deja sin donante)
     *   `asignarRuta(UUID idRuta)`
     *   `iniciarRuta(String chofer)`
-    *   `confirmarEntrega(String entidad)`
+    *   `confirmarEntrega(String entidad, List<String> fotos, String numeroRemito, ReporteRecepcion reporte)` (remito y reporte opcionales; las sobrecargas sin ellos siguen)
     *   `adjuntarFotoRecepcion(String fotoURL)`
     *   `negarEntrega(String entidad, String justificacion, boolean replanificable)`
     *   `regresarAlDeposito(String administrador)`

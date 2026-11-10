@@ -17,4 +17,7 @@ public interface IDonacionesIndependientesService {
       UUID id, CambioEstadoDonacionIndependienteRequestDTO request, String actor);
 
   void vencer();
+
+  /** La entidad contó que llegó menos al confirmar la entrega (HB-17). */
+  void registrarCantidadRecibida(UUID id, double cantidadRecibida);
 }
