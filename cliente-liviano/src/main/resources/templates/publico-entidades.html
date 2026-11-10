@@ -25,14 +25,14 @@
        filtros, usuario, 2026-11-08). La condición se arma con los valores ya validados. */-->
 <th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             q=${param.q != null ? #strings.trim(param.q[0]) : ''},
+             q=${param.q != null ? #strings.trim(param.q[0]) : (yaDonadas != null and param.nombre != null ? #strings.trim(param.nombre[0]) : '')},
              elegida=${categoria == '' ? null : categorias.^[clave == '__${categoria}__']},
              porFiltros=${entidades.?[!pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)].isEmpty()]},
              visibles=${q == '' ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(nombre, #root.q)]},
              filtrado=${categoria != '' or tipoPedido != '' or soloEmergencia},
              n=${#lists.size(visibles)}">
   <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="publica entidades">
+  <div class="publica entidades" th:attr="data-privado=${yaDonadas != null} ? 'si' : null">
     <!--/* El hero: el título a la izquierda y, a la derecha, el árbol con la cuenta (usuario,
            2026-11-08: "mover el árbol con las 6 entidades al hero"). */-->
     <header class="publica-cabeza">
@@ -88,6 +88,7 @@
 
     <!--/* Sin resultados: qué no se encontró y cómo volver a ver todas. */-->
     <section th:if="${escenario == '' and n == 0}" class="vacio" aria-labelledby="sin-titulo">
+      <span th:if="${yaDonadas != null and q != ''}" class="solo-lectores">Ninguna entidad activa se llama así.</span>
       <th:block th:if="${q != '' and elegida != null}">
         <h2 id="sin-titulo" th:text="|Ninguna entidad con «${q}» en el nombre pide ${elegida.enFrase} ahora.|">Ninguna
           entidad con «biblioteca» en el nombre pide alimentos ahora.</h2>
@@ -195,13 +196,16 @@
                    urgentes=${pedidos.?[emergencia]},
                    recurrentes=${pedidos.?[tipo == 'recurrente' and !emergencia]},
                    conFecha=${pedidos.?[tipo != 'recurrente' and !emergencia]}">
-        <details class="plegable" th:open="${param.abrir != null and param.abrir[0] == e.clave}">
+        <details class="plegable" th:open="${param.abrir != null and param.abrir[0] == e.clave}"
+                 th:attr="data-ya=${yaDonadas != null and #lists.contains(yaDonadas, e.clave)} ? 'si' : 'no'">
           <summary>
             <span class="plegable-foto"><svg viewBox="-14 -14 128 128" aria-hidden="true"
                 focusable="false"><use width="100" height="100" href="#cat-alimentos" th:href="${'#cat-' + e.cat}"/></svg></span>
             <span class="plegable-titulo">
               <b th:id="${'entidad-' + e.clave}" th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
               <span th:replace="~{publico-entidades :: chips(${pedidos})}"></span>
+              <span th:if="${yaDonadas != null}" class="chip" data-tono="suave"
+                    th:text="${#lists.contains(yaDonadas, e.clave)} ? 'Ya donaste' : 'Todavía no donaste'">Ya donaste</span>
             </span>
             <span class="plegable-medida">
               <b th:text="|Necesidades satisfechas: ${porcentaje} %|">Necesidades satisfechas: 38 %</b>
@@ -269,6 +273,9 @@
               <a class="boton" data-tono="secundario" href="/publico-mapa#entidad-comedor"
                  th:href="@{/publico-mapa} + '#entidad-' + ${e.clave}"
                  th:attr="aria-describedby=${'entidad-' + e.clave}">Ver sus entregas en el mapa</a></p>
+            <p th:if="${yaDonadas != null and #lists.contains(yaDonadas, e.clave)}" class="racimo" data-alinea="centro">
+              <a class="boton" data-tono="secundario" href="/donante-donaciones"
+                 th:href="@{/donante-donaciones}">Ver tus donaciones</a></p>
           </div>
         </details>
       </li>
