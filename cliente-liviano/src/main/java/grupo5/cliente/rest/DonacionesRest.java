@@ -127,7 +127,7 @@ class DonacionesRest implements DonacionesPuerto {
             foto == null ? null : "Foto de la entrega que subió " + entidad,
             pie,
             noticias(d, entidad, foto != null),
-            null));
+            d.quienDono() == null ? null : d.quienDono().nombreVisible()));
   }
 
   private List<DonacionesApi.Donacion> ordenadas(UUID donante) {

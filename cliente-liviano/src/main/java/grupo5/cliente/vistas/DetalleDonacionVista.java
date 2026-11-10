@@ -11,7 +11,8 @@ import java.util.List;
  * @param problema el aviso de "con problema", o null
  * @param foto la URL de la foto de la entidad, o null
  * @param pieFoto el pie de la foto, o lo que dice una entregada sin foto; null si no llegó
- * @param figuraComo el nombre que ve la entidad, o null mientras la API no lo da (HB-20)
+ * @param figuraComo el nombre que ve la entidad ({@code quienDono.nombreVisible}), o null si el
+ *     donante lo ocultó
  */
 public record DetalleDonacionVista(
     Donacion donacion,

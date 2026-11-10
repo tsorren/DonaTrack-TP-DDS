@@ -42,6 +42,7 @@ class DetalleDonacionRestTest {
       [
         {"id": "%1$s", "descripcion": "Fideos secos", "estadoActual": "Entregada",
          "fechaRegistro": "2026-10-01T10:00:00", "cantidad": 8, "entidadBeneficiariaId": "%3$s",
+         "quienDono": {"tipo": "JURIDICA", "nombreVisible": "Distribuidora Ejemplo SA"},
          "historial": [
            {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-10-02T12:00:00"},
            {"estadoNuevo": "Entregada", "timestamp": "2026-10-05T17:20:00"},
@@ -104,7 +105,7 @@ class DetalleDonacionRestTest {
     assertEquals(
         COMEDOR + " confirmó la entrega el 5 de octubre y subió esta foto.", detalle.pieFoto());
     assertNull(detalle.problema());
-    assertNull(detalle.figuraComo());
+    assertEquals("Distribuidora Ejemplo SA", detalle.figuraComo());
     assertEquals(
         List.of(
             new PasoRecorrido("En depósito", "1 de octubre", Avance.HECHO),
@@ -182,6 +183,8 @@ class DetalleDonacionRestTest {
         detalle.noticias().getFirst());
     assertNull(detalle.foto());
     assertNull(detalle.pieFoto());
+    // Sin quienDono (o con el nombre oculto), la ficha no muestra "Figura como".
+    assertNull(detalle.figuraComo());
   }
 
   @Test

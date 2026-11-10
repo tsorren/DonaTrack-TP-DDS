@@ -135,7 +135,7 @@
               <div><dt>Para</dt><dd th:text="${destino ?: 'Todavía sin destino'}">Comedor Barrio Ejemplo</dd></div>
               <div><dt>Donada</dt><dd th:text="${d.donada}">12 de octubre de 2026</dd></div>
               <div th:if="${detalle.llego}"><dt>Entregada</dt><dd th:text="${detalle.llego}">9 de octubre de 2026</dd></div>
-              <!--/* Con datos reales, sin el nombre visible hasta HB-20. */-->
+              <!--/* Con datos reales, quienDono.nombreVisible; si el donante lo ocultó, no se muestra. */-->
               <div th:if="${detalle.figuraComo}" class="datos-figura"><dt>Figura como</dt>
                 <dd><span th:text="${detalle.figuraComo}">Distribuidora Ejemplo SA</span>
                   <a href="/donante-perfil" th:href="@{/donante-perfil}">Cambialo
