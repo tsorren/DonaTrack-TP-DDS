@@ -1,6 +1,6 @@
 # Cambios al DER de Donaciones
 
-> Qué hay que cambiar en el DER de Lucid (versión del 19/10/2026) para que coincida con el schema `donaciones` que crean las migraciones Flyway V1 a V13 y V16. El diagrama completo está en [`donaciones-DER.puml`](donaciones-DER.puml), con estos cambios en rojo.
+> Qué hay que cambiar en el DER de Lucid (versión del 19/10/2026) para que coincida con el schema `donaciones` que crean las migraciones Flyway V1 a V13, V16 y V17 (V14 y V15, de HB-17 y HB-01, todavía no figuran acá). El diagrama completo está en [`donaciones-DER.puml`](donaciones-DER.puml), con estos cambios en rojo.
 >
 > Los códigos (P-n, D-n) remiten a las decisiones de la [bitácora de persistencia](../../../entrega-4/donaciones/bitacora-persistencia.md). Las desnormalizaciones (D1 a D6) están en el [ADR de desnormalización](../../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) y no cambian: ya estaban en el DER.
 
@@ -41,6 +41,8 @@ Salvo que se indique, son **aditivos** (columnas que el dominio usa y el DER no 
 | `necesidad` | `periodo` `VARCHAR(20)` en formato ISO-8601 (`P1M`, `P7D`) (DER: `BIGINT`) | D-18: un período de meses no se puede guardar en días |
 | `necesidad`, `periodo_necesidad` | Fechas como `TIMESTAMP` (DER: `TIMESTAMPTZ`) | Mismo criterio en todo el schema: el dominio usa `LocalDateTime` |
 | `periodo_necesidad` | La FK se llama `necesidad_id` (DER: `id_necesidad`) | Nombre de V1 (#897) |
+| `necesidad` | Suma `fecha_limite DATE`, `cantidad_anterior BIGINT` y `fecha_ultimo_cambio DATE`, todas nulas | **HB-18** (V17): hasta cuándo sirve una extraordinaria y el último cambio de cantidad, para el cartel de la entidad ([ADR del ciclo de vida](../../../adr/donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md)) |
+| `subcategoria` | Suma `unidad VARCHAR(20)` nula, con los valores de `categoria.tipo_unidad` | **HB-18** (V17): cada subcategoría se pide en su unidad; nula, hereda la de su categoría |
 
 ### Donaciones
 

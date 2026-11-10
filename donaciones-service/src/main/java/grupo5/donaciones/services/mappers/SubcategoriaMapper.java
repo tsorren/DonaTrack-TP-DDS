@@ -28,6 +28,7 @@ public class SubcategoriaMapper {
     }
     Subcategoria subcategoria =
         new Subcategoria(categoria != null ? categoria.getId() : null, dto.nombre());
+    subcategoria.asignarUnidad(dto.unidad());
     if (dto.aliases() != null) {
       dto.aliases().forEach(a -> subcategoria.agregarAlias(a.alias()));
     }
@@ -51,7 +52,12 @@ public class SubcategoriaMapper {
             .map(a -> new AliasSubcategoriaOutputDTO(null, a.alias()))
             .toList();
 
-    return new SubcategoriaOutputDTO(entity.getId(), entity.getNombre(), catDto, aliasDtos);
+    return new SubcategoriaOutputDTO(
+        entity.getId(),
+        entity.getNombre(),
+        catDto,
+        aliasDtos,
+        entity.unidadCon(categoria != null ? categoria.getTipoUnidad() : null));
   }
 
   public void updateEntity(Subcategoria entity, SubcategoriaInputDTO dto, Categoria categoria) {
@@ -59,5 +65,6 @@ public class SubcategoriaMapper {
       return;
     }
     entity.actualizar(categoria != null ? categoria.getId() : null, dto.nombre());
+    entity.asignarUnidad(dto.unidad());
   }
 }

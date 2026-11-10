@@ -69,7 +69,7 @@
         },
         {
           "name": "5. Crear Necesidad Extraordinaria (misma subcategoría)", "event": [{ "listen": "test", "script": { "exec": ["var j=pm.response.json(); pm.collectionVariables.set('necesidadId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"], "type": "text/javascript" } }],
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad E2E arroz\",\n  \"fechaInicio\": \"2026-01-01\"\n}" }, "url": { "raw": "{{donacionesUrl}}/api/necesidades", "host": ["{{donacionesUrl}}"], "path": ["api", "necesidades"] } }
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad E2E arroz\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}" }, "url": { "raw": "{{donacionesUrl}}/api/necesidades", "host": ["{{donacionesUrl}}"], "path": ["api", "necesidades"] } }
         },
         {
           "name": "6. Ejecutar Algoritmo de Asignación", "event": [{ "listen": "test", "script": { "exec": ["pm.test('201', function(){pm.response.to.have.status(201);});"], "type": "text/javascript" } }],

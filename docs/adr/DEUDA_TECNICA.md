@@ -465,9 +465,9 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 |---|---|
 | ADR | [20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato](./donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `NecesidadDTO` (`id, tipo, idEntidad, idSubcategoria, cantidadNecesitada, descripcion, estaSatisfecha, fechaInicio, fechaFin`); `GET /api/necesidades` sin filtro por estado y con las dadas de baja; período de cualquier largo; el cambio de cantidad vale desde el próximo período. El prototipo de Raíces ya muestra lo decidido |
+| Implementation status | `[OBSERVED] implemented` en el [PR #957](https://github.com/tsorren/DonaTrack-TP-DDS/pull/957) (HB-18): los siete puntos, Flyway V17 y OpenAPI de Donaciones 1.5.0, con la migración del contrato del ajuste del 2026-11-09 del ADR. Queda abierto: lo recibido no descuenta la cantidad no recibida hasta que se integre HB-17 (PR #951) |
 | Target | `donaciones-service` (`NecesidadDTO`, `NecesidadesService`, `NecesidadRecurrente`, `Subcategoria`, consulta de lo recibido) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
-| Cuándo se saldará | Cuando `cliente-liviano` consuma Donaciones para Necesidades (RF-10). Los dos cambios incompatibles se coordinan con `integration-tests` y Postman |
+| Cuándo se saldará | Con el merge de HB-18 a `ENTREGA_6`; el descuento de lo no recibido, al integrar #951. Los consumidores del repo (`integration-tests` y Postman) se migraron en el mismo PR |
 
 1. **`estado`** calculado (`VIGENTE`, `CUMPLIDA`, `TERMINADA`, `DADA_DE_BAJA`) y filtro `?estado=`; corregir "Listar necesidades activas" en la OpenAPI.
 2. **`version`** en la salida y en el `PUT` (`409` si no coincide).

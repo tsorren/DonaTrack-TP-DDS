@@ -110,13 +110,44 @@ public class DonacionIndependienteRepositoryJpaAdapter
 
   @Override
   public Map<UUID, Integer> sumarCantidadAsignada(Map<UUID, UUID> periodoPorNecesidad) {
+    if (periodoPorNecesidad.isEmpty()) {
+      return new HashMap<>();
+    }
+    return delPeriodoActual(
+        periodoPorNecesidad,
+        springDataRepo.sumarCantidadAsignadaPorDestino(periodoPorNecesidad.keySet()));
+  }
+
+  @Override
+  public int sumarCantidadRecibida(UUID necesidadId, UUID periodoId) {
+    if (necesidadId == null) {
+      return 0;
+    }
+    long suma =
+        periodoId != null
+            ? springDataRepo.sumarCantidadEnPeriodoConEstado(
+                necesidadId, periodoId, TipoEstadoDonacion.ENTREGADA)
+            : springDataRepo.sumarCantidadSinPeriodoConEstado(
+                necesidadId, TipoEstadoDonacion.ENTREGADA);
+    return Math.toIntExact(suma);
+  }
+
+  @Override
+  public Map<UUID, Integer> sumarCantidadRecibida(Map<UUID, UUID> periodoPorNecesidad) {
+    if (periodoPorNecesidad.isEmpty()) {
+      return new HashMap<>();
+    }
+    return delPeriodoActual(
+        periodoPorNecesidad,
+        springDataRepo.sumarCantidadPorDestinoConEstado(
+            periodoPorNecesidad.keySet(), TipoEstadoDonacion.ENTREGADA));
+  }
+
+  private Map<UUID, Integer> delPeriodoActual(
+      Map<UUID, UUID> periodoPorNecesidad, List<SumaPorDestino> filas) {
     Map<UUID, Integer> sumas = new HashMap<>();
     periodoPorNecesidad.keySet().forEach(id -> sumas.put(id, 0));
-    if (periodoPorNecesidad.isEmpty()) {
-      return sumas;
-    }
-    for (SumaPorDestino fila :
-        springDataRepo.sumarCantidadAsignadaPorDestino(periodoPorNecesidad.keySet())) {
+    for (SumaPorDestino fila : filas) {
       // Solo cuenta el período actual de la necesidad: los anteriores ya se cerraron
       if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
         sumas.put(fila.getNecesidadId(), Math.toIntExact(fila.getCantidad()));

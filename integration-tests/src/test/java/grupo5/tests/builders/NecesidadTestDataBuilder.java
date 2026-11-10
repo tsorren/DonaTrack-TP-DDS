@@ -1,6 +1,8 @@
 package grupo5.tests.builders;
 
 import grupo5.tests.dto.NecesidadTestDTO;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 
 public class NecesidadTestDataBuilder {
@@ -11,6 +13,9 @@ public class NecesidadTestDataBuilder {
   private String descripcion = "Necesidad estándar";
   private String fechaInicio = "2026-06-18";
   private String fechaFin = null;
+  // HB-18: obligatoria y futura en las extraordinarias
+  private String fechaLimite = LocalDate.now(ZoneId.systemDefault()).plusDays(30).toString();
+  private String periodicidad = null;
 
   public static NecesidadTestDataBuilder extraordinaria(
       UUID entidadId, UUID subcategoriaId, int cantidad) {
@@ -31,8 +36,22 @@ public class NecesidadTestDataBuilder {
     return this;
   }
 
+  /** Obligatoria en una RECURRENTE: SEMANAL, QUINCENAL o MENSUAL (HB-18). */
+  public NecesidadTestDataBuilder conPeriodicidad(String periodicidad) {
+    this.periodicidad = periodicidad;
+    return this;
+  }
+
   public NecesidadTestDTO build() {
     return new NecesidadTestDTO(
-        tipo, idEntidad, idSubcategoria, cantidadNecesitada, descripcion, fechaInicio, fechaFin);
+        tipo,
+        idEntidad,
+        idSubcategoria,
+        cantidadNecesitada,
+        descripcion,
+        fechaInicio,
+        fechaFin,
+        fechaLimite,
+        periodicidad);
   }
 }

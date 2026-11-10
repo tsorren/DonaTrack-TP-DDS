@@ -16,6 +16,12 @@ public class Subcategoria implements AggregateRoot {
   private UUID categoriaId;
   private String nombre;
 
+  /**
+   * En qué se pide (ADR 20261102 del ciclo de vida de la necesidad, punto 7). Opcional: si falta,
+   * vale la de su categoría.
+   */
+  private Unidad unidad;
+
   @Getter(AccessLevel.NONE)
   private final List<AliasSubcategoria> aliases = new ArrayList<>();
 
@@ -52,6 +58,16 @@ public class Subcategoria implements AggregateRoot {
     validarSubCategoria(categoriaId, nombre);
     this.categoriaId = categoriaId;
     this.nombre = nombre;
+  }
+
+  /** {@code null} deja que herede la de su categoría. */
+  public void asignarUnidad(Unidad unidad) {
+    this.unidad = unidad;
+  }
+
+  /** La propia, o la de su categoría si no tiene una. */
+  public Unidad unidadCon(Unidad deLaCategoria) {
+    return unidad != null ? unidad : deLaCategoria;
   }
 
   public boolean tieneAlias(String alias) {

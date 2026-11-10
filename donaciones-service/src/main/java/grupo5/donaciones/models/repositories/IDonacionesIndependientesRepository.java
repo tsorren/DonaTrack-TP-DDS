@@ -25,6 +25,15 @@ public interface IDonacionesIndependientesRepository extends CrudRepository<Dona
    */
   Map<UUID, Integer> sumarCantidadAsignada(Map<UUID, UUID> periodoPorNecesidad);
 
+  /**
+   * Lo recibido por una necesidad: como {@link #sumarCantidadAsignada(UUID, UUID)}, pero solo las
+   * donaciones {@code ENTREGADA} (ADR 20261102 del ciclo de vida de la necesidad, punto 6).
+   */
+  int sumarCantidadRecibida(UUID necesidadId, UUID periodoId);
+
+  /** Lo mismo que {@link #sumarCantidadRecibida(UUID, UUID)} para varias necesidades. */
+  Map<UUID, Integer> sumarCantidadRecibida(Map<UUID, UUID> periodoPorNecesidad);
+
   /** Cuántas donaciones asignadas a cada entidad se registraron después de {@code desde}. */
   Map<UUID, Integer> contarPorEntidadRegistradasDesde(LocalDateTime desde);
 

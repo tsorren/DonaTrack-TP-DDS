@@ -423,7 +423,7 @@ class DonacionesIndependientesServiceTest {
   private static FiltroDonacionesIndependientes filtro(
       UUID categoriaId, UUID entidadId, LocalDate desde, LocalDate hasta) {
     return new FiltroDonacionesIndependientes(
-        null, null, categoriaId, null, entidadId, desde, hasta);
+        null, null, categoriaId, null, entidadId, desde, hasta, null);
   }
 
   private static DonacionIndependiente registradaEl(LocalDate fecha) {
@@ -534,7 +534,29 @@ class DonacionesIndependientesServiceTest {
                 donanteId,
                 null,
                 null,
+                null,
                 null)));
+  }
+
+  @Test
+  void obtenerConFiltros_porNecesidad_devuelveLasQueLaCubren() {
+    UUID necesidadId = UUID.randomUUID();
+    UUID subcategoriaId = UUID.randomUUID();
+    DonacionIndependiente cubre =
+        DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
+    cubre.asignar(ACTOR, new DestinoAsignacion(necesidadId, null, UUID.randomUUID()));
+    DonacionIndependiente otra =
+        DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
+    otra.asignar(ACTOR, new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
+    DonacionIndependiente sinAsignar =
+        DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
+    when(repositoryMock.findAll()).thenReturn(List.of(cubre, otra, sinAsignar));
+
+    assertEquals(
+        List.of(cubre.getId()),
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(
+                null, null, null, null, null, null, null, necesidadId)));
   }
 
   private static DonacionIndependiente deLaDonacion(Donacion original, UUID subcategoriaId) {
@@ -551,7 +573,8 @@ class DonacionesIndependientesServiceTest {
 
     assertEquals(
         List.of(una.getId(), otra.getId()),
-        idsFiltrados(new FiltroDonacionesIndependientes(null, null, null, null, null, null, null)));
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null)));
     verify(subcategoriasRepositoryMock, never()).findAll();
   }
 }
