@@ -111,7 +111,7 @@ Qué mirar: el logo se ve completo y con buen contraste en los dos modos, el bot
 - **Estático, sin Docker:** `python -m unittest scripts/tests/test_auth_realm_contract.py` (y `test_auth_keycloak_compose.py` para el compose). Lee el JSON del realm y las variables.
 - **De runtime, con Docker:** `mvn -f auth-service/pom.xml -Pcontrato-auth verify`. Construye la imagen del `Dockerfile`, la arranca con `start-dev` y la base en memoria (no usa Postgres: eso lo cubre `docker compose up`), crea un donante por la Admin API, inicia sesión contra `cliente-liviano` y lee los claims.
 - **Si Testcontainers dice `Could not find a valid Docker environment` (Windows):** es del entorno, no del realm. Con Docker Desktop abierto, probá `$env:DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine"` antes del `mvn`, y borrá la línea `docker.client.strategy=…` de `%USERPROFILE%\.testcontainers.properties` (Testcontainers cachea ahí la última estrategia que funcionó).
-- El módulo hereda del pom raíz (Spotless, JaCoCo) pero **no está en sus `<modules>`**: el `mvn` general no lo compila. Sumarlo al build y al CI queda para E2-12. Si Spotless se queja del formato, `mvn -f auth-service/pom.xml spotless:apply`.
+- El módulo hereda del pom raíz (Spotless, JaCoCo) pero **no está en sus `<modules>`**: el `mvn` general no lo compila (a propósito: no produce un JAR, sino la imagen de Keycloak; el CI lo trata aparte, ver [Keycloak en preprod y en el CI](#keycloak-en-preprod-y-en-el-ci)). Si Spotless se queja del formato, `mvn -f auth-service/pom.xml spotless:apply`.
 
 ## Probar el ingreso
 
@@ -132,4 +132,18 @@ Qué mirar: el logo se ve completo y con buen contraste en los dos modos, el bot
 
 El healthcheck usa el puerto de gestión (9000) **dentro** del contenedor y no lo publica: el 9000 del host es de MinIO. La imagen no trae `curl`; el chequeo abre el socket con `bash` y espera un `200` en `/health/ready`.
 
-`docker-compose.preprod.yml` todavía no incluye Keycloak (E2-12). Su Postgres comparte el script de init y crea la base `keycloak` vacía y sin contraseña, que nadie usa.
+## Keycloak en preprod y en el CI
+
+`docker-compose.preprod.yml` incluye Keycloak como servicio `keycloak` (imagen `donatrack/auth-service:preprod`, puerto 8180 solo en loopback, mismo `environment` y healthcheck que el compose local). Su Postgres recibe `KEYCLOAK_DB_PASSWORD`. Ningún otro servicio depende de Keycloak todavía: lo valida el gateway en E2-01.
+
+`auth-service` no produce un JAR, así que el CI no lo trata como los servicios Java:
+
+| Pipeline | Qué hace con `auth-service` |
+|---|---|
+| PR (`main.yml`), job `auth-service` | Corre si cambió `auth-service/**` o un archivo global. Spotless del módulo, contrato del realm (`mvn -f auth-service/pom.xml -Pcontrato-auth verify`, necesita Docker) y, si pasa, publica `ghcr.io/<repo>/auth-service:pr-<N>`. El quality gate lo exige solo si cambió. |
+| Preprod del PR | Si cambió, exige su imagen `pr-<N>`; si no, la fija por digest del manifiesto de la rama base. |
+| Merge (`merge.yml`), job `auth-publish` | Corre el contrato sobre el estado mergeado, publica el candidato `:sha-<7>` y guarda `digest-auth-service`. El manifiesto candidato lo incluye, el preprod post-merge lo valida y `promote` lo etiqueta como a los demás. |
+
+> **Transición:** hasta que el primer merge de esta etapa llegue a `promote`, el manifiesto de la rama base no trae `auth-service` y un PR que no lo toca falla en el preprod con `auth-service no está en …`. Se resuelve solo con ese merge; no hay un camino alternativo a propósito (RM-06: sin digest validado no hay imagen).
+
+`scripts/tests/test_auth_ci_preprod.py` verifica sin Docker que el compose de preprod, el resolver y los dos workflows estén de acuerdo. Lo que no cubre es que `keycloak` quede `healthy` en el preprod y que los workflows corran en GitHub: se confirma en el primer PR.

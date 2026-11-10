@@ -107,7 +107,8 @@ También queda fuera:
 | E2-09 | Tema completo de Keycloak con la identidad Raíces | D20 (`tokens.css`) |
 | E2-10 | Cambio de rol para quien tiene dos | RI-AUTH-04, RF-CL-03 |
 | E2-11 | Cuenta por representante de una jurídica | RI-AUTH-06, D30 |
-| E2-12 | Keycloak en `docker-compose.preprod.yml` y en CI; el cliente liviano en el compose (emisor único para el navegador y el backchannel). Hasta entonces el descubrimiento de servicios excluye `auth-service` en `main.yml`, `merge.yml` y `scripts/resolver-imagenes-ghcr.sh`: quitar esa exclusión acá | — |
+| E2-12a | Keycloak en `docker-compose.preprod.yml` y en el CI. **Hecho 2026-11-10, commit pendiente.** Servicio `keycloak` en preprod (imagen `donatrack/auth-service:preprod`, 8180 solo en loopback, `environment` y healthcheck idénticos a los del compose local) y `KEYCLOAK_DB_PASSWORD` en su Postgres. `auth-service` **no entra a las matrices Java** (no produce un JAR ni está en los `<modules>`): `main.yml` tiene el job `auth-service` (Spotless, contrato del realm con `-Pcontrato-auth` e imagen `pr-<N>`) y `merge.yml` el job `auth-publish` (contrato, candidato `:sha-<7>` y `digest-auth-service`, que entra al manifiesto y a `promote`). El resolver deja de excluirlo; `api-gateway` sigue excluido. **Verificado sin Docker ni GitHub:** `scripts/tests/test_auth_ci_preprod.py` (40 tests, con prueba de mutación) y YAML de los dos workflows. **Sin probar:** que `keycloak` quede `healthy` en el preprod y que los jobs corran en GitHub Actions; se confirma en el primer PR. **Transición:** hasta el primer `promote` con `auth-service`, un PR que no lo toca falla en el preprod porque el manifiesto base no lo trae | — |
+| E2-12b | El cliente liviano en el compose (emisor único para el navegador y el backchannel). **Pendiente:** depende de la parte B (B1-01) | B1-01 |
 
 ## Invariantes
 

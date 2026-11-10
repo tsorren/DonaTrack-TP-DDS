@@ -33,8 +33,9 @@ resolver() {
 for pom in */pom.xml; do
   svc="${pom%/pom.xml}"
   [[ -f "$svc/Dockerfile" ]] || continue
-  # auth-service (Keycloak) y api-gateway (SPEC-07) no están en docker-compose.preprod.yml hasta E2-12 de SPEC-06.
-  [[ "$svc" == "common-lib" || "$svc" == "integration-tests" || "$svc" == "adr-generator" || "$svc" == "auth-service" || "$svc" == "api-gateway" ]] && continue
+  # api-gateway (SPEC-07) todavía no está en docker-compose.preprod.yml. auth-service (Keycloak) sí (E2-12 de SPEC-06):
+  # su imagen se publica en GHCR como la de los demás servicios y se etiqueta donatrack/auth-service:preprod.
+  [[ "$svc" == "common-lib" || "$svc" == "integration-tests" || "$svc" == "adr-generator" || "$svc" == "api-gateway" ]] && continue
 
   if [[ -n "${PR_TAG:-}" && "$CHANGED" == *" $svc "* ]]; then
     # RM-02: un servicio modificado solo se valida con su propia imagen.
