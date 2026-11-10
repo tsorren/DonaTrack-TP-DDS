@@ -8,6 +8,7 @@ import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
@@ -30,6 +31,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EntregasService implements IEntregasService {
+  private static final Logger log = LoggerFactory.getLogger(EntregasService.class);
+  private static final String ACTOR_BROKER = "broker-donaciones";
   private final IEntregasRepository entregasRepository;
   private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
@@ -207,7 +212,8 @@ public class EntregasService implements IEntregasService {
                   request.actor(), entrega, request.justificacion(), request.replanificable());
           case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
           case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-          case EN_TRASLADO ->
+            // CANCELADA entra solo por el comando del broker (HB-19), nunca por PATCH
+          case EN_TRASLADO, CANCELADA ->
               throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
@@ -219,6 +225,69 @@ public class EntregasService implements IEntregasService {
     publicarEventos(entrega);
     entrega.clearDomainEvents();
     return entregaMapper.toResponseDTO(entrega);
+  }
+
+  /**
+   * Cancela la entrega de una donación que todavía no salió (HB-19, comando {@code
+   * entrega.cancelada.<instancia>.v1}). Idempotente: si ya estaba cancelada vuelve a publicar la
+   * confirmación, por si la primera se perdió; si ya salió, no hace nada (lo dice {@code
+   * ruta.iniciada}).
+   */
+  @Override
+  @Transactional
+  public void cancelarPorDonacion(UUID idDonacion, String motivo) {
+    if (idDonacion == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    Entrega activa = entregasRepository.findByIdDonacion(idDonacion).orElse(null);
+    if (activa == null) {
+      reconfirmarCancelacion(idDonacion, motivo);
+      return;
+    }
+    if (activa.getEstadoActual() != EstadoEntrega.PENDIENTE) {
+      log.info(
+          "Cancelación ignorada: la entrega {} de la donación {} ya salió (estado {})",
+          activa.getId(),
+          idDonacion,
+          activa.getEstadoActual());
+      return;
+    }
+
+    UUID idRuta = activa.getIdRuta();
+    activa.cancelar(ACTOR_BROKER, motivo);
+    if (idRuta != null) {
+      Ruta ruta =
+          rutasRepository
+              .findById(idRuta)
+              .orElseThrow(() -> new RecursoNoEncontradoException(idRuta));
+      ruta.quitarEntrega(activa.getId());
+      rutasRepository.save(ruta);
+    }
+    entregasRepository.save(activa);
+    publicarEventos(activa);
+    activa.clearDomainEvents();
+    log.info("Entrega {} de la donación {} cancelada ({})", activa.getId(), idDonacion, motivo);
+  }
+
+  private void reconfirmarCancelacion(UUID idDonacion, String motivo) {
+    entregasRepository.findCanceladasByIdDonacion(idDonacion).stream()
+        .max(Comparator.comparing(EntregasService::fechaUltimoCambio))
+        .ifPresentOrElse(
+            cancelada -> {
+              log.info(
+                  "Cancelación repetida: se vuelve a confirmar la entrega {}", cancelada.getId());
+              comunicadorEventos.comunicarEntregaCancelada(
+                  new EntregaCancelada(cancelada.getId(), idDonacion, motivo));
+            },
+            () ->
+                log.warn(
+                    "Cancelación ignorada: la donación {} no tiene entrega en esta instancia",
+                    idDonacion));
+  }
+
+  private static LocalDateTime fechaUltimoCambio(Entrega entrega) {
+    List<CambioEstadoEntrega> historial = entrega.getHistorialEstado();
+    return historial.isEmpty() ? LocalDateTime.MIN : historial.getLast().timeStamp();
   }
 
   @Override
@@ -423,6 +492,7 @@ public class EntregasService implements IEntregasService {
         case EntregaConfirmada confirmada ->
             comunicadorEventos.comunicarEntregaExitosa(confirmada, buscarCamionDeEntrega(entrega));
         case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
+        case EntregaCancelada cancelada -> comunicadorEventos.comunicarEntregaCancelada(cancelada);
       }
     }
   }

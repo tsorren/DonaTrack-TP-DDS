@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.4.0
+  version: 1.6.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -74,7 +74,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/SeguimientoEntregaResponseDTO'
         '404':
-          description: No existe entrega registrada para la donación indicada
+          description: >-
+            La donación no tiene una entrega activa: nunca tuvo entrega o solo tiene entregas
+            CANCELADA (HB-19)
   /api/entregas/seguimiento/beneficiarios/{idBeneficiaria}:
     get:
       summary: Listar seguimiento de entregas por ID de beneficiario (RF-14)
@@ -660,6 +662,9 @@ components:
       properties:
         estado:
           type: string
+          description: >-
+            Estado destino. CANCELADA no se acepta por esta vía (400): la cancelación entra solo por el
+            comando entrega.cancelada.<instancia>.v1 del broker de Donaciones (HB-19).
           enum:
             - PENDIENTE
             - EN_TRASLADO
@@ -751,12 +756,16 @@ components:
           $ref: '#/components/schemas/DireccionDTO'
         estadoActual:
           type: string
+          description: >-
+            CANCELADA (HB-19) es final: la entrega no salió y su necesidad se dio de baja. Queda como
+            historia; la donación puede tener después otra entrega activa.
           enum:
             - PENDIENTE
             - EN_TRASLADO
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         horaSalida:
           type: string
           format: date-time
@@ -867,6 +876,7 @@ components:
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         esEntregaConsultada:
           type: boolean
         horaArribo:
@@ -899,6 +909,7 @@ components:
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         rutaAsignada:
           type: boolean
         idRuta:
@@ -989,6 +1000,7 @@ components:
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         estadoNuevo:
           type: string
           enum:
@@ -997,6 +1009,7 @@ components:
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         timestamp:
           type: string
           format: date-time

@@ -15,9 +15,12 @@ public interface SpringDataEntregaMongoRepository extends MongoRepository<Entreg
 
   List<EntregaDocument> findByAsignacionIsNull();
 
-  boolean existsByIdDonacion(UUID idDonacion);
+  boolean existsByIdDonacionAndEstadoNot(UUID idDonacion, EstadoEntrega estado);
 
-  Optional<EntregaDocument> findByIdDonacion(UUID idDonacion);
+  Optional<EntregaDocument> findFirstByIdDonacionAndEstadoNot(
+      UUID idDonacion, EstadoEntrega estado);
+
+  List<EntregaDocument> findByIdDonacionAndEstado(UUID idDonacion, EstadoEntrega estado);
 
   List<EntregaDocument> findByIdBeneficiaria(UUID idBeneficiaria);
 

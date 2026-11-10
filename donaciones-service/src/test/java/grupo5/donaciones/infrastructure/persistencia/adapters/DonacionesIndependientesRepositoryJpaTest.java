@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.persistencia.adapters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -325,6 +327,41 @@ class DonacionesIndependientesRepositoryJpaTest {
     assertEquals(0, independientes.sumarCantidadAsignada(recurrente.getId(), UUID.randomUUID()));
     assertEquals(4, independientes.sumarCantidadAsignada(extraordinaria.getId(), null));
     assertEquals(1, independientes.findEnDeposito().size());
+  }
+
+  @Test
+  void cancelacionPedida_seGuardaYSoloSeBuscanLasQueNoSalieronDeEsaNecesidad_HB19() {
+    NecesidadRecurrente necesidad = recurrente();
+    DonacionIndependiente asignada = nueva(1);
+    asignada.asignar(ACTOR, necesidad.destinoDeAsignacion());
+    asignada.pedirCancelacion();
+    DonacionIndependiente conRuta = nueva(2);
+    conRuta.asignar(ACTOR, necesidad.destinoDeAsignacion());
+    conRuta.planificarRuta(ACTOR);
+    DonacionIndependiente enCamino = nueva(3);
+    enCamino.asignar(ACTOR, necesidad.destinoDeAsignacion());
+    enCamino.planificarRuta(ACTOR);
+    enCamino.iniciarRecorrido(ACTOR);
+    DonacionIndependiente deOtra = nueva(4);
+    NecesidadExtraordinaria otra = NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
+    necesidades.save(otra);
+    deOtra.asignar(ACTOR, otra.destinoDeAsignacion());
+    independientes.saveAll(List.of(asignada, conRuta, enCamino, deOtra));
+
+    assertTrue(independientes.findById(asignada.getId()).orElseThrow().isCancelacionPedida());
+    assertEquals(
+        Set.of(asignada.getId(), conRuta.getId()),
+        independientes.findCancelablesPorNecesidad(necesidad.getId()).stream()
+            .map(DonacionIndependiente::getId)
+            .collect(Collectors.toSet()));
+
+    DonacionIndependiente leida = independientes.findById(asignada.getId()).orElseThrow();
+    leida.liberarPorCancelacion("logistica-service");
+    independientes.save(leida);
+    DonacionIndependiente liberada = independientes.findById(asignada.getId()).orElseThrow();
+    assertEquals(TipoEstadoDonacion.EN_DEPOSITO, liberada.getEstadoActual().getTipo());
+    assertNull(liberada.getNecesidadId());
+    assertFalse(liberada.isCancelacionPedida());
   }
 
   @Test

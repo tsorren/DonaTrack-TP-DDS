@@ -29,6 +29,14 @@ public class DonacionesIndependientesRepositoryEnMemoria
   }
 
   @Override
+  public List<DonacionIndependiente> findCancelablesPorNecesidad(UUID necesidadId) {
+    return findAll().stream()
+        .filter(d -> necesidadId != null && necesidadId.equals(d.getNecesidadId()))
+        .filter(DonacionIndependiente::esCancelable)
+        .toList();
+  }
+
+  @Override
   public Map<UUID, Integer> sumarCantidadAsignada(Map<UUID, UUID> periodoPorNecesidad) {
     Map<UUID, Integer> sumas = new HashMap<>();
     periodoPorNecesidad.forEach(

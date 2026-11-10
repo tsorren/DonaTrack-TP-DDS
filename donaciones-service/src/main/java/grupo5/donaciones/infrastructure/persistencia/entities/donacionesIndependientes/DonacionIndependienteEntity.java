@@ -65,6 +65,10 @@ public class DonacionIndependienteEntity {
   @Column(name = "url", nullable = false)
   private List<String> fotosRecepcion = new ArrayList<>();
 
+  // HB-19: espera la confirmación de la cancelación de su entrega
+  @Column(name = "cancelacion_pedida", nullable = false)
+  private boolean cancelacionPedida;
+
   // A2: sube en cada guardado (lo fuerza el adapter, porque agregar o quitar ítems no la cambia)
   @Version
   @Column(name = "version", nullable = false)

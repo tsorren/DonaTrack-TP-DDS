@@ -21,6 +21,7 @@ import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -162,6 +163,11 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
           necesidadRepository
               .findById(request.necesidadId())
               .orElseThrow(() -> new RecursoNoEncontradoException(request.necesidadId()));
+      // HB-19 (punto 9 del ADR de la baja): como al aprobar una propuesta
+      if (request.estado() == TipoEstadoDonacion.ASIGNACION_REALIZADA
+          && !necesidad.admiteAsignaciones(LocalDate.now(ZoneId.systemDefault()))) {
+        throw new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA);
+      }
     }
 
     SolicitudCambioEstadoDonacionIndependiente solicitud =

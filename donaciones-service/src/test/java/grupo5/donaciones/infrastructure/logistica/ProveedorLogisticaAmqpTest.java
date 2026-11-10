@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.logistica;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.config.RabbitMQConfig;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCanceladaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
@@ -196,5 +198,44 @@ class ProveedorLogisticaAmqpTest {
             anyString(), anyString(), any(Object.class), any(MessagePostProcessor.class), any());
 
     assertThrows(EnvioInciertoException.class, () -> proveedor.enviar(ENVIO_ID, DATOS, "t"));
+  }
+
+  // ===================== Cancelación (HB-19) =====================
+
+  @Test
+  void cancelar_publicaElComandoConSuClaveYLasMismasGarantias() {
+    cuandoRabbitResponde(true, false);
+    UUID donacionId = UUID.randomUUID();
+
+    assertTrue(proveedor.admiteCancelacion());
+    assertDoesNotThrow(() -> proveedor.cancelar(ENVIO_ID, donacionId, "trace-baja"));
+
+    ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+    ArgumentCaptor<MessagePostProcessor> envelope =
+        ArgumentCaptor.forClass(MessagePostProcessor.class);
+    verify(template)
+        .convertAndSend(
+            eq(RabbitMQConfig.EXCHANGE_DONACIONES),
+            eq("entrega.cancelada.donatrack.v1"),
+            payload.capture(),
+            envelope.capture(),
+            any());
+    EventoEntregaCanceladaV1 comando =
+        assertInstanceOf(EventoEntregaCanceladaV1.class, payload.getValue());
+    assertEquals(donacionId, comando.donacionIndependienteId());
+    assertEquals("NECESIDAD_DADA_DE_BAJA", comando.motivo());
+    Message mensaje =
+        envelope.getValue().postProcessMessage(new Message(new byte[0], new MessageProperties()));
+    assertEquals(
+        "trace-baja",
+        mensaje.getMessageProperties().getHeader(FeignTraceRequestInterceptor.TRACE_HEADER));
+  }
+
+  @Test
+  void cancelar_deberiaRechazar_CuandoNoHayColaParaLaCancelacion() {
+    cuandoRabbitResponde(true, true);
+
+    assertThrows(
+        EnvioRechazadoException.class, () -> proveedor.cancelar(ENVIO_ID, UUID.randomUUID(), "t"));
   }
 }

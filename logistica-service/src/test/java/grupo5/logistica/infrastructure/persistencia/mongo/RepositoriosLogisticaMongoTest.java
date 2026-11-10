@@ -222,6 +222,22 @@ class RepositoriosLogisticaMongoTest {
   }
 
   @Test
+  void unaEntregaCancelada_noBloqueaOtraActivaDeLaMismaDonacion() {
+    UUID idDonacion = UUID.randomUUID();
+    Entrega cancelada = entregaDeLaDonacion(idDonacion);
+    cancelada.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    entregas.save(cancelada);
+
+    Entrega nueva = entregas.save(entregaDeLaDonacion(idDonacion));
+
+    assertEquals(nueva.getId(), entregas.findByIdDonacion(idDonacion).orElseThrow().getId());
+    assertTrue(entregas.existsByIdDonacion(idDonacion));
+    assertEquals(1, entregas.findCanceladasByIdDonacion(idDonacion).size());
+    Entrega otraActiva = entregaDeLaDonacion(idDonacion);
+    assertThrows(DuplicateKeyException.class, () -> entregas.save(otraActiva));
+  }
+
+  @Test
   void dosCamionesConLaMismaPatente_violanElIndiceUnico() {
     camiones.save(new Camion("AA111AA", 20f, 5000f, 3f));
     Camion repetido = new Camion("AA111AA", 20f, 5000f, 3f);

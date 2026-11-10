@@ -95,6 +95,19 @@ public class DonacionIndependienteRepositoryJpaAdapter
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findCancelablesPorNecesidad(UUID necesidadId) {
+    return springDataRepo
+        .findByNecesidadIdAndEstadoActualIn(
+            necesidadId,
+            List.of(
+                TipoEstadoDonacion.ASIGNACION_REALIZADA, TipoEstadoDonacion.LISTA_PARA_ENTREGAR))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
   public int sumarCantidadAsignada(UUID necesidadId, UUID periodoId) {
     if (necesidadId == null) {
       return 0;

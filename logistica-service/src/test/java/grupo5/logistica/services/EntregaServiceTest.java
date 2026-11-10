@@ -21,6 +21,7 @@ import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.MotivoReporte;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
@@ -37,6 +38,7 @@ import grupo5.logistica.services.impl.EntregasService;
 import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.RutaMother;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -664,5 +666,100 @@ class EntregaServiceTest {
 
     assertEquals(EstadoRuta.PENDIENTE, dto.estadoRuta());
     assertNull(dto.posicionCamion());
+  }
+
+  // ===================== cancelarPorDonacion() (HB-19) =====================
+
+  @Test
+  void cancelarPorDonacion_pendienteConRuta_laCancelaLaSacaDeLaRutaYPublica() {
+    Entrega entrega = EntregaMother.pendiente();
+    Ruta ruta = RutaMother.pendienteCon(entrega);
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+
+    entregasService.cancelarPorDonacion(entrega.getIdDonacion(), "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.CANCELADA, entrega.getEstadoActual());
+    assertNull(entrega.getIdRuta());
+    assertFalse(ruta.getEntregaIds().contains(entrega.getId()));
+    verify(rutasRepository).save(ruta);
+    verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos)
+        .comunicarEntregaCancelada(
+            argThat(
+                e ->
+                    e.getEntregaId().equals(entrega.getId())
+                        && e.getDonacionId().equals(entrega.getIdDonacion())
+                        && "NECESIDAD_DADA_DE_BAJA".equals(e.getMotivo())));
+    assertTrue(entrega.getDomainEvents().isEmpty());
+  }
+
+  @Test
+  void cancelarPorDonacion_pendienteSinRuta_noTocaRutas() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    entregasService.cancelarPorDonacion(entrega.getIdDonacion(), "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.CANCELADA, entrega.getEstadoActual());
+    verifyNoInteractions(rutasRepository);
+    verify(comunicadorEventos).comunicarEntregaCancelada(any(EntregaCancelada.class));
+  }
+
+  @Test
+  void cancelarPorDonacion_siYaSalio_noHaceNada() {
+    Entrega entrega = EntregaMother.pendiente();
+    RutaMother.pendienteCon(entrega);
+    entrega.iniciarRuta("Chofer Jose");
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    entregasService.cancelarPorDonacion(entrega.getIdDonacion(), "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
+    verify(entregasRepository, never()).save(any());
+    verifyNoInteractions(comunicadorEventos);
+  }
+
+  @Test
+  void cancelarPorDonacion_siYaEstabaCancelada_vuelveAConfirmarLaMasReciente() {
+    Entrega vieja = EntregaMother.pendiente();
+    vieja.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    UUID idDonacion = vieja.getIdDonacion();
+    when(entregasRepository.findByIdDonacion(idDonacion)).thenReturn(Optional.empty());
+    when(entregasRepository.findCanceladasByIdDonacion(idDonacion)).thenReturn(List.of(vieja));
+
+    entregasService.cancelarPorDonacion(idDonacion, "NECESIDAD_DADA_DE_BAJA");
+
+    verify(comunicadorEventos)
+        .comunicarEntregaCancelada(argThat(e -> e.getEntregaId().equals(vieja.getId())));
+    verify(entregasRepository, never()).save(any());
+  }
+
+  @Test
+  void cancelarPorDonacion_sinEntregaEnEstaInstancia_noPublicaNada() {
+    UUID idDonacion = UUID.randomUUID();
+    when(entregasRepository.findByIdDonacion(idDonacion)).thenReturn(Optional.empty());
+    when(entregasRepository.findCanceladasByIdDonacion(idDonacion)).thenReturn(List.of());
+
+    entregasService.cancelarPorDonacion(idDonacion, "NECESIDAD_DADA_DE_BAJA");
+
+    verifyNoInteractions(comunicadorEventos);
+  }
+
+  @Test
+  void cambiarEstado_aCanceladaPorPatch_seRechaza() {
+    Entrega entrega = EntregaMother.pendiente();
+    UUID id = entrega.getId();
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.CANCELADA, "Admin", null, null);
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+    assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
   }
 }

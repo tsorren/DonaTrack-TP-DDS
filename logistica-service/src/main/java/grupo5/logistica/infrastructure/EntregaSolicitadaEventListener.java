@@ -1,15 +1,21 @@
 package grupo5.logistica.infrastructure;
 
+import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.eventos.DestinoEventoDTO;
+import grupo5.logistica.dto.eventos.EventoEntregaCanceladaV1;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.IEntregasService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,6 +25,7 @@ import org.springframework.stereotype.Component;
  * logistica): logística ya no escucha el hecho, recibe el pedido solo si el broker la eligió.
  */
 @Component
+@RabbitListener(queues = "#{queueEntregasSolicitadas.name}")
 public class EntregaSolicitadaEventListener {
 
   private static final Logger log = LoggerFactory.getLogger(EntregaSolicitadaEventListener.class);
@@ -32,7 +39,7 @@ public class EntregaSolicitadaEventListener {
     this.entregasRepository = entregasRepository;
   }
 
-  @RabbitListener(queues = "#{queueEntregasSolicitadas.name}")
+  @RabbitHandler
   public void onEntregaSolicitada(EventoEntregaSolicitadaV1 comando) {
     if (comando == null || comando.donacionIndependienteId() == null) {
       log.error("Comando EntregaSolicitada descartado: payload nulo o sin donacionIndependienteId");
@@ -57,6 +64,35 @@ public class EntregaSolicitadaEventListener {
           comando.donacionIndependienteId(),
           e.getMessage(),
           e);
+    }
+  }
+
+  /**
+   * Comando {@code entrega.cancelada.<instanciaId>.v1} (HB-19). Llega por la misma cola que el
+   * pedido, así que nunca se adelanta a la entrega que cancela. El {@code X-Trace-Id} de la baja
+   * queda en el MDC y viaja en la confirmación.
+   */
+  @RabbitHandler
+  public void onEntregaCancelada(
+      EventoEntregaCanceladaV1 comando,
+      @Header(name = FeignTraceRequestInterceptor.TRACE_HEADER, required = false) String traceId) {
+    if (comando == null || comando.donacionIndependienteId() == null) {
+      log.error("Comando EntregaCancelada descartado: payload nulo o sin donacionIndependienteId");
+      return;
+    }
+    if (traceId != null && !traceId.isBlank()) {
+      MDC.put(FeignTraceRequestInterceptor.MDC_TRACE_KEY, traceId);
+    }
+    try {
+      entregasService.cancelarPorDonacion(comando.donacionIndependienteId(), comando.motivo());
+    } catch (ValidationException | RecursoNoEncontradoException e) {
+      log.error(
+          "Comando EntregaCancelada descartado: donacionId={}, error={}",
+          comando.donacionIndependienteId(),
+          e.getMessage(),
+          e);
+    } finally {
+      MDC.remove(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
     }
   }
 

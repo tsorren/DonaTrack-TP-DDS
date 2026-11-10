@@ -50,6 +50,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   // Versión de la fila guardada (bloqueo optimista): nula hasta que se guarda por primera vez
   private Long version;
 
+  // HB-19: su necesidad se dio de baja y se espera que Logística confirme la cancelación
+  private boolean cancelacionPedida;
+
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     if (donacionOriginalId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
@@ -77,6 +80,7 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.fechaRegistro = datos.fechaRegistro();
     asignarDestino(datos.destino());
     this.version = datos.version();
+    this.cancelacionPedida = datos.cancelacionPedida();
   }
 
   /**
@@ -257,6 +261,29 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual.vencer(this, actor);
   }
 
+  /**
+   * HB-19: su necesidad se dio de baja mientras esperaba salir. Queda asignada hasta que Logística
+   * confirme la cancelación; si antes sale, la marca se limpia sola y llega igual.
+   */
+  public void pedirCancelacion() {
+    if (!esCancelable()) {
+      throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
+    }
+    this.cancelacionPedida = true;
+  }
+
+  /** Lo que todavía no salió: asignada, con o sin ruta planificada (HB-19). */
+  public boolean esCancelable() {
+    TipoEstadoDonacion tipo = this.estadoActual.getTipo();
+    return tipo == TipoEstadoDonacion.ASIGNACION_REALIZADA
+        || tipo == TipoEstadoDonacion.LISTA_PARA_ENTREGAR;
+  }
+
+  /** Vuelve al depósito sin destino porque se canceló su entrega (HB-19). */
+  public void liberarPorCancelacion(String actor) {
+    this.estadoActual.liberarPorCancelacion(this, actor);
+  }
+
   public void asignarDestino(DestinoAsignacion destino) {
     this.necesidadId = destino != null ? destino.necesidadId() : null;
     this.periodoId = destino != null ? destino.periodoId() : null;
@@ -268,6 +295,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;
+    if (!esCancelable()) {
+      this.cancelacionPedida = false;
+    }
   }
 
   public List<CambioEstado> getHistorial() {

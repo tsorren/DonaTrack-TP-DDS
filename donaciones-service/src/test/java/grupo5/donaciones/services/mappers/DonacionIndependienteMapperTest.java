@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
 import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -244,5 +246,17 @@ class DonacionIndependienteMapperTest {
 
     assertNotNull(dto);
     assertEquals(0, dto.historial().size());
+  }
+
+  @Test
+  void toDTO_llevaLaMarcaDeCancelacionPedida_HB19() {
+    DonacionIndependiente donacion =
+        DonacionIndependienteMother.asignada(
+            2, NecesidadMother.extraordinaria(UUID.randomUUID(), 10));
+    assertFalse(mapper.toDTO(donacion).cancelacionPedida());
+
+    donacion.pedirCancelacion();
+
+    assertTrue(mapper.toDTO(donacion).cancelacionPedida());
   }
 }

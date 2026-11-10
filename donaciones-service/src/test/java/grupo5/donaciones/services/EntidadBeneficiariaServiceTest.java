@@ -28,6 +28,7 @@ import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.impl.CancelacionDeEntregas;
 import grupo5.donaciones.services.impl.EntidadBeneficiariaService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
@@ -48,6 +49,8 @@ class EntidadBeneficiariaServiceTest {
   private EntidadBeneficiariaMapper mapper;
   private EntidadBeneficiariaService service;
 
+  private CancelacionDeEntregas cancelacionDeEntregas = mock(CancelacionDeEntregas.class);
+
   @BeforeEach
   void setUp() {
     repository = mock(IEntidadesBeneficiariasRepository.class);
@@ -60,7 +63,7 @@ class EntidadBeneficiariaServiceTest {
 
     service =
         new EntidadBeneficiariaService(
-            repository, personasRepository, necesidadesRepository, mapper);
+            repository, personasRepository, necesidadesRepository, mapper, cancelacionDeEntregas);
   }
 
   @Test
@@ -269,6 +272,10 @@ class EntidadBeneficiariaServiceTest {
     EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
     Necesidad n1 = mock(Necesidad.class);
     Necesidad n2 = mock(Necesidad.class);
+    UUID idN1 = UUID.randomUUID();
+    UUID idN2 = UUID.randomUUID();
+    when(n1.getId()).thenReturn(idN1);
+    when(n2.getId()).thenReturn(idN2);
     when(repository.findById(id)).thenReturn(Optional.of(entidad));
     when(necesidadesRepository.buscarNecesidadesPorEntidad(id)).thenReturn(List.of(n1, n2));
 
@@ -281,6 +288,9 @@ class EntidadBeneficiariaServiceTest {
     verify(n2).desactivar();
     verify(necesidadesRepository).save(n1);
     verify(necesidadesRepository).save(n2);
+    // HB-19: la baja en cascada también cancela lo que no salió de cada necesidad
+    verify(cancelacionDeEntregas).cancelarLasQueNoSalieron(idN1);
+    verify(cancelacionDeEntregas).cancelarLasQueNoSalieron(idN2);
   }
 
   @Test

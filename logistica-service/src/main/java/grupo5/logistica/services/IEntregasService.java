@@ -25,4 +25,6 @@ public interface IEntregasService {
   EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto);
 
   List<CambioEstadoEntregaResponseDTO> obtenerHistorial(UUID id);
+
+  void cancelarPorDonacion(UUID idDonacion, String motivo);
 }

@@ -238,8 +238,12 @@ class RepositoriosJpaAdaptersTest {
     when(springDataRepo.findByEstado(EstadoEntrega.PENDIENTE)).thenReturn(List.of(entity));
     when(springDataRepo.findByIdRutaOrderByIdEntregaAsc(any())).thenReturn(List.of(entity));
     when(springDataRepo.findByIdRutaIsNull()).thenReturn(List.of(entity));
-    when(springDataRepo.existsByIdDonacion(entrega.getIdDonacion())).thenReturn(true);
-    when(springDataRepo.findByIdDonacion(entrega.getIdDonacion())).thenReturn(Optional.of(entity));
+    when(springDataRepo.existsByIdDonacionAndEstadoNot(
+            entrega.getIdDonacion(), EstadoEntrega.CANCELADA))
+        .thenReturn(true);
+    when(springDataRepo.findFirstByIdDonacionAndEstadoNot(
+            entrega.getIdDonacion(), EstadoEntrega.CANCELADA))
+        .thenReturn(Optional.of(entity));
     when(springDataRepo.findByIdBeneficiarioOrderByIdEntregaAsc(entrega.getIdBeneficiaria()))
         .thenReturn(List.of(entity));
     UUID donanteId = UUID.randomUUID();

@@ -104,8 +104,7 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     if (idDonacion == null) {
       return false;
     }
-    return storage.values().stream()
-        .anyMatch(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion));
+    return findByIdDonacion(idDonacion).isPresent();
   }
 
   @Override
@@ -115,7 +114,16 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     }
     return storage.values().stream()
         .filter(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion))
+        .filter(entrega -> entrega.getEstadoActual() != EstadoEntrega.CANCELADA)
         .findFirst();
+  }
+
+  @Override
+  public List<Entrega> findCanceladasByIdDonacion(UUID idDonacion) {
+    return storage.values().stream()
+        .filter(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion))
+        .filter(entrega -> entrega.getEstadoActual() == EstadoEntrega.CANCELADA)
+        .toList();
   }
 
   @Override

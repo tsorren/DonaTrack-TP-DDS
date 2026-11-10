@@ -12,11 +12,14 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.entities.necesidades.DatosNecesidad;
 import grupo5.donaciones.models.entities.necesidades.EstadoNecesidad;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
@@ -31,7 +34,10 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
+import grupo5.donaciones.services.impl.CancelacionDeEntregas;
 import grupo5.donaciones.services.impl.NecesidadesService;
+import grupo5.donaciones.services.logistica.ILogisticaBroker;
+import grupo5.donaciones.services.logistica.ResultadoPedidoCancelacion;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -49,6 +55,7 @@ class NecesidadesServiceTest {
   private IDonacionesIndependientesRepository donacionesIndependientesRepositoryMock;
   private ICategoriasRepository categoriasRepositoryMock;
   private NecesidadesService necesidadesService;
+  private ILogisticaBroker logisticaBrokerMock;
 
   @BeforeEach
   void setUp() {
@@ -57,6 +64,7 @@ class NecesidadesServiceTest {
     subcategoriaRepositoryMock = mock(ISubcategoriasRepository.class);
     donacionesIndependientesRepositoryMock = mock(IDonacionesIndependientesRepository.class);
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
+    logisticaBrokerMock = mock(ILogisticaBroker.class);
 
     necesidadesService =
         new NecesidadesService(
@@ -64,7 +72,8 @@ class NecesidadesServiceTest {
             entidadesBeneficiariasRepositoryMock,
             subcategoriaRepositoryMock,
             categoriasRepositoryMock,
-            new AcumuladosDeAsignacion(donacionesIndependientesRepositoryMock));
+            new AcumuladosDeAsignacion(donacionesIndependientesRepositoryMock),
+            new CancelacionDeEntregas(donacionesIndependientesRepositoryMock, logisticaBrokerMock));
   }
 
   @Test
@@ -545,5 +554,50 @@ class NecesidadesServiceTest {
     when(necesidadRepositoryMock.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
 
     assertTrue(necesidadesService.listarPeriodos(necesidad.getId()).isEmpty());
+  }
+
+  // ===================== eliminar() y la cancelación de entregas (HB-19) =====================
+
+  @Test
+  void eliminar_cancelaLoQueNoSalioSegunLoQueRespondeElBroker() {
+    NecesidadExtraordinaria necesidad = NecesidadMother.extraordinaria(UUID.randomUUID(), 10);
+    DonacionIndependiente pedida = DonacionIndependienteMother.asignada(2, necesidad);
+    DonacionIndependiente sinEntrega = DonacionIndependienteMother.listaParaEntregar(2, necesidad);
+    DonacionIndependiente noSoportada = DonacionIndependienteMother.asignada(2, necesidad);
+    when(necesidadRepositoryMock.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    when(donacionesIndependientesRepositoryMock.findCancelablesPorNecesidad(necesidad.getId()))
+        .thenReturn(List.of(pedida, sinEntrega, noSoportada));
+    when(logisticaBrokerMock.pedirCancelacion(pedida.getId()))
+        .thenReturn(ResultadoPedidoCancelacion.PEDIDA);
+    when(logisticaBrokerMock.pedirCancelacion(sinEntrega.getId()))
+        .thenReturn(ResultadoPedidoCancelacion.SIN_ENTREGA);
+    when(logisticaBrokerMock.pedirCancelacion(noSoportada.getId()))
+        .thenReturn(ResultadoPedidoCancelacion.NO_SOPORTADA);
+
+    necesidadesService.eliminar(necesidad.getId());
+
+    assertFalse(necesidad.isActiva());
+    assertTrue(pedida.isCancelacionPedida());
+    assertEquals(TipoEstadoDonacion.ASIGNACION_REALIZADA, pedida.getEstadoActual().getTipo());
+    assertEquals(TipoEstadoDonacion.EN_DEPOSITO, sinEntrega.getEstadoActual().getTipo());
+    assertNull(sinEntrega.getNecesidadId());
+    assertFalse(noSoportada.isCancelacionPedida());
+    assertEquals(TipoEstadoDonacion.ASIGNACION_REALIZADA, noSoportada.getEstadoActual().getTipo());
+    verify(donacionesIndependientesRepositoryMock).save(pedida);
+    verify(donacionesIndependientesRepositoryMock).save(sinEntrega);
+    verify(donacionesIndependientesRepositoryMock, never()).save(noSoportada);
+  }
+
+  @Test
+  void eliminar_sinDonacionesPendientesNoLlamaAlBroker() {
+    NecesidadExtraordinaria necesidad = NecesidadMother.extraordinaria(UUID.randomUUID(), 10);
+    when(necesidadRepositoryMock.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    when(donacionesIndependientesRepositoryMock.findCancelablesPorNecesidad(necesidad.getId()))
+        .thenReturn(List.of());
+
+    necesidadesService.eliminar(necesidad.getId());
+
+    assertFalse(necesidad.isActiva());
+    verifyNoInteractions(logisticaBrokerMock);
   }
 }

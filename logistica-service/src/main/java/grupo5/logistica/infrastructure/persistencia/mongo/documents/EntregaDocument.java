@@ -34,7 +34,14 @@ public class EntregaDocument {
 
   private DireccionSubdocument destino;
 
-  @Indexed(unique = true)
+  // Una entrega activa por donación (HB-19): las CANCELADA quedan fuera del índice. Nombre nuevo:
+  // una base que ya tenga el índice único viejo ("idDonacion") lo tiene que borrar a mano.
+  @Indexed(
+      name = "uq_entrega_donacion_activa",
+      unique = true,
+      partialFilter =
+          "{ 'estado': { '$in': ['PENDIENTE', 'EN_TRASLADO', 'ENTREGADA', 'NO_RECIBIDA',"
+              + " 'REVISION'] } }")
   private UUID idDonacion;
 
   @Indexed private UUID idBeneficiaria;

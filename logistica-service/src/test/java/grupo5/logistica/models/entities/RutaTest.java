@@ -294,4 +294,34 @@ class RutaTest {
     assertEquals(1, ruta.getEntregaIds().size());
     assertEquals(1, ruta.getHistorialEstado().size());
   }
+
+  @Test
+  void quitarEntregaConservaElOrdenDeLasDemasYSoloEnPendiente() {
+    Ruta ruta = new Ruta(LocalDate.now().plusDays(1), UUID.randomUUID(), UUID.randomUUID());
+    UUID primera = UUID.randomUUID();
+    UUID segunda = UUID.randomUUID();
+    UUID tercera = UUID.randomUUID();
+    ruta.agregarEntrega(primera);
+    ruta.agregarEntrega(segunda);
+    ruta.agregarEntrega(tercera);
+
+    ruta.quitarEntrega(segunda);
+
+    assertEquals(List.of(primera, tercera), ruta.getEntregaIds());
+    assertThrows(ValidationException.class, () -> ruta.quitarEntrega(segunda));
+
+    ruta.iniciarRuta();
+    assertThrows(ValidationException.class, () -> ruta.quitarEntrega(primera));
+  }
+
+  @Test
+  void rutaQueQuedaVaciaNoSePuedeIniciar() {
+    Ruta ruta = new Ruta(LocalDate.now().plusDays(1), UUID.randomUUID(), UUID.randomUUID());
+    UUID unica = UUID.randomUUID();
+    ruta.agregarEntrega(unica);
+
+    ruta.quitarEntrega(unica);
+
+    assertThrows(ValidationException.class, ruta::iniciarRuta);
+  }
 }

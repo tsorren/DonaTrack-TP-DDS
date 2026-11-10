@@ -228,7 +228,7 @@
 4. **Incentivos sin DLQ** (`RabbitMQConfig`, `setDefaultRequeueRejected(false)`; sus colas no tienen argumentos `x-dead-letter-*`). Un mensaje que falla al procesarse se descarta. Se cierra con DLX y DLQ, como en Notificaciones.
 5. **Schedulers de Incentivos sin lock distribuido** (`InactividadJob`, `RachaJob`, `RankingMensualJob`; 0 referencias a ShedLock en código y poms). Con más de una réplica, cada job corre una vez por réplica. El ADR de ShedLock (`proposed`) ponía como condición tener PostgreSQL, que #889 ya incorpora.
 6. **`CallerRunsPolicy` en el pool asíncrono de Incentivos** (`AsyncConfig`, pool 2/10/500; el mismo default está en `CommonAsyncAutoConfiguration`). `[INFERRED]` Con la cola llena, la publicación AMQP corre en el hilo que la pidió y sus errores solo dejan un `warn` (`IncentivosEventosPublisher`). Contradice el objetivo de no bloquear al llamador.
-7. **Traza AMQP solo de ida.** Donaciones envía `X-Trace-Id` en sus publicaciones (`DonacionesEventPublisher`, `ProveedorLogisticaAmqp`) y en el pedido HTTP (`ProveedorLogisticaHttp`). Ningún listener lo restaura en el MDC, y Logística e Incentivos no lo envían. Contradice `docs/arquitectura/eventos-amqp.md` (restauración en el consumidor) y deja a medias el ADR de trazabilidad distribuida.
+7. **Traza AMQP solo de ida.** Donaciones envía `X-Trace-Id` en sus publicaciones (`DonacionesEventPublisher`, `ProveedorLogisticaAmqp`) y en el pedido HTTP (`ProveedorLogisticaHttp`). `[OBSERVED] partial` desde HB-19 (2026-11-09): Logística envía `X-Trace-Id` en sus cinco eventos de vuelta (`LogisticaEventPublisher.identidad()`, si hay un traceId en el MDC) y lo restaura en el MDC al consumir la cancelación (`EntregaSolicitadaEventListener.onEntregaCancelada`). Falta: restaurarlo en los demás listeners (el pedido de entrega en Logística, todos los de Donaciones y Notificaciones), e Incentivos no lo envía. Contradice `docs/arquitectura/eventos-amqp.md` (restauración en el consumidor) y deja a medias el ADR de trazabilidad distribuida.
 8. **Tests JPA de Notificaciones excluidos de CI.** Surefire excluye `**/RepositoriosJpaTest.java` (`pom.xml`, sección `excludes`): el test de repositorios JPA de Notificaciones no corre en `mvn verify` ni en CI. Sí corren `RepositoriosLogisticaJpaTest`, `RepositoriosIncentivosJpaTest` y `ServicesSobrePostgresTest`. El ADR multi-schema cita `RepositoriosJpaTest` como evidencia de validación. **Resuelto (2026-10-28, RM-02):** se quitó la exclusión del `pom.xml` raíz; `mvn verify -pl notificaciones-service -am` corre `RepositoriosJpaTest` con 6 tests, 0 fallas y 0 salteados.
 9. **Reglas ArchUnit faltantes.** El ADR 20260906 declara dos reglas que no están codificadas: dependencias permitidas de los controllers (`onlyDependOnClassesThat`) y dominio sin `jakarta.persistence` en todos los servicios (hoy solo en Logística). Ninguna regla impide que `services` dependa de `infrastructure`. Fugas observadas: Donaciones (`OutboxStore`; `ProcesadorDeDonaciones`, DTI-02), Incentivos (`IN8nClient` e `INotificacionesClient`, puertos ubicados en `infrastructure/`) y Logística (`RutaMapper` → `GeneradorDeURLSeguimiento`). El dominio de Donaciones importa `NecesidadDTO`, por eso su regla omite `dto..`. Además, las reglas de dominio solo inspeccionan `models.entities..`: no cubren `models.algoritmos`, `normalizacion`, `segmentacion`, `ports` ni `storage` (hoy sin imports de `dto`, `controllers` ni `infrastructure` en esos paquetes).
 10. **Notificaciones recibe hechos que no procesa** (`RabbitMQConfig` de Notificaciones liga `notificaciones.donaciones` con `donacion.#` y `donante.#`; su mapeo de tipos y `DonacionEventListener` no cubren `donacion.segmentada.v1` ni `donante.dado-de-baja.v1`, que Donaciones publica para Incentivos). `[INFERRED]` La conversión falla, el mensaje se rechaza sin requeue y termina en `notificaciones.donaciones.dlq`; no verificado con ejecución. Llena la DLQ de mensajes legítimos y confunde la revisión manual. Se cierra con bindings explícitos por clave o con un descarte controlado de los tipos ajenos. **Resuelto (2026-10-14):** bindings explícitos, una clave por handler (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`); `RabbitMQConfigTest` verifica que coincidan con el mapeo de tipos. En un broker ya provisionado, los bindings `donacion.#` y `donante.#` previos persisten hasta borrarlos a mano o recrear la cola.
@@ -487,9 +487,9 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 | Campo | Valor |
 |---|---|
 | ADR | [20261102-baja-de-una-necesidad-con-entregas-en-curso](./20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |
-| ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) |
+| ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) · cómo se implementa: [20261109-cancelacion-de-entregas-que-no-salieron](./20261109-cancelacion-de-entregas-que-no-salieron.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `NecesidadesService.eliminar` solo llama a `desactivar()`; Logística no tiene cancelación (`EstadoEntrega` sin `CANCELADA`); la asignación por `PATCH` no consulta si la necesidad sigue activa |
+| Implementation status | `[OBSERVED] partial` — HB-19 ([PR #958](https://github.com/tsorren/DonaTrack-TP-DDS/pull/958)) implementa los ítems 1 a 5. Queda pendiente lo de abajo |
 | Target | `donaciones-service` (baja, broker, procesador de eventos de vuelta) · `logistica-service` (`Entrega.cancelar`, listener del comando, salida de la ruta) · `schemas/` (comando `entrega.cancelada.<proveedorId>.v1` y evento `entrega.cancelada`) |
 | Cuándo se saldará | Antes de habilitar la baja de necesidades en el cliente con datos reales |
 
@@ -498,6 +498,17 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 3. **Vuelta** a `EN_DEPOSITO` sin destino al recibir el evento.
 4. **Guarda `NECESIDAD_INACTIVA`** en la asignación por `PATCH`.
 5. **Proveedores HTTP** sin cancelación: la entrega sigue y se loguea.
+
+Pendiente después de HB-19 (ADR 20261109, "Trabajo futuro" y "Consecuencias negativas"):
+
+- Si la confirmación `entrega.cancelada` se pierde (se publica después del commit, sin outbox), la donación queda con `cancelacionPedida` hasta que se repite la baja.
+- Si el proveedor no tiene la entrega (el pedido se descartó por inválido) no confirma, y si el pedido termina `FALLIDA` después de la baja la cancelación se descarta con un log `error`: en los dos casos la donación queda asignada y con la marca hasta una revisión manual, como cualquier solicitud `FALLIDA` del broker.
+- El seguimiento por entidad de Logística devuelve también las entregas `CANCELADA` (historia); la pantalla decide si las muestra.
+- Si el pedido todavía no salió y RabbitMQ lo devuelve, el broker puede pasarlo a un proveedor HTTP después de la baja: la cancelación termina `FALLIDO` por error de contrato y la marca queda hasta que la entrega sale (`ruta.iniciada`).
+- El ADR `proposed` [referencias a donaciones sin clave foránea](./logistica-service/20261007-referencias-a-donaciones-sin-clave-foranea.md) sigue describiendo `UNIQUE (id_donacion)`; el ajuste a una entrega activa por donación está en el ADR 20261109 (no se edita el ADR anterior).
+- Una ruta que queda sin paradas sigue `PENDIENTE` y no se puede iniciar; camión y chofer no se liberan.
+- No hay aviso al donante de que su donación va a otra entidad.
+- Una base Mongo persistente conserva el índice único viejo `idDonacion` de `entregas`: hay que borrarlo a mano.
 
 ---
 

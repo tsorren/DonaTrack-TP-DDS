@@ -28,6 +28,7 @@ La interacción entre microservicios se desacopla temporal y espacialmente media
 donaciones-service
 [donaciones.exchange] ──(donacion.asignada.v1)─► [notificaciones.donaciones]      ──► Notificaciones (Inbox)
    (TopicExchange)    ──(entrega.solicitada.donatrack.v1)► [logistica.donatrack.entregas.solicitadas] ──► Logística (comando del broker)
+                      ──(entrega.cancelada.donatrack.v1)─► [logistica.donatrack.entregas.solicitadas] ──► Logística (cancelación, HB-19: misma cola)
                       ──(donacion.segmentada.v1)► [incentivos.donacion-segmentada]   ──► Incentivos
                       ──(donacion.recibida.v1)──► [incentivos.donacion-recibida]     ──► Incentivos
                       ──(persona.sincronizada.v1)► [incentivos.persona-sincronizada] ──► Incentivos
@@ -72,6 +73,7 @@ logistica-service
 | `ruta.iniciada` | `donaciones.ruta.iniciada` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donaciones a `EN_TRASLADO` y difunde URL de tracking | [`evento-ruta-iniciada.schema.json`](./contratos/schemas/evento-ruta-iniciada.schema.json) |
 | `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA`; si trae `reporte.cantidadRecibida`, guarda lo que no llegó y la necesidad cuenta lo recibido (HB-17); con DTI-36 replica además las fotos de recepción (campo opcional, `[PROPOSED]`) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
 | `entrega.fallida` | `donaciones.entrega.fallida` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGA_FALLIDA` y evalúa replanificación | [`evento-entrega-fallida.schema.json`](./contratos/schemas/evento-entrega-fallida.schema.json) |
+| `entrega.cancelada` | `donaciones.entrega.cancelada` | `donaciones-service` (`LogisticaEventListener`) | HB-19: confirma que el proveedor canceló una entrega que no salió; la donación vuelve a `EN_DEPOSITO` sin destino y la solicitud del broker se cierra (`CANCELADA`) | [`evento-entrega-cancelada.schema.json`](./contratos/schemas/evento-entrega-cancelada.schema.json) |
 
 #### B. Eventos hacia `notificaciones-service`, `logistica-service` e `incentivos-service`
 
@@ -92,23 +94,26 @@ logistica-service
 
 #### B2. Comando del broker de logística hacia `logistica-service`
 
-Único **comando** del sistema: va a un destinatario elegido por el broker de logística de `donaciones-service`, así que su routing key identifica al destinatario (regla «eventos por hecho, comandos por destinatario», [ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)).
+Los dos **comandos** del sistema van a un destinatario elegido por el broker de logística de `donaciones-service`, así que su routing key identifica al destinatario (regla «eventos por hecho, comandos por destinatario», [ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)).
 
 | Mensaje | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Cola Receptora | JSON Schema de Contrato |
 |---|---|---|---|---|---|---|
 | Entrega Solicitada | `donaciones-service` (broker) | `donaciones.exchange` | `entrega.solicitada.<proveedorId>.v1` | `entrega.solicitada.v1` (fijo) | `logistica.<instancia>.entregas.solicitadas` (binding exacto por `LOGISTICA_INSTANCIA_ID`) | [`evento-entrega-solicitada-v1.schema.json`](./contratos/schemas/evento-entrega-solicitada-v1.schema.json) |
+| Entrega Cancelada (HB-19) | `donaciones-service` (broker) | `donaciones.exchange` | `entrega.cancelada.<proveedorId>.v1` | `entrega.cancelada.v1` (fijo) | La **misma** cola que el pedido (segundo binding exacto): con un solo consumidor, nunca se adelanta al pedido que cancela | [`evento-entrega-cancelada-v1.schema.json`](./contratos/schemas/evento-entrega-cancelada-v1.schema.json) |
+
+La cancelación (HB-19, [ADR 20261109](../adr/20261109-cancelacion-de-entregas-que-no-salieron.md)) sale por el mismo outbox del broker que el pedido (entrada de `tipo` `CANCELACION`), con el `X-Trace-Id` de la baja de la necesidad, y recién cuando el pedido de esa entrega ya salió (solicitud `ENVIADA`). Va al proveedor que tiene la entrega: un rechazo no pasa al siguiente proveedor, se reintenta con el mismo. Un proveedor HTTP no cancela: la donación sigue su camino. Logística cancela solo una entrega `PENDIENTE` (con o sin ruta sin iniciar; si tenía ruta, sale de ella) y confirma con `entrega.cancelada`; si la entrega ya salió no hace nada, y si ya estaba cancelada vuelve a confirmar.
 
 Se publica con `mandatory=true` y publisher confirms (`correlated`); el broker espera el acuse. Si RabbitMQ lo devuelve (no hay cola para esa routing key), es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: el mensaje pudo haber quedado en la cola, así que se reintenta con el mismo proveedor. Un proveedor HTTP no usa este comando: recibe el pedido por REST, y como todo proveedor informa su avance publicando en `logistica.exchange` los eventos de vuelta (no invoca a Donaciones por HTTP).
 
 #### B3. Eventos de vuelta de los proveedores de logística
 
-Todo proveedor de logística informa el avance de una entrega publicando en `logistica.exchange` los eventos `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa` y `entrega.fallida` (los mismos que ya publica nuestra Logística). No invoca a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Cada mensaje debe llevar dos headers:
+Todo proveedor de logística informa el avance de una entrega publicando en `logistica.exchange` los eventos `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida` y, si cancela entregas, `entrega.cancelada` (HB-19) (los mismos que ya publica nuestra Logística). No invoca a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Cada mensaje debe llevar dos headers:
 
 | Header | Valor |
 |---|---|
 | `X-Proveedor-Id` | Id del proveedor (el de `donatrack.logistica.proveedores`) |
 | `X-Proveedor-Token` | Token propio del proveedor, acordado con Donaciones (`donatrack.logistica.proveedor.<id>.token-vuelta`) |
-| `__TypeId__` | El alias del evento, igual a su routing key (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`), **no** el nombre de la clase del emisor: Donaciones solo conoce esos alias y descarta con un error de conversión cualquier otro valor |
+| `__TypeId__` | El alias del evento, igual a su routing key (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`, `entrega.cancelada`), **no** el nombre de la clase del emisor: Donaciones solo conoce esos alias y descarta con un error de conversión cualquier otro valor |
 
 `donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`; sin `logistica.token-vuelta` (variable `LOGISTICA_TOKEN_VUELTA`) Logística no arranca, para que la falta no pase inadvertida. Es una protección mínima (DTI-14, ítem 7). Decisión y alternativas: ADR [20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md).
 
@@ -304,6 +309,25 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "replanificable": true
 }
 ```
+
+#### Entrega Cancelada: comando (`entrega.cancelada.<proveedorId>.v1`) y evento de vuelta (`entrega.cancelada`)
+```json
+{
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "motivo": "NECESIDAD_DADA_DE_BAJA",
+  "fecha": "2026-11-09T12:00:00Z"
+}
+```
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "motivo": "NECESIDAD_DADA_DE_BAJA",
+  "fechaCancelacion": "2026-11-09T12:00:05Z"
+}
+```
+
+> El evento puede llegar repetido (Logística vuelve a confirmar una cancelación repetida). Donaciones lo deduplica por `(EntregaCancelada, entregaId, donación)` en `evento_consumido`. Logística propaga el `X-Trace-Id` del comando en el evento.
 
 ---
 
