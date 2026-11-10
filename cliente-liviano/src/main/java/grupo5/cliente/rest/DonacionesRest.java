@@ -42,14 +42,14 @@ import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClientException;
 
 /**
- * Mis donaciones y su detalle desde Donaciones: la lista del donante, las categorías del filtro y,
- * por cada entidad distinta, su nombre para el destino. El número de cada donación es su posición,
- * de la primera a la última. El detalle busca la donación en la lista del donante (otra no se
- * muestra), arma las etapas y las noticias con su historial y, si se entregó, trae la foto de
+ * Mis donaciones y su detalle desde Donaciones: la lista del donante, las categorías del filtro y
+ * el nombre de cada entidad (de las públicas) para el destino. El número de cada donación es su
+ * posición, de la primera a la última. El detalle busca la donación en la lista del donante (otra
+ * no se muestra), arma las etapas y las noticias con su historial y, si se entregó, trae la foto de
  * Logística.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
@@ -136,14 +136,32 @@ class DonacionesRest implements DonacionesPuerto {
         .toList();
   }
 
-  /** El nombre de cada entidad distinta; una sin nombre queda en null (por eso no es toMap). */
+  /**
+   * El nombre de cada entidad de la lista. El donante no puede leer una entidad por id (solo ADMIN
+   * o la entidad), así que se piden todas las activas de una vez a {@code /api/entidades/publicas}
+   * (sin paginado, las devuelve todas). Una dada de baja, o con Donaciones sin responder esa lista,
+   * queda sin nombre: la pantalla la muestra sin destino escrito.
+   */
+  // ponytail: una lista entera por pedido; con muchas entidades, un endpoint por ids.
   private Map<UUID, String> entidades(List<DonacionesApi.Donacion> lista) {
+    // HashMap y no Map.of(): get(null), el de una donación sin destino, devuelve null.
     Map<UUID, String> entidades = new HashMap<>();
-    lista.stream()
+    if (lista.stream()
         .map(DonacionesApi.Donacion::entidadBeneficiariaId)
-        .filter(Objects::nonNull)
-        .distinct()
-        .forEach(id -> entidades.put(id, nombreDeEntidad(id)));
+        .allMatch(Objects::isNull)) {
+      return entidades;
+    }
+    try {
+      List<DonacionesApi.EntidadPublica> publicas =
+          api.entidadesPublicas(new LinkedMultiValueMap<>()).getBody();
+      if (publicas != null) {
+        publicas.stream()
+            .filter(e -> e.id() != null && e.razonSocial() != null && !e.razonSocial().isBlank())
+            .forEach(e -> entidades.put(e.id(), e.razonSocial()));
+      }
+    } catch (RestClientException sinLista) {
+      entidades.clear();
+    }
     return entidades;
   }
 
@@ -344,17 +362,5 @@ class DonacionesRest implements DonacionesPuerto {
       case VENCIDA -> "Venció en el depósito el " + desde.format(DIA);
       default -> "En el depósito, espera destino";
     };
-  }
-
-  /** Una entidad que ya no está (404) o sin nombre queda sin destino escrito. */
-  private String nombreDeEntidad(UUID id) {
-    try {
-      DonacionesApi.Entidad entidad = api.entidad(id);
-      String nombre =
-          entidad == null || entidad.juridica() == null ? null : entidad.juridica().razonSocial();
-      return nombre == null || nombre.isBlank() ? null : nombre;
-    } catch (HttpClientErrorException.NotFound yaNoEsta) {
-      return null;
-    }
   }
 }

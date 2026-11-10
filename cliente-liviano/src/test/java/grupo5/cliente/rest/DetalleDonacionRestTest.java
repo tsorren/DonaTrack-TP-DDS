@@ -75,10 +75,10 @@ class DetalleDonacionRestTest {
   }
 
   private void conLaEntidad() {
-    apis.expect(requestTo("http://donaciones/api/entidades/" + ENTIDAD))
+    apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
         .andRespond(
             withSuccess(
-                "{\"juridica\": {\"razonSocial\": \"" + COMEDOR + "\"}}",
+                "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"" + COMEDOR + "\"}]",
                 MediaType.APPLICATION_JSON));
   }
 
