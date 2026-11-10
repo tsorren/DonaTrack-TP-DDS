@@ -2,6 +2,7 @@
 # Crea un usuario de MinIO por servicio, con acceso solo a sus buckets:
 #   incentivos-service -> insignias
 #   donaciones-service -> donaciones-* (padrones CSV y fotos de bienes)
+#   logistica-service  -> logistica-* (fotos de recepción, ADR-E6-08)
 # Lo corre el contenedor minio-init en cada `docker compose up`. Es idempotente: vuelve a fijar
 # la contraseña desde .env y reescribe las políticas. Falla si falta alguna variable.
 set -eu
@@ -25,3 +26,4 @@ JSON
 
 crear_usuario incentivos-service "${INCENTIVOS_MINIO_PASSWORD:?}" insignias
 crear_usuario donaciones-service "${DONACIONES_MINIO_PASSWORD:?}" 'donaciones-*'
+crear_usuario logistica-service "${LOGISTICA_MINIO_PASSWORD:?}" 'logistica-*'

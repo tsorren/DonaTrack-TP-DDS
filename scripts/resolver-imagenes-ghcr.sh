@@ -33,7 +33,8 @@ resolver() {
 for pom in */pom.xml; do
   svc="${pom%/pom.xml}"
   [[ -f "$svc/Dockerfile" ]] || continue
-  [[ "$svc" == "common-lib" || "$svc" == "integration-tests" || "$svc" == "adr-generator" ]] && continue
+  # auth-service (Keycloak) y api-gateway (SPEC-07) no están en docker-compose.preprod.yml hasta E2-12 de SPEC-06.
+  [[ "$svc" == "common-lib" || "$svc" == "integration-tests" || "$svc" == "adr-generator" || "$svc" == "auth-service" || "$svc" == "api-gateway" ]] && continue
 
   if [[ -n "${PR_TAG:-}" && "$CHANGED" == *" $svc "* ]]; then
     # RM-02: un servicio modificado solo se valida con su propia imagen.

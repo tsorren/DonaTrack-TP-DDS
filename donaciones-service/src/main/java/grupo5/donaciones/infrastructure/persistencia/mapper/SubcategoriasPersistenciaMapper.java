@@ -22,6 +22,7 @@ public class SubcategoriasPersistenciaMapper {
     entity.setId(domain.getId());
     entity.setCategoriaId(domain.getCategoriaId());
     entity.setNombre(domain.getNombre());
+    entity.setUnidad(domain.getUnidad());
     sincronizarAliases(domain, entity);
     return entity;
   }
@@ -32,7 +33,10 @@ public class SubcategoriasPersistenciaMapper {
         entity.getAliases().stream()
             .map(a -> new AliasSubcategoria(a.getAlias(), entity.getNombre()))
             .toList();
-    return new Subcategoria(entity.getId(), entity.getCategoriaId(), entity.getNombre(), aliases);
+    Subcategoria subcategoria =
+        new Subcategoria(entity.getId(), entity.getCategoriaId(), entity.getNombre(), aliases);
+    subcategoria.asignarUnidad(entity.getUnidad());
+    return subcategoria;
   }
 
   /**

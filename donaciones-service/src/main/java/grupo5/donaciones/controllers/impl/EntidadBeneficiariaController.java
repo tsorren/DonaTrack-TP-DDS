@@ -1,5 +1,10 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+import static grupo5.donaciones.seguridad.Acceso.ENTIDAD;
+import static grupo5.donaciones.seguridad.Acceso.PUBLICO;
+import static grupo5.donaciones.seguridad.Acceso.SU_ID;
+
 import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
@@ -12,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/entidades")
 public class EntidadBeneficiariaController implements IEntidadBeneficiariaController {
 
@@ -44,6 +51,7 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   }
 
   @Override
+  @PreAuthorize(ENTIDAD + SU_ID)
   @GetMapping("/{id}")
   public ResponseEntity<EntidadBeneficiariaOutputDTO> obtenerEntidad(@PathVariable UUID id) {
     return ResponseEntity.ok(service.obtenerEntidad(id));
@@ -59,6 +67,7 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   }
 
   @Override
+  @PreAuthorize(PUBLICO)
   @GetMapping("/publicas")
   public ResponseEntity<List<EntidadPublicaDTO>> obtenerPublicas(
       @RequestParam(required = false) String nombre,
@@ -74,6 +83,7 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   }
 
   @Override
+  @PreAuthorize(ENTIDAD + "hasAuthority('EDITAR_DATOS_ORGANIZACION') and " + SU_ID)
   @PutMapping("/{id}")
   public ResponseEntity<EntidadBeneficiariaOutputDTO> actualizarEntidad(
       @PathVariable UUID id, @Valid @RequestBody EntidadBeneficiariaInputDTO entidad) {

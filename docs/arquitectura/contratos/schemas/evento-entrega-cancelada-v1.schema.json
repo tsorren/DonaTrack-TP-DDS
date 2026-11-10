@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-entrega-cancelada-v1.schema.json",
+  "title": "EventoEntregaCanceladaV1",
+  "description": "Comando AMQP que el broker de logística de donaciones-service publica en donaciones.exchange con routing key entrega.cancelada.<proveedorId>.v1 (alias __TypeId__ fijo: entrega.cancelada.v1) por el outbox del broker, recién cuando el pedido de esa entrega ya salió. Pide al proveedor que tiene la entrega que la cancele si todavía no salió (HB-19, ADR 20261109-cancelacion-de-entregas-que-no-salieron). Lleva X-Trace-Id y messageId como el pedido. Nuestra Logística lo recibe por la misma cola que el pedido.",
+  "type": "object",
+  "properties": {
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Donación cuya entrega se cancela; el proveedor busca su entrega activa"
+    },
+    "motivo": {
+      "type": "string",
+      "enum": ["NECESIDAD_DADA_DE_BAJA"]
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["donacionIndependienteId", "motivo", "fecha"],
+  "additionalProperties": true
+}

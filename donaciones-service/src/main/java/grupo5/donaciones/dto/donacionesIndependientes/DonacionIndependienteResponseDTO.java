@@ -12,4 +12,34 @@ public record DonacionIndependienteResponseDTO(
     LocalDateTime fechaRegistro,
     List<CambioEstadoDIResponseDTO> historial,
     List<ItemDonacionIndependienteResponseDTO> items,
-    int cantidad) {}
+    int cantidad,
+    UUID entidadBeneficiariaId,
+    UUID necesidadId,
+    boolean cancelacionPedida) {
+
+  /** Sin necesidad (o respuesta anterior a HB-17) y sin la marca de HB-19. */
+  @SuppressWarnings("java:S107")
+  public DonacionIndependienteResponseDTO(
+      UUID id,
+      UUID donacionOriginalId,
+      String descripcion,
+      String estadoActual,
+      LocalDateTime fechaRegistro,
+      List<CambioEstadoDIResponseDTO> historial,
+      List<ItemDonacionIndependienteResponseDTO> items,
+      int cantidad,
+      UUID entidadBeneficiariaId) {
+    this(
+        id,
+        donacionOriginalId,
+        descripcion,
+        estadoActual,
+        fechaRegistro,
+        historial,
+        items,
+        cantidad,
+        entidadBeneficiariaId,
+        null,
+        false);
+  }
+}

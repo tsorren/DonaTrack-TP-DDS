@@ -378,7 +378,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker A {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker A {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -684,7 +684,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker B {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker B {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -990,7 +990,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker C {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker C {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -1874,7 +1874,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker D {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker D {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -2159,7 +2159,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker E {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker E {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [

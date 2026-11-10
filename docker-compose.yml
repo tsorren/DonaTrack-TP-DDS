@@ -105,6 +105,10 @@ services:
       # Token de los eventos de vuelta de logística: valor sintético solo para desarrollo y pruebas
       - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
       - SEED_CATALOGO_ENABLED=${SEED_CATALOGO_ENABLED:-true}
+      # Validación del token de Keycloak: apagada por defecto, Postman, integration-tests y k6 llaman sin token
+      - DONACIONES_SEGURIDAD_HABILITADA=${DONACIONES_SEGURIDAD_HABILITADA:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
@@ -153,13 +157,52 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      # Fotos de recepción en MinIO (ADR-E6-08, HB-10)
+      - LOGISTICA_MINIO_ENABLED=true
+      - LOGISTICA_MINIO_ENDPOINT=http://minio:9000
+      - LOGISTICA_MINIO_PUBLIC_ENDPOINT=http://localhost:9000
+      - LOGISTICA_MINIO_ACCESS_KEY=logistica-service
+      - LOGISTICA_MINIO_SECRET_KEY=${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
+      - LOGISTICA_FOTOS_URL_PUBLICA_BASE=http://localhost:8086
     depends_on:
       mongodb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - donatrack-network
+
+  api-gateway:
+    # Entrada única del cliente a los servicios (ADR-E6-02, etapa 1): rutas sin reescritura y
+    # X-Trace-Id, sin JWT todavía (etapa 2, F5).
+    image: donatrack/api-gateway:local
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      target: local
+    ports:
+      - "8086:8086"
+    environment:
+      - PORT=8086
+      - DONACIONES_SERVICE_URL=http://donaciones-service:8080
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+      - LOGISTICA_SERVICE_URL=http://logistica-service:8083
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -192,6 +235,9 @@ services:
       - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
       - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?ver .env.example}
       - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?ver .env.example}
+      # Google como identity provider (RX-01). Opcionales: vacías, el botón de Google no anda y lo demás sí (RX-13).
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -353,7 +399,7 @@ services:
       - minio_data:/data
 
   minio-init:
-    # Crea un usuario de MinIO por servicio (incentivos-service, donaciones-service) con acceso solo
+    # Crea un usuario de MinIO por servicio (incentivos, donaciones y logistica-service) con acceso solo
     # a sus buckets. Misma imagen que minio: trae sh y mc. Corre en cada `up` y termina.
     image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
     entrypoint: ["sh", "/opt/donatrack/minio/init-usuarios.sh"]
@@ -362,6 +408,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?ver .env.example}
       INCENTIVOS_MINIO_PASSWORD: ${INCENTIVOS_MINIO_PASSWORD:?ver .env.example}
       DONACIONES_MINIO_PASSWORD: ${DONACIONES_MINIO_PASSWORD:?ver .env.example}
+      LOGISTICA_MINIO_PASSWORD: ${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
     volumes:
       - ./persistencia/minio:/opt/donatrack/minio:ro
     depends_on:

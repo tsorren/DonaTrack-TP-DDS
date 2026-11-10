@@ -1,6 +1,8 @@
 package grupo5.donaciones.services.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.logging.FeignTraceRequestInterceptor;
@@ -11,13 +13,16 @@ import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.impl.SolicitudesEntregaRepositoryEnMemoria;
 import grupo5.donaciones.services.logistica.EntradaOutboxLogistica;
 import grupo5.donaciones.services.logistica.EstadoEntradaOutbox;
+import grupo5.donaciones.services.logistica.ICatalogoProveedoresLogistica;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
+import grupo5.donaciones.services.logistica.ResultadoPedidoCancelacion;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,9 +37,12 @@ class LogisticaBrokerTest {
   private SolicitudesEntregaRepositoryEnMemoria solicitudes;
   private LogisticaOutboxEnMemoria outbox;
   private LogisticaBroker broker;
+  private ICatalogoProveedoresLogistica catalogo;
 
   @BeforeEach
   void setUp() {
+    catalogo = mock(ICatalogoProveedoresLogistica.class);
+    when(catalogo.admiteCancelacion("donatrack")).thenReturn(true);
     solicitudes = new SolicitudesEntregaRepositoryEnMemoria();
     outbox = new LogisticaOutboxEnMemoria();
     broker = brokerCon(5);
@@ -50,6 +58,7 @@ class LogisticaBrokerTest {
         solicitudes,
         outbox,
         new SeleccionPorPreferenciaConFallback(List.of("donatrack", "externo"), "donatrack"),
+        catalogo,
         CLOCK,
         maxIntentos,
         30);
@@ -259,5 +268,116 @@ class LogisticaBrokerTest {
     assertThrows(
         ValidationException.class, () -> broker.registrarResultado(null, ResultadoEnvio.PUBLICADO));
     assertThrows(ValidationException.class, () -> broker.registrarResultado(entradaId, null));
+  }
+
+  // ===================== Cancelación (HB-19) =====================
+
+  private EntradaOutboxLogistica solicitudEnviadaConCancelacionPedida(UUID donacionId) {
+    broker.solicitarEntrega(datos(donacionId));
+    broker.registrarResultado(unicaPendiente().getId(), ResultadoEnvio.PUBLICADO);
+    MDC.put(FeignTraceRequestInterceptor.MDC_TRACE_KEY, "trace-de-la-baja");
+    assertEquals(ResultadoPedidoCancelacion.PEDIDA, broker.pedirCancelacion(donacionId));
+    return unicaPendiente();
+  }
+
+  @Test
+  void pedirCancelacion_sinSolicitudActiva_respondeSinEntregaYNoEncolaNada() {
+    assertEquals(
+        ResultadoPedidoCancelacion.SIN_ENTREGA, broker.pedirCancelacion(UUID.randomUUID()));
+    assertTrue(outbox.pendientesListas(AHORA.plusYears(1)).isEmpty());
+  }
+
+  @Test
+  void pedirCancelacion_conProveedorQueNoCancela_respondeNoSoportada() {
+    when(catalogo.admiteCancelacion("donatrack")).thenReturn(false);
+    UUID donacionId = UUID.randomUUID();
+    broker.solicitarEntrega(datos(donacionId));
+    broker.registrarResultado(unicaPendiente().getId(), ResultadoEnvio.PUBLICADO);
+
+    assertEquals(ResultadoPedidoCancelacion.NO_SOPORTADA, broker.pedirCancelacion(donacionId));
+    assertTrue(outbox.pendientesListas(AHORA.plusYears(1)).isEmpty());
+  }
+
+  @Test
+  void pedirCancelacion_encolaLaCancelacionConElTraceIdDeLaBajaYSuDestino() {
+    UUID donacionId = UUID.randomUUID();
+
+    EntradaOutboxLogistica cancelacion = solicitudEnviadaConCancelacionPedida(donacionId);
+
+    assertTrue(cancelacion.esCancelacion());
+    assertEquals("trace-de-la-baja", cancelacion.getTraceId());
+    assertEquals(donacionId, cancelacion.getDatos().donacionIndependienteId());
+    assertEquals(Optional.of("donatrack"), broker.destinoDeCancelacion(cancelacion.getId()));
+  }
+
+  @Test
+  void destinoDeCancelacion_conLaSolicitudTodaviaPendiente_laPosponeSinGastarIntentos() {
+    UUID donacionId = UUID.randomUUID();
+    broker.solicitarEntrega(datos(donacionId));
+    broker.pedirCancelacion(donacionId);
+    EntradaOutboxLogistica cancelacion =
+        outbox.pendientesListas(AHORA.plusYears(1)).stream()
+            .filter(EntradaOutboxLogistica::esCancelacion)
+            .findFirst()
+            .orElseThrow();
+
+    assertTrue(broker.destinoDeCancelacion(cancelacion.getId()).isEmpty());
+
+    assertTrue(cancelacion.estaPendiente());
+    assertEquals(0, cancelacion.getIntentos());
+    assertFalse(cancelacion.estaListaPara(AHORA));
+  }
+
+  @Test
+  void destinoDeCancelacion_conLaSolicitudFallida_laDescarta() {
+    UUID donacionId = UUID.randomUUID();
+    broker.solicitarEntrega(datos(donacionId));
+    EntradaOutboxLogistica pedido = unicaPendiente();
+    broker.pedirCancelacion(donacionId);
+    broker.registrarResultado(pedido.getId(), ResultadoEnvio.ERROR_CONTRATO);
+    EntradaOutboxLogistica cancelacion = unicaPendiente();
+
+    assertTrue(broker.destinoDeCancelacion(cancelacion.getId()).isEmpty());
+    assertEquals(EstadoEntradaOutbox.FALLIDO, cancelacion.getEstado());
+  }
+
+  @Test
+  void resultadoDeLaCancelacion_rechazoReintentaConElMismoProveedorSinTocarLaSolicitud() {
+    EntradaOutboxLogistica cancelacion = solicitudEnviadaConCancelacionPedida(UUID.randomUUID());
+
+    broker.registrarResultado(cancelacion.getId(), ResultadoEnvio.RECHAZADO);
+
+    assertTrue(cancelacion.estaPendiente());
+    assertEquals(1, cancelacion.getIntentos());
+    assertEquals("donatrack", cancelacion.getProveedorId());
+    assertEquals(EstadoSolicitudEntrega.ENVIADA, unicaSolicitud().getEstado());
+    assertTrue(unicaSolicitud().getProveedoresDescartados().isEmpty());
+  }
+
+  @Test
+  void resultadoDeLaCancelacion_publicadoYErrorDeContratoCierranLaEntrada() {
+    EntradaOutboxLogistica publicada = solicitudEnviadaConCancelacionPedida(UUID.randomUUID());
+    broker.registrarResultado(publicada.getId(), ResultadoEnvio.PUBLICADO);
+    assertEquals(EstadoEntradaOutbox.PUBLICADO, publicada.getEstado());
+    assertEquals(EstadoSolicitudEntrega.ENVIADA, unicaSolicitud().getEstado());
+
+    broker.pedirCancelacion(unicaSolicitud().getDonacionIndependienteId());
+    EntradaOutboxLogistica fallida = unicaPendiente();
+    broker.registrarResultado(fallida.getId(), ResultadoEnvio.ERROR_CONTRATO);
+    assertEquals(EstadoEntradaOutbox.FALLIDO, fallida.getEstado());
+  }
+
+  @Test
+  void cancelacionConfirmada_cierraLaSolicitudYPermiteUnaNuevaSiSeReasigna() {
+    UUID donacionId = UUID.randomUUID();
+    solicitudEnviadaConCancelacionPedida(donacionId);
+
+    broker.registrarCancelacionConfirmada(donacionId);
+    broker.registrarCancelacionConfirmada(donacionId);
+
+    assertEquals(EstadoSolicitudEntrega.CANCELADA, unicaSolicitud().getEstado());
+    broker.solicitarEntrega(datos(donacionId));
+    assertEquals(2, solicitudes.findAll().size());
+    assertTrue(solicitudes.findActivaPorDonacion(donacionId).isPresent());
   }
 }

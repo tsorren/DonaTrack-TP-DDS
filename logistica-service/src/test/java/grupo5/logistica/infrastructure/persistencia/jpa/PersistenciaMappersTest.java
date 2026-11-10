@@ -20,10 +20,13 @@ import grupo5.logistica.infrastructure.persistencia.jpa.mappers.RutaPersistencia
 import grupo5.logistica.infrastructure.persistencia.jpa.mappers.SolicitudPlanificacionPersistenciaMapper;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
@@ -140,6 +143,35 @@ class PersistenciaMappersTest {
   }
 
   @Test
+  void entregaMapper_deberiaMapearIdaYVueltaRemitoYReporte() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
+    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    entrega.iniciarRuta("Chofer");
+    ReporteRecepcion reporte = new ReporteRecepcion(MotivoReporte.INCOMPLETA, "Faltó", 3.5);
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), "R-1", reporte);
+
+    PaisEntity pais = new PaisEntity(UUID.randomUUID(), "Argentina");
+    LocalidadEntity localidad =
+        new LocalidadEntity(
+            UUID.randomUUID(),
+            new ProvinciaEntity(UUID.randomUUID(), pais, "Buenos Aires"),
+            "CABA");
+    EntregaEntity entity =
+        entregaMapper.toEntity(
+            entrega, null, entregaMapper.construirDireccionNueva(dir, localidad));
+    assertEquals("R-1", entity.getNumeroRemito());
+    assertEquals(MotivoReporte.INCOMPLETA, entity.getReporteMotivo());
+
+    Entrega reconstituida = entregaMapper.toDomain(entity);
+    assertEquals("R-1", reconstituida.getNumeroRemito());
+    assertEquals(reporte, reconstituida.getReporteRecepcion());
+
+    entity.setReporteMotivo(null);
+    assertNull(entregaMapper.toDomain(entity).getReporteRecepcion());
+  }
+
+  @Test
   void entregaMapper_deberiaMapearIdaYVueltaReutilizandoDireccionExistente() {
     assertNull(entregaMapper.toEntity(null));
     assertNull(entregaMapper.toDomain(null));
@@ -155,15 +187,19 @@ class PersistenciaMappersTest {
     DireccionEntity dirEntity = entregaMapper.construirDireccionNueva(dir, localidadEntity);
 
     Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
     entrega.iniciarRuta("Chofer");
 
     EntregaEntity entity = entregaMapper.toEntity(entrega, null, dirEntity);
+    assertEquals(donanteId, entity.getDonanteId());
     entity.setVersion(0L);
     UUID idDireccion = entity.getDireccion().getIdDireccion();
     UUID idCambioInicial = entity.getHistorialEstado().getFirst().getIdCambioEstadoEntrega();
 
     Entrega reconstituida = entregaMapper.toDomain(entity);
     assertEquals(entrega.getId(), reconstituida.getId());
+    assertEquals(donanteId, reconstituida.getDonanteId());
     assertEquals("Av. Cordoba", reconstituida.getDestino().calle());
     assertEquals(0L, reconstituida.getVersion());
 
@@ -206,5 +242,20 @@ class PersistenciaMappersTest {
     assertThrows(
         ObjectOptimisticLockingFailureException.class,
         () -> solicitudMapper.toEntity(reconstituida, entity));
+  }
+
+  @Test
+  void camionMapper_deberiaMapearLaPosicionIdaYVuelta() {
+    Camion camion = new Camion("AB123CD", 45.0f, 1500.0f, 3.0f);
+    CamionEntity sinPosicion = camionMapper.toEntity(camion);
+    assertNull(sinPosicion.getPosicionLatitud());
+    assertNull(camionMapper.toDomain(sinPosicion).getPosicion());
+
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+
+    CamionEntity entity = camionMapper.toEntity(camion);
+    assertEquals(posicion, camionMapper.toDomain(entity).getPosicion());
   }
 }

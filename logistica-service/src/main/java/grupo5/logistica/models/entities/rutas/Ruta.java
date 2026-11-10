@@ -117,6 +117,22 @@ public class Ruta extends AgregadoConEventos<EventoRuta> {
     registrarEvento(new EventoRutaAsignada(this.id, entregaId));
   }
 
+  /**
+   * Saca una parada de una ruta que todavía no salió (HB-19). Las demás conservan su orden de
+   * visita. Si era la única, la ruta queda vacía y {@link #iniciarRuta()} la rechaza.
+   */
+  public void quitarEntrega(UUID entregaId) {
+    validarIdentificador(entregaId);
+
+    if (this.estado != EstadoRuta.PENDIENTE) {
+      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+    }
+
+    if (!this.entregas.remove(entregaId)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
   public List<UUID> getEntregaIds() {
     return List.copyOf(this.entregas);
   }

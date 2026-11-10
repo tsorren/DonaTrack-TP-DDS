@@ -123,7 +123,12 @@ class PropuestaDeAsignacionServiceTest {
 
     when(donacionRepository.findEnDeposito()).thenReturn(List.of(donacion));
     Necesidad satisfecha = mock(Necesidad.class);
-    when(necesidadRepository.findActivas()).thenReturn(List.of(necesidad, satisfecha));
+    // HB-18: una extraordinaria vencida (TERMINADA) sigue activa pero no recibe asignaciones
+    Necesidad vencida = mock(Necesidad.class);
+    when(necesidadRepository.findActivas()).thenReturn(List.of(necesidad, satisfecha, vencida));
+    when(necesidad.admiteAsignaciones(any())).thenReturn(true);
+    when(satisfecha.admiteAsignaciones(any())).thenReturn(true);
+    when(vencida.admiteAsignaciones(any())).thenReturn(false);
     when(acumulados.estaSatisfecha(satisfecha)).thenReturn(true);
     when(gestorPropuestas.generarPropuestas(eq(List.of(necesidad)), eq(List.of(donacion)), any()))
         .thenReturn(List.of(propuesta));
@@ -186,7 +191,7 @@ class PropuestaDeAsignacionServiceTest {
     Propuesta propuesta = new Propuesta();
     Necesidad necesidad = mock(Necesidad.class);
     when(necesidad.getId()).thenReturn(UUID.randomUUID());
-    when(necesidad.isActiva()).thenReturn(false);
+    when(necesidad.admiteAsignaciones(any())).thenReturn(false);
     propuesta.asociarNecesidad(necesidad.getId());
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
     when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
@@ -299,7 +304,7 @@ class PropuestaDeAsignacionServiceTest {
   private static Necesidad necesidadActivaDe(UUID entidadId) {
     Necesidad necesidad = mock(Necesidad.class);
     when(necesidad.getId()).thenReturn(UUID.randomUUID());
-    when(necesidad.isActiva()).thenReturn(true);
+    when(necesidad.admiteAsignaciones(any())).thenReturn(true);
     when(necesidad.getEntidadId()).thenReturn(entidadId);
     return necesidad;
   }
@@ -506,7 +511,29 @@ class PropuestaDeAsignacionServiceTest {
                         && datos.destino() == destino
                         && datos.pesoTotalKG().equals(12.5)
                         && datos.volumenTotalM3().equals(0.3)
-                        && datos.fecha() != null));
+                        && datos.fecha() != null
+                        && datos.donanteId() == null));
+  }
+
+  @Test
+  void onPropuestaAprobada_debeMandarAlBrokerElDonanteDeLaDonacionOriginal() {
+    Necesidad necesidad = mock(Necesidad.class);
+    UUID necesidadId = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
+    prepararBeneficiario(necesidad, necesidadId, juridicaId, mock(DestinoEventoDTO.class));
+    PosibleFragmentacion fragmentacion = mock(PosibleFragmentacion.class);
+    prepararFragmentacion(fragmentacion, necesidad, UUID.randomUUID(), 12.5, 0.3);
+    UUID donanteId = UUID.randomUUID();
+    Donacion donacion = mock(Donacion.class);
+    when(donacion.getDonanteId()).thenReturn(donanteId);
+    when(donacionesRepository.findById(any())).thenReturn(Optional.of(donacion));
+
+    service.onPropuestaAprobada(
+        new PropuestaAprobada(UUID.randomUUID(), necesidadId, List.of(fragmentacion), "actor"));
+
+    verify(logisticaBroker)
+        .solicitarEntrega(
+            argThat((DatosEntregaLogistica datos) -> donanteId.equals(datos.donanteId())));
   }
 
   @Test

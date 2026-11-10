@@ -4,6 +4,7 @@ import grupo5.common.repositories.CrudRepositoryJpaAdapter;
 import grupo5.logistica.infrastructure.persistencia.jpa.entities.RutaEntity;
 import grupo5.logistica.infrastructure.persistencia.jpa.mappers.RutaPersistenciaMapper;
 import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataRutaRepository;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
@@ -50,6 +51,14 @@ public class RutasRepositoryJpaAdapter
       return List.of();
     }
     return springDataRepo.findByFecha(fecha).stream().map(toDomain).toList();
+  }
+
+  @Override
+  public List<Ruta> findByEstado(EstadoRuta estado) {
+    if (estado == null) {
+      return List.of();
+    }
+    return springDataRepo.findByEstado(estado).stream().map(toDomain).toList();
   }
 
   @Override

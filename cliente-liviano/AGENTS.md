@@ -32,7 +32,8 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 - **Sin entidades de dominio ni acceso a bases de negocio** (RNF-CL-01). Los datos llegan por las
   APIs REST, a través del gateway, como DTOs propios del cliente.
 - **No depende de `common-lib`.** Su `@RestControllerAdvice` convertiría los errores de las vistas
-  en JSON. La propagación de `traceId` se decide al integrar el gateway.
+  en JSON. El `traceId` lo genera el cliente en cada pedido (`TraceIdFiltro`, con el formato de
+  common-lib) y lo manda a las APIs en `X-Trace-Id` (ADR-E6-02, `proposed`, en el PR 938).
 - Stack fijo (D17–D21, ADR-E6-06; D31–D33, [ADR de interacción, movimiento y componentes](../docs/adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)):
   Spring MVC + Thymeleaf, HTMX, Alpine.js (build CSP), Pico.css + `tokens.css` en capas CUBE y
   MapLibre solo en pantallas con mapa. Sin build de frontend, sin Node y sin frameworks SPA.
@@ -41,10 +42,12 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 | Paquete o carpeta | Contiene |
 |---|---|
-| `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. |
+| `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. `Pantallas` arma el modelo de cada pantalla (el menú de su área, la cuenta y los datos de ejemplo) y lo usan la maqueta y el sitio real; `PantallasController` sirve `/` y `/<pantalla>`; `AccesoController` (fuera de `maqueta`) lleva ingresar y registrarse a Keycloak. Los controllers de las pantallas con datos del puerto (por ahora, `RankingController`, `MisDonacionesController`, con Mis donaciones y su detalle, y `RecibidasController`, con Donaciones recibidas de la entidad) arman su pantalla con `Pantallas.mostrar`. También el `traceId` de cada pedido (`TraceIdFiltro`, ADR-E6-02) y los errores de las APIs → páginas de error (`ErroresHttp`: 401 a Ingresar, 403, 404 y el resto 502) |
+| `grupo5.cliente.seguridad` | Ingreso con Keycloak y acceso por área (fuera de `maqueta`): `Area`, `UsuarioActual` (el único lugar que lee los claims del ID token), `CuentaDelToken` y la cadena de filtros |
 | `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
-| `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos |
-| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/` es la portada; `/<pantalla>` muestra `templates/<pantalla>.html`, y una sección del menú sin plantilla, `sin-dibujar`), los escenarios y las variantes A/B |
+| `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos. Cada puerto de datos tiene un adaptador de maqueta y uno REST; `cliente.datos.<puerto>=maqueta\|rest` elige cuál (el perfil `maqueta` pone todos en `maqueta`). `CuentaActual` dice quién es la cuenta: fuera de `maqueta`, la persona del token (`seguridad.CuentaDelToken`); con `maqueta`, la de ejemplo o, con `cliente.datos.cuenta=parametro`, el `?donante=<id>` o el `?entidad=<id>` que guarda la sesión (`web.CuentaPorParametro`) |
+| `grupo5.cliente.rest` | Adaptadores REST: una interfaz `@HttpExchange` por API sobre `RestClient`, con su URL en `cliente.api.<api>.url` (la única propiedad de URL de cada API) y el `X-Trace-Id` en cada llamada (`ClientesHttp`); las de Donaciones llevan también el token de la sesión; se prueban con `MockRestServiceServer` |
+| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/estilos` y los formularios, que vuelven a su pantalla sin guardar), los adaptadores de maqueta de cada puerto, la cuenta de ejemplo de cada área (y, con `?cuenta=persona`, la de la persona que dona), `?respuesta=` para ver las páginas de error, el sitio abierto sin ingreso, los escenarios y las variantes A/B. Una sección del menú sin plantilla muestra `sin-dibujar` |
 | `templates/<pantalla>.html` | Una plantilla por pantalla. El nombre empieza con el rol (`publico-`, `donante-`, `entidad-`, `admin-`) y, en el nivel 3, con el de su sección (`donante-donaciones-detalle`) |
 | `templates/layout-privado.html` y `layout-publico.html` | Estructura de las pantallas privadas y de las públicas (la portada tiene la suya) |
 | `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, `interaccion` (la carga de Alpine y la configuración de View Transitions, en el head de los tres layouts), los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar`. `estilos.html` es el catálogo (`/estilos`, RF-CL-05) y `componentes/<componente>.html`, los fragmentos de la capa CUBE |
@@ -161,6 +164,7 @@ mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=donante-inicio   # 
 mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b   # una pasada por variante A/B
 mvn test -pl cliente-liviano -Pvisual -Dspotless.check.skip=true -Dtest=VerificacionVisualTest#paginasCumplenElPisoEnTodosLosAnchos -Dverificacion.boceto=true -Dverificacion.variantes=<tema>-a,<tema>-b -Dverificacion.paginas=<ruta>   # boceto: solo capturas a 1280 px, sin el piso (vueltas de exploración)
 mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
+mvn -pl cliente-liviano spring-boot:run   # con las APIs: INCENTIVOS_URL (por defecto :8082), DONACIONES_URL (:8080) y LOGISTICA_URL (:8083); el donante, con ?donante=<id>
 ```
 
 Cuando axe no puede medir el contraste (por un pseudo-elemento, un degradado o una imagen de

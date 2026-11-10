@@ -238,10 +238,16 @@ class RepositoriosJpaAdaptersTest {
     when(springDataRepo.findByEstado(EstadoEntrega.PENDIENTE)).thenReturn(List.of(entity));
     when(springDataRepo.findByIdRutaOrderByIdEntregaAsc(any())).thenReturn(List.of(entity));
     when(springDataRepo.findByIdRutaIsNull()).thenReturn(List.of(entity));
-    when(springDataRepo.existsByIdDonacion(entrega.getIdDonacion())).thenReturn(true);
-    when(springDataRepo.findByIdDonacion(entrega.getIdDonacion())).thenReturn(Optional.of(entity));
+    when(springDataRepo.existsByIdDonacionAndEstadoNot(
+            entrega.getIdDonacion(), EstadoEntrega.CANCELADA))
+        .thenReturn(true);
+    when(springDataRepo.findFirstByIdDonacionAndEstadoNot(
+            entrega.getIdDonacion(), EstadoEntrega.CANCELADA))
+        .thenReturn(Optional.of(entity));
     when(springDataRepo.findByIdBeneficiarioOrderByIdEntregaAsc(entrega.getIdBeneficiaria()))
         .thenReturn(List.of(entity));
+    UUID donanteId = UUID.randomUUID();
+    when(springDataRepo.findByDonanteIdOrderByIdEntregaAsc(donanteId)).thenReturn(List.of(entity));
 
     assertEquals(1, adapter.findByEstado(EstadoEntrega.PENDIENTE).size());
     assertEquals(1, adapter.findByRutaId(UUID.randomUUID()).size());
@@ -251,6 +257,8 @@ class RepositoriosJpaAdaptersTest {
     assertEquals(1, adapter.findByIdBeneficiaria(entrega.getIdBeneficiaria()).size());
     assertTrue(adapter.findByIdDonacion(null).isEmpty());
     assertTrue(adapter.findByIdBeneficiaria(null).isEmpty());
+    assertEquals(1, adapter.findByDonanteId(donanteId).size());
+    assertTrue(adapter.findByDonanteId(null).isEmpty());
   }
 
   @Test

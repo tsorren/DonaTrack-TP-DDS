@@ -27,7 +27,7 @@
         "providerId": "declarative-user-profile",
         "subComponents": {},
         "config": {
-          "kc.user.profile.config": ["{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false,\"required\":{\"roles\":[\"user\"]}},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}"]
+          "kc.user.profile.config": ["{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false,\"required\":{\"roles\":[\"user\"]}},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"personaId\",\"displayName\":\"Persona en cuyo nombre opera\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]},\"multivalued\":false},{\"name\":\"solicitudEntidad\",\"displayName\":\"Solicitud de alta de entidad\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}"]
         }
       }
     ]
@@ -44,14 +44,119 @@
       { "name": "ENTIDAD", "description": "Entidad receptora de donaciones" },
       { "name": "ADMIN", "description": "Administración de DonaTrack" },
       {
+        "name": "SERVICIO",
+        "description": "Rol técnico del token de client credentials (cliente liviano, n8n, llamadas entre servicios)"
+      },
+      {
         "name": "default-roles-donatrack",
-        "description": "Roles que reciben las cuentas nuevas: el autorregistro da DONANTE",
+        "description": "Roles que reciben las cuentas nuevas: el autorregistro da DONANTE (sin offline_access)",
         "composite": true,
-        "composites": { "realm": ["offline_access", "uma_authorization", "DONANTE"] }
+        "composites": { "realm": ["uma_authorization", "DONANTE"] }
       },
       { "name": "offline_access", "description": "Permite pedir tokens offline" },
       { "name": "uma_authorization", "description": "Autorización UMA" }
-    ]
+    ],
+    "client": {
+      "donatrack-api": [
+        {
+          "name": "VER_DONACIONES",
+          "description": "Ver las donaciones propias o las asignadas a la entidad"
+        },
+        {
+          "name": "REGISTRAR_DONACIONES",
+          "description": "Cargar una donación y subir las fotos de los bienes"
+        },
+        {
+          "name": "VER_NECESIDADES",
+          "description": "Ver las necesidades propias, incluidas las no públicas"
+        },
+        {
+          "name": "GESTIONAR_NECESIDADES",
+          "description": "Publicar, cambiar y dar de baja necesidades"
+        },
+        {
+          "name": "EDITAR_DATOS_ORGANIZACION",
+          "description": "Editar los datos de la persona en cuyo nombre opera"
+        },
+        { "name": "VER_ENTREGAS", "description": "Seguir las entregas propias" },
+        { "name": "VER_RUTAS", "description": "Ver la ruta y el camión de una entrega propia" },
+        {
+          "name": "CONFIRMAR_RECEPCION",
+          "description": "Confirmar o rechazar la recepción y adjuntar las fotos"
+        },
+        {
+          "name": "VER_INCENTIVOS",
+          "description": "Ver nivel, métricas, misiones, insignias y posición en el ranking propios"
+        },
+        {
+          "name": "CONFIGURAR_INSIGNIAS",
+          "description": "Elegir qué insignias se muestran en público"
+        },
+        {
+          "name": "VER_NOTIFICACIONES",
+          "description": "Ver las notificaciones propias y marcarlas como leídas"
+        },
+        {
+          "name": "GESTIONAR_MIEMBROS",
+          "description": "Invitar gente a la organización, cambiarle los permisos y quitarla"
+        },
+        {
+          "name": "RESPONSABLE_ENTIDAD",
+          "description": "Plantilla: responsable de una entidad",
+          "composite": true,
+          "composites": {
+            "client": {
+              "donatrack-api": [
+                "VER_DONACIONES", "VER_NECESIDADES", "GESTIONAR_NECESIDADES",
+                "EDITAR_DATOS_ORGANIZACION", "VER_ENTREGAS", "VER_RUTAS", "CONFIRMAR_RECEPCION",
+                "VER_NOTIFICACIONES", "GESTIONAR_MIEMBROS"
+              ]
+            }
+          }
+        },
+        {
+          "name": "OPERADOR_ENTIDAD",
+          "description": "Plantilla: operador de una entidad",
+          "composite": true,
+          "composites": {
+            "client": {
+              "donatrack-api": [
+                "VER_DONACIONES", "VER_NECESIDADES", "GESTIONAR_NECESIDADES", "VER_ENTREGAS",
+                "CONFIRMAR_RECEPCION", "VER_NOTIFICACIONES"
+              ]
+            }
+          }
+        },
+        {
+          "name": "RESPONSABLE_DONANTE",
+          "description": "Plantilla: responsable de una empresa donante",
+          "composite": true,
+          "composites": {
+            "client": {
+              "donatrack-api": [
+                "VER_DONACIONES", "REGISTRAR_DONACIONES", "EDITAR_DATOS_ORGANIZACION",
+                "VER_ENTREGAS", "VER_RUTAS", "VER_INCENTIVOS", "CONFIGURAR_INSIGNIAS",
+                "VER_NOTIFICACIONES", "GESTIONAR_MIEMBROS"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DONANTE_PERSONA",
+          "description": "Plantilla: persona humana que dona",
+          "composite": true,
+          "composites": {
+            "client": {
+              "donatrack-api": [
+                "VER_DONACIONES", "REGISTRAR_DONACIONES", "EDITAR_DATOS_ORGANIZACION",
+                "VER_ENTREGAS", "VER_RUTAS", "VER_INCENTIVOS", "CONFIGURAR_INSIGNIAS",
+                "VER_NOTIFICACIONES"
+              ]
+            }
+          }
+        }
+      ]
+    }
   },
   "users": [
     {
@@ -63,16 +168,23 @@
         { "type": "password", "value": "${AUTH_ADMIN_PASSWORD}", "temporary": false }
       ],
       "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "service-account-cliente-liviano",
+      "enabled": true,
+      "serviceAccountClientId": "cliente-liviano",
+      "realmRoles": ["SERVICIO"],
+      "clientRoles": { "realm-management": ["manage-users", "view-users", "query-users"] }
     }
   ],
   "scopeMappings": [
-    { "client": "cliente-liviano", "roles": ["DONANTE", "ENTIDAD", "ADMIN"] }
+    { "client": "cliente-liviano", "roles": ["DONANTE", "ENTIDAD", "ADMIN", "SERVICIO"] }
   ],
   "clients": [
     {
       "clientId": "cliente-liviano",
       "name": "Cliente liviano",
-      "description": "Sitio web de DonaTrack: cliente OIDC confidencial con authorization code",
+      "description": "Sitio web de DonaTrack: cliente OIDC confidencial con authorization code y cuenta de servicio (rol SERVICIO)",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
@@ -81,13 +193,11 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
+      "serviceAccountsEnabled": true,
       "fullScopeAllowed": false,
       "redirectUris": ["${CLIENTE_LIVIANO_BASE_URL}/login/oauth2/code/keycloak"],
       "webOrigins": [],
-      "attributes": {
-        "post.logout.redirect.uris": "${CLIENTE_LIVIANO_BASE_URL}/"
-      },
+      "attributes": { "post.logout.redirect.uris": "${CLIENTE_LIVIANO_BASE_URL}/" },
       "defaultClientScopes": ["basic"],
       "optionalClientScopes": [],
       "protocolMappers": [
@@ -108,6 +218,57 @@
           }
         },
         {
+          "name": "permisos",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "usermodel.clientRoleMapping.clientId": "donatrack-api",
+            "claim.name": "permisos",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "lightweight.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "personaId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "personaId",
+            "claim.name": "personaId",
+            "multivalued": "false",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "lightweight.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "solicitudEntidad",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "solicitudEntidad",
+            "claim.name": "solicitudEntidad",
+            "multivalued": "false",
+            "jsonType.label": "String",
+            "access.token.claim": "false",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "lightweight.claim": "false",
+            "introspection.token.claim": "false"
+          }
+        },
+        {
           "name": "audiencia-api",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
@@ -121,6 +282,56 @@
           }
         }
       ]
+    },
+    {
+      "id": "7f3c2a9e-5b1d-4e8a-9c6f-2d4b8a1e0c53",
+      "clientId": "donatrack-api",
+      "name": "API de DonaTrack",
+      "description": "Audiencia de los servicios: sus roles de cliente son los permisos y las plantillas (matriz de permisos)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [],
+      "optionalClientScopes": []
+    }
+  ],
+  "clientScopeMappings": {
+    "donatrack-api": [
+      {
+        "client": "cliente-liviano",
+        "roles": [
+          "VER_DONACIONES", "REGISTRAR_DONACIONES", "VER_NECESIDADES", "GESTIONAR_NECESIDADES",
+          "EDITAR_DATOS_ORGANIZACION", "VER_ENTREGAS", "VER_RUTAS", "CONFIRMAR_RECEPCION",
+          "VER_INCENTIVOS", "CONFIGURAR_INSIGNIAS", "VER_NOTIFICACIONES", "GESTIONAR_MIEMBROS"
+        ]
+      }
+    ],
+    "realm-management": [
+      { "client": "cliente-liviano", "roles": ["manage-users", "view-users", "query-users"] }
+    ]
+  },
+  "identityProviders": [
+    {
+      "alias": "google",
+      "displayName": "Google",
+      "providerId": "google",
+      "enabled": true,
+      "trustEmail": false,
+      "storeToken": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "${GOOGLE_CLIENT_ID}",
+        "clientSecret": "${GOOGLE_CLIENT_SECRET}",
+        "syncMode": "IMPORT",
+        "defaultScope": "openid email"
+      }
     }
   ]
 }

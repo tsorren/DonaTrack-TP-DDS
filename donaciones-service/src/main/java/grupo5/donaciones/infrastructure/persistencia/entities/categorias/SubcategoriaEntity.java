@@ -1,8 +1,11 @@
 package grupo5.donaciones.infrastructure.persistencia.entities.categorias;
 
+import grupo5.donaciones.models.entities.categorias.Unidad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -26,6 +29,11 @@ public class SubcategoriaEntity {
 
   @Column(name = "nombre", nullable = false)
   private String nombre;
+
+  /** Nula: hereda la de su categoría (V17). */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "unidad", length = 20)
+  private Unidad unidad;
 
   @OneToMany(
       mappedBy = "subcategoria",

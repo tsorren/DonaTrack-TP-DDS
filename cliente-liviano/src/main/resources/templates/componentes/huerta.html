@@ -61,8 +61,9 @@
     <h3><a class="huerta-enlace" href="/donante-donaciones-detalle?donacion=fideos"
            th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}" th:text="${d.titulo}">Fideos secos</a></h3>
     <ul class="huerta-datos" role="list">
-      <li><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"
-           th:href="|#${icono}|"/></svg><span th:text="|${categoriaTexto} · ${d.cantidad}|">Alimentos · 8 kg</span></li>
+      <li><svg th:if="${icono}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"
+           th:href="|#${icono}|"/></svg><span
+           th:text="${categoriaTexto == null ? d.cantidad : categoriaTexto + ' · ' + d.cantidad}">Alimentos · 8 kg</span></li>
       <li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10l8-6 8 6v10z"/><path
            d="M10 20v-5h4v5"/></svg><span th:text="${d.destino != null} ? ${d.destino} : 'Todavía sin destino'">Comedor
         Barrio Ejemplo</span></li>

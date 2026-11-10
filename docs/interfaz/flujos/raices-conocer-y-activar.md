@@ -15,7 +15,7 @@
 | Qué quiere lograr | "Entender qué es esto y si me sirve antes de crear una cuenta" · "Entrar por primera vez con la cuenta que me hicieron" |
 | Dispositivo principal | Ambos; Activar cuenta, celular primero |
 | Requerimientos | RF-01 (la portada lleva a lo institucional) y la lista de pantallas públicas de [§6.2](../../requerimientos/requerimientos-e6.md). Activar cuenta: RF-AUTH-14 (alta de donantes del CSV y del depósito, D12 🎓), RF-AUTH-04 y RNF-AUTH-10 (la respuesta no revela si el correo tiene cuenta) |
-| Datos que usa | Contadores de Nosotros: HB-02 (endpoint agregado que no existe). Activar cuenta: el mecanismo de D12, en consulta con la cátedra; con Keycloak (PR 927), el enlace sería una acción requerida de "elegir contraseña". En la maqueta, datos de ejemplo y formularios que van a su pantalla siguiente |
+| Datos que usa | Contadores de Nosotros: HB-02, `GET /api/donaciones/contadores` (PR #953). Activar cuenta: el mecanismo de D12, en consulta con la cátedra; con Keycloak (PR 927), el enlace sería una acción requerida de "elegir contraseña". En la maqueta, datos de ejemplo y formularios que van a su pantalla siguiente |
 | Boceto de E1 | Nosotros: pág. 3. Las landings y Activar cuenta: sin boceto |
 
 ## 2. Dónde está en el sitio
@@ -335,8 +335,8 @@ Decisiones (bitácora, 2026-11-07):
   (usuario).
 - Activar cuenta sale del enlace del correo: elegir la contraseña, cuenta activada, y el desvío de
   enlace vencido o usado con "Pedir otro enlace", que también está en Ingresar (usuario).
-- Nosotros lleva las tres cifras del boceto, con período y fecha (usuario). Faltan en el backend
-  (HB-02).
+- Nosotros lleva las tres cifras del boceto, con período y fecha (usuario). Las da
+  `GET /api/donaciones/contadores` (HB-02).
 - Una sola ficha para las cuatro pantallas, como el roadmap (agente).
 - "Landing donante" y "Landing beneficiario" se llaman "Para donantes" y "Para entidades" en el
   sitio y en la dirección (agente, por el tono: el sitio no dice "beneficiario").

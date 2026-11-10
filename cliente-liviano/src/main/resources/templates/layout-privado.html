@@ -96,7 +96,7 @@
     <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">3</b>
   </a>
   <!--/* La cuenta, como en K (usuario, 2026-11-08): un menú que se despliega al tocar la foto de perfil,
-         con el nombre y el rol, Mi perfil y Salir. La foto por defecto es una planta. Es un <details>:
+         con el nombre y el rol, Mi perfil, Cambiar contraseña y Cerrar sesión. La foto por defecto es una planta. Es un <details>:
          anda sin JavaScript. */-->
   <details class="navegacion-cuenta">
     <summary class="navegacion-cuenta-foto" th:aria-label="|Cuenta de ${cuenta.nombre}|"
@@ -108,7 +108,10 @@
       <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
       <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
          th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
-      <a href="/publico-portada" th:href="@{/publico-portada}">Salir</a>
+      <!--/* El cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y Cerrar
+             sesión (POST con CSRF), de #955. */-->
+      <a th:if="${cuenta.cambiarClave}" href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a>
+      <form th:replace="~{cerrar-sesion :: boton}"></form>
     </div>
   </details>
 </header>

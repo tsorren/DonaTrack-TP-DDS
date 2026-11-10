@@ -22,7 +22,7 @@
 | Qué quiere lograr | "Ver qué llegó y adónde, saber quiénes piden y qué, y entrar o crear mi cuenta para donar o para sumar mi entidad" |
 | Dispositivo principal | Ambos; la computadora primero para la empresa, el celular para la entidad |
 | Requerimientos | RF-01 (destacadas del último mes con su foto, registro y login, legales). RF-02 (mapa de entregadas, detalle por marcador con fecha, categoría y foto; ubicación aproximada, D24). RF-03 (registro: el donante queda operativo al completar el perfil; la entidad, pendiente de aprobación). RF-04 (login de los tres roles; credenciales inválidas, error genérico). RF-22 (entidades activas con necesidades vigentes, sin datos de contacto). RF-AUTH-02 (Continuar con Google), RF-AUTH-05/06, RF-AUTH-13 (recuperar). RNF-AUTH-07 (bloqueo tras varios intentos) y RNF-AUTH-10 (respuestas que no revelan cuentas). RF-CL-06 (lista junto al mapa), RF-CL-07 (cuándo se actualizó). RNF-PRIV-01/03 |
-| Datos que usa | Ninguno existe para lo público todavía: HB-01 (destacadas), HB-02 (contadores), HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `SitioController`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
+| Datos que usa | Contadores: `GET /api/donaciones/contadores` (HB-02, PR #953). Destacadas: `GET /api/donaciones/destacadas` (HB-01, PR #954). Lo demás no existe para lo público todavía: HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `SitioController`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
 | Boceto de E1 | Pág. 2 (Donaciones realizadas: mapa coloreado, galería en mosaico, "Unirse a la comunidad"), pág. 23 (mapas por región, detalle de una donación), pág. 4 (Iniciar sesión), pág. 5 (Registrarse: dos tarjetas) y pág. 11 (Registro de entidad). Entidades y necesidades no tiene boceto (D26) |
 
 ## 2. Dónde está en el sitio
@@ -219,7 +219,7 @@ por su rol).
 ```text
 Rótulo · Título · Bajada
 Quién dona: [Una empresa u organización ●] [Una persona]     ← ?tipo=persona
-Empresa: Nombre de la empresa · Tu nombre y apellido
+Empresa: Nombre de la empresa · Rubro · Tu nombre y apellido
 Persona: Nombre · Apellido
 Correo electrónico · Contraseña [Mostrar]
 Aviso del nombre visible
@@ -239,7 +239,7 @@ cuenta de Distribuidora Ejemplo SA): el donante queda operativo al completar el 
 Rótulo · Título · Bajada
 Cómo sigue: 1 Completás la solicitud (estás acá) · 2 El equipo la revisa · 3 Publicás lo que necesitás
 La entidad: Nombre · Qué es · Tipo de organización
-Dirección de entrega: Calle · Altura · Localidad · Provincia
+Dirección de entrega: Calle · Altura · Código postal · Localidad · Provincia
 Quién la representa: Nombre y apellido · Correo electrónico · Contraseña [Mostrar]
 [ ] Leí y acepto los términos y la política de privacidad (versión 1)
 [Enviar la solicitud]
@@ -253,6 +253,14 @@ piden" e "Ir a la portada".
 Respecto del boceto (pág. 11): en tres grupos con título, como pedía la nota del boceto ("conviene
 partirlo en secciones claras"). Un solo representante, el que crea la cuenta; el rubro pasa a "Qué
 es", una lista corta. El país no se pregunta: es Argentina.
+
+**En el sitio real** (fuera de la maqueta), `publico-registro`, `publico-registro-donante` y
+`publico-registro-entidad` son el paso "Completá tu perfil" de la cuenta creada en Keycloak (D11,
+RI-AUTH-02). Sin sesión llevan a crear la cuenta; con sesión y sin perfil muestran el formulario
+sin correo, contraseña ni salidas, con el rótulo "Completá tu perfil" y el botón "Guardar mi
+perfil" (la entidad conserva "Enviar la solicitud"). Si Donaciones o Keycloak fallan, el aviso "No
+pudimos guardar tu perfil" (o "No pudimos enviar la solicitud") conserva lo escrito. El nombre y
+apellido de quien representa a la empresa o a la entidad pide al menos dos palabras.
 
 ### 4.8 Recuperar la contraseña (`publico-recuperar`)
 
@@ -605,7 +613,7 @@ Hallazgos, sin corregir en esta ficha:
 Datos que la maqueta inventa porque el backend no los da hoy. Son los de la lista de la corrida
 ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), copiados acá. Sin DTI ni ADR nuevos.
 
-- Público · publico-donaciones · entregas confirmadas con foto de la última semana o el último mes, con DTO público sin el donante (HB-01) y foto legible en público (hoy las fotos son privadas con URL firmada, RNF-PRIV-03) · RF-01 no tiene endpoint; la maqueta usa 10 entregas sintéticas.
+- Público · publico-donaciones · entregas confirmadas con foto de la última semana o el último mes, con DTO público sin el donante (HB-01) y foto legible en público (hoy las fotos son privadas con URL firmada, RNF-PRIV-03) · el endpoint es `GET /api/donaciones/destacadas` (PR #954); la maqueta usa 10 entregas sintéticas.
 - Público · publico-donaciones, publico-mapa · fecha de la última actualización de los datos públicos · toda cifra dice cuándo se actualizó (tono, RF-CL-07); ningún endpoint la da; la maqueta dice "15 de octubre de 2026, 14:30".
 - Público · publico-mapa · entregas confirmadas del período con barrio o coordenadas aproximadas, categoría, fecha y foto, filtrables por categoría (HB-07) · RF-02 y D24; la maqueta dibuja un mapa fijo con su lista.
 - Público · publico-entidades · entidades activas con pedidos vigentes, barrio aproximado y "qué es", sin contacto, con búsqueda por nombre y filtro por categoría (HB-08, HB-15, HB-18) · RF-22; el "rubro" de JuridicaInputDTO es texto libre y el filtro y el ícono necesitan una lista fija (comedor, merendero, escuela, hogar, club, biblioteca, otra).

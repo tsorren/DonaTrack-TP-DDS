@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.web.Pantallas;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -19,7 +20,14 @@ import org.springframework.test.web.servlet.MockMvc;
  * Las variantes de prueba están en src/test/resources: prueba-a (estilo) y prueba-b (estructura).
  */
 @WebMvcTest
-@Import(MaquetaConfig.class)
+@Import({
+  MaquetaConfig.class,
+  Pantallas.class,
+  RankingMaqueta.class,
+  DonacionesMaqueta.class,
+  RecibidasMaqueta.class,
+  CuentaMaqueta.class
+})
 @ActiveProfiles("maqueta")
 class VariantesInterceptorTest {
 

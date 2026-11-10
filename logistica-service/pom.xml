@@ -169,5 +169,11 @@
             <artifactId>rabbitmq</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Cliente S3 de MinIO: fotos de recepción (ADR-E6-08; misma versión que donaciones e incentivos) -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.17</version>
+        </dependency>
     </dependencies>
 </project>

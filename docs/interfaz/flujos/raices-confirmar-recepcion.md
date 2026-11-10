@@ -23,7 +23,7 @@
 | Qué quiere lograr | "Dejar asentado que la entrega llegó, con la foto, rápido y sin equivocarme de entrega" |
 | Dispositivo principal | Celular primero; también la computadora |
 | Requerimientos | RF-12 (confirmar recepción exige al menos una foto válida, D27; la entrega pasa a `ENTREGADA`). RF-08 (quien donó recibe la notificación de recepción) y RF-13 (la recepción también aparece en la bandeja de la entidad). RF-01 y RF-02 (la foto de una entrega confirmada puede mostrarse en la portada y en el mapa público, con ubicación aproximada). RF-14 (solo las entregas que la entidad debe recibir). RNF-PRIV-03 y 04 (fotos privadas y sin EXIF). RNF-UI-04 a 06 (ayudas del flujo crítico, éxito y error en cada acción, `hx-indicator`). RF-CL-04 (CSRF). RNF-CL-02 (sin JavaScript, igual funciona) |
-| Datos que usa | `PATCH /api/entregas/{id}/estado` con `estado: ENTREGADA`, `actor` y `fotosRecepcion` (al menos una; 400 si falta la foto o la transición no vale; 404 si no existe). Huecos: HB-10 (subir la foto: `POST /api/entregas/{id}/fotos` multipart, hacia MinIO), HB-09 (la notificación de recepción), HB-13 (que solo la entidad destinataria confirme) y HB-16 (las entregas activas de una entidad en una llamada). El remito, la necesidad que cubre y quién donó **no están en el contrato**: el remito se suma al contrato de entregas y la necesidad y quién donó los pide el cliente a Donaciones (HB-17, [ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md), 2026-11-02). Los bultos salieron de la pantalla. En la maqueta, los datos de ejemplo de la pantalla del primer prototipo |
+| Datos que usa | `PATCH /api/entregas/{id}/estado` con `estado: ENTREGADA`, `actor` y `fotosRecepcion` (al menos una; 400 si falta la foto o la transición no vale; 404 si no existe). Huecos: HB-10 (subir la foto: `POST /api/entregas/{id}/fotos` multipart, hacia MinIO), HB-09 (la notificación de recepción), HB-13 (que solo la entidad destinataria confirme) y HB-16 (las entregas activas de una entidad en una llamada). El remito, la necesidad que cubre y quién donó **no están en el contrato**: el remito se suma al contrato de entregas y la necesidad y quién donó los pide el cliente a Donaciones (HB-17, [ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md), 2026-11-02). Los bultos salieron de la pantalla. En la maqueta, los datos de ejemplo de la pantalla del primer prototipo. Sigue con la maqueta (2026-11-08): el acta pide la foto y la API solo acepta una URL (HB-10), y la lista no distingue la entrega que llegó a la puerta (HB-22) |
 | Boceto de E1 | Página 28: "Entregas a confirmar", con fecha, hora, código y contenido; una zona para soltar archivos ("Adjuntar al menos 1 imagen"), la casilla "Disclaimer legal", "Reportar problema" y "Confirmar Entregas" |
 
 ## 2. Dónde está en el sitio
@@ -239,7 +239,7 @@ Filtro de tono:
 
 - Zonas: el enlace para saltar al contenido, la navegación de la entidad (`nav` con nombre), el
   contenido (`main`) con un `h1`; la etiqueta, el tramo y cada grupo del formulario con su `h2`.
-- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú, el menú, "Salir",
+- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú, el menú, "Cuenta",
   "Seguir entregas", el campo de fotos, el remito, "Confirmar recepción" y "Llegó con un
   problema".
 - Cada campo con su `label` y su ayuda en `aria-describedby`; los obligatorios, `required` y

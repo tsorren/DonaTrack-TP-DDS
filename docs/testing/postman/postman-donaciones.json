@@ -388,7 +388,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"10 paquetes de fideos para el comedor\",\n  \"fechaInicio\": \"2026-06-18\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"10 paquetes de fideos para el comedor\",\n  \"fechaInicio\": \"2026-06-18\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/api/necesidades", "host": ["{{baseUrl}}"], "path": ["api", "necesidades"] }
           }
@@ -400,7 +400,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"20 paquetes de fideos mensuales\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"20 paquetes de fideos mensuales\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"periodicidad\": \"MENSUAL\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/api/necesidades", "host": ["{{baseUrl}}"], "path": ["api", "necesidades"] }
           }

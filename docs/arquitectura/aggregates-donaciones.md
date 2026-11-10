@@ -58,6 +58,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Referencias Externas (por ID)**: 
     *   `donacionOriginalId` (UUID que apunta a la `Donacion` de origen).
     *   `necesidadId` (UUID nulable que apunta a la `Necesidad` de destino cuando transiciona a `AsignacionRealizada`).
+*   **Cancelación por baja de la necesidad (HB-19, [ADR 20261109](../adr/20261109-cancelacion-de-entregas-que-no-salieron.md))**: `esCancelable()` (asignada, con o sin ruta planificada); `pedirCancelacion()` deja la marca `cancelacionPedida` mientras se espera la confirmación de Logística (se limpia sola si la donación sale); `liberarPorCancelacion(actor)` vuelve a `EnDeposito` sin destino. La transición no está en el `PATCH` de estado: entra solo por la baja (`CancelacionDeEntregas`) y por el evento `entrega.cancelada`.
 *   **Responsabilidad**: Gestionar de forma transaccional el estado físico, la fragmentación de cantidades para asignaciones parciales y el tracking logístico de cada lote en depósito.
 *   **Paquete**: `grupo5.donaciones.models.entities.donacionesIndependientes`
 

@@ -51,7 +51,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
                     null,
                     ACTOR)),
             List.of(),
-            0);
+            0,
+            null);
 
     when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenReturn(response);
@@ -177,10 +178,11 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             java.time.LocalDateTime.now(),
             List.of(),
             List.of(),
-            5);
+            5,
+            null);
 
     when(donacionesIndependientesService.obtenerConFiltros(
-            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null)))
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null)))
         .thenReturn(List.of(response));
 
     mockMvc
@@ -200,6 +202,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
     UUID categoriaId = UUID.randomUUID();
     UUID donanteId = UUID.randomUUID();
     UUID entidadId = UUID.randomUUID();
+    UUID necesidadId = UUID.randomUUID();
     FiltroDonacionesIndependientes esperado =
         new FiltroDonacionesIndependientes(
             TipoEstadoDonacion.EN_DEPOSITO,
@@ -208,7 +211,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             donanteId,
             entidadId,
             LocalDate.of(2026, 11, 1),
-            LocalDate.of(2026, 11, 5));
+            LocalDate.of(2026, 11, 5),
+            necesidadId);
     when(donacionesIndependientesService.obtenerConFiltros(esperado)).thenReturn(List.of());
 
     mockMvc
@@ -220,7 +224,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
                 .param("donanteId", donanteId.toString())
                 .param("entidadId", entidadId.toString())
                 .param("desde", "2026-11-01")
-                .param("hasta", "2026-11-05"))
+                .param("hasta", "2026-11-05")
+                .param("necesidadId", necesidadId.toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(0));
 
@@ -268,7 +273,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             java.time.LocalDateTime.now(),
             List.of(),
             List.of(),
-            5);
+            5,
+            null);
 
     when(donacionesIndependientesService.obtener(id)).thenReturn(response);
 

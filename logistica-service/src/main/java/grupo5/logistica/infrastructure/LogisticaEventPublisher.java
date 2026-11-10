@@ -1,12 +1,15 @@
 package grupo5.logistica.infrastructure;
 
+import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.logistica.config.RabbitMQConfig;
+import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoRutaAsignada;
 import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +64,12 @@ public class LogisticaEventPublisher {
     return mensaje -> {
       mensaje.getMessageProperties().setHeader(RabbitMQConfig.HEADER_PROVEEDOR_ID, proveedorId);
       mensaje.getMessageProperties().setHeader(RabbitMQConfig.HEADER_PROVEEDOR_TOKEN, token);
+      String traceId = MDC.get(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
+      if (traceId != null && !traceId.isBlank()) {
+        mensaje
+            .getMessageProperties()
+            .setHeader(FeignTraceRequestInterceptor.TRACE_HEADER, traceId);
+      }
       return mensaje;
     };
   }
@@ -97,6 +106,14 @@ public class LogisticaEventPublisher {
     }
   }
 
+  public void publicarEntregaCancelada(EventoEntregaCancelada evento) {
+    if (applicationEventPublisher != null) {
+      applicationEventPublisher.publishEvent(evento);
+    } else {
+      onEntregaCancelada(evento);
+    }
+  }
+
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void onRutaAsignada(EventoRutaAsignada evento) {
     log.info("Publicando RutaAsignadaEvent: rutaId={}", evento.rutaId());
@@ -123,5 +140,12 @@ public class LogisticaEventPublisher {
     log.info("Publicando EntregaFallidaEvent: entregaId={}", evento.entregaId());
     rabbitTemplate.convertAndSend(
         RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_ENTREGA_FALLIDA, evento, identidad());
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+  public void onEntregaCancelada(EventoEntregaCancelada evento) {
+    log.info("Publicando EntregaCanceladaEvent: entregaId={}", evento.entregaId());
+    rabbitTemplate.convertAndSend(
+        RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_ENTREGA_CANCELADA, evento, identidad());
   }
 }
