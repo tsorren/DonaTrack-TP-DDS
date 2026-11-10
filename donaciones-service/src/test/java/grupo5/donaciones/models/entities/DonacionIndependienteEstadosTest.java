@@ -307,4 +307,57 @@ class DonacionIndependienteEstadosTest {
     assertEquals(cantidadEnElSnapshot, snapshot.size());
     assertDoesNotThrow(() -> snapshot.forEach(e -> {}));
   }
+
+  // ===================== Cancelación por baja de la necesidad (HB-19) =====================
+
+  @Test
+  void pedirCancelacion_soloEnLoQueNoSalio_yLaMarcaSeLimpiaAlSalir() {
+    assertThrows(BusinessStateException.class, donacion::pedirCancelacion);
+
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.pedirCancelacion();
+    assertTrue(donacion.isCancelacionPedida());
+
+    donacion.planificarRuta(ACTOR);
+    assertTrue(donacion.isCancelacionPedida());
+
+    donacion.iniciarRecorrido(ACTOR);
+    assertFalse(donacion.isCancelacionPedida());
+    assertThrows(BusinessStateException.class, donacion::pedirCancelacion);
+  }
+
+  @Test
+  void liberarPorCancelacion_desdeListaParaEntregar_vuelveAlDepositoSinDestinoNiMarca() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.planificarRuta(ACTOR);
+    donacion.pedirCancelacion();
+
+    donacion.liberarPorCancelacion("logistica-service");
+
+    assertInstanceOf(EnDeposito.class, donacion.getEstadoActual());
+    assertNull(donacion.getNecesidadId());
+    assertNull(donacion.getPeriodoId());
+    assertNull(donacion.getEntidadBeneficiariaId());
+    assertFalse(donacion.isCancelacionPedida());
+  }
+
+  @Test
+  void liberarPorCancelacion_desdeEnTrasladoOEnDeposito_esTransicionInvalida() {
+    assertThrows(BusinessStateException.class, () -> donacion.liberarPorCancelacion(ACTOR));
+
+    DonacionIndependiente enCamino = DonacionIndependienteMother.enTraslado(1, receptor);
+    assertThrows(BusinessStateException.class, () -> enCamino.liberarPorCancelacion(ACTOR));
+  }
+
+  @Test
+  void elPatchAEnDeposito_sigueSinPoderLiberarUnaAsignada() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+
+    assertThrows(
+        BusinessStateException.class,
+        () ->
+            donacion.cambiarEstado(
+                new SolicitudCambioEstadoDonacionIndependiente(
+                    TipoEstadoDonacion.EN_DEPOSITO, ACTOR)));
+  }
 }

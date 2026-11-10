@@ -9,10 +9,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.puertos.DonacionesPuerto;
+import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.MisDonacionesVista;
+import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.web.MisDonacionesController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
+import grupo5.cliente.web.RecibidasController;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest({PantallasController.class, MisDonacionesController.class})
+@WebMvcTest({PantallasController.class, MisDonacionesController.class, RecibidasController.class})
 @Import({
   SeguridadConfig.class,
   Pantallas.class,
@@ -44,12 +47,16 @@ class CuentaDelTokenTest {
   private static final UUID OTRA = UUID.randomUUID();
 
   @MockitoBean private DonacionesPuerto donaciones;
+  @MockitoBean private RecibidasPuerto recibidas;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 
   private OidcLoginRequestPostProcessor donante() {
-    Map<String, Object> claims =
-        Map.of("roles", List.of("DONANTE"), "personaId", PERSONA.toString());
+    return conRol("DONANTE");
+  }
+
+  private OidcLoginRequestPostProcessor conRol(String rol) {
+    Map<String, Object> claims = Map.of("roles", List.of(rol), "personaId", PERSONA.toString());
     return oidcLogin()
         .clientRegistration(clientes.findByRegistrationId("keycloak"))
         .idToken(token -> token.claims(datos -> datos.putAll(claims)))
@@ -71,5 +78,16 @@ class CuentaDelTokenTest {
     verify(donaciones).detalle(PERSONA, null);
     verify(donaciones, never()).misDonaciones(OTRA);
     verify(donaciones, never()).detalle(OTRA, null);
+  }
+
+  @Test
+  void laEntidadEsLaPersonaDelTokenYUnaEntidadEnElPedidoNoLaCambia() throws Exception {
+    when(recibidas.recibidas(any())).thenReturn(new RecibidasVista(List.of(), "", "", null));
+
+    mvc.perform(get("/entidad-recibidas").param("entidad", OTRA.toString()).with(conRol("ENTIDAD")))
+        .andExpect(status().isOk());
+
+    verify(recibidas).recibidas(PERSONA);
+    verify(recibidas, never()).recibidas(OTRA);
   }
 }

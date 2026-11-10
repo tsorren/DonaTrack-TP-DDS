@@ -19,4 +19,17 @@ public interface IProveedorLogistica {
    * @throws ErrorContratoProveedorException si el proveedor rechazó el contenido del pedido
    */
   void enviar(UUID envioId, DatosEntregaLogistica datos, String traceId);
+
+  /** Si el proveedor sabe cancelar una entrega que todavía no salió (HB-19). */
+  default boolean admiteCancelacion() {
+    return false;
+  }
+
+  /**
+   * Le pide al proveedor que cancele la entrega de la donación (HB-19). Mismas excepciones que
+   * {@link #enviar}. Solo se llama si {@link #admiteCancelacion()}.
+   */
+  default void cancelar(UUID envioId, UUID donacionIndependienteId, String traceId) {
+    throw new UnsupportedOperationException("El proveedor " + id() + " no cancela entregas");
+  }
 }

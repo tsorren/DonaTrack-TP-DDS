@@ -14,9 +14,13 @@ public interface SpringDataEntregaRepository extends JpaRepository<EntregaEntity
 
   List<EntregaEntity> findByIdRutaIsNull();
 
-  boolean existsByIdDonacion(UUID idDonacion);
+  boolean existsByIdDonacionAndEstadoNot(UUID idDonacion, EstadoEntrega estado);
 
-  Optional<EntregaEntity> findByIdDonacion(UUID idDonacion);
+  Optional<EntregaEntity> findFirstByIdDonacionAndEstadoNot(UUID idDonacion, EstadoEntrega estado);
+
+  List<EntregaEntity> findByIdDonacionAndEstado(UUID idDonacion, EstadoEntrega estado);
 
   List<EntregaEntity> findByIdBeneficiarioOrderByIdEntregaAsc(UUID idBeneficiario);
+
+  List<EntregaEntity> findByDonanteIdOrderByIdEntregaAsc(UUID donanteId);
 }

@@ -112,6 +112,19 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   @Test
   void lasRutasPublicasNoPidenToken() throws Exception {
     pedir(get(NECESIDADES + "/publicas"), null).andExpect(status().isOk());
+    pedir(get("/api/donaciones/contadores"), null).andExpect(status().isOk());
+  }
+
+  @Test
+  void laEntidadVeLosPeriodosSoloDeSusNecesidades() throws Exception {
+    NecesidadDTO propia = necesidadDe(ENTIDAD);
+    NecesidadDTO ajena = necesidadDe(AJENO);
+    when(necesidadesService.obtenerPorId(propia.id())).thenReturn(propia);
+    when(necesidadesService.obtenerPorId(ajena.id())).thenReturn(ajena);
+
+    pedir(get(NECESIDADES + "/" + propia.id() + "/periodos"), "entidad").andExpect(status().isOk());
+    pedir(get(NECESIDADES + "/" + ajena.id() + "/periodos"), "entidad")
+        .andExpect(status().isForbidden());
   }
 
   @Test

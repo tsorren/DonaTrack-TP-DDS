@@ -11,10 +11,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * En la maqueta con las APIs, el donante llega por {@code ?donante=<id>} y la sesión lo recuerda
- * (decisión E1 del plan del cliente con datos reales); con ingreso, la cuenta sale del token. Un id
- * mal escrito no cambia la cuenta. No controla pertenencia: eso llega con la etapa 2 del gateway
- * (F5).
+ * En la maqueta con las APIs, la cuenta llega por {@code ?donante=<id>} o {@code ?entidad=<id>} y
+ * la sesión la recuerda (decisión E1 del plan del cliente con datos reales); con ingreso, la cuenta
+ * sale del token. Un id mal escrito no cambia la cuenta. No controla pertenencia: eso llega con la
+ * etapa 2 del gateway (F5).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -24,19 +24,29 @@ import org.springframework.stereotype.Component;
 class CuentaPorParametro implements CuentaActual {
 
   static final String PARAMETRO = "donante";
-  private static final String CLAVE = "cuenta.donante";
+  static final String PARAMETRO_ENTIDAD = "entidad";
 
   @Override
   public Optional<UUID> donante(HttpServletRequest pedido) {
+    return cuenta(pedido, PARAMETRO);
+  }
+
+  @Override
+  public Optional<UUID> entidad(HttpServletRequest pedido) {
+    return cuenta(pedido, PARAMETRO_ENTIDAD);
+  }
+
+  private static Optional<UUID> cuenta(HttpServletRequest pedido, String parametro) {
     HttpSession sesion = pedido.getSession();
-    String dado = pedido.getParameter(PARAMETRO);
+    String clave = "cuenta." + parametro;
+    String dado = pedido.getParameter(parametro);
     if (dado != null) {
       try {
-        sesion.setAttribute(CLAVE, UUID.fromString(dado));
+        sesion.setAttribute(clave, UUID.fromString(dado));
       } catch (IllegalArgumentException malEscrito) {
         // Se queda con la cuenta que ya tenía la sesión, si tenía.
       }
     }
-    return Optional.ofNullable((UUID) sesion.getAttribute(CLAVE));
+    return Optional.ofNullable((UUID) sesion.getAttribute(clave));
   }
 }

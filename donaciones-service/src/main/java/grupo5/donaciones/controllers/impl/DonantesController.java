@@ -6,10 +6,12 @@ import static grupo5.donaciones.seguridad.Acceso.DONANTE;
 import static grupo5.donaciones.seguridad.Acceso.SU_ID;
 
 import grupo5.donaciones.controllers.IDonantesController;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donantes.ArchivoDonantesSubido;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.ResultadoRegistro;
@@ -96,5 +98,17 @@ public class DonantesController implements IDonantesController {
   public ResponseEntity<ArchivoOutputDTO> obtenerArchivoDonantes(@PathVariable("id") UUID id) {
     ArchivoOutputDTO responseBody = archivoDonantesService.obtenerPorId(id);
     return ResponseEntity.ok(responseBody);
+  }
+
+  @Override
+  @GetMapping("/archivos/{id}/filas-con-error")
+  public ResponseEntity<List<FilaConErrorDTO>> obtenerFilasConError(
+      @PathVariable("id") UUID id,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    Pagina<FilaConErrorDTO> pagina = archivoDonantesService.obtenerFilasConError(id, page, size);
+    return ResponseEntity.ok()
+        .header(EntidadBeneficiariaController.HEADER_TOTAL, String.valueOf(pagina.total()))
+        .body(pagina.elementos());
   }
 }

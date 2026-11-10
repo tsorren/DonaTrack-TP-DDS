@@ -8,9 +8,11 @@ import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.Histori
 
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.PosicionCamionSubdocument;
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -39,6 +41,7 @@ public class CamionMongoMapper {
     doc.setCapacidadPeso(aDouble(domain.getCapacidadKG()));
     doc.setAltura(aDouble(domain.getAltura()));
     doc.setEstado(domain.getEstado());
+    doc.setPosicion(aSubdocumento(domain.getPosicion()));
 
     if (existing == null) {
       doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
@@ -66,7 +69,8 @@ public class CamionMongoMapper {
         aFloat(doc.getAltura()),
         doc.getEstado(),
         mapearHistorialDominio(doc),
-        doc.getVersion());
+        doc.getVersion(),
+        aPosicion(doc.getPosicion()));
   }
 
   private static List<CambioEstadoCamion> mapearHistorialDominio(CamionDocument doc) {
@@ -87,6 +91,18 @@ public class CamionMongoMapper {
 
   private static CambioEstadoSubdocument aSubdocumento(CambioEstadoCamion c) {
     return cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp());
+  }
+
+  private static PosicionCamionSubdocument aSubdocumento(PosicionCamion p) {
+    return p != null
+        ? new PosicionCamionSubdocument(p.latitud(), p.longitud(), p.registradaEn())
+        : null;
+  }
+
+  private static PosicionCamion aPosicion(PosicionCamionSubdocument p) {
+    return p != null
+        ? new PosicionCamion(p.getLatitud(), p.getLongitud(), p.getRegistradaEn())
+        : null;
   }
 
   private static Double aDouble(Float valor) {

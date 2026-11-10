@@ -7,7 +7,9 @@ import static grupo5.donaciones.seguridad.Acceso.SU_NECESIDAD;
 
 import grupo5.donaciones.controllers.INecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
+import grupo5.donaciones.models.entities.necesidades.EstadoNecesidad;
 import grupo5.donaciones.services.INecesidadesService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -52,8 +54,10 @@ public class NecesidadesController implements INecesidadesController {
       ENTIDAD + "hasAuthority('VER_NECESIDADES') and principal.puedeOperarSobre(#entidadId)")
   @GetMapping
   public ResponseEntity<List<NecesidadDTO>> listarNecesidades(
-      @RequestParam(required = false) UUID entidadId, @RequestParam(required = false) String tipo) {
-    List<NecesidadDTO> lista = necesidadesService.listarConFiltros(entidadId, tipo);
+      @RequestParam(required = false) UUID entidadId,
+      @RequestParam(required = false) String tipo,
+      @RequestParam(required = false) List<EstadoNecesidad> estado) {
+    List<NecesidadDTO> lista = necesidadesService.listarConFiltros(entidadId, tipo, estado);
     return ResponseEntity.ok(lista);
   }
 
@@ -78,6 +82,13 @@ public class NecesidadesController implements INecesidadesController {
   public ResponseEntity<NecesidadDTO> actualizarNecesidad(
       @PathVariable UUID id, @Valid @RequestBody NecesidadDTO dto) {
     return ResponseEntity.ok(necesidadesService.actualizar(id, dto));
+  }
+
+  @Override
+  @PreAuthorize(ENTIDAD + "hasAuthority('VER_NECESIDADES') and " + SU_NECESIDAD)
+  @GetMapping("/{id}/periodos")
+  public ResponseEntity<List<PeriodoNecesidadDTO>> listarPeriodos(@PathVariable UUID id) {
+    return ResponseEntity.ok(necesidadesService.listarPeriodos(id));
   }
 
   @Override

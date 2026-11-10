@@ -8,7 +8,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
+import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
@@ -16,11 +20,14 @@ import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
 import grupo5.donaciones.infrastructure.almacenamiento.StorageEnMemoria;
 import grupo5.donaciones.models.entities.donantes.Archivo;
 import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
+import grupo5.donaciones.models.entities.donantes.FilaConError;
+import grupo5.donaciones.models.entities.donantes.MotivoErrorFila;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.impl.ImportadorService;
@@ -36,6 +43,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ImportadorServiceTest {
 
@@ -80,7 +88,8 @@ class ImportadorServiceTest {
 
     Map<String, String> fila =
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
-    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(List.of(fila));
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(List.of(new FilaPadron(2, fila)));
 
     when(validadorDuplicados.buscarDuplicado(any(Persona.class))).thenReturn(Optional.empty());
 
@@ -103,7 +112,12 @@ class ImportadorServiceTest {
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
     verify(personaService).crearPersona(any(PersonaInputDTO.class));
     verify(donantesService).crearDonante(any(DonanteInputDTO.class));
-    verify(archivoRepository, times(2)).save(archivo);
+    // Al pasar a PROCESANDO, al conocer el total y al terminar
+    verify(archivoRepository, times(3)).save(archivo);
+    assertEquals(1, archivo.getTotalFilas());
+    assertEquals(1, archivo.getCreadas());
+    assertEquals(1, archivo.getProcesadas());
+    verify(archivoRepository, never()).guardarFilasConError(any());
   }
 
   @Test
@@ -114,7 +128,8 @@ class ImportadorServiceTest {
 
     Map<String, String> fila =
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
-    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(List.of(fila));
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(List.of(new FilaPadron(2, fila)));
 
     Humana personaExistente = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
 
@@ -125,7 +140,9 @@ class ImportadorServiceTest {
 
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
     verify(personaService).actualizarParcial(any(UUID.class), any(PersonaInputDTO.class));
-    verify(archivoRepository, times(2)).save(archivo);
+    verify(archivoRepository, times(3)).save(archivo);
+    assertEquals(1, archivo.getActualizadas());
+    assertEquals(0, archivo.getCreadas());
   }
 
   @Test
@@ -152,6 +169,130 @@ class ImportadorServiceTest {
 
     assertEquals(EstadoArchivo.ERROR, archivo.getEstado());
     verify(lectorCSV, never()).cargarDonantes(any(InputStream.class));
+  }
+
+  @Test
+  void procesarImportacionAsincronica_conFilasQueFallan_cuentaYGuardaCadaErrorConSuLineaYMotivo() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    Map<String, String> conflicto = Map.of("TipoPersona", "HUMANA", "Nombre", "Conflicto");
+    Map<String, String> dadoDeBaja = Map.of("TipoPersona", "HUMANA", "Nombre", "Baja");
+    Map<String, String> invalida = Map.of("TipoPersona", "HUMANA", "Nombre", "Invalida");
+    Map<String, String> rota = Map.of("TipoPersona", "HUMANA", "Nombre", "Rota");
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(
+            List.of(
+                new FilaPadron(2, null),
+                new FilaPadron(3, conflicto),
+                new FilaPadron(5, dadoDeBaja),
+                new FilaPadron(6, invalida),
+                new FilaPadron(7, rota)));
+    Humana existente = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
+    when(validadorDuplicados.buscarDuplicado(any(Persona.class)))
+        .thenAnswer(
+            inv -> {
+              Humana buscada = inv.getArgument(0);
+              return switch (buscada.getNombre()) {
+                case "Conflicto" ->
+                    throw new BusinessStateException(ErrorCatalog.PERSONA_DUPLICADA_EN_CONFLICTO);
+                case "Baja" -> Optional.of((Persona) existente);
+                default -> Optional.empty();
+              };
+            });
+    when(personaService.crearPersona(any(PersonaInputDTO.class)))
+        .thenAnswer(
+            inv -> {
+              HumanaInputDTO input = inv.getArgument(0);
+              if ("Invalida".equals(input.nombre())) {
+                throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+              }
+              throw new IllegalStateException("falla inesperada");
+            });
+    when(donantesService.estaDadoDeBaja(existente.getId())).thenReturn(true);
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());
+    assertEquals(5, archivo.getTotalFilas());
+    assertEquals(5, archivo.getConError());
+    assertEquals(5, archivo.getProcesadas());
+    ArgumentCaptor<List<FilaConError>> errores = ArgumentCaptor.captor();
+    verify(archivoRepository).guardarFilasConError(errores.capture());
+    assertEquals(
+        List.of(
+            new FilaConError(archivo.getId(), 2, MotivoErrorFila.FORMATO_INVALIDO, null),
+            new FilaConError(
+                archivo.getId(),
+                3,
+                MotivoErrorFila.PERSONA_DUPLICADA_EN_CONFLICTO,
+                ErrorCatalog.PERSONA_DUPLICADA_EN_CONFLICTO.getCode()),
+            new FilaConError(archivo.getId(), 5, MotivoErrorFila.DONANTE_DADO_DE_BAJA, null),
+            new FilaConError(
+                archivo.getId(),
+                6,
+                MotivoErrorFila.DATOS_INVALIDOS,
+                ErrorCatalog.ARGUMENTO_INVALIDO.getCode()),
+            new FilaConError(archivo.getId(), 7, MotivoErrorFila.ERROR_INESPERADO, null)),
+        errores.getValue());
+  }
+
+  @Test
+  void procesarImportacionAsincronica_conMuchasFilas_guardaElAvancePorTandas() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    int total = 2 * ImportadorService.TAMANIO_TANDA_PROGRESO + 1;
+    List<FilaPadron> filas =
+        java.util.stream.IntStream.rangeClosed(2, total + 1)
+            .mapToObj(linea -> new FilaPadron(linea, null))
+            .toList();
+    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(filas);
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    assertEquals(total, archivo.getConError());
+    // Dos tandas completas y el resto al terminar
+    verify(archivoRepository, times(3)).guardarFilasConError(any());
+    // PROCESANDO, total, dos tandas y el final
+    verify(archivoRepository, times(5)).save(archivo);
+  }
+
+  @Test
+  void procesarImportacionAsincronica_conFechaDeNacimientoIlegible_laCuentaComoDatosInvalidos() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    Map<String, String> fila =
+        Map.of("TipoPersona", "HUMANA", "Nombre", "Juan Perez", "FechaNacimiento", "1990-13-45");
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(List.of(new FilaPadron(4, fila)));
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    verify(archivoRepository)
+        .guardarFilasConError(
+            List.of(new FilaConError(archivo.getId(), 4, MotivoErrorFila.DATOS_INVALIDOS, null)));
+    verify(personaService, never()).crearPersona(any(PersonaInputDTO.class));
+  }
+
+  @Test
+  void procesarImportacionAsincronica_siNoPuedeGuardarLasFilasConError_terminaEnError() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(List.of(new FilaPadron(2, null)));
+    org.mockito.Mockito.doThrow(new IllegalStateException("base caída"))
+        .when(archivoRepository)
+        .guardarFilasConError(any());
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    assertEquals(EstadoArchivo.ERROR, archivo.getEstado());
+    assertEquals(1, archivo.getConError());
+    // PROCESANDO, total y el ERROR final: el avance con errores no llegó a guardarse
+    verify(archivoRepository, times(3)).save(archivo);
   }
 
   /** Un padrón guardado en el storage: el path del archivo es su clave. */

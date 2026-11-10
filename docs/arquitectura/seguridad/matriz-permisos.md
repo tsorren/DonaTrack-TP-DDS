@@ -83,7 +83,8 @@ Sin token, en cada servicio (las declara su `ReglasDeAcceso`):
 | Donaciones | `GET /api/entidades/publicas` | Listado público de entidades (HB-08, D26) |
 | Donaciones | `GET /api/necesidades/publicas` | Necesidades públicas (HB-08, D26) |
 | Logística | `GET /api/entregas/mapa` | Mapa de entregas de la portada (RF-02) |
-| Donaciones | `GET /donaciones/destacadas` y contadores de la landing | HB-01 y HB-02: **todavía no existen**; entran como públicas cuando se implementen |
+| Donaciones | `GET /api/donaciones/destacadas` | Destacadas de la landing (HB-01, D26) |
+| Donaciones | `GET /api/donaciones/contadores` | Contadores de la landing (HB-02, D26) |
 | Todos | `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**` | Healthcheck del compose y documentación en desarrollo |
 
 En el cliente liviano son públicas la portada y las pantallas `publico-*` (donaciones, mapa, entidades, contacto, legales y registro). Ingresar y recuperar la contraseña son pantallas de Keycloak.
@@ -103,6 +104,7 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `GET` | `/api/necesidades` | `ENTIDAD` | `VER_NECESIDADES` | param:`entidadId` | Entidad (mis necesidades) |
 | `GET` | `/api/necesidades/publicas` | público | — | — | Público |
 | `GET` | `/api/necesidades/{id}` | `ENTIDAD` | `VER_NECESIDADES` | dueño (entidad de la necesidad) | Entidad |
+| `GET` | `/api/necesidades/{id}/periodos` | `ENTIDAD` | `VER_NECESIDADES` | dueño (entidad de la necesidad) | Entidad (historia de la recurrente, HB-18) |
 | `PUT` | `/api/necesidades/{id}` | `ENTIDAD` | `GESTIONAR_NECESIDADES` | dueño (entidad de la necesidad) | Entidad (cambiar) |
 | `DELETE` | `/api/necesidades/{id}` | `ENTIDAD` | `GESTIONAR_NECESIDADES` | dueño (entidad de la necesidad) | Entidad (baja) |
 | `POST` | `/api/asignaciones/ejecuciones` | ADMIN, `SERVICIO` | — | — | |

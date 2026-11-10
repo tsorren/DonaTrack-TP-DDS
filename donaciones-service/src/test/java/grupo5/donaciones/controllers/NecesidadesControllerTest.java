@@ -13,8 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
+import grupo5.donaciones.models.entities.necesidades.EstadoNecesidad;
+import grupo5.donaciones.models.entities.necesidades.ResultadoPeriodo;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -78,7 +81,7 @@ class NecesidadesControllerTest extends AbstractDonacionesWebMvcTest {
             LocalDate.of(2026, Month.JUNE, 1),
             null);
 
-    when(necesidadesService.listarConFiltros(null, null)).thenReturn(List.of(dto));
+    when(necesidadesService.listarConFiltros(null, null, null)).thenReturn(List.of(dto));
 
     mockMvc
         .perform(get("/api/necesidades"))
@@ -106,7 +109,7 @@ class NecesidadesControllerTest extends AbstractDonacionesWebMvcTest {
             LocalDate.of(2026, Month.JUNE, 1),
             LocalDate.of(2026, Month.AUGUST, 1));
 
-    when(necesidadesService.listarConFiltros(entidadId, tipo)).thenReturn(List.of(dto));
+    when(necesidadesService.listarConFiltros(entidadId, tipo, null)).thenReturn(List.of(dto));
 
     mockMvc
         .perform(
@@ -230,5 +233,47 @@ class NecesidadesControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(jsonPath(CANTIDAD).value(1))
         .andExpect(jsonPath("$[0].tipo").value("EXTRAORDINARIA"))
         .andExpect(jsonPath("$[0].fechaFin").doesNotExist());
+  }
+
+  @Test
+  void listarNecesidades_porEstado_aceptaVariosSeparadosPorComa() throws Exception {
+    when(necesidadesService.listarConFiltros(
+            null, null, List.of(EstadoNecesidad.VIGENTE, EstadoNecesidad.CUMPLIDA)))
+        .thenReturn(List.of());
+
+    mockMvc
+        .perform(get("/api/necesidades").param("estado", "VIGENTE,CUMPLIDA"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(CANTIDAD).value(0));
+  }
+
+  @Test
+  void listarNecesidades_conUnEstadoQueNoExiste_respondeBadRequest() throws Exception {
+    mockMvc
+        .perform(get("/api/necesidades").param("estado", "ARCHIVADA"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void listarPeriodos_deberiaRetornarLaHistoria() throws Exception {
+    UUID id = UUID.randomUUID();
+    PeriodoNecesidadDTO periodo =
+        new PeriodoNecesidadDTO(
+            UUID.randomUUID(),
+            LocalDate.of(2026, Month.OCTOBER, 1),
+            LocalDate.of(2026, Month.NOVEMBER, 1),
+            40,
+            40,
+            35,
+            ResultadoPeriodo.INCOMPLETO);
+    when(necesidadesService.listarPeriodos(id)).thenReturn(List.of(periodo));
+
+    mockMvc
+        .perform(get("/api/necesidades/{id}/periodos", id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(CANTIDAD).value(1))
+        .andExpect(jsonPath("$[0].inicio").value("2026-10-01"))
+        .andExpect(jsonPath("$[0].recibido").value(35))
+        .andExpect(jsonPath("$[0].resultado").value("INCOMPLETO"));
   }
 }

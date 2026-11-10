@@ -18,12 +18,13 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * Con el perfil maqueta y los puertos pasados a las APIs, el sitio corre con los adaptadores REST:
  * las pantallas sin migrar se siguen sirviendo, y una API que no responde lleva a la página de
- * falla nuestra. Sin ingreso, la cuenta llega por {@code ?donante=}.
+ * falla nuestra. Sin ingreso, la cuenta llega por {@code ?donante=} o {@code ?entidad=}.
  */
 @SpringBootTest(
     properties = {
       "cliente.datos.ranking=rest",
       "cliente.datos.donaciones=rest",
+      "cliente.datos.recibidas=rest",
       "cliente.datos.cuenta=parametro",
       "cliente.api.incentivos.url=http://localhost:1",
       "cliente.api.donaciones.url=http://localhost:1",
@@ -59,6 +60,13 @@ class SitioConApisTest {
   void misDonacionesSinCuentaMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
     mvc.perform(get("/donante-donaciones")).andExpect(redirectedUrl("/publico-ingresar"));
     mvc.perform(get("/donante-donaciones?donante=00000000-0000-0000-0000-000000000002"))
+        .andExpect(status().isBadGateway());
+  }
+
+  @Test
+  void recibidasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
+    mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/publico-ingresar"));
+    mvc.perform(get("/entidad-recibidas?entidad=00000000-0000-0000-0000-000000000003"))
         .andExpect(status().isBadGateway());
   }
 }

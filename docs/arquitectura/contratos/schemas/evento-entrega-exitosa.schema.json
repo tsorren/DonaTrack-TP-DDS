@@ -28,6 +28,17 @@
       "type": "array",
       "items": { "type": "string", "format": "uri" },
       "description": "Opcional. URLs estables de las fotos de recepción, en el orden de la entrega; Donaciones las replica para las destacadas (ADR de réplicas por evento, 2026-11-06). Un emisor que no las manda sigue siendo válido."
+    },
+    "reporte": {
+      "type": "object",
+      "description": "Opcional. Problema que la entidad contó al confirmar (HB-17, ADR del contrato de entregas, DTI-29). Viaja solo si lo hubo; el remito no viaja. Donaciones cuenta para la necesidad la cantidadRecibida.",
+      "properties": {
+        "motivo": { "type": "string", "enum": ["INCOMPLETA", "DANADA", "OTRO"] },
+        "detalle": { "type": ["string", "null"], "maxLength": 500, "description": "Obligatorio con OTRO." },
+        "cantidadRecibida": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "En la unidad de la donación; obligatoria con INCOMPLETA." }
+      },
+      "required": ["motivo"],
+      "additionalProperties": false
     }
   },
   "required": ["entregaId", "donacionIndependienteId", "fechaEntrega"],

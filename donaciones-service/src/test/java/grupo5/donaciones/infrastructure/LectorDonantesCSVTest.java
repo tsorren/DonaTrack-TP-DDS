@@ -1,9 +1,12 @@
 package grupo5.donaciones.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +46,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, contenido);
 
     // Act
-    List<Map<String, String>> resultado = leer(archivoCSV);
+    List<Map<String, String>> resultado = camposDe(leer(archivoCSV));
 
     // Assert
     assertEquals(2, resultado.size());
@@ -68,7 +71,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, "");
 
     // Act
-    List<Map<String, String>> resultado = leer(archivoCSV);
+    List<Map<String, String>> resultado = camposDe(leer(archivoCSV));
 
     // Assert
     assertTrue(resultado.isEmpty());
@@ -81,7 +84,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, "TipoPersona,Nombre,Email");
 
     // Act
-    List<Map<String, String>> resultado = leer(archivoCSV);
+    List<Map<String, String>> resultado = camposDe(leer(archivoCSV));
 
     // Assert
     assertTrue(resultado.isEmpty());
@@ -95,7 +98,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, contenido);
 
     // Act
-    List<Map<String, String>> resultado = leer(archivoCSV);
+    List<Map<String, String>> resultado = camposDe(leer(archivoCSV));
 
     // Assert
     assertEquals(1, resultado.size());
@@ -106,7 +109,8 @@ class LectorDonantesCSVTest {
   }
 
   @Test
-  void cargarDonantes_conLineasMalFormadas_deberiaIgnorarlasYContinuar() throws IOException {
+  void cargarDonantes_conLineasMalFormadas_lasDevuelveSinCamposConSuLineaYContinua()
+      throws IOException {
     // Arrange
     Path archivoCSV = tempDir.resolve("mixto.csv");
     String contenido =
@@ -114,18 +118,21 @@ class LectorDonantesCSVTest {
         Nombre,Email
         Ana,ana@mail.com
         Carlos,carlos@mail.com,DATO_EXTRA
+
         David,david@mail.com
         Eva"""; // Línea con menos datos
     Files.writeString(archivoCSV, contenido);
 
     // Act
-    List<Map<String, String>> resultado = leer(archivoCSV);
+    List<FilaPadron> resultado = leer(archivoCSV);
 
-    // Assert
-    // Debería haber procesado solo las 2 filas válidas (Ana y David)
-    assertEquals(2, resultado.size());
-    assertTrue(resultado.stream().anyMatch(fila -> "Ana".equals(fila.get("Nombre"))));
-    assertTrue(resultado.stream().anyMatch(fila -> "David".equals(fila.get("Nombre"))));
+    // Assert: una fila por línea no vacía, con el número de línea real del CSV
+    assertEquals(List.of(2, 3, 5, 6), resultado.stream().map(FilaPadron::linea).toList());
+    assertEquals("Ana", resultado.get(0).campos().get("Nombre"));
+    assertFalse(resultado.get(1).formatoValido());
+    assertNull(resultado.get(1).campos());
+    assertEquals("David", resultado.get(2).campos().get("Nombre"));
+    assertFalse(resultado.get(3).formatoValido());
   }
 
   @Test
@@ -139,7 +146,11 @@ class LectorDonantesCSVTest {
     Path rutaDelArchivo = Paths.get(recurso.toURI());
 
     // Act
-    List<Map<String, String>> resultado = leer(rutaDelArchivo);
+    List<Map<String, String>> resultado =
+        leer(rutaDelArchivo).stream()
+            .filter(FilaPadron::formatoValido)
+            .map(FilaPadron::campos)
+            .toList();
 
     // Assert
     assertTrue(resultado.size() > 19000, "Debería haber leído la gran mayoría de las 20000 filas.");
@@ -164,14 +175,20 @@ class LectorDonantesCSVTest {
           }
         };
 
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(stream);
+    List<Map<String, String>> resultado = camposDe(lectorCSV.cargarDonantes(stream));
 
     assertEquals(1, resultado.size());
     assertEquals("Ana", resultado.get(0).get("Nombre"));
     assertTrue(cerrado[0]);
   }
 
-  private List<Map<String, String>> leer(Path archivo) {
+  /** Los campos de cada fila; solo para padrones sin líneas mal formadas. */
+  private static List<Map<String, String>> camposDe(List<FilaPadron> filas) {
+    assertTrue(filas.stream().allMatch(FilaPadron::formatoValido));
+    return filas.stream().map(FilaPadron::campos).toList();
+  }
+
+  private List<FilaPadron> leer(Path archivo) {
     try (InputStream contenido = Files.newInputStream(archivo)) {
       return lectorCSV.cargarDonantes(contenido);
     } catch (IOException e) {

@@ -90,6 +90,7 @@ package ENTREGA {
     ENTREGADA
     NO_RECIBIDA
     REVISION
+    CANCELADA
   }
 
   class CambioEstadoEntrega <<entity>> {
@@ -120,6 +121,7 @@ package ENTREGA {
     + adjuntarFotoRecepcion(fotoRecepcionUrl: String): void
     + mandarARevision(administrador: String): void
     + regresarAlDeposito(administrador: String): void
+    + cancelar(actor: String, motivo: String): void
     - actualizarEstado(nuevoEstado: EstadoEntrega, actor: String): void
     - registrarCambioEstado(estadoAnterior: EstadoEntrega, estadoNuevo: EstadoEntrega, actor: String): void
     + asignarRuta(idRuta: UUID): void
@@ -158,7 +160,13 @@ package ENTREGA {
 
   EventoEntrega <|-- EventoRutaAsignada
   EventoEntrega <|-- EventoEntregaExitosa
+  class EventoEntregaCancelada <<entity>> {
+    - donacionId: UUID
+    - motivo: String
+  }
+
   EventoEntrega <|-- EventoEntregaFallida
+  EventoEntrega <|-- EventoEntregaCancelada
   Entrega *-- EventoEntrega
 
   interface SolicitudTransicionEntrega <<Sealed Interface>> {
@@ -218,6 +226,7 @@ package RUTAS {
     + iniciarRuta(): void
     + completarRuta(): void
     + agregarEntrega(entregaId: UUID): void
+    + quitarEntrega(entregaId: UUID): void
     + obtenerEntregas(): List<UUID>
     + getDomainEvents(): List<EventoRutaIniciada>
     + clearDomainEvents(): void

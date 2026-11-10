@@ -184,8 +184,11 @@ package CATEGORIAS {
     - categoria: Categoria
     - nombre: String
     - aliases: List<AliasSubcategoria> {final}
+    - unidad: Unidad
     --
     + Subcategoria(categoria: Categoria, nombre: String)
+    + asignarUnidad(unidad: Unidad): void
+    + unidadCon(deLaCategoria: Unidad): Unidad
     + agregarAlias(alias: String): void
     + removerAlias(alias: String): void
     + tieneAlias(alias: String): boolean
@@ -332,6 +335,7 @@ package DONACIONES_INDEPENDIENTES {
   class AsignacionRealizada <<entity>> {
     --
     + planificarRuta(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + liberarPorCancelacion(donacion: DonacionIndependiente, actor: String): void
   }
 
   class EnTraslado <<entity>> {
@@ -343,6 +347,7 @@ package DONACIONES_INDEPENDIENTES {
   class ListaParaEntregar <<entity>> {
     --
     + iniciarRecorrido(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + liberarPorCancelacion(donacion: DonacionIndependiente, actor: String): void
   }
 
   class Entregada <<entity>> {
@@ -398,6 +403,7 @@ package DONACIONES_INDEPENDIENTES {
     - necesidadId: UUID
     - periodoId: UUID
     - entidadBeneficiariaId: UUID
+    - cancelacionPedida: boolean
     - eventos: List<EventoDonacionIndependiente>
     --
     + DonacionIndependiente(donacionOriginalId: UUID, items: List<ItemDonacionIndependiente>)
@@ -405,6 +411,9 @@ package DONACIONES_INDEPENDIENTES {
     + cambiarEstado(solicitud: SolicitudCambioEstadoDonacionIndependiente): void
     + asignar(actor: String, destino: DestinoAsignacion): void
     + asignarDestino(destino: DestinoAsignacion): void
+    + esCancelable(): boolean
+    + pedirCancelacion(): void
+    + liberarPorCancelacion(actor: String): void
     + getCantidad(): int
     + fragmentarse(cantidadNecesitada: int): DonacionIndependiente
     + tieneSubcategoria(subcategoria: SubCategoria): boolean
@@ -449,6 +458,8 @@ package NECESIDADES {
     - fechaInicio: LocalDate {final}
     - entidadId: UUID
     - version: Long
+    - cantidadAnterior: Integer
+    - fechaUltimoCambio: LocalDate
     --
     # Necesidad(subcategoriaId: UUID, cantidadNecesitada: Integer, descripcion: String)
     # Necesidad(datos: DatosNecesidad) <<reconstitución>>
@@ -456,7 +467,11 @@ package NECESIDADES {
     + {abstract} periodoActualId(): UUID
     + {abstract} estaSatisfechaCon(cantidadAcumulada: int): boolean
     + cantidadRestante(cantidadAcumulada: int): int
-    + {abstract} toDTO(cantidadAcumulada: int): NecesidadDTO
+    + actualizarCantidadNecesitada(cantidad: Integer): void
+    + {abstract} estado(recibido: int, hoy: LocalDate): EstadoNecesidad
+    + admiteAsignaciones(hoy: LocalDate): boolean
+    + muestraUltimoCambio(): boolean
+    + finDelPeriodoActual(): LocalDate
     + {abstract} isActiva(): boolean
     + {abstract} desactivar(): void
   }
@@ -474,9 +489,29 @@ package NECESIDADES {
 
   class NecesidadExtraordinaria <<entity>> {
     - activa: boolean
+    - fechaLimite: LocalDate {final}
     --
+    + NecesidadExtraordinaria(subcategoriaId: UUID, cantidadNecesitada: Integer, descripcion: String, fechaLimite: LocalDate)
     + destinoDeAsignacion(): DestinoAsignacion
     + estaSatisfechaCon(cantidadAcumulada: int): boolean
+    + estado(recibido: int, hoy: LocalDate): EstadoNecesidad
+    + admiteAsignaciones(hoy: LocalDate): boolean
+  }
+
+  enum EstadoNecesidad {
+    VIGENTE
+    CUMPLIDA
+    TERMINADA
+    DADA_DE_BAJA
+  }
+
+  enum Periodicidad {
+    SEMANAL
+    QUINCENAL
+    MENSUAL
+    --
+    + periodo(): Period
+    + {static} de(periodo: Period): Periodicidad
   }
 
   class PeriodoNecesidad <<value>> {
@@ -501,6 +536,10 @@ package NECESIDADES {
     + hayQueGenerarNuevo(fechaActual: LocalDate): boolean
     + renovarPeriodoSiCorresponde(fechaActual: LocalDate, acumuladoDelPeriodoActual: int): boolean
     + generarNuevoPeriodo(): void
+    + getPeriodicidad(): Periodicidad
+    + inicioDe(periodo: PeriodoNecesidad): LocalDate
+    + actualizarCantidadNecesitada(cantidad: Integer): void
+    + estado(recibido: int, hoy: LocalDate): EstadoNecesidad
   }
 
   class GestorNecesidades <<service>> {
@@ -516,6 +555,8 @@ package NECESIDADES {
   Necesidad ..> EntidadBeneficiaria : entidadId
   Necesidad ..> DestinoAsignacion
   NecesidadRecurrente *-- PeriodoNecesidad : "*"
+  NecesidadRecurrente ..> Periodicidad
+  Necesidad ..> EstadoNecesidad
   GestorNecesidades --> NecesidadRecurrente
 }
 
@@ -671,19 +712,45 @@ package CARGA_MASIVA {
     ERROR
   }
 
+  enum MotivoErrorFila <<enum>> {
+    FORMATO_INVALIDO
+    DATOS_INVALIDOS
+    DONANTE_DADO_DE_BAJA
+    PERSONA_DUPLICADA_EN_CONFLICTO
+    ERROR_INESPERADO
+  }
+
   class Archivo <<entity>> {
     - id: UUID {final}
     - path: String
     - estado: EstadoArchivo
+    - totalFilas: Integer
+    - creadas: Int
+    - actualizadas: Int
+    - conError: Int
     --
     + marcarComoProcesando(): void
+    + iniciarConteo(totalFilas: Int): void
+    + registrarCreada(): void
+    + registrarActualizada(): void
+    + registrarError(): void
+    + getProcesadas(): Int
     + marcarComoProcesado(): void
     + marcarComoError(): void
     + marcarComoCompletadoConErrores(): void
-    + finalizarProcesamiento(erroresNegocio: Int): void
+    + finalizarProcesamiento(): void
+  }
+
+  class FilaConError <<record>> {
+    + archivoId: UUID
+    + linea: Int
+    + motivo: MotivoErrorFila
+    + codigo: String
   }
 
   Archivo --> EstadoArchivo
+  FilaConError ..> Archivo : archivoId
+  FilaConError --> MotivoErrorFila
 }
 
 @enduml

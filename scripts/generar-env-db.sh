@@ -33,6 +33,7 @@ pw() { openssl rand -hex 16; }
   echo "MINIO_ROOT_PASSWORD=$(pw)"
   echo "INCENTIVOS_MINIO_PASSWORD=$(pw)"
   echo "DONACIONES_MINIO_PASSWORD=$(pw)"
+  echo "LOGISTICA_MINIO_PASSWORD=$(pw)"
   echo "MONGO_ROOT_USER=donatrack-mongo"
   echo "MONGO_ROOT_PASSWORD=$(pw)"
   echo "LOGISTICA_MONGO_USER=logistica_user"

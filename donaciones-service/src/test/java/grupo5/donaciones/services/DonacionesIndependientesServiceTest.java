@@ -22,6 +22,7 @@ import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteRespo
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.DonacionMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
@@ -37,6 +38,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.Vencida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.DestinoAsignacion;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
@@ -110,6 +112,27 @@ class DonacionesIndependientesServiceTest {
   }
 
   @Test
+  void registrarCantidadRecibida_guardaLoQueNoLlego() {
+    DonacionIndependiente donacion = mock(DonacionIndependiente.class);
+    UUID id = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+
+    service.registrarCantidadRecibida(id, 7.0);
+
+    verify(donacion).registrarCantidadRecibida(7.0);
+    verify(repositoryMock).save(donacion);
+  }
+
+  @Test
+  void registrarCantidadRecibida_sinDonacion_lanzaRecursoNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(
+        RecursoNoEncontradoException.class, () -> service.registrarCantidadRecibida(id, 7.0));
+  }
+
+  @Test
   void cambiarEstado_DeberiaLanzarRecursoNoEncontradoException_CuandoNoExisteDonacion() {
     UUID id = UUID.randomUUID();
     when(repositoryMock.findById(id)).thenReturn(Optional.empty());
@@ -129,6 +152,7 @@ class DonacionesIndependientesServiceTest {
     UUID id = donacion.getId();
     UUID necesidadId = UUID.randomUUID();
     Necesidad necesidad = mock(Necesidad.class);
+    when(necesidad.admiteAsignaciones(any(LocalDate.class))).thenReturn(true);
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
     when(necesidadRepositoryMock.findById(necesidadId)).thenReturn(Optional.of(necesidad));
 
@@ -402,7 +426,7 @@ class DonacionesIndependientesServiceTest {
   private static FiltroDonacionesIndependientes filtro(
       UUID categoriaId, UUID entidadId, LocalDate desde, LocalDate hasta) {
     return new FiltroDonacionesIndependientes(
-        null, null, categoriaId, null, entidadId, desde, hasta);
+        null, null, categoriaId, null, entidadId, desde, hasta, null);
   }
 
   private static DonacionIndependiente registradaEl(LocalDate fecha) {
@@ -513,7 +537,29 @@ class DonacionesIndependientesServiceTest {
                 donanteId,
                 null,
                 null,
+                null,
                 null)));
+  }
+
+  @Test
+  void obtenerConFiltros_porNecesidad_devuelveLasQueLaCubren() {
+    UUID necesidadId = UUID.randomUUID();
+    UUID subcategoriaId = UUID.randomUUID();
+    DonacionIndependiente cubre =
+        DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
+    cubre.asignar(ACTOR, new DestinoAsignacion(necesidadId, null, UUID.randomUUID()));
+    DonacionIndependiente otra =
+        DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
+    otra.asignar(ACTOR, new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
+    DonacionIndependiente sinAsignar =
+        DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
+    when(repositoryMock.findAll()).thenReturn(List.of(cubre, otra, sinAsignar));
+
+    assertEquals(
+        List.of(cubre.getId()),
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(
+                null, null, null, null, null, null, null, necesidadId)));
   }
 
   private static DonacionIndependiente deLaDonacion(Donacion original, UUID subcategoriaId) {
@@ -530,7 +576,28 @@ class DonacionesIndependientesServiceTest {
 
     assertEquals(
         List.of(una.getId(), otra.getId()),
-        idsFiltrados(new FiltroDonacionesIndependientes(null, null, null, null, null, null, null)));
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null)));
     verify(subcategoriasRepositoryMock, never()).findAll();
+  }
+
+  @Test
+  void cambiarEstado_aAsignacionRealizada_rechazaUnaNecesidadDadaDeBaja_HB19() {
+    DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
+    NecesidadExtraordinaria necesidad = NecesidadMother.extraordinaria(UUID.randomUUID(), 10);
+    necesidad.desactivar();
+    when(repositoryMock.findById(donacion.getId())).thenReturn(Optional.of(donacion));
+    when(necesidadRepositoryMock.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    CambioEstadoDonacionIndependienteRequestDTO request =
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, necesidad.getId(), null, null, null);
+    UUID id = donacion.getId();
+
+    BusinessStateException e =
+        assertThrows(BusinessStateException.class, () -> service.cambiarEstado(id, request, ACTOR));
+
+    assertEquals(ErrorCatalog.NECESIDAD_INACTIVA, e.getError());
+    assertEquals(TipoEstadoDonacion.EN_DEPOSITO, donacion.getEstadoActual().getTipo());
+    verify(repositoryMock, never()).save(any());
   }
 }

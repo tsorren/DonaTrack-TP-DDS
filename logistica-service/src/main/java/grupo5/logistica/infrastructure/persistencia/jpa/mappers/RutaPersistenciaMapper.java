@@ -101,7 +101,16 @@ public class RutaPersistenciaMapper {
   private static void sincronizarEntregas(Ruta domain, RutaEntity entity) {
     List<UUID> persistidas = entity.getEntregaIds();
     List<UUID> delDominio = domain.getEntregaIds();
-    persistidas.addAll(delDominio.subList(persistidas.size(), delDominio.size()));
+    boolean soloSeAgregaron =
+        persistidas.size() <= delDominio.size()
+            && persistidas.equals(delDominio.subList(0, persistidas.size()));
+    if (soloSeAgregaron) {
+      persistidas.addAll(delDominio.subList(persistidas.size(), delDominio.size()));
+    } else {
+      // HB-19: se quitó una parada (Ruta.quitarEntrega); las demás conservan el orden de visita
+      persistidas.clear();
+      persistidas.addAll(delDominio);
+    }
   }
 
   private static Instant aInstantUtc(LocalDateTime fechaHora) {

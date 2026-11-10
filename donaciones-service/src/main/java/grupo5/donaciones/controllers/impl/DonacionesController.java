@@ -2,12 +2,15 @@ package grupo5.donaciones.controllers.impl;
 
 import static grupo5.donaciones.seguridad.Acceso.ADMIN;
 import static grupo5.donaciones.seguridad.Acceso.DONANTE;
+import static grupo5.donaciones.seguridad.Acceso.PUBLICO;
 import static grupo5.donaciones.seguridad.Acceso.SU_DONACION;
 
 import grupo5.donaciones.controllers.IDonacionesController;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.services.IDonacionesService;
+import grupo5.donaciones.services.impl.ContadoresPublicosService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -27,9 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DonacionesController implements IDonacionesController {
 
   private final IDonacionesService service;
+  private final ContadoresPublicosService contadoresPublicosService;
 
-  public DonacionesController(IDonacionesService service) {
+  public DonacionesController(
+      IDonacionesService service, ContadoresPublicosService contadoresPublicosService) {
     this.service = service;
+    this.contadoresPublicosService = contadoresPublicosService;
   }
 
   @Override
@@ -46,6 +52,14 @@ public class DonacionesController implements IDonacionesController {
   @GetMapping
   public ResponseEntity<List<DonacionOutputDTO>> listarDonaciones() {
     return ResponseEntity.ok(service.listarDonaciones());
+  }
+
+  /** Público (RF-01, HB-02): sin token cuando el gateway aplique la allowlist. */
+  @Override
+  @PreAuthorize(PUBLICO)
+  @GetMapping("/contadores")
+  public ResponseEntity<ContadoresPublicosDTO> obtenerContadoresPublicos() {
+    return ResponseEntity.ok(contadoresPublicosService.calcular());
   }
 
   @Override

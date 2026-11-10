@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "donatrack-flujo-02-necesidades",
     "name": "Flujo 2 - Necesidades: Extraordinaria vs Recurrente (donaciones-service)",
-    "description": "Autocontenido (crea su propia Entidad Beneficiaria y Subcategoría). Cubre los dos tipos de Necesidad y el bug conocido: RECURRENTE sin fechaInicio/fechaFin tira 500 (NPE no controlada) en vez de 400.",
+    "description": "Autocontenido (crea su propia Entidad Beneficiaria y Subcategoría). Cubre los dos tipos de Necesidad: la EXTRAORDINARIA lleva fechaLimite y la RECURRENTE periodicidad (HB-18). Una RECURRENTE sin periodicidad responde 400 (antes tiraba 500 por una NPE).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -225,7 +225,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad extraordinaria QA\",\n  \"fechaInicio\": \"2026-06-18\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad extraordinaria QA\",\n  \"fechaInicio\": \"2026-06-18\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -298,7 +298,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"Necesidad recurrente QA\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"Necesidad recurrente QA\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"periodicidad\": \"MENSUAL\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -335,7 +335,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"Necesidad recurrente con fecha futura\",\n  \"fechaInicio\": \"2099-01-01\",\n  \"fechaFin\": \"2099-12-31\"\n}"
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"Necesidad recurrente con fecha futura\",\n  \"fechaInicio\": \"2099-01-01\",\n  \"periodicidad\": \"MENSUAL\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -351,13 +351,13 @@
           }
         },
         {
-          "name": "3. [Bug conocido] Recurrente sin fechas → 500, no 400",
+          "name": "3. [Negativo] Recurrente sin periodicidad → 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('BUG: hoy responde 500 (debería ser 400)', function () { pm.response.to.have.status(500); });"
+                  "pm.test('Status 400 Bad Request', function () { pm.response.to.have.status(400); });"
                 ],
                 "type": "text/javascript"
               }
@@ -385,7 +385,7 @@
                 "necesidades"
               ]
             },
-            "description": "Hoy tira NullPointerException no controlada (Period.between con fechaInicio/fechaFin null) → 500. Este test documenta el bug: si algún día lo arreglan, este test empieza a fallar (esperando 500) y hay que actualizarlo a 400. Ver Mapa de Flujos DonaTrack, sección Hallazgos transversales."
+            "description": "Sin periodicidad (SEMANAL, QUINCENAL o MENSUAL) una recurrente responde 400 (ERR-VAL-512). Antes tiraba una NullPointerException → 500; lo corrigió HB-18 (ADR 20261102 del ciclo de vida de la necesidad)."
           }
         },
         {
