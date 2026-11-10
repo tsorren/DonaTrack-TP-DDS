@@ -53,7 +53,25 @@ final class LimpiadorFotoRecepcion {
   }
 
   /** Foto ya limpia, lista para guardar. */
-  record FotoLimpia(byte[] contenido, Formato formato) {}
+  record FotoLimpia(byte[] contenido, Formato formato) {
+
+    @Override
+    public boolean equals(Object otro) {
+      return otro instanceof FotoLimpia foto
+          && formato == foto.formato
+          && Arrays.equals(contenido, foto.contenido);
+    }
+
+    @Override
+    public int hashCode() {
+      return 31 * Arrays.hashCode(contenido) + formato.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      return "FotoLimpia[" + formato + ", " + contenido.length + " bytes]";
+    }
+  }
 
   private LimpiadorFotoRecepcion() {}
 

@@ -144,4 +144,14 @@ class LimpiadorFotoRecepcionTest {
     png.put(firma).putInt(13).put(datos.array()).putInt((int) crc.getValue());
     return png.array();
   }
+
+  @Test
+  void fotoLimpia_comparaPorContenidoDelArray() {
+    FotoLimpia una = new FotoLimpia(new byte[] {1, 2, 3}, LimpiadorFotoRecepcion.Formato.PNG);
+    FotoLimpia igual = new FotoLimpia(new byte[] {1, 2, 3}, LimpiadorFotoRecepcion.Formato.PNG);
+    FotoLimpia otra = new FotoLimpia(new byte[] {1, 2, 4}, LimpiadorFotoRecepcion.Formato.PNG);
+
+    assertThat(una).isEqualTo(igual).hasSameHashCodeAs(igual).isNotEqualTo(otra);
+    assertThat(una).hasToString("FotoLimpia[PNG, 3 bytes]");
+  }
 }
