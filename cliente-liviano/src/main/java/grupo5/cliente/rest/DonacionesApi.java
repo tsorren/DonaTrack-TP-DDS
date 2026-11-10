@@ -22,6 +22,13 @@ interface DonacionesApi {
   @GetExchange("/api/entidades/{id}")
   Entidad entidad(@PathVariable UUID id);
 
+  @GetExchange("/api/donantes/{id}")
+  DonanteDetalle donante(@PathVariable UUID id);
+
+  record DonanteDetalle(UUID idDonante, PersonaDetalle persona) {}
+
+  record PersonaDetalle(String tipo) {}
+
   /** {@code estadoActual} y {@code estadoNuevo} llegan como "EnDeposito" (ver el mapper). */
   record Donacion(
       UUID id,

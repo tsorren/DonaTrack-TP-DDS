@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
   Pantallas.class,
   RankingMaqueta.class,
   DonacionesMaqueta.class,
+  MisionesMaqueta.class,
   CuentaMaqueta.class
 })
 @ActiveProfiles("maqueta")

@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import grupo5.cliente.web.MisDonacionesController;
+import grupo5.cliente.web.MisionesController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
 import grupo5.cliente.web.RankingController;
@@ -45,13 +46,15 @@ import org.springframework.test.web.servlet.MvcResult;
   SitioController.class,
   PantallasController.class,
   RankingController.class,
-  MisDonacionesController.class
+  MisDonacionesController.class,
+  MisionesController.class
 })
 @Import({
   MaquetaConfig.class,
   Pantallas.class,
   RankingMaqueta.class,
   DonacionesMaqueta.class,
+  MisionesMaqueta.class,
   CuentaMaqueta.class,
   SitioControllerTest.PaginasDeError.class
 })
