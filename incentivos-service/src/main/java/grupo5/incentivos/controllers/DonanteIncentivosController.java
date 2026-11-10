@@ -1,5 +1,9 @@
 package grupo5.incentivos.controllers;
 
+import static grupo5.incentivos.seguridad.Acceso.ADMIN;
+import static grupo5.incentivos.seguridad.Acceso.ADMIN_O_SERVICIO;
+import static grupo5.incentivos.seguridad.Acceso.VER_SUS_INCENTIVOS;
+
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.dto.CambioCategoriaDTO;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/incentivos")
 @Validated
 public class DonanteIncentivosController implements IDonanteIncentivosController {
@@ -36,6 +42,7 @@ public class DonanteIncentivosController implements IDonanteIncentivosController
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping("/donantes/{donanteId}")
   public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
       @PathVariable UUID donanteId, @Valid @RequestBody RegistrarDonanteRequest request) {
@@ -47,6 +54,7 @@ public class DonanteIncentivosController implements IDonanteIncentivosController
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @DeleteMapping("/donantes/{donanteId}")
   public ResponseEntity<Void> darDeBaja(@PathVariable UUID donanteId) {
     gestionDonanteService.darDeBaja(donanteId);
@@ -54,6 +62,7 @@ public class DonanteIncentivosController implements IDonanteIncentivosController
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PatchMapping("/donantes/{donanteId}")
   public ResponseEntity<Void> modificarDonante(
       @PathVariable UUID donanteId, @Valid @RequestBody ModificarDonanteRequest request) {
@@ -62,6 +71,7 @@ public class DonanteIncentivosController implements IDonanteIncentivosController
   }
 
   @Override
+  @PreAuthorize(VER_SUS_INCENTIVOS)
   @GetMapping("/donantes/{donanteId}")
   public ResponseEntity<DonantePerfilDTO> obtenerDonante(@PathVariable UUID donanteId) {
     DonanteIncentivos donante = gestionDonanteService.obtenerDonante(donanteId);
@@ -69,6 +79,7 @@ public class DonanteIncentivosController implements IDonanteIncentivosController
   }
 
   @Override
+  @PreAuthorize(VER_SUS_INCENTIVOS)
   @GetMapping("/donantes/{donanteId}/ascensos")
   public ResponseEntity<List<CambioCategoriaDTO>> obtenerAscensos(@PathVariable UUID donanteId) {
     DonanteIncentivos donante = gestionDonanteService.obtenerDonante(donanteId);

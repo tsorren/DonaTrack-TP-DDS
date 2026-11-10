@@ -1,6 +1,6 @@
 # Matriz de permisos — DonaTrack (E6)
 
-> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Donaciones aplica la matriz (`@PreAuthorize`, `PermisoDonaciones`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas; Incentivos, Logística y Notificaciones todavía no tienen seguridad. No comparé las reglas una por una contra los controllers. La aprobación del equipo sigue pendiente.
+> **Estado:** borrador para aprobar (2026-11-07). **Actualización 2026-11-10 (leído en el código, sin correr tests):** Donaciones e Incentivos aplican la matriz (`@PreAuthorize`, `PermisoDonaciones` y `PermisoIncentivos`, pertenencia por el claim `personaId`) y el realm y el cliente liviano llevan los permisos y las plantillas; Logística y Notificaciones todavía no tienen seguridad. En Incentivos sí comparé las 19 reglas del §7 contra los controllers (`scripts/tests/test_incentivos_seguridad.py`); en Donaciones no. La aprobación del equipo sigue pendiente.
 > **Origen:** RX-09 del plan de autenticación del sitio; cubre la "matriz de §6" que cita RI-SVC-02 de los [requerimientos de E6](../../requerimientos/requerimientos-e6.md) y que no existía.
 > **Base:** endpoints de [`contratos-rest.md`](../contratos-rest.md), contrastados con los `@*Mapping` de los controllers en `ENTREGA_6` (`e43e50a9`).
 
@@ -171,6 +171,8 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `POST` | `/api/incentivos/ranking/calcular`, `/ranking/notificaciones`, `/evaluaciones-inactividad`, `/verificaciones-racha` | `SERVICIO`, ADMIN | — | — | Jobs y n8n (DTI-09) |
 | `GET` | `/api/incentivos/admin/resumen` | ADMIN | — | — | Admin (inicio) |
 
+`[OBSERVED]` (2026-11-10, al implementar Incentivos) `POST /api/incentivos/ranking/notificaciones` figura en la fila de jobs pero **no existe** en el código: no tiene regla. Con `INCENTIVOS_SEGURIDAD_HABILITADA=true`, los flujos 5 y 8 de Postman y `IncentivosApiClient` de `integration-tests` llaman sin token y recibirían `401`; se adaptan en E2-07 (M-07).
+
 ## 8. Notificaciones (lo que usa la UI y lo técnico)
 
 `[INFERRED]` Las notificaciones se dirigen a la persona en cuyo nombre se opera (la del `personaId`). Si se dirigen a la humana que representa a una jurídica, la pertenencia cambia y hay que revisar esta sección.
@@ -196,7 +198,7 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | M-04 | Categorías y subcategorías son legibles por cualquier usuario con sesión | Hacerlas públicas: hoy no las usa ninguna pantalla pública |
 | M-05 | Los listados con filtro de dueño exigen el filtro a quien no es admin (regla 5 de §1) | Que el servicio complete el filtro con el `personaId` del token: es más cómodo, pero cambia la semántica del endpoint según quién llame |
 | M-06 | Los endpoints `X-API-Key` del broker se marcan `ADMIN` en la matriz, pero se cambian recién en E2-07 | Cortarlos en E6, como dice D25: queda fuera del alcance de este plan |
-| M-07 | En el compose, la validación de Donaciones se activa con `DONACIONES_SEGURIDAD_HABILITADA` (por defecto `false`). Postman, `integration-tests` y k6 llaman a Donaciones sin token y siguen andando hasta que pidan uno por client credentials | Activarla siempre y adaptar ya Postman, `integration-tests` y k6: suma trabajo fuera del alcance del 13/11 |
+| M-07 | En el compose, la validación de Donaciones y de Incentivos se activa con `DONACIONES_SEGURIDAD_HABILITADA` y `INCENTIVOS_SEGURIDAD_HABILITADA` (por defecto `false`). Postman, `integration-tests` y k6 llaman a Donaciones sin token y siguen andando hasta que pidan uno por client credentials | Activarla siempre y adaptar ya Postman, `integration-tests` y k6: suma trabajo fuera del alcance del 13/11 |
 
 ## 10. Pendiente de revisión
 
