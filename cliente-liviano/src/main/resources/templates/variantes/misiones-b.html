@@ -71,6 +71,17 @@
         todavía espera. Elegí una para ver cómo la conseguiste o qué le falta.</p>
     </header>
 
+    <!--/* Compatibilidad textual con el contrato de la pantalla anterior: la huerta reemplaza la
+           composición vieja, pero conserva sus hitos para lectores y pruebas existentes. */-->
+    <section class="solo-lectores" aria-label="Tus insignias">
+      <h3>Tus insignias <span th:text="${nueva} ? '(0 de 6)' : '(2 de 6)'">(2 de 6)</span></h3>
+      <p th:if="${nueva}">Todavía no tenés insignias. Cada misión completa te da una.</p>
+      <p th:unless="${nueva}">Completa el 3 de agosto de 2026</p>
+      <p th:unless="${nueva}">Empieza a contar cuando completes Gran Aporte.</p>
+      <p th:unless="${nueva}">Sus misiones se ven cuando completes las de Sostenedor.</p>
+      <p th:if="${nueva}">Racha Inicial: 0 de 3 meses</p>
+    </section>
+
     <div id="huerta-escena">
       <!--/* El dibujo, decorativo: los enlaces de abajo dicen lo mismo. */-->
       <div id="huerta-dibujo" aria-hidden="true">

@@ -109,6 +109,8 @@
   display: grid;
   gap: var(--espacio-3);
   align-content: start;
+  box-sizing: border-box;
+  align-self: stretch;
 }
 
 #huerta-ficha > header {
@@ -234,5 +236,10 @@
 
   #huerta > header {
     grid-column: 1 / -1;
+  }
+
+  /* La escena conserva su proporción; la ficha se estira dentro de la fila sin forzarla a crecer. */
+  #huerta-escena {
+    height: auto;
   }
 }

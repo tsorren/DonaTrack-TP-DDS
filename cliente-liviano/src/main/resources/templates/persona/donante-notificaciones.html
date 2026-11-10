@@ -27,6 +27,8 @@
 <th:block th:fragment="cuerpo" th:with="limite=${avisos[1].d.cartas[avisos[1].i].fecha}">
 <th:block
     th:with="conDatos=${escenario == ''},
+             marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
+             noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
              temas=${ {
       {valor: '', texto: 'Todas las categorías'},
       {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
@@ -42,19 +44,27 @@
                      : (#strings.contains(d.cartas.get(i).texto, 'salió a entregar') or #strings.contains(d.cartas.get(i).texto, 'quedó lista') ? 'camino'
                      : (#strings.startsWith(d.cartas.get(i).texto, 'Asignamos') ? 'asignadas' : 'deposito')))),
                  destino: '/donante-donaciones-detalle?donacion=' + d.clave,
-                 leida: d.cartas.get(i).fecha < '__${limite}__'} ]},
+                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), d.clave + '-' + i)
+                     and (d.cartas.get(i).fecha < '__${limite}__'
+                     or #root.marcadas == 'todas'
+                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), d.clave + '-' + i))} ]},
              deMisiones=${avisos.?[#this['m'] != null].![ {id: 'm-' + fecha, fecha: fecha, texto: texto, tema: 'misiones',
-                 destino: '/donante-misiones', leida: fecha < '__${limite}__'} ]},
+                 destino: '/donante-misiones',
+                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), 'm-' + fecha)
+                     and (fecha < '__${limite}__' or #root.marcadas == 'todas'
+                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), 'm-' + fecha))} ]},
              otras=${ {
-      {id: 'x1', fecha: '2026-10-15T16:08', tema: 'necesidades', leida: false, destino: '/donante-entidades',
+      {id: 'x1', fecha: '2026-10-15T16:08', tema: 'necesidades',
+       leida: !#lists.contains(#strings.listSplit(noLeidas, ','), 'x1')
+           and (marcadas == 'todas' or #lists.contains(#strings.listSplit(marcadas, ','), 'x1')), destino: '/donante-entidades',
        texto: 'Merendero Ejemplo Sur publicó una necesidad nueva: 20 frazadas para el 30 de octubre.'} } },
-             sinLeerAhora=${leidas ? 0 : #lists.size(deDonaciones.?[!leida]) + #lists.size(deMisiones.?[!leida]) + #lists.size(otras.?[!leida])}">
+             sinLeerAhora=${#lists.size(deDonaciones.?[!leida]) + #lists.size(deMisiones.?[!leida]) + #lists.size(otras.?[!leida])}">
   <div class="pila" data-espacio="4">
     <header class="pila" data-espacio="2">
       <p class="rotulo">Notificaciones</p>
       <h1>Noticias de <em>tus donaciones</em></h1>
       <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
-         th:text="'Listo: marcaste todas como leídas.'">Listo: marcaste todas como leídas.</p>
+         th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo: marcaste la notificación.</p>
       <p th:if="${conDatos}" class="bajada"
          th:text="${sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con tus donaciones, tus misiones o una necesidad nueva.|">3
         sin leer. Cada aviso cuenta qué pasó con tus donaciones, tus misiones o una necesidad nueva.</p>
@@ -82,7 +92,7 @@
 
     <th:block th:if="${conDatos}">
       <div th:replace="~{componentes/buzon :: buzon(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
-           '/donante-notificaciones-leidas', '2026-10-15T16:25', ${ {deDonaciones, deMisiones, otras} }, ${temas}, ${leidas})}"></div>
+           '/donante-notificaciones-leidas', '2026-10-15T16:25', ${ {deDonaciones, deMisiones, otras} }, ${temas}, ${marcadas == 'todas'})}"></div>
     </th:block>
   </div>
 </th:block>

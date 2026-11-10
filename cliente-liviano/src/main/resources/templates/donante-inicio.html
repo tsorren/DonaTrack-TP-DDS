@@ -91,6 +91,20 @@
           entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
       </section>
 
+      <section id="inicio-misiones" class="tarjeta huerta-caja" aria-labelledby="inicio-misiones-titulo">
+        <header class="huerta-cabeza">
+          <p class="huerta-rotulo">Misiones</p>
+          <h2 id="inicio-misiones-titulo">Una huerta que crece con cada donación</h2>
+          <p>En la huerta podés ver el progreso de tus misiones y qué te falta para que cada planta eche raíces.</p>
+        </header>
+        <div id="inicio-misiones-dibujo">
+          <img src="/img/ilustraciones/huerta/acceso.svg" th:src="@{/img/ilustraciones/huerta/acceso.svg}"
+               alt="Ilustración de una huerta" width="1140" height="695">
+          <a class="boton" data-tono="secundario" href="/donante-misiones?cuenta=persona"
+             th:href="@{/donante-misiones(cuenta='persona')}">Ver mi huerta</a>
+        </div>
+      </section>
+
       <!--/* 2. El tablero: lo que llegó, lo que está en curso y lo que conviene mirar, con el dibujo de
              cada donación. Cada renglón lleva al detalle. */-->
       <section data-v="tablero" aria-labelledby="tablero-titulo">
@@ -185,6 +199,8 @@
              th:text="|Ver todas (${sinLeer} sin leer)|">Ver todas (4 sin leer)</a>
         </section>
       </div>
+
+      <section th:replace="~{componentes/huerta :: participa}"></section>
     </div>
   </div>
 </th:block>

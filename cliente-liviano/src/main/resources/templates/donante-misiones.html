@@ -11,13 +11,14 @@
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
 <head>
   <title>Misiones e insignias - DonaTrack</title>
+  <link rel="stylesheet" href="/css/variantes/misiones-b.css">
 </head>
 <body>
 <!--/* La pantalla: los datos, el encabezado y los estados de datos(vista), con el camino de misiones
        de cuerpo. Las variantes misiones-a y misiones-b (templates/variantes/) usan los mismos datos
        con su propio cuerpo. */-->
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{donante-misiones :: datos(~{donante-misiones :: cuerpo})}"></th:block>
+  <th:block th:replace="~{donante-misiones :: datos(~{variantes/misiones-b :: huerta})}"></th:block>
 </th:block>
 
 <th:block th:fragment="datos(vista)"

@@ -300,6 +300,7 @@
 
 /* --- La portada: el texto y las tres láminas con el enjambre ------------------------------------- */
 .huerta-hero {
+  position: relative;
   display: grid;
   gap: 2.5rem;
   align-items: center;
@@ -325,6 +326,13 @@
 
 .huerta-hero-texto > p:not(.huerta-rotulo) {
   margin: 0;
+}
+
+.huerta-hero > .huerta-pausa {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
 }
 
 /* Las láminas con el encuadre de los recorridos (x de 4 a 254 y y de 2 a 152 en el dibujo de
@@ -432,7 +440,7 @@
 
 [data-abejas-camino] .huerta-abeja {
   display: none;
-  width: 2.5rem;
+  width: 0.833rem;
 }
 
 [data-abejas-camino][data-abejas="vuelan"] .huerta-abeja {
@@ -542,8 +550,6 @@
 .huerta-tierra:not(.huerta-tierra--caja) {
   background:
     url("../../img/tierra-textura.svg") 0 0 / 260px,
-    repeating-linear-gradient(to bottom, transparent 0 8.5rem,
-      color-mix(in srgb, var(--color-texto-suelo) 16%, transparent) 8.5rem calc(8.5rem + 1px)),
     var(--color-suelo);
 }
 

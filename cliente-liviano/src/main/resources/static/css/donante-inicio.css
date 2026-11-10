@@ -74,7 +74,12 @@
 }
 
 [data-v="frutos"] .huerta-cifra {
-  padding-right: 0;
+  grid-template-columns: minmax(4.5rem, 6.5rem) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  min-height: 10rem;
+  padding: 0 0 1.375rem;
+  background-position: 0 100%;
 }
 
 /* Los dibujos a escala, como las láminas (2026-11-09, tarde): el alto sale de sus unidades
@@ -85,10 +90,39 @@
 }
 
 [data-v="frutos"] .huerta-cifra img[data-dibujo] {
+  grid-row: 1 / span 2;
   width: auto;
   max-width: 100%;
   height: calc(var(--medida-alto) * var(--medida-escala));
-  margin-top: calc(10rem - var(--medida-alto) * var(--medida-escala));
+  margin: 0 auto;
+}
+
+[data-v="frutos"] .huerta-cifra img + b {
+  margin-top: 0;
+}
+
+#inicio-misiones {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+#inicio-misiones-dibujo {
+  position: relative;
+  max-width: 42rem;
+}
+
+#inicio-misiones-dibujo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#inicio-misiones-dibujo .boton {
+  position: absolute;
+  top: 62%;
+  left: 52%;
+  translate: -50% -50%;
+  white-space: nowrap;
 }
 
 /* 2. El tablero: tres columnas, cada una con el color de su estado en la cabeza. */

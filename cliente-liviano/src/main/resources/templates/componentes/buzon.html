@@ -38,7 +38,7 @@
      th:with="fVer=${param.ver != null and param.ver[0] == 'sin-leer' ? 'sin-leer' : ''},
               fTema=${param.tema != null and param.tema[0] != '' and #lists.contains(temas.![valor], param.tema[0]) ? param.tema[0] : ''},
               fOrden=${param.orden != null and param.orden[0] == 'viejas' ? 'viejas' : ''},
-              fAgrupar=${param.agrupar != null and param.agrupar[0] == 'no' ? 'no' : ''},
+              fAgrupar=${param.agrupar == null ? 'no' : (param.agrupar[0] == 'no' ? 'no' : '')},
               q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
               reloj=${#temporals.createDateTime(ahora)},
               dHoy=${reloj.toLocalDate().toString()},
@@ -83,7 +83,7 @@
           {valor: '', texto: 'Más nuevas primero'}, {valor: 'viejas', texto: 'Más viejas primero'} } })}"></details>
       <details th:replace="~{componentes/filtros :: menu('agrupar', 'Agrupar: por fecha', ${fAgrupar}, ${ {
           {valor: '', texto: 'Por fecha'}, {valor: 'no', texto: 'Sin agrupar'} } })}"></details>
-      <a th:if="${filtrado or fOrden != '' or fAgrupar != '' or fVer != ''}" class="filtros-sacar" href="#"
+      <a th:if="${filtrado or fOrden != '' or fVer != '' or param.agrupar != null}" class="filtros-sacar" href="#"
          th:href="${ruta}">Sacar los filtros</a>
     </div>
   </form>
@@ -156,6 +156,9 @@
   <button th:unless="${leida}" class="buzon-accion" type="submit" name="marcar" th:value="${n.id}" value="n1"
           title="Marcar como leída"><svg th:replace="~{componentes/buzon :: icono('tilde')}"></svg><span
       class="solo-lectores" th:text="|Marcar como leída: ${n.texto}|">Marcar como leída</span></button>
+  <button th:if="${leida}" class="buzon-accion" type="submit" name="no-leer" th:value="${n.id}" value="n1"
+          title="Marcar como no leída"><svg th:replace="~{componentes/buzon :: icono('tilde')}"></svg><span
+      class="solo-lectores" th:text="|Marcar como no leída: ${n.texto}|">Marcar como no leída</span></button>
 </li>
 
 <time th:fragment="cuando(fecha, reloj)"

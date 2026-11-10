@@ -997,6 +997,22 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos cargar el ranking.")));
   }
 
+  /** Cada pantalla propia de la persona que dona se arma sin errores (usuario, 2026-11-10). */
+  @Test
+  void lasPantallasDeLaPersonaQueDonaSeArman() throws Exception {
+    for (String pantalla :
+        List.of(
+            "donante-inicio",
+            "donante-donaciones",
+            "donante-entidades",
+            "donante-seguimiento",
+            "donante-notificaciones")) {
+      mvc.perform(get("/" + pantalla + "?cuenta=persona")).andExpect(status().isOk());
+    }
+    mvc.perform(get("/donante-entidades?cuenta=persona"))
+        .andExpect(content().string(containsString("class=\"progreso\"")));
+  }
+
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");
 
   @Test

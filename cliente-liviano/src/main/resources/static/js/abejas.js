@@ -7,9 +7,8 @@
 //   encuadre de Abeja1: x de 4 a 254, y de 2 a 152, el de las láminas en componentes/huerta.css).
 //   Formato: `d` son las diferencias en décimas de unidad, de a pares x y; `adelante` son los rangos de
 //   puntos que van delante de las láminas.
-// - Cómo funciona ([data-abejas-camino]): el recorrido se arma con la posición real de cada maceta, así
-//   sirve en fila (pantalla ancha) y en columna (celular). La abeja salta de maceta en maceta y vuelve
-//   por arriba (o por el costado, en columna).
+// - Cómo funciona ([data-abejas-camino]): las abejas orbitan el árbol del final de la sección. La
+//   trayectoria se calcula con su posición real, así sirve en fila (pantalla ancha) y en columna.
 // - El cuerpo se inclina según la concavidad del recorrido (abeja-partes.svg): la pose de "arriba"
 //   cuando la curva se abre hacia arriba, la de "abajo" cuando se cierra, con un paso suave.
 // - Mejora progresiva: sin JavaScript, con "reducir movimiento" o con la pausa, las abejas quedan
@@ -206,7 +205,7 @@
   const camino = document.querySelector("[data-abejas-camino]");
   if (camino) {
     const abejasCamino = [...camino.querySelectorAll(".huerta-abeja")];
-    const macetas = [...camino.querySelectorAll("img[data-dibujo]")];
+    const arbol = camino.querySelector(".huerta-como-arbol");
     let rutasCamino = [];
     let escala = 1;
 
@@ -228,28 +227,24 @@
       const caja = camino.getBoundingClientRect();
       const ancho = abejasCamino[0].getBoundingClientRect().width || 40;
       escala = ancho / ABEJA_ANCHO;
-      /* Sobre cada maceta, apenas por encima de la planta, en unidades de abeja. */
-      const paradas = macetas.map((m) => {
-        const r = m.getBoundingClientRect();
-        return [(r.left + r.width / 2 - caja.left) / escala, (r.top - caja.top) / escala - ABEJA_ALTO * 0.4];
-      });
-      const primero = paradas[0];
-      const ultimo = paradas[paradas.length - 1];
-      const enFila = Math.abs(ultimo[0] - primero[0]) > Math.abs(ultimo[1] - primero[1]);
-      /* En fila, los saltos van hacia arriba y la vuelta más arriba todavía; en columna, hacia la
-         derecha de las macetas. */
-      const normal = enFila ? [0, -1] : [1, 0];
-      const puntos = [];
-      for (let i = 0; i < paradas.length - 1; i++) {
-        const a = paradas[i];
-        const b = paradas[i + 1];
-        tramo(puntos, a, b, normal, Math.hypot(b[0] - a[0], b[1] - a[1]) * 0.35);
+      if (!arbol || escala <= 0) {
+        rutasCamino = [];
+        return;
       }
-      tramo(puntos, ultimo, primero, normal, Math.hypot(ultimo[0] - primero[0], ultimo[1] - primero[1]) * 0.22);
+      const r = arbol.getBoundingClientRect();
+      const centro = [(r.left + r.width / 2 - caja.left) / escala, (r.top + r.height / 2 - caja.top) / escala];
+      const radioX = (r.width / 2 + 1.6 * ancho) / escala;
+      const radioY = (r.height / 2 + 1.6 * ancho) / escala;
+      const puntos = [];
+      const muestras = 40;
+      for (let i = 0; i < muestras; i++) {
+        const t = (i / muestras) * Math.PI * 2 - Math.PI / 2;
+        puntos.push([centro[0] + Math.cos(t) * radioX, centro[1] + Math.sin(t) * radioY]);
+      }
       rutasCamino = [{ puntos, poses: concavidades(puntos), duracion: (puntos.length * 2) / VELOCIDAD }];
     }
 
-    if (abejasCamino.length > 0 && macetas.length > 1) {
+    if (abejasCamino.length > 0 && arbol) {
       rehacer();
       new ResizeObserver(rehacer).observe(camino);
       bandada(camino, abejasCamino, () => rutasCamino, [0, 0.5], (abeja, p) => {

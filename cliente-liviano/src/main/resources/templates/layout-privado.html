@@ -16,6 +16,8 @@
         th:href="@{/css/{hoja}.css(hoja=${hoja})}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <link th:if="${hoja == 'donante-misiones'}" rel="stylesheet"
+        href="/css/variantes/misiones-b.css">
   <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
 <body class="raices-privado">

@@ -44,6 +44,9 @@ class SitioController {
   /** Los motivos de Llegó con un problema, los del reporte del contrato de entregas. */
   private static final String MOTIVOS = "incompleta|danada|otro";
 
+  /** IDs de notificaciones que pueden viajar en el formulario de la bandeja. */
+  private static final String NOTIFICACION_ID = "[A-Za-z0-9-]+";
+
   /**
    * A dónde puede volver Contacto: una pantalla del sitio, con parámetros de letras, números y
    * guiones; nada más, para que no lleve fuera del sitio. Las plantillas de Contacto usan la misma.
@@ -229,7 +232,11 @@ class SitioController {
         menu.isEmpty() || PUBLICO.equals(rol) || ADMIN.equals(rol) ? null : "/" + rol + "-perfil");
     if (persona && !MISIONES.equals(pantalla)) {
       // Las pantallas de la persona viven en templates/persona/; las que faltan, con el aviso.
-      return existe(PERSONA + "/" + pantalla) ? PERSONA + "/" + pantalla : avisoDeLaPersona(model);
+      if (existe(PERSONA + "/" + pantalla)) {
+        return PERSONA + "/" + pantalla;
+      }
+      // Entidades es una pantalla común: la persona donante también puede recorrerla.
+      return "donante-entidades".equals(pantalla) ? pantalla : avisoDeLaPersona(model);
     }
     return dibujada ? pantalla : SIN_DIBUJAR;
   }
@@ -269,7 +276,10 @@ class SitioController {
       @RequestParam(required = false) String volver,
       @RequestParam(required = false) String mostrar,
       @RequestParam(required = false) String seccion,
-      @RequestParam(required = false) String motivo) {
+      @RequestParam(required = false) String motivo,
+      @RequestParam(required = false) List<String> elegidas,
+      @RequestParam(required = false) String marcar,
+      @RequestParam(name = "no-leer", required = false) String noLeer) {
     if (!existe(pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
@@ -285,6 +295,29 @@ class SitioController {
     }
     if (motivo != null && motivo.matches(MOTIVOS)) {
       consulta.add("problema=" + motivo);
+    }
+    if (pantalla.endsWith("-notificaciones-leidas")) {
+      List<String> ids = new ArrayList<>();
+      List<String> idsNoLeidas = new ArrayList<>();
+      if (elegidas != null) {
+        ids.addAll(elegidas.stream().filter(id -> id.matches(NOTIFICACION_ID)).toList());
+      }
+      if (marcar != null && marcar.matches(NOTIFICACION_ID)) {
+        ids.add(marcar);
+      }
+      if (noLeer != null && noLeer.matches(NOTIFICACION_ID)) {
+        idsNoLeidas.add(noLeer);
+      }
+      if (!ids.isEmpty()
+          || !idsNoLeidas.isEmpty()
+          || elegidas != null
+          || marcar != null
+          || noLeer != null) {
+        consulta.add("marcadas=" + String.join(",", ids));
+      }
+      if (!idsNoLeidas.isEmpty()) {
+        consulta.add("noLeidas=" + String.join(",", idsNoLeidas));
+      }
     }
     String destino = "redirect:/" + pantalla;
     return consulta.isEmpty() ? destino : destino + "?" + String.join("&", consulta);

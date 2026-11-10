@@ -131,7 +131,7 @@
           <ul th:unless="${e.pide.isEmpty()}" class="pedidos" role="list"
               th:aria-label="|Lo que pide ${e.nombre}|">
             <th:block th:each="p, v : ${e.pide}" th:if="${v.index < 3}">
-              <li th:replace="~{donante-entidades :: pedido(${p})}"></li>
+              <li th:replace="~{persona/donante-entidades :: necesidad(${p})}"></li>
             </th:block>
           </ul>
           <details th:if="${#lists.size(e.pide) > 3}" class="pedidos-mas">
@@ -139,7 +139,7 @@
               necesidades</span><span class="ver-menos">Ver menos</span></summary>
             <ul class="pedidos" role="list" th:aria-label="|Más necesidades de ${e.nombre}|">
               <th:block th:each="p, v : ${e.pide}" th:if="${v.index >= 3}">
-                <li th:replace="~{donante-entidades :: pedido(${p})}"></li>
+                <li th:replace="~{persona/donante-entidades :: necesidad(${p})}"></li>
               </th:block>
             </ul>
           </details>
@@ -169,5 +169,14 @@
 </th:block>
 
 
+<!--/* Una necesidad de la entidad: qué pide, cuánto falta y la barra de lo recibido (la misma
+       .progreso de la empresa). La pieza de la empresa se rehízo en la ronda del 2026-11-09 y ya no
+       trae un fragmento para usar acá. */-->
+<li th:fragment="necesidad(p)" th:with="pct=${p.total != null and p.total > 0 ? p.recibido * 100 / p.total : null}">
+  <b th:text="${p.que}">Lentejas secas</b>
+  <span th:text="|${p.falta} · ${p.cuando}|">Faltan 30 de 40 kg este mes · Se repite cada mes</span>
+  <progress th:if="${pct != null}" class="progreso" max="40" value="10" th:max="${p.total}" th:value="${p.recibido}"
+            th:aria-label="|${p.que}: recibió el ${pct} %|" th:text="|${pct} %|">25 %</progress>
+</li>
 </body>
 </html>
