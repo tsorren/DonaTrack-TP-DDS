@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <!--/* Seguimiento de la persona que dona (Martina Ruiz, RF-09): la misma pantalla que la de la empresa
-       (ficha docs/interfaz/flujos/raices-seguir-entregas.md), con sus dos entregas en curso. El dibujo
-       es fijo para las dos del ejemplo: del depósito sale una línea por entrega hasta su entidad, con
-       el sello de su estado y el camión en su posición aproximada; la lista dice lo mismo con el mismo
-       número (RF-CL-06). Cada entrega de la lista es la pieza de la empresa (donante-seguimiento ::
-       entrega). ?escenario=vacio, error y lento. */-->
+       (ficha docs/interfaz/flujos/raices-seguir-entregas.md), con sus dos entregas en curso. El mapa de
+       seguimiento es el de la empresa (donante-seguimiento :: mapa, usuario, 2026-11-10: sin el dibujo
+       de subte ni la abeja): el depósito, la entidad de cada entrega y su posición aproximada (puntos,
+       por clave de donación), con el mismo número que la lista (RF-CL-06): 1 ropa de abrigo, en camino,
+       y 2 leche en polvo, pendiente. Cada entrega de la lista es la pieza de la empresa
+       (donante-seguimiento :: entrega). ?escenario=vacio, error y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-seguimiento', ~{::contenido})}">
 <head>
@@ -17,6 +18,9 @@
 
 <th:block th:fragment="pantalla"
     th:with="enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
+             puntos=${ {
+               ropa: {lat: -34.6556, lng: -58.4044, destinoLat: -34.6683, destinoLng: -58.4067},
+               leche: {lat: -34.6400, lng: -58.4065, destinoLat: -34.6418, destinoLng: -58.4291} } },
              vanEnCamino=${enCurso.?[estado.tono == 'en-camino']},
              tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
              esperanSalir=${enCurso.?[estado.tono == 'pendiente']},
@@ -73,50 +77,10 @@
     </section>
 
     <div th:if="${escenario == ''}" class="seguimiento-cuerpo">
-      <!--/* El dibujo, fijo para las dos entregas del ejemplo: 1 ropa de abrigo (en camino, el camión
-             pasando la mitad) a la izquierda y 2 leche en polvo (pendiente, en la salida del depósito)
-             a la derecha. Lo recorrido, impreso; lo que falta, hueco. */-->
-      <figure class="seguimiento-dibujo tierra-impresa" aria-hidden="true">
-        <svg class="dibujo" viewBox="0 0 720 380" aria-hidden="true" focusable="false">
-          <path class="dibujo-tierra" d="M0 80H720"/>
-          <path class="dibujo-tallo" d="M360 80V44"/>
-          <path class="dibujo-hoja" d="M360 58C346 58 338 48 338 38C352 38 360 48 360 58ZM360 50C372 50 382 42 382 32C368 32 360 40 360 50Z"/>
-          <text class="dibujo-rotulo dibujo-rotulo--papel" x="392" y="70">Depósito</text>
-          <path class="subte-borde" d="M360 82V110"/>
-          <path class="subte-linea" d="M360 82V110"/>
-
-          <g class="linea linea--1">
-            <path class="subte-hueco" d="M180 251V300"/>
-            <path class="subte-hueco-centro" d="M180 251V300"/>
-            <path class="subte-borde" d="M360 110H284Q260 110 243 127L197 173Q180 190 180 214V215"/>
-            <path class="subte-linea" d="M360 110H284Q260 110 243 127L197 173Q180 190 180 214V215"/>
-            <g class="camion" transform="translate(180 233)">
-              <circle r="18"/>
-              <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
-              <image href="/img/ilustraciones/abeja-arriba.svg" th:href="@{/img/ilustraciones/abeja-arriba.svg}"
-                     x="-4" y="-46" width="44" height="44"/>
-            </g>
-            <g class="nodo" transform="translate(180 318)">
-              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-              <text class="nodo-numero" y="7">1</text>
-            </g>
-            <text class="dibujo-rotulo" x="180" y="364">Merendero Ejemplo Sur</text>
-          </g>
-          <g class="linea linea--2">
-            <path class="subte-hueco" d="M360 110H436Q460 110 477 127L523 173Q540 190 540 214V300"/>
-            <path class="subte-hueco-centro" d="M360 110H436Q460 110 477 127L523 173Q540 190 540 214V300"/>
-            <g transform="translate(410 110)">
-              <circle class="sello-contorno sello-contorno--punteado" r="12"/>
-            </g>
-            <g class="nodo" transform="translate(540 318)">
-              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-              <text class="nodo-numero" y="7">2</text>
-            </g>
-            <text class="dibujo-rotulo" x="540" y="364">Comedor Barrio Ejemplo</text>
-          </g>
-          <circle class="subte-estacion" cx="360" cy="110" r="9"/>
-        </svg>
-      </figure>
+      <!--/* El mapa de seguimiento, el mismo de la empresa (donante-seguimiento :: mapa): el depósito,
+             el destino de cada entrega y su posición aproximada, numerada como en la lista. Antes, el
+             dibujo de la red de subte con la abeja (usuario, 2026-11-10: sacarla). */-->
+      <div th:replace="~{donante-seguimiento :: mapa}"></div>
 
       <svg th:replace="~{iconos :: categorias}"></svg>
 
@@ -124,13 +88,13 @@
         <h2 id="lista-titulo">Entrega por entrega</h2>
         <ol class="entregas" role="list">
           <th:block th:each="d, vuelta : ${vanEnCamino}">
-            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${vuelta.count})}"></li>
+            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
           <th:block th:each="d, vuelta : ${tienenProblema}">
-            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count})}"></li>
+            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
           <th:block th:each="d, vuelta : ${esperanSalir}">
-            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count})}"></li>
+            <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
         </ol>
         <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--/* Raíces, Necesidades de la entidad (RF-10), según su ficha de flujo
        (docs/interfaz/flujos/raices-necesidades.md). Arriba, el registro de cifras y "Publicar otra
-       necesidad" plegado; la lista de los pedidos vigentes, en un cantero plegable por categoría
+       necesidad" plegado; la lista de las necesidades vigentes, en un cantero plegable por categoría
        (con su resumen: cuántas, cuántas cubiertas y cuántas entregas esperan), cada uno plegado con su resumen y,
-       abierto, su detalle: por qué hace falta, las entregas para ese pedido, quién donó, la historia
+       abierto, su detalle: por qué hace falta, las entregas para esa necesidad, quién donó, la historia
        de los períodos en barras (si se repite) y las acciones (cambiar y dar de baja, con su confirmación en un
        diálogo del navegador, sin JavaScript); al pie, las cumplidas y terminadas. Los datos de
        partida son los del primer prototipo de Necesidades, con las
@@ -11,12 +11,16 @@
        se repite cada semana, quincena o mes, el cambio de cantidad vale para el período en curso, la
        baja dice qué pasa con cada entrega según si salió, y el nombre de quien donó se ve salvo que
        lo haya ocultado.
-       ?necesidad=<clave> abre ese pedido (de partida, lentejas); una clave que no está, o
+       ?necesidad=<clave> abre esa necesidad (de partida, lentejas); una clave que no está, o
        ?escenario=no-existe, muestra "No encontramos esa necesidad". ?escenario=vacio, lento, error,
        error-publicar, error-cambiar, error-baja, sin-conexion, conflicto, cambiar-datos,
        ya-no-vigente y entidad-inactiva. Cada acción es un formulario real (POST) que lleva a
        entidad-necesidades-publicada, -cambiada o -baja; el error de datos al publicar es
        entidad-necesidades-publicar-error.
+       El envoltorio .necesidades se llama igual que la lista del bloque necesidad: la hoja de la
+       pantalla lo deja en display: block para que la lista vigente ocupe todo el ancho (2026-11-10).
+       "Con un problema" del registro de cifras abre esa necesidad en la misma pantalla con hx-boost.
+       En pantalla se dice "necesidades", nunca "pedidos" (las clases pedido-* quedan como están).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'publicada', 'publicar-error',
          'cambiada' o 'baja'.
@@ -107,7 +111,7 @@
     <header>
       <p class="rotulo" th:text="${seccion}">Necesidades</p>
       <h1>Lo que <em>hace falta</em></h1>
-      <p class="necesidades-bajada">Tus pedidos vigentes. Los ven los donantes y el catálogo público,
+      <p class="necesidades-bajada">Tus necesidades vigentes. Las ven los donantes y el catálogo público,
         sin tus datos de contacto.</p>
     </header>
 
@@ -143,7 +147,7 @@
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos cargar tus necesidades.</h2>
-      <p>Es un problema nuestro: no cambió nada en tus pedidos. Probá de nuevo en unos minutos; si
+      <p>Es un problema nuestro: no cambió nada en tus necesidades. Probá de nuevo en unos minutos; si
         sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
           con este código</a>.</p>
@@ -153,7 +157,7 @@
     </section>
 
     <!--/* El registro de cifras, con fecha, como el de Seguir entregas; se cuentan las entregas de los
-           pedidos vigentes. */-->
+           necesidades vigentes. */-->
     <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="cifras"
              aria-labelledby="cifras-titulo">
       <h2 id="cifras-titulo" class="cifras-titulo">Al 15 de octubre de 2026</h2>
@@ -173,8 +177,9 @@
           <dd th:text="${#aggregates.sum(vigentes.![camino])}">2</dd>
         </div>
         <div class="cifra">
-          <dt th:if="${#aggregates.sum(vigentes.![problema]) > 0}"><a href="/entidad-necesidades?necesidad=aceite"
-                 th:href="@{/entidad-necesidades(necesidad=aceite)}">Con un
+          <dt th:if="${#aggregates.sum(vigentes.![problema]) > 0}"><a href="/entidad-necesidades?necesidad=aceite#aceite"
+                 th:href="@{/entidad-necesidades(necesidad=aceite)} + '#aceite'" hx-boost="true"
+                 hx-swap="outerHTML show:#aceite:top">Con un
             problema</a></dt>
           <dt th:unless="${#aggregates.sum(vigentes.![problema]) > 0}">Con un problema</dt>
           <dd th:text="${#aggregates.sum(vigentes.![problema])}">1</dd>
@@ -182,7 +187,7 @@
       </dl>
     </section>
 
-    <!--/* Sin pedidos vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
+    <!--/* Sin necesidades vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">No tenés necesidades vigentes.</h2>
       <p>Publicá lo que le hace falta a tu entidad: lo ven los donantes y el catálogo público.</p>
@@ -312,9 +317,9 @@
       </section>
 
       <section class="parte" th:aria-labelledby="|${n.clave}-entregas|">
-        <h3 th:id="|${n.clave}-entregas|">Entregas para este pedido</h3>
-        <p th:if="${#lists.isEmpty(n.entregas)}">No hay entregas pendientes para este
-          pedido.</p>
+        <h3 th:id="|${n.clave}-entregas|">Entregas para esta necesidad</h3>
+        <p th:if="${#lists.isEmpty(n.entregas)}">No hay entregas pendientes para esta
+          necesidad.</p>
         <ul th:unless="${#lists.isEmpty(n.entregas)}" class="entregas" role="list">
           <li th:each="en : ${n.entregas}">
             <th:block th:replace="~{componentes/sello :: sello(${en.tono})}"></th:block>
@@ -375,7 +380,7 @@
       <section th:if="${escenario == 'error-cambiar' and n.clave == pedida}"
                class="banner" data-estado="error" role="alert" aria-labelledby="errorcambio-titulo">
         <h3 id="errorcambio-titulo">No pudimos guardar los cambios.</h3>
-        <p>Es un problema nuestro: el pedido sigue como estaba. Probá de nuevo en unos
+        <p>Es un problema nuestro: la necesidad sigue como estaba. Probá de nuevo en unos
           minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
  th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-necesidades')}">escribinos
 con este código</a>.</p>
@@ -385,7 +390,7 @@ con este código</a>.</p>
       </section>
       <section th:if="${escenario == 'conflicto' and n.clave == pedida}" class="banner"
                role="alert" aria-labelledby="conflicto-titulo">
-        <h3 id="conflicto-titulo">Otra persona de tu entidad cambió este pedido mientras lo
+        <h3 id="conflicto-titulo">Otra persona de tu entidad cambió esta necesidad mientras la
           editabas.</h3>
         <p>Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo.</p>
       </section>
@@ -410,7 +415,7 @@ con este código</a>.</p>
               <label th:for="|${n.clave}-cuanto|" for="lentejas-cuanto"
                      th:text="|Cuánto, en ${n.unidad}|">Cuánto, en kg</label>
               <small th:id="|${n.clave}-cuanto-ayuda|"
-                     th:text="${n.repite == 'Una sola vez'} ? 'Si ya llegó más que lo nuevo, el pedido queda cumplido.' : |Vale desde este período, ${#strings.toLowerCase(n.periodos[0].nombre)}: si ya llegó más que lo nuevo, este período queda cumplido.|">Vale
+                     th:text="${n.repite == 'Una sola vez'} ? 'Si ya llegó más que lo nuevo, la necesidad queda cumplida.' : |Vale desde este período, ${#strings.toLowerCase(n.periodos[0].nombre)}: si ya llegó más que lo nuevo, este período queda cumplido.|">Vale
                 desde este período, octubre: si ya llegó más que lo nuevo, este período queda
                 cumplido.</small>
               <p th:if="${conError}" th:id="|${n.clave}-cuanto-error|" class="campo-error"

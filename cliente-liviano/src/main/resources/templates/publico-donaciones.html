@@ -31,7 +31,7 @@
     </header>
 
     <div th:if="${conDatos}" class="publica-barra">
-      <form class="filtro" action="/publico-donaciones"
+      <form hx-boost="true" class="filtro" action="/publico-donaciones"
             th:action="@{/publico-donaciones}" method="get" data-al-cambiar>
         <fieldset class="filtro-opciones">
           <legend>Período</legend>

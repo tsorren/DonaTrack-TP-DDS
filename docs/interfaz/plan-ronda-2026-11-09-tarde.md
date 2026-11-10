@@ -486,3 +486,50 @@ dibujo de la diseñadora (`Bajo tierra.svg`). Ver en [/](http://localhost:8091/)
 
 Pendiente: el texto de los tipos por categoría es una muestra del dibujo, no sale de datos; cuando haya
 backend, conviene que salga de las categorías y tipos reales.
+
+### Admin, Asignaciones (tarjeta de propuesta y conflictos ponderados)
+
+[a](http://localhost:8091/admin-asignaciones?variante=asignaciones-a),
+[b](http://localhost:8091/admin-asignaciones?variante=asignaciones-b#conflictos),
+[c, conflictos](http://localhost:8091/admin-asignaciones?variante=asignaciones-c&tramite=conflictos),
+[c, lote](http://localhost:8091/admin-asignaciones?variante=asignaciones-c&tramite=lote).
+
+- **Tarjeta de la propuesta** (maqueta de la usuaria), en el fragmento común `propuesta`: lámina clara
+  con sombra de papel en tres filas. 1) Ícono de la categoría en su caja, «Aceite de girasol, 20 litros»
+  (negrita, tinta suave) → la entidad (enlace verde subrayado que abre su detalle). 2) Los puestos en
+  insignias («1.º», «2.º», fondo acento claro) con el nombre del algoritmo y, a la derecha, «Cobertura al
+  asignar: 0 % → 100 %» en una caja de papel (`--color-pendiente-fondo`); la cobertura sale de lo que ya
+  llegó y lo que suma la propuesta. 3) «Confirmar asignación» (POST directo, sin diálogo: la tarjeta ya
+  muestra lo que confirmaba el diálogo) y, a la derecha, «Ver la necesidad» y «Ver los rankings». La b
+  sigue con su tabla para las sin conflictos.
+- **Conflictos con cantidades ponderadas** (fragmentos `conflictos` y `conflicto`, iguales en las tres).
+  A la pregunta "Sin cambiar cómo funcionan los algoritmos de asignación, ¿se puede hacer algo así?": sí.
+  Los algoritmos siguen armando sus rankings por donación; esto es solo cómo se presenta cuando el stock
+  de un bien no alcanza para todas las necesidades que compiten por él. **Regla de la cantidad
+  ponderada:** el peso de cada entidad es la suma de 1 / puesto en cada algoritmo; cada una recibe
+  stock × peso / suma de pesos, sin pasar de lo que necesita (lo que sobra se reparte entre las demás con
+  la misma regla); se redondea a la unidad y la unidad que falta va a la de mayor resto. Ejemplos: arroz,
+  50 kg para Comedor Barrio Ejemplo (1.º y 2.º, necesita 30) y Comedor Ejemplo Centro (1.º y 9.º,
+  necesita 40) → 29 y 21 kg; mesas plegables, 4 para Escuela Ejemplo N.º 3 (1.º y 7.º, necesita 5) y
+  Club Ejemplo Norte (4.º y 4.º, necesita 6) → 3 y 1.
+- Título «Con conflictos · 3 donaciones independientes», la explicación y «Aceptar todas las cantidades
+  ponderadas» (con confirmación que lista cada reparto), con aire antes del primer conflicto (margen
+  propio más el de la pila). Cada conflicto es una banda de fondo de advertencia: «En el depósito: 50 kg
+  de arroz», por qué no alcanza, la suma («Asignás 50 de 50 kg.», `role="status"`) y «Asignar»; al lado,
+  una lámina por entidad con su nombre, «Necesitan 30 kg antes del 30/11/2026», sus puestos, la cantidad
+  (− [n] kg +, un `input type="number"` real con `max` = lo que necesita) y la cantidad ponderada. El
+  conflicto de las mesas muestra cantidades cambiadas a mano (5 y 3, pasan las 4): en rojo (fondo y texto
+  de problema), lo dice y «Asignar» queda con `aria-disabled`.
+- Mejora progresiva en `static/js/asignaciones.js` (script plano con delegación en el documento, cargado
+  desde el fragmento `datos`; no se registra dos veces si llega con un panel de HTMX): los botones − y +
+  aparecen con JavaScript y la suma se revisa al cambiar un valor. Sin JavaScript se escribe el número y
+  se envía; el servidor debería validar la suma (la maqueta no valida: el POST vuelve, como antes, a
+  `admin-asignaciones-aprobada`).
+- Datos corregidos para que cierren: Comedor Barrio Ejemplo necesita 30 kg de arroz (llegaron 10 de
+  40); Escuela Ejemplo N.º 3, 5 mesas (llegó 1 de 6); Club Ejemplo Norte, 6 mesas. El «Elegir esta» por
+  pares (`&gana=`) ya no tiene botón, pero las direcciones viejas siguen andando.
+- Mismo panel sin recargar (`hx-boost`): el selector de vistas, la búsqueda y los filtros, elegir la
+  donación de los rankings, «Ver los rankings», la cola de la a, los enlaces del stock y los pasos de la c
+  (estos dos, y «Ver los rankings», vuelven arriba: `show:window:top`). Los POST no.
+- Sin clases nuevas (todo por `data-`), sin cambios en Java. Verificado con curl (22 combinaciones, 200
+  y página completa) y en el navegador a 1280 y 375 px sin desborde. Sin `revision-ui`.

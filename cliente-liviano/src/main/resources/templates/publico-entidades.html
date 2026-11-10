@@ -44,14 +44,14 @@
       </div>
       <div th:if="${escenario == '' and n > 0}" class="cifra-fruto" aria-live="polite">
         <p th:if="${q == '' and !filtrado}"><b class="fruto" th:text="${n}">6</b>
-          <span>entidades con pedidos vigentes, de las 46 que están en DonaTrack. Al 15 de octubre de 2026.</span></p>
+          <span>entidades con necesidades vigentes, de las 46 que están en DonaTrack. Al 15 de octubre de 2026.</span></p>
         <p th:unless="${q == '' and !filtrado}"><b class="fruto" th:text="${n}">2</b>
           <span th:text="|${n == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que buscaste. Al 15 de octubre de 2026.|">entidades
             coinciden con lo que buscaste.</span></p>
       </div>
     </header>
 
-    <form th:if="${escenario == ''}" class="filtros-barra" action="/publico-entidades"
+    <form hx-boost="true" th:if="${escenario == ''}" class="filtros-barra" action="/publico-entidades"
           th:action="@{/publico-entidades}" method="get" role="search" data-al-cambiar>
       <div class="campo filtro-buscar">
         <label for="q">Buscar por nombre</label>
@@ -65,8 +65,8 @@
             {valor: '', texto: 'Todas las categorías'}, {valor: 'alimentos', texto: 'Alimentos'},
             {valor: 'ropa', texto: 'Ropa'}, {valor: 'muebles', texto: 'Muebles'},
             {valor: 'escolares', texto: 'Útiles escolares'} } })}"></details>
-        <details th:replace="~{componentes/filtros :: menu('pedido', 'Tipo de pedido', ${tipoPedido}, ${ {
-            {valor: '', texto: 'Todos los pedidos'}, {valor: 'recurrente', texto: 'Recurrentes, se repiten cada mes'},
+        <details th:replace="~{componentes/filtros :: menu('pedido', 'Tipo de necesidad', ${tipoPedido}, ${ {
+            {valor: '', texto: 'Todas las necesidades'}, {valor: 'recurrente', texto: 'Recurrentes, se repiten cada mes'},
             {valor: 'extraordinaria', texto: 'Extraordinarios, con fecha límite'} } })}"></details>
         <label th:replace="~{componentes/filtros :: interruptor('emergencia', 'si', 'Emergencias', ${soloEmergencia})}"></label>
         <a th:if="${filtrado}" class="filtros-sacar" href="/publico-entidades"
@@ -80,7 +80,7 @@
     </th:block>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Ninguna entidad tiene pedidos vigentes ahora.</h2>
+      <h2 id="vacio-titulo">Ninguna entidad tiene necesidades vigentes ahora.</h2>
       <p>Cuando una publique lo que le hace falta, aparece acá.</p>
       <a class="boton" data-tono="secundario" href="/publico-registro-entidad"
          th:href="@{/publico-registro-entidad}">Sumar mi entidad</a>
@@ -99,8 +99,8 @@
         <p>Probá con otra parte del nombre o sacá el filtro.</p>
       </th:block>
       <th:block th:if="${q == '' and elegida == null and filtrado}">
-        <h2 id="sin-titulo">Ninguna entidad tiene pedidos con esos filtros ahora.</h2>
-        <p>Probá con otro tipo de pedido o sacá los filtros.</p>
+        <h2 id="sin-titulo">Ninguna entidad tiene necesidades con esos filtros ahora.</h2>
+        <p>Probá con otro tipo de necesidad o sacá los filtros.</p>
       </th:block>
       <th:block th:if="${q == '' and elegida != null}">
         <h2 id="sin-titulo" th:text="|Ninguna entidad pide ${elegida.enFrase} ahora.|">Ninguna entidad pide

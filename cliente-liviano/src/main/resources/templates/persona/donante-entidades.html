@@ -63,7 +63,7 @@
       <p>Cuando una entidad se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
 
-    <form th:if="${escenario == '' or escenario == 'lento'}" class="filtro" role="search"
+    <form hx-boost="true" th:if="${escenario == '' or escenario == 'lento'}" class="filtro" role="search"
           action="/donante-entidades" th:action="@{/donante-entidades}"
           method="get" aria-label="Buscar entidades">
       <div class="campo">
@@ -135,9 +135,9 @@
             </th:block>
           </ul>
           <details th:if="${#lists.size(e.pide) > 3}" class="pedidos-mas">
-            <summary><span class="ver-mas" th:text="|Ver los ${#lists.size(e.pide)} pedidos|">Ver los 5
-              pedidos</span><span class="ver-menos">Ver menos</span></summary>
-            <ul class="pedidos" role="list" th:aria-label="|Más pedidos de ${e.nombre}|">
+            <summary><span class="ver-mas" th:text="|Ver las ${#lists.size(e.pide)} necesidades|">Ver las 5
+              necesidades</span><span class="ver-menos">Ver menos</span></summary>
+            <ul class="pedidos" role="list" th:aria-label="|Más necesidades de ${e.nombre}|">
               <th:block th:each="p, v : ${e.pide}" th:if="${v.index >= 3}">
                 <li th:replace="~{donante-entidades :: pedido(${p})}"></li>
               </th:block>
@@ -148,9 +148,9 @@
 
       <nav th:if="${busca == ''}" class="paginas" aria-label="Páginas de entidades">
         <a th:if="${!dibujada}" class="boton" data-tono="secundario" href="/donante-entidades"
-           th:href="@{/donante-entidades(pagina=${pagina - 1})}">Página anterior</a>
+           hx-boost="true" th:href="@{/donante-entidades(pagina=${pagina - 1})}">Página anterior</a>
         <a th:if="${pagina < 8}" class="boton" data-tono="secundario" href="/donante-entidades?pagina=2"
-           th:href="@{/donante-entidades(pagina=${pagina + 1})}">Página siguiente</a>
+           hx-boost="true" th:href="@{/donante-entidades(pagina=${pagina + 1})}">Página siguiente</a>
       </nav>
     </th:block>
 

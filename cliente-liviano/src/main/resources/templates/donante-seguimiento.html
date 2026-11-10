@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <!--/* Raíces, Seguimiento del donante (RF-09), según su ficha de flujo
        (docs/interfaz/flujos/raices-seguir-entregas.md). Arriba, cuántas entregas van en curso y cuándo
-       se actualizó, y las cifras por estado. El dibujo representa el estilo del mapa de Raíces (en el
-       sistema, sobre MapLibre, D21): del depósito, un brote al centro de la tierra, sale una línea de
-       subte por entrega hasta su entidad, con el sello de su estado y el camión en su posición
-       aproximada; es fijo para las tres entregas del ejemplo. Debajo, la lista dice lo mismo con el
-       mismo número (RF-CL-06), la más avanzada primero: en camino, con problema y pendiente. Los
-       datos son los de viaje-datos.html. Estados de la maqueta:
-       ?escenario=vacio, error y lento. */-->
+       se actualizó, y las cifras por estado. Después, el mapa de seguimiento (usuario, 2026-11-10: el
+       mapa real en lugar del dibujo de subte; fragmento mapa): MapLibre con OpenFreeMap, como
+       publico-mapa (static/js/mapa.js), con el depósito, la entidad de destino de cada entrega y, con
+       el número de la lista, su posición aproximada, unidas por su recorrido (lleno lo hecho, punteado
+       lo que falta). Los puntos de la maqueta están en puntos (th:with), por clave de donación, y son
+       sintéticos, uno por barrio. Debajo, la lista dice lo mismo con el mismo número (RF-CL-06), la
+       más avanzada primero: 1 en camino, 2 con problema y 3 pendiente; al pasar o enfocar una entrega,
+       se destaca en el mapa. Sin JavaScript, el aviso del mapa y la lista. Los datos son los de
+       viaje-datos.html. Estados de la maqueta: ?escenario=vacio, error y lento.
+       Fragmentos: mapa (el contenedor del mapa y su script; lo usa también persona/) y
+       entrega(d, numero, punto). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-seguimiento', ~{::contenido})}">
 <head>
@@ -18,11 +22,15 @@
   <th:block th:replace="~{viaje-datos :: viaje(~{::pantalla})}"></th:block>
 </th:block>
 
-<!--/* El orden de la lista y del dibujo: la más avanzada primero (en camino, con problema y
+<!--/* El orden de la lista y del mapa: la más avanzada primero (en camino, con problema y
        pendiente); dentro del mismo estado, la donación más reciente primero, como vienen los datos. */-->
 <th:block th:fragment="pantalla"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
+             puntos=${ {
+               lentejas: {lat: -34.6392, lng: -58.4150, destinoLat: -34.6418, destinoLng: -58.4291},
+               utiles: {lat: -34.6240, lng: -58.3944, destinoLat: -34.6052, destinoLng: -58.3846},
+               leche: {lat: -34.6405, lng: -58.3960, destinoLat: -34.6683, destinoLng: -58.4067} } },
              vanEnCamino=${enCurso.?[estado.tono == 'en-camino']},
              tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
              esperanSalir=${enCurso.?[estado.tono == 'pendiente']},
@@ -92,74 +100,15 @@
     </section>
 
     <div th:if="${escenario == ''}" class="seguimiento-cuerpo">
-      <!--/* El dibujo, fijo para las tres entregas en curso del ejemplo (A/B 2, red radial en espejo,
-             como la de la portada): el brote, al centro; de la estación del depósito salen las líneas
-             de subte con codos a 45° redondeados (A/B de las líneas, review de Sofía, 2026-11-02), una a cada lado y una hacia abajo, hasta la estación de su
-             entidad, numeradas de izquierda a derecha en el orden de la lista. Lo recorrido, impreso
-             (paja con borde); lo que falta, hueco: todavía no se imprimió. El sello de estado es la
-             estación donde está la entrega: 1 lentejas (en camino, el camión), 2 útiles (con
-             problema, donde se cortó) y 3 leche (pendiente, en el depósito). */-->
-      <figure class="seguimiento-dibujo tierra-impresa" aria-hidden="true">
-        <svg class="dibujo" viewBox="0 0 720 380" aria-hidden="true" focusable="false">
-          <path class="dibujo-tierra" d="M0 80H720"/>
-          <path class="dibujo-tallo" d="M360 80V44"/>
-          <path class="dibujo-hoja" d="M360 58C346 58 338 48 338 38C352 38 360 48 360 58ZM360 50C372 50 382 42 382 32C368 32 360 40 360 50Z"/>
-          <text class="dibujo-rotulo dibujo-rotulo--papel" x="392" y="70">Depósito</text>
-          <path class="subte-borde" d="M360 82V110"/>
-          <path class="subte-linea" d="M360 82V110"/>
-
-          <!--/* Cada entrega, en su grupo: la línea, su sello de estado y la estación de su entidad,
-                 con el número y, debajo, el nombre. Al pasar o enfocar una entrega de la lista, su
-                 grupo queda lleno y el resto se apaga. */-->
-          <!--/* 1, Lentejas secas: en camino, impresa hasta el camión y hueca lo que falta. Sin abeja: el
-                 dibujo es bajo tierra (usuario, 2026-11-09). */-->
-          <g class="linea linea--1">
-            <path class="subte-hueco" d="M110 251V300"/>
-            <path class="subte-hueco-centro" d="M110 251V300"/>
-            <path class="subte-borde" d="M360 110H214Q190 110 173 127L127 173Q110 190 110 214V215"/>
-            <path class="subte-linea" d="M360 110H214Q190 110 173 127L127 173Q110 190 110 214V215"/>
-            <g class="camion" transform="translate(110 233)">
-              <circle r="18"/>
-              <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
-            </g>
-            <g class="nodo" transform="translate(110 318)">
-              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-              <text class="nodo-numero" y="7">1</text>
-            </g>
-            <text class="dibujo-rotulo" x="110" y="364">Comedor Barrio Ejemplo</text>
-          </g>
-          <!--/* 2, Útiles escolares: con problema, impresa hasta donde se cortó y hueca después. */-->
-          <g class="linea linea--2">
-            <path class="subte-hueco" d="M360 213V300"/>
-            <path class="subte-hueco-centro" d="M360 213V300"/>
-            <path class="subte-borde" d="M360 110V185"/>
-            <path class="subte-linea" d="M360 110V185"/>
-            <g transform="translate(360 199)">
-              <circle class="sello-problema" r="13"/>
-              <path class="sello-calado" d="M0 -6V2M0 6V6.5"/>
-            </g>
-            <g class="nodo" transform="translate(360 318)">
-              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-              <text class="nodo-numero" y="7">2</text>
-            </g>
-            <text class="dibujo-rotulo" x="360" y="364">Escuela Ejemplo 12</text>
-          </g>
-          <!--/* 3, Leche en polvo: pendiente, toda hueca; espera en la salida del depósito. */-->
-          <g class="linea linea--3">
-            <path class="subte-hueco" d="M360 110H506Q530 110 547 127L593 173Q610 190 610 214V300"/>
-            <path class="subte-hueco-centro" d="M360 110H506Q530 110 547 127L593 173Q610 190 610 214V300"/>
-            <g transform="translate(450 110)">
-              <circle class="sello-contorno sello-contorno--punteado" r="12"/>
-            </g>
-            <g class="nodo" transform="translate(610 318)">
-              <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-              <text class="nodo-numero" y="7">3</text>
-            </g>
-            <text class="dibujo-rotulo" x="610" y="364">Merendero Ejemplo Sur</text>
-          </g>
-          <circle class="subte-estacion" cx="360" cy="110" r="9"/>
-        </svg>
-      </figure>
+      <!--/* El mapa de seguimiento (usuario, 2026-11-10: "sigue teniendo una abeja bajo tierra. Sacar.
+             Dije que acá iba el mapa de seguimiento"): el mapa real de publico-mapa (MapLibre con
+             OpenFreeMap, D21; static/js/mapa.js) con el depósito, la entidad de destino de cada
+             entrega y, numerada como en la lista, la posición aproximada de cada una; del depósito a
+             la entrega, la línea llena; de la entrega al destino, punteada (lo que falta). Al pasar o
+             enfocar una entrega de la lista, su marcador, su destino y su recorrido se destacan. Sin
+             JavaScript, el aviso y la lista, con los mismos datos (RF-CL-06). Los puntos son
+             sintéticos, uno por barrio: nunca una dirección. Antes, el dibujo de la red de subte. */-->
+      <div th:replace="~{:: mapa}"></div>
 
       <!--/* Los íconos de categoría: los pictogramas impresos del cuaderno de la portada. */-->
       <svg th:replace="~{iconos :: categorias}"></svg>
@@ -169,13 +118,13 @@
         <h2 id="lista-titulo">Entrega por entrega</h2>
         <ol class="entregas" role="list">
           <th:block th:each="d, vuelta : ${vanEnCamino}">
-            <li th:replace="~{:: entrega(${d}, ${vuelta.count})}"></li>
+            <li th:replace="~{:: entrega(${d}, ${vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
           <th:block th:each="d, vuelta : ${tienenProblema}">
-            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count})}"></li>
+            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
           <th:block th:each="d, vuelta : ${esperanSalir}">
-            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count})}"></li>
+            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
         </ol>
         <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
@@ -188,12 +137,62 @@
   </div>
 </th:block>
 
+<!--/* El mapa de seguimiento, que usan la empresa y la persona: el contenedor que static/js/mapa.js
+       llena con MapLibre (sus puntos son las entregas de la lista, .entrega[data-lat]), el depósito con
+       su punto y su globo, los íconos del depósito y de los destinos, y el aviso para cuando no hay
+       JavaScript. En el celular es cuadrado; desde la tableta, más ancho que alto
+       (donante-seguimiento.css). */-->
+<th:block th:fragment="mapa">
+  <div class="seguimiento-dibujo mapa-real" data-mapa data-mapa-puntos=".entrega[data-lat]" role="region"
+       aria-label="Mapa de tus entregas en curso: el depósito, por dónde va cada una y la entidad que la recibe. La lista de abajo tiene los mismos datos."
+       data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
+       data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack">
+    <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En la lista están las mismas
+      entregas, con su estado y su destino.</p>
+    <template data-mapa-icono="deposito"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+        d="M3 20V9l9-5 9 5v11"/><path d="M7 20v-7h10v7M7 16.5h10"/></svg></template>
+    <template data-mapa-icono="destino"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+        d="M4 20V10l8-6 8 6v10z"/><path d="M10 20v-5h4v5"/></svg></template>
+    <template data-mapa-globo-deposito>
+      <div class="mapa-globo-cuerpo">
+        <p class="mapa-globo-nombre">Depósito de DonaTrack</p>
+        <p>De acá salen tus donaciones hacia cada entidad.</p>
+      </div>
+    </template>
+  </div>
+  <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
+</th:block>
+
 <!--/* Una entrega de la lista (usuario, 2026-11-09: "menos margen a la izquierda, más gráfica, con
        íconos y que se entienda qué está agrupado"). Tres grupos, de arriba abajo: qué es (el número,
        el nombre, que lleva al detalle, y la cantidad); a dónde va (la categoría y la entidad, con sus
        íconos); y cómo va (el estado con su fecha, las cinco etapas y la última noticia), sobre un
-       fondo propio. */-->
-<li th:fragment="entrega(d, numero)" class="entrega" th:classappend="|entrega--${d.estado.tono}|">
+       fondo propio. punto es su lugar en el mapa ({lat, lng, destinoLat, destinoLng}, la posición
+       aproximada y la de su entidad) o null: con punto, la entrega es un punto del mapa de seguimiento,
+       con su número, y trae sus globos; se llega a ella con #entrega-<clave>. */-->
+<li th:fragment="entrega(d, numero, punto)" class="entrega" th:classappend="|entrega--${d.estado.tono}|"
+    th:id="|entrega-${d.clave}|" tabindex="-1"
+    th:attr="data-lat=${punto != null ? punto.lat : null},data-lng=${punto != null ? punto.lng : null},
+             data-destino-lat=${punto != null ? punto.destinoLat : null},data-destino-lng=${punto != null ? punto.destinoLng : null},
+             data-numero=${numero},data-nombre=|${d.titulo}, ${#strings.toLowerCase(d.estado.texto)}|,
+             data-destino-nombre=|${d.destino}, destino de la entrega ${numero}|">
+  <!--/* Los globos de su marcador y del de su destino en el mapa: los arma el servidor; mapa.js solo
+         los copia. */-->
+  <template th:if="${punto != null}" data-mapa-globo>
+    <div class="mapa-globo-cuerpo">
+      <p class="mapa-globo-nombre" th:text="|${numero}. ${d.titulo}|">1. Lentejas secas</p>
+      <p th:text="|${d.estado.texto} · ${d.nota}|">En camino · Salió hoy a las 14:30</p>
+      <p th:text="|Para ${d.destino}. ${d['seguimiento']}|">Para Comedor Barrio Ejemplo. El camión va por
+        la mitad del camino.</p>
+      <a href="#entrega-lentejas" th:href="|#entrega-${d.clave}|">Ver la entrega en la lista</a>
+    </div>
+  </template>
+  <template th:if="${punto != null}" data-mapa-globo-destino>
+    <div class="mapa-globo-cuerpo">
+      <p class="mapa-globo-nombre" th:text="${d.destino}">Comedor Barrio Ejemplo</p>
+      <p th:text="|Recibe ${numero}. ${d.titulo}.|">Recibe 1. Lentejas secas.</p>
+    </div>
+  </template>
   <header>
     <span class="entrega-numero" aria-hidden="true" th:text="${numero}">1</span>
     <h3><a href="/donante-donaciones-detalle"

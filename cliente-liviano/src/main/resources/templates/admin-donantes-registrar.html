@@ -29,7 +29,7 @@
       <h1>Registrar donante</h1>
     </header>
 
-    <form class="formulario" action="/admin-donantes-registrar" th:action="@{/admin-donantes-registrar}"
+    <form hx-boost="true" class="formulario" action="/admin-donantes-registrar" th:action="@{/admin-donantes-registrar}"
           method="get">
       <fieldset class="opciones">
         <legend>¿Quién dona?</legend>

@@ -27,12 +27,12 @@
              fallo=${accion == 'error' ? (escenario == 'propia' ? 'propia' : (escenario == 'cambio' ? 'cambio' : 'inactiva')) : ''},
              todas=${ {
       {clave: 'arroz', entidad: 'Comedor Barrio Ejemplo', pide: 'Arroz, 25 kg', cuando: '15 de octubre',
-       cubre: 'Arroz · 25 kg (de Ana Ejemplo)', alcance: 'Cubre el pedido completo.', nueva: false},
+       cubre: 'Arroz · 25 kg (de Ana Ejemplo)', alcance: 'Cubre la necesidad completa.', nueva: false},
       {clave: 'leche', entidad: 'Merendero Ejemplo Sur', pide: 'Leche en polvo, 12 unidades', cuando: '15 de octubre',
        cubre: 'Leche en polvo · 10 unidades (de Distribuidora Ejemplo SA)',
        alcance: 'Cubre 10 de las 12 unidades; el resto sigue pendiente.', nueva: false},
       {clave: 'yogur', entidad: 'Hogar Ejemplo Centro', pide: 'Yogur, 24 unidades', cuando: 'hoy, 18:36',
-       cubre: 'Yogur · 24 unidades (de Fundación Ejemplo Sur)', alcance: 'Cubre el pedido completo.', nueva: true},
+       cubre: 'Yogur · 24 unidades (de Fundación Ejemplo Sur)', alcance: 'Cubre la necesidad completa.', nueva: true},
       {clave: 'utiles', entidad: 'Escuela Ejemplo N.º 3', pide: 'Útiles escolares, 40 unidades', cuando: 'hoy, 18:36',
        cubre: 'Útiles escolares · 30 unidades (de Juan Ejemplo)',
        alcance: 'Cubre 30 de las 40 unidades; el resto sigue pendiente.', nueva: true} } },
@@ -66,13 +66,13 @@
        autofocus>Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para
       otra asignación.</p>
     <p th:if="${accion == 'corrida'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
-       autofocus th:text="${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ningún pedido nuevo.'">La
-      asignación no encontró donaciones para ningún pedido nuevo.</p>
+       autofocus th:text="${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ninguna necesidad nueva.'">La
+      asignación no encontró donaciones para ninguna necesidad nueva.</p>
     <section th:if="${fallo != ''}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
              aria-labelledby="fallo-titulo">
       <h2 id="fallo-titulo" th:switch="${fallo}">
-        <th:block th:case="'inactiva'">No se pudo aprobar: el pedido de Merendero Ejemplo Sur ya no está activo
-          (la entidad lo dio de baja o ya se cumplió).</th:block>
+        <th:block th:case="'inactiva'">No se pudo aprobar: la necesidad de Merendero Ejemplo Sur ya no está activa
+          (la entidad la dio de baja o ya se cumplió).</th:block>
         <th:block th:case="'propia'">No se pudo aprobar: una de las donaciones es de la misma entidad que la
           pidió.</th:block>
         <th:block th:case="*">Esta propuesta cambió mientras la mirabas.</th:block>
@@ -103,7 +103,7 @@
       <span th:if="${corriendo}" class="solo-lectores" role="status">Corriendo la asignación…</span>
     </form>
 
-    <p th:if="${escenario != 'error'}">Los algoritmos proponen qué donaciones del depósito cubren cada pedido
+    <p th:if="${escenario != 'error'}">Los algoritmos proponen qué donaciones del depósito cubren cada necesidad
       de las entidades. Vos aprobás o descartás cada propuesta.</p>
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="propuestas-titulo"
@@ -125,7 +125,7 @@
             <p th:text="|Propuesta del ${p.cuando}|" th:if="${!p.nueva}">Propuesta del 15 de octubre</p>
             <p th:text="|Propuesta de ${p.cuando}|" th:if="${p.nueva}">Propuesta de hoy, 18:36</p>
             <p><span th:text="|La cubre: ${p.cubre}.|">La cubre: Arroz · 25 kg (de Ana Ejemplo).</span>
-              <span th:text="${p.alcance}">Cubre el pedido completo.</span></p>
+              <span th:text="${p.alcance}">Cubre la necesidad completa.</span></p>
             <th:block th:with="sinAprobar=${fallo != '' and fallo != 'cambio' and p.clave == 'leche'}">
               <div class="racimo" th:unless="${sinAprobar}">
                 <form action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}"

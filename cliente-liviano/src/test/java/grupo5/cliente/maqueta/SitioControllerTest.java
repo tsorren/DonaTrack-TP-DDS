@@ -273,7 +273,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No encontramos esa necesidad.")));
     mvc.perform(get("/entidad-necesidades?escenario=conflicto"))
         .andExpect(
-            content().string(containsString("Otra persona de tu entidad cambió este pedido")));
+            content().string(containsString("Otra persona de tu entidad cambió esta necesidad")));
     mvc.perform(get("/entidad-necesidades?escenario=entidad-inactiva"))
         .andExpect(content().string(containsString("Tu entidad no está activa")))
         .andExpect(content().string(not(containsString("Publicar necesidad"))));
@@ -786,8 +786,8 @@ class SitioControllerTest {
 
   @Test
   void lasEntidadesDelAdminSeApruebanCorrigenORechazan() throws Exception {
-    // El selector, tras el título: Activas (de partida), Pendientes e Inactivas.
-    mvc.perform(get("/admin-entidades"))
+    // Una sola lista, de la A a la Z; el estado es un filtro al lado de la búsqueda.
+    mvc.perform(get("/admin-entidades?entidad=comedor"))
         .andExpect(model().attribute("seccion", "Entidades"))
         .andExpect(content().string(containsString("Activas · 46")))
         .andExpect(content().string(containsString("Pendientes · 3")))
@@ -924,7 +924,7 @@ class SitioControllerTest {
     mvc.perform(get("/admin-asignaciones-descartada"))
         .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
     mvc.perform(get("/admin-asignaciones-error"))
-        .andExpect(content().string(containsString("ya no está activo")))
+        .andExpect(content().string(containsString("ya no está activa")))
         .andExpect(
             content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
     mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
@@ -977,17 +977,18 @@ class SitioControllerTest {
   }
 
   @Test
-  void elRankingDiceSuCriterioYMuestraMesesAnteriores() throws Exception {
+  void elRankingDiceSuCriterioYSeFiltraPorTipoYPeriodo() throws Exception {
     mvc.perform(get("/admin-ranking"))
         .andExpect(model().attribute("seccion", "Ranking"))
-        .andExpect(content().string(containsString("Septiembre de 2026")))
-        .andExpect(content().string(containsString("misiones que cada donante completó en el mes")))
+        .andExpect(content().string(containsString("El ranking de octubre de 2026")))
         .andExpect(
-            content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
+            content().string(containsString("misiones que cada donante completó del 1 al 15")))
+        .andExpect(content().string(containsString("hx-boost=\"true\"")))
         .andExpect(content().string(containsString("<caption>")));
-    mvc.perform(get("/admin-ranking?mes=2026-08"))
-        .andExpect(content().string(containsString("El ranking de agosto de 2026")))
-        .andExpect(content().string(containsString("value=\"2026-08\" selected")));
+    mvc.perform(get("/admin-ranking?periodo=anio&tipo=persona"))
+        .andExpect(content().string(containsString("El ranking de 2026, solo personas")));
+    mvc.perform(get("/admin-ranking?periodo=siempre"))
+        .andExpect(content().string(containsString("desde marzo de 2025")));
     mvc.perform(get("/admin-ranking?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay ningún ranking")));
     mvc.perform(get("/admin-ranking?escenario=error"))

@@ -4,7 +4,9 @@
        de accesos directos arriba (enlaces a cada parte):
        1. Propuestas sin conflictos, en una tabla para comparar (donación, para quién, cuánto cubre,
           puestos y accesos), con "Aceptar las N sin conflictos".
-       2. Con conflictos, de a pares, con el porqué y "Elegir esta" (&gana=<id>).
+       2. Con conflictos (ronda 2026-11-10): el bloque común, un conflicto por bien con las cantidades
+          ponderadas según los rankings, editables (− [n] +), y "Aceptar todas las cantidades
+          ponderadas".
        3. Stock en depósito, por categoría y bien.
        4. Cada donación con su tabla de posiciones (los rankings completos); "Ver los rankings" abre la
           de esa donación (&abrir=<clave>#donacion-<clave>).
@@ -89,7 +91,7 @@
             <td data-rotulo="Puestos"><small
                 th:text="${#strings.listJoin(d.ejecuciones.![puestos.^[k == #root.pr.k].n + '.º ' + (nombre == #root.semantica ? 'semántica' : 'sub-atendidas')], ' · ')}">1.º
               semántica · 2.º sub-atendidas</small>
-              <a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-b', abrir=${d.clave}, gana=${gv})} + |#donacion-${d.clave}|">Ver los rankings</a></td>
+              <a hx-boost="true" href="#" th:href="@{/admin-asignaciones(variante='asignaciones-b', abrir=${d.clave}, gana=${gv})} + |#donacion-${d.clave}|">Ver los rankings</a></td>
             <td data-rotulo="Acciones" th:with="p=${ {k: pr.k, e: ent.get(pr.k).e} }"><th:block
                 th:if="${accion != 'lote'}"><th:block
                 th:replace="~{variantes/comun/asignaciones-datos :: asignar(${d}, ${p}, |${id}-asignar|)}"></th:block></th:block></td>
@@ -98,23 +100,14 @@
         </table>
       </section>
 
-      <!--/* 2. Con conflictos. */-->
-      <section id="conflictos" class="pila" data-espacio="3" aria-labelledby="conflictos-titulo">
-        <div>
-          <h2 id="conflictos-titulo" th:text="|Propuestas con conflictos · ${#lists.size(pendientes)} pares|">Propuestas con conflictos
-            · 2 pares</h2>
-          <p><small>Se pisan de a dos: elegí cuál gana en cada par. La otra se vuelve a calcular con lo que queda.</small></p>
-        </div>
-        <p th:if="${#lists.isEmpty(pendientes)}">No hay conflictos para resolver.</p>
-        <th:block th:each="c : ${pendientes}"><section
-            th:replace="~{variantes/comun/asignaciones-datos :: conflicto(${c}, 'asignaciones-b')}"></section></th:block>
-        <ul th:unless="${#lists.isEmpty(descartadas)}" class="lista pila" data-espacio="2" role="list">
-          <li th:each="pr : ${descartadas}" data-forma="sin">
-            <span><b th:text="|${pr.nec.que} para ${ent.get(pr.k).e}|">Mesas para Club Ejemplo Norte</b>
-              <small th:text="${pr.sinStock}">Queda sin propuesta.</small></span>
-          </li>
-        </ul>
-      </section>
+      <!--/* 2. Con conflictos: el bloque común (cantidades ponderadas). */-->
+      <section th:replace="~{variantes/comun/asignaciones-datos :: conflictos('asignaciones-b')}"></section>
+      <ul th:unless="${#lists.isEmpty(descartadas)}" class="lista pila" data-espacio="2" role="list">
+        <li th:each="pr : ${descartadas}" data-forma="sin">
+          <span><b th:text="|${pr.nec.que} para ${ent.get(pr.k).e}|">Mesas para Club Ejemplo Norte</b>
+            <small th:text="${pr.sinStock}">Queda sin propuesta.</small></span>
+        </li>
+      </ul>
 
       <!--/* 3. Stock en depósito. */-->
       <section id="stock" class="tarjeta pila" data-espacio="3" aria-labelledby="stock-titulo">
@@ -152,7 +145,7 @@
 
               <p th:each="pr : ${suya}" th:with="enConf=${!#lists.isEmpty(conConflicto.?[id == #root.pr.id])}">
                 <span th:text="|Propuesta: a ${ent.get(pr.k).e}${enConf ? ', con conflicto' : ''}.|">Propuesta: a Comedor Barrio Ejemplo, con conflicto.</span>
-                <a href="#" th:href="${enConf} ? |#conflicto-${pr.conflicto}| : |#propuesta-asignaciones-b-${pr.id}|">Ver la propuesta</a>
+                <a href="#" th:href="${enConf} ? |#conflicto-asignaciones-b-${pr.conflicto}| : |#propuesta-asignaciones-b-${pr.id}|">Ver la propuesta</a>
               </p>
               <p th:if="${d.comunes.isEmpty()}"><b>Ninguna entidad aparece en los dos rankings.</b> Elegí el destino en la
                 tabla de posiciones.</p>

@@ -65,7 +65,7 @@
     <header>
       <p class="rotulo" th:text="${seccion}">Entidades</p>
       <h1>Quiénes reciben <em>las donaciones</em></h1>
-      <p class="bajada">Lo que piden hoy las entidades activas, por categoría, y cuánto recibió cada pedido. Actualizado
+      <p class="bajada">Lo que piden hoy las entidades activas, por categoría, y cuánto recibió cada necesidad. Actualizado
         hoy, 15 de octubre, 16:25.</p>
     </header>
 
@@ -80,7 +80,7 @@
 
     <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra): al lado
            de la búsqueda en pantalla ancha, debajo en el celular. */-->
-    <form th:if="${escenario == '' or escenario == 'lento'}" class="filtros-barra" role="search"
+    <form hx-boost="true" th:if="${escenario == '' or escenario == 'lento'}" class="filtros-barra" role="search"
           action="/donante-entidades" th:action="@{/donante-entidades}"
           method="get" aria-label="Buscar entidades">
       <div class="campo filtro-buscar">
@@ -161,9 +161,9 @@
 
       <nav th:if="${busca == ''}" class="paginas" aria-label="Páginas de entidades">
         <a th:if="${!dibujada}" class="boton" data-tono="secundario" href="/donante-entidades"
-           th:href="@{/donante-entidades(pagina=${pagina - 1})}">Página anterior</a>
+           hx-boost="true" th:href="@{/donante-entidades(pagina=${pagina - 1})}">Página anterior</a>
         <a th:if="${pagina < 8}" class="boton" data-tono="secundario" href="/donante-entidades?pagina=2"
-           th:href="@{/donante-entidades(pagina=${pagina + 1})}">Página siguiente</a>
+           hx-boost="true" th:href="@{/donante-entidades(pagina=${pagina + 1})}">Página siguiente</a>
       </nav>
     </th:block>
 

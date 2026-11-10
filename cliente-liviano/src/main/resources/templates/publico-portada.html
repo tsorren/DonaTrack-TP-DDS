@@ -33,7 +33,7 @@
   <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás públicas. */-->
   <nav th:replace="~{navegacion-publica :: navegacion('')}"></nav>
 </header>
-<main id="contenido" tabindex="-1"
+<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none"
       th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
                conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
   <div class="centro pila">

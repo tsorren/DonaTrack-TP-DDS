@@ -374,8 +374,8 @@
               <div class="filtros" role="group" aria-label="Filtros de muestra">
                 <details th:replace="~{componentes/filtros :: menu('muestra-categoria', 'Categoría', 'ropa', ${ {
                     {valor: '', texto: 'Todas las categorías'}, {valor: 'ropa', texto: 'Ropa'}, {valor: 'muebles', texto: 'Muebles'} } })}"></details>
-                <details th:replace="~{componentes/filtros :: menu('muestra-tipo', 'Tipo de pedido', '', ${ {
-                    {valor: '', texto: 'Todos los pedidos'}, {valor: 'recurrente', texto: 'Recurrentes'} } })}"></details>
+                <details th:replace="~{componentes/filtros :: menu('muestra-tipo', 'Tipo de necesidad', '', ${ {
+                    {valor: '', texto: 'Todas las necesidades'}, {valor: 'recurrente', texto: 'Recurrentes'} } })}"></details>
                 <label th:replace="~{componentes/filtros :: interruptor('muestra-emergencia', 'si', 'Emergencias', false)}"></label>
                 <a class="filtros-sacar" href="/estilos" th:href="@{/estilos}">Sacar los filtros</a>
               </div>
@@ -398,7 +398,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.tarjeta', 'Una parte con papel propio: filete de tinta, esquinas suaves y sombra plana paja. Es solo el papel; el relleno es --espacio-relleno y la disposición de lo de adentro la pone la pantalla. data-filete: sin él, simple; doble (la etiqueta de herbario: Mis entidades, las actas, los pedidos) o contorno (el filete por fuera, sin borde). .tarjeta-cabeza es la cabeza de una lámina: el título en cursiva y su rótulo sobre un filete fino.', ~{::demo-tarjeta})}">
+        <div th:replace="~{componentes/muestra :: muestra('.tarjeta', 'Una parte con papel propio: filete de tinta, esquinas suaves y sombra plana paja. Es solo el papel; el relleno es --espacio-relleno y la disposición de lo de adentro la pone la pantalla. data-filete: sin él, simple; doble (la etiqueta de herbario: Mis entidades, las actas, las necesidades) o contorno (el filete por fuera, sin borde). .tarjeta-cabeza es la cabeza de una lámina: el título en cursiva y su rótulo sobre un filete fino.', ~{::demo-tarjeta})}">
           <th:block th:fragment="demo-tarjeta">
             <div class="grilla">
               <article class="tarjeta">
@@ -407,7 +407,7 @@
               </article>
               <article class="tarjeta" data-filete="doble">
                 <h4>Filete doble</h4>
-                <p>La etiqueta de herbario: una entrega, un pedido o una entidad.</p>
+                <p>La etiqueta de herbario: una entrega, una necesidad o una entidad.</p>
               </article>
               <article class="tarjeta" data-filete="contorno">
                 <h4>Filete de contorno</h4>
@@ -563,6 +563,13 @@
                 entidades, con sus entregas.</p>
               <div class="racimo">
                 <button type="button" class="mapa-marcador" aria-label="1. Comedor Barrio Ejemplo">1</button>
+                <!--/* Seguimiento: el depósito y el destino de una entrega (data-tipo, con su ícono). */-->
+                <button type="button" class="mapa-marcador" data-tipo="deposito" aria-label="Depósito de DonaTrack"><svg
+                    viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 20V9l9-5 9 5v11"/><path
+                    d="M7 20v-7h10v7M7 16.5h10"/></svg></button>
+                <button type="button" class="mapa-marcador" data-tipo="destino" aria-label="Comedor Barrio Ejemplo, destino de la entrega 1"><svg
+                    viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10l8-6 8 6v10z"/><path
+                    d="M10 20v-5h4v5"/></svg></button>
                 <div class="mapa-globo-cuerpo">
                   <p class="mapa-globo-nombre">Comedor Barrio Ejemplo</p>
                   <p>Barrio Ejemplo · 6 entregas confirmadas en el último mes</p>
@@ -691,24 +698,44 @@
             </nav>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.maestro', 'Una lista para elegir de a uno y su ficha (.maestro-ficha), dentro del renglón elegido: en el celular, justo debajo; desde la tableta, a la derecha. El elegido, con papel claro, sombra suave y un indicador redondeado a la izquierda, sin borde verde.', ~{::demo-maestro})}">
+        <div th:replace="~{componentes/muestra :: muestra('.maestro', 'Una lista para elegir de a uno y su ficha (.maestro-ficha), dentro del renglón elegido: en el celular, justo debajo y en una columna; desde la tableta, a la derecha. El elegido, con papel claro, sombra suave y un indicador redondeado a la izquierda, sin borde verde. La ficha, por partes (data-parte): la identidad, el resumen con su filete verde claro (a la derecha en pantalla ancha) y las necesidades en dos columnas.', ~{::demo-maestro})}">
           <th:block th:fragment="demo-maestro">
             <ul class="maestro" role="list">
               <li>
                 <a href="/estilos" th:href="@{/estilos}" aria-current="true">
                   <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
-                  <span><b>Comedor Barrio Ejemplo</b> <small>4 pedidos vigentes</small></span>
+                  <span><b>Comedor Barrio Ejemplo</b> <small>Comedor · 4 necesidades vigentes</small></span>
                   <span class="estado" data-forma="punto" data-estado="recibida">Activa</span>
                 </a>
-                <section class="tarjeta pila maestro-ficha" data-espacio="2" aria-labelledby="muestra-ficha">
-                  <h3 id="muestra-ficha">Comedor Barrio Ejemplo</h3>
-                  <p>La ficha del elegido.</p>
+                <section class="tarjeta maestro-ficha" aria-labelledby="muestra-ficha">
+                  <div data-parte="identidad">
+                    <svg class="categoria-icono" data-tamano="grande" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
+                    <div>
+                      <h3 id="muestra-ficha">Comedor Barrio Ejemplo</h3>
+                      <p>Comedor · Barrio Ejemplo</p>
+                    </div>
+                    <dl><div><dt>Misión:</dt> <dd>Damos almuerzo de lunes a viernes.</dd></div></dl>
+                  </div>
+                  <div data-parte="resumen">
+                    <p><span class="estado" data-forma="punto" data-estado="recibida">Activa desde el 4 de febrero</span></p>
+                    <dl><div><dt>Entregas confirmadas en el mes de octubre:</dt> <dd>5</dd></div></dl>
+                    <dl data-forma="apilado"><div><dt>Contacto del responsable:</dt> <dd>Carmen Ejemplo · comedor.barrio@ejemplo.org</dd></div></dl>
+                  </div>
+                  <section data-parte="necesidades" aria-labelledby="muestra-ficha-necesidades">
+                    <h4 id="muestra-ficha-necesidades">Necesidades vigentes · 2</h4>
+                    <ul data-lista="necesidades-ficha" role="list">
+                      <li><svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
+                        <span><b>Lentejas secas</b> <small>Faltan 30 de 40 kg este mes</small></span></li>
+                      <li><svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
+                        <span><b>Arroz</b> <small>Faltan 25 de 40 kg este mes</small></span></li>
+                    </ul>
+                  </section>
                 </section>
               </li>
               <li>
                 <a href="/estilos" th:href="@{/estilos}">
                   <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-ropa"/></svg>
-                  <span><b>Hogar Casa Ejemplo</b> <small>1 pedido vigente</small></span>
+                  <span><b>Hogar Casa Ejemplo</b> <small>Hogar · 1 necesidad vigente</small></span>
                   <span class="estado" data-forma="punto" data-estado="recibida">Activa</span>
                 </a>
               </li>

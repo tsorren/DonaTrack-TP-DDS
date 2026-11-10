@@ -42,7 +42,7 @@
     </th:block>
 
     <th:block th:unless="${escenario == 'vacio' or escenario == 'error'}">
-      <form class="filtro" action="/donante-donaciones"
+      <form hx-boost="true" class="filtro" action="/donante-donaciones"
             th:action="@{/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
         <div class="campo">
           <label for="estado">Estado</label>

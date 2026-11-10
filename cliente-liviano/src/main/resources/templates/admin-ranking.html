@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <!--/* Raíces, Ranking de donantes del admin (RF-19), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.9). De partida, el último ranking
-       (septiembre); "Ver otro mes" es un formulario GET con ?mes=2026-08 o 2026-07. El criterio va
-       arriba de la tabla, con la fecha en que se calculó. El admin ve el nombre de cada donante.
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.9). Ronda del 2026-11-10: arriba de la
+       tabla, la barra de filtros (form.filtros-barra, GET, componentes/filtros) con dos pastillas:
+       "Tipo de donante" (?tipo=entidad, empresas y organizaciones, o ?tipo=persona; sin elegir, todos)
+       y "Período" (sin elegir, este mes, octubre de 2026 hasta hoy y todavía parcial; ?periodo=anio,
+       2026; ?periodo=siempre, desde el inicio). Reemplaza al "Ver otro mes" anterior. La barra lleva
+       hx-boost: filtrar cambia la tabla sin recargar ni volver arriba; tocar una opción ya filtra
+       (data-al-cambiar). El encabezado dice el período con sus fechas y el criterio va arriba de la
+       tabla, con la fecha en que se calculó. El admin ve el nombre de cada donante. Los datos de
+       ejemplo traen, por período, los puestos ya ordenados; el tipo se filtra con una selección.
+       Sin donantes para la combinación elegida, el estado vacío con "Sacar los filtros".
        ?escenario=vacio (el 204: todavía no hay ranking), lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
@@ -10,32 +17,52 @@
   <title>Ranking - DonaTrack</title>
 </head>
 <body>
+<!--/* Cada valor de los filtros se valida contra su lista antes de entrar en una expresión. */-->
 <th:block th:fragment="contenido"
+    th:with="fTipo=${param.tipo != null and #lists.contains({'entidad', 'persona'}, param.tipo[0]) ? param.tipo[0] : ''},
+             fPeriodo=${param.periodo != null and #lists.contains({'anio', 'siempre'}, param.periodo[0]) ? param.periodo[0] : ''}">
+<th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
-             meses=${ {
-      {clave: '2026-09', nombre: 'Septiembre de 2026', calculado: '30 de septiembre de 2026, 23:59', puestos: {
-        {donante: 'Ana Ejemplo', misiones: 5},
-        {donante: 'Juan Ejemplo', misiones: 4},
-        {donante: 'Distribuidora Ejemplo SA', misiones: 3},
-        {donante: 'Fundación Ejemplo Sur', misiones: 2},
-        {donante: 'Pedro Ejemplo', misiones: 1} } },
-      {clave: '2026-08', nombre: 'Agosto de 2026', calculado: '31 de agosto de 2026, 23:59', puestos: {
-        {donante: 'Juan Ejemplo', misiones: 6},
-        {donante: 'Ana Ejemplo', misiones: 4},
-        {donante: 'Fundación Ejemplo Sur', misiones: 2},
-        {donante: 'Distribuidora Ejemplo SA', misiones: 1} } },
-      {clave: '2026-07', nombre: 'Julio de 2026', calculado: '31 de julio de 2026, 23:59', puestos: {
-        {donante: 'Distribuidora Ejemplo SA', misiones: 3},
-        {donante: 'Ana Ejemplo', misiones: 2},
-        {donante: 'Juan Ejemplo', misiones: 1} } } } },
-             elegido=${param.mes != null ? param.mes[0] : '2026-09'},
-             m=${meses.^[clave == #root.elegido] ?: meses[0]}">
+             periodos=${ {
+      {clave: '', nombre: 'Octubre de 2026', enFrase: 'de octubre de 2026', rango: 'del 1 al 15 de octubre de 2026',
+       calculado: 'Calculado hoy, 15 de octubre de 2026, a las 14:30. Es parcial: el ranking del mes se cierra el 31 de octubre a las 23:59.', puestos: {
+        {donante: 'Distribuidora Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 5},
+        {donante: 'Juan Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 4},
+        {donante: 'Supermercado Ejemplo SRL', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 3},
+        {donante: 'Ana Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 2},
+        {donante: 'Lucía Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 1} } },
+      {clave: 'anio', nombre: '2026', enFrase: 'de 2026', rango: 'del 1 de enero al 15 de octubre de 2026',
+       calculado: 'Calculado hoy, 15 de octubre de 2026, a las 14:30. Suma los meses cerrados y lo que va de octubre.', puestos: {
+        {donante: 'Ana Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 31},
+        {donante: 'Distribuidora Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 27},
+        {donante: 'Fundación Ejemplo Sur', tipo: 'organizacion', tipoTexto: 'Organización', misiones: 22},
+        {donante: 'Juan Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 19},
+        {donante: 'Supermercado Ejemplo SRL', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 14},
+        {donante: 'Pedro Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 9},
+        {donante: 'Librería Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 6},
+        {donante: 'Lucía Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 3} } },
+      {clave: 'siempre', nombre: 'Desde el inicio', enFrase: 'desde el inicio', rango: 'desde marzo de 2025, cuando empezó DonaTrack, hasta el 15 de octubre de 2026',
+       calculado: 'Calculado hoy, 15 de octubre de 2026, a las 14:30.', puestos: {
+        {donante: 'Fundación Ejemplo Sur', tipo: 'organizacion', tipoTexto: 'Organización', misiones: 58},
+        {donante: 'Ana Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 47},
+        {donante: 'Distribuidora Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 41},
+        {donante: 'Pedro Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 33},
+        {donante: 'Juan Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 26},
+        {donante: 'Librería Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 18},
+        {donante: 'Supermercado Ejemplo SRL', tipo: 'empresa', tipoTexto: 'Empresa', misiones: 14},
+        {donante: 'Asociación Vecinal Ejemplo', tipo: 'organizacion', tipoTexto: 'Organización', misiones: 7},
+        {donante: 'Carla Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 5},
+        {donante: 'Lucía Ejemplo', tipo: 'persona', tipoTexto: 'Persona', misiones: 3} } } } },
+             m=${periodos.^[clave == '__${fPeriodo}__']},
+             puestos=${fTipo == '' ? m.puestos : (fTipo == 'persona' ? m.puestos.?[tipo == 'persona'] : m.puestos.?[tipo != 'persona'])},
+             quienes=${fTipo == '' ? 'Donantes' : (fTipo == 'persona' ? 'Personas' : 'Empresas y organizaciones')},
+             filtrado=${fTipo != '' or fPeriodo != ''}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo">Administración</p>
       <h1>Ranking de donantes</h1>
-      <p th:if="${conDatos}" th:text="${m.nombre}">Septiembre de 2026</p>
+      <p th:if="${conDatos}" th:text="${m.nombre}">Octubre de 2026</p>
     </header>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el ranking…</p>
@@ -53,51 +80,68 @@
     </section>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Todavía no hay ningún ranking: se arma al cerrar el primer mes con misiones.</h2>
+      <h2 id="vacio-titulo">Todavía no hay ningún ranking: se arma cuando un donante completa su primera misión.</h2>
     </section>
 
-    <form th:if="${conDatos}" class="racimo" action="/admin-ranking" th:action="@{/admin-ranking}" method="get">
-      <div class="campo">
-        <label for="mes">Ver otro mes</label>
-        <select id="mes" name="mes">
-          <option th:each="x : ${meses}" th:value="${x.clave}" th:text="${x.nombre}"
-                  th:selected="${x.clave == m.clave}">Septiembre de 2026</option>
-        </select>
+    <!--/* Los filtros: el tipo de donante y el período, un solo formulario GET (componentes/filtros). */-->
+    <form th:if="${conDatos}" hx-boost="true" class="filtros-barra" action="/admin-ranking"
+          th:action="@{/admin-ranking}" method="get" data-al-cambiar>
+      <div class="filtros" role="group" aria-label="Filtrar el ranking">
+        <details th:replace="~{componentes/filtros :: menu('tipo', 'Tipo de donante', ${fTipo}, ${ {
+            {valor: '', texto: 'Todos los donantes'},
+            {valor: 'entidad', texto: 'Entidades: empresas y organizaciones'},
+            {valor: 'persona', texto: 'Personas'} } })}"></details>
+        <details th:replace="~{componentes/filtros :: menu('periodo', 'Este mes', ${fPeriodo}, ${ {
+            {valor: '', texto: 'Este mes'}, {valor: 'anio', texto: 'Este año'},
+            {valor: 'siempre', texto: 'Desde siempre'} } })}"></details>
+        <a th:if="${filtrado}" hx-boost="true" class="filtros-sacar" href="/admin-ranking"
+           th:href="@{/admin-ranking}">Sacar los filtros</a>
       </div>
-      <button class="boton" data-tono="secundario" type="submit">Ver</button>
     </form>
 
     <section th:if="${escenario != 'error' and escenario != 'vacio'}" class="pila" data-espacio="3"
              aria-labelledby="ranking-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="ranking-titulo" th:text="${conDatos} ? |El ranking de ${#strings.toLowerCase(m.nombre)}| : 'El ranking'">El
-        ranking de septiembre de 2026</h2>
+      <h2 id="ranking-titulo"
+          th:text="${conDatos} ? |El ranking ${m.enFrase}${fTipo == '' ? '' : (fTipo == 'persona' ? ', solo personas' : ', solo empresas y organizaciones')}| : 'El ranking'">El
+        ranking de octubre de 2026</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
-      <th:block th:if="${conDatos}">
-        <p>Ordenado por la cantidad de misiones que cada donante completó en el mes.
-          <th:block th:text="|Calculado el ${m.calculado}.|">Calculado el 30 de septiembre de 2026,
-            23:59.</th:block>
-          El de octubre se calcula al cerrar el mes.</p>
+      <th:block th:if="${conDatos and !puestos.isEmpty()}">
+        <p><th:block th:text="|Ordenado por la cantidad de misiones que cada donante completó ${m.rango}.|">Ordenado
+          por la cantidad de misiones que cada donante completó del 1 al 15 de octubre de 2026.</th:block>
+          <th:block th:text="${m.calculado}">Calculado hoy, 15 de octubre de 2026, a las 14:30. Es parcial:
+            el ranking del mes se cierra el 31 de octubre a las 23:59.</th:block></p>
         <table class="tabla">
-          <caption th:text="|Donantes de ${#strings.toLowerCase(m.nombre)}, del que más misiones completó al que menos.|">Donantes
-            de septiembre de 2026, del que más misiones completó al que menos.</caption>
+          <caption th:text="|${quienes} ${m.enFrase}, del que más misiones completó al que menos.|">Donantes
+            de octubre de 2026, del que más misiones completó al que menos.</caption>
           <thead>
             <tr>
               <th scope="col">Puesto</th>
               <th scope="col">Donante</th>
+              <th scope="col">Tipo</th>
               <th scope="col">Misiones completadas</th>
             </tr>
           </thead>
           <tbody>
-            <tr th:each="p, i : ${m.puestos}">
+            <tr th:each="p, i : ${puestos}">
               <td data-rotulo="Puesto" th:text="${i.count}">1</td>
-              <th scope="row" th:text="${p.donante}">Ana Ejemplo</th>
+              <th scope="row" th:text="${p.donante}">Distribuidora Ejemplo SA</th>
+              <td data-rotulo="Tipo" th:text="${p.tipoTexto}">Empresa</td>
               <td data-rotulo="Misiones completadas" th:text="${p.misiones}">5</td>
             </tr>
           </tbody>
         </table>
       </th:block>
+
+      <!--/* Sin donantes para la combinación elegida. */-->
+      <section th:if="${conDatos and puestos.isEmpty()}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo" th:text="|Ningún donante de este tipo completó misiones ${m.rango}.|">Ningún
+          donante de este tipo completó misiones del 1 al 15 de octubre de 2026.</h3>
+        <a class="boton" data-tono="secundario" hx-boost="true" href="/admin-ranking"
+           th:href="@{/admin-ranking}">Sacar los filtros</a>
+      </section>
     </section>
   </div>
+</th:block>
 </th:block>
 </body>
 </html>

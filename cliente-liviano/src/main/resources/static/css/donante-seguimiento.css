@@ -1,5 +1,8 @@
-/* Seguimiento del donante en Raíces: el dibujo de las entregas en curso (una línea de subte por
-   entrega desde el depósito, con el sello de su estado) y, debajo, la lista con el mismo número. */
+/* Seguimiento del donante en Raíces: el mapa de las entregas en curso (el mapa real de
+   componentes/mapa.css, que llena static/js/mapa.js: el depósito, cada destino y la posición
+   aproximada de cada entrega, desde el 2026-11-10) y, debajo, la lista con el mismo número. El dibujo
+   de subte (.camion, .nodo-numero y la tierra de figure.seguimiento-dibujo) queda para el seguimiento
+   de la entidad, que importa esta hoja. */
 @import url("privado.css");
 @import url("sellos.css");
 
@@ -84,11 +87,30 @@
   background: var(--color-pendiente-fondo);
 }
 
-/* --- El dibujo --------------------------------------------------------------------------------- */
+/* --- El mapa (y el dibujo de la entidad) ------------------------------------------------------- */
 .seguimiento-dibujo {
   margin: 0;
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
+}
+
+.seguimiento-dibujo[data-mapa] {
+  overflow: hidden;
+}
+
+/* El mapa: cuadrado en el celular (mapa.css); desde la tableta, más ancho que alto, y en pantalla
+   grande, del alto de la columna de las cifras, sin pasar el alto de la ventana. */
+@media (min-width: 53.75em) {
+  .seguimiento-dibujo[data-mapa] {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (min-width: 68.75em) {
+  .seguimiento-dibujo[data-mapa] {
+    aspect-ratio: auto;
+    height: min(30rem, 100vh - 8rem);
+  }
 }
 
 /* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 380). */
@@ -120,28 +142,6 @@ figure.seguimiento-dibujo {
   fill: var(--color-tinta);
   font: 800 22px var(--fuente-cifra);
   text-anchor: middle;
-}
-
-/* Al pasar o enfocar una entrega de la lista, su línea queda llena y el resto se apaga, como la red
-   de la portada (brief, ronda de movimiento). El dibujo acompaña: la lista dice todo. */
-.linea {
-  transition: var(--movimiento-transicion-atenua);
-}
-
-.seguimiento-cuerpo:has(.entrega:is(:hover, :focus-within)) .linea {
-  opacity: 0.28;
-}
-
-.seguimiento-cuerpo:has(.entrega:nth-child(1):is(:hover, :focus-within)) .linea--1,
-.seguimiento-cuerpo:has(.entrega:nth-child(2):is(:hover, :focus-within)) .linea--2,
-.seguimiento-cuerpo:has(.entrega:nth-child(3):is(:hover, :focus-within)) .linea--3 {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .linea {
-    transition: none;
-  }
 }
 
 /* --- La lista ----------------------------------------------------------------------------------- */

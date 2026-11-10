@@ -147,8 +147,3 @@
   color: var(--color-tinta);
   text-decoration: none;
 }
-
-/* En el conflicto, de a uno: los dos lados uno debajo del otro también en ancho (la columna es angosta). */
-[data-variante="asignaciones-c"] [data-forma="par"] {
-  grid-template-columns: 1fr;
-}

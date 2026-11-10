@@ -1,5 +1,5 @@
 /* Necesidades de la entidad en Raíces: el registro de cifras, "Publicar otra necesidad" plegado y la
-   lista de los pedidos vigentes, una etiqueta de herbario por pedido que se despliega en su detalle
+   lista de las necesidades vigentes, una etiqueta de herbario por necesidad que se despliega en su detalle
    (A/B 1, usuario, 2026-11-01); la historia de cada pedido que se repite, una barra por período (A/B
    2, usuario, 2026-11-01). */
 @import url("privado.css");
@@ -7,8 +7,12 @@
 @import url("formularios.css");
 
 /* El encabezado ocupa todo el ancho (regla general 1 de la ronda del 2026-11-09); la bajada conserva
-   unos 70 caracteres por línea. */
+   unos 70 caracteres por línea. El envoltorio de la pantalla se llama igual que la lista del bloque
+   necesidad (componentes/necesidad.css), que desde el quiebre medio es una grilla de dos columnas: sin
+   `display: block`, "Tus necesidades vigentes" quedaba en una columna angosta al lado del encabezado
+   (2026-11-10). Esta hoja no tiene capa y le gana a la de bloques. */
 .necesidades {
+  display: block;
   max-width: none;
 }
 
@@ -175,7 +179,7 @@
   gap: 0.125rem;
 }
 
-main [data-cantero] h3 {
+main [data-cantero] > summary h3 {
   margin: 0;
   color: var(--color-tinta);
   font: 850 1.625rem/1.1 var(--fuente-titulo);

@@ -165,7 +165,7 @@
       <h2 id="lista-titulo">Todos los donantes</h2>
       <!--/* La búsqueda y los filtros, un solo formulario GET: el campo y "Buscar" en la misma línea, y
              las pastillas al lado (debajo en el celular; componentes/filtros, la barra). */-->
-      <form class="filtros-barra" action="/admin-donantes"
+      <form hx-boost="true" class="filtros-barra" action="/admin-donantes"
             th:action="@{/admin-donantes}" method="get" role="search">
         <div class="campo filtro-buscar">
           <label for="buscar">Buscar por nombre o documento</label>

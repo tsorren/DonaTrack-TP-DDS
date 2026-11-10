@@ -86,27 +86,17 @@
   max-width: 40rem;
 }
 
-/* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla) -- */
+/* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla;
+   ronda del 2026-11-10: una sola lista y la ficha de la maqueta 15, en componentes/maestro.css) -- */
 
-/* Lo que mandó una pendiente y los pedidos de una activa, dentro de la ficha (.maestro-ficha): sin
-   viñetas; cada pedido, su pictograma y el texto al lado. */
-:is([data-lista="documentos"], [data-lista="pedidos-ficha"]) {
+/* Lo que mandó una pendiente, dentro de la ficha (.maestro-ficha): sin viñetas. */
+[data-lista="documentos"] {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-[data-lista="pedidos-ficha"] li {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-2);
-}
-
-[data-lista="pedidos-ficha"] li > span {
-  display: grid;
-}
-
-/* El pictograma de la lista y de la ficha, a su medida: sellos.css (sin capa, por entidad-comun.css)
+/* Los pictogramas de la lista y de la ficha, a su medida: sellos.css (sin capa, por entidad-comun.css)
    le gana al bloque maestro con su 1,75 rem. */
 .maestro .categoria-icono {
   width: 2.25rem;
@@ -114,6 +104,18 @@
 }
 
 .maestro-ficha .categoria-icono[data-tamano="grande"] {
-  width: 4rem;
-  height: 4rem;
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.maestro-ficha [data-lista="necesidades-ficha"] .categoria-icono {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+/* Desde la tableta, la ficha con el relleno grande (.mesa .tarjeta le pone el chico). */
+@media (min-width: 53.75em) {
+  .mesa .maestro-ficha {
+    --espacio-relleno: var(--espacio-4);
+  }
 }

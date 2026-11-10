@@ -34,7 +34,7 @@
     </header>
 
     <div th:if="${escenario == ''}" class="publica-barra">
-      <form class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
+      <form hx-boost="true" class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
             method="get" data-al-cambiar>
         <fieldset th:replace="~{datos-publicos :: filtroCategorias('Qué se donó', 'Todas')}"></fieldset>
         <button class="boton" data-tono="secundario" type="submit">Filtrar</button>

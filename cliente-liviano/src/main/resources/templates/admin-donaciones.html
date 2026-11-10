@@ -122,7 +122,7 @@
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="lista-titulo" th:text="${pronto} ? 'Vencen en los próximos 7 días' : 'Todas las donaciones'">Todas
         las donaciones</h2>
-      <form class="racimo" action="/admin-donaciones" th:action="@{/admin-donaciones}" method="get"
+      <form hx-boost="true" class="racimo" action="/admin-donaciones" th:action="@{/admin-donaciones}" method="get"
             role="search">
         <div class="campo">
           <label for="estado">Estado</label>

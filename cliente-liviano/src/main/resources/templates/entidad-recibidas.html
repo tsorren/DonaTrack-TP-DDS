@@ -62,7 +62,7 @@
 
     <!--/* El filtro: una pastilla por estado, con su cantidad (el componente de filtros). Sin
            JavaScript, se prenden las que hagan falta y se envía con "Filtrar". */-->
-    <form th:if="${conLista}" class="filtro" action="/entidad-recibidas"
+    <form hx-boost="true" th:if="${conLista}" class="filtro" action="/entidad-recibidas"
           th:action="@{/entidad-recibidas}" method="get" aria-label="Filtrar por estado">
       <input th:if="${escenario == 'sin-resultados'}" type="hidden" name="escenario" value="sin-resultados">
       <div class="filtros" role="group" aria-label="Estado">
@@ -117,7 +117,7 @@
                 <p th:text="|Donó ${d.dono}|">Donó Distribuidora Ejemplo SA</p>
                 <p th:if="${d.pedido}"><a href="/entidad-necesidades?necesidad=lentejas"
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
-                   th:text="|Para tu pedido de ${d.pedidoNombre}|">Para tu pedido de lentejas secas</a></p>
+                   th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de lentejas secas</a></p>
                 <!--/* Bajo "Esperan tu confirmación", sin el estado: ya lo dice el grupo (ronda del
                        2026-11-09); solo cuándo llegó. */-->
                 <p class="acta-paso">
@@ -133,7 +133,7 @@
                   recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
                 <a th:if="${d.grupo == 'problema'}" class="boton" data-tono="secundario"
                    href="/entidad-necesidades?necesidad=aceite"
-                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu pedido</a>
+                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
               </article>
             </li>
           </ul>
@@ -152,7 +152,7 @@
                     SRL</th:block><th:block th:if="${d.pedido}"> · <a
                       href="/entidad-necesidades?necesidad=lentejas"
                       th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
-                      th:text="|Para tu pedido de ${d.pedidoNombre}|">Para tu pedido de lentejas secas</a></th:block></p>
+                      th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de lentejas secas</a></th:block></p>
                   <p class="estado" data-estado="recibida" th:text="${d.paso}">Confirmaste la recepción el 10 de
                     octubre.</p>
                 </div>

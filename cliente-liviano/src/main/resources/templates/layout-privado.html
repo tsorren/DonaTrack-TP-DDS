@@ -110,7 +110,7 @@
     </div>
   </details>
 </header>
-<main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>
 <!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian, y la cola de Alpine
        (avisos, static/js/interfaz.js) deja ver tres a la vez y los quita a los 6 segundos. */-->

@@ -145,10 +145,6 @@ lectura-bajada
 legales
 legales-indice
 legales-version
-linea
-linea--1
-linea--2
-linea--3
 mapa
 marca
 marcar
@@ -159,7 +155,6 @@ mesa-resumen
 mostrando
 necesidades
 necesidades-bajada
-nodo
 nodo-numero
 nota
 noticias-inicio

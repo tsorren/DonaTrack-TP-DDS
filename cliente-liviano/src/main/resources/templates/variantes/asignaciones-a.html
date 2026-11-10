@@ -2,8 +2,12 @@
 <!--/* Variante A de Asignar donaciones (recomendada). Ronda 2026-11-09 tarde: bandeja y detalle. Ronda
        2026-11-09 noche: cuatro vistas tras el título (.segmentos), con la bandeja como una de ellas.
        - Propuestas (de partida): Sin conflictos, con "Aceptar las N sin conflictos" (confirmación con la
-         lista); Con conflictos, de a pares, con el porqué y "Elegir esta" en cada lado (&gana=<id>); y
-         Sin propuesta (sin coincidencias, o la que perdió un conflicto y no quedó stock).
+         lista); Con conflictos (ronda 2026-11-10, bloque común de asignaciones-datos): un conflicto por
+         bien, con las cantidades ponderadas según los rankings, editables, y "Aceptar todas las
+         cantidades ponderadas"; y Sin propuesta (sin coincidencias, o la que perdió un conflicto con
+         el &gana=<id> de la ronda anterior y no quedó stock).
+       - La tarjeta de cada propuesta (ronda 2026-11-10): donación → entidad, puestos, cobertura al
+         asignar y "Confirmar asignación".
        - Por donación (?vista=donaciones): la cola a la izquierda y la elegida a la derecha (&donacion=).
        - Stock en depósito (?vista=stock): por categoría y bien, cuánto hay, de qué donaciones y qué
          propuesta lo usa.
@@ -45,7 +49,8 @@
       <!--/* Propuestas. */-->
       <th:block th:if="${ver == 'propuestas'}">
         <p>Cada propuesta lleva una donación a la mejor candidata en común de los dos algoritmos. Las que no
-          chocan con otra se pueden aceptar juntas; las que se pisan, las resolvés de a una.</p>
+          chocan con otra se pueden aceptar juntas; cuando el stock no alcanza para todas, lo repartís con las
+          cantidades ponderadas o a mano.</p>
 
         <section class="pila" data-espacio="3" data-grupo="libres" aria-labelledby="libres-titulo">
           <div class="racimo" data-alinea="entre" data-espacio="3">
@@ -63,16 +68,7 @@
           </ul>
         </section>
 
-        <section class="pila" data-espacio="3" data-grupo="conflictos" aria-labelledby="conflictos-titulo">
-          <div>
-            <h2 id="conflictos-titulo" th:text="|Con conflictos · ${#lists.size(conConflicto)}|">Con conflictos · 4</h2>
-            <p><small th:text="|${#lists.size(pendientes) == 1 ? 'Un par' : #lists.size(pendientes) + ' pares'} que se pisan: elegí cuál gana en cada uno. La otra se vuelve a calcular con lo que queda.|">2
-              pares que se pisan: elegí cuál gana en cada uno. La otra se vuelve a calcular con lo que queda.</small></p>
-          </div>
-          <p th:if="${#lists.isEmpty(pendientes)}">No hay conflictos para resolver.</p>
-          <th:block th:each="c : ${pendientes}"><section
-              th:replace="~{variantes/comun/asignaciones-datos :: conflicto(${c}, 'asignaciones-a')}"></section></th:block>
-        </section>
+        <section th:replace="~{variantes/comun/asignaciones-datos :: conflictos('asignaciones-a')}"></section>
 
         <section th:unless="${#lists.isEmpty(sinCoincidencias) and #lists.isEmpty(descartadas)}" class="pila" data-espacio="2"
                  data-grupo="sin" aria-labelledby="sin-titulo">
@@ -81,7 +77,7 @@
             <li th:each="x : ${sinCoincidencias}" data-forma="sin">
               <span><b th:text="|${x.dona}, ${x.cuanto}|">Camperas de abrigo, 12 prendas</b>
                 <small>Ninguna entidad está en los dos rankings: elegí el destino en las ejecuciones.</small></span>
-              <a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', vista='rankings', donacion=${x.clave}, gana=${gv})}">Ver los rankings</a>
+              <a hx-boost="true" hx-swap="outerHTML show:window:top" href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', vista='rankings', donacion=${x.clave}, gana=${gv})}">Ver los rankings</a>
             </li>
             <li th:each="pr : ${descartadas}" data-forma="sin">
               <span><b th:text="|${pr.nec.que} para ${ent.get(pr.k).e}|">Mesas para Club Ejemplo Norte</b>
@@ -121,7 +117,7 @@
           <p th:if="${#lists.isEmpty(cola)}">Ninguna donación coincide con lo que buscaste.</p>
           <ul class="lista" data-lista="cola" role="list">
             <li th:each="x : ${cola}">
-              <a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', vista='donaciones', donacion=${x.clave}, buscar=${param.buscar}, categoria=${param.categoria}, antiguedad=${param.antiguedad}, cruce=${param.cruce})} + '#donacion'"
+              <a hx-boost="true" href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', vista='donaciones', donacion=${x.clave}, buscar=${param.buscar}, categoria=${param.categoria}, antiguedad=${param.antiguedad}, cruce=${param.cruce})} + '#donacion'"
                  th:aria-current="${d != null and x.clave == d.clave} ? 'true' : null">
                 <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
                     th:href="|#cat-${x.cat}|" href="#cat-alimentos"/></svg>
@@ -152,7 +148,7 @@
             <p th:each="pr : ${suya}" data-forma="su-propuesta"
                th:with="enConf=${!#lists.isEmpty(conConflicto.?[id == #root.pr.id])}">
               <span th:text="|Propuesta: a ${ent.get(pr.k).e}${enConf ? ', con conflicto' : ''}.|">Propuesta: a Comedor Barrio Ejemplo, con conflicto.</span>
-              <a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', gana=${gv})} + |#propuesta-asignaciones-a-${pr.id}|">Ver la propuesta</a>
+              <a hx-boost="true" href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', gana=${gv})} + |#propuesta-asignaciones-a-${pr.id}|">Ver la propuesta</a>
             </p>
 
             <section th:unless="${d.comunes.isEmpty()}" class="pila" data-espacio="2" aria-labelledby="comunes-titulo">
@@ -175,7 +171,7 @@
               <h3 id="sin-titulo">Ninguna entidad aparece en los dos rankings.</h3>
               <p>Elegí el destino en cualquiera de las dos ejecuciones.</p>
             </section>
-            <p><a href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', vista='rankings', donacion=${d.clave}, gana=${gv})}"
+            <p><a hx-boost="true" hx-swap="outerHTML show:window:top" href="#" th:href="@{/admin-asignaciones(variante='asignaciones-a', vista='rankings', donacion=${d.clave}, gana=${gv})}"
                   th:text="|Ver los rankings completos (${#lists.size(d.ejecuciones)})|">Ver los rankings completos (2)</a></p>
           </th:block>
           <p th:if="${d == null}" id="donacion-titulo">Elegí otra búsqueda o sacá los filtros para ver las donaciones.</p>

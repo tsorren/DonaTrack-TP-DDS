@@ -40,7 +40,9 @@ figure.mapa-dibujo {
 
 /* --- El mapa real (MapLibre, D21; desde el 2026-11-09) --------------------------------------------
    `<div class="mapa-dibujo mapa-real" data-mapa>`: static/js/mapa.js lo llena con MapLibre y un
-   `button.mapa-marcador` por ficha; sin JavaScript queda `.mapa-real-aviso` y la lista. */
+   `button.mapa-marcador` por ficha; sin JavaScript queda `.mapa-real-aviso` y la lista. En
+   Seguimiento es `<div class="seguimiento-dibujo mapa-real" data-mapa>` (sin el marco fijo de
+   `.mapa-dibujo`), con el depósito y los destinos (`data-tipo`) y los recorridos. */
 .mapa-real {
   position: relative;
   min-width: 0;
@@ -73,6 +75,28 @@ figure.mapa-dibujo {
   color: var(--color-tinta);
   font: 800 1.25rem/1 var(--fuente-cifra);
   cursor: pointer;
+}
+
+/* Seguimiento (desde el 2026-11-10): el depósito, un sello de tinta con el ícono en papel; el destino
+   de una entrega, una casa sobre el campo, en un cuadrado redondeado. Los números van encima. */
+.mapa-marcador[data-tipo] svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mapa-marcador[data-tipo="deposito"] {
+  background: var(--color-tinta);
+  color: var(--color-papel);
+}
+
+.mapa-marcador[data-tipo="destino"] {
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
 }
 
 .mapa-marcador:focus-visible {

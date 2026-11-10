@@ -1,14 +1,24 @@
 /* El mapa real de las pantallas con mapa (D21 del ADR del stack: MapLibre GL con el estilo de
    OpenFreeMap, solo donde hay mapa, con la atribución visible). Es una mejora: sin JavaScript se ve la
-   lista con los mismos datos (RF-CL-06) y el aviso del contenedor.
+   lista con los mismos datos (RF-CL-06) y el aviso del contenedor. Lo usan publico-mapa (las entidades)
+   y el Seguimiento del donante (las entregas en curso, de la empresa y de la persona).
 
    - El contenedor es [data-mapa]; data-maplibre dice dónde está el WebJar (/webjars/maplibre-gl/dist/).
      Si el WebJar no responde, carga la misma versión desde unpkg.
-   - Los datos salen de la página: cada ficha de la lista (.estacion-ficha[data-lat]) trae su punto,
-     su número y su nombre, y un <template data-mapa-globo> con el globo que armó el servidor. Este
-     archivo no pide nada al servidor ni arma textos del negocio: copia lo que ya está.
-   - Al pasar o enfocar una ficha (o al llegar con #entidad-<clave>), su marcador se destaca y el mapa
-     va hasta ella; con "reducir movimiento", sin animación. */
+   - Los puntos salen de la página: cada ficha de la lista trae su punto (data-lat, data-lng), su número
+     y su nombre, y un <template data-mapa-globo> con el globo que armó el servidor. Las fichas son las
+     que elige data-mapa-puntos del contenedor (de partida, .estacion-ficha[data-lat][data-lng]).
+   - Seguimiento (opcional): el contenedor puede traer el depósito (data-deposito-lat, -lng y -nombre,
+     con su globo en <template data-mapa-globo-deposito>) y cada ficha, el destino de la entrega
+     (data-destino-lat, -lng y -nombre, con su globo en <template data-mapa-globo-destino>). Entonces el
+     depósito y cada destino llevan su marcador (data-tipo="deposito" o "destino", con el ícono de
+     <template data-mapa-icono="deposito|destino"> del contenedor) y cada entrega, su recorrido: del
+     depósito a donde va el camión, lleno; de ahí al destino, punteado (lo que falta).
+   - Este archivo no pide nada al servidor ni arma textos del negocio: copia lo que ya está.
+   - Al pasar o enfocar una ficha (o al llegar con #<id de la ficha>), su marcador (y su destino y su
+     recorrido) se destaca y el mapa va hasta ella; con "reducir movimiento", sin animación.
+   - Después de un cambio de panel con HTMX, el script se vuelve a ejecutar: MapLibre no se carga dos
+     veces. */
 (function () {
   "use strict";
 
@@ -16,7 +26,10 @@
   if (!contenedor) {
     return;
   }
-  const fichas = Array.from(document.querySelectorAll(".estacion-ficha[data-lat][data-lng]"));
+  const selector = contenedor.dataset.mapaPuntos || ".estacion-ficha[data-lat][data-lng]";
+  const fichas = Array.from(document.querySelectorAll(selector)).filter(function (ficha) {
+    return ficha.dataset.lat && ficha.dataset.lng;
+  });
   if (fichas.length === 0) {
     return;
   }
@@ -45,6 +58,9 @@
   }
 
   async function cargarMapLibre() {
+    if (window.maplibregl) {
+      return window.maplibregl;
+    }
     for (const base of fuentes) {
       try {
         await cargarScript(base + "maplibre-gl.js");
@@ -59,15 +75,16 @@
     return null;
   }
 
+  const tokens = getComputedStyle(contenedor);
+  function color(nombre) {
+    return tokens.getPropertyValue("--color-" + nombre).trim();
+  }
+
   /* El mapa base con la paleta del sitio: se leen los tokens de uso (tokens.css) y se repintan las
      capas de OpenFreeMap Positron por tipo. Así el mapa cambia junto con la paleta y no hay colores
      escritos acá. Papel de fondo, parques en verde claro, agua en verde agua, edificios en el tono de
      "pendiente", calles en papel claro con borde de filete y textos en tinta con halo de papel. */
   function pintar(mapa) {
-    const tokens = getComputedStyle(contenedor);
-    const color = function (nombre) {
-      return tokens.getPropertyValue("--color-" + nombre).trim();
-    };
     const papel = color("papel");
     const claro = color("campo");
     const tinta = color("tinta");
@@ -103,11 +120,26 @@
     });
   }
 
+  function lngLatDe(elemento, prefijo) {
+    const lat = elemento.dataset[prefijo + "Lat"];
+    const lng = elemento.dataset[prefijo + "Lng"];
+    return lat && lng ? [Number(lng), Number(lat)] : null;
+  }
+
+  // Los moldes del contenedor se leen antes de vaciarlo.
+  const moldes = {
+    deposito: contenedor.querySelector("template[data-mapa-icono='deposito']"),
+    destino: contenedor.querySelector("template[data-mapa-icono='destino']"),
+    globoDeposito: contenedor.querySelector("template[data-mapa-globo-deposito]"),
+  };
+
   function armar(maplibregl) {
+    const deposito = lngLatDe(contenedor, "deposito");
     const puntos = fichas.map(function (ficha) {
       return {
         ficha: ficha,
         lngLat: [Number(ficha.dataset.lng), Number(ficha.dataset.lat)],
+        destino: lngLatDe(ficha, "destino"),
       };
     });
 
@@ -117,7 +149,13 @@
     const limites = new maplibregl.LngLatBounds();
     puntos.forEach(function (p) {
       limites.extend(p.lngLat);
+      if (p.destino) {
+        limites.extend(p.destino);
+      }
     });
+    if (deposito) {
+      limites.extend(deposito);
+    }
 
     const mapa = new maplibregl.Map({
       container: contenedor,
@@ -135,37 +173,135 @@
         "Popup.Close": "Cerrar",
       },
     });
-    mapa.on("style.load", function () {
-      pintar(mapa);
-    });
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     mapa.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
 
-    const marcadores = new Map();
-    puntos.forEach(function (p) {
+    function ponerMarcador(lngLat, opciones) {
       const boton = document.createElement("button");
       boton.type = "button";
       boton.className = "mapa-marcador";
-      boton.textContent = p.ficha.dataset.numero || "";
-      boton.setAttribute("aria-label", (p.ficha.dataset.numero ? p.ficha.dataset.numero + ". " : "") + (p.ficha.dataset.nombre || ""));
-
-      const molde = p.ficha.querySelector("template[data-mapa-globo]");
+      if (opciones.tipo) {
+        boton.dataset.tipo = opciones.tipo;
+      }
+      if (opciones.icono) {
+        boton.appendChild(opciones.icono.content.cloneNode(true));
+      } else {
+        boton.textContent = opciones.texto || "";
+      }
+      boton.setAttribute("aria-label", opciones.rotulo || "");
       const globo = new maplibregl.Popup({ offset: 26, maxWidth: "18rem" });
-      if (molde) {
-        globo.setDOMContent(molde.content.cloneNode(true));
+      if (opciones.globo) {
+        globo.setDOMContent(opciones.globo.content.cloneNode(true));
       }
       const marcador = new maplibregl.Marker({ element: boton, anchor: "center" })
-        .setLngLat(p.lngLat)
-        .setPopup(globo)
+        .setLngLat(lngLat)
+        .setPopup(opciones.globo ? globo : null)
         .addTo(mapa);
-      marcadores.set(p.ficha, { marcador: marcador, boton: boton, lngLat: p.lngLat });
+      return { marcador: marcador, boton: boton, lngLat: lngLat };
+    }
+
+    // El depósito y los destinos van primero: así los marcadores de las entregas quedan encima.
+    if (deposito) {
+      ponerMarcador(deposito, {
+        tipo: "deposito",
+        icono: moldes.deposito,
+        rotulo: contenedor.dataset.depositoNombre,
+        globo: moldes.globoDeposito,
+      });
+    }
+    const destinos = new Map();
+    puntos.forEach(function (p) {
+      if (!p.destino) {
+        return;
+      }
+      const clave = p.destino.join(",");
+      if (!destinos.has(clave)) {
+        destinos.set(
+          clave,
+          ponerMarcador(p.destino, {
+            tipo: "destino",
+            icono: moldes.destino,
+            rotulo: p.ficha.dataset.destinoNombre,
+            globo: p.ficha.querySelector("template[data-mapa-globo-destino]"),
+          }),
+        );
+      }
+      p.marcaDestino = destinos.get(clave);
+    });
+
+    const marcadores = new Map();
+    puntos.forEach(function (p, indice) {
+      const m = ponerMarcador(p.lngLat, {
+        texto: p.ficha.dataset.numero,
+        rotulo: (p.ficha.dataset.numero ? p.ficha.dataset.numero + ". " : "") + (p.ficha.dataset.nombre || ""),
+        globo: p.ficha.querySelector("template[data-mapa-globo]"),
+      });
+      m.indice = indice;
+      m.destino = p.marcaDestino;
+      marcadores.set(p.ficha, m);
+    });
+
+    // Los recorridos: lo hecho (del depósito a la entrega) y lo que falta (de la entrega al destino).
+    const tramos = [];
+    if (deposito) {
+      puntos.forEach(function (p, indice) {
+        tramos.push({
+          type: "Feature",
+          properties: { indice: indice, falta: false },
+          geometry: { type: "LineString", coordinates: [deposito, p.lngLat] },
+        });
+        if (p.destino) {
+          tramos.push({
+            type: "Feature",
+            properties: { indice: indice, falta: true },
+            geometry: { type: "LineString", coordinates: [p.lngLat, p.destino] },
+          });
+        }
+      });
+    }
+
+    function dibujarRecorridos() {
+      if (tramos.length === 0 || mapa.getSource("recorridos")) {
+        return;
+      }
+      mapa.addSource("recorridos", { type: "geojson", data: { type: "FeatureCollection", features: tramos } });
+      mapa.addLayer({
+        id: "recorridos-falta",
+        type: "line",
+        source: "recorridos",
+        filter: ["==", ["get", "falta"], true],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": color("tinta-suave"), "line-width": 3, "line-dasharray": [1, 2] },
+      });
+      mapa.addLayer({
+        id: "recorridos-hecho",
+        type: "line",
+        source: "recorridos",
+        filter: ["==", ["get", "falta"], false],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": color("tinta"), "line-width": 4 },
+      });
+    }
+
+    mapa.on("style.load", function () {
+      pintar(mapa);
+      dibujarRecorridos();
     });
 
     function destacar(ficha) {
+      const elegido = ficha ? marcadores.get(ficha) : null;
       contenedor.toggleAttribute("data-destacado", Boolean(ficha));
-      marcadores.forEach(function (m, f) {
-        m.boton.toggleAttribute("data-activo", f === ficha);
+      contenedor.querySelectorAll(".mapa-marcador").forEach(function (boton) {
+        boton.toggleAttribute(
+          "data-activo",
+          Boolean(elegido) && (boton === elegido.boton || (elegido.destino && boton === elegido.destino.boton)),
+        );
       });
+      if (mapa.getLayer("recorridos-hecho")) {
+        const opacidad = elegido ? ["case", ["==", ["get", "indice"], elegido.indice], 1, 0.2] : 1;
+        mapa.setPaintProperty("recorridos-hecho", "line-opacity", opacidad);
+        mapa.setPaintProperty("recorridos-falta", "line-opacity", opacidad);
+      }
     }
 
     function irA(ficha, abrir) {
@@ -175,7 +311,8 @@
       }
       destacar(ficha);
       mapa.easeTo({ center: m.lngLat, duration: quieto.matches ? 0 : 600 });
-      if (abrir && !m.marcador.getPopup().isOpen()) {
+      const globo = m.marcador.getPopup();
+      if (abrir && globo && !globo.isOpen()) {
         m.marcador.togglePopup();
       }
     }
