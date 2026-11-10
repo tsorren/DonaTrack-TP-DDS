@@ -12,4 +12,7 @@ public interface CuentaActual {
 
   /** El id del donante, o vacío si todavía no se sabe quién es. */
   Optional<UUID> donante(HttpServletRequest pedido);
+
+  /** El id de la entidad beneficiaria, o vacío si todavía no se sabe cuál es. */
+  Optional<UUID> entidad(HttpServletRequest pedido);
 }

@@ -13,4 +13,31 @@ public record DonacionIndependienteResponseDTO(
     List<CambioEstadoDIResponseDTO> historial,
     List<ItemDonacionIndependienteResponseDTO> items,
     int cantidad,
-    UUID entidadBeneficiariaId) {}
+    UUID entidadBeneficiariaId,
+    UUID necesidadId) {
+
+  /** Sin necesidad: la donación no está asignada a una (o la respuesta es anterior a HB-17). */
+  @SuppressWarnings("java:S107")
+  public DonacionIndependienteResponseDTO(
+      UUID id,
+      UUID donacionOriginalId,
+      String descripcion,
+      String estadoActual,
+      LocalDateTime fechaRegistro,
+      List<CambioEstadoDIResponseDTO> historial,
+      List<ItemDonacionIndependienteResponseDTO> items,
+      int cantidad,
+      UUID entidadBeneficiariaId) {
+    this(
+        id,
+        donacionOriginalId,
+        descripcion,
+        estadoActual,
+        fechaRegistro,
+        historial,
+        items,
+        cantidad,
+        entidadBeneficiariaId,
+        null);
+  }
+}

@@ -54,6 +54,7 @@ Qué muestra la maqueta con datos sintéticos y todavía no tiene de dónde sali
 - Entidad · entidad-recibidas · donaciones asignadas a la entidad, con filtro por estado y rango de fechas · GET /donaciones-independientes no filtra por entidad asignada (HB-04).
 - Entidad · entidad-recibidas · pedido que cubre cada donación · falta necesidadId en la donación (HB-17).
 - Entidad · entidad-recibidas · nombre visible de quien donó o su categoría · HB-20.
+- Entidad · entidad-recibidas, entidad-inicio, entidad-seguimiento · la entrega que llegó a la puerta y espera confirmación · Donaciones y Logística la tienen en traslado, igual que la que viene en camino (HB-22). Sumado al conectar Donaciones recibidas (2026-11-08).
 - Entidad · entidad-notificaciones · que asignación, en camino, entrega fallida y llegada generen notificación a la entidad · sin verificar (HB-09).
 - Entidad · entidad-notificaciones · id de la donación o entrega en cada notificación, para enlazarla · los eventos traen solo descripcion.
 

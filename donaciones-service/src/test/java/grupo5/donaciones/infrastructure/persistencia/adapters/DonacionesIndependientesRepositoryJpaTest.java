@@ -366,6 +366,25 @@ class DonacionesIndependientesRepositoryJpaTest {
   }
 
   @Test
+  void sumarCantidadAsignada_cuentaLoQueLlegoCuandoLaEntregaVinoIncompleta() {
+    NecesidadRecurrente recurrente = recurrente();
+    UUID periodoId = recurrente.periodoActualId();
+    DonacionIndependiente incompleta = nueva(10);
+    incompleta.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    incompleta.registrarCantidadRecibida(6.5);
+    DonacionIndependiente completa = nueva(4);
+    completa.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    independientes.saveAll(List.of(incompleta, completa));
+
+    assertEquals(10, independientes.sumarCantidadAsignada(recurrente.getId(), periodoId));
+    assertEquals(
+        Map.of(recurrente.getId(), 10),
+        independientes.sumarCantidadAsignada(Map.of(recurrente.getId(), periodoId)));
+    assertEquals(
+        4, independientes.findById(incompleta.getId()).orElseThrow().getCantidadNoRecibida());
+  }
+
+  @Test
   void contarPorEntidadRegistradasDesde_cuentaSoloLasAsignadasRegistradasDespues() {
     DonacionIndependiente asignada = nueva(5);
     asignada.asignar(ACTOR, recurrente().destinoDeAsignacion());

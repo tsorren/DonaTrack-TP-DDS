@@ -1,6 +1,7 @@
 package grupo5.logistica.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
@@ -19,6 +20,11 @@ public class RutasRepository extends CrudRepositoryEnMemoria<Ruta> implements IR
     return storage.values().stream()
         .filter(ruta -> Objects.equals(ruta.getFecha(), fecha))
         .toList();
+  }
+
+  @Override
+  public List<Ruta> findByEstado(EstadoRuta estado) {
+    return storage.values().stream().filter(ruta -> ruta.getEstado() == estado).toList();
   }
 
   @Override
