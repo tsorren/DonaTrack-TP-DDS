@@ -22,4 +22,7 @@ public interface AdminPersonasPuerto {
 
   /** Sube el CSV y devuelve el id de la importación. */
   UUID importar(MultipartFile archivo);
+
+  /** Da de alta la persona y la hace donante. */
+  void registrarDonante(PersonaNueva persona);
 }

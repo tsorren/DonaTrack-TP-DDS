@@ -3,11 +3,13 @@ package grupo5.cliente.web;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -16,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.CuentasDelMenu;
+import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.seguridad.UsuarioActual;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
@@ -165,6 +168,53 @@ class AdminDonantesControllerTest {
         .andExpect(content().string(containsString("2 donantes nuevos")))
         .andExpect(content().string(not(containsString("Descargar"))))
         .andExpect(content().string(not(containsString("null"))));
+  }
+
+  @Test
+  void registrarUnaPersonaLaDaDeAltaConSuCorreoYDejaElAviso() throws Exception {
+    mvc.perform(
+            post("/admin-donantes-registrado")
+                .param("tipo", "persona")
+                .param("nombre", "Ana")
+                .param("apellido", "Ejemplo")
+                .param("documento", "20000001")
+                .param("correo", "ana@ejemplo.org")
+                .with(admin())
+                .with(csrf()))
+        .andExpect(redirectedUrl("/admin-donantes"))
+        .andExpect(flash().attribute(Envios.AVISO, "Registraste a Ana Ejemplo como donante."));
+    verify(personas).registrarDonante(new PersonaNueva.Humana("Ana", "Ejemplo", "ana@ejemplo.org"));
+  }
+
+  @Test
+  void registrarUnaOrganizacionLlevaSuTipoDelContratoYSuDireccion() throws Exception {
+    mvc.perform(
+            post("/admin-donantes-registrado")
+                .param("tipo", "organizacion")
+                .param("razonSocial", "Distribuidora Ejemplo SA")
+                .param("tipoOrganizacion", "Institución")
+                .param("rubro", "")
+                .param("correo", "distribuidora@ejemplo.org")
+                .param("calle", "Calle Ejemplo")
+                .param("altura", "123")
+                .param("localidad", "Localidad Ejemplo")
+                .param("pais", "Argentina")
+                .with(admin())
+                .with(csrf()))
+        .andExpect(
+            flash()
+                .attribute(Envios.AVISO, "Registraste a Distribuidora Ejemplo SA como donante."));
+    verify(personas)
+        .registrarDonante(
+            new PersonaNueva.Juridica(
+                "JURIDICA",
+                "Distribuidora Ejemplo SA",
+                "INSTITUCION",
+                null,
+                new PersonaNueva.Direccion(
+                    "Calle Ejemplo", 123, null, "Localidad Ejemplo", null, "Argentina"),
+                List.of(new PersonaNueva.Contacto("CORREO", "distribuidora@ejemplo.org", true)),
+                List.of()));
   }
 
   @Test

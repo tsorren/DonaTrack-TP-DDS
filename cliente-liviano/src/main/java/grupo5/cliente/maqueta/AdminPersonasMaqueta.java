@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
+import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
@@ -200,5 +201,11 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   @Override
   public UUID importar(MultipartFile archivo) {
     throw new UnsupportedOperationException("La maqueta no importa archivos");
+  }
+
+  /** En la maqueta el formulario lo atiende SitioController y no guarda nada. */
+  @Override
+  public void registrarDonante(PersonaNueva persona) {
+    throw new UnsupportedOperationException("La maqueta no registra donantes");
   }
 }

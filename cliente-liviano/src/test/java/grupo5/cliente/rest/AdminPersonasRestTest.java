@@ -7,6 +7,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import java.time.Clock;
@@ -28,6 +29,8 @@ class AdminPersonasRestTest {
 
   private static final String DONACIONES = "http://donaciones";
   private static final UUID ARCHIVO = UUID.fromString("00000000-0000-4000-8000-0000000000aa");
+  private static final UUID PERSONA = UUID.fromString("00000000-0000-4000-8000-000000000009");
+  private static final MediaType JSON = MediaType.APPLICATION_JSON;
 
   /** Una persona activa, una organización dada de baja y una empresa, con campos que no se usan. */
   private static final String TRES_DONANTES =
@@ -159,6 +162,30 @@ class AdminPersonasRestTest {
     assertEquals("126", resultado.conError());
     assertEquals("Fila 15", resultado.filas().get(0).fila());
     assertEquals("Falta el apellido.", resultado.filas().get(0).que());
+  }
+
+  @Test
+  void registrarDonanteCreaLaPersonaYDespuesElDonanteConSuId() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/personas"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"tipo": "HUMANA", "nombre": "Ana", "apellido": "Ejemplo",
+                     "mediosDeContacto": [{"tipo": "CORREO", "direccionCorreo": "ana@ejemplo.org"}]}
+                    """))
+        .andRespond(withSuccess("{\"tipo\": \"HUMANA\", \"id\": \"" + PERSONA + "\"}", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(content().json("{\"idPersona\": \"" + PERSONA + "\"}"))
+        .andRespond(withSuccess("{}", JSON));
+
+    adaptador.registrarDonante(new PersonaNueva.Humana("Ana", "Ejemplo", "ana@ejemplo.org"));
+
+    donaciones.verify();
   }
 
   @Test

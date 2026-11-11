@@ -1,6 +1,7 @@
 package grupo5.cliente.rest;
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
+import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.rest.DonacionesApi.Archivo;
 import grupo5.cliente.rest.DonacionesApi.Persona;
 import grupo5.cliente.vistas.AdminDonantesVista;
@@ -119,6 +120,12 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     return persona.tipoDocumento() == null
         ? persona.documento()
         : persona.tipoDocumento() + " " + persona.documento();
+  }
+
+  @Override
+  public void registrarDonante(PersonaNueva persona) {
+    Persona creada = donaciones.crearPersona(persona);
+    donaciones.registrarDonante(new DonacionesApi.DonanteNuevo(creada.id()));
   }
 
   // --- Importar donantes -----------------------------------------------------------------------
