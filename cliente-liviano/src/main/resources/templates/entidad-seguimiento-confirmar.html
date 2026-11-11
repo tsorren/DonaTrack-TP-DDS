@@ -8,7 +8,9 @@
        ?entrega=lentejas (de partida) o ropa; una clave que no está, o ?escenario=vacio, muestra "No
        encontramos esa entrega". ?escenario=lento (enviando), error (del servidor), sin-conexion y
        confirmada (ya confirmada). Es un formulario real (POST, multipart por las fotos, lo
-       obligatorio con required): va a entidad-seguimiento-sellada-<clave>.
+       obligatorio con required): va a entidad-seguimiento-sellada-<clave>. Fuera de la maqueta lo
+       atiende EntidadEnviosController (fotos a Logística, ENTREGADA con el remito y el reporte) y
+       vuelve a Seguir entregas con el aviso.
        Fragmentos:
        - entrega(pedida, pantalla): las entregas que esperan confirmación, escritas una sola vez para
          el acta, el acta con errores y la confirmada. pedida es la clave; null, la de ?entrega=.
@@ -29,7 +31,8 @@
             ~{entidad-seguimiento-confirmar :: acta(false, false)})}"></th:block>
 </th:block>
 
-<!--/* Los datos de la entrega y, además, la categoría, el pedido que cubre (de las
+<!--/* Las entregas vienen del controller (entregasPorConfirmar: de la maqueta o de Logística y
+       Donaciones). Los datos de la entrega y, además, la categoría, el pedido que cubre (de las
        necesidades publicadas) y quién donó. El nombre se ve, sea empresa o persona, salvo
        que quien donó lo haya ocultado en su perfil (dono null; donoTipo 'empresa' o, si falta, persona;
        usuario, 2026-11-02): entonces se ve su categoría del ranking de Incentivos, donoCategoria
@@ -37,29 +40,12 @@
        empresa donante»: la pantalla no falla por esa llamada. Las cantidades,
        en la unidad de la subcategoría del catálogo: kg, litros o unidades. */-->
 <th:block th:fragment="entrega(pedida, pantalla)"
-    th:with="entregas=${ {
-      {clave: 'lentejas', nombre: 'lentejas secas', titulo: 'Lentejas secas, 15 kg', cantidad: '15 kg',
-       salio: 'Hoy, 14:30', llego: 'Hoy, 18:20', llegoFrase: 'Llegó hoy a las 18:20.',
-       llegaron: 'Llegaron hoy a las 18:20.',
-       remito: '0001-00004521', categoria: 'cat-alimentos', categoriaTexto: 'Alimentos',
-       pedido: 'Lentejas secas, 40 kg, hasta el 31 de octubre.', recibido: 'Van 10 kg recibidos.',
-       pedidoDespues: 'Tu necesidad de lentejas secas: 25 de 40 kg recibidos, hasta el 31 de octubre.',
-       dono: 'Distribuidora Ejemplo SA', foto: 'lentejas-1', confirmo: '18:45',
-       salida: 15, unidad: 'kg', decimales: true, llegoMenos: '12 de 15 kg', detalle: 'Dos bolsas rotas.'},
-      {clave: 'ropa', nombre: 'ropa de abrigo', titulo: 'Ropa de abrigo, 10 unidades', cantidad: '10 unidades',
-       salio: 'Ayer, 15:50', llego: 'Ayer, 17:10', llegoFrase: 'Llegó ayer a las 17:10.',
-       llegaron: 'Llegó ayer a las 17:10.',
-       remito: '0001-00004498', categoria: 'cat-ropa', categoriaTexto: 'Ropa',
-       pedido: 'Ropa de abrigo, 30 unidades, hasta el 15 de noviembre.', recibido: 'Van 5 unidades recibidas.',
-       pedidoDespues: 'Tu necesidad de ropa de abrigo: 15 de 30 unidades recibidas, hasta el 15 de noviembre.',
-       dono: null, donoCategoria: 'Sostenedor', foto: 'ropa-1', confirmo: '18:50',
-       salida: 10, unidad: 'unidades', decimales: false, llegoMenos: '8 de 10 unidades',
-       detalle: 'Faltaba una caja.'} } },
+    th:with="entregas=${entregasPorConfirmar},
              escenario=${param.escenario != null ? param.escenario[0] : ''},
              clave=${pedida ?: (param.entrega == null ? 'lentejas' : param.entrega[0])},
              elegidas=${escenario == 'vacio' ? {} : entregas.?[clave == #root.clave]},
              e=${#lists.isEmpty(elegidas) ? null : elegidas[0]},
-             otra=${e == null ? null : entregas.?[clave != #root.clave][0]}">
+             otra=${e == null ? null : entregas.^[clave != #root.clave]}">
   <th:block th:replace="${pantalla}"></th:block>
 </th:block>
 
@@ -184,7 +170,8 @@
         <form th:unless="${escenario == 'confirmada'}" class="acta-formulario"
               action="/entidad-seguimiento-sellada-lentejas"
               th:action="@{/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
-              method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+              method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
+              hx-boost="true" hx-indicator="#enviando-entidad-seguimiento-confirmar" hx-select-oob="#avisos">
           <p class="obligatorios" th:text="${problema} ? 'Son obligatorios las fotos, qué pasó y el remito; cuánto llegó, si llegó menos.' : 'Los dos datos son obligatorios: las fotos y el remito.'">Los
             dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">
@@ -271,11 +258,12 @@
           </fieldset>
 
           <div class="firma">
-            <p class="firma-quien">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
+            <p class="firma-quien" th:text="|Recibe ${cuenta.nombre}, por ${cuenta.rol}, el ${hoyActa}|">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
             <button class="boton" data-tono="principal" type="submit"
                     th:disabled="${escenario == 'lento'}"
                     th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar
               recepción</button>
+            <p th:replace="~{envio :: indicador('enviando-entidad-seguimiento-confirmar', 'Subiendo las fotos y confirmando la entrega…')}"></p>
             <p th:if="${problema}" class="nota">Al confirmar, la entrega queda como entregada, con el
               problema anotado, y quien donó recibe el aviso.</p>
             <p th:unless="${problema}" class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.

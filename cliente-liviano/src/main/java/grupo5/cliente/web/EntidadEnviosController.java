@@ -1,14 +1,17 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.CuentaActual;
+import grupo5.cliente.puertos.EntidadConfirmarPuerto;
 import grupo5.cliente.puertos.EntidadNotificacionesPuerto;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -22,10 +25,47 @@ public class EntidadEnviosController {
 
   private final CuentaActual cuentas;
   private final EntidadNotificacionesPuerto notificaciones;
+  private final EntidadConfirmarPuerto confirmar;
 
-  EntidadEnviosController(CuentaActual cuentas, EntidadNotificacionesPuerto notificaciones) {
+  EntidadEnviosController(
+      CuentaActual cuentas,
+      EntidadNotificacionesPuerto notificaciones,
+      EntidadConfirmarPuerto confirmar) {
     this.cuentas = cuentas;
     this.notificaciones = notificaciones;
+    this.confirmar = confirmar;
+  }
+
+  /**
+   * El acta de Confirmar recepción y de Llegó con un problema ({@code motivo}): sube las fotos y
+   * deja la entrega como entregada, con el remito y el problema si lo hay. La clave es la entrega
+   * de Logística; vuelve a Seguir entregas con el aviso.
+   */
+  @PostMapping("/entidad-seguimiento-sellada-{clave}")
+  String confirmarRecepcion(
+      @PathVariable UUID clave,
+      @RequestParam List<MultipartFile> fotos,
+      @RequestParam String remito,
+      @RequestParam(required = false) String motivo,
+      @RequestParam(required = false) Double cantidadRecibida,
+      @RequestParam(required = false) String detalle,
+      HttpServletRequest pedido,
+      RedirectAttributes atributos) {
+    UUID entidad = cuentas.entidad(pedido).orElse(null);
+    if (entidad == null) {
+      return Entidad.INGRESAR;
+    }
+    String elegido = motivo != null && motivo.matches("incompleta|danada|otro") ? motivo : null;
+    confirmar.confirmar(
+        entidad,
+        clave.toString(),
+        new EntidadConfirmarPuerto.Acta(fotos, remito, elegido, cantidadRecibida, detalle));
+    return Envios.listo(
+        "entidad-seguimiento",
+        elegido == null
+            ? "Confirmaste la recepción. Le avisamos a quien donó."
+            : "Confirmaste la recepción y contaste el problema. Le avisamos a quien donó.",
+        atributos);
   }
 
   /**

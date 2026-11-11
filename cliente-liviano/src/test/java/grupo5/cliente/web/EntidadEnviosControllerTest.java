@@ -1,22 +1,29 @@
 package grupo5.cliente.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 import grupo5.cliente.puertos.CuentaActual;
+import grupo5.cliente.puertos.EntidadConfirmarPuerto;
+import grupo5.cliente.puertos.EntidadConfirmarPuerto.Acta;
 import grupo5.cliente.puertos.EntidadNotificacionesPuerto;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,6 +46,7 @@ class EntidadEnviosControllerTest {
   @MockitoBean private ClientRegistrationRepository clientes;
   @MockitoBean private CuentaActual cuentas;
   @MockitoBean private EntidadNotificacionesPuerto notificaciones;
+  @MockitoBean private EntidadConfirmarPuerto confirmar;
   @Autowired private MockMvc mvc;
 
   @BeforeEach
@@ -74,6 +82,38 @@ class EntidadEnviosControllerTest {
                         + " necesitás cambiar algo, escribinos desde Contacto."));
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "datos"))
         .andExpect(redirectedUrl("/entidad-perfil#datos"));
+  }
+
+  @Test
+  void elActaConfirmaConLasFotosYElProblemaYVuelveASeguirEntregas() throws Exception {
+    MockMultipartFile foto =
+        new MockMultipartFile("fotos", "acta.jpg", "image/jpeg", new byte[] {1, 2, 3});
+    mvc.perform(
+            multipart("/entidad-seguimiento-sellada-" + UNA)
+                .file(foto)
+                .param("remito", "0001-00004521")
+                .param("motivo", "incompleta")
+                .param("cantidadRecibida", "12.5")
+                .param("detalle", "Dos bolsas rotas."))
+        .andExpect(redirectedUrl("/entidad-seguimiento"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Confirmaste la recepción y contaste el problema. Le avisamos a quien donó."));
+    ArgumentCaptor<Acta> acta = ArgumentCaptor.forClass(Acta.class);
+    verify(confirmar).confirmar(eq(ENTIDAD), eq(UNA.toString()), acta.capture());
+    assertEquals("0001-00004521", acta.getValue().remito());
+    assertEquals("incompleta", acta.getValue().motivo());
+    assertEquals(12.5, acta.getValue().cantidadRecibida());
+    assertEquals(1, acta.getValue().fotos().size());
+
+    mvc.perform(
+            multipart("/entidad-seguimiento-sellada-" + UNA)
+                .file(foto)
+                .param("remito", "0001-00004522"))
+        .andExpect(
+            flash().attribute(Envios.AVISO, "Confirmaste la recepción. Le avisamos a quien donó."));
   }
 
   @Test
