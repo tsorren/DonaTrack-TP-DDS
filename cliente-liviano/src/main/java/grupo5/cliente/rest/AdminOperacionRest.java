@@ -20,12 +20,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -137,13 +139,14 @@ class AdminOperacionRest implements AdminOperacionPuerto {
         .sorted(Comparator.comparing(DonacionesApi.Propuesta::fechaCreacion, PRIMERO_SIN_FECHA))
         .forEach(
             p -> {
-              DonacionesApi.Necesidad necesidad = pedidos.necesidad(p.necesidad().id());
-              String entidad = pedidos.entidad(necesidad.idEntidad());
-              String pide = pide(p.necesidad(), necesidad.unidad());
+              UUID necesidad = p.necesidad().id();
+              String entidad = pedidos.entidadDe(necesidad);
+              String unidad = pedidos.unidadDe(necesidad);
+              String pide = pide(p.necesidad(), unidad);
               switch (p.estado() == null ? "" : p.estado()) {
                 case APROBADA -> decididas.addFirst(new Decidida(entidad, pide, "Aprobada"));
                 case DESCARTADA -> decididas.addFirst(new Decidida(entidad, pide, "Descartada"));
-                default -> pendientes.add(propuesta(p, entidad, pide, necesidad.unidad(), hoy));
+                default -> pendientes.add(propuesta(p, entidad, pide, unidad, hoy));
               }
             });
     String ultima =
@@ -168,7 +171,7 @@ class AdminOperacionRest implements AdminOperacionPuerto {
         donaciones.propuestas().stream()
             .filter(p -> id.equals(p.id()))
             .findFirst()
-            .map(p -> pedidos.entidad(pedidos.necesidad(p.necesidad().id()).idEntidad()))
+            .map(p -> pedidos.entidadDe(p.necesidad().id()))
             .orElse(null);
     donaciones.decidirPropuesta(
         id,
@@ -249,20 +252,37 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   /** La necesidad y el nombre de la entidad de cada propuesta, pedidos una vez por pantalla. */
   private final class Pedidos {
 
-    private final Map<UUID, DonacionesApi.Necesidad> necesidades = new HashMap<>();
-    private final Map<UUID, String> entidades = new HashMap<>();
+    private final Map<UUID, Optional<DonacionesApi.Necesidad>> necesidades = new HashMap<>();
+    private final Map<UUID, Optional<String>> entidades = new HashMap<>();
 
-    DonacionesApi.Necesidad necesidad(UUID id) {
-      return necesidades.computeIfAbsent(id, donaciones::necesidad);
-    }
-
-    String entidad(UUID id) {
-      return entidades.computeIfAbsent(
+    /** Una necesidad que ya no está (404) deja la propuesta sin entidad ni unidad. */
+    private Optional<DonacionesApi.Necesidad> necesidad(UUID id) {
+      return necesidades.computeIfAbsent(
           id,
           clave -> {
-            DonacionesApi.Persona juridica = donaciones.entidad(clave).juridica();
-            return juridica == null ? null : juridica.razonSocial();
+            try {
+              return Optional.ofNullable(donaciones.necesidad(clave));
+            } catch (HttpClientErrorException.NotFound noEsta) {
+              return Optional.empty();
+            }
           });
+    }
+
+    String unidadDe(UUID necesidad) {
+      return necesidad(necesidad).map(DonacionesApi.Necesidad::unidad).orElse(null);
+    }
+
+    String entidadDe(UUID necesidad) {
+      return necesidad(necesidad)
+          .map(DonacionesApi.Necesidad::idEntidad)
+          .flatMap(
+              id ->
+                  entidades.computeIfAbsent(
+                      id,
+                      clave ->
+                          Optional.ofNullable(donaciones.entidad(clave).juridica())
+                              .map(DonacionesApi.Persona::razonSocial)))
+          .orElse(null);
     }
   }
 

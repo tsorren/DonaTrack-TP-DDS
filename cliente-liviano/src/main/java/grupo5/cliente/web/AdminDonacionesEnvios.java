@@ -39,6 +39,7 @@ class AdminDonacionesEnvios {
       DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, HH:mm", Locale.forLanguageTag("es-AR"));
   private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
   private static final String BIEN = "bienes[";
+  private static final String REGISTRAR = "admin-donaciones-registrar";
 
   private final AdminOperacionPuerto operacion;
   private final CuentasDelMenu cuentas;
@@ -80,18 +81,21 @@ class AdminDonacionesEnvios {
    */
   @PostMapping("/admin-donaciones-registrada")
   String registrar(
-      @RequestParam UUID donante,
+      @RequestParam(required = false) UUID donante,
       @RequestParam String descripcion,
       @RequestParam String deposito,
       @RequestParam LocalDate recepcion,
       HttpServletRequest pedido,
       RedirectAttributes atributos) {
+    if (donante == null) {
+      return Envios.listo(REGISTRAR, "Elegí quién dona para registrar la donación.", atributos);
+    }
     List<BienNuevo> bienes = new ArrayList<>();
     for (int i = 0; pedido.getParameter(BIEN + i + "].que") != null; i++) {
       String cantidad = pedido.getParameter(BIEN + i + "].cantidad");
       if (cantidad == null || !cantidad.trim().matches("\\d{1,9}")) {
         return Envios.listo(
-            "admin-donaciones-registrar?donante=" + donante,
+            REGISTRAR + "?donante=" + donante,
             "La cantidad del bien " + (i + 1) + " tiene que ser un número. Por ejemplo: 20.",
             atributos);
       }
@@ -101,8 +105,13 @@ class AdminDonacionesEnvios {
       operacion.registrarDonacion(
           new DonacionNueva(donante.toString(), descripcion.trim(), bienes, deposito, recepcion));
     } catch (HttpClientErrorException.Conflict baja) {
+      // ERR-EST-211 es DONANTE_INACTIVO (docs/arquitectura/catalogo-errores.md); otro 409, a su
+      // página de error.
+      if (!baja.getResponseBodyAsString().contains("ERR-EST-211")) {
+        throw baja;
+      }
       return Envios.listo(
-          "admin-donaciones-registrar",
+          REGISTRAR,
           "Ese donante está dado de baja: no se le pueden registrar donaciones. Si volvió,"
               + " registralo de nuevo en Donantes.",
           atributos);

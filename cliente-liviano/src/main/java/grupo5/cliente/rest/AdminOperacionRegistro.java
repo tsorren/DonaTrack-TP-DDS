@@ -103,10 +103,11 @@ final class AdminOperacionRegistro {
       nombre =
           (p.nombre() == null ? "" : p.nombre()) + (p.apellido() == null ? "" : " " + p.apellido());
     }
-    String documento =
-        p == null || p.documento() == null
-            ? ""
-            : (p.tipoDocumento() == null ? "" : p.tipoDocumento() + " ") + p.documento();
+    String documento = "";
+    if (p != null && p.documento() != null) {
+      documento =
+          p.tipoDocumento() == null ? p.documento() : p.tipoDocumento() + " " + p.documento();
+    }
     return new Donante(d.idDonante().toString(), nombre.trim(), documento);
   }
 }

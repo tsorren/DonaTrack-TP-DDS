@@ -37,16 +37,19 @@ import org.springframework.util.LinkedMultiValueMap;
 final class AdminOperacionDonaciones {
 
   private static final String DEPOSITO = "deposito";
+  private static final String EN_ASIGNADA = "asignada";
+  private static final String EN_CAMINO = "camino";
+  private static final String EN_ENTREGADA = "entregada";
   private static final String ENDEPOSITO = "ENDEPOSITO";
   private static final int PRONTO = 7;
   private static final DateTimeFormatter MES = DateTimeFormatter.ofPattern("MMMM", Comun.ES_AR);
   private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm", Comun.ES_AR);
   private static final List<String> ORDEN_DE_ESTADOS =
-      List.of(DEPOSITO, "asignada", "camino", "entregada", "vencida");
+      List.of(DEPOSITO, EN_ASIGNADA, EN_CAMINO, EN_ENTREGADA, "vencida");
 
   private final DonacionesApi api;
   private final LocalDateTime ahora;
-  private final Collator alfabetico = Collator.getInstance(Comun.ES_AR);
+  private final Collator castellano = Collator.getInstance(Comun.ES_AR);
 
   AdminOperacionDonaciones(DonacionesApi api, LocalDateTime ahora) {
     this.api = api;
@@ -89,7 +92,7 @@ final class AdminOperacionDonaciones {
   }
 
   private Comparator<Fila> alfabetico(Function<Fila, String> texto) {
-    return Comparator.comparing(f -> Objects.toString(texto.apply(f), ""), alfabetico);
+    return Comparator.comparing(f -> Objects.toString(texto.apply(f), ""), castellano);
   }
 
   private static List<String> claves(List<Fila> filas, Comparator<Fila> orden) {
@@ -149,7 +152,7 @@ final class AdminOperacionDonaciones {
         vista,
         vence,
         d.fechaRegistro(),
-        "entregada".equals(estado) ? Comun.desde(d, ENTREGADA) : null);
+        EN_ENTREGADA.equals(estado) ? Comun.desde(d, ENTREGADA) : null);
   }
 
   private Bien bien(DonacionesApi.Item item) {
@@ -227,9 +230,9 @@ final class AdminOperacionDonaciones {
 
   private static String estado(String normalizado) {
     return switch (normalizado) {
-      case ASIGNADA, LISTA, FALLIDA -> "asignada";
-      case TRASLADO -> "camino";
-      case ENTREGADA -> "entregada";
+      case ASIGNADA, LISTA, FALLIDA -> EN_ASIGNADA;
+      case TRASLADO -> EN_CAMINO;
+      case ENTREGADA -> EN_ENTREGADA;
       case VENCIDA -> "vencida";
       default -> DEPOSITO;
     };
@@ -281,8 +284,8 @@ final class AdminOperacionDonaciones {
   /** "7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre. Al …". */
   private String resumen(List<Donacion> todas, List<Fila> filas) {
     long enDeposito = todas.stream().filter(d -> DEPOSITO.equals(d.estado())).count();
-    long asignadas = todas.stream().filter(d -> "asignada".equals(d.estado())).count();
-    long enCamino = todas.stream().filter(d -> "camino".equals(d.estado())).count();
+    long asignadas = todas.stream().filter(d -> EN_ASIGNADA.equals(d.estado())).count();
+    long enCamino = todas.stream().filter(d -> EN_CAMINO.equals(d.estado())).count();
     YearMonth mes = YearMonth.from(ahora);
     long entregadas =
         filas.stream()

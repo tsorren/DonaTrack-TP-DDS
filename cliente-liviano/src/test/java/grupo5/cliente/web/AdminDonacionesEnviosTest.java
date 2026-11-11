@@ -3,6 +3,7 @@ package grupo5.cliente.web;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -21,6 +22,7 @@ import grupo5.cliente.puertos.AdminOperacionPuerto.DonacionNueva;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -192,6 +194,39 @@ class AdminDonacionesEnviosTest {
     assertEquals(5, fideos.cantidad());
     assertNull(fideos.vence());
     assertNull(fideos.foto());
+  }
+
+  @Test
+  void sinDonanteElegidoODadoDeBajaVuelveAlFormulario() throws Exception {
+    mvc.perform(
+            multipart("/admin-donaciones-registrada")
+                .param("descripcion", "Caja")
+                .param("deposito", "Depósito Central")
+                .param("recepcion", "2026-11-10"))
+        .andExpect(redirectedUrl("/admin-donaciones-registrar"))
+        .andExpect(flash().attribute(Envios.AVISO, "Elegí quién dona para registrar la donación."));
+    doThrow(
+            HttpClientErrorException.create(
+                HttpStatus.CONFLICT,
+                "Conflict",
+                null,
+                "{\"code\": \"ERR-EST-211\"}".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8))
+        .when(operacion)
+        .registrarDonacion(any());
+    mvc.perform(
+            multipart("/admin-donaciones-registrada")
+                .param("donante", ANA)
+                .param("descripcion", "Caja")
+                .param("deposito", "Depósito Central")
+                .param("recepcion", "2026-11-10"))
+        .andExpect(redirectedUrl("/admin-donaciones-registrar"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Ese donante está dado de baja: no se le pueden registrar donaciones. Si"
+                        + " volvió, registralo de nuevo en Donantes."));
   }
 
   @Test

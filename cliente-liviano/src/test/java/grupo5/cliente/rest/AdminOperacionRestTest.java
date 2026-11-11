@@ -10,6 +10,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
@@ -28,6 +29,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -169,6 +171,30 @@ class AdminOperacionRestTest {
     assertEquals(
         List.of(new Decidida("Comedor Ejemplo", "Arroz, 25 kg", "Descartada")), vista.decididas());
     donaciones.verify();
+  }
+
+  @Test
+  void unaNecesidadQueYaNoEstaDejaLaPropuestaSinEntidad() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "estado": "PENDIENTE", "fechaCreacion": "2026-10-15T10:00:00",
+                  "necesidad": {"id": "%s", "descripcion": "Arroz", "cantidadNecesitada": 25},
+                  "fragmentaciones": []}]"""
+                    .formatted(P1, N1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/necesidades/" + N1))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/asignaciones/ejecuciones"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+    Propuesta arroz = adaptador.asignaciones().propuestas().getFirst();
+    assertNull(arroz.entidad());
+    assertEquals("Arroz, 25", arroz.pide());
   }
 
   @Test

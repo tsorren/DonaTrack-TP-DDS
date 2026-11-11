@@ -41,6 +41,10 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
   private static final String APROBADA = "Aprobada";
   private static final String COMPLETA = "Cubre la necesidad completa.";
   private static final String HOY = "hoy, 18:36";
+  private static final AdminDonacionesRegistroVista.Donante ANA_EJEMPLO =
+      new AdminDonacionesRegistroVista.Donante("ana-ejemplo", "Ana Ejemplo", "DNI 20.000.001");
+  private static final AdminDonacionesRegistroVista.Donante JUAN_EJEMPLO =
+      new AdminDonacionesRegistroVista.Donante("juan-ejemplo", "Juan Ejemplo", "DNI 20.000.002");
 
   /**
    * Las propuestas y las decididas de ejemplo; la plantilla elige cuáles mostrar según el
@@ -100,11 +104,6 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
   public void marcarVencida(String donacion, String actor, String motivo) {
     // En la maqueta el envío lo atiende SitioController, sin guardar.
   }
-
-  private static final AdminDonacionesRegistroVista.Donante ANA_EJEMPLO =
-      new AdminDonacionesRegistroVista.Donante("ana-ejemplo", "Ana Ejemplo", "DNI 20.000.001");
-  private static final AdminDonacionesRegistroVista.Donante JUAN_EJEMPLO =
-      new AdminDonacionesRegistroVista.Donante("juan-ejemplo", "Juan Ejemplo", "DNI 20.000.002");
 
   /** Cualquier búsqueda encuentra a Ana y a Juan, como mostraba la plantilla. */
   @Override

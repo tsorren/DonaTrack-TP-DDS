@@ -86,7 +86,8 @@ class AdminAsignacionesEnviosTest {
                 HttpStatus.CONFLICT,
                 "Conflict",
                 HttpHeaders.EMPTY,
-                "{\"codigo\": \"NECESIDAD_INACTIVA\"}".getBytes(StandardCharsets.UTF_8),
+                "{\"code\": \"ERR-EST-521\", \"type\": \"BusinessStateException\"}"
+                    .getBytes(StandardCharsets.UTF_8),
                 StandardCharsets.UTF_8));
 
     mvc.perform(post("/admin-asignaciones-aprobada").param("propuesta", ID))

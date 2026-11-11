@@ -76,14 +76,17 @@ class AdminAsignacionesEnvios {
     return entidad == null ? "" : " para " + entidad;
   }
 
-  /** El código del catálogo de errores dice por qué no se pudo aprobar. */
+  /**
+   * El código del catálogo de errores (docs/arquitectura/catalogo-errores.md) dice por qué no se
+   * pudo aprobar: ERR-EST-521 es NECESIDAD_INACTIVA y ERR-EST-520, DONACION_A_SI_MISMO.
+   */
   private static String porQue(String cuerpo) {
-    if (cuerpo.contains("NECESIDAD_INACTIVA")) {
+    if (cuerpo.contains("ERR-EST-521")) {
       return "No se pudo aprobar: la necesidad ya no está activa (la entidad la dio de baja o ya se"
           + " cumplió)."
           + SIN_ASIGNAR;
     }
-    if (cuerpo.contains("DONACION_A_SI_MISMO")) {
+    if (cuerpo.contains("ERR-EST-520")) {
       return "No se pudo aprobar: una de las donaciones es de la misma entidad que la pidió."
           + SIN_ASIGNAR;
     }
