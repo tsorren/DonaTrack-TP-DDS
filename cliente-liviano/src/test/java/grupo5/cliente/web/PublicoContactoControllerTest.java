@@ -15,11 +15,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import grupo5.cliente.puertos.ContactoRechazado;
 import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.puertos.PublicoContactoPuerto;
 import grupo5.cliente.puertos.PublicoContactoPuerto.Mensaje;
 import grupo5.cliente.puertos.PublicoContactoPuerto.Motivo;
-import grupo5.cliente.puertos.PublicoContactoPuerto.Rechazado;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -103,7 +103,7 @@ class PublicoContactoControllerTest {
 
   @Test
   void conElLimiteVuelveAlFormularioConSuAviso() throws Exception {
-    when(contacto.enviar(any(), any())).thenThrow(new Rechazado(Motivo.LIMITE, null));
+    when(contacto.enviar(any(), any())).thenThrow(new ContactoRechazado(Motivo.LIMITE, null));
 
     mvc.perform(
             post("/publico-contacto-enviado")

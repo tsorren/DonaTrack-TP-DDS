@@ -104,7 +104,7 @@ class PublicoRest implements PublicoPuerto {
     DateTimeFormatter inicio;
     if (desde.getYear() != hasta.getYear()) {
       inicio = Comun.DIA_Y_ANIO;
-    } else if (desde.getMonth() != hasta.getMonth()) {
+    } else if (desde.getMonthValue() != hasta.getMonthValue()) {
       inicio = Comun.DIA;
     } else {
       inicio = SOLO_DIA;

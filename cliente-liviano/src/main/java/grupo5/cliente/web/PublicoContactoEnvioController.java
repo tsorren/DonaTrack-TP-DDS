@@ -1,9 +1,9 @@
 package grupo5.cliente.web;
 
+import grupo5.cliente.puertos.ContactoRechazado;
 import grupo5.cliente.puertos.PublicoContactoPuerto;
 import grupo5.cliente.puertos.PublicoContactoPuerto.Mensaje;
 import grupo5.cliente.puertos.PublicoContactoPuerto.Motivo;
-import grupo5.cliente.puertos.PublicoContactoPuerto.Rechazado;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -88,7 +88,7 @@ class PublicoContactoEnvioController {
     try {
       atributos.addFlashAttribute(
           PublicoContactoController.NUMERO, contacto.enviar(enviado, pedido.getRemoteAddr()));
-    } catch (Rechazado rechazo) {
+    } catch (ContactoRechazado rechazo) {
       return Envios.listo(
           FORMULARIO, rechazo.motivo() == Motivo.LIMITE ? LIMITE : INVALIDO, atributos);
     }

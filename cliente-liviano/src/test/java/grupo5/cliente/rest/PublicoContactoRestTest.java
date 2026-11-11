@@ -11,9 +11,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.ContactoRechazado;
 import grupo5.cliente.puertos.PublicoContactoPuerto.Mensaje;
 import grupo5.cliente.puertos.PublicoContactoPuerto.Motivo;
-import grupo5.cliente.puertos.PublicoContactoPuerto.Rechazado;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,10 +81,10 @@ class PublicoContactoRestTest {
 
     assertThatThrownBy(() -> adaptador.enviar(MENSAJE, "203.0.113.7"))
         .isInstanceOfSatisfying(
-            Rechazado.class, r -> assertThat(r.motivo()).isEqualTo(Motivo.LIMITE));
+            ContactoRechazado.class, r -> assertThat(r.motivo()).isEqualTo(Motivo.LIMITE));
     assertThatThrownBy(() -> adaptador.enviar(MENSAJE, "203.0.113.7"))
         .isInstanceOfSatisfying(
-            Rechazado.class, r -> assertThat(r.motivo()).isEqualTo(Motivo.INVALIDO));
+            ContactoRechazado.class, r -> assertThat(r.motivo()).isEqualTo(Motivo.INVALIDO));
   }
 
   @Test
@@ -93,7 +93,7 @@ class PublicoContactoRestTest {
 
     assertThatThrownBy(() -> adaptador.enviar(MENSAJE, "203.0.113.7"))
         .isInstanceOf(RestClientException.class)
-        .isNotInstanceOf(Rechazado.class);
+        .isNotInstanceOf(ContactoRechazado.class);
   }
 
   @Test

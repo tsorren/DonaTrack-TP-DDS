@@ -1,5 +1,6 @@
 package grupo5.cliente.rest;
 
+import grupo5.cliente.puertos.ContactoRechazado;
 import grupo5.cliente.puertos.PublicoContactoPuerto;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -47,9 +48,9 @@ class PublicoContactoRest implements PublicoContactoPuerto {
                   mensaje.claveEnvio()))
           .numero();
     } catch (HttpClientErrorException.BadRequest invalido) {
-      throw new Rechazado(Motivo.INVALIDO, invalido);
+      throw new ContactoRechazado(Motivo.INVALIDO, invalido);
     } catch (HttpClientErrorException.TooManyRequests limite) {
-      throw new Rechazado(Motivo.LIMITE, limite);
+      throw new ContactoRechazado(Motivo.LIMITE, limite);
     }
   }
 }

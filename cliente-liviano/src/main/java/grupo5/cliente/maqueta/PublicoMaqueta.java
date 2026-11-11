@@ -42,7 +42,6 @@ class PublicoMaqueta implements PublicoPuerto {
                   "Escuela Ejemplo N.º 12",
                   "Centro Ejemplo",
                   "14",
-                  true,
                   FOTO_SILLAS,
                   "Sillas apiladas en un aula"),
               alimentos("Lentejas secas, 10 kg", "10", true),
@@ -53,7 +52,6 @@ class PublicoMaqueta implements PublicoPuerto {
                   "Merendero Ejemplo Sur",
                   "Ejemplo Sur",
                   "09",
-                  true,
                   FOTO_ROPA,
                   "Bolsas con ropa de abrigo junto a la puerta del merendero"),
               entrega(
@@ -62,7 +60,6 @@ class PublicoMaqueta implements PublicoPuerto {
                   COMEDOR,
                   "Barrio Ejemplo",
                   "08",
-                  true,
                   FOTO_ROPA,
                   "Bolsas con ropa de abrigo junto a la puerta del comedor"),
               entrega(
@@ -71,7 +68,6 @@ class PublicoMaqueta implements PublicoPuerto {
                   "Hogar Casa Ejemplo",
                   "Parque Ejemplo",
                   "07",
-                  false,
                   FOTO_ROPA,
                   "Bolsas con frazadas junto a la puerta del hogar"),
               alimentos("Leche en polvo, 12 unidades", "06", false),
@@ -93,16 +89,12 @@ class PublicoMaqueta implements PublicoPuerto {
           "del 8 al 15 de octubre de 2026",
           "15 de octubre de 2026, 14:30");
 
-  /** Una entrega de octubre; {@code dia}, con dos cifras. */
+  /**
+   * Una entrega de octubre; {@code dia}, con dos cifras. Es de la semana si llegó del 8 al 15 (hoy
+   * es el 15).
+   */
   private static PublicoEntregas.Entrega entrega(
-      String que,
-      String cat,
-      String entidad,
-      String barrio,
-      String dia,
-      boolean semana,
-      String foto,
-      String alt) {
+      String que, String cat, String entidad, String barrio, String dia, String foto, String alt) {
     return new PublicoEntregas.Entrega(
         que,
         cat,
@@ -112,7 +104,7 @@ class PublicoMaqueta implements PublicoPuerto {
         Integer.parseInt(dia) + " de octubre",
         ANIO,
         "2026-10-" + dia,
-        semana,
+        Integer.parseInt(dia) >= 8,
         foto,
         alt);
   }
