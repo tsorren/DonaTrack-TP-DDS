@@ -29,3 +29,4 @@ donatrack:
       - GET /api/entidades/publicas
       - GET /api/necesidades/publicas
       - GET /api/entregas/mapa
+      - POST /api/contacto

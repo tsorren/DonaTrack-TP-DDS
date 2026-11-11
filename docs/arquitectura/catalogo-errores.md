@@ -34,7 +34,7 @@
 | `RecursoNoEncontradoException` | `DonaTrackException` | `404 Not Found` | Recurso buscado por ID no existe |
 | `InfrastructureException` | `DonaTrackException` | `500 Internal Server Error` | Fallo en capa de infraestructura (CSV, conexiones externas) |
 
-> \* `BusinessStateException` devuelve `404 Not Found` para los códigos `ERR-EST-702`, `ERR-EST-708` y `ERR-EST-716` (ver handler).
+> \* `BusinessStateException` devuelve `404 Not Found` para los códigos `ERR-EST-702`, `ERR-EST-708` y `ERR-EST-716`, y `429 Too Many Requests` para `ERR-EST-903` (ver handler).
 
 ---
 
@@ -248,6 +248,7 @@
 | `ERR-EST-810` | `SOLICITUD_PLANIFICACION_TRANSICION_INVALIDA` | Transición de estado de solicitud de planificación inválida | `409` | |
 | `ERR-EST-816` | `ENTREGA_DONACION_DUPLICADA` | Ya existe una entrega registrada para la donación indicada | `409` | |
 | `ERR-EST-902` | `PERSONA_ANONIMIZADA` | La persona réplica ya está anonimizada y no admite nuevas sincronizaciones (notificaciones) | `409` | ADR [20261018](../adr/notificaciones-service/20261018-rechazo-de-sincronizacion-de-personas-anonimizadas-con-codigo-de-catalogo.md) (`proposed`) |
+| `ERR-EST-903` | `CONTACTO_LIMITE_EXCEDIDO` | El correo o la IP pasaron el límite de mensajes de contacto (5 por hora por correo, 20 por día por IP) | **`429`** | Excepción especial en handler. HB-21, ADR [20261110](../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md) (`proposed`) |
 
 ---
 

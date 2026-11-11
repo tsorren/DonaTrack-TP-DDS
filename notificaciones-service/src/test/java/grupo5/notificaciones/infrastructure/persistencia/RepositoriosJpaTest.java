@@ -3,15 +3,20 @@ package grupo5.notificaciones.infrastructure.persistencia;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
+import grupo5.notificaciones.infrastructure.persistencia.adapters.MensajeContactoRepositoryJpaAdapter;
 import grupo5.notificaciones.infrastructure.persistencia.adapters.NotificacionRepositoryJpaAdapter;
 import grupo5.notificaciones.infrastructure.persistencia.adapters.PersonaRepositoryJpaAdapter;
 import grupo5.notificaciones.infrastructure.persistencia.entities.PersonaEntity;
 import grupo5.notificaciones.infrastructure.persistencia.mappers.NotificacionPersistenciaMapper;
 import grupo5.notificaciones.infrastructure.persistencia.mappers.PersonaPersistenciaMapper;
 import grupo5.notificaciones.infrastructure.persistencia.repositories.SpringDataPersonaRepository;
+import grupo5.notificaciones.models.entities.contacto.EstadoMensajeContacto;
+import grupo5.notificaciones.models.entities.contacto.MensajeContacto;
+import grupo5.notificaciones.models.entities.contacto.TemaContacto;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Correo;
@@ -19,6 +24,8 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.Telefono;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.entities.personas.TipoTelefono;
+import grupo5.notificaciones.models.ports.NotificacionSender;
+import grupo5.notificaciones.models.repositories.IMensajeContactoRepository;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.mothers.NotificacionMother;
@@ -32,6 +39,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -46,7 +54,8 @@ import org.testcontainers.utility.MountableFile;
   PersonaPersistenciaMapper.class,
   NotificacionPersistenciaMapper.class,
   PersonaRepositoryJpaAdapter.class,
-  NotificacionRepositoryJpaAdapter.class
+  NotificacionRepositoryJpaAdapter.class,
+  MensajeContactoRepositoryJpaAdapter.class
 })
 @Testcontainers
 @DisabledIfDockerUnavailable
@@ -64,6 +73,7 @@ class RepositoriosJpaTest {
 
   @Autowired private IPersonaRepository personaRepository;
   @Autowired private INotificacionRepository notificacionRepository;
+  @Autowired private IMensajeContactoRepository mensajeContactoRepository;
   @Autowired private SpringDataPersonaRepository springDataPersonaRepo;
   @Autowired private JdbcTemplate jdbcTemplate;
 
@@ -201,5 +211,81 @@ class RepositoriosJpaTest {
             eventId,
             LocalDateTime.now());
     assertEquals(0, segundaVez, "El evento duplicado debe ser descartado (0 filas afectadas)");
+  }
+
+  private static MensajeContacto mensajeContacto(UUID clave, String correo, LocalDateTime cuando) {
+    return MensajeContacto.recibido(
+        clave, TemaContacto.ENTREGA, "No llegó", null, correo, "203.0.113.7", cuando);
+  }
+
+  @Test
+  void mensajeContacto_guardaConNumeroDeLaSecuenciaYCuentaPorCorreoEIp() {
+    LocalDateTime ahora = LocalDateTime.now();
+    MensajeContacto primero =
+        mensajeContactoRepository.guardar(
+            mensajeContacto(UUID.randomUUID(), "ana@ejemplo.org", ahora));
+    MensajeContacto segundo =
+        mensajeContactoRepository.guardar(
+            mensajeContacto(UUID.randomUUID(), "ana@ejemplo.org", ahora.minusHours(2)));
+
+    assertTrue(segundo.getNumero() > primero.getNumero());
+    assertEquals(
+        primero.getNumero(),
+        mensajeContactoRepository
+            .buscarPorClaveEnvio(primero.getClaveEnvio())
+            .orElseThrow()
+            .getNumero());
+    assertEquals(
+        1, mensajeContactoRepository.contarPorCorreoDesde("ana@ejemplo.org", ahora.minusHours(1)));
+    assertEquals(2, mensajeContactoRepository.contarPorIpDesde("203.0.113.7", ahora.minusDays(1)));
+  }
+
+  @Test
+  void mensajeContacto_listaDelMasNuevoAlMasViejoYFiltraPorEstado() {
+    LocalDateTime ahora = LocalDateTime.now();
+    MensajeContacto primero =
+        mensajeContactoRepository.guardar(
+            mensajeContacto(UUID.randomUUID(), "a@ejemplo.org", ahora));
+    MensajeContacto segundo =
+        mensajeContactoRepository.guardar(
+            mensajeContacto(UUID.randomUUID(), "b@ejemplo.org", ahora));
+    primero.responder(
+        "Listo",
+        new NotificacionSender() {
+          @Override
+          public boolean enviarA(Correo correo, String mensaje) {
+            return true;
+          }
+
+          @Override
+          public boolean enviarA(Telefono telefono, String mensaje) {
+            return true;
+          }
+        });
+    mensajeContactoRepository.guardar(primero);
+
+    List<MensajeContacto> todos = mensajeContactoRepository.listar(null, 0, 20);
+    List<MensajeContacto> recibidos =
+        mensajeContactoRepository.listar(EstadoMensajeContacto.RECIBIDO, 0, 20);
+
+    assertEquals(segundo.getNumero(), todos.get(0).getNumero());
+    assertEquals(primero.getNumero(), todos.get(1).getNumero());
+    assertEquals(
+        List.of(segundo.getNumero()), recibidos.stream().map(MensajeContacto::getNumero).toList());
+    assertEquals(1, mensajeContactoRepository.contar(EstadoMensajeContacto.RESPONDIDO));
+    assertEquals(
+        EstadoMensajeContacto.RESPONDIDO,
+        mensajeContactoRepository.buscarPorNumero(primero.getNumero()).orElseThrow().getEstado());
+  }
+
+  @Test
+  void mensajeContacto_conClaveDeEnvioRepetida_fallaPorElUnique() {
+    UUID clave = UUID.randomUUID();
+    LocalDateTime ahora = LocalDateTime.now();
+    mensajeContactoRepository.guardar(mensajeContacto(clave, "ana@ejemplo.org", ahora));
+
+    MensajeContacto repetido = mensajeContacto(clave, "ana@ejemplo.org", ahora);
+    assertThrows(
+        DataIntegrityViolationException.class, () -> mensajeContactoRepository.guardar(repetido));
   }
 }
