@@ -639,5 +639,20 @@ todo lo que dicen los textos de ejemplo:
 | Entregas confirmadas | Período y fecha | "del <hace 30 días> al <hoy>" y "Actualizado el <día y hora del pedido>" | El período lo fija la ventana de las destacadas (30 y 7 días) |
 
 Quedan fijos, sin conectar: "Lo que viajó este mes" de la portada y la fecha "Actualizado el …" de
-las cifras viven en `componentes/huerta`, que es compartido; el Mapa y Entidades siguen con los
-datos de ejemplo (ver la sección de huecos).
+las cifras viven en `componentes/huerta`, que es compartido. Entidades y el Mapa se conectaron en el
+cierre de E6 (más abajo).
+
+### Textos del cierre de E6: Entidades y necesidades
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Fuera de la maqueta, la pantalla lee los datos
+públicos de Donaciones (`/api/entidades/publicas` y `/api/necesidades/publicas`) y no muestra lo que
+esa API no trae (el HTML de la maqueta no cambia):
+
+| Elemento | Texto propuesto | Por qué |
+|---|---|---|
+| Grupo de las entidades que no son de los cinco tipos | "Otras entidades" | El "rubro" es texto libre: lo que no dice comedor, merendero, escuela, biblioteca, hogar o club queda acá, para que ninguna entidad desaparezca |
+| Lo que se pide | "Piden 40 kg" (con la unidad si hay sesión; sin ella, "Piden 40"), en lugar de "Faltan 30 de 40 kg este mes", y sin barra | La API no dice cuánto llegó (HB-18) |
+| Cuándo se repite | "Se repite; este período termina el 30 de noviembre" (sin fecha, "Se repite"), en lugar de "Se repite cada mes" | La API da el fin del período, no cada cuánto se repite |
+| Qué no se muestra | La misión, la emergencia, «Necesidades satisfechas» y su nota, el filtro «Emergencias», y el enlace "Ver sus entregas en el mapa" | La API pública no los trae (HB-08, HB-18) y no se sabe qué entidades tienen entregas |
+| Categoría | Sin sesión, sin el filtro por categoría, sin los íconos ni los chips de categoría | Las subcategorías (con su categoría y su unidad) piden sesión |
+| Sin pedidos | La pantalla de "Ninguna entidad tiene necesidades vigentes ahora." | La lista vacía de la API |
