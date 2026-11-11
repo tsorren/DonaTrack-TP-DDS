@@ -292,3 +292,26 @@ Preguntas abiertas, para el equipo (no cambian el prototipo):
   viene en el DTO: conviene que lo traiga, o que traiga la marca de en curso.
 - Donante · `donante-misiones` · la fecha del ascenso puede no coincidir con la de la misión que lo
   produjo: `CambioCategoria` guarda la fecha de proceso y `fechaCompletada`, la del evento.
+
+### Textos del cierre de E6: la conexión con Incentivos
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Fuera de la maqueta, la pantalla lee Incentivos
+(`/donantes/{id}`, `/misiones` y `/ascensos`) y de Donaciones, el tipo de persona (las empresas ven
+"Sin permiso"). El HTML de la maqueta no cambia. Lo que Incentivos no da no se muestra:
+
+| Elemento | Texto propuesto | Por qué |
+|---|---|---|
+| Lo que lleva una misión en curso | "Llevás 12 de 50." (en lugar de "12 de 50 bienes") | `MisionDTO` da el avance sin la unidad (bienes, meses o categorías) |
+| Una planta conseguida | "Completaste esta misión el 3 de agosto de 2026." y nada más (sin los tres pasos, "Ver la donación" ni "Ver el mensaje de la entidad") | Incentivos no dice qué donación completó la misión ni qué le escribió la entidad |
+| La primera planta (Bienvenida) | "Te sumaste a DonaTrack. Esta planta llega con tu cuenta." con un solo paso, la fecha de alta, y "Ver a quién donar" | Es lo único que Incentivos sabe de ella |
+| "Tu donación más grande desde el…" | No se muestra | La API no la da |
+| Desde cuándo es de su categoría | La fecha del último ascenso a ella o, si nunca ascendió, la de su alta; sin ninguna, "Sos donante Colaborador." | Son dos llamadas y pueden faltar |
+| El saludo | El primer nombre de Incentivos; sin nombre, "Gracias por donar." | El nombre puede faltar |
+| Aviso de lo que falta | "Todavía no mostramos con qué donación completaste cada misión." (debajo del saludo) | Que quien mira sepa qué no está, en lugar de creer que no existe |
+| Nombre y qué pide cada misión | Los de su insignia: "Racha Inicial" y "3 meses consecutivos donando" (en la maqueta, "3 meses seguidos donando") | El nombre de la misión en Incentivos es interno ("Racha", repetido en dos categorías); la insignia trae el que ve la persona |
+| Cuál está en curso y cuáles esperan | La primera misión sin completar está en curso; las que le siguen en su categoría esperan, y las de las categorías que vienen no se abren | `MisionDTO` no trae el número ni la marca de en curso: se deduce del orden de la lista (el de `MisionFactory`) |
+
+Fuera de la maqueta, la entrada "Misiones" no está en el menú de la persona (la agrega
+`CuentaDeEjemplo`, solo de la maqueta) y el token del usuario no viaja a Incentivos hasta F5: queda
+anotado en el cierre de E6.
+

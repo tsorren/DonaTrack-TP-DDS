@@ -6,7 +6,10 @@
        La lista "Entidad por entidad" dice todo, con el mismo número (RF-CL-06), y es lo que se ve sin
        JavaScript. Al pasar o enfocar una entidad de la lista, o al llegar con #entidad-<clave> (desde
        Entidades), su marcador se destaca y el mapa va hasta ella. Estados: ?categoria=alimentos, ropa,
-       muebles y escolares (sin resultados), ?escenario=vacio, lento y error. */-->
+       muebles y escolares (sin resultados), ?escenario=vacio, lento y error. Datos: mapaPublico, de
+       PublicoMapaPuerto (de ejemplo o las entregas del mapa público de Logística: sin entidad,
+       categoría ni foto, el punto es un lugar y la pantalla oculta el filtro y las fotos); sin entregas,
+       el estado vacío. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-mapa', ~{::contenido})}">
 <head>
@@ -14,13 +17,20 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{datos-publicos :: datos(~{::pantalla})}"></th:block>
+  <th:block th:replace="~{::pantalla}"></th:block>
 </th:block>
 
 <th:block th:fragment="pantalla"
-    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             filtradas=${escenario == 'vacio' ? {} : (categoria == '' ? entregas : entregas.?[cat == '__${categoria}__'])},
-             elegida=${categoria == '' ? null : categorias.^[clave == '__${categoria}__']},
+    th:with="v=${mapaPublico},
+             categorias=${ {
+      {clave: 'alimentos', texto: 'Alimentos', enFrase: 'alimentos'},
+      {clave: 'ropa', texto: 'Ropa', enFrase: 'ropa'},
+      {clave: 'muebles', texto: 'Muebles', enFrase: 'muebles'},
+      {clave: 'escolares', texto: 'Útiles escolares', enFrase: 'útiles escolares'} } },
+             categoria=${mapaPublico.conCategorias and param.categoria != null and #lists.contains({'alimentos', 'ropa', 'muebles', 'escolares'}, param.categoria[0]) ? param.categoria[0] : ''},
+             escenario=${param.escenario != null ? param.escenario[0] : (mapaPublico.todas.isEmpty() ? 'vacio' : '')},
+             filtradas=${escenario == 'vacio' ? {} : (categoria == '' ? mapaPublico.todas : mapaPublico.todas.?[cat == #root.categoria])},
+             elegida=${categoria == '' ? null : categorias.^[clave == #root.categoria]},
              conEntidades=${#sets.toSet(filtradas.![entidad]).size()},
              cargado=${escenario == '' or escenario == 'vacio'},
              hay=${escenario == '' and !filtradas.isEmpty()}">
@@ -29,23 +39,27 @@
     <header class="publica-cabeza">
       <p class="rotulo">Mapa</p>
       <h1>Adónde llegaron <em>las donaciones</em></h1>
-      <p class="lectura-bajada">Cada punto es una entidad que confirmó entregas en el último mes. La ubicación
+      <p th:if="${v.conEntidades}" class="lectura-bajada">Cada punto es una entidad que confirmó entregas en el último mes. La ubicación
         es aproximada: mostramos el barrio, nunca la dirección.</p>
+      <p th:unless="${v.conEntidades}" class="lectura-bajada">Cada punto es un lugar donde se confirmaron entregas en el
+        último mes. Mostramos la localidad, nunca la dirección.</p>
     </header>
 
     <div th:if="${escenario == ''}" class="publica-barra">
-      <form hx-boost="true" class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
+      <form th:if="${v.conCategorias}" hx-boost="true" class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
             method="get" data-al-cambiar>
         <fieldset th:replace="~{datos-publicos :: filtroCategorias('Qué se donó', 'Todas')}"></fieldset>
         <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
       </form>
       <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
         <p><b class="fruto" th:text="${#lists.size(filtradas)}">10</b>
-          <span th:text="|${#lists.size(filtradas) == 1 ? 'entrega' : 'entregas'}${elegida == null ? ' confirmadas' : ' de ' + elegida.enFrase} en ${conEntidades} ${conEntidades == 1 ? 'entidad' : 'entidades'}, del 16 de septiembre al 15 de octubre de 2026.|">entregas
+          <span th:text="|${#lists.size(filtradas) == 1 ? 'entrega' : 'entregas'}${elegida == null ? ' confirmadas' : ' de ' + elegida.enFrase} en ${conEntidades} ${v.conEntidades ? (conEntidades == 1 ? 'entidad' : 'entidades') : (conEntidades == 1 ? 'lugar' : 'lugares')}, ${v.rango}.|">entregas
             confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026.</span></p>
-        <p class="nota">Actualizado el 15 de octubre de 2026, 14:30.</p>
+        <p class="nota" th:text="|Actualizado el ${v.actualizado}.|">Actualizado el 15 de octubre de 2026, 14:30.</p>
       </div>
     </div>
+
+    <p th:if="${hay and v.nota != null}" class="texto-chico" data-tono="suave" th:text="${v.nota}">Todavía no mostramos qué entidad recibió cada entrega.</p>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar el mapa de entregas.',
@@ -62,15 +76,16 @@
       <figure th:if="${escenario == 'lento'}" class="mapa-dibujo tierra-impresa esqueleto" aria-hidden="true"></figure>
       <div th:if="${hay}" class="mapa-dibujo mapa-real" data-mapa role="region"
            aria-label="Mapa de las entidades con entregas confirmadas. La lista de al lado tiene los mismos datos."
+           th:aria-label="${v.conEntidades} ? 'Mapa de las entidades con entregas confirmadas. La lista de al lado tiene los mismos datos.' : 'Mapa de los lugares con entregas confirmadas. La lista de al lado tiene los mismos datos.'"
            data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}">
-        <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En la lista están las mismas
+        <p class="mapa-real-aviso" th:text="|Para ver el mapa hace falta JavaScript. En la lista están ${v.conEntidades ? 'las mismas entidades' : 'los mismos lugares'}, con sus entregas.|">Para ver el mapa hace falta JavaScript. En la lista están las mismas
           entidades, con sus entregas.</p>
       </div>
 
       <section th:if="${hay}" class="mapa-lista" aria-labelledby="lista-titulo">
-        <h2 id="lista-titulo">Entidad por entidad</h2>
+        <h2 id="lista-titulo" th:text="${v.conEntidades} ? 'Entidad por entidad' : 'Lugar por lugar'">Entidad por entidad</h2>
         <ol class="estaciones" role="list">
-          <th:block th:each="e : ${entidades}" th:with="suyas=${filtradas.?[entidad == '__${e.nombre}__']}">
+          <th:block th:each="e : ${v.estaciones}" th:with="suyas=${categoria == '' ? e.entregas : e.entregas.?[cat == '__${categoria}__']}">
           <li th:unless="${suyas.isEmpty()}" class="estacion-ficha" th:classappend="${'estacion-ficha--' + e.numero}"
               th:id="${'entidad-' + e.clave}" tabindex="-1"
               th:attr="data-lat=${e.lat},data-lng=${e.lng},data-numero=${e.numero},data-nombre=${e.nombre}">
@@ -78,9 +93,9 @@
             <template data-mapa-globo>
               <div class="mapa-globo-cuerpo">
                 <p class="mapa-globo-nombre" th:text="${e.nombre}">Comedor Barrio Ejemplo</p>
-                <p th:text="|${e.barrio} · ${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'} en el último mes|">Barrio
+                <p th:text="|${e.barrio.isEmpty() ? '' : e.barrio + ' · '}${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'} en el último mes|">Barrio
                   Ejemplo · 6 entregas confirmadas en el último mes</p>
-                <p th:text="|Pide: ${#strings.listJoin(e.pedidos.![que], ', ')}.|">Pide: lentejas secas, arroz.</p>
+                <p th:unless="${e.pide.isEmpty()}" th:text="|Pide: ${#strings.listJoin(e.pide, ', ')}.|">Pide: lentejas secas, arroz.</p>
                 <a href="#entidad-comedor" th:href="${'#entidad-' + e.clave}">Ver sus entregas en la lista</a>
               </div>
             </template>
@@ -90,19 +105,21 @@
                   class="estacion-numero" x="21" y="28" th:text="${e.numero}">1</text></svg>
               <div>
                 <h3 th:text="${e.nombre}">Comedor Barrio Ejemplo</h3>
-                <p th:text="|${e.barrio} · ${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'}|">Barrio
+                <p th:text="|${e.barrio.isEmpty() ? '' : e.barrio + ' · '}${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'}|">Barrio
                   Ejemplo · 6 entregas confirmadas</p>
               </div>
             </header>
             <ul class="estacion-entregas" role="list">
               <li th:each="f : ${suyas}" th:with="id=${'foto-' + e.clave + '-' + fStat.count}">
-                <svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use width="100" height="100"
+                <svg th:if="${f.cat != null}" class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use width="100" height="100"
                     href="#cat-alimentos" th:href="${'#cat-' + f.cat}"/></svg>
-                <p th:id="${id + '-que'}" th:text="|${f.que} · ${categorias.^[clave == '__${f.cat}__'].texto} · ${f.dia}|">Lentejas
+                <p th:id="${id + '-que'}" th:text="${f.categoria != null} ? |${f.que} · ${f.categoria} · ${f.dia}| : |${f.que} · ${f.dia}|">Lentejas
                   secas, 10 kg · Alimentos · 10 de octubre</p>
+                <th:block th:if="${f.foto != null}">
                 <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
                   la foto de la entrega</button>
                 <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${f})}"></div>
+                </th:block>
               </li>
             </ul>
           </li>
