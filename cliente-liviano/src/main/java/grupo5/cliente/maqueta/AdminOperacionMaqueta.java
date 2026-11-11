@@ -9,6 +9,7 @@ import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminCamionesVista.Chofer;
 import grupo5.cliente.vistas.AdminCamionesVista.Rendimiento;
 import grupo5.cliente.vistas.AdminCamionesVista.Viaje;
+import grupo5.cliente.vistas.AdminDonacionesVista;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -88,6 +89,11 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
               new Decidida(HOGAR, "Ropa de abrigo, 40 prendas", APROBADA),
               new Decidida(COMEDOR, "Galletitas, 5 kg", "Descartada"),
               new Decidida(MERENDERO, "Harina, 10 kg", "Descartada")));
+
+  @Override
+  public AdminDonacionesVista donaciones(String accion) {
+    return AdminOperacionDonaciones.vista(accion);
+  }
 
   @Override
   public AdminAsignacionesVista asignaciones() {

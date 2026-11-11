@@ -2,6 +2,7 @@ package grupo5.cliente.puertos;
 
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista;
+import grupo5.cliente.vistas.AdminDonacionesVista;
 
 /**
  * La operación del admin: camiones, asignaciones y donaciones. Lo implementan la maqueta y el
@@ -32,4 +33,7 @@ public interface AdminOperacionPuerto {
    * propuesta cambió) es el 409 de Donaciones.
    */
   String decidirPropuesta(String propuesta, boolean aprobar, String motivo);
+
+  /** Todas las donaciones; la maqueta muestra con {@code vencida} la que se marcó vencida. */
+  AdminDonacionesVista donaciones(String accion);
 }

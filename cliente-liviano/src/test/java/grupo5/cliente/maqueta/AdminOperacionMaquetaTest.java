@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.web.AdminAsignacionesController;
 import grupo5.cliente.web.AdminCamionesController;
+import grupo5.cliente.web.AdminDonacionesController;
 import grupo5.cliente.web.Pantallas;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,11 @@ import org.springframework.test.web.servlet.MockMvc;
  * La operación del admin en la maqueta: los datos de ejemplo salen del adaptador y cada pantalla de
  * resultado muestra lo que cambió.
  */
-@WebMvcTest({AdminCamionesController.class, AdminAsignacionesController.class})
+@WebMvcTest({
+  AdminCamionesController.class,
+  AdminAsignacionesController.class,
+  AdminDonacionesController.class
+})
 @ActiveProfiles("maqueta")
 @Import({MaquetaConfig.class, Pantallas.class, AdminOperacionMaqueta.class})
 class AdminOperacionMaquetaTest {
@@ -51,5 +56,18 @@ class AdminOperacionMaquetaTest {
         .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
     mvc.perform(get("/admin-asignaciones-aprobada"))
         .andExpect(content().string(containsString("Decididas · 8")));
+  }
+
+  @Test
+  void donacionesYElDetalleDeLaVencida() throws Exception {
+    mvc.perform(get("/admin-donaciones?vence=pronto"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Pan lactal · 15 u")))
+        .andExpect(content().string(not(containsString("Arroz · 25 kg"))));
+    mvc.perform(get("/admin-donaciones-detalle?donacion=lentejas"))
+        .andExpect(
+            content().string(containsString("8 de octubre: Comedor Barrio Ejemplo confirmó que")));
+    mvc.perform(get("/admin-donaciones-detalle-vencida"))
+        .andExpect(content().string(containsString("la marcaste como vencida. Dejó de estar")));
   }
 }

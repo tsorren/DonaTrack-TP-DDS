@@ -10,6 +10,8 @@
        la lista de claves en ese orden (ordenes), porque la plantilla no ordena: el sistema lo hará
        en la consulta. El formulario lleva hx-boost: filtra y ordena sin recargar ni volver arriba.
        ?escenario=vacio, lento y error.
+       Las donaciones, los órdenes y las cifras vienen del controller (adminDonaciones: de la maqueta o
+       de Donaciones); el historial de cada una ya viene escrito.
        El detalle es la misma hoja: admin-donaciones-detalle?donacion=<clave> (de partida, la leche en
        polvo, que está en el depósito y vence en 2 días). "Marcar como vencida" abre un diálogo del
        navegador (popover) con el motivo opcional; es un formulario real (POST) que lleva a
@@ -36,67 +38,11 @@
                           entregada: 'Entregada', vencida: 'Vencida'} },
              sellos=${ {deposito: 'puerta', asignada: 'salir', camino: 'camino', entregada: 'entregada',
                         vencida: 'problema'} },
-             todas=${ {
-      {clave: 'leche', que: 'Leche en polvo', cantidad: '10 unidades', corto: '10 u', donante: 'Distribuidora Ejemplo SA',
-       registrada: '10 de octubre', estado: accion == 'vencida' ? 'vencida' : 'deposito',
-       vence: accion == 'vencida' ? '17 de octubre' : '17 de octubre, en 2 días',
-       bien: 'Nuevo', deposito: 'Depósito Central'},
-      {clave: 'yogur', que: 'Yogur', cantidad: '24 unidades', corto: '24 u', donante: 'Fundación Ejemplo Sur',
-       registrada: '13 de octubre', estado: 'deposito', vence: '19 de octubre, en 4 días', bien: 'Nuevo',
-       deposito: 'Depósito Central'},
-      {clave: 'pan', que: 'Pan lactal', cantidad: '15 unidades', corto: '15 u', donante: 'Juan Ejemplo',
-       registrada: '14 de octubre', estado: 'deposito', vence: '20 de octubre, en 5 días', bien: 'Nuevo',
-       deposito: 'Depósito Central'},
-      {clave: 'queso', que: 'Queso', cantidad: '6 kg', corto: '6 kg', donante: 'Distribuidora Ejemplo SA',
-       registrada: '12 de octubre', estado: 'deposito', vence: '21 de octubre, en 6 días', bien: 'Nuevo',
-       deposito: 'Depósito Sur'},
-      {clave: 'arroz', que: 'Arroz', cantidad: '25 kg', corto: '25 kg', donante: 'Ana Ejemplo',
-       registrada: '11 de octubre', estado: 'deposito', vence: null, bien: 'Nuevo', deposito: 'Depósito Central'},
-      {clave: 'frazadas', que: 'Frazadas', cantidad: '12 unidades', corto: '12 u', donante: 'Fundación Ejemplo Sur',
-       registrada: '9 de octubre', estado: 'deposito', vence: null, bien: 'Usado', deposito: 'Depósito Sur'},
-      {clave: 'utiles', que: 'Útiles escolares', cantidad: '30 unidades', corto: '30 u', donante: 'Juan Ejemplo',
-       registrada: '7 de octubre', estado: 'deposito', vence: null, bien: 'Nuevo', deposito: 'Depósito Central'},
-      {clave: 'fideos', que: 'Fideos', cantidad: '20 kg', corto: '20 kg', donante: 'Distribuidora Ejemplo SA',
-       registrada: '8 de octubre', estado: 'asignada', vence: null, bien: 'Nuevo', deposito: 'Depósito Central',
-       entidad: 'Comedor Barrio Ejemplo', asignadaEl: '14 de octubre'},
-      {clave: 'aceite', que: 'Aceite', cantidad: '12 litros', corto: '12 l', donante: 'Ana Ejemplo',
-       registrada: '6 de octubre', estado: 'asignada', vence: null, bien: 'Nuevo', deposito: 'Depósito Central',
-       entidad: 'Hogar Ejemplo Centro', asignadaEl: '14 de octubre'},
-      {clave: 'azucar', que: 'Azúcar', cantidad: '15 kg', corto: '15 kg', donante: 'Fundación Ejemplo Sur',
-       registrada: '5 de octubre', estado: 'asignada', vence: null, bien: 'Nuevo', deposito: 'Depósito Sur',
-       entidad: 'Merendero Ejemplo Sur', asignadaEl: '13 de octubre'},
-      {clave: 'cuadernos', que: 'Cuadernos', cantidad: '40 unidades', corto: '40 u', donante: 'Juan Ejemplo',
-       registrada: '3 de octubre', estado: 'asignada', vence: null, bien: 'Nuevo', deposito: 'Depósito Central',
-       entidad: 'Escuela Ejemplo N.º 3', asignadaEl: '12 de octubre'},
-      {clave: 'abrigo', que: 'Ropa de abrigo', cantidad: '40 prendas', corto: '40 prendas', donante: 'Ana Ejemplo',
-       registrada: '2 de octubre', estado: 'camino', vence: null, bien: 'Usado', deposito: 'Depósito Central',
-       entidad: 'Hogar Ejemplo Centro', asignadaEl: '12 de octubre', salioEl: 'hoy, 14:30'},
-      {clave: 'lentejas', que: 'Lentejas', cantidad: '10 kg', corto: '10 kg', donante: 'Distribuidora Ejemplo SA',
-       registrada: '1 de octubre', estado: 'entregada', vence: null, bien: 'Nuevo', deposito: 'Depósito Central',
-       entidad: 'Comedor Barrio Ejemplo', asignadaEl: '6 de octubre', salioEl: '8 de octubre',
-       entregadaEl: '8 de octubre'},
-      {clave: 'panales', que: 'Pañales', cantidad: '6 paquetes', corto: '6 paq.', donante: 'Fundación Ejemplo Sur',
-       registrada: '30 de septiembre', estado: 'entregada', vence: null, bien: 'Nuevo', deposito: 'Depósito Sur',
-       entidad: 'Hogar Ejemplo Centro', asignadaEl: '3 de octubre', salioEl: '7 de octubre',
-       entregadaEl: '7 de octubre'},
-      {clave: 'caja', que: 'Caja de alimentos', cantidad: '3 bienes', corto: '3 bienes', donante: 'Ana Ejemplo',
-       registrada: '15 de octubre', estado: 'deposito', vence: null, bien: 'Nuevo', deposito: 'Depósito Central',
-       nueva: true, bienes: {
-         {que: 'Arroz', cantidad: '10 kg', bien: 'Nuevo', vence: null},
-         {que: 'Fideos', cantidad: '10 kg', bien: 'Nuevo', vence: null},
-         {que: 'Aceite', cantidad: '10 litros', bien: 'Nuevo', vence: null} } } } },
-             donaciones=${escenario == 'vacio' ? {} : todas.?[#this['nueva'] == null
-                 and (!#root.pronto or vence != null) and (#root.filtro == '' or estado == #root.filtro)]},
+             todas=${adminDonaciones.todas},
+             donaciones=${escenario == 'vacio' ? {} : todas.?[!nueva
+                 and (!#root.pronto or prontaAVencer) and (#root.filtro == '' or estado == #root.filtro)]},
              orden=${param.orden != null and #lists.contains({'reciente', 'antigua', 'nombre', 'donante'}, param.orden[0]) ? param.orden[0] : ''},
-             ordenes=${ {
-               reciente: {'pan', 'yogur', 'queso', 'arroz', 'leche', 'frazadas', 'fideos', 'utiles', 'aceite',
-                          'azucar', 'cuadernos', 'abrigo', 'lentejas', 'panales'},
-               antigua: {'panales', 'lentejas', 'abrigo', 'cuadernos', 'azucar', 'aceite', 'utiles', 'fideos',
-                         'frazadas', 'leche', 'arroz', 'queso', 'yogur', 'pan'},
-               nombre: {'aceite', 'arroz', 'azucar', 'cuadernos', 'fideos', 'frazadas', 'leche', 'lentejas', 'pan',
-                        'panales', 'queso', 'abrigo', 'utiles', 'yogur'},
-               donante: {'arroz', 'aceite', 'abrigo', 'leche', 'queso', 'fideos', 'lentejas', 'yogur', 'frazadas',
-                         'azucar', 'panales', 'pan', 'utiles', 'cuadernos'} } },
+             ordenes=${adminDonaciones.ordenes},
              criterios=${ {
                {valor: '', texto: 'Vencen antes', caption: 'Primero, las del depósito que vencen antes.'},
                {valor: 'reciente', texto: 'Registradas más recientes', caption: 'Primero, las registradas más recientemente.'},
@@ -115,8 +61,8 @@
       <div>
         <p class="rotulo">Administración</p>
         <h1>Donaciones</h1>
-        <p th:if="${conDatos}">7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en
-          octubre. Al 15 de octubre de 2026, 18:30.</p>
+        <p th:if="${conDatos}" th:text="${adminDonaciones.resumen}">7 en el depósito · 4 asignadas · 1 en
+          camino · 9 entregas confirmadas en octubre. Al 15 de octubre de 2026, 18:30.</p>
       </div>
       <div th:if="${escenario != 'error'}" class="racimo">
         <a class="boton" data-tono="principal" href="/admin-donaciones-registrar"
@@ -237,7 +183,7 @@
     </section>
 
     <section class="tarjeta pila" data-filete="doble" data-espacio="3" aria-labelledby="que-titulo"
-             th:with="bienes=${d['bienes'] ?: { {que: d.que, cantidad: d.cantidad, bien: d.bien, vence: d.vence} }}">
+             th:with="bienes=${d.bienes ?: { {que: d.que, cantidad: d.cantidad, bien: d.bien, vence: d.vence} }}">
       <h2 id="que-titulo">Qué es</h2>
       <dl class="grilla" data-espacio="2">
         <div><dt>Donó</dt><dd th:text="${d.donante}">Distribuidora Ejemplo SA</dd></div>
@@ -269,17 +215,8 @@
     <section class="pila" data-espacio="3" aria-labelledby="historial-titulo">
       <h2 id="historial-titulo">Historial</h2>
       <ol class="lista pila" data-espacio="2" role="list">
-        <li th:text="|${d.registrada}: llegó al ${d.deposito}. La registró Leo, de Administración.|">10 de
-          octubre: llegó al Depósito Central. La registró Leo, de Administración.</li>
-        <li th:if="${d.estado == 'asignada' or d.estado == 'camino' or d.estado == 'entregada'}"
-            th:text="|${d.asignadaEl}: quedó asignada a ${d.entidad}. La aprobó Leo, de Administración.|">14 de
-          octubre: quedó asignada.</li>
-        <li th:if="${d.estado == 'camino' or d.estado == 'entregada'}"
-            th:text="|${d.salioEl}: salió en camino.|">Hoy, 14:30: salió en camino.</li>
-        <li th:if="${d.estado == 'entregada'}"
-            th:text="|${d.entregadaEl}: ${d.entidad} confirmó que la recibió.|">8 de octubre: la recibieron.</li>
-        <li th:if="${d.estado == 'vencida'}">15 de octubre, 18:35: la marcaste como vencida. Dejó de
-          estar disponible para asignar.</li>
+        <li th:each="h : ${d.historial}" th:text="${h}">10 de octubre: llegó al Depósito Central. La registró
+          Leo, de Administración.</li>
       </ol>
     </section>
 

@@ -6,6 +6,7 @@ import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
+import grupo5.cliente.vistas.AdminDonacionesVista;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Clock;
@@ -27,7 +28,8 @@ import org.springframework.stereotype.Component;
 /**
  * La operación del admin desde Logística y Donaciones. Logística da de cada camión la patente, las
  * capacidades y el estado (con los deshabilitados, HB-23); no da nombre, chofer, viaje, motivo ni
- * rendimiento: quedan null y la pantalla no los muestra.
+ * rendimiento: quedan null y la pantalla no los muestra. Las asignaciones y las donaciones salen de
+ * Donaciones (estas, con {@link AdminOperacionDonaciones}).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -80,6 +82,13 @@ class AdminOperacionRest implements AdminOperacionPuerto {
                 habilitado ? "DISPONIBLE" : "DESHABILITADO",
                 motivo == null || motivo.isBlank() ? null : motivo.trim()))
         .patente();
+  }
+
+  @Override
+  public AdminDonacionesVista donaciones(String accion) {
+    return new AdminOperacionDonaciones(
+            donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)))
+        .vista();
   }
 
   @Override
