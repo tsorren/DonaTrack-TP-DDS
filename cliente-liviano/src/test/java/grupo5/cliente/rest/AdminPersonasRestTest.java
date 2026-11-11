@@ -2,14 +2,21 @@ package grupo5.cliente.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.cuentas.SolicitudesDeEntidad;
+import grupo5.cliente.cuentas.SolicitudesDeEntidad.Pendiente;
 import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -18,6 +25,7 @@ import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -52,6 +60,7 @@ class AdminPersonasRestTest {
 
   private MockRestServiceServer donaciones;
   private AdminPersonasRest adaptador;
+  private final StaticListableBeanFactory cuentas = new StaticListableBeanFactory();
 
   @BeforeEach
   void armar() {
@@ -60,7 +69,126 @@ class AdminPersonasRestTest {
     Clock reloj = Clock.fixed(Instant.parse("2026-11-10T21:30:00Z"), ZoneOffset.UTC);
     adaptador =
         new AdminPersonasRest(
-            ClientesHttp.cliente(builder, DONACIONES, DonacionesApi.class), reloj);
+            ClientesHttp.cliente(builder, DONACIONES, DonacionesApi.class),
+            reloj,
+            cuentas.getBeanProvider(SolicitudesDeEntidad.class));
+  }
+
+  /** Una activa y una dada de baja; la activa con una necesidad vigente de alimentos. */
+  private static final String DOS_ENTIDADES =
+      """
+      [
+        {"id": "00000000-0000-4000-8000-0000000000e1", "activo": true,
+         "juridica": {"tipo": "JURIDICA", "razonSocial": "Merendero Ejemplo Sur", "rubro": "Merendero",
+                      "tipoJuridico": "ONG",
+                      "direccion": {"calle": "Calle Ejemplo", "altura": 10, "localidad": "Ejemplo Sur"},
+                      "mediosDeContacto": [{"tipo": "CORREO", "direccionCorreo": "sur@ejemplo.org"}],
+                      "representantes": [{"tipo": "HUMANA", "nombre": "Raúl", "apellido": "Ejemplo"}]}},
+        {"id": "00000000-0000-4000-8000-0000000000e2", "activo": false,
+         "juridica": {"tipo": "JURIDICA", "razonSocial": "Club Ejemplo Norte",
+                      "tipoJuridico": "INSTITUCION"}}
+      ]
+      """;
+
+  @Test
+  void lasEntidadesSalenPorNombreConSusNecesidadesYLasQuePidenSumarseConSusDatos() {
+    UUID juridica = UUID.fromString("00000000-0000-4000-8000-0000000000e3");
+    SolicitudesDeEntidad solicitudes = mock(SolicitudesDeEntidad.class);
+    when(solicitudes.pendientes())
+        .thenReturn(
+            List.of(
+                new Pendiente("cuenta-1", "Hogar Ejemplo Norte", "hogar@ejemplo.org", juridica)));
+    cuentas.addBean("solicitudes", solicitudes);
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades"))
+        .andRespond(withSuccess(DOS_ENTIDADES, JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/necesidades?estado=VIGENTE"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "00000000-0000-4000-8000-0000000000f1",
+                  "idEntidad": "00000000-0000-4000-8000-0000000000e1",
+                  "idSubcategoria": "00000000-0000-4000-8000-0000000000c1",
+                  "descripcion": "Leche en polvo", "cantidadNecesitada": 40,
+                  "unidad": "KILOGRAMO", "fechaLimite": "2026-12-31", "estado": "VIGENTE"}]
+                """,
+                JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/subcategorias"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "00000000-0000-4000-8000-0000000000c1", "nombre": "Leche",
+                  "categoria": {"nombre": "Alimentos"}}]
+                """,
+                JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/personas?tipo=JURIDICA"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"tipo": "JURIDICA", "id": "00000000-0000-4000-8000-0000000000e3",
+                  "razonSocial": "Asociación Civil Hogar Ejemplo Norte", "tipoJuridico": "ONG",
+                  "tipoDocumento": "CUIT", "documento": "30-00000011-0",
+                  "direccion": {"calle": "Calle Ejemplo", "altura": 1234,
+                                "localidad": "Localidad Ejemplo", "provincia": "Buenos Aires"}}]
+                """,
+                JSON));
+
+    AdminEntidadesVista vista = adaptador.entidades();
+
+    assertEquals(1, vista.activas());
+    assertEquals(
+        List.of("Club Ejemplo Norte", "Hogar Ejemplo Norte", "Merendero Ejemplo Sur"),
+        vista.todas().stream().map(Entidad::nombre).toList());
+    Entidad club = vista.todas().get(0);
+    assertEquals("inactiva", club.estado());
+    assertEquals("Institución", club.tipo());
+    assertNull(club.baja());
+    Entidad hogar = vista.todas().get(1);
+    assertEquals("cuenta-1", hogar.clave());
+    assertEquals("pendiente", hogar.estado());
+    assertEquals("30-00000011-0", hogar.cuit());
+    assertEquals("Calle Ejemplo 1234, Localidad Ejemplo, Buenos Aires", hogar.direccion());
+    assertNull(hogar.cuando());
+    assertNull(hogar.constancia());
+    Entidad merendero = vista.todas().get(2);
+    assertEquals("activa", merendero.estado());
+    assertEquals("Merendero", merendero.tipo());
+    assertEquals("Ejemplo Sur", merendero.localidad());
+    assertEquals("Raúl Ejemplo", merendero.responsable());
+    assertEquals("sur@ejemplo.org", merendero.correo());
+    assertEquals("alimentos", merendero.cat());
+    assertEquals(
+        new AdminEntidadesVista.Necesidad(
+            "Leche en polvo", "alimentos", "Pide 40 kg, hasta el 31 de diciembre"),
+        merendero.necesidades().get(0));
+    assertNull(merendero.alta());
+    assertNull(merendero.entregas());
+  }
+
+  @Test
+  void sinSolicitudesNiNecesidadesNoPideMasDeLoQueHace() {
+    donaciones.expect(requestTo(DONACIONES + "/api/entidades")).andRespond(withSuccess("[]", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/necesidades?estado=VIGENTE"))
+        .andRespond(withSuccess("[]", JSON));
+
+    assertEquals(List.of(), adaptador.entidades().todas());
+    donaciones.verify();
+  }
+
+  @Test
+  void aprobarHabilitaLaCuentaYDevuelveElNombre() {
+    SolicitudesDeEntidad solicitudes = mock(SolicitudesDeEntidad.class);
+    when(solicitudes.pendientes())
+        .thenReturn(
+            List.of(new Pendiente("cuenta-1", "Hogar Ejemplo Norte", "h@ejemplo.org", null)));
+    cuentas.addBean("solicitudes", solicitudes);
+
+    assertEquals("Hogar Ejemplo Norte", adaptador.aprobarEntidad("cuenta-1"));
+    verify(solicitudes).aprobar("cuenta-1");
   }
 
   @Test

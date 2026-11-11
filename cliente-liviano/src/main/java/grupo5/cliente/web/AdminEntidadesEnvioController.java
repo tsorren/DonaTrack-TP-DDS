@@ -25,6 +25,20 @@ public class AdminEntidadesEnvioController {
   }
 
   /**
+   * Aprobar a una entidad que pidió sumarse ({@code entidad} es su cuenta): la da de alta en
+   * Donaciones y habilita su cuenta (SolicitudesDeEntidad). La dirección es de un solo tramo para
+   * que la alcance la regla de acceso del área de administración.
+   */
+  @PostMapping("/admin-entidades-aprobada")
+  String aprobar(@RequestParam String entidad, RedirectAttributes atributos) {
+    String nombre = personas.aprobarEntidad(entidad);
+    return Envios.listo(
+        ENTIDADES,
+        "Aprobaste a " + nombre + ". Ya puede publicar sus necesidades y recibir donaciones.",
+        atributos);
+  }
+
+  /**
    * Registrar entidad: la organización con su dirección y su responsable, que queda activa. El CUIT
    * no viaja todavía: PersonaNueva no lo tiene.
    */

@@ -2,6 +2,7 @@ package grupo5.cliente.puertos;
 
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminEntidadesVista;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,4 +29,10 @@ public interface AdminPersonasPuerto {
 
   /** Da de alta la persona jurídica y la hace entidad beneficiaria (queda activa). */
   void registrarEntidad(PersonaNueva.Juridica juridica);
+
+  /** Las entidades: las que piden sumarse, las activas y las inactivas, por nombre. */
+  AdminEntidadesVista entidades();
+
+  /** Aprueba a la entidad que pidió sumarse (su {@code clave}) y devuelve su nombre. */
+  String aprobarEntidad(String clave);
 }

@@ -1,5 +1,6 @@
 package grupo5.cliente.rest;
 
+import grupo5.cliente.cuentas.SolicitudesDeEntidad;
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.rest.DonacionesApi.Archivo;
@@ -8,6 +9,7 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminEntidadesVista;
 import java.text.NumberFormat;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -16,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -42,10 +45,26 @@ class AdminPersonasRest implements AdminPersonasPuerto {
 
   private final DonacionesApi donaciones;
   private final Clock reloj;
+  private final AdminPersonasEntidades entidades;
 
-  AdminPersonasRest(DonacionesApi donaciones, Clock reloj) {
+  /**
+   * Las solicitudes de entidad las da Keycloak, fuera de la maqueta; sin ellas, no hay pendientes.
+   */
+  AdminPersonasRest(
+      DonacionesApi donaciones, Clock reloj, ObjectProvider<SolicitudesDeEntidad> solicitudes) {
     this.donaciones = donaciones;
     this.reloj = reloj;
+    this.entidades = new AdminPersonasEntidades(donaciones, solicitudes);
+  }
+
+  @Override
+  public AdminEntidadesVista entidades() {
+    return entidades.entidades(ahora());
+  }
+
+  @Override
+  public String aprobarEntidad(String clave) {
+    return entidades.aprobar(clave);
   }
 
   private String ahora() {

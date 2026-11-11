@@ -35,7 +35,8 @@ class SolicitudesDeEntidadTest {
     when(donaciones.juridicas()).thenReturn(List.of(new Juridica(JURIDICA, "Merendero Oeste")));
 
     assertThat(solicitudes.pendientes())
-        .containsExactly(new Pendiente("cuenta-1", "Merendero Oeste", "rosa@ejemplo.test"));
+        .containsExactly(
+            new Pendiente("cuenta-1", "Merendero Oeste", "rosa@ejemplo.test", JURIDICA));
   }
 
   @Test

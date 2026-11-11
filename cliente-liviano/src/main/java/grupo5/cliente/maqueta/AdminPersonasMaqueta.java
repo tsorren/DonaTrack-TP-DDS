@@ -6,6 +6,7 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminEntidadesVista;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -213,5 +214,16 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   @Override
   public void registrarEntidad(PersonaNueva.Juridica juridica) {
     throw new UnsupportedOperationException("La maqueta no registra entidades");
+  }
+
+  @Override
+  public AdminEntidadesVista entidades() {
+    return AdminPersonasEntidadesDeEjemplo.ENTIDADES;
+  }
+
+  /** En la maqueta el formulario lo atiende SitioController y no aprueba nada. */
+  @Override
+  public String aprobarEntidad(String clave) {
+    throw new UnsupportedOperationException("La maqueta no aprueba entidades");
   }
 }
