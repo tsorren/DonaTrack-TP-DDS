@@ -1,6 +1,6 @@
 # api-gateway — Entrada única a los servicios
 
-> **Estado:** etapa 1 del [ADR-E6-02](../docs/adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) (`proposed`): rutas, allowlist escrita y `X-Trace-Id`. **Todavía no valida el JWT**: eso llega en la etapa 2 (F5). Spec: [SPEC-07](../docs/specs/active/SPEC-07-api-gateway-etapa-1.md).
+> **Estado:** etapas 1 y 2 del [ADR-E6-02](../docs/adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) (`proposed`): rutas, `X-Trace-Id` y validación del JWT. **La validación viene apagada por defecto** (`GATEWAY_SEGURIDAD_HABILITADA=false`): con ella apagada, todas las rutas pasan sin token. Specs: [SPEC-07](../docs/specs/active/SPEC-07-api-gateway-etapa-1.md) (etapa 1) y [SPEC-06](../docs/specs/active/SPEC-06-auth-mvp-keycloak.md), iteración 4 (etapa 2).
 
 ## Qué hace
 
@@ -23,7 +23,18 @@ La tabla de [`RutasGateway`](src/main/java/grupo5/gateway/RutasGateway.java) es 
 
 ## Rutas públicas
 
-`donatrack.gateway.rutas-publicas` en [`application.yml`](src/main/resources/application.yml) lista lo que en la etapa 2 pasa sin token (D26). Hoy no se aplica. Si una pantalla pública suma una llamada, su ruta entra ahí en el mismo cambio. Un test comprueba que cada ruta pública tiene una ruta expuesta.
+`donatrack.gateway.rutas-publicas` en [`application.yml`](src/main/resources/application.yml) lista lo que pasa sin token (D26), con el formato `"MÉTODO /ruta"`. Se aplica solo con la seguridad encendida. Si una pantalla pública suma una llamada, su ruta entra ahí **y** en el servicio, en el mismo cambio.
+
+- **Se abre la ruta, no el método.** El gateway usa la misma cadena de seguridad de `common-lib` que los servicios, que decide por ruta. El método lo decide el `@PreAuthorize` del servicio (la segunda capa). Por eso `POST /api/contacto` es público y `GET /api/contacto` (el listado del ADMIN) pasa el gateway sin token y lo rechaza Notificaciones con `401`.
+- **Las dos capas coinciden por test.** `scripts/tests/test_gateway_seguridad.py` exige que esta lista sea exactamente el conjunto de endpoints `@PreAuthorize(PUBLICO)` de los servicios, y que cada ruta tenga una ruta expuesta.
+- Una entrada mal escrita (método desconocido, ruta sin `/`) corta el arranque.
+
+## Validación del JWT
+
+Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `iss` y `aud` antes de enrutar. Sin token, o con uno inválido, responde `401` con el formato de error unificado; las rutas públicas pasan. El `Authorization` llega intacto al servicio, que vuelve a validarlo (doble capa). Las claves de Keycloak se cachean, así que un IdP caído no corta los pedidos con tokens vigentes.
+
+- El issuer y las claves llegan por `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI` y `_JWK_SET_URI`. No se definen en `application.yml`: con valor vacío Spring igual intenta armar el decoder y falla.
+- Una ruta que no está en la tabla de arriba da `401` sin token y `404` con token.
 
 - `POST /api/contacto` (HB-21): el cliente liviano manda la IP del navegador en `X-Forwarded-For`. Si el gateway agrega otra detrás, Notificaciones igual cuenta por la primera.
 
@@ -42,6 +53,8 @@ La tabla de [`RutasGateway`](src/main/java/grupo5/gateway/RutasGateway.java) es 
 | `NOTIFICACIONES_SERVICE_URL` | `http://localhost:8081` |
 | `INCENTIVOS_SERVICE_URL` | `http://localhost:8082` |
 | `LOGISTICA_SERVICE_URL` | `http://localhost:8083` |
+| `GATEWAY_SEGURIDAD_HABILITADA` | `false` |
+| `GATEWAY_JWT_AUDIENCIA` | `donatrack-api` |
 
 ## Correr y probar
 

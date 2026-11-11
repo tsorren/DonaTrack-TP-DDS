@@ -194,8 +194,8 @@ services:
       - donatrack-network
 
   api-gateway:
-    # Entrada única del cliente a los servicios (ADR-E6-02, etapa 1): rutas sin reescritura y
-    # X-Trace-Id, sin JWT todavía (etapa 2, F5).
+    # Entrada única del cliente a los servicios (ADR-E6-02): rutas sin reescritura, X-Trace-Id y,
+    # con GATEWAY_SEGURIDAD_HABILITADA=true, validación del JWT antes de enrutar (etapa 2).
     image: donatrack/api-gateway:local
     build:
       context: .
@@ -210,6 +210,10 @@ services:
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      # Validación del token de Keycloak (ADR-E6-02, etapa 2): apagada por defecto, Postman, integration-tests y k6 llaman sin token
+      - GATEWAY_SEGURIDAD_HABILITADA=${GATEWAY_SEGURIDAD_HABILITADA:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m

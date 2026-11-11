@@ -248,7 +248,10 @@ Prioridades:
   si un servicio cambia su respuesta. La política de evolución de contratos pide cambios aditivos, y
   la F6 lo comprueba contra los servicios reales.
 - **Gateway sin JWT.** Mientras falte la etapa 2, la allowlist no protege nada. Si F1 llega a
-  `main` sin F5, se registra como deuda (ADR-E6-02).
+  `main` sin F5, se registra como deuda (ADR-E6-02). *Actualización 2026-11-11:* la parte del
+  gateway de F5 está implementada (iteración 4 de SPEC-06) pero **apagada por defecto**
+  (`GATEWAY_SEGURIDAD_HABILITADA=false`): hasta que se encienda, el gateway sigue sin validar el
+  token. Encenderla es la iteración 5 de SPEC-06.
 
 ## 7. Lo que este plan no cubre
 

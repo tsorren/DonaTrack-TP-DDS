@@ -190,6 +190,48 @@ services:
     networks:
       - preprod-network
 
+  api-gateway:
+    # Entrada única a los servicios (ADR-E6-02). La validación del JWT (GATEWAY_SEGURIDAD_HABILITADA) queda
+    # apagada: ningún test del preprod manda token todavía (E2-07).
+    image: donatrack/api-gateway:preprod
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: api-gateway/target/api-gateway-1.0.jar
+    ports:
+      - "8086:8086"
+    environment:
+      - PORT=8086
+      - SPRING_PROFILES_ACTIVE=preprod
+      - DONACIONES_SERVICE_URL=http://donaciones-service:8080
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+      - LOGISTICA_SERVICE_URL=http://logistica-service:8083
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
+    depends_on:
+      donaciones-service:
+        condition: service_healthy
+      notificaciones-service:
+        condition: service_healthy
+      incentivos-service:
+        condition: service_healthy
+      logistica-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - preprod-network
+
   rabbitmq:
     image: rabbitmq:3.13-alpine
     # RM-08: el consumidor espía de integration-tests captura los mensajes; solo en loopback

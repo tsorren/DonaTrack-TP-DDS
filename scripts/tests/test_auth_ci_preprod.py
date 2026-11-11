@@ -146,15 +146,14 @@ class PreprodComposeTests(unittest.TestCase):
 @unittest.skipIf(BASH is None, "bash no disponible")
 class ResolverTests(unittest.TestCase):
     def setUp(self):
-        # Repo mínimo con los servicios que importan: auth-service, un Java y api-gateway.
+        # Repo mínimo con los servicios que importan: auth-service y un Java. El api-gateway se crea
+        # en los tests que lo usan (_crear_servicio).
         self.tmp = tempfile.mkdtemp()
         os.makedirs(os.path.join(self.tmp, "scripts"))
         for nombre in ("resolver-imagenes-ghcr.sh", "manifiesto_version.py"):
             shutil.copy(os.path.join(SCRIPTS, nombre), os.path.join(self.tmp, "scripts", nombre))
-        for svc in ("auth-service", "svc-a", "api-gateway"):
-            os.makedirs(os.path.join(self.tmp, svc))
-            for nombre in ("pom.xml", "Dockerfile"):
-                open(os.path.join(self.tmp, svc, nombre), "w", encoding="utf-8").close()
+        for svc in ("auth-service", "svc-a"):
+            self._crear_servicio(svc)
         self.bin = os.path.join(self.tmp, "bin")
         os.makedirs(self.bin)
         self.llamadas = os.path.join(self.tmp, "docker.log")
@@ -165,6 +164,11 @@ class ResolverTests(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _crear_servicio(self, svc):
+        os.makedirs(os.path.join(self.tmp, svc))
+        for nombre in ("pom.xml", "Dockerfile"):
+            open(os.path.join(self.tmp, svc, nombre), "w", encoding="utf-8").close()
 
     def _correr(self, **extra):
         env = dict(os.environ, GHCR_BASE=GHCR_BASE, PATH=self.bin + os.pathsep + os.environ["PATH"])
@@ -212,9 +216,29 @@ class ResolverTests(unittest.TestCase):
         self.assertIn("auth-service", r.stdout + r.stderr)
         self.assertNotIn("auth-service", self._docker())
 
-    def test_api_gateway_sigue_afuera_del_preprod(self):
+    def test_api_gateway_modificado_exige_su_imagen_del_pr_y_la_etiqueta_para_preprod(self):
+        # El gateway entró al preprod (ADR-E6-02): se resuelve como cualquier otro servicio.
+        self._crear_servicio("api-gateway")
         r = self._correr(PR_TAG="pr-7", CHANGED_SERVICES="api-gateway,svc-a,auth-service")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        log = self._docker()
+        self.assertIn("pull -q %s/api-gateway:pr-7" % GHCR_BASE, log)
+        self.assertIn("tag %s/api-gateway:pr-7 donatrack/api-gateway:preprod" % GHCR_BASE, log)
+
+    def test_api_gateway_sin_cambios_se_fija_por_digest_del_manifiesto(self):
+        self._crear_servicio("api-gateway")
+        manifiesto = self._manifiesto(["api-gateway", "auth-service", "svc-a"])
+        r = self._correr(PR_TAG="pr-7", CHANGED_SERVICES="svc-a", MANIFIESTO=manifiesto)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("pull -q %s/api-gateway@%s" % (GHCR_BASE, DIGEST), self._docker())
+
+    def test_un_manifiesto_sin_api_gateway_falla_y_no_se_improvisa_otra_imagen(self):
+        # RM-06: sin digest validado no hay imagen. Aplica hasta que un merge con el gateway llegue a promote.
+        self._crear_servicio("api-gateway")
+        manifiesto = self._manifiesto(["auth-service", "svc-a"])
+        r = self._correr(PR_TAG="pr-7", CHANGED_SERVICES="svc-a", MANIFIESTO=manifiesto)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("api-gateway", r.stdout + r.stderr)
         self.assertNotIn("api-gateway", self._docker())
 
 

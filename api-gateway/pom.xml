@@ -44,6 +44,12 @@
             <artifactId>common-lib</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- Resource server (ADR-E6-02, etapa 2): valida el JWT de Keycloak antes de enrutar. Apagado
+             por defecto (donatrack.seguridad.habilitada=false). Sin versión: la administra el BOM. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

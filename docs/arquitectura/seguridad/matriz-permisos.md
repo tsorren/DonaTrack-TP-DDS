@@ -88,6 +88,8 @@ Sin token, en cada servicio (las declara su `ReglasDeAcceso`):
 | Donaciones | `GET /api/donaciones/contadores` | Contadores de la landing (HB-02, D26) |
 | Todos | `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**` | Healthcheck del compose y documentación en desarrollo |
 
+`[OBSERVED]` (2026-11-11) La allowlist del gateway (`donatrack.gateway.rutas-publicas`) es exactamente esta tabla sin la última fila: las seis rutas de las cuatro primeras filas. Un test estático (`scripts/tests/test_gateway_seguridad.py`) lo exige. El gateway abre la ruta sin distinguir método, así que `GET /api/contacto` pasa el gateway sin token y lo rechaza Notificaciones.
+
 En el cliente liviano son públicas la portada y las pantallas `publico-*` (donaciones, mapa, entidades, contacto, legales y registro). Ingresar y recuperar la contraseña son pantallas de Keycloak.
 
 ## 5. Donaciones (completo)
