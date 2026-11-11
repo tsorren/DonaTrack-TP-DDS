@@ -59,9 +59,9 @@ class DonanteSeguimientoRest implements DonanteSeguimientoPuerto {
   }
 
   /** Las entregas activas del donante por donación; vacío si Logística no responde. */
-  static Map<UUID, LogisticaApi.Seguimiento> seguimientos(LogisticaApi logistica, UUID donante) {
+  static Map<UUID, LogisticaApi.Seguimiento> seguimientos(LogisticaApi cliente, UUID donante) {
     try {
-      List<LogisticaApi.Seguimiento> lista = logistica.seguimientoDeDonante(donante);
+      List<LogisticaApi.Seguimiento> lista = cliente.seguimientoDeDonante(donante);
       return lista == null
           ? Map.of()
           : lista.stream()

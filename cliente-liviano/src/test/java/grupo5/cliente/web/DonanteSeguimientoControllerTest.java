@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -83,5 +84,19 @@ class DonanteSeguimientoControllerTest {
     when(cuentas.donante(any())).thenReturn(Optional.empty());
 
     mvc.perform(get("/donante-seguimiento")).andExpect(redirectedUrl("/publico-ingresar"));
+  }
+
+  @Test
+  void sinEntregasEnCursoMuestraElEstadoVacio() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(seguimientos.seguimiento(DONANTE))
+        .thenReturn(
+            new DonanteSeguimientoVista(List.of(), Map.of(), "hoy, 7 de noviembre, a las 19:40"));
+
+    mvc.perform(get("/donante-seguimiento"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Ningún camión está en camino con tus donaciones")))
+        .andExpect(content().string(not(containsString("aria-labelledby=\"lista-titulo\""))));
   }
 }
