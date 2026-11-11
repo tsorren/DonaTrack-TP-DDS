@@ -57,7 +57,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 /**
  * Autorización de Notificaciones con la seguridad encendida (matriz de permisos, §8): sin token es
- * 401; con token, el rol, el permiso y el dueño. El servicio va simulado, así que un 200, un 202 o
+ * 401, salvo en {@code /api/contacto}, ruta pública donde el ADMIN lo exige el método y responde
+ * 403; con token, el rol, el permiso y el dueño. El servicio va simulado, así que un 200, un 202 o
  * un 204 quiere decir "pasó la autorización", y un 403, que no. Un cuerpo inválido daría 400 antes
  * de evaluar el permiso, por eso los pedidos con cuerpo llevan uno válido.
  */
@@ -283,6 +284,10 @@ class SeguridadNotificacionesTest {
   void elFormularioDeContactoNoPideToken() throws Exception {
     pedir(post(CONTACTO).contentType(MediaType.APPLICATION_JSON).content(mensajeContacto()), null)
         .andExpect(status().isCreated());
+    pedir(
+            post(CONTACTO).contentType(MediaType.APPLICATION_JSON).content(mensajeContacto()),
+            "donante")
+        .andExpect(status().isCreated());
   }
 
   @Test
@@ -292,6 +297,12 @@ class SeguridadNotificacionesTest {
     pedir(get(CONTACTO + "/1"), null).andExpect(status().isUnauthorized());
     pedir(get(CONTACTO), "donante").andExpect(status().isForbidden());
     pedir(get(CONTACTO + "/1"), "entidad").andExpect(status().isForbidden());
+    pedir(
+            post(CONTACTO + "/1/respuesta")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(respuesta),
+            null)
+        .andExpect(status().isUnauthorized());
     pedir(
             post(CONTACTO + "/1/respuesta")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -83,6 +83,7 @@ Sin token, en cada servicio (las declara su `ReglasDeAcceso`):
 | Donaciones | `GET /api/entidades/publicas` | Listado público de entidades (HB-08, D26) |
 | Donaciones | `GET /api/necesidades/publicas` | Necesidades públicas (HB-08, D26) |
 | Logística | `GET /api/entregas/mapa` | Mapa de entregas de la portada (RF-02) |
+| Notificaciones | `POST /api/contacto` | Formulario de contacto (HB-21); la regla es por ruta, así que leer los mensajes queda en el ADMIN por `@PreAuthorize` |
 | Donaciones | `GET /api/donaciones/destacadas` | Destacadas de la landing (HB-01, D26) |
 | Donaciones | `GET /api/donaciones/contadores` | Contadores de la landing (HB-02, D26) |
 | Todos | `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**` | Healthcheck del compose y documentación en desarrollo |
