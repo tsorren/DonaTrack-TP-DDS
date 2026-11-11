@@ -136,6 +136,20 @@ class RepositoriosMongoAdaptersTest {
   }
 
   @Test
+  void camionMongoAdapter_findAll_incluyeLosDeshabilitados() {
+    Camion deshabilitado = nuevoCamion();
+    deshabilitado.deshabilitar();
+    when(camionRepo.findAll())
+        .thenReturn(
+            List.of(
+                camionMapper.toDocument(nuevoCamion()), camionMapper.toDocument(deshabilitado)));
+
+    assertEquals(
+        List.of(EstadoCamion.DISPONIBLE, EstadoCamion.DESHABILITADO),
+        camiones.findAll().stream().map(Camion::getEstado).toList());
+  }
+
+  @Test
   void camionMongoAdapter_findDisponibles_devuelveLosDisponiblesSinRutaEnTraslado() {
     CamionDocument doc = camionMapper.toDocument(nuevoCamion());
     when(camionRepo.findByEstado(EstadoCamion.DISPONIBLE)).thenReturn(List.of(doc));

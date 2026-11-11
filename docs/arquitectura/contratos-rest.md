@@ -117,7 +117,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/rutas/{id}/entregas` | Agregar entrega a una ruta planificada | `AgregarEntregaRutaRequestDTO` | `201`, `400`, `404` |
 | `PATCH` | `/api/rutas/{id}/estado` | Cambio de estado de ruta | `CambioEstadoRutaRequestDTO` | `200`, `400`, `404` |
 | `POST` | `/api/camiones` | Alta de camión en la flota (patente, capacidad, peso) | `CamionRequestDTO` | `201`, `400` |
-| `GET` | `/api/camiones` | Listado de camiones | — | `200` |
+| `GET` | `/api/camiones` | Listado de camiones, sin los `DESHABILITADO`. Con `incluirDeshabilitados=true`, todos (HB-23; OpenAPI de Logística 1.8.0) | — | `200` |
 | `GET` | `/api/camiones/{id}` | Consulta de camión por ID | — | `200`, `404` |
 | `PATCH` | `/api/camiones/{id}/estado` | Cambio de estado operativo de camión | `CambioEstadoCamionRequestDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/camiones/{id}` | Baja de camión de la flota | — | `204`, `404` |

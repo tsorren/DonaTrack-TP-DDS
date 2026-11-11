@@ -12,7 +12,8 @@ public interface ICamionesController {
 
   ResponseEntity<CamionResponseDTO> crear(@Valid CamionRequestDTO request);
 
-  ResponseEntity<List<CamionResponseDTO>> listar();
+  /** Sin {@code incluirDeshabilitados} o en false, sin los DESHABILITADO (HB-23). */
+  ResponseEntity<List<CamionResponseDTO>> listar(boolean incluirDeshabilitados);
 
   ResponseEntity<CamionResponseDTO> consultarPorId(UUID id);
 

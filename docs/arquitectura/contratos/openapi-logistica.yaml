@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.7.0
+  version: 1.8.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -437,7 +437,17 @@ paths:
           description: Datos inválidos
     get:
       summary: Listar camiones
+      description: >-
+        Sin incluirDeshabilitados, o en false, sin los DESHABILITADO (como siempre). Con
+        incluirDeshabilitados=true, todos los camiones (HB-23).
       operationId: listarCamiones
+      parameters:
+        - name: incluirDeshabilitados
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Listado de camiones
