@@ -65,7 +65,7 @@
           <small th:if="${p > 1 and !tiene and enCurso != null}"
                  th:text="|En curso: ${enCurso.nombre}, ${enCurso.cuenta}.|">En curso: Gran Aporte, 12 de 50 bienes.</small>
           <small th:if="${p > 1 and !tiene and enCurso == null}"
-                 th:text="|Se abre cuando completes ${c['anterior']}.|">Se abre cuando completes Sostenedor.</small>
+                 th:text="|Se abre cuando completes ${c.anterior}.|">Se abre cuando completes Sostenedor.</small>
         </span>
       </li>
     </ol>
@@ -121,7 +121,7 @@
 
     <!--/* La que falta, de una categoría que todavía no se abre: sin nombrar sus misiones. */-->
     <p th:if="${p > 1 and !tiene and c.estado == 'se abre después'}"
-       th:text="|Se gana al completar las ${#lists.size(suyas)} misiones de ${c.nombre}. Las vas a ver cuando completes las de ${c['anterior']}.|">Se
+       th:text="|Se gana al completar las ${#lists.size(suyas)} misiones de ${c.nombre}. Las vas a ver cuando completes las de ${c.anterior}.|">Se
       gana al completar las 2 misiones de Transformador. Las vas a ver cuando completes las de Sostenedor.</p>
 
     <button type="button" class="boton" data-tono="secundario" th:popovertarget="|pieza-${p}|"

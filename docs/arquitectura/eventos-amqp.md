@@ -49,7 +49,7 @@ incentivos-service
 
 logistica-service
 [logistica.exchange]  ──(ruta.#)───────────────► [donaciones.ruta.asignada / iniciada] ──► LogisticaEventListener
-   (TopicExchange)    ──(entrega.#)────────────► [donaciones.entrega.exitosa / fallida]
+   (TopicExchange)    ──(entrega.#)────────────► [donaciones.entrega.exitosa / fallida / cancelada / en-puerta]
 ```
 
 ### 2.1 Exchanges del Sistema
@@ -71,6 +71,7 @@ logistica-service
 |---|---|---|---|---|
 | `ruta.asignada` | `donaciones.ruta.asignada` | `donaciones-service` (`LogisticaEventListener`) | Notifica que una donación fue incluida en una ruta planificada | [`evento-ruta-asignada.schema.json`](./contratos/schemas/evento-ruta-asignada.schema.json) |
 | `ruta.iniciada` | `donaciones.ruta.iniciada` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donaciones a `EN_TRASLADO` y difunde URL de tracking | [`evento-ruta-iniciada.schema.json`](./contratos/schemas/evento-ruta-iniciada.schema.json) |
+| `entrega.en-puerta` | `donaciones.entrega.en-puerta` | `donaciones-service` (`LogisticaEventListener`) | HB-22: el camión llegó al destino y la entidad todavía no confirmó; la donación pasa de `EN_TRASLADO` a `EN_PUERTA`. Si ya no está en traslado (llegó después de `entrega.exitosa`) o el evento se repite, se registra como consumido y no se aplica. Es opcional: un proveedor que no lo publica sigue confirmando desde `EN_TRASLADO` | [`evento-entrega-en-puerta.schema.json`](./contratos/schemas/evento-entrega-en-puerta.schema.json) |
 | `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA`; si trae `reporte.cantidadRecibida`, guarda lo que no llegó y la necesidad cuenta lo recibido (HB-17); con DTI-36 replica además las fotos de recepción (campo opcional, `[PROPOSED]`) | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
 | `entrega.fallida` | `donaciones.entrega.fallida` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGA_FALLIDA` y evalúa replanificación | [`evento-entrega-fallida.schema.json`](./contratos/schemas/evento-entrega-fallida.schema.json) |
 | `entrega.cancelada` | `donaciones.entrega.cancelada` | `donaciones-service` (`LogisticaEventListener`) | HB-19: confirma que el proveedor canceló una entrega que no salió; la donación vuelve a `EN_DEPOSITO` sin destino y la solicitud del broker se cierra (`CANCELADA`) | [`evento-entrega-cancelada.schema.json`](./contratos/schemas/evento-entrega-cancelada.schema.json) |
@@ -92,6 +93,8 @@ logistica-service
 | 9 | Subió de Categoría | `incentivos-service` | `incentivos.exchange` | `incentivo.subio-categoria.v1` | `incentivo.subio-categoria.v1` | `notificaciones.incentivos` | [`evento-incentivo-subio-categoria-v1.schema.json`](./contratos/schemas/evento-incentivo-subio-categoria-v1.schema.json) |
 | 10 | Donante Inactivo | `incentivos-service` | `incentivos.exchange` | `incentivo.donante-inactivo.v1` | `incentivo.donante-inactivo.v1` | `notificaciones.incentivos` | [`evento-incentivo-donante-inactivo-v1.schema.json`](./contratos/schemas/evento-incentivo-donante-inactivo-v1.schema.json) |
 
+> **`donacionIndependienteId` (opcional, cierre de E6, HB-09):** `donacion.en-camino.v1`, `donacion.recibida.v1`, `donacion.entrega-fallida.v1` y `donacion.vencida.v1` llevan el id de la donación independiente al final del payload, como `donacion.asignada.v1`, que ya lo traía obligatorio. Donaciones lo completa desde el evento interno; `notificaciones-service` lo guarda como `referenciaId` de la notificación para enlazar el aviso con el detalle de la donación. Aditivo: los schemas lo declaran opcional (`additionalProperties` sigue en `true`) e Incentivos ignora los campos que no conoce.
+
 #### B2. Comando del broker de logística hacia `logistica-service`
 
 Los dos **comandos** del sistema van a un destinatario elegido por el broker de logística de `donaciones-service`, así que su routing key identifica al destinatario (regla «eventos por hecho, comandos por destinatario», [ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)).
@@ -107,13 +110,13 @@ Se publica con `mandatory=true` y publisher confirms (`correlated`); el broker e
 
 #### B3. Eventos de vuelta de los proveedores de logística
 
-Todo proveedor de logística informa el avance de una entrega publicando en `logistica.exchange` los eventos `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida` y, si cancela entregas, `entrega.cancelada` (HB-19) (los mismos que ya publica nuestra Logística). No invoca a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Cada mensaje debe llevar dos headers:
+Todo proveedor de logística informa el avance de una entrega publicando en `logistica.exchange` los eventos `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida` y, si cancela entregas, `entrega.cancelada` (HB-19) y, si informa la llegada al destino, `entrega.en-puerta` (HB-22, opcional) (los mismos que ya publica nuestra Logística). No invoca a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Cada mensaje debe llevar dos headers:
 
 | Header | Valor |
 |---|---|
 | `X-Proveedor-Id` | Id del proveedor (el de `donatrack.logistica.proveedores`) |
 | `X-Proveedor-Token` | Token propio del proveedor, acordado con Donaciones (`donatrack.logistica.proveedor.<id>.token-vuelta`) |
-| `__TypeId__` | El alias del evento, igual a su routing key (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`, `entrega.cancelada`), **no** el nombre de la clase del emisor: Donaciones solo conoce esos alias y descarta con un error de conversión cualquier otro valor |
+| `__TypeId__` | El alias del evento, igual a su routing key (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`, `entrega.cancelada`, `entrega.en-puerta`), **no** el nombre de la clase del emisor: Donaciones solo conoce esos alias y descarta con un error de conversión cualquier otro valor |
 
 `donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`; sin `logistica.token-vuelta` (variable `LOGISTICA_TOKEN_VUELTA`) Logística no arranca, para que la falta no pase inadvertida. Es una protección mínima (DTI-14, ítem 7). Decisión y alternativas: ADR [20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md).
 
@@ -271,6 +274,17 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "urlMapa": "http://localhost:8080/seguimiento/7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d"
 }
 ```
+
+#### Entrega en la Puerta (`entrega.en-puerta`, HB-22)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "fechaLlegada": "2026-11-11T11:30:00Z"
+}
+```
+
+> El camión llegó al destino y la entidad todavía no confirmó. Opcional: un proveedor que no lo publica sigue confirmando desde `EN_TRASLADO`. Va firmado con `X-Proveedor-Id` y `X-Proveedor-Token`, como los demás eventos de vuelta. Donaciones lo aplica solo sobre una donación `EN_TRASLADO`; deduplica por `(EntregaEnPuerta, entregaId, donación)` en `evento_consumido`. Ver el [ADR del estado `EN_PUERTA`](../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md).
 
 #### Entrega Exitosa (`entrega.exitosa`)
 ```json

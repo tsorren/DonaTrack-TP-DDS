@@ -18,7 +18,7 @@ public interface IEntregasService {
 
   List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria);
 
-  /** Entregas activas (pendientes o en traslado) de un donante (RF-09, HB-16). */
+  /** Entregas activas (pendientes, en traslado o en la puerta) de un donante (RF-09, HB-16). */
   List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId);
 
   EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO dto);
@@ -28,6 +28,12 @@ public interface IEntregasService {
   List<CambioEstadoEntregaResponseDTO> obtenerHistorial(UUID id);
 
   void cancelarPorDonacion(UUID idDonacion, String motivo);
+
+  /**
+   * El camión llegó al destino (HB-22): la entrega pasa a {@code EN_PUERTA}. Idempotente si ya
+   * estaba ahí. La llaman el {@code PATCH} de estado y el planificador de posiciones.
+   */
+  EntregaResponseDTO marcarEnPuerta(UUID id, String actor);
 
   /** Beneficiaria de la entrega, para la regla de pertenencia; vacío si la entrega no existe. */
   Optional<UUID> beneficiariaDe(UUID id);

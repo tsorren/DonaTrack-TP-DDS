@@ -75,7 +75,7 @@ final class AdminPersonasInicio {
         new Cifras(
             contar(todas, EN_DEPOSITO),
             contar(todas, Comun.ASIGNADA) + contar(todas, Comun.LISTA),
-            contar(todas, Comun.TRASLADO),
+            contar(todas, Comun.TRASLADO) + contar(todas, Comun.PUERTA),
             todas.stream()
                 .filter(d -> Comun.ENTREGADA.equals(Comun.normalizado(d.estadoActual())))
                 .map(d -> Comun.desde(d, Comun.ENTREGADA))

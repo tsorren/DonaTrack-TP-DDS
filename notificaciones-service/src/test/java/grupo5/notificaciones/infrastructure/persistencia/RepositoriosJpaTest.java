@@ -3,6 +3,7 @@ package grupo5.notificaciones.infrastructure.persistencia;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -129,6 +130,29 @@ class RepositoriosJpaTest {
     assertEquals(1, porPersona.size());
     assertEquals("Mensaje de prueba de persistencia", porPersona.get(0).getMensaje());
     assertEquals(2, porPersona.get(0).getHistorialEstado().size()); // PENDIENTE + ENVIADA
+  }
+
+  @Test
+  void deberiaPersistirTipoEventoYReferenciaYConservarlosAlMarcarComoLeida() {
+    UUID personaId = UUID.randomUUID();
+    UUID donacionId = UUID.randomUUID();
+    Notificacion conTipo = new Notificacion(personaId, "Tu donación salió del depósito");
+    conTipo.etiquetar("DONACION_EN_CAMINO", donacionId);
+    Notificacion anterior = new Notificacion(personaId, "Una notificación anterior a HB-09");
+    notificacionRepository.save(conTipo);
+    notificacionRepository.save(anterior);
+
+    Notificacion leida = notificacionRepository.findById(conTipo.getId()).orElseThrow();
+    leida.marcarComoLeida();
+    notificacionRepository.save(leida);
+
+    Notificacion releida = notificacionRepository.findById(conTipo.getId()).orElseThrow();
+    assertTrue(releida.isLeida());
+    assertEquals("DONACION_EN_CAMINO", releida.getTipoEvento());
+    assertEquals(donacionId, releida.getReferenciaId());
+    Notificacion sinTipo = notificacionRepository.findById(anterior.getId()).orElseThrow();
+    assertNull(sinTipo.getTipoEvento());
+    assertNull(sinTipo.getReferenciaId());
   }
 
   @Test

@@ -21,37 +21,16 @@
 </th:block>
 
 <!--/* Los lugares, en el orden de las misiones (el de la lista y el del teclado). tipo: bienvenida, mision
-       o final. Los conseguidos traen qué hiciste, la categoría de la donación, los 3 hitos y el mensaje de
-       la entidad (datos de ejemplo, los de persona/datos-persona). La pintura va en el orden del dibujo
-       (las hojas del piso tapan el estante). */-->
+       o final. La historia de cada planta (qué hiciste, la categoría de la donación, los hitos y el mensaje
+       de la entidad) sale de la vista: la de la bienvenida (misMisiones.bienvenida) y la de cada misión
+       (historia), o null si no se sabe. La pintura va en el orden del dibujo (las hojas del piso tapan el
+       estante). */-->
 <th:block th:fragment="huerta"
     th:with="pedido=${param.lugar != null ? param.lugar[0] : ''},
              lugares=${ {
-      {clave: 'mesada-izq', tipo: 'bienvenida', planta: 'Jazmín', titulo: 'Bienvenida', categoria: 'cat-alimentos',
-       hizo: nueva ? 'Te sumaste a DonaTrack. Esta planta llega con tu cuenta.'
-                   : 'Te sumaste a DonaTrack y donaste por primera vez: lentejas secas, 4 kg, para Comedor Barrio Ejemplo.',
-       hitos: nueva ? { {texto: 'Te sumaste a DonaTrack', fecha: '15 de octubre de 2026', hecho: true},
-                        {texto: 'Tu primera donación', fecha: 'Cuando quieras', hecho: false},
-                        {texto: 'La entidad confirma que la recibió', fecha: 'Después de tu primera donación', hecho: false} }
-                    : { {texto: 'Te sumaste a DonaTrack', fecha: '1 de junio de 2026', hecho: true},
-                        {texto: 'Llevaste tus lentejas al depósito', fecha: '5 de junio de 2026', hecho: true},
-                        {texto: 'Comedor Barrio Ejemplo confirmó que las recibió', fecha: '9 de junio de 2026', hecho: true} },
-       donacion: nueva ? null : 'lentejas', entidad: 'Comedor Barrio Ejemplo',
-       mensaje: 'Gracias por las lentejas, Martina: alcanzaron para el guiso de toda la semana.'},
-      {clave: 'estante-izq', tipo: 'mision', planta: 'Palmera', titulo: 'Racha Inicial', categoria: 'cat-alimentos',
-       hizo: 'Donaste 3 meses seguidos: junio, julio y agosto de 2026. Tus galletitas completaron la misión.',
-       hitos: { {texto: 'Llevaste tus galletitas al depósito', fecha: '3 de agosto de 2026', hecho: true},
-                {texto: 'Llegaron a Merendero Ejemplo Sur', fecha: '7 de agosto de 2026, 10:30', hecho: true},
-                {texto: 'Merendero Ejemplo Sur confirmó que las recibió', fecha: '7 de agosto de 2026, 17:40', hecho: true} },
-       donacion: 'galletitas', entidad: 'Merendero Ejemplo Sur',
-       mensaje: 'Las galletitas acompañaron la merienda del viernes. ¡Gracias por acordarte de nosotros!'},
-      {clave: 'piso-izq', tipo: 'mision', planta: 'Bananero', titulo: 'Explorador', categoria: 'cat-escolares',
-       hizo: 'Donaste en 3 categorías distintas: alimentos, ropa y útiles escolares. Los útiles completaron la misión.',
-       hitos: { {texto: 'Llevaste tus útiles escolares al depósito', fecha: '2 de septiembre de 2026', hecho: true},
-                {texto: 'Llegaron a Escuela Ejemplo N.º 12', fecha: '8 de septiembre de 2026, 9:00', hecho: true},
-                {texto: 'Escuela Ejemplo N.º 12 confirmó que los recibió', fecha: '8 de septiembre de 2026, 12:30', hecho: true} },
-       donacion: 'utiles', entidad: 'Escuela Ejemplo N.º 12',
-       mensaje: 'Los útiles ya están en las mochilas de segundo grado. ¡Gracias!'},
+      {clave: 'mesada-izq', tipo: 'bienvenida', planta: 'Jazmín', titulo: 'Bienvenida'},
+      {clave: 'estante-izq', tipo: 'mision', planta: 'Palmera', titulo: 'Racha Inicial'},
+      {clave: 'piso-izq', tipo: 'mision', planta: 'Bananero', titulo: 'Explorador'},
       {clave: 'mesada-medio', tipo: 'mision', planta: 'Orejas de elefante', titulo: 'Gran Aporte'},
       {clave: 'mesada-der', tipo: 'mision', planta: 'Naranjo', titulo: 'Constancia'},
       {clave: 'estante-der', tipo: 'mision', planta: 'Menta', titulo: 'Impacto Real'},
@@ -60,6 +39,7 @@
              pintura=${ {'piso-der', 'mesada-der', 'colgante', 'estante-izq', 'mesada-medio', 'estante-der',
                          'piso-izq', 'mesada-izq'} },
              completas=${#lists.size(obtenidas)},
+             bienvenida=${misMisiones.bienvenida},
              conPlanta=${completas + 1 + (completas == 6 ? 1 : 0)},
              elegido=${lugares.^[clave == #root.pedido]}">
   <svg th:replace="~{iconos :: categorias}"></svg>
@@ -74,12 +54,15 @@
     <!--/* Compatibilidad textual con el contrato de la pantalla anterior: la huerta reemplaza la
            composición vieja, pero conserva sus hitos para lectores y pruebas existentes. */-->
     <section class="solo-lectores" aria-label="Tus insignias">
-      <h3>Tus insignias <span th:text="${nueva} ? '(0 de 6)' : '(2 de 6)'">(2 de 6)</span></h3>
+      <h3>Tus insignias <span th:text="|(${completas} de ${#lists.size(misiones)})|">(2 de 6)</span></h3>
       <p th:if="${nueva}">Todavía no tenés insignias. Cada misión completa te da una.</p>
-      <p th:unless="${nueva}">Completa el 3 de agosto de 2026</p>
-      <p th:unless="${nueva}">Empieza a contar cuando completes Gran Aporte.</p>
-      <p th:unless="${nueva}">Sus misiones se ven cuando completes las de Sostenedor.</p>
-      <p th:if="${nueva}">Racha Inicial: 0 de 3 meses</p>
+      <p th:if="${!nueva and !obtenidas.isEmpty()}" th:text="|Completa el ${obtenidas[0].fecha}|">Completa el 3 de agosto de 2026</p>
+      <p th:if="${!nueva and misiones.^[estado == 'espera'] != null}"
+         th:text="|Empieza a contar cuando completes ${misiones.^[estado == 'espera'].espera}.|">Empieza a contar cuando completes Gran Aporte.</p>
+      <p th:if="${!nueva and !siguientes.isEmpty()}"
+         th:text="|Sus misiones se ven cuando completes las de ${siguientes[0].anterior}.|">Sus misiones se ven cuando completes las de Sostenedor.</p>
+      <p th:if="${nueva and misiones.^[estado == 'curso'] != null}"
+         th:text="|${misiones.^[estado == 'curso'].nombre}: ${misiones.^[estado == 'curso'].cuenta}|">Racha Inicial: 0 de 3 meses</p>
     </section>
 
     <div id="huerta-escena">
@@ -123,6 +106,7 @@
     <section id="huerta-ficha" class="tarjeta" aria-labelledby="huerta-ficha-titulo" aria-live="polite"
              th:with="l=${elegido},
                       m=${l != null and l.tipo == 'mision' ? misiones.^[nombre == #root.l.titulo] : null},
+                      h=${l == null ? null : (l.tipo == 'bienvenida' ? bienvenida : (m != null ? m.historia : null))},
                       c=${m != null ? categorias.^[nombre == #root.m.categoria] : null},
                       tiene=${l != null and (l.tipo == 'bienvenida' or (l.tipo == 'final' and completas == 6) or (m != null and m.estado == 'completa'))},
                       oculta=${c != null and c.estado == 'se abre después'},
@@ -148,33 +132,33 @@
       <th:block th:if="${tiene}">
         <header class="racimo" data-espacio="3">
           <svg class="categoria-icono" data-tamano="grande" viewBox="-14 -14 128 128" aria-hidden="true"
-               focusable="false"><use th:href="|#${l['categoria'] ?: 'cat-alimentos'}|" href="#cat-alimentos"
+               focusable="false"><use th:href="|#${h?.categoria ?: 'cat-alimentos'}|" href="#cat-alimentos"
                                       width="100" height="100"/></svg>
           <div>
             <p class="rotulo" th:text="${m != null} ? |${l.planta} · ${m.categoria}| : ${l.planta}">Palmera · Colaborador</p>
             <h3 id="huerta-ficha-titulo" th:text="${l.titulo}">Racha Inicial</h3>
           </div>
         </header>
-        <p th:text="${l['hizo'] ?: 'Completaste las 6 misiones: tu huerta está completa.'}">Donaste 3 meses seguidos:
+        <p th:text="${h?.hizo ?: (m != null ? 'Completaste esta misión el ' + m.fecha + '.' : 'Completaste las 6 misiones: tu huerta está completa.')}">Donaste 3 meses seguidos:
           junio, julio y agosto de 2026. Tus galletitas completaron la misión.</p>
-        <ol th:if="${l['hitos'] != null}" id="huerta-hitos" role="list" aria-label="Cómo la conseguiste">
-          <li th:each="h : ${l.hitos}" th:data-hito="${h.hecho} ? 'hecho' : 'falta'">
-            <b th:text="${h.texto}">Llevaste tus galletitas al depósito</b>
-            <span th:text="${h.fecha}">3 de agosto de 2026</span>
+        <ol th:if="${h?.hitos != null}" id="huerta-hitos" role="list" aria-label="Cómo la conseguiste">
+          <li th:each="hito : ${h.hitos}" th:data-hito="${hito.hecho} ? 'hecho' : 'falta'">
+            <b th:text="${hito.texto}">Llevaste tus galletitas al depósito</b>
+            <span th:text="${hito.fecha}">3 de agosto de 2026</span>
           </li>
         </ol>
         <div class="racimo" data-espacio="2">
-          <a th:if="${l['donacion'] != null}" class="boton" data-tono="secundario" href="/donante-donaciones-detalle"
-             th:href="@{/donante-donaciones-detalle(donacion=${l.donacion})}">Ver la donación</a>
-          <a th:if="${l.tipo == 'bienvenida' and l['donacion'] == null}" class="boton" data-tono="secundario"
+          <a th:if="${h?.donacion != null}" class="boton" data-tono="secundario" href="/donante-donaciones-detalle"
+             th:href="@{/donante-donaciones-detalle(donacion=${h.donacion})}">Ver la donación</a>
+          <a th:if="${l.tipo == 'bienvenida' and h?.donacion == null}" class="boton" data-tono="secundario"
              href="/donante-entidades" th:href="@{/donante-entidades}">Ver a quién donar</a>
         </div>
-        <details th:if="${l['donacion'] != null}" id="huerta-mensaje">
+        <details th:if="${h?.donacion != null}" id="huerta-mensaje">
           <summary class="boton" data-tono="secundario">Ver el mensaje de la entidad</summary>
           <blockquote>
-            <p th:text="${l.mensaje}">Las galletitas acompañaron la merienda del viernes. ¡Gracias por acordarte de
+            <p th:text="${h.mensaje}">Las galletitas acompañaron la merienda del viernes. ¡Gracias por acordarte de
               nosotros!</p>
-            <footer th:text="${l.entidad}">Merendero Ejemplo Sur</footer>
+            <footer th:text="${h.entidad}">Merendero Ejemplo Sur</footer>
           </blockquote>
         </details>
       </th:block>
@@ -195,7 +179,7 @@
           <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
                     th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
           <p><b th:text="|Llevás ${m.cuenta}.|">Llevás 12 de 50 bienes.</b>
-            <th:block th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de
+            <th:block th:if="${m.nota != null}" th:text="${m.nota}">Tu donación más grande desde el 2 de
               septiembre.</th:block></p>
         </th:block>
         <p th:if="${m != null and m.estado == 'espera'}"
@@ -203,7 +187,7 @@
           que salga la planta: 6 meses seguidos donando. Empieza a contar cuando completes Gran Aporte.</p>
         <p th:if="${m != null and m.estado == 'cerrada' and !oculta}"
            th:text="|Para que salga la planta: ${#strings.toLowerCase(m.pide)}.|">Para que salga la planta: …</p>
-        <p th:if="${oculta}" th:text="|Su misión se ve cuando completes las de ${c['anterior']}.|">Su misión se ve
+        <p th:if="${oculta}" th:text="|Su misión se ve cuando completes las de ${c.anterior}.|">Su misión se ve
           cuando completes las de Sostenedor.</p>
         <p th:if="${l.tipo == 'final'}"
            th:text="|La planta colgante sale cuando completes las 6 misiones. Llevás ${completas}.|">La planta

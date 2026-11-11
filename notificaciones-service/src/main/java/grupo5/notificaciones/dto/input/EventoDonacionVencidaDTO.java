@@ -14,5 +14,6 @@ public record EventoDonacionVencidaDTO(
         LocalDateTime fecha,
     @NotNull(message = "El ID de la persona administradora es obligatorio") UUID personaAdminId,
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
-    @NotBlank(message = "El motivo es obligatorio") String motivo)
+    @NotBlank(message = "El motivo es obligatorio") String motivo,
+    UUID referenciaId)
     implements EventoNotificableDTO {}

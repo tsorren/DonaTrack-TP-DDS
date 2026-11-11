@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.7.0
-  description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
+  version: 1.8.0
+  description: API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde 1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -21,6 +21,7 @@ paths:
               - EN_DEPOSITO
               - ASIGNACION_REALIZADA
               - EN_TRASLADO
+              - EN_PUERTA
               - LISTA_PARA_ENTREGAR
               - ENTREGADA
               - ENTREGA_FALLIDA
@@ -1616,6 +1617,7 @@ components:
             - EN_DEPOSITO
             - ASIGNACION_REALIZADA
             - EN_TRASLADO
+            - EN_PUERTA
             - LISTA_PARA_ENTREGAR
             - ENTREGADA
             - ENTREGA_FALLIDA
@@ -1651,6 +1653,7 @@ components:
             - EN_DEPOSITO
             - ASIGNACION_REALIZADA
             - EN_TRASLADO
+            - EN_PUERTA
             - LISTA_PARA_ENTREGAR
             - ENTREGADA
             - ENTREGA_FALLIDA

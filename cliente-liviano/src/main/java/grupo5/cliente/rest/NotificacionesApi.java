@@ -16,8 +16,8 @@ import org.springframework.web.service.annotation.PostExchange;
  * (docs/arquitectura/contratos/openapi-notificaciones.yaml): la bandeja de una persona, su conteo
  * de sin leer, marcarlas como leídas y el formulario de contacto. {@code personaId} es el id de la
  * persona (el de la cuenta). La declara entera el esqueleto de la conexión de pantallas (SPEC-08):
- * los frentes la usan y no la cambian. Notificaciones no pide token todavía (HB-13, fuera de
- * alcance).
+ * los frentes la usan y no la cambian. Con ingreso, la llamada lleva el token del usuario (lo pone
+ * {@code ClientesHttp}, SPEC-09, F5); sin ingreso va sin cabecera.
  */
 interface NotificacionesApi {
 
@@ -47,13 +47,20 @@ interface NotificacionesApi {
   MensajeRecibido contacto(
       @RequestHeader("X-Forwarded-For") String ipOrigen, @RequestBody MensajeDeContacto mensaje);
 
-  /** {@code estado}: PENDIENTE, ENVIADA o FALLIDA; leída si tiene {@code fechaLectura}. */
+  /**
+   * {@code estado}: PENDIENTE, ENVIADA o FALLIDA; leída si tiene {@code fechaLectura}. {@code
+   * tipoEvento} (DONACION_ASIGNADA, DONACION_EN_CAMINO, DONACION_RECIBIDA, ENTREGA_FALLIDA, etc.) y
+   * {@code referenciaId}, el id de la donación, son opcionales (HB-09): vienen nulos en las
+   * anteriores y cuando el emisor no los informó.
+   */
   record Notificacion(
       UUID id,
       String mensaje,
       String estado,
       LocalDateTime fechaCreacion,
-      LocalDateTime fechaLectura) {}
+      LocalDateTime fechaLectura,
+      String tipoEvento,
+      UUID referenciaId) {}
 
   record Conteo(Long noLeidas) {}
 

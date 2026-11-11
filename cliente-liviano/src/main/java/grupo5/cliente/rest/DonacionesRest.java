@@ -9,6 +9,7 @@ import static grupo5.cliente.rest.Comun.ENTREGADA;
 import static grupo5.cliente.rest.Comun.FALLIDA;
 import static grupo5.cliente.rest.Comun.HORA;
 import static grupo5.cliente.rest.Comun.LISTA;
+import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.TRASLADO;
 import static grupo5.cliente.rest.Comun.VENCIDA;
 import static grupo5.cliente.rest.Comun.cantidad;
@@ -212,7 +213,7 @@ class DonacionesRest implements DonacionesPuerto {
   static List<PasoRecorrido> pasos(DonacionesApi.Donacion d, String estado) {
     int actual =
         switch (estado) {
-          case FALLIDA -> ETAPAS.indexOf(TRASLADO);
+          case FALLIDA, PUERTA -> ETAPAS.indexOf(TRASLADO);
           case VENCIDA -> 0;
           default -> Math.max(0, ETAPAS.indexOf(estado));
         };
@@ -306,6 +307,7 @@ class DonacionesRest implements DonacionesPuerto {
       case ASIGNADA -> "Asignamos tu donación a una necesidad de " + entidad + ".";
       case LISTA -> "Tu donación quedó lista para entregar.";
       case TRASLADO -> "El camión salió a entregar tu donación a " + entidad + ".";
+      case PUERTA -> "El camión llegó a " + entidad + ". Falta que confirme la recepción.";
       case ENTREGADA ->
           mayuscula(entidad)
               + " confirmó que recibió tu donación"
@@ -359,7 +361,7 @@ class DonacionesRest implements DonacionesPuerto {
 
   static EstadoEntrega estadoEntrega(String estado) {
     return switch (estado) {
-      case TRASLADO -> EstadoEntrega.EN_CAMINO;
+      case TRASLADO, PUERTA -> EstadoEntrega.EN_CAMINO;
       case ENTREGADA -> EstadoEntrega.ENTREGADA;
       case FALLIDA, VENCIDA -> EstadoEntrega.CON_PROBLEMA;
       default -> EstadoEntrega.PENDIENTE;
@@ -371,6 +373,7 @@ class DonacionesRest implements DonacionesPuerto {
       case ASIGNADA -> "Asignada, espera el camión";
       case LISTA -> "Lista para entregar, espera el camión";
       case TRASLADO -> "Salió el " + desde.format(DIA_Y_HORA);
+      case PUERTA -> "Llegó a la entidad el " + desde.format(DIA_Y_HORA);
       case ENTREGADA -> "Entrega confirmada el " + desde.format(DIA);
       case FALLIDA -> "No pudo llegar el " + desde.format(DIA);
       case VENCIDA -> "Venció en el depósito el " + desde.format(DIA);

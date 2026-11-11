@@ -53,7 +53,7 @@ el de los datos.
 |---|---|---|---|---|
 | Mis donaciones | `/donaciones-independientes?donanteId&estado&categoriaId` | 🟢 | 🔁 la categoría del filtro pasa de nombre a id con `/api/categorias`. 🔁 el número de la donación, por posición. 🔁 el destino: `entidadBeneficiariaId` (sumado al DTO al conectarla, 2026-11-07) y una llamada a `/api/entidades/{id}` por entidad distinta | HB-03 y HB-04, hechos |
 | Misiones e insignias | `/api/incentivos/donantes/{id}/misiones`, `/insignias`, `/donantes/{id}`, `/ascensos`; tipo de persona en Donaciones | 🟡 | 🔁 "en espera" y "se abre después", por el orden de la lista y la categoría del donante. ❌ unidad del progreso ("12 de 50 **bienes**"). ❌ número de misión. ❌ "tu donación más grande". Cuatro llamadas a dos servicios | — |
-| Notificaciones | `/api/notificaciones/persona/{id}`, conteo, marcar leídas | 🟡 | ✅ mensaje, fecha y leída. ❌ tipo de evento (sin sello) e id de la donación (sin enlace). El evento de entrada los trae; `NotificacionDTO` no los devuelve | HB-09 (nuevo campo) |
+| Notificaciones | `/api/notificaciones/persona/{id}`, conteo, marcar leídas | 🟢 | ✅ mensaje, fecha y leída. ✅ tipo de evento (`tipoEvento`, siempre) e id de la donación (`referenciaId`: Donaciones lo manda en los cinco avisos de donación desde el cierre de E6). Las anteriores a la V5 y las de un emisor que no manda el id quedan sin tipo o sin enlace | HB-09 (hecho, 2026-11-11) |
 | Detalle de una donación | `/donaciones-independientes/{id}`, seguimiento, `/api/entregas/{id}` | 🟡 | ✅ etapas y fechas (historial propio de la donación). 🔁 fotos con `fotosRecepcion` de la entrega. 🔁 causa del problema, con la justificación del cambio. ❌ nueva salida. 🔁 "Figura como": `quienDono.nombreVisible` (HB-20, falta usarlo en el cliente). Conectada el 2026-11-07: el número y la pertenencia salen del listado del donante | HB-20 |
 | Inicio | Donaciones, `/api/entregas/seguimiento/donantes/{id}`, conteo de notificaciones | 🟡 | ✅ entregas activas en una llamada (HB-16, 2026-11-08; las creadas antes no tienen donante). 🔁 entidades que confirmaron, con una llamada por entidad. ❌ nueva fecha de salida | HB-16, hecho |
 | Seguimiento | `/api/entregas/seguimiento/donantes/{id}` (una llamada, desde el 2026-11-08) | 🟡 | ✅ estado, paradas, patente y última actualización. ✅ todas las activas en una llamada. ❌ posición del camión. ❌ nombre del destino | HB-05, HB-06; HB-16 hecho |
@@ -64,9 +64,9 @@ el de los datos.
 
 | Pantalla | Endpoints | Estado | Qué falta o se deriva | HB |
 |---|---|---|---|---|
-| Notificaciones | Las mismas del donante | 🟡 | ❌ tipo de evento e id de la donación o la entrega (el botón "Confirmar" no tiene a dónde ir) | HB-09 (nuevo campo) |
+| Notificaciones | Las mismas del donante | 🟢 | ✅ tipo de evento e id de la donación: el botón "Confirmar recepción" sale en los avisos "en camino" cuya donación Logística tiene en una entrega que espera (`EN_PUERTA` o `EN_TRASLADO`) | HB-09 (hecho, 2026-11-11) |
 | Seguir entregas | `/api/entregas/seguimiento/beneficiarios/{id}`, `/api/entregas/{id}` | 🟡 | ✅ estado, paradas y patente, en una llamada. 🔁 dirección exacta con la entrega. ❌ posición del camión. El endpoint trae también las entregadas: las filtra el cliente | HB-05, HB-06 |
-| Donaciones recibidas | `/donaciones-independientes?entidadId&estado&desde&hasta`, `/api/donaciones/{id}` | 🟡 | 🔁 quién donó: `quienDono` en el listado (HB-20), con el nombre visible o `null` si el donante lo ocultó; reemplaza la llamada a `/api/donaciones/{id}` por donación original, que desde la autenticación (#955) solo pueden pedir el donante y el admin. Falta cambiar el cliente. 🔁 las recibidas del mes, con la fecha de su cambio a entregada. ✅ el pedido que cubre (`necesidadId`, HB-17). ❌ "Esperan tu confirmación": la que llegó a la puerta y la que viene en camino están las dos en traslado, y van a "En camino". ❌ las novedades sin leer. Las fechas filtran por registro, no por asignación. Conectada el 2026-11-08 | HB-20, HB-22, HB-09 |
+| Donaciones recibidas | `/donaciones-independientes?entidadId&estado&desde&hasta`, `/api/donaciones/{id}` | 🟡 | 🔁 quién donó: `quienDono` en el listado (HB-20), con el nombre visible o `null` si el donante lo ocultó; reemplaza la llamada a `/api/donaciones/{id}` por donación original, que desde la autenticación (#955) solo pueden pedir el donante y el admin. Falta cambiar el cliente. 🔁 las recibidas del mes, con la fecha de su cambio a entregada. ✅ el pedido que cubre (`necesidadId`, HB-17). ✅ "Esperan tu confirmación": la donación `EN_PUERTA` (HB-22, 2026-11-11), con la hora de llegada del historial; la que viene en camino sigue en "En camino". ❌ las novedades sin leer. Las fechas filtran por registro, no por asignación. Conectada el 2026-11-08 | HB-20, HB-22, HB-09 |
 | Necesidades | CRUD de `/api/necesidades` | 🟡 | ✅ HB-18: `unidad`, `estado`, `fechaLimite`, `periodicidad`, `version` (409), `ultimoCambio` y la historia en `/api/necesidades/{id}/periodos` y `/donaciones-independientes?necesidadId=`. ❌ lo recibido de una extraordinaria como cantidad | HB-17, HB-18 |
 | Inicio | Seguimiento, donaciones, necesidades, conteo | 🟡 | 🔁 lo recibido por pedido: el `estado` de cada necesidad y, en las recurrentes, `/periodos` (HB-18). "Espera confirmación" no es un estado de la entrega | HB-18 |
 | Confirmar recepción (y Llegó con un problema) | `PATCH /api/entregas/{id}/estado`, `PATCH .../fotos` | 🔴 | ✅ fotos por URL. ❌ subir el archivo: el acta pide la foto y la API solo acepta una URL, así que no se conecta (2026-11-08). ✅ remito y reporte con la cantidad recibida (HB-17). ✅ pedido que cubre (`necesidadId`, HB-17) | HB-10 |
@@ -93,10 +93,10 @@ Huecos que se repiten en varias pantallas, de más a menos pantallas:
 |---|---|---|
 | Identidad de la cuenta (`/me`, pertenencia) | Todas las privadas | HB-11, HB-13 (con el login) |
 | Lo recibido y el período de cada necesidad | Entidades y necesidades, Entidades del donante, Necesidades, Inicio de la entidad | HB-18 |
-| Tipo de evento e id de la donación o la entrega en `NotificacionDTO` | Notificaciones del donante y de la entidad | **No**. Aditivo en el contrato, pero `Notificacion` tampoco los guarda: toca dominio, esquema y DTO |
+| ~~Tipo de evento e id de la donación o la entrega en `NotificacionDTO`~~ Hecho (2026-11-11) | Notificaciones del donante y de la entidad | HB-09 |
 | Posición del camión | Seguimiento del donante, Seguir entregas de la entidad | HB-05, HB-06 |
 | ~~Pedido que cubre cada donación (`necesidadId` en el DTO)~~ Hecho (2026-11-08) | Donaciones recibidas, Confirmar recepción | HB-17 |
-| La entrega que llegó a la puerta y espera confirmación | Donaciones recibidas, Inicio y Seguir entregas de la entidad | HB-22 |
+| ~~La entrega que llegó a la puerta y espera confirmación~~ Hecho (2026-11-11) | Donaciones recibidas, Inicio y Seguir entregas de la entidad | HB-22 |
 | Destacadas con foto y contadores | Portada, Donaciones realizadas | HB-01 (HB-02 hecho el 2026-11-08) |
 | "Qué es" la entidad como lista fija | Entidades y necesidades, Registro de entidad, Mi perfil de la entidad | **No** |
 
@@ -162,16 +162,19 @@ HTML es el mismo, salvo la pieza común de envío y espacios.
 
 | Rol | Conectadas (qué sigue sin dato) | Pendientes y motivo |
 |---|---|---|
-| Público | Portada, Donaciones realizadas (destacadas, contadores, total de entidades); Nosotros (cifras sin "desde marzo"); Contacto (`POST /api/contacto`, HB-21: espera el merge de su rama); registro de donante y de entidad (constancia de legales con la versión vigente). Sin barrio en las destacadas | **Entidades y necesidades** y **Mapa de entregadas**: sin puerto ni controller en esta corrida, siguen con datos de ejemplo `[INFERRED]` (las subcategorías con la unidad piden sesión y los DTOs públicos son mínimos a propósito, HB-08 y D24). Legales, Para donantes, Para entidades, Ingresar y Recuperar: sin datos de API |
-| Donante | Inicio, Mis donaciones y detalle ("Figura como" con `quienDono`; el destino sin nombre), Entidades, Seguimiento (con `posicionCamion`), Notificaciones (sin tipo ni enlace: HB-09 sigue fuera), Mi perfil (nombre visible y constancia de legales) | **Misiones e insignias**: sin puerto ni controller, sigue con datos de ejemplo. "Qué te avisamos" y "Datos de la cuenta" no guardan: el aviso lo dice |
-| Entidad | Inicio, Necesidades (publicar, cambiar con `version` y dar de baja), Donaciones recibidas (con `quienDono`), Seguir entregas, Confirmar recepción y Llegó con un problema (fotos por multipart, remito y reporte), Notificaciones, Mi perfil (lectura) | Guardar Mi perfil: el aviso dice que todavía no se puede. "Esperan tu confirmación" (HB-22), lo recibido de una extraordinaria y el tipo de la notificación, fuera |
+| Público | Portada, Donaciones realizadas (destacadas, contadores, total de entidades); Nosotros (cifras sin "desde marzo"); Contacto (`POST /api/contacto`, HB-21: espera el merge de su rama); registro de donante y de entidad (constancia de legales con la versión vigente). Sin barrio en las destacadas. **Entidades y necesidades** (cierre de E6, F2: entidades y necesidades públicas de Donaciones; sin barrio, misión, emergencia, lo cubierto del mes ni categoría sin sesión) y **Mapa de entregadas** (`/api/entregas/mapa` de Logística: un punto por lugar, sin entidad, categoría ni foto) | Legales, Para donantes, Para entidades, Ingresar y Recuperar: sin datos de API |
+| Donante | Inicio, Mis donaciones y detalle ("Figura como" con `quienDono`; el destino sin nombre), Entidades, Seguimiento (con `posicionCamion`), Notificaciones (con tipo y enlace a la donación, HB-09), Mi perfil (nombre visible y constancia de legales). **Misiones e insignias** (cierre de E6, F2: perfil, misiones y ascensos de Incentivos y el tipo de persona de Donaciones; sin unidad del avance, sin la historia de cada planta ni "tu donación más grande") | "Qué te avisamos" y "Datos de la cuenta" no guardan: el aviso lo dice. Misiones no está en el menú de la persona fuera de maqueta (`Pantallas.java` arma el menú sin ella; la dirección escrita a mano funciona) |
+| Entidad | Inicio, Necesidades (publicar, cambiar con `version` y dar de baja), Donaciones recibidas (con `quienDono`), Seguir entregas, Confirmar recepción y Llegó con un problema (fotos por multipart, remito y reporte), Notificaciones (con tipo y botón "Confirmar recepción", HB-09), Mi perfil (lectura). "Esperan tu confirmación" con la donación `EN_PUERTA` (HB-22, cierre de E6) | Guardar Mi perfil: el aviso dice que todavía no se puede. Lo recibido de una extraordinaria, fuera |
 | Admin | Inicio, Donantes (registrar e importar CSV con avance), Entidades (registrar y aprobar), Donaciones (registrar, detalle y marcar vencida), Asignaciones, Camiones (con HB-23), Ranking | Pedir corrección y rechazar una entidad (sin operación), búsqueda en el servidor y fecha de alta de donantes, motivo y fecha de una propuesta o de un cambio de camión |
 
-Quedan fuera de todas, como en el §5: el token hacia Logística, Incentivos y Notificaciones (F5, HB-13),
-la variante de la persona fuera de maqueta y las pantallas que resuelve Keycloak.
+Quedan fuera de todas, como en el §5: la variante de la persona fuera de maqueta y las pantallas que
+resuelve Keycloak. El token hacia Logística, Incentivos y Notificaciones, que esta lista dejaba fuera, lo
+lleva el cliente desde el cierre de E6 (F5, [SPEC-09](../specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md)): con las
+ramas `E6_F5_token_cliente` y `E6_cierre_F2` integradas, Misiones fuera de maqueta ya pide a Incentivos con el token
+del donante.
 
-**Pantallas sin controller propio:** Mapa, Entidades y necesidades, y Misiones. Hasta conectarlas, el
-criterio de hecho de SPEC-08 las cuenta como pendientes con su motivo.
+**Pantallas sin controller propio:** ninguna. Mapa, Entidades y necesidades, y Misiones tienen puerto, adaptador
+REST y controller desde el cierre de E6 (F2, 2026-11-11).
 
 **Los textos nuevos** que esta conexión propone fuera de la maqueta están en la sección "Textos de la
 conexión con las APIs" de cada ficha, marcados "Pendiente de OK del usuario".

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Notificaciones Service API
-  version: 1.1.0
+  version: 1.2.0
   description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 servers:
   - url: http://localhost:8081
@@ -559,6 +559,10 @@ components:
           format: uuid
         descripcion:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoDonacionRecibidaDTO:
       type: object
       required:
@@ -584,6 +588,10 @@ components:
           type: string
         patenteCamion:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoDonacionEnCaminoDTO:
       type: object
       required:
@@ -609,6 +617,10 @@ components:
           type: string
         urlMapa:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoEntregaFallidaDTO:
       type: object
       required:
@@ -642,6 +654,10 @@ components:
           type: string
         replanificable:
           type: boolean
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoDonacionVencidaDTO:
       type: object
       required:
@@ -668,6 +684,10 @@ components:
           type: string
         motivo:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     NotificacionDTO:
       type: object
       required:
@@ -693,6 +713,22 @@ components:
           type: string
           format: date-time
           nullable: true
+        tipoEvento:
+          type: string
+          nullable: true
+          description: >-
+            Tipo del evento que originó la notificación (HB-09). Hoy: DONANTE_REGISTRADO, DONANTE_INACTIVO,
+            MISION_CUMPLIDA, SUBIO_CATEGORIA, DONACION_ASIGNADA, DONACION_RECIBIDA, DONACION_EN_CAMINO,
+            ENTREGA_FALLIDA y DONACION_VENCIDA. Texto libre a propósito, no un enum: un tipo nuevo no
+            rompe a los clientes. Nulo en las notificaciones anteriores a HB-09 y en los avisos directos
+            (por ejemplo, el de un mensaje de contacto nuevo).
+        referenciaId:
+          type: string
+          format: uuid
+          nullable: true
+          description: >-
+            Id de la donación a la que se refiere el aviso (HB-09). Nulo si el emisor del evento no la
+            informó, en las anteriores a HB-09 y en los avisos que no hablan de una donación.
     MensajeContactoInputDTO:
       type: object
       required:

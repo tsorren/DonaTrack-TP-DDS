@@ -20,4 +20,5 @@ public record EventoDonacionVencidaV1(
         LocalDateTime fecha,
     @NotNull(message = "El ID del administrador es obligatorio") UUID personaAdminId,
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
-    @NotBlank(message = "El motivo es obligatorio") String motivo) {}
+    @NotBlank(message = "El motivo es obligatorio") String motivo,
+    UUID donacionIndependienteId) {}

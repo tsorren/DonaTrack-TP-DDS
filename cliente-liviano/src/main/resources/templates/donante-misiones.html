@@ -5,7 +5,8 @@
        las insignias (las obtenidas, con su sello lleno; las que faltan, huecas) y el camino de
        misiones por categoría: lo hecho, plegado en un desplegable; lo que tiene abierto (una en curso,
        con su barra), y lo que viene, solo con su nombre (usuaria, 2026-11-09). Pruebas A/B de la
-       ronda del 2026-11-09: ?variante=misiones-a (álbum de figuritas) y misiones-b (huerta). Las 6 misiones son las de MisionFactory (incentivos-service). Estados de la maqueta:
+       ronda del 2026-11-09: ?variante=misiones-a (álbum de figuritas) y misiones-b (huerta). Las 6 misiones son las de MisionFactory (incentivos-service). Datos: misMisiones, de
+       DonanteMisionesPuerto (de ejemplo o los de Incentivos). Estados de la maqueta:
        ?escenario=vacio (recién empieza), lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
@@ -23,35 +24,25 @@
 
 <th:block th:fragment="datos(vista)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             nueva=${escenario == 'vacio'},
-             misiones=${nueva ? { {categoria: 'Colaborador', nombre: 'Racha Inicial', pide: '3 meses seguidos donando', estado: 'curso', progreso: 0, objetivo: 3, cuenta: '0 de 3 meses'},
-                                 {categoria: 'Colaborador', nombre: 'Explorador', pide: 'Donaciones en 3 categorías distintas', estado: 'espera', espera: 'Racha Inicial'},
-                                 {categoria: 'Sostenedor', nombre: 'Gran Aporte', pide: 'Una donación con al menos 50 bienes', estado: 'cerrada'},
-                                 {categoria: 'Sostenedor', nombre: 'Constancia', pide: '6 meses seguidos donando', estado: 'cerrada'},
-                                 {categoria: 'Transformador', nombre: 'Impacto Real', pide: '10 donaciones recibidas, confirmadas por la entidad', estado: 'cerrada'},
-                                 {categoria: 'Transformador', nombre: 'Diversidad Solidaria', pide: 'Donaciones en 8 categorías distintas', estado: 'cerrada'} }
-                               : { {categoria: 'Colaborador', nombre: 'Racha Inicial', pide: '3 meses seguidos donando', estado: 'completa', fecha: '3 de agosto de 2026'},
-                                 {categoria: 'Colaborador', nombre: 'Explorador', pide: 'Donaciones en 3 categorías distintas', estado: 'completa', fecha: '2 de septiembre de 2026'},
-                                 {categoria: 'Sostenedor', nombre: 'Gran Aporte', pide: 'Una donación con al menos 50 bienes', estado: 'curso', progreso: 12, objetivo: 50, cuenta: '12 de 50 bienes', nota: 'Tu donación más grande desde el 2 de septiembre.'},
-                                 {categoria: 'Sostenedor', nombre: 'Constancia', pide: '6 meses seguidos donando', estado: 'espera', espera: 'Gran Aporte'},
-                                 {categoria: 'Transformador', nombre: 'Impacto Real', pide: '10 donaciones recibidas, confirmadas por la entidad', estado: 'cerrada'},
-                                 {categoria: 'Transformador', nombre: 'Diversidad Solidaria', pide: 'Donaciones en 8 categorías distintas', estado: 'cerrada'} }},
-             categorias=${nueva ? { {nombre: 'Colaborador', estado: 'tu categoría', siguiente: 'Sostenedor'},
-                                   {nombre: 'Sostenedor', estado: 'se abre después', anterior: 'Colaborador'},
-                                   {nombre: 'Transformador', estado: 'se abre después', anterior: 'Sostenedor'} }
-                                 : { {nombre: 'Colaborador', estado: 'completa'},
-                                   {nombre: 'Sostenedor', estado: 'tu categoría', siguiente: 'Transformador'},
-                                   {nombre: 'Transformador', estado: 'se abre después', anterior: 'Sostenedor'} }},
+             v=${misMisiones},
+             nueva=${misMisiones.nueva},
+             misiones=${misMisiones.misiones},
+             categorias=${misMisiones.categorias},
              obtenidas=${misiones.?[estado == 'completa']}">
   <div id="misiones" class="pila" data-espacio="4">
     <header>
       <p class="rotulo">Misiones e insignias</p>
       <h1 th:text="${persona} ? 'Tus misiones e insignias' : 'Misiones e insignias'">Tus misiones e insignias</h1>
-      <p th:if="${persona and escenario == ''}">Gracias por donar, Martina. Sos donante Sostenedor desde el
+      <p th:if="${persona and escenario == '' and !nueva}"
+         th:text="|Gracias por donar${v.nombre != null ? ', ' + v.nombre : ''}. Sos donante ${v.categoria}${v.desde != null ? ' desde el ' + v.desde : ''}. Completaste ${v.completadas} de las ${#lists.size(misiones)} misiones. Al ${v.actualizado}.|">Gracias por donar, Martina. Sos donante Sostenedor desde el
         2 de septiembre de 2026. Completaste 2 de las 6 misiones. Al 15 de octubre de 2026, 16:25.</p>
-      <p th:if="${persona and nueva}">Gracias por sumarte, Martina. Sos donante Colaborador. Todavía no
+      <p th:if="${persona and nueva}"
+         th:text="|Gracias por sumarte${v.nombre != null ? ', ' + v.nombre : ''}. Sos donante ${v.categoria}. Todavía no completaste ninguna misión. Al ${v.actualizado}.|">Gracias por sumarte, Martina. Sos donante Colaborador. Todavía no
         completaste ninguna misión. Al 15 de octubre de 2026, 16:25.</p>
     </header>
+
+    <p th:if="${persona and v.nota != null and (escenario == '' or nueva)}" class="texto-chico" data-tono="suave"
+       th:text="${v.nota}">Todavía no mostramos con qué donación completaste cada misión.</p>
 
     <!--/* Sin permiso: la empresa no tiene misiones (RF-07). En el sistema, el menú no la muestra y la
            dirección responde esto; en la maqueta, la empresa lo ve si escribe la dirección. */-->
@@ -140,7 +131,7 @@
           <article th:replace="~{:: mision(${m}, |mision-${c.nombre}-${v.count}|)}"></article>
         </li>
       </ul>
-      <p th:if="${c['siguiente'] != null}" th:text="|Las misiones avanzan de a una, en orden. Al completar las 2, pasás a ${c['siguiente']}.|">Las
+      <p th:if="${c.siguiente != null}" th:text="|Las misiones avanzan de a una, en orden. Al completar las 2, pasás a ${c.siguiente}.|">Las
         misiones avanzan de a una, en orden. Al completar las 2, pasás a Transformador.</p>
     </section>
 
@@ -149,7 +140,7 @@
       <th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>
       <div>
         <h2 th:id="|cat-${c.nombre}|" th:text="|${c.nombre} · se abre después|">Transformador · se abre después</h2>
-        <p th:text="|Sus misiones se ven cuando completes las de ${c['anterior']}.|">Sus misiones se ven cuando
+        <p th:text="|Sus misiones se ven cuando completes las de ${c.anterior}.|">Sus misiones se ven cuando
           completes las de Sostenedor.</p>
       </div>
     </section>
@@ -172,7 +163,7 @@
     <progress class="progreso" th:value="${m.progreso}" th:max="${m.objetivo}" value="12" max="50"
               th:aria-label="|${m.nombre}: ${m.cuenta}|"></progress>
     <p><b th:text="${m.cuenta}">12 de 50 bienes</b></p>
-    <p th:if="${m['nota'] != null}" th:text="${m['nota']}">Tu donación más grande desde el 2 de septiembre.</p>
+    <p th:if="${m.nota != null}" th:text="${m.nota}">Tu donación más grande desde el 2 de septiembre.</p>
   </th:block>
   <th:block th:if="${m.estado == 'espera'}">
     <p><span class="estado" data-estado="pendiente"><th:block
