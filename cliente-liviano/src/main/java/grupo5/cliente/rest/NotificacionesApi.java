@@ -16,8 +16,8 @@ import org.springframework.web.service.annotation.PostExchange;
  * (docs/arquitectura/contratos/openapi-notificaciones.yaml): la bandeja de una persona, su conteo
  * de sin leer, marcarlas como leídas y el formulario de contacto. {@code personaId} es el id de la
  * persona (el de la cuenta). La declara entera el esqueleto de la conexión de pantallas (SPEC-08):
- * los frentes la usan y no la cambian. Notificaciones no pide token todavía (HB-13, fuera de
- * alcance).
+ * los frentes la usan y no la cambian. Con ingreso, la llamada lleva el token del usuario (lo pone
+ * {@code ClientesHttp}, SPEC-09, F5); sin ingreso va sin cabecera.
  */
 interface NotificacionesApi {
 
