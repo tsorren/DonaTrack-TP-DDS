@@ -10,7 +10,7 @@
          notificaciones; acá se escribe una vez, con las claves, y los textos salen de viaje-datos.
          También escenario (?escenario=).
        - error(titulo, volver): el banner de error con el código para soporte.
-       - aviso(a, sinLeer): una noticia, con su marca de leída, el sello de su donación y el enlace.
+       - aviso(a, sinLeer): con hoyIso y ayerIso definidos, una noticia, con su marca de leída, el sello de su donación y el enlace.
        Dos textos de viaje-datos se muestran distinto (ficha, sección 6): "Escuela Ejemplo 12" se
        escribe "Escuela Ejemplo N.º 12" y la categoría Vestimenta, "Ropa". */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
@@ -47,7 +47,8 @@
   <a class="boton" data-tono="secundario" href="#" th:href="${volver}">Volver a intentar</a>
 </section>
 
-<!--/* Hoy es el jueves 15 de octubre de 2026: lo de hoy dice "Hoy", lo del 14, "Ayer". */-->
+<!--/* Lo de hoy dice "Hoy" y lo de ayer, "Ayer": los días (hoyIso y ayerIso, en ISO) los pone quien
+       lo usa (el inicio; en la maqueta, el 15 y el 14 de octubre de 2026). */-->
 <li th:fragment="aviso(a, sinLeer)" class="noticia" th:classappend="${sinLeer} ? 'noticia--sin-leer'"
     th:with="c=${a.d.cartas[a.i]}, dia=${#strings.substring(c.fecha, 0, 10)},
              hora=${#strings.substringAfter(c.cuando, ', ')}">
@@ -61,7 +62,7 @@
      th:text="${#strings.replace(c.texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12')}">El camión
     salió a entregar tus lentejas a Comedor Barrio Ejemplo.</a>
   <time class="noticia-cuando" th:datetime="${c.fecha}"
-        th:text="${dia == '2026-10-15' ? 'Hoy, ' + hora : (dia == '2026-10-14' ? 'Ayer, ' + hora : c.cuando)}">Hoy,
+        th:text="${dia == hoyIso ? 'Hoy, ' + hora : (dia == ayerIso ? 'Ayer, ' + hora : c.cuando)}">Hoy,
     14:30</time>
   <span class="noticia-donacion" th:text="|${a.d.titulo}, ${a.d.cantidad}|">Lentejas secas, 15 kg</span>
 </li>

@@ -7,6 +7,8 @@
        últimas noticias, del mismo alto). Las ilustraciones van a escala, como las láminas de la
        portada (data-dibujo y --medida-alto del componente huerta): la maceta mide lo mismo en
        todas y los árboles son más altos. Lo propio de la pantalla va con data-v.
+       Los datos vienen del controller (miInicio: de la maqueta, las de viaje-datos con las fechas
+       del 15 de octubre de 2026; o de Donaciones, Logística y Notificaciones, con las de hoy).
        ?escenario=vacio, error y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-inicio', ~{::contenido})}">
@@ -20,6 +22,7 @@
 
 <th:block th:fragment="cuerpo"
     th:with="conDatos=${escenario == ''},
+             donaciones=${miInicio.donaciones},
              entregadas=${donaciones.?[estado.tono == 'entregada']},
              enCamino=${donaciones.?[estado.tono == 'en-camino']},
              porSalir=${donaciones.?[destino != null and estado.tono == 'pendiente']},
@@ -31,8 +34,8 @@
     <header class="inicio-cabecera">
       <p class="rotulo" th:text="${seccion}">Inicio</p>
       <h1>Hola, <em th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</em></h1>
-      <p class="bajada">Así va lo que donó tu empresa en octubre de 2026. Actualizado hoy, 15 de
-        octubre, 16:25.</p>
+      <p class="bajada">Así va lo que donó tu empresa en [[${miInicio.mes}]]. Actualizado hoy,
+        [[${miInicio.actualizado}]].</p>
       <div class="racimo" th:if="${conDatos}">
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Mis donaciones</a>
@@ -62,27 +65,27 @@
       <!--/* 1. Qué dio fruto: tres cifras grandes, cada una con su dibujo. */-->
       <section data-v="frutos" aria-labelledby="frutos-titulo">
         <header class="huerta-cabeza">
-          <p class="huerta-rotulo">Octubre de 2026</p>
+          <p class="huerta-rotulo">[[${miInicio.mesConMayuscula()}]]</p>
           <h2 id="frutos-titulo">Lo que <em>ya dio fruto.</em></h2>
         </header>
         <ul class="huerta-cifras" role="list">
           <li class="huerta-cifra">
             <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
                  data-dibujo="planta-naranjo" alt="" width="90" height="230">
-            <b th:text="${#lists.size(entregadas)}">2</b>
-            <span>entregas confirmadas por las entidades en octubre</span>
+            <b th:text="${miInicio.entregadasDelMes}">2</b>
+            <span>entregas confirmadas por las entidades en [[${miInicio.nombreDelMes()}]]</span>
           </li>
           <li class="huerta-cifra">
             <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
                  data-dibujo="paso-3-brote" alt="" width="95" height="166">
             <b th:text="${#lists.size(enCamino) + #lists.size(porSalir) + #lists.size(conProblema)}">3</b>
-            <span>entregas en curso hoy, 15 de octubre</span>
+            <span>entregas en curso hoy, [[${miInicio.hoy}]]</span>
           </li>
           <li class="huerta-cifra">
             <img src="/img/ilustraciones/arbol-triangular.svg" th:src="@{/img/ilustraciones/arbol-triangular.svg}"
                  data-dibujo="arbol-triangular" alt="" width="134" height="278">
             <b th:text="${entidades}">3</b>
-            <span>entidades reciben tus donaciones desde el 1 de octubre</span>
+            <span>entidades reciben tus donaciones desde el [[${miInicio.desde}]]</span>
           </li>
         </ul>
         <!--/* El hito de lo acumulado (brief: el juego se insinúa). */-->
@@ -143,7 +146,7 @@
                 <a href="/donante-donaciones-detalle?donacion=leche"
                    th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
                    th:text="|${d.titulo}, ${d.cantidad}|">Leche en polvo, 6 kg</a>
-                <span th:text="|${d.seguimiento} Va a ${d.destino}.|">Sale del depósito el 16 de octubre. Va a Merendero Ejemplo Sur.</span>
+                <span th:text="|${d.seguimiento != null ? d.seguimiento + ' ' : ''}Va a ${d.destino}.|">Sale del depósito el 16 de octubre. Va a Merendero Ejemplo Sur.</span>
               </li>
             </ul>
           </section>
@@ -190,13 +193,14 @@
             <h2 id="noticias-titulo">Últimas noticias</h2>
           </header>
           <ol class="noticias" role="list">
-            <th:block th:each="a, vuelta : ${avisos}" th:if="${vuelta.index < 3}">
-              <li th:replace="~{datos-donante :: aviso(${a}, ${vuelta.index < sinLeer})}"></li>
+            <th:block th:each="a, vuelta : ${miInicio.avisos}" th:if="${vuelta.index < 3}"
+                      th:with="hoyIso=${miInicio.hoyIso}, ayerIso=${miInicio.ayerIso}">
+              <li th:replace="~{datos-donante :: aviso(${a}, ${vuelta.index < miInicio.sinLeer})}"></li>
             </th:block>
           </ol>
           <a class="noticias-todas" href="/donante-notificaciones"
              th:href="@{/donante-notificaciones}"
-             th:text="|Ver todas (${sinLeer} sin leer)|">Ver todas (4 sin leer)</a>
+             th:text="|Ver todas (${miInicio.sinLeer} sin leer)|">Ver todas (4 sin leer)</a>
         </section>
       </div>
 
