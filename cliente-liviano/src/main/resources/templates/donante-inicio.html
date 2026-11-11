@@ -21,13 +21,13 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="conDatos=${escenario == ''},
+    th:with="conDatos=${escenario == '' and !miInicio.donaciones.isEmpty()},
              donaciones=${miInicio.donaciones},
              entregadas=${donaciones.?[estado.tono == 'entregada']},
              enCamino=${donaciones.?[estado.tono == 'en-camino']},
              porSalir=${donaciones.?[destino != null and estado.tono == 'pendiente']},
              conProblema=${donaciones.?[estado.tono == 'con-problema']},
-             sinDestino=${donaciones.?[destino == null]},
+             sinDestino=${donaciones.?[destino == null and estado.tono == 'pendiente']},
              primera=${entregadas.isEmpty() ? null : entregadas[#lists.size(entregadas) - 1]},
              entidades=${#sets.size(#sets.toSet(donaciones.?[destino != null].![destino]))}">
   <div class="inicio" data-v="inicio-empresa">
@@ -51,7 +51,7 @@
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
     </th:block>
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or (escenario == '' and miInicio.donaciones.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
       <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
         hasta que la entidad confirme la entrega.</p>
