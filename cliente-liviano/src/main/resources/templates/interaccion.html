@@ -8,7 +8,10 @@
        layout), lo reemplaza sin mover el scroll (show:none, scrollIntoViewOnBoost false) y deja la
        dirección nueva con la History API (pushState), así Atrás vuelve al panel anterior. Sin
        JavaScript, los mismos enlaces y formularios recargan la página. static/js/paneles.js envía
-       los filtros [data-al-cambiar] al tocarlos. Sin View Transitions en esos intercambios (con
+       los filtros [data-al-cambiar] al tocarlos. Los avisos de éxito que renderiza el servidor llevan
+       hx-swap-oob="beforeend:#avisos": en una respuesta HTMX se agregan a la región aria-live y la
+       cola de Alpine los administra; sin JavaScript o en una navegación completa quedan en el panel.
+       Sin View Transitions en esos intercambios (con
        ellas, a veces el panel no se cambiaba); entre páginas rige @view-transition de app.css.
        Alpine.js, con defer. El orden importa: /js/interfaz.js registra los
        componentes (Alpine.data) cuando Alpine avisa con alpine:init, así que se carga antes que

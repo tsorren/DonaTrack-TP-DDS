@@ -726,15 +726,15 @@
 <!--/* Lo que pasó: después de asignar una (?accion=asignada&donacion=<clave>&entidad=<k>), de aceptar el
        lote (?accion=lote) o de elegir en un conflicto (el último ?gana=). */-->
 <th:block th:fragment="aviso">
-  <p th:if="${accion == 'asignada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+  <p th:if="${accion == 'asignada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
      th:with="ad=${todas.^[clave == #root.asignada] ?: todas[0]},
               ak=${param.entidad != null and ent.containsKey(param.entidad[0]) ? param.entidad[0] : 'comedor'}"
      th:text="|Asignaste ${ad.dona}, ${ad.cuanto}, a ${ent.get(ak).e}. Sale del depósito cuando se arme la ruta.|">Asignaste
     Arroz, 25 kg, a Comedor Barrio Ejemplo. Sale del depósito cuando se arme la ruta.</p>
-  <p th:if="${accion == 'lote'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+  <p th:if="${accion == 'lote'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
      th:text="|Asignaste las ${#lists.size(libresTodas)} propuestas sin conflictos. Salen del depósito cuando se arme la ruta. ${#lists.isEmpty(pendientes) ? '' : 'Los conflictos siguen esperando que elijas.'}|">Asignaste
     las 5 propuestas sin conflictos. Salen del depósito cuando se arme la ruta.</p>
-  <p th:if="${accion == '' and param.gana != null}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+  <p th:if="${accion == '' and param.gana != null}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
      th:with="uid=${param.gana[param.gana.length - 1]},
               ultima=${propuestas.^[id == #root.uid]},
               otra=${ultima != null ? propuestas.^[id == #root.ultima.contra] : null}"

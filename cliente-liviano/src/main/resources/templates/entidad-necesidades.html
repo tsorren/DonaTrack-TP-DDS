@@ -116,11 +116,11 @@
     </header>
 
     <!--/* Los avisos de cada acción, con el foco (decisión de la ficha: el éxito toma el foco). */-->
-    <p th:if="${accion == 'publicada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'publicada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Publicamos tu necesidad. Ya la ven los donantes y el catálogo público.</p>
-    <p th:if="${accion == 'cambiada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'cambiada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Guardamos los cambios de Lentejas secas.</p>
-    <p th:if="${accion == 'baja'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'baja'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no
       pudo llegar vuelve al depósito para otra entidad.</p>
     <section th:if="${noExiste}" class="banner" role="alert" aria-labelledby="noexiste-titulo">
