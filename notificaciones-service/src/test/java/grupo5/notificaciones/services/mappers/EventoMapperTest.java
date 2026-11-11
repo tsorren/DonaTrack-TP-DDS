@@ -2,6 +2,7 @@ package grupo5.notificaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
@@ -27,6 +28,7 @@ import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
 import grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO;
 import grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO;
+import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionAsignada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionEnCamino;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionRecibida;
@@ -43,6 +45,7 @@ import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +93,8 @@ class EventoMapperTest {
             donante.getId(),
             TEST_DATE_TIME,
             beneficiario.getId(),
-            "10kg de arroz");
+            "10kg de arroz",
+            null);
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -180,7 +184,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             beneficiario.getId(),
             "ropa",
-            "AB123CD");
+            "AB123CD",
+            null);
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -199,7 +204,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             beneficiario.getId(),
             "ropa",
-            "https://donatrack.app/mapa/123");
+            "https://donatrack.app/mapa/123",
+            null);
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -220,7 +226,8 @@ class EventoMapperTest {
             "ropa",
             admin.getId(),
             "Nadie respondió",
-            true);
+            true,
+            null);
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -296,7 +303,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             admin.getId(),
             "10 kg de arroz",
-            "Expiró plazo de acopio");
+            "Expiró plazo de acopio",
+            null);
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -321,7 +329,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             adminInexistente,
             "10 kg de arroz",
-            "Expiró plazo de acopio");
+            "Expiró plazo de acopio",
+            null);
 
     assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
   }
@@ -348,7 +357,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             beneficiario.getId(),
             "Caja con abrigos",
-            "https://mapa.donatrack.org/track/123");
+            "https://mapa.donatrack.org/track/123",
+            null);
 
     DonacionEnCamino resultado = mapper.toEntity(evento);
 
@@ -368,7 +378,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             beneficiario.getId(),
             "Medicamentos varios",
-            "AF-345-BG");
+            "AF-345-BG",
+            null);
 
     DonacionRecibida resultado = mapper.toEntity(evento);
 
@@ -390,7 +401,8 @@ class EventoMapperTest {
             "Alimentos perecederos",
             admin.getId(),
             "Destinatario no se encontraba en el domicilio",
-            true);
+            true,
+            null);
 
     EntregaFallida resultado = mapper.toEntity(evento);
 
@@ -412,7 +424,8 @@ class EventoMapperTest {
             TEST_DATE_TIME,
             admin.getId(),
             "Lácteos",
-            "Superó fecha de vencimiento en depósito");
+            "Superó fecha de vencimiento en depósito",
+            null);
 
     DonacionVencida resultado = mapper.toEntity(evento);
 
@@ -460,5 +473,88 @@ class EventoMapperTest {
     assertEquals("Platino", resultado.getCategoriaNueva());
     assertEquals("Bronce", resultado.getCategoriaVieja());
     assertEquals(TEST_DATE_TIME, resultado.getFecha());
+  }
+
+  @Test
+  void toEntity_v1ConDonacionIndependienteId_dejaLaReferenciaEnLasNotificaciones() {
+    UUID donacionId = UUID.randomUUID();
+    EventoDonacionEnCaminoV1 v1 =
+        new EventoDonacionEnCaminoV1(
+            donante.getId(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "Arroz",
+            "http://mapa",
+            donacionId);
+
+    List<Notificacion> notificaciones = mapper.toEntity(v1).generarNotificaciones();
+
+    assertEquals(2, notificaciones.size());
+    notificaciones.forEach(
+        n -> {
+          assertEquals("DONACION_EN_CAMINO", n.getTipoEvento());
+          assertEquals(donacionId, n.getReferenciaId());
+        });
+  }
+
+  @Test
+  void toEntity_v1SinDonacionIndependienteId_guardaElTipoYLaReferenciaQuedaEnNulo() {
+    EventoDonacionRecibidaV1 v1 =
+        new EventoDonacionRecibidaV1(
+            donante.getId(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "Arroz",
+            "AB123CD",
+            null);
+
+    Notificacion notificacion = mapper.toEntity(v1).generarNotificaciones().getFirst();
+
+    assertEquals("DONACION_RECIBIDA", notificacion.getTipoEvento());
+    assertNull(notificacion.getReferenciaId());
+  }
+
+  @Test
+  void toEntity_donacionAsignadaV1_usaElIdDeLaDonacionComoReferencia() {
+    UUID donacionId = UUID.randomUUID();
+    DestinoEventoDTO destino =
+        new DestinoEventoDTO("Av. Corrientes", 1234, null, null, "C1043", "CABA", "CABA", "AR");
+    EventoDonacionAsignadaV1 v1 =
+        new EventoDonacionAsignadaV1(
+            donacionId,
+            donante.getId(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "Ropa",
+            destino,
+            12.5,
+            0.4);
+
+    Notificacion notificacion = mapper.toEntity(v1).generarNotificaciones().getFirst();
+
+    assertEquals("DONACION_ASIGNADA", notificacion.getTipoEvento());
+    assertEquals(donacionId, notificacion.getReferenciaId());
+  }
+
+  @Test
+  void toEntity_dtoConReferenciaId_laLlevaALasNotificaciones() {
+    UUID donacionId = UUID.randomUUID();
+    EventoDonacionVencidaDTO dto =
+        new EventoDonacionVencidaDTO(
+            UUID.randomUUID(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            admin.getId(),
+            "Arroz",
+            "Vencida",
+            donacionId);
+
+    Notificacion notificacion = mapper.toEntity(dto).generarNotificaciones().getFirst();
+
+    assertEquals("DONACION_VENCIDA", notificacion.getTipoEvento());
+    assertEquals(donacionId, notificacion.getReferenciaId());
   }
 }
