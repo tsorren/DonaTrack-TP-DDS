@@ -124,6 +124,7 @@ números reservados (W1 Preparar, leídos de `origin/ENTREGA_6`):
 - La entrega cancelada sigue siendo final; `EN_PUERTA` es un estado activo (cuenta para "una
   entrega activa por donación").
 - Toda llamada del cliente lleva el `X-Trace-Id`; fuera de maqueta, también el token del usuario.
+  Para Misiones (Incentivos) se cumple al integrar `E6_F5_token_cliente` con `E6_cierre_F2`: el cliente HTTP es de F5 (integradas en `E6_cierre_control`, 2026-11-11).
 - Sin secretos ni datos reales; los ejemplos son sintéticos. Ningún test se debilita.
 
 ## 5. Criterios de Aceptación
