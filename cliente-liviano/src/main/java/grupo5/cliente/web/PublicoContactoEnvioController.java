@@ -54,7 +54,12 @@ class PublicoContactoEnvioController {
     this.contacto = contacto;
   }
 
-  // ponytail: la IP es la de quien le habla al cliente; detrás de un proxy, leer X-Forwarded-For.
+  /**
+   * {@code sitio} es el campo trampa del ADR de HB-21: oculto para las personas; si llega con
+   * texto, muestra el aviso de recibido sin llamar a Notificaciones.
+   */
+  // ponytail: la IP es getRemoteAddr(), la del navegador porque ningún despliegue pone un proxy
+  // delante del cliente; con un proxy, server.forward-headers-strategy=native y probarlo.
   @PostMapping("/publico-contacto-enviado")
   String enviar(
       @RequestParam(required = false) String tema,
@@ -63,8 +68,12 @@ class PublicoContactoEnvioController {
       @RequestParam(required = false) String correo,
       @RequestParam(required = false) UUID claveEnvio,
       @RequestParam(required = false) String volver,
+      @RequestParam(required = false) String sitio,
       HttpServletRequest pedido,
       RedirectAttributes atributos) {
+    if (sitio != null && !sitio.isBlank()) {
+      return Envios.listo(FORMULARIO, RECIBIDO, atributos);
+    }
     Mensaje enviado =
         new Mensaje(
             tema == null ? OTRO : TEMAS.getOrDefault(tema, OTRO),

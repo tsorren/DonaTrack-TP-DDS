@@ -40,7 +40,8 @@ interface NotificacionesApi {
    * Un mensaje del formulario de contacto (HB-21, ADR {@code proposed} de Notificaciones; contrato
    * fijado en SPEC-08). Público. 201 con el número; la misma {@code claveEnvio} otra vez, 200 con
    * el número del primero; 429 si se pasa del límite. {@code ipOrigen} viaja en {@code
-   * X-Forwarded-For}: la IP del navegador, para el límite por IP.
+   * X-Forwarded-For}, para el límite por IP: la de quien le habla al cliente liviano, que sin un
+   * proxy delante es la del navegador.
    */
   @PostExchange("/api/contacto")
   MensajeRecibido contacto(

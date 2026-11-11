@@ -184,6 +184,8 @@ región de avisos:
 | Datos que el servidor no aceptó (400), de vuelta en el formulario | "No pudimos enviar tu mensaje: revisá que esté escrito y que el correo tenga la @." | El navegador ya pide el mensaje y el correo; esto cubre lo que pase igual |
 | Mensaje repetido (la misma clave) | — | Sin texto propio: muestra el enviado con el número del primero |
 
-El campo trampa del ADR no está en el contrato de la API: el formulario no lo lleva todavía. Con el
+El campo trampa del ADR (`sitio`) queda en el cliente liviano, sin tocar el contrato de la API: va
+oculto en el formulario y, si llega con texto, el cliente muestra "Recibimos tu mensaje." en el
+formulario sin llamar a Notificaciones (sin número, porque no se guardó). Con el
 429 o el 400 el formulario vuelve vacío y el aviso usa el estilo del aviso breve compartido: a
 decidir si vuelve con lo escrito (como `publico-contacto-error`).

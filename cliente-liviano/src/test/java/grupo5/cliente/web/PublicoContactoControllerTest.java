@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -57,7 +58,8 @@ class PublicoContactoControllerTest {
                 .string(
                     containsString(
                         "<input type=\"hidden\" name=\"claveEnvio\" value=\"" + CLAVE + "\">")))
-        .andExpect(content().string(containsString("hx-indicator=\"#enviando-publico-contacto\"")));
+        .andExpect(content().string(containsString("hx-indicator=\"#enviando-publico-contacto\"")))
+        .andExpect(content().string(containsString("name=\"sitio\"")));
   }
 
   @Test
@@ -130,5 +132,18 @@ class PublicoContactoControllerTest {
     verify(contacto).enviar(mensaje.capture(), any());
     assertThat(mensaje.getValue().tema()).isEqualTo("OTRO");
     assertThat(mensaje.getValue().claveEnvio()).isNotNull();
+  }
+
+  @Test
+  void conElCampoTrampaEscritoMuestraElAvisoSinMandarNada() throws Exception {
+    mvc.perform(
+            post("/publico-contacto-enviado")
+                .param("mensaje", "Hola")
+                .param("correo", "ana@ejemplo.test")
+                .param("sitio", "https://spam.test"))
+        .andExpect(redirectedUrl("/publico-contacto"))
+        .andExpect(flash().attribute(Envios.AVISO, "Recibimos tu mensaje."));
+
+    verify(contacto, never()).enviar(any(), any());
   }
 }

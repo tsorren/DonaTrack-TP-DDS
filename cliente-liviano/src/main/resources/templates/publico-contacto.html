@@ -7,7 +7,8 @@
        pantallas de /). ?escenario=lento (enviando), error (del servidor) y
        sin-conexion. Es un formulario real (POST) que va a publico-contacto-enviado; el error de
        datos es publico-contacto-error. Fuera de la maqueta lo guarda PublicoContactoEnvioController
-       (HB-21) y lleva la clave de envío oculta (claveEnvio, del puerto: la maqueta no la tiene).
+       (HB-21) y lleva la clave de envío oculta (claveEnvio, del puerto: la maqueta no la tiene) y el campo trampa
+       oculto (sitio): si llega con texto, no se manda.
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -36,6 +37,7 @@
           class="formulario" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
           hx-boost="true" hx-indicator="#enviando-publico-contacto" hx-select-oob="#avisos">
       <input th:if="${claveEnvio}" type="hidden" name="claveEnvio" th:value="${claveEnvio}">
+      <p hidden><label>Dejá este campo vacío <input name="sitio" tabindex="-1" autocomplete="off"></label></p>
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
