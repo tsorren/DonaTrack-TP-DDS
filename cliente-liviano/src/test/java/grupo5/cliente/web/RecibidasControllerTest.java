@@ -61,7 +61,9 @@ class RecibidasControllerTest {
                       "camino",
                       "Salió del depósito el 8 de noviembre a las 9:15.",
                       null,
-                      null),
+                      null,
+                      null,
+                      "salió el 8 de noviembre"),
                   new Recibida(
                       "b",
                       "Fideos secos",
@@ -74,7 +76,9 @@ class RecibidasControllerTest {
                       "recibida",
                       "Confirmaste la recepción el 5 de noviembre.",
                       "5",
-                      "2026-11-05")),
+                      "2026-11-05",
+                      null,
+                      null)),
               "noviembre",
               "8 de noviembre de 2026, 18:30",
               null);

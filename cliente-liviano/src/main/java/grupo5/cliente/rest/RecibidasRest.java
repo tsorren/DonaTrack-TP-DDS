@@ -116,7 +116,22 @@ class RecibidasRest implements RecibidasPuerto {
         f.grupo(),
         paso(f.estado(), f.desde()),
         recibida ? String.valueOf(f.desde().getDayOfMonth()) : null,
-        recibida ? f.desde().toLocalDate().toString() : null);
+        recibida ? f.desde().toLocalDate().toString() : null,
+        null,
+        breve(f.estado(), f.desde()));
+  }
+
+  /** El paso en pocas palabras, para Inicio; las recibidas no lo llevan. */
+  private static String breve(String estado, LocalDateTime desde) {
+    String dia = desde.format(DIA);
+    return switch (estado) {
+      case ENTREGADA -> null;
+      case FALLIDA -> "no pudo llegar el " + dia;
+      case VENCIDA -> "venció en el depósito el " + dia;
+      case TRASLADO -> "salió del depósito el " + dia;
+      case LISTA -> "lista para entregar desde el " + dia;
+      default -> "asignada el " + dia;
+    };
   }
 
   private static String paso(String estado, LocalDateTime desde) {

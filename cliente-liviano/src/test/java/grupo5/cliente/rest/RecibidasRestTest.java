@@ -108,6 +108,8 @@ class RecibidasRestTest {
     assertEquals("Alimentos", lentejas.categoriaNombre());
     assertEquals("15 kg", lentejas.cuanto());
     assertNull(lentejas.pedido());
+    assertEquals("salió del depósito el 8 de noviembre", lentejas.breve());
+    assertNull(lentejas.llego());
 
     Recibida leche = lista.get(3);
     assertEquals("Lista para entregar desde el 6 de noviembre. Espera el camión.", leche.paso());
@@ -128,6 +130,7 @@ class RecibidasRestTest {
     assertEquals("Confirmaste la recepción el 5 de noviembre.", fideos.paso());
     assertEquals("5", fideos.dia());
     assertEquals("2026-11-05", fideos.fecha());
+    assertNull(fideos.breve());
     assertEquals("Fideos secos", fideos.nombre());
   }
 }

@@ -10,9 +10,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
- * Las 11 donaciones asignadas al Comedor Barrio Ejemplo, las mismas de {@code piezas-entidad.html}
- * (que siguen usando Inicio y Seguir entregas). "Hoy" es el 15 de octubre de 2026. Quien ocultó su
- * nombre figura con su categoría del ranking (Donante Sostenedor).
+ * Las 11 donaciones asignadas al Comedor Barrio Ejemplo, las de Donaciones recibidas, Inicio y
+ * Seguir entregas (piezas-entidad.html las agrupa). "Hoy" es el 15 de octubre de 2026. Quien ocultó
+ * su nombre figura con su categoría del ranking (Donante Sostenedor).
  */
 @Component
 @ConditionalOnProperty(
@@ -45,7 +45,9 @@ class RecibidasMaqueta implements RecibidasPuerto {
                   "15 kg",
                   DISTRIBUIDORA,
                   "puerta",
-                  "Llegó a tu puerta hoy a las 18:20. Espera tu confirmación."),
+                  "Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.",
+                  "Llegó hoy, 18:20, desde el Depósito Central.",
+                  null),
               new Recibida(
                   ROPA,
                   ROPA_DE_ABRIGO,
@@ -58,6 +60,8 @@ class RecibidasMaqueta implements RecibidasPuerto {
                   "puerta",
                   "Llegó a tu puerta ayer a las 17:10. Espera tu confirmación.",
                   null,
+                  null,
+                  "Llegó ayer, 17:10, desde el Depósito Central.",
                   null),
               espera(
                   "aceite",
@@ -65,21 +69,27 @@ class RecibidasMaqueta implements RecibidasPuerto {
                   "10 litros",
                   ALMACEN,
                   "problema",
-                  "El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha."),
+                  "El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.",
+                  null,
+                  "te avisamos la nueva fecha"),
               espera(
                   ARROZ,
                   "Arroz",
                   "20 kg",
                   ALMACEN,
                   "camino",
-                  "Salió del depósito hoy a las 9:15. Llega mañana."),
+                  "Salió del depósito hoy a las 9:15. Llega mañana.",
+                  null,
+                  "llega mañana"),
               espera(
                   LECHE,
                   LECHE_EN_POLVO,
                   "12 unidades",
                   LACTEOS,
                   "salir",
-                  "Asignada el 13 de octubre. Sale del depósito el 17 de octubre."),
+                  "Asignada el 13 de octubre. Sale del depósito el 17 de octubre.",
+                  null,
+                  "sale el 17 de octubre"),
               recibida("r10", LENTEJAS_SECAS, ALIMENTOS, "10 kg", ALMACEN, LENTEJAS, 10),
               recibida("r9", "Arroz", ALIMENTOS, "5 kg", "Martina Ruiz", ARROZ, 9),
               recibida("r8", ROPA_DE_ABRIGO, "cat-ropa", "5 unidades", SOSTENEDOR, ROPA, 8),
@@ -97,7 +107,14 @@ class RecibidasMaqueta implements RecibidasPuerto {
 
   /** Una de alimentos que todavía no se recibió; su pedido se llama como ella. */
   private static Recibida espera(
-      String clave, String nombre, String cuanto, String dono, String grupo, String paso) {
+      String clave,
+      String nombre,
+      String cuanto,
+      String dono,
+      String grupo,
+      String paso,
+      String llego,
+      String breve) {
     return new Recibida(
         clave,
         nombre,
@@ -110,7 +127,9 @@ class RecibidasMaqueta implements RecibidasPuerto {
         grupo,
         paso,
         null,
-        null);
+        null,
+        llego,
+        breve);
   }
 
   /** Una recibida en octubre: el pedido se nombra como el bien, en minúsculas. */
@@ -134,6 +153,8 @@ class RecibidasMaqueta implements RecibidasPuerto {
         RECIBIDA,
         "Confirmaste la recepción el " + dia + " de octubre.",
         String.valueOf(dia),
-        "2026-10-%02d".formatted(dia));
+        "2026-10-%02d".formatted(dia),
+        null,
+        null);
   }
 }
