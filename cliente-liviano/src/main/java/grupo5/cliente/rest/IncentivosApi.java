@@ -18,7 +18,8 @@ import org.springframework.web.service.annotation.PutExchange;
  * conexión de pantallas (SPEC-08): los frentes la usan y no la cambian. {@code donanteId} es el id
  * del donante en Donaciones, que es el de su persona ({@code Donante.id == personaId}; que
  * Incentivos use el mismo es una inferencia del alta por evento, sin verificar contra un servicio).
- * Incentivos no pide token todavía (F5, fuera de alcance).
+ * Con ingreso, la llamada lleva el token del usuario (lo pone {@code ClientesHttp}, SPEC-09, F5);
+ * sin ingreso va sin cabecera.
  */
 @HttpExchange("/api/incentivos")
 interface IncentivosApi {

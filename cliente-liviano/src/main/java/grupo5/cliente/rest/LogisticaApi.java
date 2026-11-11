@@ -18,7 +18,8 @@ import org.springframework.web.service.annotation.PostExchange;
  * entregas, su seguimiento y sus fotos, el mapa público y los camiones. Sin entrega, Logística
  * responde 404. Los records copian los campos de cada DTO; el resto del JSON se ignora. La declara
  * entera el esqueleto de la conexión de pantallas (SPEC-08): los frentes la usan y no la cambian.
- * Logística no pide token todavía (F5, fuera de alcance).
+ * Con ingreso, la llamada lleva el token del usuario (lo pone {@code ClientesHttp}, SPEC-09, F5);
+ * sin ingreso va sin cabecera.
  */
 interface LogisticaApi {
 
