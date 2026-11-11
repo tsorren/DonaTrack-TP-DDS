@@ -24,6 +24,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Profile("!maqueta")
 class PublicoContactoEnvioController {
 
+  private static final String OTRO = "OTRO";
+
   /** El tema del contrato de cada opción de la plantilla (las opciones no llevan value). */
   private static final Map<String, String> TEMAS =
       Map.of(
@@ -32,7 +34,7 @@ class PublicoContactoEnvioController {
           "Una necesidad de mi entidad", "NECESIDAD",
           "Mi cuenta", "CUENTA",
           "Algo del sitio no anduvo", "SITIO",
-          "Otra cosa", "OTRO");
+          "Otra cosa", OTRO);
 
   /** A dónde puede volver el enviado: una pantalla del sitio, como en SitioController. */
   private static final String VOLVER =
@@ -41,8 +43,8 @@ class PublicoContactoEnvioController {
   private static final String FORMULARIO = "publico-contacto";
   private static final String RECIBIDO = "Recibimos tu mensaje.";
   private static final String LIMITE =
-      "Ya mandaste varios mensajes seguidos. Probá de nuevo en una hora: los que mandaste nos"
-          + " llegaron.";
+      "No pudimos enviar este mensaje: ya mandaste varios seguidos. Los anteriores nos llegaron;"
+          + " probá de nuevo más tarde.";
   private static final String INVALIDO =
       "No pudimos enviar tu mensaje: revisá que esté escrito y que el correo tenga la @.";
 
@@ -65,7 +67,7 @@ class PublicoContactoEnvioController {
       RedirectAttributes atributos) {
     Mensaje enviado =
         new Mensaje(
-            TEMAS.getOrDefault(tema, "OTRO"),
+            tema == null ? OTRO : TEMAS.getOrDefault(tema, OTRO),
             mensaje,
             codigo == null || codigo.isBlank() ? null : codigo.strip(),
             correo,

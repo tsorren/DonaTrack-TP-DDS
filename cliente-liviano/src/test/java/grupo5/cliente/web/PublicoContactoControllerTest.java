@@ -112,7 +112,23 @@ class PublicoContactoControllerTest {
             flash()
                 .attribute(
                     Envios.AVISO,
-                    "Ya mandaste varios mensajes seguidos. Probá de nuevo en una hora: los que"
-                        + " mandaste nos llegaron."));
+                    "No pudimos enviar este mensaje: ya mandaste varios seguidos. Los anteriores"
+                        + " nos llegaron; probá de nuevo más tarde."));
+  }
+
+  @Test
+  void sinTemaVaComoOtroYSinClaveLlevaUnaNueva() throws Exception {
+    when(contacto.enviar(any(), any())).thenReturn(5L);
+
+    mvc.perform(
+            post("/publico-contacto-enviado")
+                .param("mensaje", "Hola")
+                .param("correo", "ana@ejemplo.test"))
+        .andExpect(redirectedUrl("/publico-contacto-enviado"));
+
+    ArgumentCaptor<Mensaje> mensaje = ArgumentCaptor.forClass(Mensaje.class);
+    verify(contacto).enviar(mensaje.capture(), any());
+    assertThat(mensaje.getValue().tema()).isEqualTo("OTRO");
+    assertThat(mensaje.getValue().claveEnvio()).isNotNull();
   }
 }
