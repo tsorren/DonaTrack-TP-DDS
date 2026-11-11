@@ -1,16 +1,19 @@
 package grupo5.donaciones.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionEnCaminoV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionEntregaFallidaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaV1;
 import grupo5.donaciones.infrastructure.outbox.OutboxStore;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionRecibida;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionVencida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoRutaIniciada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
@@ -25,6 +28,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -71,13 +75,16 @@ class DonacionesIndependientesNotificacionesServiceTest {
     when(donante.personaId()).thenReturn(personaDonanteId);
     when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
 
+    // El evento de vencida no lleva a la entidad: esos dos datos no se piden en ese caso.
     Necesidad necesidad = mock(Necesidad.class);
-    when(necesidad.getEntidadId()).thenReturn(entidadId);
-    when(necesidadRepository.findById(necesidadId)).thenReturn(Optional.of(necesidad));
+    lenient().when(necesidad.getEntidadId()).thenReturn(entidadId);
+    lenient().when(necesidadRepository.findById(necesidadId)).thenReturn(Optional.of(necesidad));
 
     EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
-    when(entidad.juridicaId()).thenReturn(personaBeneficiariaId);
-    when(entidadesBeneficiariasRepository.findById(entidadId)).thenReturn(Optional.of(entidad));
+    lenient().when(entidad.juridicaId()).thenReturn(personaBeneficiariaId);
+    lenient()
+        .when(entidadesBeneficiariasRepository.findById(entidadId))
+        .thenReturn(Optional.of(entidad));
 
     DonacionIndependiente donacionIndependiente = mock(DonacionIndependiente.class);
     when(donacionIndependiente.getDescripcion()).thenReturn("Abrigo de lana");
@@ -93,7 +100,9 @@ class DonacionesIndependientesNotificacionesServiceTest {
 
     notificacionesService.procesarRutaIniciada(event);
 
-    verify(eventPublisher, times(1)).publicarDonacionEnCamino(any(EventoDonacionEnCaminoV1.class));
+    var captor = ArgumentCaptor.forClass(EventoDonacionEnCaminoV1.class);
+    verify(eventPublisher, times(1)).publicarDonacionEnCamino(captor.capture());
+    assertEquals(donacionIndependienteId, captor.getValue().donacionIndependienteId());
   }
 
   @Test
@@ -104,7 +113,9 @@ class DonacionesIndependientesNotificacionesServiceTest {
 
     notificacionesService.procesarDonacionRecibida(event);
 
-    verify(eventPublisher, times(1)).publicarDonacionRecibida(any(EventoDonacionRecibidaV1.class));
+    var captor = ArgumentCaptor.forClass(EventoDonacionRecibidaV1.class);
+    verify(eventPublisher, times(1)).publicarDonacionRecibida(captor.capture());
+    assertEquals(donacionIndependienteId, captor.getValue().donacionIndependienteId());
   }
 
   @Test
@@ -117,8 +128,21 @@ class DonacionesIndependientesNotificacionesServiceTest {
 
     notificacionesService.procesarDonacionFallida(event);
 
-    verify(eventPublisher, times(1))
-        .publicarDonacionEntregaFallida(any(EventoDonacionEntregaFallidaV1.class));
+    var captor = ArgumentCaptor.forClass(EventoDonacionEntregaFallidaV1.class);
+    verify(eventPublisher, times(1)).publicarDonacionEntregaFallida(captor.capture());
+    assertEquals(donacionIndependienteId, captor.getValue().donacionIndependienteId());
+  }
+
+  @Test
+  void procesarDonacionVencida_deberiaPublicarEventoConElIdDeLaDonacion() {
+    when(personasService.obtenerIdPersonaAdministradora()).thenReturn(personaAdminId);
+
+    notificacionesService.procesarDonacionVencida(
+        new EventoDonacionVencida(donacionIndependienteId, donacionOriginalId, "Venció"));
+
+    var captor = ArgumentCaptor.forClass(EventoDonacionVencidaV1.class);
+    verify(eventPublisher, times(1)).publicarDonacionVencida(captor.capture());
+    assertEquals(donacionIndependienteId, captor.getValue().donacionIndependienteId());
   }
 
   @Test

@@ -23,4 +23,5 @@ public record EventoDonacionEntregaFallidaV1(
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
     @NotNull(message = "El ID del administrador es obligatorio") UUID personaAdminId,
     @NotBlank(message = "La justificación es obligatoria") String justificacion,
-    @NotNull(message = "Debe indicarse si la entrega es replanificable") Boolean replanificable) {}
+    @NotNull(message = "Debe indicarse si la entrega es replanificable") Boolean replanificable,
+    UUID donacionIndependienteId) {}
