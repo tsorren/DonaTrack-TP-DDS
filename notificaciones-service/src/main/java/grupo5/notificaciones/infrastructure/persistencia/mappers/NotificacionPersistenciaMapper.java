@@ -50,16 +50,17 @@ public class NotificacionPersistenciaMapper {
                 he.getEstadoAnterior(), he.getEstadoNuevo(), he.getTimestamp()));
       }
     }
-    return new Notificacion(
-        entity.getId(),
-        entity.getPersonaId(),
-        entity.getMensaje(),
-        entity.getFechaCreacion(),
-        entity.getEstadoNotificacion(),
-        historialDomain,
-        Boolean.TRUE.equals(entity.getLeida()),
-        entity.getFechaLectura(),
-        entity.getTipoEvento(),
-        entity.getReferenciaId());
+    Notificacion notificacion =
+        new Notificacion(
+            entity.getId(),
+            entity.getPersonaId(),
+            entity.getMensaje(),
+            entity.getFechaCreacion(),
+            entity.getEstadoNotificacion(),
+            historialDomain,
+            Boolean.TRUE.equals(entity.getLeida()),
+            entity.getFechaLectura());
+    notificacion.etiquetar(entity.getTipoEvento(), entity.getReferenciaId());
+    return notificacion;
   }
 }

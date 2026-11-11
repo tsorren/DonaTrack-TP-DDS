@@ -47,13 +47,20 @@ interface NotificacionesApi {
   MensajeRecibido contacto(
       @RequestHeader("X-Forwarded-For") String ipOrigen, @RequestBody MensajeDeContacto mensaje);
 
-  /** {@code estado}: PENDIENTE, ENVIADA o FALLIDA; leída si tiene {@code fechaLectura}. */
+  /**
+   * {@code estado}: PENDIENTE, ENVIADA o FALLIDA; leída si tiene {@code fechaLectura}. {@code
+   * tipoEvento} (DONACION_ASIGNADA, DONACION_EN_CAMINO, DONACION_RECIBIDA, ENTREGA_FALLIDA, etc.) y
+   * {@code referenciaId}, el id de la donación, son opcionales (HB-09): vienen nulos en las
+   * anteriores y cuando el emisor no los informó.
+   */
   record Notificacion(
       UUID id,
       String mensaje,
       String estado,
       LocalDateTime fechaCreacion,
-      LocalDateTime fechaLectura) {}
+      LocalDateTime fechaLectura,
+      String tipoEvento,
+      UUID referenciaId) {}
 
   record Conteo(Long noLeidas) {}
 
