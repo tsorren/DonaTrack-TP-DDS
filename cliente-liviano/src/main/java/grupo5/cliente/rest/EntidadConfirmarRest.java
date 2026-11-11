@@ -184,11 +184,13 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   @Override
   public void confirmar(UUID entidad, String clave, Acta acta) {
     // La clave es la donación; una clave que ya es la entrega (enlaces viejos) se usa tal cual
+    // En cualquier estado: una segunda confirmación recibe el 400 de Logística, no un 404
     UUID entrega =
-        porConfirmar(entidad)
+        logistica.seguimientoDeEntidad(entidad).stream()
+            .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
             .filter(s -> s.idDonacion().toString().equals(clave))
+            .min(Comparator.comparing(s -> "CANCELADA".equals(s.estadoEntrega())))
             .map(Seguimiento::idEntrega)
-            .findFirst()
             .orElseGet(() -> UUID.fromString(clave));
     MultiValueMap<String, Object> partes = new LinkedMultiValueMap<>();
     acta.fotos().stream()

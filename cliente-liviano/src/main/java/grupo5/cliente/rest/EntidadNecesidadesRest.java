@@ -129,7 +129,12 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
             .map(n -> terminada(n, subcategorias.get(n.idSubcategoria())))
             .toList(),
         catalogo(catalogo),
-        null,
+        vigentes.stream()
+            .flatMap(n -> n.entregas().stream())
+            .map(Entrega::confirmar)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null),
         vigentes.stream()
             .filter(n -> n.problema() > 0)
             .map(Necesidad::clave)
@@ -191,7 +196,12 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         tono = TRASLADO.equals(estado) ? "en-camino" : "pendiente";
         camino++;
       }
-      entregas.add(new Entrega(cuanto, tono, RecibidasRest.paso(estado, desde(d, estado)), null));
+      entregas.add(
+          new Entrega(
+              cuanto,
+              tono,
+              RecibidasRest.paso(estado, desde(d, estado)),
+              enLaPuerta ? d.id().toString() : null));
     }
     String nombre = sub != null && sub.nombre() != null ? sub.nombre() : n.descripcion();
     Categoria categoria = sub == null ? null : sub.categoria();

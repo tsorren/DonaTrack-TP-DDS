@@ -206,7 +206,7 @@ Recibidas en octubre (6)
   Las recibidas son las entregadas en el mes en curso, y el grupo lleva ese mes ("Recibidas en
   noviembre"). Lo que no llega se omite, sin inventarlo: el pedido que cubre (HB-17), "Ver tu
   pedido", el aviso de novedades (HB-09) y "Esperan tu confirmación", porque la que llegó a la puerta
-  sigue en traslado (HB-22): va a "En camino", sin el botón. Por eso, desde la lista todavía no se
+  sigue en traslado (HB-22; resuelto el 2026-11-11, ver "Ajuste de HB-22" al final): va a "En camino", sin el botón. Por eso, desde la lista todavía no se
   llega a Confirmar recepción, que sigue con la maqueta (HB-10). Textos del próximo paso, aprobados
   por el usuario el 2026-11-08: "Asignada el 13 de octubre. Espera el camión." · "Lista para
   entregar desde el 13 de octubre. Espera el camión." · "Salió del depósito el 14 de octubre a las

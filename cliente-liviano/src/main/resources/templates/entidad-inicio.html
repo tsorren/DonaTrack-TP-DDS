@@ -73,7 +73,7 @@
             <ul class="puerta-lista" role="list">
               <li th:each="d : ${puerta}" class="tarjeta acta" data-filete="doble">
                 <h3 th:id="|puerta-${d.clave}|" class="acta-titulo">
-                  <svg class="categoria-icono" viewBox="0 0 100 100" role="img"
+                  <svg th:if="${d.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" role="img"
                        th:aria-label="${d.categoriaNombre}" aria-label="Alimentos">
                     <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>
                   </svg>

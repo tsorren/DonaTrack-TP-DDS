@@ -209,5 +209,12 @@ class DonacionesRestTest {
     assertEquals(
         "Llegó a la entidad el 8 de noviembre, 18:20",
         DonacionesRest.nota(Comun.PUERTA, java.time.LocalDateTime.of(2026, 11, 8, 18, 20)));
+    assertEquals(
+        "El camión llegó a Comedor Ejemplo. Falta que confirme la recepción.",
+        DonacionesRest.textoDeNoticia(
+            new DonacionesApi.Cambio(
+                "EN_PUERTA", java.time.LocalDateTime.of(2026, 11, 8, 18, 20), null, null, null),
+            "Comedor Ejemplo",
+            false));
   }
 }

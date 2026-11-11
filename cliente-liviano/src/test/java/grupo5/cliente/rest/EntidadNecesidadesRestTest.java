@@ -86,9 +86,13 @@ class EntidadNecesidadesRestTest {
                  {"id": "6f1c2c1e-0000-4000-8000-000000000003", "descripcion": "Mesa",
                   "estadoActual": "EntregaFallida", "fechaRegistro": "2026-11-01T10:00:00",
                   "historial": [{"estadoNuevo": "EntregaFallida", "timestamp": "2026-11-07T16:10:00"}],
-                  "cantidad": 1, "necesidadId": "%s"}]
+                  "cantidad": 1, "necesidadId": "%s"},
+                 {"id": "6f1c2c1e-0000-4000-8000-000000000004", "descripcion": "Silla",
+                  "estadoActual": "EN_PUERTA", "fechaRegistro": "2026-11-01T10:00:00",
+                  "historial": [{"estadoNuevo": "EN_PUERTA", "timestamp": "2026-11-08T18:20:00"}],
+                  "cantidad": 2, "necesidadId": "%s"}]
                 """
-                    .formatted(LENTEJAS, LENTEJAS, SILLAS),
+                    .formatted(LENTEJAS, LENTEJAS, SILLAS, SILLAS),
                 MediaType.APPLICATION_JSON));
     servidor
         .expect(requestTo(API + "necesidades/" + LENTEJAS + "/periodos"))
@@ -139,6 +143,16 @@ class EntidadNecesidadesRestTest {
     assertEquals(6, sillas.max());
     assertEquals(1, sillas.problema());
     assertEquals("necesidad-" + SILLAS, vista.conProblema());
+    // HB-22: la que llegó a la puerta lleva su sello y el acta de su donación
+    assertEquals(1, sillas.puerta());
+    assertEquals(0, sillas.camino());
+    var enLaPuerta = sillas.entregas().get(1);
+    assertEquals("puerta", enLaPuerta.tono());
+    assertEquals(
+        "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación.",
+        enLaPuerta.texto());
+    assertEquals("6f1c2c1e-0000-4000-8000-000000000004", enLaPuerta.confirmar());
+    assertEquals("6f1c2c1e-0000-4000-8000-000000000004", vista.aConfirmar());
 
     assertEquals("Frazadas · 20 unidades", vista.terminadas().getFirst().titulo());
     assertEquals("La diste de baja.", vista.terminadas().getFirst().texto());
