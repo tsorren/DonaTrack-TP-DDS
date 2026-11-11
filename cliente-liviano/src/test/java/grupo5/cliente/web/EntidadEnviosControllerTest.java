@@ -63,6 +63,20 @@ class EntidadEnviosControllerTest {
   }
 
   @Test
+  void elPerfilTodaviaNoGuardaYLoDice() throws Exception {
+    mvc.perform(post("/entidad-perfil-guardado").param("seccion", "avisos"))
+        .andExpect(redirectedUrl("/entidad-perfil#como-te-avisamos"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si"
+                        + " necesitás cambiar algo, escribinos desde Contacto."));
+    mvc.perform(post("/entidad-perfil-guardado").param("seccion", "datos"))
+        .andExpect(redirectedUrl("/entidad-perfil#datos"));
+  }
+
+  @Test
   void sinEntidadMandaAIngresar() throws Exception {
     when(cuentas.entidad(any())).thenReturn(Optional.empty());
     mvc.perform(post(LEIDAS)).andExpect(redirectedUrl("/publico-ingresar"));

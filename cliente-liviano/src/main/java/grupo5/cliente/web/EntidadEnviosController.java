@@ -51,4 +51,20 @@ public class EntidadEnviosController {
         entidad, marcar != null ? List.of(marcar) : (elegidas == null ? List.of() : elegidas));
     return Envios.listo("entidad-notificaciones", "Marcaste las novedades como leídas.", atributos);
   }
+
+  /**
+   * Mi perfil todavía no guarda: {@code PUT /api/personas/{id}} reemplaza la persona entera y el
+   * cuerpo compartido ({@code PersonaNueva}) no lleva el documento, el piso ni los teléfonos, que
+   * se borrarían; "Qué es" y "Qué te avisamos" no tienen dónde guardarse. Vuelve sin cambiar nada y
+   * lo dice.
+   */
+  @PostMapping("/entidad-perfil-guardado")
+  String guardarPerfil(
+      @RequestParam(required = false) String seccion, RedirectAttributes atributos) {
+    return Envios.listo(
+        "avisos".equals(seccion) ? "entidad-perfil#como-te-avisamos" : "entidad-perfil#datos",
+        "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si necesitás"
+            + " cambiar algo, escribinos desde Contacto.",
+        atributos);
+  }
 }
