@@ -8,7 +8,9 @@
        camino, En tu puerta, Donaciones recibidas, Necesidades, Problemas) y hace cuánto. "Ahora" es
        el 15 de octubre de 2026, 18:30; los ejemplos cubren minutos, horas, días, semanas y el mes
        anterior. Marcar es un formulario real (POST) que lleva a entidad-notificaciones-leidas: la
-       misma bandeja, todas leídas, con el aviso arriba. Leer no confirma nada: las que esperan en la
+       misma bandeja, todas leídas, con el aviso arriba (en el sistema, Envios deja el aviso en
+       #avisos y vuelve a la bandeja). Las novedades y las categorías vienen del controller
+       (bandeja: de la maqueta o de Notificaciones). Leer no confirma nada: las que esperan en la
        puerta conservan su botón «Confirmar recepción».
        ?escenario=vacio, nada-sin-leer, lento y error. Enviando ("Marcando…") y el error al marcar se
        describen en la ficha y no se dibujan.
@@ -29,45 +31,18 @@
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              todasLeidas=${accion == 'leidas' or escenario == 'nada-sin-leer'},
              conDatos=${escenario != 'vacio' and escenario != 'error' and escenario != 'lento'},
-             temas=${ {
-      {valor: '', texto: 'Todas las categorías'},
-      {valor: 'camino', texto: 'Entregas en camino', icono: 'camion'},
-      {valor: 'puerta', texto: 'En tu puerta', icono: 'puerta'},
-      {valor: 'recibidas', texto: 'Donaciones recibidas', icono: 'tilde'},
-      {valor: 'necesidades', texto: 'Necesidades', icono: 'necesidad'},
-      {valor: 'problemas', texto: 'Problemas', icono: 'problema'} } },
-             novedades=${ {
-      {id: 'n1', tema: 'puerta', fecha: '2026-10-15T18:20', leida: false,
-       texto: 'Lentejas secas, 15 kg, llegó a tu puerta. Confirmá la recepción con una foto.',
-       boton: 'Confirmar recepción', que: 'lentejas secas', destino: '/entidad-seguimiento-confirmar?entrega=lentejas'},
-      {id: 'n2', tema: 'camino', fecha: '2026-10-15T09:15', leida: false,
-       texto: 'Arroz, 20 kg, salió del depósito. Llega mañana.', destino: '/entidad-recibidas?estado=en-camino'},
-      {id: 'n3', tema: 'puerta', fecha: '2026-10-14T17:10', leida: false,
-       texto: 'Ropa de abrigo, 10 unidades, llegó a tu puerta. Confirmá la recepción con una foto.',
-       boton: 'Confirmar recepción', que: 'ropa de abrigo', destino: '/entidad-seguimiento-confirmar?entrega=ropa'},
-      {id: 'n4', tema: 'problemas', fecha: '2026-10-14T16:40', leida: true,
-       texto: 'Aceite de girasol, 10 litros: el camión no pudo llegar. Te avisamos la nueva fecha.',
-       destino: '/entidad-necesidades?necesidad=aceite'},
-      {id: 'n5', tema: 'necesidades', fecha: '2026-10-13T10:05', leida: true,
-       texto: 'Se asignó a tu necesidad de leche en polvo una donación de 12 unidades. Sale del depósito el 17 de octubre.',
-       destino: '/entidad-recibidas?estado=por-salir'},
-      {id: 'n6', tema: 'recibidas', fecha: '2026-10-10T11:05', leida: true,
-       texto: 'Lentejas secas, 10 kg, llegó a tu puerta.', nota: 'Confirmaste la recepción el 10 de octubre.',
-       destino: '/entidad-recibidas?estado=recibidas'},
-      {id: 'n7', tema: 'necesidades', fecha: '2026-10-07T12:00', leida: true,
-       texto: 'Se asignó a tu necesidad de arroz una donación de 20 kg.', destino: '/entidad-recibidas?estado=en-camino'},
-      {id: 'n8', tema: 'recibidas', fecha: '2026-09-28T12:00', leida: true,
-       texto: 'Fideos secos, 10 kg, llegó a tu puerta.', nota: 'Confirmaste la recepción el 28 de septiembre.',
-       destino: '/entidad-recibidas?estado=recibidas'} } },
+             temas=${bandeja.temas},
+             novedades=${bandeja.novedades},
              sinLeer=${todasLeidas ? 0 : #lists.size(novedades.?[!leida])}">
   <div class="pila" data-espacio="4">
     <header class="cabecera-entidad">
       <p class="rotulo">Notificaciones</p>
       <h1>Tus <em>novedades</em></h1>
       <p th:if="${conDatos and sinLeer > 0}"
-         th:text="|${sinLeer} sin leer. Al 15 de octubre de 2026, 18:30.|">3 sin leer. Al 15 de
+         th:text="|${sinLeer} sin leer. Al ${bandeja.actualizado}.|">3 sin leer. Al 15 de
         octubre de 2026, 18:30.</p>
-      <p th:if="${conDatos and sinLeer == 0}">No tenés novedades sin leer. Al 15 de octubre de 2026,
+      <p th:if="${conDatos and sinLeer == 0}"
+         th:text="|No tenés novedades sin leer. Al ${bandeja.actualizado}.|">No tenés novedades sin leer. Al 15 de octubre de 2026,
         18:30.</p>
     </header>
 
@@ -95,7 +70,7 @@
 
     <th:block th:if="${conDatos}">
       <div th:replace="~{componentes/buzon :: buzon(${accion == 'leidas' ? '/entidad-notificaciones-leidas' : '/entidad-notificaciones'},
-           '/entidad-notificaciones-leidas', '2026-10-15T18:30', ${ {novedades} }, ${temas}, ${todasLeidas})}"></div>
+           '/entidad-notificaciones-leidas', ${bandeja.ahora}, ${ {novedades} }, ${temas}, ${todasLeidas})}"></div>
     </th:block>
   </div>
 </th:block>
