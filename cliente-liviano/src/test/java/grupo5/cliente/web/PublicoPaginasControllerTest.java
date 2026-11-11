@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Las páginas públicas con lo que da el puerto, no con los datos de ejemplo de la plantilla. */
-@WebMvcTest({PublicoPortadaController.class})
+@WebMvcTest({PublicoPortadaController.class, PublicoNosotrosController.class})
 @ActiveProfiles("maqueta")
 @Import({MaquetaConfig.class, Pantallas.class, PublicoPaginasControllerTest.DatosDeLaApi.class})
 class PublicoPaginasControllerTest {
@@ -60,5 +60,13 @@ class PublicoPaginasControllerTest {
           .andExpect(content().string(containsString("Donantes con al menos una donación")))
           .andExpect(content().string(not(containsString("1.284"))));
     }
+  }
+
+  @Test
+  void nosotrosMuestraLasCifrasDelPuerto() throws Exception {
+    mvc.perform(get("/publico-nosotros"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<b>3</b>")))
+        .andExpect(content().string(not(containsString("318"))));
   }
 }
