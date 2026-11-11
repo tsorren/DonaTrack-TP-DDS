@@ -1,6 +1,7 @@
 # Brechas de datos por pantalla (E6)
 
-> **Estado:** inventario `[OBSERVED]` del 2026-11-07, con clasificación `[INFERRED]`. Insumo de
+> **Estado:** inventario `[OBSERVED]` del 2026-11-07, con clasificación `[INFERRED]`; el §10 trae el
+> estado de las pantallas después de la corrida `conexion-pantallas` (2026-11-10). Insumo de
 > la F2 del [plan del cliente con datos reales y gateway](plan-e6-cliente-datos-reales-y-gateway.md):
 > dice qué pantallas se pueden conectar hoy y qué le falta al backend para el resto.
 > Parte de la [ficha de huecos de backend de Raíces](../interfaz/flujos/raices-ab-huecos-backend.md)
@@ -149,3 +150,28 @@ Contra la [ficha de huecos](../interfaz/flujos/raices-ab-huecos-backend.md):
   DTOs: por ejemplo, que `idBeneficiaria` de Logística es la persona jurídica.
 - La ficha de huecos vive en `docs/interfaz/` y no se edita en este cambio: este inventario la
   actualiza por referencia.
+
+## 10. Estado después de la conexión (2026-11-10)
+
+`[OBSERVED]` en las ramas de la corrida `conexion-pantallas` ([SPEC-08](../specs/active/SPEC-08-conexion-de-pantallas.md)),
+sin mergear: un PR por rol (`E6_conexion_publico`, `_donante`, `_entidad` y `_admin`) y uno por hueco
+de backend (`E6_HB21_contacto`, `E6_HB23_camiones_deshabilitados`). Las tablas de arriba (§2 a §5)
+son el inventario del 2026-11-07; esta es su actualización, pantalla por pantalla. Fuera de maqueta,
+cada una lee su puerto REST con los datos que da el backend y dice lo que no sabe; en maqueta el
+HTML es el mismo, salvo la pieza común de envío y espacios.
+
+| Rol | Conectadas (qué sigue sin dato) | Pendientes y motivo |
+|---|---|---|
+| Público | Portada, Donaciones realizadas (destacadas, contadores, total de entidades); Nosotros (cifras sin "desde marzo"); Contacto (`POST /api/contacto`, HB-21: espera el merge de su rama); registro de donante y de entidad (constancia de legales con la versión vigente). Sin barrio en las destacadas | **Entidades y necesidades** y **Mapa de entregadas**: sin puerto ni controller en esta corrida, siguen con datos de ejemplo `[INFERRED]` (las subcategorías con la unidad piden sesión y los DTOs públicos son mínimos a propósito, HB-08 y D24). Legales, Para donantes, Para entidades, Ingresar y Recuperar: sin datos de API |
+| Donante | Inicio, Mis donaciones y detalle ("Figura como" con `quienDono`; el destino sin nombre), Entidades, Seguimiento (con `posicionCamion`), Notificaciones (sin tipo ni enlace: HB-09 sigue fuera), Mi perfil (nombre visible y constancia de legales) | **Misiones e insignias**: sin puerto ni controller, sigue con datos de ejemplo. "Qué te avisamos" y "Datos de la cuenta" no guardan: el aviso lo dice |
+| Entidad | Inicio, Necesidades (publicar, cambiar con `version` y dar de baja), Donaciones recibidas (con `quienDono`), Seguir entregas, Confirmar recepción y Llegó con un problema (fotos por multipart, remito y reporte), Notificaciones, Mi perfil (lectura) | Guardar Mi perfil: el aviso dice que todavía no se puede. "Esperan tu confirmación" (HB-22), lo recibido de una extraordinaria y el tipo de la notificación, fuera |
+| Admin | Inicio, Donantes (registrar e importar CSV con avance), Entidades (registrar y aprobar), Donaciones (registrar, detalle y marcar vencida), Asignaciones, Camiones (con HB-23), Ranking | Pedir corrección y rechazar una entidad (sin operación), búsqueda en el servidor y fecha de alta de donantes, motivo y fecha de una propuesta o de un cambio de camión |
+
+Quedan fuera de todas, como en el §5: el token hacia Logística, Incentivos y Notificaciones (F5, HB-13),
+la variante de la persona fuera de maqueta y las pantallas que resuelve Keycloak.
+
+**Pantallas sin controller propio:** Mapa, Entidades y necesidades, y Misiones. Hasta conectarlas, el
+criterio de hecho de SPEC-08 las cuenta como pendientes con su motivo.
+
+**Los textos nuevos** que esta conexión propone fuera de la maqueta están en la sección "Textos de la
+conexión con las APIs" de cada ficha, marcados "Pendiente de OK del usuario".

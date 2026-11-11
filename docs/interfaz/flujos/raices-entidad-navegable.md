@@ -518,6 +518,33 @@ Filtro de tono:
 - Palabras que no van (brief de Raíces): "eco", "huella verde", "florecer", "regá", "cosechá" y
   "sostenible" de adorno. La metáfora va, como mucho, en un título.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Siguen
+`docs/interfaz/tono-y-comunicacion.md`: lo pendiente se dice pendiente, sin culpa ni urgencia, y no se
+promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
+
+#### Notificaciones, inicio y seguimiento
+
+| Pantalla | Elemento | Texto | Nota |
+|---|---|---|---|
+| Notificaciones | Categoría, sin el tipo de evento | "Novedades" | `NotificacionDTO` no trae el tipo ni la donación (HB-09, fuera de alcance): todas van a esa categoría y llevan a Donaciones recibidas, sin el botón de confirmar |
+| Notificaciones | Aviso al dejar una sin leer | "Dejaste la novedad sin leer." | En `#avisos`, al volver a la bandeja. Marcar como leídas usa el de la ficha: "Marcaste las novedades como leídas." |
+| Inicio | Cuándo, en "Lo que viene" | "salió del depósito el 8 de noviembre" · "lista para entregar desde el 6 de noviembre" · "asignada el 3 de noviembre" · "no pudo llegar el 4 de noviembre" · "venció en el depósito el 7 de noviembre" | Reemplazan a "llega mañana" o "sale el 17 de octubre": Donaciones da desde cuándo está así, no cuándo llega |
+| Seguir entregas | Última noticia | "Última noticia: 8 de noviembre, 18:25." | El formato ya está en la ficha; sale de `ultimaActualizacion` de Logística |
+
+#### Inicio del admin (admin-inicio)
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Cabecera, en singular | "Hoy espera tu decisión 1 entidad." · "Hoy esperan tu decisión 1 entidad y 1 propuesta de asignación." · "1 donación vence en los próximos 7 días." | La frase de la ficha armada con las cuentas reales, con singular |
+| Títulos de las tarjetas, en singular | "1 pide sumarse" · "1 vence en los próximos 7 días" · "1 propuesta" | Ídem |
+| La primera que vence | "La primera, Leche en polvo, vence el 12 de noviembre, en 2 días." · "…, vence el 11 de noviembre, en 1 día." · "La primera, Leche en polvo, vence hoy." | La frase de la ficha con la fecha real |
+| Una propuesta | "Arroz, 25." | La propuesta no trae la unidad ni la entidad (NecesidadResumen) |
+| Sin nota de las entidades | (no se escribe "La más antigua llegó el …" ni "A una le falta …") | Keycloak no da cuándo llegó la solicitud y nadie guarda la constancia |
+| La primera que vence, sin descripción | "La primera vence el 12 de noviembre, en 2 días." | La donación no trae descripción |
+| Una propuesta sin descripción | "Una necesidad, 25." | La necesidad no trae descripción |
+
 ## 7. Accesibilidad
 
 - Zonas en las cuatro: saltar al contenido, la navegación del rol (`nav` con nombre), `main` con un
