@@ -172,6 +172,9 @@ cambio solo si la donación está `EN_TRASLADO`; si ya está en otro estado (el 
   alguien informó la llegada.
 - En la simulación la primera parada pasa a `EN_PUERTA` apenas sale el camión.
 - El planificador de posiciones escribe entregas y publica eventos, además de mover el camión.
+- El `PATCH` de estado conserva su permiso (`CONFIRMAR_SU_ENTREGA`): la entidad podría marcar su
+  propia entrega en la puerta. El cliente no lo hace; restringirlo por estado queda para la
+  seguridad del grupo (SPEC-06).
 - Una base Mongo persistente conserva el índice viejo `uq_entrega_donacion_activa`; es redundante
   (cubre un subconjunto) y se puede borrar a mano.
 

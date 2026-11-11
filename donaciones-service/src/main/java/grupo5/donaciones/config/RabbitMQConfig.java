@@ -10,6 +10,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaCanceladaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
@@ -44,6 +45,7 @@ public class RabbitMQConfig {
   public static final String QUEUE_ENTREGA_EXITOSA = "donaciones.entrega.exitosa";
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";
   public static final String QUEUE_ENTREGA_CANCELADA = "donaciones.entrega.cancelada";
+  public static final String QUEUE_ENTREGA_EN_PUERTA = "donaciones.entrega.en-puerta";
 
   // Routing Keys emitidas hacia donaciones.exchange
   public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
@@ -142,6 +144,19 @@ public class RabbitMQConfig {
         .with("entrega.cancelada");
   }
 
+  @Bean
+  public Queue queueEntregaEnPuerta() {
+    return new Queue(QUEUE_ENTREGA_EN_PUERTA, true);
+  }
+
+  @Bean
+  public Binding bindingEntregaEnPuerta(
+      Queue queueEntregaEnPuerta, TopicExchange logisticaExchange) {
+    return BindingBuilder.bind(queueEntregaEnPuerta)
+        .to(logisticaExchange)
+        .with("entrega.en-puerta");
+  }
+
   // --- Serialización JSON y Templates ---
   @Bean
   public DefaultClassMapper classMapper() {
@@ -164,6 +179,7 @@ public class RabbitMQConfig {
     idClassMapping.put("entrega.exitosa", EventoEntregaExitosa.class);
     idClassMapping.put("entrega.fallida", EventoEntregaFallida.class);
     idClassMapping.put("entrega.cancelada", EventoEntregaCancelada.class);
+    idClassMapping.put("entrega.en-puerta", EventoEntregaEnPuerta.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }
