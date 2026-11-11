@@ -15,7 +15,9 @@ public record RecibidasVista(
    * Una donación asignada. {@code grupo} es {@code puerta}, {@code problema}, {@code camino},
    * {@code salir} o {@code recibida}; {@code categoria} es el ícono del sprite, o null; {@code
    * pedido} y {@code pedidoNombre}, la necesidad que cubre, o null (HB-17). {@code dia} y {@code
-   * fecha} (ISO), solo en las recibidas.
+   * fecha} (ISO), solo en las recibidas. {@code llego}, cuándo y de dónde llegó, solo en las que
+   * esperan en la puerta; {@code breve}, el paso en pocas palabras ("llega mañana"), en las que
+   * todavía no llegaron. Los usan Inicio y Seguir entregas.
    */
   public record Recibida(
       String clave,
@@ -29,5 +31,7 @@ public record RecibidasVista(
       String grupo,
       String paso,
       String dia,
-      String fecha) {}
+      String fecha,
+      String llego,
+      String breve) {}
 }

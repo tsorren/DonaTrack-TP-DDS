@@ -8,7 +8,8 @@
        de estado) y lo recibido en el mes (un fruto con la cifra, en una tarjeta clara); a la derecha,
        tus necesidades vigentes, un renglón por necesidad con su barra de .progreso. Las donaciones
        salen de piezas-entidad.html (datos), las mismas de Donaciones recibidas; las necesidades, de
-       Necesidades. En pantalla se dice "necesidades", nunca "pedidos".
+       Necesidades, y el día, del controller (inicio: de la maqueta o de Donaciones); las novedades
+       sin leer, de la cabecera (sinLeer). En pantalla se dice "necesidades", nunca "pedidos".
        ?escenario=vacio (entidad recién aprobada), sin-puerta, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-inicio', ~{::contenido})}">
@@ -21,24 +22,20 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="conPartes=${escenario != 'vacio' and escenario != 'error'},
+    th:with="mesRecibido=${recibidas.mes},
+             conPartes=${escenario != 'vacio' and escenario != 'error'},
              conDatos=${conPartes and escenario != 'lento'},
              puerta=${asignadas.?[grupo == 'puerta']},
              recibidas=${asignadas.?[grupo == 'recibida']},
-             necesidades=${ {
-      {nombre: 'Aceite de girasol', categoria: 'cat-alimentos', recibido: '0 de 20 litros', valor: 0, max: 20, plazo: 'Hasta el 20 de octubre'},
-      {nombre: 'Leche en polvo', categoria: 'cat-alimentos', recibido: '12 de 24 unidades', valor: 12, max: 24, plazo: 'Hasta el 25 de octubre'},
-      {nombre: 'Lentejas secas', categoria: 'cat-alimentos', recibido: '10 de 40 kg', valor: 10, max: 40, plazo: 'Octubre, hasta el 31'},
-      {nombre: 'Arroz', categoria: 'cat-alimentos', recibido: '15 de 40 kg', valor: 15, max: 40, plazo: 'Octubre, hasta el 31'},
-      {nombre: 'Ropa de abrigo', categoria: 'cat-ropa', recibido: '5 de 30 unidades', valor: 5, max: 30, plazo: 'Hasta el 15 de noviembre'} } }">
+             necesidades=${inicio.necesidades}">
   <div class="inicio">
     <header class="cabecera-entidad">
       <p class="rotulo" th:text="${seccion}">Inicio</p>
       <h1>Hola, <em th:text="${cuenta.nombre}">Marta</em></h1>
       <p class="inicio-fecha"><th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block> ·
-        jueves 15 de octubre de 2026</p>
-      <th:block th:if="${conDatos}">
-        <a th:replace="~{piezas-entidad :: novedades(${escenario == 'sin-puerta' ? 1 : 3})}"></a>
+        <th:block th:text="${inicio.fecha}">jueves 15 de octubre de 2026</th:block></p>
+      <th:block th:if="${conDatos and sinLeer > 0}">
+        <a th:replace="~{piezas-entidad :: novedades(${escenario == 'sin-puerta' ? 1 : sinLeer})}"></a>
       </th:block>
     </header>
 
@@ -142,12 +139,12 @@
           <p th:text="|${#lists.size(necesidades)} necesidades vigentes.|">5 necesidades vigentes.</p>
           <ul class="pedidos-renglones" role="list">
             <li th:each="n : ${necesidades}">
-              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <svg th:if="${n.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
               </svg>
               <span class="renglon-que"><b th:text="${n.nombre}">Lentejas secas</b>
                 <small th:text="${n.plazo}">Octubre, hasta el 31</small></span>
-              <span class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
+              <span th:if="${n.recibido != null}" class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
                 <progress class="progreso" th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
             </li>
           </ul>
@@ -164,12 +161,12 @@
              confirmado"), con la cifra adentro y su período y fecha al lado. Es un resultado
              registrado, no un efecto. */-->
       <section class="recibido" aria-labelledby="recibido-titulo">
-        <h2 id="recibido-titulo">Lo recibido en octubre</h2>
+        <h2 id="recibido-titulo" th:text="|Lo recibido en ${mesRecibido}|">Lo recibido en octubre</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <div th:if="${conDatos}" class="recibido-rama">
           <p class="recibido-fruto" aria-hidden="true" th:text="${#lists.size(recibidas)}">6</p>
           <div class="recibido-texto">
-            <p th:text="|${#lists.size(recibidas)} donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30.|">6
+            <p th:text="|${#lists.size(recibidas)} donaciones recibidas, confirmadas por tu entidad. Al ${inicio.al}.|">6
               donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30.</p>
             <a class="boton" data-tono="secundario" href="/entidad-recibidas?estado=recibidas"
                th:href="@{/entidad-recibidas(estado='recibidas')}">Ver las recibidas</a>
