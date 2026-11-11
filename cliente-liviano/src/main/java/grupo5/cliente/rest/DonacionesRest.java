@@ -1,5 +1,22 @@
 package grupo5.cliente.rest;
 
+import static grupo5.cliente.rest.Comun.ARGENTINA;
+import static grupo5.cliente.rest.Comun.ASIGNADA;
+import static grupo5.cliente.rest.Comun.DIA;
+import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
+import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
+import static grupo5.cliente.rest.Comun.ENTREGADA;
+import static grupo5.cliente.rest.Comun.FALLIDA;
+import static grupo5.cliente.rest.Comun.HORA;
+import static grupo5.cliente.rest.Comun.LISTA;
+import static grupo5.cliente.rest.Comun.TRASLADO;
+import static grupo5.cliente.rest.Comun.VENCIDA;
+import static grupo5.cliente.rest.Comun.cantidad;
+import static grupo5.cliente.rest.Comun.categoria;
+import static grupo5.cliente.rest.Comun.desde;
+import static grupo5.cliente.rest.Comun.icono;
+import static grupo5.cliente.rest.Comun.normalizado;
+
 import grupo5.cliente.puertos.DonacionesPuerto;
 import grupo5.cliente.rest.DonacionesApi.Cambio;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
@@ -14,12 +31,9 @@ import grupo5.cliente.vistas.PasoRecorrido.Avance;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,14 +42,14 @@ import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClientException;
 
 /**
- * Mis donaciones y su detalle desde Donaciones: la lista del donante, las categorías del filtro y,
- * por cada entidad distinta, su nombre para el destino. El número de cada donación es su posición,
- * de la primera a la última. El detalle busca la donación en la lista del donante (otra no se
- * muestra), arma las etapas y las noticias con su historial y, si se entregó, trae la foto de
+ * Mis donaciones y su detalle desde Donaciones: la lista del donante, las categorías del filtro y
+ * el nombre de cada entidad (de las públicas) para el destino. El número de cada donación es su
+ * posición, de la primera a la última. El detalle busca la donación en la lista del donante (otra
+ * no se muestra), arma las etapas y las noticias con su historial y, si se entregó, trae la foto de
  * Logística.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
@@ -44,22 +58,6 @@ import org.springframework.web.client.RestClientException;
 @ConditionalOnProperty(name = "cliente.datos.donaciones", havingValue = "rest")
 class DonacionesRest implements DonacionesPuerto {
 
-  private static final Locale ES_AR = Locale.forLanguageTag("es-AR");
-  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
-  private static final DateTimeFormatter DIA = DateTimeFormatter.ofPattern("d 'de' MMMM", ES_AR);
-  private static final DateTimeFormatter DIA_Y_ANIO =
-      DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", ES_AR);
-  private static final DateTimeFormatter DIA_Y_HORA =
-      DateTimeFormatter.ofPattern("d 'de' MMMM, H:mm", ES_AR);
-  private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("H:mm", ES_AR);
-
-  static final String ENTREGADA = "ENTREGADA";
-  static final String FALLIDA = "ENTREGAFALLIDA";
-  static final String VENCIDA = "VENCIDA";
-  static final String TRASLADO = "ENTRASLADO";
-  static final String ASIGNADA = "ASIGNACIONREALIZADA";
-  static final String LISTA = "LISTAPARAENTREGAR";
-
   /** Las cinco etapas, en orden, con el estado de Donaciones que las abre. */
   private static final List<String> ETAPAS =
       List.of("ENDEPOSITO", ASIGNADA, LISTA, TRASLADO, ENTREGADA);
@@ -67,23 +65,8 @@ class DonacionesRest implements DonacionesPuerto {
   private static final List<String> NOMBRES_ETAPAS =
       List.of("En depósito", "Asignada", "Lista para entregar", "En camino", "Entregada");
 
-  /** El sprite de categorías tiene cuatro íconos; una categoría sin el suyo no muestra ninguno. */
-  private static final Map<String, String> ICONOS =
-      Map.of(
-          "aliment", "cat-alimentos",
-          "ropa", "cat-ropa",
-          "vestim", "cat-ropa",
-          "escolar", "cat-escolares",
-          "mueble", "cat-muebles");
-
-  private static final Map<String, String> UNIDADES =
-      Map.of(
-          "KILOGRAMO", "kg",
-          "LITROS", "l",
-          "UNIDADES", "unidades",
-          "METRO", "m",
-          "METRO_CUADRADO", "m²",
-          "METRO_CUBICO", "m³");
+  /** El destino de una donación asignada a una entidad cuyo nombre no se pudo leer. */
+  static final String SIN_NOMBRE = "una entidad";
 
   private final DonacionesApi api;
   private final LogisticaApi logistica;
@@ -147,7 +130,7 @@ class DonacionesRest implements DonacionesPuerto {
             foto == null ? null : "Foto de la entrega que subió " + entidad,
             pie,
             noticias(d, entidad, foto != null),
-            null));
+            d.quienDono() == null ? null : d.quienDono().nombreVisible()));
   }
 
   private List<DonacionesApi.Donacion> ordenadas(UUID donante) {
@@ -156,14 +139,43 @@ class DonacionesRest implements DonacionesPuerto {
         .toList();
   }
 
-  /** El nombre de cada entidad distinta; una sin nombre queda en null (por eso no es toMap). */
+  /**
+   * El nombre de cada entidad de la lista. El donante no puede leer una entidad por id (solo ADMIN
+   * o la entidad), así que se piden todas las activas de una vez a {@code /api/entidades/publicas}
+   * (sin paginado, las devuelve todas). Una dada de baja, o con Donaciones sin responder esa lista,
+   * queda como {@link #SIN_NOMBRE}: tiene destino, sin nombre.
+   */
+  // ponytail: una lista entera por pedido; con muchas entidades, un endpoint por ids.
   private Map<UUID, String> entidades(List<DonacionesApi.Donacion> lista) {
+    return nombresDeEntidades(api, lista);
+  }
+
+  /** También lo usa el seguimiento y el inicio del donante. */
+  static Map<UUID, String> nombresDeEntidades(
+      DonacionesApi donaciones, List<DonacionesApi.Donacion> lista) {
+    // HashMap y no Map.of(): get(null), el de una donación sin destino, devuelve null.
     Map<UUID, String> entidades = new HashMap<>();
+    if (lista.stream()
+        .map(DonacionesApi.Donacion::entidadBeneficiariaId)
+        .allMatch(Objects::isNull)) {
+      return entidades;
+    }
+    try {
+      List<DonacionesApi.EntidadPublica> publicas =
+          donaciones.entidadesPublicas(new LinkedMultiValueMap<>()).getBody();
+      if (publicas != null) {
+        publicas.stream()
+            .filter(e -> e.id() != null && e.razonSocial() != null && !e.razonSocial().isBlank())
+            .forEach(e -> entidades.put(e.id(), e.razonSocial()));
+      }
+    } catch (RestClientException sinLista) {
+      entidades.clear();
+    }
+    // Una que no está entre las públicas (dada de baja) o sin la lista: tiene destino, sin nombre.
     lista.stream()
         .map(DonacionesApi.Donacion::entidadBeneficiariaId)
         .filter(Objects::nonNull)
-        .distinct()
-        .forEach(id -> entidades.put(id, nombreDeEntidad(id)));
+        .forEach(id -> entidades.putIfAbsent(id, SIN_NOMBRE));
     return entidades;
   }
 
@@ -197,7 +209,7 @@ class DonacionesRest implements DonacionesPuerto {
    * que siguen, pendientes. Una entregada tiene todas hechas; una que no pudo llegar se queda en
    * "En camino" y una vencida, en "En depósito".
    */
-  private static List<PasoRecorrido> pasos(DonacionesApi.Donacion d, String estado) {
+  static List<PasoRecorrido> pasos(DonacionesApi.Donacion d, String estado) {
     int actual =
         switch (estado) {
           case FALLIDA -> ETAPAS.indexOf(TRASLADO);
@@ -248,7 +260,7 @@ class DonacionesRest implements DonacionesPuerto {
   }
 
   /** La justificación del último cambio a ese estado, o null. */
-  private static String motivo(DonacionesApi.Donacion d, String estado) {
+  static String motivo(DonacionesApi.Donacion d, String estado) {
     return d.historial() == null
         ? null
         : d.historial().stream()
@@ -277,7 +289,7 @@ class DonacionesRest implements DonacionesPuerto {
         .toList();
   }
 
-  private static String cuando(LocalDateTime momento, LocalDate hoy) {
+  static String cuando(LocalDateTime momento, LocalDate hoy) {
     LocalDate dia = momento.toLocalDate();
     if (dia.equals(hoy)) {
       return "Hoy, " + momento.format(HORA);
@@ -287,7 +299,7 @@ class DonacionesRest implements DonacionesPuerto {
         : momento.format(DIA_Y_HORA);
   }
 
-  private static String textoDeNoticia(Cambio cambio, String entidad, boolean conFoto) {
+  static String textoDeNoticia(Cambio cambio, String entidad, boolean conFoto) {
     String justificacion = cambio.justificacion();
     return switch (normalizado(cambio.estadoNuevo())) {
       case "ENDEPOSITO" -> "Recibimos tu donación en el depósito.";
@@ -345,26 +357,7 @@ class DonacionesRest implements DonacionesPuerto {
         nota(estado, desde(d, estado)));
   }
 
-  /** La categoría del primer ítem, o null si no la tiene completa. */
-  static Categoria categoria(DonacionesApi.Donacion d) {
-    Categoria categoria =
-        d.items() == null
-                || d.items().isEmpty()
-                || d.items().getFirst() == null
-                || d.items().getFirst().bien() == null
-            ? null
-            : d.items().getFirst().bien().categoria();
-    return categoria == null || categoria.id() == null || categoria.nombre() == null
-        ? null
-        : categoria;
-  }
-
-  /** "EnDeposito" y "EN_DEPOSITO" (el enum del contrato) quedan iguales: "ENDEPOSITO". */
-  static String normalizado(String estado) {
-    return estado == null ? "" : estado.replace("_", "").toUpperCase(Locale.ROOT);
-  }
-
-  private static EstadoEntrega estadoEntrega(String estado) {
+  static EstadoEntrega estadoEntrega(String estado) {
     return switch (estado) {
       case TRASLADO -> EstadoEntrega.EN_CAMINO;
       case ENTREGADA -> EstadoEntrega.ENTREGADA;
@@ -373,18 +366,7 @@ class DonacionesRest implements DonacionesPuerto {
     };
   }
 
-  /** Cuándo entró al estado en el que está: su último cambio a ese estado, o el registro. */
-  static LocalDateTime desde(DonacionesApi.Donacion d, String estado) {
-    return d.historial() == null
-        ? d.fechaRegistro()
-        : d.historial().stream()
-            .filter(c -> normalizado(c.estadoNuevo()).equals(estado))
-            .map(Cambio::timestamp)
-            .max(Comparator.naturalOrder())
-            .orElse(d.fechaRegistro());
-  }
-
-  private static String nota(String estado, LocalDateTime desde) {
+  static String nota(String estado, LocalDateTime desde) {
     return switch (estado) {
       case ASIGNADA -> "Asignada, espera el camión";
       case LISTA -> "Lista para entregar, espera el camión";
@@ -394,35 +376,5 @@ class DonacionesRest implements DonacionesPuerto {
       case VENCIDA -> "Venció en el depósito el " + desde.format(DIA);
       default -> "En el depósito, espera destino";
     };
-  }
-
-  /** Una entidad que ya no está (404) o sin nombre queda sin destino escrito. */
-  private String nombreDeEntidad(UUID id) {
-    try {
-      DonacionesApi.Entidad entidad = api.entidad(id);
-      String nombre =
-          entidad == null || entidad.juridica() == null ? null : entidad.juridica().razonSocial();
-      return nombre == null || nombre.isBlank() ? null : nombre;
-    } catch (HttpClientErrorException.NotFound yaNoEsta) {
-      return null;
-    }
-  }
-
-  static String cantidad(int cantidad, Categoria categoria) {
-    String unidad =
-        categoria == null || categoria.unidad() == null ? null : UNIDADES.get(categoria.unidad());
-    if (cantidad == 1 && "unidades".equals(unidad)) {
-      unidad = "unidad";
-    }
-    return unidad == null ? String.valueOf(cantidad) : cantidad + " " + unidad;
-  }
-
-  static String icono(String nombre) {
-    String minusculas = nombre.toLowerCase(Locale.ROOT);
-    return ICONOS.entrySet().stream()
-        .filter(e -> minusculas.contains(e.getKey()))
-        .map(Map.Entry::getValue)
-        .findFirst()
-        .orElse(null);
   }
 }

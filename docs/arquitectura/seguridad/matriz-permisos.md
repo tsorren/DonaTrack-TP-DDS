@@ -194,6 +194,9 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `POST` | `/api/notificaciones/eventos`, `/notificaciones` (legado, DTI-13) | `SERVICIO` | — | — | Incentivos por Feign |
 | `GET` | `/notificaciones/persona/{personaId}` (alias QA) | ADMIN | — | — | |
 | `PUT`, `GET`, `DELETE` | `/api/notificaciones/personas/**` | `SERVICIO`, ADMIN | — | — | Réplica de personas |
+| `POST` | `/api/contacto` | público | — | — | Contacto (HB-21; límite por correo e IP) |
+| `GET` | `/api/contacto`, `/api/contacto/{numero}` | ADMIN | — | — | Sin pantalla todavía (HB-21) |
+| `POST` | `/api/contacto/{numero}/respuesta` | ADMIN | — | — | Sin pantalla todavía (HB-21) |
 
 `[OBSERVED]` (2026-11-10, al implementar Notificaciones) El alias `GET /notificaciones/persona/{personaId}` compartía método con la ruta `/api/…`, y la matriz les da reglas distintas (ADMIN y dueño): pasó a ser un método propio, que solo entra el ADMIN. La pertenencia de `PATCH /{id}/leida` se resuelve con `NotificacionService.personaDe` (la notificación guarda su `personaId`, el DTO no): una notificación inexistente no tiene dueño, así que quien no es admin recibe `403` y no puede averiguar qué ids existen. Con `NOTIFICACIONES_SEGURIDAD_HABILITADA=true`, `NotificacionesFeignClient` de Incentivos, los flujos 7 y 8 de Postman y los clientes de `integration-tests` llaman sin token y recibirían `401`; se adaptan en E2-07 (M-07).
 

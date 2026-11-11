@@ -14,7 +14,7 @@ La tabla de [`RutasGateway`](src/main/java/grupo5/gateway/RutasGateway.java) es 
 | Servicio | Rutas |
 |---|---|
 | Donaciones | `/api/{categorias,donaciones,donantes,entidades,items-normalizados,necesidades,personas,asignaciones,subcategorias}/**`, `/api/logistica/proveedores`, `/api/logistica/proveedor-preferido` |
-| Notificaciones | `/api/notificaciones/**` |
+| Notificaciones | `/api/notificaciones/**`, `/api/contacto` y `/api/contacto/**` (HB-21) |
 | Incentivos | `/api/incentivos/**` |
 | Logística | `/api/{camiones,choferes,entregas,rutas}/**`, `/api/logistica/resultados`, `/api/logistica/callback/**`, `/api/logistica/planificaciones/**` |
 
@@ -24,6 +24,8 @@ La tabla de [`RutasGateway`](src/main/java/grupo5/gateway/RutasGateway.java) es 
 ## Rutas públicas
 
 `donatrack.gateway.rutas-publicas` en [`application.yml`](src/main/resources/application.yml) lista lo que en la etapa 2 pasa sin token (D26). Hoy no se aplica. Si una pantalla pública suma una llamada, su ruta entra ahí en el mismo cambio. Un test comprueba que cada ruta pública tiene una ruta expuesta.
+
+- `POST /api/contacto` (HB-21): el cliente liviano manda la IP del navegador en `X-Forwarded-For`. Si el gateway agrega otra detrás, Notificaciones igual cuenta por la primera.
 
 ## `X-Trace-Id`
 

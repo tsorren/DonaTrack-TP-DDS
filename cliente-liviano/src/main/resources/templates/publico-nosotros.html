@@ -3,7 +3,8 @@
        pág. 3): quiénes somos, las cifras con período y fecha (los árboles de la portada, estética de K), cómo
        trabajamos, lo que nos importa y dos salidas, una por público. Se llega desde el pie. Los estados
        de la maqueta (?escenario=vacio, lento o error) solo cambian las cifras: el resto es texto fijo.
-       ponytail: cifras fijas del caso de ejemplo, iguales a las de la portada; con backend, HB-02. */-->
+       Las cifras (cifrasDeNosotros) las da PublicoPuerto: de ejemplo o los contadores de Donaciones
+       (HB-02). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-conocer', ~{::contenido})}">
 <head>
@@ -21,10 +22,7 @@
         donación desde el depósito hasta que la entidad confirma que llegó.</p>
     </header>
 
-    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${ {
-        {n: '1.284', t: 'Entregas confirmadas desde marzo de 2026'},
-        {n: '46', t: 'Entidades en el mapa'},
-        {n: '318', t: 'Donantes con al menos una donación desde marzo de 2026'} } })}"></section>
+    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDeNosotros})}"></section>
 
     <section class="grilla" data-espacio="4" aria-labelledby="somos-titulo">
       <div class="lectura">

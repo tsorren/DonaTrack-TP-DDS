@@ -2,7 +2,9 @@ package grupo5.cliente.integracion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -67,6 +69,35 @@ class PersonasRestTest {
         .andRespond(withStatus(HttpStatus.CREATED));
 
     donaciones.registrarDonante(PERSONA);
+
+    servidor.verify();
+  }
+
+  @Test
+  void aceptarLosLegalesLeeLaVersionVigenteYAceptaEsa() {
+    String legales = BASE + "/api/personas/" + PERSONA + "/legales";
+    servidor
+        .expect(requestTo(legales))
+        .andExpect(method(GET))
+        .andRespond(
+            withSuccess(
+                """
+                {"versionAceptada": null, "aceptadaEn": null, "versionVigente": 3,
+                 "vigenteAceptada": false}
+                """,
+                APPLICATION_JSON));
+    servidor
+        .expect(requestTo(legales))
+        .andExpect(method(PUT))
+        .andExpect(jsonPath("$.version").value(3))
+        .andRespond(
+            withSuccess(
+                """
+                {"versionAceptada": 3, "versionVigente": 3, "vigenteAceptada": true}
+                """,
+                APPLICATION_JSON));
+
+    donaciones.aceptarLegalesVigentes(PERSONA);
 
     servidor.verify();
   }

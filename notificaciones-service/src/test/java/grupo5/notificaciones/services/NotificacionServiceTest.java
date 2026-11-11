@@ -383,4 +383,17 @@ class NotificacionServiceTest {
     verifyNoInteractions(jdbcTemplate);
     verify(repository).saveAll(any());
   }
+
+  @Test
+  void notificarPersona_guardaUnaNotificacionPendienteYPublicaNotificacionCreada() {
+    UUID adminId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    service.notificarPersona(adminId, "Nuevo mensaje de contacto Nº 7, sobre una entrega.");
+
+    ArgumentCaptor<Notificacion> guardada = ArgumentCaptor.forClass(Notificacion.class);
+    verify(repository).save(guardada.capture());
+    assertEquals(adminId, guardada.getValue().getPersonaId());
+    assertEquals(EstadoNotificacion.PENDIENTE, guardada.getValue().getEstadoNotificacion());
+    verify(eventPublisher).publishEvent(any(NotificacionCreada.class));
+  }
 }

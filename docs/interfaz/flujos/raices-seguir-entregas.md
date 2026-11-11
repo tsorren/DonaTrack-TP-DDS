@@ -185,6 +185,20 @@ Filtro de tono:
 - Palabras que no van (brief de Raíces): "eco", "huella verde", "florecer", "regá", "cosechá" y
   "sostenible" puesto de adorno.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Siguen
+`docs/interfaz/tono-y-comunicacion.md`: lo pendiente se dice pendiente, sin culpa ni urgencia, y no se
+promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
+
+#### Donante
+
+| Dónde | Texto | Cuándo |
+|---|---|---|
+| Noticia de una entrega en camino (lista y globo del mapa), con datos reales | "Posición aproximada, actualizada hoy a las 16:20." (otro día: "Posición aproximada, actualizada el 14 de octubre, 16:20.") | Logística da `posicionCamion.registradaEn`; no dice "por la mitad del camino" |
+| Noticia de una entrega que no pudo llegar, con datos reales | "<Motivo>. Última noticia: 11 de octubre, 16:10." | El motivo es la justificación del cambio a `EntregaFallida`; la nueva salida no existe en la API |
+| Bajada | "… Posiciones aproximadas, actualizadas hoy, 7 de noviembre, a las 19:40." | La hora es la de la lectura de la pantalla |
+
 ## 7. Accesibilidad
 
 - Zonas: el enlace para saltar al contenido, la navegación del donante (`nav` con nombre), el

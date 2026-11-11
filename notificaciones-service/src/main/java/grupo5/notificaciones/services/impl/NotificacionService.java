@@ -225,6 +225,14 @@ public class NotificacionService {
     persistirYPublicar(mapper.toEntity(dto));
   }
 
+  /** Un aviso directo a una persona (hoy, el de mensaje de contacto nuevo a la Administración). */
+  @Transactional
+  public void notificarPersona(UUID personaId, String mensaje) {
+    Notificacion notificacion = new Notificacion(personaId, mensaje);
+    repository.save(notificacion);
+    publicarYLimpiarDomainEvents(notificacion);
+  }
+
   private void publicarYLimpiarDomainEvents(Notificacion notificacion) {
     notificacion.getDomainEvents().forEach(eventPublisher::publishEvent);
     notificacion.clearDomainEvents();

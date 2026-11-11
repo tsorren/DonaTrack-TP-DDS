@@ -23,7 +23,7 @@
         <circle class="sello-tinta" cx="4" cy="4" r="26"/><circle class="sello-disco" r="26"/>
         <path class="sello-calado sello-calado--fino" d="M-10 1L-3 8L11 -7"/>
       </svg>
-      <p>Su número es <b>4821</b>. Te respondemos por correo.</p>
+      <p>Su número es <b th:text="${numeroDelMensaje}">4821</b>. Te respondemos por correo.</p>
     </div>
     <a th:if="${volver}" class="boton" data-tono="principal" href="/entidad-necesidades"
        th:href="${volver}"

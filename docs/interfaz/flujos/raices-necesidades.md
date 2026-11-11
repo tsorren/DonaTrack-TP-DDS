@@ -315,6 +315,26 @@ Filtro de tono:
 - Palabras que no van (brief de Raíces): "eco", "huella verde", "florecer", "regá", "cosechá",
   "sostenible" de adorno; tampoco "echó raíces" en un dato o un botón.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Son los que la maqueta no necesita y Donaciones sí:
+lo que no se sabe todavía, los cambios guardados de verdad y las terminadas sin fecha.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Sin lo recibido | "Pide 20 litros" | Una de una sola vez: Donaciones no informa lo recibido (fuera de alcance); va sin cifra ni barra |
+| Hasta cuándo | "faltan 12 días" · "falta 1 día" · "termina hoy" | Calculado desde hoy |
+| Último cambio | "Cambiada hoy" o "Cambiada el 3 de noviembre" · cartel: "Hoy pasó de 30 a 40 kg." o "El 3 de noviembre pasó de 30 a 40 kg." | Sale de `ultimoCambio`; sin "Vale desde octubre", que no se sabe |
+| Período | "del 1 de noviembre al 30 de noviembre" | Las fechas de cada período |
+| Sin categoría | "Otras" | El cantero de una subcategoría sin categoría |
+| Sin periodicidad | "Se repite" | Una recurrente creada antes, con otro largo |
+| Terminadas | "Cumplida." · "Terminó sin cumplirse." · "La diste de baja." | Donaciones no dice cuándo ni cuánto llegó |
+| Aviso al publicar | "Publicamos tu necesidad. Ya la ven los donantes y el catálogo público." | El de la maqueta, ahora en `#avisos` |
+| Aviso al cambiar | "Guardamos los cambios de tu necesidad." | El envío no trae el nombre |
+| Aviso al dar de baja | "Diste de baja tu necesidad. Ya no la ven los donantes." | Qué pasa con cada entrega lo dice el diálogo antes de confirmar |
+| Conflicto (409) | "Otra persona de tu entidad cambió esta necesidad mientras la editabas. Revisala y, si hace falta, guardá tus cambios de nuevo." | Vuelve a la necesidad abierta, con lo nuevo |
+
+
 ## 7. Accesibilidad
 
 - Zonas: el enlace para saltar al contenido, la navegación de la entidad (`nav` con nombre), el

@@ -99,7 +99,9 @@ class CompletarPerfilTest {
   @Test
   void elAdminDeLaPlataformaEntraSinCompletarPerfil() throws Exception {
     OidcLoginRequestPostProcessor admin = como(Map.of("roles", List.of("ADMIN")));
-    mvc.perform(get("/admin-entidades").with(admin)).andExpect(status().isOk());
+    // Una sección sin dibujar: no depende de los datos de las APIs (conexión de pantallas,
+    // SPEC-08).
+    mvc.perform(get("/admin-donantes-prueba").with(admin)).andExpect(status().isOk());
     mvc.perform(get("/inicio").with(admin)).andExpect(redirectedUrl("/admin-inicio"));
     mvc.perform(get(DONANTE).with(admin)).andExpect(redirectedUrl("/inicio"));
   }
@@ -164,6 +166,7 @@ class CompletarPerfilTest {
             post(DONANTE)
                 .with(sinPerfil())
                 .with(csrf())
+                .param("terminos", "on")
                 .param("empresa", "Acme SA")
                 .param("rubro", "Alimentos")
                 .param("nombre", "Ana Pérez"))
@@ -179,6 +182,7 @@ class CompletarPerfilTest {
                 .queryParam("tipo", "persona")
                 .with(sinPerfil())
                 .with(csrf())
+                .param("terminos", "on")
                 .param("nombre", "Ana")
                 .param("apellido", "Pérez"))
         .andExpect(redirectedUrl(LOGIN));
@@ -192,6 +196,7 @@ class CompletarPerfilTest {
             post(ENTIDAD)
                 .with(sinPerfil())
                 .with(csrf())
+                .param("terminos", "on")
                 .param("entidad", "Merendero Oeste")
                 .param("queEs", "Merendero")
                 .param("tipo", "asociacion")
@@ -218,6 +223,20 @@ class CompletarPerfilTest {
   }
 
   @Test
+  void sinAceptarLosLegalesNoSeGuardaElPerfil() throws Exception {
+    mvc.perform(
+            post(DONANTE)
+                .with(sinPerfil())
+                .with(csrf())
+                .param("empresa", "Acme SA")
+                .param("rubro", "Alimentos")
+                .param("nombre", "Ana Pérez"))
+        .andExpect(status().isBadRequest());
+
+    verify(perfiles, never()).completar(any(), any());
+  }
+
+  @Test
   void siFallaElGuardadoLaPantallaAvisaYConservaLoEscrito() throws Exception {
     doThrow(new IllegalStateException("Donaciones caído")).when(perfiles).completar(any(), any());
 
@@ -225,6 +244,7 @@ class CompletarPerfilTest {
             post(DONANTE)
                 .with(sinPerfil())
                 .with(csrf())
+                .param("terminos", "on")
                 .param("empresa", "Acme SA")
                 .param("rubro", "Alimentos")
                 .param("nombre", "Ana Pérez"))

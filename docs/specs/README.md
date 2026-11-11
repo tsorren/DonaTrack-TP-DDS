@@ -71,6 +71,7 @@ Al completar la implementación y pasar todos los Quality Gates, el archivo se t
 | **SPEC-05** | [`SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md`](active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) | ARCHITECTURAL | `APPROVED_BY_USER` | Rediseño del roadmap de preprod fiel (base por servicio, despliegue sin Render, contratos vivos con política de aviso en el PR y bloqueo en el post-merge) e implementación de RM-01 a RM-08. |
 | **SPEC-06** | [`SPEC-06-auth-mvp-keycloak.md`](active/SPEC-06-auth-mvp-keycloak.md) | ARCHITECTURAL | `APPROVED_BY_USER` | MVP de autenticación con Keycloak (login con email y clave, registro de donante, menú por rol y logout) y backlog de las etapas siguientes (gateway, Google, entidades, CSV). |
 | **SPEC-07** | [`SPEC-07-api-gateway-etapa-1.md`](active/SPEC-07-api-gateway-etapa-1.md) | ARCHITECTURAL | `APPROVED_BY_USER` | API gateway, etapa 1 (ADR-E6-02): módulo `api-gateway` con Spring Cloud Gateway WebMVC, rutas sin reescritura (también `/api/logistica/**`), allowlist escrita y `X-Trace-Id`; sin JWT (F5). |
+| **SPEC-08** | [`SPEC-08-conexion-de-pantallas.md`](active/SPEC-08-conexion-de-pantallas.md) | ARCHITECTURAL | `PROPOSED` | Conexión de las pantallas del cliente liviano a las APIs (E6): esqueleto compartido, frentes por rol con lista cerrada de archivos, huecos aditivos (HB-21 Contacto, HB-23 camiones deshabilitados) y lo que queda fuera. |
 
 ---
 

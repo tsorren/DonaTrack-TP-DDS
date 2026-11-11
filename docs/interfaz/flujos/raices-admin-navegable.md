@@ -424,6 +424,105 @@ dice pendiente ("Cubre 10 de las 12 unidades; el resto sigue pendiente", "Espera
 "Vencida" y "Rechazar" dicen lo que pasa, sin culpa; el ranking dice su criterio; ninguna acción
 apura.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Siguen
+`docs/interfaz/tono-y-comunicacion.md`: lo pendiente se dice pendiente, sin culpa ni urgencia, y no se
+promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
+
+#### §4.1 `admin-donantes` (importar CSV)
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Aviso al subir el CSV | "Recibimos el archivo. Podés seguir usando el sitio mientras se importa." | El envío real deja un aviso del servidor (`Envios`) |
+| Indicador del envío | "Subiendo el archivo…" | `hx-indicator` del formulario de importar |
+| Avance sin el total (Donaciones no lo sabe hasta leer el padrón) | "Procesando: 8.400 filas." | `totalFilas` es null al empezar |
+| Encabezado del bloque sin el total | "donantes-octubre.csv" (solo el nombre) | Ídem |
+| Resultado sin fecha de fin | "Importación terminada." | Donaciones no guarda cuándo terminó |
+| Resultado con lo que da Donaciones | "20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error." | No hay "sin cambios porque está dado de baja": `procesadas = creadas + actualizadas + conError` |
+| Nombre del archivo si no llegó | "El archivo" | El nombre viaja en la dirección; Donaciones solo guarda una clave |
+| Cuántos coinciden con la búsqueda | "Coinciden 3 donantes de la lista." | Fuera de la maqueta no es "la lista de ejemplo" |
+
+#### §4.2 `admin-donantes-registrar`
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Aviso al registrar (fuera de la maqueta) | "Registraste a Ana Ejemplo como donante." | Es la primera frase de `admin-donantes-registrado`; se deja afuera "Le enviamos un correo…" porque hoy el alta no manda ningún correo |
+| Indicador del envío | "Registrando al donante…" | Ya está en la plantilla (estado lento); se reusa en `hx-indicator` |
+
+#### §4.3 `admin-entidades`
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Aviso al aprobar | "Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus necesidades y recibir donaciones." | Sin "Le avisamos por correo.": aprobar asigna el rol en Keycloak y no manda correo |
+| Indicador de Aprobar | "Aprobando…" | `hx-indicator` del formulario de Aprobar |
+| Renglón de una pendiente sin fecha | "ONG · pidió sumarse" | Keycloak no da cuándo pidió sumarse |
+| Sello sin fecha | "Pendiente de aprobación" · "Activa" · "Inactiva" | Donaciones no guarda la fecha de alta ni la de baja |
+| Necesidad vigente en la ficha | "Pide 40 kg, hasta el 31 de diciembre" (o "Pide 40 kg" sin fecha límite) | No hay "lo recibido" de una necesidad: no se puede decir "Faltan" |
+| Tipo si la entidad no cargó rubro | "ONG", "Institución", "Gubernamental" u "Organización" | El tipo de la ficha (Comedor, Hogar…) es el rubro libre de la persona jurídica |
+
+#### §4.4 `admin-entidades-registrar`
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Aviso al registrar (fuera de la maqueta) | "Registraste a Escuela Ejemplo N.º 5. Queda activa: la registraste vos, no necesita aprobación." | Es la de `admin-entidades-registrada`, sin "Le enviamos un correo a su responsable…" (no se manda) |
+| Indicador del envío | "Registrando la entidad…" | Ya está en la plantilla (estado lento) |
+
+#### §4.1 (cifra de la cabecera)
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Un solo donante activo | "1 donante activo, al 10 de noviembre de 2026, 18:30." | Singular de la frase de la ficha |
+
+#### 4.5 Donaciones y su detalle
+
+| Dónde | Texto propuesto | Por qué |
+|---|---|---|
+| Columna "Vence", vence hoy | `17 de octubre, hoy` | La ficha solo tiene "en N días" |
+| Columna "Vence", vence mañana | `17 de octubre, mañana` | Ídem |
+| Cabecera, singulares | `1 asignada` · `1 entrega confirmada en noviembre` | La ficha solo tiene plurales |
+| Historial, el registro | `10 de octubre: llegó al depósito de Av. Ejemplo 1234.` | Donaciones da la dirección del depósito, no su nombre, ni quién la registró |
+| Historial, asignada | `14 de octubre: quedó asignada a Comedor Barrio Ejemplo. La aprobó <actor>.` | El actor sale del historial de Donaciones (sin actor, sin la segunda oración) |
+| Historial, lista | `14 de octubre: quedó lista para entregar.` | Estado que la ficha no nombra |
+| Historial, falló la entrega | `8 de octubre: la entrega no pudo llegar.` | Ídem |
+| Historial, volvió | `9 de octubre: volvió al depósito.` | Ídem |
+| Historial, vencida | `15 de octubre, 18:35: quedó vencida; la marcó <actor>. Dejó de estar disponible para asignar.` | Puede marcarla el sistema o otra persona, no siempre "vos" |
+| Donante o estado del bien sin dato | `—` | Dato que Donaciones no trae |
+| Aviso, 409 al marcar vencida | `Esta donación cambió mientras la mirabas: no la marcamos como vencida. Volvimos a cargar su estado.` | La ficha lo tiene como banner; fuera de la maqueta llega como aviso |
+
+#### 4.6 Registrar donación
+
+| Dónde | Texto propuesto | Por qué |
+|---|---|---|
+| Búsqueda, una | `1 donante coincide con la búsqueda.` | La ficha solo tiene "2 donantes coinciden" |
+| Búsqueda, ninguna | `Ningún donante coincide con la búsqueda.` | Estado sin texto en la ficha |
+| Aviso, registrada | `Registraste la donación: Caja de alimentos, 3 bienes. Quedó en el Depósito Central.` | La ficha nombra al donante y lleva a "Registrada"; fuera de la maqueta vuelve a Donaciones (el alta devuelve la original, no las independientes) |
+| Aviso, cantidad que no es número | `La cantidad del bien 2 tiene que ser un número. Por ejemplo: 20.` | La ficha lo muestra junto al campo, con lo escrito; fuera de la maqueta vuelve al formulario con el donante elegido |
+| Aviso, 409 donante de baja | `Ese donante está dado de baja: no se le pueden registrar donaciones. Si volvió, registralo de nuevo en Donantes.` | La ficha lo muestra en el resumen con el nombre |
+| Indicador del envío | `Registrando la donación…` | Pieza de envío (hx-indicator) |
+
+#### 4.7 Asignar donaciones
+
+| Dónde | Texto propuesto | Por qué |
+|---|---|---|
+| Cabecera, nunca corrió | `Todavía no se corrió ninguna asignación.` | Estado sin texto en la ficha |
+| Cabecera, singular | `Última asignación: hoy, 0:00 · generó 1 propuesta.` | La ficha solo tiene plurales |
+| Aviso, corrida con una | `La asignación generó 1 propuesta nueva.` | Ídem |
+| Propuesta, cubre una parte | `Cubre 10 de 12 unidades; el resto sigue pendiente.` | La ficha dice "de las 12 unidades"; con kg o litros "de las" no concuerda |
+| "La cubre", varias donaciones | `Arroz · 25 kg (de Ana Ejemplo); Arroz · 5 kg` | Separador entre donaciones; sin "(de …)" si el donante ocultó su nombre |
+| Aviso, 409 necesidad inactiva | `No se pudo aprobar: la necesidad ya no está activa (la entidad la dio de baja o ya se cumplió). No se asignó nada; podés descartar la propuesta.` | La ficha lo tiene como banner con el nombre de la entidad |
+| Aviso, 409 donación propia | `No se pudo aprobar: una de las donaciones es de la misma entidad que la pidió. No se asignó nada; podés descartar la propuesta.` | Ídem |
+| Aviso, 409 la propuesta cambió | `Esta propuesta cambió mientras la mirabas. Volvimos a cargar la lista.` | Ídem |
+| Indicadores | `Guardando…` (aprobar y descartar) · `Corriendo la asignación…` | Pieza de envío |
+
+#### 4.8 Camiones
+
+| Dónde | Texto propuesto | Por qué |
+|---|---|---|
+| Tarjeta, "Ahora" en ruta | `En ruta` | Logística no da a dónde va ni el viaje |
+| Tarjeta y ficha, disponible | `En el depósito` | Logística no da desde cuándo |
+| Indicadores | `Guardando…` | Pieza de envío |
+
 ## 7. Accesibilidad
 
 - Zonas: cabecera, navegación del admin (`nav` con `aria-current` en la sección), `main` con un

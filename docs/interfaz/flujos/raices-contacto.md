@@ -170,3 +170,22 @@ Preguntas que eran abiertas, decididas el 2026-11-10 en el [ADR de HB-21](../../
 - Cómo se evita el abuso: una clave de envío oculta (reenviar devuelve el mismo número), un límite
   por correo y por IP, un campo trampa y un largo máximo. Para la pantalla: el formulario lleva la
   clave y el campo trampa ocultos, y la clave tiene que sobrevivir al reenvío.
+
+### Textos de la conexión con la API
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Fuera de la maqueta el
+formulario se guarda en Notificaciones (`POST /api/contacto`, HB-21). Estos avisos salen en la
+región de avisos:
+
+| Caso | Texto propuesto | Nota |
+|---|---|---|
+| Enviado (aviso breve, además de la pantalla de enviado) | "Recibimos tu mensaje." | El mismo título de la pantalla de enviado |
+| Límite de mensajes (429), de vuelta en el formulario | "No pudimos enviar este mensaje: ya mandaste varios seguidos. Los anteriores nos llegaron; probá de nuevo más tarde." | Sin culpa ni plazo (el límite es por hora por correo y por día por IP); dice que este no salió y los anteriores sí |
+| Datos que el servidor no aceptó (400), de vuelta en el formulario | "No pudimos enviar tu mensaje: revisá que esté escrito y que el correo tenga la @." | El navegador ya pide el mensaje y el correo; esto cubre lo que pase igual |
+| Mensaje repetido (la misma clave) | — | Sin texto propio: muestra el enviado con el número del primero |
+
+El campo trampa del ADR (`sitio`) queda en el cliente liviano, sin tocar el contrato de la API: va
+oculto en el formulario y, si llega con texto, el cliente muestra "Recibimos tu mensaje." en el
+formulario sin llamar a Notificaciones (sin número, porque no se guardó). Con el
+429 o el 400 el formulario vuelve vacío y el aviso usa el estilo del aviso breve compartido: a
+decidir si vuelve con lo escrito (como `publico-contacto-error`).

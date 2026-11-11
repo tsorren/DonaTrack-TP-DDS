@@ -432,4 +432,77 @@ package PERSISTENCIA {
   SpringDataNotificacionRepository --> NotificacionEntity
 }
 
+' ==================== CONTACTO (HB-21) ====================
+package CONTACTO {
+  enum TemaContacto <<enumeration>> {
+    ENTREGA
+    DONACION
+    NECESIDAD
+    CUENTA
+    SITIO
+    OTRO
+  }
+
+  enum EstadoMensajeContacto <<enumeration>> {
+    RECIBIDO
+    RESPONDIDO
+    ENVIO_FALLIDO
+  }
+
+  class MensajeContacto <<entity>> {
+    - numero: Long
+    - claveEnvio: UUID
+    - tema: TemaContacto
+    - texto: String
+    - codigoError: String
+    - correo: String
+    - ipOrigen: String
+    - recibidoEn: LocalDateTime
+    - estado: EstadoMensajeContacto
+    - respuesta: String
+    - respondidoEn: LocalDateTime
+    --
+    + {static} recibido(...): MensajeContacto
+    + asignarNumero(numero: long): void
+    + responder(texto: String, sender: NotificacionSender): void
+  }
+
+  interface IMensajeContactoRepository <<interface>> {
+    + guardar(mensaje: MensajeContacto): MensajeContacto
+    + buscarPorNumero(numero: long): Optional<MensajeContacto>
+    + buscarPorClaveEnvio(clave: UUID): Optional<MensajeContacto>
+    + contarPorCorreoDesde(correo: String, desde: LocalDateTime): long
+    + contarPorIpDesde(ip: String, desde: LocalDateTime): long
+    + listar(estado: EstadoMensajeContacto, pagina: int, tamanio: int): List<MensajeContacto>
+    + contar(estado: EstadoMensajeContacto): long
+  }
+
+  class ContactoService <<service>> {
+    - repository: IMensajeContactoRepository
+    - notificacionService: NotificacionService
+    - sender: NotificacionSender
+    --
+    + recibir(dto: MensajeContactoInputDTO, xForwardedFor: String): Recepcion
+    + listar(estado: EstadoMensajeContacto, pagina: int): Pagina
+    + obtener(numero: long): Optional<MensajeContactoDTO>
+    + responder(numero: long, texto: String): Optional<MensajeContactoDTO>
+  }
+
+  class MensajeContactoRepositoryEnMemoria <<service>> {
+    + <<@Profile("!postgres")>>
+  }
+
+  class MensajeContactoRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  MensajeContacto --> TemaContacto : tema
+  MensajeContacto --> EstadoMensajeContacto : estado
+  MensajeContacto ..> NotificacionSender : responder (double dispatch)
+  ContactoService --> IMensajeContactoRepository : repository
+  ContactoService ..> NotificacionService : notificarPersona(ID_ADMIN) >
+  MensajeContactoRepositoryEnMemoria ..|> IMensajeContactoRepository
+  MensajeContactoRepositoryJpaAdapter ..|> IMensajeContactoRepository
+}
+
 @enduml

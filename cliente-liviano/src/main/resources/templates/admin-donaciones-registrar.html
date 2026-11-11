@@ -7,7 +7,9 @@
        por GET con ?bienes=<n> (sin validar) y vuelve con un bien más; sumarlo en el lugar con Alpine
        queda para después: sin él, todo funciona. El registro es un formulario real (POST, multipart
        por las fotos) que lleva a admin-donaciones-registrada. Estados: ?escenario=lento y error; el
-       error de datos es admin-donaciones-registrar-error.
+       error de datos es admin-donaciones-registrar-error. Los donantes vienen del controller
+       (registro: de la maqueta o de Donaciones); fuera de la maqueta el registro guarda de verdad
+       (pieza envio) y vuelve a Donaciones con el aviso.
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -25,11 +27,7 @@
              inactivo=${conError and escenario == 'inactivo'},
              datos=${conError and !inactivo},
              escrito=${conError or escenario == 'error'},
-             donantes=${ {
-      {clave: 'ana-ejemplo', nombre: 'Ana Ejemplo', documento: 'DNI 20.000.001'},
-      {clave: 'distribuidora', nombre: 'Distribuidora Ejemplo SA', documento: 'CUIT 30-00000001-0'},
-      {clave: 'juan-ejemplo', nombre: 'Juan Ejemplo', documento: 'DNI 20.000.002'},
-      {clave: 'pedro-ejemplo', nombre: 'Pedro Ejemplo', documento: 'DNI 20.000.003'} } },
+             donantes=${registro.donantes},
              clave=${inactivo ? 'pedro-ejemplo' : (escrito ? 'ana-ejemplo' : (param.donante != null ? param.donante[0] : ''))},
              donante=${donantes.^[clave == #root.clave]},
              buscado=${param.buscar != null ? param.buscar[0] : null},
@@ -86,9 +84,11 @@
           <button class="boton" data-tono="secundario" type="submit">Buscar</button>
         </form>
         <th:block th:if="${buscado != null}">
-          <p role="status">2 donantes coinciden con la búsqueda.</p>
+          <p role="status" th:with="n=${#lists.size(registro.encontrados)}"
+             th:text="${n == 1} ? '1 donante coincide con la búsqueda.' : (${n == 0} ? 'Ningún donante coincide con la búsqueda.' : |${n} donantes coinciden con la búsqueda.|)">2
+            donantes coinciden con la búsqueda.</p>
           <ul class="lista pila" data-espacio="2" role="list">
-            <li th:each="x : ${donantes.?[clave == 'ana-ejemplo' or clave == 'juan-ejemplo']}">
+            <li th:each="x : ${registro.encontrados}">
               <a class="boton" data-tono="secundario" hx-boost="true" th:href="@{/admin-donaciones-registrar(donante=${x.clave})}"
                  href="/admin-donaciones-registrar?donante=ana-ejemplo"><b th:text="${x.nombre}">Ana Ejemplo</b> ·
                 <span th:text="${x.documento}">DNI 20.000.001</span></a>
@@ -101,7 +101,8 @@
     </section>
 
     <form class="formulario" action="/admin-donaciones-registrada" th:action="@{/admin-donaciones-registrada}"
-          method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+          method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
+          hx-boost="true" hx-indicator="#enviando-admin-donaciones-registrar" hx-select-oob="#avisos">
       <input th:if="${donante != null}" type="hidden" name="donante" th:value="${donante.clave}"
              value="ana-ejemplo">
       <p class="obligatorios">* obligatorio</p>
@@ -182,6 +183,7 @@
         <a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Cancelar</a>
       </div>
       <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la donación…</p>
+      <p th:replace="~{envio :: indicador('enviando-admin-donaciones-registrar', 'Registrando la donación…')}"></p>
     </form>
   </div>
 </th:block>

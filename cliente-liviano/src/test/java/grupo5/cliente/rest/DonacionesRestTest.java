@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.vistas.EstadoEntrega;
@@ -16,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -64,12 +66,14 @@ class DonacionesRestTest {
     donaciones
         .expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
         .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
-    // Una sola llamada por entidad, aunque dos donaciones vayan a la misma.
+    // El donante no puede leer una entidad por id: una sola llamada a las públicas, para todas.
     donaciones
-        .expect(once(), requestTo("http://donaciones/api/entidades/" + ENTIDAD))
+        .expect(once(), requestTo("http://donaciones/api/entidades/publicas"))
         .andRespond(
             withSuccess(
-                "{\"juridica\": {\"razonSocial\": \"Comedor Barrio Ejemplo\", \"rubro\": \"x\"}}",
+                "[{\"id\": \""
+                    + ENTIDAD
+                    + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\", \"rubro\": \"x\"}]",
                 MediaType.APPLICATION_JSON));
     donaciones
         .expect(requestTo("http://donaciones/api/categorias"))
@@ -169,5 +173,33 @@ class DonacionesRestTest {
             "Venció en el depósito el 1 de octubre"),
         libro.stream().map(Donacion::nota).toList());
     assertNull(libro.get(1).categoria());
+  }
+
+  @Test
+  void sinLaListaDeEntidadesLasAsignadasVanAUnaEntidad() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo("http://donaciones/api/entidades/publicas"))
+        .andRespond(withStatus(HttpStatus.FORBIDDEN));
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    DonacionesRest adaptador =
+        new DonacionesRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+            Clock.systemUTC());
+
+    List<Donacion> libro = adaptador.misDonaciones(DONANTE).donaciones();
+
+    donaciones.verify();
+    // Tiene destino aunque no se sepa el nombre; la que no tiene, sigue sin destino.
+    assertEquals("una entidad", libro.get(1).destino());
+    assertNull(libro.get(0).destino());
+    assertEquals(3, libro.size());
   }
 }

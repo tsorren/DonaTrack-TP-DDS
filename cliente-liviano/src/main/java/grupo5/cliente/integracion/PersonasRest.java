@@ -15,6 +15,10 @@ class PersonasRest implements PersonasDeDonaciones {
 
   private record Creada(UUID id) {}
 
+  private record Legales(Integer versionVigente) {}
+
+  private static final String LEGALES = "/api/personas/{id}/legales";
+
   private final RestClient donaciones;
 
   PersonasRest(@Qualifier("donacionesComoServicio") RestClient donaciones) {
@@ -29,6 +33,18 @@ class PersonasRest implements PersonasDeDonaciones {
   @Override
   public void registrarDonante(UUID personaId) {
     enviar("/api/donantes", Map.of("idPersona", personaId));
+  }
+
+  /** La versión vigente la sabe Donaciones: se lee y se acepta esa. */
+  @Override
+  public void aceptarLegalesVigentes(UUID personaId) {
+    Legales legales = donaciones.get().uri(LEGALES, personaId).retrieve().body(Legales.class);
+    donaciones
+        .put()
+        .uri(LEGALES, personaId)
+        .body(Map.of("version", legales.versionVigente()))
+        .retrieve()
+        .toBodilessEntity();
   }
 
   @Override

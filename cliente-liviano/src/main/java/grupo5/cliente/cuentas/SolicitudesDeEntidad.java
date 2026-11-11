@@ -26,8 +26,10 @@ public class SolicitudesDeEntidad {
   private static final String SOLICITUD = "solicitudEntidad";
   private static final String SIN_NOMBRE = "Entidad sin razón social registrada";
 
-  /** Lo que ve quien aprueba: qué entidad es y con qué cuenta pidió sumarse. */
-  public record Pendiente(String cuentaId, String razonSocial, String correo) {}
+  /**
+   * Lo que ve quien aprueba: qué entidad es, con qué cuenta pidió sumarse y su persona jurídica.
+   */
+  public record Pendiente(String cuentaId, String razonSocial, String correo, UUID personaId) {}
 
   private final DonacionesComoUsuario donaciones;
   private final DirectorioDeCuentas cuentas;
@@ -47,7 +49,8 @@ public class SolicitudesDeEntidad {
 
   private static Pendiente pendiente(SolicitudDeEntidad solicitud, Map<UUID, String> nombres) {
     String razonSocial = nombres.getOrDefault(solicitud.personaId(), SIN_NOMBRE);
-    return new Pendiente(solicitud.cuentaId(), razonSocial, solicitud.correo());
+    return new Pendiente(
+        solicitud.cuentaId(), razonSocial, solicitud.correo(), solicitud.personaId());
   }
 
   public void aprobar(String cuentaId) {

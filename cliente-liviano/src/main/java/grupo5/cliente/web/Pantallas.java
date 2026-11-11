@@ -1,5 +1,6 @@
 package grupo5.cliente.web;
 
+import grupo5.cliente.puertos.AvisosSinLeer;
 import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.seguridad.Area;
 import grupo5.cliente.vistas.EstadoEntrega;
@@ -9,10 +10,13 @@ import grupo5.cliente.vistas.PasoRecorrido.Avance;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -89,10 +93,13 @@ public class Pantallas {
 
   private final ResourceLoader recursos;
   private final CuentasDelMenu cuentas;
+  private final ObjectProvider<AvisosSinLeer> avisos;
 
-  Pantallas(ResourceLoader recursos, CuentasDelMenu cuentas) {
+  /** Sin {@link AvisosSinLeer} (los tests que no lo cargan), la cabecera queda sin número. */
+  Pantallas(ResourceLoader recursos, CuentasDelMenu cuentas, ObjectProvider<AvisosSinLeer> avisos) {
     this.recursos = recursos;
     this.cuentas = cuentas;
+    this.avisos = avisos;
   }
 
   /** La vista se arma solo con un nombre que ya pasó por la expresión de la dirección. */
@@ -144,9 +151,21 @@ public class Pantallas {
                         seccion.equals(actual)))
             .toList());
     model.addAttribute("cuenta", cuentas.de(prefijo).orElse(null));
+    model.addAttribute("sinLeer", area.isPresent() ? sinLeer(prefijo) : 0L);
     model.addAttribute(
         "perfil",
         area.filter(Area::requierePersona).map(a -> "/" + a.prefijo() + "-perfil").orElse(null));
     return dibujada ? pantalla : SIN_DIBUJAR;
+  }
+
+  /** Las sin leer de la cuenta, para la cabecera del layout privado. */
+  private long sinLeer(String prefijo) {
+    AvisosSinLeer conteo = avisos.getIfAvailable();
+    if (conteo == null
+        || !(RequestContextHolder.getRequestAttributes()
+            instanceof ServletRequestAttributes pedido)) {
+      return 0;
+    }
+    return conteo.sinLeer(prefijo, pedido.getRequest());
   }
 }

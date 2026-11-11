@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static grupo5.cliente.seguridad.EstadoDeCuenta.SIN_PERFIL;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import grupo5.cliente.cuentas.Perfil;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -80,27 +82,30 @@ public class AccesoController {
   String guardarDonantePersona(
       @AuthenticationPrincipal OidcUser usuario,
       @ModelAttribute DonantePersona perfil,
+      @RequestParam(required = false) String terminos,
       HttpSession sesion,
       Model model) {
-    return guardar(usuario, perfil, sesion, model, DONANTE);
+    return guardar(usuario, perfil, terminos, sesion, model, DONANTE);
   }
 
   @PostMapping("/" + DONANTE)
   String guardarDonanteEmpresa(
       @AuthenticationPrincipal OidcUser usuario,
       @ModelAttribute DonanteEmpresa perfil,
+      @RequestParam(required = false) String terminos,
       HttpSession sesion,
       Model model) {
-    return guardar(usuario, perfil, sesion, model, DONANTE);
+    return guardar(usuario, perfil, terminos, sesion, model, DONANTE);
   }
 
   @PostMapping("/" + ENTIDAD)
   String guardarEntidad(
       @AuthenticationPrincipal OidcUser usuario,
       @ModelAttribute Entidad perfil,
+      @RequestParam(required = false) String terminos,
       HttpSession sesion,
       Model model) {
-    return guardar(usuario, perfil, sesion, model, ENTIDAD);
+    return guardar(usuario, perfil, terminos, sesion, model, ENTIDAD);
   }
 
   /** Quien llegó con sesión (su solicitud espera) puede cerrarla desde esta pantalla. */
@@ -118,10 +123,22 @@ public class AccesoController {
         + UsuarioActual.desde(usuario.getClaims()).area().map(Area::inicio).orElse("/");
   }
 
+  /**
+   * Guardar el perfil anota la aceptación de los legales vigentes: sin la casilla marcada (el
+   * navegador la pide con {@code required}), no se guarda.
+   */
   private String guardar(
-      OidcUser usuario, Perfil perfil, HttpSession sesion, Model model, String pantalla) {
+      OidcUser usuario,
+      Perfil perfil,
+      String terminos,
+      HttpSession sesion,
+      Model model,
+      String pantalla) {
     if (!sinPerfil(usuario)) {
       return "redirect:/inicio";
+    }
+    if (terminos == null) {
+      throw new ResponseStatusException(BAD_REQUEST);
     }
     try {
       perfiles.completar(usuario.getSubject(), perfil);
