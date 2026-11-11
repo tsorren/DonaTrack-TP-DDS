@@ -7,6 +7,9 @@ import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminInicioVista;
+import grupo5.cliente.vistas.AdminInicioVista.Cifras;
+import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -225,5 +228,26 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   @Override
   public String aprobarEntidad(String clave) {
     throw new UnsupportedOperationException("La maqueta no aprueba entidades");
+  }
+
+  /** El inicio de la ficha: 3 entidades, 4 donaciones que vencen y 2 propuestas. */
+  @Override
+  public AdminInicioVista inicio() {
+    return new AdminInicioVista(
+        "Jueves 15 de octubre de 2026",
+        "Hoy esperan tu decisión 3 entidades y 2 propuestas de asignación. 4 donaciones vencen en"
+            + " los próximos 7 días.",
+        new Decisiones(
+            3,
+            List.of("Hogar Ejemplo Norte", "Merendero Ejemplo Este", "Comedor Ejemplo Oeste"),
+            "La más antigua llegó el 9 de octubre. A una le falta la constancia de domicilio.",
+            4,
+            "La primera, Leche en polvo, vence el 17 de octubre, en 2 días.",
+            2,
+            List.of(
+                "Leche en polvo, 10 unidades, para Merendero Ejemplo Sur.",
+                "Arroz, 25 kg, para Comedor Barrio Ejemplo.")),
+        AL,
+        new Cifras(7, 4, 1, 9, "octubre", 46, 86, 1, 3));
   }
 }

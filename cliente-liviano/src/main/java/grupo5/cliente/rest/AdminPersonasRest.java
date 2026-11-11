@@ -10,6 +10,7 @@ import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminInicioVista;
 import java.text.NumberFormat;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -46,15 +47,27 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   private final DonacionesApi donaciones;
   private final Clock reloj;
   private final AdminPersonasEntidades entidades;
+  private final AdminPersonasInicio inicio;
 
   /**
    * Las solicitudes de entidad las da Keycloak, fuera de la maqueta; sin ellas, no hay pendientes.
    */
   AdminPersonasRest(
-      DonacionesApi donaciones, Clock reloj, ObjectProvider<SolicitudesDeEntidad> solicitudes) {
+      DonacionesApi donaciones,
+      LogisticaApi logistica,
+      Clock reloj,
+      ObjectProvider<SolicitudesDeEntidad> solicitudes) {
     this.donaciones = donaciones;
     this.reloj = reloj;
     this.entidades = new AdminPersonasEntidades(donaciones, solicitudes);
+    this.inicio = new AdminPersonasInicio(donaciones, logistica);
+  }
+
+  @Override
+  public AdminInicioVista inicio() {
+    LocalDateTime ahora = LocalDateTime.now(reloj.withZone(Comun.ARGENTINA));
+    String al = AL.format(ahora);
+    return inicio.inicio(ahora, al, entidades.entidades(al), donantes().activos());
   }
 
   @Override

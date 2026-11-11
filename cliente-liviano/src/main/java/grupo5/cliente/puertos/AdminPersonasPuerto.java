@@ -3,6 +3,7 @@ package grupo5.cliente.puertos;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminInicioVista;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,4 +36,7 @@ public interface AdminPersonasPuerto {
 
   /** Aprueba a la entidad que pidió sumarse (su {@code clave}) y devuelve su nombre. */
   String aprobarEntidad(String clave);
+
+  /** El inicio del admin: lo que espera una decisión y cómo está todo. */
+  AdminInicioVista inicio();
 }

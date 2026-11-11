@@ -17,6 +17,7 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
+import grupo5.cliente.vistas.AdminInicioVista;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -59,6 +60,7 @@ class AdminPersonasRestTest {
       """;
 
   private MockRestServiceServer donaciones;
+  private MockRestServiceServer logistica;
   private AdminPersonasRest adaptador;
   private final StaticListableBeanFactory cuentas = new StaticListableBeanFactory();
 
@@ -67,9 +69,12 @@ class AdminPersonasRestTest {
     RestClient.Builder builder = RestClient.builder();
     donaciones = MockRestServiceServer.bindTo(builder).build();
     Clock reloj = Clock.fixed(Instant.parse("2026-11-10T21:30:00Z"), ZoneOffset.UTC);
+    RestClient.Builder deLogistica = RestClient.builder();
+    logistica = MockRestServiceServer.bindTo(deLogistica).build();
     adaptador =
         new AdminPersonasRest(
             ClientesHttp.cliente(builder, DONACIONES, DonacionesApi.class),
+            ClientesHttp.cliente(deLogistica, "http://logistica", LogisticaApi.class),
             reloj,
             cuentas.getBeanProvider(SolicitudesDeEntidad.class));
   }
@@ -177,6 +182,81 @@ class AdminPersonasRestTest {
 
     assertEquals(List.of(), adaptador.entidades().todas());
     donaciones.verify();
+  }
+
+  @Test
+  void elInicioCuentaLoQueEsperaDecisionYCadaCifraConLoQueDanLasApis() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades"))
+        .andRespond(withSuccess(DOS_ENTIDADES, JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/necesidades?estado=VIGENTE"))
+        .andRespond(withSuccess("[]", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes"))
+        .andRespond(withSuccess(TRES_DONANTES, JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes"))
+        .andRespond(
+            withSuccess(
+                """
+                [
+                  {"id": "00000000-0000-4000-8000-0000000000d1", "descripcion": "Leche en polvo",
+                   "estadoActual": "EnDeposito", "cantidad": 10,
+                   "items": [{"cantidad": 10, "bien": {"bien": {"fechaVencimiento": "2026-11-12"}}}]},
+                  {"id": "00000000-0000-4000-8000-0000000000d2", "descripcion": "Arroz",
+                   "estadoActual": "EnDeposito", "cantidad": 1,
+                   "items": [{"cantidad": 1, "bien": {"bien": {"fechaVencimiento": "2027-01-01"}}}]},
+                  {"id": "00000000-0000-4000-8000-0000000000d3", "estadoActual": "AsignacionRealizada",
+                   "cantidad": 1},
+                  {"id": "00000000-0000-4000-8000-0000000000d4", "estadoActual": "EnTraslado",
+                   "cantidad": 1},
+                  {"id": "00000000-0000-4000-8000-0000000000d5", "estadoActual": "Entregada",
+                   "cantidad": 1, "fechaRegistro": "2026-10-01T10:00:00",
+                   "historial": [{"estadoNuevo": "Entregada", "timestamp": "2026-11-05T10:00:00"}]},
+                  {"id": "00000000-0000-4000-8000-0000000000d6", "estadoActual": "Entregada",
+                   "cantidad": 1, "fechaRegistro": "2026-10-01T10:00:00",
+                   "historial": [{"estadoNuevo": "Entregada", "timestamp": "2026-10-20T10:00:00"}]}
+                ]
+                """,
+                JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "00000000-0000-4000-8000-0000000000a1", "estado": "PENDIENTE",
+                  "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 25}},
+                 {"id": "00000000-0000-4000-8000-0000000000a2", "estado": "APROBADA",
+                  "necesidad": {"descripcion": "Fideos", "cantidadNecesitada": 5}}]
+                """,
+                JSON));
+    logistica
+        .expect(requestTo("http://logistica/api/camiones"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"patente": "AA000AA", "estado": "EN_RUTA"},
+                 {"patente": "AA000AB", "estado": "DISPONIBLE"},
+                 {"patente": "AA000AC", "estado": "DISPONIBLE"}]
+                """,
+                JSON));
+
+    AdminInicioVista inicio = adaptador.inicio();
+
+    assertEquals("Martes 10 de noviembre de 2026", inicio.fecha());
+    assertEquals("10 de noviembre de 2026, 18:30", inicio.al());
+    assertEquals(
+        "Hoy espera tu decisión 1 propuesta de asignación. 1 donación vence en los próximos 7"
+            + " días.",
+        inicio.resumen());
+    assertEquals(0, inicio.decisiones().entidades());
+    assertEquals(
+        "La primera, Leche en polvo, vence el 12 de noviembre, en 2 días.",
+        inicio.decisiones().primeraQueVence());
+    assertEquals(List.of("Arroz, 25."), inicio.decisiones().listaPropuestas());
+    assertNull(inicio.decisiones().notaEntidades());
+    assertEquals(new AdminInicioVista.Cifras(2, 1, 1, 1, "noviembre", 1, 2, 1, 2), inicio.cifras());
   }
 
   @Test
