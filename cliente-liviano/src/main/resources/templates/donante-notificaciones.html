@@ -32,7 +32,7 @@
        noLeidas son los de la maqueta, que vuelve de marcar sin guardar. */-->
 <th:block th:fragment="cuerpo">
 <th:block
-    th:with="conDatos=${escenario == ''},
+    th:with="conDatos=${escenario == '' and !bandeja.avisos.isEmpty()},
              marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
              noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
              todosLosTemas=${ {
@@ -62,7 +62,7 @@
         sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
     </header>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or (escenario == '' and bandeja.avisos.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
       <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la
         entidad confirme la entrega.</p>

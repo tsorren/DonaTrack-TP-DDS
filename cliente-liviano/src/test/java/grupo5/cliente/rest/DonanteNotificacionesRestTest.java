@@ -1,5 +1,6 @@
 package grupo5.cliente.rest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -98,7 +99,7 @@ class DonanteNotificacionesRestTest {
 
     adaptador.marcar(PERSONA, List.of(UNA, "6f1c2c1e-0000-4000-8000-0000000000ff", "x"), true);
 
-    apis.verify();
+    assertDoesNotThrow(() -> apis.verify());
   }
 
   @Test
@@ -109,6 +110,6 @@ class DonanteNotificacionesRestTest {
 
     adaptador.marcarTodas(PERSONA);
 
-    apis.verify();
+    assertDoesNotThrow(() -> apis.verify());
   }
 }

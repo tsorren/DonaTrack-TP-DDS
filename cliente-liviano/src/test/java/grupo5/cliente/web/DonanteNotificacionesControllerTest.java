@@ -76,4 +76,16 @@ class DonanteNotificacionesControllerTest {
 
     mvc.perform(get("/donante-notificaciones")).andExpect(redirectedUrl("/publico-ingresar"));
   }
+
+  @Test
+  void unaBandejaVaciaMuestraElEstadoVacio() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(notificaciones.bandeja(DONANTE))
+        .thenReturn(new DonanteNotificacionesVista(List.of(), "2026-11-07T19:40"));
+
+    mvc.perform(get("/donante-notificaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Todavía no tenés notificaciones.")))
+        .andExpect(content().string(not(containsString("Ninguna notificación coincide"))));
+  }
 }
