@@ -6,7 +6,8 @@
        Uso: <th:block th:replace="~{datos-publicos :: datos(~{::pantalla})}">, con
        <th:block th:fragment="pantalla"> en la página. Adentro están:
        - entregas: las 10 confirmadas del último mes, la más reciente primero (semana: entra en la
-         última semana).
+         última semana). Las usa el Mapa; Entregas confirmadas lee las mismas de PublicoPuerto
+         (maqueta/PublicoMaqueta). ponytail: duplicadas hasta que el Mapa se conecte.
        - entidades: las 6 con necesidades vigentes, en el orden de la portada; numero es su estación en
          el mapa (null si no confirmó entregas en el período), x, y, su barrio en el dibujo, y lat, lng,
          un punto sintético en su barrio (CABA) para el mapa de MapLibre: nunca una dirección. Cada
@@ -30,28 +31,28 @@
              categoria=${param.categoria != null and #lists.contains({'alimentos', 'ropa', 'muebles', 'escolares'}, param.categoria[0]) ? param.categoria[0] : ''},
              entregas=${ {
       {que: 'Sillas, 6 unidades', cat: 'muebles', entidad: 'Escuela Ejemplo N.º 12', barrio: 'Centro Ejemplo',
-       dia: '14 de octubre', fecha: '2026-10-14', semana: true, foto: fotoSillas, alt: 'Sillas apiladas en un aula'},
+       anio: '2026', dia: '14 de octubre', fecha: '2026-10-14', semana: true, foto: fotoSillas, alt: 'Sillas apiladas en un aula'},
       {que: 'Lentejas secas, 10 kg', cat: 'alimentos', entidad: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
-       dia: '10 de octubre', fecha: '2026-10-10', semana: true, foto: fotoComedor, alt: altComedor},
+       anio: '2026', dia: '10 de octubre', fecha: '2026-10-10', semana: true, foto: fotoComedor, alt: altComedor},
       {que: 'Arroz, 5 kg', cat: 'alimentos', entidad: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
-       dia: '9 de octubre', fecha: '2026-10-09', semana: true, foto: fotoComedor, alt: altComedor},
+       anio: '2026', dia: '9 de octubre', fecha: '2026-10-09', semana: true, foto: fotoComedor, alt: altComedor},
       {que: 'Ropa de abrigo, 12 prendas', cat: 'ropa', entidad: 'Merendero Ejemplo Sur', barrio: 'Ejemplo Sur',
-       dia: '9 de octubre', fecha: '2026-10-09', semana: true, foto: fotoRopa,
+       anio: '2026', dia: '9 de octubre', fecha: '2026-10-09', semana: true, foto: fotoRopa,
        alt: 'Bolsas con ropa de abrigo junto a la puerta del merendero'},
       {que: 'Ropa de abrigo, 5 unidades', cat: 'ropa', entidad: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
-       dia: '8 de octubre', fecha: '2026-10-08', semana: true, foto: fotoRopa,
+       anio: '2026', dia: '8 de octubre', fecha: '2026-10-08', semana: true, foto: fotoRopa,
        alt: 'Bolsas con ropa de abrigo junto a la puerta del comedor'},
       {que: 'Frazadas, 10 unidades', cat: 'ropa', entidad: 'Hogar Casa Ejemplo', barrio: 'Parque Ejemplo',
-       dia: '7 de octubre', fecha: '2026-10-07', semana: false, foto: fotoRopa,
+       anio: '2026', dia: '7 de octubre', fecha: '2026-10-07', semana: false, foto: fotoRopa,
        alt: 'Bolsas con frazadas junto a la puerta del hogar'},
       {que: 'Leche en polvo, 12 unidades', cat: 'alimentos', entidad: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
-       dia: '6 de octubre', fecha: '2026-10-06', semana: false, foto: fotoComedor, alt: altComedor},
+       anio: '2026', dia: '6 de octubre', fecha: '2026-10-06', semana: false, foto: fotoComedor, alt: altComedor},
       {que: 'Fideos secos, 8 kg', cat: 'alimentos', entidad: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
-       dia: '5 de octubre', fecha: '2026-10-05', semana: false, foto: fotoComedor, alt: altComedor},
+       anio: '2026', dia: '5 de octubre', fecha: '2026-10-05', semana: false, foto: fotoComedor, alt: altComedor},
       {que: 'Arroz, 10 kg', cat: 'alimentos', entidad: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
-       dia: '2 de octubre', fecha: '2026-10-02', semana: false, foto: fotoComedor, alt: altComedor},
+       anio: '2026', dia: '2 de octubre', fecha: '2026-10-02', semana: false, foto: fotoComedor, alt: altComedor},
       {que: 'Sillas, 4 unidades', cat: 'muebles', entidad: 'Biblioteca Popular Ejemplo', barrio: 'Villa Ejemplo',
-       dia: '22 de septiembre', fecha: '2026-09-22', semana: false, foto: fotoSillas,
+       anio: '2026', dia: '22 de septiembre', fecha: '2026-09-22', semana: false, foto: fotoSillas,
        alt: 'Sillas apiladas en la sala de lectura'} } },
              entidades=${ {
       {clave: 'comedor', numero: 1, lat: -34.6418, lng: -58.4291, tipo: 'Comedor', nombre: 'Comedor Barrio Ejemplo', barrio: 'Barrio Ejemplo',
@@ -119,7 +120,7 @@
        loading="lazy">
   <p class="dialogo-titulo" th:id="${id + '-titulo'}" th:text="${e.que}">Sillas, 6 unidades</p>
   <p><th:block th:text="${e.entidad}">Escuela Ejemplo N.º 12</th:block> confirmó la entrega el
-    <time th:datetime="${e.fecha}" th:text="|${e.dia} de 2026|">14 de
+    <time th:datetime="${e.fecha}" th:text="|${e.dia} de ${e.anio}|">14 de
       octubre de 2026</time> y subió esta foto.</p>
   <button type="button" class="boton" data-tono="secundario" th:attr="popovertarget=${id}"
           popovertargetaction="hide">Cerrar</button>

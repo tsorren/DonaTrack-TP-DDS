@@ -5,7 +5,8 @@
        una lámina de papel con su foto, el sello impreso de entrega confirmada y el pictograma de su
        categoría en el cuadro salvia del cuaderno del mes. La foto grande, en el popover de la portada.
        Estados: ?periodo=semana, ?escenario=vacio, lento, error y sin-foto (la primera foto no carga:
-       se ve su texto alternativo). Datos: datos-publicos.html. */-->
+       se ve su texto alternativo). Datos: entregasConfirmadas, de PublicoPuerto (de ejemplo o las
+       destacadas de Donaciones, HB-01); sin entregas, el estado vacío. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-donaciones', ~{::contenido})}">
 <head>
@@ -13,11 +14,12 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{datos-publicos :: datos(~{::pantalla})}"></th:block>
+  <th:block th:replace="~{::pantalla}"></th:block>
 </th:block>
 
 <th:block th:fragment="pantalla"
-    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+    th:with="entregas=${entregasConfirmadas.lista},
+             escenario=${param.escenario != null ? param.escenario[0] : (entregas.isEmpty() ? 'vacio' : '')},
              semana=${param.periodo != null and param.periodo[0] == 'semana'},
              lista=${semana ? entregas.?[semana] : entregas},
              conDatos=${escenario == '' or escenario == 'sin-foto'}">
@@ -45,11 +47,9 @@
       <!--/* La cifra del período, en un fruto. */-->
       <div class="cifra-fruto" aria-live="polite">
         <p><b class="fruto" th:text="${#lists.size(lista)}">10</b>
-          <span th:if="${!semana}">entregas confirmadas en el último mes, del 16 de septiembre al 15 de octubre
-            de 2026.</span>
-          <span th:if="${semana}">entregas confirmadas en la última semana, del 8 al 15 de octubre de
-            2026.</span></p>
-        <p class="nota">Actualizado el 15 de octubre de 2026, 14:30.</p>
+          <span th:if="${!semana}">entregas confirmadas en el último mes, [[${entregasConfirmadas.rangoMes}]].</span>
+          <span th:if="${semana}">entregas confirmadas en la última semana, [[${entregasConfirmadas.rangoSemana}]].</span></p>
+        <p class="nota">Actualizado el [[${entregasConfirmadas.actualizado}]].</p>
       </div>
     </div>
 
@@ -90,10 +90,10 @@
           <h2 th:id="${id + '-que'}" th:text="${e.que}">Sillas, 6 unidades</h2>
           <p class="lamina-categoria"><svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true"
               focusable="false"><use width="100" height="100" href="#cat-muebles" th:href="${'#cat-' + e.cat}"/></svg><span
-              th:text="${categorias.^[clave == '__${e.cat}__'].texto}">Muebles</span></p>
-          <p th:text="|${e.entidad} · ${e.barrio}|">Escuela Ejemplo N.º 12 · Centro Ejemplo</p>
+              th:text="${e.categoria}">Muebles</span></p>
+          <p th:text="${e.lugar}">Escuela Ejemplo N.º 12 · Centro Ejemplo</p>
           <p class="lamina-fecha">Entrega confirmada el <time th:datetime="${e.fecha}"
-             th:text="|${e.dia} de 2026|">14 de octubre de 2026</time></p>
+             th:text="|${e.dia} de ${e.anio}|">14 de octubre de 2026</time></p>
         </div>
         <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
           la foto de la entrega</button>
