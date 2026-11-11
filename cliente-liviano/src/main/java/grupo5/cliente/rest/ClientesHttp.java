@@ -25,6 +25,9 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 @Configuration
 class ClientesHttp {
 
+  /** Nombre del bean con el interceptor del token del usuario (ver {@code IntegracionConfig}). */
+  private static final String TOKEN_DEL_USUARIO = "tokenDelUsuario";
+
   private final Supplier<RestClient.Builder> constructores;
 
   ClientesHttp() {
@@ -44,28 +47,28 @@ class ClientesHttp {
   @Bean
   IncentivosApi incentivosApi(
       @Value("${cliente.api.incentivos.url}") String url,
-      @Qualifier("tokenDelUsuario") ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
     return cliente(constructores.get(), url, IncentivosApi.class, interceptores(tokenDelUsuario));
   }
 
   @Bean
   DonacionesApi donacionesApi(
       @Value("${cliente.api.donaciones.url}") String url,
-      @Qualifier("tokenDelUsuario") ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
     return cliente(constructores.get(), url, DonacionesApi.class, interceptores(tokenDelUsuario));
   }
 
   @Bean
   LogisticaApi logisticaApi(
       @Value("${cliente.api.logistica.url}") String url,
-      @Qualifier("tokenDelUsuario") ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
     return cliente(constructores.get(), url, LogisticaApi.class, interceptores(tokenDelUsuario));
   }
 
   @Bean
   NotificacionesApi notificacionesApi(
       @Value("${cliente.api.notificaciones.url}") String url,
-      @Qualifier("tokenDelUsuario") ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
     return cliente(
         constructores.get(), url, NotificacionesApi.class, interceptores(tokenDelUsuario));
   }

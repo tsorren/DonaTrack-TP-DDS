@@ -1,5 +1,6 @@
 package grupo5.cliente.rest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.headerDoesNotExist;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -53,45 +54,48 @@ class ClientesHttpTest {
 
   @Test
   void incentivosLlevaElTokenDelUsuario() {
-    conToken(INCENTIVOS);
+    assertDoesNotThrow(() -> conToken(INCENTIVOS).verify());
   }
 
   @Test
   void donacionesLlevaElTokenDelUsuario() {
-    conToken(DONACIONES);
+    assertDoesNotThrow(() -> conToken(DONACIONES).verify());
   }
 
   @Test
   void logisticaLlevaElTokenDelUsuario() {
-    conToken(LOGISTICA);
+    assertDoesNotThrow(() -> conToken(LOGISTICA).verify());
   }
 
   @Test
   void notificacionesLlevaElTokenDelUsuario() {
-    conToken(NOTIFICACIONES);
+    assertDoesNotThrow(() -> conToken(NOTIFICACIONES).verify());
   }
 
   @Test
   void enLaMaquetaNingunaApiLlevaAutorizacion() {
     for (Caso caso : new Caso[] {INCENTIVOS, DONACIONES, LOGISTICA, NOTIFICACIONES}) {
-      llamar(caso, interceptores(), headerDoesNotExist(HttpHeaders.AUTHORIZATION));
+      assertDoesNotThrow(
+          () ->
+              llamar(caso, interceptores(), headerDoesNotExist(HttpHeaders.AUTHORIZATION))
+                  .verify());
     }
   }
 
-  private static void conToken(Caso caso) {
+  private static MockRestServiceServer conToken(Caso caso) {
     ClientHttpRequestInterceptor usuario =
         (pedido, cuerpo, ejecucion) -> {
           pedido.getHeaders().setBearerAuth("token-del-usuario");
           return ejecucion.execute(pedido, cuerpo);
         };
-    llamar(
+    return llamar(
         caso,
         interceptores(usuario),
         header(HttpHeaders.AUTHORIZATION, "Bearer token-del-usuario"));
   }
 
-  /** Hace la llamada de un caso y verifica que el servidor de mentira recibió esa autorización. */
-  private static void llamar(
+  /** Hace la llamada de un caso contra un servidor de mentira que espera esa autorización. */
+  private static MockRestServiceServer llamar(
       Caso caso,
       ObjectProvider<ClientHttpRequestInterceptor> interceptores,
       RequestMatcher autorizacion) {
@@ -111,7 +115,7 @@ class ClientesHttpTest {
 
     caso.llamada().accept(http, interceptores);
 
-    servidor[0].verify();
+    return servidor[0];
   }
 
   /** Lo que Spring inyecta como {@code tokenDelUsuario}: nada en la maqueta, uno fuera de ella. */
