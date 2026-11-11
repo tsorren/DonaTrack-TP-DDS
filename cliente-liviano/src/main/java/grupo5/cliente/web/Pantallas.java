@@ -143,7 +143,7 @@ public class Pantallas {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     boolean dibujada = existe(pantalla);
-    String prefijo = pantalla.split("-")[0];
+    String prefijo = pantalla.substring(0, pantalla.indexOf('-'));
     Optional<Area> area = Area.deRuta(prefijo);
     List<Seccion> menu = area.map(MENUS::get).orElse(List.of());
     Seccion actual =
