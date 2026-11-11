@@ -170,3 +170,18 @@ Preguntas que eran abiertas, decididas el 2026-11-10 en el [ADR de HB-21](../../
 - Cómo se evita el abuso: una clave de envío oculta (reenviar devuelve el mismo número), un límite
   por correo y por IP, un campo trampa y un largo máximo. Para la pantalla: el formulario lleva la
   clave y el campo trampa ocultos, y la clave tiene que sobrevivir al reenvío.
+
+### Textos de la conexión con la API
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Fuera de la maqueta el
+formulario se guarda en Notificaciones (`POST /api/contacto`, HB-21). Estos avisos salen en la
+región de avisos:
+
+| Caso | Texto propuesto | Nota |
+|---|---|---|
+| Enviado (aviso breve, además de la pantalla de enviado) | "Recibimos tu mensaje." | El mismo título de la pantalla de enviado |
+| Límite de mensajes (429), de vuelta en el formulario | "Ya mandaste varios mensajes seguidos. Probá de nuevo en una hora: los que mandaste nos llegaron." | Sin culpa; dice que los anteriores llegaron |
+| Datos que el servidor no aceptó (400), de vuelta en el formulario | "No pudimos enviar tu mensaje: revisá que esté escrito y que el correo tenga la @." | El navegador ya pide el mensaje y el correo; esto cubre lo que pase igual |
+| Mensaje repetido (la misma clave) | — | Sin texto propio: muestra el enviado con el número del primero |
+
+El campo trampa del ADR no está en el contrato de la API: el formulario no lo lleva todavía.
