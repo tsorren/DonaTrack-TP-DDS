@@ -65,6 +65,9 @@ class DonacionesRest implements DonacionesPuerto {
   private static final List<String> NOMBRES_ETAPAS =
       List.of("En depósito", "Asignada", "Lista para entregar", "En camino", "Entregada");
 
+  /** El destino de una donación asignada a una entidad cuyo nombre no se pudo leer. */
+  static final String SIN_NOMBRE = "una entidad";
+
   private final DonacionesApi api;
   private final LogisticaApi logistica;
   private final Clock reloj;
@@ -140,7 +143,7 @@ class DonacionesRest implements DonacionesPuerto {
    * El nombre de cada entidad de la lista. El donante no puede leer una entidad por id (solo ADMIN
    * o la entidad), así que se piden todas las activas de una vez a {@code /api/entidades/publicas}
    * (sin paginado, las devuelve todas). Una dada de baja, o con Donaciones sin responder esa lista,
-   * queda sin nombre: la pantalla la muestra sin destino escrito.
+   * queda como {@link #SIN_NOMBRE}: tiene destino, sin nombre.
    */
   // ponytail: una lista entera por pedido; con muchas entidades, un endpoint por ids.
   private Map<UUID, String> entidades(List<DonacionesApi.Donacion> lista) {
@@ -149,7 +152,7 @@ class DonacionesRest implements DonacionesPuerto {
 
   /** También lo usa el seguimiento y el inicio del donante. */
   static Map<UUID, String> nombresDeEntidades(
-      DonacionesApi api, List<DonacionesApi.Donacion> lista) {
+      DonacionesApi donaciones, List<DonacionesApi.Donacion> lista) {
     // HashMap y no Map.of(): get(null), el de una donación sin destino, devuelve null.
     Map<UUID, String> entidades = new HashMap<>();
     if (lista.stream()
@@ -159,7 +162,7 @@ class DonacionesRest implements DonacionesPuerto {
     }
     try {
       List<DonacionesApi.EntidadPublica> publicas =
-          api.entidadesPublicas(new LinkedMultiValueMap<>()).getBody();
+          donaciones.entidadesPublicas(new LinkedMultiValueMap<>()).getBody();
       if (publicas != null) {
         publicas.stream()
             .filter(e -> e.id() != null && e.razonSocial() != null && !e.razonSocial().isBlank())
@@ -168,6 +171,11 @@ class DonacionesRest implements DonacionesPuerto {
     } catch (RestClientException sinLista) {
       entidades.clear();
     }
+    // Una que no está entre las públicas (dada de baja) o sin la lista: tiene destino, sin nombre.
+    lista.stream()
+        .map(DonacionesApi.Donacion::entidadBeneficiariaId)
+        .filter(Objects::nonNull)
+        .forEach(id -> entidades.putIfAbsent(id, SIN_NOMBRE));
     return entidades;
   }
 

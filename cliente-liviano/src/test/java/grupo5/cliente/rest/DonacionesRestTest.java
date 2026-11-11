@@ -176,7 +176,7 @@ class DonacionesRestTest {
   }
 
   @Test
-  void sinLaListaDeEntidadesLasDonacionesQuedanSinDestinoEscrito() {
+  void sinLaListaDeEntidadesLasAsignadasVanAUnaEntidad() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
@@ -197,7 +197,9 @@ class DonacionesRestTest {
     List<Donacion> libro = adaptador.misDonaciones(DONANTE).donaciones();
 
     donaciones.verify();
-    assertNull(libro.get(1).destino());
+    // Tiene destino aunque no se sepa el nombre; la que no tiene, sigue sin destino.
+    assertEquals("una entidad", libro.get(1).destino());
+    assertNull(libro.get(0).destino());
     assertEquals(3, libro.size());
   }
 }
