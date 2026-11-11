@@ -10,7 +10,9 @@
        lado; cada cifra lleva a la primera entrega de su estado. El
        dibujo es fijo para las 5 del ejemplo (en el sistema, MapLibre, D21) y va oculto a los
        lectores: la lista dice todo, con el mismo número (RF-CL-06). Las donaciones salen de
-       piezas-entidad.html (datos), las mismas de Inicio y Donaciones recibidas.
+       piezas-entidad.html (datos), las mismas de Inicio y Donaciones recibidas; la última noticia de
+       cada una, del controller (noticiasDeEntregas: de la maqueta o de Logística). Fuera de la
+       maqueta el dibujo sigue siendo el del ejemplo.
        ?escenario=vacio, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento', ~{::contenido})}">
@@ -25,16 +27,15 @@
 <th:block th:fragment="cuerpo"
     th:with="vienen=${asignadas.?[grupo != 'recibida']},
              conDatos=${escenario == '' and !#lists.isEmpty(vienen)},
-             noticias=${ {aceite: 'Última noticia: 14 de octubre, 16:40.',
-                          arroz: 'El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 18:25.'} }">
+             noticias=${noticiasDeEntregas}">
   <header class="cabecera-entidad">
     <p class="rotulo" th:text="${seccion}">Seguir entregas</p>
     <h1>Lo que viene a tu puerta</h1>
     <p>Las entregas asignadas al <th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block>,
       desde que salen del depósito hasta que confirmás la recepción. Tu dirección es exacta; la del
-      camión, aproximada. Al 15 de octubre de 2026, 18:30.</p>
-    <th:block th:if="${conDatos}">
-      <a th:replace="~{piezas-entidad :: novedades(3)}"></a>
+      camión, aproximada. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
+    <th:block th:if="${conDatos and sinLeer > 0}">
+      <a th:replace="~{piezas-entidad :: novedades(${sinLeer})}"></a>
     </th:block>
   </header>
 
