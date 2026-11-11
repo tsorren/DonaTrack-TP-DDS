@@ -134,7 +134,8 @@ class RecibidasRest implements RecibidasPuerto {
     };
   }
 
-  private static String paso(String estado, LocalDateTime desde) {
+  /** El paso de una asignada en palabras; también lo usan las entregas de Necesidades. */
+  static String paso(String estado, LocalDateTime desde) {
     String dia = desde.format(DIA);
     return switch (estado) {
       case ENTREGADA -> "Confirmaste la recepción el " + dia + ".";

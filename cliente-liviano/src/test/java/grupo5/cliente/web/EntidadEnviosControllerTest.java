@@ -3,6 +3,7 @@ package grupo5.cliente.web;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -13,7 +14,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
 import grupo5.cliente.puertos.EntidadConfirmarPuerto.Acta;
+import grupo5.cliente.puertos.EntidadNecesidadesPuerto;
 import grupo5.cliente.puertos.EntidadNotificacionesPuerto;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,11 +27,14 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Los envíos reales de la entidad (fuera de la maqueta): llaman al puerto, redirigen a la pantalla
@@ -47,6 +54,7 @@ class EntidadEnviosControllerTest {
   @MockitoBean private CuentaActual cuentas;
   @MockitoBean private EntidadNotificacionesPuerto notificaciones;
   @MockitoBean private EntidadConfirmarPuerto confirmar;
+  @MockitoBean private EntidadNecesidadesPuerto necesidades;
   @Autowired private MockMvc mvc;
 
   @BeforeEach
@@ -114,6 +122,77 @@ class EntidadEnviosControllerTest {
                 .param("remito", "0001-00004522"))
         .andExpect(
             flash().attribute(Envios.AVISO, "Confirmaste la recepción. Le avisamos a quien donó."));
+  }
+
+  @Test
+  void publicarCambiarYDarDeBajaUnaNecesidad() throws Exception {
+    mvc.perform(
+            post("/entidad-necesidades-publicada")
+                .param("que", UNA.toString())
+                .param("cuanto", "30")
+                .param("repite", "mes")
+                .param("hasta", "")
+                .param("motivo", " Para la cena. "))
+        .andExpect(redirectedUrl("/entidad-necesidades"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Publicamos tu necesidad. Ya la ven los donantes y el catálogo público."));
+    verify(necesidades).publicar(ENTIDAD, UNA, 30, "MENSUAL", null, "Para la cena.");
+
+    mvc.perform(
+            post("/entidad-necesidades-publicada")
+                .param("que", UNA.toString())
+                .param("cuanto", "6")
+                .param("repite", "una")
+                .param("hasta", "2026-11-20")
+                .param("motivo", "Para el comedor."))
+        .andExpect(redirectedUrl("/entidad-necesidades"));
+    verify(necesidades)
+        .publicar(ENTIDAD, UNA, 6, null, LocalDate.of(2026, 11, 20), "Para el comedor.");
+
+    String abierta = "/entidad-necesidades?necesidad=necesidad-" + UNA + "#necesidad-" + UNA;
+    mvc.perform(
+            post("/entidad-necesidades-cambiada?necesidad=" + UNA + "&version=3")
+                .param("cuanto", "45")
+                .param("motivo", "Para el almuerzo."))
+        .andExpect(redirectedUrl(abierta))
+        .andExpect(flash().attribute(Envios.AVISO, "Guardamos los cambios de tu necesidad."));
+    verify(necesidades).cambiar(UNA, 3, 45, "Para el almuerzo.");
+
+    mvc.perform(post("/entidad-necesidades-baja?necesidad=" + UNA))
+        .andExpect(redirectedUrl("/entidad-necesidades"))
+        .andExpect(
+            flash()
+                .attribute(Envios.AVISO, "Diste de baja tu necesidad. Ya no la ven los donantes."));
+    verify(necesidades).darDeBaja(UNA);
+  }
+
+  @Test
+  void siOtraPersonaLaCambioVuelveALaNecesidadConElAviso() throws Exception {
+    doThrow(
+            HttpClientErrorException.create(
+                HttpStatus.CONFLICT,
+                "Conflict",
+                HttpHeaders.EMPTY,
+                new byte[0],
+                StandardCharsets.UTF_8))
+        .when(necesidades)
+        .cambiar(UNA, 3, 45, "Para el almuerzo.");
+
+    mvc.perform(
+            post("/entidad-necesidades-cambiada?necesidad=" + UNA + "&version=3")
+                .param("cuanto", "45")
+                .param("motivo", "Para el almuerzo."))
+        .andExpect(
+            redirectedUrl("/entidad-necesidades?necesidad=necesidad-" + UNA + "#necesidad-" + UNA))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Otra persona de tu entidad cambió esta necesidad mientras la editabas."
+                        + " Revisala y, si hace falta, guardá tus cambios de nuevo."));
   }
 
   @Test
