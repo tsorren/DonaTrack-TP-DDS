@@ -92,6 +92,20 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   }
 
   @Override
+  public void marcarVencida(String donacion, String actor, String motivo) {
+    donaciones.cambiarEstado(
+        UUID.fromString(donacion),
+        actor,
+        new DonacionesApi.Cambiar(
+            "VENCIDA",
+            motivo == null || motivo.isBlank() ? null : motivo.trim(),
+            null,
+            null,
+            null,
+            null));
+  }
+
+  @Override
   public AdminAsignacionesVista asignaciones() {
     LocalDate hoy = LocalDate.now(reloj.withZone(Comun.ARGENTINA));
     Pedidos pedidos = new Pedidos();

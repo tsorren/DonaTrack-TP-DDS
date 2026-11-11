@@ -7,6 +7,7 @@ import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -366,6 +367,23 @@ class AdminOperacionRestTest {
         "1 en el depósito · 1 asignada · 0 en camino · 1 entrega confirmada en noviembre. Al 10 de"
             + " noviembre de 2026, 18:30.",
         vista.resumen());
+    donaciones.verify();
+  }
+
+  @Test
+  void marcarVencidaMandaElEstadoConElActorYElMotivo() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes/" + D2 + "/estado"))
+        .andExpect(method(PATCH))
+        .andExpect(header("X-Actor", "Leo Ejemplo"))
+        .andExpect(
+            content().json("{\"estado\": \"VENCIDA\", \"justificacion\": \"Se rompió el envase\"}"))
+        .andRespond(
+            withSuccess(
+                "{\"id\": \"" + D2 + "\", \"estadoActual\": \"Vencida\", \"cantidad\": 10}",
+                MediaType.APPLICATION_JSON));
+
+    adaptador.marcarVencida(D2, "Leo Ejemplo", " Se rompió el envase ");
     donaciones.verify();
   }
 }

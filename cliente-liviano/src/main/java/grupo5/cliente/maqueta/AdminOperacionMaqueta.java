@@ -96,6 +96,11 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
   }
 
   @Override
+  public void marcarVencida(String donacion, String actor, String motivo) {
+    // En la maqueta el envío lo atiende SitioController, sin guardar.
+  }
+
+  @Override
   public AdminAsignacionesVista asignaciones() {
     return ASIGNACIONES;
   }

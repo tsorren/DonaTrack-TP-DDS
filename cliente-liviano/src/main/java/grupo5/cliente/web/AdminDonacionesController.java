@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.vistas.AdminDonacionesVista;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -40,7 +41,15 @@ public class AdminDonacionesController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
     }
     String vista = pantallas.mostrar(pantalla, model);
-    model.addAttribute("adminDonaciones", operacion.donaciones(vencida ? "vencida" : ""));
+    AdminDonacionesVista datos = operacion.donaciones(vencida ? "vencida" : "");
+    String pedida = pedido.getParameter("donacion");
+    if (!maqueta
+        && DETALLE.equals(pantalla)
+        && datos.todas().stream().noneMatch(d -> d.clave().equals(pedida))) {
+      // La maqueta muestra la primera; con datos reales, una que no está es un 404.
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No encontramos esa donación");
+    }
+    model.addAttribute("adminDonaciones", datos);
     return vista;
   }
 }

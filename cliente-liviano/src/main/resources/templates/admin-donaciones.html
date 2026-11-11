@@ -231,7 +231,8 @@
         <p>Deja de estar disponible para asignar y no se puede deshacer. El sistema ya marca solas, cada
           madrugada, las que pasaron su fecha; usalo si se venció antes o se dañó.</p>
         <form class="pila" data-espacio="3" action="/admin-donaciones-detalle-vencida"
-              th:action="@{/admin-donaciones-detalle-vencida}" method="post">
+              th:action="@{/admin-donaciones-detalle-vencida}" method="post" hx-boost="true"
+              hx-indicator="#enviando-admin-donaciones-detalle" hx-select-oob="#avisos">
           <input type="hidden" name="donacion" th:value="${d.clave}" value="leche">
           <div class="campo">
             <label for="motivo">Motivo (opcional)</label>
@@ -242,6 +243,7 @@
             <button type="button" class="boton" data-tono="secundario" popovertarget="vencida"
                     popovertargetaction="hide" autofocus>Cancelar</button>
           </div>
+          <p th:replace="~{envio :: indicador('enviando-admin-donaciones-detalle', 'Guardando…')}"></p>
         </form>
       </dialog>
     </th:block>

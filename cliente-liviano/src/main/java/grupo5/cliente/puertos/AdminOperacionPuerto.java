@@ -36,4 +36,10 @@ public interface AdminOperacionPuerto {
 
   /** Todas las donaciones; la maqueta muestra con {@code vencida} la que se marcó vencida. */
   AdminDonacionesVista donaciones(String accion);
+
+  /**
+   * Marca vencida una donación del depósito; {@code actor} queda en su historial. Si cambió a la
+   * vez, es el 409 de Donaciones.
+   */
+  void marcarVencida(String donacion, String actor, String motivo);
 }
