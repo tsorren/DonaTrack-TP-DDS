@@ -53,6 +53,7 @@ docs/
 │   ├── auditoria-arquitectura-testing.md  # 🏛️ Auditoría integral y Blueprint de Arquitectura de Testing y QA (Documento Maestro)
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
+│   ├── demo-seeder.md                     # Seeder de demo: seis meses de historia y lo de hoy (SPEC-10)
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
 │   ├── preprod-fiel.md                    # Criterio de preprod fiel, estado de CI/CD e integración y brechas
@@ -94,7 +95,7 @@ docs/
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-09)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -194,6 +195,7 @@ docs/
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
+* 🎬 **Seeder de demo (propuesta):** [SPEC-10](specs/active/SPEC-10-seeder-de-demo.md) · [testing/demo-seeder.md](testing/demo-seeder.md)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
