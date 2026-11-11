@@ -103,6 +103,47 @@ class FuentePosicionCamionSimuladaTest {
   }
 
   @Test
+  void lasParadasAlcanzadasSonLasDelTramoEnCursoSinLasQueNoTienenCoordenadas() {
+    List<UUID> ids = ruta.getEntregaIds();
+    UUID ea = ids.get(0);
+    UUID eb = ids.get(2);
+    UUID ec = ids.get(3);
+
+    // Al salir, ninguna: ruta.iniciada tiene que llegar antes a Donaciones
+    assertTrue(fuenteA(INICIO, 2).entregasAlcanzadas(ruta).isEmpty());
+    // A mitad del primer tramo, la primera; todavía no llegó a la segunda
+    assertEquals(List.of(ea), fuenteA(INICIO.plusMillis(INTERVALO_MS), 2).entregasAlcanzadas(ruta));
+    assertEquals(
+        List.of(ea, eb), fuenteA(INICIO.plusMillis(2 * INTERVALO_MS), 2).entregasAlcanzadas(ruta));
+    // Un tick perdido no deja una parada sin marcar: pasado el final, todas
+    assertEquals(
+        List.of(ea, eb, ec), fuenteA(INICIO.plusSeconds(3_600), 2).entregasAlcanzadas(ruta));
+  }
+
+  @Test
+  void unaRutaDeUnaSolaParada_laAlcanzaPasadoElPrimerIntervalo() {
+    Entrega unica = registrar(EntregaMother.pendienteEn(a));
+    Ruta corta =
+        enTraslado(List.of(unica.getId()), LocalDateTime.ofInstant(INICIO, ZoneOffset.UTC));
+
+    assertTrue(fuenteA(INICIO, 10).entregasAlcanzadas(corta).isEmpty());
+    assertEquals(
+        List.of(unica.getId()),
+        fuenteA(INICIO.plusMillis(INTERVALO_MS), 10).entregasAlcanzadas(corta));
+  }
+
+  @Test
+  void unaRutaQueNoEstaEnTraslado_noAlcanzaNingunaParada() {
+    Ruta completada =
+        conEstado(
+            EstadoRuta.COMPLETADA,
+            ruta.getEntregaIds(),
+            LocalDateTime.ofInstant(INICIO, ZoneOffset.UTC));
+
+    assertTrue(fuenteA(INICIO.plusSeconds(60), 1).entregasAlcanzadas(completada).isEmpty());
+  }
+
+  @Test
   void rechazaConfiguracionNoPositiva() {
     Clock clock = Clock.fixed(INICIO, ZoneOffset.UTC);
     assertThrows(

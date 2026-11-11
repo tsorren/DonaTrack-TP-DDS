@@ -98,7 +98,8 @@ class EntidadConfirmarRestTest {
     donaciones.verify();
     assertEquals(1, entregas.size());
     EntidadEntregaVista e = entregas.getFirst();
-    assertEquals(ENTREGA, e.clave());
+    // La clave es la donación, como en Donaciones recibidas (HB-22)
+    assertEquals(DONACION, e.clave());
     assertEquals("lentejas secas", e.nombre());
     assertEquals("Lentejas secas, 15 kg", e.titulo());
     assertEquals("8 de noviembre, 14:30", e.salio());
@@ -129,6 +130,15 @@ class EntidadConfirmarRestTest {
   @Test
   void confirmarSubeLasFotosYDejaLaEntregaEntregadaConElProblema() {
     logistica
+        .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "EN_PUERTA"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
         .expect(requestTo(LOGISTICA + ENTREGA + "/fotos"))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header(HttpHeaders.CONTENT_TYPE, startsWith("multipart/form-data")))
@@ -154,11 +164,53 @@ class EntidadConfirmarRestTest {
     MockMultipartFile foto =
         new MockMultipartFile("fotos", "acta.jpg", "image/jpeg", new byte[] {1, 2, 3});
 
+    // Con la clave de la donación, confirma la entrega que la lleva
     adaptador.confirmar(
         ENTIDAD,
-        ENTREGA,
+        DONACION,
         new Acta(List.of(foto), " 0001-00004521 ", "incompleta", 12.5, "Dos bolsas rotas."));
 
     logistica.verify();
+  }
+
+  @Test
+  void primeroLasQueLlegaronALaPuertaConLaHoraDeLlegadaDelHistorial() {
+    String otraDonacion = "6f1c2c1e-0000-4000-8000-0000000000d2";
+    logistica
+        .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "6f1c2c1e-0000-4000-8000-0000000000a2", "idDonacion": "%s",
+                  "estadoEntrega": "EN_TRASLADO", "horaSalida": "2026-11-08T17:30:00Z"},
+                 {"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "EN_PUERTA",
+                  "horaSalida": "2026-11-08T12:00:00Z"}]
+                """
+                    .formatted(otraDonacion, ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "EN_PUERTA",
+                  "cantidad": 15,
+                  "historial": [{"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]},
+                 {"id": "%s", "descripcion": "Arroz", "estadoActual": "EN_TRASLADO",
+                  "cantidad": 5}]
+                """
+                    .formatted(DONACION, otraDonacion),
+                MediaType.APPLICATION_JSON));
+
+    List<EntidadEntregaVista> entregas = adaptador.entregas(ENTIDAD);
+
+    assertEquals(
+        List.of(DONACION, otraDonacion),
+        entregas.stream().map(EntidadEntregaVista::clave).toList());
+    EntidadEntregaVista enLaPuerta = entregas.getFirst();
+    assertEquals("8 de noviembre, 18:20", enLaPuerta.llego());
+    assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", enLaPuerta.llegoFrase());
+    assertNull(entregas.get(1).llego());
+    assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", entregas.get(1).llegoFrase());
   }
 }

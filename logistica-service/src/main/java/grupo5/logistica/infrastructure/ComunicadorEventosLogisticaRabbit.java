@@ -2,12 +2,14 @@ package grupo5.logistica.infrastructure;
 
 import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
+import grupo5.logistica.dto.eventos.EventoEntregaEnPuerta;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
@@ -103,5 +105,12 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             evento.getDonacionId(),
             evento.getMotivo(),
             evento.getTimestamp()));
+  }
+
+  @Override
+  public void comunicarEntregaEnPuerta(EntregaEnPuerta evento) {
+    eventPublisher.publicarEntregaEnPuerta(
+        new EventoEntregaEnPuerta(
+            evento.getEntregaId(), evento.getDonacionId(), evento.getTimestamp()));
   }
 }

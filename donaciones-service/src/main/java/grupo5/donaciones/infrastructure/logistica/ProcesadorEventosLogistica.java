@@ -3,6 +3,7 @@ package grupo5.donaciones.infrastructure.logistica;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -38,6 +39,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
 
   private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
+  private static final String EN_PUERTA = "EntregaEnPuerta";
   private static final int MAX_INTENTOS_POR_CONFLICTO = 3;
   private static final Runnable NADA = () -> {};
   private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
@@ -205,6 +207,50 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
     } catch (Exception e) {
       log.error(
           "Error al procesar la cancelación de la donación {}: {}", donacionId, e.getMessage(), e);
+    }
+  }
+
+  /**
+   * HB-22: el camión llegó a la entidad. Solo pasa a {@code EN_PUERTA} una donación en traslado: si
+   * ya está en otro estado (el evento llegó después de {@code entrega.exitosa} o se repitió), se
+   * registra como consumido sin tocarla.
+   */
+  @Override
+  public void procesarEntregaEnPuerta(EventoEntregaEnPuerta evento, String origen) {
+    UUID donacionId = evento.donacionIndependienteId();
+    log.info("Evento EntregaEnPuerta recibido: donacionId={}", donacionId);
+    try {
+      conReintentoPorConflicto(
+          () -> {
+            if (eventosConsumidosRepository.yaFueConsumido(
+                EN_PUERTA, evento.entregaId(), donacionId)) {
+              log.info("Evento duplicado ignorado: EntregaEnPuerta de la donación {}", donacionId);
+              return;
+            }
+            donacionesIndependientesRepository
+                .findById(donacionId)
+                .filter(d -> d.getEstadoActual().getTipo() == TipoEstadoDonacion.EN_TRASLADO)
+                .ifPresentOrElse(
+                    donacion -> {
+                      donacion.llegarAPuerta(ACTOR);
+                      donacionesIndependientesRepository.save(donacion);
+                    },
+                    () ->
+                        log.info(
+                            "La donación {} ya no está en traslado: la llegada no la cambia",
+                            donacionId));
+            eventosConsumidosRepository.registrar(
+                new EventoConsumido(
+                    UUID.randomUUID(),
+                    EN_PUERTA,
+                    origen,
+                    evento.entregaId(),
+                    donacionId,
+                    LocalDateTime.now(ZONA_HORARIA)));
+          });
+    } catch (Exception e) {
+      log.error(
+          "Error al procesar la llegada de la donación {}: {}", donacionId, e.getMessage(), e);
     }
   }
 

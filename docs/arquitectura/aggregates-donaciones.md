@@ -48,11 +48,12 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `ItemDonacionIndependiente` (Objeto de valor).
     *   `Bien` (Objeto de valor compartido).
     *   `CambioEstado` (Registro inmutable de auditoría de transiciones).
-*   **Estados de Ciclo de Vida (State Pattern con 7 clases concretas)**:
+*   **Estados de Ciclo de Vida (State Pattern con 8 clases concretas)**:
     *   `EnDeposito`: Bien ingresado físicamente en depósito disponible para matching.
     *   `AsignacionRealizada`: Bien emparejado formalmente con una necesidad insatisfecha.
     *   `ListaParaEntregar`: Bien preparado para ser retirado por el camión de logística.
     *   `EnTraslado`: Bien cargado en ruta de transporte hacia la entidad receptora.
+    *   `EnPuerta` (HB-22, [ADR](../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)): el camión llegó a la entidad y la donación espera su confirmación. Extiende `EnTraslado`: se llega solo desde `EnTraslado` (`llegarAPuerta`, por el evento `entrega.en-puerta`) y sale igual, a `Entregada` o `EntregaFallida`; no vuelve a llegar.
     *   `Entregada`: Bien recepcionado exitosamente por la entidad beneficiaria.
     *   `EntregaFallida`: Entrega rechazada o frustrada, en proceso de resolución o retorno.
     *   `Vencida`: Bien perecedero que superó su fecha límite en depósito antes de ser entregado.

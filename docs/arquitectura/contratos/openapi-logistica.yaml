@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.8.0
+  version: 1.9.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -142,7 +142,12 @@ paths:
   /api/entregas/{id}/estado:
     patch:
       summary: Cambiar estado de una entrega
-      description: Transiciona el estado de la entrega. Para pasar a ENTREGADA (RF-12) es obligatorio enviar al menos una referencia fotográfica válida en fotosRecepcion (o fotoRecepcionUrl por compatibilidad).
+      description: >-
+        Transiciona el estado de la entrega. Para pasar a ENTREGADA (RF-12) es obligatorio enviar al
+        menos una referencia fotográfica válida en fotosRecepcion (o fotoRecepcionUrl por
+        compatibilidad). EN_PUERTA (HB-22, desde 1.9.0) la informa quien mueve el camión al llegar
+        al destino: solo desde EN_TRASLADO, idempotente si ya está en la puerta, y publica
+        entrega.en-puerta. ENTREGADA y NO_RECIBIDA se aceptan desde EN_TRASLADO o EN_PUERTA.
       operationId: cambiarEstadoEntrega
       parameters:
         - name: id
@@ -757,9 +762,11 @@ components:
           description: >-
             Estado destino. CANCELADA no se acepta por esta vía (400): la cancelación entra solo por el
             comando entrega.cancelada.<instancia>.v1 del broker de Donaciones (HB-19).
+            EN_PUERTA (HB-22) marca que el camión llegó al destino.
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
@@ -865,9 +872,12 @@ components:
           description: >-
             CANCELADA (HB-19) es final: la entrega no salió y su necesidad se dio de baja. Queda como
             historia; la donación puede tener después otra entrega activa.
+            EN_PUERTA (HB-22, valor nuevo en 1.9.0) es activo: el camión llegó al destino y la
+            entidad todavía no confirmó.
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
@@ -979,6 +989,7 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
@@ -1012,6 +1023,7 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
@@ -1103,6 +1115,7 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
@@ -1112,6 +1125,7 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION

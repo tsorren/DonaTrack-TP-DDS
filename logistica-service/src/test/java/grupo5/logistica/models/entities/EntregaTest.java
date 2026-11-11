@@ -9,6 +9,7 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
@@ -483,5 +484,68 @@ class EntregaTest {
     assertThrows(
         ValidationException.class, () -> cancelada.cancelar("broker-donaciones", "motivo"));
     assertThrows(ValidationException.class, () -> cancelada.asignarRuta(UUID.randomUUID()));
+  }
+
+  // HB-22: EN_PUERTA, intermedio y opcional entre el traslado y la confirmación
+
+  @Test
+  void llegarAPuertaDesdeEnTrasladoPasaAEnPuertaYEmiteEvento() {
+    UUID donacionId = UUID.randomUUID();
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(), donacionId, UUID.randomUUID(), createTestDireccion(), 10f, 1f);
+    entrega.iniciarRuta("Chofer Jose");
+
+    entrega.llegarAPuerta("SIMULADOR");
+
+    assertEquals(EstadoEntrega.EN_PUERTA, entrega.getEstadoActual());
+    CambioEstadoEntrega cambio = entrega.getHistorialEstado().getLast();
+    assertEquals(EstadoEntrega.EN_TRASLADO, cambio.estadoAnterior());
+    assertEquals(EstadoEntrega.EN_PUERTA, cambio.estadoNuevo());
+    assertNull(entrega.getHoraArribo(), "la hora de arribo sigue siendo la de la confirmación");
+    EntregaEnPuerta evento =
+        assertInstanceOf(EntregaEnPuerta.class, entrega.getDomainEvents().getFirst());
+    assertEquals(entrega.getId(), evento.getEntregaId());
+    assertEquals(donacionId, evento.getDonacionId());
+  }
+
+  @Test
+  void desdeEnPuertaSeConfirmaOSeNiega() {
+    Entrega confirmada = enPuerta();
+    confirmada.confirmarEntrega("Comedor", List.of(FOTO_VALIDA_1));
+    assertEquals(EstadoEntrega.ENTREGADA, confirmada.getEstadoActual());
+    assertNotNull(confirmada.getHoraArribo());
+
+    Entrega negada = enPuerta();
+    negada.negarEntrega("Comedor", "No era lo pedido", false);
+    assertEquals(EstadoEntrega.NO_RECIBIDA, negada.getEstadoActual());
+  }
+
+  @Test
+  void desdeEnTrasladoSeSigueConfirmandoSinPasarPorLaPuerta() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+
+    entrega.confirmarEntrega("Comedor", List.of(FOTO_VALIDA_1));
+
+    assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstadoActual());
+  }
+
+  @Test
+  void llegarAPuertaFueraDeEnTrasladoLanzaExcepcion() {
+    Entrega pendiente = crearEntregaValida();
+    assertThrows(ValidationException.class, () -> pendiente.llegarAPuerta("SIMULADOR"));
+
+    Entrega yaEnPuerta = enPuerta();
+    assertThrows(ValidationException.class, () -> yaEnPuerta.llegarAPuerta("SIMULADOR"));
+    assertThrows(ValidationException.class, () -> yaEnPuerta.mandarARevision("Admin"));
+    assertThrows(ValidationException.class, () -> yaEnPuerta.llegarAPuerta(" "));
+  }
+
+  private Entrega enPuerta() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+    entrega.llegarAPuerta("SIMULADOR");
+    return entrega;
   }
 }

@@ -13,6 +13,12 @@ public class EnTraslado implements EstadoDonacionIndependiente {
     return TipoEstadoDonacion.EN_TRASLADO;
   }
 
+  /** El camión llegó a la entidad (HB-22): desde la puerta se confirma o falla igual que acá. */
+  @Override
+  public void llegarAPuerta(DonacionIndependiente d, String actor) {
+    d.cambiarEstado(new EnPuerta(), null, actor);
+  }
+
   @Override
   public void confirmarEntrega(DonacionIndependiente d, String actor) {
     confirmarEntrega(d, (String) null, actor);

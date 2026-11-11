@@ -38,6 +38,16 @@ public interface EstadoDonacionIndependiente {
     iniciarRecorrido(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
   }
 
+  /** HB-22: solo desde {@code EN_TRASLADO}. */
+  default void llegarAPuerta(DonacionIndependiente d, String actor) {
+    lanzarTransicionInvalida();
+  }
+
+  default void llegarAPuerta(
+      DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
+    llegarAPuerta(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
+  }
+
   default void confirmarEntrega(DonacionIndependiente d, String actor) {
     lanzarTransicionInvalida();
   }

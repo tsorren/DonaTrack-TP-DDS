@@ -472,6 +472,39 @@ class RepositoriosLogisticaJpaTest {
   }
 
   @Test
+  void unaEntregaEnLaPuertaSePersisteYCuentaComoActivaDeSuDonacion() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID idDonacion = UUID.randomUUID();
+    Entrega entrega =
+        new Entrega(
+            idDonacion,
+            UUID.randomUUID(),
+            new Direccion("Medrano", 951, null, null, "1179", caba),
+            10.0f,
+            1.0f);
+    entrega.iniciarRuta("Chofer");
+    entrega.llegarAPuerta("SIMULADOR");
+    entregasRepository.save(entrega);
+
+    Entrega leida = entregasRepository.findById(entrega.getId()).orElseThrow();
+    assertEquals(EstadoEntrega.EN_PUERTA, leida.getEstadoActual());
+    assertEquals(EstadoEntrega.EN_PUERTA, leida.getHistorialEstado().getLast().estadoNuevo());
+    assertTrue(entregasRepository.existsByIdDonacion(idDonacion));
+
+    // V9: EN_PUERTA es activa para el índice único parcial
+    Entrega duplicada =
+        new Entrega(
+            idDonacion,
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1300, null, null, "1033", caba),
+            10.0f,
+            1.0f);
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () -> entregasRepository.save(duplicada));
+  }
+
+  @Test
   void deberiaPersistirSolicitudPlanificacionYActualizarEstado() {
     Camion camion = camionRepository.save(new Camion("CD789EF", 60.0f, 3000.0f, 3.0f));
     Chofer chofer = choferesRepository.save(new Chofer("Luis", "Diaz", "LIC-004", "1133445566"));

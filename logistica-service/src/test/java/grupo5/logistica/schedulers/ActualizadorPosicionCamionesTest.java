@@ -7,14 +7,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.PosicionCamion;
+import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
+import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.FuentePosicionCamion;
+import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.testutils.CamionMother;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -32,6 +38,8 @@ class ActualizadorPosicionCamionesTest {
   private IRutasRepository rutas;
   private ICamionRepository camiones;
   private FuentePosicionCamion fuente;
+  private IEntregasRepository entregas;
+  private IEntregasService entregasService;
   private ActualizadorPosicionCamiones actualizador;
 
   @BeforeEach
@@ -39,7 +47,10 @@ class ActualizadorPosicionCamionesTest {
     rutas = mock(IRutasRepository.class);
     camiones = mock(ICamionRepository.class);
     fuente = mock(FuentePosicionCamion.class);
-    actualizador = new ActualizadorPosicionCamiones(rutas, camiones, fuente);
+    entregas = mock(IEntregasRepository.class);
+    entregasService = mock(IEntregasService.class);
+    actualizador =
+        new ActualizadorPosicionCamiones(rutas, camiones, fuente, entregas, entregasService);
   }
 
   @Test
@@ -96,6 +107,49 @@ class ActualizadorPosicionCamionesTest {
     actualizador.actualizar();
 
     verify(camiones, never()).findById(any());
+  }
+
+  @Test
+  void marcaEnPuertaLasEntregasAlcanzadasQueSiguenEnTraslado() {
+    Ruta ruta = rutaDe(UUID.randomUUID());
+    Entrega enViaje = enTraslado();
+    Entrega yaEnPuerta = enTraslado();
+    yaEnPuerta.llegarAPuerta("CHOFER");
+    when(rutas.findByEstado(EstadoRuta.EN_TRASLADO)).thenReturn(List.of(ruta));
+    when(fuente.posicionActual(ruta)).thenReturn(Optional.empty());
+    when(fuente.entregasAlcanzadas(ruta)).thenReturn(List.of(enViaje.getId(), yaEnPuerta.getId()));
+    when(entregas.findById(enViaje.getId())).thenReturn(Optional.of(enViaje));
+    when(entregas.findById(yaEnPuerta.getId())).thenReturn(Optional.of(yaEnPuerta));
+
+    actualizador.actualizar();
+
+    verify(entregasService).marcarEnPuerta(enViaje.getId(), ActualizadorPosicionCamiones.ACTOR);
+    verify(entregasService, never())
+        .marcarEnPuerta(yaEnPuerta.getId(), ActualizadorPosicionCamiones.ACTOR);
+  }
+
+  @Test
+  void unaConfirmacionQueGanaLaCarreraNoCortaElResto() {
+    Ruta ruta = rutaDe(UUID.randomUUID());
+    Entrega confirmada = enTraslado();
+    Entrega otra = enTraslado();
+    when(rutas.findByEstado(EstadoRuta.EN_TRASLADO)).thenReturn(List.of(ruta));
+    when(fuente.posicionActual(ruta)).thenReturn(Optional.empty());
+    when(fuente.entregasAlcanzadas(ruta)).thenReturn(List.of(confirmada.getId(), otra.getId()));
+    when(entregas.findById(any())).thenReturn(Optional.of(confirmada), Optional.of(otra));
+    when(entregasService.marcarEnPuerta(confirmada.getId(), ActualizadorPosicionCamiones.ACTOR))
+        .thenThrow(new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA));
+
+    actualizador.actualizar();
+
+    verify(entregasService).marcarEnPuerta(otra.getId(), ActualizadorPosicionCamiones.ACTOR);
+  }
+
+  private static Entrega enTraslado() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(UUID.randomUUID());
+    entrega.iniciarRuta("CHOFER");
+    return entrega;
   }
 
   private static Ruta rutaDe(UUID camionId) {

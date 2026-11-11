@@ -6,6 +6,7 @@ import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 import static grupo5.cliente.rest.Comun.ENTREGADA;
 import static grupo5.cliente.rest.Comun.ES_AR;
 import static grupo5.cliente.rest.Comun.FALLIDA;
+import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.TRASLADO;
 import static grupo5.cliente.rest.Comun.VENCIDA;
 import static grupo5.cliente.rest.Comun.cantidad;
@@ -50,7 +51,7 @@ import org.springframework.util.MultiValueMap;
  * el catálogo ({@code /api/subcategorias}), lo asignado ({@code /donaciones-independientes
  * ?entidadId}, por {@code necesidadId}: las entregas y quién donó) y los períodos de las que se
  * repiten. Lo recibido de una que es una sola vez no está en la API (fuera de alcance): va sin
- * cifra. "En tu puerta" no se distingue de "en camino" (HB-22).
+ * cifra. "En tu puerta" son las que llegaron ({@code EN_PUERTA}, HB-22).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -128,7 +129,12 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
             .map(n -> terminada(n, subcategorias.get(n.idSubcategoria())))
             .toList(),
         catalogo(catalogo),
-        null,
+        vigentes.stream()
+            .flatMap(n -> n.entregas().stream())
+            .map(Entrega::confirmar)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null),
         vigentes.stream()
             .filter(n -> n.problema() > 0)
             .map(Necesidad::clave)
@@ -158,6 +164,7 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         actual != null ? actual.fin() : (n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin());
     List<Entrega> entregas = new ArrayList<>();
     List<Donacion> donaron = new ArrayList<>();
+    int puerta = 0;
     int camino = 0;
     int problema = 0;
     for (DonacionesApi.Donacion d : asignadas) {
@@ -177,14 +184,24 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         continue;
       }
       boolean conProblema = FALLIDA.equals(estado) || VENCIDA.equals(estado);
-      String tono =
-          conProblema ? "con-problema" : (TRASLADO.equals(estado) ? "en-camino" : "pendiente");
+      boolean enLaPuerta = PUERTA.equals(estado);
+      String tono;
       if (conProblema) {
+        tono = "con-problema";
         problema++;
+      } else if (enLaPuerta) {
+        tono = "puerta";
+        puerta++;
       } else {
+        tono = TRASLADO.equals(estado) ? "en-camino" : "pendiente";
         camino++;
       }
-      entregas.add(new Entrega(cuanto, tono, RecibidasRest.paso(estado, desde(d, estado)), null));
+      entregas.add(
+          new Entrega(
+              cuanto,
+              tono,
+              RecibidasRest.paso(estado, desde(d, estado)),
+              enLaPuerta ? d.id().toString() : null));
     }
     String nombre = sub != null && sub.nombre() != null ? sub.nombre() : n.descripcion();
     Categoria categoria = sub == null ? null : sub.categoria();
@@ -205,7 +222,7 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         cambio(n.ultimoCambio(), pedida, unidad, hoy, false),
         cambio(n.ultimoCambio(), pedida, unidad, hoy, true),
         n.descripcion(),
-        0,
+        puerta,
         camino,
         problema,
         entregas,

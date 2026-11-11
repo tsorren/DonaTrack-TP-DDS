@@ -29,6 +29,7 @@
       "enum": [
         "PENDIENTE",
         "EN_TRASLADO",
+        "EN_PUERTA",
         "ENTREGADA",
         "NO_RECIBIDA",
         "REVISION",
