@@ -128,6 +128,12 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     donaciones.registrarDonante(new DonacionesApi.DonanteNuevo(creada.id()));
   }
 
+  @Override
+  public void registrarEntidad(PersonaNueva.Juridica juridica) {
+    Persona creada = donaciones.crearPersona(juridica);
+    donaciones.registrarEntidad(new DonacionesApi.EntidadNueva(creada.id()));
+  }
+
   // --- Importar donantes -----------------------------------------------------------------------
 
   @Override

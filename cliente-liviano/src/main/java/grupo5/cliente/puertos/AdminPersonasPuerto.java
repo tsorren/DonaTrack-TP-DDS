@@ -25,4 +25,7 @@ public interface AdminPersonasPuerto {
 
   /** Da de alta la persona y la hace donante. */
   void registrarDonante(PersonaNueva persona);
+
+  /** Da de alta la persona jurídica y la hace entidad beneficiaria (queda activa). */
+  void registrarEntidad(PersonaNueva.Juridica juridica);
 }

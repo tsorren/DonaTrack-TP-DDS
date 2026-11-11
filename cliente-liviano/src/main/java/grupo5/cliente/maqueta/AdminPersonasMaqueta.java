@@ -208,4 +208,10 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   public void registrarDonante(PersonaNueva persona) {
     throw new UnsupportedOperationException("La maqueta no registra donantes");
   }
+
+  /** En la maqueta el formulario lo atiende SitioController y no guarda nada. */
+  @Override
+  public void registrarEntidad(PersonaNueva.Juridica juridica) {
+    throw new UnsupportedOperationException("La maqueta no registra entidades");
+  }
 }

@@ -189,6 +189,39 @@ class AdminPersonasRestTest {
   }
 
   @Test
+  void registrarEntidadCreaLaJuridicaYDespuesLaEntidadConSuId() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/personas"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"tipo": "JURIDICA", "razonSocial": "Escuela Ejemplo N.º 5",
+                     "tipoJuridico": "INSTITUCION",
+                     "direccion": {"calle": "Calle Ejemplo", "altura": 123},
+                     "representantes": [{"nombre": "Clara", "apellido": "Ejemplo"}]}
+                    """))
+        .andRespond(withSuccess("{\"tipo\": \"JURIDICA\", \"id\": \"" + PERSONA + "\"}", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(content().json("{\"juridicaId\": \"" + PERSONA + "\"}"))
+        .andRespond(withSuccess("{}", JSON));
+
+    adaptador.registrarEntidad(
+        new PersonaNueva.Juridica(
+            "Escuela Ejemplo N.º 5",
+            "INSTITUCION",
+            null,
+            new PersonaNueva.Direccion("Calle Ejemplo", 123, null, null, null, "Argentina"),
+            new PersonaNueva.Humana("Clara", "Ejemplo", "escuela5@ejemplo.org"),
+            "escuela5@ejemplo.org"));
+
+    donaciones.verify();
+  }
+
+  @Test
   void unArchivoQueNoSePudoLeerLlevaASuError() {
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes/archivos/" + ARCHIVO))
