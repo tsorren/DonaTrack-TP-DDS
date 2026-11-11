@@ -7,11 +7,19 @@ import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.vistas.PasoRecorrido;
 import grupo5.cliente.vistas.PasoRecorrido.Avance;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
@@ -91,20 +99,36 @@ public class Pantallas {
           new PasoRecorrido("En camino", "Hoy, 14:30", Avance.ACTUAL),
           new PasoRecorrido("Entregada", "Pendiente", Avance.PENDIENTE));
 
-  private final ResourceLoader recursos;
+  /** Los nombres de las plantillas dibujadas; la dirección del pedido nunca llega al disco. */
+  private final Set<String> dibujadas;
+
   private final CuentasDelMenu cuentas;
   private final ObjectProvider<AvisosSinLeer> avisos;
 
   /** Sin {@link AvisosSinLeer} (los tests que no lo cargan), la cabecera queda sin número. */
   Pantallas(ResourceLoader recursos, CuentasDelMenu cuentas, ObjectProvider<AvisosSinLeer> avisos) {
-    this.recursos = recursos;
+    this.dibujadas = plantillas(recursos);
     this.cuentas = cuentas;
     this.avisos = avisos;
   }
 
-  /** La vista se arma solo con un nombre que ya pasó por la expresión de la dirección. */
+  /** Si hay una plantilla con ese nombre; se compara contra la lista, no se arma una ruta. */
   public boolean existe(String pantalla) {
-    return recursos.getResource("classpath:templates/" + pantalla + ".html").exists();
+    return dibujadas.contains(pantalla);
+  }
+
+  private static Set<String> plantillas(ResourceLoader recursos) {
+    try {
+      return Arrays.stream(
+              ResourcePatternUtils.getResourcePatternResolver(recursos)
+                  .getResources("classpath*:templates/*.html"))
+          .map(Resource::getFilename)
+          .filter(Objects::nonNull)
+          .map(nombre -> nombre.substring(0, nombre.length() - ".html".length()))
+          .collect(Collectors.toUnmodifiableSet());
+    } catch (IOException falla) {
+      throw new UncheckedIOException("No se pudieron listar las plantillas", falla);
+    }
   }
 
   /** La pantalla con los datos del sistema: su modelo y la plantilla de {@code reales/}. */
@@ -115,6 +139,9 @@ public class Pantallas {
 
   /** Completa el modelo de la pantalla y devuelve su vista. */
   public String mostrar(String pantalla, Model model) {
+    if (!pantalla.matches(NOMBRE)) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
+    }
     boolean dibujada = existe(pantalla);
     String prefijo = pantalla.split("-")[0];
     Optional<Area> area = Area.deRuta(prefijo);
