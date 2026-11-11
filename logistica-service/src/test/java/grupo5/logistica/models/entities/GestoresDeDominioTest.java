@@ -210,6 +210,24 @@ class GestoresDeDominioTest {
   }
 
   @Test
+  void gestorDeRutasNoCompletaRutaSiHayEntregasEsperandoEnLaPuerta() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
+    entrega.llegarAPuerta("SIMULADOR");
+
+    List<Entrega> entregas = List.of(entrega);
+
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.completarRuta(ruta, camion, chofer, entregas));
+    assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
+  }
+
+  @Test
   void gestorDeRutasCompletaRutaCuandoTodasLasEntregasEstanResueltas() {
     Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
     Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");

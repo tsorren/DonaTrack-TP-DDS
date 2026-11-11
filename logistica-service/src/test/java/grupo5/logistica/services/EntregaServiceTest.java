@@ -23,6 +23,7 @@ import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -396,14 +397,19 @@ class EntregaServiceTest {
     entregada.asignarRuta(UUID.randomUUID());
     entregada.iniciarRuta("Chofer");
     entregada.confirmarEntrega("Actor", "https://storage.donatrack.org/f.jpg");
+    Entrega enPuerta = EntregaMother.pendiente();
+    enPuerta.asignarRuta(UUID.randomUUID());
+    enPuerta.iniciarRuta("Chofer");
+    enPuerta.llegarAPuerta("SIMULADOR");
     when(entregasRepository.findByDonanteId(donanteId))
-        .thenReturn(List.of(pendiente, enTraslado, entregada));
+        .thenReturn(List.of(pendiente, enTraslado, entregada, enPuerta));
 
     List<SeguimientoEntregaResponseDTO> resultado =
         entregasService.listarSeguimientoPorDonante(donanteId);
 
+    // HB-22: la que espera en la puerta sigue activa
     assertEquals(
-        List.of(pendiente.getId(), enTraslado.getId()),
+        List.of(pendiente.getId(), enTraslado.getId(), enPuerta.getId()),
         resultado.stream().map(SeguimientoEntregaResponseDTO::idEntrega).toList());
   }
 
@@ -808,5 +814,49 @@ class EntregaServiceTest {
         assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
     assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
     assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+  }
+
+  @Test
+  void cambiarEstado_aEnPuerta_laMarcaYPublicaLaLlegadaSinSolicitud() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    UUID id = entrega.getId();
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.EN_PUERTA, "Chofer", null, null);
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
+
+    assertEquals(EstadoEntrega.EN_PUERTA, resultado.estadoActual());
+    verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos).comunicarEntregaEnPuerta(any(EntregaEnPuerta.class));
+    assertTrue(entrega.getDomainEvents().isEmpty());
+  }
+
+  @Test
+  void marcarEnPuerta_siYaEstabaEnLaPuerta_noGuardaNiPublica() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    entrega.llegarAPuerta("Chofer");
+    entrega.clearDomainEvents();
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+
+    EntregaResponseDTO resultado = entregasService.marcarEnPuerta(entrega.getId(), "SIMULADOR");
+
+    assertEquals(EstadoEntrega.EN_PUERTA, resultado.estadoActual());
+    verify(entregasRepository, never()).save(any());
+    verifyNoInteractions(comunicadorEventos);
+  }
+
+  @Test
+  void marcarEnPuerta_deUnaPendiente_seRechaza() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+
+    assertThrows(
+        ValidationException.class,
+        () -> entregasService.marcarEnPuerta(entrega.getId(), "SIMULADOR"));
+    verifyNoInteractions(comunicadorEventos);
   }
 }

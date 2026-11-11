@@ -222,6 +222,21 @@ class RepositoriosLogisticaMongoTest {
   }
 
   @Test
+  void unaEntregaEnLaPuerta_seLeeEnLaPuertaYBloqueaOtraActivaDeLaMismaDonacion() {
+    UUID idDonacion = UUID.randomUUID();
+    Entrega enPuerta = entregaDeLaDonacion(idDonacion);
+    enPuerta.iniciarRuta("Chofer");
+    enPuerta.llegarAPuerta("SIMULADOR");
+    entregas.save(enPuerta);
+
+    assertEquals(
+        EstadoEntrega.EN_PUERTA,
+        entregas.findById(enPuerta.getId()).orElseThrow().getEstadoActual());
+    Entrega otraActiva = entregaDeLaDonacion(idDonacion);
+    assertThrows(DuplicateKeyException.class, () -> entregas.save(otraActiva));
+  }
+
+  @Test
   void unaEntregaCancelada_noBloqueaOtraActivaDeLaMismaDonacion() {
     UUID idDonacion = UUID.randomUUID();
     Entrega cancelada = entregaDeLaDonacion(idDonacion);

@@ -10,6 +10,7 @@ import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.*;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
@@ -193,7 +194,8 @@ public class EntregasService implements IEntregasService {
 
   private static boolean estaActiva(Entrega entrega) {
     return entrega.getEstadoActual() == EstadoEntrega.PENDIENTE
-        || entrega.getEstadoActual() == EstadoEntrega.EN_TRASLADO;
+        || entrega.getEstadoActual() == EstadoEntrega.EN_TRASLADO
+        || entrega.getEstadoActual() == EstadoEntrega.EN_PUERTA;
   }
 
   @Override
@@ -213,6 +215,11 @@ public class EntregasService implements IEntregasService {
   public EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO request) {
     if (request == null || request.estado() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+
+    if (request.estado() == EstadoEntrega.EN_PUERTA) {
+      // Sin solicitud de transición: la llegada no es un pedido de la entidad ni del admin (HB-22)
+      return marcarEnPuerta(id, request.actor());
     }
 
     Entrega entrega = buscarEntrega(id);
@@ -235,6 +242,20 @@ public class EntregasService implements IEntregasService {
     if (solicitudesTransicionRepository != null) {
       solicitudesTransicionRepository.registrar(solicitud);
     }
+    publicarEventos(entrega);
+    entrega.clearDomainEvents();
+    return entregaMapper.toResponseDTO(entrega);
+  }
+
+  @Override
+  @Transactional
+  public EntregaResponseDTO marcarEnPuerta(UUID id, String actor) {
+    Entrega entrega = buscarEntrega(id);
+    if (entrega.getEstadoActual() == EstadoEntrega.EN_PUERTA) {
+      return entregaMapper.toResponseDTO(entrega);
+    }
+    entrega.llegarAPuerta(actor);
+    entregasRepository.save(entrega);
     publicarEventos(entrega);
     entrega.clearDomainEvents();
     return entregaMapper.toResponseDTO(entrega);
@@ -506,6 +527,7 @@ public class EntregasService implements IEntregasService {
             comunicadorEventos.comunicarEntregaExitosa(confirmada, buscarCamionDeEntrega(entrega));
         case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
         case EntregaCancelada cancelada -> comunicadorEventos.comunicarEntregaCancelada(cancelada);
+        case EntregaEnPuerta enPuerta -> comunicadorEventos.comunicarEntregaEnPuerta(enPuerta);
       }
     }
   }

@@ -4,6 +4,7 @@ import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
@@ -20,4 +21,6 @@ public interface ComunicadorEventosLogistica {
   void comunicarEntregaFallida(EntregaFallida evento);
 
   void comunicarEntregaCancelada(EntregaCancelada evento);
+
+  void comunicarEntregaEnPuerta(EntregaEnPuerta evento);
 }
