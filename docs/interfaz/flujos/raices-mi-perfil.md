@@ -141,6 +141,27 @@ interruptor que guarda solo).
 Persona en vez de empresa: "Donante Sostenedor" (con su categoría), el mismo texto que ve la
 entidad en Confirmar recepción y en Necesidades.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Siguen
+`docs/interfaz/tono-y-comunicacion.md`: lo pendiente se dice pendiente, sin culpa ni urgencia, y no se
+promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
+
+#### Donante
+
+| Dónde | Texto | Cuándo |
+|---|---|---|
+| Aviso en `#avisos` al enviar "Datos de la cuenta" o "Cómo te avisamos" fuera de la maqueta | "Todavía no podemos guardar estos datos desde acá. Si algo está mal, escribinos." | No hay operación en Donaciones que guarde esos datos sin pisar los representantes y los medios de la persona, ni modelo de preferencias de avisos |
+| Constancia de Términos y privacidad, sin versión aceptada | "Todavía no aceptaste los términos y la política de privacidad." | `GET /api/personas/{id}/legales` sin `versionAceptada` |
+| Lo que ve la entidad si el nombre está oculto y no responde Incentivos | "Empresa donante" (persona: "Donante"), sin la categoría | Incentivos caído o sin perfil del donante |
+
+#### Entidad
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Aviso al guardar (todavía no guarda) | "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si necesitás cambiar algo, escribinos desde Contacto." | Fuera de la maqueta, en `#avisos`. Guardar queda pendiente (ver el reporte) |
+| Constancia sin aceptar | "Todavía no aceptaste los términos y la política de privacidad." | Cuando `GET /api/personas/{id}/legales` no trae versión aceptada |
+
 ## 7. Accesibilidad
 
 Un solo `h1`. Las opciones son un `fieldset` con `legend`; el ejemplo de cada opción va en su

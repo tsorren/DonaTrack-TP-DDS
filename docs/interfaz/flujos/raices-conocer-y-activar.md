@@ -358,3 +358,14 @@ Preguntas abiertas, para el equipo (no cambian el prototipo):
 |---|---|---|
 | `publico-nosotros` | Contadores públicos agregados (entregas confirmadas, entidades activas, donantes con donaciones) | HB-02 |
 | `publico-activar` | El envío del correo de bienvenida y la acción de elegir contraseña en el IdP | RF-AUTH-14, D12 🎓 |
+
+HB-02 ya está en Donaciones (`GET /api/donaciones/contadores`): Nosotros lo usa fuera de la maqueta
+(corrida conexion-pantallas, 2026-11-10).
+
+### Textos de la conexión con la API
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10).
+
+| Pantalla | Elemento | Texto propuesto | Por qué |
+|---|---|---|---|
+| Nosotros | Cifras | "Entregas confirmadas" · "Entidades en el mapa" · "Donantes con al menos una donación", sin "desde marzo de 2026" | Los contadores no dicen desde cuándo cuentan |

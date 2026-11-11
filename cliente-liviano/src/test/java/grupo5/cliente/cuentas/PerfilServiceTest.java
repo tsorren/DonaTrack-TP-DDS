@@ -62,6 +62,7 @@ class PerfilServiceTest {
 
     assertThat(personaCreada()).isEqualTo(new Humana("Ana", "Pérez", CORREO));
     verify(donaciones).registrarDonante(PERSONA);
+    verify(donaciones).aceptarLegalesVigentes(PERSONA);
     verify(cuentas)
         .vincular(CUENTA, Map.of("personaId", PERSONA.toString()), Optional.of("DONANTE_PERSONA"));
   }
@@ -91,6 +92,7 @@ class PerfilServiceTest {
     assertThat(juridica.direccion().pais()).isEqualTo("Argentina");
     assertThat(juridica.representantes()).containsExactly(new Humana("Rosa", "Gómez", CORREO));
     verify(donaciones, never()).registrarDonante(any());
+    verify(donaciones).aceptarLegalesVigentes(PERSONA);
     verify(cuentas)
         .vincular(
             CUENTA,
@@ -114,6 +116,17 @@ class PerfilServiceTest {
     doThrow(new IllegalStateException("409")).when(donaciones).registrarDonante(PERSONA);
 
     assertThatThrownBy(() -> servicio.completar(CUENTA, new DonantePersona("Ana", "Pérez")))
+        .isInstanceOf(IllegalStateException.class);
+
+    verify(donaciones).eliminar(PERSONA);
+    verify(cuentas, never()).vincular(any(), any(), any());
+  }
+
+  @Test
+  void siFallaLaConstanciaDeLosLegalesSeDaDeBajaLaPersona() {
+    doThrow(new IllegalStateException("502")).when(donaciones).aceptarLegalesVigentes(PERSONA);
+
+    assertThatThrownBy(() -> servicio.completar(CUENTA, ENTIDAD))
         .isInstanceOf(IllegalStateException.class);
 
     verify(donaciones).eliminar(PERSONA);

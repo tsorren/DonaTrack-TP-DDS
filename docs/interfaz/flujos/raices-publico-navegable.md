@@ -623,3 +623,21 @@ Datos que la maqueta inventa porque el backend no los da hoy. Son los de la list
 - Público · publico-recuperar · pedido de enlace de un solo uso con vencimiento y respuesta neutra (RF-AUTH-13, RNF-AUTH-10) · no hay mecanismo de envío (D8 pendiente) ni IdP (D1); la maqueta va al aviso sin mandar nada.
 - Público · publico-registro-donante · alta en el IdP y completar perfil (RI-AUTH-02, HB-11), constancia de los legales (HB-20) y quién ingresa por una empresa (D30 pendiente) · la maqueta pide el nombre de quien usa la cuenta y lleva al inicio del donante.
 - Público · publico-registro-entidad · alta de la jurídica con dirección y un representante, en estado pendiente, y su aprobación (HB-12, RF-21) · RF-03; la maqueta lleva a la solicitud enviada.
+
+### Textos de la conexión con la API
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Fuera de la maqueta, la
+portada y Entregas confirmadas leen Donaciones (contadores, HB-02; destacadas, HB-01), que no trae
+todo lo que dicen los textos de ejemplo:
+
+| Pantalla | Elemento | Texto propuesto | Por qué |
+|---|---|---|---|
+| Portada | Tercera cifra | "Donantes con al menos una donación" (en lugar de "Donaciones en camino ahora") | Donaciones no cuenta las que están en camino; cuenta los donantes con donaciones |
+| Portada | Cifras | "Entregas confirmadas" · "Entidades en el mapa", sin período | Los contadores no dicen desde cuándo cuentan |
+| Entregas confirmadas | Texto alternativo de la foto | "Foto de <lo entregado> que subió <la entidad> al confirmar la entrega" | La destacada no trae la descripción de la foto |
+| Entregas confirmadas | Lugar de cada entrega | Solo el nombre de la entidad, sin el barrio | La destacada no trae el barrio (HB-08, privacidad) |
+| Entregas confirmadas | Período y fecha | "del <hace 30 días> al <hoy>" y "Actualizado el <día y hora del pedido>" | El período lo fija la ventana de las destacadas (30 y 7 días) |
+
+Quedan fijos, sin conectar: "Lo que viajó este mes" de la portada y la fecha "Actualizado el …" de
+las cifras viven en `componentes/huerta`, que es compartido; el Mapa y Entidades siguen con los
+datos de ejemplo (ver la sección de huecos).

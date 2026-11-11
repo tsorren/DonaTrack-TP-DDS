@@ -1,9 +1,13 @@
 # cliente-liviano — Interfaz web de DonaTrack
 
 > **Estado:** en construcción (Entrega 6). La maqueta navegable tiene el recorrido público, el del
-> donante y el de la entidad, más el inicio del admin, con datos de ejemplo y una sola identidad
-> visual. Desde la F0 del plan con datos reales (el plan está en el
-> [PR 938](https://github.com/tsorren/DonaTrack-TP-DDS/pull/938)), el Ranking del admin consume Incentivos, y Mis donaciones del donante y su detalle, Donaciones y Logística; las demás pantallas siguen con datos de ejemplo.
+> donante, el de la entidad y el del admin, con datos de ejemplo y una sola identidad visual. Fuera
+> del perfil `maqueta`, las pantallas leen las APIs de Donaciones, Logística, Incentivos y
+> Notificaciones, y sus formularios guardan de verdad (corrida `conexion-pantallas`, 2026-11-10,
+> [SPEC-08](../docs/specs/active/SPEC-08-conexion-de-pantallas.md)). Quedan con datos de ejemplo
+> Entidades y necesidades y el Mapa de entregadas del público, y Misiones del donante; lo que cada
+> pantalla todavía no puede mostrar está en las
+> [brechas de datos por pantalla](../docs/requerimientos/brechas-de-datos-por-pantalla-e6.md).
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
@@ -36,13 +40,15 @@ mvn test -pl cliente-liviano -Pvisual                                         # 
   lento, error, sin permiso) y `?variante=<tema>-a|b` para las comparaciones A/B. `/` es la
   portada; cada pantalla se ve en `/<pantalla>` (por ejemplo, `/donante-inicio`).
 - Sin el perfil `maqueta`, cada puerto usa su adaptador REST (`cliente.datos.<puerto>=rest`, en
-  `application.properties`) con la URL de su API (`cliente.api.<api>.url`); las pantallas que
-  todavía no pasaron a datos reales se siguen sirviendo con los datos de las plantillas. Un puerto
-  solo se elige con `--cliente.datos.ranking=maqueta|rest`. Quién es la cuenta lo dice el puerto
-  `CuentaActual`: sin login todavía, el donante entra con
-  `?donante=<id>` (la sesión lo recuerda; `cliente.datos.cuenta=parametro`); sin id, Mis
-  donaciones manda a Ingresar. Cada pedido genera un `traceId` que
-  viaja a las APIs en `X-Trace-Id` y es el código de soporte de las páginas de error.
+  `application.properties`) con la URL de su API (`cliente.api.<api>.url`: `DONACIONES_URL`,
+  `LOGISTICA_URL`, `INCENTIVOS_URL` y `NOTIFICACIONES_URL`); las pantallas que todavía no pasaron a
+  datos reales se siguen sirviendo con los datos de las plantillas. Un puerto solo se elige con
+  `--cliente.datos.ranking=maqueta|rest`. Quién es la cuenta lo dice el puerto `CuentaActual`: con
+  ingreso por Keycloak sale del token; el `?donante=<id>` y el `?entidad=<id>` (la sesión los
+  recuerda) valen solo en el perfil `maqueta` con `cliente.datos.cuenta=parametro`. Cada envío real
+  (POST, redirección y aviso en `#avisos`, con indicador de carga) termina en `web/Envios`. Cada
+  pedido genera un `traceId` que viaja a las APIs en `X-Trace-Id` y es el código de soporte de las
+  páginas de error.
 - En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador: `cliente-liviano`
   (maqueta), `cliente-liviano-rest`, `incentivos` y `donaciones` (los dos en memoria, sin RabbitMQ).
 - La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el

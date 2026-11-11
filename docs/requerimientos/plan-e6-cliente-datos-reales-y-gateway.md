@@ -212,6 +212,16 @@ Tamaños `[INFERRED]`, contados en archivos y tests; no son mediciones.
 | **F5** | **Gateway, etapa 2, y JWKS en los servicios:** E2-01, HB-13; los ids de "mis datos" salen del token (E2-03, HB-11) y se retira el id por parámetro | F1, F4 | E2-01 y E2-03 | Los casos de "Validación" del ADR-E6-02 | Alto: los cuatro servicios |
 | **F6** | **De punta a punta:** el cliente en el compose (E2-12) y el recorrido de la demo (tarea 23) | F1, F2; con login, F4 y F5 | 1 script · 1 doc · compose | Gate 4 | Medio: compose y CI |
 
+**Avance de F2 y F3 (2026-11-10, `[OBSERVED]` en las ramas de la corrida `conexion-pantallas`, sin
+mergear; [SPEC-08](../specs/active/SPEC-08-conexion-de-pantallas.md)).** Un esqueleto compartido
+(contrato de las cuatro APIs, claves `cliente.datos.<puerto>`, pieza común de envío con aviso en
+`#avisos`) y cinco frentes por rol conectaron las pantallas de los cuatro roles y sus formularios; el
+estado pantalla por pantalla está en el [§10 de las brechas](brechas-de-datos-por-pantalla-e6.md).
+Del F3 entran HB-21 (Contacto) y HB-23 (camiones deshabilitados, id nuevo); HB-22, el tipo de evento
+de las notificaciones y lo que no cumple el criterio de aditivo mínimo siguen fuera. Pendientes de
+F2: Entidades y necesidades y Mapa de entregadas (público) y Misiones (donante). Los textos nuevos
+esperan el OK del usuario en cada ficha.
+
 ```text
 F0 ──┬──> F2 (rebanadas) ──> F3 (huecos)
      └──> F4 (login) ──┐

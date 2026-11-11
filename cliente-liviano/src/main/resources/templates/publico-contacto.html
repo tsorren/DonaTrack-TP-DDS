@@ -6,7 +6,9 @@
        no anduvo"; ?volver= es la pantalla de origen, a la que vuelve la página de enviado (solo
        pantallas de /). ?escenario=lento (enviando), error (del servidor) y
        sin-conexion. Es un formulario real (POST) que va a publico-contacto-enviado; el error de
-       datos es publico-contacto-error.
+       datos es publico-contacto-error. Fuera de la maqueta lo guarda PublicoContactoEnvioController
+       (HB-21) y lleva la clave de envío oculta (claveEnvio, del puerto: la maqueta no la tiene) y el campo trampa
+       oculto (sitio): si llega con texto, no se manda.
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -32,7 +34,10 @@
 
     <form action="/publico-contacto-enviado"
           th:action="@{/publico-contacto-enviado(volver=${volver})}" method="post"
-          class="formulario" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+          class="formulario" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
+          hx-boost="true" hx-indicator="#enviando-publico-contacto" hx-select-oob="#avisos">
+      <input th:if="${claveEnvio}" type="hidden" name="claveEnvio" th:value="${claveEnvio}">
+      <p hidden><label>Dejá este campo vacío <input name="sitio" tabindex="-1" autocomplete="off"></label></p>
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
@@ -96,6 +101,7 @@
       <button id="enviar" class="boton" data-tono="principal" type="submit"
               th:disabled="${escenario == 'lento'}"
               th:text="${escenario == 'lento'} ? 'Enviando…' : 'Enviar mensaje'">Enviar mensaje</button>
+      <p th:replace="~{envio :: indicador('enviando-publico-contacto', 'Enviando…')}"></p>
     </form>
 
     <!--/* A la derecha del formulario, a su altura (A/B layout:contacto, A, 2026-11-04; nota de Nico):

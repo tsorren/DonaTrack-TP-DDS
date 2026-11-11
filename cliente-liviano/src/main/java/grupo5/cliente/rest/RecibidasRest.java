@@ -1,11 +1,16 @@
 package grupo5.cliente.rest;
 
-import static grupo5.cliente.rest.DonacionesRest.ASIGNADA;
-import static grupo5.cliente.rest.DonacionesRest.ENTREGADA;
-import static grupo5.cliente.rest.DonacionesRest.FALLIDA;
-import static grupo5.cliente.rest.DonacionesRest.LISTA;
-import static grupo5.cliente.rest.DonacionesRest.TRASLADO;
-import static grupo5.cliente.rest.DonacionesRest.VENCIDA;
+import static grupo5.cliente.rest.Comun.ASIGNADA;
+import static grupo5.cliente.rest.Comun.ENTREGADA;
+import static grupo5.cliente.rest.Comun.FALLIDA;
+import static grupo5.cliente.rest.Comun.LISTA;
+import static grupo5.cliente.rest.Comun.TRASLADO;
+import static grupo5.cliente.rest.Comun.VENCIDA;
+import static grupo5.cliente.rest.Comun.cantidad;
+import static grupo5.cliente.rest.Comun.categoria;
+import static grupo5.cliente.rest.Comun.desde;
+import static grupo5.cliente.rest.Comun.icono;
+import static grupo5.cliente.rest.Comun.normalizado;
 
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
@@ -87,7 +92,7 @@ class RecibidasRest implements RecibidasPuerto {
   }
 
   private static Fila fila(DonacionesApi.Donacion d) {
-    String estado = DonacionesRest.normalizado(d.estadoActual());
+    String estado = normalizado(d.estadoActual());
     String grupo =
         switch (estado) {
           case ENTREGADA -> RECIBIDA;
@@ -97,21 +102,21 @@ class RecibidasRest implements RecibidasPuerto {
         };
     // Una en depósito con entidad todavía no tiene su cambio a asignada: vale el registro.
     String desdeQue = SALIR.equals(grupo) && !LISTA.equals(estado) ? ASIGNADA : estado;
-    return new Fila(d, estado, grupo, DonacionesRest.desde(d, desdeQue));
+    return new Fila(d, estado, grupo, desde(d, desdeQue));
   }
 
   private Recibida recibida(Fila f, Map<UUID, String> donantes) {
     DonacionesApi.Donacion d = f.d();
-    Categoria categoria = DonacionesRest.categoria(d);
+    Categoria categoria = categoria(d);
     boolean recibida = RECIBIDA.equals(f.grupo());
     UUID original = d.donacionOriginalId();
     String dono = original == null ? UN_DONANTE : donantes.computeIfAbsent(original, this::donante);
     return new Recibida(
         d.id().toString(),
         d.descripcion(),
-        categoria == null ? null : DonacionesRest.icono(categoria.nombre()),
+        categoria == null ? null : icono(categoria.nombre()),
         categoria == null ? null : categoria.nombre(),
-        DonacionesRest.cantidad(d.cantidad(), categoria),
+        cantidad(d.cantidad(), categoria),
         dono,
         null,
         null,
