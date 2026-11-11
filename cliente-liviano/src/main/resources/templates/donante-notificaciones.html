@@ -5,13 +5,13 @@
        buzón (componentes/buzon): «Todas | Sin leer», la búsqueda, Categoría, Ordenar y Agrupar (get
        con hx-boost), y la lista con «Seleccionar todas», «Marcar todas como leídas» y una fila por
        aviso: qué pasó (enlaza al detalle de la donación), a qué está asociado y hace cuánto.
-       Los avisos de las donaciones salen de datos-donante (avisos: la donación y su carta); su
-       categoría se deduce del texto de la carta: salió a entregar o quedó lista, Donaciones en camino;
-       confirmó que recibió, Donaciones entregadas; asignamos, Donaciones asignadas; recibimos, En el
-       depósito; no pudo llegar, Problemas en la entrega. Se suman dos avisos de Necesidades (una
-       necesidad nueva de una entidad), que no son de una donación. "Ahora" es el 15 de octubre de
-       2026, 16:25 (el de las demás pantallas del donante); sin leer, los 4 más nuevos (la campana
-       dice 4). Marcar es un formulario post real que va a donante-notificaciones-leidas.
+       Los avisos vienen del controller (bandeja: de la maqueta o de Notificaciones), cada uno con su
+       categoría: en la maqueta, la de su carta; con datos reales, la que se deduce del texto
+       (Notificaciones no dice el tipo, HB-09), "Otras novedades" si no es ninguna. El menú de
+       Categoría muestra solo las que tienen avisos. "Ahora" lo da la bandeja (en la maqueta, el 15 de
+       octubre de 2026, 16:25); sin leer, los 4 más nuevos (la campana dice 4). Marcar es un
+       formulario post real que va a donante-notificaciones-leidas; fuera de la maqueta lo guarda
+       DonanteNotificacionesEnvioController y vuelve con el aviso.
        ?escenario=vacio, error y lento.
        Fragmento hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -28,41 +28,29 @@
   <th:block th:replace="~{datos-donante :: donante(~{donante-notificaciones :: cuerpo})}"></th:block>
 </th:block>
 
-<!--/* limite: la fecha del tercer aviso de una donación, el más viejo de los sin leer. */-->
-<th:block th:fragment="cuerpo" th:with="limite=${avisos[2].d.cartas[avisos[2].i].fecha}">
+<!--/* La bandeja viene del controller (bandeja: de la maqueta o de Notificaciones); marcadas y
+       noLeidas son los de la maqueta, que vuelve de marcar sin guardar. */-->
+<th:block th:fragment="cuerpo">
 <th:block
-    th:with="conDatos=${escenario == ''},
+    th:with="conDatos=${escenario == '' and !bandeja.avisos.isEmpty()},
              marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
              noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
-             temas=${ {
+             todosLosTemas=${ {
       {valor: '', texto: 'Todas las categorías'},
       {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
       {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'},
       {valor: 'asignadas', texto: 'Donaciones asignadas', icono: 'asigna'},
       {valor: 'deposito', texto: 'En el depósito', icono: 'caja'},
       {valor: 'necesidades', texto: 'Necesidades', icono: 'necesidad'},
-      {valor: 'problemas', texto: 'Problemas en la entrega', icono: 'problema'} } },
-             deDonaciones=${avisos.![ {id: d.clave + '-' + i, fecha: d.cartas.get(i).fecha,
-                 texto: #strings.replace(d.cartas.get(i).texto, 'Escuela Ejemplo 12', 'Escuela Ejemplo N.º 12'),
-                 tema: (#strings.contains(d.cartas.get(i).texto, 'no pudo llegar') ? 'problemas'
-                     : (#strings.contains(d.cartas.get(i).texto, 'confirmó que recibió') ? 'entregadas'
-                     : (#strings.contains(d.cartas.get(i).texto, 'salió a entregar') or #strings.contains(d.cartas.get(i).texto, 'quedó lista') ? 'camino'
-                     : (#strings.startsWith(d.cartas.get(i).texto, 'Asignamos') ? 'asignadas' : 'deposito')))),
-                 destino: '/donante-donaciones-detalle?donacion=' + d.clave,
-                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), d.clave + '-' + i)
-                     and (d.cartas.get(i).fecha < '__${limite}__'
-                     or #root.marcadas == 'todas'
-                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), d.clave + '-' + i))} ]},
-             otras=${ {
-      {id: 'x1', fecha: '2026-10-15T16:02', tema: 'necesidades',
-       leida: !#lists.contains(#strings.listSplit(noLeidas, ','), 'x1')
-           and (marcadas == 'todas' or #lists.contains(#strings.listSplit(marcadas, ','), 'x1')), destino: '/donante-entidades',
-       texto: 'Comedor Barrio Ejemplo publicó una necesidad nueva: 30 kg de arroz para el 25 de octubre.'},
-      {id: 'x2', fecha: '2026-09-28T11:00', tema: 'necesidades',
-       leida: !#lists.contains(#strings.listSplit(noLeidas, ','), 'x2')
-           and (true or marcadas == 'todas' or #lists.contains(#strings.listSplit(marcadas, ','), 'x2')), destino: '/donante-entidades',
-       texto: 'Escuela Ejemplo N.º 12 publicó una necesidad de útiles escolares para el inicio de octubre.'} } },
-             sinLeerAhora=${#lists.size(deDonaciones.?[!leida]) + #lists.size(otras.?[!leida])}">
+      {valor: 'problemas', texto: 'Problemas en la entrega', icono: 'problema'},
+      {valor: 'otras', texto: 'Otras novedades', icono: 'mision'} } },
+             deDonaciones=${bandeja.avisos.![ {id: id, fecha: fecha, texto: texto, tema: tema, destino: destino,
+                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), id)
+                     and (leida or #root.marcadas == 'todas'
+                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), id))} ]},
+             presentes=${deDonaciones.![tema]},
+             temas=${todosLosTemas.?[valor == '' or #root.presentes.contains(valor)]},
+             sinLeerAhora=${#lists.size(deDonaciones.?[!leida])}">
   <div class="pila" data-espacio="4">
     <header class="pila" data-espacio="2">
       <p class="rotulo">Notificaciones</p>
@@ -74,7 +62,7 @@
         sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
     </header>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or (escenario == '' and bandeja.avisos.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
       <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la
         entidad confirme la entrega.</p>
@@ -96,7 +84,7 @@
 
     <th:block th:if="${conDatos}">
       <div th:replace="~{componentes/buzon :: buzon(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
-           '/donante-notificaciones-leidas', '2026-10-15T16:25', ${ {deDonaciones, otras} }, ${temas}, ${marcadas == 'todas'})}"></div>
+           '/donante-notificaciones-leidas', ${bandeja.ahora}, ${ {deDonaciones} }, ${temas}, ${marcadas == 'todas'})}"></div>
     </th:block>
   </div>
 </th:block>

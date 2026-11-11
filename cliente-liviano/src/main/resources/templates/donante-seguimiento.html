@@ -6,10 +6,12 @@
        publico-mapa (static/js/mapa.js), con el depósito, la entidad de destino de cada entrega y, con
        el número de la lista, su posición aproximada, unidas por su recorrido (lleno lo hecho, punteado
        lo que falta). Los puntos de la maqueta están en puntos (th:with), por clave de donación, y son
-       sintéticos, uno por barrio. Debajo, la lista dice lo mismo con el mismo número (RF-CL-06), la
+       sintéticos, uno por barrio (los da la maqueta; con datos reales, la posición del camión y el destino
+       de la entrega en Logística). Debajo, la lista dice lo mismo con el mismo número (RF-CL-06), la
        más avanzada primero: 1 en camino, 2 con problema y 3 pendiente; al pasar o enfocar una entrega,
        se destaca en el mapa. Sin JavaScript, el aviso del mapa y la lista. Los datos son los de
-       viaje-datos.html. Estados de la maqueta: ?escenario=vacio, error y lento.
+       viaje-datos.html. Los datos vienen del controller (miSeguimiento: de la maqueta, las de
+       viaje-datos, o de Donaciones y Logística); viaje-datos sigue envolviendo la pantalla. Estados de la maqueta: ?escenario=vacio, error y lento.
        Fragmentos: mapa (el contenedor del mapa y su script; lo usa también persona/) y
        entrega(d, numero, punto). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -26,23 +28,23 @@
        pendiente); dentro del mismo estado, la donación más reciente primero, como vienen los datos. */-->
 <th:block th:fragment="pantalla"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             donaciones=${miSeguimiento.donaciones},
              enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
-             puntos=${ {
-               lentejas: {lat: -34.6392, lng: -58.4150, destinoLat: -34.6418, destinoLng: -58.4291},
-               utiles: {lat: -34.6240, lng: -58.3944, destinoLat: -34.6052, destinoLng: -58.3846},
-               leche: {lat: -34.6405, lng: -58.3960, destinoLat: -34.6683, destinoLng: -58.4067} } },
+             puntos=${miSeguimiento.puntos},
              vanEnCamino=${enCurso.?[estado.tono == 'en-camino']},
              tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
              esperanSalir=${enCurso.?[estado.tono == 'pendiente']},
-             sinDestino=${donaciones.?[destino == null].![titulo]}">
+             sinDestino=${donaciones.?[destino == null and estado.tono == 'pendiente'].![titulo]},
+             conDatos=${escenario == '' and !enCurso.isEmpty()},
+             vacia=${escenario == 'vacio' or (escenario == '' and enCurso.isEmpty())}">
   <div class="seguimiento">
     <header class="seguimiento-cabecera">
       <p class="rotulo" th:text="${seccion}">Seguimiento</p>
       <h1>Tus entregas en curso</h1>
-      <p class="seguimiento-bajada" th:if="${escenario == ''}"
-         th:text="|Gracias por donar. ${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.|">Gracias
+      <p class="seguimiento-bajada" th:if="${conDatos}"
+         th:text="|Gracias por donar. ${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso. Posiciones aproximadas, actualizadas ${miSeguimiento.actualizado}.|">Gracias
         por donar. 3 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.</p>
-      <p class="seguimiento-bajada" th:if="${escenario == 'vacio'}">Ninguna entrega en curso.</p>
+      <p class="seguimiento-bajada" th:if="${vacia}">Ninguna entrega en curso.</p>
     </header>
 
     <!--/* Cargando: primero el aviso, que se ve en el celular; después, el lugar de cada parte, sin
@@ -67,7 +69,7 @@
          th:href="@{/donante-seguimiento}">Volver a intentar</a>
     </section>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
       <p>Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por
         dónde va el camión.</p>
@@ -76,7 +78,7 @@
     </section>
 
     <!--/* Las cifras por estado, un registro como el de la portada; aparte, las que esperan destino. */-->
-    <section th:if="${escenario == ''}" class="cifras" aria-labelledby="cifras-titulo">
+    <section th:if="${conDatos}" class="cifras" aria-labelledby="cifras-titulo">
       <h2 id="cifras-titulo" class="cifras-titulo">Tus donaciones, por estado</h2>
       <dl>
         <div class="cifra">
@@ -99,7 +101,7 @@
       </dl>
     </section>
 
-    <div th:if="${escenario == ''}" class="seguimiento-cuerpo">
+    <div th:if="${conDatos}" class="seguimiento-cuerpo">
       <!--/* El mapa de seguimiento (usuario, 2026-11-10: "sigue teniendo una abeja bajo tierra. Sacar.
              Dije que acá iba el mapa de seguimiento"): el mapa real de publico-mapa (MapLibre con
              OpenFreeMap, D21; static/js/mapa.js) con el depósito, la entidad de destino de cada
