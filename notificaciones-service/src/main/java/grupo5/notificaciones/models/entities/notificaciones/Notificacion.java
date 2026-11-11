@@ -35,6 +35,15 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   private boolean leida;
   private LocalDateTime fechaLectura;
 
+  /**
+   * Tipo del evento que la originó ({@link TipoEvento}) o null: las anteriores a HB-09 no lo
+   * tienen.
+   */
+  private String tipoEvento;
+
+  /** La donación a la que se refiere, o null si el emisor no la informó. */
+  private UUID referenciaId;
+
   @Getter(AccessLevel.NONE)
   private List<CambioEstadoNotificacion> historialEstado;
 
@@ -75,6 +84,31 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
       List<CambioEstadoNotificacion> historialEstado,
       boolean leida,
       LocalDateTime fechaLectura) {
+    this(
+        id,
+        personaId,
+        mensaje,
+        fechaCreacion,
+        estadoNotificacion,
+        historialEstado,
+        leida,
+        fechaLectura,
+        null,
+        null);
+  }
+
+  // Constructor de persistencia con el tipo de evento y la referencia (HB-09)
+  public Notificacion(
+      UUID id,
+      UUID personaId,
+      String mensaje,
+      LocalDateTime fechaCreacion,
+      EstadoNotificacion estadoNotificacion,
+      List<CambioEstadoNotificacion> historialEstado,
+      boolean leida,
+      LocalDateTime fechaLectura,
+      String tipoEvento,
+      UUID referenciaId) {
     this.id = id;
     this.personaId = personaId;
     this.mensaje = mensaje;
@@ -84,10 +118,18 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
         historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
     this.leida = leida;
     this.fechaLectura = fechaLectura;
+    this.tipoEvento = tipoEvento;
+    this.referenciaId = referenciaId;
   }
 
   public List<CambioEstadoNotificacion> getHistorialEstado() {
     return List.copyOf(this.historialEstado);
+  }
+
+  /** Marca de qué evento viene y a qué donación se refiere (HB-09). */
+  public void etiquetar(String tipoEvento, UUID referenciaId) {
+    this.tipoEvento = tipoEvento;
+    this.referenciaId = referenciaId;
   }
 
   public void actualizarEstado(EstadoNotificacion nuevoEstado) {

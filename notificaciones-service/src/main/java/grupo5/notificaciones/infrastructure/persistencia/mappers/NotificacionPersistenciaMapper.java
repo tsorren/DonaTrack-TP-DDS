@@ -23,6 +23,8 @@ public class NotificacionPersistenciaMapper {
     entity.setEstadoNotificacion(domain.getEstadoNotificacion());
     entity.setLeida(domain.isLeida());
     entity.setFechaLectura(domain.getFechaLectura());
+    entity.setTipoEvento(domain.getTipoEvento());
+    entity.setReferenciaId(domain.getReferenciaId());
 
     List<CambioEstadoEmbeddable> historial =
         domain.getHistorialEstado().stream()
@@ -56,6 +58,8 @@ public class NotificacionPersistenciaMapper {
         entity.getEstadoNotificacion(),
         historialDomain,
         Boolean.TRUE.equals(entity.getLeida()),
-        entity.getFechaLectura());
+        entity.getFechaLectura(),
+        entity.getTipoEvento(),
+        entity.getReferenciaId());
   }
 }

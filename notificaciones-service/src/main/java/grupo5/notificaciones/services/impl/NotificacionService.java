@@ -289,7 +289,9 @@ public class NotificacionService {
         n.getEstadoNotificacion().name(),
         n.getFechaCreacion(),
         n.isLeida(),
-        n.getFechaLectura());
+        n.getFechaLectura(),
+        n.getTipoEvento(),
+        n.getReferenciaId());
   }
 
   @Transactional

@@ -32,4 +32,9 @@ public sealed interface EventoNotificableDTO
   UUID personaId();
 
   LocalDateTime fecha();
+
+  /** La donación a la que se refiere el evento; solo los eventos de donación la traen (HB-09). */
+  default UUID referenciaId() {
+    return null;
+  }
 }

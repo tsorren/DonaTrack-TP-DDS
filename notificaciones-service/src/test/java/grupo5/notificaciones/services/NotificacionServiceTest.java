@@ -108,7 +108,8 @@ class NotificacionServiceTest {
             "ropa",
             admin.getId(),
             "Nadie respondió",
-            true);
+            true,
+            null);
 
     EventoNotificable evento =
         new EntregaFallida(
@@ -134,6 +135,23 @@ class NotificacionServiceTest {
     assertEquals(notificacion.getId(), resultado.get(0).id());
     assertEquals("Hola, tenés novedades", resultado.get(0).mensaje());
     assertEquals(EstadoNotificacion.PENDIENTE.name(), resultado.get(0).estado());
+  }
+
+  @Test
+  void obtenerPorPersona_devuelveTipoEventoYReferenciaYNuloEnLasAnteriores() {
+    Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    UUID donacionId = UUID.randomUUID();
+    Notificacion conTipo = NotificacionMother.pendiente(persona, "Salió");
+    conTipo.etiquetar("DONACION_EN_CAMINO", donacionId);
+    Notificacion anterior = NotificacionMother.pendiente(persona, "Vieja");
+    when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(conTipo, anterior));
+
+    List<NotificacionDTO> resultado = service.obtenerPorPersona(persona.getId());
+
+    assertEquals("DONACION_EN_CAMINO", resultado.get(0).tipoEvento());
+    assertEquals(donacionId, resultado.get(0).referenciaId());
+    assertNull(resultado.get(1).tipoEvento());
+    assertNull(resultado.get(1).referenciaId());
   }
 
   @Test

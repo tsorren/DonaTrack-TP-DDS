@@ -21,4 +21,5 @@ public record EventoDonacionEnCaminoV1(
     @NotNull(message = "El ID de la persona beneficiaria es obligatorio")
         UUID personaBeneficiariaId,
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
-    @NotBlank(message = "La URL de seguimiento es obligatoria") String urlMapa) {}
+    @NotBlank(message = "La URL de seguimiento es obligatoria") String urlMapa,
+    UUID donacionIndependienteId) {}

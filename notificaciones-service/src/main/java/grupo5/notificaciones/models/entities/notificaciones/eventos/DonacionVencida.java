@@ -3,6 +3,7 @@ package grupo5.notificaciones.models.entities.notificaciones.eventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +37,7 @@ public class DonacionVencida extends EventoNotificable {
   }
 
   @Override
-  public List<Notificacion> generarNotificaciones() {
+  protected List<Notificacion> crearNotificaciones() {
     String mensaje =
         "Atención administrador: La donación de "
             + detalleDonacion
@@ -47,5 +48,10 @@ public class DonacionVencida extends EventoNotificable {
             + ".";
     Notificacion aAdmin = new Notificacion(this.administracion.getId(), mensaje, this.getFecha());
     return List.of(aAdmin);
+  }
+
+  @Override
+  public TipoEvento tipoEvento() {
+    return TipoEvento.DONACION_VENCIDA;
   }
 }
