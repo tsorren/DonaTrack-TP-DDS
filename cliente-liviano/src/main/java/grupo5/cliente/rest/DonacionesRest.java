@@ -144,6 +144,12 @@ class DonacionesRest implements DonacionesPuerto {
    */
   // ponytail: una lista entera por pedido; con muchas entidades, un endpoint por ids.
   private Map<UUID, String> entidades(List<DonacionesApi.Donacion> lista) {
+    return nombresDeEntidades(api, lista);
+  }
+
+  /** También lo usa el seguimiento y el inicio del donante. */
+  static Map<UUID, String> nombresDeEntidades(
+      DonacionesApi api, List<DonacionesApi.Donacion> lista) {
     // HashMap y no Map.of(): get(null), el de una donación sin destino, devuelve null.
     Map<UUID, String> entidades = new HashMap<>();
     if (lista.stream()
@@ -195,7 +201,7 @@ class DonacionesRest implements DonacionesPuerto {
    * que siguen, pendientes. Una entregada tiene todas hechas; una que no pudo llegar se queda en
    * "En camino" y una vencida, en "En depósito".
    */
-  private static List<PasoRecorrido> pasos(DonacionesApi.Donacion d, String estado) {
+  static List<PasoRecorrido> pasos(DonacionesApi.Donacion d, String estado) {
     int actual =
         switch (estado) {
           case FALLIDA -> ETAPAS.indexOf(TRASLADO);
@@ -246,7 +252,7 @@ class DonacionesRest implements DonacionesPuerto {
   }
 
   /** La justificación del último cambio a ese estado, o null. */
-  private static String motivo(DonacionesApi.Donacion d, String estado) {
+  static String motivo(DonacionesApi.Donacion d, String estado) {
     return d.historial() == null
         ? null
         : d.historial().stream()
@@ -275,7 +281,7 @@ class DonacionesRest implements DonacionesPuerto {
         .toList();
   }
 
-  private static String cuando(LocalDateTime momento, LocalDate hoy) {
+  static String cuando(LocalDateTime momento, LocalDate hoy) {
     LocalDate dia = momento.toLocalDate();
     if (dia.equals(hoy)) {
       return "Hoy, " + momento.format(HORA);
@@ -285,7 +291,7 @@ class DonacionesRest implements DonacionesPuerto {
         : momento.format(DIA_Y_HORA);
   }
 
-  private static String textoDeNoticia(Cambio cambio, String entidad, boolean conFoto) {
+  static String textoDeNoticia(Cambio cambio, String entidad, boolean conFoto) {
     String justificacion = cambio.justificacion();
     return switch (normalizado(cambio.estadoNuevo())) {
       case "ENDEPOSITO" -> "Recibimos tu donación en el depósito.";
@@ -343,7 +349,7 @@ class DonacionesRest implements DonacionesPuerto {
         nota(estado, desde(d, estado)));
   }
 
-  private static EstadoEntrega estadoEntrega(String estado) {
+  static EstadoEntrega estadoEntrega(String estado) {
     return switch (estado) {
       case TRASLADO -> EstadoEntrega.EN_CAMINO;
       case ENTREGADA -> EstadoEntrega.ENTREGADA;
@@ -352,7 +358,7 @@ class DonacionesRest implements DonacionesPuerto {
     };
   }
 
-  private static String nota(String estado, LocalDateTime desde) {
+  static String nota(String estado, LocalDateTime desde) {
     return switch (estado) {
       case ASIGNADA -> "Asignada, espera el camión";
       case LISTA -> "Lista para entregar, espera el camión";
