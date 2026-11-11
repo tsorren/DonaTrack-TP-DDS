@@ -80,4 +80,16 @@ class DonanteEntidadesControllerTest {
 
     mvc.perform(get("/donante-entidades")).andExpect(redirectedUrl("/publico-ingresar"));
   }
+
+  @Test
+  void sinEntidadesActivasMuestraElEstadoVacio() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), anyString(), anyInt()))
+        .thenReturn(new DonanteEntidadesVista(List.of(), 0, 1, 1, "hoy, 7 de noviembre, 19:40"));
+
+    mvc.perform(get("/donante-entidades"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Por ahora no hay entidades activas.")))
+        .andExpect(content().string(not(containsString("entidades activas. Página"))));
+  }
 }

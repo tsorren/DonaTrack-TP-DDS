@@ -27,6 +27,7 @@
     th:with="entidades=${misEntidades.entidades},
              busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
              categoria=${param.categoria != null and {'alimentos', 'ropa', 'muebles', 'escolares'}.contains(param.categoria[0]) ? param.categoria[0] : ''},
+             sinEntidades=${misEntidades.total == 0 and busca == ''},
              soloYa=${param.ya != null and param.ya[0] == 'si'},
              filtrado=${categoria != '' or soloYa},
              pagina=${param.pagina != null and param.pagina[0].matches('[1-9][0-9]{0,3}')
@@ -49,14 +50,14 @@
       <section th:replace="~{datos-donante :: error('No pudimos cargar las entidades.', '/donante-entidades')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or (escenario == '' and sinEntidades)}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Por ahora no hay entidades activas.</h2>
       <p>Cuando una entidad se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
 
     <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra): al lado
            de la búsqueda en pantalla ancha, debajo en el celular. */-->
-    <form hx-boost="true" th:if="${escenario == '' or escenario == 'lento'}" class="filtros-barra" role="search"
+    <form hx-boost="true" th:if="${(escenario == '' and !sinEntidades) or escenario == 'lento'}" class="filtros-barra" role="search"
           action="/donante-entidades" th:action="@{/donante-entidades}"
           method="get" aria-label="Buscar entidades">
       <div class="campo filtro-buscar">
@@ -82,7 +83,7 @@
       <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
     </th:block>
 
-    <th:block th:if="${escenario == ''}">
+    <th:block th:if="${escenario == '' and !sinEntidades}">
       <p class="resultado" role="status"
          th:text="${filtrado} ? (${lista.isEmpty()} ? 'Ninguna entidad coincide con lo que elegiste.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste.|)
                  : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre.|)
