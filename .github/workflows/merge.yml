@@ -447,6 +447,9 @@ jobs:
           cat manifiesto-version.json
 
       - name: Validación pre-producción post-merge (estricta)
+        env:
+          # Igual que en main.yml: la variable de repositorio PREPROD_AUTH=true enciende la seguridad.
+          PREPROD_AUTH: ${{ vars.PREPROD_AUTH }}
         run: MANIFIESTO=manifiesto-version.json ./run-preprod-tests.sh --images ghcr
 
       # D5: un cambio incompatible de OpenAPI falla acá. En un push se compara con la cabeza

@@ -129,7 +129,8 @@ class CuentaDeServicioTests(unittest.TestCase):
     """Client credentials con SERVICIO y lo justo para crear, buscar y editar usuarios."""
 
     def setUp(self):
-        cuentas = [u for u in cargar_realm().get("users", []) if u.get("serviceAccountClientId")]
+        cuentas = [u for u in cargar_realm().get("users", [])
+                   if u.get("serviceAccountClientId") == "cliente-liviano"]
         self.assertEqual(len(cuentas), 1)
         self.cuenta = cuentas[0]
 
@@ -470,9 +471,10 @@ class AdminInicialTests(unittest.TestCase):
     def setUp(self):
         self.usuarios = cargar_realm().get("users", [])
 
-    def test_se_importan_el_admin_y_la_cuenta_de_servicio(self):
-        self.assertEqual(len(self.usuarios), 2)
+    def test_se_importan_el_admin_y_las_cuentas_de_servicio(self):
+        self.assertEqual(len(self.usuarios), 3)
         self.assertEqual(self.usuarios[1].get("serviceAccountClientId"), "cliente-liviano")
+        self.assertEqual(self.usuarios[2].get("serviceAccountClientId"), "donatrack-pruebas")
 
     def test_email_por_variable(self):
         admin = self.usuarios[0]
@@ -552,6 +554,81 @@ class SecretosYVariablesTests(unittest.TestCase):
         texto = leer("scripts", "generar-env-db.sh")
         self.assertRegex(texto, r'CLIENTE_LIVIANO_SECRET=\$\(pw\)')
         self.assertIn("CLIENTE_LIVIANO_BASE_URL=http://localhost:", texto)
+
+
+class ClientePruebasTests(unittest.TestCase):
+    """E2-07: cuenta de servicio con ADMIN para integration-tests, k6 y Postman con la seguridad encendida.
+
+    Es la credencial más poderosa del realm, así que se fija todo lo que la limita: solo client
+    credentials (sin flujos de personas), solo el rol ADMIN en su token, y el secreto por variable.
+    """
+
+    def setUp(self):
+        self.realm = cargar_realm()
+        self.cli = next(c for c in self.realm["clients"] if c["clientId"] == "donatrack-pruebas")
+        self.liviano = next(c for c in self.realm["clients"] if c["clientId"] == "cliente-liviano")
+
+    def test_es_confidencial_y_su_secreto_sale_de_una_variable(self):
+        self.assertIs(self.cli.get("publicClient"), False)
+        self.assertEqual(self.cli.get("clientAuthenticatorType"), "client-secret")
+        self.assertEqual(self.cli.get("secret"), "${PRUEBAS_CLIENT_SECRET}")
+
+    def test_solo_client_credentials_y_ningun_flujo_de_personas(self):
+        self.assertIs(self.cli.get("serviceAccountsEnabled"), True)
+        for flujo in ("standardFlowEnabled", "implicitFlowEnabled", "directAccessGrantsEnabled"):
+            self.assertIs(self.cli.get(flujo), False, flujo)
+        self.assertEqual(self.cli.get("redirectUris"), [])
+        self.assertEqual(self.cli.get("webOrigins"), [])
+
+    def test_el_scope_completo_esta_apagado_y_solo_se_mapea_admin(self):
+        # Con fullScopeAllowed en false, un rol que no esté en scopeMappings no llega al token.
+        self.assertIs(self.cli.get("fullScopeAllowed"), False)
+        mapeos = [m for m in self.realm.get("scopeMappings", []) if m["client"] == "donatrack-pruebas"]
+        self.assertEqual(len(mapeos), 1)
+        self.assertEqual(mapeos[0]["roles"], ["ADMIN"])
+
+    def test_sin_scopes_de_datos_personales(self):
+        self.assertEqual(self.cli.get("defaultClientScopes"), ["basic"])
+        self.assertEqual(self.cli.get("optionalClientScopes"), [])
+
+    def test_los_mappers_son_los_del_cliente_liviano_para_roles_y_audiencia(self):
+        # Mismos claims que el resto (RNF-AUTH-08): `roles` plano y `aud` con la API. Nada más:
+        # sin permisos, sin personaId, sin solicitudEntidad.
+        def por_nombre(c):
+            return {m["name"]: m for m in c["protocolMappers"]}
+        propios, ajenos = por_nombre(self.cli), por_nombre(self.liviano)
+        self.assertEqual(set(propios), {"roles", "audiencia-api"})
+        for nombre in propios:
+            self.assertEqual(propios[nombre], ajenos[nombre], nombre)
+
+    def test_la_cuenta_de_servicio_tiene_solo_admin_y_ningun_rol_de_cliente(self):
+        cuenta = next(u for u in self.realm["users"] if u.get("serviceAccountClientId") == "donatrack-pruebas")
+        self.assertEqual(cuenta["username"], "service-account-donatrack-pruebas")
+        self.assertEqual(cuenta.get("realmRoles"), ["ADMIN"])
+        self.assertNotIn("clientRoles", cuenta, "no necesita la Admin API ni permisos de cliente")
+        self.assertNotIn("credentials", cuenta)
+
+    def test_hay_exactamente_dos_cuentas_de_servicio(self):
+        cuentas = [u["serviceAccountClientId"] for u in self.realm["users"] if u.get("serviceAccountClientId")]
+        self.assertEqual(sorted(cuentas), ["cliente-liviano", "donatrack-pruebas"])
+
+    def test_ningun_otro_cliente_de_servicio_recibe_admin(self):
+        for u in self.realm["users"]:
+            if u.get("serviceAccountClientId") and u["serviceAccountClientId"] != "donatrack-pruebas":
+                self.assertNotIn("ADMIN", u.get("realmRoles", []), u["username"])
+
+
+class SecretoDePruebasTests(unittest.TestCase):
+    def test_el_secreto_lo_reciben_el_realm_y_los_dos_compose_y_es_obligatorio(self):
+        for compose in ("docker-compose.yml", "docker-compose.preprod.yml"):
+            kc = bloque_servicio(leer(compose), "keycloak") or ""
+            self.assertTrue("PRUEBAS_CLIENT_SECRET=${PRUEBAS_CLIENT_SECRET:?" in kc, compose)
+
+    def test_env_example_env_y_generador_lo_definen(self):
+        for archivo in (".env.example", ".env"):
+            env = variables_env(leer(archivo))
+            self.assertTrue(env.get("PRUEBAS_CLIENT_SECRET", "").startswith("cambiar-"), archivo)
+        self.assertRegex(leer("scripts", "generar-env-db.sh"), r'PRUEBAS_CLIENT_SECRET=\$\(pw\)')
 
 
 class ContextoDeBuildTests(unittest.TestCase):

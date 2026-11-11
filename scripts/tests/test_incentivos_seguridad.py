@@ -140,10 +140,12 @@ class ComposeTests(unittest.TestCase):
             self.bloque,
         )
 
-    def test_el_preprod_no_la_enciende(self):
-        # Postman, integration-tests y k6 llaman sin token hasta E2-07 (decisión M-07 de la matriz).
+    def test_el_preprod_la_enciende_solo_con_la_opcion_y_viene_apagada(self):
+        # PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth) la enciende; sin eso, apagada.
         preprod = leer(RAIZ, "docker-compose.preprod.yml")
-        self.assertNotIn("INCENTIVOS_SEGURIDAD_HABILITADA", preprod)
+        self.assertTrue("INCENTIVOS_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}" in preprod)
+        self.assertFalse(re.search(r"INCENTIVOS_SEGURIDAD_HABILITADA=true", preprod))
+        self.assertTrue("SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/" in preprod)
 
 
 class ControllersTests(unittest.TestCase):

@@ -1,6 +1,10 @@
 package grupo5.donaciones.seguridad;
 
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -18,10 +22,13 @@ import grupo5.donaciones.controllers.AbstractDonacionesWebMvcTest;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.dto.personas.AceptarLegalesDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -48,6 +55,7 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   private static final UUID AJENO = UUID.randomUUID();
   private static final String NECESIDADES = "/api/necesidades";
   private static final String INDEPENDIENTES = "/donaciones-independientes";
+  private static final String SUB_DEL_ADMIN = "7d5f0c3e-0000-4000-8000-00000000a001";
 
   private final ObjectMapper json = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -70,9 +78,20 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
                     "EDITAR_DATOS_ORGANIZACION");
             case "entidad-sin-permisos" -> token("ENTIDAD", ENTIDAD);
             case "admin" -> token("ADMIN", AJENO);
+            case "admin-con-sub" -> tokenConSub("ADMIN", AJENO, SUB_DEL_ADMIN);
             case "servicio" -> token("SERVICIO", AJENO);
             default -> throw new BadJwtException("token desconocido");
           };
+    }
+
+    private static Jwt tokenConSub(String rol, UUID personaId, String sub) {
+      return Jwt.withTokenValue("t")
+          .header("alg", "none")
+          .subject(sub)
+          .claim("roles", List.of(rol))
+          .claim("personaId", personaId.toString())
+          .claim("permisos", List.of())
+          .build();
     }
 
     private static Jwt token(String rol, UUID personaId, String... permisos) {
@@ -314,5 +333,36 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
                 .content("{}"),
             "donante")
         .andExpect(status().isBadRequest());
+  }
+
+  // RI-SVC-04: el actor de la auditoría sale del sub del token y no de un encabezado cualquiera.
+  @Test
+  void elActorDeLaAuditoriaSaleDelTokenYNoDelEncabezado() throws Exception {
+    UUID id = UUID.randomUUID();
+    String estado = INDEPENDIENTES + "/" + id + "/estado";
+    CambioEstadoDonacionIndependienteRequestDTO cambio =
+        DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ASIGNACION_REALIZADA);
+
+    pedir(conCuerpo(patch(estado).header("X-Actor", "intruso"), cambio), "admin-con-sub")
+        .andExpect(status().isOk());
+    pedir(conCuerpo(patch(estado), cambio), "admin-con-sub").andExpect(status().isOk());
+
+    verify(donacionesIndependientesService, times(2))
+        .cambiarEstado(eq(id), any(), eq(SUB_DEL_ADMIN));
+    verify(donacionesIndependientesService, never()).cambiarEstado(eq(id), any(), eq("intruso"));
+  }
+
+  @Test
+  void sinSubEnElTokenSeUsaElEncabezadoLegadoYSinEncabezadoEsObligatorio() throws Exception {
+    UUID id = UUID.randomUUID();
+    String estado = INDEPENDIENTES + "/" + id + "/estado";
+    CambioEstadoDonacionIndependienteRequestDTO cambio =
+        DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ASIGNACION_REALIZADA);
+
+    pedir(conCuerpo(patch(estado).header("X-Actor", "legado"), cambio), "admin")
+        .andExpect(status().isOk());
+    verify(donacionesIndependientesService).cambiarEstado(eq(id), any(), eq("legado"));
+
+    pedir(conCuerpo(patch(estado), cambio), "admin").andExpect(status().isBadRequest());
   }
 }

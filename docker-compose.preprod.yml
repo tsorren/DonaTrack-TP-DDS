@@ -23,6 +23,10 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
+      - NOTIFICACIONES_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,6 +74,10 @@ services:
       - INCENTIVOS_MINIO_ACCESS_KEY=incentivos-service
       - INCENTIVOS_MINIO_SECRET_KEY=${INCENTIVOS_MINIO_PASSWORD:?ver .env.example}
       - INCENTIVOS_MINIO_BUCKET=insignias
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
+      - INCENTIVOS_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -124,6 +132,10 @@ services:
       - DONACIONES_MINIO_PUBLIC_ENDPOINT=http://minio:9000
       - DONACIONES_MINIO_ACCESS_KEY=donaciones-service
       - DONACIONES_MINIO_SECRET_KEY=${DONACIONES_MINIO_PASSWORD:?ver .env.example}
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
+      - DONACIONES_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       postgres:
         condition: service_healthy
@@ -173,6 +185,10 @@ services:
       - LOGISTICA_MINIO_ACCESS_KEY=logistica-service
       - LOGISTICA_MINIO_SECRET_KEY=${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
       - LOGISTICA_FOTOS_URL_PUBLICA_BASE=http://logistica-service:8083
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
+      - LOGISTICA_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       mongodb:
         condition: service_healthy
@@ -213,6 +229,10 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
+      # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
+      - GATEWAY_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
       donaciones-service:
         condition: service_healthy
@@ -326,6 +346,8 @@ services:
       # Los lee el realm al importarse (${...} en auth-service/realm/donatrack-realm.json), solo con la base vacía.
       - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
       - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
+      # Cuenta de servicio con el rol ADMIN para integration-tests, k6 y Postman con la seguridad encendida (SPEC-06 E2-07).
+      - PRUEBAS_CLIENT_SECRET=${PRUEBAS_CLIENT_SECRET:?ver .env.example}
       - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?ver .env.example}
       - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?ver .env.example}
       # Google como identity provider (RX-01). Opcionales: vacías, el botón de Google no anda y lo demás sí (RX-13).

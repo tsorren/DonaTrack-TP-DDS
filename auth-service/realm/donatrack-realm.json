@@ -175,10 +175,17 @@
       "serviceAccountClientId": "cliente-liviano",
       "realmRoles": ["SERVICIO"],
       "clientRoles": { "realm-management": ["manage-users", "view-users", "query-users"] }
+    },
+    {
+      "username": "service-account-donatrack-pruebas",
+      "enabled": true,
+      "serviceAccountClientId": "donatrack-pruebas",
+      "realmRoles": ["ADMIN"]
     }
   ],
   "scopeMappings": [
-    { "client": "cliente-liviano", "roles": ["DONANTE", "ENTIDAD", "ADMIN", "SERVICIO"] }
+    { "client": "cliente-liviano", "roles": ["DONANTE", "ENTIDAD", "ADMIN", "SERVICIO"] },
+    { "client": "donatrack-pruebas", "roles": ["ADMIN"] }
   ],
   "clients": [
     {
@@ -266,6 +273,56 @@
             "userinfo.token.claim": "true",
             "lightweight.claim": "false",
             "introspection.token.claim": "false"
+          }
+        },
+        {
+          "name": "audiencia-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "donatrack-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "donatrack-pruebas",
+      "name": "Pruebas (solo desarrollo y preprod)",
+      "description": "Cuenta de servicio (client credentials) con el rol ADMIN para integration-tests, k6 y Postman con la seguridad encendida. En un entorno real el secreto tiene que ser aleatorio y no usarse",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${PRUEBAS_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": false,
+      "redirectUris": [],
+      "webOrigins": [],
+      "defaultClientScopes": ["basic"],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "lightweight.claim": "true",
+            "introspection.token.claim": "true"
           }
         },
         {

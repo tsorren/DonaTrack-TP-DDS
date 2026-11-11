@@ -132,12 +132,14 @@ class ComposeYRunnerTests(unittest.TestCase):
             self.assertTrue("- %s_SERVICE_URL=http://%s:%d" % (var, host, puerto) in b, var)
             self.assertRegex(b, r"%s:\n        condition: service_healthy" % host)
 
-    def test_el_preprod_tiene_healthcheck_y_no_enciende_la_seguridad(self):
+    def test_el_preprod_tiene_healthcheck_y_la_seguridad_es_una_opcion_apagada_por_defecto(self):
         b = self.bloque("docker-compose.preprod.yml", "api-gateway")
         self.assertIn("http://localhost:8086/actuator/health", b)
-        # Solo las líneas de entorno: el comentario del bloque nombra la variable para explicar por qué falta.
+        # Solo las líneas de entorno: los comentarios del bloque nombran la variable para explicarla.
         entorno = [l.strip() for l in b.splitlines() if l.strip().startswith("- ")]
-        self.assertFalse(any(l.startswith("- GATEWAY_SEGURIDAD_HABILITADA") for l in entorno))
+        self.assertIn("- GATEWAY_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}", entorno)
+        self.assertFalse(any(re.match(r"- GATEWAY_SEGURIDAD_HABILITADA=true", l) for l in entorno))
+        self.assertTrue(any(l.startswith("- SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=") for l in entorno))
 
     def test_el_resolver_ya_no_saltea_el_gateway(self):
         resolver = leer(RAIZ, "scripts", "resolver-imagenes-ghcr.sh")

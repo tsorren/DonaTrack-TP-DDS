@@ -779,6 +779,9 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GH_REPOSITORY: ${{ github.repository }}
           RAW_BASE_REF: ${{ github.base_ref }}
+          # Servicios y gateway validando el JWT (run-preprod-tests.sh --auth). Se enciende creando la
+          # variable de repositorio PREPROD_AUTH=true; vacía o ausente, el preprod corre como siempre.
+          PREPROD_AUTH: ${{ vars.PREPROD_AUTH }}
         run: |
           export GHCR_BASE="ghcr.io/$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
           export PR_TAG="pr-${PR_NUMBER}"

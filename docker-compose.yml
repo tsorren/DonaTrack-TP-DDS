@@ -249,6 +249,8 @@ services:
       # Los lee el realm al importarse (${...} en auth-service/realm/donatrack-realm.json), solo con la base vacía.
       - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
       - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
+      # Cuenta de servicio con el rol ADMIN para integration-tests, k6 y Postman con la seguridad encendida (SPEC-06 E2-07).
+      - PRUEBAS_CLIENT_SECRET=${PRUEBAS_CLIENT_SECRET:?ver .env.example}
       - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?ver .env.example}
       - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?ver .env.example}
       # Google como identity provider (RX-01). Opcionales: vacías, el botón de Google no anda y lo demás sí (RX-13).

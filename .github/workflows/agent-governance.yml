@@ -43,3 +43,28 @@ jobs:
 
       - name: Validar contratos y schemas OpenAPI
         run: node scripts/validate-contracts.js
+
+  # Tests estáticos de seguridad, realm, compose y CI (SPEC-06). Sin Docker, sin Maven y sin
+  # dependencias externas: solo Python (ya instalado en ubuntu-latest) y Node. Antes de esto no
+  # corrían en ningún workflow: un PR podía romperlos sin que nada lo avisara.
+  tests-estaticos:
+    name: Tests estáticos de seguridad (Python y Node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Tests de scripts, realm, compose, CI y seguridad por servicio (Python)
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+
+      - name: Tests del token de Postman y k6 (Node)
+        run: node scripts/tests/postman-k6-token.test.js

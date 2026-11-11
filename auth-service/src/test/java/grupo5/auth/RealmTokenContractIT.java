@@ -94,6 +94,8 @@ class RealmTokenContractIT {
   private static final String ADMIN_USER = "kc-admin-" + UUID.randomUUID();
   private static final String ADMIN_PASSWORD = "adm-" + UUID.randomUUID();
   private static final String CLIENT_SECRET = "sec-" + UUID.randomUUID();
+  private static final String PRUEBAS_CLIENT_ID = "donatrack-pruebas";
+  private static final String PRUEBAS_SECRET = "pru-" + UUID.randomUUID();
   private static final String USER_PASSWORD = "usr-" + UUID.randomUUID();
   private static final String CLAVE_INCORRECTA = "mal-" + UUID.randomUUID();
   private static final String ADMIN_DONATRACK_CLAVE = "adm-app-" + UUID.randomUUID();
@@ -126,6 +128,7 @@ class RealmTokenContractIT {
             .withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", ADMIN_PASSWORD)
             .withEnv("CLIENTE_LIVIANO_SECRET", CLIENT_SECRET)
             .withEnv("CLIENTE_LIVIANO_BASE_URL", BASE_URL_CLIENTE)
+            .withEnv("PRUEBAS_CLIENT_SECRET", PRUEBAS_SECRET)
             .withEnv("AUTH_ADMIN_EMAIL", ADMIN_DONATRACK_EMAIL)
             .withEnv("AUTH_ADMIN_PASSWORD", ADMIN_DONATRACK_CLAVE)
             .withEnv("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID)
@@ -423,6 +426,55 @@ class RealmTokenContractIT {
     assertFalse(access.has("personaId"));
   }
 
+  // E2-07: la cuenta de pruebas llama a los servicios como ADMIN con la seguridad encendida.
+  @Test
+  void laCuentaDePruebasObtieneUnTokenConElRolAdmin() throws Exception {
+    JsonNode access = claims(tokenDePruebas());
+    assertEquals(List.of("ADMIN"), valores(access.get("roles")));
+    assertTrue(valores(access.get("aud")).contains(API_AUDIENCE), access.toString());
+    assertFalse(access.has("permisos"));
+    assertFalse(access.has("personaId"));
+  }
+
+  // Es la credencial más poderosa del realm: ser ADMIN de DonaTrack no da poder sobre Keycloak.
+  @Test
+  void laCuentaDePruebasNoAdministraElRealm() throws Exception {
+    String pruebas = tokenDePruebas();
+    HttpResponse<String> roles = get(baseUrl + "/admin/realms/" + REALM + "/roles", pruebas);
+    assertEquals(403, roles.statusCode(), roles.body());
+    HttpResponse<String> usuarios = get(baseUrl + "/admin/realms/" + REALM + "/users", pruebas);
+    assertEquals(403, usuarios.statusCode(), usuarios.body());
+  }
+
+  @Test
+  void laCuentaDePruebasSoloHaceClientCredentials() throws Exception {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "password");
+    campos.put("client_id", PRUEBAS_CLIENT_ID);
+    campos.put("client_secret", PRUEBAS_SECRET);
+    campos.put("username", ADMIN_DONATRACK_EMAIL);
+    campos.put("password", ADMIN_DONATRACK_CLAVE);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertTrue(respuesta.statusCode() >= 400 && respuesta.statusCode() < 500, respuesta.body());
+    assertTrue(respuesta.body().contains("unauthorized_client"), respuesta.body());
+  }
+
+  // El secreto de una cuenta de servicio no sirve para la otra: no se pasa de SERVICIO a ADMIN.
+  @Test
+  void elSecretoDeUnaCuentaDeServicioNoSirveParaLaOtra() throws Exception {
+    Map<String, String> pidiendoAdmin = new LinkedHashMap<>();
+    pidiendoAdmin.put("grant_type", "client_credentials");
+    pidiendoAdmin.put("client_id", PRUEBAS_CLIENT_ID);
+    pidiendoAdmin.put("client_secret", CLIENT_SECRET);
+    assertEquals(401, post(HTTP, urlDeToken(REALM), form(pidiendoAdmin)).statusCode());
+
+    Map<String, String> alReves = new LinkedHashMap<>();
+    alReves.put("grant_type", "client_credentials");
+    alReves.put("client_id", CLIENT_ID);
+    alReves.put("client_secret", PRUEBAS_SECRET);
+    assertEquals(401, post(HTTP, urlDeToken(REALM), form(alReves)).statusCode());
+  }
+
   // Lo que necesita el alta de perfil: crear la cuenta, buscarla y editarle personaId y roles.
   @Test
   void laCuentaDeServicioCreaBuscaYEditaUsuarios() throws Exception {
@@ -567,6 +619,17 @@ class RealmTokenContractIT {
     campos.put("grant_type", "client_credentials");
     campos.put("client_id", CLIENT_ID);
     campos.put("client_secret", CLIENT_SECRET);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertEquals(200, respuesta.statusCode(), respuesta.body());
+    return JSON.readTree(respuesta.body()).get("access_token").asText();
+  }
+
+  // Client credentials de la cuenta de pruebas: el token ADMIN de integration-tests, k6 y Postman.
+  private static String tokenDePruebas() throws IOException, InterruptedException {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "client_credentials");
+    campos.put("client_id", PRUEBAS_CLIENT_ID);
+    campos.put("client_secret", PRUEBAS_SECRET);
     HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
     assertEquals(200, respuesta.statusCode(), respuesta.body());
     return JSON.readTree(respuesta.body()).get("access_token").asText();

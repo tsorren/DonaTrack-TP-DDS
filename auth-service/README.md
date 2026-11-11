@@ -62,6 +62,15 @@ El cliente solo recibe el scope `basic` (que trae `sub`): no se le asignan `prof
 - **Registro (D11, R14):** la cuenta se crea en Keycloak y el sitio pide "Completá tu perfil". Toda cuenta creada por la Admin API recibe el rol por defecto (`DONANTE`): una cuenta de entidad pendiente tiene `DONANTE` pero ningún permiso.
 - **Google:** identity provider `google` con `${GOOGLE_CLIENT_ID}` y `${GOOGLE_CLIENT_SECRET}` (opcionales en el compose: vacías, todo anda menos "Continuar con Google"). El primer ingreso usa el flujo `first broker login`, que pide la clave para vincular una cuenta existente (D4).
 
+## Cuenta de pruebas `donatrack-pruebas` (E2-07)
+
+Cliente confidencial con **solo client credentials** y una cuenta de servicio con el rol `ADMIN` y nada más (sin el rol por defecto, sin roles de `realm-management`). La usan `integration-tests`, k6 y Postman para llamar a los servicios cuando la seguridad está encendida (`run-preprod-tests.sh --auth`). Su token lleva `roles` = `ADMIN` y `aud` con `donatrack-api`, y no tiene `permisos` ni `personaId`. Su secreto sale de `PRUEBAS_CLIENT_SECRET`.
+
+- **Es la credencial más poderosa del realm.** Ser `ADMIN` de DonaTrack pasa todas las reglas de los servicios, aunque no da ningún poder sobre Keycloak: la Admin API le responde `403` (lo comprueba `RealmTokenContractIT`).
+- **En un entorno real, `PRUEBAS_CLIENT_SECRET` tiene que ser un valor aleatorio que nadie use.** El realm importa el cliente siempre; lo que lo vuelve inofensivo es que nadie conozca el secreto.
+- Con `fullScopeAllowed` en `false`, el rol solo llega al token porque el realm lo declara en `scopeMappings`. Un test del contrato lo fija.
+- No hay cuentas de servicio para Incentivos ni Donaciones porque no hacen llamadas HTTP internas en el despliegue estándar (ver M-08 de la [matriz de permisos](../docs/arquitectura/seguridad/matriz-permisos.md)).
+
 ## Políticas de seguridad (A1-02b)
 
 | Política | Valor | Dónde se ve |

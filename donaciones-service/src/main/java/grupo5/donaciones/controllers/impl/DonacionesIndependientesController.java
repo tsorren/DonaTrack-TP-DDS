@@ -8,12 +8,14 @@ import grupo5.donaciones.controllers.IDonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
+import grupo5.donaciones.seguridad.AuditoriaDelActor;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,7 +59,9 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
   public ResponseEntity<DonacionIndependienteResponseDTO> cambiarEstado(
       @PathVariable UUID id,
       @Valid @RequestBody CambioEstadoDonacionIndependienteRequestDTO request,
-      @RequestHeader("X-Actor") String actor) {
-    return ResponseEntity.ok(service.cambiarEstado(id, request, actor));
+      @RequestHeader(value = "X-Actor", required = false) String actorLegado,
+      Authentication autenticacion) {
+    return ResponseEntity.ok(
+        service.cambiarEstado(id, request, AuditoriaDelActor.de(autenticacion, actorLegado)));
   }
 }

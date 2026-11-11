@@ -112,9 +112,11 @@ paths:
           schema: { type: string, format: uuid }
         - name: X-Actor
           in: header
-          required: true
+          required: false
           schema: { type: string }
-          description: Identificador del actor o sistema que ejecuta la transición
+          description: >-
+            Quién ejecuta la transición. Con token se toma del `sub` y este encabezado se ignora
+            (RI-SVC-04); sin token (seguridad apagada) es obligatorio y su falta responde 400.
       requestBody:
         required: true
         content:

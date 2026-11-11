@@ -157,8 +157,12 @@ class ComposeTests(unittest.TestCase):
             "realms/donatrack/protocol/openid-connect/certs" in self.bloque
         )
 
-    def test_el_preprod_no_la_enciende(self):
-        self.assertFalse("LOGISTICA_SEGURIDAD_HABILITADA" in leer(RAIZ, "docker-compose.preprod.yml"))
+    def test_el_preprod_la_enciende_solo_con_la_opcion_y_viene_apagada(self):
+        # PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth) la enciende; sin eso, apagada.
+        preprod = leer(RAIZ, "docker-compose.preprod.yml")
+        self.assertTrue("LOGISTICA_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}" in preprod)
+        self.assertFalse(re.search(r"LOGISTICA_SEGURIDAD_HABILITADA=true", preprod))
+        self.assertTrue("SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/" in preprod)
 
 
 class ControllersTests(unittest.TestCase):

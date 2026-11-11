@@ -133,9 +133,14 @@ class PreprodComposeTests(unittest.TestCase):
     def test_ningun_otro_servicio_dependia_de_keycloak_antes_de_esta_etapa(self):
         # Keycloak llega solo al preprod: lo valida el gateway recién en E2-01. Si alguien lo agrega
         # como dependencia, este test obliga a revisar el orden de arranque a propósito.
+        # Mira `depends_on`, no el bloque entero: los servicios nombran a Keycloak en la URL del JWKS
+        # (SPEC-06 E2-01), que se consulta recién con el primer token y no obliga a esperarlo.
         for nombre in ("notificaciones-service", "incentivos-service", "donaciones-service",
-                       "logistica-service"):
-            self.assertNotIn("keycloak", servicio(self.preprod, nombre), nombre)
+                       "logistica-service", "api-gateway"):
+            bloque = servicio(self.preprod, nombre)
+            dependencias = re.search(r"    depends_on:\n((?:      .*\n)+)", bloque + "\n")
+            self.assertIsNotNone(dependencias, nombre)
+            self.assertNotRegex(dependencias.group(1), r"(?m)^      keycloak:", nombre)
 
     @unittest.skipIf(yaml is None, "PyYAML no disponible")
     def test_el_compose_de_preprod_es_yaml_valido(self):

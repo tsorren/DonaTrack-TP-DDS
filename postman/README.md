@@ -46,6 +46,20 @@ incentivosUrl     = http://localhost:8082
 logisticaUrl      = http://localhost:8083
 ```
 
+### Token para la seguridad encendida (SPEC-06 E2-07)
+
+Las 9 colecciones traen un pre-request script que pide un token a Keycloak (client credentials de la cuenta `donatrack-pruebas`, rol `ADMIN`) **solo si** definís `pruebasClientSecret`. Sin esa variable no hace nada y los pedidos salen como siempre, que es lo que corresponde con la seguridad apagada.
+
+| Variable | Valor por defecto | Para qué |
+|---|---|---|
+| `pruebasClientSecret` | vacío | Secreto de la cuenta (`PRUEBAS_CLIENT_SECRET` de `.env`). **No lo guardes en la colección** |
+| `pruebasClientId` | `donatrack-pruebas` | Cliente del realm |
+| `keycloakTokenUrl` | `http://localhost:8180/realms/donatrack/protocol/openid-connect/token` | Dónde se pide el token |
+
+Con Newman: `newman run postman/flujo-1-catalogo-personas.json --env-var pruebasClientSecret="$(sed -n 's/^PRUEBAS_CLIENT_SECRET=//p' .env)"`. El token se guarda en la colección y se renueva 30 segundos antes de vencer.
+
+**El token solo se manda a los servicios propios** (`baseUrl`, `donacionesUrl`, `notificacionesUrl`, `incentivosUrl` y `logisticaUrl`), y solo si la URL es exactamente esa base o sigue con `/` o `?`. Nunca va al proveedor logístico externo del flujo 9 (`logisticaExternoUrl`): es un `ADMIN`. `scripts/tests/postman-k6-token.test.js` ejecuta estos scripts y lo comprueba.
+
 ### IDs generados automáticamente (flujos 5 y 7)
 
 Los flujos 5 y 7 tienen un pre-request script global que genera IDs con `{{$guid}}` si aún no existen, permitiendo correr la colección varias veces sin colisiones:
