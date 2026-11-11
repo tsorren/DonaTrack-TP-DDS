@@ -341,6 +341,8 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Lo que pide | El mismo texto de cada pedido de la ficha pública: "Lentejas secas · Faltan 30 de 40 kg este mes · Se repite cada mes" · en uno de una sola vez: "Aceite de girasol · Faltan 20 litros · Hasta el 20 de octubre". Más de 3: "Ver los 5 pedidos" · "Ver menos" | Nombre accesible de la lista: "Lo que pide <entidad>". La barra, si hay, repite el texto |
 | Sin necesidades | "Hoy no pide nada." | — |
 | Paginado | "Página siguiente" · "Página anterior" | Nombre accesible: "Páginas de entidades" |
+| Lo que pide, con datos reales | "Piden 40 kg · Hasta el 20 de octubre" · sin fecha: "Piden 20 unidades · Sin fecha de cierre" · sin unidad: "Piden 20" | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Lo recibido de cada necesidad no existe en la API (HB-18): no se dice cuánto falta y el renglón va sin barra ni porcentaje. Un pedido cuya categoría no es de las cuatro del sprite no se muestra en ningún grupo |
+| Cuenta, una sola entidad | "1 entidad activa. Página 1 de 1." | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10) |
 | Cómo donar: título | Cómo llega tu donación | — |
 | Cómo donar | "Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una entidad. Desde que la registran, ves cada paso en Mis donaciones." · "Depósito Central Ejemplo · Calle Ejemplo 1234, Ciudad Ejemplo · Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h" · "Ver Mis donaciones" | RF-15 y RF-17. Los datos del depósito, sintéticos (los del primer prototipo) |
 
