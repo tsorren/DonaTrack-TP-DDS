@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -21,10 +20,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
- * Las notificaciones del donante desde Notificaciones. El DTO no dice de qué tipo es ni a qué
- * donación va (HB-09, fuera de esta corrida): la categoría se deduce del texto y el mensaje lleva a
- * Mis donaciones (o a Entidades, si es de una necesidad). Marcar solo toca las de la bandeja de la
- * persona: Notificaciones todavía no valida el token (HB-13).
+ * Las notificaciones del donante desde Notificaciones. La categoría sale del tipo de evento y el
+ * mensaje lleva al detalle de la donación a la que se refiere (HB-09); sin tipo, "Otras novedades",
+ * y sin donación, a Mis donaciones. Marcar solo toca las de la bandeja de la persona:
+ * Notificaciones todavía no valida el token (HB-13).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -32,16 +31,17 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "cliente.datos.donante", havingValue = "rest")
 class DonanteNotificacionesRest implements DonanteNotificacionesPuerto {
 
-  /** Qué parte del texto dice la categoría, en el orden en que se prueba. */
-  // ponytail: deducido del texto; con el tipo en el DTO (HB-09), se lee de ahí.
-  private static final List<Map.Entry<String, List<String>>> TEMAS =
-      List.of(
-          Map.entry("problemas", List.of("no pudo llegar", "no pudimos entregar")),
-          Map.entry("entregadas", List.of("recibió tu donación", "confirmó que recibió")),
-          Map.entry("camino", List.of("salió a entregar", "quedó lista")),
-          Map.entry("asignadas", List.of("asignamos tu donación", "fue asignada")),
-          Map.entry("necesidades", List.of("necesidad nueva", "publicó una necesidad")),
-          Map.entry("deposito", List.of("recibimos tu donación")));
+  /** La categoría de cada tipo de evento; los demás (y sin tipo) van a "otras". */
+  private static final Map<String, String> TEMAS =
+      Map.of(
+          "DONACION_ASIGNADA", "asignadas",
+          "DONACION_EN_CAMINO", "camino",
+          "DONACION_RECIBIDA", "entregadas",
+          "ENTREGA_FALLIDA", "problemas",
+          "DONACION_VENCIDA", "problemas");
+
+  private static final String OTRAS = "otras";
+  private static final String MIS_DONACIONES = "/donante-donaciones";
 
   private final NotificacionesApi api;
   private final Clock reloj;
@@ -84,23 +84,20 @@ class DonanteNotificacionesRest implements DonanteNotificacionesPuerto {
 
   private static Aviso aviso(NotificacionesApi.Notificacion n) {
     String texto = n.mensaje() == null ? "" : n.mensaje();
-    String tema = tema(texto);
     return new Aviso(
         n.id().toString(),
         iso(n.fechaCreacion()),
         texto,
-        tema,
-        "necesidades".equals(tema) ? "/donante-entidades" : "/donante-donaciones",
+        tema(n.tipoEvento()),
+        n.referenciaId() == null
+            ? MIS_DONACIONES
+            : "/donante-donaciones-detalle?donacion=" + n.referenciaId(),
         n.fechaLectura() != null);
   }
 
-  static String tema(String texto) {
-    String minusculas = texto.toLowerCase(Locale.ROOT);
-    return TEMAS.stream()
-        .filter(t -> t.getValue().stream().anyMatch(minusculas::contains))
-        .map(Map.Entry::getKey)
-        .findFirst()
-        .orElse("otras");
+  static String tema(String tipoEvento) {
+    // Map.of no admite buscar con null: sin tipo, "otras".
+    return tipoEvento == null ? OTRAS : TEMAS.getOrDefault(tipoEvento, OTRAS);
   }
 
   /** ISO a los minutos, como lo compara el buzón: "2026-10-15T16:25". */

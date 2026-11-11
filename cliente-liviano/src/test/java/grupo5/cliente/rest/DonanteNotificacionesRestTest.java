@@ -32,18 +32,24 @@ class DonanteNotificacionesRestTest {
   private static final String BANDEJA =
       "http://notificaciones/api/notificaciones/persona/" + PERSONA;
 
-  /** Desordenadas, una leída; textos como los arma Notificaciones. */
+  private static final String DONACION = "6f1c2c1e-0000-4000-8000-0000000000d1";
+
+  /**
+   * Desordenadas, una leída; textos como los arma Notificaciones. La asignada trae su tipo y su
+   * donación (HB-09); la otra es de antes y no trae ninguno.
+   */
   private static final String DOS =
       """
       [
         {"id": "%1$s", "mensaje": "Tu donación de Fideos fue asignada a Comedor Barrio Ejemplo",
-         "estado": "ENVIADA", "fechaCreacion": "2026-10-14T12:15:30", "fechaLectura": null},
+         "estado": "ENVIADA", "fechaCreacion": "2026-10-14T12:15:30", "fechaLectura": null,
+         "tipoEvento": "DONACION_ASIGNADA", "referenciaId": "%3$s"},
         {"id": "%2$s", "mensaje": "¡Felicitaciones! Has ascendido de la categoría A a B.",
          "estado": "ENVIADA", "fechaCreacion": "2026-10-15T16:02:00",
          "fechaLectura": "2026-10-15T16:10:00"}
       ]
       """
-          .formatted(UNA, OTRA);
+          .formatted(UNA, OTRA, DONACION);
 
   private MockRestServiceServer apis;
   private DonanteNotificacionesRest adaptador;
@@ -70,23 +76,24 @@ class DonanteNotificacionesRestTest {
     Aviso ascenso = vista.avisos().get(0);
     assertEquals(OTRA, ascenso.id());
     assertEquals("otras", ascenso.tema());
+    assertEquals("/donante-donaciones", ascenso.destino());
     assertTrue(ascenso.leida());
     Aviso asignada = vista.avisos().get(1);
     assertEquals("2026-10-14T12:15", asignada.fecha());
     assertEquals("asignadas", asignada.tema());
-    assertEquals("/donante-donaciones", asignada.destino());
+    assertEquals("/donante-donaciones-detalle?donacion=" + DONACION, asignada.destino());
     assertFalse(asignada.leida());
   }
 
   @Test
-  void laCategoriaSaleDelTexto() {
-    assertEquals("problemas", DonanteNotificacionesRest.tema("No pudimos entregar tu donación"));
-    assertEquals("entregadas", DonanteNotificacionesRest.tema("¡Gracias! X recibió tu donación"));
-    assertEquals(
-        "camino", DonanteNotificacionesRest.tema("El camión salió a entregar tu donación"));
-    assertEquals("necesidades", DonanteNotificacionesRest.tema("X publicó una necesidad nueva"));
-    assertEquals(
-        "deposito", DonanteNotificacionesRest.tema("Recibimos tu donación en el depósito."));
+  void laCategoriaSaleDelTipoDeEventoYSinTipoSonOtrasNovedades() {
+    assertEquals("problemas", DonanteNotificacionesRest.tema("ENTREGA_FALLIDA"));
+    assertEquals("entregadas", DonanteNotificacionesRest.tema("DONACION_RECIBIDA"));
+    assertEquals("camino", DonanteNotificacionesRest.tema("DONACION_EN_CAMINO"));
+    assertEquals("asignadas", DonanteNotificacionesRest.tema("DONACION_ASIGNADA"));
+    assertEquals("otras", DonanteNotificacionesRest.tema("MISION_CUMPLIDA"));
+    assertEquals("otras", DonanteNotificacionesRest.tema("UN_TIPO_QUE_NO_CONOCEMOS"));
+    assertEquals("otras", DonanteNotificacionesRest.tema(null));
   }
 
   @Test

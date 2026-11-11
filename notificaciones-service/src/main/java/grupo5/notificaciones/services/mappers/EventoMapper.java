@@ -48,8 +48,10 @@ public class EventoMapper {
   public DonacionAsignada toEntity(EventoDonacionAsignadaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
-    return new DonacionAsignada(
-        donante, beneficiario, construirDetalleDonacion(evento), evento.fecha());
+    return conReferencia(
+        new DonacionAsignada(
+            donante, beneficiario, construirDetalleDonacion(evento), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonanteRegistrado toEntity(EventoDonanteRegistradoV1 evento) {
@@ -60,36 +62,43 @@ public class EventoMapper {
   public DonacionEnCamino toEntity(EventoDonacionEnCaminoV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
-    return new DonacionEnCamino(
-        donante, beneficiario, evento.descripcion(), evento.urlMapa(), evento.fecha());
+    return conReferencia(
+        new DonacionEnCamino(
+            donante, beneficiario, evento.descripcion(), evento.urlMapa(), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonacionRecibida toEntity(EventoDonacionRecibidaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
-    return new DonacionRecibida(
-        donante, beneficiario, evento.descripcion(), evento.patenteCamion(), evento.fecha());
+    return conReferencia(
+        new DonacionRecibida(
+            donante, beneficiario, evento.descripcion(), evento.patenteCamion(), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public EntregaFallida toEntity(EventoDonacionEntregaFallidaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
     Persona admin = buscarPersona(evento.personaAdminId());
-    return new EntregaFallida(
-        donante,
-        beneficiario,
-        admin,
-        evento.descripcion(),
-        evento.justificacion(),
-        evento.replanificable(),
-        evento.fecha());
+    return conReferencia(
+        new EntregaFallida(
+            donante,
+            beneficiario,
+            admin,
+            evento.descripcion(),
+            evento.justificacion(),
+            evento.replanificable(),
+            evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonacionVencida toEntity(EventoDonacionVencidaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona admin = buscarPersona(evento.personaAdminId());
-    return new DonacionVencida(
-        donante, admin, evento.descripcion(), evento.motivo(), evento.fecha());
+    return conReferencia(
+        new DonacionVencida(donante, admin, evento.descripcion(), evento.motivo(), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonanteInactivo toEntity(EventoIncentivoDonanteInactivoV1 evento) {
@@ -141,6 +150,12 @@ public class EventoMapper {
 
   public EventoNotificable toEntity(EventoNotificableDTO dto) {
     Persona donante = buscarPersona(dto.personaId());
+    EventoNotificable evento = armar(dto, donante);
+    evento.asociarReferencia(dto.referenciaId());
+    return evento;
+  }
+
+  private EventoNotificable armar(EventoNotificableDTO dto, Persona donante) {
     return switch (dto) {
       case EventoDonacionAsignadaDTO don -> {
         Persona beneficiario = buscarPersona(don.personaBeneficiariaId());
@@ -181,6 +196,14 @@ public class EventoMapper {
         yield new DonacionVencida(donante, admin, dv.descripcion(), dv.motivo(), dv.fecha());
       }
     };
+  }
+
+  /**
+   * Deja en el evento la donación a la que se refiere (HB-09); si el emisor no la informó, null.
+   */
+  private static <T extends EventoNotificable> T conReferencia(T evento, UUID donacionId) {
+    evento.asociarReferencia(donacionId);
+    return evento;
   }
 
   private Persona buscarPersona(UUID id) {
