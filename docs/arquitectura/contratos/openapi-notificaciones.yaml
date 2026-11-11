@@ -710,7 +710,8 @@ components:
           maxLength: 2000
         codigoError:
           type: string
-          maxLength: 64
+          pattern: '^[0-9a-fA-F]{12,32}$'
+          description: El código de un aviso de error del sitio (hexadecimal).
           nullable: true
         correo:
           type: string

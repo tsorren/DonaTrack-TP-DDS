@@ -110,6 +110,29 @@ class ContactoControllerTest {
   }
 
   @Test
+  void recibir_conCodigoDeErrorSinElFormatoDeLosAvisos_responde400() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/contacto")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(CUERPO.replace("null", "\"no es un código\"")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void recibir_conElCodigoDeUnAviso_responde201() throws Exception {
+    when(service.recibir(any(), any())).thenReturn(new ContactoService.Recepcion(4821, true));
+
+    mockMvc
+        .perform(
+            post("/api/contacto")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(CUERPO.replace("null", "\"0a1b2c3d4e5f60718293a4b5c6d7e8f9\"")))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
   void recibir_conCorreoInvalidoOTemaDesconocido_responde400() throws Exception {
     mockMvc
         .perform(
