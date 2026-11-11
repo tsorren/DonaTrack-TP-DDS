@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Notificaciones Service API
-  version: 1.0.0
+  version: 1.1.0
   description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 servers:
   - url: http://localhost:8081
@@ -250,6 +250,145 @@ paths:
       responses:
         '204':
           description: Datos de la persona anonimizados o eliminados
+  /api/contacto:
+    post:
+      tags: [Contacto]
+      summary: Recibir un mensaje del formulario de contacto (HB-21)
+      description: >-
+        Público (ruta de la allowlist del gateway). Orden de los chequeos: primero la claveEnvio
+        (si ya estaba, 200 con el número del primer mensaje, aunque el correo esté en el límite),
+        después los límites (5 por hora por correo y 20 por día por IP, en configuración) y recién
+        entonces se guarda. Cada mensaje nuevo avisa a la Administración en su bandeja.
+      operationId: recibirMensajeContacto
+      parameters:
+        - name: X-Forwarded-For
+          in: header
+          required: false
+          description: >-
+            La IP del navegador va primera; el gateway suma la suya detrás. Sin el encabezado,
+            solo cuenta el límite por correo.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MensajeContactoInputDTO'
+      responses:
+        '201':
+          description: Mensaje recibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumeroMensajeDTO'
+        '200':
+          description: La claveEnvio ya estaba; el número es el del primer mensaje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumeroMensajeDTO'
+        '400':
+          description: Datos inválidos (ERR-CSR-003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Límite de envíos superado (ERR-EST-903)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags: [Contacto]
+      summary: Listar los mensajes de contacto (solo ADMIN, con HB-13)
+      description: Del más nuevo al más viejo, 20 por página. El total va en el header X-Total-Count.
+      operationId: listarMensajesContacto
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoMensajeContacto'
+        - name: pagina
+          in: query
+          required: false
+          description: Desde 0.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Página de mensajes
+          headers:
+            X-Total-Count:
+              description: Cantidad total de mensajes con ese filtro
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MensajeContactoDTO'
+        '400':
+          description: Estado o página inválidos (ERR-CSR-003)
+  /api/contacto/{numero}:
+    get:
+      tags: [Contacto]
+      summary: Obtener un mensaje de contacto con su respuesta (solo ADMIN, con HB-13)
+      operationId: obtenerMensajeContacto
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Mensaje encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeContactoDTO'
+        '404':
+          description: No hay mensaje con ese número
+  /api/contacto/{numero}/respuesta:
+    post:
+      tags: [Contacto]
+      summary: Responder un mensaje de contacto por correo (solo ADMIN, con HB-13)
+      description: >-
+        Manda "Respuesta a tu mensaje Nº <numero>" y el texto al correo del mensaje. Queda en
+        RESPONDIDO si el correo salió, o en ENVIO_FALLIDO si el proveedor falló (se reintenta con
+        el mismo pedido).
+      operationId: responderMensajeContacto
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RespuestaContactoInputDTO'
+      responses:
+        '200':
+          description: Mensaje con su nuevo estado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeContactoDTO'
+        '400':
+          description: Respuesta vacía o de más de 5000 caracteres (ERR-CSR-003)
+        '404':
+          description: No hay mensaje con ese número
 components:
   schemas:
     PersonaReplicaDTO:
@@ -554,3 +693,110 @@ components:
           type: string
           format: date-time
           nullable: true
+    MensajeContactoInputDTO:
+      type: object
+      required:
+        - tema
+        - texto
+        - correo
+        - claveEnvio
+      properties:
+        tema:
+          type: string
+          enum: [ENTREGA, DONACION, NECESIDAD, CUENTA, SITIO, OTRO]
+        texto:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        codigoError:
+          type: string
+          pattern: '^[0-9a-fA-F]{12,32}$'
+          description: El código de un aviso de error del sitio (hexadecimal).
+          nullable: true
+        correo:
+          type: string
+          format: email
+          maxLength: 254
+        claveEnvio:
+          type: string
+          format: uuid
+          description: La genera el formulario al abrirse; un reenvío con la misma clave no crea otro mensaje.
+    NumeroMensajeDTO:
+      type: object
+      required:
+        - numero
+      properties:
+        numero:
+          type: integer
+          format: int64
+    RespuestaContactoInputDTO:
+      type: object
+      required:
+        - texto
+      properties:
+        texto:
+          type: string
+          minLength: 1
+          maxLength: 5000
+    EstadoMensajeContacto:
+      type: string
+      enum: [RECIBIDO, RESPONDIDO, ENVIO_FALLIDO]
+    MensajeContactoDTO:
+      type: object
+      required:
+        - numero
+        - tema
+        - texto
+        - correo
+        - estado
+        - recibidoEn
+      properties:
+        numero:
+          type: integer
+          format: int64
+        tema:
+          type: string
+          enum: [ENTREGA, DONACION, NECESIDAD, CUENTA, SITIO, OTRO]
+        texto:
+          type: string
+        codigoError:
+          type: string
+          nullable: true
+        correo:
+          type: string
+        estado:
+          type: string
+          enum: [RECIBIDO, RESPONDIDO, ENVIO_FALLIDO]
+        recibidoEn:
+          type: string
+          description: Hora de Buenos Aires sin offset (yyyy-MM-ddTHH:mm:ss), como la serializa LocalDateTime.
+        respuesta:
+          type: string
+          nullable: true
+        respondidoEn:
+          type: string
+          description: Hora de Buenos Aires sin offset (yyyy-MM-ddTHH:mm:ss), como la serializa LocalDateTime.
+          nullable: true
+    ErrorResponse:
+      type: object
+      description: Formato de error común (common-lib).
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        type:
+          type: string
+        details:
+          type: string
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+        errors:
+          type: array
+          nullable: true
+          items:
+            type: object

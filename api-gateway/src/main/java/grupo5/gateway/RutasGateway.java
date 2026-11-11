@@ -51,7 +51,12 @@ public class RutasGateway {
 
   @Bean
   RouterFunction<ServerResponse> rutaNotificaciones(GatewayProperties props) {
-    return ruta("notificaciones", props.servicios().notificaciones(), "/api/notificaciones/**");
+    return ruta(
+        "notificaciones",
+        props.servicios().notificaciones(),
+        "/api/notificaciones/**",
+        "/api/contacto",
+        "/api/contacto/**");
   }
 
   @Bean

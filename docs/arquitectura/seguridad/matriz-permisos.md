@@ -185,6 +185,9 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `POST` | `/api/notificaciones/eventos`, `/notificaciones` (legado, DTI-13) | `SERVICIO` | — | — | Incentivos por Feign |
 | `GET` | `/notificaciones/persona/{personaId}` (alias QA) | ADMIN | — | — | |
 | `PUT`, `GET`, `DELETE` | `/api/notificaciones/personas/**` | `SERVICIO`, ADMIN | — | — | Réplica de personas |
+| `POST` | `/api/contacto` | público | — | — | Contacto (HB-21; límite por correo e IP) |
+| `GET` | `/api/contacto`, `/api/contacto/{numero}` | ADMIN | — | — | Sin pantalla todavía (HB-21) |
+| `POST` | `/api/contacto/{numero}/respuesta` | ADMIN | — | — | Sin pantalla todavía (HB-21) |
 
 ## 9. Decisiones para aprobar
 

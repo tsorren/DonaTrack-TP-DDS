@@ -35,6 +35,13 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 *   **Responsabilidad**: Registrar el mensaje, el destinatario, la fecha y el estado de la comunicación. Provee la lógica para ordenar los canales por prioridad (respetando la predeterminación) y ejecutar reintentos de envío (*fallback*) ante fallos de proveedores de mensajería (Double Dispatch con `NotificacionRouter` y adaptadores multicanal).
 *   **Paquete**: `grupo5.notificaciones.models.entities.notificaciones`
 
+### 2.3. Agregado: Mensaje de contacto (HB-21)
+*   **Aggregate Root**: `MensajeContacto` (un mensaje del formulario de contacto del sitio). Implementa el [ADR `proposed` de HB-21](../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md).
+*   **Componentes Internos**: `TemaContacto` (los seis temas del formulario) y `EstadoMensajeContacto` (*RECIBIDO*, *RESPONDIDO*, *ENVIO_FALLIDO*).
+*   **Identidad**: `numero`, de la identidad de la tabla `mensaje_contacto` (Flyway V4); `claveEnvio` es UNIQUE y hace idempotente el reenvío.
+*   **Responsabilidad**: guardar el mensaje y responderlo por correo con "Respuesta a tu mensaje Nº …" mediante `NotificacionSender`. Si el proveedor falla queda en *ENVIO_FALLIDO* con la respuesta guardada. `ContactoService` chequea primero la clave de envío y después el límite (5 por hora por correo y 20 por día por IP, contados en la tabla), y avisa a la persona Administración con una `Notificacion` común.
+*   **Paquete**: `grupo5.notificaciones.models.entities.contacto`
+
 ---
 
 ## 3. Políticas y Procesamiento de Eventos (`EventoNotificable`)
