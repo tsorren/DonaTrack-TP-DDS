@@ -178,6 +178,15 @@ Filtro de tono:
 - El error del servidor dice qué no cambió, también el problema.
 - Sin urgencia ni disculpas de adorno.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10).
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Aviso al confirmar con el problema | "Confirmaste la recepción y contaste el problema. Le avisamos a quien donó." | En `#avisos`, al volver a Seguir entregas |
+
+
 ## 7. Accesibilidad
 
 - Las del acta (zonas, orden del foco, `label`, `aria-describedby`, resumen con `role="alert"`).

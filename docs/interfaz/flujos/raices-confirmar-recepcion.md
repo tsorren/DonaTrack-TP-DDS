@@ -235,6 +235,18 @@ Filtro de tono:
   "sostenible" puesto de adorno; tampoco "echó raíces" en un dato o un botón (la imagen de raíz, solo
   en el dibujo).
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Fuera de la maqueta, Logística no dice cuándo
+llegó la entrega a la puerta (lo completa recién al confirmar; HB-22, fuera de alcance) y la
+confirmación vuelve a Seguir entregas con un aviso del servidor en lugar de Recepción confirmada.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Bajada, sin la hora de llegada | "Silla plegable, 1 unidad. Salió del depósito el 8 de noviembre a las 14:30." | Reemplaza a "Llegó hoy a las 18:20." cuando no se sabe cuándo llegó |
+| Aviso al confirmar | "Confirmaste la recepción. Le avisamos a quien donó." | En `#avisos`, al volver a Seguir entregas. No afirma que ya lo leyó (HB-09) |
+
+
 ## 7. Accesibilidad
 
 - Zonas: el enlace para saltar al contenido, la navegación de la entidad (`nav` con nombre), el
