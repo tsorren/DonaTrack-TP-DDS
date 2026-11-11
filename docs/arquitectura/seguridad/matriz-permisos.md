@@ -200,6 +200,8 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 
 `[OBSERVED]` (2026-11-10, al implementar Notificaciones) El alias `GET /notificaciones/persona/{personaId}` compartía método con la ruta `/api/…`, y la matriz les da reglas distintas (ADMIN y dueño): pasó a ser un método propio, que solo entra el ADMIN. La pertenencia de `PATCH /{id}/leida` se resuelve con `NotificacionService.personaDe` (la notificación guarda su `personaId`, el DTO no): una notificación inexistente no tiene dueño, así que quien no es admin recibe `403` y no puede averiguar qué ids existen. Con `NOTIFICACIONES_SEGURIDAD_HABILITADA=true`, `NotificacionesFeignClient` de Incentivos, los flujos 7 y 8 de Postman y los clientes de `integration-tests` llaman sin token y recibirían `401`; se adaptan en E2-07 (M-07).
 
+`[OBSERVED]` (2026-11-11, al integrar ENTREGA_6) El contacto (HB-21) llegó después de esta sección: `POST /api/contacto` es la ruta pública de Notificaciones (`ReglasDeAccesoNotificaciones` y `@PreAuthorize(PUBLICO)`), y leer y responder mensajes heredan el ADMIN de `ContactoController`. Como la regla pública es por ruta y no por método, `GET /api/contacto` sin token responde `403` en vez de `401`.
+
 ## 9. Decisiones para aprobar
 
 | # | Decisión propuesta | Alternativa |

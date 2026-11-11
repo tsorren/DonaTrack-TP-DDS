@@ -9,6 +9,7 @@ public final class Acceso {
 
   public static final String ADMIN = "hasRole('ADMIN')";
   public static final String ADMIN_O_SERVICIO = "hasAnyRole('ADMIN', 'SERVICIO')";
+  public static final String PUBLICO = "permitAll()";
   public static final String DONANTE_O_ENTIDAD =
       ADMIN + " or hasAnyRole('DONANTE', 'ENTIDAD') and ";
   public static final String SU_PERSONA = "principal.puedeOperarSobre(#personaId)";

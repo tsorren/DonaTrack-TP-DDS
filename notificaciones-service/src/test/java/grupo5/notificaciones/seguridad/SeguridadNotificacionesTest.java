@@ -1,5 +1,10 @@
 package grupo5.notificaciones.seguridad;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -14,6 +19,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.common.seguridad.SeguridadAutoConfiguration;
+import grupo5.notificaciones.controllers.ContactoController;
 import grupo5.notificaciones.controllers.NotificacionController;
 import grupo5.notificaciones.controllers.PersonasController;
 import grupo5.notificaciones.dto.NotificacionDTO;
@@ -22,6 +28,7 @@ import grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.services.IPersonasService;
+import grupo5.notificaciones.services.impl.ContactoService;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -54,12 +61,13 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  * un 204 quiere decir "pasó la autorización", y un 403, que no. Un cuerpo inválido daría 400 antes
  * de evaluar el permiso, por eso los pedidos con cuerpo llevan uno válido.
  */
-@WebMvcTest({NotificacionController.class, PersonasController.class})
+@WebMvcTest({NotificacionController.class, PersonasController.class, ContactoController.class})
 @Import({
   CommonLibAutoConfiguration.class,
   LoggingAutoConfiguration.class,
   SeguridadAutoConfiguration.class,
-  DuenioDe.class
+  DuenioDe.class,
+  ReglasDeAccesoNotificaciones.class
 })
 @ImportAutoConfiguration(AopAutoConfiguration.class)
 @TestPropertySource(properties = "donatrack.seguridad.habilitada=true")
@@ -74,6 +82,7 @@ class SeguridadNotificacionesTest {
   private static final LocalDateTime FECHA = LocalDateTime.of(2026, 6, 18, 12, 0, 0);
   private static final String NOTIFICACIONES = "/api/notificaciones";
   private static final String PERSONAS = "/api/notificaciones/personas";
+  private static final String CONTACTO = "/api/contacto";
 
   private final ObjectMapper json = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -81,6 +90,7 @@ class SeguridadNotificacionesTest {
 
   @MockitoBean private NotificacionService notificacionService;
   @MockitoBean private IPersonasService personasService;
+  @MockitoBean private ContactoService contactoService;
 
   @TestConfiguration
   @EnableWebSecurity
@@ -116,6 +126,12 @@ class SeguridadNotificacionesTest {
     when(notificacionService.personaDe(NOTIFICACION_AJENA)).thenReturn(Optional.of(AJENO));
     when(notificacionService.marcarComoLeida(NOTIFICACION_PROPIA)).thenReturn(Optional.of(dto));
     when(notificacionService.marcarComoLeida(NOTIFICACION_AJENA)).thenReturn(Optional.of(dto));
+    when(contactoService.recibir(any(), isNull()))
+        .thenReturn(new ContactoService.Recepcion(1, true));
+    when(contactoService.listar(isNull(), anyInt()))
+        .thenReturn(new ContactoService.Pagina(List.of(), 0));
+    when(contactoService.obtener(anyLong())).thenReturn(Optional.empty());
+    when(contactoService.responder(anyLong(), anyString())).thenReturn(Optional.empty());
   }
 
   private ResultActions pedir(MockHttpServletRequestBuilder pedido, String token) throws Exception {
@@ -261,5 +277,41 @@ class SeguridadNotificacionesTest {
         .andExpect(status().isForbidden());
     pedir(put(PERSONAS).contentType(MediaType.APPLICATION_JSON).content(persona()), "servicio")
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void elFormularioDeContactoNoPideToken() throws Exception {
+    pedir(post(CONTACTO).contentType(MediaType.APPLICATION_JSON).content(mensajeContacto()), null)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void losMensajesDeContactoSonDelAdmin() throws Exception {
+    String respuesta = "{\"texto\":\"Gracias por escribir\"}";
+    pedir(get(CONTACTO), null).andExpect(status().isForbidden());
+    pedir(get(CONTACTO + "/1"), null).andExpect(status().isUnauthorized());
+    pedir(get(CONTACTO), "donante").andExpect(status().isForbidden());
+    pedir(get(CONTACTO + "/1"), "entidad").andExpect(status().isForbidden());
+    pedir(
+            post(CONTACTO + "/1/respuesta")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(respuesta),
+            "donante")
+        .andExpect(status().isForbidden());
+    pedir(get(CONTACTO), "admin").andExpect(status().isOk());
+    pedir(get(CONTACTO + "/1"), "admin").andExpect(status().isNotFound());
+    pedir(
+            post(CONTACTO + "/1/respuesta")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(respuesta),
+            "admin")
+        .andExpect(status().isNotFound());
+  }
+
+  private static String mensajeContacto() {
+    return "{\"tema\":\"ENTREGA\",\"texto\":\"Consulta de prueba\","
+        + "\"correo\":\"persona@example.com\",\"claveEnvio\":\""
+        + UUID.randomUUID()
+        + "\"}";
   }
 }

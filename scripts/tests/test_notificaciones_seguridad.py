@@ -21,7 +21,11 @@ CONTROLLERS = os.path.join(BASE, "controllers")
 SEGURIDAD = os.path.join(BASE, "seguridad")
 
 # Regla por defecto de cada controller (la que hereda un endpoint sin @PreAuthorize propio).
-POR_DEFECTO = {"NotificacionController": "ADMIN", "PersonasController": "ADMIN_O_SERVICIO"}
+POR_DEFECTO = {
+    "ContactoController": "ADMIN",
+    "NotificacionController": "ADMIN",
+    "PersonasController": "ADMIN_O_SERVICIO",
+}
 
 # Matriz §8 de docs/arquitectura/seguridad/matriz-permisos.md: (verbo, ruta) -> constante de Acceso,
 # o None si hereda la regla de la clase.
@@ -38,6 +42,11 @@ ESPERADO = {
     ("PUT", "/api/notificaciones/personas"): None,
     ("GET", "/api/notificaciones/personas/{id}"): None,
     ("DELETE", "/api/notificaciones/personas/{id}"): None,
+    # Contacto (HB-21): el envío es público (ReglasDeAccesoNotificaciones); leer y responder, del ADMIN.
+    ("POST", "/api/contacto"): "PUBLICO",
+    ("GET", "/api/contacto"): None,
+    ("GET", "/api/contacto/{numero}"): None,
+    ("POST", "/api/contacto/{numero}/respuesta"): None,
 }
 # Constante de Acceso -> parámetro del que sale el dueño (nombre que usa el SpEL).
 CON_DUENIO = {"VER_SUS_NOTIFICACIONES": "personaId", "MARCAR_SU_NOTIFICACION": "id"}
@@ -55,6 +64,10 @@ def controllers():
 
 def nombre(ruta):
     return os.path.basename(ruta)[: -len(".java")]
+
+
+def notificacion_controller():
+    return os.path.join(CONTROLLERS, "NotificacionController.java")
 
 
 def regla_de_clase(ruta):
@@ -142,8 +155,10 @@ class ComposeTests(unittest.TestCase):
 
 
 class ControllersTests(unittest.TestCase):
-    def test_hay_dos_controllers(self):
-        self.assertEqual([nombre(c) for c in controllers()], ["NotificacionController", "PersonasController"])
+    def test_estan_los_tres_controllers(self):
+        self.assertEqual(
+            [nombre(c) for c in controllers()], ["ContactoController", "NotificacionController", "PersonasController"]
+        )
 
     def test_cada_controller_deniega_por_defecto_con_su_regla(self):
         for ruta in controllers():
@@ -165,7 +180,7 @@ class ControllersTests(unittest.TestCase):
             self.assertNotRegex(leer(ruta), r"@(Get|Post|Put|Patch|Delete)Mapping\(\{", nombre(ruta))
 
     def test_el_alias_legado_es_un_metodo_propio_que_hereda_el_admin(self):
-        alias = [e for e in endpoints(controllers()[0]) if e[1] == "/notificaciones/persona/{personaId}"]
+        alias = [e for e in endpoints(notificacion_controller()) if e[1] == "/notificaciones/persona/{personaId}"]
         self.assertEqual(len(alias), 1)
         self.assertIsNone(alias[0][2], "el alias es solo del ADMIN (hereda la regla de la clase)")
 
@@ -188,7 +203,7 @@ class ControllersTests(unittest.TestCase):
     def test_la_interfaz_y_la_implementacion_tienen_los_mismos_endpoints(self):
         interfaz = leer(CONTROLLERS, "INotificacionController.java")
         de_interfaz = set(re.findall(r'@(Get|Post|Put|Patch|Delete)Mapping\("([^"]*)"\)', interfaz))
-        de_impl = {(v.capitalize(), r) for v, r, _, _ in endpoints(controllers()[0])}
+        de_impl = {(v.capitalize(), r) for v, r, _, _ in endpoints(notificacion_controller())}
         self.assertEqual({(v, r) for v, r in de_interfaz}, de_impl)
 
 
@@ -228,6 +243,11 @@ class AccesoPermisosYDuenioTests(unittest.TestCase):
         servicio = leer(BASE, "services", "impl", "NotificacionService.java")
         self.assertRegex(servicio, r"public Optional<UUID> personaDe\(UUID id\)")
         self.assertIn("repository.findById(id).map(Notificacion::getPersonaId)", servicio)
+
+    def test_el_formulario_de_contacto_es_la_unica_ruta_publica(self):
+        reglas = leer(SEGURIDAD, "ReglasDeAccesoNotificaciones.java")
+        self.assertIn('List.of("/api/contacto")', reglas)
+        self.assertIn('PUBLICO = "permitAll()"', self.acceso)
 
     def test_la_clase_no_se_puede_instanciar(self):
         self.assertIn("private Acceso() {}", self.acceso)
