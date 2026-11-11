@@ -242,6 +242,11 @@ public class NotificacionService {
     return repository.findById(id).map(NotificacionService::toDTO);
   }
 
+  /** Persona a la que se dirige la notificación; vacío si no existe (regla de pertenencia). */
+  public Optional<UUID> personaDe(UUID id) {
+    return repository.findById(id).map(Notificacion::getPersonaId);
+  }
+
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId, @Nullable Boolean leida) {
     if (personaId == null) {
       return List.of();

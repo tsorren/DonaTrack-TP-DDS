@@ -7,7 +7,8 @@
     <!-- Hereda del pom raíz (Spotless, JaCoCo, BOMs) pero NO está en sus <modules>: el `mvn` de los
          demás servicios no lo compila. Se corre aparte (SPEC-06 A1-02):
          mvn -f auth-service/pom.xml -Pcontrato-auth verify
-         Sumarlo al build general queda para E2-12 (Keycloak en preprod y CI). -->
+         E2-12 lo dejó fuera de los <modules> a propósito: no produce un JAR, sino la imagen de Keycloak.
+         El CI lo trata aparte (job `auth-service` de main.yml y `auth-publish` de merge.yml). -->
     <parent>
         <groupId>grupo5</groupId>
         <artifactId>donatrack</artifactId>

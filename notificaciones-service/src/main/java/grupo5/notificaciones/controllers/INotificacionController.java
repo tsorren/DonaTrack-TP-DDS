@@ -53,8 +53,16 @@ public interface INotificacionController {
       summary = "Obtener historial de notificaciones de una persona con filtro opcional de lectura",
       description = "Si leida=false devuelve solo pendientes de lectura (campana/inbox).")
   @ApiResponse(responseCode = "200", description = "Historial de notificaciones devuelto")
-  @GetMapping({"/notificaciones/persona/{personaId}", "/api/notificaciones/persona/{personaId}"})
+  @GetMapping("/api/notificaciones/persona/{personaId}")
   ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(
+      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida);
+
+  @Operation(
+      summary = "Obtener historial de notificaciones de una persona (alias legado, solo QA)",
+      deprecated = true)
+  @ApiResponse(responseCode = "200", description = "Historial de notificaciones devuelto")
+  @GetMapping("/notificaciones/persona/{personaId}")
+  ResponseEntity<List<NotificacionDTO>> obtenerPorPersonaLegacy(
       @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida);
 
   @Operation(

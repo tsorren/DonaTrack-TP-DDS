@@ -1,5 +1,9 @@
 package grupo5.logistica.controllers.impl;
 
+import static grupo5.logistica.seguridad.Acceso.ADMIN;
+import static grupo5.logistica.seguridad.Acceso.CONFIRMAR_SU_ENTREGA;
+import static grupo5.logistica.seguridad.Acceso.VER_SU_ENTREGA;
+
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.responses.ErrorResponse;
@@ -14,6 +18,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
  * externas sigue en {@link EntregasController}.
  */
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/entregas/{id}/fotos")
 public class FotosRecepcionController {
 
@@ -38,6 +44,7 @@ public class FotosRecepcionController {
     this.fotosRecepcionService = fotosRecepcionService;
   }
 
+  @PreAuthorize(CONFIRMAR_SU_ENTREGA)
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<List<FotoRecepcionSubidaDTO>> subir(
       @PathVariable("id") UUID id, @RequestPart("foto") List<MultipartFile> fotos) {
@@ -46,6 +53,7 @@ public class FotosRecepcionController {
         .body(fotosRecepcionService.subir(id, contenidos));
   }
 
+  @PreAuthorize(VER_SU_ENTREGA)
   @GetMapping("/{fotoId}")
   public ResponseEntity<Void> leer(
       @PathVariable("id") UUID id, @PathVariable("fotoId") UUID fotoId) {

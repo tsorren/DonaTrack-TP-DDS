@@ -1,5 +1,8 @@
 package grupo5.notificaciones.controllers;
 
+import static grupo5.notificaciones.seguridad.Acceso.ADMIN;
+import static grupo5.notificaciones.seguridad.Acceso.PUBLICO;
+
 import grupo5.notificaciones.dto.contacto.MensajeContactoDTO;
 import grupo5.notificaciones.dto.contacto.MensajeContactoInputDTO;
 import grupo5.notificaciones.dto.contacto.NumeroMensajeDTO;
@@ -11,6 +14,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequiredArgsConstructor
 public class ContactoController implements IContactoController {
 
@@ -28,6 +33,7 @@ public class ContactoController implements IContactoController {
   private final ContactoService service;
 
   @Override
+  @PreAuthorize(PUBLICO)
   @PostMapping("/api/contacto")
   public ResponseEntity<NumeroMensajeDTO> recibir(
       @RequestHeader(value = "X-Forwarded-For", required = false) String xForwardedFor,

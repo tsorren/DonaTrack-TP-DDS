@@ -144,16 +144,16 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | RNF-AUTH-06 | Base de datos propia del IdP | Schema o base propia en el PostgreSQL existente; el enunciado permite compartir el motor | Enunciado E5: un schema por servicio, motor compartido (por analogía) |
 | RNF-AUTH-07 | Protección de fuerza bruta en el login | Bloqueo temporal tras N intentos fallidos (sugerido: 5 en 15 min); el rate limiting general queda para E7 | Buena práctica |
 | RNF-AUTH-08 | Claims independientes del producto | Los roles viajan en un claim `roles` plano (en Keycloak, con un *protocol mapper*), para que los servicios no dependan de `realm_access.roles` | D1 |
-| RNF-AUTH-09 | Sin datos personales en el token | Ni nombre, ni documento, ni datos de contacto: solo `sub` y roles (minimización de PII, ADR [crypto-shredding](../adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md)) | D9 |
+| RNF-AUTH-09 | Sin datos personales en el token | Ni nombre, ni documento, ni datos de contacto, ni email (minimización de PII, ADR [crypto-shredding](../adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md)). **Enmendado (2026-11-10):** el token lleva `sub`, roles, `permisos` y `personaId`; los dos últimos son ids y permisos de negocio, no datos personales ([ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md)) | D9 |
 | RNF-AUTH-10 | Respuestas que no revelan cuentas | Login, recuperación y activación responden igual exista o no el email | OWASP ASVS |
 
 ### 4.3 Integración IdP ↔ negocio
 
 | ID | Requerimiento | Criterio de aceptación `[PROPOSED]` | Origen |
 |---|---|---|---|
-| RI-AUTH-01 | El negocio guarda el `sub` del IdP en la `Persona` | Columna `usuarioId` (única, nullable) en `Persona`; el IdP no guarda ids del negocio | D9 |
-| RI-AUTH-02 | "Completar perfil" al primer login | Si el `sub` no tiene `Persona` asociada, el cliente lleva al formulario de perfil; al guardarlo se crea la `Persona` y su rol | D11 |
-| RI-AUTH-03 | `GET /api/personas/me` en Donaciones | Devuelve la persona y sus roles de negocio a partir del `sub` del token; el cliente lo cachea en la sesión | D9 |
+| RI-AUTH-01 | ~~El negocio guarda el `sub` del IdP en la `Persona`~~ **Enmendado (2026-11-10):** el IdP guarda el `personaId` de la `Persona` | ~~Columna `usuarioId` (única, nullable) en `Persona`; el IdP no guarda ids del negocio~~ El `personaId` es un atributo del usuario en Keycloak que solo el admin ve y edita, y viaja como claim en el token. `Persona` no guarda el `sub` ([ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md)) | D9 |
+| RI-AUTH-02 | "Completar perfil" al primer login | Si la cuenta no tiene `personaId`, el cliente lleva al formulario de perfil; al guardarlo se crea la `Persona`, se anota el `personaId` en la cuenta y se le asigna su plantilla de permisos. **Implementado** en el cliente liviano (`PerfilService`) | D11 |
+| RI-AUTH-03 | `GET /api/personas/me` en Donaciones | Devuelve la persona y sus roles de negocio. **Reformulado (2026-11-10):** resuelve por el `personaId` del token, no por el `sub`. **Pendiente:** no existe; lo piden "Mi perfil" y la constancia de los legales | D9 |
 | RI-AUTH-04 | Una persona puede tener más de un rol | Una jurídica puede ser `DONANTE` y `ENTIDAD` a la vez (identidad compartida); la UI ofrece cambiar de rol | ADR identidad compartida |
 | RI-AUTH-05 | Aprobación de entidades | Pantalla de admin con las entidades pendientes; aprobar asigna el rol `ENTIDAD` en el IdP y activa la entidad en el negocio | D10 |
 | RI-AUTH-06 | Quién inicia sesión por una jurídica | Pendiente (D30) | D30 ⏸️ |
@@ -298,7 +298,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-08 | Donaciones | DTOs públicos de entidades y necesidades | RF-06, RF-22 | D26 |
 | HB-09 | Notificaciones | Verificar que los 4 eventos del donante y los 2 de la entidad generan notificación | RF-08, RF-13 | — |
 | HB-10 | Logística | `POST /api/entregas/{id}/fotos` multipart → MinIO y `GET /api/entregas/{id}/fotos/{fotoId}` (redirige a la URL firmada); el `PATCH .../fotos` actual se conserva. **Avance:** implementado en la PR #952 ([DTI-37](../adr/DEUDA_TECNICA.md#dti-37)); falta la ruta en la allowlist del gateway (F5) | RF-12 | D27, [ADR-E6-08](../adr/logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
-| HB-11 | Donaciones | `usuarioId` en `Persona` y `GET /api/personas/me` | RI-AUTH-01/03 | D9 |
+| HB-11 | Donaciones | ~~`usuarioId` en `Persona` y~~ `GET /api/personas/me`. **Reformulado (2026-11-10):** `usuarioId` se descarta; `/me` resuelve por el `personaId` del token y sigue pendiente | RI-AUTH-03 | D9 |
 | HB-12 | Donaciones | Estado "pendiente de aprobación" para entidades autorregistradas y endpoint de aprobación | RF-21 | D10 |
 | HB-13 | Los 4 servicios | Resource server JWT, `@PreAuthorize` y chequeos de pertenencia | RI-SVC-01..03 | D2, D13 |
 | HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error). **Avance:** la subida multipart → MinIO está implementada en la rama `E4_donaciones_minio`; el progreso (`totalFilas`, `procesadas`, `creadas`, `actualizadas`, `conError` en `ArchivoOutputDTO`) y el resultado por fila (`GET /api/donantes/archivos/{id}/filas-con-error`) están en el PR #956 | RF-20 | Auditoría `[OBSERVED]` |
@@ -376,7 +376,7 @@ Cada uso da uno nuevo. Reusar uno viejo es señal de robo y corta la sesión. In
 | Experiencia | **Transparente** | Transparente | Login cada 15 min |
 | Riesgo de carreras con varias pestañas | Existe, y lo resuelve la sesión del servidor (D5) | No | No |
 
-### D9 — Vínculo IdP ↔ negocio por `sub` ✅ · ADR-E6-04
+### D9 — Vínculo IdP ↔ negocio por `sub` ✅ · **enmendada el 2026-11-10: `personaId` en el IdP** · ADR del vínculo
 
 | Criterio | **`sub` guardado en el negocio** | Claim `donanteId` en el token | Mismo id en ambos |
 |---|---|---|---|
@@ -386,6 +386,7 @@ Cada uso da uno nuevo. Reusar uno viejo es señal de robo y corta la sesión. In
 | Datos viejos | No hay | Hasta el próximo refresh | No hay |
 
 - **Afinado con el modelo actual:** Donante y EntidadBeneficiaria comparten el id de la `Persona` `[OBSERVED]`; por eso el `sub` se guarda en `Persona` (HB-11) `[PROPOSED]`.
+- **Enmienda (2026-11-10):** la implementación eligió la alternativa "Claim `donanteId` en el token", pero con el `personaId` (el id de la `Persona`, que Donante y Entidad comparten) en vez de un `donanteId`: el id de la `Persona` es un atributo del usuario de Keycloak, que solo el admin edita, y viaja como claim `personaId`. `Persona` no guarda el `sub`. Se pierde el desacople del IdP (cambiar de IdP exige exportar los atributos y recrear el mapper) y se gana que los cuatro servicios decidan la pertenencia sin llamar a Donaciones `[INFERRED]`. La tabla de arriba es la comparación original y no se reescribe. Análisis, consecuencias y puntos abiertos: [ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md).
 
 ### D10 — Donante libre, entidad con aprobación, admin por admin ✅ · ADR-E6-04
 - Buena práctica (OWASP ASVS): los roles con privilegio no se autoasignan.
@@ -594,7 +595,7 @@ Composición, utilidades, bloques (un componente por hoja y fragmento, con slots
 - **Para cerrarla hace falta:**
   1. Consultar a la cátedra si un Keycloak configurado cuenta como *"implementación de un SSO"* y como *"servicio de Autenticación"* (RQ-E6-04/05).
   2. Ver con cuánto tiempo cuenta el equipo hasta la fecha de entrega de E6.
-- **Lo que no cambia con ninguna de las dos:** D9 (`sub` en el negocio) y RNF-AUTH-08 (claim `roles` plano) hacen que cambiar de IdP cueste poco.
+- **Lo que no cambia con ninguna de las dos:** RNF-AUTH-08 (claim `roles` plano) y D9 hacen que cambiar de IdP cueste poco. *(Enmienda 2026-11-10: con el `personaId` en el IdP, D9 ya no aporta el desacople que se contó acá; ver el [ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md).)*
 
 ### D8 — Envío del email de recuperación (y de verificación) ⏸️ · ADR-E6-01
 Ya está decidido que el email sale por **notificaciones-service**. Falta el cómo, que depende de la D1:
@@ -650,7 +651,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | ADR-E6-01 Proveedor de identidad, Social-Login y emails de cuenta | D1, D3, D4, D8, D12 | Sí | Tecnología nueva y seguridad | D1 redactada en su propio [ADR](../adr/auth-service/20261104-proveedor-de-identidad-keycloak.md); el resto espera D8 y D12 |
 | ADR-E6-02 API gateway, validación JWT en doble capa y rutas públicas | D2, D16, D26 | Sí | Integración entre servicios y seguridad | Redactado (`proposed`): [ADR](../adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) |
 | ADR-E6-03 Sesión del cliente liviano y ciclo de vida de los tokens | D5, D6, D7 | Sí | Estado y seguridad | Listo |
-| ADR-E6-04 Identidad y autorización: `sub`, roles, pertenencia y alta de cuentas | D9, D10, D11, D13, D14, D30 | Sí | Contratos entre IdP y negocio, seguridad | Esperar D30 (se puede redactar marcándola) |
+| ADR-E6-04 Identidad y autorización: roles, pertenencia y alta de cuentas (D9 pasó al [ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md)) | D10, D11, D13, D14, D30 | Sí | Contratos entre IdP y negocio, seguridad | Esperar D30 (se puede redactar marcándola) |
 | ADR-E6-05 Autenticación entre servicios y retiro de `X-Actor` / `X-API-Key` | D15, D25 | Sí | *Breaking change* de contrato | Listo |
 | ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Redactado (`proposed`): [ADR](../adr/20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md) |

@@ -1,5 +1,14 @@
 package grupo5.logistica.controllers.impl;
 
+import static grupo5.logistica.seguridad.Acceso.ADMIN;
+import static grupo5.logistica.seguridad.Acceso.ADMIN_O_SERVICIO;
+import static grupo5.logistica.seguridad.Acceso.CONFIRMAR_SU_ENTREGA;
+import static grupo5.logistica.seguridad.Acceso.PUBLICO;
+import static grupo5.logistica.seguridad.Acceso.VER_EL_SEGUIMIENTO_DE_SU_BENEFICIARIA;
+import static grupo5.logistica.seguridad.Acceso.VER_EL_SEGUIMIENTO_DE_SU_DONACION;
+import static grupo5.logistica.seguridad.Acceso.VER_EL_SEGUIMIENTO_DE_SU_DONANTE;
+import static grupo5.logistica.seguridad.Acceso.VER_SU_ENTREGA;
+
 import grupo5.logistica.controllers.IEntregasController;
 import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
@@ -14,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/entregas")
 public class EntregasController implements IEntregasController {
   private final IEntregasService entregasService;
@@ -32,6 +43,7 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping
   public ResponseEntity<EntregaResponseDTO> crear(@Valid @RequestBody CrearEntregaRequestDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(entregasService.crear(dto));
@@ -44,18 +56,21 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(PUBLICO)
   @GetMapping("/mapa")
   public ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico() {
     return ResponseEntity.ok(entregasService.listarMapaPublico());
   }
 
   @Override
+  @PreAuthorize(VER_SU_ENTREGA)
   @GetMapping("/{id}")
   public ResponseEntity<EntregaResponseDTO> obtenerPorId(@PathVariable("id") UUID id) {
     return ResponseEntity.ok(entregasService.obtenerPorId(id));
   }
 
   @Override
+  @PreAuthorize(VER_EL_SEGUIMIENTO_DE_SU_DONACION)
   @GetMapping("/seguimiento/donaciones/{idDonacion}")
   public ResponseEntity<SeguimientoEntregaResponseDTO> obtenerSeguimientoPorDonacion(
       @PathVariable("idDonacion") UUID idDonacion) {
@@ -63,6 +78,7 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(VER_EL_SEGUIMIENTO_DE_SU_BENEFICIARIA)
   @GetMapping("/seguimiento/beneficiarios/{idBeneficiaria}")
   public ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorBeneficiaria(
       @PathVariable("idBeneficiaria") UUID idBeneficiaria) {
@@ -70,6 +86,7 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(VER_EL_SEGUIMIENTO_DE_SU_DONANTE)
   @GetMapping("/seguimiento/donantes/{donanteId}")
   public ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorDonante(
       @PathVariable("donanteId") UUID donanteId) {
@@ -77,6 +94,7 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(CONFIRMAR_SU_ENTREGA)
   @PatchMapping("/{id}/estado")
   public ResponseEntity<EntregaResponseDTO> cambiarEstado(
       @PathVariable("id") UUID id, @Valid @RequestBody CambioEstadoEntregaRequestDTO request) {
@@ -84,6 +102,7 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(CONFIRMAR_SU_ENTREGA)
   @PatchMapping("/{id}/fotos")
   public ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @Valid @RequestBody AdjuntarFotoRecepcionRequestDTO dto) {
@@ -91,6 +110,7 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @PreAuthorize(VER_SU_ENTREGA)
   @GetMapping("/{id}/historial")
   public ResponseEntity<List<CambioEstadoEntregaResponseDTO>> obtenerHistorial(
       @PathVariable("id") UUID id) {

@@ -20,7 +20,11 @@ import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IRutasService;
 import grupo5.logistica.services.mappers.RutaMapper;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +70,15 @@ public class RutasService implements IRutasService {
   public RutaConEntregasResponseDTO obtenerConEntregas(UUID id) {
     Ruta ruta = buscarRuta(id);
     return rutaMapper.toResponseDTOConEntregas(ruta, buscarEntregasDeRuta(ruta));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Set<UUID> organizacionesDe(UUID id) {
+    return entregasRepository.findByRutaId(id).stream()
+        .flatMap(entrega -> Stream.of(entrega.getIdBeneficiaria(), entrega.getDonanteId()))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
   }
 
   @Override

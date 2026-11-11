@@ -1,14 +1,18 @@
 package grupo5.notificaciones.controllers;
 
+import static grupo5.notificaciones.seguridad.Acceso.ADMIN_O_SERVICIO;
+
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.services.IPersonasService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@PreAuthorize(ADMIN_O_SERVICIO)
 @RequestMapping("/api/notificaciones/personas")
 @RequiredArgsConstructor
 public class PersonasController implements IPersonasController {

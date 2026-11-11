@@ -1,8 +1,11 @@
 package grupo5.logistica.controllers.impl;
 
+import static grupo5.logistica.seguridad.Acceso.ADMIN;
+
 import grupo5.logistica.services.IPlanificacionService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * planificación continúa iniciándose mediante el scheduler.
  */
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/logistica/planificaciones")
 @ConditionalOnProperty(
     prefix = "logistica.planificacion",

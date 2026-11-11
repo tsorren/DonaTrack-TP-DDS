@@ -601,8 +601,8 @@ class ModuloDeContratoTests(unittest.TestCase):
         self.assertNotIn("maven-failsafe-plugin", antes_de_perfiles)
 
     def test_el_modulo_hereda_del_pom_raiz(self):
-        """Hereda del padre (Spotless, JaCoCo, BOMs) pero no se agrega a <modules> hasta E2-12 (CI):
-        así el `mvn` de los demás no compila ni formatea este módulo."""
+        """Hereda del padre (Spotless, JaCoCo, BOMs) pero no está en <modules> (E2-12 lo dejó así: no
+        produce un JAR): el `mvn` de los demás no lo compila y el CI lo trata en su propio job."""
         self.assertIn("<relativePath>../pom.xml</relativePath>", leer("auth-service", "pom.xml"))
 
 

@@ -73,6 +73,53 @@ class EntregaServiceTest {
             comunicadorEventos);
   }
 
+  // ===================== dueño (pertenencia) =====================
+
+  @Test
+  void beneficiariaDe_cuandoExiste_deberiaDevolverLaBeneficiariaDeLaEntrega() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+
+    assertEquals(
+        Optional.of(entrega.getIdBeneficiaria()), entregasService.beneficiariaDe(entrega.getId()));
+  }
+
+  @Test
+  void beneficiariaDe_cuandoNoExiste_deberiaDevolverVacio() {
+    UUID id = UUID.randomUUID();
+    when(entregasRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertTrue(entregasService.beneficiariaDe(id).isEmpty());
+  }
+
+  @Test
+  void donanteDeDonacion_cuandoSeConoceElDonante_deberiaDevolverlo() {
+    UUID donante = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.registrarDonante(donante);
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    assertEquals(Optional.of(donante), entregasService.donanteDeDonacion(entrega.getIdDonacion()));
+  }
+
+  @Test
+  void donanteDeDonacion_cuandoLaEntregaNoTieneDonante_deberiaDevolverVacio() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    assertTrue(entregasService.donanteDeDonacion(entrega.getIdDonacion()).isEmpty());
+  }
+
+  @Test
+  void donanteDeDonacion_cuandoNoHayEntrega_deberiaDevolverVacio() {
+    UUID idDonacion = UUID.randomUUID();
+    when(entregasRepository.findByIdDonacion(idDonacion)).thenReturn(Optional.empty());
+
+    assertTrue(entregasService.donanteDeDonacion(idDonacion).isEmpty());
+  }
+
   // ===================== crear() =====================
 
   @Test
