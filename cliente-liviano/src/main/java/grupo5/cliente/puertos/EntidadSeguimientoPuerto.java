@@ -10,4 +10,7 @@ import java.util.UUID;
 public interface EntidadSeguimientoPuerto {
 
   Map<String, String> noticias(UUID entidad);
+
+  /** Si va el dibujo de las raíces del ejemplo: fuera de la maqueta, no (el mapa es D21). */
+  boolean dibujoDeEjemplo();
 }

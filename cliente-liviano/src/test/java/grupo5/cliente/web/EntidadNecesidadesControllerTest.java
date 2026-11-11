@@ -49,6 +49,9 @@ class EntidadNecesidadesControllerTest {
   private static final String ID = "6f1c2c1e-0000-4000-8000-0000000000b2";
   private static final String CLAVE = "necesidad-" + ID;
 
+  /** La entidad recién aprobada: sin necesidades. */
+  private static final UUID VACIA = UUID.fromString("6f1c2c1e-0000-4000-8000-0000000000f0");
+
   @TestConfiguration
   static class DeDonaciones {
 
@@ -61,58 +64,60 @@ class EntidadNecesidadesControllerTest {
               "8 de noviembre de 2026",
               "2026-11-08",
               "8 de noviembre",
-              List.of(
-                  new Necesidad(
-                      CLAVE,
-                      ID,
-                      2L,
-                      "Bicicletas",
-                      null,
-                      "Movilidad",
-                      "unidades",
-                      "Hasta el 20 de noviembre",
-                      "faltan 12 días",
-                      "Una sola vez",
-                      null,
-                      6,
-                      null,
-                      null,
-                      "Para ir a la escuela.",
-                      0,
-                      0,
-                      1,
-                      List.of(
-                          new Entrega(
-                              "1 unidad",
-                              "con-problema",
-                              "El camión no pudo llegar el 7 de noviembre.",
-                              null)),
-                      List.of(),
-                      null,
-                      List.of()),
-                  new Necesidad(
-                      "necesidad-otra",
-                      "6f1c2c1e-0000-4000-8000-0000000000b3",
-                      1L,
-                      "Leche",
-                      null,
-                      "Movilidad",
-                      "unidades",
-                      null,
-                      null,
-                      "Cada semana",
-                      null,
-                      10,
-                      null,
-                      null,
-                      "Para la merienda.",
-                      0,
-                      0,
-                      0,
-                      List.of(),
-                      List.of(),
-                      null,
-                      List.of())),
+              VACIA.equals(entidad)
+                  ? List.of()
+                  : List.of(
+                      new Necesidad(
+                          CLAVE,
+                          ID,
+                          2L,
+                          "Bicicletas",
+                          null,
+                          "Movilidad",
+                          "unidades",
+                          "Hasta el 20 de noviembre",
+                          "faltan 12 días",
+                          "Una sola vez",
+                          null,
+                          6,
+                          null,
+                          null,
+                          "Para ir a la escuela.",
+                          0,
+                          0,
+                          1,
+                          List.of(
+                              new Entrega(
+                                  "1 unidad",
+                                  "con-problema",
+                                  "El camión no pudo llegar el 7 de noviembre.",
+                                  null)),
+                          List.of(),
+                          null,
+                          List.of()),
+                      new Necesidad(
+                          "necesidad-otra",
+                          "6f1c2c1e-0000-4000-8000-0000000000b3",
+                          1L,
+                          "Leche",
+                          null,
+                          "Movilidad",
+                          "unidades",
+                          null,
+                          null,
+                          "Cada semana",
+                          null,
+                          10,
+                          null,
+                          null,
+                          "Para la merienda.",
+                          0,
+                          0,
+                          0,
+                          List.of(),
+                          List.of(),
+                          null,
+                          List.of())),
               List.of(new Rubro("Movilidad", "Movilidad", null)),
               List.of(new Terminada("Frazadas · 20 unidades", "La diste de baja.")),
               List.of(
@@ -152,6 +157,14 @@ class EntidadNecesidadesControllerTest {
   }
 
   @Autowired private MockMvc mvc;
+
+  @Test
+  void sinNecesidadesInvitaAPublicar() throws Exception {
+    mvc.perform(get(PANTALLA).param("entidad", VACIA.toString()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No tenés necesidades vigentes.")))
+        .andExpect(content().string(containsString("Publicar una necesidad")));
+  }
 
   @Test
   void sinEntidadMandaAIngresar() throws Exception {

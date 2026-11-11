@@ -31,8 +31,8 @@ import org.springframework.util.MultiValueMap;
 
 /**
  * El Inicio de la entidad desde Donaciones (las necesidades vigentes, con lo recibido del período
- * en curso de las recurrentes). Lo recibido de una extraordinaria no se sabe todavía (fuera de
- * alcance): va sin cifra.
+ * en curso de las recurrentes: el más nuevo, que pasa a CUMPLIDO apenas se cumple). Lo recibido de
+ * una extraordinaria no se sabe todavía (fuera de alcance): va sin cifra.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -73,18 +73,23 @@ class EntidadInicioRest implements EntidadInicioPuerto {
 
   private Necesidad necesidad(DonacionesApi.Necesidad n, Subcategoria subcategoria) {
     Categoria categoria = subcategoria == null ? null : subcategoria.categoria();
+    // Como en Necesidades: el nombre es el de la subcategoría; la descripción es el motivo.
+    String nombre =
+        subcategoria != null && subcategoria.nombre() != null
+            ? subcategoria.nombre()
+            : n.descripcion();
     String icono =
         categoria == null || categoria.nombre() == null ? null : icono(categoria.nombre());
     Categoria conUnidad = new Categoria(null, null, n.unidad(), null, null, null);
     if ("RECURRENTE".equals(n.tipo())) {
       Periodo actual =
           donaciones.periodos(n.id()).stream()
-              .filter(p -> "EN_CURSO".equals(p.resultado()))
+              .filter(p -> p.inicio() != null)
               .max(Comparator.comparing(Periodo::inicio))
               .orElse(null);
       if (actual != null && actual.objetivo() != null && actual.recibido() != null) {
         return new Necesidad(
-            n.descripcion(),
+            nombre,
             icono,
             actual.recibido() + " de " + cantidad(actual.objetivo(), conUnidad),
             actual.recibido(),
@@ -95,12 +100,7 @@ class EntidadInicioRest implements EntidadInicioPuerto {
     LocalDate hasta = n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin();
     int pedida = n.cantidadNecesitada() == null ? 0 : n.cantidadNecesitada();
     return new Necesidad(
-        n.descripcion(),
-        icono,
-        null,
-        null,
-        pedida,
-        hasta == null ? null : "Hasta el " + hasta.format(DIA));
+        nombre, icono, null, null, pedida, hasta == null ? null : "Hasta el " + hasta.format(DIA));
   }
 
   /** "Octubre, hasta el 31". */

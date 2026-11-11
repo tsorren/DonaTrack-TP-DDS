@@ -42,6 +42,7 @@ public class EntidadSeguimientoController {
     }
     model.addAttribute("recibidas", recibidas.recibidas(entidad.get()));
     model.addAttribute("noticiasDeEntregas", seguimientos.noticias(entidad.get()));
+    model.addAttribute("dibujoDeEjemplo", seguimientos.dibujoDeEjemplo());
     return vista;
   }
 }

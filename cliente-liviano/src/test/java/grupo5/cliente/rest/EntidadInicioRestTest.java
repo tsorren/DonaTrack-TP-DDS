@@ -47,7 +47,7 @@ class EntidadInicioRestTest {
             withSuccess(
                 """
                 [{"id": "%s", "nombre": "Legumbres", "categoria": {"nombre": "Alimentos"}},
-                 {"id": "%s", "nombre": "Sillas", "categoria": {"nombre": "Muebles"}}]
+                 {"id": "%s", "nombre": "Sillas plegables", "categoria": {"nombre": "Muebles"}}]
                 """
                     .formatted(LENTEJAS, SILLAS),
                 MediaType.APPLICATION_JSON));
@@ -58,8 +58,8 @@ class EntidadInicioRestTest {
                 """
                 [{"inicio": "2026-10-01", "fin": "2026-10-31", "objetivo": 40, "asignado": 40,
                   "recibido": 40, "resultado": "CUMPLIDO"},
-                 {"inicio": "2026-11-01", "fin": "2026-11-30", "objetivo": 40, "asignado": 20,
-                  "recibido": 10, "resultado": "EN_CURSO"}]
+                 {"inicio": "2026-11-01", "fin": "2026-11-30", "objetivo": 40, "asignado": 40,
+                  "recibido": 40, "resultado": "CUMPLIDO"}]
                 """,
                 MediaType.APPLICATION_JSON));
     // "Ahora" es el jueves 12 de noviembre de 2026, 18:30 en Buenos Aires.
@@ -76,11 +76,12 @@ class EntidadInicioRestTest {
     Necesidad lentejas = inicio.necesidades().getFirst();
     assertEquals(
         new Necesidad(
-            "Lentejas secas", "cat-alimentos", "10 de 40 kg", 10, 40, "Noviembre, hasta el 30"),
+            "Legumbres", "cat-alimentos", "40 de 40 kg", 40, 40, "Noviembre, hasta el 30"),
         lentejas);
     Necesidad sillas = inicio.necesidades().get(1);
     assertEquals(
-        new Necesidad("Sillas", "cat-muebles", null, null, 6, "Hasta el 20 de noviembre"), sillas);
+        new Necesidad("Sillas plegables", "cat-muebles", null, null, 6, "Hasta el 20 de noviembre"),
+        sillas);
   }
 
   @Test

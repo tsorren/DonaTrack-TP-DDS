@@ -42,6 +42,9 @@ class EntidadNotificacionesControllerTest {
 
   private static final String PANTALLA = "/entidad-notificaciones";
 
+  /** La entidad recién aprobada: sin novedades. */
+  private static final UUID VACIA = UUID.fromString("6f1c2c1e-0000-4000-8000-0000000000f0");
+
   @TestConfiguration
   static class DosNovedades {
 
@@ -51,27 +54,29 @@ class EntidadNotificacionesControllerTest {
         @Override
         public EntidadNotificacionesVista bandeja(UUID entidad) {
           return new EntidadNotificacionesVista(
-              List.of(
-                  new Novedad(
-                      "a",
-                      "novedades",
-                      "2026-11-08T09:15",
-                      false,
-                      "Tu donación salió del depósito.",
-                      null,
-                      null,
-                      "/entidad-recibidas",
-                      null),
-                  new Novedad(
-                      "b",
-                      "novedades",
-                      "2026-11-01T10:00",
-                      true,
-                      "Llegó a tu puerta.",
-                      null,
-                      null,
-                      "/entidad-recibidas",
-                      null)),
+              VACIA.equals(entidad)
+                  ? List.of()
+                  : List.of(
+                      new Novedad(
+                          "a",
+                          "novedades",
+                          "2026-11-08T09:15",
+                          false,
+                          "Tu donación salió del depósito.",
+                          null,
+                          null,
+                          "/entidad-recibidas",
+                          null),
+                      new Novedad(
+                          "b",
+                          "novedades",
+                          "2026-11-01T10:00",
+                          true,
+                          "Llegó a tu puerta.",
+                          null,
+                          null,
+                          "/entidad-recibidas",
+                          null)),
               List.of(
                   new Tema("", "Todas las categorías", null),
                   new Tema("novedades", "Novedades", "reloj")),
@@ -93,6 +98,14 @@ class EntidadNotificacionesControllerTest {
   }
 
   @Autowired private MockMvc mvc;
+
+  @Test
+  void sinNovedadesLoDice() throws Exception {
+    mvc.perform(get(PANTALLA).param("entidad", VACIA.toString()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Todavía no tenés novedades.")))
+        .andExpect(content().string(not(containsString("Ninguna notificación coincide"))));
+  }
 
   @Test
   void sinEntidadMandaAIngresar() throws Exception {

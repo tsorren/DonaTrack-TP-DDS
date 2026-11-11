@@ -62,13 +62,14 @@
                '/entidad-notificaciones')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or (conDatos and #lists.isEmpty(novedades))}" class="vacio"
+             aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés novedades.</h2>
       <p>Te avisamos acá cuando se asigne una donación a tu entidad, cuando salga hacia vos, si tiene un
         problema y cuando llegue a tu puerta.</p>
     </section>
 
-    <th:block th:if="${conDatos}">
+    <th:block th:if="${conDatos and !#lists.isEmpty(novedades)}">
       <div th:replace="~{componentes/buzon :: buzon(${accion == 'leidas' ? '/entidad-notificaciones-leidas' : '/entidad-notificaciones'},
            '/entidad-notificaciones-leidas', ${bandeja.ahora}, ${ {novedades} }, ${temas}, ${todasLeidas})}"></div>
     </th:block>

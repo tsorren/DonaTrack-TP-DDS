@@ -45,7 +45,8 @@
              '/entidad-seguimiento')}"></section>
   </th:block>
 
-  <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+  <section th:if="${escenario == 'vacio' or (escenario == '' and #lists.isEmpty(vienen))}" class="vacio"
+           aria-labelledby="vacio-titulo">
     <h2 id="vacio-titulo">No tenés entregas por recibir.</h2>
     <p>Cuando se asigne una donación a tu entidad, vas a ver acá por dónde viene y cuándo llega a tu
       puerta.</p>
@@ -93,7 +94,7 @@
            sello junto a ella. 3 (aceite), con problema: impresa hasta donde se cortó. 4 (arroz), en
            camino: impresa hasta la abeja, a mitad de camino. 5 (leche), pendiente: punteada, con su
            sello junto al depósito. Los números son los de la lista. */-->
-    <figure class="mapa-dibujo tierra-impresa" aria-hidden="true">
+    <figure th:if="${dibujoDeEjemplo}" class="mapa-dibujo tierra-impresa" aria-hidden="true">
       <svg class="dibujo" viewBox="0 0 900 590" aria-hidden="true" focusable="false">
         <path class="dibujo-tierra" d="M0 80H900"/>
 

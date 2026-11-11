@@ -32,6 +32,7 @@ class EntidadConfirmarRestTest {
   private static final String ENTREGA = "6f1c2c1e-0000-4000-8000-0000000000a1";
   private static final String DONACION = "6f1c2c1e-0000-4000-8000-0000000000d1";
   private static final String NECESIDAD = "6f1c2c1e-0000-4000-8000-0000000000b1";
+  private static final String LEGUMBRES = "6f1c2c1e-0000-4000-8000-0000000000c5";
   private static final String LOGISTICA = "http://logistica/api/entregas/";
 
   private final RestClient.Builder deLogistica = RestClient.builder();
@@ -78,8 +79,17 @@ class EntidadConfirmarRestTest {
         .expect(requestTo("http://donaciones/api/necesidades/" + NECESIDAD))
         .andRespond(
             withSuccess(
-                "{\"descripcion\": \"Lentejas secas\", \"cantidadNecesitada\": 40,"
+                "{\"descripcion\": \"Para el almuerzo.\", \"cantidadNecesitada\": 40,"
+                    + " \"idSubcategoria\": \""
+                    + LEGUMBRES
+                    + "\","
                     + " \"unidad\": \"KILOGRAMO\", \"fechaLimite\": \"2026-11-30\"}",
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo("http://donaciones/api/subcategorias"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + LEGUMBRES + "\", \"nombre\": \"Lentejas secas\"}]",
                 MediaType.APPLICATION_JSON));
 
     List<EntidadEntregaVista> entregas = adaptador.entregas(ENTIDAD);

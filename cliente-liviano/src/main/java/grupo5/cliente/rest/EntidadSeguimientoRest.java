@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 /**
  * Las noticias de las entregas de la entidad desde Logística ({@code GET
  * /api/entregas/seguimiento/beneficiarios/{id}}): la última actualización de cada una, por la
- * donación que lleva. La posición del camión no se dibuja todavía (el dibujo es fijo; MapLibre,
- * D21).
+ * donación que lleva. Sin el dibujo del ejemplo: la posición del camión no se dibuja todavía
+ * (MapLibre, D21).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -41,5 +41,10 @@ class EntidadSeguimientoRest implements EntidadSeguimientoPuerto {
                         + s.ultimaActualizacion().atZone(ARGENTINA).format(DIA_Y_HORA)
                         + ".",
                 (una, otra) -> una));
+  }
+
+  @Override
+  public boolean dibujoDeEjemplo() {
+    return false;
   }
 }

@@ -151,8 +151,8 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
                 .sorted(Comparator.comparing(DonacionesApi.Periodo::inicio).reversed())
                 .toList()
             : List.of();
-    DonacionesApi.Periodo actual =
-        periodos.stream().filter(p -> "EN_CURSO".equals(p.resultado())).findFirst().orElse(null);
+    // El período en curso es el más nuevo: pasa a CUMPLIDO apenas se cumple, sin terminar.
+    DonacionesApi.Periodo actual = periodos.isEmpty() ? null : periodos.getFirst();
     int pedida = n.cantidadNecesitada() == null ? 0 : n.cantidadNecesitada();
     LocalDate hasta =
         actual != null ? actual.fin() : (n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin());

@@ -122,23 +122,33 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         null);
   }
 
-  /** "Descripción, 40 kg, hasta el 31 de octubre."; sin necesidad, null. */
+  /**
+   * "Lentejas secas, 40 kg, hasta el 31 de octubre.": el nombre es el de la subcategoría, como en
+   * Necesidades (la descripción es el motivo); sin necesidad, null.
+   */
   private String pedido(UUID necesidadId) {
     if (necesidadId == null) {
       return null;
     }
     DonacionesApi.Necesidad n = donaciones.necesidad(necesidadId);
-    if (n == null || n.descripcion() == null) {
+    if (n == null) {
+      return null;
+    }
+    String nombre =
+        donaciones.subcategorias().stream()
+            .filter(s -> s.id() != null && s.id().equals(n.idSubcategoria()))
+            .map(DonacionesApi.Subcategoria::nombre)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(n.descripcion());
+    if (nombre == null) {
       return null;
     }
     Categoria conUnidad = new Categoria(null, null, n.unidad(), null, null, null);
     String cuanto =
         n.cantidadNecesitada() == null ? "" : ", " + cantidad(n.cantidadNecesitada(), conUnidad);
     LocalDate hasta = n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin();
-    return n.descripcion()
-        + cuanto
-        + (hasta == null ? "" : ", hasta el " + hasta.format(DIA))
-        + ".";
+    return nombre + cuanto + (hasta == null ? "" : ", hasta el " + hasta.format(DIA)) + ".";
   }
 
   private static String cuando(Instant momento) {

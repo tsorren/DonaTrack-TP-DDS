@@ -51,7 +51,8 @@
              vigentes=${escenario == 'vacio' ? {} : todas.?[(clave != 'fideos' or #root.mostrarNueva) and (clave != 'aceite' or !#root.sinAceite)]},
              pedida=${param.necesidad != null ? param.necesidad[0] : (mostrarNueva ? 'fideos' : (escenario == 'error-baja' ? 'aceite' : 'lentejas'))},
              noExiste=${escenario == 'no-existe' or (param.necesidad != null and #lists.isEmpty(vigentes.?[clave == #root.pedida]))},
-             cambiando=${escenario == 'conflicto' or escenario == 'cambiar-datos' or escenario == 'error-cambiar'}">
+             cambiando=${escenario == 'conflicto' or escenario == 'cambiar-datos' or escenario == 'error-cambiar'},
+             sinVigentes=${escenario == 'vacio' or (escenario != 'error' and escenario != 'lento' and #lists.isEmpty(vigentes))}">
   <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="necesidades">
     <header>
@@ -134,7 +135,7 @@
     </section>
 
     <!--/* Sin necesidades vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
-    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${sinVigentes}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">No tenés necesidades vigentes.</h2>
       <p>Publicá lo que le hace falta a tu entidad: lo ven los donantes y el catálogo público.</p>
     </section>
@@ -432,9 +433,9 @@ con este código</a>.</p>
        conError, el error de datos de entidad-necesidades-publicar-error (cuánto y la fecha). */-->
 <details th:fragment="publicar(conError)" id="publicar" class="publicar"
          th:with="escrito=${escenario == 'error-publicar' or escenario == 'sin-conexion'}"
-         th:open="${conError or escrito or escenario == 'vacio'}">
+         th:open="${conError or escrito or sinVigentes}">
   <summary class="boton" data-tono="secundario"
-           th:text="${escenario == 'vacio'} ? 'Publicar una necesidad' : 'Publicar otra necesidad'">Publicar
+           th:text="${sinVigentes} ? 'Publicar una necesidad' : 'Publicar otra necesidad'">Publicar
     otra necesidad</summary>
   <form action="/entidad-necesidades-publicada"
         th:action="@{/entidad-necesidades-publicada}" method="post"

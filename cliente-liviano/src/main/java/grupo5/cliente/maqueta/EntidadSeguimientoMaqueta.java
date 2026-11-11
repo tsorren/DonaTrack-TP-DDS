@@ -25,4 +25,9 @@ class EntidadSeguimientoMaqueta implements EntidadSeguimientoPuerto {
   public Map<String, String> noticias(UUID entidad) {
     return NOTICIAS;
   }
+
+  @Override
+  public boolean dibujoDeEjemplo() {
+    return true;
+  }
 }
