@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
       "cliente.datos.ranking=rest",
       "cliente.datos.donaciones=rest",
       "cliente.datos.recibidas=rest",
+      "cliente.datos.publico=rest",
+      "cliente.datos.misiones=rest",
       "cliente.datos.cuenta=parametro",
       "cliente.api.incentivos.url=http://localhost:1",
       "cliente.api.donaciones.url=http://localhost:1",
@@ -67,6 +69,19 @@ class SitioConApisTest {
   void recibidasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
     mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/publico-ingresar"));
     mvc.perform(get("/entidad-recibidas?entidad=00000000-0000-0000-0000-000000000003"))
+        .andExpect(status().isBadGateway());
+  }
+
+  @Test
+  void entidadesYMapaConLasApisCaidasSonUnaFallaNuestra() throws Exception {
+    mvc.perform(get("/publico-entidades")).andExpect(status().isBadGateway());
+    mvc.perform(get("/publico-mapa")).andExpect(status().isBadGateway());
+  }
+
+  @Test
+  void misionesSinCuentaMandaAIngresarYConLasApisCaidasEsUnaFallaNuestra() throws Exception {
+    mvc.perform(get("/donante-misiones")).andExpect(redirectedUrl("/publico-ingresar"));
+    mvc.perform(get("/donante-misiones?donante=00000000-0000-0000-0000-000000000002"))
         .andExpect(status().isBadGateway());
   }
 }

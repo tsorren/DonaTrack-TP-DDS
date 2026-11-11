@@ -70,10 +70,20 @@ interface IncentivosApi {
       Integer misionesCompletadas,
       Integer insigniasGanadas) {}
 
+  /**
+   * Una misión del donante, en el orden de MisionFactory. {@code categoria}: COLABORADOR,
+   * SOSTENEDOR o TRANSFORMADOR; el avance ({@code progresoActual} de {@code objetivo}) no dice en
+   * qué unidad está.
+   */
   record Mision(
       String nombre,
       String descripcion,
       String categoria,
+      Integer progresoActual,
+      Integer objetivo,
+      Integer porcentaje,
+      Integer distanciaAlObjetivo,
+      Boolean completada,
       LocalDate fechaCompletada,
       Insignia insignia) {}
 
