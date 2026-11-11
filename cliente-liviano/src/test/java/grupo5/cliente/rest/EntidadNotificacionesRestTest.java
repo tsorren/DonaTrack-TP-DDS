@@ -34,6 +34,8 @@ class EntidadNotificacionesRestTest {
   private static final String ENTREGA = "6f1c2c1e-0000-4000-8000-0000000000f1";
   private static final String SEGUIMIENTO =
       "http://logistica/api/entregas/seguimiento/beneficiarios/" + ENTIDAD;
+  private static final String ASIGNADAS =
+      "http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD;
 
   private final RestClient.Builder builder = RestClient.builder();
   private final MockRestServiceServer servidor = MockRestServiceServer.bindTo(builder).build();
@@ -42,6 +44,7 @@ class EntidadNotificacionesRestTest {
       new EntidadNotificacionesRest(
           ClientesHttp.cliente(builder, "http://notificaciones", NotificacionesApi.class),
           ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+          ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
           Clock.fixed(Instant.parse("2026-11-08T21:30:45Z"), ZoneOffset.UTC));
 
   @Test
@@ -138,6 +141,11 @@ class EntidadNotificacionesRestTest {
                 """
                     .formatted(ENTREGA, DONACION),
                 MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(ASIGNADAS))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + DONACION + "\", \"cantidad\": 1}]", MediaType.APPLICATION_JSON));
 
     Novedad novedad = adaptador.bandeja(ENTIDAD).novedades().getFirst();
 
@@ -172,6 +180,39 @@ class EntidadNotificacionesRestTest {
 
     servidor.verify();
     for (Novedad n : List.of(entregada, sinLogistica)) {
+      assertNull(n.boton());
+      assertEquals("/entidad-recibidas?estado=en-camino", n.destino());
+    }
+  }
+
+  @Test
+  void siLaDonacionNoEstaEntreLasAsignadasDeLaEntidad_oDonacionesNoResponde_noHayBoton() {
+    String enTraslado =
+        "[{\"idEntrega\": \""
+            + ENTREGA
+            + "\", \"idDonacion\": \""
+            + DONACION
+            + "\", \"estadoEntrega\": \"EN_TRASLADO\"}]";
+    servidor
+        .expect(requestTo(BASE + "persona/" + ENTIDAD))
+        .andRespond(withSuccess(enCamino(), MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(SEGUIMIENTO))
+        .andRespond(withSuccess(enTraslado, MediaType.APPLICATION_JSON));
+    servidor.expect(requestTo(ASIGNADAS)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(BASE + "persona/" + ENTIDAD))
+        .andRespond(withSuccess(enCamino(), MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(SEGUIMIENTO))
+        .andRespond(withSuccess(enTraslado, MediaType.APPLICATION_JSON));
+    servidor.expect(requestTo(ASIGNADAS)).andRespond(withServerError());
+
+    Novedad ajena = adaptador.bandeja(ENTIDAD).novedades().getFirst();
+    Novedad sinDonaciones = adaptador.bandeja(ENTIDAD).novedades().getFirst();
+
+    servidor.verify();
+    for (Novedad n : List.of(ajena, sinDonaciones)) {
       assertNull(n.boton());
       assertEquals("/entidad-recibidas?estado=en-camino", n.destino());
     }

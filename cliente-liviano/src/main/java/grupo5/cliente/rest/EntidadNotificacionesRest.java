@@ -27,8 +27,9 @@ import org.springframework.web.client.RestClientException;
  * La bandeja de la entidad desde Notificaciones. La categoría sale del tipo de evento (HB-09); sin
  * tipo, "Otras novedades". Todas llevan a Donaciones recibidas. La que avisa que la entrega salió
  * lleva además el botón "Confirmar recepción" si Logística tiene esa donación en una entrega que
- * todavía espera (la clave de Confirmar recepción es la de la entrega, no la de la donación que
- * trae el aviso); si Logística no responde, queda el enlace simple.
+ * todavía espera y está entre las asignadas de la entidad, como lo exige Confirmar recepción (su
+ * clave es la de la entrega, no la de la donación que trae el aviso); si Logística o Donaciones no
+ * responden, queda el enlace simple.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -64,16 +65,19 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
           "DONACION_VENCIDA",
           "problemas");
 
-  /** Las entregas que todavía esperan la confirmación de la entidad. */
-  private static final Set<String> ESPERANDO = Set.of("EN_TRASLADO", "EN_PUERTA");
+  /** El estado que Confirmar recepción acepta (EntidadConfirmarRest); si HB-22 suma otro, ambos. */
+  private static final String ESPERANDO = "EN_TRASLADO";
 
   private final NotificacionesApi api;
   private final LogisticaApi logistica;
+  private final DonacionesApi donaciones;
   private final Clock reloj;
 
-  EntidadNotificacionesRest(NotificacionesApi api, LogisticaApi logistica, Clock reloj) {
+  EntidadNotificacionesRest(
+      NotificacionesApi api, LogisticaApi logistica, DonacionesApi donaciones, Clock reloj) {
     this.api = api;
     this.logistica = logistica;
+    this.donaciones = donaciones;
     this.reloj = reloj;
   }
 
@@ -121,9 +125,9 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
   }
 
   /**
-   * De la donación del aviso a la entrega que la entidad todavía tiene que confirmar. Una sola
-   * llamada a Logística, y solo si hay un aviso de entrega en camino con donación; sin respuesta,
-   * ninguna.
+   * De la donación del aviso a la entrega que la entidad todavía tiene que confirmar. Una llamada a
+   * Logística y otra a Donaciones (las asignadas, como Confirmar recepción), y solo si hay un aviso
+   * de entrega en camino con donación; sin respuesta, ninguna.
    */
   private Map<UUID, UUID> entregasEsperando(
       UUID entidad, List<NotificacionesApi.Notificacion> avisos) {
@@ -132,9 +136,20 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
       return Map.of();
     }
     try {
-      return logistica.seguimientoDeEntidad(entidad).stream()
-          .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
-          .filter(s -> ESPERANDO.contains(s.estadoEntrega()))
+      List<LogisticaApi.Seguimiento> esperando =
+          logistica.seguimientoDeEntidad(entidad).stream()
+              .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
+              .filter(s -> ESPERANDO.equals(s.estadoEntrega()))
+              .toList();
+      if (esperando.isEmpty()) {
+        return Map.of();
+      }
+      Set<UUID> asignadas =
+          donaciones.asignadas(entidad).stream()
+              .map(DonacionesApi.Donacion::id)
+              .collect(Collectors.toSet());
+      return esperando.stream()
+          .filter(s -> asignadas.contains(s.idDonacion()))
           .collect(
               Collectors.toMap(
                   LogisticaApi.Seguimiento::idDonacion,
