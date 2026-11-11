@@ -1,0 +1,2038 @@
+<!DOCTYPE html><html lang="en"><head><meta name="theme-color" content="#2176AE"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" data-href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap"/><link rel="stylesheet" data-href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&amp;display=swap"/><meta charSet="utf-8"/><meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/><link rel="shortcut icon" type="image/x-icon" href="/DonaTrack-TP-DDS/adr-preview/favicon.ico"/><meta name="og:image" content="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-og.png"/><title>Estado EN_PUERTA de la entrega: el camión llegó y la entidad todavía no confirmó ADR - Architecture knowledge base of DonaTrack</title><meta name="next-head-count" content="5"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/css/f4b1bfe580d32a3f533d.css" as="style"/><link rel="stylesheet" href="/DonaTrack-TP-DDS/adr-preview/_next/static/css/f4b1bfe580d32a3f533d.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/webpack-50bee04d1dc61f8adf5b.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/framework.b33896d72531466bcf17.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/commons.1a3eba1bbb8ea986a150.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/main-d0427bd7c9d85889a938.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/a3e17150ead73d62fba7a33a50672ae3f72841a5.56d1813f1730ddfb4c80.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/_app-796f4c8086e869be38c4.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/364bddfb.28847971f0e02b167249.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3da477db.e49cd5277ed36ace32c1.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3b07cb59.4f0af644828e83722dc4.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/b4e962f4.26c14c8db148d74faf11.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/45d2d314fc8da5e3d79852782e4a432ad4da6771.21d74951d06ae300fd57.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/adr/%5B...slug%5D-9f67d10c628dcc0d3aa2.js" as="script"/><style id="jss-server-side">html {
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+strong, b {
+  font-weight: 700;
+}
+body {
+  color: rgba(0, 0, 0, 0.87);
+  margin: 0;
+  padding: 0 !important;
+  font-size: 0.875rem;
+  max-width: 100%;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  background-color: #fff;
+}
+@media print {
+  body {
+    background-color: #fff;
+  }
+}
+  body::backdrop {
+    background-color: #fff;
+  }
+  blockquote {
+    color: #9e9e9e;
+    margin: 0;
+    padding: 0 1em;
+    border-left: 0.25em solid #F8F8F8;
+  }
+  .MuiSvgIcon-root {
+    fill: currentColor;
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    font-size: 1.5rem;
+    transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .MuiSvgIcon-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiSvgIcon-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiSvgIcon-colorAction {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  .MuiSvgIcon-colorError {
+    color: #ff1744;
+  }
+  .MuiSvgIcon-colorDisabled {
+    color: rgba(0, 0, 0, 0.26);
+  }
+  .MuiSvgIcon-fontSizeInherit {
+    font-size: inherit;
+  }
+  .MuiSvgIcon-fontSizeSmall {
+    font-size: 1.25rem;
+  }
+  .MuiSvgIcon-fontSizeLarge {
+    font-size: 2.1875rem;
+  }
+  .MuiTooltip-popper {
+    z-index: 1500;
+    pointer-events: none;
+  }
+  .MuiTooltip-popperInteractive {
+    pointer-events: auto;
+  }
+  .MuiTooltip-popperArrow[x-placement*="bottom"] .MuiTooltip-arrow {
+    top: 0;
+    left: 0;
+    margin-top: -0.71em;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="top"] .MuiTooltip-arrow {
+    left: 0;
+    bottom: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-bottom: -0.71em;
+  }
+  .MuiTooltip-popperArrow[x-placement*="right"] .MuiTooltip-arrow {
+    left: 0;
+    width: 0.71em;
+    height: 1em;
+    margin-top: 4px;
+    margin-left: -0.71em;
+    margin-bottom: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="left"] .MuiTooltip-arrow {
+    right: 0;
+    width: 0.71em;
+    height: 1em;
+    margin-top: 4px;
+    margin-right: -0.71em;
+    margin-bottom: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="left"] .MuiTooltip-arrow::before {
+    transform-origin: 0 0;
+  }
+  .MuiTooltip-popperArrow[x-placement*="right"] .MuiTooltip-arrow::before {
+    transform-origin: 100% 100%;
+  }
+  .MuiTooltip-popperArrow[x-placement*="top"] .MuiTooltip-arrow::before {
+    transform-origin: 100% 0;
+  }
+  .MuiTooltip-popperArrow[x-placement*="bottom"] .MuiTooltip-arrow::before {
+    transform-origin: 0 100%;
+  }
+  .MuiTooltip-tooltip {
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.625rem;
+    max-width: 300px;
+    word-wrap: break-word;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.4em;
+    border-radius: 4px;
+    background-color: rgba(97, 97, 97, 0.9);
+  }
+  .MuiTooltip-tooltipArrow {
+    margin: 0;
+    position: relative;
+  }
+  .MuiTooltip-arrow {
+    color: rgba(97, 97, 97, 0.9);
+    width: 1em;
+    height: 0.71em;
+    overflow: hidden;
+    position: absolute;
+    box-sizing: border-box;
+  }
+  .MuiTooltip-arrow::before {
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    content: "";
+    display: block;
+    transform: rotate(45deg);
+    background-color: currentColor;
+  }
+  .MuiTooltip-touch {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.14286em;
+  }
+  .MuiTooltip-tooltipPlacementLeft {
+    margin: 0 24px ;
+    transform-origin: right center;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementLeft {
+    margin: 0 14px;
+  }
+}
+  .MuiTooltip-tooltipPlacementRight {
+    margin: 0 24px;
+    transform-origin: left center;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementRight {
+    margin: 0 14px;
+  }
+}
+  .MuiTooltip-tooltipPlacementTop {
+    margin: 24px 0;
+    transform-origin: center bottom;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementTop {
+    margin: 14px 0;
+  }
+}
+  .MuiTooltip-tooltipPlacementBottom {
+    margin: 24px 0;
+    transform-origin: center top;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementBottom {
+    margin: 14px 0;
+  }
+}
+  .MuiButtonBase-root {
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    display: inline-flex;
+    outline: 0;
+    padding: 0;
+    position: relative;
+    align-items: center;
+    user-select: none;
+    border-radius: 0;
+    vertical-align: middle;
+    -moz-appearance: none;
+    justify-content: center;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiButtonBase-root::-moz-focus-inner {
+    border-style: none;
+  }
+  .MuiButtonBase-root.Mui-disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+@media print {
+  .MuiButtonBase-root {
+    color-adjust: exact;
+  }
+}
+  .MuiButton-root {
+    color: rgba(0, 0, 0, 0.87);
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    min-width: 64px;
+    box-sizing: border-box;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    border-radius: 4px;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+  }
+  .MuiButton-root:hover {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiButton-root.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+  }
+@media (hover: none) {
+  .MuiButton-root:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-root:hover.Mui-disabled {
+    background-color: transparent;
+  }
+  .MuiButton-label {
+    width: 100%;
+    display: inherit;
+    align-items: inherit;
+    justify-content: inherit;
+  }
+  .MuiButton-text {
+    padding: 6px 8px;
+  }
+  .MuiButton-textPrimary {
+    color: #2176AE;
+  }
+  .MuiButton-textPrimary:hover {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-textPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-textSecondary {
+    color: #FF007B;
+  }
+  .MuiButton-textSecondary:hover {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-textSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    padding: 5px 15px;
+  }
+  .MuiButton-outlined.Mui-disabled {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiButton-outlinedPrimary {
+    color: #2176AE;
+    border: 1px solid rgba(33, 118, 174, 0.5);
+  }
+  .MuiButton-outlinedPrimary:hover {
+    border: 1px solid #2176AE;
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-outlinedPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-outlinedSecondary {
+    color: #FF007B;
+    border: 1px solid rgba(255, 0, 123, 0.5);
+  }
+  .MuiButton-outlinedSecondary:hover {
+    border: 1px solid #FF007B;
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+  .MuiButton-outlinedSecondary.Mui-disabled {
+    border: 1px solid rgba(0, 0, 0, 0.26);
+  }
+@media (hover: none) {
+  .MuiButton-outlinedSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-contained {
+    color: rgba(0, 0, 0, 0.87);
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+    background-color: #e0e0e0;
+  }
+  .MuiButton-contained:hover {
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+    background-color: #d5d5d5;
+  }
+  .MuiButton-contained.Mui-focusVisible {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+  }
+  .MuiButton-contained:active {
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
+  }
+  .MuiButton-contained.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+    box-shadow: none;
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+@media (hover: none) {
+  .MuiButton-contained:hover {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+    background-color: #e0e0e0;
+  }
+}
+  .MuiButton-contained:hover.Mui-disabled {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  .MuiButton-containedPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiButton-containedPrimary:hover {
+    background-color: rgb(23, 82, 121);
+  }
+@media (hover: none) {
+  .MuiButton-containedPrimary:hover {
+    background-color: #2176AE;
+  }
+}
+  .MuiButton-containedSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiButton-containedSecondary:hover {
+    background-color: rgb(178, 0, 86);
+  }
+@media (hover: none) {
+  .MuiButton-containedSecondary:hover {
+    background-color: #FF007B;
+  }
+}
+  .MuiButton-disableElevation {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation:hover {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation.Mui-focusVisible {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation:active {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation.Mui-disabled {
+    box-shadow: none;
+  }
+  .MuiButton-colorInherit {
+    color: inherit;
+    border-color: currentColor;
+  }
+  .MuiButton-textSizeSmall {
+    padding: 4px 5px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-textSizeLarge {
+    padding: 8px 11px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-outlinedSizeSmall {
+    padding: 3px 9px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-outlinedSizeLarge {
+    padding: 7px 21px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-containedSizeSmall {
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-containedSizeLarge {
+    padding: 8px 22px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-fullWidth {
+    width: 100%;
+  }
+  .MuiButton-startIcon {
+    display: inherit;
+    margin-left: -4px;
+    margin-right: 8px;
+  }
+  .MuiButton-startIcon.MuiButton-iconSizeSmall {
+    margin-left: -2px;
+  }
+  .MuiButton-endIcon {
+    display: inherit;
+    margin-left: 8px;
+    margin-right: -4px;
+  }
+  .MuiButton-endIcon.MuiButton-iconSizeSmall {
+    margin-right: -2px;
+  }
+  .MuiButton-iconSizeSmall > *:first-child {
+    font-size: 18px;
+  }
+  .MuiButton-iconSizeMedium > *:first-child {
+    font-size: 20px;
+  }
+  .MuiButton-iconSizeLarge > *:first-child {
+    font-size: 22px;
+  }
+@media (min-width:0px) and (max-width:899.95px) {
+  .jss27 {
+    display: none;
+  }
+}
+@media (min-width:0px) {
+  .jss28 {
+    display: none;
+  }
+}
+@media (max-width:899.95px) {
+  .jss29 {
+    display: none;
+  }
+}
+@media (min-width:900px) and (max-width:1059.95px) {
+  .jss30 {
+    display: none;
+  }
+}
+@media (min-width:900px) {
+  .jss31 {
+    display: none;
+  }
+}
+@media (max-width:1059.95px) {
+  .jss32 {
+    display: none;
+  }
+}
+@media (min-width:1060px) and (max-width:1279.95px) {
+  .jss33 {
+    display: none;
+  }
+}
+@media (min-width:1060px) {
+  .jss34 {
+    display: none;
+  }
+}
+@media (max-width:1279.95px) {
+  .jss35 {
+    display: none;
+  }
+}
+@media (min-width:1280px) and (max-width:1919.95px) {
+  .jss36 {
+    display: none;
+  }
+}
+@media (min-width:1280px) {
+  .jss37 {
+    display: none;
+  }
+}
+@media (max-width:1919.95px) {
+  .jss38 {
+    display: none;
+  }
+}
+@media (min-width:1920px) {
+  .jss39 {
+    display: none;
+  }
+}
+@media (min-width:1920px) {
+  .jss40 {
+    display: none;
+  }
+}
+@media (min-width:0px) {
+  .jss41 {
+    display: none;
+  }
+}
+  .MuiDivider-root {
+    border: none;
+    height: 1px;
+    margin: 0;
+    flex-shrink: 0;
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  .MuiDivider-absolute {
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+  }
+  .MuiDivider-inset {
+    margin-left: 72px;
+  }
+  .MuiDivider-light {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+  .MuiDivider-middle {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  .MuiDivider-vertical {
+    width: 1px;
+    height: 100%;
+  }
+  .MuiDivider-flexItem {
+    height: auto;
+    align-self: stretch;
+  }
+  .MuiTypography-root {
+    margin: 0;
+  }
+  .MuiTypography-body2 {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.43;
+    letter-spacing: 0.01071em;
+  }
+  .MuiTypography-body1 {
+    font-size: 1rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.00938em;
+  }
+  .MuiTypography-caption {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: 0.03333em;
+  }
+  .MuiTypography-button {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+  }
+  .MuiTypography-h1 {
+    font-size: 3.5rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 300;
+    line-height: 1.167;
+    letter-spacing: -0.01562em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h1 {
+    font-size: 5.3556rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h1 {
+    font-size: 5.5698rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h1 {
+    font-size: 5.9983rem;
+  }
+}
+  .MuiTypography-h2 {
+    font-size: 2.375rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.00833em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h2 {
+    font-size: 3.3333rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h2 {
+    font-size: 3.5417rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h2 {
+    font-size: 3.75rem;
+  }
+}
+  .MuiTypography-h3 {
+    font-size: 2rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h3 {
+    font-size: 2.7273rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h3 {
+    font-size: 2.7273rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h3 {
+    font-size: 2.9545rem;
+  }
+}
+  .MuiTypography-h4 {
+    font-size: 1.5625rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.235;
+    letter-spacing: 0.00735em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+  .MuiTypography-h5 {
+    font-size: 1.25rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.334;
+    letter-spacing: 0em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+  .MuiTypography-h6 {
+    font-size: 1.125rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.0075em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+  .MuiTypography-subtitle1 {
+    font-size: 1rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.75;
+    letter-spacing: 0.00938em;
+  }
+  .MuiTypography-subtitle2 {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.57;
+    letter-spacing: 0.00714em;
+  }
+  .MuiTypography-overline {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 2.66;
+    letter-spacing: 0.08333em;
+    text-transform: uppercase;
+  }
+  .MuiTypography-srOnly {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+  }
+  .MuiTypography-alignLeft {
+    text-align: left;
+  }
+  .MuiTypography-alignCenter {
+    text-align: center;
+  }
+  .MuiTypography-alignRight {
+    text-align: right;
+  }
+  .MuiTypography-alignJustify {
+    text-align: justify;
+  }
+  .MuiTypography-noWrap {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .MuiTypography-gutterBottom {
+    margin-bottom: 0.35em;
+  }
+  .MuiTypography-paragraph {
+    margin-bottom: 16px;
+  }
+  .MuiTypography-colorInherit {
+    color: inherit;
+  }
+  .MuiTypography-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiTypography-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiTypography-colorTextPrimary {
+    color: rgba(0, 0, 0, 0.87);
+  }
+  .MuiTypography-colorTextSecondary {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  .MuiTypography-colorError {
+    color: #ff1744;
+  }
+  .MuiTypography-displayInline {
+    display: inline;
+  }
+  .MuiTypography-displayBlock {
+    display: block;
+  }
+  .MuiLink-root:hover {
+    color: rgb(23, 82, 121);
+  }
+  .MuiLink-underlineNone {
+    text-decoration: none;
+  }
+  .MuiLink-underlineHover {
+    text-decoration: none;
+  }
+  .MuiLink-underlineHover:hover {
+    text-decoration: underline;
+  }
+  .MuiLink-underlineAlways {
+    text-decoration: underline;
+  }
+  .MuiLink-button {
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    position: relative;
+    user-select: none;
+    border-radius: 0;
+    vertical-align: middle;
+    -moz-appearance: none;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiLink-button::-moz-focus-inner {
+    border-style: none;
+  }
+  .MuiLink-button.Mui-focusVisible {
+    outline: auto;
+  }
+  .MuiPaper-root {
+    color: rgba(0, 0, 0, 0.87);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #fff;
+  }
+  .MuiPaper-rounded {
+    border-radius: 4px;
+  }
+  .MuiPaper-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiPaper-elevation0 {
+    box-shadow: none;
+  }
+  .MuiPaper-elevation1 {
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation2 {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation3 {
+    box-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation4 {
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation5 {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 5px 8px 0px rgba(0,0,0,0.14),0px 1px 14px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation6 {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation7 {
+    box-shadow: 0px 4px 5px -2px rgba(0,0,0,0.2),0px 7px 10px 1px rgba(0,0,0,0.14),0px 2px 16px 1px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation8 {
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation9 {
+    box-shadow: 0px 5px 6px -3px rgba(0,0,0,0.2),0px 9px 12px 1px rgba(0,0,0,0.14),0px 3px 16px 2px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation10 {
+    box-shadow: 0px 6px 6px -3px rgba(0,0,0,0.2),0px 10px 14px 1px rgba(0,0,0,0.14),0px 4px 18px 3px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation11 {
+    box-shadow: 0px 6px 7px -4px rgba(0,0,0,0.2),0px 11px 15px 1px rgba(0,0,0,0.14),0px 4px 20px 3px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation12 {
+    box-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation13 {
+    box-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 13px 19px 2px rgba(0,0,0,0.14),0px 5px 24px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation14 {
+    box-shadow: 0px 7px 9px -4px rgba(0,0,0,0.2),0px 14px 21px 2px rgba(0,0,0,0.14),0px 5px 26px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation15 {
+    box-shadow: 0px 8px 9px -5px rgba(0,0,0,0.2),0px 15px 22px 2px rgba(0,0,0,0.14),0px 6px 28px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation16 {
+    box-shadow: 0px 8px 10px -5px rgba(0,0,0,0.2),0px 16px 24px 2px rgba(0,0,0,0.14),0px 6px 30px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation17 {
+    box-shadow: 0px 8px 11px -5px rgba(0,0,0,0.2),0px 17px 26px 2px rgba(0,0,0,0.14),0px 6px 32px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation18 {
+    box-shadow: 0px 9px 11px -5px rgba(0,0,0,0.2),0px 18px 28px 2px rgba(0,0,0,0.14),0px 7px 34px 6px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation19 {
+    box-shadow: 0px 9px 12px -6px rgba(0,0,0,0.2),0px 19px 29px 2px rgba(0,0,0,0.14),0px 7px 36px 6px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation20 {
+    box-shadow: 0px 10px 13px -6px rgba(0,0,0,0.2),0px 20px 31px 3px rgba(0,0,0,0.14),0px 8px 38px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation21 {
+    box-shadow: 0px 10px 13px -6px rgba(0,0,0,0.2),0px 21px 33px 3px rgba(0,0,0,0.14),0px 8px 40px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation22 {
+    box-shadow: 0px 10px 14px -6px rgba(0,0,0,0.2),0px 22px 35px 3px rgba(0,0,0,0.14),0px 8px 42px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation23 {
+    box-shadow: 0px 11px 14px -7px rgba(0,0,0,0.2),0px 23px 36px 3px rgba(0,0,0,0.14),0px 9px 44px 8px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation24 {
+    box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12);
+  }
+  .MuiIconButton-root {
+    flex: 0 0 auto;
+    color: rgba(0, 0, 0, 0.54);
+    padding: 12px;
+    overflow: visible;
+    font-size: 1.5rem;
+    text-align: center;
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-radius: 50%;
+  }
+  .MuiIconButton-root:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiIconButton-root.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+    background-color: transparent;
+  }
+@media (hover: none) {
+  .MuiIconButton-root:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-edgeStart {
+    margin-left: -12px;
+  }
+  .MuiIconButton-sizeSmall.MuiIconButton-edgeStart {
+    margin-left: -3px;
+  }
+  .MuiIconButton-edgeEnd {
+    margin-right: -12px;
+  }
+  .MuiIconButton-sizeSmall.MuiIconButton-edgeEnd {
+    margin-right: -3px;
+  }
+  .MuiIconButton-colorInherit {
+    color: inherit;
+  }
+  .MuiIconButton-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiIconButton-colorPrimary:hover {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiIconButton-colorPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiIconButton-colorSecondary:hover {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+@media (hover: none) {
+  .MuiIconButton-colorSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-sizeSmall {
+    padding: 3px;
+    font-size: 1.125rem;
+  }
+  .MuiIconButton-label {
+    width: 100%;
+    display: flex;
+    align-items: inherit;
+    justify-content: inherit;
+  }
+  .MuiAppBar-root {
+    width: 100%;
+    display: flex;
+    z-index: 1100;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    flex-direction: column;
+  }
+  .MuiAppBar-positionFixed {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: fixed;
+  }
+@media print {
+  .MuiAppBar-positionFixed {
+    position: absolute;
+  }
+}
+  .MuiAppBar-positionAbsolute {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: absolute;
+  }
+  .MuiAppBar-positionSticky {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: sticky;
+  }
+  .MuiAppBar-positionStatic {
+    position: static;
+  }
+  .MuiAppBar-positionRelative {
+    position: relative;
+  }
+  .MuiAppBar-colorDefault {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #f5f5f5;
+  }
+  .MuiAppBar-colorPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiAppBar-colorSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiAppBar-colorInherit {
+    color: inherit;
+  }
+  .MuiAppBar-colorTransparent {
+    color: inherit;
+    background-color: transparent;
+  }
+  .MuiBackdrop-root {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    z-index: -1;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiBackdrop-invisible {
+    background-color: transparent;
+  }
+  .MuiButtonGroup-root {
+    display: inline-flex;
+    border-radius: 4px;
+  }
+  .MuiButtonGroup-contained {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+  }
+  .MuiButtonGroup-disableElevation {
+    box-shadow: none;
+  }
+  .MuiButtonGroup-fullWidth {
+    width: 100%;
+  }
+  .MuiButtonGroup-vertical {
+    flex-direction: column;
+  }
+  .MuiButtonGroup-grouped {
+    min-width: 40px;
+  }
+  .MuiButtonGroup-groupedHorizontal:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .MuiButtonGroup-groupedHorizontal:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedVertical:not(:first-child) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedVertical:not(:last-child) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedTextHorizontal:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.23);
+  }
+  .MuiButtonGroup-groupedTextVertical:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.23);
+  }
+  .MuiButtonGroup-groupedTextPrimary:not(:last-child) {
+    border-color: rgba(33, 118, 174, 0.5);
+  }
+  .MuiButtonGroup-groupedTextSecondary:not(:last-child) {
+    border-color: rgba(255, 0, 123, 0.5);
+  }
+  .MuiButtonGroup-groupedOutlinedHorizontal:not(:first-child) {
+    margin-left: -1px;
+  }
+  .MuiButtonGroup-groupedOutlinedHorizontal:not(:last-child) {
+    border-right-color: transparent;
+  }
+  .MuiButtonGroup-groupedOutlinedVertical:not(:first-child) {
+    margin-top: -1px;
+  }
+  .MuiButtonGroup-groupedOutlinedVertical:not(:last-child) {
+    border-bottom-color: transparent;
+  }
+  .MuiButtonGroup-groupedOutlinedPrimary:hover {
+    border-color: #2176AE;
+  }
+  .MuiButtonGroup-groupedOutlinedSecondary:hover {
+    border-color: #FF007B;
+  }
+  .MuiButtonGroup-groupedContained {
+    box-shadow: none;
+  }
+  .MuiButtonGroup-groupedContainedHorizontal:not(:last-child) {
+    border-right: 1px solid #bdbdbd;
+  }
+  .MuiButtonGroup-groupedContainedHorizontal:not(:last-child).Mui-disabled {
+    border-right: 1px solid rgba(0, 0, 0, 0.26);
+  }
+  .MuiButtonGroup-groupedContainedVertical:not(:last-child) {
+    border-bottom: 1px solid #bdbdbd;
+  }
+  .MuiButtonGroup-groupedContainedVertical:not(:last-child).Mui-disabled {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.26);
+  }
+  .MuiButtonGroup-groupedContainedPrimary:not(:last-child) {
+    border-color: rgb(23, 82, 121);
+  }
+  .MuiButtonGroup-groupedContainedSecondary:not(:last-child) {
+    border-color: rgb(178, 0, 86);
+  }
+  .MuiChip-root {
+    color: rgba(0, 0, 0, 0.87);
+    border: none;
+    cursor: default;
+    height: 32px;
+    display: inline-flex;
+    outline: 0;
+    padding: 0;
+    font-size: 0.8125rem;
+    box-sizing: border-box;
+    transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    align-items: center;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    white-space: nowrap;
+    border-radius: 16px;
+    vertical-align: middle;
+    justify-content: center;
+    text-decoration: none;
+    background-color: #e0e0e0;
+  }
+  .MuiChip-root.Mui-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .MuiChip-root .MuiChip-avatar {
+    color: #616161;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    margin-left: 5px;
+    margin-right: -6px;
+  }
+  .MuiChip-root .MuiChip-avatarColorPrimary {
+    color: #fff;
+    background-color: rgb(23, 82, 121);
+  }
+  .MuiChip-root .MuiChip-avatarColorSecondary {
+    color: #fff;
+    background-color: rgb(178, 0, 86);
+  }
+  .MuiChip-root .MuiChip-avatarSmall {
+    width: 18px;
+    height: 18px;
+    font-size: 0.625rem;
+    margin-left: 4px;
+    margin-right: -4px;
+  }
+  .MuiChip-sizeSmall {
+    height: 24px;
+  }
+  .MuiChip-colorPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiChip-colorSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiChip-clickable {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiChip-clickable:hover, .MuiChip-clickable:focus {
+    background-color: rgb(206, 206, 206);
+  }
+  .MuiChip-clickable:active {
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+  .MuiChip-clickableColorPrimary:hover, .MuiChip-clickableColorPrimary:focus {
+    background-color: rgb(50, 128, 180);
+  }
+  .MuiChip-clickableColorSecondary:hover, .MuiChip-clickableColorSecondary:focus {
+    background-color: rgb(255, 20, 133);
+  }
+  .MuiChip-deletable:focus {
+    background-color: rgb(206, 206, 206);
+  }
+  .MuiChip-deletableColorPrimary:focus {
+    background-color: rgb(77, 145, 190);
+  }
+  .MuiChip-deletableColorSecondary:focus {
+    background-color: rgb(255, 51, 149);
+  }
+  .MuiChip-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    background-color: transparent;
+  }
+  .MuiChip-clickable.MuiChip-outlined:hover, .MuiChip-clickable.MuiChip-outlined:focus, .MuiChip-deletable.MuiChip-outlined:focus {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiChip-outlined .MuiChip-avatar {
+    margin-left: 4px;
+  }
+  .MuiChip-outlined .MuiChip-avatarSmall {
+    margin-left: 2px;
+  }
+  .MuiChip-outlined .MuiChip-icon {
+    margin-left: 4px;
+  }
+  .MuiChip-outlined .MuiChip-iconSmall {
+    margin-left: 2px;
+  }
+  .MuiChip-outlined .MuiChip-deleteIcon {
+    margin-right: 5px;
+  }
+  .MuiChip-outlined .MuiChip-deleteIconSmall {
+    margin-right: 3px;
+  }
+  .MuiChip-outlinedPrimary {
+    color: #2176AE;
+    border: 1px solid #2176AE;
+  }
+  .MuiChip-clickable.MuiChip-outlinedPrimary:hover, .MuiChip-clickable.MuiChip-outlinedPrimary:focus, .MuiChip-deletable.MuiChip-outlinedPrimary:focus {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+  .MuiChip-outlinedSecondary {
+    color: #FF007B;
+    border: 1px solid #FF007B;
+  }
+  .MuiChip-clickable.MuiChip-outlinedSecondary:hover, .MuiChip-clickable.MuiChip-outlinedSecondary:focus, .MuiChip-deletable.MuiChip-outlinedSecondary:focus {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+  .MuiChip-icon {
+    color: #616161;
+    margin-left: 5px;
+    margin-right: -6px;
+  }
+  .MuiChip-iconSmall {
+    width: 18px;
+    height: 18px;
+    margin-left: 4px;
+    margin-right: -4px;
+  }
+  .MuiChip-iconColorPrimary {
+    color: inherit;
+  }
+  .MuiChip-iconColorSecondary {
+    color: inherit;
+  }
+  .MuiChip-label {
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 12px;
+    padding-right: 12px;
+    text-overflow: ellipsis;
+  }
+  .MuiChip-labelSmall {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .MuiChip-deleteIcon {
+    color: rgba(0, 0, 0, 0.26);
+    width: 22px;
+    cursor: pointer;
+    height: 22px;
+    margin: 0 5px 0 -6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiChip-deleteIcon:hover {
+    color: rgba(0, 0, 0, 0.4);
+  }
+  .MuiChip-deleteIconSmall {
+    width: 16px;
+    height: 16px;
+    margin-left: -4px;
+    margin-right: 4px;
+  }
+  .MuiChip-deleteIconColorPrimary {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .MuiChip-deleteIconColorPrimary:hover, .MuiChip-deleteIconColorPrimary:active {
+    color: #fff;
+  }
+  .MuiChip-deleteIconColorSecondary {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .MuiChip-deleteIconColorSecondary:hover, .MuiChip-deleteIconColorSecondary:active {
+    color: #fff;
+  }
+  .MuiChip-deleteIconOutlinedColorPrimary {
+    color: rgba(33, 118, 174, 0.7);
+  }
+  .MuiChip-deleteIconOutlinedColorPrimary:hover, .MuiChip-deleteIconOutlinedColorPrimary:active {
+    color: #2176AE;
+  }
+  .MuiChip-deleteIconOutlinedColorSecondary {
+    color: rgba(255, 0, 123, 0.7);
+  }
+  .MuiChip-deleteIconOutlinedColorSecondary:hover, .MuiChip-deleteIconOutlinedColorSecondary:active {
+    color: #FF007B;
+  }
+  .MuiCircularProgress-root {
+    display: inline-block;
+  }
+  .MuiCircularProgress-static {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-indeterminate {
+    animation: MuiCircularProgress-keyframes-circular-rotate 1.4s linear infinite;
+  }
+  .MuiCircularProgress-determinate {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiCircularProgress-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiCircularProgress-svg {
+    display: block;
+  }
+  .MuiCircularProgress-circle {
+    stroke: currentColor;
+  }
+  .MuiCircularProgress-circleStatic {
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-circleIndeterminate {
+    animation: MuiCircularProgress-keyframes-circular-dash 1.4s ease-in-out infinite;
+    stroke-dasharray: 80px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  .MuiCircularProgress-circleDeterminate {
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+@keyframes MuiCircularProgress-keyframes-circular-rotate {
+  0% {
+    transform-origin: 50% 50%;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes MuiCircularProgress-keyframes-circular-dash {
+  0% {
+    stroke-dasharray: 1px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  50% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -15px;
+  }
+  100% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -125px;
+  }
+}
+  .MuiCircularProgress-circleDisableShrink {
+    animation: none;
+  }
+  .MuiDrawer-docked {
+    flex: 0 0 auto;
+  }
+  .MuiDrawer-paper {
+    top: 0;
+    flex: 1 0 auto;
+    height: 100%;
+    display: flex;
+    outline: 0;
+    z-index: 1200;
+    position: fixed;
+    overflow-y: auto;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+  }
+  .MuiDrawer-paperAnchorLeft {
+    left: 0;
+    right: auto;
+  }
+  .MuiDrawer-paperAnchorRight {
+    left: auto;
+    right: 0;
+  }
+  .MuiDrawer-paperAnchorTop {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    height: auto;
+    max-height: 100%;
+  }
+  .MuiDrawer-paperAnchorBottom {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    max-height: 100%;
+  }
+  .MuiDrawer-paperAnchorDockedLeft {
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedTop {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedRight {
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedBottom {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiList-root {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    list-style: none;
+  }
+  .MuiList-padding {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .MuiList-subheader {
+    padding-top: 0;
+  }
+  .MuiSnackbar-root {
+    left: 8px;
+    right: 8px;
+    display: flex;
+    z-index: 1400;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+  }
+  .MuiSnackbar-anchorOriginTopCenter {
+    top: 8px;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopCenter {
+    top: 24px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+  .MuiSnackbar-anchorOriginBottomCenter {
+    bottom: 8px;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomCenter {
+    left: 50%;
+    right: auto;
+    bottom: 24px;
+    transform: translateX(-50%);
+  }
+}
+  .MuiSnackbar-anchorOriginTopRight {
+    top: 8px;
+    justify-content: flex-end;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopRight {
+    top: 24px;
+    left: auto;
+    right: 24px;
+  }
+}
+  .MuiSnackbar-anchorOriginBottomRight {
+    bottom: 8px;
+    justify-content: flex-end;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomRight {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+  }
+}
+  .MuiSnackbar-anchorOriginTopLeft {
+    top: 8px;
+    justify-content: flex-start;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopLeft {
+    top: 24px;
+    left: 24px;
+    right: auto;
+  }
+}
+  .MuiSnackbar-anchorOriginBottomLeft {
+    bottom: 8px;
+    justify-content: flex-start;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomLeft {
+    left: 24px;
+    right: auto;
+    bottom: 24px;
+  }
+}
+  .MuiToolbar-root {
+    display: flex;
+    position: relative;
+    align-items: center;
+  }
+  .MuiToolbar-gutters {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+@media (min-width:900px) {
+  .MuiToolbar-gutters {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+  .MuiToolbar-regular {
+    min-height: 56px;
+  }
+@media (min-width:0px) and (orientation: landscape) {
+  .MuiToolbar-regular {
+    min-height: 48px;
+  }
+}
+@media (min-width:900px) {
+  .MuiToolbar-regular {
+    min-height: 64px;
+  }
+}
+  .MuiToolbar-dense {
+    min-height: 48px;
+  }
+  .jss80 {
+    height: 18px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    vertical-align: text-bottom;
+  }
+  .jss81 {
+    padding: 0 6px;
+  }
+  .jss82 {
+    color: #424242;
+  }
+  .jss83 {
+    color: #283593;
+  }
+  .jss84 {
+    color: #d84315;
+  }
+  .jss85 {
+    color: #558b2f;
+  }
+  .jss86 {
+    color: #6d4c41;
+  }
+  .jss87 {
+    color: #6d4c41;
+  }
+  .jss91 {
+    text-decoration: line-through;
+  }
+  .jss92 {
+    text-decoration: line-through;
+  }
+  .jss93 {
+    text-decoration: line-through;
+  }
+  .jss94:hover .jss95 {
+    visibility: visible;
+  }
+  .jss95 {
+    color: inherit;
+    visibility: hidden;
+    margin-left: 0.3ch;
+  }
+  .jss95:hover {
+    color: #2176AE;
+  }
+  .jss96 {
+    padding: 3px;
+    border-radius: 4px;
+    background-color: #F8F8F8;
+  }
+  .jss98 > ul {
+    padding: 0 !important;
+  }
+  .jss99 {
+    font-weight: 700;
+    padding-bottom: 8px;
+  }
+  .jss100 {
+    padding-left: 1rem;
+    list-style-type: none;
+  }
+  .jss71 {
+    display: flex;
+  }
+  .jss72 {
+    flex-grow: 0.5;
+  }
+@media (max-width:1279.95px) {
+  .jss72 {
+    display: none;
+  }
+}
+  .jss73 {
+    flex-grow: 1;
+    padding-left: 16px;
+    overflow-wrap: anywhere;
+    padding-right: 16px;
+  }
+@media (min-width:1060px) {
+  .jss73 {
+    flex-grow: 0;
+    flex-basis: 782px;
+    flex-shrink: 0;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+  .jss73 img {
+    max-width: 100%;
+  }
+  .jss74 {
+    flex-grow: 1;
+    flex-basis: 180px;
+  }
+@media (max-width:1279.95px) {
+  .jss74 {
+    display: none;
+  }
+}
+  .jss75 {
+    top: 112px;
+    position: sticky;
+    min-width: 20ch;
+    align-self: flex-start;
+    padding-left: 16px;
+  }
+  .jss43 {
+    padding: 0;
+  }
+  .jss44 {
+    display: block;
+  }
+  .jss45:hover .jss57 {
+    background-color: #2176AE;
+  }
+  .jss46 .jss57 {
+    background-color: #FF007B;
+  }
+  .jss46 .jss44 {
+    color: #FF007B;
+  }
+  .jss46 .jss44:hover {
+    color: #FF007B;
+  }
+  .jss46:hover .jss57 {
+    background-color: #FF007B;
+  }
+  .jss47 {
+    flex: 0 0 calc(12ch - 11.5px);
+  }
+  .jss48 {
+    flex: 0 0 12ch;
+  }
+  .jss49 {
+    width: 35px;
+    height: 35px;
+  }
+  .jss50 {
+    color: #9e9e9e;
+    font-size: 0.8rem;
+  }
+  .jss51 {
+    margin-left: -1ch;
+  }
+  .jss52 {
+    vertical-align: middle;
+  }
+  .jss53 {
+    margin-right: 0.5ch;
+  }
+  .jss54 {
+    color: #616161;
+    font-size: 0.8rem;
+    white-space: pre;
+    vertical-align: text-top;
+  }
+  .jss55 {
+    flex: 0 0 calc(12ch - 12px);
+  }
+  .jss56 {
+    padding-bottom: 16px;
+  }
+  .jss58 {
+    background-color: #FF007B;
+  }
+  .jss62 {
+    text-decoration: line-through;
+  }
+  .jss63 {
+    text-decoration: line-through;
+  }
+  .jss64 {
+    text-decoration: line-through;
+  }
+  .jss1 {
+    display: flex;
+  }
+  .jss2 {
+    flex-grow: 0.5;
+  }
+@media (max-width:1279.95px) {
+  .jss2 {
+    display: none;
+  }
+}
+  .jss3 {
+    flex-grow: 1;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+@media (min-width:1060px) {
+  .jss3 {
+    flex-grow: 0;
+    flex-basis: 782px;
+    flex-shrink: 0;
+  }
+}
+  .jss4 {
+    flex-grow: 1;
+    flex-basis: 180px;
+  }
+@media (max-width:1279.95px) {
+  .jss4 {
+    display: none;
+  }
+}
+  .jss5 {
+    z-index: 1201;
+  }
+@media (min-width:900px) {
+  .jss6 {
+    display: none;
+  }
+}
+  .jss7 {
+    display: none;
+  }
+@media (min-width:900px) {
+  .jss7 {
+    width: 356px;
+    cursor: pointer;
+    display: flex;
+    flex-grow: 0;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+  .jss8 {
+    color: inherit;
+    display: block;
+    margin-left: 16px;
+  }
+  .jss8:hover {
+    color: inherit;
+  }
+  .jss9 {
+    z-index: 1298;
+  }
+  .jss10 {
+    width: 100%;
+    z-index: 1299;
+    transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+@media (min-width:1060px) {
+  .jss10 {
+    width: 70%;
+  }
+}
+  .jss11 {
+    width: 100%;
+  }
+@media (min-width:900px) {
+  .jss12 {
+    width: 380px;
+    flex-shrink: 0;
+  }
+}
+  .jss13 {
+    width: 380px;
+  }
+  .jss14 {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+@media (min-width:900px) {
+  .jss14 {
+    padding-top: 48px;
+  }
+}
+  .jss15 {
+    visibility: visible;
+    justify-content: space-between;
+  }
+@media (min-width:900px) {
+  .jss15 {
+    visibility: hidden;
+  }
+}
+  .jss16 {
+    overflow: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  .jss16::-webkit-scrollbar {
+    width: 6px;
+    background-color: [object Object];
+  }
+  .jss16::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #bdbdbd;
+    -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,.3);
+  }
+  .jss17 {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+  .jss18 {
+    display: flex;
+    padding-left: 16px;
+    padding-right: 24px;
+    padding-bottom: 4px;
+    justify-content: space-between;
+  }
+@media (min-width:900px) {
+  .jss18 {
+    padding-left: 24px;
+  }
+}
+  .jss19 {
+    font-weight: 700;
+  }
+  .jss20 {
+    align-self: center;
+    margin-top: 30vh;
+  }
+  .jss21 {
+    flex-grow: 1;
+    padding-top: 16px;
+  }
+@media (min-width:900px) {
+  .jss21 {
+    padding-top: 48px;
+  }
+}
+  .jss22 {
+    min-height: calc(100vh - 35px - 72px);
+  }
+@media (min-width:900px) {
+  .jss22 {
+    min-height: calc(100vh - 35px - 112px);
+  }
+}
+  .jss23 {
+    color: #9e9e9e;
+    height: 35px;
+    display: flex;
+    margin-top: 48px;
+    background-color: #f5f5f5;
+  }
+  .jss24 {
+    font-size: 0.77rem;
+  }
+  .jss25 {
+    color: #757575;
+    font-size: 0.8rem;
+  }
+  .jss25:hover {
+    color: #424242;
+  }
+  .jss26 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .jss76 {
+    color: #616161;
+    display: flex;
+    justify-content: space-between;
+  }
+  .jss77 {
+    display: flex;
+  }
+  .jss77 > * {
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .jss77 > *:first-child {
+    margin-left: 0;
+  }
+  .jss77 > *:last-child {
+    margin-right: 0;
+  }
+  .jss78 {
+    vertical-align: middle;
+  }
+  .jss79 {
+    color: #757575;
+  }
+  .jss65 {
+    margin-top: 8px;
+    margin-bottom: 32px;
+  }
+  .jss66 {
+    margin-bottom: 24px;
+  }
+  .jss67 {
+    margin-top: 96px;
+  }
+  .jss68 {
+    display: flex;
+    margin-top: 8px;
+    justify-content: space-between;
+  }
+  .jss70 {
+    color: #757575;
+    font-size: 0.77rem;
+    text-align: center;
+  }</style><style data-href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuaabWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWub2bWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style><style data-href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&display=swap">@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oSWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjojISWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjovoSWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjoa4OWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style></head><body><div id="__next"><div class="jss1"><header class="MuiPaper-root MuiAppBar-root MuiAppBar-positionFixed MuiAppBar-colorPrimary jss5 mui-fixed MuiPaper-elevation4"><div class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"><button class="MuiButtonBase-root MuiIconButton-root jss6 MuiIconButton-colorInherit MuiIconButton-edgeStart" tabindex="0" type="button" aria-label="open drawer"><span class="MuiIconButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg></span></button><div class="jss7"><div><img src="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-logo-dark.png" alt="Log4brains logo" width="50" height="50"/></div><div><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss8 MuiTypography-h6 MuiTypography-colorPrimary MuiTypography-noWrap" href="/DonaTrack-TP-DDS/adr-preview/">DonaTrack</a><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss8 MuiTypography-body2 MuiTypography-colorPrimary MuiTypography-noWrap" href="/DonaTrack-TP-DDS/adr-preview/">Architecture knowledge base</a></div></div><div class="jss2"></div><div class="jss3"><div class="MuiBackdrop-root jss9" aria-hidden="true" style="opacity:0;visibility:hidden"></div></div><div class="jss4"></div></div></header><nav class="jss12" aria-label="architecture decision records list"><div class="jss31"></div><div class="jss29"><div class="MuiDrawer-root MuiDrawer-docked"><div class="MuiPaper-root MuiDrawer-paper jss13 MuiDrawer-paperAnchorLeft MuiDrawer-paperAnchorDockedLeft MuiPaper-elevation0"><div class="jss14"><div class="MuiToolbar-root MuiToolbar-regular jss15 MuiToolbar-gutters"><div></div><a class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeSmall" tabindex="0" aria-disabled="false" aria-label="go to homepage" title="Architecture knowledge base of DonaTrack" href="/DonaTrack-TP-DDS/adr-preview/"><span class="MuiIconButton-label"><img src="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-logo.png" alt="Log4brains logo" width="40" height="40"/></span></a><button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeSmall" tabindex="0" type="button" aria-label="close drawer" title="Close"><span class="MuiIconButton-label"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></span></button></div><div class="jss18"><h6 class="MuiTypography-root jss19 MuiTypography-subtitle2">Decision log</h6><div class="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate" style="width:13px;height:13px;opacity:0;visibility:hidden" role="progressbar"><svg class="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle></svg></div></div><div class="MuiCircularProgress-root jss20 MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate" style="width:30px;height:30px" role="progressbar"><svg class="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle></svg></div><ul class="MuiList-root jss17 MuiList-padding"></ul></div></div></div></div></nav><div class="jss21"><div class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"></div><main class="jss22"><div class="jss71"><div class="jss72"></div><div class="jss73"><h3 class="MuiTypography-root MuiTypography-h3 MuiTypography-gutterBottom">Estado EN_PUERTA de la entrega: el camión llegó y la entidad todavía no confirmó</h3><hr class="MuiDivider-root"/><div class="jss65 jss76"><div><div class="jss77"><p class="MuiTypography-root MuiTypography-body2" title="Package"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"></path></svg> <!-- -->logistica</p><p class="MuiTypography-root MuiTypography-body2" title="Publication date"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"></path></svg> <!-- -->Nov 12, 2026</p><div title="Status"><div class="MuiChip-root jss80 jss83 MuiChip-outlined MuiChip-sizeSmall"><span class="MuiChip-label MuiChip-labelSmall jss81">PROPOSED</span></div></div></div><p class="MuiTypography-root MuiTypography-body2" title="Decider"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg> <!-- -->tsorren (pendiente de aprobación); redactado por el agente en HB-22</p><p class="MuiTypography-root MuiTypography-body2" title="Tags"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"></path></svg> <span class="jss79">#logistica #donaciones #entregas #maquina-de-estados #amqp #contrato #cliente-liviano #entrega-6</span></p></div><div><div><div role="group" class="MuiButtonGroup-root"><button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlined" tabindex="0" type="button" title="Copy link"><span class="MuiButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></svg></span></button><a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlined" tabindex="0" aria-disabled="false" href="https://github.com/tsorren/DonaTrack-TP-DDS/blob/master/docs/adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md" target="_blank" rel="noopener" title="View/edit on Github"><span class="MuiButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9a127.5 127.5 0 0 1 38.1 91v112.5c.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"></path></svg></svg></span></a></div></div></div></div><div><div><blockquote><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Origen:</strong> HB-22 de la corrida de cierre de E6
+(<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="../../specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md">SPEC-09</a>, §3.1 &quot;D1&quot;). El usuario
+eligió el estado nuevo (alternativa b) contra la recomendación de la matriz (2026-11-11). Este ADR
+baja esa elección al diseño: quién pone el estado, qué transiciones abre, cómo lo replica
+Donaciones y qué cambia en los contratos. Extiende la máquina de
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss90 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/logistica/20260630-manejo-de-transiciones-y-ciclo-de-vida-de-entrega/">manejo de transiciones y ciclo de vida de Entrega</a>,
+sin reemplazarla.</p></blockquote>
+<h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="contexto-y-problema">Contexto y Problema<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#contexto-y-problema" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">La entidad necesita ver, en &quot;Esperan tu confirmación&quot;, las entregas que ya llegaron a su puerta. Hoy
+no se puede saber:</p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> <code class="jss96">EstadoEntrega</code> (<code class="jss96">logistica-service/.../entregas/EstadoEntrega.java</code>) tiene
+<code class="jss96">PENDIENTE</code>, <code class="jss96">EN_TRASLADO</code>, <code class="jss96">ENTREGADA</code>, <code class="jss96">NO_RECIBIDA</code>, <code class="jss96">REVISION</code> y <code class="jss96">CANCELADA</code>. Una entrega que
+viene en camino y una que espera en la puerta están las dos <code class="jss96">EN_TRASLADO</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> <code class="jss96">horaArribo</code> se completa recién al confirmar (<code class="jss96">Entrega.confirmarEntrega</code>): no sirve
+para saber que el camión llegó.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> El camión lo mueve la simulación (<code class="jss96">FuentePosicionCamionSimulada</code>, ADR-E6-07), que
+calcula la posición por el tiempo transcurrido y recorre las paradas en el orden de visita.
+<code class="jss96">ActualizadorPosicionCamiones</code> guarda esa posición en el camión cada intervalo. Nadie usa ese dato
+para la entrega.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> Donaciones replica el estado de la entrega en su propia máquina
+(<code class="jss96">TipoEstadoDonacion</code>, patrón State en <code class="jss96">DonacionIndependiente</code>) a partir de los eventos de
+<code class="jss96">logistica.exchange</code> (<code class="jss96">ruta.iniciada</code> → <code class="jss96">EN_TRASLADO</code>, <code class="jss96">entrega.exitosa</code> → <code class="jss96">ENTREGADA</code>). Las tres
+pantallas de la entidad (Inicio, Donaciones recibidas y Seguir entregas) leen el estado de
+Donaciones (<code class="jss96">RecibidasRest</code>), que hoy manda todo lo que está en traslado a &quot;En camino&quot;.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">[OBSERVED]</code> <code class="jss96">RecibidasRest</code> ya tiene el grupo <code class="jss96">puerta</code> en su orden, pero ningún estado lo llena.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Problema: ¿cómo se agrega a la máquina de la entrega un estado &quot;llegó a la puerta&quot; sin romper a
+quien hoy confirma desde <code class="jss96">EN_TRASLADO</code>, y cómo llega ese dato hasta la pantalla de la entidad?</p><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="atributos-de-calidad-y-drivers-de-decision">Atributos de Calidad y Drivers de Decisión<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#atributos-de-calidad-y-drivers-de-decision" title="Permanent link">¶</a></h2><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Dato confiable:</strong> lo pone quien mueve el camión, no una deducción de la pantalla.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Compatibilidad:</strong> los consumidores que confirman desde <code class="jss96">EN_TRASLADO</code> (integration-tests, flujos
+de Postman, proveedores de logística que no conocen el estado nuevo) siguen funcionando.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Trazabilidad:</strong> el cambio queda en el historial de la entrega y de la donación, con su hora.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>Mantenibilidad:</strong> se respetan los patrones existentes (métodos de comportamiento con historial
+en <code class="jss96">Entrega</code>, State en <code class="jss96">DonacionIndependiente</code>, eventos de vuelta firmados en
+<code class="jss96">logistica.exchange</code>).</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="relaciones-arquitectonicas">Relaciones Arquitectónicas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#relaciones-arquitectonicas" title="Permanent link">¶</a></h2><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Extiende <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss90 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/logistica/20260630-manejo-de-transiciones-y-ciclo-de-vida-de-entrega/">manejo de transiciones y ciclo de vida de Entrega</a>(métodos de comportamiento explícitos con enum e historial).</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Sigue la mensajería de <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss90 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/logistica/20260703-uso-de-rabbitmq-para-la-comunicacion-entre-logistica-y-los-demas-servicios/">uso de RabbitMQ entre Logística y los demás servicios</a>:
+un evento de vuelta más en <code class="jss96">logistica.exchange</code>, con su cola en Donaciones.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Toma el precedente de <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261109-cancelacion-de-entregas-que-no-salieron/">cancelación de entregas que no salieron</a>(HB-19) para el valor nuevo del enum: minor de la OpenAPI, línea en
+<code class="jss96">cambios-incompatibles-aceptados.txt</code> y &quot;una entrega activa por donación&quot;.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="alternativas-consideradas">Alternativas Consideradas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#alternativas-consideradas" title="Permanent link">¶</a></h2><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="d1-como-se-sabe-que-la-entrega-llego-decidida-por-el-usuario-spec-09-31">D1. Cómo se sabe que la entrega llegó (decidida por el usuario, SPEC-09 §3.1)<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#d1-como-se-sabe-que-la-entrega-llego-decidida-por-el-usuario-spec-09-31" title="Permanent link">¶</a></h3><table><thead><tr><th> Criterio (peso) </th><th style="text-align:center"> a. Marca <code class="jss96">llegoEn</code> en <code class="jss96">Entrega</code> </th><th style="text-align:center"> <strong>b. Estado nuevo <code class="jss96">EN_PUERTA</code></strong> </th><th style="text-align:center"> c. Lo deduce el cliente por la distancia </th></tr></thead><tbody><tr><td> Contrato aditivo (0,30) </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 2 </td><td style="text-align:center"> 5 </td></tr><tr><td> No toca la máquina de estados (0,25) </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 1 </td><td style="text-align:center"> 5 </td></tr><tr><td> Dato confiable (0,25) </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 5 </td><td style="text-align:center"> 2 </td></tr><tr><td> Tamaño (0,20) </td><td style="text-align:center"> 4 </td><td style="text-align:center"> 2 </td><td style="text-align:center"> 5 </td></tr><tr><td> <strong>Total</strong> </td><td style="text-align:center"> 4,55 </td><td style="text-align:center"> 2,50 </td><td style="text-align:center"> 4,25 </td></tr></tbody></table><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>a. Marca <code class="jss96">llegoEn</code>:</strong> un campo opcional en <code class="jss96">Entrega</code>, replicado en Donaciones. Aditivo, pero la
+pantalla tiene que combinar estado y marca para decidir el grupo. Descartada por el usuario: el
+dato más claro para la entidad es un estado de la máquina, no una marca al costado.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>b. Estado <code class="jss96">EN_PUERTA</code>:</strong> elegida.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>c. Deducción en el cliente:</strong> depende de la posición simulada y de un umbral de distancia; el
+cliente decidiría algo que es del dominio de Logística. <code class="jss96">[REJECTED]</code>.</span></li></ul><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="d2-quien-pone-el-estado">D2. Quién pone el estado<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#d2-quien-pone-el-estado" title="Permanent link">¶</a></h3><table><thead><tr><th> Opción </th><th> Pros </th><th> Contras </th></tr></thead><tbody><tr><td> <strong>a. La fuente de posición del camión (simulación) y el <code class="jss96">PATCH</code> de estado</strong> </td><td> El dato lo pone quien mueve el camión. En la demo pasa solo; un chofer o un proveedor real lo informa por el endpoint que ya existe </td><td> El planificador de posiciones pasa a escribir entregas </td></tr><tr><td> b. Solo el <code class="jss96">PATCH</code> </td><td> Mínimo </td><td> En la demo nadie lo llama: la entidad nunca vería &quot;Esperan tu confirmación&quot; </td></tr><tr><td> c. La entidad, al abrir la pantalla </td><td> — </td><td> No es un dato confiable: la entidad confirmaría que llegó sin haberlo visto </td></tr></tbody></table><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="d3-transiciones">D3. Transiciones<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#d3-transiciones" title="Permanent link">¶</a></h3><table><thead><tr><th> Opción </th><th> Pros </th><th> Contras </th></tr></thead><tbody><tr><td> <strong>a. <code class="jss96">EN_PUERTA</code> intermedio y opcional; <code class="jss96">EN_TRASLADO → ENTREGADA / NO_RECIBIDA</code> sigue</strong> </td><td> Nadie que confirme desde <code class="jss96">EN_TRASLADO</code> se rompe. Una parada sin coordenadas o un proveedor que no informa la llegada se pueden confirmar igual </td><td> La máquina tiene dos caminos al mismo final </td></tr><tr><td> b. <code class="jss96">EN_PUERTA</code> obligatorio antes de confirmar </td><td> Un solo camino </td><td> Rompe integration-tests, Postman y a todo proveedor que no lo mande; con el planificador apagado nada se podría confirmar </td></tr></tbody></table><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="d4-como-llega-a-donaciones">D4. Cómo llega a Donaciones<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#d4-como-llega-a-donaciones" title="Permanent link">¶</a></h3><table><thead><tr><th> Opción </th><th> Pros </th><th> Contras </th></tr></thead><tbody><tr><td> <strong>a. Evento de vuelta <code class="jss96">entrega.en-puerta</code> y estado <code class="jss96">EN_PUERTA</code> en <code class="jss96">TipoEstadoDonacion</code></strong> </td><td> Mismo canal, firma e idempotencia que los otros eventos de vuelta. Las tres pantallas ya leen Donaciones </td><td> Un estado más en el State de Donaciones y una migración </td></tr><tr><td> b. El cliente lee el estado en Logística </td><td> Sin cambios en Donaciones </td><td> Recibidas e Inicio hacen una segunda llamada por entidad; Donaciones queda desfasada respecto de Logística </td></tr></tbody></table><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="resultado-de-la-decision">Resultado de la Decisión<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#resultado-de-la-decision" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>D1 = b, D2 = a, D3 = a, D4 = a.</strong></p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Máquina de <code class="jss96">Entrega</code> (Logística):</strong></p><pre><code class="jss96">PENDIENTE ──iniciarRuta──&gt; EN_TRASLADO ──llegarAPuerta──&gt; EN_PUERTA
+                               │                            │
+                               ├──confirmarEntrega──────────┼──&gt; ENTREGADA
+                               └──negarEntrega──────────────┴──&gt; NO_RECIBIDA ──&gt; REVISION ──&gt; PENDIENTE
+PENDIENTE ──cancelar──&gt; CANCELADA (final)
+</code></pre>
+<ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">Entrega.llegarAPuerta(actor)</code>: solo desde <code class="jss96">EN_TRASLADO</code>; registra el cambio en el historial y el
+evento de dominio <code class="jss96">EntregaEnPuerta</code>. No toca <code class="jss96">horaArribo</code>, que sigue siendo la hora de la
+confirmación: la hora de llegada es la del cambio a <code class="jss96">EN_PUERTA</code> en el historial.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">confirmarEntrega</code> y <code class="jss96">negarEntrega</code> aceptan <code class="jss96">EN_TRASLADO</code> y <code class="jss96">EN_PUERTA</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Sin <code class="jss96">EN_PUERTA → REVISION</code> directo: la revisión es el paso del administrador después de una falla,
+que necesita la justificación de <code class="jss96">NO_RECIBIDA</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">EN_PUERTA</code> es un estado activo: cuenta para &quot;una entrega activa por donación&quot; (índice único
+parcial), para las entregas activas del donante (HB-16) y bloquea completar la ruta, como
+<code class="jss96">EN_TRASLADO</code>.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Quién lo pone:</strong></p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">La fuente de posición dice qué paradas alcanzó el camión
+(<code class="jss96">FuentePosicionCamion.entregasAlcanzadas(Ruta)</code>, con un <code class="jss96">default</code> vacío para otras fuentes). La
+simulación devuelve las paradas con coordenadas cuyo índice es menor o igual al tramo en curso:
+si se pierde un tick, la parada se marca en el siguiente. En el primer intervalo no se alcanza
+ninguna, aunque el camión arranca en la primera parada: <code class="jss96">ruta.iniciada</code> y <code class="jss96">entrega.en-puerta</code> van
+por colas distintas, y Donaciones solo aplica la llegada sobre una donación en traslado.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">ActualizadorPosicionCamiones</code> llama a <code class="jss96">EntregasService.marcarEnPuerta</code> por cada una que siga
+<code class="jss96">EN_TRASLADO</code>, con el actor <code class="jss96">SIMULADOR</code>. Si pierde la carrera de versión con la confirmación de
+la entidad, la saltea.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><code class="jss96">PATCH /api/entregas/{id}/estado</code> con <code class="jss96">estado=EN_PUERTA</code> y el <code class="jss96">actor</code> (chofer o proveedor) hace lo
+mismo. Es idempotente: si la entrega ya está <code class="jss96">EN_PUERTA</code>, no cambia nada.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Donaciones:</strong> <code class="jss96">TipoEstadoDonacion.EN_PUERTA</code> y el estado <code class="jss96">EnPuerta</code>, al que se llega solo desde
+<code class="jss96">EnTraslado</code> (<code class="jss96">llegarAPuerta</code>). Desde <code class="jss96">EnPuerta</code> se confirma la entrega o se registra la falla, igual
+que desde <code class="jss96">EnTraslado</code>, que conserva esas dos salidas. El consumidor de <code class="jss96">entrega.en-puerta</code> aplica el
+cambio solo si la donación está <code class="jss96">EN_TRASLADO</code>; si ya está en otro estado (el evento llegó después de
+<code class="jss96">entrega.exitosa</code>, o se repitió), lo registra como consumido y no lo aplica.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Contratos:</strong></p><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">REST (cambio de contrato, AGENTS.md §8.2): <code class="jss96">EN_PUERTA</code> se suma al enum del estado de la entrega
+(<code class="jss96">openapi-logistica.yaml</code> 1.9.0: respuestas, seguimiento, historial y el request del <code class="jss96">PATCH</code>) y
+al de la donación independiente (<code class="jss96">openapi-donaciones.yaml</code> 1.8.0). Un consumidor estricto del enum
+puede romperse; se anota en <code class="jss96">cambios-incompatibles-aceptados.txt</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">AMQP: evento de vuelta <code class="jss96">entrega.en-puerta</code> (alias <code class="jss96">__TypeId__</code> igual a la routing key) con
+<code class="jss96">entregaId</code>, <code class="jss96">donacionIndependienteId</code> y <code class="jss96">fechaLlegada</code>, firmado con <code class="jss96">X-Proveedor-Id</code> y
+<code class="jss96">X-Proveedor-Token</code>. Esquema: <code class="jss96">schemas/evento-entrega-en-puerta.schema.json</code>.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Persistencia: Logística V9 (<code class="jss96">ALTER TYPE estado_entrega ADD VALUE &#x27;EN_PUERTA&#x27;</code> y el índice único
+parcial pasa a <code class="jss96">estado &lt;&gt; &#x27;CANCELADA&#x27;</code>, que no usa el valor recién agregado). Mongo suma
+<code class="jss96">EN_PUERTA</code> al filtro del índice parcial, con un nombre nuevo. Donaciones V20 reemplaza los dos
+<code class="jss96">CHECK</code> de estado.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="consecuencias">Consecuencias<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#consecuencias" title="Permanent link">¶</a></h2><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="positivas">Positivas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#positivas" title="Permanent link">¶</a></h3><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">La entidad ve en &quot;Esperan tu confirmación&quot; lo que de verdad llegó, en Inicio, Recibidas y Seguir
+entregas, con la hora de llegada del historial.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Nada que hoy confirme desde <code class="jss96">EN_TRASLADO</code> se rompe.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">El historial de la entrega y de la donación distingue el viaje de la espera en la puerta.</span></li></ul><h3 class="MuiTypography-root jss94 MuiTypography-h5 MuiTypography-gutterBottom" id="negativas">Negativas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#negativas" title="Permanent link">¶</a></h3><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">No es aditivo: un consumidor externo que valide el enum de forma estricta se rompe (mitigado con
+la versión minor y la línea en <code class="jss96">cambios-incompatibles-aceptados.txt</code>).</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Dos caminos a <code class="jss96">ENTREGADA</code>: los reportes que midan la espera en la puerta solo la tienen cuando
+alguien informó la llegada.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">En la simulación la primera parada pasa a <code class="jss96">EN_PUERTA</code> un intervalo después de salir (30 s por
+defecto): los tests de integración que esperan un historial exacto pueden verla.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Si <code class="jss96">entrega.en-puerta</code> llega a Donaciones antes que <code class="jss96">ruta.iniciada</code> (colas distintas), se registra
+sin aplicarse y la donación sigue &quot;En camino&quot; hasta la confirmación, que vale igual.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">El planificador de posiciones escribe entregas y publica eventos, además de mover el camión.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">El <code class="jss96">PATCH</code> de estado conserva su permiso (<code class="jss96">CONFIRMAR_SU_ENTREGA</code>): la entidad podría marcar su
+propia entrega en la puerta. El cliente no lo hace; restringirlo por estado queda para la
+seguridad del grupo (SPEC-06).</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Una base Mongo persistente conserva el índice viejo <code class="jss96">uq_entrega_donacion_activa</code>; es redundante
+(cubre un subconjunto) y se puede borrar a mano.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="analisis-por-alternativa">Análisis por alternativa<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#analisis-por-alternativa" title="Permanent link">¶</a></h2><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>D1.a (marca <code class="jss96">llegoEn</code>):</strong> aditiva y chica, pero deja la decisión del grupo repartida entre estado y
+marca, y la máquina no refleja la espera. <strong>D1.c:</strong> responsabilidad del dominio en la pantalla
+(viola el principio de experto en información, GRASP).</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>D2.b:</strong> correcta pero incompleta para la demo. <strong>D2.c:</strong> el dato no lo da quien lo sabe.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>D3.b:</strong> más pura, pero rompe a consumidores fuera del alcance del frente y deja a la entidad sin
+poder confirmar cuando nadie informa la llegada.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1"><strong>D4.b:</strong> acopla tres pantallas a dos servicios y deja a Donaciones sin el dato que replica
+para todos los demás estados.</span></li></ul><h2 class="MuiTypography-root jss94 MuiTypography-h4 MuiTypography-gutterBottom" id="trabajo-futuro">Trabajo futuro<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss95 MuiTypography-colorPrimary" href="#trabajo-futuro" title="Permanent link">¶</a></h2><ul><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Notificar a la entidad que la entrega llegó a su puerta (evento notificable desde Donaciones):
+fuera de HB-22.</span></li><li class="jss97"><span class="MuiTypography-root MuiTypography-body1">Un proveedor externo de logística (n8n) tendría que publicar <code class="jss96">entrega.en-puerta</code> para que sus
+entregas aparezcan en &quot;Esperan tu confirmación&quot;; mientras no lo haga, siguen en &quot;En camino&quot; y se
+confirman igual.</span></li></ul></div></div><hr class="MuiDivider-root jss67"/><nav class="jss68"><div></div><div class="jss69"><p class="MuiTypography-root jss70 MuiTypography-body1">Last edited by <!-- -->tsorren</p><p class="MuiTypography-root jss70 MuiTypography-body1">on <!-- -->Nov 11, 2026 4:56 PM</p></div><div></div></nav></div><div class="jss74 jss75"></div></div></main><footer class="jss23"><div class="jss2"></div><div class="jss3 jss26"><p class="MuiTypography-root jss24 MuiTypography-body1">Powered by<!-- --> <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss25 MuiTypography-colorPrimary" href="https://github.com/thomvaill/log4brains" target="_blank" rel="noopener">Log4brains</a> <span style="font-size:0.8em">(v1.1.0)</span></p></div><div class="jss4"></div></footer></div></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"projectName":"DonaTrack","currentAdr":{"slug":"logistica/20261111-estado-en-puerta-de-la-entrega","package":"logistica","title":"Estado EN_PUERTA de la entrega: el camión llegó y la entidad todavía no confirmó","status":"proposed","supersededBy":null,"tags":["logistica","donaciones","entregas","maquina-de-estados","amqp","contrato","cliente-liviano","entrega-6"],"deciders":["tsorren (pendiente de aprobación); redactado por el agente en HB-22"],"body":{"enhancedMdx":"\n\u003e **Origen:** HB-22 de la corrida de cierre de E6\n\u003e ([SPEC-09](../../specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md), §3.1 \"D1\"). El usuario\n\u003e eligió el estado nuevo (alternativa b) contra la recomendación de la matriz (2026-11-11). Este ADR\n\u003e baja esa elección al diseño: quién pone el estado, qué transiciones abre, cómo lo replica\n\u003e Donaciones y qué cambia en los contratos. Extiende la máquina de\n\u003e \u003cAdrLink slug=\"logistica/20260630-manejo-de-transiciones-y-ciclo-de-vida-de-entrega\" status=\"accepted\" title=\"Manejo de transiciones y ciclo de vida de Entrega\" package=\"logistica\" customLabel=\"manejo de transiciones y ciclo de vida de Entrega\" /\u003e,\n\u003e sin reemplazarla.\n\n## Contexto y Problema\n\nLa entidad necesita ver, en \"Esperan tu confirmación\", las entregas que ya llegaron a su puerta. Hoy\nno se puede saber:\n\n- `[OBSERVED]` `EstadoEntrega` (`logistica-service/.../entregas/EstadoEntrega.java`) tiene\n  `PENDIENTE`, `EN_TRASLADO`, `ENTREGADA`, `NO_RECIBIDA`, `REVISION` y `CANCELADA`. Una entrega que\n  viene en camino y una que espera en la puerta están las dos `EN_TRASLADO`.\n- `[OBSERVED]` `horaArribo` se completa recién al confirmar (`Entrega.confirmarEntrega`): no sirve\n  para saber que el camión llegó.\n- `[OBSERVED]` El camión lo mueve la simulación (`FuentePosicionCamionSimulada`, ADR-E6-07), que\n  calcula la posición por el tiempo transcurrido y recorre las paradas en el orden de visita.\n  `ActualizadorPosicionCamiones` guarda esa posición en el camión cada intervalo. Nadie usa ese dato\n  para la entrega.\n- `[OBSERVED]` Donaciones replica el estado de la entrega en su propia máquina\n  (`TipoEstadoDonacion`, patrón State en `DonacionIndependiente`) a partir de los eventos de\n  `logistica.exchange` (`ruta.iniciada` → `EN_TRASLADO`, `entrega.exitosa` → `ENTREGADA`). Las tres\n  pantallas de la entidad (Inicio, Donaciones recibidas y Seguir entregas) leen el estado de\n  Donaciones (`RecibidasRest`), que hoy manda todo lo que está en traslado a \"En camino\".\n- `[OBSERVED]` `RecibidasRest` ya tiene el grupo `puerta` en su orden, pero ningún estado lo llena.\n\nProblema: ¿cómo se agrega a la máquina de la entrega un estado \"llegó a la puerta\" sin romper a\nquien hoy confirma desde `EN_TRASLADO`, y cómo llega ese dato hasta la pantalla de la entidad?\n\n## Atributos de Calidad y Drivers de Decisión\n\n- **Dato confiable:** lo pone quien mueve el camión, no una deducción de la pantalla.\n- **Compatibilidad:** los consumidores que confirman desde `EN_TRASLADO` (integration-tests, flujos\n  de Postman, proveedores de logística que no conocen el estado nuevo) siguen funcionando.\n- **Trazabilidad:** el cambio queda en el historial de la entrega y de la donación, con su hora.\n- **Mantenibilidad:** se respetan los patrones existentes (métodos de comportamiento con historial\n  en `Entrega`, State en `DonacionIndependiente`, eventos de vuelta firmados en\n  `logistica.exchange`).\n\n## Relaciones Arquitectónicas\n\n- Extiende \u003cAdrLink slug=\"logistica/20260630-manejo-de-transiciones-y-ciclo-de-vida-de-entrega\" status=\"accepted\" title=\"Manejo de transiciones y ciclo de vida de Entrega\" package=\"logistica\" customLabel=\"manejo de transiciones y ciclo de vida de Entrega\" /\u003e\n  (métodos de comportamiento explícitos con enum e historial).\n- Sigue la mensajería de \u003cAdrLink slug=\"logistica/20260703-uso-de-rabbitmq-para-la-comunicacion-entre-logistica-y-los-demas-servicios\" status=\"accepted\" title=\"Uso de RabbitMQ para la comunicación entre Logística y los demás servicios\" package=\"logistica\" customLabel=\"uso de RabbitMQ entre Logística y los demás servicios\" /\u003e:\n  un evento de vuelta más en `logistica.exchange`, con su cola en Donaciones.\n- Toma el precedente de \u003cAdrLink slug=\"20261109-cancelacion-de-entregas-que-no-salieron\" status=\"proposed\" title=\"Cancelación de las entregas que no salieron: comando por el outbox, misma cola y una entrega activa por donación\" customLabel=\"cancelación de entregas que no salieron\" /\u003e\n  (HB-19) para el valor nuevo del enum: minor de la OpenAPI, línea en\n  `cambios-incompatibles-aceptados.txt` y \"una entrega activa por donación\".\n\n## Alternativas Consideradas\n\n### D1. Cómo se sabe que la entrega llegó (decidida por el usuario, SPEC-09 §3.1)\n\n| Criterio (peso) | a. Marca `llegoEn` en `Entrega` | **b. Estado nuevo `EN_PUERTA`** | c. Lo deduce el cliente por la distancia |\n|---|:-:|:-:|:-:|\n| Contrato aditivo (0,30) | 5 | 2 | 5 |\n| No toca la máquina de estados (0,25) | 5 | 1 | 5 |\n| Dato confiable (0,25) | 4 | 5 | 2 |\n| Tamaño (0,20) | 4 | 2 | 5 |\n| **Total** | 4,55 | 2,50 | 4,25 |\n\n- **a. Marca `llegoEn`:** un campo opcional en `Entrega`, replicado en Donaciones. Aditivo, pero la\n  pantalla tiene que combinar estado y marca para decidir el grupo. Descartada por el usuario: el\n  dato más claro para la entidad es un estado de la máquina, no una marca al costado.\n- **b. Estado `EN_PUERTA`:** elegida.\n- **c. Deducción en el cliente:** depende de la posición simulada y de un umbral de distancia; el\n  cliente decidiría algo que es del dominio de Logística. `[REJECTED]`.\n\n### D2. Quién pone el estado\n\n| Opción | Pros | Contras |\n|---|---|---|\n| **a. La fuente de posición del camión (simulación) y el `PATCH` de estado** | El dato lo pone quien mueve el camión. En la demo pasa solo; un chofer o un proveedor real lo informa por el endpoint que ya existe | El planificador de posiciones pasa a escribir entregas |\n| b. Solo el `PATCH` | Mínimo | En la demo nadie lo llama: la entidad nunca vería \"Esperan tu confirmación\" |\n| c. La entidad, al abrir la pantalla | — | No es un dato confiable: la entidad confirmaría que llegó sin haberlo visto |\n\n### D3. Transiciones\n\n| Opción | Pros | Contras |\n|---|---|---|\n| **a. `EN_PUERTA` intermedio y opcional; `EN_TRASLADO → ENTREGADA / NO_RECIBIDA` sigue** | Nadie que confirme desde `EN_TRASLADO` se rompe. Una parada sin coordenadas o un proveedor que no informa la llegada se pueden confirmar igual | La máquina tiene dos caminos al mismo final |\n| b. `EN_PUERTA` obligatorio antes de confirmar | Un solo camino | Rompe integration-tests, Postman y a todo proveedor que no lo mande; con el planificador apagado nada se podría confirmar |\n\n### D4. Cómo llega a Donaciones\n\n| Opción | Pros | Contras |\n|---|---|---|\n| **a. Evento de vuelta `entrega.en-puerta` y estado `EN_PUERTA` en `TipoEstadoDonacion`** | Mismo canal, firma e idempotencia que los otros eventos de vuelta. Las tres pantallas ya leen Donaciones | Un estado más en el State de Donaciones y una migración |\n| b. El cliente lee el estado en Logística | Sin cambios en Donaciones | Recibidas e Inicio hacen una segunda llamada por entidad; Donaciones queda desfasada respecto de Logística |\n\n## Resultado de la Decisión\n\n**D1 = b, D2 = a, D3 = a, D4 = a.**\n\n**Máquina de `Entrega` (Logística):**\n\n```text\nPENDIENTE ──iniciarRuta──\u003e EN_TRASLADO ──llegarAPuerta──\u003e EN_PUERTA\n                               │                            │\n                               ├──confirmarEntrega──────────┼──\u003e ENTREGADA\n                               └──negarEntrega──────────────┴──\u003e NO_RECIBIDA ──\u003e REVISION ──\u003e PENDIENTE\nPENDIENTE ──cancelar──\u003e CANCELADA (final)\n```\n\n- `Entrega.llegarAPuerta(actor)`: solo desde `EN_TRASLADO`; registra el cambio en el historial y el\n  evento de dominio `EntregaEnPuerta`. No toca `horaArribo`, que sigue siendo la hora de la\n  confirmación: la hora de llegada es la del cambio a `EN_PUERTA` en el historial.\n- `confirmarEntrega` y `negarEntrega` aceptan `EN_TRASLADO` y `EN_PUERTA`.\n- Sin `EN_PUERTA → REVISION` directo: la revisión es el paso del administrador después de una falla,\n  que necesita la justificación de `NO_RECIBIDA`.\n- `EN_PUERTA` es un estado activo: cuenta para \"una entrega activa por donación\" (índice único\n  parcial), para las entregas activas del donante (HB-16) y bloquea completar la ruta, como\n  `EN_TRASLADO`.\n\n**Quién lo pone:**\n\n- La fuente de posición dice qué paradas alcanzó el camión\n  (`FuentePosicionCamion.entregasAlcanzadas(Ruta)`, con un `default` vacío para otras fuentes). La\n  simulación devuelve las paradas con coordenadas cuyo índice es menor o igual al tramo en curso:\n  si se pierde un tick, la parada se marca en el siguiente. En el primer intervalo no se alcanza\n  ninguna, aunque el camión arranca en la primera parada: `ruta.iniciada` y `entrega.en-puerta` van\n  por colas distintas, y Donaciones solo aplica la llegada sobre una donación en traslado.\n- `ActualizadorPosicionCamiones` llama a `EntregasService.marcarEnPuerta` por cada una que siga\n  `EN_TRASLADO`, con el actor `SIMULADOR`. Si pierde la carrera de versión con la confirmación de\n  la entidad, la saltea.\n- `PATCH /api/entregas/{id}/estado` con `estado=EN_PUERTA` y el `actor` (chofer o proveedor) hace lo\n  mismo. Es idempotente: si la entrega ya está `EN_PUERTA`, no cambia nada.\n\n**Donaciones:** `TipoEstadoDonacion.EN_PUERTA` y el estado `EnPuerta`, al que se llega solo desde\n`EnTraslado` (`llegarAPuerta`). Desde `EnPuerta` se confirma la entrega o se registra la falla, igual\nque desde `EnTraslado`, que conserva esas dos salidas. El consumidor de `entrega.en-puerta` aplica el\ncambio solo si la donación está `EN_TRASLADO`; si ya está en otro estado (el evento llegó después de\n`entrega.exitosa`, o se repitió), lo registra como consumido y no lo aplica.\n\n**Contratos:**\n\n- REST (cambio de contrato, AGENTS.md §8.2): `EN_PUERTA` se suma al enum del estado de la entrega\n  (`openapi-logistica.yaml` 1.9.0: respuestas, seguimiento, historial y el request del `PATCH`) y\n  al de la donación independiente (`openapi-donaciones.yaml` 1.8.0). Un consumidor estricto del enum\n  puede romperse; se anota en `cambios-incompatibles-aceptados.txt`.\n- AMQP: evento de vuelta `entrega.en-puerta` (alias `__TypeId__` igual a la routing key) con\n  `entregaId`, `donacionIndependienteId` y `fechaLlegada`, firmado con `X-Proveedor-Id` y\n  `X-Proveedor-Token`. Esquema: `schemas/evento-entrega-en-puerta.schema.json`.\n- Persistencia: Logística V9 (`ALTER TYPE estado_entrega ADD VALUE 'EN_PUERTA'` y el índice único\n  parcial pasa a `estado \u003c\u003e 'CANCELADA'`, que no usa el valor recién agregado). Mongo suma\n  `EN_PUERTA` al filtro del índice parcial, con un nombre nuevo. Donaciones V20 reemplaza los dos\n  `CHECK` de estado.\n\n## Consecuencias\n\n### Positivas\n\n- La entidad ve en \"Esperan tu confirmación\" lo que de verdad llegó, en Inicio, Recibidas y Seguir\n  entregas, con la hora de llegada del historial.\n- Nada que hoy confirme desde `EN_TRASLADO` se rompe.\n- El historial de la entrega y de la donación distingue el viaje de la espera en la puerta.\n\n### Negativas\n\n- No es aditivo: un consumidor externo que valide el enum de forma estricta se rompe (mitigado con\n  la versión minor y la línea en `cambios-incompatibles-aceptados.txt`).\n- Dos caminos a `ENTREGADA`: los reportes que midan la espera en la puerta solo la tienen cuando\n  alguien informó la llegada.\n- En la simulación la primera parada pasa a `EN_PUERTA` un intervalo después de salir (30 s por\n  defecto): los tests de integración que esperan un historial exacto pueden verla.\n- Si `entrega.en-puerta` llega a Donaciones antes que `ruta.iniciada` (colas distintas), se registra\n  sin aplicarse y la donación sigue \"En camino\" hasta la confirmación, que vale igual.\n- El planificador de posiciones escribe entregas y publica eventos, además de mover el camión.\n- El `PATCH` de estado conserva su permiso (`CONFIRMAR_SU_ENTREGA`): la entidad podría marcar su\n  propia entrega en la puerta. El cliente no lo hace; restringirlo por estado queda para la\n  seguridad del grupo (SPEC-06).\n- Una base Mongo persistente conserva el índice viejo `uq_entrega_donacion_activa`; es redundante\n  (cubre un subconjunto) y se puede borrar a mano.\n\n## Análisis por alternativa\n\n- **D1.a (marca `llegoEn`):** aditiva y chica, pero deja la decisión del grupo repartida entre estado y\n  marca, y la máquina no refleja la espera. **D1.c:** responsabilidad del dominio en la pantalla\n  (viola el principio de experto en información, GRASP).\n- **D2.b:** correcta pero incompleta para la demo. **D2.c:** el dato no lo da quien lo sabe.\n- **D3.b:** más pura, pero rompe a consumidores fuera del alcance del frente y deja a la entidad sin\n  poder confirmar cuando nadie informa la llegada.\n- **D4.b:** acopla tres pantallas a dos servicios y deja a Donaciones sin el dato que replica\n  para todos los demás estados.\n\n## Trabajo futuro\n\n- Notificar a la entidad que la entrega llegó a su puerta (evento notificable desde Donaciones):\n  fuera de HB-22.\n- Un proveedor externo de logística (n8n) tendría que publicar `entrega.en-puerta` para que sus\n  entregas aparezcan en \"Esperan tu confirmación\"; mientras no lo haga, siguen en \"En camino\" y se\n  confirman igual.\n"},"creationDate":"2026-11-11T16:05:21.000Z","lastEditDate":"2026-11-11T16:56:04.000Z","lastEditAuthor":"tsorren","publicationDate":"2026-11-12T02:59:59.000Z","file":{"relativePath":"docs/adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md","absolutePath":"/home/runner/work/DonaTrack-TP-DDS/DonaTrack-TP-DDS/docs/adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md"},"repository":{"provider":"github","viewUrl":"https://github.com/tsorren/DonaTrack-TP-DDS/blob/master/docs/adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md"}},"l4bVersion":"1.1.0"},"__N_SSG":true},"page":"/adr/[...slug]","query":{"slug":["logistica","20261111-estado-en-puerta-de-la-entrega"]},"buildId":"F3vgtkoSO1SozOpiDxnsZ","assetPrefix":"/DonaTrack-TP-DDS/adr-preview","runtimeConfig":{},"isFallback":false,"gsp":true}</script><script nomodule="" src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/polyfills-694d8cb7f00ed89b8e7e.js"></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/webpack-50bee04d1dc61f8adf5b.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/framework.b33896d72531466bcf17.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/commons.1a3eba1bbb8ea986a150.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/main-d0427bd7c9d85889a938.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/a3e17150ead73d62fba7a33a50672ae3f72841a5.56d1813f1730ddfb4c80.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/_app-796f4c8086e869be38c4.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/364bddfb.28847971f0e02b167249.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3da477db.e49cd5277ed36ace32c1.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3b07cb59.4f0af644828e83722dc4.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/b4e962f4.26c14c8db148d74faf11.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/45d2d314fc8da5e3d79852782e4a432ad4da6771.21d74951d06ae300fd57.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/adr/%5B...slug%5D-9f67d10c628dcc0d3aa2.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/F3vgtkoSO1SozOpiDxnsZ/_buildManifest.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/F3vgtkoSO1SozOpiDxnsZ/_ssgManifest.js" async=""></script></body></html>
