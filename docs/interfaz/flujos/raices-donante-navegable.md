@@ -374,6 +374,9 @@ en las páginas siguientes).
 | Cada aviso | "Sin leer" o "Leída" · el sello del estado actual de su donación · el texto, enlace al detalle (`?donacion=<clave>`) · la fecha ("Hoy, 14:30", "Ayer, 17:00", "11 de octubre, 16:10") · "Lentejas secas, 15 kg" | — |
 | Sin leer | Las cuatro del 14 y el 15 de octubre: lentejas salió (hoy, 14:30) · arroz recibido en el depósito (ayer, 17:00) · leche asignada a Merendero Ejemplo Sur (ayer, 12:15) · lentejas lista para entregar (ayer, 9:10) | — |
 | Leídas | Las otras trece cartas de `viaje-datos`, de la más nueva a la más vieja | La de recepción dice "<Entidad> confirmó que recibió tu <donación> y sumó una foto." |
+| Categoría "Otras novedades" (con datos reales) | "Otras novedades" | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Notificaciones no dice el tipo de aviso (HB-09): la categoría se deduce del texto, y un aviso que no es de ninguna (un ascenso, una misión) va acá. El menú de Categoría muestra solo las que tienen avisos |
+| Mensaje de un aviso con datos reales | El texto que arma Notificaciones, enlace a Mis donaciones (o a Entidades, si es de una necesidad) | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Sin el id de la donación (HB-09) no se puede enlazar al detalle |
+| Aviso al marcar (con datos reales) | "Listo: marcaste todas como leídas." · "Listo: marcaste la notificación como leída." · "Listo: marcaste la notificación como no leída." | Los mismos de `donante-notificaciones-leidas`, en la región de avisos |
 
 Ayudas por flujo crítico: ninguna de estas pantallas envía datos de la donación; la única acción,
 "Marcar todas como leídas", es reversible en el contrato (`PATCH /{id}/leida`). La ayuda está en las
