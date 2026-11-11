@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import grupo5.cliente.web.AdminAsignacionesController;
 import grupo5.cliente.web.AdminCamionesController;
 import grupo5.cliente.web.Pantallas;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * La operación del admin en la maqueta: los datos de ejemplo salen del adaptador y cada pantalla de
  * resultado muestra lo que cambió.
  */
-@WebMvcTest(AdminCamionesController.class)
+@WebMvcTest({AdminCamionesController.class, AdminAsignacionesController.class})
 @ActiveProfiles("maqueta")
 @Import({MaquetaConfig.class, Pantallas.class, AdminOperacionMaqueta.class})
 class AdminOperacionMaquetaTest {
@@ -38,5 +39,17 @@ class AdminOperacionMaquetaTest {
         .andExpect(content().string(containsString("Service de frenos. Desde hoy, 18:35.")));
     mvc.perform(get("/admin-camiones-agregado"))
         .andExpect(content().string(containsString("Camión Mediano")));
+  }
+
+  @Test
+  void asignacionesYSusPantallasDeResultado() throws Exception {
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Última asignación: hoy, 0:00 · generó 2")))
+        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 2")));
+    mvc.perform(get("/admin-asignaciones-corrida?escenario=nuevas"))
+        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
+    mvc.perform(get("/admin-asignaciones-aprobada"))
+        .andExpect(content().string(containsString("Decididas · 8")));
   }
 }

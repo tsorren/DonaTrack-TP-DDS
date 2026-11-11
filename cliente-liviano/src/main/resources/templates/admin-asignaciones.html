@@ -7,6 +7,9 @@
        plegadas, cada una con su sello. Aprobar y Descartar llevan a admin-asignaciones-aprobada y
        -descartada; la aprobación que falla, a admin-asignaciones-error.
        ?escenario=vacio, lento, error y corriendo (el botón deshabilitado mientras corre).
+       Las propuestas, las decididas y la última asignación vienen del controller (asignaciones: de
+       la maqueta o de Donaciones); los formularios guardan de verdad fuera de la maqueta (pieza
+       envio). Las variantes (variantes/asignaciones-*) siguen con sus datos de ejemplo.
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'descartada', 'error'
          o 'corrida'. */-->
@@ -25,28 +28,11 @@
              conDatos=${escenario != 'error' and escenario != 'lento'},
              nuevas=${accion == 'corrida' and escenario == 'nuevas'},
              fallo=${accion == 'error' ? (escenario == 'propia' ? 'propia' : (escenario == 'cambio' ? 'cambio' : 'inactiva')) : ''},
-             todas=${ {
-      {clave: 'arroz', entidad: 'Comedor Barrio Ejemplo', pide: 'Arroz, 25 kg', cuando: '15 de octubre',
-       cubre: 'Arroz · 25 kg (de Ana Ejemplo)', alcance: 'Cubre la necesidad completa.', nueva: false},
-      {clave: 'leche', entidad: 'Merendero Ejemplo Sur', pide: 'Leche en polvo, 12 unidades', cuando: '15 de octubre',
-       cubre: 'Leche en polvo · 10 unidades (de Distribuidora Ejemplo SA)',
-       alcance: 'Cubre 10 de las 12 unidades; el resto sigue pendiente.', nueva: false},
-      {clave: 'yogur', entidad: 'Hogar Ejemplo Centro', pide: 'Yogur, 24 unidades', cuando: 'hoy, 18:36',
-       cubre: 'Yogur · 24 unidades (de Fundación Ejemplo Sur)', alcance: 'Cubre la necesidad completa.', nueva: true},
-      {clave: 'utiles', entidad: 'Escuela Ejemplo N.º 3', pide: 'Útiles escolares, 40 unidades', cuando: 'hoy, 18:36',
-       cubre: 'Útiles escolares · 30 unidades (de Juan Ejemplo)',
-       alcance: 'Cubre 30 de las 40 unidades; el resto sigue pendiente.', nueva: true} } },
+             todas=${asignaciones.propuestas},
              propuestas=${escenario == 'vacio' ? {} : todas.?[(!nueva or #root.nuevas)
                  and (clave != 'arroz' or #root.accion != 'aprobada')
                  and (clave != 'leche' or #root.accion != 'descartada')]},
-             decididas=${ {
-      {entidad: 'Comedor Barrio Ejemplo', que: 'Fideos, 20 kg', estado: 'Aprobada'},
-      {entidad: 'Hogar Ejemplo Centro', que: 'Aceite, 12 litros', estado: 'Aprobada'},
-      {entidad: 'Merendero Ejemplo Sur', que: 'Azúcar, 15 kg', estado: 'Aprobada'},
-      {entidad: 'Escuela Ejemplo N.º 3', que: 'Cuadernos, 40 unidades', estado: 'Aprobada'},
-      {entidad: 'Hogar Ejemplo Centro', que: 'Ropa de abrigo, 40 prendas', estado: 'Aprobada'},
-      {entidad: 'Comedor Barrio Ejemplo', que: 'Galletitas, 5 kg', estado: 'Descartada'},
-      {entidad: 'Merendero Ejemplo Sur', que: 'Harina, 10 kg', estado: 'Descartada'} } },
+             decididas=${asignaciones.decididas},
              recienDecidida=${accion == 'aprobada' ? {entidad: 'Comedor Barrio Ejemplo', que: 'Arroz, 25 kg', estado: 'Aprobada'}
                  : (accion == 'descartada' ? {entidad: 'Merendero Ejemplo Sur', que: 'Leche en polvo, 12 unidades', estado: 'Descartada'} : null)},
              corriendo=${escenario == 'corriendo'}">
@@ -55,7 +41,7 @@
       <p class="rotulo">Administración</p>
       <h1>Asignar donaciones</h1>
       <p th:if="${conDatos}"
-         th:text="${accion == 'corrida'} ? (${nuevas} ? 'Última asignación: hoy, 18:36 · generó 2 propuestas.' : 'Última asignación: hoy, 18:36 · no generó propuestas.') : 'Última asignación: hoy, 0:00 · generó 2 propuestas.'">Última
+         th:text="${accion == 'corrida'} ? (${nuevas} ? 'Última asignación: hoy, 18:36 · generó 2 propuestas.' : 'Última asignación: hoy, 18:36 · no generó propuestas.') : (${asignaciones.ultima != null} ? |Última asignación: ${asignaciones.ultima}.| : 'Todavía no se corrió ninguna asignación.')">Última
         asignación: hoy, 0:00 · generó 2 propuestas.</p>
     </header>
 
@@ -96,11 +82,13 @@
     </section>
 
     <form th:if="${escenario != 'error'}" class="racimo" action="/admin-asignaciones-corrida"
-          th:action="@{/admin-asignaciones-corrida}" method="post">
+          th:action="@{/admin-asignaciones-corrida}" method="post" hx-boost="true"
+          hx-indicator="#enviando-admin-asignaciones" hx-select-oob="#avisos">
       <button class="boton" data-tono="secundario" type="submit" th:disabled="${corriendo}"
               th:text="${corriendo} ? 'Corriendo la asignación…' : 'Correr la asignación ahora'">Correr la
         asignación ahora</button>
       <span th:if="${corriendo}" class="solo-lectores" role="status">Corriendo la asignación…</span>
+      <p th:replace="~{envio :: indicador('enviando-admin-asignaciones', 'Corriendo la asignación…')}"></p>
     </form>
 
     <p th:if="${escenario != 'error'}">Los algoritmos proponen qué donaciones del depósito cubren cada necesidad
@@ -129,23 +117,27 @@
             <th:block th:with="sinAprobar=${fallo != '' and fallo != 'cambio' and p.clave == 'leche'}">
               <div class="racimo" th:unless="${sinAprobar}">
                 <form action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}"
-                      method="post">
+                      method="post" hx-boost="true" th:hx-indicator="|#enviando-aprobar-${p.clave}|"
+                      hx-select-oob="#avisos">
                   <input type="hidden" name="propuesta" th:value="${p.clave}" value="arroz">
                   <button class="boton" data-tono="principal" type="submit"
                           th:aria-label="|Aprobar: propuesta para ${p.entidad}|">Aprobar</button>
+                  <p th:replace="~{envio :: indicador(|enviando-aprobar-${p.clave}|, 'Guardando…')}"></p>
                 </form>
               </div>
               <details th:open="${sinAprobar}">
                 <summary class="boton" data-tono="secundario"
                          th:aria-label="|Descartar: propuesta para ${p.entidad}|">Descartar</summary>
                 <form class="formulario" action="/admin-asignaciones-descartada"
-                      th:action="@{/admin-asignaciones-descartada}" method="post">
+                      th:action="@{/admin-asignaciones-descartada}" method="post" hx-boost="true"
+                      th:hx-indicator="|#enviando-descartar-${p.clave}|" hx-select-oob="#avisos">
                   <input type="hidden" name="propuesta" th:value="${p.clave}" value="arroz">
                   <div class="campo">
                     <label th:for="|motivo-${p.clave}|" for="motivo-arroz">Motivo (opcional)</label>
                     <textarea th:id="|motivo-${p.clave}|" id="motivo-arroz" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
                   </div>
                   <button class="boton" data-tono="quitar" type="submit">Descartar propuesta</button>
+                  <p th:replace="~{envio :: indicador(|enviando-descartar-${p.clave}|, 'Guardando…')}"></p>
                 </form>
               </details>
             </th:block>

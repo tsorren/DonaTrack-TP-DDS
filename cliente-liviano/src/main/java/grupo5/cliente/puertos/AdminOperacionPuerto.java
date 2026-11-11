@@ -1,5 +1,6 @@
 package grupo5.cliente.puertos;
 
+import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista;
 
 /**
@@ -19,4 +20,16 @@ public interface AdminOperacionPuerto {
    * Deshabilita el camión (con el motivo, opcional) o lo vuelve a habilitar; devuelve su patente.
    */
   String cambiarCamion(String camion, boolean habilitado, String motivo);
+
+  AdminAsignacionesVista asignaciones();
+
+  /** Corre la asignación ahora y devuelve cuántas propuestas generó. */
+  int correrAsignacion();
+
+  /**
+   * Aprueba o descarta la propuesta y devuelve el nombre de la entidad que la pidió. Una aprobación
+   * que no se puede hacer (la necesidad ya no está activa, la donación es de la misma entidad, la
+   * propuesta cambió) es el 409 de Donaciones.
+   */
+  String decidirPropuesta(String propuesta, boolean aprobar, String motivo);
 }

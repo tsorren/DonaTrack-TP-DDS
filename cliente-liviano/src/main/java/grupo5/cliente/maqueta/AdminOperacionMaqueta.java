@@ -1,6 +1,9 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminCamionesVista.Chofer;
@@ -29,6 +32,77 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
   private static final String FURGON = "furgon";
   private static final String GRANDE = "3.500 kg · 18 m³";
   private static final String CHICO = "1.500 kg · 9 m³";
+  private static final String COMEDOR = "Comedor Barrio Ejemplo";
+  private static final String HOGAR = "Hogar Ejemplo Centro";
+  private static final String MERENDERO = "Merendero Ejemplo Sur";
+  private static final String ESCUELA = "Escuela Ejemplo N.º 3";
+  private static final String APROBADA = "Aprobada";
+  private static final String COMPLETA = "Cubre la necesidad completa.";
+  private static final String HOY = "hoy, 18:36";
+
+  /**
+   * Las propuestas y las decididas de ejemplo; la plantilla elige cuáles mostrar según el
+   * resultado.
+   */
+  private static final AdminAsignacionesVista ASIGNACIONES =
+      new AdminAsignacionesVista(
+          "hoy, 0:00 · generó 2 propuestas",
+          List.of(
+              new Propuesta(
+                  "arroz",
+                  COMEDOR,
+                  "Arroz, 25 kg",
+                  "15 de octubre",
+                  "Arroz · 25 kg (de Ana Ejemplo)",
+                  COMPLETA,
+                  false),
+              new Propuesta(
+                  "leche",
+                  MERENDERO,
+                  "Leche en polvo, 12 unidades",
+                  "15 de octubre",
+                  "Leche en polvo · 10 unidades (de Distribuidora Ejemplo SA)",
+                  "Cubre 10 de las 12 unidades; el resto sigue pendiente.",
+                  false),
+              new Propuesta(
+                  "yogur",
+                  HOGAR,
+                  "Yogur, 24 unidades",
+                  HOY,
+                  "Yogur · 24 unidades (de Fundación Ejemplo Sur)",
+                  COMPLETA,
+                  true),
+              new Propuesta(
+                  "utiles",
+                  ESCUELA,
+                  "Útiles escolares, 40 unidades",
+                  HOY,
+                  "Útiles escolares · 30 unidades (de Juan Ejemplo)",
+                  "Cubre 30 de las 40 unidades; el resto sigue pendiente.",
+                  true)),
+          List.of(
+              new Decidida(COMEDOR, "Fideos, 20 kg", APROBADA),
+              new Decidida(HOGAR, "Aceite, 12 litros", APROBADA),
+              new Decidida(MERENDERO, "Azúcar, 15 kg", APROBADA),
+              new Decidida(ESCUELA, "Cuadernos, 40 unidades", APROBADA),
+              new Decidida(HOGAR, "Ropa de abrigo, 40 prendas", APROBADA),
+              new Decidida(COMEDOR, "Galletitas, 5 kg", "Descartada"),
+              new Decidida(MERENDERO, "Harina, 10 kg", "Descartada")));
+
+  @Override
+  public AdminAsignacionesVista asignaciones() {
+    return ASIGNACIONES;
+  }
+
+  @Override
+  public int correrAsignacion() {
+    return 0;
+  }
+
+  @Override
+  public String decidirPropuesta(String propuesta, boolean aprobar, String motivo) {
+    return COMEDOR;
+  }
 
   @Override
   public AdminCamionesVista camiones(String accion) {
