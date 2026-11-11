@@ -2,7 +2,11 @@ package grupo5.cliente.puertos;
 
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista;
+import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.core.io.InputStreamSource;
 
 /**
  * La operación del admin: camiones, asignaciones y donaciones. Lo implementan la maqueta y el
@@ -42,4 +46,38 @@ public interface AdminOperacionPuerto {
    * vez, es el 409 de Donaciones.
    */
   void marcarVencida(String donacion, String actor, String motivo);
+
+  /** Los donantes para elegir y los que coinciden con {@code buscar} (null: sin búsqueda). */
+  AdminDonacionesRegistroVista registro(String buscar);
+
+  /**
+   * Registra una donación con sus bienes (y la foto de cada uno, si la tiene). Un donante dado de
+   * baja es el 409 de Donaciones.
+   */
+  void registrarDonacion(DonacionNueva donacion);
+
+  /** Lo que se registra: quién dona, qué llegó y dónde quedó. */
+  record DonacionNueva(
+      String donante,
+      String descripcion,
+      List<BienNuevo> bienes,
+      String deposito,
+      LocalDate recepcion) {
+
+    public DonacionNueva {
+      bienes = List.copyOf(bienes);
+    }
+  }
+
+  /**
+   * Un bien: {@code estado} es NUEVO, USADO o DESGASTADO; {@code foto}, null si no tiene, con su
+   * tipo de contenido.
+   */
+  record BienNuevo(
+      String que,
+      int cantidad,
+      LocalDate vence,
+      String estado,
+      String tipoFoto,
+      InputStreamSource foto) {}
 }

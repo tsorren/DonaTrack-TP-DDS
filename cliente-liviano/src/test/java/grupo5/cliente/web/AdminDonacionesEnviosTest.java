@@ -1,10 +1,14 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -12,15 +16,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.AdminOperacionPuerto.BienNuevo;
+import grupo5.cliente.puertos.AdminOperacionPuerto.DonacionNueva;
+import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -28,6 +37,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
@@ -124,5 +134,82 @@ class AdminDonacionesEnviosTest {
                     Envios.AVISO,
                     "Esta donación cambió mientras la mirabas: no la marcamos como vencida."
                         + " Volvimos a cargar su estado."));
+  }
+
+  private static final String ANA = "6f1c2c1e-0000-4000-8000-0000000000a1";
+
+  @Test
+  void registrarBuscaDonantesYLasPantallasDeResultadoNoExisten() throws Exception {
+    AdminDonacionesRegistroVista.Donante ana =
+        new AdminDonacionesRegistroVista.Donante(ANA, "Ana Ejemplo", "DNI 20.000.001");
+    when(operacion.registro("ana"))
+        .thenReturn(new AdminDonacionesRegistroVista(List.of(ana), List.of(ana)));
+
+    mvc.perform(get("/admin-donaciones-registrar?buscar=ana"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("1 donante coincide con la búsqueda.")))
+        .andExpect(content().string(containsString("donante=" + ANA)));
+    mvc.perform(get("/admin-donaciones-registrada")).andExpect(status().isNotFound());
+    mvc.perform(get("/admin-donaciones-registrar-error")).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void registrarGuardaLosBienesConSuFotoYVuelveALaLista() throws Exception {
+    mvc.perform(
+            multipart("/admin-donaciones-registrada")
+                .file(
+                    new MockMultipartFile(
+                        "bienes[0].foto", "arroz.jpg", "image/jpeg", new byte[] {1, 2, 3}))
+                .param("donante", ANA)
+                .param("descripcion", "Caja de alimentos")
+                .param("bienes[0].que", "Arroz")
+                .param("bienes[0].cantidad", "10")
+                .param("bienes[0].vence", "2027-01-31")
+                .param("bienes[0].estado", "Nuevo")
+                .param("bienes[1].que", "Fideos")
+                .param("bienes[1].cantidad", "5")
+                .param("bienes[1].vence", "")
+                .param("bienes[1].estado", "Usado")
+                .param("deposito", "Depósito Central")
+                .param("recepcion", "2026-11-10"))
+        .andExpect(redirectedUrl("/admin-donaciones"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Registraste la donación: Caja de alimentos, 2 bienes. Quedó en el Depósito"
+                        + " Central."));
+    ArgumentCaptor<DonacionNueva> guardada = ArgumentCaptor.forClass(DonacionNueva.class);
+    verify(operacion).registrarDonacion(guardada.capture());
+    DonacionNueva donacion = guardada.getValue();
+    assertEquals(ANA, donacion.donante());
+    assertEquals(LocalDate.of(2026, 11, 10), donacion.recepcion());
+    BienNuevo arroz = donacion.bienes().get(0);
+    assertEquals("NUEVO", arroz.estado());
+    assertEquals(LocalDate.of(2027, 1, 31), arroz.vence());
+    assertEquals("image/jpeg", arroz.tipoFoto());
+    BienNuevo fideos = donacion.bienes().get(1);
+    assertEquals(5, fideos.cantidad());
+    assertNull(fideos.vence());
+    assertNull(fideos.foto());
+  }
+
+  @Test
+  void unaCantidadQueNoEsUnNumeroVuelveAlFormularioSinGuardar() throws Exception {
+    mvc.perform(
+            multipart("/admin-donaciones-registrada")
+                .param("donante", ANA)
+                .param("descripcion", "Caja")
+                .param("bienes[0].que", "Arroz")
+                .param("bienes[0].cantidad", "veinte")
+                .param("deposito", "Depósito Central")
+                .param("recepcion", "2026-11-10"))
+        .andExpect(redirectedUrl("/admin-donaciones-registrar?donante=" + ANA))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "La cantidad del bien 1 tiene que ser un número. Por ejemplo: 20."));
+    verifyNoInteractions(operacion);
   }
 }

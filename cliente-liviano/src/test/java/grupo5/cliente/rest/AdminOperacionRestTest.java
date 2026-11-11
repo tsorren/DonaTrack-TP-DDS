@@ -12,18 +12,22 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
+import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -385,5 +389,114 @@ class AdminOperacionRestTest {
 
     adaptador.marcarVencida(D2, "Leo Ejemplo", " Se rompió el envase ");
     donaciones.verify();
+  }
+
+  private static final String DONANTES =
+      """
+      [
+        {"idDonante": "%s", "activo": true,
+         "persona": {"nombre": "Ana", "apellido": "Ejemplo", "tipoDocumento": "DNI",
+                     "documento": "20.000.001"}},
+        {"idDonante": "%s", "activo": true,
+         "persona": {"razonSocial": "Distribuidora Ejemplo SA", "tipoDocumento": "CUIT",
+                     "documento": "30-00000001-0"}},
+        {"idDonante": "%s", "activo": false,
+         "persona": {"nombre": "Pedro", "apellido": "Ejemplo"}}
+      ]
+      """
+          .formatted(D1, D2, D3);
+
+  @Test
+  void registroListaLosDonantesActivosYBuscaPorNombreODocumento() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes"))
+        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes"))
+        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes"))
+        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+
+    AdminDonacionesRegistroVista sinBuscar = adaptador.registro(null);
+    assertEquals(
+        List.of(
+            new AdminDonacionesRegistroVista.Donante(D1, "Ana Ejemplo", "DNI 20.000.001"),
+            new AdminDonacionesRegistroVista.Donante(
+                D2, "Distribuidora Ejemplo SA", "CUIT 30-00000001-0")),
+        sinBuscar.donantes());
+    assertEquals(List.of(), sinBuscar.encontrados());
+    assertEquals(
+        List.of(D2),
+        adaptador.registro("distri").encontrados().stream()
+            .map(AdminDonacionesRegistroVista.Donante::clave)
+            .toList());
+    assertEquals(
+        List.of(D1),
+        adaptador.registro("20000001").encontrados().stream()
+            .map(AdminDonacionesRegistroVista.Donante::clave)
+            .toList());
+    donaciones.verify();
+  }
+
+  @Test
+  void registrarSubeLaFotoALaDireccionFirmadaYGuardaSuReferencia() {
+    RestClient.Builder deSubidas = RestClient.builder();
+    MockRestServiceServer almacenamiento = MockRestServiceServer.bindTo(deSubidas).build();
+    RestClient.Builder deDonaciones = RestClient.builder();
+    MockRestServiceServer api = MockRestServiceServer.bindTo(deDonaciones).build();
+    AdminOperacionRest conFotos =
+        new AdminOperacionRest(
+            null,
+            ClientesHttp.cliente(deDonaciones, DONACIONES, DonacionesApi.class),
+            Clock.systemUTC(),
+            deSubidas.build());
+    api.expect(requestTo(DONACIONES + "/api/donaciones/fotos"))
+        .andExpect(method(POST))
+        .andExpect(content().json("{\"tipoContenido\": \"image/jpeg\"}"))
+        .andRespond(
+            withSuccess(
+                """
+                {"uploadUrl": "http://fotos/subida/1", "metodo": "PUT",
+                 "tipoContenido": "image/jpeg", "referencia": "fotos/1.jpg"}""",
+                MediaType.APPLICATION_JSON));
+    almacenamiento
+        .expect(requestTo("http://fotos/subida/1"))
+        .andExpect(method(PUT))
+        .andExpect(content().bytes(new byte[] {1, 2, 3}))
+        .andRespond(withSuccess());
+    api.expect(requestTo(DONACIONES + "/api/donaciones"))
+        .andExpect(method(POST))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"idDonante": "%s", "descripcion": "Caja de alimentos",
+                     "nombreDeposito": "Depósito Central", "fecha": "2026-11-10T00:00:00",
+                     "items": [
+                       {"descripcionBien": "Arroz", "fotoUrl": "fotos/1.jpg", "cantidad": 10,
+                        "estadoBien": "NUEVO", "fechaVencimiento": "2027-01-31"},
+                       {"descripcionBien": "Fideos", "fotoUrl": null, "cantidad": 5,
+                        "estadoBien": "USADO", "fechaVencimiento": null}]}"""
+                        .formatted(D1)))
+        .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+    conFotos.registrarDonacion(
+        new AdminOperacionPuerto.DonacionNueva(
+            D1,
+            "Caja de alimentos",
+            List.of(
+                new AdminOperacionPuerto.BienNuevo(
+                    "Arroz",
+                    10,
+                    LocalDate.of(2027, 1, 31),
+                    "NUEVO",
+                    "image/jpeg",
+                    new ByteArrayResource(new byte[] {1, 2, 3})),
+                new AdminOperacionPuerto.BienNuevo("Fideos", 5, null, "USADO", null, null)),
+            "Depósito Central",
+            LocalDate.of(2026, 11, 10)));
+    api.verify();
+    almacenamiento.verify();
   }
 }

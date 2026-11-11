@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -50,6 +51,26 @@ public class AdminDonacionesController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No encontramos esa donación");
     }
     model.addAttribute("adminDonaciones", datos);
+    return vista;
+  }
+
+  /**
+   * Registrar donación (RF-15): los donantes para elegir y los que coinciden con {@code ?buscar=}.
+   * {@code -registrar-error} y {@code -registrada} son pantallas de la maqueta.
+   */
+  @GetMapping({
+    "/admin-donaciones-registrar",
+    "/admin-donaciones-registrar-error",
+    "/admin-donaciones-registrada"
+  })
+  String registrar(
+      @RequestParam(required = false) String buscar, Model model, HttpServletRequest pedido) {
+    String pantalla = pedido.getRequestURI().substring(1);
+    if (!"admin-donaciones-registrar".equals(pantalla) && !maqueta) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
+    }
+    String vista = pantallas.mostrar(pantalla, model);
+    model.addAttribute("registro", operacion.registro(buscar));
     return vista;
   }
 }

@@ -9,6 +9,7 @@ import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminCamionesVista.Chofer;
 import grupo5.cliente.vistas.AdminCamionesVista.Rendimiento;
 import grupo5.cliente.vistas.AdminCamionesVista.Viaje;
+import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +98,30 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
 
   @Override
   public void marcarVencida(String donacion, String actor, String motivo) {
+    // En la maqueta el envío lo atiende SitioController, sin guardar.
+  }
+
+  private static final AdminDonacionesRegistroVista.Donante ANA_EJEMPLO =
+      new AdminDonacionesRegistroVista.Donante("ana-ejemplo", "Ana Ejemplo", "DNI 20.000.001");
+  private static final AdminDonacionesRegistroVista.Donante JUAN_EJEMPLO =
+      new AdminDonacionesRegistroVista.Donante("juan-ejemplo", "Juan Ejemplo", "DNI 20.000.002");
+
+  /** Cualquier búsqueda encuentra a Ana y a Juan, como mostraba la plantilla. */
+  @Override
+  public AdminDonacionesRegistroVista registro(String buscar) {
+    return new AdminDonacionesRegistroVista(
+        List.of(
+            ANA_EJEMPLO,
+            new AdminDonacionesRegistroVista.Donante(
+                "distribuidora", "Distribuidora Ejemplo SA", "CUIT 30-00000001-0"),
+            JUAN_EJEMPLO,
+            new AdminDonacionesRegistroVista.Donante(
+                "pedro-ejemplo", "Pedro Ejemplo", "DNI 20.000.003")),
+        buscar == null ? List.of() : List.of(ANA_EJEMPLO, JUAN_EJEMPLO));
+  }
+
+  @Override
+  public void registrarDonacion(DonacionNueva donacion) {
     // En la maqueta el envío lo atiende SitioController, sin guardar.
   }
 

@@ -6,6 +6,7 @@ import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
+import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -21,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 /**
  * La operación del admin desde Logística y Donaciones. Logística da de cada camión la patente, las
@@ -48,11 +51,30 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   private final LogisticaApi logistica;
   private final DonacionesApi donaciones;
   private final Clock reloj;
+  private final AdminOperacionRegistro registro;
 
+  @Autowired
   AdminOperacionRest(LogisticaApi logistica, DonacionesApi donaciones, Clock reloj) {
+    this(logistica, donaciones, reloj, RestClient.create());
+  }
+
+  /** {@code subidas} sube las fotos a la dirección firmada (los tests le pasan uno simulado). */
+  AdminOperacionRest(
+      LogisticaApi logistica, DonacionesApi donaciones, Clock reloj, RestClient subidas) {
     this.logistica = logistica;
     this.donaciones = donaciones;
     this.reloj = reloj;
+    this.registro = new AdminOperacionRegistro(donaciones, subidas);
+  }
+
+  @Override
+  public AdminDonacionesRegistroVista registro(String buscar) {
+    return registro.registro(buscar);
+  }
+
+  @Override
+  public void registrarDonacion(DonacionNueva donacion) {
+    registro.registrar(donacion);
   }
 
   @Override
