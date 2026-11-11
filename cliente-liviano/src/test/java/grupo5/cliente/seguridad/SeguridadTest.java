@@ -16,9 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.cuentas.PerfilService;
+import grupo5.cliente.puertos.PublicoPuerto;
 import grupo5.cliente.web.AccesoController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
+import grupo5.cliente.web.PublicoPortadaController;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +44,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * La cadena de seguridad fuera de la maqueta. Pide pantallas que no dependen de los datos de las
- * APIs (las públicas sin datos y secciones sin dibujar, que muestran el menú y la cuenta): las
- * pantallas con datos las prueba cada una con su controller (conexión de pantallas, SPEC-08). Las
- * necesidades y las solicitudes de entidad, con ingreso, están en {@link NecesidadesConIngresoTest}
- * y {@link SolicitudesConIngresoTest}.
+ * APIs (las públicas sin datos y secciones sin dibujar, que muestran el menú y la cuenta) y la
+ * portada, con su puerto simulado: las pantallas con datos las prueba cada una con su controller
+ * (conexión de pantallas, SPEC-08). Las necesidades y las solicitudes de entidad, con ingreso,
+ * están en {@link NecesidadesConIngresoTest} y {@link SolicitudesConIngresoTest}.
  */
-@WebMvcTest({PantallasController.class, AccesoController.class})
+@WebMvcTest({PantallasController.class, AccesoController.class, PublicoPortadaController.class})
 @Import({SeguridadConfig.class, Pantallas.class})
 @TestPropertySource(
     properties = {
@@ -82,6 +84,7 @@ class SeguridadTest {
   }
 
   @MockitoBean private PerfilService perfiles;
+  @MockitoBean private PublicoPuerto publico;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 
@@ -95,10 +98,7 @@ class SeguridadTest {
 
   @Test
   void laPortadaYLasPantallasPublicasNoPidenIngresar() throws Exception {
-    // La portada la sirve PublicoPortadaController, que no está en este corte: basta con que la
-    // cadena no la mande a ingresar.
-    mvc.perform(get("/"))
-        .andExpect(result -> assertThat(result.getResponse().getRedirectedUrl()).isNull());
+    mvc.perform(get("/")).andExpect(status().isOk());
     mvc.perform(get("/publico-legales")).andExpect(status().isOk());
     mvc.perform(get("/publico-para-donantes")).andExpect(status().isOk());
     mvc.perform(get("/css/tokens.css")).andExpect(status().isOk());

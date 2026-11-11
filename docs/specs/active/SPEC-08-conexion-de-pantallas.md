@@ -168,7 +168,9 @@ Reglas para todos:
 
 - En `maqueta`, el HTML de cada pantalla queda igual (comparación con `curl` antes y después).
 - Ningún frente toca un archivo de otro ni uno compartido; dos frentes nunca comparten un archivo.
-- Sin marcado, clases ni estilos nuevos en las plantillas, salvo el indicador de envío del catálogo.
+- Sin marcado, clases ni estilos nuevos en las plantillas, salvo el indicador de envío del catálogo
+  y el campo trampa de Contacto (`<p hidden>` con el campo `sitio`), que pide el ADR de HB-21: no
+  se ve ni se lee, así que la pantalla queda igual.
 - Todo envío real funciona sin JavaScript (formulario con `action` real) y lleva el token CSRF.
 - Contratos de backend aditivos: nada que ya existe cambia (AGENTS.md §8.2).
 - Sin secretos ni datos reales; los ejemplos son sintéticos. Ningún ADR se promueve.

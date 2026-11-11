@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -132,6 +133,28 @@ class PublicoContactoControllerTest {
     verify(contacto).enviar(mensaje.capture(), any());
     assertThat(mensaje.getValue().tema()).isEqualTo("OTRO");
     assertThat(mensaje.getValue().claveEnvio()).isNotNull();
+  }
+
+  @Test
+  void elCodigoSeMandaSoloConElFormatoDeLosAvisos() throws Exception {
+    when(contacto.enviar(any(), any())).thenReturn(5L);
+
+    mvc.perform(
+        post("/publico-contacto-enviado")
+            .param("mensaje", "Hola")
+            .param("correo", "ana@ejemplo.test")
+            .param("codigo", " a1b2c3d4e5f6 "));
+    mvc.perform(
+        post("/publico-contacto-enviado")
+            .param("mensaje", "Hola")
+            .param("correo", "ana@ejemplo.test")
+            .param("codigo", "no me acuerdo"));
+
+    ArgumentCaptor<Mensaje> mensaje = ArgumentCaptor.forClass(Mensaje.class);
+    verify(contacto, times(2)).enviar(mensaje.capture(), any());
+    assertThat(mensaje.getAllValues())
+        .extracting(Mensaje::codigoError)
+        .containsExactly("a1b2c3d4e5f6", null);
   }
 
   @Test

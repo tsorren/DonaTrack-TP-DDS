@@ -40,6 +40,9 @@ class PublicoContactoEnvioController {
   private static final String VOLVER =
       "/" + Pantallas.NOMBRE + "(?:\\?[a-z]+=[a-z0-9-]+(?:&[a-z]+=[a-z0-9-]+)*)?";
 
+  /** El formato de los códigos de los avisos, el mismo que valida Notificaciones (HB-21). */
+  private static final String CODIGO = "[0-9a-fA-F]{12,32}";
+
   private static final String FORMULARIO = "publico-contacto";
   private static final String RECIBIDO = "Recibimos tu mensaje.";
   private static final String LIMITE =
@@ -56,7 +59,8 @@ class PublicoContactoEnvioController {
 
   /**
    * {@code sitio} es el campo trampa del ADR de HB-21: oculto para las personas; si llega con
-   * texto, muestra el aviso de recibido sin llamar a Notificaciones.
+   * texto, muestra el aviso de recibido sin llamar a Notificaciones. Un código que no tiene el
+   * formato de los avisos no se manda: el campo es opcional y el mensaje llega igual.
    */
   // ponytail: la IP es getRemoteAddr(), la del navegador porque ningún despliegue pone un proxy
   // delante del cliente; con un proxy, server.forward-headers-strategy=native y probarlo.
@@ -78,7 +82,7 @@ class PublicoContactoEnvioController {
         new Mensaje(
             tema == null ? OTRO : TEMAS.getOrDefault(tema, OTRO),
             mensaje,
-            codigo == null || codigo.isBlank() ? null : codigo.strip(),
+            codigo == null || !codigo.strip().matches(CODIGO) ? null : codigo.strip(),
             correo,
             claveEnvio == null ? UUID.randomUUID() : claveEnvio);
     try {
