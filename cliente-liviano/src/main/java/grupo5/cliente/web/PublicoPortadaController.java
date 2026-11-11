@@ -1,25 +1,29 @@
 package grupo5.cliente.web;
 
+import grupo5.cliente.puertos.PublicoPuerto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * La portada ({@code /}). Vive aparte de {@link PantallasController} para que el frente público de
- * la conexión de pantallas (SPEC-08) le sume sus datos sin tocar lo compartido: este archivo es de
- * ese frente.
+ * La portada ({@code /} y {@code /publico-portada}, la misma plantilla), con las cifras del puerto.
+ * La ruta literal le gana a la {@code /{pantalla}} de {@link PantallasController}.
  */
 @Controller
 public class PublicoPortadaController {
 
   private final Pantallas pantallas;
+  private final PublicoPuerto publico;
 
-  PublicoPortadaController(Pantallas pantallas) {
+  PublicoPortadaController(Pantallas pantallas, PublicoPuerto publico) {
     this.pantallas = pantallas;
+    this.publico = publico;
   }
 
-  @GetMapping("/")
+  @GetMapping({"/", "/publico-portada"})
   String portada(Model model) {
-    return pantallas.mostrar("publico-portada", model);
+    String vista = pantallas.mostrar("publico-portada", model);
+    model.addAttribute("cifrasDePortada", publico.cifrasDePortada());
+    return vista;
   }
 }
