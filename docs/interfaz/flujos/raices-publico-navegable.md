@@ -639,5 +639,40 @@ todo lo que dicen los textos de ejemplo:
 | Entregas confirmadas | Período y fecha | "del <hace 30 días> al <hoy>" y "Actualizado el <día y hora del pedido>" | El período lo fija la ventana de las destacadas (30 y 7 días) |
 
 Quedan fijos, sin conectar: "Lo que viajó este mes" de la portada y la fecha "Actualizado el …" de
-las cifras viven en `componentes/huerta`, que es compartido; el Mapa y Entidades siguen con los
-datos de ejemplo (ver la sección de huecos).
+las cifras viven en `componentes/huerta`, que es compartido. Entidades y el Mapa se conectaron en el
+cierre de E6 (más abajo).
+
+### Textos del cierre de E6: Entidades y necesidades
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Fuera de la maqueta, la pantalla lee los datos
+públicos de Donaciones (`/api/entidades/publicas` y `/api/necesidades/publicas`) y no muestra lo que
+esa API no trae (el HTML de la maqueta no cambia):
+
+| Elemento | Texto propuesto | Por qué |
+|---|---|---|
+| Grupo de las entidades que no son de los cinco tipos | "Otras entidades" | El "rubro" es texto libre: lo que no dice comedor, merendero, escuela, biblioteca, hogar o club queda acá, para que ninguna entidad desaparezca |
+| Lo que se pide | "Piden 40 kg" (con la unidad si hay sesión; sin ella, "Piden 40"), en lugar de "Faltan 30 de 40 kg este mes", y sin barra | La API no dice cuánto llegó (HB-18) |
+| Cuándo se repite | "Se repite; este período termina el 30 de noviembre" (sin fecha, "Se repite"), en lugar de "Se repite cada mes" | La API da el fin del período, no cada cuánto se repite |
+| Qué no se muestra | La misión, la emergencia, «Necesidades satisfechas» y su nota, el filtro «Emergencias», y el enlace "Ver sus entregas en el mapa" | La API pública no los trae (HB-08, HB-18) y no se sabe qué entidades tienen entregas |
+| Categoría | Sin sesión, sin el filtro por categoría, sin los íconos ni los chips de categoría | Las subcategorías (con su categoría y su unidad) piden sesión |
+| Aviso de lo que falta | "Todavía no mostramos cuánto de cada pedido ya llegó, ni la misión de cada entidad." (arriba de la lista) | Que quien mira sepa qué no está, en lugar de creer que no existe |
+| Sin pedidos | La pantalla de "Ninguna entidad tiene necesidades vigentes ahora." | La lista vacía de la API |
+
+### Textos del cierre de E6: Mapa
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Fuera de la maqueta, el Mapa lee el mapa
+público de Logística (`/api/entregas/mapa`): el punto exacto de cada entrega confirmada (D24,
+ADR-E6-07), la localidad, la provincia y la fecha. No trae qué entidad recibió, qué se entregó ni la
+foto, y Donaciones no da el lugar, así que no se pueden cruzar. El HTML de la maqueta no cambia:
+
+| Elemento | Texto propuesto | Por qué |
+|---|---|---|
+| Bajada | "Cada punto es un lugar donde se confirmaron entregas en el último mes. Mostramos la localidad, nunca la dirección." (en lugar de "Cada punto es una entidad… aproximada: mostramos el barrio…") | El punto es un lugar, no una entidad; las coordenadas son las exactas de D24 |
+| Título de la lista | "Lugar por lugar" (en lugar de "Entidad por entidad") | Idem |
+| Cifra | "12 entregas confirmadas en 5 lugares, del 11 de octubre al 10 de noviembre de 2026." | Idem; el período es la ventana de 30 días |
+| Nombre de un lugar | La localidad de Logística y, debajo, la provincia; sin localidad, "Lugar sin nombre" | Logística no da el nombre de la entidad |
+| Una entrega | "Entrega de 12,5 kg · 9 de noviembre"; sin peso, "Entrega confirmada" | No se sabe qué se entregó: solo el peso total |
+| Texto de lectores del mapa | "Mapa de los lugares con entregas confirmadas. La lista de al lado tiene los mismos datos." | Idem |
+| Qué no se muestra | El filtro "Qué se donó", los íconos de categoría, "Pide: …" en el globo y "Ver la foto de la entrega" | Logística no trae categoría ni foto; las fotos de cada entrega siguen en Entregas confirmadas |
+| Aviso de lo que falta | "Todavía no mostramos qué entidad recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas." (debajo de la cifra) | Que quien mira sepa qué no está, en lugar de creer que no existe |
+| Sin entregas | El estado vacío de "Todavía no hay entregas confirmadas en el último mes." | La lista vacía de la API |
