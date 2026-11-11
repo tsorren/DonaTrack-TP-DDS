@@ -202,4 +202,12 @@ class DonacionesRestTest {
     assertNull(libro.get(0).destino());
     assertEquals(3, libro.size());
   }
+
+  @Test
+  void laQueLlegoALaEntidadSigueEnCaminoParaElDonanteConSuNota() {
+    assertEquals(EstadoEntrega.EN_CAMINO, DonacionesRest.estadoEntrega(Comun.PUERTA));
+    assertEquals(
+        "Llegó a la entidad el 8 de noviembre, 18:20",
+        DonacionesRest.nota(Comun.PUERTA, java.time.LocalDateTime.of(2026, 11, 8, 18, 20)));
+  }
 }

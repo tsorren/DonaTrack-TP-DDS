@@ -80,11 +80,12 @@
                   <span th:text="|${d.nombre} · ${d.cuanto}|">Lentejas secas · 15 kg</span>
                 </h3>
                 <!--/* Sin el estado "Espera tu confirmación": ya lo dice la parte (ronda del 2026-11-09). */-->
-                <p class="acta-texto" th:text="|${d.llego} Para tu necesidad de ${d.pedidoNombre}.|">Llegó hoy,
+                <!--/* Fuera de la maqueta el pedido que cubre no llega (HB-17): solo cuándo llegó (HB-22). */-->
+                <p class="acta-texto" th:text="${d.pedidoNombre == null} ? ${d.llego} : |${d.llego} Para tu necesidad de ${d.pedidoNombre}.|">Llegó hoy,
                   18:20, desde el Depósito Central. Para tu necesidad de lentejas secas.</p>
                 <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
                    th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
-                  recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
+                  recepción<span class="solo-lectores" th:text="${d.pedidoNombre == null} ? '' : |: ${d.pedidoNombre}|">: lentejas secas</span></a>
               </li>
             </ul>
           </th:block>

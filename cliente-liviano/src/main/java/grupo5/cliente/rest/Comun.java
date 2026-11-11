@@ -30,6 +30,10 @@ final class Comun {
   static final String FALLIDA = "ENTREGAFALLIDA";
   static final String VENCIDA = "VENCIDA";
   static final String TRASLADO = "ENTRASLADO";
+
+  /** El camión llegó a la entidad y espera su confirmación (HB-22). */
+  static final String PUERTA = "ENPUERTA";
+
   static final String ASIGNADA = "ASIGNACIONREALIZADA";
   static final String LISTA = "LISTAPARAENTREGAR";
 

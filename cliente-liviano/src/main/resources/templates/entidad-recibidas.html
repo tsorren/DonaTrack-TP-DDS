@@ -132,7 +132,7 @@
                 <a th:if="${d.grupo == 'puerta'}" class="boton" data-tono="principal"
                    href="/entidad-seguimiento-confirmar?entrega=lentejas"
                    th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
-                  recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
+                  recepción<span class="solo-lectores" th:text="${d.pedidoNombre == null} ? '' : |: ${d.pedidoNombre}|">: lentejas secas</span></a>
                 <a th:if="${d.grupo == 'problema' and d.pedido != null}" class="boton" data-tono="secundario"
                    href="/entidad-necesidades?necesidad=aceite"
                    th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>

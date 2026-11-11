@@ -662,3 +662,17 @@ También en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huec
   camino, entregas confirmadas del mes, donantes, camiones en ruta y libres) · no hay un resumen
   agregado; contarlas obliga a traer las listas enteras de Donaciones, Logística y Usuarios en cada
   carga.
+
+## Ajuste de HB-22: "Esperan tu confirmación" con datos reales (cierre E6, 2026-11-11)
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Donaciones replica el estado `EN_PUERTA` de la
+entrega ([ADR del estado EN_PUERTA](../../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)): la donación que llegó a la puerta va a "Esperan tu confirmación" en Inicio, Donaciones
+recibidas y Seguir entregas, con el botón "Confirmar recepción". Reemplaza la nota de 2026-11-08 que
+la mandaba a "En camino". En Necesidades, su sello es "puerta". El pedido que cubre sigue sin llegar
+(HB-17): en Inicio, la tarjeta dice solo cuándo llegó.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Paso (Recibidas, Seguir entregas, Necesidades) | "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación." | La maqueta dice "hoy"/"ayer"; con datos, la fecha |
+| Llegó (tarjeta de Inicio) | "Llegó el 8 de noviembre, 18:20." | Sin "desde el Depósito Central": el depósito no llega |
+| Breve (Lo que viene) | "llegó a tu puerta el 8 de noviembre" | — |

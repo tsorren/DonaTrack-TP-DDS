@@ -5,8 +5,10 @@ import static grupo5.cliente.rest.Comun.DIA;
 import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
 import static grupo5.cliente.rest.Comun.HORA;
+import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.cantidad;
 import static grupo5.cliente.rest.Comun.categoria;
+import static grupo5.cliente.rest.Comun.desde;
 import static grupo5.cliente.rest.Comun.icono;
 
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
@@ -16,7 +18,9 @@ import grupo5.cliente.vistas.EntidadEntregaVista;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -24,6 +28,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -33,9 +38,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Confirmar recepción con Logística y Donaciones. Esperan la confirmación las entregas de la
- * entidad en traslado: Logística no distingue la que ya llegó a la puerta ({@code horaArribo} se
- * completa recién al confirmar; HB-22, fuera de alcance), así que se dice cuándo salió. Qué llevan
- * sale de la donación asignada ({@code idDonacion}) y la necesidad que cubre, de {@code GET
+ * entidad que llegaron a la puerta ({@code EN_PUERTA}, HB-22), primero, con la hora de llegada que
+ * da el historial de la donación; después, las que siguen en traslado, que también se pueden
+ * confirmar (un proveedor que no informa la llegada), con cuándo salieron. La clave es la donación,
+ * como en Donaciones recibidas, para que sus enlaces lleguen al acta. Qué llevan sale de la
+ * donación asignada ({@code idDonacion}) y la necesidad que cubre, de {@code GET
  * /api/necesidades/{id}}. Cuánto lleva recibido esa necesidad y la categoría del ranking de quien
  * ocultó su nombre no se piden. Confirmar sube las fotos ({@code POST /api/entregas/{id}/fotos}) y
  * pasa la entrega a ENTREGADA con el remito y, si lo hay, el reporte del problema.
@@ -47,6 +54,8 @@ import org.springframework.web.multipart.MultipartFile;
 class EntidadConfirmarRest implements EntidadConfirmarPuerto {
 
   private static final String EN_TRASLADO = "EN_TRASLADO";
+  private static final String EN_PUERTA = "EN_PUERTA";
+  private static final List<String> SE_CONFIRMAN = List.of(EN_PUERTA, EN_TRASLADO);
 
   private final LogisticaApi logistica;
   private final DonacionesApi donaciones;
@@ -66,9 +75,8 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   @Override
   public List<EntidadEntregaVista> entregas(UUID entidad) {
     List<Seguimiento> enLaPuerta =
-        logistica.seguimientoDeEntidad(entidad).stream()
-            .filter(s -> EN_TRASLADO.equals(s.estadoEntrega()))
-            .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
+        porConfirmar(entidad)
+            .sorted(Comparator.comparingInt(s -> SE_CONFIRMAN.indexOf(s.estadoEntrega())))
             .toList();
     if (enLaPuerta.isEmpty()) {
       return List.of();
@@ -84,6 +92,12 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         .toList();
   }
 
+  private Stream<Seguimiento> porConfirmar(UUID entidad) {
+    return logistica.seguimientoDeEntidad(entidad).stream()
+        .filter(s -> SE_CONFIRMAN.contains(s.estadoEntrega()))
+        .filter(s -> s.idEntrega() != null && s.idDonacion() != null);
+  }
+
   private EntidadEntregaVista entrega(Seguimiento s, DonacionesApi.Donacion d) {
     Categoria categoria = categoria(d);
     // La unidad sola, la de Comun: "2 kg" sin el número; sin categoría, vacía.
@@ -92,16 +106,22 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
     String descripcion = Objects.requireNonNullElse(d.descripcion(), "Donación");
     String salio =
         s.horaSalida() == null ? null : "Salió del depósito el " + dia(s.horaSalida()) + ".";
+    // La hora de llegada es la del cambio a EN_PUERTA en el historial de la donación (hora local)
+    LocalDateTime llego = EN_PUERTA.equals(s.estadoEntrega()) ? desde(d, PUERTA) : null;
+    String frase =
+        llego == null
+            ? salio
+            : "Llegó a tu puerta el " + llego.format(DIA) + " a las " + llego.format(HORA) + ".";
     DonacionesApi.QuienDono quien = d.quienDono();
     return new EntidadEntregaVista(
-        s.idEntrega().toString(),
+        s.idDonacion().toString(),
         descripcion.toLowerCase(Locale.ROOT),
         descripcion + ", " + cuanto,
         cuanto,
         cuando(s.horaSalida()),
-        null,
-        salio,
-        salio,
+        llego == null ? null : llego.format(DIA_Y_HORA),
+        frase,
+        frase,
         null,
         categoria == null ? null : icono(categoria.nombre()),
         categoria == null ? null : categoria.nombre(),
@@ -163,7 +183,13 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
 
   @Override
   public void confirmar(UUID entidad, String clave, Acta acta) {
-    UUID entrega = UUID.fromString(clave);
+    // La clave es la donación; una clave que ya es la entrega (enlaces viejos) se usa tal cual
+    UUID entrega =
+        porConfirmar(entidad)
+            .filter(s -> s.idDonacion().toString().equals(clave))
+            .map(Seguimiento::idEntrega)
+            .findFirst()
+            .orElseGet(() -> UUID.fromString(clave));
     MultiValueMap<String, Object> partes = new LinkedMultiValueMap<>();
     acta.fotos().stream()
         .filter(f -> f != null && !f.isEmpty())

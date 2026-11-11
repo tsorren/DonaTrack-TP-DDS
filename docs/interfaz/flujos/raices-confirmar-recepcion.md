@@ -352,3 +352,16 @@ Preguntas abiertas, para el equipo (no cambian el prototipo):
 - El menú de la entidad del prototipo no tiene Notificaciones (RF-13, va en la campana) ni Mi
   perfil (va en la cuenta), que el mapa del sitio pone en el nivel 2: el mismo patrón aprobado en
   Seguir entregas.
+
+## Ajuste de HB-22: la entrega que llegó a la puerta (cierre E6, 2026-11-11)
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). La entrega tiene un estado nuevo, `EN_PUERTA`,
+que pone quien mueve el camión al llegar ([ADR del estado EN_PUERTA](../../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)). Fuera de la maqueta, el acta lista primero las que
+llegaron a la puerta, con la hora de llegada del historial de la donación, y después las que siguen en
+traslado (un proveedor que no informa la llegada), que también se pueden confirmar. La clave del acta
+(`?entrega=`) pasa a ser la donación, como en Donaciones recibidas, para que su botón "Confirmar
+recepción" llegue al acta; al confirmar, el cliente busca la entrega de esa donación en Logística.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Bajada, con la hora de llegada | "Llegó a tu puerta el 8 de noviembre a las 18:20." | Solo en las `EN_PUERTA`. Las que siguen en traslado conservan "Salió del depósito el …" |

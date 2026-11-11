@@ -6,6 +6,7 @@ import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
 import static grupo5.cliente.rest.Comun.ENTREGADA;
 import static grupo5.cliente.rest.Comun.FALLIDA;
 import static grupo5.cliente.rest.Comun.LISTA;
+import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.TRASLADO;
 import static grupo5.cliente.rest.Comun.VENCIDA;
 
@@ -231,7 +232,7 @@ final class AdminOperacionDonaciones {
   private static String estado(String normalizado) {
     return switch (normalizado) {
       case ASIGNADA, LISTA, FALLIDA -> EN_ASIGNADA;
-      case TRASLADO -> EN_CAMINO;
+      case TRASLADO, PUERTA -> EN_CAMINO;
       case ENTREGADA -> EN_ENTREGADA;
       case VENCIDA -> "vencida";
       default -> DEPOSITO;
@@ -264,6 +265,8 @@ final class AdminOperacionDonaciones {
                 case LISTA -> historial.add(dia + ": quedó lista para entregar.");
                 case TRASLADO ->
                     historial.add(DIA_Y_HORA.format(c.timestamp()) + ": salió en camino.");
+                case PUERTA ->
+                    historial.add(DIA_Y_HORA.format(c.timestamp()) + ": llegó a " + hacia + ".");
                 case ENTREGADA -> historial.add(dia + ": " + hacia + " confirmó que la recibió.");
                 case FALLIDA -> historial.add(dia + ": la entrega no pudo llegar.");
                 case VENCIDA ->
