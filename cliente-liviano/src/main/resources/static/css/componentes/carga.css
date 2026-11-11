@@ -23,6 +23,29 @@
   background: url("../../img/ilustraciones/abeja-arriba.svg") center / contain no-repeat;
 }
 
+/* Indicador común de HTMX: el script lo anuncia recién después de 300 ms para no parpadear en las
+   respuestas rápidas. Vive fuera de #contenido para no desaparecer cuando HTMX reemplaza el panel. */
+#indicador-carga {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: var(--movimiento-transicion-atenua);
+}
+
+#indicador-carga[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .cargando::before {
     animation: var(--movimiento-animacion-vuelo-carga);

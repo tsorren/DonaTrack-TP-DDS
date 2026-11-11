@@ -51,6 +51,10 @@
       </div>
     </header>
 
+    <th:block th:if="${yaDonadas != null}">
+      <aside th:replace="~{componentes/pista :: pista('entidades', 'Conocé las entidades', 'Podés explorar sus necesidades y reconocer cuáles ya recibieron una donación tuya.')}"></aside>
+    </th:block>
+
     <form hx-boost="true" th:if="${escenario == ''}" class="filtros-barra" action="/publico-entidades"
           th:action="@{/publico-entidades}" method="get" role="search" data-al-cambiar>
       <div class="campo filtro-buscar">

@@ -242,7 +242,7 @@
   }
 
   .navegacion a {
-    min-height: 3rem;
+    min-height: var(--medida-toque-minimo);
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     font-size: 0.95rem;
@@ -364,7 +364,7 @@
 .navegacion-cuenta-menu a {
   display: flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0 0.5rem;
   border-radius: 0.5rem;
   color: var(--color-tinta);

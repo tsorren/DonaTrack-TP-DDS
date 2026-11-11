@@ -138,7 +138,7 @@ main .ejemplar h2 {
 .pedidos-mas summary {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-acento);
   font-weight: 700;
   text-decoration: underline;

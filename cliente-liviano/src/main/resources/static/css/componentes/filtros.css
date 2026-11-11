@@ -81,7 +81,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0 1.125rem;
   border-radius: 999px;
   background: var(--color-campo);
@@ -177,7 +177,7 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0 0.5rem;
   border-radius: 0.5rem;
   color: var(--color-tinta);
@@ -228,7 +228,7 @@
 .filtros-sacar {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0 0.5rem;
   font-weight: 700;
 }

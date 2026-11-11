@@ -19,7 +19,7 @@
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -590,7 +590,7 @@
 .huerta-tierra a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -1030,7 +1030,7 @@
 .huerta-opcion-acciones > a:not(.boton) {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -1093,7 +1093,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.75rem 0;
   color: var(--color-tinta);
   font-size: 1.05rem;
@@ -1283,7 +1283,7 @@
   grid-row: 1 / span 2;
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 

@@ -28,8 +28,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  min-width: 3rem;
-  min-height: 3rem;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
   margin-left: auto;
   color: var(--color-tinta);
   font-weight: 700;

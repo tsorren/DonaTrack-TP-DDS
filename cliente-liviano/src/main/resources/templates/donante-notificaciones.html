@@ -72,6 +72,9 @@
       <p th:if="${conDatos}" class="bajada"
          th:text="${sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.|">4
         sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
+      <th:block th:if="${conDatos}">
+        <aside th:replace="~{componentes/pista :: pista('notificaciones', 'Organizá tus notificaciones', 'Podés buscar, filtrar y ordenar los avisos. También podés elegir si querés verlos agrupados o sin agrupar.')}"></aside>
+      </th:block>
     </header>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">

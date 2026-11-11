@@ -149,7 +149,7 @@ figure.mapa-dibujo {
 .mapa-globo-cuerpo a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
