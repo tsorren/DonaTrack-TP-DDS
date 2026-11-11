@@ -127,8 +127,9 @@ PENDIENTE ──cancelar──> CANCELADA (final)
 - La fuente de posición dice qué paradas alcanzó el camión
   (`FuentePosicionCamion.entregasAlcanzadas(Ruta)`, con un `default` vacío para otras fuentes). La
   simulación devuelve las paradas con coordenadas cuyo índice es menor o igual al tramo en curso:
-  si se pierde un tick, la parada se marca en el siguiente. El camión arranca en la primera parada,
-  así que esa entrega pasa a `EN_PUERTA` en el primer tick.
+  si se pierde un tick, la parada se marca en el siguiente. En el primer intervalo no se alcanza
+  ninguna, aunque el camión arranca en la primera parada: `ruta.iniciada` y `entrega.en-puerta` van
+  por colas distintas, y Donaciones solo aplica la llegada sobre una donación en traslado.
 - `ActualizadorPosicionCamiones` llama a `EntregasService.marcarEnPuerta` por cada una que siga
   `EN_TRASLADO`, con el actor `SIMULADOR`. Si pierde la carrera de versión con la confirmación de
   la entidad, la saltea.
@@ -170,7 +171,10 @@ cambio solo si la donación está `EN_TRASLADO`; si ya está en otro estado (el 
   la versión minor y la línea en `cambios-incompatibles-aceptados.txt`).
 - Dos caminos a `ENTREGADA`: los reportes que midan la espera en la puerta solo la tienen cuando
   alguien informó la llegada.
-- En la simulación la primera parada pasa a `EN_PUERTA` apenas sale el camión.
+- En la simulación la primera parada pasa a `EN_PUERTA` un intervalo después de salir (30 s por
+  defecto): los tests de integración que esperan un historial exacto pueden verla.
+- Si `entrega.en-puerta` llega a Donaciones antes que `ruta.iniciada` (colas distintas), se registra
+  sin aplicarse y la donación sigue "En camino" hasta la confirmación, que vale igual.
 - El planificador de posiciones escribe entregas y publica eventos, además de mover el camión.
 - El `PATCH` de estado conserva su permiso (`CONFIRMAR_SU_ENTREGA`): la entidad podría marcar su
   propia entrega en la puerta. El cliente no lo hace; restringirlo por estado queda para la

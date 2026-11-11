@@ -27,7 +27,9 @@ import org.springframework.stereotype.Component;
  * coordenadas se saltean. El camión arranca en la primera parada y queda quieto en la última.
  *
  * <p>Una parada está alcanzada cuando el camión llegó a ella: su índice es menor o igual al del
- * tramo en curso, o es la última y el camión ya la tocó (HB-22).
+ * tramo en curso (HB-22). En el paso 0 no hay ninguna: el camión recién sale, y así {@code
+ * ruta.iniciada} le gana a la llegada en Donaciones, que solo la aplica sobre una donación en
+ * traslado.
  */
 @Component
 public class FuentePosicionCamionSimulada implements FuentePosicionCamion {
@@ -86,8 +88,12 @@ public class FuentePosicionCamionSimulada implements FuentePosicionCamion {
     if (paradas.isEmpty()) {
       return List.of();
     }
-    long paso = paso(ruta, paradas.size());
-    // La parada i se alcanza en el paso i * pasosPorTramo (la primera, al salir)
+    // Sin acotar al final: una ruta de una sola parada también la alcanza
+    long paso = pasosTranscurridos(ruta);
+    if (paso <= 0) {
+      return List.of();
+    }
+    // Pasado el primer intervalo, la parada i se alcanza en el paso i * pasosPorTramo
     int alcanzadas = (int) Math.min(paso / pasosPorTramo + 1, paradas.size());
     return paradas.subList(0, alcanzadas).stream().map(Entrega::getId).toList();
   }
@@ -100,10 +106,13 @@ public class FuentePosicionCamionSimulada implements FuentePosicionCamion {
 
   /** Sub-paso en curso desde el inicio real, acotado al final del recorrido. */
   private long paso(Ruta ruta, int cantidadParadas) {
-    Instant inicio = ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC);
-    long transcurridos = Duration.between(inicio, clock.instant()).toMillis();
     long pasoTotal = (long) (cantidadParadas - 1) * pasosPorTramo;
-    return Math.clamp(transcurridos / intervalo.toMillis(), 0L, pasoTotal);
+    return Math.clamp(pasosTranscurridos(ruta), 0L, pasoTotal);
+  }
+
+  private long pasosTranscurridos(Ruta ruta) {
+    Instant inicio = ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC);
+    return Duration.between(inicio, clock.instant()).toMillis() / intervalo.toMillis();
   }
 
   /** Las entregas de la ruta en el orden de visita, sin las que no tienen coordenadas. */
