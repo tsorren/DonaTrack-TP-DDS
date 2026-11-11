@@ -55,6 +55,15 @@ mvn test -pl cliente-liviano -Pvisual                                         # 
   resultado en `target/capturas/`. No corre en el CI
   ([DTI-28](../docs/adr/DEUDA_TECNICA.md#dti-28)).
 
+## Con Keycloak y en el compose
+
+El sitio corre como servicio `cliente-liviano` en `docker-compose.yml` y en el preprod, en el puerto 8090,
+ingresando por Keycloak y hablando con los servicios solo por el gateway. Dentro del contenedor,
+`docker-entrypoint.sh` reenvía `localhost:8180` a Keycloak para que el *issuer* sea el mismo que ve el
+navegador. La guía completa, con el recorrido por rol y cómo correr el recorrido automático contra Keycloak
+real (`IngresoConKeycloakRealTest`, perfil `visual`), está en
+[`docs/testing/demo-punta-a-punta.md`](../docs/testing/demo-punta-a-punta.md).
+
 ## Responsabilidades
 
 - **Interfaz de usuario:** las pantallas del [mapa del sitio](../docs/interfaz/mapa-del-sitio.md)

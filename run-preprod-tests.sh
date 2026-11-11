@@ -172,6 +172,7 @@ else
     "incentivos-service/target/incentivos-service-1.0.jar"
     "logistica-service/target/logistica-service-1.0.jar"
     "api-gateway/target/api-gateway-1.0.jar"
+    "cliente-liviano/target/cliente-liviano-1.0.jar"
   )
   MISSING_JAR=false
   for jar in "${REQUIRED_JARS[@]}"; do

@@ -227,6 +227,41 @@ services:
     networks:
       - donatrack-network
 
+  cliente-liviano:
+    # El sitio (SPEC-06 E2-12b, SPEC-09 F6): ingresa por Keycloak y habla con los servicios solo por el gateway.
+    # KEYCLOAK_ISSUER_URI es la URL pública de Keycloak (la del navegador y la de los tokens); como dentro del
+    # contenedor "localhost" no es Keycloak, docker-entrypoint.sh la reenvía a keycloak:8080 (emisor único).
+    build:
+      context: .
+      dockerfile: cliente-liviano/Dockerfile
+      target: local
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+      - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
+      - KEYCLOAK_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
+      - KEYCLOAK_LOCAL_FORWARD_TO=keycloak:8080
+      - DONACIONES_URL=http://api-gateway:8086
+      - NOTIFICACIONES_URL=http://api-gateway:8086
+      - INCENTIVOS_URL=http://api-gateway:8086
+      - LOGISTICA_URL=http://api-gateway:8086
+      - SPRING_MAIN_BANNER_MODE=off
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 40s
+      start_interval: 1s
+    networks:
+      - donatrack-network
+
   keycloak:
     # IdP de DonaTrack (SPEC-06 A1-01, ADR 20261104): Keycloak fijado por digest, con el realm y el
     # tema ya construidos (kc.sh build). Sus datos viven en la base `keycloak` de Postgres.
