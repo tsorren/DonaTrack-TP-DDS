@@ -120,10 +120,10 @@
                  cubre y quién donó (decisiones del usuario, 2026-11-01). */-->
           <section class="tarjeta etiqueta" data-filete="doble" aria-labelledby="etiqueta-titulo">
             <h2 id="etiqueta-titulo" class="etiqueta-titulo">
-              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <svg th:if="${e.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${e.categoria}|"/>
               </svg>
-              <span th:text="|${e.categoriaTexto} · ${e.cantidad}|">Alimentos · 15 kg</span>
+              <span th:text="|${e.categoriaTexto != null ? e.categoriaTexto + ' · ' : ''}${e.cantidad}|">Alimentos · 15 kg</span>
             </h2>
             <dl>
               <div>

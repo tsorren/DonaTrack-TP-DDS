@@ -95,6 +95,7 @@ class EntidadInicioControllerTest {
         .andExpect(content().string(containsString("No tenés entregas para")))
         .andExpect(content().string(containsString("salió del depósito el 8 de noviembre")))
         .andExpect(content().string(containsString("Sillas")))
+        .andExpect(content().string(not(containsString("null"))))
         .andExpect(content().string(containsString("Hasta el 20 de noviembre")))
         .andExpect(content().string(containsString("Lo recibido en noviembre")))
         .andExpect(content().string(containsString("Al 8 de noviembre, 18:30.")))

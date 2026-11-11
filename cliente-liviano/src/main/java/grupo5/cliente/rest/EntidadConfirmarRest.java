@@ -33,8 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Confirmar recepción con Logística y Donaciones. Esperan la confirmación las entregas de la
- * entidad en traslado que ya llegaron a la parada ({@code horaArribo}); qué llevan sale de la
- * donación asignada ({@code idDonacion}) y la necesidad que cubre, de {@code GET
+ * entidad en traslado: Logística no distingue la que ya llegó a la puerta ({@code horaArribo} se
+ * completa recién al confirmar; HB-22, fuera de alcance), así que se dice cuándo salió. Qué llevan
+ * sale de la donación asignada ({@code idDonacion}) y la necesidad que cubre, de {@code GET
  * /api/necesidades/{id}}. Cuánto lleva recibido esa necesidad y la categoría del ranking de quien
  * ocultó su nombre no se piden. Confirmar sube las fotos ({@code POST /api/entregas/{id}/fotos}) y
  * pasa la entrega a ENTREGADA con el remito y, si lo hay, el reporte del problema.
@@ -66,7 +67,7 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   public List<EntidadEntregaVista> entregas(UUID entidad) {
     List<Seguimiento> enLaPuerta =
         logistica.seguimientoDeEntidad(entidad).stream()
-            .filter(s -> EN_TRASLADO.equals(s.estadoEntrega()) && s.horaArribo() != null)
+            .filter(s -> EN_TRASLADO.equals(s.estadoEntrega()))
             .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
             .toList();
     if (enLaPuerta.isEmpty()) {
@@ -89,7 +90,8 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
     String unidad = cantidad(2, categoria).substring(1).strip();
     String cuanto = cantidad(d.cantidad(), categoria);
     String descripcion = Objects.requireNonNullElse(d.descripcion(), "Donación");
-    String llego = "Llegó el " + dia(s.horaArribo()) + ".";
+    String salio =
+        s.horaSalida() == null ? null : "Salió del depósito el " + dia(s.horaSalida()) + ".";
     DonacionesApi.QuienDono quien = d.quienDono();
     return new EntidadEntregaVista(
         s.idEntrega().toString(),
@@ -97,9 +99,9 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         descripcion + ", " + cuanto,
         cuanto,
         cuando(s.horaSalida()),
-        cuando(s.horaArribo()),
-        llego,
-        llego,
+        null,
+        salio,
+        salio,
         null,
         categoria == null ? null : icono(categoria.nombre()),
         categoria == null ? null : categoria.nombre(),

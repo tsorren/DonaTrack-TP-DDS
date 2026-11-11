@@ -139,12 +139,12 @@
           <p th:text="|${#lists.size(necesidades)} necesidades vigentes.|">5 necesidades vigentes.</p>
           <ul class="pedidos-renglones" role="list">
             <li th:each="n : ${necesidades}">
-              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <svg th:if="${n.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
               </svg>
               <span class="renglon-que"><b th:text="${n.nombre}">Lentejas secas</b>
                 <small th:text="${n.plazo}">Octubre, hasta el 31</small></span>
-              <span class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
+              <span th:if="${n.recibido != null}" class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
                 <progress class="progreso" th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
             </li>
           </ul>

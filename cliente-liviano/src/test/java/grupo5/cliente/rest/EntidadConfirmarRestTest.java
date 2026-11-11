@@ -47,7 +47,7 @@ class EntidadConfirmarRestTest {
           Clock.fixed(Instant.parse("2026-11-08T21:30:00Z"), ZoneOffset.UTC));
 
   @Test
-  void esperanLasQueLlegaronConLoQueLlevanYLaNecesidadQueCubren() {
+  void esperanLasEnTrasladoConLoQueLlevanYLaNecesidadQueCubren() {
     logistica
         .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
         .andRespond(
@@ -56,7 +56,7 @@ class EntidadConfirmarRestTest {
                 [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "EN_TRASLADO",
                   "horaSalida": "2026-11-08T17:30:00Z", "horaArribo": "2026-11-08T21:20:00Z"},
                  {"idEntrega": "6f1c2c1e-0000-4000-8000-0000000000a2", "idDonacion": "%s",
-                  "estadoEntrega": "EN_TRASLADO", "horaSalida": "2026-11-08T17:30:00Z"},
+                  "estadoEntrega": "PENDIENTE"},
                  {"idEntrega": "6f1c2c1e-0000-4000-8000-0000000000a3", "idDonacion": "%s",
                   "estadoEntrega": "ENTREGADA", "horaArribo": "2026-11-07T15:00:00Z"}]
                 """
@@ -92,8 +92,8 @@ class EntidadConfirmarRestTest {
     assertEquals("lentejas secas", e.nombre());
     assertEquals("Lentejas secas, 15 kg", e.titulo());
     assertEquals("8 de noviembre, 14:30", e.salio());
-    assertEquals("8 de noviembre, 18:20", e.llego());
-    assertEquals("Llegó el 8 de noviembre a las 18:20.", e.llegoFrase());
+    assertNull(e.llego());
+    assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", e.llegoFrase());
     assertEquals("cat-alimentos", e.categoria());
     assertEquals("Lentejas secas, 40 kg, hasta el 30 de noviembre.", e.pedido());
     assertNull(e.recibido());

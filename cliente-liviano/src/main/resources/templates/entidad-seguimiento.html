@@ -194,9 +194,9 @@
                 class="nodo-numero" x="21" y="29" th:text="${vuelta.count}">1</text></svg>
             <div>
               <h3 th:text="${d.nombre}">Lentejas secas</h3>
-              <p><svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <p><svg th:if="${d.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                   <use href="#cat-alimentos" th:href="|#${d.categoria}|"/></svg>
-                <th:block th:text="|${d.categoriaNombre} · ${d.cuanto} · Donó ${d.dono}|">Alimentos · 15 kg · Donó
+                <th:block th:text="|${d.categoriaNombre != null ? d.categoriaNombre + ' · ' : ''}${d.cuanto} · Donó ${d.dono}|">Alimentos · 15 kg · Donó
                 Distribuidora Ejemplo SA</th:block></p>
             </div>
           </header>

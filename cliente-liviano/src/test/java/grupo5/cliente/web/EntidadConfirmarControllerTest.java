@@ -55,9 +55,9 @@ class EntidadConfirmarControllerTest {
                   "Silla plegable, 1 unidad",
                   "1 unidad",
                   "8 de noviembre, 14:30",
-                  "8 de noviembre, 18:20",
-                  "Llegó el 8 de noviembre a las 18:20.",
-                  "Llegó el 8 de noviembre a las 18:20.",
+                  null,
+                  "Salió del depósito el 8 de noviembre a las 14:30.",
+                  "Salió del depósito el 8 de noviembre a las 14:30.",
                   null,
                   null,
                   null,
@@ -106,7 +106,9 @@ class EntidadConfirmarControllerTest {
                 .param("entrega", ENTREGA)
                 .session(sesion))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Silla plegable, 1 unidad. Llegó el 8 de")))
+        .andExpect(
+            content()
+                .string(containsString("Silla plegable, 1 unidad. Salió del depósito el 8 de")))
         .andExpect(
             content().string(containsString("action=\"/entidad-seguimiento-sellada-" + ENTREGA)))
         .andExpect(
@@ -114,6 +116,7 @@ class EntidadConfirmarControllerTest {
                 .string(containsString("hx-indicator=\"#enviando-entidad-seguimiento-confirmar\"")))
         .andExpect(content().string(containsString(", el 8 de noviembre de 2026</p>")))
         .andExpect(content().string(containsString("Un donante")))
+        .andExpect(content().string(not(containsString("null"))))
         .andExpect(content().string(not(containsString("15 de octubre"))));
 
     mvc.perform(get("/entidad-seguimiento-problema").param("entrega", ENTREGA).session(sesion))

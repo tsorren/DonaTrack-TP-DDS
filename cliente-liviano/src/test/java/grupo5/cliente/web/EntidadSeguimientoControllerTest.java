@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -87,6 +88,7 @@ class EntidadSeguimientoControllerTest {
         .andExpect(content().string(containsString("Al 8 de noviembre de 2026, 18:30.")))
         .andExpect(content().string(containsString("id=\"entrega-d1\"")))
         .andExpect(content().string(containsString("Silla plegable")))
-        .andExpect(content().string(containsString("Última noticia: 8 de noviembre, 18:25.")));
+        .andExpect(content().string(containsString("Última noticia: 8 de noviembre, 18:25.")))
+        .andExpect(content().string(not(containsString("null"))));
   }
 }
