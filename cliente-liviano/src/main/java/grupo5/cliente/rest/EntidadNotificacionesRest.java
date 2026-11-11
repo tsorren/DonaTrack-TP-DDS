@@ -65,8 +65,8 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
           "DONACION_VENCIDA",
           "problemas");
 
-  /** El estado que Confirmar recepción acepta (EntidadConfirmarRest); si HB-22 suma otro, ambos. */
-  private static final String ESPERANDO = "EN_TRASLADO";
+  /** Los estados que Confirmar recepción acepta (EntidadConfirmarRest): la puerta y el traslado. */
+  private static final Set<String> ESPERANDO = Set.of("EN_PUERTA", "EN_TRASLADO");
 
   private final NotificacionesApi api;
   private final LogisticaApi logistica;
@@ -138,8 +138,9 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
     try {
       List<LogisticaApi.Seguimiento> esperando =
           logistica.seguimientoDeEntidad(entidad).stream()
-              .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
-              .filter(s -> ESPERANDO.equals(s.estadoEntrega()))
+              .filter(
+                  s -> s.idEntrega() != null && s.idDonacion() != null && s.estadoEntrega() != null)
+              .filter(s -> ESPERANDO.contains(s.estadoEntrega()))
               .toList();
       if (esperando.isEmpty()) {
         return Map.of();

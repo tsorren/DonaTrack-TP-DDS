@@ -29,6 +29,7 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 
 ### 2.2. Agregado: Notificación
 *   **Aggregate Root**: `Notificacion` (Representa el intento y estado final de una notificación despachada a un usuario).
+*   **Datos del evento de origen (HB-09)**: `tipoEvento` (texto con los nombres de `TipoEvento`) y `referenciaId` (UUID de la donación), ambos opcionales: las notificaciones anteriores a la migración V5 y las de un evento sin id quedan sin ellos. Los eventos siguen sin persistirse (ADR 20260901).
 *   **Componentes Internos**: `EstadoNotificacion` (Enum con valores *PENDIENTE*, *ENVIADA*, *FALLIDA*) y `CambioEstadoNotificacion` (auditoría inmutable).
 *   **Eventos de Dominio**: `NotificacionCreada`, `NotificacionEnviada`, `NotificacionFallida` (en `grupo5.notificaciones.models.entities.notificaciones.events`).
 *   **Referencias Externas (por ID)**: `personaId` (UUID que apunta al agregado `Persona`).
@@ -48,7 +49,7 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 
 La jerarquía de clases bajo el paquete `grupo5.notificaciones.models.entities.notificaciones.eventos` (tales como `EventoDeDonacion`, `DonanteRegistrado`, `DonanteInactivo`, `DonacionAsignada`, `DonacionRecibida`, `MisionCumplida`, `SubioCategoria`, `DonacionEnCamino`, `EntregaFallida`, `DonacionVencida`) representa **Políticas de Dominio (Domain Policies)** y no agregados persistentes:
 
-*   **Rol en el Diseño**: Actúan como factorías polimórficas de alertas (`generarNotificaciones()`).
+*   **Rol en el Diseño**: Actúan como factorías polimórficas de alertas. Desde HB-09, `EventoNotificable` declara `tipoEvento()` y `generarNotificaciones()` es final: las subclases implementan `crearNotificaciones()` y la base etiqueta cada notificación con el tipo y la referencia.
 *   **Canales de Ingesta**:
     1.  **AMQP (Primario)**: colas `notificaciones.donaciones` (`DonacionEventListener`) y `notificaciones.incentivos` (`IncentivoEventListener`), con listeners `@RabbitHandler` tipados y DLQ propia. Queda además la cola legada `cola.eventos.notificaciones` (`notificaciones.#`), consumida por `NotificacionRabbitListener`.
     2.  **HTTP REST (Dual / Retrocompatibilidad)**: Endpoints `POST /api/notificaciones/eventos` (canónico) y `POST /notificaciones` (deprecated). Responde `202 Accepted` de forma inmediata.

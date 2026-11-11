@@ -157,6 +157,33 @@ class EntidadNotificacionesRestTest {
   }
 
   @Test
+  void elAvisoDeEntregaQueLlegoALaPuertaTambienLlevaAConfirmarRecepcion() {
+    servidor
+        .expect(requestTo(BASE + "persona/" + ENTIDAD))
+        .andRespond(withSuccess(enCamino(), MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(SEGUIMIENTO))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "EN_PUERTA"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(ASIGNADAS))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + DONACION + "\", \"cantidad\": 1}]", MediaType.APPLICATION_JSON));
+
+    Novedad novedad = adaptador.bandeja(ENTIDAD).novedades().getFirst();
+
+    servidor.verify();
+    assertEquals("Confirmar recepción", novedad.boton());
+    assertEquals("/entidad-seguimiento-confirmar?entrega=" + ENTREGA, novedad.destino());
+  }
+
+  @Test
   void siLaEntregaYaNoEspera_oLogisticaNoResponde_queda_elEnlaceSimpleSinBoton() {
     servidor
         .expect(requestTo(BASE + "persona/" + ENTIDAD))

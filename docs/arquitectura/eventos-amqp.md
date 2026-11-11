@@ -93,6 +93,8 @@ logistica-service
 | 9 | Subió de Categoría | `incentivos-service` | `incentivos.exchange` | `incentivo.subio-categoria.v1` | `incentivo.subio-categoria.v1` | `notificaciones.incentivos` | [`evento-incentivo-subio-categoria-v1.schema.json`](./contratos/schemas/evento-incentivo-subio-categoria-v1.schema.json) |
 | 10 | Donante Inactivo | `incentivos-service` | `incentivos.exchange` | `incentivo.donante-inactivo.v1` | `incentivo.donante-inactivo.v1` | `notificaciones.incentivos` | [`evento-incentivo-donante-inactivo-v1.schema.json`](./contratos/schemas/evento-incentivo-donante-inactivo-v1.schema.json) |
 
+> **`donacionIndependienteId` (opcional, cierre de E6, HB-09):** `donacion.en-camino.v1`, `donacion.recibida.v1`, `donacion.entrega-fallida.v1` y `donacion.vencida.v1` llevan el id de la donación independiente al final del payload, como `donacion.asignada.v1`, que ya lo traía obligatorio. Donaciones lo completa desde el evento interno; `notificaciones-service` lo guarda como `referenciaId` de la notificación para enlazar el aviso con el detalle de la donación. Aditivo: los schemas lo declaran opcional (`additionalProperties` sigue en `true`) e Incentivos ignora los campos que no conoce.
+
 #### B2. Comando del broker de logística hacia `logistica-service`
 
 Los dos **comandos** del sistema van a un destinatario elegido por el broker de logística de `donaciones-service`, así que su routing key identifica al destinatario (regla «eventos por hecho, comandos por destinatario», [ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)).

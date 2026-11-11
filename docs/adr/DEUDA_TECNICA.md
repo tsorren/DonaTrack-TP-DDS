@@ -615,3 +615,26 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 5. **Orientación.** Al re-codificar se pierde el tag EXIF `Orientation`: una foto vertical de celular guardada como píxeles apaisados (Orientation 6 u 8) se muestra girada. Falta leer el tag y rotar los píxeles antes de codificar. `[INFERRED]` de la auditoría de cierre de HB-10; sin test todavía.
 
 ---
+
+---
+
+## DTI-38 — Lo que deja abierto el cierre de E6: `EN_PUERTA`, avisos sin enlace y token del cliente
+<a id="dti-38"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [Estado `EN_PUERTA` de la entrega](./logistica-service/20261111-estado-en-puerta-de-la-entrega.md) (HB-22) |
+| Decision status | `proposed` |
+| Decidido por | Usuario (2026-11-11): estado nuevo contra la recomendación de la matriz ([SPEC-09](../specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md) §3.1) |
+| Implementation status | `[OBSERVED] partial` (2026-11-11, rama `E6_cierre_control`) — **hecho:** `EN_PUERTA` en Logística (V9, OpenAPI 1.9.0) y en Donaciones (V20, OpenAPI 1.8.0), `tipoEvento` y `referenciaId` en Notificaciones (V5, OpenAPI 1.2.0), `donacionIndependienteId` en los eventos de Donaciones y el token del usuario hacia las cuatro APIs. **Falta:** los ítems de abajo |
+| Target | `logistica-service` · `donaciones-service` · `notificaciones-service` · `cliente-liviano` (`ClientesHttp`) · `integration-tests` y `postman` (del grupo, PR 969) |
+| Cuándo se saldará | Antes de publicar el sitio; el ítem 3 con el Gate 3 del grupo |
+
+1. **Quién marca `EN_PUERTA`.** El `PATCH` a `EN_PUERTA` pasa por el permiso `CONFIRMAR_SU_ENTREGA`: la entidad podría marcar su propia entrega en la puerta. El cliente no lo hace (consecuencias del ADR).
+2. **Proveedores externos.** Un proveedor que no publica `entrega.en-puerta` (n8n) deja sus entregas en "En camino"; se confirman igual desde `EN_TRASLADO`. Una carrera entre `ruta.iniciada` y `entrega.en-puerta` (colas distintas) deja la donación "En camino" hasta la confirmación.
+3. **Pruebas de integración y Postman.** `LogisticaIntegrationIT`, `FullDistributedDonationE2EIT` y los flujos de `postman/` esperan un historial exacto sin `EN_PUERTA`: con la simulación de posición (30 s por tramo) puede aparecer en el medio. Fuera de la zona del cierre (PR 969); opciones: `logistica.posicion.simulada.habilitada=false` en el Gate 3 o aceptar `EN_PUERTA` opcional. Gate 3 `[DEFERRED_NO_DOCKER]`.
+4. **Mongo persistente.** Una base que ya tenía el índice `uq_entrega_donacion_activa` lo conserva (redundante con el nuevo); se borra a mano.
+5. **Diagramas.** Los `.puml` y el Lucidchart de clases de Donaciones y Logística no dibujan `EnPuerta`, `Entrega.llegarAPuerta` ni `entregasAlcanzadas`; `docs/generated/contracts-summary.json` no se regeneró.
+6. **Avisos.** El aviso a la entidad "llegó a tu puerta" no existe (la maqueta tiene el tema "En tu puerta"). Las notificaciones anteriores a la V5 y las de un emisor que no manda el id quedan en "Otras novedades" o sin enlace al detalle.
+7. **Token del cliente.** El cliente no distingue un endpoint público de uno privado: sin sesión llama sin token y deja que la API conteste 401 o 200 (`ErroresHttp` convierte el 401 en "Ingresar").
+8. **Pantallas de F2.** El Mapa muestra lugares y no entidades (Logística no dice qué entidad recibió y Donaciones no da el lugar de las entregas: falta un id de entrega o de donación en el DTO público); `MisionDTO` no trae la unidad del avance ni la donación que completó cada misión; Misiones no está en el menú de la persona fuera de maqueta (decidir de dónde sale que la cuenta es `HUMANA` sin una llamada por pantalla) y su escena de huerta a 360 px tiene enlaces de 22 a 45 px (escena de 46 rem con desplazamiento propio o lista de las 8 macetas: decisión de diseño).

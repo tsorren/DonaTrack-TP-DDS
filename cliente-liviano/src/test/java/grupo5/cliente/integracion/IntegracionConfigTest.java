@@ -28,7 +28,10 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
-/** El sitio llama a Donaciones y a Keycloak con el token técnico, pedido una sola vez. */
+/**
+ * El sitio llama a Donaciones y a Keycloak con el token técnico, pedido una sola vez; como usuario,
+ * con el de su ingreso, y sin ingreso, sin token.
+ */
 class IntegracionConfigTest {
 
   private static final UUID PERSONA = UUID.randomUUID();
@@ -87,14 +90,7 @@ class IntegracionConfigTest {
 
   @Test
   void conElTokenDelUsuarioLaLlamadaLlevaElDeSuIngreso() {
-    ClientRegistration keycloak =
-        ClientRegistration.withRegistrationId("keycloak")
-            .clientId("cliente-liviano")
-            .authorizationGrantType(AUTHORIZATION_CODE)
-            .redirectUri(url + "/{registrationId}")
-            .authorizationUri(url + "/auth")
-            .tokenUri(url + "/token")
-            .build();
+    ClientRegistration keycloak = registroKeycloak();
     var clientes = new InMemoryClientRegistrationRepository(keycloak);
     var ingresos = new InMemoryOAuth2AuthorizedClientService(clientes);
     var usuario = new DefaultOAuth2User(List.of(), Map.of("sub", "ana"), "sub");
@@ -111,6 +107,30 @@ class IntegracionConfigTest {
 
     assertThat(autorizaciones).containsExactly("Bearer token-usuario");
     assertThat(pedidosDeToken.get()).isZero();
+  }
+
+  @Test
+  void sinIngresoLaLlamadaDelUsuarioVaSinToken() {
+    var clientes = new InMemoryClientRegistrationRepository(registroKeycloak());
+    var config = new IntegracionConfig();
+    var interceptor =
+        config.tokenDelUsuario(clientes, new InMemoryOAuth2AuthorizedClientService(clientes));
+
+    new DonacionesRestComoUsuario(config.donacionesComoUsuario(interceptor, url))
+        .registrarEntidad(PERSONA);
+
+    assertThat(autorizaciones).hasSize(1).containsOnlyNulls();
+    assertThat(pedidosDeToken.get()).isZero();
+  }
+
+  private ClientRegistration registroKeycloak() {
+    return ClientRegistration.withRegistrationId("keycloak")
+        .clientId("cliente-liviano")
+        .authorizationGrantType(AUTHORIZATION_CODE)
+        .redirectUri(url + "/{registrationId}")
+        .authorizationUri(url + "/auth")
+        .tokenUri(url + "/token")
+        .build();
   }
 
   private static void responder(

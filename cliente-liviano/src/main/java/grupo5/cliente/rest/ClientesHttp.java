@@ -3,6 +3,7 @@ package grupo5.cliente.rest;
 import grupo5.cliente.web.TraceIdFiltro;
 import java.time.Clock;
 import java.util.List;
+import java.util.function.Supplier;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,10 +18,26 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 /**
  * Un {@link RestClient} por API, con su URL base ({@code cliente.api.<api>.url}). Cada llamada
  * lleva el {@code X-Trace-Id} del pedido del navegador (ADR-E6-02: lo genera el cliente). Las de
- * Donaciones llevan además el token de quien tiene la sesión, si hay ingreso (fuera de la maqueta).
+ * las cuatro APIs llevan además el token de quien tiene la sesión (fuera de la maqueta); sin
+ * ingreso, como en la portada, el mapa público o el contacto, el interceptor no pone cabecera y la
+ * llamada va sin token, y la API decide si ese endpoint es público.
  */
 @Configuration
 class ClientesHttp {
+
+  /** Nombre del bean con el interceptor del token del usuario (ver {@code IntegracionConfig}). */
+  private static final String TOKEN_DEL_USUARIO = "tokenDelUsuario";
+
+  private final Supplier<RestClient.Builder> constructores;
+
+  ClientesHttp() {
+    this(RestClient::builder);
+  }
+
+  /** Los tests pasan un constructor atado a {@code MockRestServiceServer}. */
+  ClientesHttp(Supplier<RestClient.Builder> constructores) {
+    this.constructores = constructores;
+  }
 
   @Bean
   Clock reloj() {
@@ -28,29 +45,38 @@ class ClientesHttp {
   }
 
   @Bean
-  IncentivosApi incentivosApi(@Value("${cliente.api.incentivos.url}") String url) {
-    return cliente(RestClient.builder(), url, IncentivosApi.class);
+  IncentivosApi incentivosApi(
+      @Value("${cliente.api.incentivos.url}") String url,
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+    return cliente(constructores.get(), url, IncentivosApi.class, interceptores(tokenDelUsuario));
   }
 
   @Bean
   DonacionesApi donacionesApi(
       @Value("${cliente.api.donaciones.url}") String url,
-      @Qualifier("tokenDelUsuario") ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+    return cliente(constructores.get(), url, DonacionesApi.class, interceptores(tokenDelUsuario));
+  }
+
+  @Bean
+  LogisticaApi logisticaApi(
+      @Value("${cliente.api.logistica.url}") String url,
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+    return cliente(constructores.get(), url, LogisticaApi.class, interceptores(tokenDelUsuario));
+  }
+
+  @Bean
+  NotificacionesApi notificacionesApi(
+      @Value("${cliente.api.notificaciones.url}") String url,
+      @Qualifier(TOKEN_DEL_USUARIO) ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
     return cliente(
-        RestClient.builder(),
-        url,
-        DonacionesApi.class,
-        tokenDelUsuario.stream().toArray(ClientHttpRequestInterceptor[]::new));
+        constructores.get(), url, NotificacionesApi.class, interceptores(tokenDelUsuario));
   }
 
-  @Bean
-  LogisticaApi logisticaApi(@Value("${cliente.api.logistica.url}") String url) {
-    return cliente(RestClient.builder(), url, LogisticaApi.class);
-  }
-
-  @Bean
-  NotificacionesApi notificacionesApi(@Value("${cliente.api.notificaciones.url}") String url) {
-    return cliente(RestClient.builder(), url, NotificacionesApi.class);
+  /** Vacío en la maqueta, que no tiene ingreso: ahí ninguna llamada lleva token. */
+  private static ClientHttpRequestInterceptor[] interceptores(
+      ObjectProvider<ClientHttpRequestInterceptor> tokenDelUsuario) {
+    return tokenDelUsuario.stream().toArray(ClientHttpRequestInterceptor[]::new);
   }
 
   /** Arma el proxy de una API; los tests le pasan el builder atado a MockRestServiceServer. */
