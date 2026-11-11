@@ -130,7 +130,7 @@ class AdminDonantesControllerTest {
         .andExpect(status().isOk())
         .andExpect(
             content()
-                .string(containsString("1 donantes activos, al 10 de noviembre de 2026, 18:30.")))
+                .string(containsString("1 donante activo, al 10 de noviembre de 2026, 18:30.")))
         .andExpect(content().string(containsString("Ana Ejemplo")))
         .andExpect(content().string(containsString("Coincide 1 donante de la lista.")))
         .andExpect(content().string(not(containsString("null"))));

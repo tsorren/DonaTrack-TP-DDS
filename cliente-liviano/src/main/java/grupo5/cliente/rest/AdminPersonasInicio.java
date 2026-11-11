@@ -124,8 +124,9 @@ final class AdminPersonasInicio {
           case 1 -> "vence el " + Comun.DIA.format(fecha) + ", en 1 día";
           default -> "vence el " + Comun.DIA.format(fecha) + ", en " + dias + " días";
         };
-    String que = d.descripcion() == null || d.descripcion().isBlank() ? "una" : d.descripcion();
-    return "La primera, " + que + ", " + cuando + ".";
+    return d.descripcion() == null || d.descripcion().isBlank()
+        ? "La primera " + cuando + "."
+        : "La primera, " + d.descripcion() + ", " + cuando + ".";
   }
 
   private static String propuesta(DonacionesApi.NecesidadResumen necesidad) {

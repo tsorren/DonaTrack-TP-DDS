@@ -54,7 +54,7 @@
       <div>
         <p class="rotulo">Administración</p>
         <h1>Donantes</h1>
-        <p th:if="${conDatos}" th:text="|${adminDonantes.activos} donantes activos, al ${adminDonantes.al}.|">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
+        <p th:if="${conDatos}" th:text="${adminDonantes.activos == 1} ? |1 donante activo, al ${adminDonantes.al}.| : |${adminDonantes.activos} donantes activos, al ${adminDonantes.al}.|">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
       </div>
       <div th:if="${escenario != 'error'}" class="racimo">
         <a class="boton" data-tono="principal" href="/admin-donantes-registrar"

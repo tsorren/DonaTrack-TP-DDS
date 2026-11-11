@@ -24,6 +24,9 @@ final class AdminPersonasEntidadesDeEjemplo {
   private static final String MERENDERO = "Merendero";
   private static final String ESCUELA = "Escuela";
 
+  /** Cada dato de la ficha es un parámetro de su fábrica: se lee mejor así (S107). */
+  private static final String MUCHOS_PARAMETROS = "java:S107";
+
   static final AdminEntidadesVista ENTIDADES =
       new AdminEntidadesVista(
           46,
@@ -251,7 +254,7 @@ final class AdminPersonasEntidadesDeEjemplo {
 
   private AdminPersonasEntidadesDeEjemplo() {}
 
-  @SuppressWarnings("java:S107") // cada dato de la ficha es un parámetro: se lee mejor así
+  @SuppressWarnings(MUCHOS_PARAMETROS)
   private static Entidad activa(
       String clave,
       String nombre,
@@ -291,7 +294,7 @@ final class AdminPersonasEntidadesDeEjemplo {
         null);
   }
 
-  @SuppressWarnings("java:S107")
+  @SuppressWarnings(MUCHOS_PARAMETROS)
   private static Entidad pendiente(
       String clave,
       String nombre,
@@ -333,7 +336,7 @@ final class AdminPersonasEntidadesDeEjemplo {
         null);
   }
 
-  @SuppressWarnings("java:S107")
+  @SuppressWarnings(MUCHOS_PARAMETROS)
   private static Entidad inactiva(
       String clave,
       String nombre,

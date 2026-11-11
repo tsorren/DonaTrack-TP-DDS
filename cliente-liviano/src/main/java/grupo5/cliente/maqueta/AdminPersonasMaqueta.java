@@ -10,7 +10,10 @@ import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
 import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -43,6 +46,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   private static final String MUEBLES = "muebles";
   private static final String ROPA = "ropa";
   private static final String AL = "15 de octubre de 2026, 18:30";
+  private static final Locale ES_AR = Locale.forLanguageTag("es-AR");
 
   private static final List<Donante> DONANTES =
       List.of(
@@ -147,31 +151,14 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
               ALIMENTOS,
               ALIMENTOS_TEXTO));
 
-  private static final List<String> NUEVOS =
-      List.of(
-          "lucia",
-          "ana",
-          "club",
-          "juan",
-          "super",
-          "fundacion",
-          "libreria",
-          "pedro",
-          "carla",
-          "distribuidora");
+  /** La lista ya va de los más nuevos a los más antiguos. */
+  private static final List<String> NUEVOS = DONANTES.stream().map(Donante::clave).toList();
 
   private static final List<String> POR_NOMBRE =
-      List.of(
-          "ana",
-          "club",
-          "carla",
-          "distribuidora",
-          "fundacion",
-          "juan",
-          "libreria",
-          "lucia",
-          "pedro",
-          "super");
+      DONANTES.stream()
+          .sorted(Comparator.comparing(Donante::nombre, Collator.getInstance(ES_AR)))
+          .map(Donante::clave)
+          .toList();
 
   /** La importación de la ficha: 20.000 filas, con su avance y su resultado. */
   private static final Importacion IMPORTACION =

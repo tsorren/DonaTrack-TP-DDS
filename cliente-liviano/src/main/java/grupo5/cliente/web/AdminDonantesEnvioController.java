@@ -57,9 +57,9 @@ public class AdminDonantesEnvioController {
   @PostMapping("/admin-donantes-registrado")
   String registrar(
       @RequestParam(defaultValue = "persona") String tipo,
-      @RequestParam(required = false) String nombre,
-      @RequestParam(required = false) String apellido,
-      @RequestParam(required = false) String razonSocial,
+      @RequestParam(defaultValue = "") String nombre,
+      @RequestParam(defaultValue = "") String apellido,
+      @RequestParam(defaultValue = "") String razonSocial,
       @RequestParam(required = false) String tipoOrganizacion,
       @RequestParam(required = false) String rubro,
       @RequestParam String correo,
