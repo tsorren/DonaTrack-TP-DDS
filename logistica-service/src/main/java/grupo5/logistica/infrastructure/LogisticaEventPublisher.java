@@ -3,6 +3,7 @@ package grupo5.logistica.infrastructure;
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.logistica.config.RabbitMQConfig;
 import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
+import grupo5.logistica.dto.eventos.EventoEntregaEnPuerta;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoRutaAsignada;
@@ -114,6 +115,14 @@ public class LogisticaEventPublisher {
     }
   }
 
+  public void publicarEntregaEnPuerta(EventoEntregaEnPuerta evento) {
+    if (applicationEventPublisher != null) {
+      applicationEventPublisher.publishEvent(evento);
+    } else {
+      onEntregaEnPuerta(evento);
+    }
+  }
+
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void onRutaAsignada(EventoRutaAsignada evento) {
     log.info("Publicando RutaAsignadaEvent: rutaId={}", evento.rutaId());
@@ -147,5 +156,12 @@ public class LogisticaEventPublisher {
     log.info("Publicando EntregaCanceladaEvent: entregaId={}", evento.entregaId());
     rabbitTemplate.convertAndSend(
         RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_ENTREGA_CANCELADA, evento, identidad());
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+  public void onEntregaEnPuerta(EventoEntregaEnPuerta evento) {
+    log.info("Publicando EntregaEnPuertaEvent: entregaId={}", evento.entregaId());
+    rabbitTemplate.convertAndSend(
+        RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_ENTREGA_EN_PUERTA, evento, identidad());
   }
 }

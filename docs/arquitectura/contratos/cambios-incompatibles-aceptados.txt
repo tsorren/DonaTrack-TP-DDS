@@ -28,3 +28,12 @@ PUT /api/necesidades/{id} added required request body
 # lo enumeran. oasdiff v1.34 clasifica "enum value added" en una respuesta como aviso (WARN), no
 # como error, así que no hace falta una línea para --err-ignore. [INFERRED] Se confirma con la
 # salida del job de contratos del PR; si lo marca como error, la línea va acá.
+
+# HB-22 (SPEC-09, 2026-11-11; ADR logistica-service/20261111-estado-en-puerta-de-la-entrega): el
+# camión que llega al destino pasa la entrega a EN_PUERTA. Logística (1.9.0) suma el valor al estado
+# de la entrega en las respuestas, el seguimiento, el historial y el request del PATCH de estado;
+# Donaciones (1.8.0) lo suma al estado de la donación independiente (respuestas, filtro y request
+# del cambio de estado). Un consumidor estricto del enum puede romperse; los del repo (cliente
+# liviano, integration-tests) leen el estado como texto. Como en HB-19, oasdiff clasifica "enum
+# value added" como aviso; en un request no rompe a quien no lo manda. [INFERRED] Se confirma con
+# la salida del job de contratos del PR; si lo marca como error, las líneas van acá.

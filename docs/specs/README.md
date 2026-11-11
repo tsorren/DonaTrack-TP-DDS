@@ -72,6 +72,7 @@ Al completar la implementación y pasar todos los Quality Gates, el archivo se t
 | **SPEC-06** | [`SPEC-06-auth-mvp-keycloak.md`](active/SPEC-06-auth-mvp-keycloak.md) | ARCHITECTURAL | `APPROVED_BY_USER` | MVP de autenticación con Keycloak (login con email y clave, registro de donante, menú por rol y logout) y backlog de las etapas siguientes (gateway, Google, entidades, CSV). |
 | **SPEC-07** | [`SPEC-07-api-gateway-etapa-1.md`](active/SPEC-07-api-gateway-etapa-1.md) | ARCHITECTURAL | `APPROVED_BY_USER` | API gateway, etapa 1 (ADR-E6-02): módulo `api-gateway` con Spring Cloud Gateway WebMVC, rutas sin reescritura (también `/api/logistica/**`), allowlist escrita y `X-Trace-Id`; sin JWT (F5). |
 | **SPEC-08** | [`SPEC-08-conexion-de-pantallas.md`](active/SPEC-08-conexion-de-pantallas.md) | ARCHITECTURAL | `PROPOSED` | Conexión de las pantallas del cliente liviano a las APIs (E6): esqueleto compartido, frentes por rol con lista cerrada de archivos, huecos aditivos (HB-21 Contacto, HB-23 camiones deshabilitados) y lo que queda fuera. |
+| **SPEC-09** | [`SPEC-09-cierre-e6-demo-punta-a-punta.md`](active/SPEC-09-cierre-e6-demo-punta-a-punta.md) | ARCHITECTURAL | `PROPOSED` | Cierre de la E6 para la demo punta a punta: S2083, pantallas sin controller (F2), estado `EN_PUERTA` con ADR `proposed` (HB-22), tipo y referencia de la notificación (HB-09), token del cliente hacia todos los servicios (F5), demo en el preprod (F6) y barrido de Sonar. |
 
 ---
 

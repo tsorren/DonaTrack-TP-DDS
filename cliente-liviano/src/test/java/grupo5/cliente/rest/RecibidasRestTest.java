@@ -133,4 +133,41 @@ class RecibidasRestTest {
     assertNull(fideos.breve());
     assertEquals("Fideos secos", fideos.nombre());
   }
+
+  @Test
+  void laQueLlegoALaPuertaEsperaLaConfirmacionPrimeroConLaHoraDeLlegada() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "6f1c2c1e-0000-4000-8000-000000000003", "descripcion": "Arroz",
+                  "estadoActual": "EN_TRASLADO", "fechaRegistro": "2026-11-01T10:00:00",
+                  "historial": [{"estadoNuevo": "EnTraslado", "timestamp": "2026-11-08T09:15:00"}],
+                  "cantidad": 5},
+                 {"id": "6f1c2c1e-0000-4000-8000-000000000009", "descripcion": "Lentejas secas",
+                  "estadoActual": "EN_PUERTA", "fechaRegistro": "2026-11-01T10:00:00",
+                  "historial": [{"estadoNuevo": "EnTraslado", "timestamp": "2026-11-08T09:15:00"},
+                                {"estadoNuevo": "EN_PUERTA", "timestamp": "2026-11-08T18:20:00"}],
+                  "cantidad": 15}]
+                """,
+                MediaType.APPLICATION_JSON));
+    Clock hoy = Clock.fixed(Instant.parse("2026-11-08T21:30:00Z"), ZoneOffset.UTC);
+    RecibidasRest adaptador =
+        new RecibidasRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class), hoy);
+
+    List<Recibida> lista = adaptador.recibidas(ENTIDAD).asignadas();
+
+    assertEquals(List.of("puerta", "camino"), lista.stream().map(Recibida::grupo).toList());
+    Recibida lentejas = lista.getFirst();
+    assertEquals(
+        "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación.",
+        lentejas.paso());
+    assertEquals("Llegó el 8 de noviembre, 18:20.", lentejas.llego());
+    assertEquals("llegó a tu puerta el 8 de noviembre", lentejas.breve());
+    assertNull(lista.get(1).llego());
+  }
 }

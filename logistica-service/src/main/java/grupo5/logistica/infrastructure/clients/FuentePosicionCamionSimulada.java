@@ -5,7 +5,6 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
-import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.FuentePosicionCamion;
 import java.time.Clock;
@@ -13,8 +12,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +25,11 @@ import org.springframework.stereotype.Component;
  * perdido no desfasa al camión, y {@code registradaEn} es la hora del sub-paso, así que repetir un
  * tick da la misma posición y {@code Camion#registrarPosicion} la descarta. Las paradas sin
  * coordenadas se saltean. El camión arranca en la primera parada y queda quieto en la última.
+ *
+ * <p>Una parada está alcanzada cuando el camión llegó a ella: su índice es menor o igual al del
+ * tramo en curso (HB-22). En el paso 0 no hay ninguna: el camión recién sale, y así {@code
+ * ruta.iniciada} le gana a la llegada en Donaciones, que solo la aplica sobre una donación en
+ * traslado.
  */
 @Component
 public class FuentePosicionCamionSimulada implements FuentePosicionCamion {
@@ -51,20 +55,17 @@ public class FuentePosicionCamionSimulada implements FuentePosicionCamion {
 
   @Override
   public Optional<PosicionCamion> posicionActual(Ruta ruta) {
-    if (ruta == null
-        || ruta.getEstado() != EstadoRuta.EN_TRASLADO
-        || ruta.getHoraInicioReal() == null) {
+    if (!enTraslado(ruta)) {
       return Optional.empty();
     }
-    List<CoordenadasGeograficas> paradas = coordenadasDeParadas(ruta);
+    List<CoordenadasGeograficas> paradas =
+        paradasConCoordenadas(ruta).stream().map(e -> e.getDestino().coordenadas()).toList();
     if (paradas.isEmpty()) {
       return Optional.empty();
     }
 
     Instant inicio = ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC);
-    long transcurridos = Duration.between(inicio, clock.instant()).toMillis();
-    long pasoTotal = (long) (paradas.size() - 1) * pasosPorTramo;
-    long paso = Math.clamp(transcurridos / intervalo.toMillis(), 0L, pasoTotal);
+    long paso = paso(ruta, paradas.size());
 
     int tramo = (int) (paso / pasosPorTramo);
     CoordenadasGeograficas desde = paradas.get(tramo);
@@ -78,14 +79,48 @@ public class FuentePosicionCamionSimulada implements FuentePosicionCamion {
             inicio.plus(intervalo.multipliedBy(paso))));
   }
 
-  private List<CoordenadasGeograficas> coordenadasDeParadas(Ruta ruta) {
+  @Override
+  public List<UUID> entregasAlcanzadas(Ruta ruta) {
+    if (!enTraslado(ruta)) {
+      return List.of();
+    }
+    List<Entrega> paradas = paradasConCoordenadas(ruta);
+    if (paradas.isEmpty()) {
+      return List.of();
+    }
+    // Sin acotar al final: una ruta de una sola parada también la alcanza
+    long paso = pasosTranscurridos(ruta);
+    if (paso <= 0) {
+      return List.of();
+    }
+    // Pasado el primer intervalo, la parada i se alcanza en el paso i * pasosPorTramo
+    int alcanzadas = (int) Math.min(paso / pasosPorTramo + 1, paradas.size());
+    return paradas.subList(0, alcanzadas).stream().map(Entrega::getId).toList();
+  }
+
+  private static boolean enTraslado(Ruta ruta) {
+    return ruta != null
+        && ruta.getEstado() == EstadoRuta.EN_TRASLADO
+        && ruta.getHoraInicioReal() != null;
+  }
+
+  /** Sub-paso en curso desde el inicio real, acotado al final del recorrido. */
+  private long paso(Ruta ruta, int cantidadParadas) {
+    long pasoTotal = (long) (cantidadParadas - 1) * pasosPorTramo;
+    return Math.clamp(pasosTranscurridos(ruta), 0L, pasoTotal);
+  }
+
+  private long pasosTranscurridos(Ruta ruta) {
+    Instant inicio = ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC);
+    return Duration.between(inicio, clock.instant()).toMillis() / intervalo.toMillis();
+  }
+
+  /** Las entregas de la ruta en el orden de visita, sin las que no tienen coordenadas. */
+  private List<Entrega> paradasConCoordenadas(Ruta ruta) {
     return ruta.getEntregaIds().stream()
         .map(entregasRepository::findById)
         .flatMap(Optional::stream)
-        .map(Entrega::getDestino)
-        .filter(Objects::nonNull)
-        .filter(Direccion::tieneCoordenadas)
-        .map(Direccion::coordenadas)
+        .filter(e -> e.getDestino() != null && e.getDestino().tieneCoordenadas())
         .toList();
   }
 }

@@ -216,6 +216,7 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
       case ASIGNACION_REALIZADA -> this.estadoActual.asignar(this, solicitud);
       case LISTA_PARA_ENTREGAR -> this.estadoActual.planificarRuta(this, solicitud);
       case EN_TRASLADO -> this.estadoActual.iniciarRecorrido(this, solicitud);
+      case EN_PUERTA -> this.estadoActual.llegarAPuerta(this, solicitud);
       case ENTREGADA -> this.estadoActual.confirmarEntrega(this, solicitud);
       case ENTREGA_FALLIDA -> this.estadoActual.registrarFalla(this, solicitud);
       case EN_DEPOSITO -> this.estadoActual.retornar(this, solicitud);
@@ -239,6 +240,10 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
 
   public void iniciarRecorrido(String actor) {
     this.estadoActual.iniciarRecorrido(this, actor);
+  }
+
+  public void llegarAPuerta(String actor) {
+    this.estadoActual.llegarAPuerta(this, actor);
   }
 
   public void confirmarEntrega(String actor) {

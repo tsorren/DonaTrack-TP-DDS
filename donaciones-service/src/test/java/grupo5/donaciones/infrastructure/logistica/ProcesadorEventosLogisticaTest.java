@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
@@ -461,6 +462,62 @@ class ProcesadorEventosLogisticaTest {
     procesador.procesarEntregaCancelada(cancelada(UUID.randomUUID()), ORIGEN);
 
     verifyNoInteractions(donacionesIndependientesRepository, broker);
+    verify(eventosConsumidosRepository, never()).registrar(any());
+  }
+
+  // ===================== entrega.en-puerta (HB-22) =====================
+
+  private static EventoEntregaEnPuerta enPuerta(UUID donacionId) {
+    return new EventoEntregaEnPuerta(UUID.randomUUID(), donacionId, LocalDateTime.now());
+  }
+
+  @Test
+  void entregaEnPuerta_pasaLaDonacionEnTrasladoAEnPuertaYRegistraElEvento() {
+    DonacionIndependiente enCamino =
+        DonacionIndependienteMother.enTraslado(
+            2, NecesidadMother.extraordinaria(UUID.randomUUID(), 10));
+    EventoEntregaEnPuerta evento = enPuerta(enCamino.getId());
+    when(eventosConsumidosRepository.yaFueConsumido(
+            "EntregaEnPuerta", evento.entregaId(), enCamino.getId()))
+        .thenReturn(false);
+    when(donacionesIndependientesRepository.findById(enCamino.getId()))
+        .thenReturn(Optional.of(enCamino));
+
+    procesador.procesarEntregaEnPuerta(evento, ORIGEN);
+
+    assertEquals(TipoEstadoDonacion.EN_PUERTA, enCamino.getEstadoActual().getTipo());
+    verify(donacionesIndependientesRepository).save(enCamino);
+    verify(eventosConsumidosRepository)
+        .registrar(
+            argThat(
+                (EventoConsumido e) ->
+                    "EntregaEnPuerta".equals(e.eventType())
+                        && evento.entregaId().equals(e.businessId())));
+  }
+
+  @Test
+  void entregaEnPuerta_siLaDonacionYaFueEntregada_noLaTocaPeroRegistraElEvento() {
+    DonacionIndependiente entregada =
+        DonacionIndependienteMother.entregada(
+            2, NecesidadMother.extraordinaria(UUID.randomUUID(), 10));
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(entregada.getId()))
+        .thenReturn(Optional.of(entregada));
+
+    procesador.procesarEntregaEnPuerta(enPuerta(entregada.getId()), ORIGEN);
+
+    assertEquals(TipoEstadoDonacion.ENTREGADA, entregada.getEstadoActual().getTipo());
+    verify(donacionesIndependientesRepository, never()).save(any());
+    verify(eventosConsumidosRepository).registrar(any(EventoConsumido.class));
+  }
+
+  @Test
+  void entregaEnPuerta_duplicada_seIgnora() {
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(true);
+
+    procesador.procesarEntregaEnPuerta(enPuerta(UUID.randomUUID()), ORIGEN);
+
+    verifyNoInteractions(donacionesIndependientesRepository);
     verify(eventosConsumidosRepository, never()).registrar(any());
   }
 }

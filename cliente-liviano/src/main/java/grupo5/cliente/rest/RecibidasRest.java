@@ -4,6 +4,7 @@ import static grupo5.cliente.rest.Comun.ASIGNADA;
 import static grupo5.cliente.rest.Comun.ENTREGADA;
 import static grupo5.cliente.rest.Comun.FALLIDA;
 import static grupo5.cliente.rest.Comun.LISTA;
+import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.TRASLADO;
 import static grupo5.cliente.rest.Comun.VENCIDA;
 import static grupo5.cliente.rest.Comun.cantidad;
@@ -32,10 +33,10 @@ import org.springframework.stereotype.Component;
 /**
  * Donaciones recibidas desde Donaciones: las asignadas a la entidad, agrupadas por estado, con
  * quién donó ({@code quienDono} del listado: la entidad no puede leer la donación original). Las
- * recibidas son las entregadas en el mes en curso. Donaciones no distingue la que llegó a la puerta
- * de la que viene en camino (las dos están en traslado): todas van a "En camino" y "Esperan tu
- * confirmación" queda vacío. El pedido que cubre no llega (HB-17), ni cuántas notificaciones hay
- * sin leer.
+ * recibidas son las entregadas en el mes en curso. La que llegó a la puerta ({@code EN_PUERTA},
+ * HB-22) va a "Esperan tu confirmación", con la hora de su cambio de estado; la que viene en
+ * camino, a "En camino". El pedido que cubre no llega (HB-17), ni cuántas notificaciones hay sin
+ * leer.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -90,6 +91,7 @@ class RecibidasRest implements RecibidasPuerto {
     String grupo =
         switch (estado) {
           case ENTREGADA -> RECIBIDA;
+          case PUERTA -> "puerta";
           case FALLIDA, VENCIDA -> "problema";
           case TRASLADO -> "camino";
           default -> SALIR;
@@ -103,6 +105,7 @@ class RecibidasRest implements RecibidasPuerto {
     DonacionesApi.Donacion d = f.d();
     Categoria categoria = categoria(d);
     boolean recibida = RECIBIDA.equals(f.grupo());
+    boolean enLaPuerta = PUERTA.equals(f.estado());
     String dono = donante(d);
     return new Recibida(
         d.id().toString(),
@@ -117,7 +120,9 @@ class RecibidasRest implements RecibidasPuerto {
         paso(f.estado(), f.desde()),
         recibida ? String.valueOf(f.desde().getDayOfMonth()) : null,
         recibida ? f.desde().toLocalDate().toString() : null,
-        null,
+        enLaPuerta
+            ? "Llegó el " + f.desde().format(DIA) + ", " + f.desde().format(HORA) + "."
+            : null,
         breve(f.estado(), f.desde()));
   }
 
@@ -126,6 +131,7 @@ class RecibidasRest implements RecibidasPuerto {
     String dia = desde.format(DIA);
     return switch (estado) {
       case ENTREGADA -> null;
+      case PUERTA -> "llegó a tu puerta el " + dia;
       case FALLIDA -> "no pudo llegar el " + dia;
       case VENCIDA -> "venció en el depósito el " + dia;
       case TRASLADO -> "salió del depósito el " + dia;
@@ -139,6 +145,12 @@ class RecibidasRest implements RecibidasPuerto {
     String dia = desde.format(DIA);
     return switch (estado) {
       case ENTREGADA -> "Confirmaste la recepción el " + dia + ".";
+      case PUERTA ->
+          "Llegó a tu puerta el "
+              + dia
+              + " a las "
+              + desde.format(HORA)
+              + ". Espera tu confirmación.";
       case FALLIDA -> "El camión no pudo llegar el " + dia + ".";
       case VENCIDA -> "Venció en el depósito el " + dia + ".";
       case TRASLADO -> "Salió del depósito el " + dia + " a las " + desde.format(HORA) + ".";

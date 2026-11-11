@@ -6,6 +6,7 @@ import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
 import static grupo5.cliente.rest.Comun.ENTREGADA;
 import static grupo5.cliente.rest.Comun.FALLIDA;
 import static grupo5.cliente.rest.Comun.HORA;
+import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.TRASLADO;
 import static grupo5.cliente.rest.Comun.cantidad;
 import static grupo5.cliente.rest.Comun.categoria;
@@ -101,7 +102,9 @@ final class DonanteDonaciones {
           + desde(d, estado).format(DIA_Y_HORA)
           + ".";
     }
-    if (!TRASLADO.equals(estado) || s == null || s.posicionCamion() == null) {
+    if (!(TRASLADO.equals(estado) || PUERTA.equals(estado))
+        || s == null
+        || s.posicionCamion() == null) {
       return null;
     }
     Instant leida = s.posicionCamion().registradaEn();

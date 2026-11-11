@@ -10,6 +10,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DatosDonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnDeposito;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EnPuerta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnTraslado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EntregaFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.Entregada;
@@ -234,6 +235,7 @@ public class DonacionesIndependientesPersistenciaMapper {
       case ASIGNACION_REALIZADA -> new AsignacionRealizada();
       case LISTA_PARA_ENTREGAR -> new ListaParaEntregar();
       case EN_TRASLADO -> new EnTraslado();
+      case EN_PUERTA -> new EnPuerta();
       case ENTREGADA -> new Entregada(patenteCamion);
       case ENTREGA_FALLIDA -> new EntregaFallida();
       case VENCIDA -> new Vencida();

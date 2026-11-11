@@ -2,6 +2,7 @@ package grupo5.logistica.config;
 
 import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
 import grupo5.logistica.dto.eventos.EventoEntregaCanceladaV1;
+import grupo5.logistica.dto.eventos.EventoEntregaEnPuerta;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
@@ -49,6 +50,7 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_ENTREGA_EXITOSA = "entrega.exitosa";
   public static final String ROUTING_KEY_ENTREGA_FALLIDA = "entrega.fallida";
   public static final String ROUTING_KEY_ENTREGA_CANCELADA = "entrega.cancelada";
+  public static final String ROUTING_KEY_ENTREGA_EN_PUERTA = "entrega.en-puerta";
 
   private final String instanciaId;
 
@@ -119,6 +121,7 @@ public class RabbitMQConfig {
     idClassMapping.put(ROUTING_KEY_ENTREGA_EXITOSA, EventoEntregaExitosa.class);
     idClassMapping.put(ROUTING_KEY_ENTREGA_FALLIDA, EventoEntregaFallida.class);
     idClassMapping.put(ROUTING_KEY_ENTREGA_CANCELADA, EventoEntregaCancelada.class);
+    idClassMapping.put(ROUTING_KEY_ENTREGA_EN_PUERTA, EventoEntregaEnPuerta.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }

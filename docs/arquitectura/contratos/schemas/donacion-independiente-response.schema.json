@@ -25,6 +25,7 @@
         "EN_DEPOSITO",
         "ASIGNACION_REALIZADA",
         "EN_TRASLADO",
+        "EN_PUERTA",
         "LISTA_PARA_ENTREGAR",
         "ENTREGADA",
         "ENTREGA_FALLIDA",

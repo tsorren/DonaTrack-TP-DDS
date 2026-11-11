@@ -299,3 +299,10 @@ Partes que se deciden con A/B, en este orden:
    tarjeta").
 
 Preguntas abiertas: ninguna.
+
+## Ajuste de HB-22 (cierre E6, 2026-11-11)
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). La entrega que llegó a la puerta de la entidad
+(`EN_PUERTA`, [ADR del estado EN_PUERTA](../../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)) sigue activa para el donante: se ve como "En camino", con la última posición del
+camión, hasta que la entidad confirma. Sin textos nuevos en esta pantalla; los de Mis donaciones van en
+la lista de textos pendientes del cierre.

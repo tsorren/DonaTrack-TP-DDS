@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
@@ -218,9 +219,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     List<String> fotosNormalizadas = normalizarFotosObligatorias(fotosRecepcion);
     String remitoNormalizado = normalizarRemito(numeroRemito);
 
-    if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
-      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
-    }
+    validarEnViajeOEnPuerta();
 
     this.fotosRecepcion.clear();
     this.fotosRecepcion.addAll(fotosNormalizadas);
@@ -230,6 +229,22 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
     registrarEvento(
         new EntregaConfirmada(this.id, this.idDonacion, this.idRuta, reporte, fotosNormalizadas));
+  }
+
+  /**
+   * El camión llegó al destino (HB-22, ADR 20261111-estado-en-puerta-de-la-entrega): solo desde
+   * {@code EN_TRASLADO}. La pone quien mueve el camión. No toca {@code horaArribo}: la hora de
+   * llegada es la del cambio en el historial.
+   */
+  public void llegarAPuerta(String actor) {
+    validarActor(actor);
+
+    if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+    }
+
+    actualizarEstado(EstadoEntrega.EN_PUERTA, actor);
+    registrarEvento(new EntregaEnPuerta(this.id, this.idDonacion));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
@@ -254,9 +269,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     validarActor(entidad);
     validarJustificacion(justificacion);
 
-    if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
-      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
-    }
+    validarEnViajeOEnPuerta();
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
     registrarEvento(
@@ -324,6 +337,14 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     CambioEstadoEntrega cambio =
         new CambioEstadoEntrega(anterior, nuevo, LocalDateTime.now(ZoneId.of("UTC")), actor);
     this.historialEstado.add(cambio);
+  }
+
+  /** Confirmar o negar: desde el viaje o desde la puerta ({@code EN_PUERTA} es opcional). */
+  private void validarEnViajeOEnPuerta() {
+    if (this.estadoActual != EstadoEntrega.EN_TRASLADO
+        && this.estadoActual != EstadoEntrega.EN_PUERTA) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+    }
   }
 
   private static void validarIdentificador(UUID id) {

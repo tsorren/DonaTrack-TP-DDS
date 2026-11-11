@@ -2,6 +2,7 @@ package grupo5.donaciones.infrastructure.logistica;
 
 import grupo5.donaciones.config.RabbitMQConfig;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -77,6 +78,16 @@ public class LogisticaEventListener {
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_TOKEN, required = false) String token) {
     if (verificador.esOrigenValido(proveedorId, token, List.of(evento.donacionIndependienteId()))) {
       procesador.procesarEntregaCancelada(evento, RabbitMQConfig.QUEUE_ENTREGA_CANCELADA);
+    }
+  }
+
+  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_EN_PUERTA)
+  public void onEntregaEnPuerta(
+      EventoEntregaEnPuerta evento,
+      @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,
+      @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_TOKEN, required = false) String token) {
+    if (verificador.esOrigenValido(proveedorId, token, List.of(evento.donacionIndependienteId()))) {
+      procesador.procesarEntregaEnPuerta(evento, RabbitMQConfig.QUEUE_ENTREGA_EN_PUERTA);
     }
   }
 }
