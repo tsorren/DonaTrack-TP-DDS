@@ -28,6 +28,13 @@ class DonantePerfilRest implements DonantePerfilPuerto {
 
   private static final String JURIDICA = "JURIDICA";
 
+  private static final DonacionesApi.Persona SIN_PERSONA =
+      new DonacionesApi.Persona(
+          null, null, null, null, null, null, null, null, null, null, null, null);
+
+  private static final DonacionesApi.Direccion SIN_DIRECCION =
+      new DonacionesApi.Direccion(null, null, null, null, null, null, null, null);
+
   private final DonacionesApi api;
   private final IncentivosApi incentivos;
 
@@ -39,37 +46,39 @@ class DonantePerfilRest implements DonantePerfilPuerto {
   @Override
   public DonantePerfilVista perfil(UUID donante) {
     DonacionesApi.Donante d = api.donante(donante);
-    DonacionesApi.Persona p = d.persona();
-    boolean empresa = p == null || JURIDICA.equals(p.tipo());
+    // Sin persona o sin dirección, los campos quedan vacíos: así no hay un null por campo.
+    DonacionesApi.Persona p = d.persona() == null ? SIN_PERSONA : d.persona();
+    DonacionesApi.Direccion dir = p.direccion() == null ? SIN_DIRECCION : p.direccion();
+    boolean empresa = p.tipo() == null || JURIDICA.equals(p.tipo());
     String tipo = empresa ? "Empresa donante" : "Persona donante";
-    String categoria = categoria(donante);
-    String anonimo;
-    if (categoria == null) {
-      anonimo = empresa ? tipo : "Donante";
-    } else {
-      anonimo = empresa ? tipo + " · " + categoria : "Donante " + categoria;
-    }
     List<DonacionesApi.Medio> medios =
-        p == null || p.mediosDeContacto() == null ? List.of() : p.mediosDeContacto();
+        p.mediosDeContacto() == null ? List.of() : p.mediosDeContacto();
     String correo = medio(medios, "CORREO");
-    DonacionesApi.Direccion dir = p == null ? null : p.direccion();
     return new DonantePerfilVista(
         nombre(p),
         correo == null ? tipo : tipo + " · " + correo,
-        anonimo,
+        anonimo(empresa, categoria(donante)),
         Boolean.FALSE.equals(d.mostrarNombre()),
-        p == null ? null : p.rubro(),
-        p == null ? null : p.documento(),
-        dir == null ? null : dir.calle(),
-        dir == null || dir.altura() == null ? null : dir.altura().toString(),
-        dir == null ? null : piso(dir),
-        dir == null ? null : dir.codigoPostal(),
-        dir == null ? null : dir.localidad(),
-        dir == null ? null : dir.provincia(),
+        p.rubro(),
+        p.documento(),
+        dir.calle(),
+        dir.altura() == null ? null : dir.altura().toString(),
+        piso(dir),
+        dir.codigoPostal(),
+        dir.localidad(),
+        dir.provincia(),
         correo,
         medio(medios, "WHATSAPP"),
         medio(medios, "TELEFONO"),
         legales(donante));
+  }
+
+  /** Lo que ve la entidad sin el nombre: "Empresa donante · Sostenedor" o "Donante Sostenedor". */
+  private static String anonimo(boolean empresa, String categoria) {
+    if (empresa) {
+      return categoria == null ? "Empresa donante" : "Empresa donante · " + categoria;
+    }
+    return categoria == null ? "Donante" : "Donante " + categoria;
   }
 
   @Override
@@ -78,9 +87,6 @@ class DonantePerfilRest implements DonantePerfilPuerto {
   }
 
   private static String nombre(DonacionesApi.Persona p) {
-    if (p == null) {
-      return null;
-    }
     return JURIDICA.equals(p.tipo())
         ? p.razonSocial()
         : Stream.of(p.nombre(), p.apellido())

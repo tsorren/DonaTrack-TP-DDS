@@ -1,5 +1,6 @@
 package grupo5.cliente.rest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -112,6 +113,6 @@ class DonantePerfilRestTest {
 
     adaptador.mostrarNombre(DONANTE, true);
 
-    apis.verify();
+    assertDoesNotThrow(() -> apis.verify());
   }
 }
