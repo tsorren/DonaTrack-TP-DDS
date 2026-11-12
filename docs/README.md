@@ -202,7 +202,7 @@ docs/
 * 📥 **Pantalla de importaciones del admin (R11-20, construida 2026-11-12):** [spec del lote p1-importaciones](specs/active/R11-p1-importaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-importaciones.md)
 * 📄 **Entidades y Mis donaciones del donante con filtros en el servidor (R11-12, R11-13 y R11-18, implementada):** [spec del lote p1-donante-listas](specs/active/R11-p1-donante-listas-spec.md)
 * 📄 **Asignaciones con el algoritmo y el puesto de cada propuesta (R11-24, propuesta, implementada):** [spec del lote p1-asignaciones](specs/active/R11-p1-asignaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-asignaciones.md)
-* 📥 **Importador de donantes por partes (R11-B08, propuesta):** [spec del lote p1-importador](specs/active/R11-p1-importador-spec.md) · [ensayo de 20.000 filas](testing/ensayo-importacion-20000.md) · deuda: [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
+* 📥 **Importador de donantes por partes (R11-B08, implementada salvo el ensayo):** [spec del lote p1-importador](specs/active/R11-p1-importador-spec.md) · [ensayo de 20.000 filas](testing/ensayo-importacion-20000.md) · deuda: [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
