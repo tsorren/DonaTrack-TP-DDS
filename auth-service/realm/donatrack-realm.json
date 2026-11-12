@@ -2,6 +2,7 @@
   "realm": "donatrack",
   "enabled": true,
   "displayName": "DonaTrack",
+  "displayNameHtml": "Dona<em>Track</em>",
   "loginTheme": "donatrack",
   "internationalizationEnabled": true,
   "supportedLocales": ["es"],

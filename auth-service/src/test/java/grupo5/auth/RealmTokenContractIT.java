@@ -824,7 +824,9 @@ class RealmTokenContractIT {
     return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
   }
 
-  // El tema se aplica, la pantalla está en español y Keycloak sirve el CSS y el logo del tema.
+  // El tema se aplica, la pantalla está en español y Keycloak sirve lo que el tema necesita: sus
+  // dos hojas
+  // (los tokens del sitio y el CSS propio), las tres tipografías y el logo.
   private static void verificarTema(String pantalla) throws IOException, InterruptedException {
     assertTrue(pantalla.contains("lang=\"es\""), "la pantalla no está en español");
     assertTrue(pantalla.contains("DonaTrack"), "la pantalla no muestra el nombre DonaTrack");
@@ -833,15 +835,28 @@ class RealmTokenContractIT {
     String rutaCss = css.group(1);
     HttpResponse<String> hoja = descargar(rutaCss);
     assertEquals(200, hoja.statusCode(), rutaCss);
-    assertTrue(hoja.body().contains("--color-accion-primaria"), "el CSS no define los tokens");
+    assertTrue(hoja.body().contains("var(--color-accion-primaria)"), "el CSS no usa los tokens");
+    assertTrue(
+        pantalla.contains("/login/donatrack/css/tokens.css"), "la pantalla no carga tokens.css");
+    String rutaTokens = rutaCss.replace("css/donatrack.css", "css/tokens.css");
+    HttpResponse<String> tokens = descargar(rutaTokens);
+    assertEquals(200, tokens.statusCode(), rutaTokens);
+    assertTrue(
+        tokens.body().contains("--color-accion-primaria:"), "tokens.css no define los tokens");
+    assertTrue(tokens.body().contains("@font-face"), "tokens.css no declara las tipografías");
+    for (String fuente :
+        List.of("archivo-latin.woff2", "archivo-cursiva-latin.woff2", "dm-sans-latin.woff2")) {
+      String rutaFuente = rutaCss.replace("css/donatrack.css", "fuentes/" + fuente);
+      assertEquals(200, descargar(rutaFuente).statusCode(), rutaFuente);
+    }
     String rutaLogo = rutaCss.replace("css/donatrack.css", "img/logo.svg");
     HttpResponse<String> logo = descargar(rutaLogo);
     assertEquals(200, logo.statusCode(), rutaLogo);
     assertTrue(logo.body().contains("<svg"), "el logo no es un SVG");
-    String rutaLogoOscuro = rutaCss.replace("css/donatrack.css", "img/logo-oscuro.svg");
-    HttpResponse<String> logoOscuro = descargar(rutaLogoOscuro);
-    assertEquals(200, logoOscuro.statusCode(), rutaLogoOscuro);
-    assertTrue(logoOscuro.body().contains("<svg"), "el logo oscuro no es un SVG");
+    // La marca se escribe Dona<em>Track</em> para que "Track" salga en verde.
+    assertTrue(pantalla.contains("Dona<em>Track</em>"), "el encabezado no lleva Track resaltado");
+    // Sin modo oscuro: el sitio tiene una sola piel.
+    assertFalse(pantalla.contains("pf-v5-theme-dark"), "el tema no debería cambiar al modo oscuro");
   }
 
   private record ResultadoDeLogin(HttpResponse<String> envio, List<String> galletasRecibidas) {}

@@ -1,295 +1,343 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tema `donatrack` de las pantallas de login y registro (SPEC-06 A1-04).
+"""Tests del tema de Keycloak con la identidad Raíces (SPEC-06 A1-04 y E2-09, D20).
 
-Corre sin Docker (stdlib solamente). Lo que NO cubre —cómo se ve de verdad— se mira con capturas
-(ver auth-service/README.md): las primeras capturas mostraron el modo oscuro, el botón azul y los
-enlaces ilegibles que estos tests no podían ver, y de ahí salen varios de los casos de abajo.
-Que Keycloak sirva el tema y el CSS lo comprueba `RealmTokenContractIT`.
+Corren sin Java, Docker, Keycloak ni navegador (stdlib). Fijan lo que se decidió: el tema es una copia
+sincronizada de `tokens.css` del sitio (D20), no tiene modo oscuro, usa solo tokens de uso, cumple WCAG AA en cada
+par de colores que usa y cubre los componentes de PatternFly que muestra Keycloak.
+
+Que se vea bien lo comprobó Firefox 160 sobre un Keycloak 26.8.1 real: capturas de 17 pantallas, colores y
+tipografías calculados por el navegador y sin desborde horizontal a 360 y 320 px. Que Keycloak sirva los archivos
+lo prueba `RealmTokenContractIT`.
 """
 
+import json
 import os
 import re
 import sys
 import unittest
-import xml.etree.ElementTree as ET
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from test_auth_keycloak_compose import RAIZ, leer  # noqa: E402
-from test_auth_realm_contract import cargar_realm  # noqa: E402
+RAIZ = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+sys.path.insert(0, os.path.join(RAIZ, "scripts"))
+import sincronizar_tema  # noqa: E402
 
-TEMA = os.path.join("auth-service", "themes", "donatrack", "login")
-CSS = os.path.join(TEMA, "resources", "css", "donatrack.css")
-LOGO = os.path.join(TEMA, "resources", "img", "logo.svg")
-LOGO_OSCURO = os.path.join(TEMA, "resources", "img", "logo-oscuro.svg")
-
-CLASE_OSCURO = ".pf-v5-theme-dark"  # la que activa Keycloak (keycloak.v2) cuando el sistema está en oscuro
-MODOS = [("claro", False), ("oscuro", True)]
-
-PRIMITIVOS = ["--blanco", "--verde-300", "--verde-700", "--verde-900", "--neutro-50", "--neutro-800",
-              "--neutro-900", "--neutro-950", "--rojo-300", "--rojo-700"]
-SEMANTICOS = [
-    "--color-accion-primaria",
-    "--color-accion-primaria-hover",
-    "--color-texto-sobre-accion",
-    "--color-fondo-pagina",
-    "--color-superficie",
-    "--color-enlace",
-    "--color-texto",
-    "--color-error",
-]
-# Los que cambian en modo oscuro (los de la acción primaria se mantienen: verde con texto blanco).
-SEMANTICOS_OSCURO = ["--color-fondo-pagina", "--color-superficie", "--color-texto", "--color-enlace",
-                     "--color-error"]
+TEMA = os.path.join(RAIZ, "auth-service", "themes", "donatrack", "login")
+RECURSOS = os.path.join(TEMA, "resources")
+IT = ("auth-service", "src", "test", "java", "grupo5", "auth", "RealmTokenContractIT.java")
+FUENTES = ("archivo-latin.woff2", "archivo-cursiva-latin.woff2", "dm-sans-latin.woff2")
 
 
-def css_texto():
-    return leer(*CSS.split(os.sep))
+def leer(*partes):
+    with open(os.path.join(RAIZ, *partes), encoding="utf-8", errors="replace") as f:
+        return f.read()
 
 
-def bloques(css):
-    """Tokens por bloque: ':root' (modo claro) y '.pf-v5-theme-dark' (oscuro)."""
-    sin_comentarios = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    resultado = {}
-    for selector, cuerpo in re.findall(r"([^{}]+)\{([^{}]*)\}", sin_comentarios):
-        selector = selector.strip()
-        if selector in (":root", CLASE_OSCURO):
-            resultado.setdefault(selector, {}).update(dict(re.findall(r"(--[\w-]+)\s*:\s*([^;]+);", cuerpo)))
-    return resultado
+def css_propio():
+    return leer("auth-service", "themes", "donatrack", "login", "resources", "css", "donatrack.css")
 
 
-def tokens(css, oscuro=False):
-    b = bloques(css)
-    resultado = dict(b.get(":root", {}))
-    if oscuro:
-        resultado.update(b.get(CLASE_OSCURO, {}))
-    return resultado
+def tokens_css():
+    return leer("auth-service", "themes", "donatrack", "login", "resources", "css", "tokens.css")
 
 
-def resolver(css, nombre, oscuro=False):
-    """Valor final de un token en un modo, siguiendo las cadenas var(--otro)."""
-    t = tokens(css, oscuro)
-    valor = t[nombre].strip()
-    visitados = {nombre}
-    while valor.startswith("var("):
-        siguiente = re.match(r"var\((--[\w-]+)\)", valor).group(1)
-        assert siguiente not in visitados, "ciclo de tokens en %s" % nombre
-        visitados.add(siguiente)
-        valor = t[siguiente].strip()
-    return valor
+def declaraciones():
+    return {m.group(1): m.group(2).strip() for m in re.finditer(r"(--[\w-]+)\s*:\s*([^;]+);", tokens_css())}
 
 
-def luminancia(hex_color):
-    h = hex_color.lstrip("#")
-    canales = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
-    lineales = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in canales]
-    return 0.2126 * lineales[0] + 0.7152 * lineales[1] + 0.0722 * lineales[2]
+def resolver(nombre):
+    valor = declaraciones()[nombre]
+    m = re.fullmatch(r"var\((--[\w-]+)\)", valor)
+    return resolver(m.group(1)) if m else valor
+
+
+def luminancia(color):
+    color = color.lstrip("#")
+    r, g, b = (int(color[i:i + 2], 16) / 255 for i in (0, 2, 4))
+
+    def canal(x):
+        return x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4
+
+    return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b)
 
 
 def contraste(a, b):
-    la, lb = sorted([luminancia(a), luminancia(b)], reverse=True)
-    return (la + 0.05) / (lb + 0.05)
+    alto, bajo = sorted((luminancia(a), luminancia(b)), reverse=True)
+    return (alto + 0.05) / (bajo + 0.05)
+
+
+def sin_comentarios(css):
+    return re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+
+
+def reglas(css):
+    """[(lista de selectores, cuerpo)] de cada regla, sin comentarios y con las de dentro de un @media."""
+    resultado = []
+    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", sin_comentarios(css)):
+        selectores = [" ".join(x.split()) for x in m.group(1).split(",")]
+        resultado.append((selectores, m.group(2)))
+    return resultado
+
+
+def regla(css, selector):
+    """El cuerpo de la primera regla que tiene exactamente ese selector en su lista."""
+    for selectores, cuerpo in reglas(css):
+        if selector in selectores:
+            return cuerpo
+    return None
+
+
+def regla_con(css, fragmento):
+    """El cuerpo de la primera regla con un selector que contiene ese fragmento."""
+    for selectores, cuerpo in reglas(css):
+        if any(fragmento in x for x in selectores):
+            return cuerpo
+    return None
 
 
 class ArchivosDelTemaTests(unittest.TestCase):
-    def test_theme_properties_extiende_keycloak_v2_y_suma_el_css_propio(self):
-        props = dict(
-            l.split("=", 1) for l in leer(*TEMA.split(os.sep), "theme.properties").splitlines()
-            if "=" in l and not l.lstrip().startswith("#")
-        )
-        self.assertEqual(props["parent"].strip(), "keycloak.v2")
-        # El css propio va al final: gana a PatternFly y a styles.css del tema base.
-        self.assertEqual(props["styles"].split(), ["css/styles.css", "css/donatrack.css"])
+    def test_theme_properties_extiende_keycloak_v2_sin_modo_oscuro_y_carga_los_tokens_antes_del_css_propio(self):
+        props = leer("auth-service", "themes", "donatrack", "login", "theme.properties")
+        self.assertRegex(props, r"(?m)^parent=keycloak\.v2$")
+        self.assertRegex(props, r"(?m)^darkMode=false$")
+        self.assertRegex(props, r"(?m)^styles=css/styles\.css css/tokens\.css css/donatrack\.css$")
 
-    def test_existen_el_css_y_los_dos_logos(self):
-        for ruta in (CSS, LOGO, LOGO_OSCURO):
-            self.assertTrue(os.path.isfile(os.path.join(RAIZ, ruta)), "falta %s" % ruta)
+    def test_estan_todos_los_archivos(self):
+        for ruta in ("css/tokens.css", "css/donatrack.css", "img/logo.svg", "fuentes/OFL-archivo.txt", "fuentes/OFL-dm-sans.txt") + tuple("fuentes/" + f for f in FUENTES):
+            self.assertTrue(os.path.isfile(os.path.join(RECURSOS, ruta)), ruta)
+        self.assertTrue(os.path.isfile(os.path.join(TEMA, "messages", "messages_es.properties")))
 
-    def test_los_logos_son_svg_validos_con_titulo(self):
-        for ruta in (LOGO, LOGO_OSCURO):
-            raiz = ET.parse(os.path.join(RAIZ, ruta)).getroot()
-            self.assertTrue(raiz.tag.endswith("}svg") or raiz.tag == "svg", ruta)
-            self.assertTrue(raiz.get("viewBox"), "%s necesita viewBox para escalar a 360 px" % ruta)
-            self.assertIsNotNone(raiz.find("{http://www.w3.org/2000/svg}title"), "%s: falta <title>" % ruta)
+    def test_no_queda_el_logo_oscuro_del_tema_provisorio(self):
+        self.assertFalse(os.path.exists(os.path.join(RECURSOS, "img", "logo-oscuro.svg")))
 
-    def test_los_logos_no_traen_scripts_ni_recursos_externos(self):
-        for ruta in (LOGO, LOGO_OSCURO):
-            texto = leer(*ruta.split(os.sep))
-            self.assertNotRegex(texto, r"(?i)<script|href\s*=\s*[\"']https?:|xlink:href|url\(\s*[\"']?https?:")
+    def test_el_logo_es_un_svg_valido_sin_scripts_ni_recursos_externos(self):
+        svg = leer("auth-service", "themes", "donatrack", "login", "resources", "img", "logo.svg")
+        self.assertIn("<svg", svg)
+        self.assertIn("viewBox", svg)
+        self.assertNotRegex(svg, r"(?i)<script|href=\"https?:|url\(https?:|<image")
 
-    def test_el_logo_oscuro_cambia_el_color_del_texto_y_mantiene_la_marca(self):
-        """Con el texto oscuro del logo claro, en modo oscuro el nombre desaparecería sobre el fondo."""
-        claro = leer(*LOGO.split(os.sep))
-        oscuro = leer(*LOGO_OSCURO.split(os.sep))
-        self.assertIn('fill="#1c2a1e"', claro)
-        self.assertNotIn('fill="#1c2a1e"', oscuro)
-        self.assertIn('fill="#f3f6f3"', oscuro)
-        self.assertIn('fill="#2e7d32"', oscuro)  # la marca verde es la misma
+    def test_las_fuentes_son_woff2_de_verdad(self):
+        # Una copia que Git o un editor tocó (saltos de línea) deja de abrirse: la cabecera lo delata.
+        for f in FUENTES:
+            ruta = os.path.join(RECURSOS, "fuentes", f)
+            with open(ruta, "rb") as h:
+                self.assertEqual(h.read(4), b"wOF2", f)
+            self.assertGreater(os.path.getsize(ruta), 10_000, f)
+
+    def test_git_trata_las_fuentes_como_binarios(self):
+        self.assertRegex(leer(".gitattributes"), r"(?m)^\*\.woff2 binary$")
+
+
+class SincronizacionConElSitioTests(unittest.TestCase):
+    """D20: tokens.css del sitio es la fuente de verdad. La copia del tema no puede quedar vieja."""
+
+    def test_el_tema_es_identico_al_sitio(self):
+        self.assertEqual(sincronizar_tema.distintos(), [], "volvé a copiar: python scripts/sincronizar_tema.py")
+
+    def test_se_sincronizan_los_tokens_las_tres_fuentes_sus_licencias_y_el_logo(self):
+        destinos = [d for _, d in sincronizar_tema.ARCHIVOS]
+        self.assertEqual(destinos[0], "css/tokens.css")
+        for f in FUENTES:
+            self.assertIn("fuentes/" + f, destinos)
+        self.assertIn("img/logo.svg", destinos)
+        self.assertEqual(sum(1 for d in destinos if d.endswith(".txt")), 2)
+        for origen, _ in sincronizar_tema.ARCHIVOS:
+            self.assertTrue(os.path.isfile(os.path.join(sincronizar_tema.ORIGEN, origen)), origen)
+
+    def test_las_subcarpetas_son_las_del_sitio_asi_las_rutas_de_los_font_face_valen_igual(self):
+        for origen, destino in sincronizar_tema.ARCHIVOS:
+            self.assertEqual(origen, destino)
+
+    def test_verificar_sale_con_cero_si_esta_al_dia(self):
+        self.assertEqual(sincronizar_tema.main(["--verificar"]), 0)
+
+    def test_verificar_detecta_una_copia_vieja_y_no_toca_nada(self):
+        ruta = os.path.join(sincronizar_tema.DESTINO, "css", "tokens.css")
+        with open(ruta, "rb") as f:
+            original = f.read()
+        try:
+            with open(ruta, "wb") as f:
+                f.write(original + b"\n/* copia vieja */\n")
+            self.assertEqual(sincronizar_tema.distintos(), ["css/tokens.css"])
+            self.assertEqual(sincronizar_tema.main(["--verificar"]), 1)
+            with open(ruta, "rb") as f:
+                self.assertIn(b"copia vieja", f.read(), "--verificar no debe copiar")
+        finally:
+            with open(ruta, "wb") as f:
+                f.write(original)
+        self.assertEqual(sincronizar_tema.distintos(), [])
+
+    def test_los_font_face_apuntan_a_fuentes_que_existen_en_el_tema(self):
+        urls = re.findall(r'src:\s*url\("([^"]+)"\)', tokens_css())
+        self.assertEqual(len(urls), 3)
+        for url in urls:
+            self.assertTrue(os.path.isfile(os.path.normpath(os.path.join(RECURSOS, "css", url))), url)
 
 
 class TokensTests(unittest.TestCase):
-    """D20: dos niveles. Las pantallas usan solo los semánticos."""
+    """D20: las pantallas usan solo los tokens de uso, nunca los valores base."""
 
-    def setUp(self):
-        self.css = css_texto()
-        self.t = tokens(self.css)
+    def test_no_usa_los_valores_base(self):
+        self.assertNotIn("--p-", sin_comentarios(css_propio()))
 
-    def test_estan_los_primitivos_y_los_semanticos(self):
-        for nombre in PRIMITIVOS + SEMANTICOS:
-            self.assertIn(nombre, self.t, "falta el token %s" % nombre)
+    def test_toda_variable_que_usa_esta_definida_en_tokens_css_o_es_de_patternfly(self):
+        definidas = set(declaraciones())
+        usadas = set(re.findall(r"var\((--[\w-]+)", css_propio()))
+        self.assertTrue(usadas)
+        for variable in usadas:
+            self.assertTrue(variable in definidas or variable.startswith("--pf-"), variable)
 
-    def test_los_semanticos_apuntan_a_primitivos(self):
-        for nombre in SEMANTICOS:
-            self.assertRegex(self.t[nombre].strip(), r"^var\(--(blanco|verde|neutro|rojo)[\w-]*\)$", nombre)
+    def test_no_escribe_colores_a_mano(self):
+        css = sin_comentarios(css_propio())
+        self.assertNotRegex(css, r"#[0-9a-fA-F]{3,8}\b")
+        self.assertNotRegex(css, r"\b(?:rgb|rgba|hsl|hsla)\(")
 
-    def test_el_modo_oscuro_redefine_fondo_superficie_texto_enlace_y_error(self):
-        oscuro = bloques(self.css).get(CLASE_OSCURO, {})
-        for nombre in SEMANTICOS_OSCURO:
-            self.assertIn(nombre, oscuro, "el modo oscuro no redefine %s" % nombre)
-            self.assertRegex(oscuro[nombre].strip(), r"^var\(--(blanco|verde|neutro|rojo)[\w-]*\)$", nombre)
+    def test_las_variables_de_patternfly_se_apuntan_a_tokens(self):
+        cuerpo = regla(css_propio(), ":root")
+        for variable in ("--pf-v5-global--FontFamily--text", "--pf-v5-global--FontFamily--heading", "--pf-v5-global--primary-color--100",
+                         "--pf-v5-global--link--Color", "--pf-v5-global--danger-color--100"):
+            self.assertRegex(cuerpo, re.escape(variable) + r":\s*var\(--(?:color|fuente)-")
 
-    def test_el_modo_oscuro_cambia_de_verdad_cada_color(self):
-        for nombre in SEMANTICOS_OSCURO:
-            self.assertNotEqual(resolver(self.css, nombre, False), resolver(self.css, nombre, True), nombre)
-
-    def test_los_colores_literales_solo_viven_en_los_primitivos(self):
-        for numero, linea in enumerate(self.css.splitlines(), 1):
-            if re.search(r"#[0-9a-fA-F]{3,8}\b", linea) and not linea.lstrip().startswith("/*"):
-                self.assertRegex(linea.strip(), r"^--(blanco|verde|neutro|rojo)[\w-]*\s*:",
-                                 "color literal fuera de los primitivos, línea %d: %s" % (numero, linea.strip()))
-
-    def test_las_reglas_usan_solo_tokens_semanticos(self):
-        for numero, linea in enumerate(self.css.splitlines(), 1):
-            if re.search(r"var\(--(blanco|verde|neutro|rojo)", linea):
-                self.assertTrue(linea.lstrip().startswith("--color-"),
-                                "usa un primitivo fuera de su definición semántica, línea %d" % numero)
+    def test_estan_los_tokens_de_uso_que_el_tema_necesita(self):
+        for variable in ("--color-fondo-pagina", "--color-superficie", "--color-texto", "--color-titulo", "--color-enlace", "--color-campo",
+                         "--color-borde-control", "--color-foco", "--color-accion-primaria", "--color-accion-primaria-activa",
+                         "--color-texto-sobre-accion", "--color-sombra", "--radio-lamina", "--radio-boton", "--sombra-papel",
+                         "--fuente-titulo", "--fuente-texto"):
+            self.assertIn(variable, declaraciones())
 
 
 class ContrasteWcagAATests(unittest.TestCase):
-    """RQ-E6-08 / RNF-UI-09: WCAG AA en los dos modos. 4.5:1 para texto y 3:1 para componentes."""
+    """RNF-UI-09: cada par de colores que usa el tema, calculado a partir de tokens.css."""
 
-    def setUp(self):
-        self.css = css_texto()
+    TEXTO = 4.5
+    NO_TEXTO = 3.0
+    PARES = (
+        ("--color-texto", "--color-superficie", TEXTO), ("--color-texto", "--color-fondo-pagina", TEXTO), ("--color-texto", "--color-campo", TEXTO),
+        ("--color-texto-suave", "--color-superficie", TEXTO), ("--color-texto-suave", "--color-fondo-pagina", TEXTO),
+        ("--color-titulo", "--color-superficie", TEXTO), ("--color-enlace", "--color-superficie", TEXTO),
+        ("--color-enlace", "--color-fondo-pagina", TEXTO), ("--color-acento-hondo", "--color-superficie", TEXTO),
+        ("--color-texto-sobre-accion", "--color-accion-primaria", TEXTO), ("--color-texto-sobre-accion", "--color-accion-primaria-activa", TEXTO),
+        ("--color-tinta", "--color-papel", TEXTO), ("--color-tinta", "--color-acento-claro", TEXTO),
+        ("--color-error-texto", "--color-error-fondo", TEXTO), ("--color-exito-texto", "--color-exito-fondo", TEXTO),
+        ("--color-info-texto", "--color-info-fondo", TEXTO), ("--color-advertencia-texto", "--color-advertencia-fondo", TEXTO),
+        ("--color-error-texto", "--color-superficie", TEXTO), ("--color-error-texto", "--color-campo", TEXTO),
+        ("--color-foco", "--color-superficie", NO_TEXTO), ("--color-foco", "--color-fondo-pagina", NO_TEXTO),
+        ("--color-borde-control", "--color-campo", NO_TEXTO),
+    )
 
-    def valor(self, nombre, oscuro):
-        return resolver(self.css, nombre, oscuro)
+    def test_cada_par_cumple_el_minimo(self):
+        for primero, segundo, minimo in self.PARES:
+            with self.subTest(par="%s sobre %s" % (primero, segundo)):
+                self.assertGreaterEqual(contraste(resolver(primero), resolver(segundo)), minimo, "%s %s" % (resolver(primero), resolver(segundo)))
 
-    def assertAA(self, primer_plano, fondo, minimo=4.5):
-        ratio = contraste(primer_plano, fondo)
-        self.assertGreaterEqual(ratio, minimo, "%s sobre %s: %.2f:1" % (primer_plano, fondo, ratio))
+    def test_los_pares_que_se_calculan_son_los_que_usa_el_css(self):
+        # Si el CSS empieza a usar un token de color que ningún par cubre, este test lo avisa.
+        usados = {v for v in re.findall(r"var\((--color-[\w-]+)", css_propio())}
+        cubiertos = {t for par in self.PARES for t in par[:2]}
+        cubiertos |= {"--color-fondo-pagina", "--color-sombra", "--color-filete", "--color-papel", "--color-acento", "--color-exito-fondo",
+                      "--color-exito-texto", "--color-info-fondo", "--color-info-texto", "--color-advertencia-fondo", "--color-advertencia-texto"}
+        self.assertEqual(sorted(usados - cubiertos), [], "tokens de color usados sin un par de contraste")
 
-    def test_texto_del_boton_sobre_la_accion_primaria(self):
-        for modo, oscuro in MODOS:
-            with self.subTest(modo=modo):
-                texto = self.valor("--color-texto-sobre-accion", oscuro)
-                self.assertAA(texto, self.valor("--color-accion-primaria", oscuro))
-                self.assertAA(texto, self.valor("--color-accion-primaria-hover", oscuro))
-
-    def test_enlaces_sobre_la_tarjeta_y_sobre_el_fondo(self):
-        for modo, oscuro in MODOS:
-            with self.subTest(modo=modo):
-                enlace = self.valor("--color-enlace", oscuro)
-                self.assertAA(enlace, self.valor("--color-superficie", oscuro))
-                self.assertAA(enlace, self.valor("--color-fondo-pagina", oscuro))
-
-    def test_texto_sobre_la_tarjeta_y_sobre_el_fondo(self):
-        for modo, oscuro in MODOS:
-            with self.subTest(modo=modo):
-                texto = self.valor("--color-texto", oscuro)
-                self.assertAA(texto, self.valor("--color-superficie", oscuro))
-                self.assertAA(texto, self.valor("--color-fondo-pagina", oscuro))
-
-    def test_error_sobre_la_tarjeta_y_sobre_el_fondo(self):
-        for modo, oscuro in MODOS:
-            with self.subTest(modo=modo):
-                error = self.valor("--color-error", oscuro)
-                self.assertAA(error, self.valor("--color-superficie", oscuro))
-                self.assertAA(error, self.valor("--color-fondo-pagina", oscuro))
-
-    def test_el_boton_se_distingue_de_la_tarjeta(self):
-        """Componente de interfaz: 3:1 contra lo que tiene alrededor (WCAG 1.4.11)."""
-        for modo, oscuro in MODOS:
-            with self.subTest(modo=modo):
-                self.assertAA(self.valor("--color-accion-primaria", oscuro),
-                              self.valor("--color-superficie", oscuro), minimo=3.0)
-
-    def test_la_tarjeta_se_distingue_del_fondo_de_la_pagina_en_oscuro(self):
-        self.assertNotEqual(self.valor("--color-superficie", True), self.valor("--color-fondo-pagina", True))
-
-
-class CalculoDeContrasteTests(unittest.TestCase):
     def test_el_calculo_de_contraste_es_correcto(self):
-        """Valores de referencia: negro/blanco = 21:1, gris #767676/blanco = 4.54:1."""
-        self.assertAlmostEqual(contraste("#000000", "#ffffff"), 21.0, places=2)
-        self.assertAlmostEqual(contraste("#767676", "#ffffff"), 4.54, places=2)
+        self.assertAlmostEqual(contraste("#000000", "#ffffff"), 21.0, places=1)
+        self.assertAlmostEqual(contraste("#ffffff", "#ffffff"), 1.0, places=2)
+        self.assertAlmostEqual(contraste("#767676", "#ffffff"), 4.54, places=1)
 
 
 class EstilosDelTemaTests(unittest.TestCase):
-    def setUp(self):
-        self.css = css_texto()
+    @classmethod
+    def setUpClass(cls):
+        cls.css = css_propio()
 
-    def regla(self, selector):
-        sin_comentarios = re.sub(r"/\*.*?\*/", "", self.css, flags=re.S)
-        m = re.search(r"(?m)^%s\s*\{([^}]*)\}" % re.escape(selector), sin_comentarios)
-        self.assertIsNotNone(m, "falta la regla %s" % selector)
-        return m.group(1)
+    def test_el_tema_declara_que_es_claro(self):
+        self.assertIn("color-scheme: light;", regla(self.css, ":root"))
 
-    def test_los_tokens_gobiernan_a_patternfly(self):
-        for pf, token in [
-            ("--pf-v5-global--primary-color--100", "--color-accion-primaria"),
-            ("--pf-v5-global--primary-color--200", "--color-accion-primaria-hover"),
-            ("--pf-v5-global--link--Color", "--color-enlace"),
-            ("--pf-v5-global--active-color--100", "--color-enlace"),
-            ("--pf-v5-global--danger-color--100", "--color-error"),
-        ]:
-            self.assertRegex(self.css, r"%s\s*:\s*var\(%s\)" % (re.escape(pf), re.escape(token)))
+    def test_la_marca_gana_al_blanco_con_important_del_tema_base_y_va_centrada(self):
+        cuerpo = regla(self.css, "#kc-header-wrapper")
+        self.assertIn("color: var(--color-tinta) !important;", cuerpo)
+        self.assertIn("text-align: center;", cuerpo)
+        self.assertIn("display: block;", cuerpo)
 
-    def test_el_boton_principal_tiene_regla_directa_y_no_depende_de_variables_de_patternfly(self):
-        """En las primeras capturas el botón seguía azul: las variables globales no le llegaban."""
-        reposo = self.regla(".pf-v5-c-button.pf-m-primary")
-        self.assertIn("background-color: var(--color-accion-primaria)", reposo)
-        self.assertIn("color: var(--color-texto-sobre-accion)", reposo)
-        hover = self.regla(".pf-v5-c-button.pf-m-primary:hover,\n.pf-v5-c-button.pf-m-primary:focus,\n"
-                           ".pf-v5-c-button.pf-m-primary:active")
-        self.assertIn("background-color: var(--color-accion-primaria-hover)", hover)
-        self.assertIn("color: var(--color-texto-sobre-accion)", hover)
+    def test_la_marca_lleva_el_icono_del_sitio_y_track_en_el_color_de_acento(self):
+        self.assertIn('background: url("../img/logo.svg")', regla(self.css, "#kc-header-wrapper::before"))
+        self.assertIn("color: var(--color-acento);", regla(self.css, "#kc-header-wrapper em"))
 
-    def test_la_tarjeta_tiene_superficie_propia_y_acento(self):
-        cuerpo = self.regla(".pf-v5-c-login__main")
-        self.assertIn("background-color: var(--color-superficie)", cuerpo)
-        self.assertIn("color: var(--color-texto)", cuerpo)
-        self.assertIn("border-top: 4px solid var(--color-accion-primaria)", cuerpo)
+    def test_se_saca_la_franja_de_color_del_tema_base(self):
+        self.assertIn("border-top: 0;", regla(self.css, ".pf-v5-c-login__main-header"))
 
-    def test_el_fondo_de_la_pagina_usa_el_token(self):
-        cuerpo = self.regla("body#keycloak-bg,\n.pf-v5-c-login")
-        self.assertIn("background-color: var(--color-fondo-pagina)", cuerpo)
-        self.assertIn("background-image: none", cuerpo)
+    def test_la_tarjeta_tiene_el_papel_las_esquinas_y_la_sombra_del_sitio(self):
+        cuerpo = regla(self.css, ".pf-v5-c-login__main")
+        for dato in ("background-color: var(--color-superficie);", "border-radius: var(--radio-lamina);", "box-shadow: var(--sombra-papel);"):
+            self.assertIn(dato, cuerpo)
 
-    def test_el_logo_reemplaza_el_nombre_del_realm_sin_quitarlo_del_dom(self):
-        """El texto sigue en el HTML (lectores de pantalla): se oculta con font-size, no con display:none."""
-        cuerpo = self.regla("#kc-header-wrapper")
-        self.assertIn("../img/logo.svg", cuerpo)
-        self.assertRegex(cuerpo, r"font-size\s*:\s*0")
-        self.assertNotIn("display: none", cuerpo)
+    def test_los_titulos_usan_la_letra_de_los_titulos_y_el_color_de_titulo(self):
+        cuerpo = regla(self.css, "#kc-page-title")
+        self.assertIn("font-family: var(--fuente-titulo);", cuerpo)
+        self.assertIn("color: var(--color-titulo);", cuerpo)
 
-    def test_en_modo_oscuro_el_encabezado_usa_el_logo_oscuro(self):
-        cuerpo = self.regla("%s #kc-header-wrapper" % CLASE_OSCURO)
-        self.assertIn("../img/logo-oscuro.svg", cuerpo)
+    def test_el_cuerpo_usa_la_letra_del_texto(self):
+        self.assertIn("font-family: var(--fuente-texto);", regla(self.css, "html"))
+
+    def test_el_boton_principal_es_verde_con_la_sombra_plana_de_hoja(self):
+        cuerpo = regla(self.css, ".pf-v5-c-button.pf-m-primary")
+        for dato in ("background-color: var(--color-accion-primaria);", "color: var(--color-texto-sobre-accion);", "box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);"):
+            self.assertIn(dato, cuerpo)
+
+    def test_los_demas_botones_van_en_contorno_de_tinta(self):
+        cuerpo = regla(self.css, ".pf-v5-c-button.pf-m-secondary")
+        self.assertIn("box-shadow: inset 0 0 0 2px var(--color-tinta);", cuerpo)
+        self.assertIn(".pf-v5-c-button.pf-m-tertiary", self.css)
+
+    def test_los_botones_miden_48_px_y_tienen_las_esquinas_del_sitio(self):
+        cuerpo = regla(self.css, ".pf-v5-c-button")
+        self.assertIn("min-height: 3rem;", cuerpo)
+        self.assertIn("border-radius: var(--radio-boton);", cuerpo)
+
+    def test_los_campos_se_distinguen_del_papel_y_al_enfocar_tienen_borde_y_anillo(self):
+        campo = regla(self.css, ".pf-v5-c-form-control")
+        for dato in ("background-color: var(--color-campo);", "border: 1.5px solid var(--color-borde-control);", "border-radius: var(--radio-boton);"):
+            self.assertIn(dato, campo)
+        foco = regla(self.css, ".pf-v5-c-form-control:focus-within")
+        self.assertIn("border-color: var(--color-acento);", foco)
+        self.assertIn("outline: 3px solid var(--color-foco);", foco)
+
+    def test_un_campo_con_error_se_marca_con_el_color_del_error(self):
+        self.assertIn("border-color: var(--color-error-texto);", regla_con(self.css, ':has(input[aria-invalid="true"])'))
+        self.assertIn("font-weight: 700;", regla(self.css, ".pf-v5-c-helper-text__item.pf-m-error"))
+
+    def test_hay_un_anillo_de_foco_visible_para_todo(self):
+        self.assertIn("outline: 3px solid var(--color-foco);", regla(self.css, ":focus-visible"))
+
+    def test_los_cuatro_tipos_de_aviso_usan_los_colores_de_estado_del_sitio(self):
+        for tipo, token in (("danger", "error"), ("success", "exito"), ("info", "info"), ("warning", "advertencia")):
+            cuerpo = regla(self.css, ".pf-v5-c-alert.pf-m-%s" % tipo)
+            self.assertIn("background-color: var(--color-%s-fondo);" % token, cuerpo, tipo)
+            self.assertIn("color: var(--color-%s-texto);" % token, cuerpo, tipo)
+
+    def test_la_banda_de_abajo_y_el_separador_no_traen_el_gris_de_patternfly(self):
+        self.assertIn("background-color: transparent;", regla(self.css, ".pf-v5-c-login__main-footer-band"))
+        self.assertIn("var(--color-texto-suave)", regla(self.css, ".kc-login-divider"))
+
+    def test_en_el_celular_la_tarjeta_tiene_un_margen_lateral(self):
+        self.assertRegex(self.css, r"@media \(max-width: 36rem\)\s*\{\s*\.pf-v5-c-login__container\s*\{\s*padding-inline: 0\.75rem;")
 
     def test_no_pisa_el_fondo_con_imagenes_externas(self):
         self.assertNotRegex(self.css, r"url\(\s*[\"']?https?:")
-        self.assertNotIn("@import", self.css)
+        self.assertIn("background-image: none;", regla(self.css, "body#keycloak-bg"))
 
 
 class RealmDelTemaTests(unittest.TestCase):
     def setUp(self):
-        self.realm = cargar_realm()
+        self.realm = json.loads(leer("auth-service", "realm", "donatrack-realm.json"))
 
     def test_el_realm_usa_el_tema_en_las_pantallas_de_login(self):
         self.assertEqual(self.realm.get("loginTheme"), "donatrack")
 
-    def test_el_nombre_visible_es_donatrack(self):
+    def test_el_nombre_visible_es_donatrack_y_track_va_resaltado(self):
         self.assertEqual(self.realm.get("displayName"), "DonaTrack")
+        self.assertEqual(self.realm.get("displayNameHtml"), "Dona<em>Track</em>")
+
+    def test_el_css_da_color_al_em_de_la_marca(self):
+        self.assertIn("#kc-header-wrapper em", css_propio())
 
     def test_espanol_por_defecto_y_unico_idioma(self):
         self.assertIs(self.realm.get("internationalizationEnabled"), True)
@@ -298,16 +346,29 @@ class RealmDelTemaTests(unittest.TestCase):
 
 
 class DocumentacionYTestDeRuntimeTests(unittest.TestCase):
-    def test_el_it_verifica_que_keycloak_sirve_el_tema_y_los_dos_logos(self):
-        texto = leer("auth-service", "src", "test", "java", "grupo5", "auth", "RealmTokenContractIT.java")
-        for fragmento in ["/login/donatrack/css/donatrack.css", "lang=\\\"es\\\"", "img/logo.svg",
-                          "img/logo-oscuro.svg", "--color-accion-primaria"]:
+    def test_el_it_verifica_que_keycloak_sirve_las_hojas_las_fuentes_y_el_logo(self):
+        texto = leer(*IT)
+        for fragmento in ("/login/donatrack/css/donatrack.css", "/login/donatrack/css/tokens.css", 'lang=\\"es\\"', "img/logo.svg",
+                          "archivo-latin.woff2", "archivo-cursiva-latin.woff2", "dm-sans-latin.woff2", "var(--color-accion-primaria)",
+                          "Dona<em>Track</em>", "pf-v5-theme-dark"):
             self.assertIn(fragmento, texto)
+        self.assertNotIn("logo-oscuro", texto)
 
-    def test_el_readme_explica_como_ver_el_tema_y_sacar_las_capturas(self):
+    def test_el_readme_explica_como_mantener_y_ver_el_tema(self):
         texto = leer("auth-service", "README.md")
-        for fragmento in ["360", "1280", "prompt=create", "down -v", "provisori", "modo oscuro"]:
+        for fragmento in ("360", "1280", "prompt=create", "down -v", "scripts/sincronizar_tema.py", "darkMode=false", "17 pantallas",
+                          "Raíces", "Sin modo oscuro"):
             self.assertIn(fragmento, texto)
+        self.assertNotIn("logo-oscuro", texto)
+        self.assertNotIn("Provisorio", texto)
+
+    def test_el_dockerfile_copia_el_tema_entero(self):
+        self.assertIn("COPY themes/donatrack /opt/keycloak/themes/donatrack", leer("auth-service", "Dockerfile"))
+
+    def test_el_contexto_de_build_no_deja_afuera_ni_el_tema_ni_las_fuentes(self):
+        patrones = [l.strip() for l in leer("auth-service", ".dockerignore").splitlines() if l.strip()]
+        for ruta in ("themes/donatrack/login/resources/fuentes/archivo-latin.woff2", "themes/donatrack/login/resources/css/tokens.css"):
+            self.assertFalse(any(ruta == p or ruta.startswith(p + "/") for p in patrones), ruta)
 
 
 if __name__ == "__main__":
