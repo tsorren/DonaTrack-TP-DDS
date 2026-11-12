@@ -215,3 +215,22 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 3. Mientras dura un reintento, el consumidor de la cola notificaciones.donaciones queda frenado. Recomiendo 4 intentos cortos y medir en el ensayo el pico de la cola y cuánto tarda en volver a 0 (C9); si se ve crecer, bajar a 3 intentos antes de pensar en una cola de espera. **Resuelto: la opción recomendada.**
 4. Si la lectura se corta a mitad del archivo, ya no se descarta todo: las tandas procesadas quedan importadas y el archivo termina en ERROR con sus contadores. Recomiendo aceptarlo, porque volver a importar el mismo archivo es seguro: las filas ya importadas entran como actualizadas. **Resuelto: la opción recomendada.**
 5. No vi los registros de Notificaciones del ensayo: no sé si el aviso se perdió por la ValidationException o porque la publicación de persona.sincronizada falló y se tragó el error. Con el contenedor por defecto, una ValidationException se reencolaría, no se perdería. Recomiendo que el constructor lo confirme con una prueba antes de elegir cómo engancha el reintento. **Resuelto: la opción recomendada.**
+
+## Ajuste de la ronda 1 de revisión (2026-11-12)
+
+`[OBSERVED]` La revisión encontró que el reintento con esperas (0,5, 1 y 2 s con `Thread.sleep`)
+no podía resolver el caso: `persona.sincronizada` y `donante.registrado` llegan por la misma cola
+`notificaciones.donaciones` al mismo listener, y la fábrica del contenedor
+(`RabbitMQConfig.rabbitListenerContainerFactory`) tiene un solo consumidor. Mientras el hilo
+esperaba, la persona quedaba detrás, en la cola o en el prefetch, y el aviso terminaba siempre en
+la DLQ.
+
+Cambio sobre el punto 4 del alcance y la duda 3: **no se espera dentro del consumidor.** Cuando
+falta la persona, el error sale y el contenedor reencola el mensaje; pasan primero los mensajes que
+ya estaban, entre ellos la persona. Las entregas se cuentan por `messageId` y a la décima
+(`ReintentoPersonaFaltante.INTENTOS`) el mensaje se rechaza sin reencolar y va a
+`notificaciones.donaciones.dlq`; sin `messageId` va directo a la DLQ. C6 se prueba con los dos
+eventos por el mismo listener en el orden de la cola (`ReintentoPersonaFaltanteTest`). El riesgo de
+la tabla sobre el consumidor frenado ya no aplica. Queda abierto que el tope cuenta entregas y no
+tiempo; si en el ensayo (C9) llega algún aviso a la DLQ, el arreglo es el orden de publicación en
+Donaciones (duda 1).

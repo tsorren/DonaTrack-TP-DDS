@@ -84,7 +84,7 @@ public class DonacionEventListener {
     notificacionService.procesar(evento, messageId);
   }
 
-  // 6. Donante Registrado: si su persona todavía no se copió, espera unos segundos (R11-B08)
+  // 6. Donante Registrado: si su persona todavía no se copió, vuelve a la cola con tope (R11-B08)
   @RabbitHandler
   public void onDonanteRegistrado(
       @Valid EventoDonanteRegistradoV1 evento,
