@@ -161,6 +161,11 @@ detalle que se despliega y los formularios plegados. Esquema en el celular:
   necesidades vigentes hay, cuántas entregas esperan la confirmación (con el enlace a la primera),
   cuántas vienen en camino o por salir y cuántas tienen un problema (con el enlace a su pedido),
   separadas como en el registro de Seguir entregas.
+- > **Desde R11 (2026-11-12, en revisión):** con JavaScript, "Publicar otra necesidad" abre una
+  > ventana que bloquea el fondo, en 3 pasos (Qué y cuánto · Cuándo · Por qué y revisar), y "Dar de
+  > baja" bloquea el fondo: lo detalla la ficha [ventanas que bloquean y publicar en 3 pasos](r11-p2-ventanas.md)
+  > (lote `p2-ventanas`, R11-31 y R11-32). Los datos, los textos de error y el envío no cambian. Lo
+  > de abajo queda como estaba antes de R11, y es lo que se ve sin JavaScript.
 - **Publicar otra necesidad:** un formulario plegado, como en el primer prototipo, con los datos que pide el
   contrato: qué hace falta (de la lista del catálogo, agrupada por categoría), cuánto (con la
   unidad), si se repite (una sola vez, cada semana, cada quincena o cada mes), hasta cuándo (solo si es una sola
