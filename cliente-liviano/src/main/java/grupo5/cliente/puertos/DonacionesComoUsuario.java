@@ -9,8 +9,12 @@ public interface DonacionesComoUsuario {
 
   List<NecesidadDeEntidad> necesidadesDe(UUID entidadId);
 
-  /** Las personas jurídicas registradas, con su razón social; las lee quien administra. */
-  List<Juridica> juridicas();
+  /**
+   * Las personas jurídicas de esos identificadores, con su razón social; las lee quien administra.
+   * Solo las pedidas (R11-01): con el CSV hay miles de jurídicas y no se traen todas para
+   * cruzarlas. Un id que no existe no aparece.
+   */
+  List<Juridica> juridicas(List<UUID> ids);
 
   /** Da de alta la entidad beneficiaria de una persona jurídica; la hace quien administra. */
   void registrarEntidad(UUID juridicaId);

@@ -422,8 +422,9 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
     throw new UnsupportedOperationException("La maqueta no registra entidades");
   }
 
+  /** La lista entera de ejemplo: la pantalla busca y filtra sobre ella. */
   @Override
-  public AdminEntidadesVista entidades() {
+  public AdminEntidadesVista entidades(String buscar, int pagina) {
     return AdminPersonasEntidadesDeEjemplo.ENTIDADES;
   }
 

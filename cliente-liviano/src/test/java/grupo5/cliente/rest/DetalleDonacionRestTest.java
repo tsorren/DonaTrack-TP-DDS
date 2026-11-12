@@ -76,7 +76,7 @@ class DetalleDonacionRestTest {
   }
 
   private void conLaEntidad() {
-    apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
+    apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(
             withSuccess(
                 "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"" + COMEDOR + "\"}]",

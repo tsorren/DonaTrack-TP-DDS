@@ -358,6 +358,13 @@ Comedor Ejemplo Oeste · Comedor · 14 de octubre                  [Revisar]
 [Registrar entidad]
 ```
 
+- **R11-01, de a una página (lote `p0-admin-listados`, ronda 2):** fuera de la maqueta, la lista es
+  una página de 20 entidades registradas pedida a Donaciones, con el paginador provisorio debajo y
+  la búsqueda por nombre resuelta allá, sin distinguir mayúsculas ni tildes. En la página 1 van
+  primero las que piden sumarse; después, las registradas por nombre. La línea de estado dice
+  cuántas hay en total y cuántas están activas, las dos como números del servicio. Estado,
+  Necesidades y Tipo no se ofrecen hasta que Donaciones los resuelva (lote `p2-listas-restantes`,
+  [DTI-39](../../adr/DEUDA_TECNICA.md#dti-39)).
 - **Aprobar:** sin pregunta extra; es lo que más se hace, y si fue un error se da de baja la
   entidad (el correo de aprobación ya le llegó). Resultado
   `admin-entidades-aprobada`: "Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus pedidos y

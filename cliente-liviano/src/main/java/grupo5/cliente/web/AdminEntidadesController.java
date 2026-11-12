@@ -1,6 +1,8 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
+import grupo5.cliente.vistas.AdminEntidadesVista;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,18 +27,31 @@ public class AdminEntidadesController {
   }
 
   @GetMapping("/" + ENTIDADES)
-  String entidades(Model model) {
-    return mostrar(ENTIDADES, model);
+  String entidades(Model model, HttpServletRequest pedido) {
+    return mostrar(ENTIDADES, model, pedido);
   }
 
   @GetMapping("/" + ENTIDADES + "-{accion:aprobada|correccion|rechazada}")
-  String despues(@PathVariable String accion, Model model) {
-    return mostrar(ENTIDADES + "-" + accion, model);
+  String despues(@PathVariable String accion, Model model, HttpServletRequest pedido) {
+    return mostrar(ENTIDADES + "-" + accion, model, pedido);
   }
 
-  private String mostrar(String pantalla, Model model) {
+  /**
+   * La página pedida ({@code ?pagina=}) con la búsqueda ({@code ?buscar=}); el paginador provisorio
+   * (R11-01) solo si la fuente da la lista de a una página y hay más de una.
+   */
+  private String mostrar(String pantalla, Model model, HttpServletRequest pedido) {
     String vista = pantallas.mostrar(pantalla, model);
-    model.addAttribute("adminEntidades", personas.entidades());
+    String buscar = pedido.getParameter("buscar");
+    AdminEntidadesVista datos =
+        personas.entidades(buscar == null ? "" : buscar.strip(), Paginadores.pedida(pedido));
+    model.addAttribute("adminEntidades", datos);
+    model.addAttribute(
+        "paginador",
+        Paginadores.de(
+            pedido,
+            "Páginas de entidades",
+            datos == null || datos.enPaginas() == null ? null : datos.enPaginas().registradas()));
     return vista;
   }
 }

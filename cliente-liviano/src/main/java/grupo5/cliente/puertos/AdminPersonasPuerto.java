@@ -40,8 +40,12 @@ public interface AdminPersonasPuerto {
   /** Da de alta la persona jurídica y la hace entidad beneficiaria (queda activa). */
   void registrarEntidad(PersonaNueva.Juridica juridica);
 
-  /** Las entidades: las que piden sumarse, las activas y las inactivas, por nombre. */
-  AdminEntidadesVista entidades();
+  /**
+   * Las entidades: las que piden sumarse, las activas y las inactivas, por nombre. {@code buscar},
+   * parte del nombre ('' para todas); {@code pagina}, desde 1. La fuente que pide de a una página
+   * (R11-01) resuelve allá la búsqueda; la maqueta devuelve la lista entera y la pantalla filtra.
+   */
+  AdminEntidadesVista entidades(String buscar, int pagina);
 
   /** Aprueba a la entidad que pidió sumarse (su {@code clave}) y devuelve su nombre. */
   String aprobarEntidad(String clave);

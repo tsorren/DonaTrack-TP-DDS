@@ -67,7 +67,7 @@ class DonanteSeguimientoRestTest {
     apis.expect(
             requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(withSuccess(DOS, MediaType.APPLICATION_JSON));
-    apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
+    apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(
             withSuccess(
                 "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",

@@ -26,6 +26,13 @@
        - Con HTMX (ronda 2026-11-10), el formulario va con hx-boost y cada renglón, con hx-get a su
          dirección sin el ancla (#entidad-<clave>) y hx-push-url: la ficha cambia sin recargar ni mover
          la página. Sin JavaScript, los mismos enlaces recargan y el ancla lleva al renglón elegido.
+       - De a una página (R11-01, adminEntidades.enPaginas no es null fuera de la maqueta): la lista es
+         una página de 20 registradas pedida a Donaciones, con la búsqueda por nombre resuelta allá
+         (sin distinguir mayúsculas ni tildes) y, en la página 1, antes, las que piden sumarse. Los
+         filtros Estado, Necesidades y Tipo no se ofrecen (Donaciones no los resuelve: DTI-39) y la
+         pantalla no vuelve a filtrar la página. Debajo de la lista, el paginador provisorio
+         (pieza paginador, ?pagina=N); buscar vuelve a la página 1. En la maqueta, la lista entera y
+         los filtros sobre ella, como antes.
        ?escenario=vacio (nadie pide sumarse), lento y error.
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'correccion' o
@@ -56,7 +63,8 @@
 <th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento'},
-             q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+             paginada=${adminEntidades.enPaginas != null},
+             q=${paginada ? adminEntidades.enPaginas.buscar : (param.buscar != null ? #strings.trim(param.buscar[0]) : '')},
              todas=${adminEntidades.todas},
              vigentes=${todas.?[(clave != 'hogar' or (estado == 'activa') == (#root.accion == 'aprobada'))
                  and (clave != 'comedor-oeste' or #root.accion != 'rechazada')
@@ -66,17 +74,18 @@
              cuantasInactivas=${#lists.size(vigentes.?[estado == 'inactiva'])},
              cuantasTodas=${cuantasActivas + cuantasPendientes + cuantasInactivas},
              cuantasDelEstado=${fVer == 'activas' ? cuantasActivas : (fVer == 'pendientes' ? cuantasPendientes : (fVer == 'inactivas' ? cuantasInactivas : cuantasTodas))},
-             porFiltros=${vigentes.?[('__${fEstado}__' == '' or estado == '__${fEstado}__')
+             porFiltros=${paginada ? vigentes : vigentes.?[('__${fEstado}__' == '' or estado == '__${fEstado}__')
                  and ('__${fPedidos}__' == '' or ('__${fPedidos}__' == 'con') == !necesidades.isEmpty())
                  and ('__${fTipo}__' == '' or tipo == '__${fTipo}__')]},
-             lista=${q == '' ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(nombre, #root.q) or #strings.containsIgnoreCase(localidad, #root.q)]},
-             otrosFiltros=${fPedidos != '' or fTipo != '' or q != ''},
-             filtrado=${fVer != '' or otrosFiltros},
+             lista=${q == '' or paginada ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(nombre, #root.q) or #strings.containsIgnoreCase(localidad, #root.q)]},
+             otrosFiltros=${!paginada and (fPedidos != '' or fTipo != '') or q != ''},
+             filtrado=${!paginada and fVer != '' or otrosFiltros},
              pedida=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero-este' : (accion == 'aprobada' ? 'hogar' : ''))},
              elegida=${lista.^[clave == #root.pedida] != null ? pedida : (#lists.isEmpty(lista) ? '' : lista[0].clave)},
              consulta=${(fVer != '' ? '&ver=' + fVer : '') + (fPedidos != '' ? '&pedidos=' + fPedidos : '')
                  + (fTipo != '' ? '&tipo=' + #uris.escapeQueryParam(fTipo) : '')
-                 + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')}">
+                 + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
+                 + (paginada and adminEntidades.enPaginas.registradas.pagina > 1 ? '&pagina=' + adminEntidades.enPaginas.registradas.pagina : '')}">
   <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="mesa">
     <header class="mesa-cabecera">
@@ -114,7 +123,9 @@
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="lista-titulo" class="solo-lectores">Todas las entidades</h2>
+      <!--/* Al cambiar de página, el foco vuelve al título de la lista. */-->
+      <h2 id="lista-titulo" class="solo-lectores" tabindex="-1"
+          th:autofocus="${paginador != null and paginador.cambio}">Todas las entidades</h2>
 
       <th:block th:if="${escenario == 'lento'}">
         <p class="cargando" role="status">Cargando las entidades…</p>
@@ -128,7 +139,8 @@
             th:action="@{/admin-entidades}" method="get" role="search" data-al-cambiar>
         <input th:if="${elegida != ''}" type="hidden" name="entidad" th:value="${elegida}" value="comedor">
         <div class="campo filtro-buscar">
-          <label for="buscar">Buscar por nombre o localidad</label>
+          <label for="buscar" th:text="${paginada} ? 'Buscar por nombre' : 'Buscar por nombre o localidad'">Buscar
+            por nombre o localidad</label>
           <div class="filtro-buscar-fila">
             <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
                    placeholder="Por ejemplo: comedor">
@@ -136,6 +148,7 @@
           </div>
         </div>
         <div class="filtros" role="group" aria-label="Filtrar las entidades">
+          <th:block th:unless="${paginada}">
           <details th:replace="~{componentes/filtros :: menu('ver', 'Estado', ${fVer}, ${ {
               {valor: '', texto: 'Todas · ' + cuantasTodas}, {valor: 'activas', texto: 'Activas · ' + cuantasActivas},
               {valor: 'pendientes', texto: 'Pendientes · ' + cuantasPendientes},
@@ -148,12 +161,18 @@
               {valor: 'Merendero', texto: 'Merenderos'}, {valor: 'Escuela', texto: 'Escuelas'},
               {valor: 'Hogar', texto: 'Hogares'}, {valor: 'Club', texto: 'Clubes'},
               {valor: 'Biblioteca', texto: 'Bibliotecas'}, {valor: 'Centro comunitario', texto: 'Centros comunitarios'} } })}"></details>
+          </th:block>
           <a th:if="${filtrado}" class="filtros-sacar" href="/admin-entidades" th:href="@{/admin-entidades}">Sacar
             los filtros</a>
         </div>
       </form>
 
-      <p th:if="${conDatos and !#lists.isEmpty(lista)}" role="status"
+      <p th:if="${conDatos and paginada and !#lists.isEmpty(lista)}" role="status"
+         th:with="n=${adminEntidades.enPaginas.total}, activasTexto=${#numbers.formatInteger(adminEntidades.activas, 1, 'POINT')}"
+         th:text="${q != ''} ? (${n == 1} ? 'Coincide 1 entidad.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} entidades.|) : |Se ven ${#lists.size(lista)} de las ${#numbers.formatInteger(n, 1, 'POINT')} entidades; ${activasTexto} están activas. Primero, las que piden sumarse; después, por nombre, de la A a la Z.|">Se
+        ven 20 de las 152 entidades; 46 están activas. Primero, las que piden sumarse; después, por nombre, de la A a la
+        Z.</p>
+      <p th:if="${conDatos and !paginada and !#lists.isEmpty(lista)}" role="status"
          th:text="${otrosFiltros} ? (${#lists.size(lista) == 1} ? |Coincide 1 de ${cuantasDelEstado}.| : |Coinciden ${#lists.size(lista)} de ${cuantasDelEstado}.|) : |Se ven ${#lists.size(lista)} de las ${cuantasDelEstado}, por nombre, de la A a la Z.|">Se
         ven 14 de las 52, por nombre, de la A a la Z.</p>
 
@@ -272,6 +291,9 @@
           </section>
         </li>
       </ul>
+      <th:block th:if="${conDatos}">
+        <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+      </th:block>
     </section>
   </div>
 </th:block>

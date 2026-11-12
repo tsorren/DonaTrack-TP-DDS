@@ -106,8 +106,8 @@ class AdminPersonasRestTest {
                 new Pendiente("cuenta-1", "Hogar Ejemplo Norte", "hogar@ejemplo.org", juridica)));
     cuentas.addBean("solicitudes", solicitudes);
     donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades?page=0&size=100"))
-        .andRespond(withSuccess(DOS_ENTIDADES, JSON));
+        .expect(requestTo(DONACIONES + "/api/entidades?page=0&size=20"))
+        .andRespond(withSuccess(DOS_ENTIDADES, JSON).header("X-Total-Count", "2"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/necesidades?estado=VIGENTE"))
         .andRespond(
@@ -143,18 +143,26 @@ class AdminPersonasRestTest {
                                 "localidad": "Localidad Ejemplo", "provincia": "Buenos Aires"}}]
                 """,
                 JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades/publicas?size=1"))
+        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "57"));
 
-    AdminEntidadesVista vista = adaptador.entidades();
+    AdminEntidadesVista vista = adaptador.entidades("", 1);
 
-    assertEquals(1, vista.activas());
+    donaciones.verify();
+    // Las activas, un número del servicio: no se cuentan sobre la página.
+    assertEquals(57, vista.activas());
+    // Primero las que piden sumarse; después, la página de registradas por nombre.
     assertEquals(
-        List.of("Club Ejemplo Norte", "Hogar Ejemplo Norte", "Merendero Ejemplo Sur"),
+        List.of("Hogar Ejemplo Norte", "Club Ejemplo Norte", "Merendero Ejemplo Sur"),
         vista.todas().stream().map(Entidad::nombre).toList());
-    Entidad club = vista.todas().get(0);
+    assertEquals(3, vista.enPaginas().total());
+    assertEquals(1, vista.enPaginas().registradas().paginas());
+    Entidad club = vista.todas().get(1);
     assertEquals("inactiva", club.estado());
     assertEquals("Institución", club.tipo());
     assertNull(club.baja());
-    Entidad hogar = vista.todas().get(1);
+    Entidad hogar = vista.todas().get(0);
     assertEquals("cuenta-1", hogar.clave());
     assertEquals("pendiente", hogar.estado());
     assertEquals("30-00000011-0", hogar.cuit());
@@ -177,16 +185,48 @@ class AdminPersonasRestTest {
   }
 
   @Test
-  void sinSolicitudesNiNecesidadesNoPideMasDeLoQueHace() {
+  void sinSolicitudesNiEntidadesNoPideMasDeLoQueHace() {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades?page=0&size=100"))
+        .expect(requestTo(DONACIONES + "/api/entidades?page=0&size=20"))
         .andRespond(withSuccess("[]", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades/publicas?size=1"))
+        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "0"));
+
+    assertEquals(List.of(), adaptador.entidades("", 1).todas());
+    donaciones.verify();
+  }
+
+  @Test
+  void laBusquedaVaAlServidorYDespuesDeLaPrimeraPaginaNoVanLasQuePidenSumarse() {
+    SolicitudesDeEntidad solicitudes = mock(SolicitudesDeEntidad.class);
+    when(solicitudes.pendientes())
+        .thenReturn(
+            List.of(
+                new Pendiente("cuenta-1", "Comedor San José", "c@ejemplo.org", null),
+                new Pendiente("cuenta-2", "Hogar Norte", "h@ejemplo.org", null)));
+    cuentas.addBean("solicitudes", solicitudes);
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades?nombre=jose&page=1&size=20"))
+        .andRespond(withSuccess(DOS_ENTIDADES, JSON).header("X-Total-Count", "22"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/necesidades?estado=VIGENTE"))
         .andRespond(withSuccess("[]", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades/publicas?size=1"))
+        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "30"));
 
-    assertEquals(List.of(), adaptador.entidades().todas());
+    AdminEntidadesVista vista = adaptador.entidades(" jose ", 2);
+
     donaciones.verify();
+    assertEquals(
+        List.of("Club Ejemplo Norte", "Merendero Ejemplo Sur"),
+        vista.todas().stream().map(Entidad::nombre).toList());
+    // 22 registradas que coinciden y una que pide sumarse ("José", sin distinguir la tilde).
+    assertEquals(23, vista.enPaginas().total());
+    assertEquals("jose", vista.enPaginas().buscar());
+    assertEquals(2, vista.enPaginas().registradas().pagina());
+    assertEquals(2, vista.enPaginas().registradas().paginas());
   }
 
   @Test

@@ -70,7 +70,7 @@ class DonanteInicioRestTest {
     apis.expect(
             requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
-    apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
+    apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(
             withSuccess(
                 "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",
@@ -152,7 +152,7 @@ class DonanteInicioRestTest {
     // Octubre: 7 registradas, llegan las 3 más recientes (las de la constante TRES, para no
     // repetirlas; el total manda).
     pagina("&desde=2026-10-01&hasta=2026-10-31&page=0&size=3", TRES, 7);
-    apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
+    apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(
             withSuccess(
                 "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",

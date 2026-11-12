@@ -422,10 +422,10 @@
       "rol": "juicio",
       "ruta": "CONTRATO",
       "disenio": "spec",
-      "modulos": ["logistica-service", "incentivos-service", "cliente-liviano"],
-      "archivos": "logistica-service: los dos seguimientos, paginados y sin una lectura por entrega; incentivos-service: historial del ranking paginado; cliente-liviano: las listas de templates/entidad-seguimiento.html y del historial de admin-ranking",
-      "rutasVisuales": ["entidad-seguimiento", "admin-ranking"],
-      "que": "Seguir entregas y el historial del ranking se piden de a una página."
+      "modulos": ["logistica-service", "incentivos-service", "donaciones-service", "cliente-liviano"],
+      "archivos": "logistica-service: los dos seguimientos, paginados y sin una lectura por entrega; incentivos-service: historial del ranking paginado; donaciones-service: filtros de GET /api/entidades por estado (activa o de baja), con o sin necesidades vigentes y tipo, y conteos de las donaciones asignadas a una entidad por estado; cliente-liviano: las listas de templates/entidad-seguimiento.html y del historial de admin-ranking, rest/RecibidasRest.java, rest/EntidadConfirmarRest.java, rest/EntidadNecesidadesRest.java, rest/EntidadNotificacionesRest.java (lo que usan de DonacionesApi.asignadas), DonacionesApi.asignadas, rest/AdminPersonasEntidades.java y templates/admin-entidades.html (solo los filtros)",
+      "rutasVisuales": ["entidad-seguimiento", "admin-ranking", "entidad-recibidas", "entidad-necesidades", "admin-entidades"],
+      "que": "Seguir entregas y el historial del ranking se piden de a una página. Las pantallas de la entidad (Recibidas, Confirmar recepción, Necesidades y Notificaciones) dejan de leer una página de 100 asignadas sin paginador (DTI-39, ítem 1): cada lista pide su página con su paginador y cada cruce o cifra, un número del servicio. En Entidades del admin, que ya va de a una página, vuelven los filtros Estado, Necesidades y Tipo, resueltos en Donaciones (DTI-39, ítem 2)."
     },
     {
       "id": "p2-admin-graficos",

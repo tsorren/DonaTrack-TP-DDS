@@ -35,11 +35,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -62,6 +65,12 @@ import org.springframework.web.client.RestClientException;
 @Primary
 @ConditionalOnProperty(name = "cliente.datos.donaciones", havingValue = "rest")
 class DonacionesRest implements DonacionesPuerto {
+
+  /**
+   * Cuántas páginas de entidades públicas se recorren como mucho para ponerles nombre (R11-01): 10
+   * de 100, mil entidades activas. Más allá, la donación queda con su destino y sin nombre.
+   */
+  static final int PAGINAS_DE_ENTIDADES = 10;
 
   /** Las cinco etapas, en orden, con el estado de Donaciones que las abre. */
   private static final List<String> ETAPAS =
@@ -222,11 +231,11 @@ class DonacionesRest implements DonacionesPuerto {
 
   /**
    * El nombre de cada entidad de la lista. El donante no puede leer una entidad por id (solo ADMIN
-   * o la entidad), así que se piden todas las activas de una vez a {@code /api/entidades/publicas}
-   * (sin paginado, las devuelve todas). Una dada de baja, o con Donaciones sin responder esa lista,
-   * queda como {@link #SIN_NOMBRE}: tiene destino, sin nombre.
+   * o la entidad) y {@code /api/entidades/publicas} no filtra por id, así que se recorren sus
+   * páginas de a {@link DonacionesApi#TOPE} (R11-01) hasta tener todas las de la lista, o hasta
+   * {@link #PAGINAS_DE_ENTIDADES} páginas. Una dada de baja, una más allá del tope o con Donaciones
+   * sin responder esa lista, queda como {@link #SIN_NOMBRE}: tiene destino, sin nombre.
    */
-  // ponytail: una lista entera por pedido; con muchas entidades, un endpoint por ids.
   private Map<UUID, String> entidades(List<DonacionesApi.Donacion> lista) {
     return nombresDeEntidades(api, lista);
   }
@@ -236,28 +245,48 @@ class DonacionesRest implements DonacionesPuerto {
       DonacionesApi donaciones, List<DonacionesApi.Donacion> lista) {
     // HashMap y no Map.of(): get(null), el de una donación sin destino, devuelve null.
     Map<UUID, String> entidades = new HashMap<>();
-    if (lista.stream()
-        .map(DonacionesApi.Donacion::entidadBeneficiariaId)
-        .allMatch(Objects::isNull)) {
+    Set<UUID> buscadas =
+        lista.stream()
+            .map(DonacionesApi.Donacion::entidadBeneficiariaId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    if (buscadas.isEmpty()) {
       return entidades;
     }
     try {
-      List<DonacionesApi.EntidadPublica> publicas =
-          donaciones.entidadesPublicas(new LinkedMultiValueMap<>()).getBody();
-      if (publicas != null) {
-        publicas.stream()
-            .filter(e -> e.id() != null && e.razonSocial() != null && !e.razonSocial().isBlank())
-            .forEach(e -> entidades.put(e.id(), e.razonSocial()));
-      }
+      leerNombres(donaciones, buscadas, entidades);
     } catch (RestClientException sinLista) {
       entidades.clear();
     }
     // Una que no está entre las públicas (dada de baja) o sin la lista: tiene destino, sin nombre.
-    lista.stream()
-        .map(DonacionesApi.Donacion::entidadBeneficiariaId)
-        .filter(Objects::nonNull)
-        .forEach(id -> entidades.putIfAbsent(id, SIN_NOMBRE));
+    buscadas.forEach(id -> entidades.putIfAbsent(id, SIN_NOMBRE));
     return entidades;
+  }
+
+  /** Recorre las páginas de las públicas hasta encontrar las buscadas, la última o el tope. */
+  private static void leerNombres(
+      DonacionesApi donaciones, Set<UUID> buscadas, Map<UUID, String> entidades) {
+    Set<UUID> faltan = new HashSet<>(buscadas);
+    for (int pagina = 0; pagina < PAGINAS_DE_ENTIDADES && !faltan.isEmpty(); pagina++) {
+      MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+      filtros.add("page", String.valueOf(pagina));
+      filtros.add("size", String.valueOf(DonacionesApi.TOPE));
+      ResponseEntity<List<DonacionesApi.EntidadPublica>> respuesta =
+          donaciones.entidadesPublicas(filtros);
+      List<DonacionesApi.EntidadPublica> publicas =
+          Objects.requireNonNullElse(respuesta.getBody(), List.of());
+      for (DonacionesApi.EntidadPublica e : publicas) {
+        if (e.id() != null && e.razonSocial() != null && !e.razonSocial().isBlank()) {
+          entidades.put(e.id(), e.razonSocial());
+          faltan.remove(e.id());
+        }
+      }
+      long total = Paginas.total(respuesta, publicas, pagina + 1, DonacionesApi.TOPE);
+      if (publicas.size() < DonacionesApi.TOPE
+          || (long) (pagina + 1) * DonacionesApi.TOPE >= total) {
+        return;
+      }
+    }
   }
 
   /**

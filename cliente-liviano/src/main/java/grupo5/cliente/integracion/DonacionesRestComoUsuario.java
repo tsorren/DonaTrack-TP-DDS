@@ -1,6 +1,7 @@
 package grupo5.cliente.integracion;
 
 import grupo5.cliente.puertos.DonacionesComoUsuario;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,8 @@ import org.springframework.web.client.RestClient;
 @Profile("!maqueta")
 class DonacionesRestComoUsuario implements DonacionesComoUsuario {
 
+  private static final int LOTE = 100;
+
   private final RestClient donaciones;
 
   DonacionesRestComoUsuario(@Qualifier("donacionesComoUsuario") RestClient donaciones) {
@@ -25,9 +28,28 @@ class DonacionesRestComoUsuario implements DonacionesComoUsuario {
     return listar("/api/necesidades?entidadId={id}", new Necesidades(), entidadId);
   }
 
+  /** De a {@link #LOTE} identificadores por pedido, el máximo que acepta Donaciones. */
   @Override
-  public List<Juridica> juridicas() {
-    return listar("/api/personas?tipo=JURIDICA", new Juridicas());
+  public List<Juridica> juridicas(List<UUID> ids) {
+    List<Juridica> juridicas = new ArrayList<>();
+    for (int desde = 0; desde < ids.size(); desde += LOTE) {
+      List<UUID> lote = ids.subList(desde, Math.min(ids.size(), desde + LOTE));
+      List<Juridica> leidas =
+          donaciones
+              .get()
+              .uri(
+                  uri ->
+                      uri.path("/api/personas")
+                          .queryParam("id", lote.toArray())
+                          .queryParam("size", LOTE)
+                          .build())
+              .retrieve()
+              .body(new Juridicas());
+      if (leidas != null) {
+        juridicas.addAll(leidas);
+      }
+    }
+    return juridicas;
   }
 
   @Override

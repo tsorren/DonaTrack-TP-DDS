@@ -44,15 +44,16 @@ interface DonacionesApi {
   /**
    * Las de un donante, de a una página del tamaño más grande que acepta Donaciones ({@link #TOPE}).
    * Desde R11-01 el servicio ya no manda todas cuando no se pide página (manda 20): las pantallas
-   * que muestran estas donaciones como lista se paginan en su lote (R11-13); hasta entonces, como
-   * mucho las {@link #TOPE} más recientes.
+   * que muestran estas donaciones como lista se paginan en su lote (R11-13, lote {@code
+   * p1-donante-listas}); hasta entonces, como mucho las {@link #TOPE} más recientes (DTI-39).
    */
   @GetExchange("/donaciones-independientes?size=" + TOPE)
   List<Donacion> donaciones(@RequestParam UUID donanteId);
 
   /**
    * Las asignadas a una entidad beneficiaria, con el mismo tope de una página de {@link #TOPE}
-   * (R11-01): se cruzan con sus entregas y sus necesidades; ver la deuda en la ficha del admin.
+   * (R11-01): se cruzan con sus entregas y sus necesidades. Las pantallas de la entidad pasan a
+   * pedir su página o un número del servicio en el lote {@code p2-listas-restantes} (DTI-39).
    */
   @GetExchange("/donaciones-independientes?size=" + TOPE)
   List<Donacion> asignadas(@RequestParam UUID entidadId);

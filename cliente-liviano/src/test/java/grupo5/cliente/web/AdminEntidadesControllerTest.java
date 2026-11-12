@@ -2,6 +2,8 @@ package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,6 +19,7 @@ import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
 import grupo5.cliente.vistas.CuentaVista;
+import grupo5.cliente.vistas.Tramo;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +65,7 @@ class AdminEntidadesControllerTest {
 
   @Test
   void conLoQueDaLaApiCadaFichaMuestraLoQueSabeYNoEscribeNull() throws Exception {
-    when(personas.entidades())
+    when(personas.entidades(anyString(), anyInt()))
         .thenReturn(
             new AdminEntidadesVista(
                 1,
@@ -97,6 +100,31 @@ class AdminEntidadesControllerTest {
     mvc.perform(get("/admin-entidades?entidad=e2"))
         .andExpect(content().string(containsString(">Inactiva<")))
         .andExpect(content().string(not(containsString("Estuvo activa"))));
+  }
+
+  @Test
+  void deAUnaPaginaBuscaEnLaFuenteMuestraElPaginadorYNoOfreceLosFiltrosQueNoResuelve()
+      throws Exception {
+    Entidad comedor = comoLaApi("e1", "activa", "Comedor Ejemplo", null);
+    when(personas.entidades("jose", 2))
+        .thenReturn(
+            new AdminEntidadesVista(
+                46,
+                "10 de noviembre de 2026, 18:30",
+                List.of(comedor),
+                new AdminEntidadesVista.EnPaginas(
+                    "jose", 45, new Tramo<>(List.of(comedor), 45, 2, 3))));
+
+    mvc.perform(get("/admin-entidades").param("buscar", " jose ").param("pagina", "2"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Página 2 de 3")))
+        .andExpect(content().string(containsString("Coinciden 45 entidades.")))
+        .andExpect(content().string(containsString("Buscar por nombre</label>")))
+        .andExpect(content().string(containsString("pagina=3")))
+        .andExpect(content().string(containsString("entidad=e1&amp;buscar=jose&amp;pagina=2")))
+        .andExpect(content().string(not(containsString("Activas · "))))
+        .andExpect(content().string(not(containsString("Necesidades vigentes</"))));
+    verify(personas).entidades("jose", 2);
   }
 
   @Test

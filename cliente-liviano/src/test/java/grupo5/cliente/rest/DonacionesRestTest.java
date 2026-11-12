@@ -17,7 +17,10 @@ import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -79,7 +82,7 @@ class DonacionesRestTest {
     donaciones.expect(requestTo(PRIMERA)).andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
     // El donante no puede leer una entidad por id: una sola llamada a las públicas, para todas.
     donaciones
-        .expect(once(), requestTo("http://donaciones/api/entidades/publicas"))
+        .expect(once(), requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(
             withSuccess(
                 "[{\"id\": \""
@@ -147,7 +150,7 @@ class DonacionesRestTest {
                     + "&page=1&size=12"))
         .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON).header("X-Total-Count", "25"));
     donaciones
-        .expect(requestTo("http://donaciones/api/entidades/publicas"))
+        .expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     Clock hoy = Clock.fixed(Instant.parse("2026-10-15T19:25:00Z"), ZoneOffset.UTC);
     DonacionesRest adaptador =
@@ -184,7 +187,7 @@ class DonacionesRestTest {
         .expect(requestTo(PRIMERA.replace("page=0", "page=1")))
         .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON).header("X-Total-Count", "15"));
     donaciones
-        .expect(requestTo("http://donaciones/api/entidades/publicas"))
+        .expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     DonacionesRest adaptador =
         new DonacionesRest(
@@ -266,7 +269,7 @@ class DonacionesRestTest {
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     donaciones.expect(requestTo(PRIMERA)).andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
     donaciones
-        .expect(requestTo("http://donaciones/api/entidades/publicas"))
+        .expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(withStatus(HttpStatus.FORBIDDEN));
     DonacionesRest adaptador =
         new DonacionesRest(
@@ -296,5 +299,94 @@ class DonacionesRestTest {
                 "EN_PUERTA", java.time.LocalDateTime.of(2026, 11, 8, 18, 20), null, null, null),
             "Comedor Ejemplo",
             false));
+  }
+
+  /** Una página llena de 100 entidades públicas que no son las buscadas. */
+  private static String otrasCien() {
+    return IntStream.range(0, DonacionesApi.TOPE)
+        .mapToObj(
+            i -> "{\"id\": \"" + UUID.randomUUID() + "\", \"razonSocial\": \"Otra " + i + "\"}")
+        .collect(Collectors.joining(",", "[", "]"));
+  }
+
+  private static List<DonacionesApi.Donacion> conDestino(UUID entidad) {
+    return List.of(
+        new DonacionesApi.Donacion(
+            UUID.randomUUID(),
+            "Fideos",
+            "ENTREGADA",
+            null,
+            List.of(),
+            List.of(),
+            1,
+            entidad,
+            null,
+            null,
+            null,
+            null));
+  }
+
+  @Test
+  void elNombreDeUnaEntidadMasAllaDeLaPrimeraPaginaSeBuscaEnLaSiguiente() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
+        .andRespond(
+            withSuccess(otrasCien(), MediaType.APPLICATION_JSON).header("X-Total-Count", "150"));
+    donaciones
+        .expect(requestTo("http://donaciones/api/entidades/publicas?page=1&size=100"))
+        .andRespond(
+            withSuccess(
+                    "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",
+                    MediaType.APPLICATION_JSON)
+                .header("X-Total-Count", "150"));
+    DonacionesApi api = ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class);
+
+    Map<UUID, String> nombres =
+        DonacionesRest.nombresDeEntidades(api, conDestino(UUID.fromString(ENTIDAD)));
+
+    donaciones.verify();
+    assertEquals("Comedor Barrio Ejemplo", nombres.get(UUID.fromString(ENTIDAD)));
+  }
+
+  @Test
+  void conTodasLasEntidadesYaNombradasNoSePidenMasPaginas() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(once(), requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
+        .andRespond(
+            withSuccess(
+                    "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",
+                    MediaType.APPLICATION_JSON)
+                .header("X-Total-Count", "900"));
+    DonacionesApi api = ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class);
+
+    Map<UUID, String> nombres =
+        DonacionesRest.nombresDeEntidades(api, conDestino(UUID.fromString(ENTIDAD)));
+
+    donaciones.verify();
+    assertEquals("Comedor Barrio Ejemplo", nombres.get(UUID.fromString(ENTIDAD)));
+  }
+
+  @Test
+  void pasadoElTopeDePaginasLaEntidadQuedaSinNombre() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    for (int pagina = 0; pagina < DonacionesRest.PAGINAS_DE_ENTIDADES; pagina++) {
+      donaciones
+          .expect(
+              requestTo("http://donaciones/api/entidades/publicas?page=" + pagina + "&size=100"))
+          .andRespond(
+              withSuccess(otrasCien(), MediaType.APPLICATION_JSON).header("X-Total-Count", "5000"));
+    }
+    DonacionesApi api = ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class);
+
+    Map<UUID, String> nombres =
+        DonacionesRest.nombresDeEntidades(api, conDestino(UUID.fromString(ENTIDAD)));
+
+    donaciones.verify();
+    assertEquals(DonacionesRest.SIN_NOMBRE, nombres.get(UUID.fromString(ENTIDAD)));
   }
 }
