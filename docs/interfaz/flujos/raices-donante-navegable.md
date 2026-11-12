@@ -196,6 +196,12 @@ menú marca Mis donaciones.
 
 ### donante-notificaciones (nivel 2)
 
+> **Actualización R11-14 (2026-11-12, en revisión):** la bandeja va de a 20 por página, con los
+> filtros resueltos en Notificaciones, y cambia cómo se ven las leídas y las sin leer, sus vínculos
+> y el ícono de "Marcar como no leída". Lo que dice la
+> [ficha del lote `p1-notificaciones`](r11-p1-notificaciones.md) sobre la bandeja manda sobre esta
+> sección; el resto sigue igual.
+
 ```text
 [Notificaciones]  Noticias de tus donaciones
                   4 sin leer. …                        [Marcar todas como leídas]
