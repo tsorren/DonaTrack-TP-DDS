@@ -11,7 +11,9 @@ import grupo5.cliente.vistas.DonanteAnioVista;
 import grupo5.cliente.vistas.DonanteDonacionVista;
 import grupo5.cliente.vistas.DonanteInicioVista;
 import grupo5.cliente.vistas.DonanteInicioVista.Aviso;
+import grupo5.cliente.vistas.DonanteTableroVista;
 import grupo5.cliente.vistas.EstadoEntrega;
+import grupo5.cliente.vistas.Tramo;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,8 +23,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +41,9 @@ import org.springframework.web.client.RestClientException;
  * curso, Logística), las tres noticias más nuevas de su historial y las sin leer de Notificaciones
  * (0 si no responde). Las entregas del mes son las confirmadas en el mes de hoy. El año de la
  * persona ({@link #anio}) no pide la lista entera: de cada mes, una página de 3 con su total, y las
- * cifras del año como totales ({@code X-Total-Count}) de páginas de una.
+ * cifras del año como totales ({@code X-Total-Count}) de páginas de una. El tablero de la empresa
+ * ({@link #tablero}) tampoco: una página de 3 por columna con su total, y la cifra de las que
+ * esperan destino.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -52,6 +59,14 @@ class DonanteInicioRest implements DonanteInicioPuerto {
   private static final List<String> EN_CAMINO = List.of("EN_TRASLADO", "EN_PUERTA");
   private static final List<String> EN_DEPOSITO =
       List.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR");
+
+  // Los grupos de estados de cada columna del tablero (ficha r11-p2-tablero, §4.3), en un solo
+  // lugar: los mismos que separaba la plantilla.
+  private static final List<String> COLUMNA_TENER = List.of("ENTREGA_FALLIDA", "VENCIDA");
+  private static final List<String> COLUMNA_CAMINO =
+      List.of("EN_TRASLADO", "EN_PUERTA", "ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR");
+  private static final List<String> COLUMNA_LLEGO = ENTREGADAS;
+  private static final List<String> ESPERAN_DESTINO = List.of("EN_DEPOSITO");
 
   private final DonacionesApi api;
   private final LogisticaApi logistica;
@@ -103,6 +118,75 @@ class DonanteInicioRest implements DonanteInicioPuerto {
         desde,
         hoy.toString(),
         hoy.minusDays(1).toString());
+  }
+
+  @Override
+  public DonanteTableroVista tablero(UUID donante, int tener, int camino, int llego) {
+    LocalDate hoy = LocalDate.now(reloj.withZone(ARGENTINA));
+    Pagina paginaTener = columna(donante, COLUMNA_TENER, tener);
+    Long esperan = null;
+    if (paginaTener != null) {
+      try {
+        esperan = contar(donante, null, null, ESPERAN_DESTINO);
+      } catch (RestClientException sinCifra) {
+        // Las que esperan destino van en la misma tarjeta: sin la cifra, la columna dice que falló.
+        paginaTener = null;
+      }
+    }
+    Pagina paginaCamino = columna(donante, COLUMNA_CAMINO, camino);
+    Pagina paginaLlego = columna(donante, COLUMNA_LLEGO, llego);
+    List<DonacionesApi.Donacion> mostradas =
+        Stream.of(paginaTener, paginaCamino, paginaLlego)
+            .filter(Objects::nonNull)
+            .flatMap(p -> p.filas().stream())
+            .toList();
+    Map<UUID, String> entidades = DonacionesRest.nombresDeEntidades(api, mostradas);
+    // "Sale del depósito el…" lo dice Logística: solo si la columna en curso trae alguna.
+    Map<UUID, LogisticaApi.Seguimiento> seguimientos =
+        paginaCamino == null || paginaCamino.filas().isEmpty()
+            ? Map.of()
+            : DonanteSeguimientoRest.seguimientos(logistica, donante);
+    Function<Pagina, Tramo<DonanteDonacionVista>> tramo =
+        p ->
+            p == null
+                ? null
+                : new Tramo<>(
+                    DonanteDonaciones.vistas(p.filas(), entidades, seguimientos, hoy),
+                    p.total(),
+                    p.pagina(),
+                    Tramo.paginas(p.total(), DonanteTableroVista.POR_COLUMNA));
+    return new DonanteTableroVista(
+        tramo.apply(paginaTener),
+        tramo.apply(paginaCamino),
+        tramo.apply(paginaLlego),
+        esperan == null ? 0 : esperan);
+  }
+
+  /** Lo que llegó de Donaciones para una columna: sus filas, el total y la página (desde 1). */
+  private record Pagina(List<DonacionesApi.Donacion> filas, long total, int pagina) {}
+
+  /**
+   * La página {@code pedida} (desde 1) de los {@code estados}; si se pasa, la última que hay. Null
+   * si Donaciones no responde.
+   */
+  private Pagina columna(UUID donante, List<String> estados, int pedida) {
+    try {
+      Pagina pagina = leer(donante, estados, pedida);
+      int ultima = Tramo.paginas(pagina.total(), DonanteTableroVista.POR_COLUMNA);
+      return pagina.pagina() > ultima ? leer(donante, estados, ultima) : pagina;
+    } catch (RestClientException sinColumna) {
+      return null;
+    }
+  }
+
+  private Pagina leer(UUID donante, List<String> estados, int pagina) {
+    MultiValueMap<String, String> filtros =
+        filtros(donante, null, null, estados, DonanteTableroVista.POR_COLUMNA);
+    filtros.set("page", String.valueOf(pagina - 1));
+    ResponseEntity<List<DonacionesApi.Donacion>> respuesta = api.pagina(filtros);
+    List<DonacionesApi.Donacion> cuerpo =
+        respuesta.getBody() == null ? List.of() : respuesta.getBody();
+    return new Pagina(cuerpo, total(respuesta, cuerpo.size()), pagina);
   }
 
   @Override

@@ -134,6 +134,9 @@
 /donante-inicio?escenario=vacio
 /donante-inicio?escenario=error
 /donante-inicio?escenario=lento
+# El tablero con los totales del boceto A (1, 5 y 48) y una página del medio (R11-25).
+/donante-inicio?escenario=muchas
+/donante-inicio?escenario=muchas&camino=2&llego=8
 /donante-donaciones?estado=pendiente&categoria=alimentos
 /donante-donaciones?estado=con-problema&categoria=ropa
 /donante-donaciones?escenario=vacio
