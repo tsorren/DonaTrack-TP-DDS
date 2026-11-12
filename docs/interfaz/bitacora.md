@@ -31,6 +31,22 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-11 · donante · Las personas ven sus pantallas de persona (R11-06, R11-09)
+
+- **Decisión:** el tipo de la cuenta se pide a Donaciones una vez por sesión; persona (`HUMANA`) y
+  sin tipo ven Inicio y Mi perfil de `persona/` (con datos reales) y las demás pantallas comunes con
+  sus textos; solo la persona confirmada tiene Misiones en el menú y "Ver mi huerta", arriba de
+  todo. La empresa pierde la huerta y "¿Qué planta sos vos?". "Ya doné" filtra la página y lo dice.
+  Con login real, "Cómo llega tu donación" va sin el depósito de ejemplo y ofrece escribir.
+- **Alternativas:** pedir el tipo en cada pantalla o sumarlo al token; deducirlo de la razón social;
+  cablear las siete plantillas de `persona/`; una dirección fija del depósito en la configuración.
+- **Por qué:** una cuenta sin tipo nunca se trata como empresa; una sola versión de cada pantalla
+  común; ningún dato de ejemplo con login real.
+- **Costo:** sin "Tu próxima misión" ni fecha de nacimiento; "Ya doné" abarca la página hasta
+  `p1-donante-listas`; la persona tiene que escribir para saber el depósito.
+- **Quién decidió:** usuario (backlog R11, sección 3) y agente (ficha `r11-p0-persona.md`, sección 9).
+- **Evidencia:** [ficha](flujos/r11-p0-persona.md).
+
 ### 2026-11-08 · ux · Revisión de UX: portada, entidades, registro e inicio del donante
 
 - **Decisión:** a pedido del usuario, como revisión de UX/UI:

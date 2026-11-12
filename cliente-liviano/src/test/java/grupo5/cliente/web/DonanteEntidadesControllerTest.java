@@ -92,4 +92,43 @@ class DonanteEntidadesControllerTest {
         .andExpect(content().string(containsString("Por ahora no hay entidades activas.")))
         .andExpect(content().string(not(containsString("entidades activas. Página"))));
   }
+
+  @Test
+  void yaDoneDiceQueFiltraLaPaginaYElPaginadorLoConserva() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), anyString(), anyInt()))
+        .thenReturn(
+            new DonanteEntidadesVista(
+                List.of(
+                    new Entidad("Hogar Ejemplo", List.of("d1"), List.of(frazadas())),
+                    new Entidad("Club Ejemplo", List.of(), List.of(frazadas()))),
+                14,
+                3,
+                3,
+                "hoy, 7 de noviembre, 19:40"));
+
+    mvc.perform(get("/donante-entidades?ya=si&pagina=2"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Ya doné")))
+        .andExpect(
+            content().string(containsString("En esta página, 1 entidad a la que ya donaste.")))
+        .andExpect(content().string(not(containsString("Club Ejemplo"))))
+        .andExpect(content().string(containsString("/donante-entidades?pagina=3&amp;ya=si")))
+        .andExpect(content().string(containsString("/donante-entidades?pagina=1&amp;ya=si")));
+  }
+
+  @Test
+  void enLaMaquetaComoLlegaMuestraElDepositoDeEjemplo() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), anyString(), anyInt()))
+        .thenReturn(new DonanteEntidadesVista(List.of(), 0, 1, 1, "hoy, 7 de noviembre, 19:40"));
+
+    mvc.perform(get("/donante-entidades"))
+        .andExpect(content().string(containsString("Depósito Central Ejemplo")));
+  }
+
+  private static Pedido frazadas() {
+    return new Pedido(
+        "Frazadas", "cat-ropa", "Piden 20 unidades", "Hasta el 15 de noviembre", null, 20);
+  }
 }

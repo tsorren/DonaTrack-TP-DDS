@@ -101,30 +101,6 @@
   margin-top: 0;
 }
 
-#inicio-misiones {
-  display: grid;
-  gap: var(--espacio-3);
-}
-
-#inicio-misiones-dibujo {
-  position: relative;
-  max-width: 42rem;
-}
-
-#inicio-misiones-dibujo img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-#inicio-misiones-dibujo .boton {
-  position: absolute;
-  top: 62%;
-  left: 52%;
-  translate: -50% -50%;
-  white-space: nowrap;
-}
-
 /* 2. El tablero: tres columnas, cada una con el color de su estado en la cabeza. */
 [data-v="tablero"] {
   display: grid;

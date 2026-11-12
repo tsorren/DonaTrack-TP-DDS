@@ -2,11 +2,15 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AvisosSinLeer;
 import grupo5.cliente.puertos.CuentasDelMenu;
+import grupo5.cliente.puertos.DonantePerfilPuerto;
+import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
 import grupo5.cliente.seguridad.Area;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.vistas.PasoRecorrido;
 import grupo5.cliente.vistas.PasoRecorrido.Avance;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -15,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.io.Resource;
@@ -90,6 +95,27 @@ public class Pantallas {
               new Seccion("Camiones", "camiones", "admin-camiones"),
               new Seccion("Ranking", ICONO_INCENTIVOS, "admin-ranking")));
 
+  /**
+   * El menú de la persona que dona: el del donante con Misiones antes de Seguimiento (RF-07; la
+   * empresa no la ve).
+   */
+  private static final List<Seccion> MENU_PERSONA =
+      List.of(
+          MENUS.get(Area.DONANTE).get(0),
+          MENUS.get(Area.DONANTE).get(1),
+          MENUS.get(Area.DONANTE).get(2),
+          new Seccion("Misiones", ICONO_INCENTIVOS, "donante-misiones"),
+          MENUS.get(Area.DONANTE).get(3));
+
+  /** Las pantallas del donante con diseño propio de persona, en templates/persona/. */
+  private static final Set<String> PROPIAS_DE_PERSONA =
+      Set.of("donante-inicio", "donante-perfil", "donante-perfil-guardado");
+
+  /** En la sesión: el tipo de la cuenta del donante y de qué donante es. */
+  private static final String TIPO = "donante.tipo";
+
+  private static final String TIPO_DE_QUIEN = "donante.tipo.de";
+
   /** El recorrido de la donación en camino; viaje-datos toma de acá los avances de los pasos. */
   private static final List<PasoRecorrido> PASOS =
       List.of(
@@ -104,12 +130,21 @@ public class Pantallas {
 
   private final CuentasDelMenu cuentas;
   private final ObjectProvider<AvisosSinLeer> avisos;
+  private final ObjectProvider<DonantePerfilPuerto> perfiles;
 
-  /** Sin {@link AvisosSinLeer} (los tests que no lo cargan), la cabecera queda sin número. */
-  Pantallas(ResourceLoader recursos, CuentasDelMenu cuentas, ObjectProvider<AvisosSinLeer> avisos) {
+  /**
+   * Sin {@link AvisosSinLeer} (los tests que no lo cargan), la cabecera queda sin número; sin
+   * {@link DonantePerfilPuerto}, el donante ve la versión de empresa.
+   */
+  Pantallas(
+      ResourceLoader recursos,
+      CuentasDelMenu cuentas,
+      ObjectProvider<AvisosSinLeer> avisos,
+      ObjectProvider<DonantePerfilPuerto> perfiles) {
     this.dibujadas = plantillas(recursos);
     this.cuentas = cuentas;
     this.avisos = avisos;
+    this.perfiles = perfiles;
   }
 
   /** Si hay una plantilla con ese nombre; se compara contra la lista, no se arma una ruta. */
@@ -139,13 +174,51 @@ public class Pantallas {
 
   /** Completa el modelo de la pantalla y devuelve su vista. */
   public String mostrar(String pantalla, Model model) {
+    return armar(pantalla, model, false);
+  }
+
+  /**
+   * La pantalla del donante en la versión de su tipo de cuenta (docs/interfaz/flujos/
+   * r11-p0-persona.md): {@code persona} en el modelo es true salvo en la empresa, y {@code sinTipo}
+   * true si Donaciones no dice el tipo. La persona confirmada tiene Misiones en el menú; Inicio y
+   * Mi perfil de la persona (también sin tipo) son las plantillas de {@code persona/}. El tipo se
+   * pide una vez por sesión y por donante; si el pedido falla, no se guarda y la falla sigue su
+   * camino (página de error). Sin el puerto (tests de pantalla sueltos), la versión de empresa.
+   */
+  public String mostrarDonante(
+      String pantalla, UUID donante, Model model, HttpServletRequest pedido) {
+    Tipo tipo = tipoDe(donante, pedido);
+    String vista = armar(pantalla, model, tipo == Tipo.PERSONA);
+    boolean persona = tipo != Tipo.EMPRESA;
+    model.addAttribute("persona", persona);
+    model.addAttribute("sinTipo", tipo == Tipo.SIN_TIPO);
+    return persona && PROPIAS_DE_PERSONA.contains(vista) ? "persona/" + vista : vista;
+  }
+
+  private Tipo tipoDe(UUID donante, HttpServletRequest pedido) {
+    DonantePerfilPuerto puerto = perfiles == null ? null : perfiles.getIfAvailable();
+    if (puerto == null) {
+      return Tipo.EMPRESA;
+    }
+    HttpSession sesion = pedido.getSession();
+    if (donante.equals(sesion.getAttribute(TIPO_DE_QUIEN))
+        && sesion.getAttribute(TIPO) instanceof Tipo guardado) {
+      return guardado;
+    }
+    Tipo tipo = Objects.requireNonNullElse(puerto.tipo(donante), Tipo.SIN_TIPO);
+    sesion.setAttribute(TIPO_DE_QUIEN, donante);
+    sesion.setAttribute(TIPO, tipo);
+    return tipo;
+  }
+
+  private String armar(String pantalla, Model model, boolean conMisiones) {
     if (!pantalla.matches(NOMBRE)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     boolean dibujada = existe(pantalla);
     String prefijo = pantalla.substring(0, pantalla.indexOf('-'));
     Optional<Area> area = Area.deRuta(prefijo);
-    List<Seccion> menu = area.map(MENUS::get).orElse(List.of());
+    List<Seccion> menu = conMisiones ? MENU_PERSONA : area.map(MENUS::get).orElse(List.of());
     Seccion actual =
         menu.stream()
             .filter(
@@ -162,6 +235,7 @@ public class Pantallas {
     model.addAttribute("completarPerfil", model.containsAttribute("completarPerfil"));
     model.addAttribute("sesionPendiente", model.containsAttribute("sesionPendiente"));
     model.addAttribute("persona", false);
+    model.addAttribute("sinTipo", false);
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("pasos", PASOS);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());

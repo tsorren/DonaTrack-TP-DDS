@@ -35,11 +35,11 @@ public class DonanteNotificacionesController {
   String bandeja(Model model, HttpServletRequest pedido) {
     String pantalla =
         pedido.getRequestURI().endsWith(LEIDAS) ? LEIDAS.substring(1) : "donante-notificaciones";
-    String vista = pantallas.mostrar(pantalla, model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return "redirect:/publico-ingresar";
     }
+    String vista = pantallas.mostrarDonante(pantalla, donante.get(), model, pedido);
     model.addAttribute("bandeja", notificaciones.bandeja(donante.get()));
     return vista;
   }

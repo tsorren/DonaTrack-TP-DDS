@@ -80,7 +80,10 @@ class DonantePerfilEnvioControllerTest {
           "martina@ejemplo.test",
           null,
           null,
-          "Aceptaste la versión 2 el 3 de noviembre de 2026.");
+          "Aceptaste la versión 2 el 3 de noviembre de 2026.",
+          "Martina",
+          "Ruiz",
+          null);
 
   @MockitoBean private DonantePerfilPuerto perfiles;
   @MockitoBean private CuentaActual cuentas;

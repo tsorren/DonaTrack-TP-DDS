@@ -84,14 +84,17 @@
     </th:block>
 
     <th:block th:if="${escenario == '' and !sinEntidades}">
+      <!--/* "Ya doné" filtra la página que se ve (el filtro de todo el listado es de p1-donante-listas):
+             el resultado lo dice (ficha r11-p0-persona.md). */-->
       <p class="resultado" role="status"
-         th:text="${filtrado} ? (${lista.isEmpty()} ? 'Ninguna entidad coincide con lo que elegiste.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste.|)
+         th:text="${soloYa and categoria == ''} ? (${lista.isEmpty()} ? 'En esta página no hay entidades a las que hayas donado.' : |En esta página, ${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad a la que' : 'entidades a las que'} ya donaste.|)
+                 : (${filtrado} ? (${lista.isEmpty()} ? 'Ninguna entidad coincide con lo que elegiste.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste.|)
                  : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre.|)
-                 : |${activas}. Página ${pagina} de ${misEntidades.paginas}.|)">46
+                 : |${activas}. Página ${pagina} de ${misEntidades.paginas}.|))">46
         entidades activas. Página 1 de 8.</p>
 
       <section th:if="${(busca != '' or filtrado) and lista.isEmpty()}" class="vacio" aria-labelledby="sin-resultados">
-        <h2 id="sin-resultados" th:text="${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.'">Probá
+        <h2 id="sin-resultados" th:text="${soloYa and categoria == ''} ? 'Probá en otra página o sacá el filtro.' : (${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.')">Probá
           con otra parte del nombre.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
@@ -136,11 +139,14 @@
         </th:block>
       </th:block>
 
-      <nav th:if="${busca == ''}" class="paginas" aria-label="Páginas de entidades">
+      <!--/* El paginador conserva la categoría y "Ya doné"; los que no se eligieron no se escriben (la
+             categoría sale de la lista fija de arriba). */-->
+      <nav th:if="${busca == ''}" class="paginas" aria-label="Páginas de entidades"
+           th:with="filtros=${(categoria == '' ? '' : '&categoria=' + categoria) + (soloYa ? '&ya=si' : '')}">
         <a th:if="${pagina > 1}" class="boton" data-tono="secundario" href="/donante-entidades"
-           hx-boost="true" th:href="@{/donante-entidades(pagina=${pagina - 1})}">Página anterior</a>
+           hx-boost="true" th:href="@{${'/donante-entidades?pagina=' + (pagina - 1) + filtros}}">Página anterior</a>
         <a th:if="${pagina < misEntidades.paginas}" class="boton" data-tono="secundario" href="/donante-entidades?pagina=2"
-           hx-boost="true" th:href="@{/donante-entidades(pagina=${pagina + 1})}">Página siguiente</a>
+           hx-boost="true" th:href="@{${'/donante-entidades?pagina=' + (pagina + 1) + filtros}}">Página siguiente</a>
       </nav>
     </th:block>
 
@@ -148,9 +154,15 @@
       <h2 id="como-titulo">Cómo llega tu donación</h2>
       <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
         entidad. Desde que la registran, ves cada paso en Mis donaciones.</p>
-      <p class="deposito"><b>Depósito Central Ejemplo</b>
+      <!--/* El depósito de ejemplo, solo en la maqueta: con datos reales todavía no hay de dónde sacarlo
+             (R11-09) y se ofrece escribir para saberlo. */-->
+      <p th:if="${depositoDeEjemplo}" class="deposito"><b>Depósito Central Ejemplo</b>
         <span>Calle Ejemplo 1234, Ciudad Ejemplo</span>
         <span>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</span></p>
+      <p th:unless="${depositoDeEjemplo}">¿No sabés dónde queda el depósito?
+        <a href="/publico-contacto?volver=/donante-entidades"
+           th:href="@{/publico-contacto(volver='/donante-entidades')}">Escribinos</a> y te pasamos la
+        dirección y el horario.</p>
       <a class="boton" data-tono="secundario" href="/donante-donaciones"
          th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
     </section>

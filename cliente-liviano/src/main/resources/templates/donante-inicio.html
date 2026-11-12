@@ -4,7 +4,8 @@
        arriba abajo. Qué dio fruto este mes (las cifras grandes con su planta), qué está en camino y
        qué conviene mirar (un tablero de tres columnas con el dibujo de cada donación), por dónde va
        la que está en camino (el recorrido con la abeja) y, al final, lo acumulado (las raíces y las
-       últimas noticias, del mismo alto). Las ilustraciones van a escala, como las láminas de la
+       últimas noticias, del mismo alto). Sin huerta ni "¿Qué planta sos vos?": las empresas no
+       tienen misiones (RF-07; ficha r11-p0-persona.md). Las ilustraciones van a escala, como las láminas de la
        portada (data-dibujo y --medida-alto del componente huerta): la maceta mide lo mismo en
        todas y los árboles son más altos. Lo propio de la pantalla va con data-v.
        Los datos vienen del controller (miInicio: de la maqueta, las de viaje-datos con las fechas
@@ -92,20 +93,6 @@
         <p th:if="${primera}" class="hito"
            th:text="|Primera entrega confirmada: ${#strings.toLowerCase(primera.titulo)}, el ${#strings.substringBefore(primera.llego, ' de 2026')}, en ${primera.destino}.|">Primera
           entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
-      </section>
-
-      <section id="inicio-misiones" class="tarjeta huerta-caja" aria-labelledby="inicio-misiones-titulo">
-        <header class="huerta-cabeza">
-          <p class="huerta-rotulo">Misiones</p>
-          <h2 id="inicio-misiones-titulo">Una huerta que crece con cada donación</h2>
-          <p>En la huerta podés ver el progreso de tus misiones y qué te falta para que cada planta eche raíces.</p>
-        </header>
-        <div id="inicio-misiones-dibujo">
-          <img src="/img/ilustraciones/huerta/acceso.svg" th:src="@{/img/ilustraciones/huerta/acceso.svg}"
-               alt="Ilustración de una huerta" width="1140" height="695">
-          <a class="boton" data-tono="secundario" href="/donante-misiones?cuenta=persona"
-             th:href="@{/donante-misiones(cuenta='persona')}">Ver mi huerta</a>
-        </div>
       </section>
 
       <!--/* 2. El tablero: lo que llegó, lo que está en curso y lo que conviene mirar, con el dibujo de
@@ -203,8 +190,6 @@
              th:text="|Ver todas (${miInicio.sinLeer} sin leer)|">Ver todas (4 sin leer)</a>
         </section>
       </div>
-
-      <section th:replace="~{componentes/huerta :: participa}"></section>
     </div>
   </div>
 </th:block>

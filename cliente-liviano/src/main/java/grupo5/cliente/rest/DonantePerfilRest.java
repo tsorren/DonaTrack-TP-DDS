@@ -3,6 +3,7 @@ package grupo5.cliente.rest;
 import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 
 import grupo5.cliente.puertos.DonantePerfilPuerto;
+import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
 import grupo5.cliente.vistas.DonantePerfilVista;
 import java.util.List;
 import java.util.Locale;
@@ -27,6 +28,7 @@ import org.springframework.web.client.RestClientException;
 class DonantePerfilRest implements DonantePerfilPuerto {
 
   private static final String JURIDICA = "JURIDICA";
+  private static final String HUMANA = "HUMANA";
 
   private static final DonacionesApi.Persona SIN_PERSONA =
       new DonacionesApi.Persona(
@@ -49,8 +51,15 @@ class DonantePerfilRest implements DonantePerfilPuerto {
     // Sin persona o sin dirección, los campos quedan vacíos: así no hay un null por campo.
     DonacionesApi.Persona p = d.persona() == null ? SIN_PERSONA : d.persona();
     DonacionesApi.Direccion dir = p.direccion() == null ? SIN_DIRECCION : p.direccion();
-    boolean empresa = p.tipo() == null || JURIDICA.equals(p.tipo());
-    String tipo = empresa ? "Empresa donante" : "Persona donante";
+    // Sin tipo no es empresa (R11-06): solo JURIDICA lleva razón social y CUIT.
+    Tipo cuentaDe = tipo(p);
+    boolean empresa = cuentaDe == Tipo.EMPRESA;
+    String tipo =
+        switch (cuentaDe) {
+          case EMPRESA -> "Empresa donante";
+          case PERSONA -> "Persona donante";
+          case SIN_TIPO -> "Donante";
+        };
     List<DonacionesApi.Medio> medios =
         p.mediosDeContacto() == null ? List.of() : p.mediosDeContacto();
     String correo = medio(medios, "CORREO");
@@ -59,8 +68,8 @@ class DonantePerfilRest implements DonantePerfilPuerto {
         correo == null ? tipo : tipo + " · " + correo,
         anonimo(empresa, categoria(donante)),
         Boolean.FALSE.equals(d.mostrarNombre()),
-        p.rubro(),
-        p.documento(),
+        empresa ? p.rubro() : null,
+        empresa ? p.documento() : null,
         dir.calle(),
         dir.altura() == null ? null : dir.altura().toString(),
         piso(dir),
@@ -70,7 +79,37 @@ class DonantePerfilRest implements DonantePerfilPuerto {
         correo,
         medio(medios, "WHATSAPP"),
         medio(medios, "TELEFONO"),
-        legales(donante));
+        legales(donante),
+        empresa ? null : p.nombre(),
+        empresa ? null : p.apellido(),
+        empresa ? null : documento(p));
+  }
+
+  @Override
+  public Tipo tipo(UUID donante) {
+    DonacionesApi.Donante d = api.donante(donante);
+    return tipo(d == null || d.persona() == null ? SIN_PERSONA : d.persona());
+  }
+
+  private static Tipo tipo(DonacionesApi.Persona p) {
+    if (JURIDICA.equals(p.tipo())) {
+      return Tipo.EMPRESA;
+    }
+    return HUMANA.equals(p.tipo()) ? Tipo.PERSONA : Tipo.SIN_TIPO;
+  }
+
+  /** "DNI 12.345.678"; un número con otros signos, como viene. */
+  private static String documento(DonacionesApi.Persona p) {
+    if (p.documento() == null || p.documento().isBlank()) {
+      return null;
+    }
+    String numero =
+        p.documento().matches("\\d{4,}")
+            ? String.format(Comun.ES_AR, "%,d", Long.parseLong(p.documento()))
+            : p.documento();
+    return p.tipoDocumento() == null || p.tipoDocumento().isBlank()
+        ? numero
+        : p.tipoDocumento() + " " + numero;
   }
 
   /** Lo que ve la entidad sin el nombre: "Empresa donante · Sostenedor" o "Donante Sostenedor". */
@@ -86,12 +125,16 @@ class DonantePerfilRest implements DonantePerfilPuerto {
     api.cambiarPreferencias(donante, new DonacionesApi.Preferencias(mostrar));
   }
 
+  /** La razón social de la empresa; si no, nombre y apellido o, sin ninguno, "Tu cuenta". */
   private static String nombre(DonacionesApi.Persona p) {
-    return JURIDICA.equals(p.tipo())
-        ? p.razonSocial()
-        : Stream.of(p.nombre(), p.apellido())
-            .filter(Objects::nonNull)
+    if (JURIDICA.equals(p.tipo())) {
+      return p.razonSocial();
+    }
+    String nombre =
+        Stream.of(p.nombre(), p.apellido())
+            .filter(v -> v != null && !v.isBlank())
             .collect(Collectors.joining(" "));
+    return nombre.isEmpty() ? "Tu cuenta" : nombre;
   }
 
   /** "SOSTENEDOR" se lee "Sostenedor"; sin Incentivos, null. */

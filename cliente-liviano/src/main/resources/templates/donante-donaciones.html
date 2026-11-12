@@ -29,11 +29,13 @@
   <div class="donaciones">
     <header>
       <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
-      <h1>Lo que donó <em>tu empresa</em></h1>
+      <h1 th:if="${persona}">Lo que <em>donaste</em></h1>
+      <h1 th:unless="${persona}">Lo que donó <em>tu empresa</em></h1>
     </header>
 
     <section th:if="${vacia and escenario != 'error'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Tu empresa todavía no tiene donaciones registradas.</h2>
+      <h2 id="vacio-titulo" th:text="${persona} ? 'Todavía no tenés donaciones registradas.' : 'Tu empresa todavía no tiene donaciones registradas.'">Tu
+        empresa todavía no tiene donaciones registradas.</h2>
       <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
         con su estado.</p>
       <a class="boton" data-tono="secundario" href="/donante-entidades"

@@ -34,11 +34,11 @@ public class MisDonacionesController {
 
   @GetMapping("/donante-donaciones")
   String misDonaciones(Model model, HttpServletRequest pedido) {
-    String vista = pantallas.mostrar("donante-donaciones", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return INGRESAR;
     }
+    String vista = pantallas.mostrarDonante("donante-donaciones", donante.get(), model, pedido);
     model.addAttribute("misDonaciones", donaciones.misDonaciones(donante.get()));
     return vista;
   }
@@ -46,11 +46,12 @@ public class MisDonacionesController {
   @GetMapping("/donante-donaciones-detalle")
   String detalle(
       @RequestParam(required = false) String donacion, Model model, HttpServletRequest pedido) {
-    String vista = pantallas.mostrar("donante-donaciones-detalle", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return INGRESAR;
     }
+    String vista =
+        pantallas.mostrarDonante("donante-donaciones-detalle", donante.get(), model, pedido);
     model.addAttribute("detalle", donaciones.detalle(donante.get(), donacion).orElse(null));
     return vista;
   }

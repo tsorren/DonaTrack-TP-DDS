@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * El inicio del donante con los datos del puerto. El atributo es {@code miInicio}: {@code
- * donaciones} y {@code avisos} los define datos-donante, que sigue envolviendo la pantalla. Sin
- * cuenta, manda a ingresar.
+ * El inicio del donante con los datos del puerto, en la versión de su tipo de cuenta (la persona,
+ * la de templates/persona/). El atributo es {@code miInicio}: {@code donaciones} y {@code avisos}
+ * los define datos-donante, que sigue envolviendo la pantalla. Sin cuenta, manda a ingresar.
  */
 @Controller
 public class DonanteInicioController {
@@ -29,11 +29,11 @@ public class DonanteInicioController {
 
   @GetMapping("/donante-inicio")
   String inicio(Model model, HttpServletRequest pedido) {
-    String vista = pantallas.mostrar("donante-inicio", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return "redirect:/publico-ingresar";
     }
+    String vista = pantallas.mostrarDonante("donante-inicio", donante.get(), model, pedido);
     model.addAttribute("miInicio", inicios.inicio(donante.get()));
     return vista;
   }
