@@ -96,7 +96,7 @@ docs/
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10, R11-p1-importador, R11-p2-actividad)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10, R11-p1-importador, R11-p2-actividad, R11-p2-listas-restantes)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02, R11-p0-api-listados y las cinco de R11-p1)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
