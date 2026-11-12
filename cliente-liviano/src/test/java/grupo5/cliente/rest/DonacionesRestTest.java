@@ -13,6 +13,7 @@ import grupo5.cliente.vistas.MisDonacionesVista.Categoria;
 import grupo5.cliente.vistas.MisDonacionesVista.Donacion;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
@@ -118,6 +119,37 @@ class DonacionesRestTest {
 
     assertEquals(List.of(new Categoria(ALIMENTOS, "Alimentos")), vista.categorias());
     assertEquals("hoy, 15 de octubre, 16:25", vista.actualizado());
+  }
+
+  @Test
+  void lasDeUnMesSeLasPideFiltradasADonaciones() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(
+            requestTo(
+                "http://donaciones/donaciones-independientes?donanteId="
+                    + DONANTE
+                    + "&desde=2026-10-01&hasta=2026-10-31"))
+        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo("http://donaciones/api/entidades/publicas"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    Clock hoy = Clock.fixed(Instant.parse("2026-10-15T19:25:00Z"), ZoneOffset.UTC);
+    DonacionesRest adaptador =
+        new DonacionesRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+            hoy);
+
+    MisDonacionesVista vista = adaptador.misDonaciones(DONANTE, YearMonth.of(2026, 10));
+
+    donaciones.verify();
+    assertEquals(3, vista.donaciones().size());
+    assertEquals("Arroz largo fino", vista.donaciones().getFirst().titulo());
   }
 
   /** Los otros cuatro estados, sin historial, sin ítems y con un ítem sin bien: ninguno falla. */

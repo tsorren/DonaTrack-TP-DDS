@@ -5,7 +5,9 @@
        La lista es la huerta de la empresa, como Mis donaciones de K (2026-11-08): una lámina por
        donación, la más reciente primero, con el dibujo según su estado; el texto dice lo mismo.
        Los datos vienen del controller (misDonaciones: de la maqueta o de Donaciones), no de
-       viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento. */-->
+       viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento.
+       Con ?mes=2026-10 ("Ver todas" de un mes del inicio de la persona), las de ese mes: lo dice
+       arriba, con el enlace para ver todas; el filtro de estado y categoría lo conserva. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones', ~{::contenido})}">
 <head>
@@ -31,10 +33,15 @@
       <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
       <h1 th:if="${persona}">Lo que <em>donaste</em></h1>
       <h1 th:unless="${persona}">Lo que donó <em>tu empresa</em></h1>
+      <p th:if="${mesTexto != null}" class="bajada" id="mes-elegido">
+        <span th:text="|Estás viendo las registradas en ${mesTexto}.|">Estás viendo las registradas
+          en octubre de 2026.</span>
+        <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver todas tus donaciones</a>
+      </p>
     </header>
 
     <section th:if="${vacia and escenario != 'error'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo" th:text="${persona} ? 'Todavía no tenés donaciones registradas.' : 'Tu empresa todavía no tiene donaciones registradas.'">Tu
+      <h2 id="vacio-titulo" th:text="${mesTexto != null and escenario != 'vacio'} ? |No hay donaciones registradas en ${mesTexto}.| : (${persona} ? 'Todavía no tenés donaciones registradas.' : 'Tu empresa todavía no tiene donaciones registradas.')">Tu
         empresa todavía no tiene donaciones registradas.</h2>
       <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
         con su estado.</p>
@@ -49,6 +56,7 @@
     <th:block th:unless="${vacia or escenario == 'error'}">
       <form hx-boost="true" class="filtro" action="/donante-donaciones"
             th:action="@{/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
+        <input th:if="${mesClave != null}" type="hidden" name="mes" th:value="${mesClave}">
         <div class="campo">
           <label for="estado">Estado</label>
           <select id="estado" name="estado">
@@ -69,7 +77,7 @@
         </div>
         <button class="boton" data-tono="principal" type="submit">Filtrar</button>
         <a th:if="${filtrado}" class="filtro-sacar" href="/donante-donaciones"
-           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+           th:href="${mesClave != null} ? @{/donante-donaciones(mes=${mesClave})} : @{/donante-donaciones}">Sacar los filtros</a>
       </form>
     </th:block>
 
@@ -90,7 +98,7 @@
         <h2 id="sin-resultados">No hay donaciones con esos filtros.</h2>
         <p>Probá con otro estado o con otra categoría.</p>
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
-           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+           th:href="${mesClave != null} ? @{/donante-donaciones(mes=${mesClave})} : @{/donante-donaciones}">Sacar los filtros</a>
       </section>
 
       <!--/* La huerta, como Mis donaciones de K (estética de K, 2026-11-08; antes, un libro de asientos):

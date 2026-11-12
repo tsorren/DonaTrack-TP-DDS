@@ -46,7 +46,18 @@ final class DonanteDonaciones {
         api.donaciones(donante).stream()
             .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
             .toList();
-    Map<UUID, String> entidades = DonacionesRest.nombresDeEntidades(api, lista);
+    return vistas(lista, DonacionesRest.nombresDeEntidades(api, lista), seguimientos, hoy);
+  }
+
+  /**
+   * Las de {@code lista}, en su orden, con los nombres de {@code entidades} ya leídos (el inicio de
+   * la persona las pide de a un mes y lee los nombres una sola vez).
+   */
+  static List<DonanteDonacionVista> vistas(
+      List<DonacionesApi.Donacion> lista,
+      Map<UUID, String> entidades,
+      Map<UUID, LogisticaApi.Seguimiento> seguimientos,
+      LocalDate hoy) {
     return IntStream.range(0, lista.size())
         .mapToObj(
             i ->

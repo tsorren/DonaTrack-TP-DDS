@@ -137,6 +137,30 @@ class MisDonacionesControllerTest {
   }
 
   @Test
+  void conUnMesMuestraSoloLasDeEseMesYLoDice() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones?mes=2026-10&donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Estás viendo las registradas en octubre de 2026.")))
+        .andExpect(content().string(containsString("Ver todas tus donaciones")))
+        .andExpect(content().string(containsString("name=\"mes\" value=\"2026-10\"")))
+        .andExpect(content().string(containsString("Silla plegable")));
+
+    mvc.perform(get("/donante-donaciones?mes=2026-09").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(containsString("No hay donaciones registradas en septiembre de 2026.")))
+        .andExpect(content().string(not(containsString("Silla plegable"))));
+
+    mvc.perform(get("/donante-donaciones?mes=no-es-un-mes").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("Estás viendo las registradas"))))
+        .andExpect(content().string(containsString("Silla plegable")));
+  }
+
+  @Test
   void elDetalleMuestraLoQueDaLaApiYNoInventaLaDeOtroDonante() throws Exception {
     mvc.perform(get("/donante-donaciones-detalle?donacion=a"))
         .andExpect(redirectedUrl("/publico-ingresar"));

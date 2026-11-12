@@ -147,6 +147,16 @@ Cambios respecto de la versión de la maqueta, y por qué:
 - **El año y los meses salen de la fecha de hoy**, no de un "octubre" fijo; el mes en que donó
   muestra sus plantas y el que no, neutro (sin marca de falta ni racha).
 - **Sin tipo:** la misma pantalla sin el bloque de la huerta.
+- **De cada mes, 3 y "Ver todas"** (reglas 1 y 2 del backlog, arreglos de la ronda 1): "Mes por
+  mes" muestra las 3 donaciones más recientes de cada mes y "Ver todas las de octubre (7)", que lleva
+  a Mis donaciones filtrada por ese mes (`/donante-donaciones?mes=2026-10`); si el mes tiene 3 o
+  menos, el enlace dice "Ver las de octubre en Mis donaciones". El almanaque dibuja hasta 3 plantas
+  y "+N" por las demás. "Donaste N veces", "N donaciones registradas" y las tres cifras son números
+  que cuenta Donaciones (`X-Total-Count`), no el largo de una lista. La pantalla lee `miAnio`
+  (`DonanteAnioVista`) y no la lista entera del inicio de la empresa.
+- **Mis donaciones con `?mes=`:** dice "Estás viendo las registradas en octubre de 2026." con "Ver
+  todas tus donaciones"; el filtro de estado y categoría conserva el mes. Un mes mal escrito se
+  ignora. Las páginas de Mis donaciones son de `p1-donante-listas`, que tiene que conservar `mes`.
 
 ### Inicio de la empresa (`donante-inicio`)
 
@@ -223,6 +233,9 @@ Cambios, y por qué:
 | Inicio persona | Cargando | El texto y las cajas punteadas de siempre | "Cargando tu inicio…" |
 | Inicio persona | Error del servidor | La caja de error de `datos-donante :: error` | "No pudimos cargar tu inicio." + Reintentar |
 | Inicio persona | Sin tipo | Como "Con datos", sin el bloque de la huerta | — |
+| Inicio persona | Mes con más de 3 | Las 3 más recientes y el enlace | "Ver todas las de octubre (7)" |
+| Mis donaciones | Filtrada por mes | La frase arriba y el enlace | "Estás viendo las registradas en octubre de 2026." / "Ver todas tus donaciones" |
+| Mis donaciones | Mes sin donaciones | Caja vacía | "No hay donaciones registradas en septiembre de 2026." |
 | Inicio empresa | Con datos | El tablero de siempre, sin huerta ni "¿Qué planta sos vos?" | — |
 | Perfil persona | Con datos | Nombre, renglón de cuenta, cómo te ven, datos, avisos, términos | "Persona donante · ana@correo-ejemplo.test" |
 | Perfil persona | Datos que faltan | El campo vacío, sin texto de ejemplo adentro | (el campo, vacío) |

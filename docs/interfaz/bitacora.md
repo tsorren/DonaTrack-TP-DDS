@@ -31,6 +31,22 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-11 · donante · El año de la persona, de a 3 por mes y con las cifras como números
+
+- **Decisión:** en el inicio de la persona, cada mes muestra sus 3 donaciones más recientes y
+  "Ver todas", que lleva a Mis donaciones filtrada por ese mes (`?mes=2026-10`). Las cifras del año
+  (donaciones, entregadas, en camino, en el depósito) y las de cada mes llegan como números: el
+  total (`X-Total-Count`) que da Donaciones para cada pedido. La persona no pide la lista entera.
+- **Alternativas:** dejar el resumen del inicio sin páginas como excepción aprobada (el usuario
+  pidió páginas o lotes en todas las listas); un endpoint nuevo de resumen del donante (cambia la
+  API de Donaciones, fuera de este lote); contar en la plantilla (rompe la regla 1).
+- **Por qué:** reglas 1 y 2 del backlog R11: nada de listas completas y un resumen con 3 y "Ver
+  todas".
+- **Costo:** el inicio hace un pedido por mes del año, más tres para las cifras. Mis donaciones
+  filtrada por mes todavía no tiene páginas: las suma `p1-donante-listas`, que conserva el `mes`.
+- **Quién decidió:** usuario (punto 4 del pedido de la corrida) y agente (arreglos de la ronda 1).
+- **Evidencia:** [ficha](flujos/r11-p0-persona.md), sección 4.
+
 ### 2026-11-11 · donante · Las personas ven sus pantallas de persona (R11-06, R11-09)
 
 - **Decisión:** el tipo de la cuenta se pide a Donaciones una vez por sesión; persona (`HUMANA`) y

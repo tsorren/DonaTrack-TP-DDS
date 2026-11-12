@@ -48,6 +48,12 @@ interface DonacionesApi {
   @GetExchange("/donaciones-independientes")
   List<Donacion> buscar(@RequestParam MultiValueMap<String, String> filtros);
 
+  /**
+   * Una página con filtros ({@code page}, {@code size}); el total viene en {@code X-Total-Count}.
+   */
+  @GetExchange("/donaciones-independientes")
+  ResponseEntity<List<Donacion>> pagina(@RequestParam MultiValueMap<String, String> filtros);
+
   /** El donante (dueño) o ADMIN. La entidad no puede leer una por id: usa el listado. */
   @GetExchange("/donaciones-independientes/{id}")
   Donacion donacionIndependiente(@PathVariable UUID id);

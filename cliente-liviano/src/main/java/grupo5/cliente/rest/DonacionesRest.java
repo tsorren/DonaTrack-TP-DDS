@@ -32,6 +32,7 @@ import grupo5.cliente.vistas.PasoRecorrido.Avance;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 
 /**
@@ -81,7 +83,23 @@ class DonacionesRest implements DonacionesPuerto {
 
   @Override
   public MisDonacionesVista misDonaciones(UUID donante) {
-    List<DonacionesApi.Donacion> lista = ordenadas(donante);
+    return libro(ordenadas(donante));
+  }
+
+  /** Las del mes, filtradas por Donaciones por la fecha de registro (desde y hasta inclusivos). */
+  @Override
+  public MisDonacionesVista misDonaciones(UUID donante, YearMonth mes) {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("donanteId", donante.toString());
+    filtros.add("desde", mes.atDay(1).toString());
+    filtros.add("hasta", mes.atEndOfMonth().toString());
+    return libro(
+        api.buscar(filtros).stream()
+            .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
+            .toList());
+  }
+
+  private MisDonacionesVista libro(List<DonacionesApi.Donacion> lista) {
     Map<UUID, String> entidades = entidades(lista);
     List<Donacion> donaciones =
         IntStream.range(0, lista.size())
