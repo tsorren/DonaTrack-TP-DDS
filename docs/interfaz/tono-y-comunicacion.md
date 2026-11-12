@@ -1,7 +1,7 @@
 # Tono y comunicación
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-31 · parte del [proceso de diseño](README.md)**
+> **Versión 1.4 · 2026-11-12 (cifras y cuentas de la revisión del 2026-11-11; plazos sin fijar; cifra con tope y lo que muestra una página, oleada P1; un botón no promete un lugar que la cuenta no tiene, `p1-portada`) · parte del [proceso de diseño](README.md)**
 > Fuente: el [Brief de Tono y Comunicación v1.0](identidad/brief-tono-y-comunicacion-v1.0.pdf) del
 > equipo. Este documento lo lleva a la interfaz: qué se escribe en cada pantalla y qué no. Si el
 > equipo saca una versión nueva del brief, se actualiza este archivo y nada más. Lo marcado
@@ -33,7 +33,7 @@ promesa de impacto que no se puede demostrar; un reemplazo del criterio de las o
 | Responsable de operaciones de una ONG (decide la compra) | Admin | Que la plataforma ordena donaciones, entregas y estados sin sumar trabajo |
 | Responsable de responsabilidad social (RSE) | Donante (una empresa; el foco de Raíces) | Que hay un proceso claro, datos que se pueden consultar y forma de explicar qué se hizo |
 | Persona donante | Donante | Que su aporte tiene un recorrido, que puede ver su estado y que es parte de algo compartido |
-| Organización o comunidad receptora | Entidad | Que su necesidad cuenta, que la coordinación es clara y que confirma la recepción ella misma |
+| Organización o comunidad receptora | Organización (en el código, `entidad`) | Que su necesidad cuenta, que la coordinación es clara y que confirma la recepción ella misma |
 | Quien llega por primera vez *(extensión)* | Público (portada) | Qué es DonaTrack, para quién es y qué puede hacer ahora |
 
 Son promesas relacionadas, no intercambiables: una pantalla para la organización no le habla solo
@@ -59,10 +59,10 @@ La voz es una sola (cercana, clara, honesta y orientada a la acción); el tono c
 | Momento en el sitio | Tono | Cómo se escribe |
 |---|---|---|
 | Portada, páginas públicas e institucionales | Profesional, seguro, directo | Qué resuelve, cómo funciona y para quién. Sin exageraciones ni jerga de startup |
-| Pantallas de trabajo (admin, entidad, formularios, tablas) | Claro, útil, tranquilizador | Instrucciones, estados y próximo paso. Frases cortas, verbos concretos |
+| Pantallas de trabajo (admin, organización, formularios, tablas) | Claro, útil, tranquilizador | Instrucciones, estados y próximo paso. Frases cortas, verbos concretos |
 | Panel, avisos y seguimiento del donante | Cálido, agradecido, participativo | Reconoce el aporte, dice qué información hay y propone seguir, sin presionar |
 | Demoras, problemas y errores | Honesto, responsable, sereno | Qué pasa, qué se sabe y cuál es el siguiente paso. Sin optimismo vacío |
-| Historias y datos de una entidad | Respetuoso, en contexto, digno | La entidad habla y actúa. Sin paternalismo ni exposición innecesaria |
+| Historias y datos de una organización | Respetuoso, en contexto, digno | La organización habla y actúa. Sin paternalismo ni exposición innecesaria |
 
 **Cómo escribimos:** verbos concretos (organizar, asignar, preparar, entregar, confirmar,
 consultar, participar); una idea por oración; acciones y resultados que se pueden ver antes que
@@ -76,14 +76,14 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
 | Estado | Qué se puede decir | Qué no se debe dar a entender |
 |---|---|---|
 | Registrada | La donación quedó registrada | Que ya fue asignada o entregada |
-| Asignada | Se asignó a una entidad o a una necesidad | Que la entidad ya la recibió |
+| Asignada | Se asignó a una organización o a una necesidad | Que la organización ya la recibió |
 | Preparada / En camino | La entrega se está preparando o está en camino, según el dato real | Que la entrega ya ocurrió |
-| Entrega confirmada | La entidad confirmó la recepción; se ve la información disponible (la foto, la fecha) | Que se conoce el efecto social de esa entrega |
+| Entrega confirmada | La organización confirmó la recepción; se ve la información disponible (la foto, la fecha) | Que se conoce el efecto social de esa entrega |
 | Con problema o demorada | Qué pasa, qué se sabe y el próximo paso | Que todo sigue normal |
 
 - Un paso que todavía no ocurrió se muestra como pendiente, con texto: "Falta confirmar la entrega:
-  la confirma la entidad con la foto". Nunca con el nombre del estado cumplido.
-- Cuando algo está confirmado, se dice qué lo respalda (la confirmación de la entidad, la foto).
+  la confirma la organización con la foto". Nunca con el nombre del estado cumplido.
+- Cuando algo está confirmado, se dice qué lo respalda (la confirmación de la organización, la foto).
 - El sistema de color de los estados ([dirección de arte](direccion-de-arte.md#cómo-se-arma-una-dirección))
   acompaña a estos nombres; no los reemplaza.
 
@@ -100,22 +100,50 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
 - Ninguna cifra inventada, ni porcentajes, testimonios o casos de éxito sin respaldo. En la
   maqueta los datos son de ejemplo y sintéticos, pero se escriben como se escribirían los reales.
 - Una cifra que se pueda malinterpretar lleva **período, fuente y alcance**: "1.284 entregas
-  confirmadas desde marzo de 2026, según las confirmaciones de las entidades".
+  confirmadas desde marzo de 2026, según las confirmaciones de las organizaciones".
 - Toda cifra que cambia con el tiempo dice cuándo se actualizó *(extensión)*.
-- Sin comparar entidades ni donantes (rankings, tablas de posiciones) sin un criterio claro y
+- Sin comparar organizaciones ni donantes (rankings, tablas de posiciones) sin un criterio claro y
   comparable.
 - Una estimación no se presenta como resultado. Si falta un dato, se dice cuál y por qué.
+- Una cuenta dice de qué es *(extensión, revisión del 2026-11-11)*. "Coinciden 1.234 donantes." es
+  el total del servicio, no lo que entra en la pantalla. Si algo solo mira la página que se ve, lo
+  dice: "En esta página, 2 organizaciones a las que ya donaste.". Si son demasiados para una lista
+  corta, se pide más precisión sin culpa: "Hay 41 donantes que coinciden. Escribí más del nombre o el documento para encontrarlo.".
+- Un período sin datos no afirma más de lo que se sabe *(extensión)*: "Todavía no hay donaciones
+  tuyas registradas en 2026." en lugar de "Nunca donaste", si la cuenta donó otros años.
+- Lo que la plataforma todavía no puede hacer se dice como límite, no se esconde *(extensión)*:
+  "Esta lista todavía no se puede filtrar por vencimiento: te mostramos todas las del depósito."
+- Un plazo que nadie fijó se dice como lo habitual, sin cifra ni fecha *(extensión, revisión del
+  2026-11-11, R11-08)*: "La revisión suele llevar unos días hábiles." Una cifra ("hasta 5 días
+  hábiles") sería una promesa; callar el plazo deja a la persona sin saber cuánto esperar.
+- Una cifra con tope dice el total y lo que se muestra *(extensión, oleada P1, R11-19)*: "Hubo 340
+  entregas en el último mes. El mapa muestra las 200 más recientes." Nunca el tope como si fuera el
+  total.
+- Una lista paginada dice qué parte se ve y de cuántas *(extensión, oleada P1, R11-11)*:
+  "Mostrando 1 a 20 de 57 notificaciones." con la palabra de lo que se lista, no "resultados".
+- Un botón no promete un lugar que la cuenta no tiene *(extensión, oleada P1, R11-15)*: con la
+  solicitud pendiente, lo público dice "Ver mi solicitud", no "Ir a mi inicio", porque esa cuenta
+  todavía no tiene inicio. Con la cuenta activa, "Ir a mi inicio" ("Mi inicio" en la barra del
+  celular).
 
-## Personas, entidades y fotos
+## Personas, organizaciones y fotos
 
-- Se nombra a las personas y a las entidades por su rol y su contexto, no por una carencia. "Entidad"
-  o "entidad beneficiaria" sirven para el rol en el sistema; al contar algo, se dice el nombre: "el
-  Comedor Barrio Ejemplo".
+- Se nombra a las personas y a las organizaciones por su rol y su contexto, no por una carencia.
+  Quien recibe se llama **Organización** en todo lo que se ve: menús, títulos, botones, avisos,
+  ayudas y páginas públicas (R11-45). "Entidad" y "entidad beneficiaria" quedan solo en el código,
+  las rutas y la API, que no cambian de nombre. Al contar algo, se dice el nombre: "el Comedor
+  Barrio Ejemplo".
+- El donante que es persona jurídica dice su tipo jurídico: Empresa, ONG, Institución o
+  Gubernamental ("ONG donante"). Nunca se lo llama "organización": esa palabra es de quien recibe.
+- La cuenta se nombra por su nombre: el saludo y el menú dicen el nombre y apellido de la persona,
+  la razón social de la empresa o de la organización, o el nombre de quien administra. El rol
+  ("Persona donante", "Organización", "Administración") va debajo, como dato, nunca en lugar del
+  nombre (R11-44). Si el nombre no se pudo traer, el menú dice "Tu cuenta".
 - Sin expresiones paternalistas: "los más necesitados", "dar voz a quienes no tienen voz".
 - Las fotos de una entrega muestran lo entregado y el lugar. No exponen a personas en situación
-  vulnerable; si alguien aparece, es porque la entidad lo decidió *(extensión, a partir de "evita
+  vulnerable; si alguien aparece, es porque la organización lo decidió *(extensión, a partir de "evita
   la exposición innecesaria")*.
-- La entidad no es pasiva: confirma, pide, informa. Los textos la muestran haciendo.
+- La organización no es pasiva: confirma, pide, informa. Los textos la muestran haciendo.
 
 ## Cómo no escribimos
 
@@ -164,7 +192,7 @@ Todo texto, sección o pantalla las pasa antes de mostrarse al usuario. Las usan
 1. ¿Se entiende qué hace DonaTrack y para quién es?
 2. ¿Ayuda a resolver una necesidad real de una organización o de quien dona?
 3. ¿Es claro y honesto sobre el estado, el alcance y los resultados?
-4. ¿Respeta la dignidad y la capacidad de acción de las personas y las entidades?
+4. ¿Respeta la dignidad y la capacidad de acción de las personas y las organizaciones?
 5. ¿Invita a participar sin culpa, miedo ni manipulación?
 6. ¿Equilibra cercanía y profesionalismo?
 7. ¿Cada afirmación concreta se puede respaldar con un dato?

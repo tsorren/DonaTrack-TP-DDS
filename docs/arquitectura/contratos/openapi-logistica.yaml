@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.9.0
+  version: 1.10.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -43,17 +43,55 @@ paths:
   /api/entregas/mapa:
     get:
       summary: Listar donaciones entregadas con coordenadas válidas para el mapa público (RF-02)
-      description: Retorna únicamente entregas en estado ENTREGADA cuyo destino posee coordenadas geográficas válidas, mediante una proyección sanitizada sin datos personales, sin calle/altura/piso/departamento/código postal y sin fotos de recepción.
+      description: >-
+        Retorna únicamente entregas en estado ENTREGADA cuyo destino posee coordenadas geográficas
+        válidas, mediante una proyección sanitizada sin datos personales, sin
+        calle/altura/piso/departamento/código postal y sin fotos de recepción. Desde 1.10.0
+        (R11-19) devuelve solo las de un período (por la hora de arribo, en hora de Argentina), de
+        la más reciente a la más vieja (a igual hora, por `idEntrega`) y con tope; el total del
+        período, sin el tope, va en `X-Total-Count`. Sin parámetros, los últimos 30 días y hasta
+        200 (antes, toda la historia). El período, el orden y el tope se resuelven en la base.
       operationId: listarMapaPublico
+      parameters:
+        - name: desde
+          in: query
+          required: false
+          description: Primer día del período, inclusive. Si falta, `hasta` menos 30 días.
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: false
+          description: Último día del período, inclusive. Si falta, hoy (en hora de Argentina).
+          schema:
+            type: string
+            format: date
+        - name: limite
+          in: query
+          required: false
+          description: Cuántas entregas como máximo. Si falta, 200.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 200
       responses:
         '200':
-          description: Listado sanitizado de entregas completadas geolocalizadas
+          description: Listado sanitizado de entregas completadas geolocalizadas del período, con el tope
+          headers:
+            X-Total-Count:
+              description: Cantidad de entregas del período con coordenadas, sin contar el tope.
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/EntregaMapaPublicoResponseDTO'
+        '400':
+          description: '`hasta` anterior a `desde`, una fecha que no se entiende o `limite` fuera de 1..500 (ERR-CSR-003)'
   /api/entregas/seguimiento/donaciones/{idDonacion}:
     get:
       summary: Consultar seguimiento de traslado por ID de donación para el donante (RF-09)

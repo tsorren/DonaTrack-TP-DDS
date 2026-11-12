@@ -410,7 +410,8 @@
 <form th:fragment="formulario(conError, enDialogo)" class="pila" data-espacio="3"
       th:classappend="${enDialogo} ? '' : 'formulario tarjeta'"
       action="/admin-camiones-agregado" th:action="@{/admin-camiones-agregado}" method="post" hx-boost="true"
-      hx-indicator="#enviando-admin-camiones-agregar" hx-select-oob="#avisos">
+      hx-indicator="#enviando-admin-camiones-agregar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
   <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
            autofocus aria-labelledby="resumen-titulo">
     <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>

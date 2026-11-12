@@ -7,7 +7,10 @@
 //   así sirve también para los formularios que llegan en un panel nuevo.
 // - La entrada de la página en el historial se marca como de HTMX: así, al volver con Atrás hasta la
 //   página tal como se abrió, HTMX la trae de nuevo (sin la marca, solo cambiaba la dirección).
-// - Un menú de filtro (<details>) que quedó abierto se cierra al llegar el panel nuevo.
+// - Los menús desplegables (<details>: la cuenta y las pastillas de filtro) se cierran al tocar afuera,
+//   con Esc (el foco vuelve a su botón) y al pasar el foco a otro lado; abrir uno cierra el que
+//   estaba abierto. Sin JavaScript abren y cierran solo con su botón, como un <details> común.
+// - Los menús que quedaron abiertos se cierran al llegar el panel nuevo.
 if (!history.state) {
   history.replaceState({ htmx: true }, "", location.href);
 }
@@ -25,8 +28,48 @@ document.addEventListener("change", (evento) => {
     formulario.requestSubmit();
   }
 });
-document.addEventListener("htmx:afterSettle", () => {
-  document.querySelectorAll("#contenido details.filtros-pildora[open]").forEach((menu) => {
-    menu.open = false;
+
+const MENUS = "details.navegacion-cuenta, details.filtros-pildora";
+
+function cerrarMenus(excepto) {
+  document.querySelectorAll(MENUS).forEach((menu) => {
+    if (menu.open && menu !== excepto) {
+      menu.open = false;
+    }
   });
+}
+
+// Tocar (mouse, dedo o lápiz) fuera de un menú abierto lo cierra. El botón de otro menú también es
+// "afuera": abrirlo cierra el anterior. El botón del propio menú lo abre y lo cierra el navegador.
+document.addEventListener("pointerdown", (evento) => {
+  cerrarMenus(evento.target.closest(MENUS));
+});
+document.addEventListener("keydown", (evento) => {
+  if (evento.key !== "Escape") {
+    return;
+  }
+  const conElFoco = document.activeElement?.closest(MENUS);
+  const estabaAbierto = conElFoco?.open;
+  cerrarMenus(null);
+  if (estabaAbierto) {
+    conElFoco.querySelector("summary")?.focus();
+  }
+});
+// Al pasar el foco a otro elemento de la página (con Tab, por ejemplo) el menú se cierra. Se decide
+// después del evento, cuando el foco ya llegó a destino: cerrar en medio del cambio de foco hacía caer
+// el navegador al tocar el título de un menú de filtro. Sin destino (otra ventana o un toque en un
+// lugar sin foco) no se cierra: de lo segundo se ocupa pointerdown.
+document.addEventListener("focusout", (evento) => {
+  const menu = evento.target.closest(MENUS);
+  if (!menu || !evento.relatedTarget) {
+    return;
+  }
+  setTimeout(() => {
+    if (menu.open && !menu.contains(document.activeElement)) {
+      menu.open = false;
+    }
+  }, 0);
+});
+document.addEventListener("htmx:afterSettle", () => {
+  cerrarMenus(null);
 });

@@ -31,11 +31,11 @@ public class DonanteMisionesController {
 
   @GetMapping("/donante-misiones")
   String misiones(Model model, HttpServletRequest pedido) {
-    String vista = pantallas.mostrar("donante-misiones", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return "redirect:/publico-ingresar";
     }
+    String vista = pantallas.mostrarDonante("donante-misiones", donante.get(), model, pedido);
     DonanteMisionesVista mias = misiones.misiones(donante.get());
     if (mias.persona() != null) {
       model.addAttribute("persona", mias.persona());

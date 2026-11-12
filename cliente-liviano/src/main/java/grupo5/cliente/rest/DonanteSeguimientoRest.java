@@ -49,7 +49,7 @@ class DonanteSeguimientoRest implements DonanteSeguimientoPuerto {
     LocalDateTime ahora = LocalDateTime.now(reloj.withZone(ARGENTINA));
     Map<UUID, LogisticaApi.Seguimiento> seguimientos = seguimientos(logistica, donante);
     List<DonanteDonacionVista> donaciones =
-        DonanteDonaciones.de(api, donante, seguimientos, ahora.toLocalDate());
+        DonanteDonaciones.enCurso(api, donante, seguimientos, ahora.toLocalDate());
     Map<String, Punto> puntos = new HashMap<>();
     seguimientos
         .values()

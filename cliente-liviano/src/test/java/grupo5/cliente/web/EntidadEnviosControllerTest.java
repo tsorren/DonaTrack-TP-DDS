@@ -191,7 +191,7 @@ class EntidadEnviosControllerTest {
             flash()
                 .attribute(
                     Envios.AVISO,
-                    "Otra persona de tu entidad cambió esta necesidad mientras la editabas."
+                    "Otra persona de tu organización cambió esta necesidad mientras la editabas."
                         + " Revisala y, si hace falta, guardá tus cambios de nuevo."));
   }
 

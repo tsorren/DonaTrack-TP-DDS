@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -86,6 +87,9 @@ public abstract class AlgoritmoAsignacion {
     if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
     return donaciones.stream().filter(donacion -> mismaSubcategoria(donacion, necesidad)).toList();
   }
+
+  /** Qué algoritmo es: queda en cada propuesta que sugiere (R11-24). */
+  public abstract TipoAlgoritmo tipo();
 
   public abstract List<DonacionIndependiente> filtrarDonaciones(
       Necesidad necesidad, List<DonacionIndependiente> donaciones);

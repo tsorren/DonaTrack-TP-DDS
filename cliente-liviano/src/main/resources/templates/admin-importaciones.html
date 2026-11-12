@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!--/* Importaciones de donantes del admin (R11-20), según su ficha de flujo
+       (docs/interfaz/flujos/r11-p1-importaciones.md, sección 4.1). Es una pestaña de la sección
+       Donantes (Pantallas la marca así): arriba, las pestañas Donantes · Importaciones; después, el
+       título con "Importar CSV", cuántas siguen en curso (un número de la fuente) y cuándo se leyeron
+       las cifras, con "Actualizar"; la búsqueda por nombre del archivo y los filtros (Estado, Subida y
+       Ordenar) en un formulario GET; y la lista, de a 20, con el paginador provisorio.
+       La lista llega ya buscada, filtrada y ordenada (adminImportaciones.importaciones, un
+       vistas.Tramo): la plantilla no filtra ni cuenta. Cada renglón lleva a su avance o a su
+       resultado; el que no leyó ninguna fila dice por qué y no lleva a ningún lado. Las importaciones
+       viejas, sin nombre ni fecha guardados, lo dicen.
+       Lo que la dirección pidió y no se entendió (adminImportaciones.consulta.avisos) se avisa arriba
+       de la lista; ese filtro no se aplica.
+       En la maqueta, ?escenario=vacia, sin-resultados y con-viejas.
+       Fragmentos:
+       - pestanas(actual): la fila de pestañas de Donantes; actual es 'donantes' o 'importaciones'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Importaciones - Donantes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="datos=${adminImportaciones},
+             c=${datos.consulta},
+             tramo=${datos.importaciones},
+             n=${tramo.total},
+             filtrado=${c.filtrada()},
+             vacia=${n == 0 and !filtrado}">
+  <div class="mesa">
+    <nav th:replace="~{admin-importaciones :: pestanas('importaciones')}"></nav>
+
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Donantes</p>
+        <h1>Importaciones de donantes</h1>
+      </div>
+      <div class="racimo">
+        <a class="boton" data-tono="principal" href="/admin-donantes?importar=abrir#importar"
+           th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
+      </div>
+    </header>
+
+    <details>
+      <summary class="boton" data-tono="secundario">¿Qué muestra esta lista?</summary>
+      <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y los
+        que no terminaron. Abrí uno para ver su avance o sus filas con error. Para seguir una
+        importación en vivo, abrí su avance: esta lista no se actualiza sola.</p>
+    </details>
+
+    <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no se importó ningún archivo de donantes.</h2>
+      <p>Importá un CSV desde Donantes para cargar muchos donantes de una vez.</p>
+      <a class="boton" data-tono="secundario" href="/admin-donantes?importar=abrir#importar"
+         th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
+    </section>
+
+    <section th:unless="${vacia}" class="pila" data-espacio="3" aria-labelledby="lista-titulo">
+      <div class="pila" data-espacio="1">
+        <p th:if="${datos.enCurso > 0}">
+          <span th:text="${datos.enCurso == 1} ? '1 importación en curso.' : |${#numbers.formatInteger(datos.enCurso, 1, 'POINT')} importaciones en curso.|">1
+            importación en curso.</span>
+          <a href="/admin-importaciones?estado=en-curso" th:href="@{/admin-importaciones(estado='en-curso')}"
+             hx-boost="true">Ver solo las que están en curso</a>
+        </p>
+        <p class="texto-chico">
+          <span th:text="|Cifras leídas el ${datos.al}.|">Cifras leídas el 12 de noviembre de 2026, 18:34.</span>
+          <a href="/admin-importaciones" th:href="${actualizar}" hx-boost="true">Actualizar</a>
+        </p>
+      </div>
+
+      <h2 id="lista-titulo" tabindex="-1" class="solo-lectores"
+          th:autofocus="${paginador != null and paginador.cambio}">Todas las importaciones</h2>
+
+      <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra). Enviarlo
+             no lleva ?pagina=: vuelve a la primera. Con fechas escritas en la dirección, van ocultas. */-->
+      <form hx-boost="true" class="filtros-barra" action="/admin-importaciones"
+            th:action="@{/admin-importaciones}" method="get" role="search"
+            hx-indicator="#buscando-importaciones">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por nombre del archivo</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" maxlength="100"
+                   th:value="${c.buscar}" placeholder="Por ejemplo: donantes-octubre">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <th:block th:if="${c.conRango()}">
+          <input type="hidden" name="desde" th:if="${c.desde != null}" th:value="${c.desde}">
+          <input type="hidden" name="hasta" th:if="${c.hasta != null}" th:value="${c.hasta}">
+        </th:block>
+        <div class="filtros" role="group" aria-label="Filtrar las importaciones">
+          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${c.estado}, ${datos.estados})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('subida', 'Subida', ${c.subida}, ${datos.subidas})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('orden', 'Más recientes primero', ${c.orden}, ${datos.ordenes})}"></details>
+        </div>
+        <p th:replace="~{envio :: indicador('buscando-importaciones', 'Buscando importaciones…')}"></p>
+      </form>
+
+      <p th:each="aviso : ${c.avisos}" class="aviso-breve" role="status" th:text="${aviso}">No
+        entendimos la fecha pedida: te mostramos todas las fechas.</p>
+
+      <div class="racimo" aria-live="polite">
+        <p th:if="${n > 0}" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
+          23 importaciones.</p>
+        <a th:if="${filtrado or c.orden != ''}" class="filtros-sacar" href="/admin-importaciones"
+           th:href="@{/admin-importaciones}">Sacar los filtros</a>
+      </div>
+
+      <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo">Ninguna importación coincide con la búsqueda y los filtros elegidos.</h3>
+        <a class="boton" data-tono="secundario" href="/admin-importaciones"
+           th:href="@{/admin-importaciones}">Sacar los filtros</a>
+      </section>
+
+      <table th:if="${n > 0}" class="tabla">
+        <caption class="solo-lectores"
+                 th:text="|Importaciones de donantes, página ${tramo.pagina} de ${tramo.paginas}|">Importaciones
+          de donantes, página 1 de 2</caption>
+        <thead>
+          <tr>
+            <th scope="col">Archivo</th>
+            <th scope="col">Subido</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Filas</th>
+            <th scope="col"><span class="solo-lectores">Qué se puede hacer</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="f : ${tramo.filas}"
+              th:with="nombre=${f.archivo != null ? f.archivo : 'Archivo sin nombre guardado'}">
+            <th scope="row" th:text="${nombre}">donantes-octubre.csv</th>
+            <td data-rotulo="Subido">
+              <time th:if="${f.subido != null}" th:datetime="${f.subidoIso}" th:text="${f.subido}"
+                    datetime="2026-10-15T18:02:00">15 oct 2026, 18:02</time>
+              <th:block th:if="${f.subido == null}">Sin fecha guardada</th:block>
+            </td>
+            <td data-rotulo="Estado" th:text="${f.estado}">Terminada con filas con error</td>
+            <td data-rotulo="Filas">
+              <th:block th:if="${f.filas != null}" th:text="${f.filas}">20.000 filas: 19.100 nuevos,
+                774 actualizados y 126 con error</th:block>
+              <th:block th:if="${f.filas == null and f.detalle == null}">—</th:block>
+              <th:block th:if="${f.detalle != null}" th:text="${f.detalle}">El archivo no se pudo leer.</th:block>
+            </td>
+            <td data-rotulo="">
+              <a th:if="${f.enlace != null}" class="boton" data-tono="secundario"
+                 th:href="@{${f.enlace}}" href="/admin-donantes-importado"
+                 th:aria-label="|${f.accion} de ${nombre}|"
+                 th:text="|${f.accion} ›|">Ver el resultado ›</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+    </section>
+  </div>
+</th:block>
+
+<!--/* Las pestañas de la sección Donantes (ficha r11-p1-importaciones, sección 2): enlaces reales; la
+       que se ve, con aria-current. */-->
+<nav th:fragment="pestanas(actual)" class="segmentos" aria-label="Vistas de donantes" hx-boost="true">
+  <a href="/admin-donantes" th:href="@{/admin-donantes}"
+     th:attr="aria-current=${actual == 'donantes'} ? 'page' : null">Donantes</a>
+  <a href="/admin-importaciones" th:href="@{/admin-importaciones}"
+     th:attr="aria-current=${actual == 'importaciones'} ? 'page' : null">Importaciones</a>
+</nav>
+</body>
+</html>

@@ -12,10 +12,13 @@ import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDat
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -61,6 +64,25 @@ public class EntregasRepositoryMongoAdapter
       return List.of();
     }
     return aDominio(springDataRepo.findByEstado(estado));
+  }
+
+  @Override
+  public List<Entrega> findEntregadasParaMapa(Instant desde, Instant hasta, int limite) {
+    if (desde == null || hasta == null || limite <= 0) {
+      return List.of();
+    }
+    Sort orden = Sort.by(Sort.Order.desc("horaArribo"), Sort.Order.asc("id"));
+    return aDominio(
+        springDataRepo.buscarParaMapa(
+            EstadoEntrega.ENTREGADA, desde, hasta, PageRequest.of(0, limite, orden)));
+  }
+
+  @Override
+  public long contarEntregadasParaMapa(Instant desde, Instant hasta) {
+    if (desde == null || hasta == null) {
+      return 0;
+    }
+    return springDataRepo.contarParaMapa(EstadoEntrega.ENTREGADA, desde, hasta);
   }
 
   @Override

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* El paginador provisorio de R11-01, reemplazado por el componente paginas de R11-11
+       (templates/componentes/paginas.html, ficha docs/interfaz/flujos/r11-p1-paginador.md, §4.3).
+       Queda solo como pase: paginador(p) dibuja paginas(p), así las listas del admin que lo nombran
+       (Donantes, filas con error, Donaciones y Entidades) cambian sin tocar sus plantillas. Se borra
+       cuando ninguna plantilla lo nombre: las nuevas usan componentes/paginas :: paginas(p).
+       Fragmentos:
+       - paginador(p): p es un vistas.Paginador que arma web.Paginadores.de(...), o null. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="paginador(p)" th:replace="~{componentes/paginas :: paginas(${p})}"></nav>
+</body>
+</html>

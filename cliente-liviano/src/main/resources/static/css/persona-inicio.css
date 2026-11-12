@@ -59,6 +59,13 @@
   gap: var(--espacio-1) var(--espacio-2);
 }
 
+/* Cada donación del mes es un enlace al detalle: con el alto de toque mínimo. */
+#anio-lista li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
 #anio-lista figure {
   max-width: 28rem;
   margin: 0;
@@ -118,8 +125,28 @@
 }
 
 /* El acceso a la huerta: el dibujo y, encima, el botón real donde la diseñadora dibujó el suyo. */
+/* La huerta, arriba de todo (R11-06): compacta, para que el año se vea enseguida; en pantalla
+   ancha, el título al lado del dibujo. */
+#anio-huerta {
+  display: grid;
+  gap: var(--espacio-3);
+  align-items: center;
+  margin-bottom: var(--espacio-4);
+}
+
+#anio-huerta .huerta-cabeza {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 53.75em) {
+  #anio-huerta {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 28rem);
+  }
+}
+
 #anio-huerta-dibujo {
   position: relative;
+  max-width: 28rem;
 }
 
 #anio-huerta-dibujo img {

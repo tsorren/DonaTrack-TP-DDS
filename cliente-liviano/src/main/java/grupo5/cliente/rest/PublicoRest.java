@@ -29,7 +29,7 @@ import org.springframework.util.MultiValueMap;
 class PublicoRest implements PublicoPuerto {
 
   private static final String ENTREGAS = "Entregas confirmadas";
-  private static final String ENTIDADES = "Entidades en el mapa";
+  private static final String ENTIDADES = "Organizaciones en el mapa";
   private static final String DONANTES = "Donantes con al menos una donación";
 
   private static final int DIAS_DEL_MES = 30;

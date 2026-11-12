@@ -16,6 +16,11 @@
   column-gap: 1rem;
 }
 
+/* El paginador es el componente paginas (R11-11): debajo de las láminas, con aire. */
+.donaciones > .paginas {
+  margin-top: 2rem;
+}
+
 /* El pie, centrado y en el 80 % del ancho, con aire sobre las láminas (usuario, 2026-11-09). */
 .donaciones-pie {
   display: grid;

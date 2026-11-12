@@ -122,7 +122,9 @@ class EnVivo:
                 (necesidades,))}
 
     def pendientes(self) -> list[dict]:
-        return [p for p in self.donaciones.get("/api/asignaciones/propuestas") or []
+        # Desde R11-24 el listado pagina (20 por defecto): se piden las pendientes, hasta 100.
+        return [p for p in self.donaciones.get(
+                    "/api/asignaciones/propuestas?estado=PENDIENTE&orden=reciente&size=100") or []
                 if p.get("estado") == "PENDIENTE"]
 
     def propuestas_para(self, destinos: dict[str, str], previas: set[str]) -> list[dict]:

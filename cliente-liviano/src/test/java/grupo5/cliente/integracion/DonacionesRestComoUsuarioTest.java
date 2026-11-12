@@ -1,6 +1,7 @@
 package grupo5.cliente.integracion;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
@@ -12,7 +13,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import grupo5.cliente.puertos.DonacionesComoUsuario.Juridica;
 import grupo5.cliente.puertos.DonacionesComoUsuario.NecesidadDeEntidad;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -46,17 +49,38 @@ class DonacionesRestComoUsuarioTest {
   }
 
   @Test
-  void lasJuridicasSeLeenEnUnaSolaLlamadaConSuRazonSocial() {
+  void lasJuridicasSeLeenPorSuIdConSuRazonSocial() {
     String json =
         """
         [{"tipo":"JURIDICA","id":"%s","razonSocial":"Merendero Oeste","documento":"30-1",
           "mediosDeContacto":[],"representantes":[]}]"""
             .formatted(PERSONA);
     servidor
-        .expect(requestTo(BASE + "/api/personas?tipo=JURIDICA"))
+        .expect(requestTo(BASE + "/api/personas?id=" + PERSONA + "&size=100"))
         .andRespond(withSuccess(json, APPLICATION_JSON));
 
-    assertThat(donaciones.juridicas()).containsExactly(new Juridica(PERSONA, "Merendero Oeste"));
+    assertThat(donaciones.juridicas(List.of(PERSONA)))
+        .containsExactly(new Juridica(PERSONA, "Merendero Oeste"));
+    servidor.verify();
+  }
+
+  @Test
+  void conMasDeCienSolicitudesLasJuridicasSePidenDeACien() {
+    List<UUID> ids = IntStream.range(0, 101).mapToObj(i -> UUID.randomUUID()).toList();
+    servidor
+        .expect(requestTo(containsString("&id=" + ids.get(99) + "&size=100")))
+        .andRespond(withSuccess("[]", APPLICATION_JSON));
+    servidor
+        .expect(requestTo(BASE + "/api/personas?id=" + ids.get(100) + "&size=100"))
+        .andRespond(withSuccess("[]", APPLICATION_JSON));
+
+    assertThat(donaciones.juridicas(ids)).isEmpty();
+    servidor.verify();
+  }
+
+  @Test
+  void sinSolicitudesNoSePideNada() {
+    assertThat(donaciones.juridicas(List.of())).isEmpty();
     servidor.verify();
   }
 

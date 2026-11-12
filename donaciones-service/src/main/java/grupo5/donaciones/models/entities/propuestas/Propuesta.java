@@ -24,6 +24,15 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   private EstadoPropuesta estado;
   private LocalDateTime fechaCreacion;
 
+  /** Id de la cuenta que la aprobó o descartó ("SISTEMA" si no hubo cuenta); null si pendiente. */
+  private String decididaPor;
+
+  private LocalDateTime fechaDecision;
+
+  /** Qué algoritmos la sugirieron y en qué puesto (R11-24); vacía en las anteriores a V24. */
+  @Getter(AccessLevel.NONE)
+  private List<SugerenciaDeAlgoritmo> sugerencias = new ArrayList<>();
+
   public Propuesta() {
     this.id = UUID.randomUUID();
     this.posiblesFragmentaciones = new ArrayList<>();
@@ -43,11 +52,25 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
       EstadoPropuesta estado,
       LocalDateTime fechaCreacion,
       List<PosibleFragmentacion> posiblesFragmentaciones) {
+    this(id, necesidadQueSatisfaceId, estado, fechaCreacion, posiblesFragmentaciones, null, null);
+  }
+
+  /** Constructor de reconstitución con la decisión ya tomada (quién y cuándo). */
+  public Propuesta(
+      UUID id,
+      UUID necesidadQueSatisfaceId,
+      EstadoPropuesta estado,
+      LocalDateTime fechaCreacion,
+      List<PosibleFragmentacion> posiblesFragmentaciones,
+      String decididaPor,
+      LocalDateTime fechaDecision) {
     this.id = id;
     this.necesidadQueSatisfaceId = necesidadQueSatisfaceId;
     this.estado = estado;
     this.fechaCreacion = fechaCreacion;
     this.posiblesFragmentaciones = new ArrayList<>(posiblesFragmentaciones);
+    this.decididaPor = decididaPor;
+    this.fechaDecision = fechaDecision;
   }
 
   public void asociarNecesidad(UUID necesidadId) {
@@ -56,6 +79,27 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
 
   public List<PosibleFragmentacion> getPosiblesFragmentaciones() {
     return List.copyOf(posiblesFragmentaciones);
+  }
+
+  public List<SugerenciaDeAlgoritmo> getSugerencias() {
+    return List.copyOf(sugerencias);
+  }
+
+  /**
+   * Registra que {@code sugerencia.algoritmo()} la sugirió. Un algoritmo aparece una sola vez: una
+   * segunda sugerencia suya reemplaza a la primera.
+   */
+  public void registrarSugerencia(SugerenciaDeAlgoritmo sugerencia) {
+    if (sugerencia == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    sugerencias.removeIf(s -> s.algoritmo() == sugerencia.algoritmo());
+    sugerencias.add(sugerencia);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirSugerencias(List<SugerenciaDeAlgoritmo> guardadas) {
+    this.sugerencias = new ArrayList<>(guardadas);
   }
 
   void setId(UUID id) {
@@ -99,9 +143,10 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
     }
 
-    String actorFinal = (actor == null || actor.isBlank()) ? "SISTEMA" : actor;
+    String actorFinal = actorODefecto(actor);
 
     this.estado = EstadoPropuesta.APROBADA;
+    registrarDecision(actorFinal);
     this.registrarEvento(
         new PropuestaAprobada(
             this.id,
@@ -113,9 +158,23 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   }
 
   public void rechazar() {
+    rechazar(null);
+  }
+
+  public void rechazar(String actor) {
     if (this.estado != EstadoPropuesta.PENDIENTE) {
       throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     this.estado = EstadoPropuesta.DESCARTADA;
+    registrarDecision(actorODefecto(actor));
+  }
+
+  private void registrarDecision(String actor) {
+    this.decididaPor = actor;
+    this.fechaDecision = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  private static String actorODefecto(String actor) {
+    return (actor == null || actor.isBlank()) ? "SISTEMA" : actor;
   }
 }

@@ -54,6 +54,7 @@ docs/
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   ├── demo-seeder.md                     # Seeder de demo: seis meses de historia y lo de hoy (SPEC-10)
+│   ├── ensayo-importacion-20000.md        # Ensayo de importación de 20.000 donantes: cómo se corre y qué alcanza (R11-03)
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
 │   ├── preprod-fiel.md                    # Criterio de preprod fiel, estado de CI/CD e integración y brechas
@@ -90,13 +91,13 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-38) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-41) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10)
-│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10, R11-p1-importador)
+│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02, R11-p0-api-listados y las cinco de R11-p1)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
 │   ├── README.md                          # Visión general y reglas de regeneración
@@ -196,6 +197,14 @@ docs/
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🎬 **Seeder de demo (propuesta):** [SPEC-10](specs/active/SPEC-10-seeder-de-demo.md) · [testing/demo-seeder.md](testing/demo-seeder.md)
+* 📏 **Ensayo de importación de 20.000 donantes:** [testing/ensayo-importacion-20000.md](testing/ensayo-importacion-20000.md)
+* 📄 **Listados paginados y cifras de Donaciones (R11-01, implementada en la oleada P0):** [spec del lote p0-api-listados](specs/completed/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md) · ADRs `proposed`: [listados siempre paginados](adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md), [búsqueda sin tildes](adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md), [SQL nativo y lectura por lote](adr/donaciones-service/20261111-consultas-de-listado-en-sql-nativo-y-lectura-por-lote.md), [cifras del admin como conteos](adr/donaciones-service/20261111-cifras-del-admin-como-conteos-en-un-resumen.md) y [`fecha_alta` y últimos importados](adr/donaciones-service/20261111-fecha-de-alta-del-donante-y-ultimos-importados-en-el-archivo.md) · deuda: [DTI-39](adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
+* 📥 **Pantalla de importaciones del admin (R11-20, construida 2026-11-12):** [spec del lote p1-importaciones](specs/completed/R11-p1-importaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-importaciones.md)
+* 📄 **Entidades y Mis donaciones del donante con filtros en el servidor (R11-12, R11-13 y R11-18, implementada):** [spec del lote p1-donante-listas](specs/completed/R11-p1-donante-listas-spec.md)
+* 📄 **Asignaciones con el algoritmo y el puesto de cada propuesta (R11-24, propuesta, implementada):** [spec del lote p1-asignaciones](specs/completed/R11-p1-asignaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-asignaciones.md)
+* 🏠 **Portada y públicas con la sesión iniciada, y Bajo tierra sin rótulos pisados (R11-15 y R11-17, construida 2026-11-12):** [ficha de flujo](interfaz/flujos/r11-p1-portada.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42), ítem 1
+* 📄 **ADRs de la oleada P1 de R11 (`proposed`, escritos después del código):** [cuentas de administración en el realm](adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md) · [autor de la decisión desde el token](adr/donaciones-service/20261112-autor-de-la-decision-de-una-propuesta-desde-el-token.md) · [historial de importaciones](adr/donaciones-service/20261112-historial-de-importaciones-con-nombre-y-fecha-de-subida-en-el-archivo.md) · [entidades vistas por un donante](adr/donaciones-service/20261112-entidades-vistas-por-un-donante-en-un-recurso-propio-con-la-marca-ya-le-dono.md) · [bandeja paginada](adr/notificaciones-service/20261112-bandeja-por-persona-paginada-con-busqueda-sin-tildes-por-translate.md) · [mapa por período y con tope](adr/logistica-service/20261112-mapa-publico-por-periodo-y-con-tope.md) · [sugerencias de cada algoritmo](adr/donaciones-service/20261112-propuestas-con-la-sugerencia-de-cada-algoritmo-y-su-situacion-calculada-en-donaciones.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42)
+* 📥 **Importador de donantes por partes (R11-B08, implementada salvo el ensayo):** [spec del lote p1-importador](specs/active/R11-p1-importador-spec.md) · [ensayo de 20.000 filas](testing/ensayo-importacion-20000.md) · deuda: [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)

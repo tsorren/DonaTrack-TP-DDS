@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,51 +31,74 @@ public class LectorDonantesCSV implements CargadorDonantes {
   }
 
   @Override
-  public List<FilaPadron> cargarDonantes(InputStream contenido) {
-    List<FilaPadron> filasMapeadas = new ArrayList<>();
-
+  public int contarFilas(InputStream contenido) {
     // Cerrar el reader cierra también el stream; quien lo abrió puede volver a cerrarlo sin efecto.
-    try (BufferedReader reader =
-        new BufferedReader(new InputStreamReader(contenido, StandardCharsets.UTF_8))) {
+    try (BufferedReader reader = abrir(contenido)) {
+      if (reader.readLine() == null) {
+        return 0; // Archivo vacío
+      }
+      int filas = 0;
+      String linea;
+      while ((linea = reader.readLine()) != null) {
+        if (!linea.isBlank()) {
+          filas++;
+        }
+      }
+      return filas;
+    } catch (IOException e) {
+      throw new InfrastructureException(ErrorCatalog.CSV_READ_ERROR, e);
+    }
+  }
 
+  @Override
+  public void leerPorTandas(
+      InputStream contenido, int tamanioTanda, Consumer<List<FilaPadron>> alLeerTanda) {
+    if (tamanioTanda < 1) {
+      throw new IllegalArgumentException("El tamaño de la tanda tiene que ser al menos 1");
+    }
+    try (BufferedReader reader = abrir(contenido)) {
       String cabeceraStr = reader.readLine();
       if (cabeceraStr == null) {
-        return filasMapeadas; // Archivo vacío
+        return; // Archivo vacío
       }
-
       if (cabeceraStr.startsWith(BOM)) {
         cabeceraStr = cabeceraStr.substring(1);
       }
-
       final String[] cabecera =
           Arrays.stream(cabeceraStr.split(",")).map(String::trim).toArray(String[]::new);
 
+      List<FilaPadron> tanda = new ArrayList<>(tamanioTanda);
       String linea;
       int numeroDeLinea = 1;
       while ((linea = reader.readLine()) != null) {
         numeroDeLinea++;
-        procesarYAgregarLinea(linea, cabecera, filasMapeadas, numeroDeLinea);
+        if (!linea.isBlank()) {
+          tanda.add(mapear(linea, cabecera, numeroDeLinea));
+        }
+        if (tanda.size() == tamanioTanda) {
+          alLeerTanda.accept(List.copyOf(tanda));
+          tanda.clear();
+        }
       }
-
+      if (!tanda.isEmpty()) {
+        alLeerTanda.accept(List.copyOf(tanda));
+      }
     } catch (IOException e) {
       throw new InfrastructureException(ErrorCatalog.CSV_READ_ERROR, e);
     }
-
-    return filasMapeadas;
   }
 
-  private void procesarYAgregarLinea(
-      String linea, String[] cabecera, List<FilaPadron> filasMapeadas, int numeroDeLinea) {
-    if (linea.isBlank()) {
-      return;
-    }
+  private static BufferedReader abrir(InputStream contenido) {
+    return new BufferedReader(new InputStreamReader(contenido, StandardCharsets.UTF_8));
+  }
+
+  private FilaPadron mapear(String linea, String[] cabecera, int numeroDeLinea) {
     try {
-      filasMapeadas.add(
-          new FilaPadron(numeroDeLinea, donanteParser.procesarLinea(linea, cabecera)));
+      return new FilaPadron(numeroDeLinea, donanteParser.procesarLinea(linea, cabecera));
     } catch (IllegalArgumentException e) {
       // Sin el contenido de la línea: trae datos personales (nombre, documento, email)
       log.warn("Línea {} con error de formato: {}", numeroDeLinea, e.getMessage());
-      filasMapeadas.add(new FilaPadron(numeroDeLinea, null));
+      return new FilaPadron(numeroDeLinea, null);
     }
   }
 }

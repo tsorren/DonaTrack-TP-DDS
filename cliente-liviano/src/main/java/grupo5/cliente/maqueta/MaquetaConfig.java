@@ -29,7 +29,7 @@ public class MaquetaConfig implements WebMvcConfigurer {
   private static final Map<Area, CuentaVista> CUENTAS =
       Map.of(
           Area.DONANTE, new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante"),
-          Area.ENTIDAD, new CuentaVista("Marta", "Comedor Barrio Ejemplo"),
+          Area.ENTIDAD, new CuentaVista("Comedor Barrio Ejemplo", "Organización"),
           Area.ADMIN, new CuentaVista("Leo", "Administración"));
 
   private static final Map<String, Long> SIN_LEER =

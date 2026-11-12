@@ -18,12 +18,14 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,6 +98,26 @@ public class EntregasRepositoryJpaAdapter
       return List.of();
     }
     return springDataRepo.findByEstado(estado).stream().map(mapper::toDomain).toList();
+  }
+
+  @Override
+  public List<Entrega> findEntregadasParaMapa(Instant desde, Instant hasta, int limite) {
+    if (desde == null || hasta == null || limite <= 0) {
+      return List.of();
+    }
+    return springDataRepo
+        .buscarParaMapa(EstadoEntrega.ENTREGADA, desde, hasta, PageRequest.of(0, limite))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  public long contarEntregadasParaMapa(Instant desde, Instant hasta) {
+    if (desde == null || hasta == null) {
+      return 0;
+    }
+    return springDataRepo.contarParaMapa(EstadoEntrega.ENTREGADA, desde, hasta);
   }
 
   @Override

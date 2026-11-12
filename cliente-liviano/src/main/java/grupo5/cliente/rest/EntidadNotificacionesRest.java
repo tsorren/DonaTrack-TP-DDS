@@ -5,14 +5,17 @@ import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 import static grupo5.cliente.rest.Comun.HORA;
 
 import grupo5.cliente.puertos.EntidadNotificacionesPuerto;
+import grupo5.cliente.vistas.ConsultaBandeja;
 import grupo5.cliente.vistas.EntidadNotificacionesVista;
 import grupo5.cliente.vistas.EntidadNotificacionesVista.Novedad;
 import grupo5.cliente.vistas.EntidadNotificacionesVista.Tema;
+import grupo5.cliente.vistas.Tramo;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,12 +27,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
 /**
- * La bandeja de la entidad desde Notificaciones. La categoría sale del tipo de evento (HB-09); sin
- * tipo, "Otras novedades". Todas llevan a Donaciones recibidas. La que avisa que la entrega salió
- * lleva además el botón "Confirmar recepción" si Logística tiene esa donación en una entrega que
- * todavía espera y está entre las asignadas de la entidad, como lo exige Confirmar recepción (su
- * clave es la de la entrega, no la de la donación que trae el aviso); si Logística o Donaciones no
- * responden, queda el enlace simple.
+ * La bandeja de la entidad desde Notificaciones, de a una página (R11-14): la página, "Sin leer",
+ * la búsqueda, la categoría y el orden los resuelve el servicio, y el total y las sin leer son sus
+ * números. La categoría y el título salen del tipo de evento (HB-09); sin tipo, "Otras novedades" y
+ * "Novedad". Todas llevan a Donaciones recibidas. La que avisa que la entrega salió lleva además el
+ * botón "Confirmar recepción" si Logística tiene esa donación en una entrega que todavía espera y
+ * está entre las asignadas de la entidad, como lo exige Confirmar recepción (su clave es la de la
+ * entrega, no la de la donación que trae el aviso); si Logística o Donaciones no responden, queda
+ * el vínculo simple. Eso se calcula solo para los avisos de la página.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -38,32 +43,36 @@ import org.springframework.web.client.RestClientException;
 class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
 
   private static final DateTimeFormatter ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-  private static final String OTRAS = "otras";
   private static final String EN_CAMINO = "DONACION_EN_CAMINO";
   private static final String A_RECIBIDAS = "/entidad-recibidas";
+  private static final String NOVEDAD = "Novedad";
 
-  /** Las categorías en el orden del filtro; el menú muestra solo las que tienen avisos. */
-  private static final List<Tema> TEMAS =
+  /** Las categorías del menú, en su orden: siempre todas las del rol (ficha, sección 4). */
+  static final List<Tema> TEMAS =
       List.of(
+          new Tema("", "Todas las categorías", null),
           new Tema("camino", "Entregas en camino", "camion"),
           new Tema("asignadas", "Donaciones asignadas", "asigna"),
           new Tema("recibidas", "Donaciones recibidas", "tilde"),
           new Tema("problemas", "Problemas", "problema"),
-          new Tema(OTRAS, "Otras novedades", "reloj"));
+          new Tema(Bandejas.OTRAS, "Otras novedades", "reloj"));
 
-  /** La categoría de cada tipo de evento; los demás (y sin tipo) van a "otras". */
-  private static final Map<String, String> TEMA_DE =
+  /** Los tipos de evento de cada categoría; los demás (y sin tipo) van a "otras". */
+  private static final Map<String, List<String>> TIPOS_DE = tiposDe();
+
+  /** El título de cada tipo de aviso (ficha, sección 6); los demás y sin tipo, "Novedad". */
+  private static final Map<String, String> TITULOS =
       Map.of(
           "DONACION_ASIGNADA",
-          "asignadas",
+          "Nueva donación asignada",
           EN_CAMINO,
-          "camino",
+          "Entrega en camino",
           "DONACION_RECIBIDA",
-          "recibidas",
+          "Entrega recibida",
           "ENTREGA_FALLIDA",
-          "problemas",
+          "La entrega tuvo un problema",
           "DONACION_VENCIDA",
-          "problemas");
+          "Donación vencida");
 
   /** Los estados que Confirmar recepción acepta (EntidadConfirmarRest): la puerta y el traslado. */
   private static final Set<String> ESPERANDO = Set.of("EN_PUERTA", "EN_TRASLADO");
@@ -81,38 +90,63 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
     this.reloj = reloj;
   }
 
+  private static Map<String, List<String>> tiposDe() {
+    Map<String, List<String>> tipos = new LinkedHashMap<>();
+    tipos.put("camino", List.of(EN_CAMINO));
+    tipos.put("asignadas", List.of("DONACION_ASIGNADA"));
+    tipos.put("recibidas", List.of("DONACION_RECIBIDA"));
+    tipos.put("problemas", List.of("ENTREGA_FALLIDA", "DONACION_VENCIDA"));
+    return Collections.unmodifiableMap(tipos);
+  }
+
   @Override
-  public EntidadNotificacionesVista bandeja(UUID entidad) {
+  public EntidadNotificacionesVista bandeja(UUID entidad, ConsultaBandeja consulta) {
     LocalDateTime ahora =
         LocalDateTime.now(reloj.withZone(ARGENTINA)).truncatedTo(ChronoUnit.MINUTES);
+    Tramo<NotificacionesApi.Notificacion> pagina =
+        Bandejas.pagina(api, entidad, consulta, TIPOS_DE);
     List<NotificacionesApi.Notificacion> avisos =
-        api.bandeja(entidad, null).stream()
-            .filter(n -> n.id() != null && n.fechaCreacion() != null)
-            .toList();
+        pagina.filas().stream().filter(n -> n.id() != null && n.fechaCreacion() != null).toList();
     Map<UUID, UUID> entregaDe = entregasEsperando(entidad, avisos);
     List<Novedad> novedades = avisos.stream().map(n -> novedad(n, entregaDe)).toList();
-    Set<String> presentes = novedades.stream().map(Novedad::tema).collect(Collectors.toSet());
-    List<Tema> temas = new ArrayList<>();
-    temas.add(new Tema("", "Todas las categorías", null));
-    TEMAS.stream().filter(t -> presentes.contains(t.valor())).forEach(temas::add);
     return new EntidadNotificacionesVista(
-        novedades, temas, ahora.format(ISO), ahora.format(DIA_Y_ANIO) + ", " + ahora.format(HORA));
+        new Tramo<>(novedades, pagina.total(), pagina.pagina(), pagina.paginas()),
+        Bandejas.sinLeer(api, entidad),
+        TEMAS,
+        ahora.format(ISO),
+        ahora.format(DIA_Y_ANIO) + ", " + ahora.format(HORA));
   }
 
   private static Novedad novedad(NotificacionesApi.Notificacion n, Map<UUID, UUID> entregaDe) {
-    String tema = n.tipoEvento() == null ? OTRAS : TEMA_DE.getOrDefault(n.tipoEvento(), OTRAS);
+    String tema = tema(n.tipoEvento());
     UUID entrega = n.referenciaId() == null ? null : entregaDe.get(n.referenciaId());
     boolean confirmable = EN_CAMINO.equals(n.tipoEvento()) && entrega != null;
+    String titulo =
+        n.tipoEvento() == null ? NOVEDAD : TITULOS.getOrDefault(n.tipoEvento(), NOVEDAD);
     return new Novedad(
         n.id().toString(),
         tema,
         n.fechaCreacion().format(ISO),
         n.fechaLectura() != null,
-        n.mensaje(),
+        titulo,
+        n.mensaje() == null ? "" : n.mensaje(),
+        "Ver en Donaciones recibidas",
         confirmable ? "Confirmar recepción" : null,
         confirmable ? n.mensaje() : null,
         confirmable ? "/entidad-seguimiento-confirmar?entrega=" + entrega : destino(tema),
         null);
+  }
+
+  static String tema(String tipoEvento) {
+    // List.of no admite buscar con null: sin tipo, "Otras novedades".
+    if (tipoEvento == null) {
+      return Bandejas.OTRAS;
+    }
+    return TIPOS_DE.entrySet().stream()
+        .filter(categoria -> categoria.getValue().contains(tipoEvento))
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .orElse(Bandejas.OTRAS);
   }
 
   private static String destino(String tema) {
@@ -166,12 +200,12 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
     if (ids.isEmpty()) {
       api.marcarTodasLeidas(entidad);
     } else {
-      ids.forEach(id -> api.marcarLeida(id, true));
+      ids.stream().distinct().forEach(id -> Bandejas.marcar(api, id, true));
     }
   }
 
   @Override
   public void dejarSinLeer(UUID id) {
-    api.marcarLeida(id, false);
+    Bandejas.marcar(api, id, false);
   }
 }

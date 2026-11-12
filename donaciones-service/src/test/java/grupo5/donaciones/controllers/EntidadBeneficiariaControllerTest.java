@@ -168,7 +168,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
   void obtenerPublicas_devuelveSoloLosCamposPublicosYElTotal() throws Exception {
     EntidadPublicaDTO entidad =
         new EntidadPublicaDTO(UUID.randomUUID(), "Comedor Sur", "Alimentos");
-    when(entidadBeneficiariaService.buscarPublicas("comedor", 0, 10))
+    when(entidadBeneficiariaService.buscarPublicas("comedor", null, 0, 10))
         .thenReturn(new Pagina<>(List.of(entidad), 3));
 
     mockMvc
@@ -190,12 +190,33 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
   @Test
   void obtenerPublicas_noSeConfundeConElPathDeUnaEntidad() throws Exception {
-    when(entidadBeneficiariaService.buscarPublicas(null, null, null))
+    when(entidadBeneficiariaService.buscarPublicas(null, null, null, null))
         .thenReturn(new Pagina<>(List.of(), 0));
 
     mockMvc
         .perform(get(RUTA + "/publicas"))
         .andExpect(status().isOk())
         .andExpect(jsonPath(CANTIDAD).value(0));
+  }
+
+  // R11-12: la categoría filtra en Donaciones; sin ella, todo sigue igual que en 1.9.0
+  @Test
+  void obtenerPublicas_conCategoria_laPasaAlServicio() throws Exception {
+    UUID categoria = UUID.randomUUID();
+    when(entidadBeneficiariaService.buscarPublicas(null, categoria, null, null))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(get(RUTA + "/publicas").param("categoriaId", categoria.toString()))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"));
+  }
+
+  @Test
+  void obtenerPublicas_conCategoriaMalEscrita_responde400() throws Exception {
+    mockMvc
+        .perform(get(RUTA + "/publicas").param("categoriaId", "no-es-un-uuid"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
   }
 }

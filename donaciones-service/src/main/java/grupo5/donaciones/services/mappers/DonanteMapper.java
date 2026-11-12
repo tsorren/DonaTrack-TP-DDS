@@ -7,6 +7,11 @@ import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,16 +38,29 @@ public class DonanteMapper {
   public DonanteOutputDTO toOutputDTO(Donante entity) {
     if (entity == null) return null;
 
-    PersonaOutputDTO personaOutput = null;
-    if (entity.personaId() != null) {
-      Persona persona = personasRepository.findById(entity.personaId()).orElse(null);
-      if (persona != null) {
-        personaOutput = personaMapper.toOutputDTO(persona);
-      }
-    }
+    Persona persona =
+        entity.personaId() == null
+            ? null
+            : personasRepository.findById(entity.personaId()).orElse(null);
+    return toOutputDTO(entity, persona);
+  }
 
+  /** Una página de donantes: sus personas se leen juntas, no una por fila (R11-01). */
+  public List<DonanteOutputDTO> toOutputDTOs(List<Donante> donantes) {
+    Map<UUID, Persona> personas =
+        personasRepository.findAllById(donantes.stream().map(Donante::personaId).toList()).stream()
+            .collect(Collectors.toMap(Persona::getId, Function.identity(), (a, b) -> a));
+    return donantes.stream().map(d -> toOutputDTO(d, personas.get(d.personaId()))).toList();
+  }
+
+  private DonanteOutputDTO toOutputDTO(Donante entity, Persona persona) {
+    PersonaOutputDTO personaOutput = persona == null ? null : personaMapper.toOutputDTO(persona);
     return new DonanteOutputDTO(
-        entity.getId(), personaOutput, entity.estaActivo(), entity.muestraNombre());
+        entity.getId(),
+        personaOutput,
+        entity.estaActivo(),
+        entity.muestraNombre(),
+        entity.getFechaAlta());
   }
 
   public void updateEntity(Donante entity, DonanteInputDTO dto) {

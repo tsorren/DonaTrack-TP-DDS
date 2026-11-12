@@ -12,6 +12,7 @@ import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.EntregasDelMapaPublico;
 import grupo5.logistica.dto.entregas.PosicionCamionDTO;
 import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
@@ -40,6 +41,8 @@ import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import grupo5.logistica.testutils.EntregaMother;
 import grupo5.logistica.testutils.RutaMother;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -218,10 +221,26 @@ class EntregaServiceTest {
     assertTrue(resultado.isEmpty());
   }
 
-  // ===================== listarMapaPublico() (RF-02) =====================
+  // ===================== listarMapaPublico() (RF-02, R11-19) =====================
+
+  /** 12 de noviembre de 2026, 10:30 en Argentina. */
+  private static final Clock HOY_EN_ARGENTINA =
+      Clock.fixed(Instant.parse("2026-11-12T13:30:00Z"), ZoneOffset.UTC);
+
+  private EntregasService conReloj(Clock reloj) {
+    return new EntregasService(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        null,
+        null,
+        reloj);
+  }
 
   @Test
-  void listarMapaPublico_deberiaRetornarSoloEntregadasConCoordenadasValidasYSanitizadas() {
+  void listarMapaPublico_deberiaPedirElPeriodoYElTopeALaBaseYDevolverElTotalSinElTope() {
     Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
     Direccion dirConCoords =
         new Direccion(
@@ -232,28 +251,23 @@ class EntregaServiceTest {
             "C1179",
             caba,
             new CoordenadasGeograficas(-34.5986, -58.4201));
-    Direccion dirSinCoords = new Direccion("Av. Rivadavia", 1200, null, null, "C1033", caba);
-
-    Entrega entregadaConCoords =
+    Entrega entregada =
         new Entrega(UUID.randomUUID(), UUID.randomUUID(), dirConCoords, 15.0f, 1.5f);
-    entregadaConCoords.asignarRuta(UUID.randomUUID());
-    entregadaConCoords.iniciarRuta("Chofer");
-    entregadaConCoords.confirmarEntrega("Comedor", "https://storage.donatrack.org/foto1.jpg");
+    entregada.asignarRuta(UUID.randomUUID());
+    entregada.iniciarRuta("Chofer");
+    entregada.confirmarEntrega("Comedor", "https://storage.donatrack.org/foto1.jpg");
+    Instant desde = Instant.parse("2026-11-01T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-11T03:00:00Z");
+    when(entregasRepository.findEntregadasParaMapa(desde, hasta, 5)).thenReturn(List.of(entregada));
+    when(entregasRepository.contarEntregadasParaMapa(desde, hasta)).thenReturn(340L);
 
-    Entrega entregadaSinCoords =
-        new Entrega(UUID.randomUUID(), UUID.randomUUID(), dirSinCoords, 20.0f, 2.0f);
-    entregadaSinCoords.asignarRuta(UUID.randomUUID());
-    entregadaSinCoords.iniciarRuta("Chofer");
-    entregadaSinCoords.confirmarEntrega("Comedor", "https://storage.donatrack.org/foto2.jpg");
+    EntregasDelMapaPublico resultado =
+        entregasService.listarMapaPublico(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 10), 5);
 
-    when(entregasRepository.findByEstado(EstadoEntrega.ENTREGADA))
-        .thenReturn(List.of(entregadaConCoords, entregadaSinCoords));
-
-    List<EntregaMapaPublicoResponseDTO> resultado = entregasService.listarMapaPublico();
-
-    assertEquals(1, resultado.size());
-    EntregaMapaPublicoResponseDTO item = resultado.getFirst();
-    assertEquals(entregadaConCoords.getId(), item.idEntrega());
+    assertEquals(340L, resultado.total());
+    assertEquals(1, resultado.entregas().size());
+    EntregaMapaPublicoResponseDTO item = resultado.entregas().getFirst();
+    assertEquals(entregada.getId(), item.idEntrega());
     assertEquals(-34.5986, item.latitud());
     assertEquals(-58.4201, item.longitud());
     assertEquals("CABA", item.localidad());
@@ -262,6 +276,64 @@ class EntregaServiceTest {
     assertNotNull(item.fechaEntrega());
     assertEquals(15.0f, item.pesoTotalKG());
     assertEquals(1.5f, item.volumenTotalM3());
+    verify(entregasRepository, never()).findByEstado(any());
+  }
+
+  @Test
+  void listarMapaPublico_sinParametros_deberiaPedirLosUltimos30DiasEnHoraDeArgentinaHasta200() {
+    EntregasService servicio = conReloj(HOY_EN_ARGENTINA);
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    when(entregasRepository.findEntregadasParaMapa(desde, hasta, 200)).thenReturn(List.of());
+    when(entregasRepository.contarEntregadasParaMapa(desde, hasta)).thenReturn(0L);
+
+    EntregasDelMapaPublico resultado = servicio.listarMapaPublico(null, null, null);
+
+    assertTrue(resultado.entregas().isEmpty());
+    assertEquals(0L, resultado.total());
+    verify(entregasRepository).findEntregadasParaMapa(desde, hasta, 200);
+  }
+
+  @Test
+  void listarMapaPublico_soloConHasta_deberiaEmpezar30DiasAntes() {
+    Instant desde = Instant.parse("2026-09-01T03:00:00Z");
+    Instant hasta = Instant.parse("2026-10-02T03:00:00Z");
+    when(entregasRepository.findEntregadasParaMapa(desde, hasta, 200)).thenReturn(List.of());
+
+    entregasService.listarMapaPublico(null, LocalDate.of(2026, 10, 1), null);
+
+    verify(entregasRepository).findEntregadasParaMapa(desde, hasta, 200);
+    verify(entregasRepository).contarEntregadasParaMapa(desde, hasta);
+  }
+
+  @Test
+  void listarMapaPublico_conHastaAnteriorADesde_deberiaRechazarConArgumentoInvalido() {
+    LocalDate desde = LocalDate.of(2026, 11, 10);
+    LocalDate hasta = LocalDate.of(2026, 11, 1);
+
+    ValidationException error =
+        assertThrows(
+            ValidationException.class, () -> entregasService.listarMapaPublico(desde, hasta, 10));
+
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), error.getErrorCode());
+    verifyNoInteractions(entregasRepository);
+  }
+
+  @Test
+  void listarMapaPublico_conLimiteFueraDe1A500_deberiaRechazarConArgumentoInvalido() {
+    assertThrows(ValidationException.class, () -> entregasService.listarMapaPublico(null, null, 0));
+    assertThrows(
+        ValidationException.class, () -> entregasService.listarMapaPublico(null, null, 501));
+    verifyNoInteractions(entregasRepository);
+  }
+
+  @Test
+  void listarMapaPublico_conLimite500_deberiaAceptarlo() {
+    when(entregasRepository.findEntregadasParaMapa(any(), any(), eq(500))).thenReturn(List.of());
+
+    entregasService.listarMapaPublico(null, null, 500);
+
+    verify(entregasRepository).findEntregadasParaMapa(any(), any(), eq(500));
   }
 
   // ===================== obtenerPorId() =====================

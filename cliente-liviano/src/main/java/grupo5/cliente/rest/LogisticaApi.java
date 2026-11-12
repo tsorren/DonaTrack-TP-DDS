@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,9 +40,15 @@ interface LogisticaApi {
   @GetExchange("/api/entregas/{id}")
   Entrega entrega(@PathVariable UUID id);
 
-  /** Las entregadas, con coordenadas exactas y sin datos de la donación (D24). */
+  /**
+   * Las entregadas del período ({@code desde} y {@code hasta}, días inclusive en ISO, {@code
+   * 2026-11-12}) con coordenadas exactas y sin datos de la donación (D24), de la más reciente a la
+   * más vieja y como mucho {@code limite} (R11-19); cuántas hay sin el tope, en {@code
+   * X-Total-Count}.
+   */
   @GetExchange("/api/entregas/mapa")
-  List<EntregaEnElMapa> mapa();
+  ResponseEntity<List<EntregaEnElMapa>> mapa(
+      @RequestParam String desde, @RequestParam String hasta, @RequestParam int limite);
 
   /**
    * Confirmar la recepción (ENTREGADA, con fotos, remito y reporte) o decir que no llegó

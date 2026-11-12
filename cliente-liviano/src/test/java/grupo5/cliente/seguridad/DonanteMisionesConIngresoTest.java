@@ -1,6 +1,7 @@
 package grupo5.cliente.seguridad;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -96,7 +97,7 @@ class DonanteMisionesConIngresoTest {
         .thenReturn(
             new PublicoEntidadesVista(
                 List.of(), 0, "10 de noviembre de 2026", null, false, false, null));
-    when(mapa.mapa())
+    when(mapa.mapa(any()))
         .thenReturn(
             new PublicoMapaVista(
                 List.of(), "del 11 de octubre al 10 de noviembre de 2026", "", false, false, null));

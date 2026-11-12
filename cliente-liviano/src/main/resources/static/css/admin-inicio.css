@@ -1,7 +1,8 @@
-/* Inicio del admin en Raíces (ficha raices-entidad-navegable, 4.4): la mesa de trabajo de quien
-   decide, sobria. Lo que espera una decisión, una etiqueta de herbario por lista, con su cantidad en
-   el título; cómo está todo, en el registro de doble filete de Necesidades, con cada cifra en la
-   letra de texto y su nombre al lado, sin gráficos. */
+/* Inicio del admin en Raíces (ficha raices-entidad-navegable, 4.4, por temas desde R11-21): la mesa
+   de trabajo de quien decide, sobria. Lo que espera una decisión, una tarjeta por tema con su
+   cantidad en el título; cómo está todo, en cuatro tarjetas con su período, cada cifra grande en la
+   letra de cifras, alineada a la derecha de su columna y con su nombre al lado, sin gráficos (R11-42
+   los suma adentro de cada tarjeta). */
 @import url("entidad-comun.css");
 
 .mesa {
@@ -41,10 +42,10 @@
 
 /* Cada lista que espera: la etiqueta de herbario, con su cantidad en el título. */
 .decision {
+  --espacio-relleno: 1.125rem 1.25rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1.125rem 1.25rem 1.25rem;
 }
 
 main .decision h3 {
@@ -93,28 +94,44 @@ main .decision h3 {
   vertical-align: 0.1em;
 }
 
-/* El botón al pie de la etiqueta: los tres quedan a la misma altura. */
+/* El botón al pie de la tarjeta: en el celular, a todo el ancho; desde el quiebre medio, los tres a
+   la misma altura. El enlace, debajo. */
 .decision .boton {
-  align-self: flex-start;
+  align-self: stretch;
   margin-top: auto;
+}
+
+/* El enlace suelto debajo del botón, con su toque mínimo de 48 px. */
+.decision .boton + a {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 3rem;
 }
 
 .decisiones .vacio {
   margin: 0;
 }
 
-/* --- Cómo está todo: dos registros de doble filete, cada cifra con su nombre --------------------- */
+/* --- Cómo está todo: cuatro tarjetas por tema, cada cifra con su nombre al lado --------------- */
 .todo-fecha {
   margin: -0.5rem 0 1rem;
 }
 
 .registros {
   display: grid;
-  gap: 1.75rem;
+  gap: 1.5rem;
+}
+
+.registro-mesa {
+  --espacio-relleno: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 main .registro-mesa h3 {
-  margin: 0 0 0.75rem;
+  margin: 0;
   color: var(--color-acento);
   font: 700 0.875rem var(--fuente-texto);
   font-stretch: 112%;
@@ -122,42 +139,82 @@ main .registro-mesa h3 {
   letter-spacing: 0.08em;
 }
 
+.registro-mesa .tarjeta-cabeza {
+  margin: 0;
+  padding: 0 0 0.5rem;
+  border-bottom-color: var(--color-tinta);
+}
+
+.registro-mesa p {
+  margin: 0;
+}
+
 .registro-mesa dl {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 6px;
-  border: 1px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  outline: 1px solid var(--color-tinta);
-  outline-offset: 5px;
+  margin: 0;
 }
 
+/* Una fila: el número a la derecha de su columna (números tabulares), el nombre y su «Ver ›». */
 .registro-mesa dl > div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  padding: 0.75rem 1rem;
+  display: grid;
+  grid-template-columns: 6ch minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  padding: 0.25rem 0;
 }
 
-.registro-mesa dl > div:nth-child(n + 3) {
+.registro-mesa dl > div + div {
   border-top: 1px dotted var(--color-tinta-suave);
 }
 
-.registro-mesa dl > div:nth-child(even) {
-  border-left: 1px dotted var(--color-tinta-suave);
-}
-
 .registro-mesa dt {
-  order: 2;
+  grid-column: 2;
+  grid-row: 1;
   line-height: 1.3;
 }
 
 .registro-mesa dd {
-  order: 1;
   margin: 0;
+}
+
+.registro-mesa dt + dd {
+  grid-column: 1;
+  grid-row: 1;
   color: var(--color-tinta);
   font: 800 1.625rem / 1.1 var(--fuente-cifra);
   font-stretch: 118%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.registro-mesa dd + dd {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+/* La aclaración de una fila sin enlace propio baja debajo del nombre. */
+.registro-mesa dd[data-parte="nota"] {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  color: var(--color-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* El «Ver ›» de cada fila, con su toque mínimo de 48 px. */
+.registro-mesa dd + dd a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  min-height: 3rem;
+}
+
+.registro-mesa .salidas {
+  margin-top: auto;
+}
+
+.registro-mesa .banner {
+  margin: 0;
 }
 
 @media (min-width: 53.75em) {
@@ -165,16 +222,12 @@ main .registro-mesa h3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .registro-mesa dl {
-    max-width: 56rem;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .decision .boton {
+    align-self: flex-start;
   }
 
-  .registro-mesa dl > div:nth-child(n + 3) {
-    border-top: 0;
-  }
-
-  .registro-mesa dl > div + div {
-    border-left: 1px dotted var(--color-tinta-suave);
+  /* Donaciones por estado, la más larga, a la izquierda; las demás, de a dos. */
+  .registros {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 }

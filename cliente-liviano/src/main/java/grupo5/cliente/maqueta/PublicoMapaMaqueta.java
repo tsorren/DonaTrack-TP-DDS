@@ -4,6 +4,7 @@ import grupo5.cliente.puertos.PublicoMapaPuerto;
 import grupo5.cliente.vistas.PublicoMapaVista;
 import grupo5.cliente.vistas.PublicoMapaVista.Entrega;
 import grupo5.cliente.vistas.PublicoMapaVista.Estacion;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component;
  * Las diez entregas confirmadas de ejemplo (ficha raices-publico-navegable.md, 6.3), en los cinco
  * puntos del mapa que escribía {@code datos-publicos}: un punto sintético por barrio de la ciudad,
  * nunca una dirección. "Hoy" es el 15 de octubre de 2026. El filtro y los estados ({@code
- * ?escenario=}) los muestra la plantilla.
+ * ?escenario=}) los muestra la plantilla. Con {@code ?escenario=muchas} (R11-19) suma nueve
+ * entidades sintéticas más, para ver la lista en dos páginas; los datos de siempre no cambian.
  */
 @Component
 @ConditionalOnProperty(
@@ -142,6 +144,81 @@ class PublicoMapaMaqueta implements PublicoMapaPuerto {
           true,
           null);
 
+  /** Una entidad sintética del escenario {@code muchas}. */
+  private record Otra(String nombre, String barrio) {}
+
+  /** Los barrios sintéticos del escenario {@code muchas}. */
+  private static final List<Otra> OTRAS =
+      List.of(
+          new Otra("Comedor Ejemplo Norte", "Norte Ejemplo"),
+          new Otra("Merendero Ejemplo Oeste", "Oeste Ejemplo"),
+          new Otra("Club Ejemplo del Barrio", "Barrio Ejemplo Dos"),
+          new Otra("Hogar Ejemplo Esperanza", "Parque Ejemplo Dos"),
+          new Otra("Escuela Ejemplo N.º 30", "Centro Ejemplo Dos"),
+          new Otra("Comedor Ejemplo Ribera", "Ribera Ejemplo"),
+          new Otra("Centro Comunitario Ejemplo", "Villa Ejemplo Dos"),
+          new Otra("Biblioteca Ejemplo Sur", "Sur Ejemplo Dos"),
+          new Otra("Parroquia Ejemplo", "Alto Ejemplo"));
+
+  /**
+   * Los lugares del escenario van en una grilla de 4 por 4, con la distancia justa para que cada
+   * marcador de 48 px quede suelto también en el celular.
+   */
+  private static final int COLUMNAS = 4;
+
+  private static final double PASO = 0.035;
+  private static final double NORTE = -34.58;
+  private static final double OESTE = -58.48;
+
+  private static final PublicoMapaVista MUCHAS = conOtras();
+
+  private static PublicoMapaVista conOtras() {
+    List<Estacion> estaciones = new ArrayList<>();
+    for (Estacion estacion : MAPA.estaciones()) {
+      int lugar = estaciones.size();
+      estaciones.add(
+          new Estacion(
+              estacion.clave(),
+              estacion.numero(),
+              latitud(lugar),
+              longitud(lugar),
+              estacion.nombre(),
+              estacion.barrio(),
+              estacion.pide(),
+              estacion.entregas()));
+    }
+    for (Otra otra : OTRAS) {
+      int lugar = estaciones.size();
+      int numero = lugar + 1;
+      String nombre = otra.nombre();
+      estaciones.add(
+          new Estacion(
+              "ejemplo-" + numero,
+              numero,
+              latitud(lugar),
+              longitud(lugar),
+              nombre,
+              otra.barrio(),
+              List.of("Arroz"),
+              List.of(entrega("Arroz, 4 kg", ALIMENTOS, "03", nombre, FOTO_COMEDOR, ALT_COMEDOR))));
+    }
+    return new PublicoMapaVista(
+        estaciones,
+        MAPA.rango(),
+        MAPA.actualizado(),
+        MAPA.conEntidades(),
+        MAPA.conCategorias(),
+        MAPA.nota());
+  }
+
+  private static double latitud(int lugar) {
+    return NORTE - Math.floorDiv(lugar, COLUMNAS) * PASO;
+  }
+
+  private static double longitud(int lugar) {
+    return OESTE + Math.floorMod(lugar, COLUMNAS) * PASO;
+  }
+
   /** Una entrega de octubre; {@code dia}, con dos cifras. */
   private static Entrega entrega(
       String que, String cat, String dia, String entidad, String foto, String alt) {
@@ -162,7 +239,7 @@ class PublicoMapaMaqueta implements PublicoMapaPuerto {
   }
 
   @Override
-  public PublicoMapaVista mapa() {
-    return MAPA;
+  public PublicoMapaVista mapa(String escenario) {
+    return "muchas".equals(escenario) ? MUCHAS : MAPA;
   }
 }

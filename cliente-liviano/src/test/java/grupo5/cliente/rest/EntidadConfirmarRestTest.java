@@ -64,7 +64,8 @@ class EntidadConfirmarRestTest {
                     .formatted(ENTREGA, DONACION, DONACION, DONACION),
                 MediaType.APPLICATION_JSON));
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD))
         .andRespond(
             withSuccess(
                 """
@@ -189,7 +190,8 @@ class EntidadConfirmarRestTest {
                     .formatted(otraDonacion, ENTREGA, DONACION),
                 MediaType.APPLICATION_JSON));
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD))
         .andRespond(
             withSuccess(
                 """

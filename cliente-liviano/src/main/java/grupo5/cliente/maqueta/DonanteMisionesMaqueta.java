@@ -59,7 +59,7 @@ class DonanteMisionesMaqueta implements DonanteMisionesPuerto {
       new Mision(
           TRANSFORMADOR,
           "Impacto Real",
-          "10 donaciones recibidas, confirmadas por la entidad",
+          "10 donaciones recibidas, confirmadas por la organización",
           CERRADA,
           null,
           null,
@@ -233,7 +233,7 @@ class DonanteMisionesMaqueta implements DonanteMisionesPuerto {
                   new Hito(TE_SUMASTE, "15 de octubre de 2026", true),
                   new Hito("Tu primera donación", "Cuando quieras", false),
                   new Hito(
-                      "La entidad confirma que la recibió",
+                      "La organización confirma que la recibió",
                       "Después de tu primera donación",
                       false)),
               null,

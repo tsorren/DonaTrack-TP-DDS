@@ -9,30 +9,41 @@ import grupo5.cliente.rest.DonacionesApi.Subcategoria;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
 import grupo5.cliente.vistas.AdminEntidadesVista.Necesidad;
+import grupo5.cliente.vistas.Tramo;
 import java.text.Collator;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * Las entidades del admin con lo que da Donaciones: todas las entidades (activas y dadas de baja),
- * sus necesidades vigentes y, de las que piden sumarse (las solicitudes de Keycloak), los datos de
- * su persona jurídica. Lo que nadie guarda (la misión, la fecha de alta y de baja, las entregas
- * confirmadas, el motivo de la baja, la constancia) queda null.
+ * Las entidades del admin con lo que da Donaciones, de a una página (R11-01): la página pedida de
+ * las registradas (activas y dadas de baja), buscadas por nombre en el servidor, con sus
+ * necesidades vigentes; en la página 1, antes, las que piden sumarse (las solicitudes de Keycloak)
+ * con los datos de su persona jurídica, leídas por id. Cuántas activas hay es un número del
+ * servicio, no el largo de la página. Lo que nadie guarda (la misión, la fecha de alta y de baja,
+ * las entregas confirmadas, el motivo de la baja, la constancia) queda null.
  */
 final class AdminPersonasEntidades {
 
   private static final String ACTIVA = "activa";
-  private static final String JURIDICA = "JURIDICA";
+  private static final String SIZE = "size";
+
+  /** De a 20 entidades por página, como los donantes (ficha, decisiones de R11). */
+  static final int POR_PAGINA = 20;
+
+  /** El tamaño de página más grande que acepta Donaciones: las personas se piden de a este lote. */
+  private static final int TOPE = DonacionesApi.TOPE;
 
   private final DonacionesApi donaciones;
   private final ObjectProvider<SolicitudesDeEntidad> solicitudes;
@@ -43,26 +54,111 @@ final class AdminPersonasEntidades {
     this.solicitudes = solicitudes;
   }
 
-  AdminEntidadesVista entidades(String al) {
-    List<DonacionesApi.Entidad> registradas =
-        Objects.requireNonNullElse(
-            donaciones.entidades(new LinkedMultiValueMap<>()).getBody(), List.of());
-    Map<UUID, List<Necesidad>> necesidades = necesidadesVigentes();
-    List<Entidad> todas = new ArrayList<>();
-    registradas.forEach(e -> todas.add(registrada(e, necesidades.getOrDefault(e.id(), List.of()))));
-    SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
-    List<Pendiente> pendientes = cuentas == null ? List.of() : cuentas.pendientes();
-    if (!pendientes.isEmpty()) {
-      Map<UUID, Persona> juridicas =
-          donaciones.personas(JURIDICA).stream()
-              .filter(p -> p.id() != null)
-              .collect(Collectors.toMap(Persona::id, Function.identity(), (a, b) -> a));
-      pendientes.forEach(p -> todas.add(pendiente(p, juridicas.get(p.personaId()))));
-    }
+  AdminEntidadesVista entidades(String al, String buscar, int pagina) {
+    String nombre = buscar == null ? "" : buscar.strip();
+    Tramo<DonacionesApi.Entidad> tramo =
+        Paginas.pedir(pagina, POR_PAGINA, numero -> donaciones.entidades(filtros(nombre, numero)));
+    Map<UUID, List<Necesidad>> necesidades =
+        tramo.filas().isEmpty() ? Map.of() : necesidadesVigentes();
     Collator orden = Collator.getInstance(Comun.ES_AR);
-    todas.sort(Comparator.comparing(Entidad::nombre, orden));
-    long activas = todas.stream().filter(e -> ACTIVA.equals(e.estado())).count();
-    return new AdminEntidadesVista(activas, al, todas);
+    List<Entidad> registradas =
+        tramo.filas().stream()
+            .map(e -> registrada(e, necesidades.getOrDefault(e.id(), List.of())))
+            .sorted(Comparator.comparing(Entidad::nombre, orden))
+            .toList();
+    List<Pendiente> buscadas = buscadas(nombre);
+    List<Entidad> todas =
+        new ArrayList<>(tramo.pagina() == 1 ? pendientes(buscadas, orden) : List.of());
+    todas.addAll(registradas);
+    long total = tramo.total() + buscadas.size();
+    Tramo<Entidad> paginada =
+        new Tramo<>(registradas, tramo.total(), tramo.pagina(), tramo.paginas());
+    return new AdminEntidadesVista(
+        activas(), al, todas, new AdminEntidadesVista.EnPaginas(nombre, total, paginada));
+  }
+
+  private static MultiValueMap<String, String> filtros(String nombre, int pagina) {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    if (!nombre.isEmpty()) {
+      filtros.add("nombre", nombre);
+    }
+    filtros.add("page", String.valueOf(pagina));
+    filtros.add(SIZE, String.valueOf(POR_PAGINA));
+    return filtros;
+  }
+
+  /**
+   * Cuántas entidades activas hay: el total de una página de una de las públicas (solo activas),
+   * sin traer la lista ni contar sobre una página.
+   */
+  private long activas() {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add(SIZE, "1");
+    ResponseEntity<List<DonacionesApi.EntidadPublica>> respuesta =
+        donaciones.entidadesPublicas(filtros);
+    return Paginas.total(respuesta, List.of(), 1, 1);
+  }
+
+  /** Las que piden sumarse y cumplen la búsqueda, con los datos de su jurídica, por nombre. */
+  private List<Entidad> pendientes(List<Pendiente> pendientes, Collator orden) {
+    if (pendientes.isEmpty()) {
+      return List.of();
+    }
+    Map<UUID, Persona> juridicas = personas(pendientes);
+    return pendientes.stream()
+        .map(p -> pendiente(p, juridicas.get(p.personaId())))
+        .sorted(Comparator.comparing(Entidad::nombre, orden))
+        .toList();
+  }
+
+  /** Las solicitudes cuyo nombre contiene {@code nombre}, sin distinguir mayúsculas ni tildes. */
+  private List<Pendiente> buscadas(String nombre) {
+    SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
+    if (cuentas == null) {
+      return List.of();
+    }
+    String buscado = sinTildes(nombre);
+    return cuentas.pendientes().stream()
+        .filter(p -> buscado.isEmpty() || sinTildes(p.razonSocial()).contains(buscado))
+        .toList();
+  }
+
+  private static String sinTildes(String texto) {
+    return Normalizer.normalize(texto == null ? "" : texto, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "")
+        .toLowerCase(Comun.ES_AR);
+  }
+
+  /** Los nombres de las entidades que piden sumarse, como los traen sus solicitudes. */
+  List<String> pendientes() {
+    SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
+    return cuentas == null
+        ? List.of()
+        : cuentas.pendientes().stream().map(Pendiente::razonSocial).toList();
+  }
+
+  /**
+   * Solo las personas de las solicitudes, por su identificador (R11-01), de a {@link #TOPE}: con el
+   * CSV hay miles de jurídicas donantes y no se traen todas para cruzarlas.
+   */
+  private Map<UUID, Persona> personas(List<Pendiente> pendientes) {
+    List<String> ids =
+        pendientes.stream()
+            .map(Pendiente::personaId)
+            .filter(Objects::nonNull)
+            .map(UUID::toString)
+            .distinct()
+            .toList();
+    Map<UUID, Persona> juridicas = new HashMap<>();
+    for (int desde = 0; desde < ids.size(); desde += TOPE) {
+      MultiValueMap<String, String> lote = new LinkedMultiValueMap<>();
+      ids.subList(desde, Math.min(ids.size(), desde + TOPE)).forEach(id -> lote.add("id", id));
+      lote.add(SIZE, String.valueOf(TOPE));
+      Objects.requireNonNullElse(donaciones.personas(lote).getBody(), List.<Persona>of()).stream()
+          .filter(p -> p.id() != null)
+          .forEach(p -> juridicas.putIfAbsent(p.id(), p));
+    }
+    return juridicas;
   }
 
   /** Aprueba la solicitud de la cuenta {@code clave} y devuelve el nombre de la entidad. */

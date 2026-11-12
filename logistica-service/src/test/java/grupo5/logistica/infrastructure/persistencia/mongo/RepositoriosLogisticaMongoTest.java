@@ -12,6 +12,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.adapters.EventosEntreg
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.RutasRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.SolicitudPlanificacionRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.SolicitudesTransicionEntregaRepositoryMongoAdapter;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EventoEntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudTransicionEntregaDocument;
@@ -34,12 +35,14 @@ import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.CamionMother;
 import grupo5.logistica.testutils.ChoferMother;
 import grupo5.logistica.testutils.EntregaMother;
 import grupo5.logistica.testutils.SolicitudPlanificacionMother;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -350,5 +353,37 @@ class RepositoriosLogisticaMongoTest {
     List<Ruta> resultado = rutas.findByEstado(EstadoRuta.EN_TRASLADO);
 
     assertEquals(List.of(enTraslado.getId()), resultado.stream().map(Ruta::getId).toList());
+  }
+
+  @Test
+  void lasEntregadasDelMapa_seFiltranOrdenanTopeanYCuentanEnLaBase() {
+    CoordenadasGeograficas punto = new CoordenadasGeograficas(-34.6, -58.4);
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    Entrega vieja = EntregaMother.entregadaEl(desde, punto);
+    Entrega media = EntregaMother.entregadaEl(Instant.parse("2026-11-01T15:00:00Z"), punto);
+    Entrega nueva = EntregaMother.entregadaEl(Instant.parse("2026-11-12T15:00:00Z"), punto);
+    entregas.save(vieja);
+    entregas.save(nueva);
+    entregas.save(media);
+    entregas.save(EntregaMother.entregadaEl(hasta, punto));
+    entregas.save(EntregaMother.entregadaEl(desde.minusSeconds(1), punto));
+    entregas.save(EntregaMother.entregadaEl(Instant.parse("2026-11-02T15:00:00Z"), null));
+    entregas.save(
+        EntregaMother.enEstadoEl(
+            EstadoEntrega.NO_RECIBIDA, Instant.parse("2026-11-03T15:00:00Z"), punto));
+
+    assertEquals(
+        List.of(nueva.getId(), media.getId(), vieja.getId()),
+        entregas.findEntregadasParaMapa(desde, hasta, 10).stream().map(Entrega::getId).toList());
+    assertEquals(
+        List.of(nueva.getId(), media.getId()),
+        entregas.findEntregadasParaMapa(desde, hasta, 2).stream().map(Entrega::getId).toList());
+    assertEquals(3, entregas.contarEntregadasParaMapa(desde, hasta));
+    List<String> indices =
+        mongoTemplate.indexOps(EntregaDocument.class).getIndexInfo().stream()
+            .map(IndexInfo::getName)
+            .toList();
+    assertTrue(indices.contains("idx_entrega_estado_hora_arribo"));
   }
 }

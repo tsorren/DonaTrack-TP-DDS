@@ -24,6 +24,7 @@ import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregasDelMapaPublico;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.services.ICamionesService;
@@ -217,6 +218,9 @@ class SeguridadLogisticaTest {
 
   @Test
   void elMapaDeEntregasEsPublico() throws Exception {
+    when(entregasService.listarMapaPublico(null, null, null))
+        .thenReturn(new EntregasDelMapaPublico(List.of(), 0));
+
     pedir(get(ENTREGAS + "/mapa"), null).andExpect(status().isOk());
   }
 

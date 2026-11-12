@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-11T18:17:23.378Z",
+  "generatedAt": "2026-11-12T09:22:58.166Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 123,
+    "endpointsCount": 126,
     "schemasCount": 28,
     "eventsCount": 9
   },
@@ -11,7 +11,7 @@
     {
       "title": "DonaTrack - Donaciones Service API",
       "fileName": "openapi-donaciones.yaml",
-      "version": "1.8.0",
+      "version": "1.10.0",
       "serverUrl": "http://localhost:8080",
       "endpoints": [
         {
@@ -67,7 +67,20 @@
           "operationId": "listarDonaciones",
           "requestBody": "-",
           "responses": {
-            "200": "DonacionOutputDTO"
+            "200": "DonacionOutputDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/donaciones/resumen",
+          "method": "GET",
+          "summary": "Cifras del inicio del administrador",
+          "operationId": "obtenerResumenAdmin",
+          "requestBody": "-",
+          "responses": {
+            "200": "ResumenAdminDTO",
+            "401": "-",
+            "403": "-"
           }
         },
         {
@@ -219,7 +232,7 @@
           "operationId": "listarPropuestasAsignacion",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "PropuestaDTO"
           }
         },
         {
@@ -324,7 +337,8 @@
           "operationId": "listarDonantes",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "DonanteOutputDTO",
+            "400": "-"
           }
         },
         {
@@ -350,6 +364,20 @@
           }
         },
         {
+          "path": "/api/donantes/{id}/entidades",
+          "method": "GET",
+          "summary": "Listar las entidades activas vistas por un donante",
+          "operationId": "listarEntidadesParaDonante",
+          "requestBody": "-",
+          "responses": {
+            "200": "EntidadParaDonanteDTO",
+            "400": "-",
+            "401": "-",
+            "403": "-",
+            "404": "-"
+          }
+        },
+        {
           "path": "/api/donantes/{id}/preferencias",
           "method": "PATCH",
           "summary": "Cambiar si la entidad ve el nombre del donante",
@@ -360,6 +388,19 @@
             "400": "-",
             "403": "-",
             "404": "-"
+          }
+        },
+        {
+          "path": "/api/donantes/archivos",
+          "method": "GET",
+          "summary": "Listar las importaciones de donantes (solo ADMIN)",
+          "operationId": "listarArchivosDonantes",
+          "requestBody": "-",
+          "responses": {
+            "200": "ArchivoDonantesResponse",
+            "400": "-",
+            "401": "-",
+            "403": "-"
           }
         },
         {
@@ -569,7 +610,8 @@
           "operationId": "listarPersonasDonaciones",
           "requestBody": "-",
           "responses": {
-            "200": "PersonaOutputDTO"
+            "200": "-",
+            "400": "PersonaOutputDTO"
           }
         },
         {

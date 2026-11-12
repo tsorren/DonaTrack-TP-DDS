@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Notificaciones Service API
-  version: 1.2.0
+  version: 1.3.0
   description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 servers:
   - url: http://localhost:8081
@@ -42,51 +42,86 @@ paths:
           description: Payload inválido o campos obligatorios faltantes
   /notificaciones/persona/{personaId}:
     get:
-      summary: Obtener historial de notificaciones de una persona (Legacy/Deprecated)
+      summary: Una página de la bandeja de una persona (Legacy/Deprecated, solo QA)
+      description: Alias de GET /api/notificaciones/persona/{personaId}, con los mismos parámetros y respuesta.
       operationId: obtenerNotificacionesPorPersona
       deprecated: true
       parameters:
-        - name: personaId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/BandejaPersonaId'
+        - $ref: '#/components/parameters/BandejaLeida'
+        - $ref: '#/components/parameters/BandejaQ'
+        - $ref: '#/components/parameters/BandejaTipo'
+        - $ref: '#/components/parameters/BandejaExcluirTipo'
+        - $ref: '#/components/parameters/BandejaOrden'
+        - $ref: '#/components/parameters/BandejaPage'
+        - $ref: '#/components/parameters/BandejaSize'
       responses:
         '200':
-          description: Historial de notificaciones despachadas
+          description: >-
+            El tramo pedido, en el orden pedido. Sin page ni size, la página 0 de 20 (no hay modo
+            "devuelve todo"). Una página fuera de rango devuelve [] con el total real.
+          headers:
+            X-Total-Count:
+              description: Cuántas cumplen leida, q, tipo y excluirTipo, sin contar la página
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
+                maxItems: 100
                 items:
                   $ref: '#/components/schemas/NotificacionDTO'
+        '400':
+          description: >-
+            page negativo, size fuera de 1..100, q de más de 100 caracteres, orden desconocido o
+            un tipo/excluirTipo que no es un TipoEvento (ERR-CSR-003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/notificaciones/persona/{personaId}:
     get:
-      summary: Obtener historial de notificaciones de una persona
+      summary: Una página de la bandeja de notificaciones de una persona
+      description: >-
+        Desde 1.3.0 (R11-14) pagina, filtra y ordena en el servidor y devuelve el total en
+        X-Total-Count. Antes devolvía todas las notificaciones de la persona sin orden definido.
+        Leerla no marca nada como leída.
       operationId: obtenerNotificacionesPorPersonaApi
       parameters:
-        - name: personaId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: leida
-          in: query
-          required: false
-          schema:
-            type: boolean
-          description: Filtro opcional. Si es false trae solo pendientes.
+        - $ref: '#/components/parameters/BandejaPersonaId'
+        - $ref: '#/components/parameters/BandejaLeida'
+        - $ref: '#/components/parameters/BandejaQ'
+        - $ref: '#/components/parameters/BandejaTipo'
+        - $ref: '#/components/parameters/BandejaExcluirTipo'
+        - $ref: '#/components/parameters/BandejaOrden'
+        - $ref: '#/components/parameters/BandejaPage'
+        - $ref: '#/components/parameters/BandejaSize'
       responses:
         '200':
-          description: Historial de notificaciones despachadas
+          description: >-
+            El tramo pedido, en el orden pedido. Sin page ni size, la página 0 de 20 (no hay modo
+            "devuelve todo"). Una página fuera de rango devuelve [] con el total real.
+          headers:
+            X-Total-Count:
+              description: Cuántas cumplen leida, q, tipo y excluirTipo, sin contar la página
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
+                maxItems: 100
                 items:
                   $ref: '#/components/schemas/NotificacionDTO'
+        '400':
+          description: >-
+            page negativo, size fuera de 1..100, q de más de 100 caracteres, orden desconocido o
+            un tipo/excluirTipo que no es un TipoEvento (ERR-CSR-003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/notificaciones:
     get:
       summary: Obtener notificaciones por persona y/o estado
@@ -390,6 +425,83 @@ paths:
         '404':
           description: No hay mensaje con ese número
 components:
+  parameters:
+    BandejaPersonaId:
+      name: personaId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BandejaLeida:
+      name: leida
+      in: query
+      required: false
+      description: true o false, solo esas; sin valor, todas.
+      schema:
+        type: boolean
+    BandejaQ:
+      name: q
+      in: query
+      required: false
+      description: >-
+        Las que contienen el texto en el mensaje, sin distinguir mayúsculas ni tildes (camion
+        encuentra "camión"). Vacío o solo espacios, sin filtro.
+      schema:
+        type: string
+        maxLength: 100
+    BandejaTipo:
+      name: tipo
+      in: query
+      required: false
+      description: Repetible. Solo las de esos tipos de evento.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TipoEvento'
+    BandejaExcluirTipo:
+      name: excluirTipo
+      in: query
+      required: false
+      description: >-
+        Repetible. Todas menos las de esos tipos; las que no tienen tipo entran. Con tipo, se
+        combinan con "y".
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TipoEvento'
+    BandejaOrden:
+      name: orden
+      in: query
+      required: false
+      description: Por fechaCreacion descendente (recientes) o ascendente (antiguas), desempatado por id en el mismo sentido.
+      schema:
+        type: string
+        enum: [recientes, antiguas]
+        default: recientes
+    BandejaPage:
+      name: page
+      in: query
+      required: false
+      description: La página, desde 0.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    BandejaSize:
+      name: size
+      in: query
+      required: false
+      description: Cuántas por página.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
   schemas:
     PersonaReplicaDTO:
       type: object
@@ -688,6 +800,21 @@ components:
           type: string
           format: uuid
           description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
+    TipoEvento:
+      type: string
+      description: >-
+        Los tipos que acepta el filtro de la bandeja (tipo y excluirTipo); otro valor da 400. En la
+        respuesta, tipoEvento sigue siendo texto libre.
+      enum:
+        - DONANTE_REGISTRADO
+        - DONANTE_INACTIVO
+        - MISION_CUMPLIDA
+        - SUBIO_CATEGORIA
+        - DONACION_ASIGNADA
+        - DONACION_RECIBIDA
+        - DONACION_EN_CAMINO
+        - ENTREGA_FALLIDA
+        - DONACION_VENCIDA
     NotificacionDTO:
       type: object
       required:

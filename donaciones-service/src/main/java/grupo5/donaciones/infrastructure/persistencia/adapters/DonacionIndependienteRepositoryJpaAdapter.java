@@ -11,7 +11,17 @@ import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataDona
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
+import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
+import grupo5.donaciones.models.repositories.listados.PorVencer;
+import grupo5.donaciones.models.repositories.listados.Tramo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +42,33 @@ public class DonacionIndependienteRepositoryJpaAdapter
         SpringDataDonacionIndependienteRepository>
     implements IDonacionesIndependientesRepository {
 
+  // Filtros del listado (R11-01): lo que mira otras tablas va en un EXISTS
+  private static final String DEL_DONANTE =
+      "EXISTS (SELECT 1 FROM donaciones.donacion dn WHERE dn.id = di.id_donacion"
+          + " AND dn.id_donante = :donanteId)";
+
+  private static final String DE_LA_SUBCATEGORIA =
+      "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente i"
+          + " JOIN donaciones.item_donacion_normalizado n ON n.id = i.id_item_normalizado"
+          + " WHERE i.id_donacion_independiente = di.id AND n.id_subcategoria = :subcategoriaId)";
+
+  private static final String DE_LA_CATEGORIA =
+      "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente ic"
+          + " JOIN donaciones.item_donacion_normalizado nc ON nc.id = ic.id_item_normalizado"
+          + " JOIN donaciones.subcategoria s ON s.id = nc.id_subcategoria"
+          + " WHERE ic.id_donacion_independiente = di.id AND s.id_categoria = :categoriaId)";
+
+  // En depósito con algún bien que vence en el rango (resumen del admin)
+  private static final String POR_VENCER =
+      " FROM donaciones.donacion_independiente di"
+          + " JOIN donaciones.item_donacion_independiente i ON i.id_donacion_independiente = di.id"
+          + " JOIN donaciones.item_donacion_normalizado n ON n.id = i.id_item_normalizado"
+          + " WHERE di.estado_actual = 'EN_DEPOSITO'"
+          + " AND n.fecha_vencimiento BETWEEN :desde AND :hasta";
+
   private final DonacionesIndependientesPersistenciaMapper mapper;
+
+  @PersistenceContext private EntityManager em;
 
   public DonacionIndependienteRepositoryJpaAdapter(
       SpringDataDonacionIndependienteRepository springDataRepo,
@@ -78,6 +114,16 @@ public class DonacionIndependienteRepositoryJpaAdapter
   @Transactional(readOnly = true)
   public Optional<DonacionIndependiente> findById(UUID id) {
     return super.findById(id);
+  }
+
+  /** Una consulta para todas (la página de propuestas, R11-24). */
+  @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findAllById(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(ids).stream().map(mapper::toDomain).toList();
   }
 
   @Override
@@ -189,6 +235,105 @@ public class DonacionIndependienteRepositoryJpaAdapter
   @Override
   public long contarEnEstado(TipoEstadoDonacion estado) {
     return springDataRepo.countByEstadoActual(estado);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Tramo<DonacionIndependiente> buscar(CriterioDonacionesIndependientes c) {
+    ConsultaListado consulta =
+        new ConsultaListado("FROM donaciones.donacion_independiente di")
+            .siHay(
+                c.estados().stream().map(TipoEstadoDonacion::name).toList(),
+                "di.estado_actual IN (:estados)",
+                "estados")
+            .siHay(c.donanteId(), DEL_DONANTE, "donanteId")
+            .siHay(c.subcategoriaId(), DE_LA_SUBCATEGORIA, "subcategoriaId")
+            .siHay(c.categoriaId(), DE_LA_CATEGORIA, "categoriaId")
+            .siHay(c.entidadId(), "di.id_beneficiario_asignado = :entidadId", "entidadId")
+            .siHay(c.necesidadId(), "di.id_necesidad = :necesidadId", "necesidadId")
+            .siHay(
+                c.desde() == null ? null : c.desde().atStartOfDay(),
+                "di.fecha_registro >= :desde",
+                "desde")
+            .siHay(
+                c.hasta() == null ? null : c.hasta().plusDays(1).atStartOfDay(),
+                "di.fecha_registro < :hasta",
+                "hasta");
+    if (c.q() != null) {
+      consulta.donde(
+          "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente iq"
+              + " WHERE iq.id_donacion_independiente = di.id AND "
+              + ConsultaListado.contiene("iq.bien_descripcion", "q")
+              + ")",
+          "q",
+          ConsultaListado.patron(c.q()));
+    }
+    String orden =
+        c.orden() == OrdenPorFecha.RECIENTES
+            ? "di.fecha_registro DESC, di.id"
+            : "di.fecha_registro ASC, di.id";
+    List<UUID> ids = consulta.ids(em, "di.id", orden, c.paginado());
+    List<DonacionIndependiente> pagina =
+        ConsultaListado.enOrden(
+            ids,
+            ids.isEmpty()
+                ? List.of()
+                : springDataRepo.findAllById(ids).stream().map(mapper::toDomain).toList(),
+            DonacionIndependiente::getId);
+    return new Tramo<>(pagina, consulta.total(em));
+  }
+
+  @Override
+  public Map<TipoEstadoDonacion, Long> contarPorEstado() {
+    Map<TipoEstadoDonacion, Long> conteo = new EnumMap<>(TipoEstadoDonacion.class);
+    springDataRepo
+        .contarPorEstado()
+        .forEach(fila -> conteo.put(fila.getEstado(), fila.getCantidad()));
+    return conteo;
+  }
+
+  @Override
+  public long contarQuePasaronA(
+      TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta) {
+    Object total =
+        em.createNativeQuery(
+                "SELECT count(DISTINCT c.id_donacion_independiente)"
+                    + " FROM donaciones.cambio_estado_donacion_independiente c"
+                    + " JOIN donaciones.estado_donacion_independiente e ON e.id = c.id_estado_nuevo"
+                    + " WHERE e.tipo = :estado AND c.\"timestamp\" >= :desde"
+                    + " AND c.\"timestamp\" < :hasta")
+            .setParameter("estado", estado.name())
+            .setParameter("desde", desde)
+            .setParameter("hasta", hasta)
+            .getSingleResult();
+    return ((Number) total).longValue();
+  }
+
+  @Override
+  public PorVencer buscarPorVencer(LocalDate desde, LocalDate hasta) {
+    Object cantidad =
+        em.createNativeQuery("SELECT count(DISTINCT di.id)" + POR_VENCER)
+            .setParameter("desde", desde)
+            .setParameter("hasta", hasta)
+            .getSingleResult();
+    List<?> proxima =
+        em.createNativeQuery(
+                "SELECT di.id, min(n.fecha_vencimiento) AS vence"
+                    + POR_VENCER
+                    + " GROUP BY di.id ORDER BY vence, di.id LIMIT 1")
+            .setParameter("desde", desde)
+            .setParameter("hasta", hasta)
+            .getResultList();
+    if (proxima.isEmpty()) {
+      return PorVencer.ninguna();
+    }
+    Object[] fila = (Object[]) proxima.get(0);
+    return new PorVencer(
+        ((Number) cantidad).longValue(), ConsultaListado.uuid(fila[0]), fecha(fila[1]));
+  }
+
+  private static LocalDate fecha(Object valor) {
+    return valor instanceof Date sql ? sql.toLocalDate() : (LocalDate) valor;
   }
 
   // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta

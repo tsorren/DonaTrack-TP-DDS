@@ -41,8 +41,8 @@
   <div class="recibidas">
     <header class="cabecera-entidad">
       <p class="rotulo" th:text="${seccion}">Donaciones recibidas</p>
-      <h1>Lo asignado a <em>tu entidad</em></h1>
-      <p>Las donaciones asignadas al <th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block>,
+      <h1>Lo asignado a <em>tu organización</em></h1>
+      <p>Las donaciones asignadas a <th:block th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</th:block>,
         de la que está en tu puerta a la que ya recibiste. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
       <th:block th:if="${conDatos and recibidas.novedades != null}">
         <a th:replace="~{piezas-entidad :: novedades(${recibidas.novedades})}"></a>
@@ -56,7 +56,7 @@
     </th:block>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Todavía no se asignaron donaciones a tu entidad.</h2>
+      <h2 id="vacio-titulo">Todavía no se asignaron donaciones a tu organización.</h2>
       <p>Se asignan a lo que pedís: publicá tus necesidades y aparecen acá cuando se asigne una.</p>
       <a class="boton" data-tono="principal" href="/entidad-necesidades"
          th:href="@{/entidad-necesidades}">Ver tus necesidades</a>

@@ -1,12 +1,19 @@
 package grupo5.cliente.web;
 
+import grupo5.cliente.puertos.AreaDeLaSesion;
 import grupo5.cliente.puertos.AvisosSinLeer;
 import grupo5.cliente.puertos.CuentasDelMenu;
+import grupo5.cliente.puertos.DonantePerfilPuerto;
+import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
 import grupo5.cliente.seguridad.Area;
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.vistas.PasoRecorrido;
 import grupo5.cliente.vistas.PasoRecorrido.Avance;
+import grupo5.cliente.vistas.SalidaDeLaCuenta;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -15,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.io.Resource;
@@ -47,7 +55,15 @@ public class Pantallas {
    * Pantallas que el layout privado enlaza fuera del menú; si no están dibujadas, muestran la
    * página de sin dibujar.
    */
-  private static final Map<String, String> FUERA_DEL_MENU = Map.of("perfil", "Mi perfil");
+  private static final Map<String, String> FUERA_DEL_MENU =
+      Map.of("perfil", "Mi perfil", "administradores", "Administradores");
+
+  /**
+   * Pantallas que son parte de una sección aunque su nombre no empiece con el de ella: la pestaña
+   * Importaciones es de Donantes (R11-20).
+   */
+  private static final Map<String, String> EN_LA_SECCION =
+      Map.of("admin-importaciones", "admin-donantes");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
@@ -71,7 +87,7 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
               new Seccion("Mis donaciones", "Donaciones", ICONO_DONACIONES, "donante-donaciones"),
-              new Seccion("Entidades", "entidades", "donante-entidades"),
+              new Seccion("Organizaciones", "entidades", "donante-entidades"),
               new Seccion("Seguimiento", ICONO_SEGUIMIENTO, "donante-seguimiento")),
           Area.ENTIDAD,
           List.of(
@@ -84,11 +100,57 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
               new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
-              new Seccion("Entidades", "entidades", "admin-entidades"),
+              new Seccion("Organizaciones", "entidades", "admin-entidades"),
               new Seccion("Donaciones", ICONO_DONACIONES, "admin-donaciones"),
               new Seccion("Asignar donaciones", "Asignar", ICONO_SEGUIMIENTO, "admin-asignaciones"),
               new Seccion("Camiones", "camiones", "admin-camiones"),
               new Seccion("Ranking", ICONO_INCENTIVOS, "admin-ranking")));
+
+  /**
+   * El menú de la persona que dona: el del donante con Misiones antes de Seguimiento (RF-07; la
+   * empresa no la ve).
+   */
+  private static final List<Seccion> MENU_PERSONA =
+      List.of(
+          MENUS.get(Area.DONANTE).get(0),
+          MENUS.get(Area.DONANTE).get(1),
+          MENUS.get(Area.DONANTE).get(2),
+          new Seccion("Misiones", ICONO_INCENTIVOS, "donante-misiones"),
+          MENUS.get(Area.DONANTE).get(3));
+
+  /** Las pantallas del donante con diseño propio de persona, en templates/persona/. */
+  private static final Set<String> PROPIAS_DE_PERSONA =
+      Set.of("donante-inicio", "donante-perfil", "donante-perfil-guardado");
+
+  /** En la sesión: el tipo de la cuenta del donante y de qué donante es. */
+  private static final String TIPO = "donante.tipo";
+
+  private static final String TIPO_DE_QUIEN = "donante.tipo.de";
+
+  /**
+   * Las pantallas que no son de ningún área y, con la sesión iniciada, se ven con el marco privado
+   * del rol (docs/interfaz/flujos/raices-paginas-de-error.md, R11-05): Contacto.
+   */
+  private static final Set<String> CON_MARCO_DE_LA_CUENTA =
+      Set.of("publico-contacto", "publico-contacto-enviado", "publico-contacto-error");
+
+  /** El prefijo de las pantallas públicas, las que no son de ningún área. */
+  private static final String PUBLICO = "publico";
+
+  /**
+   * En el modelo de lo público con la sesión iniciada: la salida a lo propio ({@link
+   * SalidaDeLaCuenta}). Las plantillas eligen el final de la navegación por esta marca.
+   */
+  static final String SALIDA_DE_LA_CUENTA = "salidaDeLaCuenta";
+
+  /** El rol que muestra el menú de la cuenta cuya solicitud de entidad espera la aprobación. */
+  private static final String EN_REVISION = "Solicitud en revisión";
+
+  /** Adonde lleva "Ver mi solicitud". */
+  private static final String SOLICITUD = "/publico-registro-entidad-enviada";
+
+  /** El layout de las páginas con sesión; sin ella, y por defecto, el público. */
+  static final String MARCO_PRIVADO = "layout-privado";
 
   /** El recorrido de la donación en camino; viaje-datos toma de acá los avances de los pasos. */
   private static final List<PasoRecorrido> PASOS =
@@ -104,12 +166,25 @@ public class Pantallas {
 
   private final CuentasDelMenu cuentas;
   private final ObjectProvider<AvisosSinLeer> avisos;
+  private final ObjectProvider<DonantePerfilPuerto> perfiles;
+  private final ObjectProvider<AreaDeLaSesion> sesiones;
 
-  /** Sin {@link AvisosSinLeer} (los tests que no lo cargan), la cabecera queda sin número. */
-  Pantallas(ResourceLoader recursos, CuentasDelMenu cuentas, ObjectProvider<AvisosSinLeer> avisos) {
+  /**
+   * Sin {@link AvisosSinLeer} (los tests que no lo cargan), la cabecera queda sin número; sin
+   * {@link DonantePerfilPuerto}, el donante ve la versión de empresa; sin {@link AreaDeLaSesion},
+   * las páginas de error y Contacto tienen el marco público.
+   */
+  Pantallas(
+      ResourceLoader recursos,
+      CuentasDelMenu cuentas,
+      ObjectProvider<AvisosSinLeer> avisos,
+      ObjectProvider<DonantePerfilPuerto> perfiles,
+      ObjectProvider<AreaDeLaSesion> sesiones) {
     this.dibujadas = plantillas(recursos);
     this.cuentas = cuentas;
     this.avisos = avisos;
+    this.perfiles = perfiles;
+    this.sesiones = sesiones;
   }
 
   /** Si hay una plantilla con ese nombre; se compara contra la lista, no se arma una ruta. */
@@ -139,19 +214,58 @@ public class Pantallas {
 
   /** Completa el modelo de la pantalla y devuelve su vista. */
   public String mostrar(String pantalla, Model model) {
+    return armar(pantalla, model, false);
+  }
+
+  /**
+   * La pantalla del donante en la versión de su tipo de cuenta (docs/interfaz/flujos/
+   * r11-p0-persona.md): {@code persona} en el modelo es true salvo en la empresa, y {@code sinTipo}
+   * true si Donaciones no dice el tipo. La persona confirmada tiene Misiones en el menú; Inicio y
+   * Mi perfil de la persona (también sin tipo) son las plantillas de {@code persona/}. El tipo se
+   * pide una vez por sesión y por donante; si el pedido falla, no se guarda y la falla sigue su
+   * camino (página de error). Sin el puerto (tests de pantalla sueltos), la versión de empresa.
+   */
+  public String mostrarDonante(
+      String pantalla, UUID donante, Model model, HttpServletRequest pedido) {
+    Tipo tipo = tipoDe(donante, pedido);
+    String vista = armar(pantalla, model, tipo == Tipo.PERSONA);
+    boolean persona = tipo != Tipo.EMPRESA;
+    model.addAttribute("persona", persona);
+    model.addAttribute("sinTipo", tipo == Tipo.SIN_TIPO);
+    return persona && PROPIAS_DE_PERSONA.contains(vista) ? "persona/" + vista : vista;
+  }
+
+  private Tipo tipoDe(UUID donante, HttpServletRequest pedido) {
+    DonantePerfilPuerto puerto = perfiles == null ? null : perfiles.getIfAvailable();
+    if (puerto == null) {
+      return Tipo.EMPRESA;
+    }
+    HttpSession sesion = pedido.getSession();
+    if (donante.equals(sesion.getAttribute(TIPO_DE_QUIEN))
+        && sesion.getAttribute(TIPO) instanceof Tipo guardado) {
+      return guardado;
+    }
+    Tipo tipo = Objects.requireNonNullElse(puerto.tipo(donante), Tipo.SIN_TIPO);
+    sesion.setAttribute(TIPO_DE_QUIEN, donante);
+    sesion.setAttribute(TIPO, tipo);
+    return tipo;
+  }
+
+  private String armar(String pantalla, Model model, boolean conMisiones) {
     if (!pantalla.matches(NOMBRE)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     boolean dibujada = existe(pantalla);
     String prefijo = pantalla.substring(0, pantalla.indexOf('-'));
     Optional<Area> area = Area.deRuta(prefijo);
-    List<Seccion> menu = area.map(MENUS::get).orElse(List.of());
+    List<Seccion> menu = conMisiones ? MENU_PERSONA : area.map(MENUS::get).orElse(List.of());
+    String deLaSeccion = EN_LA_SECCION.getOrDefault(pantalla, pantalla);
     Seccion actual =
         menu.stream()
             .filter(
                 seccion ->
-                    pantalla.equals(seccion.pantalla())
-                        || pantalla.startsWith(seccion.pantalla() + "-"))
+                    deLaSeccion.equals(seccion.pantalla())
+                        || deLaSeccion.startsWith(seccion.pantalla() + "-"))
             .findFirst()
             .orElse(null);
     String fueraDelMenu = FUERA_DEL_MENU.get(pantalla.substring(prefijo.length() + 1));
@@ -162,27 +276,123 @@ public class Pantallas {
     model.addAttribute("completarPerfil", model.containsAttribute("completarPerfil"));
     model.addAttribute("sesionPendiente", model.containsAttribute("sesionPendiente"));
     model.addAttribute("persona", false);
+    model.addAttribute("sinTipo", false);
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("pasos", PASOS);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
-    model.addAttribute(
-        "navegacion",
-        menu.stream()
-            .map(
-                seccion ->
-                    new OpcionNavegacion(
-                        seccion.texto(),
-                        seccion.textoCorto(),
-                        seccion.icono(),
-                        "/" + seccion.pantalla(),
-                        seccion.equals(actual)))
-            .toList());
+    model.addAttribute("navegacion", opciones(menu, actual));
     model.addAttribute("cuenta", cuentas.de(prefijo).orElse(null));
     model.addAttribute("sinLeer", area.isPresent() ? sinLeer(prefijo) : 0L);
-    model.addAttribute(
-        "perfil",
-        area.filter(Area::requierePersona).map(a -> "/" + a.prefijo() + "-perfil").orElse(null));
+    model.addAttribute("perfil", area.map(Pantallas::miPerfil).orElse(null));
+    if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes pedido) {
+      if (CON_MARCO_DE_LA_CUENTA.contains(pantalla)) {
+        conMarcoDeLaCuenta(pedido.getRequest(), model);
+      } else if (PUBLICO.equals(prefijo)) {
+        conLaCuentaEnLoPublico(pedido.getRequest(), model);
+      }
+    }
     return dibujada ? pantalla : SIN_DIBUJAR;
+  }
+
+  private static List<OpcionNavegacion> opciones(List<Seccion> menu, Seccion actual) {
+    return menu.stream()
+        .map(
+            seccion ->
+                new OpcionNavegacion(
+                    seccion.texto(),
+                    seccion.textoCorto(),
+                    seccion.icono(),
+                    "/" + seccion.pantalla(),
+                    seccion.equals(actual)))
+        .toList();
+  }
+
+  /**
+   * La dirección de Mi perfil del área: cada una tiene la suya (la administración, desde R11-10).
+   */
+  private static String miPerfil(Area area) {
+    return "/" + area.prefijo() + "-perfil";
+  }
+
+  /**
+   * Las páginas que no son de ningún área (las de error y Contacto) con la sesión iniciada: el
+   * marco privado del área de la cuenta, con su menú sin ninguna sección marcada, su cuenta, la
+   * campanita sin número y {@code inicio}, la dirección de "Volver a mi inicio". Solo usa lo que ya
+   * está en la sesión (el área del token, y el tipo de la cuenta si ya se guardó): no pide nada a
+   * ningún servicio, porque una falla de uno rompería también la página de error. Sin sesión, con
+   * la cuenta sin perfil o pendiente, o si el marco no se puede armar, el modelo queda como estaba
+   * y la página usa el marco público.
+   */
+  public void conMarcoDeLaCuenta(HttpServletRequest pedido, Model model) {
+    AreaDeLaSesion sesion = sesiones == null ? null : sesiones.getIfAvailable();
+    if (sesion == null) {
+      return;
+    }
+    try {
+      Area area = sesion.activa(pedido).orElse(null);
+      if (area == null) {
+        return;
+      }
+      CuentaVista cuenta = cuentas.deLaSesion(area.prefijo()).orElse(null);
+      if (cuenta == null) {
+        return;
+      }
+      List<Seccion> menu =
+          area == Area.DONANTE && esPersona(pedido) ? MENU_PERSONA : MENUS.get(area);
+      model.addAttribute("navegacion", opciones(menu, null));
+      model.addAttribute("seccion", null);
+      model.addAttribute("cuenta", cuenta);
+      model.addAttribute("sinLeer", 0L);
+      model.addAttribute("perfil", miPerfil(area));
+      model.addAttribute("inicio", area.inicio());
+      model.addAttribute("marco", MARCO_PRIVADO);
+    } catch (RuntimeException noSePudoArmar) {
+      // Una página de error nunca falla por su marco: "marco" es lo último que se pone, y sin él la
+      // plantilla usa el público.
+    }
+  }
+
+  /**
+   * Lo público (la portada y las páginas de {@code layout-publico}) con la sesión iniciada
+   * (docs/interfaz/flujos/r11-p1-portada.md, R11-15): la navegación pública sigue igual y, en lugar
+   * de "Ingresar" y "Crear una cuenta", la salida a lo propio y el menú de la cuenta. Con la cuenta
+   * activa, "Ir a mi inicio" y su Mi perfil; con la solicitud de su entidad pendiente, "Ver mi
+   * solicitud" y "Solicitud en revisión", sin Mi perfil. Las mismas reglas que {@link
+   * #conMarcoDeLaCuenta}: solo lo que hay en la sesión, sin campanita ni ningún servicio. Sin
+   * sesión, o si la cuenta no se puede armar, el modelo queda sin la salida y la página muestra el
+   * encabezado de visitante.
+   */
+  void conLaCuentaEnLoPublico(HttpServletRequest pedido, Model model) {
+    AreaDeLaSesion sesion = sesiones == null ? null : sesiones.getIfAvailable();
+    if (sesion == null) {
+      return;
+    }
+    try {
+      Optional<Area> activa = sesion.activa(pedido);
+      Area area = activa.or(() -> sesion.pendiente(pedido)).orElse(null);
+      CuentaVista cuenta = area == null ? null : cuentas.deLaSesion(area.prefijo()).orElse(null);
+      if (cuenta == null) {
+        return;
+      }
+      if (activa.isPresent()) {
+        model.addAttribute("cuenta", cuenta);
+        model.addAttribute("perfil", miPerfil(area));
+        model.addAttribute(SALIDA_DE_LA_CUENTA, new SalidaDeLaCuenta(area.inicio(), false));
+      } else {
+        model.addAttribute(
+            "cuenta", new CuentaVista(cuenta.nombre(), EN_REVISION, cuenta.cambiarClave()));
+        model.addAttribute(SALIDA_DE_LA_CUENTA, new SalidaDeLaCuenta(SOLICITUD, true));
+      }
+    } catch (RuntimeException noSePudoArmar) {
+      // La página nunca falla por su encabezado: la salida es lo último que se pone, y sin ella la
+      // plantilla muestra el de visitante.
+    }
+  }
+
+  /** Si la sesión ya sabe que la cuenta del donante es una persona; no se la pide a nadie. */
+  private static boolean esPersona(HttpServletRequest pedido) {
+    HttpSession sesion = pedido.getSession(false);
+    return sesion != null && sesion.getAttribute(TIPO) == Tipo.PERSONA;
   }
 
   /** Las sin leer de la cuenta, para la cabecera del layout privado. */

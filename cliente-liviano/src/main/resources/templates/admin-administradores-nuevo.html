@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!--/* Dar de alta un administrador como página aparte (R11-10, ficha docs/interfaz/flujos/
+       r11-p1-admins.md §4.3): el mismo formulario de la ventana de Administradores
+       (admin-administradores :: formulario). Llega acá sin JavaScript: al abrirla de forma directa o
+       cuando el alta vuelve con un error de datos o del servicio (con HTMX, en cambio, el error vuelve
+       a la ventana abierta), con lo escrito conservado. El modelo
+       (web.AdminAdministradoresController): errores (por campo), nombre, apellido y correo (lo
+       escrito), errorAlta y codigo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Dar de alta un administrador - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo"><a href="/admin-administradores" th:href="@{/admin-administradores}">Administradores</a></p>
+        <h1>Dar de alta un administrador</h1>
+      </div>
+    </header>
+    <th:block th:replace="~{admin-administradores :: formulario(false)}"></th:block>
+  </div>
+</th:block>
+</body>
+</html>

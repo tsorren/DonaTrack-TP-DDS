@@ -3,6 +3,10 @@ package grupo5.cliente.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
@@ -14,18 +18,25 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
+import grupo5.cliente.vistas.AdminAsignacionesVista.DonacionEnJuego;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Sugerencia;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import grupo5.cliente.vistas.ConsultaAsignaciones;
+import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
@@ -63,31 +74,6 @@ class AdminOperacionRestTest {
   private static final String P1 = "6f1c2c1e-0000-4000-8000-0000000000b1";
   private static final String P2 = "6f1c2c1e-0000-4000-8000-0000000000b2";
 
-  /**
-   * Una pendiente vieja que cubre todo, una de hoy que cubre una parte (el donante ocultó su
-   * nombre) y una descartada; las tres de la misma entidad.
-   */
-  private static final String PROPUESTAS =
-      """
-      [
-        {"id": "%s", "estado": "PENDIENTE", "fechaCreacion": "2026-10-15T10:00:00",
-         "necesidad": {"id": "%s", "descripcion": "Arroz", "cantidadNecesitada": 25},
-         "fragmentaciones": [{"cantidadNecesaria": 25, "donacionIndependiente":
-           {"descripcion": "Arroz", "cantidad": 25,
-            "quienDono": {"tipo": "HUMANA", "nombreVisible": "Ana Ejemplo"}}}]},
-        {"id": "%s", "estado": "PENDIENTE", "fechaCreacion": "2026-11-10T09:05:00",
-         "necesidad": {"id": "%s", "descripcion": "Leche en polvo", "cantidadNecesitada": 12},
-         "fragmentaciones": [{"cantidadNecesaria": 10, "donacionIndependiente":
-           {"descripcion": "Leche en polvo", "cantidad": 10,
-            "quienDono": {"tipo": "JURIDICA", "nombreVisible": null}}}]},
-        {"id": "6f1c2c1e-0000-4000-8000-0000000000b3", "estado": "DESCARTADA",
-         "fechaCreacion": "2026-10-20T10:00:00",
-         "necesidad": {"id": "%s", "descripcion": "Arroz", "cantidadNecesitada": 25},
-         "fragmentaciones": []}
-      ]
-      """
-          .formatted(P1, N1, P2, N2, N1);
-
   private MockRestServiceServer logistica;
   private MockRestServiceServer donaciones;
   private AdminOperacionRest adaptador;
@@ -106,49 +92,89 @@ class AdminOperacionRestTest {
             reloj);
   }
 
-  private void necesidad(String necesidad, String unidad) {
+  private static final String ASIGNACIONES = DONACIONES + "/api/asignaciones";
+  private static final String RESUMEN_PROPUESTAS = ASIGNACIONES + "/propuestas/resumen";
+  private static final String ULTIMA = ASIGNACIONES + "/ejecuciones?page=0&size=1";
+  private static final String RECIENTES =
+      ASIGNACIONES + "/propuestas?page=0&size=3&estado=APROBADA&estado=DESCARTADA&orden=reciente";
+  private static final String D_ARROZ = "6f1c2c1e-0000-4000-8000-0000000000d1";
+
+  /**
+   * Una pendiente vieja sugerida por los dos (las donaciones son de Quienes menos recibieron) y una
+   * de hoy, de antes de guardar el algoritmo, que cubre una parte (el donante ocultó su nombre).
+   * Las dos ya traen la organización y la unidad: no se piden aparte.
+   */
+  private static final String LIBRES =
+      """
+      [
+        {"id": "%s", "estado": "PENDIENTE", "fechaCreacion": "2026-10-15T10:00:00",
+         "situacion": "LIBRE", "otrasPendientesMismaNecesidad": 0,
+         "necesidad": {"id": "%s", "descripcion": "Arroz", "cantidadNecesitada": 25,
+                       "entidadNombre": "Comedor Ejemplo", "unidad": "KILOGRAMO"},
+         "sugeridaPor": [
+           {"algoritmo": "PRIORIDAD_SUBATENDIDOS", "puesto": 1, "deCuantas": 6,
+            "eligioLasDonaciones": true},
+           {"algoritmo": "COMPATIBILIDAD_SEMANTICA", "puesto": 3, "deCuantas": 10,
+            "eligioLasDonaciones": false}],
+         "fragmentaciones": [{"cantidadNecesaria": 25, "disponible": 25, "pedidaEnOtras": 0,
+           "otrasPropuestas": 0, "donacionIndependiente":
+           {"id": "%s", "descripcion": "Arroz", "cantidad": 25,
+            "quienDono": {"tipo": "HUMANA", "nombreVisible": "Ana Ejemplo"}}}]},
+        {"id": "%s", "estado": "PENDIENTE", "fechaCreacion": "2026-11-10T09:05:00",
+         "situacion": "LIBRE", "sugeridaPor": [],
+         "necesidad": {"id": "%s", "descripcion": "Leche en polvo", "cantidadNecesitada": 12,
+                       "entidadNombre": "Merendero Ejemplo", "unidad": "UNIDADES"},
+         "fragmentaciones": [{"cantidadNecesaria": 10, "disponible": 10, "donacionIndependiente":
+           {"descripcion": "Leche en polvo", "cantidad": 10,
+            "quienDono": {"tipo": "JURIDICA", "nombreVisible": null}}}]}
+      ]
+      """
+          .formatted(P1, N1, D_ARROZ, P2, N2);
+
+  private void resumen(int libres, int enConflicto, int sinStock) {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/necesidades/" + necesidad))
+        .expect(requestTo(RESUMEN_PROPUESTAS))
         .andRespond(
             withSuccess(
                 """
-                {"id": "%s", "idEntidad": "%s", "unidad": "%s"}"""
-                    .formatted(necesidad, E1, unidad),
+                {"pendientes": %d, "libres": %d, "enConflicto": %d, "sinStock": %d}"""
+                    .formatted(libres + enConflicto + sinStock, libres, enConflicto, sinStock),
                 MediaType.APPLICATION_JSON));
   }
 
-  private void entidad() {
+  private void ultima(String cuerpo) {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades/" + E1))
-        .andRespond(
-            withSuccess(
-                """
-                {"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}"""
-                    .formatted(E1),
-                MediaType.APPLICATION_JSON));
+        .expect(requestTo(ULTIMA))
+        .andRespond(withSuccess(cuerpo, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "3"));
   }
 
   @Test
-  void separaLasPendientesDeLasDecididasYDiceCuantoCubreCadaUna() {
+  void propuestasPideUnaPaginaSinProblemasElResumenLaUltimaYLasTresDecididas() {
+    resumen(12, 2, 1);
+    ultima(
+        """
+        [{"fechaEjecucion": "2026-11-10T00:00:00", "cantidadPropuestasGeneradas": 12}]""");
     donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
-        .andRespond(withSuccess(PROPUESTAS, MediaType.APPLICATION_JSON));
-    necesidad(N1, "KILOGRAMO");
-    entidad();
-    necesidad(N2, "UNIDADES");
+        .expect(
+            requestTo(ASIGNACIONES + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"))
+        .andRespond(withSuccess(LIBRES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "12"));
     donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/ejecuciones"))
+        .expect(requestTo(RECIENTES))
         .andRespond(
             withSuccess(
                 """
-                [{"fechaEjecucion": "2026-11-09T00:00:00", "cantidadPropuestasGeneradas": 1},
-                 {"fechaEjecucion": "2026-11-10T00:00:00", "cantidadPropuestasGeneradas": 2}]
-                """,
+                [{"id": "%s", "estado": "APROBADA",
+                  "necesidad": {"descripcion": "Fideos", "cantidadNecesitada": 20,
+                                "entidadNombre": "Hogar Ejemplo", "unidad": "KILOGRAMO"}}]"""
+                    .formatted(P1),
                 MediaType.APPLICATION_JSON));
 
-    AdminAsignacionesVista vista = adaptador.asignaciones();
+    AdminAsignacionesVista vista = adaptador.asignaciones(ConsultaAsignaciones.primera(), "");
 
-    assertEquals("hoy, 0:00 · generó 2 propuestas", vista.ultima());
+    assertEquals(new Cuentas(15, 12, 3), vista.cuentas());
+    assertEquals("hoy, 0:00 · generó 12 propuestas", vista.ultima());
+    assertEquals(12, vista.propuestas().total());
+    assertEquals(2, vista.propuestas().paginas());
     assertEquals(
         List.of(
             new Propuesta(
@@ -158,55 +184,190 @@ class AdminOperacionRestTest {
                 "15 de octubre",
                 "Arroz · 25 kg (de Ana Ejemplo)",
                 "Cubre la necesidad completa.",
-                false),
+                false,
+                List.of(
+                    new Sugerencia("Quienes menos recibieron", "1.º de 6"),
+                    new Sugerencia("Parecido con lo pedido", "3.º de 10")),
+                "Las donaciones son las que eligió Quienes menos recibieron.",
+                "libre",
+                null,
+                null),
             new Propuesta(
                 P2,
-                "Comedor Ejemplo",
+                "Merendero Ejemplo",
                 "Leche en polvo, 12 unidades",
                 "hoy, 9:05",
                 "Leche en polvo · 10 unidades",
                 "Cubre 10 de 12 unidades; el resto sigue pendiente.",
-                true)),
-        vista.propuestas());
+                true,
+                List.of(),
+                "Sin el dato del algoritmo: se generó antes de que lo guardáramos.",
+                "libre",
+                null,
+                null)),
+        vista.propuestas().filas());
     assertEquals(
-        List.of(new Decidida("Comedor Ejemplo", "Arroz, 25 kg", "Descartada")), vista.decididas());
+        List.of(new Decidida("Hogar Ejemplo", "Fideos, 20 kg", "Aprobada")), vista.recientes());
+    // Ni una necesidad ni una organización por propuesta, ni listas sin página (A11)
     donaciones.verify();
   }
 
   @Test
-  void unaNecesidadQueYaNoEstaDejaLaPropuestaSinEntidad() {
+  void elFiltroVerPideLasDelAlgoritmoElegido() {
+    resumen(0, 0, 0);
+    ultima("[]");
     donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
-        .andRespond(
-            withSuccess(
-                """
-                [{"id": "%s", "estado": "PENDIENTE", "fechaCreacion": "2026-10-15T10:00:00",
-                  "necesidad": {"id": "%s", "descripcion": "Arroz", "cantidadNecesitada": 25},
-                  "fragmentaciones": []}]"""
-                    .formatted(P1, N1),
-                MediaType.APPLICATION_JSON));
+        .expect(
+            requestTo(
+                ASIGNACIONES
+                    + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"
+                    + "&algoritmo=PRIORIDAD_SUBATENDIDOS"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
     donaciones
-        .expect(requestTo(DONACIONES + "/api/necesidades/" + N1))
-        .andRespond(withStatus(HttpStatus.NOT_FOUND));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/ejecuciones"))
+        .expect(requestTo(RECIENTES))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-    Propuesta arroz = adaptador.asignaciones().propuestas().getFirst();
-    assertNull(arroz.entidad());
-    assertEquals("Arroz, 25", arroz.pide());
+    AdminAsignacionesVista vista =
+        adaptador.asignaciones(
+            ConsultaAsignaciones.de(null, null, "menos-recibieron", null, null, 1), "");
+
+    assertNull(vista.ultima());
+    assertEquals("Quienes menos recibieron", vista.algoritmoElegido());
+    donaciones.verify();
   }
 
   @Test
-  void sinEjecucionesLaUltimaAsignacionQuedaVacia() {
+  void conflictosDiceConQuienChocaCadaUnaYLaQueYaNoAlcanzaNoSeAprueba() {
+    resumen(0, 2, 1);
+    ultima("[]");
     donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+        .expect(
+            requestTo(
+                ASIGNACIONES
+                    + "/propuestas?page=0&size=10&estado=PENDIENTE"
+                    + "&situacion=EN_CONFLICTO&situacion=SIN_STOCK"))
+        .andRespond(
+            withSuccess(
+                """
+                [
+                  {"id": "%s", "estado": "PENDIENTE", "situacion": "EN_CONFLICTO",
+                   "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 25,
+                                 "entidadNombre": "Comedor Ejemplo", "unidad": "KILOGRAMO"},
+                   "fragmentaciones": [{"cantidadNecesaria": 25, "disponible": 25,
+                     "pedidaEnOtras": 20, "otrasPropuestas": 1, "donacionIndependiente":
+                     {"id": "%s", "descripcion": "Arroz", "cantidad": 25,
+                      "quienDono": {"nombreVisible": "Ana Ejemplo"}}}]},
+                  {"id": "%s", "estado": "PENDIENTE", "situacion": "EN_CONFLICTO",
+                   "otrasPendientesMismaNecesidad": 1,
+                   "necesidad": {"descripcion": "Fideos", "cantidadNecesitada": 10,
+                                 "entidadNombre": "Escuela Ejemplo", "unidad": "KILOGRAMO"},
+                   "fragmentaciones": [{"cantidadNecesaria": 10, "disponible": 10,
+                     "donacionIndependiente": {"descripcion": "Fideos", "cantidad": 10}}]},
+                  {"id": "6f1c2c1e-0000-4000-8000-0000000000b3", "estado": "PENDIENTE",
+                   "situacion": "SIN_STOCK",
+                   "necesidad": {"descripcion": "Azúcar", "cantidadNecesitada": 15,
+                                 "entidadNombre": "Hogar Ejemplo", "unidad": "KILOGRAMO"},
+                   "fragmentaciones": [{"cantidadNecesaria": 15, "disponible": 0,
+                     "donacionIndependiente": {"descripcion": "Azúcar", "cantidad": 15,
+                      "estadoActual": "AsignacionRealizada"}}]}
+                ]"""
+                    .formatted(P1, D_ARROZ, P2),
+                MediaType.APPLICATION_JSON));
+
+    List<Propuesta> conflictos =
+        adaptador
+            .asignaciones(ConsultaAsignaciones.de("conflictos", null, null, null, null, 1), "")
+            .propuestas()
+            .filas();
+
+    assertEquals(
+        "Compite por Arroz · 25 kg (de Ana Ejemplo) con 1 propuesta más: alcanza para una.",
+        conflictos.get(0).franja());
+    assertEquals(D_ARROZ, conflictos.get(0).comparar());
+    assertEquals(
+        "Cubre la misma necesidad que otra propuesta pendiente. Si aprobás las dos, se asigna de"
+            + " más.",
+        conflictos.get(1).franja());
+    assertNull(conflictos.get(1).comparar());
+    assertEquals(
+        "Ya no alcanza: Azúcar · 15 kg quedó asignada a otra organización. Podés descartarla.",
+        conflictos.get(2).franja());
+    assertFalse(conflictos.get(2).aprobable());
+    donaciones.verify();
+  }
+
+  @Test
+  void destinoListaLasDonacionesEnJuegoYLaElegidaTraeTodasLasQueLaPiden() {
+    resumen(1, 2, 0);
+    ultima("[]");
     donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/ejecuciones"))
+        .expect(requestTo(ASIGNACIONES + "/donaciones?page=0&size=10"))
+        .andRespond(
+            withSuccess(
+                    """
+                [{"donacionIndependiente": {"id": "%s", "descripcion": "Arroz", "cantidad": 25,
+                   "fechaRegistro": "2026-11-03T10:00:00",
+                   "quienDono": {"nombreVisible": "Ana Ejemplo"}},
+                  "disponible": 25, "pedidaEnPendientes": 45, "propuestasPendientes": 2,
+                  "alcanza": false}]"""
+                        .formatted(D_ARROZ),
+                    MediaType.APPLICATION_JSON)
+                .header(Paginas.TOTAL, "1"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-    assertNull(adaptador.asignaciones().ultima());
+    DonacionEnJuego arroz =
+        adaptador
+            .asignaciones(ConsultaAsignaciones.de("destino", null, null, null, null, 1), "")
+            .donaciones()
+            .filas()
+            .getFirst();
+    assertEquals(
+        new DonacionEnJuego(
+            D_ARROZ,
+            "Arroz · 25",
+            "Ana Ejemplo",
+            "7 días en el depósito",
+            2,
+            false,
+            "La piden 2 propuestas y no alcanza para todas."),
+        arroz);
+    donaciones.verify();
+    donaciones.reset();
+
+    resumen(1, 2, 0);
+    ultima("[]");
+    donaciones
+        .expect(
+            requestTo(
+                ASIGNACIONES + "/propuestas?page=0&size=20&estado=PENDIENTE&donacion=" + D_ARROZ))
+        .andRespond(withSuccess(LIBRES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "1"));
+
+    AdminAsignacionesVista elegida =
+        adaptador.asignaciones(
+            ConsultaAsignaciones.de("destino", null, null, null, D_ARROZ, 1), "");
+    assertEquals("La pide 1 propuesta.", elegida.elegida().resumen());
+    assertNull(elegida.propuestas().filas().getFirst().comparar());
+    donaciones.verify();
+  }
+
+  @Test
+  void todasLasDecididasSonUnaPaginaDeVeinteSinResumen() {
+    donaciones
+        .expect(
+            requestTo(
+                ASIGNACIONES
+                    + "/propuestas?page=1&size=20&estado=APROBADA&estado=DESCARTADA"
+                    + "&orden=reciente"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "25"));
+
+    AdminAsignacionesVista vista =
+        adaptador.asignaciones(ConsultaAsignaciones.de(null, "decididas", null, null, null, 2), "");
+
+    assertEquals(25, vista.decididas().total());
+    assertNull(vista.cuentas());
+    donaciones.verify();
   }
 
   @Test
@@ -220,19 +381,29 @@ class AdminOperacionRestTest {
   }
 
   @Test
-  void aprobarMandaElEstadoYDevuelveLaEntidad() {
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
-        .andRespond(withSuccess(PROPUESTAS, MediaType.APPLICATION_JSON));
-    necesidad(N1, "KILOGRAMO");
-    entidad();
+  void aprobarMandaElEstadoYCuentaLasQuePasaronAConflictos() {
+    resumen(3, 2, 0);
     donaciones
         .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas/" + P1 + "/estado"))
         .andExpect(method(PUT))
         .andExpect(content().json("{\"estado\": \"APROBADA\", \"justificacion\": null}"))
         .andRespond(withSuccess());
+    resumen(2, 1, 1);
 
-    assertEquals("Comedor Ejemplo", adaptador.decidirPropuesta(P1, true, " "));
+    assertEquals(1, adaptador.decidirPropuesta(P1, true, " "));
+    donaciones.verify();
+  }
+
+  @Test
+  void descartarSoloMandaElEstadoConElMotivo() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas/" + P1 + "/estado"))
+        .andExpect(method(PUT))
+        .andExpect(
+            content().json("{\"estado\": \"DESCARTADA\", \"justificacion\": \"Ya no hace falta\"}"))
+        .andRespond(withSuccess());
+
+    assertEquals(0, adaptador.decidirPropuesta(P1, false, " Ya no hace falta "));
     donaciones.verify();
   }
 
@@ -311,6 +482,17 @@ class AdminOperacionRestTest {
   private static final String D2 = "6f1c2c1e-0000-4000-8000-0000000000d2";
   private static final String D3 = "6f1c2c1e-0000-4000-8000-0000000000d3";
   private static final String O1 = "6f1c2c1e-0000-4000-8000-0000000000f1";
+  private static final String H1 = "6f1c2c1e-0000-4000-8000-0000000000a9";
+
+  /** El resumen de Donaciones: las cifras de la cabecera, ya contadas allá. */
+  private static final String RESUMEN =
+      """
+      {"donacionesPorEstado": {"EN_DEPOSITO": 1, "ASIGNACION_REALIZADA": 1, "ENTREGADA": 1},
+       "entregadasEnElMes": {"mes": "2026-11", "cantidad": 1},
+       "porVencer": {"dias": 7, "cantidad": 1,
+                     "proxima": {"descripcion": "Leche en polvo", "fechaVencimiento": "2026-11-12"}},
+       "donantes": {"total": 3, "activos": 2}, "entidadesActivas": 1, "propuestasPendientes": 0}
+      """;
 
   /**
    * Una en el depósito que vence en 2 días (el donante ocultó su nombre, pero el admin lo ve en la
@@ -334,7 +516,7 @@ class AdminOperacionRestTest {
            "unidad": "KILOGRAMO"}, "bien": {"descripcion": "Arroz", "estado": "NUEVO"}}}]},
         {"id": "%2$s", "descripcion": "Leche en polvo", "estadoActual": "EnDeposito",
          "fechaRegistro": "2026-11-08T10:00:00", "cantidad": 10, "donacionOriginalId": "%5$s",
-         "quienDono": {"tipo": "HUMANA", "nombreVisible": null},
+         "quienDono": {"tipo": "HUMANA", "nombreVisible": null, "donanteId": "%6$s"},
          "items": [{"cantidad": 10, "bien": {"categoria": {"id": "%4$s", "nombre": "Alimentos",
            "unidad": "UNIDADES"}, "bien": {"descripcion": "Leche en polvo",
            "fechaVencimiento": "2026-11-12", "estado": "NUEVO"}}}]},
@@ -343,61 +525,214 @@ class AdminOperacionRestTest {
          "items": []}
       ]
       """
-          .formatted(D1, D2, D3, E1, O1);
+          .formatted(D1, D2, D3, E1, O1, H1);
 
   @Test
-  void lasDonacionesVienenConQuienDonoElDepositoLaEntidadYElHistorial() {
+  void lasDonacionesSonUnaPaginaConLosNombresDeQuienesDonaronYLasCifrasDelResumen() {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donaciones"))
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes?orden=recientes&page=0&size=20"))
+        .andRespond(
+            withSuccess(INDEPENDIENTES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "43"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/personas?id=" + H1 + "&size=20"))
         .andRespond(
             withSuccess(
                 """
-                [{"id": "%s", "donante": {"persona": {"nombre": "Ana", "apellido": "Ejemplo"}},
-                  "deposito": {"calle": "Av. Ejemplo", "altura": 1234}}]"""
-                    .formatted(O1),
+                [{"tipo": "HUMANA", "id": "%s", "nombre": "Ana", "apellido": "Ejemplo"}]"""
+                    .formatted(H1),
                 MediaType.APPLICATION_JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades"))
-        .andRespond(
-            withSuccess(
-                """
-                [{"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}]"""
-                    .formatted(E1),
-                MediaType.APPLICATION_JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/donaciones-independientes"))
-        .andRespond(withSuccess(INDEPENDIENTES, MediaType.APPLICATION_JSON));
 
-    AdminDonacionesVista vista = adaptador.donaciones("");
+    AdminDonacionesVista vista = adaptador.donaciones(new ConsultaDonaciones("", false, "", 1), "");
 
     assertEquals(
-        List.of(D2, D3, D1),
-        vista.todas().stream().map(AdminDonacionesVista.Donacion::clave).toList());
-    AdminDonacionesVista.Donacion leche = vista.todas().get(0);
+        List.of(D1, D2, D3),
+        vista.donaciones().filas().stream().map(AdminDonacionesVista.Donacion::clave).toList());
+    assertEquals(43, vista.donaciones().total());
+    assertEquals(3, vista.donaciones().paginas());
+    AdminDonacionesVista.Donacion leche = vista.donaciones().filas().get(1);
     assertEquals("Ana Ejemplo", leche.donante());
-    assertEquals("Av. Ejemplo 1234", leche.deposito());
     assertEquals("12 de noviembre, en 2 días", leche.vence());
     assertEquals("10 u", leche.corto());
     assertEquals("Nuevo", leche.bien());
     assertEquals(true, leche.prontaAVencer());
-    AdminDonacionesVista.Donacion arroz = vista.todas().get(2);
-    assertEquals("entregada", arroz.estado());
-    assertEquals("Comedor Ejemplo", arroz.entidad());
-    assertEquals(
-        List.of(
-            "1 de noviembre: llegó al depósito.",
-            "3 de noviembre: quedó asignada a Comedor Ejemplo. La aprobó Leo.",
-            "5 de noviembre, 14:30: salió en camino.",
-            "5 de noviembre: Comedor Ejemplo confirmó que la recibió."),
-        arroz.historial());
-    assertEquals("asignada", vista.todas().get(1).estado());
-    assertEquals(List.of(D3, D2, D1), vista.ordenes().get("reciente"));
-    assertEquals(List.of(D1, D3, D2), vista.ordenes().get("nombre"));
+    assertEquals("entregada", vista.donaciones().filas().get(0).estado());
+    assertEquals("asignada", vista.donaciones().filas().get(2).estado());
+    assertFalse(vista.conVence());
+    assertNull(vista.porVencer());
     assertEquals(
         "1 en el depósito · 1 asignada · 0 en camino · 1 entrega confirmada en noviembre. Al 10 de"
             + " noviembre de 2026, 18:30.",
         vista.resumen());
     donaciones.verify();
+  }
+
+  @Test
+  void elEstadoYElOrdenLosResuelveDonacionesYVencenProntoMuestraElDeposito() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?estado=EN_TRASLADO&estado=EN_PUERTA"
+                    + "&orden=antiguas&page=1&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "21"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=recientes&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+
+    AdminDonacionesVista enCamino =
+        adaptador.donaciones(new ConsultaDonaciones("camino", false, "antigua", 2), "");
+    AdminDonacionesVista pronto =
+        adaptador.donaciones(new ConsultaDonaciones(null, true, "nombre", 1), "");
+
+    assertEquals(2, enCamino.donaciones().pagina());
+    assertEquals("antigua", enCamino.consulta().orden());
+    assertEquals("", pronto.consulta().orden());
+    assertEquals(
+        "1 donación del depósito vence en los próximos 7 días; la primera, Leche en polvo, el 12"
+            + " de noviembre. Esta lista todavía no se puede filtrar por vencimiento: te mostramos"
+            + " todas las del depósito.",
+        pronto.porVencer());
+    donaciones.verify();
+  }
+
+  @Test
+  void elDetalleSePidePorSuIdConSuOriginalYSuEntidad() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes/" + D1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%1$s", "descripcion": "Arroz", "estadoActual": "ENTREGADA",
+                 "fechaRegistro": "2026-11-01T10:00:00", "cantidad": 25,
+                 "entidadBeneficiariaId": "%2$s", "donacionOriginalId": "%3$s",
+                 "historial": [
+                   {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-03T09:00:00",
+                    "estadoAnterior": "EnDeposito", "actor": "Leo"},
+                   {"estadoNuevo": "EnTraslado", "timestamp": "2026-11-05T14:30:00",
+                    "estadoAnterior": "ListaParaEntregar"},
+                   {"estadoNuevo": "Entregada", "timestamp": "2026-11-05T17:00:00",
+                    "estadoAnterior": "EnTraslado"}],
+                 "items": []}"""
+                    .formatted(D1, E1, O1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/" + O1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "donante": {"persona": {"nombre": "Ana", "apellido": "Ejemplo"}},
+                 "deposito": {"calle": "Av. Ejemplo", "altura": 1234}}"""
+                    .formatted(O1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades/" + E1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}"""
+                    .formatted(E1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes/" + D3))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+    AdminDonacionesVista.Donacion detalle = adaptador.donacion(D1, "detalle");
+
+    assertEquals("entregada", detalle.estado());
+    assertEquals("Ana Ejemplo", detalle.donante());
+    assertEquals("Av. Ejemplo 1234", detalle.deposito());
+    assertEquals("Comedor Ejemplo", detalle.entidad());
+    assertEquals(
+        List.of(
+            "1 de noviembre: llegó al depósito de Av. Ejemplo 1234.",
+            "3 de noviembre: quedó asignada a Comedor Ejemplo. La aprobó Leo.",
+            "5 de noviembre, 14:30: salió en camino.",
+            "5 de noviembre: Comedor Ejemplo confirmó que la recibió."),
+        detalle.historial());
+    assertNull(adaptador.donacion(D3, "detalle"));
+    assertNull(adaptador.donacion("no-es-un-id", "detalle"));
+    donaciones.verify();
+  }
+
+  @Test
+  void elHistorialMuestraElNombreDeLaCuentaQueHizoCadaCambio() {
+    String cuentaDeAna = "6f1c2c1e-0000-4000-8000-0000000000aa";
+    DirectorioDeAdministradores cuentas = mock(DirectorioDeAdministradores.class);
+    when(cuentas.cuenta(cuentaDeAna))
+        .thenReturn(
+            Optional.of(
+                new DirectorioDeAdministradores.Administrador(
+                    cuentaDeAna, "Ana", "Pérez", "ana.perez@ejemplo.org", null, true)));
+    RestClient.Builder deDonaciones = RestClient.builder();
+    MockRestServiceServer api = MockRestServiceServer.bindTo(deDonaciones).build();
+    AdminOperacionRest conCuentas =
+        new AdminOperacionRest(
+            null,
+            ClientesHttp.cliente(deDonaciones, DONACIONES, DonacionesApi.class),
+            Clock.fixed(Instant.parse("2026-11-10T21:30:00Z"), ZoneOffset.UTC),
+            RestClient.create(),
+            cuentas);
+    api.expect(requestTo(DONACIONES + "/donaciones-independientes/" + D1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%1$s", "descripcion": "Arroz", "estadoActual": "Vencida",
+                 "fechaRegistro": "2026-11-01T10:00:00", "cantidad": 25,
+                 "entidadBeneficiariaId": "%2$s", "donacionOriginalId": "%3$s",
+                 "historial": [
+                   {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-03T09:00:00",
+                    "estadoAnterior": "EnDeposito", "actor": "SISTEMA"},
+                   {"estadoNuevo": "EnDeposito", "timestamp": "2026-11-04T09:00:00",
+                    "estadoAnterior": "AsignacionRealizada"},
+                   {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-05T09:00:00",
+                    "estadoAnterior": "EnDeposito", "actor": "%4$s"},
+                   {"estadoNuevo": "Vencida", "timestamp": "2026-11-06T10:15:00",
+                    "estadoAnterior": "EnDeposito", "actor": "%4$s"}],
+                 "items": []}"""
+                    .formatted(D1, E1, O1, cuentaDeAna),
+                MediaType.APPLICATION_JSON));
+    api.expect(requestTo(DONACIONES + "/api/donaciones/" + O1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "donante": {"persona": {"nombre": "Ana", "apellido": "Ejemplo"}},
+                 "deposito": {"calle": "Av. Ejemplo", "altura": 1234}}"""
+                    .formatted(O1),
+                MediaType.APPLICATION_JSON));
+    api.expect(requestTo(DONACIONES + "/api/entidades/" + E1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}"""
+                    .formatted(E1),
+                MediaType.APPLICATION_JSON));
+
+    AdminDonacionesVista.Donacion detalle = conCuentas.donacion(D1, "detalle");
+
+    assertEquals(
+        List.of(
+            "1 de noviembre: llegó al depósito de Av. Ejemplo 1234.",
+            "3 de noviembre: quedó asignada a Comedor Ejemplo.",
+            "4 de noviembre: volvió al depósito.",
+            "5 de noviembre: quedó asignada a Comedor Ejemplo. La aprobó Ana Pérez.",
+            "6 de noviembre, 10:15: quedó vencida; la marcó Ana Pérez. Dejó de estar disponible"
+                + " para asignar."),
+        detalle.historial());
+    // Cada cuenta se busca una sola vez por detalle.
+    verify(cuentas, times(1)).cuenta(cuentaDeAna);
+    api.verify();
   }
 
   @Test
@@ -433,35 +768,39 @@ class AdminOperacionRestTest {
           .formatted(D1, D2, D3);
 
   @Test
-  void registroListaLosDonantesActivosYBuscaPorNombreODocumento() {
+  void registroBuscaEnDonacionesHasta10YTraeAlElegidoPorSuId() {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donantes"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+        .expect(
+            requestTo(DONACIONES + "/api/donantes?q=jose&activo=true&orden=nombre&page=0&size=10"))
+        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "37"));
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donantes"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+        .expect(requestTo(DONACIONES + "/api/donantes/" + D2))
+        .andRespond(
+            withSuccess(
+                """
+                {"idDonante": "%s", "activo": true,
+                 "persona": {"razonSocial": "Distribuidora Ejemplo SA", "tipoDocumento": "CUIT",
+                             "documento": "30-00000001-0"}}"""
+                    .formatted(D2),
+                MediaType.APPLICATION_JSON));
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donantes"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+        .expect(requestTo(DONACIONES + "/api/donantes/" + D3))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
-    AdminDonacionesRegistroVista sinBuscar = adaptador.registro(null);
+    AdminDonacionesRegistroVista sinBuscar = adaptador.registro(null, null);
+    assertEquals(List.of(), sinBuscar.donantes());
+    assertEquals(List.of(), sinBuscar.encontrados());
+    assertEquals(0, sinBuscar.coinciden());
+    AdminDonacionesRegistroVista buscados = adaptador.registro(" jose ", null);
+    assertEquals(3, buscados.encontrados().size());
+    assertEquals(37, buscados.coinciden());
     assertEquals(
         List.of(
-            new AdminDonacionesRegistroVista.Donante(D1, "Ana Ejemplo", "DNI 20.000.001"),
             new AdminDonacionesRegistroVista.Donante(
                 D2, "Distribuidora Ejemplo SA", "CUIT 30-00000001-0")),
-        sinBuscar.donantes());
-    assertEquals(List.of(), sinBuscar.encontrados());
-    assertEquals(
-        List.of(D2),
-        adaptador.registro("distri").encontrados().stream()
-            .map(AdminDonacionesRegistroVista.Donante::clave)
-            .toList());
-    assertEquals(
-        List.of(D1),
-        adaptador.registro("20000001").encontrados().stream()
-            .map(AdminDonacionesRegistroVista.Donante::clave)
-            .toList());
+        adaptador.registro(null, D2).donantes());
+    assertEquals(List.of(), adaptador.registro(null, D3).donantes());
+    assertEquals(List.of(), adaptador.registro(null, "no-es-un-id").donantes());
     donaciones.verify();
   }
 

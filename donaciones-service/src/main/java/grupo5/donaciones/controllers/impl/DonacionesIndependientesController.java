@@ -10,6 +10,7 @@ import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteRespo
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.seguridad.AuditoriaDelActor;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.ParametrosListado;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -43,8 +44,8 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
           + "hasRole('ENTIDAD') and principal.puedeOperarSobre(#filtro.entidadId()))")
   @GetMapping
   public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas(
-      FiltroDonacionesIndependientes filtro) {
-    return ResponseEntity.ok(service.obtenerConFiltros(filtro));
+      FiltroDonacionesIndependientes filtro, ParametrosListado listado) {
+    return Paginas.conTotal(service.obtenerConFiltros(filtro, listado));
   }
 
   @Override

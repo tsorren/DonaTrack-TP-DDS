@@ -1,5 +1,6 @@
 package grupo5.cliente.puertos;
 
+import grupo5.cliente.vistas.DonanteAnioVista;
 import grupo5.cliente.vistas.DonanteInicioVista;
 import java.util.UUID;
 
@@ -9,5 +10,9 @@ import java.util.UUID;
  */
 public interface DonanteInicioPuerto {
 
+  /** El inicio de la empresa. */
   DonanteInicioVista inicio(UUID donante);
+
+  /** El inicio de la persona: su año mes a mes, con las cifras como números. */
+  DonanteAnioVista anio(UUID donante);
 }

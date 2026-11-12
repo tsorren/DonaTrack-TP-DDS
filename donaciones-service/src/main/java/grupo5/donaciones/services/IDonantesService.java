@@ -1,15 +1,17 @@
 package grupo5.donaciones.services;
 
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
-import java.util.List;
+import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import java.util.UUID;
 
 public interface IDonantesService {
   /** Registro idempotente: {@code creado = false} si la persona ya era donante. */
   ResultadoRegistro<DonanteOutputDTO> crearDonante(DonanteInputDTO dto);
 
-  List<DonanteOutputDTO> listarDonantesPorContacto(String canal);
+  /** Una página de donantes, con la búsqueda, los filtros y el orden en la base (R11-01). */
+  Pagina<DonanteOutputDTO> buscar(FiltroDonantes filtro, ParametrosListado listado);
 
   DonanteOutputDTO obtenerPorId(UUID id);
 

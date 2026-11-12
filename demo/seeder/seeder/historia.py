@@ -23,7 +23,7 @@ from pymongo import MongoClient
 
 from . import catalogo
 from .config import Config
-from .guion import Donacion, Independiente, Mundo, detalle_de, ranking_de
+from .guion import Donacion, Independiente, Mundo, detalle_de, rankings_cerrados
 from .imagenes import foto_de_recepcion
 
 log = logging.getLogger("seeder")
@@ -369,10 +369,8 @@ def escribir_incentivos(config: Config, mundo: Mundo) -> None:
 
 
 def _rankings(cur, mundo: Mundo) -> None:
-    """Los rankings de los meses cerrados de la ventana, calculados el día 1 a las 00:05."""
-    primero = mundo.hoy.replace(day=1)
-    mes = mundo.inicio.replace(day=1)
-    while mes < primero:
+    """Los rankings de los meses cerrados, calculados el día 1 a las 00:05 del mes siguiente."""
+    for mes, filas in rankings_cerrados(mundo):
         siguiente = (mes + timedelta(days=32)).replace(day=1)
         periodo = f"{mes.year:04d}-{mes.month:02d}"
         id_ranking = Ids.de("ranking", periodo)
@@ -381,13 +379,12 @@ def _rankings(cur, mundo: Mundo) -> None:
         cur.execute(
             "INSERT INTO ranking_mensual (id, periodo, calculado_en) VALUES (%s,%s,%s)",
             (id_ranking, periodo, calculado))
-        for posicion, (clave, cantidad) in enumerate(ranking_de(mundo, mes.year, mes.month), 1):
+        for posicion, (clave, cantidad) in enumerate(filas, 1):
             donante = mundo.donante(clave)
             cur.execute(
                 """INSERT INTO ranking_mensual_entrada (ranking_id, posicion, donante_id,
                    nombre_donante, misiones_completadas) VALUES (%s,%s,%s,%s,%s)""",
                 (id_ranking, posicion, donante.persona_id, donante.denominacion, cantidad))
-        mes = siguiente
 
 
 # --- Notificaciones ----------------------------------------------------------------------

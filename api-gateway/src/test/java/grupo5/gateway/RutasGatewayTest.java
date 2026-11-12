@@ -32,6 +32,8 @@ class RutasGatewayTest {
 
   private static final String TRACE_HEADER = "X-Trace-Id";
   private static final String TRACE_RECIBIDO = "X-Trace-Recibido";
+  private static final String QUERY_RECIBIDA = "X-Query-Recibida";
+  private static final String TOTAL = "X-Total-Count";
   private static final Map<String, HttpServer> SERVICIOS =
       Map.of(
           "donaciones", servicioFalso("donaciones"),
@@ -64,8 +66,10 @@ class RutasGatewayTest {
     "GET, /api/donaciones, donaciones",
     "GET, /api/donaciones/42, donaciones",
     "POST, /api/donantes/archivos, donaciones",
+    "GET, /api/donantes/archivos, donaciones",
     "GET, /api/entidades/publicas, donaciones",
     "GET, /api/donaciones/contadores, donaciones",
+    "GET, /api/donaciones/resumen, donaciones",
     "GET, /api/donaciones/destacadas, donaciones",
     "PUT, /api/subcategorias/3, donaciones",
     "GET, /api/asignaciones/propuestas, donaciones",
@@ -116,6 +120,19 @@ class RutasGatewayTest {
   }
 
   @Test
+  void unListadoPaginadoLlegaConSusParametrosYVuelveConElTotal_R1101() throws Exception {
+    String query = "page=2&size=50&q=g%C3%B3mez&orden=NOMBRE&estado=EN_DEPOSITO&estado=ENTREGADA";
+
+    HttpResponse<String> respuesta = pedir("GET", "/api/donantes?" + query, null);
+
+    assertThat(respuesta.statusCode()).isEqualTo(200);
+    // El gateway puede reordenar los parámetros: llegan todos, con sus valores repetidos
+    assertThat(respuesta.headers().firstValue(QUERY_RECIBIDA).orElseThrow().split("&"))
+        .containsExactlyInAnyOrder(query.split("&"));
+    assertThat(respuesta.headers().firstValue(TOTAL)).contains("57");
+  }
+
+  @Test
   void generaElTraceIdSiFaltaYLoMandaAlServicio() throws Exception {
     HttpResponse<String> respuesta = pedir("GET", "/api/incentivos/ranking/ultimo", null);
 
@@ -157,6 +174,12 @@ class RutasGatewayTest {
               // Como un servicio real: devuelve el traceId que adoptó.
               exchange.getResponseHeaders().add(TRACE_HEADER, traceRecibido);
             }
+            String query = exchange.getRequestURI().getRawQuery();
+            if (query != null) {
+              exchange.getResponseHeaders().add(QUERY_RECIBIDA, query);
+            }
+            // Como un listado paginado (R11-01): el total va en un header
+            exchange.getResponseHeaders().add(TOTAL, "57");
             byte[] cuerpo =
                 (nombre + " " + exchange.getRequestURI().getPath())
                     .getBytes(StandardCharsets.UTF_8);

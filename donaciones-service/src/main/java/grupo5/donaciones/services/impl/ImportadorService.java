@@ -21,6 +21,7 @@ import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
+import grupo5.donaciones.models.repositories.listados.PersonaEnListado;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -42,7 +44,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImportadorService implements IImportadorService {
 
-  /** Cada cuántas filas se guarda el avance (HB-14): ~40 escrituras para 20.000 filas. */
+  /**
+   * Cada cuántas filas se lee el padrón y se guarda el avance (HB-14, R11-B08): ~40 tandas para
+   * 20.000 filas. Nunca hay en memoria más de una tanda.
+   */
   public static final int TAMANIO_TANDA_PROGRESO = 500;
 
   private final IArchivoDonantesRepository archivoRepository;
@@ -89,18 +94,21 @@ public class ImportadorService implements IImportadorService {
       archivo.marcarComoProcesando();
       archivoRepository.save(archivo);
 
-      List<FilaPadron> filas = leerPadron(archivo);
-      archivo.iniciarConteo(filas.size());
+      int totalContado = contarPadron(archivo);
+      archivo.iniciarConteo(totalContado);
       archivoRepository.save(archivo);
 
       List<FilaConError> errores = new ArrayList<>();
-      for (int i = 0; i < filas.size(); i++) {
-        procesarFila(archivo, filas.get(i)).ifPresent(errores::add);
-        if ((i + 1) % TAMANIO_TANDA_PROGRESO == 0) {
-          guardarAvance(archivo, errores);
-        }
-      }
+      leerPadron(archivo, tanda -> procesarTanda(archivo, tanda, errores));
 
+      if (archivo.getProcesadas() != totalContado) {
+        log.warn(
+            "El archivo {} tenía {} filas al contarlo y se procesaron {}: queda la cuenta real",
+            archivoId,
+            totalContado,
+            archivo.getProcesadas());
+        archivo.iniciarConteo(archivo.getProcesadas());
+      }
       archivo.finalizarProcesamiento();
       guardarAvance(archivo, errores);
 
@@ -124,11 +132,36 @@ public class ImportadorService implements IImportadorService {
     archivoRepository.save(archivo);
   }
 
-  /** El path del archivo es la clave del objeto en el bucket de padrones. */
-  private List<FilaPadron> leerPadron(Archivo archivo) throws IOException {
+  /**
+   * Aplica las filas de una tanda y, si la tanda vino completa, guarda el avance (HB-14). Solo la
+   * última puede venir incompleta: su avance lo guarda el cierre.
+   */
+  private void procesarTanda(Archivo archivo, List<FilaPadron> tanda, List<FilaConError> errores) {
+    for (FilaPadron fila : tanda) {
+      procesarFila(archivo, fila).ifPresent(errores::add);
+    }
+    if (tanda.size() == TAMANIO_TANDA_PROGRESO) {
+      guardarAvance(archivo, errores);
+    }
+  }
+
+  /**
+   * Primera pasada: cuenta las filas sin guardarlas, para dar el total antes de procesar. El path
+   * del archivo es la clave del objeto en el bucket de padrones.
+   */
+  private int contarPadron(Archivo archivo) throws IOException {
     try (InputStream contenido =
         storage.abrir(almacenamiento.bucketPadrones(), archivo.getPath())) {
-      return lectorCSV.cargarDonantes(contenido);
+      return lectorCSV.contarFilas(contenido);
+    }
+  }
+
+  /** Segunda pasada: lee el padrón de a tandas y procesa cada una antes de leer la siguiente. */
+  private void leerPadron(Archivo archivo, Consumer<List<FilaPadron>> alLeerTanda)
+      throws IOException {
+    try (InputStream contenido =
+        storage.abrir(almacenamiento.bucketPadrones(), archivo.getPath())) {
+      lectorCSV.leerPorTandas(contenido, TAMANIO_TANDA_PROGRESO, alLeerTanda);
     }
   }
 
@@ -156,13 +189,13 @@ public class ImportadorService implements IImportadorService {
             personaId, personaMapper.mapToActualizacionParcial(campos));
         // Recién con la fila válida y aplicada se registra el rol (y se publica donante.registrado)
         donantesService.registrarSiNoExiste(personaId);
-        archivo.registrarActualizada();
+        archivo.registrarActualizada(PersonaEnListado.nombreVisible(personaClon));
       } else {
         log.info("Creando nueva persona y donante...");
         PersonaOutputDTO personaCreada =
             personaService.crearPersona(transformarAPersonaInputDTO(personaClon, campos));
         donantesService.crearDonante(new DonanteInputDTO(personaCreada.id()));
-        archivo.registrarCreada();
+        archivo.registrarCreada(PersonaEnListado.nombreVisible(personaClon));
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -221,7 +254,7 @@ public class ImportadorService implements IImportadorService {
           juridica.getRazonSocial(),
           juridica.getTipo(),
           juridica.getRubro(),
-          List.of());
+          juridica.getRepresentantes().stream().map(ImportadorService::representante).toList());
     } else if (persona instanceof Humana humana) {
       return new HumanaInputDTO(
           TipoPersona.HUMANA,
@@ -237,5 +270,22 @@ public class ImportadorService implements IImportadorService {
       throw new IllegalArgumentException(
           "El tipo de persona en el CSV no coincide con el objeto Persona procesado.");
     }
+  }
+
+  /**
+   * El representante que armó el mapeo de la fila (el CSV no lo trae: va el de relleno de {@link
+   * PersonaMapper#mapToPersona}). Sin él, {@code Juridica} rechaza el alta (ERR-VAL-104, R11-03).
+   */
+  private static HumanaInputDTO representante(Humana humana) {
+    return new HumanaInputDTO(
+        TipoPersona.HUMANA,
+        humana.getTipoDocumento(),
+        humana.getDocumento(),
+        null,
+        List.of(),
+        humana.getNombre(),
+        humana.getApellido(),
+        humana.getGenero(),
+        humana.getFechaNacimiento());
   }
 }

@@ -92,7 +92,7 @@ class PublicoRestTest {
     assertThat(adaptador.cifrasDePortada())
         .containsExactly(
             new PublicoCifra("1.284", "Entregas confirmadas"),
-            new PublicoCifra("46", "Entidades en el mapa"),
+            new PublicoCifra("46", "Organizaciones en el mapa"),
             new PublicoCifra("318", "Donantes con al menos una donación"));
   }
 

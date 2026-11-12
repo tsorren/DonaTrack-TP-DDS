@@ -83,9 +83,9 @@
   </a>
   <!--/* La campana de la administración (usuario, ronda 2026-11-09: "agregá la bell de notificaciones"):
          la misma pieza, hacia admin-notificaciones, con 3 sin leer en la maqueta y ninguna después de
-         marcarlas como leídas. La administración no tiene Mi perfil, así que se reconoce por su cuenta.
+         marcarlas como leídas. Se reconoce por su Mi perfil (R11-10: la administración tiene el suyo).
          Un agregado: no cambia la de los otros roles ni el controlador. */-->
-  <a th:if="${perfil == null and cuenta != null and cuenta.rol == 'Administración'}"
+  <a th:if="${perfil != null and #strings.endsWith(perfil, '/admin-perfil')}"
      th:with="pantalla=${#execInfo.processedTemplateName},
               sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}"
      class="armazon-avisos" href="/admin-notificaciones" th:href="@{/admin-notificaciones}"
@@ -97,25 +97,9 @@
     <span class="armazon-avisos-texto">Notificaciones</span>
     <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">3</b>
   </a>
-  <!--/* La cuenta, como en K (usuario, 2026-11-08): un menú que se despliega al tocar la foto de perfil,
-         con el nombre y el rol, Mi perfil, Cambiar contraseña y Cerrar sesión. La foto por defecto es una planta. Es un <details>:
-         anda sin JavaScript. */-->
-  <details class="navegacion-cuenta">
-    <summary class="navegacion-cuenta-foto" th:aria-label="|Cuenta de ${cuenta.nombre}|"
-             aria-label="Cuenta de Nombre">
-      <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}"
-           alt="" width="48" height="48">
-    </summary>
-    <div class="navegacion-cuenta-menu">
-      <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
-      <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
-         th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
-      <!--/* El cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y Cerrar
-             sesión (POST con CSRF), de #955. */-->
-      <a th:if="${cuenta.cambiarClave}" href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a>
-      <form th:replace="~{cerrar-sesion :: boton}"></form>
-    </div>
-  </details>
+  <!--/* La cuenta: la foto de perfil y su menú (cuenta-menu.html), el mismo que lo público muestra
+         con la sesión iniciada (docs/interfaz/flujos/r11-p1-portada.md). */-->
+  <details th:replace="~{cuenta-menu :: menu}"></details>
 </header>
 <main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>

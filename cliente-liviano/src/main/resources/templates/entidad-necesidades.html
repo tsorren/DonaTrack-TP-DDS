@@ -69,7 +69,7 @@
        autofocus>Guardamos los cambios de Lentejas secas.</p>
     <p th:if="${accion == 'baja'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no
-      pudo llegar vuelve al depósito para otra entidad.</p>
+      pudo llegar vuelve al depósito para otra organización.</p>
     <section th:if="${noExiste}" class="banner" role="alert" aria-labelledby="noexiste-titulo">
       <h2 id="noexiste-titulo">No encontramos esa necesidad.</h2>
       <p>Puede que el enlace esté incompleto o que ya no esté vigente. Fijate en la lista o en
@@ -78,7 +78,7 @@
     <section th:if="${escenario == 'ya-no-vigente'}" class="banner" role="alert"
              aria-labelledby="novigente-titulo">
       <h2 id="novigente-titulo">Aceite de girasol ya no está vigente.</h2>
-      <p>Puede que otra persona de tu entidad lo haya dado de baja o que haya terminado. Fijate en
+      <p>Puede que otra persona de tu organización lo haya dado de baja o que haya terminado. Fijate en
         <a href="#terminadas">Cumplidas y terminadas</a>.</p>
     </section>
     <section th:if="${escenario == 'error-baja'}" class="banner" data-estado="error" role="alert"
@@ -137,13 +137,13 @@
     <!--/* Sin necesidades vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
     <section th:if="${sinVigentes}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">No tenés necesidades vigentes.</h2>
-      <p>Publicá lo que le hace falta a tu entidad: lo ven los donantes y el catálogo público.</p>
+      <p>Publicá lo que le hace falta a tu organización: lo ven los donantes y el catálogo público.</p>
     </section>
 
     <!--/* Publicar: si la entidad no está activa (se sabe al cargar), el aviso va en lugar del
            formulario. */-->
     <section th:if="${escenario == 'entidad-inactiva'}" class="banner" aria-labelledby="inactiva-titulo">
-      <h2 id="inactiva-titulo">Tu entidad no está activa, así que no puede publicar necesidades.</h2>
+      <h2 id="inactiva-titulo">Tu organización no está activa, así que no puede publicar necesidades.</h2>
       <p><a href="/publico-contacto"
          th:href="@{/publico-contacto(volver='/entidad-necesidades')}">Escribinos</a>
         para revisarlo.</p>
@@ -335,7 +335,7 @@ con este código</a>.</p>
       </section>
       <section th:if="${escenario == 'conflicto' and n.clave == pedida}" class="banner"
                role="alert" aria-labelledby="conflicto-titulo">
-        <h3 id="conflicto-titulo">Otra persona de tu entidad cambió esta necesidad mientras la
+        <h3 id="conflicto-titulo">Otra persona de tu organización cambió esta necesidad mientras la
           editabas.</h3>
         <p>Ahora pide 45 kg por mes. Revisalo y, si hace falta, guardá tus cambios de nuevo.</p>
       </section>
@@ -405,12 +405,12 @@ con este código</a>.</p>
              th:text="${salieron == 1} ? '1 entrega ya salió del depósito: llega igual y queda asentado lo que recibas.' : |${salieron} entregas ya salieron del depósito: llegan igual y queda asentado lo que recibas.|">1
             entrega ya salió del depósito: llega igual y queda asentado lo que recibas.</p>
           <p th:if="${noSalieron > 0}"
-             th:text="${noSalieron == 1} ? '1 entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noSalieron} entregas todavía no salieron: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
-            entrega todavía no salió: vuelve al depósito y se asigna a otra entidad que la
+             th:text="${noSalieron == 1} ? '1 entrega todavía no salió: vuelve al depósito y se asigna a otra organización que la necesite.' : |${noSalieron} entregas todavía no salieron: vuelven al depósito y se asignan a otras organizaciones que las necesiten.|">1
+            entrega todavía no salió: vuelve al depósito y se asigna a otra organización que la
             necesite.</p>
           <p th:if="${noLlegaron > 0}"
-             th:text="${noLlegaron == 1} ? '1 entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la necesite.' : |${noLlegaron} entregas no pudieron llegar: vuelven al depósito y se asignan a otras entidades que las necesiten.|">1
-            entrega no pudo llegar: vuelve al depósito y se asigna a otra entidad que la
+             th:text="${noLlegaron == 1} ? '1 entrega no pudo llegar: vuelve al depósito y se asigna a otra organización que la necesite.' : |${noLlegaron} entregas no pudieron llegar: vuelven al depósito y se asignan a otras organizaciones que las necesiten.|">1
+            entrega no pudo llegar: vuelve al depósito y se asigna a otra organización que la
             necesite.</p>
         </th:block>
         <div class="acciones">
@@ -439,7 +439,8 @@ con este código</a>.</p>
     otra necesidad</summary>
   <form action="/entidad-necesidades-publicada"
         th:action="@{/entidad-necesidades-publicada}" method="post"
-        class="formulario" hx-boost="true" hx-indicator="#enviando-entidad-necesidades" hx-select-oob="#avisos">
+        class="formulario" hx-boost="true" hx-indicator="#enviando-entidad-necesidades" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
     <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
              autofocus aria-labelledby="resumen-titulo">
       <h2 id="resumen-titulo">Revisá dos cosas antes de publicar</h2>

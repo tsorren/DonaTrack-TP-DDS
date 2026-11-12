@@ -42,7 +42,7 @@ Cada dirección gráfica (la "A" o la "B" de una comparación) se describe con e
 5. **Forma.** Radios, bordes y sombras con una lógica única; no un poco de cada cosa.
 6. **Imagen.** Las fotos reales de entregas son el contenido más fuerte del sitio. Muestran lo
    entregado y el lugar, sin exponer a personas en situación vulnerable
-   ([personas y fotos](tono-y-comunicacion.md#personas-entidades-y-fotos)). Las insignias de E1 ya
+   ([personas y fotos](tono-y-comunicacion.md#personas-organizaciones-y-fotos)). Las insignias de E1 ya
    marcan un estilo de ilustración (plana, geométrica, saturada) que se puede extender.
 7. **Movimiento.** Solo para explicar un cambio: una entrega que pasa de estado, un aviso que
    aparece. Nada de animaciones de entrada en cada sección.

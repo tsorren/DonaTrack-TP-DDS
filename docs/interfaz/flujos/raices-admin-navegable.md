@@ -6,6 +6,30 @@
 > del usuario, 2026-11-07). El inicio del admin (`admin-inicio`) ya está en la ficha
 > [`raices-entidad-navegable`](raices-entidad-navegable.md#44-admin-inicio) y no cambia acá; esta
 > ficha dibuja las seis secciones del menú, a las que hoy el inicio lleva y caen en `sin-dibujar`.
+>
+> **Cambio de la revisión del 2026-11-11 (lote `p0-admin-listados`, R11-01 y R11-02):**
+> **en revisión** desde el 2026-11-11. Toca §1 (datos), §3 (recorrido de la importación), §4.1,
+> §4.5, §4.6, la nueva §4.10 (de dónde salen las cifras), §5, §6, §7, §8 y §9. El resto de la
+> ficha sigue aprobado. Sale del
+> [backlog de la revisión](../backlog-revision-2026-11-11.md#p0--sin-esto-la-demo-falla): ninguna
+> pantalla del admin pide una lista completa, y el avance de la importación se ve en vivo.
+> Construido el 2026-11-11 (falta la aprobación del usuario); lo que queda sin paginar, en
+> [DTI-39](../../adr/DEUDA_TECNICA.md#dti-39).
+
+## Ajustes del usuario al aprobar R11 P0 (2026-11-11) — mandan sobre el resto
+
+1. **Búsqueda sin tildes:** buscar "Gomez" encuentra "Gómez". Lo resuelve el servicio
+   (spec `R11-p0-api-listados`, §0).
+2. **Ninguna lista llega completa.** El servicio ya no devuelve todo cuando no se pide página: sin
+   página manda las primeras 20. Por eso este lote migra **todos** los consumidores del cliente
+   liviano de `/api/donantes`, `/api/personas`, `/donaciones-independientes`, `/api/donaciones` y
+   `/api/entidades`, no solo las pantallas del admin: cada uno pide página (con el paginador
+   provisorio "‹ Anterior · Página N de M · Siguiente ›") o, si es un resumen dentro de otra
+   pantalla, 3 elementos y "Ver todas". Mis donaciones queda con el paginador provisorio hasta su
+   rediseño en P1 (R11-13). Lo que toque fuera de los archivos del lote, en `fueraDeZona`.
+3. **"Los últimos importados" se muestra:** sale del campo `ultimos` del avance de la importación
+   (spec §0.3). Ya no se oculta.
+4. Lo demás del diseño, aprobado como está.
 
 ## 1. Para quién y para qué
 
@@ -16,7 +40,7 @@
 | Qué quiere lograr | "Registrar lo que llega, decidir lo pendiente y que nada se trabe" |
 | Dispositivo principal | Escritorio. En el celular todo se puede usar, con las listas en tarjetas |
 | Requerimientos | RF-15 (registrar donantes y donaciones en un mismo flujo), RF-16 (marcar vencidas), RF-17 (elegir la entidad final según los algoritmos), RF-18 (camiones: alta, cambio de estado y baja), RF-19 (ranking del último mes y meses anteriores), RF-20 (importar donantes por CSV de más de 10.000 filas, con progreso y resultado por fila), RF-21 (aprobar entidades pendientes), RNF-UI-02 (nada a más de 3 niveles), RNF-UI-05 (cada acción con su mensaje de éxito y de error), RF-CL-07 (toda cifra que cambia dice cuándo se actualizó), RNF-CL-02 (sin JavaScript, igual funciona) |
-| Datos que usa | Donaciones: `POST /api/personas`, `POST /api/donantes`, `POST /api/donantes/archivos` y `GET /api/donantes/archivos/{id}`, `GET /api/donantes` y `GET /api/donantes/{id}`, `POST /api/entidades`, `GET /api/entidades`, `POST /api/donaciones`, `POST /api/donaciones/fotos`, `GET /api/donaciones` y `GET /api/donaciones/{id}`, `GET /donaciones-independientes?estado=`, `GET /donaciones-independientes/{id}`, `PATCH /donaciones-independientes/{id}/estado`, `POST` y `GET /api/asignaciones/ejecuciones`, `GET /api/asignaciones/propuestas`, `PUT /api/asignaciones/propuestas/{id}/estado`. Logística: `GET` y `POST /api/camiones`, `PATCH /api/camiones/{id}/estado`. Incentivos: `GET /api/incentivos/ranking/ultimo` y `.../historial`. Lo que falta, en [Huecos de backend](#huecos-de-backend). En la maqueta, datos sintéticos de esta ficha, coherentes con el inicio del admin |
+| Datos que usa | Donaciones: `POST /api/personas`, `POST /api/donantes`, `POST /api/donantes/archivos` y `GET /api/donantes/archivos/{id}`, `GET /api/donantes` y `GET /api/donantes/{id}`, `POST /api/entidades`, `GET /api/entidades`, `POST /api/donaciones`, `POST /api/donaciones/fotos`, `GET /api/donaciones` y `GET /api/donaciones/{id}`, `GET /donaciones-independientes?estado=`, `GET /donaciones-independientes/{id}`, `PATCH /donaciones-independientes/{id}/estado`, `POST` y `GET /api/asignaciones/ejecuciones`, `GET /api/asignaciones/propuestas`, `PUT /api/asignaciones/propuestas/{id}/estado`. Logística: `GET` y `POST /api/camiones`, `PATCH /api/camiones/{id}/estado`. Incentivos: `GET /api/incentivos/ranking/ultimo` y `.../historial`. Lo que falta, en [Huecos de backend](#huecos-de-backend). En la maqueta, datos sintéticos de esta ficha, coherentes con el inicio del admin. **Desde R11:** los listados de donantes y donaciones se piden de a una página, con la búsqueda, los filtros y el orden resueltos en Donaciones, y las cifras se piden como números (contrato del lote `p0-api-listados`; qué necesita cada pantalla, en [§9, R11](#lo-que-estas-pantallas-le-piden-a-donaciones-r11)) |
 | Boceto de E1 | Pág. 13 (inicio del admin: menú con Registrar donantes, Registrar donaciones, Donaciones, Camiones y Donantes, y saludo). Las demás secciones no tienen boceto |
 
 ## 2. Dónde está en el sitio
@@ -52,8 +76,14 @@ flowchart TD
   rdo -->|datos inválidos| rdoer[admin-donantes-registrar-error]
   rdok -->|Registrar su donación| rdn
   don -->|Importar CSV| imp[admin-donantes-importando]
+  imp -->|se actualiza sola| imp
   imp -->|terminó| impok[admin-donantes-importado]
+  imp -->|se cortó a mitad de camino| impcor[admin-donantes-importando, cortada]
+  imp -->|Volver a Donantes o cualquier menú| fuera([sigue trabajando])
+  fuera -->|franja Ver el avance, en Donantes| imp
+  impok -->|Anterior / Siguiente| impok
   don -->|archivo no válido| imper[admin-donantes-importar-error]
+  don -->|Anterior / Siguiente, con la búsqueda y los filtros| don
 
   ent -->|Aprobar| ea[admin-entidades-aprobada]
   ent -->|Pedir corrección| ec[admin-entidades-correccion]
@@ -95,6 +125,25 @@ Desvíos considerados:
 - **Sin permiso:** si otro rol abre una dirección del admin, ve "Esta pantalla es para la
   administración." y "Ir a tu inicio" (el mismo desvío de la ficha de la entidad).
 
+Desvíos que suma R11 (2026-11-11):
+
+- **Salir de la importación y volver:** el avance no retiene al admin. Puede ir a cualquier
+  sección; al volver a Donantes, una franja arriba dice cómo va la importación y lleva al avance.
+  La dirección del avance también se puede guardar o recargar: lleva el archivo
+  (`?archivo=<id>`), no depende de la pantalla anterior.
+- **La importación se corta a mitad de camino** (Donaciones la deja en `ERROR` después de leer
+  filas): no se dice "no se importó ninguna fila", porque las leídas quedaron guardadas. Se dice
+  hasta dónde llegó y que se puede volver a subir el archivo (los que ya están se actualizan, no se
+  duplican: es la regla de la ayuda del CSV).
+- **El avance no se pudo actualizar** (una consulta falla mientras importa): quedan a la vista las
+  últimas cifras con su hora, un aviso breve y el reintento sigue solo; la importación no se
+  detiene por eso.
+- **Página que no existe** (`?pagina=` mayor que la última, o no es un número): se muestra la
+  última página que hay, o la primera si el valor no se entiende. Nunca una lista vacía con
+  "Ningún donante coincide" cuando sí hay donantes.
+- **Cambiar la búsqueda o un filtro:** vuelve a la página 1; cambiar de página conserva la búsqueda,
+  los filtros y el orden (regla 3 del backlog).
+
 ## 4. Pantallas
 
 Todas usan el layout privado con el menú del admin, la cabecera con "Leo · Administración" y el
@@ -121,21 +170,149 @@ Nombre                     Tipo      Documento     Alta              Estado
 Distribuidora Ejemplo SA   Empresa   CUIT ...      2 de marzo        Activo
 Ana Ejemplo                Persona   DNI ...       14 de octubre     Activo
 ...
+                 ‹ Anterior    Página 1 de 1.000    Siguiente ›
 ```
 
 - `admin-donantes-importando`: el bloque de importar queda abierto con el archivo y su avance:
   "donantes-octubre.csv · 20.000 filas" · "Procesando: 8.400 de 20.000 filas." · "Podés seguir
   usando el sitio: el resultado queda acá cuando termine." La lista sigue debajo (RF-20: sin
   bloquear la pantalla). Con JavaScript, el avance se actualiza solo cada 5 s; sin JavaScript,
-  "Ver el avance" vuelve a cargar la página.
+  "Ver el avance" vuelve a cargar la página. **Reemplazado por R11-02, más abajo:** la página de
+  avance ya no lleva la lista debajo, y la actualización sola, que la plantilla prometía pero no
+  hacía, pasa a existir.
 - `admin-donantes-importado`: "Importación terminada el 15 de octubre de 2026, 18:42." ·
   "20.000 filas leídas: 19.100 donantes nuevos, 754 actualizados, 20 sin cambios porque el
   donante está dado de baja y 126 filas con error." · tabla
   de las filas con error (Fila, Qué pasó) con las primeras 20 y "Descargar las 126 filas con
   error". Los donantes nuevos reciben un correo para activar su cuenta (ver Preguntas abiertas,
-  D12).
+  D12). **Reemplazado por R11-02, más abajo:** las filas con error se recorren por páginas.
 - `admin-donantes-importar-error`: el archivo no se aceptó (no es CSV, está vacío o pasa de 50
   MB); no se leyó ninguna fila.
+
+#### R11-01 · La lista de donantes, de a una página
+
+Patrón conocido: **paginado** para recorrer mucho contenido
+([criterios de la cátedra §4](../criterios-catedra-ux-ui.md#4-patrones-de-navegación)), con la
+búsqueda y los filtros arriba de la lista.
+
+- **De a 20 donantes por página.** La pantalla pide a Donaciones solo la página que muestra, con la
+  búsqueda, los filtros y el orden ya resueltos allá. Nunca la lista entera, ni para contar ni para
+  ordenar.
+- **La cifra de la cabecera es un número que da Donaciones**, no el largo de una lista: "20.086
+  donantes activos, al 11 de noviembre de 2026, 18:30." Con separador de miles.
+- **Cuántos coinciden** sale del total de la página que da Donaciones: "Coinciden 1.234 donantes."
+  (sin "de la lista": ya no hay una lista traída entera).
+- **Paginador provisorio** hasta que exista el componente `paginas` (R11-11, lote `p1-paginador`):
+  "‹ Anterior", "Página 3 de 1.000" y "Siguiente ›", debajo de la tabla. Igual en el celular. En
+  la primera página, "Anterior" se ve apagado y no es un enlace; en la última, lo mismo con
+  "Siguiente". Con una sola página, no hay paginador. Los enlaces son direcciones reales
+  (`?pagina=3` más la búsqueda, los filtros y el orden que había), así que funcionan sin
+  JavaScript y el "atrás" del navegador vuelve a la página anterior. Cuando llegue R11-11, el
+  paginador provisorio se cambia por el componente sin tocar las direcciones.
+- **Filtros: solo los que Donaciones puede resolver.** Hoy Donaciones no guarda qué dona cada
+  donante, si activó su cuenta ni su fecha de alta (lo dice el adaptador: quedan vacíos). Fuera de
+  la maqueta, la pantalla muestra solo los filtros y las columnas que tienen dato: búsqueda por
+  nombre o documento, tipo de donante (personas, empresas, organizaciones), estado (activos o dados
+  de baja) y el orden que el contrato de `p0-api-listados` acepte. "Qué dona", "Sin activar su
+  cuenta", la columna "Alta" y los órdenes por fecha se muestran solo si el contrato los trae. Un
+  filtro que no filtra es peor que no tenerlo: promete algo que no pasa. La maqueta los conserva,
+  porque tiene esos datos.
+- **El componente de filtros no cambia acá:** su rediseño es otro lote. Solo cambia de dónde salen
+  los resultados.
+- **Si hay una importación en curso**, arriba de todo, debajo de la cabecera, una franja de aviso
+  (no una ventana: no interrumpe) con el avance resumido y el enlace al avance; ver
+  [R11-02](#r11-02--el-avance-de-la-importación-en-vivo).
+
+```text
+Donantes
+20.086 donantes activos, al 11 de noviembre de 2026, 18:30.     [Registrar donante] [Importar CSV]
+
+┌ Se está importando donantes-octubre.csv: 8.400 de 20.000 filas.   Ver el avance ┐
+
+Todos los donantes
+Buscar por nombre o documento [__________] [Buscar]   Tipo ▾  Estado ▾  Orden ▾
+Coinciden 1.234 donantes.                       (solo con búsqueda o filtros)
+Nombre                     Tipo      Documento        Estado
+Distribuidora Ejemplo SA   Empresa   CUIT ...         Activo
+...                                                    (20 por página)
+                 ‹ Anterior    Página 3 de 62    Siguiente ›
+```
+
+#### R11-02 · El avance de la importación, en vivo
+
+Patrones conocidos: **barra de progreso** para un proceso largo con un final, **aviso breve** que no
+interrumpe para contar cómo va y **paginado** para las filas con error
+([criterios §4 y §5](../criterios-catedra-ux-ui.md#5-patrones-de-interacción)). Es una página
+aparte, como pide la regla 4 del backlog para los procesos largos, y vive dentro de Donantes (nivel
+3): las direcciones `admin-donantes-importando` y `admin-donantes-importado` no cambian.
+
+- **Sin la lista de donantes.** La página de avance muestra solo la importación. Era la lista
+  debajo lo que la rompía con 20.000 donantes (backlog, §9).
+- **Se actualiza sola.** Con JavaScript, el bloque del avance se vuelve a pedir cada 3 segundos
+  mientras la importación sigue, y solo mientras la pestaña está a la vista. Cuando termina, deja
+  de pedirse y queda el resultado. Donaciones guarda el avance cada 500 filas, así que las cifras
+  suben de a saltos: es lo esperable y no se disimula. Sin JavaScript, el botón "Ver el avance"
+  vuelve a cargar la página (como hasta ahora).
+- **Cuatro cifras, siempre juntas:** filas leídas (de cuántas, si ya se sabe), donantes nuevos,
+  actualizados y filas con error. Leídas = nuevos + actualizados + con error, como las da
+  Donaciones; la pantalla no calcula ninguna por su cuenta.
+- **La hora de la última actualización** al lado de las cifras ("Actualizado a las 18:34:12."):
+  muestra que la página está viva y cumple RF-CL-07.
+- **Los últimos importados:** los 5 últimos donantes que leyó el archivo, con su nombre y si fue
+  nuevo o actualizado, para ver que lo importado es lo esperado. Sin documento ni correo: alcanza
+  con el nombre para reconocerlo, y es menos dato personal en pantalla. Hoy Donaciones no los da
+  (ver [Huecos](#huecos-de-backend)); mientras no los dé, el bloque no se muestra.
+- **Se puede salir y volver.** "Volver a Donantes" y todo el menú siguen a mano; la importación
+  sigue en Donaciones aunque nadie mire. El cliente recuerda, en la sesión del admin, la última
+  importación que subió: así Donantes muestra la franja "Se está importando…" con el enlace al
+  avance. Cuando termina, la franja pasa a "Terminó la importación de donantes-octubre.csv. Ver el
+  resultado" hasta que el admin abre el resultado. La vista de todas las importaciones (R11-20) y
+  la notificación al terminar llegan en P1 y reemplazan esta memoria de la sesión.
+- **Al terminar:** el resumen con las cuatro cifras y, si hubo filas con error, su tabla de a 20
+  por página (Fila, Qué pasó) con el mismo paginador provisorio. El total de páginas sale de las
+  filas con error que da Donaciones. Sin filas con error: "Todas las filas se importaron sin
+  errores."
+- **Si Donaciones deja la importación en `ERROR`:** sin ninguna fila leída, es
+  `admin-donantes-importar-error`, como hasta ahora ("No se importó ninguna fila."); con filas
+  leídas, la página de avance muestra "La importación se cortó en la fila…" (§5), porque esas filas
+  sí quedaron guardadas.
+- **"Descargar las filas con error"** no se muestra fuera de la maqueta: hoy el botón manda a una
+  dirección que el sistema no atiende. Las filas se recorren en la tabla paginada. La descarga
+  queda en los huecos.
+- **El comentario de la plantilla** `admin-donantes.html` que decía "el avance se actualiza solo
+  cada 5 s con HTMX" se corrige: describe lo que hace la página de verdad (cada 3 s, solo mientras
+  importa, y sin JavaScript con "Ver el avance").
+
+```text
+Donantes › Importación
+Importando donantes-octubre.csv
+[████████████░░░░░░░░░░░░░░]  8.400 de 20.000 filas
+Donantes nuevos: 7.950 · Actualizados: 410 · Filas con error: 40
+Actualizado a las 18:34:12. Se actualiza sola mientras importa.
+Podés seguir usando el sitio. Para volver a este avance, entrá a Donantes.
+
+Últimos importados
+  Ana Ejemplo           Nuevo
+  Juan Ejemplo          Actualizado
+  ... (5)
+
+[Volver a Donantes]          (sin JavaScript, además: [Ver el avance])
+```
+
+```text
+Donantes › Importación
+Importación terminada                                   (aviso breve, recibe el foco)
+20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error.
+Los donantes nuevos reciben un correo para activar su cuenta.
+
+Filas con error · 126
+Fila     Qué pasó
+15       Falta el apellido.
+202      El correo ya es de otra persona, con otro documento.
+...                                                   (20 por página)
+                 ‹ Anterior    Página 1 de 7    Siguiente ›
+[Volver a Donantes]
+```
 - Respecto del boceto (pág. 13): "Donantes" y "Registrar donantes" eran dos entradas del menú;
   quedan en una sección con la acción adentro, y el CSV vive en la misma pantalla para no pasar de
   3 niveles ([bitácora, 2026-10-30](../bitacora.md)).
@@ -181,6 +358,13 @@ Comedor Ejemplo Oeste · Comedor · 14 de octubre                  [Revisar]
 [Registrar entidad]
 ```
 
+- **R11-01, de a una página (lote `p0-admin-listados`, ronda 2):** fuera de la maqueta, la lista es
+  una página de 20 entidades registradas pedida a Donaciones, con el paginador provisorio debajo y
+  la búsqueda por nombre resuelta allá, sin distinguir mayúsculas ni tildes. En la página 1 van
+  primero las que piden sumarse; después, las registradas por nombre. La línea de estado dice
+  cuántas hay en total y cuántas están activas, las dos como números del servicio. Estado,
+  Necesidades y Tipo no se ofrecen hasta que Donaciones los resuelva (lote `p2-listas-restantes`,
+  [DTI-39](../../adr/DEUDA_TECNICA.md#dti-39)).
 - **Aprobar:** sin pregunta extra; es lo que más se hace, y si fue un error se da de baja la
   entidad (el correo de aprobación ya le llegó). Resultado
   `admin-entidades-aprobada`: "Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus pedidos y
@@ -240,6 +424,22 @@ Fideos · 20 kg        Distribuidora Ejemplo SA  8 de octubre   Asignada        
 - Una donación que no está en el depósito no tiene el botón: "Solo se puede marcar como vencida
   una donación que está en el depósito." (el contrato da transición inválida en los demás estados).
 
+#### R11-01 · Donaciones, de a una página
+
+- **De a 20 por página**, con el mismo paginador provisorio de Donantes (§4.1) debajo de la tabla.
+  El estado, "Vence en los próximos 7 días" y el orden los resuelve Donaciones; cambiar uno vuelve a
+  la página 1 y cambiar de página los conserva.
+- **Cada fila llega armada de Donaciones**: qué es, cantidad, quién donó, cuándo se registró, el
+  estado, cuándo vence y, si está asignada, a qué entidad. Hoy la pantalla pide tres listas enteras
+  (las donaciones, las originales y las entidades) y las cruza; con R11 pide una sola página.
+- **Las cifras de la cabecera** ("7 en el depósito · 4 asignadas · 1 en camino · 9 entregas
+  confirmadas en octubre. Al …") son números que da Donaciones, no el conteo de una lista. Con
+  separador de miles.
+- **El detalle** (`?donacion=<id>`) se pide por su identificador; ya no se busca dentro de la lista
+  entera.
+- "Ninguna donación tiene ese estado." sigue igual; con el filtro de vencimiento, el texto vacío de
+  la tabla de estados.
+
 ### 4.6 `admin-donaciones-registrar`
 
 ```text
@@ -260,8 +460,18 @@ Donaciones › Registrar donación
 - `admin-donaciones-registrar-error`: los campos en error y, si el donante está inactivo (409
   `DONANTE_INACTIVO`): "Ana Ejemplo está dado de baja como donante: no se le pueden registrar
   donaciones. Si volvió, registralo de nuevo en Donantes."
+- **R11-01, "Quién dona":** la búsqueda la resuelve Donaciones (solo donantes activos) y trae como
+  máximo 10 resultados. Es un buscador para elegir uno, no un listado: no lleva paginador. Si hay
+  más de 10, debajo de los 10: "Hay 230 donantes que coinciden. Escribí más del nombre o el
+  documento para encontrarlo." El donante ya elegido (`?donante=<id>`, cuando llega desde
+  Registrar donante) se pide por su identificador, sin traer la lista.
 
 ### 4.7 `admin-asignaciones`
+
+> **Desde R11 (2026-11-12, en revisión):** esta sección la reemplaza la ficha
+> [Asignar donaciones, con lo que propuso cada algoritmo](r11-p1-asignaciones.md) (lote
+> `p1-asignaciones`, R11-24): pestañas Propuestas / Conflictos / Destino y el algoritmo y el puesto
+> de cada propuesta. Lo de abajo queda como estaba antes de R11.
 
 ```text
 Asignar donaciones
@@ -351,6 +561,29 @@ Puesto   Donante                    Misiones completadas
 - El admin ve el nombre de cada donante: ocultar el nombre ([Mi perfil](raices-mi-perfil.md)) es
   de cara a las entidades, no a la administración.
 
+### 4.10 De dónde salen las cifras (R11-01)
+
+No cambia ningún dibujo: el inicio del admin sigue su ficha
+([`raices-entidad-navegable` §4.4](raices-entidad-navegable.md#44-admin-inicio)) y su rediseño con
+tarjetas y gráficos es R11-21, de P1. Cambia solo de dónde sale cada número, para que ninguna
+pantalla pida una lista entera para contarla.
+
+| Pantalla | Cifra | Hoy | Con R11 |
+|---|---|---|---|
+| `admin-inicio` | Donantes activos | La lista entera de donantes, contada | Un número de Donaciones |
+| `admin-inicio` | En el depósito, asignadas, en camino, entregas del mes | La lista entera de donaciones, contada por estado | Números de Donaciones, por estado y del mes en curso |
+| `admin-inicio` | Vencen en los próximos 7 días, y cuál vence primero | La lista entera de donaciones, filtrada en el cliente | Una página de una donación (la que vence primero) con su total |
+| `admin-inicio` | Entidades activas | La lista entera de entidades, con sus necesidades | El total de la lista paginada de entidades |
+| `admin-inicio` | Entidades que piden sumarse, con su nombre | Las solicitudes de Keycloak, cruzadas con todas las personas jurídicas | Las solicitudes de Keycloak, con el nombre que ya traen |
+| `admin-entidades` | Datos de las que piden sumarse | Todas las personas jurídicas (con el CSV, miles de empresas donantes) | Solo las personas de esas solicitudes, por su identificador |
+| `admin-donantes` | Donantes activos | La lista entera, contada | Un número de Donaciones |
+| `admin-donaciones` | Cifras por estado | La lista entera, contada | Números de Donaciones |
+| `publico-portada` | Entregas, entidades y donantes | Ya es un número (`/api/donaciones/contadores`) | Igual en el cliente; lo lento era el servicio, que lo arregla `p0-api-listados` |
+
+Las cifras siguen llevando su fecha ("Al 11 de noviembre de 2026, 18:30.") y pasan a llevar
+separador de miles. Si Donaciones no responde un número, el bloque muestra su error con el código,
+con el aviso común de error y su código, y no un cero: un cero sería un dato falso.
+
 ## 5. Estados
 
 | Pantalla | Estado | Qué se ve | Texto |
@@ -375,6 +608,30 @@ Puesto   Donante                    Misiones completadas
 | Todas | Sin permiso | No se dibuja (ver Desvíos) | "Esta pantalla es para la administración." · "Ir a tu inicio" |
 
 En la maqueta, cada estado se ve con `?escenario=vacio|lento|error`, como en el resto del sitio.
+
+Estados que suma R11 (2026-11-11), cada uno con el patrón conocido que sigue:
+
+| Pantalla | Estado | Qué se ve | Texto | Patrón |
+|---|---|---|---|---|
+| `admin-donantes`, `admin-donaciones` | Con datos, varias páginas | La página, y el paginador provisorio debajo | "‹ Anterior" · "Página 3 de 62" · "Siguiente ›" | Paginado |
+| `admin-donantes`, `admin-donaciones` | Primera o última página | El extremo que no sigue, apagado y sin enlace | "‹ Anterior" (apagado) · "Página 1 de 62" | Paginado |
+| `admin-donantes`, `admin-donaciones` | Una sola página | Sin paginador | — | Lista |
+| `admin-donantes` | Con búsqueda o filtros, con resultados | El total de Donaciones arriba de la tabla | "Coincide 1 donante." · "Coinciden 1.234 donantes." | Lista con filtros |
+| `admin-donantes` | Con búsqueda o filtros, sin resultados | El aviso y "Ver todos" | "Ningún donante coincide con lo que buscaste." · "Probá con otra parte del nombre o del documento, o sacá los filtros." (ya existe) | Lista con filtros |
+| `admin-donantes`, `admin-donaciones` | Página que no existe | La última página que hay (o la primera, si el número no se entiende) | El paginador dice en cuál está: "Página 62 de 62" | Paginado |
+| `admin-donantes`, `admin-donaciones` | Cargando otra página | La tabla anterior con `aria-busy` hasta que llega la nueva | "Cargando la página 4…" | Aviso breve |
+| `admin-donantes` | Importación en curso | Franja de aviso arriba de la lista | "Se está importando donantes-octubre.csv: 8.400 de 20.000 filas." · "Ver el avance" | Aviso breve |
+| `admin-donantes` | Importación terminada, sin abrir | Franja de aviso arriba de la lista | "Terminó la importación de donantes-octubre.csv." · "Ver el resultado" | Aviso breve |
+| `admin-donantes-importando` | Esperando para empezar (`PENDIENTE`) | El nombre del archivo y la barra sin avance | "Recibimos donantes-octubre.csv. Todavía no empezó a importarse: esta página cambia sola cuando empiece." | Barra de progreso |
+| `admin-donantes-importando` | Leyendo, sin el total todavía | La barra sin medida (indeterminada) y las cifras | "Leyendo el archivo: 500 filas por ahora." | Barra de progreso |
+| `admin-donantes-importando` | Importando, con el total | La barra, las cuatro cifras, la hora y los últimos importados | "8.400 de 20.000 filas" · "Donantes nuevos: 7.950 · Actualizados: 410 · Filas con error: 40" · "Actualizado a las 18:34:12. Se actualiza sola mientras importa." | Barra de progreso |
+| `admin-donantes-importando` | No se pudo actualizar el avance | Las últimas cifras con su hora y un aviso breve; se reintenta solo | "No pudimos actualizar el avance. Lo volvemos a intentar en unos segundos; la importación sigue." | Aviso breve |
+| `admin-donantes-importando` | Se cortó a mitad de camino (`ERROR` con filas leídas) | Aviso de error, las cifras hasta donde llegó y la ayuda para seguir | "La importación se cortó en la fila 8.400." · "Las 8.400 filas leídas quedaron guardadas: 7.950 donantes nuevos, 410 actualizados y 40 filas con error. Las demás no se importaron." · "Podés volver a subir el archivo: los que ya están se actualizan, no se duplican." | Aviso de error |
+| `admin-donantes-importado` | Terminada, con filas con error | El aviso, el resumen y la tabla de a 20 con su paginador | "Importación terminada." · "20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error." · "Filas con error · 126" | Aviso breve + paginado |
+| `admin-donantes-importado` | Terminada, sin filas con error | El aviso y el resumen | "Importación terminada." · "20.000 filas leídas: 19.874 donantes nuevos y 126 actualizados." · "Todas las filas se importaron sin errores." | Aviso breve |
+| `admin-donantes-importado` | No se pudo cargar una página de filas con error | El resumen sigue; en lugar de la tabla, el error común con el código | "No pudimos cargar las filas con error." · el texto y el código de siempre · "Volver a cargar" | Aviso de error |
+| `admin-donaciones-registrar` | Búsqueda con más de 10 | Los 10 primeros y la ayuda | "Hay 230 donantes que coinciden. Escribí más del nombre o el documento para encontrarlo." | Campo de búsqueda |
+| `admin-inicio`, `admin-donantes`, `admin-donaciones` | Una cifra no llegó | El aviso común de error en ese bloque, nunca un cero | "No pudimos cargar estas cifras." · el texto y el código de siempre | Aviso de error |
 
 ## 6. Textos
 
@@ -441,7 +698,41 @@ promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
 | Resultado sin fecha de fin | "Importación terminada." | Donaciones no guarda cuándo terminó |
 | Resultado con lo que da Donaciones | "20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error." | No hay "sin cambios porque está dado de baja": `procesadas = creadas + actualizadas + conError` |
 | Nombre del archivo si no llegó | "El archivo" | El nombre viaja en la dirección; Donaciones solo guarda una clave |
-| Cuántos coinciden con la búsqueda | "Coinciden 3 donantes de la lista." | Fuera de la maqueta no es "la lista de ejemplo" |
+| Cuántos coinciden con la búsqueda | "Coinciden 3 donantes de la lista." | Fuera de la maqueta no es "la lista de ejemplo". **R11 lo cambia** a "Coinciden 1.234 donantes.": el total es de Donaciones, no de una lista traída |
+
+#### R11 · Listados de a una página y avance en vivo
+
+Pasan el filtro de tono: cada cifra dice de qué es y de cuándo; lo que todavía no pasó se dice así
+("Todavía no empezó a importarse"); lo que se cortó dice hasta dónde llegó y qué quedó guardado,
+sin culpa y con el próximo paso; nada apura ("Podés seguir usando el sitio"). Todas las cifras con
+separador de miles.
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Paginador provisorio | "‹ Anterior" · "Página 3 de 62" · "Siguiente ›" | Lo pide el lote hasta R11-11; "Página N de M" dice dónde se está y cuánto falta |
+| Nombre del paginador (lectores) | "Páginas de donantes" · "Páginas de donaciones" · "Páginas de filas con error" | Distingue el paginador de cada lista |
+| Cargando otra página | "Cargando la página 4…" | Respuesta a cada acción (RNF-UI-05) |
+| Cabecera de Donantes | "20.086 donantes activos, al 11 de noviembre de 2026, 18:30." · singular: "1 donante activo, al …" | La de siempre, con separador de miles |
+| Coinciden | "Coincide 1 donante." · "Coinciden 1.234 donantes." | Sin "de la lista" |
+| Franja, importación en curso | "Se está importando donantes-octubre.csv: 8.400 de 20.000 filas." · enlace "Ver el avance" | Sin el total todavía: "Se está importando donantes-octubre.csv: 500 filas leídas." |
+| Franja, terminada | "Terminó la importación de donantes-octubre.csv." · enlace "Ver el resultado" | Hasta que el admin lo abre |
+| Título de la página de avance | "Importando donantes-octubre.csv" · al terminar, "Importación terminada" | Sin nombre de archivo: "Importando el archivo" |
+| Miga | "Donantes › Importación" | Vuelve a Donantes |
+| Esperando | "Recibimos donantes-octubre.csv. Todavía no empezó a importarse: esta página cambia sola cuando empiece." | Lo pendiente, pendiente; sin prometer un plazo |
+| Leyendo sin total | "Leyendo el archivo: 500 filas por ahora." | `totalFilas` llega null al empezar |
+| Avance | "8.400 de 20.000 filas" | Junto a la barra |
+| Cuatro cifras | "Donantes nuevos: 7.950 · Actualizados: 410 · Filas con error: 40" | Las mismas palabras que el resultado final |
+| Hora | "Actualizado a las 18:34:12. Se actualiza sola mientras importa." | Sin JavaScript: "Actualizado a las 18:34:12. Tocá «Ver el avance» para ver cómo sigue." |
+| Seguir trabajando | "Podés seguir usando el sitio. Para volver a este avance, entrá a Donantes." | Dice cómo volver, no solo que se puede salir |
+| Últimos importados | Título "Últimos importados" · por fila, el nombre y "Nuevo" o "Actualizado" | Sin documento ni correo |
+| No se pudo actualizar | "No pudimos actualizar el avance. Lo volvemos a intentar en unos segundos; la importación sigue." | El reintento es el siguiente pedido, a los 3 s |
+| Se cortó | "La importación se cortó en la fila 8.400." · "Las 8.400 filas leídas quedaron guardadas: 7.950 donantes nuevos, 410 actualizados y 40 filas con error. Las demás no se importaron." · "Podés volver a subir el archivo: los que ya están se actualizan, no se duplican." | Reemplaza, en este caso, a "No se importó ninguna fila", que sería falso |
+| Terminada | "Importación terminada." · "20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error." | Las de la conexión con las APIs, sin cambios |
+| Filas con error | Título "Filas con error · 126" · columnas "Fila" y "Qué pasó" | De a 20 |
+| Sin filas con error | "Todas las filas se importaron sin errores." | |
+| Botón de salida | "Volver a Donantes" | En la página de avance, siempre |
+| Registrar donación, más de 10 | "Hay 230 donantes que coinciden. Escribí más del nombre o el documento para encontrarlo." | Un buscador para elegir no se pagina |
+| Una cifra no llegó | "No pudimos cargar estas cifras." · el texto y el código del aviso común | Nunca un cero en su lugar |
 
 #### §4.2 `admin-donantes-registrar`
 
@@ -539,6 +830,23 @@ promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
 - El resumen de errores de un formulario recibe el foco al volver, y cada enlace lleva a su campo.
 - Las acciones de una fila nombran el objeto en su nombre accesible.
 
+R11 (2026-11-11):
+
+- **Paginador provisorio:** un `nav` con nombre ("Páginas de donantes"), "Página 3 de 62" como
+  texto y `aria-current="page"` en él; el extremo que no sigue no es un enlace, para que no reciba
+  el foco. Al cambiar de página con HTMX, el foco va al título de la lista y la tabla lleva
+  `aria-busy` mientras carga.
+- **El avance que se actualiza solo no se lee cada 3 segundos.** Las cifras van en una zona sin
+  aviso automático; la barra es un `progress` con su valor y su máximo (sin máximo, indeterminada).
+  Se leen solos, con `role="status"`, solo los cambios de etapa: empezó, terminó, se cortó o no se
+  pudo actualizar. Así un lector de pantalla no repite números sin parar.
+- **Al terminar,** el aviso "Importación terminada" recibe el foco una sola vez (como hoy), no en
+  cada actualización.
+- **La actualización sola se pausa** cuando la pestaña no está a la vista, y el bloque que se
+  reemplaza no contiene el foco: reemplazarlo no saca al admin de donde estaba.
+- **La franja de Donantes** es un aviso en el contenido, no una ventana: se lee en su orden y no
+  atrapa el foco.
+
 ## 8. Revisión de usabilidad
 
 | # | Heurística | Cómo la cumple | Riesgo que queda |
@@ -567,6 +875,35 @@ Los 7 factores (Morville):
 Probar con personas reales: si "Pedir corrección" y "Rechazar" se distinguen sin explicación, y si
 la lectura del resultado del CSV (nuevos, actualizados, sin cambios y con error) se entiende a la primera.
 
+### Revisión de los cambios de R11 (2026-11-11)
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | El avance se actualiza solo, con cuatro cifras y la hora; la franja de Donantes dice cómo va sin entrar; el paginador dice "Página 3 de 62" | Las cifras suben de a 500 filas: puede parecer trabada entre un salto y otro. La hora que cambia muestra que la página está viva, aunque el número no cambie |
+| 2 | Lenguaje del usuario | "Donantes nuevos", "Actualizados", "Filas con error", "Se cortó"; ningún `PROCESADO_CON_ERRORES` ni "polling" | "Fila" es palabra del archivo; quien sube un CSV la conoce |
+| 3 | Control y libertad | Se puede salir del avance a cualquier sección y volver por la franja o por la dirección; "Volver a Donantes" siempre a mano; el "atrás" del navegador recorre las páginas | No se puede cancelar una importación en curso: Donaciones no lo permite (se anota en los huecos) |
+| 4 | Consistencia | El mismo paginador en donantes, donaciones y filas con error; las mismas palabras en el avance y en el resultado | El paginador es provisorio: cambia de forma con R11-11, no de lugar ni de direcciones |
+| 5 | Prevención de errores | Solo los filtros que filtran de verdad; nunca un cero en lugar de una cifra que no llegó; la página que no existe muestra la última | Se puede subir otro archivo mientras uno se importa; la franja muestra solo el último |
+| 6 | Reconocer antes que recordar | La franja recuerda la importación en curso: no hay que guardar la dirección; los filtros quedan a la vista al cambiar de página | La memoria es de la sesión: otro admin, u otro navegador, no ve la franja hasta R11-20 |
+| 7 | Flexibilidad | Búsqueda, filtros y orden en el servidor, sobre todos los donantes y no sobre una página | Sin saltar a una página por su número hasta R11-11 |
+| 8 | Diseño minimalista | La página de avance muestra solo la importación; los últimos importados, solo nombre y resultado | — |
+| 9 | Recuperarse de errores | La importación cortada dice hasta dónde llegó, qué quedó guardado y que se puede volver a subir sin duplicar; el avance que no se actualizó reintenta solo | La descarga de las filas con error no está; se recorren en la tabla |
+| 10 | Ayuda | "Podés seguir usando el sitio. Para volver a este avance, entrá a Donantes."; la ayuda del buscador cuando hay más de 10 | — |
+
+Los 7 factores, en lo que cambia:
+
+- **Útil:** el admin puede importar 20.000 donantes en vivo, en la demo, sin que la pantalla se caiga.
+- **Usable:** el avance se entiende sin tocar nada y no retiene al admin.
+- **Deseable:** la barra que avanza y los nombres que van entrando hacen ver que el trabajo pasa.
+- **Valioso:** lo que pide RF-20 (progreso y resultado por fila), con 20.000 filas.
+- **Ubicable:** la importación sigue en Donantes, y la franja lleva de vuelta.
+- **Accesible:** el avance no satura al lector de pantalla y el paginador tiene nombre (§7).
+- **Creíble:** cada cifra es de Donaciones, con su hora; ningún filtro ni cero de mentira.
+
+Probar con personas reales: si "Página 3 de 62" con solo Anterior y Siguiente alcanza para recorrer
+donantes, o se extraña saltar a una página (lo resuelve R11-11); y si quien importa entiende que
+puede irse y volver por la franja.
+
 ## 9. Decisiones y preguntas
 
 Decisiones (bitácora, 2026-11-07):
@@ -587,6 +924,73 @@ Preguntas abiertas:
   consulta con la cátedra. La maqueta muestra "Le enviamos un correo para que active su cuenta",
   que lleva a la pantalla pública Activar cuenta (F6 del roadmap). Si la cátedra elige otra
   alternativa, cambian esos textos.
+
+Decisiones de R11 (2026-11-11). Las del usuario salen de la
+[sección 3 del backlog](../backlog-revision-2026-11-11.md#3-decisiones-de-la-ronda) y no se
+reabren; las demás son del agente diseñador del lote:
+
+- Rendimiento con arreglo de fondo: Donaciones pagina, busca y filtra; las cifras, como números
+  (usuario).
+- Avance en vivo, con los últimos importados, y se puede seguir trabajando (usuario). La vista de
+  importaciones y las notificaciones del admin son de P1 (R11-20).
+- La importación se actualiza cada 3 segundos y solo con la pestaña a la vista (agente). Se
+  descartó 1 segundo, porque suma pedidos mientras Donaciones importa y el avance cambia cada 500
+  filas igual, y 5 segundos, porque se siente trabado.
+- El bloque del avance se vuelve a pedir a la misma dirección de la página y se queda solo con su
+  parte (agente). Se descartó una dirección nueva solo para el bloque: sin la lista, la página es
+  liviana, y así una sola dirección sirve con y sin JavaScript. Se descartó la recarga automática
+  de toda la página sin JavaScript (`meta refresh`): interrumpe a los lectores de pantalla.
+- Para "salir y volver", el cliente recuerda la última importación en la sesión del admin y
+  Donantes muestra una franja (agente). Se descartó pedirle a Donaciones la lista de importaciones
+  en curso: es la vista de R11-20, de P1.
+- De a 20 por página en donantes, donaciones y filas con error (agente): entra en una pantalla de
+  escritorio sin desplazarse mucho y coincide con las 20 filas con error que ya se mostraban.
+- El paginador provisorio es "‹ Anterior · Página N de M · Siguiente ›", con direcciones reales
+  (`?pagina=`), igual en el celular (lote). Al llegar R11-11 cambia el dibujo, no las direcciones.
+- Fuera de la maqueta, solo los filtros y columnas que Donaciones resuelve (agente). Se descartó
+  dejar "Qué dona" y "Sin activar su cuenta" sin dato: filtran nada y la pantalla mentiría.
+- "Descargar las filas con error" no se muestra fuera de la maqueta hasta que exista (agente): hoy
+  manda a una dirección que el sistema no atiende.
+- La importación cortada a mitad de camino tiene su propio texto, distinto de "No se importó
+  ninguna fila" (agente): Donaciones guarda las filas leídas antes de cortarse.
+- Los últimos importados muestran nombre y resultado, sin documento (agente): menos dato personal
+  en pantalla.
+- El buscador de Registrar donación trae como máximo 10 y pide escribir más, sin paginar (agente):
+  es para elegir uno.
+
+### Lo que estas pantallas le piden a Donaciones (R11)
+
+Lo define el contrato del lote `p0-api-listados`; si el contrato dice otra cosa, manda el contrato
+y esta tabla se ajusta. Cada página trae sus filas y el total.
+
+| Pantalla | Pedido | Con qué |
+|---|---|---|
+| `admin-donantes` | Una página de donantes | Página, tamaño (20), búsqueda por nombre o documento, tipo (persona, empresa, organización), estado (activo, baja) y orden; cada fila con el nombre, el tipo y el documento, sin una consulta de persona por donante |
+| `admin-donantes`, `admin-inicio` | Cuántos donantes activos | Un número |
+| `admin-donaciones` | Una página de donaciones | Página, tamaño (20), estado, "vence en los próximos 7 días" y orden (vence antes, registradas recientes o antiguas, por nombre, por donante); cada fila con qué es, cantidad, donante, fecha de registro, estado, vencimiento y entidad asignada |
+| `admin-donaciones`, `admin-inicio` | Cuántas hay por estado y cuántas se entregaron en el mes | Números |
+| `admin-donaciones-detalle` | Una donación con su historial | Su identificador (ya existe) |
+| `admin-inicio` | La que vence primero y cuántas vencen en 7 días | Una página de tamaño 1, en el depósito, ordenada por vencimiento, con su total |
+| `admin-inicio` | Cuántas entidades activas | El total de `GET /api/entidades` con tamaño 1 (ya pagina) |
+| `admin-entidades` | Las personas de las solicitudes pendientes | Por sus identificadores, de una vez |
+| `admin-donaciones-registrar` | Donantes activos que coinciden | Búsqueda, tamaño 10, con el total; y uno por su identificador |
+| `admin-donantes-importando` | El avance | `GET /api/donantes/archivos/{id}` (ya existe) |
+| `admin-donantes-importando` | Los últimos importados | Hueco nuevo, abajo |
+| `admin-donantes-importado` | Filas con error, de a 20 | `GET .../filas-con-error?page=&size=` (ya existe); el total, del avance (`conError`) |
+| `publico-portada` | Los contadores | `GET /api/donaciones/contadores` (ya existe; lo acelera `p0-api-listados`) |
+
+Qué toca la construcción (lote `p0-admin-listados`, ruta STANDARD, solo `cliente-liviano`): los
+adaptadores `AdminPersonas*` y `AdminOperacion*`, `DonacionesApi`, `AdminDonantes*Controller`, las
+vistas de donantes y donaciones (pasan de la lista entera a una página con su total), las
+plantillas `admin-donantes*.html` y `admin-donaciones.html`, y en `admin-inicio` solo de dónde
+salen las cifras. La maqueta sigue con sus datos de ejemplo, de a una página. El texto "Hay 230
+donantes que coinciden…" de Registrar donación vive en `admin-donaciones-registrar.html`, que no
+está en la lista de archivos del lote: se toca solo esa línea y se avisa.
+
+Lo que sigue pidiéndose entero después de R11, porque no es de Donantes ni de Donaciones y es
+corto: las solicitudes pendientes de Keycloak, los camiones de Logística y las propuestas de
+asignación del inicio (estas últimas, filtradas por pendientes en el cliente; se anota en los
+huecos).
 
 ### Huecos de backend
 
@@ -609,3 +1013,9 @@ Los marcados "nuevo" salieron de esta ficha: se suman a
 | `admin-donaciones-registrar` | La lista de depósitos para elegir: el DTO recibe `nombreDeposito` y una dirección, sin catálogo | Nuevo (F3) |
 | `admin-donaciones` | Paginar | HB-04 |
 | `admin-donaciones-registrar` | El contrato dice `donanteId` y el código recibe `idDonante` | Divergencia contrato-código, a reportar en F3 |
+| `admin-donantes`, `admin-donaciones`, `admin-inicio` | Paginar, buscar, filtrar y contar en el servidor (reemplaza a las filas "Nuevo (F2)" de Donantes, "Nuevo (F3)" de la lista única de Donaciones y del vencimiento, y a HB-04) | R11-01, lo resuelve `p0-api-listados` |
+| `admin-donantes-importando` | Los últimos donantes que leyó el archivo (nombre y si fue nuevo o actualizado). Hoy `ArchivoOutputDTO` trae solo los contadores y el donante no guarda de qué archivo vino. Propuesta: un campo nuevo y opcional en el avance con los últimos 5, guardado con el avance cada 500 filas | Nuevo (R11-02) |
+| `admin-donantes-importado` | Descargar las filas con error: el botón manda a `POST /admin-donantes-importado`, que el cliente no atiende | Nuevo (R11-02) |
+| `admin-donantes-importando` | Cancelar una importación en curso: Donaciones no tiene cómo | Nuevo (R11-02), backlog |
+| `admin-donantes` | Qué dona, si activó su cuenta y la fecha de alta de cada donante: Donaciones no los guarda; sin ellos no hay filtro ni orden por esos datos | Nuevo (R11-01) |
+| `admin-inicio` | Pedir solo las propuestas pendientes (`GET /api/asignaciones/propuestas` trae todas y se filtran en el cliente) | Nuevo (R11-01), fuera de `p0-api-listados` |

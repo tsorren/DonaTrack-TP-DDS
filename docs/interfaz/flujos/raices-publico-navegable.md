@@ -51,6 +51,11 @@ navegación; además, conviene que "Lo que viajó este mes" enlace a Entregas co
 las entregas confirmadas") y que el rótulo de la tierra enlace a Entidades ("Ver todas las
 entidades y lo que piden"). Lo demás de la portada no cambia.
 
+**Con la sesión iniciada** (R11-15, ficha [r11-p1-portada](r11-p1-portada.md), construida el
+2026-11-12): los destinos son los mismos, salvo "Ingresar" y "Crear una cuenta", que se cambian por
+"Ir a mi inicio" (o "Ver mi solicitud", con la solicitud pendiente) y la foto con el menú de la
+cuenta. Esta ficha no se reescribe: el detalle está en esa.
+
 ## 3. Recorrido
 
 ```mermaid
@@ -136,6 +141,9 @@ La foto grande se abre en la misma página (con JavaScript, un diálogo; sin él
 o la imagen sola), con el mismo texto que en la portada.
 
 ### 4.2 Mapa (`publico-mapa`)
+
+> Desde R11-19 (2026-11-12, en revisión), la lista va plegada y paginada y los botones de salida,
+> debajo del mapa: ver la [ampliación R11-19](#ampliación-r11-19-mapa-más-corto-lote-p1-mapa).
 
 ```text
 Rótulo · Título · Bajada (ubicación aproximada)
@@ -247,8 +255,10 @@ Quién la representa: Nombre y apellido · Correo electrónico · Contraseña [M
 ```
 
 **Solicitud enviada** (`publico-registro-entidad-enviada`): el sello "Solicitud recibida", qué pasa
-ahora y el mismo "Cómo sigue" con el paso 2 como actual. Salidas: "Ver las entidades y lo que
-piden" e "Ir a la portada".
+ahora, cuánto suele tardar la revisión ("unos días hábiles", R11-08), que mientras tanto puede
+recorrer lo público y el mismo "Cómo sigue" con el paso 2 como actual. Salidas: "Ver las entidades
+y lo que piden" e "Ir a la portada". Con la cuenta pendiente, esas salidas y las demás pantallas
+públicas se pueden navegar; lo privado lleva otra vez a esta pantalla (R11-08).
 
 Respecto del boceto (pág. 11): en tres grupos con título, como pedía la nota del boceto ("conviene
 partirlo en secciones claras"). Un solo representante, el que crea la cuenta; el rubro pasa a "Qué
@@ -403,7 +413,8 @@ y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comun
 | | Casilla y acción | La misma casilla · "Todos los datos son obligatorios." · "Enviar la solicitud" | |
 | | Salida | "¿Querés donar? Crear una cuenta de donante" | |
 | Solicitud enviada | Sello y título | "Solicitud recibida" · "Recibimos la solicitud de tu entidad" | |
-| | Qué pasa ahora | "El equipo de DonaTrack la revisa antes de sumarla. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés ingresar y publicar lo que le hace falta a tu entidad." | Sin plazo |
+| | Qué pasa ahora | "El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar unos días hábiles. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés ingresar y publicar lo que le hace falta a tu entidad." | R11-08 pide decir cuánto suele tardar: "unos días hábiles", sin cifra fija ni fecha, porque no hay un plazo acordado |
+| | Mientras tanto | "Mientras tanto, podés recorrer el sitio: la portada, las entidades y lo que piden." | R11-08: la cuenta pendiente navega lo público |
 | | Salidas | "Ver las entidades y lo que piden" · "Ir a la portada" | |
 
 ### 6.2 Ayudas por flujo crítico (RNF-UI-04)
@@ -492,7 +503,8 @@ llevan el prefijo del sitio (`/`).
   revisión".
 - Sin urgencia ni culpa: "Quiero donar", sin "ahora"; los pedidos no llevan cuenta regresiva (la
   fecha alcanza).
-- Sin promesas que nadie fijó: ni plazo de revisión, ni "gratis", ni elegir la entidad.
+- Sin promesas que nadie fijó: ni "gratis", ni elegir la entidad. De la revisión se dice cuánto
+  suele tardar ("unos días hábiles", R11-08), nunca una cifra ni una fecha.
 - Las entidades actúan: piden, confirman, publican. Se nombran por su tipo y su nombre.
 - La raíz, como mucho en un título por pantalla; nunca en botones, datos ni errores. Palabras que
   no van: "eco", "huella verde", "florecer", "regá", "cosechá", "sostenible" de adorno.
@@ -527,7 +539,7 @@ llevan el prefijo del sitio (`/`).
 
 | # | Heurística | Cómo la cumple | Riesgo que queda |
 |---|---|---|---|
-| 1 | Visibilidad del estado | Cada lista dice su cifra con período y fecha de actualización; cargando, vacío y error con texto; "Ingresando…", "Creando tu cuenta…"; la entidad sabe en qué paso está ("Cómo sigue", "Tu entidad todavía está en revisión") | Sin plazo de revisión, la entidad no sabe cuánto esperar (pregunta abierta) |
+| 1 | Visibilidad del estado | Cada lista dice su cifra con período y fecha de actualización; cargando, vacío y error con texto; "Ingresando…", "Creando tu cuenta…"; la entidad sabe en qué paso está ("Cómo sigue", "Tu entidad todavía está en revisión"); la solicitud enviada dice que la revisión suele llevar unos días hábiles (R11-08) | "Unos días hábiles" orienta, pero no es un plazo acordado (pregunta abierta 2) |
 | 2 | Lenguaje del usuario | "Entregas confirmadas", "Lo que piden", "Quiero donar, yo o mi empresa", "Represento a una entidad"; "Qué es" en lugar de "rubro" y "Tipo de organización" con ejemplos en lugar de "tipo jurídico" | "Tipo de organización" puede seguir siendo dudoso para alguien de un comedor |
 | 3 | Control y libertad | Navegación pública y Atrás siempre; los filtros se sacan con "Ver todas"; ante un error, lo escrito sigue (salvo la contraseña) | — |
 | 4 | Consistencia | Las mismas categorías, íconos y "Ver la foto de la entrega" que la portada; los avisos de error con código como en Contacto y Necesidades; el resumen de errores de Contacto | Los dos sitios dibujan distinto; los textos y estados, iguales |
@@ -593,7 +605,9 @@ Preguntas abiertas (no frenan la maqueta; la ficha usa la opción indicada):
 
 1. **Regla de la contraseña:** la fija el IdP (D1, pendiente). La ficha usa "Al menos 8
    caracteres".
-2. **¿Cuánto tarda la revisión de una entidad?** No hay plazo acordado; los textos no prometen uno.
+2. **¿Cuánto tarda la revisión de una entidad?** No hay plazo acordado. R11-08 pide decir cuánto
+   suele tardar: la ficha usa "unos días hábiles", sin cifra ni fecha. Si el equipo fija un
+   plazo, el texto lo toma.
 3. **Correo ya registrado al crear una cuenta:** decir que existe ayuda, pero revela cuentas
    (RNF-AUTH-10 lo pide para login y recuperación). La maqueta no lo dibuja.
 4. **¿Cuánto dura el enlace para una contraseña nueva?** Depende de D8 (pendiente); RF-AUTH-13
@@ -676,3 +690,343 @@ foto, y Donaciones no da el lugar, así que no se pueden cruzar. El HTML de la m
 | Qué no se muestra | El filtro "Qué se donó", los íconos de categoría, "Pide: …" en el globo y "Ver la foto de la entrega" | Logística no trae categoría ni foto; las fotos de cada entrega siguen en Entregas confirmadas |
 | Aviso de lo que falta | "Todavía no mostramos qué entidad recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas." (debajo de la cifra) | Que quien mira sepa qué no está, en lugar de creer que no existe |
 | Sin entregas | El estado vacío de "Todavía no hay entregas confirmadas en el último mes." | La lista vacía de la API |
+
+## Ampliación R11-19: Mapa más corto (lote `p1-mapa`)
+
+> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él) (usuario)
+> Ficha de la skill `ux-flujo` para el lote `p1-mapa` del
+> [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
+> La decisión del usuario ("Mapa público: botones debajo del mapa; lista plegada (entidad +
+> cantidad) y paginada", sección 3 del backlog) ya está tomada: esta ampliación la baja a la
+> pantalla, no la reabre. Reemplaza, solo para `publico-mapa`, la composición de la sección 4.2
+> y lo que dicen del Mapa las secciones 5 a 7; los textos de la conexión con Logística
+> ("Textos del cierre de E6: Mapa") siguen valiendo.
+
+### 0. Qué pasa hoy (evidencia)
+
+Leído en `ebe332642`. `[V]` es leído en el código; `[H]`, hipótesis.
+
+| # | Hoy | Dónde |
+|---|---|---|
+| M1 | Los botones de salida ("Ver las fotos de cada entrega", "Ver las entidades y lo que piden", "Quiero donar") van después de la lista entera: con muchos lugares, quedan muy abajo `[V]` | `publico-mapa.html:150-157` |
+| M2 | La lista muestra cada lugar abierto, con todas sus entregas, sin páginas `[V]` | `publico-mapa.html:85-128` |
+| M3 | El cliente pide a Logística **todas** las entregas confirmadas de la historia y se queda con las de los últimos 30 días `[V]` | `PublicoMapaRest.java:59-66`, `LogisticaApi.java:43-44` |
+| M4 | Logística lee todas las `ENTREGADA` de la base, sin período ni tope, y las devuelve en un arreglo `[V]` | `EntregasService.java:133-139`, `EntregasController.java:60-63` |
+| M5 | Los marcadores salen de las fichas de la lista (`data-lat`, `data-lng` y su `<template data-mapa-globo>`): si la lista se pagina tal cual, el mapa mostraría solo los lugares de esa página `[V]` | `static/js/mapa.js:1-40`, `publico-mapa.html:89-101` |
+| M6 | La fecha de la entrega confirmada es `hora_arribo`, que se fija al confirmar (`confirmarEntrega`) y tiene columna propia; el índice que hay es solo por `estado` `[V]` | `Entrega.java:216-229`, `V1__init_logistica.sql:88,191` |
+| M7 | `mapa.js` y `mapa.css` también los usa el Seguimiento del donante (persona y empresa) `[V]` | `static/js/mapa.js:3-4` |
+
+### 1. Para quién y para qué
+
+| | |
+|---|---|
+| Quién | El mismo de la ficha (sección 1): sobre todo la persona de responsabilidad social de una empresa que evalúa donar, desde la computadora; también una persona que quiere donar o alguien de una entidad, muchas veces desde el celular |
+| Tono | Página pública de información: claro, honesto con lo que falta, sin inflar cifras ([tono según la pantalla](../tono-y-comunicacion.md#tono-según-la-pantalla)) |
+| Qué quiere lograr | "Ver de un vistazo adónde llegaron las donaciones y, si me interesa un lugar, qué recibió; y seguir hacia donar sin bajar toda la página" |
+| Dispositivo principal | Los dos. En el celular, hoy es la página más larga del sitio público |
+| Requerimientos | RF-02 (mapa de entregadas y detalle por marcador), RF-CL-06 (lista con los mismos datos junto al mapa), RF-CL-07 (la cifra dice período y cuándo se actualizó), RNF-CL-02 (sin JavaScript, igual funciona), reglas generales 1, 2 y 3 del backlog (nunca la lista completa; listado completo con páginas; un solo paginador) |
+| Datos que usa | `GET /api/entregas/mapa` con período y tope (contrato en la sección 10). En la maqueta, `PublicoMapaMaqueta`, con un escenario más largo para ver las páginas (sección 9) |
+| Boceto de E1 | Págs. 2 y 23, como en la sección 4.2 |
+
+### 2. Dónde está en el sitio
+
+Sin cambios: público, nivel 2 (portada → Mapa), en la navegación pública
+([mapa del sitio](../mapa-del-sitio.md)). Las páginas de la lista no suman nivel: son la misma
+pantalla con `?pagina=N`.
+
+### 3. Recorrido
+
+```mermaid
+flowchart TD
+  entrada([Portada, navegación o Entregas confirmadas]) --> mapa[Mapa: cifra, mapa, botones debajo y lista plegada, página 1]
+  mapa -->|toca una fila| abierta[La fila se abre: sus entregas; su marcador se destaca]
+  mapa -->|toca un marcador| globo[Globo con nombre y cantidad; si su fila está en esta página, se abre]
+  globo -->|su fila está en otra página: Ver sus entregas en la lista| otra[Página de esa fila, con la fila abierta]
+  abierta -->|toca otra fila| abierta
+  abierta -->|toca la misma fila| mapa
+  mapa -->|paginador| pagina[Otra página de la lista; el mapa no se recarga]
+  mapa -->|botones debajo del mapa| salidas[Entregas confirmadas · Entidades · Quiero donar]
+  mapa -->|más entregas que el tope| tope[La cifra dice cuántas hay y cuántas muestra el mapa]
+  entrada -->|sin entregas en el período| vacio[Estado vacío]
+  entrada -->|Logística no responde| error[Aviso de error con código y Probar de nuevo]
+  entrada -->|sin JavaScript o el mapa no carga| sinmapa[Aviso en lugar del mapa; lista y páginas igual]
+  pagina -->|página que no existe| ultima[La última página que hay]
+```
+
+Desvíos considerados: volver (el "atrás" del navegador vuelve a la página anterior de la lista,
+porque cada página tiene su dirección); error del servidor; sin conexión (el mismo aviso de error);
+error al cambiar de página; sin JavaScript; el mapa no carga (el WebJar de MapLibre o los mosaicos
+de OpenFreeMap no responden); página fuera de rango; más entregas que el tope. Sin permiso no
+aplica: es público (una cuenta con la solicitud pendiente lo ve igual, R11-08).
+
+### 4. Pantalla
+
+Patrones conocidos ([criterios de la cátedra](../criterios-catedra-ux-ui.md), secciones 4 y 5):
+la lista es una **lista con acordeón** (Material: *Expansion panel*, el componente `.plegable`
+del catálogo) en la que tocar un ítem muestra su detalle en el lugar; el recorrido de la lista es
+**paginado** (no desplazamiento sin fin: es contenido para recorrer y volver, regla 2); el mapa es
+un **mapa con marcadores y globo**, como el de sucursales de cualquier comercio, con la lista como
+alternativa.
+
+**Computadora (desde 1100 px):** dos columnas, como hoy. A la izquierda, el mapa fijo al
+desplazarse y, debajo de él, los botones; a la derecha, la lista plegada de 10 filas y su
+paginador. Diez filas plegadas ocupan más o menos el alto del mapa (40 rem).
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ Mapa · Adónde llegaron las donaciones                                  │
+│ Bajada (Mostramos la localidad, nunca la dirección.)                   │
+│ 34 entregas confirmadas en 14 lugares, del 13 de octubre al 12 de      │
+│ noviembre de 2026. · Actualizado el 12 de noviembre de 2026, 10:30.    │
+│ Nota de lo que falta (texto chico)                                     │
+├──────────────────────────────────┬─────────────────────────────────────┤
+│ ┌──────────────────────────────┐ │ Lugar por lugar                     │
+│ │                              │ │ ① Quilmes · 6 entregas       Ver ▾  │
+│ │   MAPA (MapLibre)            │ │ ② La Plata · 4 entregas      Ver ▴  │
+│ │   ① ② ③ … ⑭ (todos los       │ │   Buenos Aires                      │
+│ │   lugares del período)       │ │   Entrega de 12,5 kg · 9 de nov.    │
+│ │                              │ │   Entrega de 8 kg · 2 de nov.       │
+│ └──────────────────────────────┘ │ ③ Lanús · 3 entregas         Ver ▾  │
+│ Mapa: © OpenStreetMap            │ …                                   │
+│ [Ver las fotos de cada entrega]  │ ⑩ Berazategui · 1 entrega    Ver ▾  │
+│ [Ver las entidades y lo que      │                                     │
+│  piden]          [Quiero donar]  │   « ‹ 1 2 › »                       │
+└──────────────────────────────────┴─────────────────────────────────────┘
+```
+
+**Celular (360 px):** una columna. El título, la cifra, el mapa (más bajo que hoy: alrededor de
+60 % del ancho, lo fija `mapa.css`), la atribución, los botones apilados ("Quiero donar" primero,
+a lo ancho) y, después, la lista plegada con el paginador `‹ 1 de 2 ›`.
+
+```text
+┌──────────────────────────────┐
+│ Mapa                         │
+│ Adónde llegaron las          │
+│ donaciones                   │
+│ 34 entregas confirmadas en   │
+│ 14 lugares, del 13 de oct. … │
+│ Actualizado el …             │
+│ ┌──────────────────────────┐ │
+│ │ MAPA                     │ │
+│ └──────────────────────────┘ │
+│ Mapa: © OpenStreetMap        │
+│ [       Quiero donar       ] │
+│ [Ver las fotos de cada       │
+│  entrega]                    │
+│ [Ver las entidades y lo que  │
+│  piden]                      │
+│ Lugar por lugar              │
+│ ① Quilmes · 6 entregas    ▾  │
+│ ② La Plata · 4 entregas   ▾  │
+│ …                            │
+│        ‹ 1 de 2 ›            │
+└──────────────────────────────┘
+```
+
+Cómo se comporta:
+
+- **Fila plegada:** el número (el mismo del marcador), el nombre (la entidad en la maqueta; el
+  lugar con los datos de Logística) y la cantidad de entregas confirmadas del período, más "Ver"
+  con su flecha. Es un `<details class="plegable">`: se abre y se cierra sin JavaScript.
+- **Una fila abierta por vez:** las filas comparten `name` (acordeón exclusivo); abrir otra cierra
+  la anterior y la lista sigue corta. Donde el navegador no lo soporta, se pueden abrir varias: no
+  se pierde nada.
+- **Fila abierta:** el barrio o la provincia y sus entregas, como hoy (qué · categoría · día y, si
+  hay foto, "Ver la foto de la entrega"). Al abrirla, o al pasar o enfocar la fila, su marcador se
+  destaca y el mapa va hasta él (lo que ya hace `mapa.js`).
+- **Tocar un marcador:** abre su globo (nombre, cantidad y "Ver sus entregas en la lista") y, si la
+  fila está en la página que se ve, la abre. En la computadora la lista se desplaza hasta la fila
+  dentro de su columna; en el celular la página no se mueve sola (el globo ofrece ir). Si la fila
+  está en otra página, el enlace del globo lleva a esa página con la fila abierta.
+- **El mapa muestra todos los lugares del período** (hasta el tope), no solo los de la página: sus
+  puntos salen de una lista de puntos aparte, oculta, que arma el servidor con el número, el
+  nombre, la página de cada uno y su globo (M5). La lista visible es la página.
+- **Cambiar de página** reemplaza solo la lista (HTMX, con `?pagina=N` en la barra de
+  direcciones); el mapa queda donde estaba, sin recargarse. Sin JavaScript, el enlace carga la
+  página entera con esa dirección. El paginador conserva `?categoria=` (maqueta) y quita
+  `?abierta=`.
+- **Botones debajo del mapa** (M1): los tres de siempre; en la computadora quedan fijos con el mapa
+  mientras se recorre la lista.
+- **El orden de la lista** es el de hoy: primero el lugar con la entrega más reciente. Los números
+  van de 1 al total y siguen de una página a otra (la página 2 empieza en 11).
+
+Respecto de la sección 4.2 (aprobada el 2026-11-03): la lista deja de estar abierta y entera; los
+botones suben a debajo del mapa; el mapa muestra todos los puntos aunque la lista se pagine. El
+boceto no tenía lista; su desvío ya estaba anotado.
+
+### 5. Estados
+
+| Estado | Cómo se llega | Qué se ve | Texto |
+|---|---|---|---|
+| Con datos, una página | Hasta 10 lugares (la maqueta, tal cual) | Mapa, botones y lista plegada; sin paginador (con una sola página no se dibuja) | Cifra: "10 entregas confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026." · "Actualizado el …" |
+| Con datos, varias páginas | Más de 10 lugares (maqueta: `?escenario=muchas`) | Igual, con el paginador debajo de la lista | El paginador del sitio (regla 3): `« ‹ 1 2 › »`; en el celular, `‹ 1 de 2 ›` |
+| Fila abierta | Tocar la fila, tocar su marcador o llegar con `?abierta=<clave>` | La fila abierta con sus entregas; el marcador destacado | "Barrio Ejemplo" · "Lentejas secas, 10 kg · Alimentos · 10 de octubre" · "Ver la foto de la entrega"; la flecha de "Ver" sube |
+| Globo de un marcador | Tocar o enfocar un marcador | El globo, sobre el mapa | "Comedor Barrio Ejemplo" · "6 entregas confirmadas en el último mes" · "Ver sus entregas en la lista" |
+| Más entregas que el tope | `X-Total-Count` mayor que lo recibido | La cifra con el total y lo que muestra el mapa; nada más cambia | "340 entregas confirmadas del 13 de octubre al 12 de noviembre de 2026. El mapa muestra las 200 más recientes, en 37 lugares." |
+| Página fuera de rango | `?pagina=` mayor que las que hay, cero, negativa o que no es un número | La última página que hay (la primera, si no es un número) | Sin aviso: el paginador dice en qué página se está |
+| Filtro sin resultados (maqueta) | `?categoria=escolares` | Como hoy | Como hoy (sección 5 de la ficha) |
+| Vacío | Ninguna entrega en el período | Como hoy: el aviso, sin mapa, lista ni paginador; sin los botones de salida (el aviso trae el suyo) | "Todavía no hay entregas confirmadas en el último mes." · "Se cuentan cuando cada entidad confirma lo que recibe." · "Ver las entidades y lo que piden" |
+| Cargando la pantalla | `?escenario=lento` | Como hoy: el lugar del mapa y de la lista | "Cargando el mapa de entregas…" |
+| Cargando otra página | Tocar el paginador, con JavaScript | La lista queda a la vista, atenuada, con `aria-busy`; el mapa no cambia | Sin texto nuevo (el indicador del sitio) |
+| Error del servidor o sin conexión | Logística no responde, responde con error o se pasa del límite de espera (R11-04) | Como hoy: el aviso en lugar del mapa y la lista | "No pudimos cargar el mapa de entregas." · "Es un problema nuestro. Probá de nuevo en unos minutos;" · el código de soporte · "Probar de nuevo" |
+| Error al cambiar de página | Con JavaScript, la página pedida no llega | La lista que había sigue a la vista y, arriba de ella, un aviso | "No pudimos traer esta página de la lista." · "Probar de nuevo" (enlace a la dirección de esa página) |
+| Sin JavaScript | El navegador no corre scripts | El aviso en lugar del mapa, los botones debajo del aviso, la lista plegada y el paginador con enlaces | "Para ver el mapa hace falta JavaScript. En la lista están los mismos lugares, con sus entregas." (en la maqueta, "las mismas entidades") |
+| El mapa no carga | El WebJar o los mosaicos no responden | Igual que sin JavaScript | El mismo aviso |
+
+### 6. Textos
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Título de la lista | "Lugar por lugar" (datos de Logística) · "Entidad por entidad" (maqueta) | Sin cambios |
+| Fila plegada | "1 · Quilmes · 6 entregas confirmadas" · con una: "1 entrega confirmada" · "Ver" | En el celular, si no entra, "6 entregas"; el nombre baja a un segundo renglón, nunca se corta con puntos suspensivos |
+| Fila para lectores | "Quilmes, 6 entregas confirmadas. Número 1 en el mapa." | El `summary` lo dice en este orden; la flecha y "Ver" no se leen (el `details` ya anuncia si está abierto) |
+| Globo | "Quilmes" · "Buenos Aires · 6 entregas confirmadas en el último mes" · "Ver sus entregas en la lista" | El enlace lleva a `?pagina=N&abierta=<clave>#entidad-<clave>` |
+| Cifra, sin tope | "34 entregas confirmadas en 14 lugares, del 13 de octubre al 12 de noviembre de 2026." | Como hoy |
+| Cifra, con tope | "340 entregas confirmadas del 13 de octubre al 12 de noviembre de 2026. El mapa muestra las 200 más recientes, en 37 lugares." | El total sale de `X-Total-Count`: un número, no una lista contada |
+| Paginador | El del sitio (lote `p1-paginador`); su nombre: "Páginas de la lista del mapa" | Si al construir todavía no está, el provisorio (`paginador :: paginador(p)`), con el mismo nombre |
+| Aviso al cambiar de página | "Página 2 de 4 de la lista." | Solo para lectores, en la región `aria-live` de la lista |
+| Error al cambiar de página | "No pudimos traer esta página de la lista." · "Probar de nuevo" | Nuevo |
+| Botones | "Quiero donar" (principal) · "Ver las fotos de cada entrega" · "Ver las entidades y lo que piden" | Sin cambios de texto: solo cambian de lugar |
+
+Filtro de tono: la cifra dice período y fecha; cuando hay más que el tope, dice cuántas hay y
+cuántas se muestran, sin esconder el recorte (pregunta 3); "entregas confirmadas", nunca
+"donaciones", porque cuenta lo que la entidad confirmó (pregunta 7). "Entidad" sigue en los textos
+de la maqueta: el cambio a "Organización" lo hace el lote `p1-nombres`, en todo el sitio a la vez.
+
+### 7. Accesibilidad
+
+- Orden del foco: navegación, título, cifra, el mapa (sus marcadores, como hoy), los botones, la
+  lista (cada `summary` y, abierta, sus enlaces y botones) y el paginador. Los botones van antes de
+  la lista en el código porque visualmente están antes.
+- La lista sigue siendo la alternativa completa al mapa (RF-CL-06): todos los lugares están en
+  alguna página, con el mismo número y los mismos datos del globo, y más (cada entrega). La lista
+  de puntos que lee el mapa está oculta para todos (`hidden`): no se lee dos veces.
+- Cada fila es `details`/`summary`: se abre con Enter o Espacio y el lector anuncia si está
+  abierta; no hace falta `aria-expanded` a mano.
+- Al cambiar de página con JavaScript, el foco va al título de la lista (`tabindex="-1"`) y la
+  región `aria-live="polite"` dice "Página 2 de 4 de la lista." Sin JavaScript, la página carga
+  entera, como cualquier enlace.
+- Al llegar con `?abierta=` y `#entidad-<clave>`, la fila viene abierta desde el servidor y el
+  ancla la lleva a la vista: funciona sin JavaScript.
+- Tocar un marcador no mueve el foco a la lista: el foco queda en el marcador y el globo ofrece el
+  enlace. Quien usa el teclado no salta de zona sin pedirlo.
+- Blancos de toque de al menos 44 px: la fila plegada entera es el blanco; el paginador, el del
+  sitio.
+- Con "reducir movimiento", el mapa no se anima al ir a un marcador (como hoy).
+
+### 8. Revisión de usabilidad
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | La cifra dice período, total y, si hay tope, cuántas muestra; el paginador dice en qué página se está; la fila abierta y su marcador se destacan juntos | Que no se note que el mapa tiene más puntos que la página de la lista |
+| 2 | Lenguaje del usuario | "Lugar por lugar", "entregas confirmadas", "Ver"; nada de "registros" ni "resultados" | — |
+| 3 | Control y libertad | La fila se cierra tocándola otra vez; cada página tiene su dirección y el "atrás" funciona | El acordeón exclusivo cierra una fila que alguien quería comparar con otra |
+| 4 | Consistencia | El `.plegable` de Entidades de la portada y el paginador único del sitio; los botones con los textos de siempre | Hasta que exista el componente `paginas`, el paginador provisorio |
+| 5 | Prevención de errores | Una página fuera de rango muestra la última que hay en lugar de una lista vacía | — |
+| 6 | Reconocer antes que recordar | El mismo número en el marcador y en la fila; el globo dice el nombre y la cantidad sin abrir nada | Con muchos lugares, buscar uno por nombre obliga a recorrer páginas (pregunta abierta 2) |
+| 7 | Flexibilidad | Se llega a un lugar por el mapa o por la lista; con teclado, por los marcadores o las filas | — |
+| 8 | Diseño minimalista | Plegada, cada fila es una línea; los botones se ven sin bajar; la página del celular pasa de varias pantallas de entregas a una lista de 10 líneas | — |
+| 9 | Recuperarse de errores | Error al cargar y al cambiar de página, con "Probar de nuevo" y la lista anterior a la vista | — |
+| 10 | Ayuda | La bajada y la nota de lo que falta explican qué es cada punto y qué no se muestra | — |
+
+Los 7 factores (Morville): **útil**, contesta "adónde llegó" y lleva a donar; **usable**, una línea
+por lugar y un toque para el detalle; **deseable**, el mapa queda protagonista y la página no se
+estira; **valioso**, los botones de salida a la vista sirven a quien evalúa donar; **ubicable**, el
+número une marcador y fila, y cada página tiene su dirección; **accesible**, la lista paginada dice
+todo lo del mapa y anda sin JavaScript; **creíble**, la cifra no esconde el tope.
+
+Para probar con personas: si quien mira desde el celular entiende que el mapa tiene todos los
+lugares aunque la lista muestre 10, y si se nota que tocar un marcador abre la fila de abajo.
+
+### 9. Decisiones y preguntas
+
+Decisiones de esta ampliación (agente; el usuario ya fijó el qué en la sección 3 del backlog):
+
+- **10 filas por página.** Diez filas plegadas ocupan el alto del mapa en la computadora.
+  Descartados 5 (demasiadas páginas para pocos lugares) y 20 (vuelve a estirar la página del
+  celular).
+- **El mapa muestra todos los lugares del período; la lista, una página.** Descartado que el mapa
+  muestre solo los de la página: dejaría de contestar "adónde llegaron" y cada cambio de página
+  movería todos los puntos.
+- **Una fila abierta por vez** (acordeón exclusivo con `name`). Descartado abrir varias: la lista
+  vuelve a crecer, que es lo que R11-19 quiere evitar.
+- **Tocar un marcador abre la fila solo si está en la página que se ve; si no, el globo lleva a su
+  página.** Descartado cambiar de página solo con tocar un marcador: la lista cambiaría sin que la
+  persona lo pidiera.
+- **`?abierta=<clave>`** para llegar con una fila abierta (desde el globo y, cuando exista, desde
+  Entidades), porque el servidor no ve el `#`. Descartado depender de que el navegador abra un
+  `details` al seguir un ancla: no todos lo hacen.
+- **Página fuera de rango: la última que hay,** sin aviso. Descartados el 404 (suele ser un enlace
+  viejo, no un error de quien lo usa) y la lista vacía.
+- **La paginación de la lista la hace el cliente liviano en su servidor,** sobre los lugares que
+  ya trajo para el mapa. No es una lista completa de un servicio: Logística devuelve solo el período
+  y con tope (regla 1). Descartado pedir a Logística los lugares ya agrupados y paginados: el mapa
+  igual necesita todos los puntos del período, y sería un segundo contrato.
+- **Período y tope con `desde`, `hasta` y `limite`** (sección 10). Descartados `page` y `size` de
+  los listados de Donaciones: el mapa no tiene página 2, pide el período de una vez.
+- **Escenario `?escenario=muchas` en la maqueta,** con más de 10 lugares sintéticos, para ver el
+  paginador. Los datos de ejemplo de siempre no cambian (otras fichas citan "10 entregas en 5
+  entidades").
+
+Para la [bitácora](../bitacora.md), al cerrar el lote: en el Mapa, la lista pasa a plegada y
+paginada, y los botones de salida, a debajo del mapa (R11-19, usuario, 2026-11-11).
+
+Preguntas abiertas (no frenan el lote; se usa la opción recomendada):
+
+1. **"Entidad y cantidad" con los datos de Logística.** Logística no dice qué entidad recibió
+   ("Textos del cierre de E6: Mapa"), así que con datos reales la fila dice el lugar y la cantidad.
+   Recomendada: dejarlo así en este lote y anotar en el backlog que mostrar la entidad pide que el
+   mapa público traiga la beneficiaria y cruzarla con las entidades públicas de Donaciones (toca la
+   privacidad de D24). Alternativa: sumarlo ahora, fuera de la zona del lote.
+2. **Buscar un lugar en la lista.** Con muchos lugares, encontrar uno obliga a recorrer páginas.
+   Recomendada: sin buscador en este lote (no está en la decisión y el período es de un mes); si en
+   la demo hay más de 3 páginas, va a P2.
+
+### 10. Contrato: entregas del mapa por período y con tope
+
+Ruta CONTRATO. Cambio **aditivo** sobre `GET /api/entregas/mapa`
+([OpenAPI de Logística](../../arquitectura/contratos/openapi-logistica.yaml)), con el mismo criterio
+que los listados de Donaciones de `p0-api-listados`: arreglo en el cuerpo y total en
+`X-Total-Count`. Sin ADR nuevo: aplica la regla 1 del backlog y un patrón ya decidido (Gate A de
+§9.1 de `AGENTS.md`: no hay decisión nueva).
+
+| Parámetro | Tipo | Qué hace |
+|---|---|---|
+| `desde` | `date`, opcional | Primer día del período, inclusive, en hora de Argentina. Si falta, `hasta` menos 30 días |
+| `hasta` | `date`, opcional | Último día del período, inclusive. Si falta, hoy |
+| `limite` | entero, opcional | Cuántas entregas como máximo, de 1 a 500. Si falta, 200 |
+
+| Respuesta | |
+|---|---|
+| Cuerpo | El arreglo de `EntregaMapaPublicoResponseDTO` de siempre, sin campos nuevos: las `ENTREGADA` con coordenadas cuya `hora_arribo` cae en el período, de la más reciente a la más vieja; a igual hora, por `idEntrega` |
+| `X-Total-Count` | Cuántas cumplen el período, sin el tope: un conteo en la base, no la lista contada |
+| 400 | `hasta` anterior a `desde`, una fecha que no se entiende o `limite` fuera de 1..500, con el error de validación del catálogo de Logística |
+| Sin parámetros | Los últimos 30 días, hasta 200. Deja de devolver la historia entera: el único consumidor es el cliente liviano, que ya se quedaba con 30 días. Si `oasdiff` lo marca, se anota en `cambios-incompatibles-aceptados.txt` |
+
+El período y el tope se resuelven en la consulta (no leer todas las `ENTREGADA` y filtrar en
+memoria, M4), en los dos adaptadores de persistencia (Postgres y Mongo). En Postgres, la migración
+siguiente de Logística (`V10`) suma el índice por `(estado, hora_arribo)`; en Mongo, el índice
+compuesto equivalente en `EntregaDocument`. Una `ENTREGADA` sin `hora_arribo` (no debería haber: se
+fija al confirmar, M6) no aparece en el mapa.
+
+El cliente liviano (`PublicoMapaRest`) pide `desde` y `hasta` del último mes y `limite=200`, lee
+`X-Total-Count` y deja de filtrar por fecha. Para paginar, la vista y el controlador del Mapa suman
+la página, el total de páginas y la página de cada lugar; esos archivos (`PublicoMapaController`,
+`PublicoMapaPuerto`, `PublicoMapaVista`, `PublicoMapaMaqueta`) no están en la lista del lote y se
+tocan porque son imprescindibles para paginar. `mapa.js` y `mapa.css` también los usa el
+Seguimiento del donante (M7): el cambio no puede romperlo, y la verificación visual mira también
+esa pantalla.
+
+Pruebas que pide el contrato: período por defecto y explícito, tope por defecto y explícito, orden,
+`X-Total-Count` mayor que lo devuelto, los tres 400, una entrega fuera del período y una sin
+coordenadas que no aparecen, en los dos adaptadores; en el cliente, que se pida con período y tope,
+que la cifra con tope use el total del header y que una página fuera de rango muestre la última.
+
+
+## Aprobación del diseño p1-mapa (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Con datos reales, Logística no dice qué entidad recibió cada entrega, así que la fila muestra el lugar (localidad) y la cantidad, no la entidad. Recomiendo dejarlo así en este lote y anotar en el backlog que mostrar la entidad necesita que el mapa público traiga la beneficiaria y cruzarla con las entidades públicas de Donaciones, lo que toca la privacidad de D24. **Resuelto: la opción recomendada.**
+2. No hay buscador en la lista, y con muchos lugares encontrar uno obliga a recorrer páginas. Recomiendo no sumarlo en este lote; si en la demo hay más de 3 páginas, que pase a P2. **Resuelto: la opción recomendada.**
+3. Sin parámetros, el endpoint deja de devolver toda la historia y devuelve los últimos 30 días. Recomiendo aceptarlo, porque el único consumidor es el cliente liviano y ya filtraba 30 días. Si oasdiff lo marca, se anota en cambios-incompatibles-aceptados.txt. **Resuelto: la opción recomendada.**

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Las donaciones del donante como las muestran el inicio y Seguimiento, armadas con lo mismo que
@@ -33,6 +35,20 @@ import java.util.stream.IntStream;
  * Logística de las que están en curso. Sin foto: la foto de la entidad la trae el detalle.
  */
 final class DonanteDonaciones {
+
+  /**
+   * Los estados de Donaciones sin entregar: lo que sigue Seguimiento. {@code EN_DEPOSITO} va porque
+   * de ahí salen la cifra "Esperan destino" y el pie con sus nombres.
+   */
+  private static final List<String> EN_CURSO =
+      List.of(
+          "EN_DEPOSITO",
+          "ASIGNACION_REALIZADA",
+          "LISTA_PARA_ENTREGAR",
+          "EN_TRASLADO",
+          "EN_PUERTA",
+          "ENTREGA_FALLIDA",
+          "VENCIDA");
 
   private DonanteDonaciones() {}
 
@@ -46,7 +62,44 @@ final class DonanteDonaciones {
         api.donaciones(donante).stream()
             .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
             .toList();
-    Map<UUID, String> entidades = DonacionesRest.nombresDeEntidades(api, lista);
+    return vistas(lista, DonacionesRest.nombresDeEntidades(api, lista), seguimientos, hoy);
+  }
+
+  /**
+   * Las que Seguimiento puede mostrar (R11-13, duda 2 de la spec p1-donante-listas): las que
+   * todavía no se entregaron, pedidas al servidor por estado. Las que van en curso salen en la
+   * lista y el mapa; las que están en el depósito, en la cifra y el pie de las que esperan destino.
+   * Así la página del tope ({@link DonacionesApi#TOPE}) ya no se llena de entregadas.
+   */
+  static List<DonanteDonacionVista> enCurso(
+      DonacionesApi api,
+      UUID donante,
+      Map<UUID, LogisticaApi.Seguimiento> seguimientos,
+      LocalDate hoy) {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("donanteId", donante.toString());
+    EN_CURSO.forEach(e -> filtros.add("estado", e));
+    filtros.add("page", "0");
+    filtros.add("size", String.valueOf(DonacionesApi.TOPE));
+    List<DonacionesApi.Donacion> pagina = api.pagina(filtros).getBody();
+    List<DonacionesApi.Donacion> lista =
+        pagina == null
+            ? List.of()
+            : pagina.stream()
+                .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
+                .toList();
+    return vistas(lista, DonacionesRest.nombresDeEntidades(api, lista), seguimientos, hoy);
+  }
+
+  /**
+   * Las de {@code lista}, en su orden, con los nombres de {@code entidades} ya leídos (el inicio de
+   * la persona las pide de a un mes y lee los nombres una sola vez).
+   */
+  static List<DonanteDonacionVista> vistas(
+      List<DonacionesApi.Donacion> lista,
+      Map<UUID, String> entidades,
+      Map<UUID, LogisticaApi.Seguimiento> seguimientos,
+      LocalDate hoy) {
     return IntStream.range(0, lista.size())
         .mapToObj(
             i ->
@@ -68,7 +121,7 @@ final class DonanteDonaciones {
     Categoria categoria = categoria(d);
     String estado = normalizado(d.estadoActual());
     String destino = entidades.get(d.entidadBeneficiariaId());
-    String entidad = destino == null ? "la entidad" : destino;
+    String entidad = destino == null ? "la organización" : destino;
     LocalDateTime desde = desde(d, estado);
     return new DonanteDonacionVista(
         d.id().toString(),

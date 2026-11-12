@@ -95,7 +95,7 @@ public class EntidadEnviosController {
     } catch (HttpClientErrorException.Conflict otraPersona) {
       return Envios.listo(
           NECESIDADES + "?necesidad=" + clave + "#" + clave,
-          "Otra persona de tu entidad cambió esta necesidad mientras la editabas. Revisala y, si"
+          "Otra persona de tu organización cambió esta necesidad mientras la editabas. Revisala y, si"
               + " hace falta, guardá tus cambios de nuevo.",
           atributos);
     }
@@ -150,7 +150,8 @@ public class EntidadEnviosController {
 
   /**
    * La bandeja: el tilde de una fila ({@code marcar}) o la de dejarla sin leer ({@code no-leer}), o
-   * el botón de la cabecera con las elegidas (sin ninguna, todas).
+   * el botón de la cabecera con las elegidas (sin ninguna, todas). Vuelve a la misma página, con
+   * sus filtros (R11-14).
    */
   @PostMapping("/entidad-notificaciones-leidas")
   String marcar(
@@ -163,13 +164,14 @@ public class EntidadEnviosController {
     if (entidad == null) {
       return Entidad.INGRESAR;
     }
+    String volver = BandejaDeNotificaciones.volver("entidad-notificaciones", pedido);
     if (noLeer != null) {
       notificaciones.dejarSinLeer(noLeer);
-      return Envios.listo("entidad-notificaciones", "Dejaste la novedad sin leer.", atributos);
+      return Envios.listo(volver, "Dejaste la novedad sin leer.", atributos);
     }
     notificaciones.marcarLeidas(
         entidad, marcar != null ? List.of(marcar) : (elegidas == null ? List.of() : elegidas));
-    return Envios.listo("entidad-notificaciones", "Marcaste las novedades como leídas.", atributos);
+    return Envios.listo(volver, "Marcaste las novedades como leídas.", atributos);
   }
 
   /**

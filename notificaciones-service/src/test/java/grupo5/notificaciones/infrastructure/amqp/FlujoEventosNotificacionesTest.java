@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import grupo5.notificaciones.controllers.NotificacionController;
 import grupo5.notificaciones.dto.ConteoNoLeidasDTO;
+import grupo5.notificaciones.dto.FiltroBandeja;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
@@ -121,7 +122,7 @@ class FlujoEventosNotificacionesTest {
     assertEquals(4, conteoDonante.getBody().noLeidas());
 
     ResponseEntity<List<NotificacionDTO>> notificacionesDonante =
-        notificacionController.obtenerPorPersona(donante.getId(), false);
+        notificacionController.obtenerPorPersona(donante.getId(), FiltroBandeja.deLectura(false));
     List<NotificacionDTO> listaDonante = notificacionesDonante.getBody();
     assertNotNull(listaDonante);
     assertEquals(4, listaDonante.size());
@@ -157,9 +158,17 @@ class FlujoEventosNotificacionesTest {
     notificacionController.marcarTodasComoLeidas(donante.getId());
     assertEquals(0, notificacionController.contarNoLeidas(donante.getId()).getBody().noLeidas());
     assertEquals(
-        0, notificacionController.obtenerPorPersona(donante.getId(), false).getBody().size());
+        0,
+        notificacionController
+            .obtenerPorPersona(donante.getId(), FiltroBandeja.deLectura(false))
+            .getBody()
+            .size());
     assertEquals(
-        4, notificacionController.obtenerPorPersona(donante.getId(), true).getBody().size());
+        4,
+        notificacionController
+            .obtenerPorPersona(donante.getId(), FiltroBandeja.deLectura(true))
+            .getBody()
+            .size());
 
     // --- VERIFICACIÓN ENTIDAD BENEFICIARIA ---
     // La entidad beneficiaria debe tener exactamente 2 notificaciones (Asignación y Recepción)
@@ -169,7 +178,8 @@ class FlujoEventosNotificacionesTest {
     assertEquals(2, conteoBeneficiario.getBody().noLeidas());
 
     ResponseEntity<List<NotificacionDTO>> notificacionesBeneficiario =
-        notificacionController.obtenerPorPersona(beneficiario.getId(), false);
+        notificacionController.obtenerPorPersona(
+            beneficiario.getId(), FiltroBandeja.deLectura(false));
     List<NotificacionDTO> listaBeneficiario = notificacionesBeneficiario.getBody();
     assertNotNull(listaBeneficiario);
     assertEquals(2, listaBeneficiario.size());

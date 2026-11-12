@@ -12,7 +12,7 @@
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+      th:replace="~{${marco ?: 'layout-publico'} :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
 <head>
   <title>Contacto - DonaTrack</title>
 </head>
@@ -67,7 +67,7 @@
           <option value="">Elegí uno</option>
           <option>Una entrega</option>
           <option>Una donación</option>
-          <option>Una necesidad de mi entidad</option>
+          <option>Una necesidad de mi organización</option>
           <option>Mi cuenta</option>
           <option th:selected="${codigo != '' or escrito}">Algo del sitio no anduvo</option>
           <option>Otra cosa</option>
@@ -112,7 +112,7 @@
            th:src="@{/img/ilustraciones/paso-1-semillas.svg}" alt="" width="94" height="104"></div>
       <h2 id="lamina-titulo">Cuándo escribirnos</h2>
       <ul>
-        <li>Querés sumar tu entidad al mapa.</li>
+        <li>Querés sumar tu organización al mapa.</li>
         <li>Querés donar con tu empresa.</li>
         <li>Pasó algo con una entrega o con el sitio.</li>
       </ul>

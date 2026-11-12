@@ -1,6 +1,7 @@
 package grupo5.logistica.services;
 
 import grupo5.logistica.dto.entregas.*;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,7 +11,13 @@ public interface IEntregasService {
 
   List<EntregaResponseDTO> listar();
 
-  List<EntregaMapaPublicoResponseDTO> listarMapaPublico();
+  /**
+   * El mapa público (RF-02, R11-19): las entregadas con coordenadas de {@code desde} a {@code
+   * hasta} (días inclusive, en hora de Argentina), de la más reciente a la más vieja y como mucho
+   * {@code limite}, con cuántas hay sin el tope. Sin {@code hasta}, hoy; sin {@code desde}, {@code
+   * hasta} menos 30 días; sin {@code limite}, 200 (de 1 a 500).
+   */
+  EntregasDelMapaPublico listarMapaPublico(LocalDate desde, LocalDate hasta, Integer limite);
 
   EntregaResponseDTO obtenerPorId(UUID id);
 

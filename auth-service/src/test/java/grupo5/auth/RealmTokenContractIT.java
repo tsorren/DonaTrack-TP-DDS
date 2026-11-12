@@ -326,6 +326,42 @@ class RealmTokenContractIT {
     assertEquals(List.of("ADMIN"), nombresDeRoles(admin(base + "/role-mappings/realm/composite")));
   }
 
+  // R11-10: las cuentas de administración se marcan con un atributo que solo ve la administración
+  // del realm; el sitio las lista y las cuenta por esa marca, de a una página.
+  @Test
+  void elAdminInicialEstaMarcadoComoCuentaDeAdministracion() throws Exception {
+    String id = idDelUsuario(ADMIN_DONATRACK_EMAIL);
+    JsonNode usuario = admin("/admin/realms/" + REALM + "/users/" + id);
+    assertEquals(List.of("si"), valores(usuario.get("attributes").get("administracion")));
+
+    String ruta = "/admin/realms/" + REALM + "/users";
+    String marca = "?q=" + URLEncoder.encode("administracion:si", StandardCharsets.UTF_8);
+    JsonNode pagina = admin(ruta + marca + "&first=0&max=10&briefRepresentation=false");
+    assertEquals(1, pagina.size(), pagina.toString());
+    assertEquals(id, pagina.get(0).get("id").asText());
+    assertEquals(1, admin(ruta + "/count" + marca).asInt());
+  }
+
+  @Test
+  void laMarcaDeAdministracionYQuienDioElAltaSoloLasVeLaAdministracionDelRealm() throws Exception {
+    JsonNode perfil = admin("/admin/realms/" + REALM + "/users/profile");
+    for (String nombre : List.of("administracion", "altaPor")) {
+      JsonNode permisos = atributo(perfil, nombre).get("permissions");
+      assertEquals(List.of("admin"), valores(permisos.get("view")), nombre);
+      assertEquals(List.of("admin"), valores(permisos.get("edit")), nombre);
+    }
+  }
+
+  @Test
+  void laMarcaDeAdministracionNoViajaEnElToken() throws Exception {
+    JsonNode login = iniciarSesionYCanjearElCodigo(ADMIN_DONATRACK_EMAIL, ADMIN_DONATRACK_CLAVE);
+    for (String token : List.of("access_token", "id_token")) {
+      JsonNode claims = claims(login.get(token).asText());
+      assertFalse(claims.has("administracion"), token);
+      assertFalse(claims.has("altaPor"), token);
+    }
+  }
+
   @Test
   void laClaveDelAdminSalioDeLaVariableYNoDelLiteral() throws Exception {
     JsonNode login = iniciarSesionYCanjearElCodigo(ADMIN_DONATRACK_EMAIL, ADMIN_DONATRACK_CLAVE);

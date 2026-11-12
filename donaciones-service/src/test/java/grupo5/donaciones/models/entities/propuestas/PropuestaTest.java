@@ -314,4 +314,53 @@ class PropuestaTest {
     assertEquals(
         1, snapshot.size(), "El snapshot defensivo tomado no debe mutar tras clearDomainEvents()");
   }
+
+  @Test
+  void aceptar_guardaQuienYCuandoDecidio() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+
+    propuesta.aceptar("sub-de-ana");
+
+    assertEquals("sub-de-ana", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
+  }
+
+  @Test
+  void aceptar_sinActor_quedaDecididaPorSistema() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+
+    propuesta.aceptar(null);
+
+    assertEquals("SISTEMA", propuesta.getDecididaPor());
+  }
+
+  @Test
+  void rechazar_guardaQuienYCuandoDecidio() {
+    Propuesta propuesta = new Propuesta();
+
+    propuesta.rechazar("sub-de-carla");
+
+    assertEquals(EstadoPropuesta.DESCARTADA, propuesta.getEstado());
+    assertEquals("sub-de-carla", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
+  }
+
+  @Test
+  void unaPropuestaPendiente_noTieneDecision() {
+    Propuesta propuesta = new Propuesta();
+
+    assertNull(propuesta.getDecididaPor());
+    assertNull(propuesta.getFechaDecision());
+  }
+
+  @Test
+  void rechazar_unaYaDecidida_noCambiaQuienDecidio() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.rechazar("sub-de-carla");
+
+    assertThrows(BusinessStateException.class, () -> propuesta.rechazar("sub-de-ana"));
+    assertEquals("sub-de-carla", propuesta.getDecididaPor());
+  }
 }

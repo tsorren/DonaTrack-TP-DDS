@@ -606,17 +606,7 @@
           ],
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/asignaciones/propuestas",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "asignaciones",
-                "propuestas"
-              ]
-            }
+            "url": "{{baseUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           }
         },
         {
@@ -1186,17 +1176,7 @@
           ],
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/asignaciones/propuestas",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "asignaciones",
-                "propuestas"
-              ]
-            },
+            "url": "{{baseUrl}}/api/asignaciones/propuestas?orden=reciente&size=100",
             "description": "A propósito NO se aprueba esta propuesta: mientras esté PENDIENTE, la DonacionIndependiente sigue en EN_DEPOSITO, que es el único estado desde el que se puede vencer."
           }
         },

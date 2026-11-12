@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -47,6 +48,7 @@ import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.EntregaMother;
@@ -64,6 +66,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @SuppressWarnings("java:S120")
 @ExtendWith(MockitoExtension.class)
@@ -568,5 +572,38 @@ class RepositoriosMongoAdaptersTest {
 
   private static EntregaFallida entregaFallida(String justificacion) {
     return new EntregaFallida(UUID.randomUUID(), UUID.randomUUID(), justificacion, true);
+  }
+
+  @Test
+  void entregasMongoAdapter_paraElMapa_pideElPeriodoOrdenadoYConTopeYCuentaEnLaBase() {
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    EntregaDocument doc =
+        entregaMapper.toDocument(
+            EntregaMother.entregadaEl(
+                Instant.parse("2026-11-01T15:00:00Z"), new CoordenadasGeograficas(-34.6, -58.4)));
+    ArgumentCaptor<Pageable> pagina = ArgumentCaptor.forClass(Pageable.class);
+    when(entregaRepo.buscarParaMapa(
+            eq(EstadoEntrega.ENTREGADA), eq(desde), eq(hasta), pagina.capture()))
+        .thenReturn(List.of(doc));
+    when(entregaRepo.contarParaMapa(EstadoEntrega.ENTREGADA, desde, hasta)).thenReturn(340L);
+
+    List<Entrega> resultado = entregas.findEntregadasParaMapa(desde, hasta, 200);
+
+    assertEquals(List.of(doc.getId()), resultado.stream().map(Entrega::getId).toList());
+    assertEquals(0, pagina.getValue().getPageNumber());
+    assertEquals(200, pagina.getValue().getPageSize());
+    assertEquals(
+        Sort.by(Sort.Order.desc("horaArribo"), Sort.Order.asc("id")), pagina.getValue().getSort());
+    assertEquals(340L, entregas.contarEntregadasParaMapa(desde, hasta));
+  }
+
+  @Test
+  void entregasMongoAdapter_paraElMapa_sinPeriodoOConTopeCero_devuelveVacioSinConsultar() {
+    Instant hoy = Instant.parse("2026-11-12T03:00:00Z");
+    assertTrue(entregas.findEntregadasParaMapa(null, hoy, 10).isEmpty());
+    assertTrue(entregas.findEntregadasParaMapa(hoy, hoy, 0).isEmpty());
+    assertEquals(0, entregas.contarEntregadasParaMapa(hoy, null));
+    verify(entregaRepo, never()).buscarParaMapa(any(), any(), any(), any());
   }
 }

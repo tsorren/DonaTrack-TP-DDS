@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<!--/* Administradores (R11-10, ficha docs/interfaz/flujos/r11-p1-admins.md §4.2): quienes pueden
+       administrar DonaTrack, de a 10 por página y con el total del servicio, sin buscador (son pocas
+       cuentas). En el escritorio, una tabla; en 360 px, la misma tabla como tarjetas (.tabla con
+       data-rotulo). "Dar de alta un administrador" abre una ventana (popover) con el formulario;
+       con un error de datos o del servicio, con HTMX vuelve solo el formulario (fragmento ventana) y
+       reemplaza al de la ventana, que sigue abierta; sin JavaScript, vuelve en su página aparte
+       (admin-administradores-nuevo).
+       "Generar otra contraseña provisoria" está solo en las cuentas que todavía no entraron y pide
+       confirmar en otra ventana, porque la anterior deja de servir.
+       El modelo (web.AdminAdministradoresController): filas (List<Fila>, o null si el servicio no
+       respondió), total (el del servicio), paginador (null con una sola página), codigo (el de
+       soporte) y errores (vacío: el formulario de la ventana arranca limpio).
+       Fragmentos:
+       - formulario(enDialogo): el alta; lo usa también admin-administradores-nuevo.
+       - ventana: el formulario de la ventana solo, para la respuesta HTMX de un alta con error. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Administradores - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1 id="lista-titulo" tabindex="-1">Administradores</h1>
+        <p>Quienes pueden administrar DonaTrack. Cada uno entra con su cuenta, y lo que aprueba queda a su
+          nombre.</p>
+      </div>
+      <div th:if="${filas != null}" class="racimo">
+        <button type="button" class="boton" data-tono="principal" popovertarget="alta-administrador">Dar de
+          alta un administrador</button>
+      </div>
+    </header>
+
+    <section th:if="${filas == null}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos traer las cuentas de administración ahora.</h2>
+      <p>Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto"
+           th:href="@{/publico-contacto(codigo=${codigo},volver='/admin-administradores')}">escribinos con
+          este código</a>.</p>
+      <p th:if="${codigo}" class="aviso-codigo">Código: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-administradores"
+         th:href="@{/admin-administradores}">Volver a cargar</a>
+    </section>
+
+    <dialog th:if="${filas != null}" class="dialogo" id="alta-administrador" popover
+            aria-labelledby="alta-titulo">
+      <h2 class="dialogo-titulo" id="alta-titulo">Dar de alta un administrador</h2>
+      <th:block th:replace="~{admin-administradores :: formulario(true)}"></th:block>
+    </dialog>
+
+    <section th:if="${filas != null}" class="pila" data-espacio="3" aria-labelledby="lista-titulo">
+      <p th:text="${total == 1} ? 'Hay 1 cuenta de administración: la tuya.' : |Son ${#numbers.formatInteger(total, 1, 'POINT')} cuentas de administración.|">Son
+        3 cuentas de administración.</p>
+      <table class="tabla">
+        <caption class="solo-lectores">Cuentas de administración</caption>
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Correo</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Creada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="c : ${filas}">
+            <th scope="row"><th:block th:text="${c.nombre} ?: 'Sin nombre cargado'">Ana Pérez</th:block><th:block
+                th:if="${c.propia}"> · Vos</th:block></th>
+            <td data-rotulo="Correo" th:text="${c.correo}">ana.perez@ejemplo.org</td>
+            <td data-rotulo="Estado">
+              <th:block th:text="${c.entro} ? 'Activa' : 'Todavía no entró'">Activa</th:block>
+              <th:block th:unless="${c.entro}">
+                <br>
+                <button type="button" class="boton" data-tono="secundario" data-tamano="chico"
+                        th:attr="popovertarget=|otra-${c.id}|" popovertarget="otra-cuenta"
+                >Generar otra contraseña provisoria</button>
+                <dialog class="dialogo" id="otra-cuenta" th:id="|otra-${c.id}|" popover
+                        th:attr="aria-labelledby=|otra-titulo-${c.id}|" aria-labelledby="otra-titulo">
+                  <h2 class="dialogo-titulo" id="otra-titulo" th:id="|otra-titulo-${c.id}|"
+                      th:text="|¿Generar otra contraseña para ${c.nombre ?: c.correo}?|">¿Generar otra contraseña
+                    para Bruno Díaz?</h2>
+                  <p>La que le diste antes deja de servir.</p>
+                  <form class="racimo" action="/admin-administradores-contrasena"
+                        th:action="@{/admin-administradores-contrasena}" method="post">
+                    <input type="hidden" name="cuenta" th:value="${c.id}">
+                    <button type="button" class="boton" data-tono="secundario"
+                            th:attr="popovertarget=|otra-${c.id}|" popovertarget="otra-cuenta"
+                            popovertargetaction="hide">Cancelar</button>
+                    <button class="boton" data-tono="principal" type="submit">Generar otra contraseña</button>
+                  </form>
+                </dialog>
+              </th:block>
+            </td>
+            <td data-rotulo="Creada" th:text="${c.creada} ?: '—'">12 de noviembre de 2026</td>
+          </tr>
+        </tbody>
+      </table>
+      <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+    </section>
+  </div>
+</th:block>
+
+<!--/* La respuesta HTMX de un alta con error: el formulario de la ventana, con lo escrito y el error
+       junto al campo. El controller lo manda a reemplazar #alta-formulario (HX-Retarget). */-->
+<th:block th:fragment="ventana">
+  <th:block th:replace="~{admin-administradores :: formulario(true)}"></th:block>
+</th:block>
+
+<!--/* El alta: nombre, apellido y correo. Va al POST real (admin-administradores); con un error de
+       datos o del servicio vuelve con lo escrito y el error junto al campo: con HTMX, en la ventana
+       abierta (fragmento ventana); sin JavaScript, en la página aparte. */-->
+<form th:fragment="formulario(enDialogo)" id="alta-formulario" class="pila" data-espacio="3"
+      th:classappend="${enDialogo} ? '' : 'formulario tarjeta'"
+      th:with="eNombre=${errores != null ? errores['nombre'] : null},
+               eApellido=${errores != null ? errores['apellido'] : null},
+               eCorreo=${errores != null ? errores['correo'] : null}"
+      action="/admin-administradores" th:action="@{/admin-administradores}" method="post" hx-boost="true"
+      hx-indicator="#enviando-admin-administradores" hx-disinherit="hx-indicator hx-select-oob" novalidate>
+  <p>Va a poder hacer todo lo que hacés vos: aprobar organizaciones y asignaciones, registrar donaciones y
+    dar de alta a otros.</p>
+  <section th:if="${errorAlta}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
+           aria-labelledby="error-alta-titulo">
+    <h2 id="error-alta-titulo">No pudimos dar de alta la cuenta. No se creó nada.</h2>
+    <p>Probá de nuevo en unos minutos; si sigue,
+      <a href="/publico-contacto"
+         th:href="@{/publico-contacto(codigo=${codigo},volver='/admin-administradores')}">escribinos con este
+        código</a>.</p>
+    <p th:if="${codigo}" class="aviso-codigo">Código: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
+  </section>
+  <div class="grilla" data-espacio="3">
+    <div class="campo" th:data-estado="${eNombre != null} ? 'error'">
+      <label for="alta-nombre">Nombre</label>
+      <p th:if="${eNombre}" id="alta-nombre-error" class="campo-error" th:text="${eNombre}">Escribí el nombre.</p>
+      <input id="alta-nombre" name="nombre" type="text" required maxlength="255" autocomplete="off"
+             th:value="${nombre}" th:autofocus="${eNombre != null}"
+             th:attr="aria-describedby=${eNombre != null} ? 'alta-nombre-error' : null,aria-invalid=${eNombre != null} ? 'true' : null">
+    </div>
+    <div class="campo" th:data-estado="${eApellido != null} ? 'error'">
+      <label for="alta-apellido">Apellido</label>
+      <p th:if="${eApellido}" id="alta-apellido-error" class="campo-error" th:text="${eApellido}">Escribí el
+        apellido.</p>
+      <input id="alta-apellido" name="apellido" type="text" required maxlength="255" autocomplete="off"
+             th:value="${apellido}" th:autofocus="${eNombre == null and eApellido != null}"
+             th:attr="aria-describedby=${eApellido != null} ? 'alta-apellido-error' : null,aria-invalid=${eApellido != null} ? 'true' : null">
+    </div>
+    <div class="campo" th:data-estado="${eCorreo != null} ? 'error'">
+      <label for="alta-correo">Correo</label>
+      <small id="alta-correo-ayuda">Con este correo va a entrar.</small>
+      <p th:if="${eCorreo}" id="alta-correo-error" class="campo-error" th:text="${eCorreo}">Revisá el correo.</p>
+      <input id="alta-correo" name="correo" type="email" required maxlength="255" autocomplete="off"
+             th:value="${correo}" th:autofocus="${eNombre == null and eApellido == null and eCorreo != null}"
+             aria-describedby="alta-correo-ayuda"
+             th:attr="aria-describedby=${eCorreo != null} ? 'alta-correo-ayuda alta-correo-error' : 'alta-correo-ayuda',aria-invalid=${eCorreo != null} ? 'true' : null">
+    </div>
+  </div>
+  <p>Le damos una contraseña provisoria para su primer ingreso. Ahí va a elegir la suya.</p>
+  <div class="racimo">
+    <button th:if="${enDialogo}" type="button" class="boton" data-tono="secundario"
+            popovertarget="alta-administrador" popovertargetaction="hide">Cancelar</button>
+    <a th:unless="${enDialogo}" class="boton" data-tono="secundario" href="/admin-administradores"
+       th:href="@{/admin-administradores}">Cancelar</a>
+    <button class="boton" data-tono="principal" type="submit">Dar de alta</button>
+  </div>
+  <p th:replace="~{envio :: indicador('enviando-admin-administradores', 'Dando de alta…')}"></p>
+</form>
+</body>
+</html>

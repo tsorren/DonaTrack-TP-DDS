@@ -133,7 +133,7 @@ class PublicoMaqueta implements PublicoPuerto {
   public List<PublicoCifra> cifrasDePortada() {
     return List.of(
         new PublicoCifra(ENTREGAS, "Entregas confirmadas"),
-        new PublicoCifra(ENTIDADES, "Entidades en el mapa"),
+        new PublicoCifra(ENTIDADES, "Organizaciones en el mapa"),
         new PublicoCifra("32", "Donaciones en camino ahora"));
   }
 
@@ -141,7 +141,7 @@ class PublicoMaqueta implements PublicoPuerto {
   public List<PublicoCifra> cifrasDeNosotros() {
     return List.of(
         new PublicoCifra(ENTREGAS, "Entregas confirmadas desde marzo de 2026"),
-        new PublicoCifra(ENTIDADES, "Entidades en el mapa"),
+        new PublicoCifra(ENTIDADES, "Organizaciones en el mapa"),
         new PublicoCifra("318", "Donantes con al menos una donación desde marzo de 2026"));
   }
 }

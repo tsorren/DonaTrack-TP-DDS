@@ -31,6 +31,656 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · público · Portada con sesión: la cuenta se ve en todo lo público, no solo en la portada
+
+- **Decisión:** con la sesión iniciada, la portada y todas las públicas que usan `layout-publico`
+  (Entregas confirmadas, Mapa, Organizaciones, Nosotros, las dos landings y Legales) muestran la
+  cuenta en lugar de "Ingresar" y "Crear una cuenta" (R11-15, lote `p1-portada`).
+- **Alternativas:** solo la portada.
+- **Por qué:** el problema ("si voy al home me salgo") vuelve al primer clic en cualquier pública.
+- **Costo:** no hay capturas de la portada con sesión ni del ancho de 768 px
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1).
+- **Quién decidió:** usuario (regla general 6 y "la misma portada", sección 3 del backlog); bajarlo a
+  todo lo público, agente en la ficha [r11-p1-portada](flujos/r11-p1-portada.md) §9.1, aprobada
+  por el usuario con las opciones recomendadas.
+
+### 2026-11-12 · público · Portada con sesión: navegación pública más la cuenta, no el marco del rol
+
+- **Decisión:** con sesión, lo público conserva su navegación (Entregas confirmadas, Mapa,
+  Organizaciones) y cambia "Ingresar" y "Crear una cuenta" por "Ir a mi inicio", destacado ("Mi
+  inicio" en la barra del celular), y la foto con el menú de la cuenta.
+- **Alternativas:** el marco privado del rol, como en las páginas de error y Contacto.
+- **Por qué:** la decisión del usuario es "la misma portada", y lo público tiene sus propios destinos.
+- **Costo:** con sesión hay dos encabezados: el del rol en errores y Contacto, y el público con la
+  cuenta en la portada y las públicas.
+- **Quién decidió:** agente, en la ficha (§9.2), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · público · La cuenta pendiente ve "Ver mi solicitud" en lo público
+
+- **Decisión:** la organización con la solicitud pendiente también ve su cuenta en lo público, con
+  "En revisión" debajo del nombre y "Ver mi solicitud" ("Mi solicitud" en el celular) en lugar de
+  "Ir a mi inicio".
+- **Alternativas:** "Ir a mi inicio" para todos, que llevaría igual a la solicitud.
+- **Por qué:** la cuenta pendiente no tiene inicio; prometerlo confunde. Cumple la regla 6 y lo que
+  R11-08 le dejaba a este lote.
+- **Costo:** en "Recibimos la solicitud", "Ver mi solicitud" apunta a la misma página y no se marca
+  como la actual ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1).
+- **Quién decidió:** agente, en la ficha (§9.3), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · público · La cuenta en lo público sale solo de la sesión, sin campanita
+
+- **Decisión:** el encabezado público con sesión no pide nada a ningún servicio: no tiene campanita
+  y arma la cuenta con lo que ya está en la sesión (`CuentasDelMenu.deLaSesion` y
+  `AreaDeLaSesion.pendiente`). Si el nombre todavía no quedó guardado, el menú dice "Tu cuenta",
+  como en errores y Contacto. Si la cuenta no se puede armar, la página sale con el encabezado de
+  visitante.
+- **Alternativas:** la campanita con el número de avisos; pedir el nombre a Donaciones o a Keycloak
+  al cargar la portada (`CuentasDelMenu.de()`).
+- **Por qué:** la portada no se tiene que caer ni frenar porque falle un servicio.
+- **Costo:** sin la campanita, los avisos sin leer no se ven desde lo público. Con ingreso real, si
+  la portada es la primera página después del login, el menú dice "Tu cuenta" hasta entrar a una
+  página privada. El error al armar la cuenta se calla sin registro.
+- **Quién decidió:** agente: la campanita, en la ficha (§9.4), aprobada por el usuario; usar
+  `deLaSesion` en lugar de `de()`, el constructor sin consulta (lote `p1-portada`).
+
+### 2026-11-12 · público · Portada con sesión: los botones de registro quedan como están
+
+- **Decisión:** con la sesión iniciada, "Quiero donar", "Soy una organización", los de "¿Qué planta
+  sos vos?" y los del cierre de la portada no cambian.
+- **Alternativas:** cambiarlos por "Ir a mi inicio" con sesión.
+- **Por qué:** la decisión fue "la misma portada" y esos botones ya llevan al inicio del área;
+  cambiarlos tocaba fragmentos de `huerta.html` fuera de Bajo tierra.
+- **Costo:** quien dona y toca "Quiero donar" con la sesión abierta va a su inicio sin aviso; conviene
+  probarlo con personas.
+- **Quién decidió:** agente, duda 1 de la ficha (§9.5), resuelta con la opción recomendada por pedido
+  del usuario.
+
+### 2026-11-12 · público · La marca de la portada dice "ir a la portada" y la cuenta sin perfil no cambia
+
+- **Decisión:** el logo de la portada se anuncia como "DonaTrack, ir a la portada", como en el resto
+  de las públicas. La cuenta sin perfil sigue como estaba: no llega a la portada y su registro ya
+  tiene "Cerrar sesión".
+- **Alternativas:** dejar "ir al inicio" en la portada; mostrar la cuenta también sin perfil.
+- **Por qué:** con sesión, "inicio" ahora es "Mi inicio", y el mismo nombre para dos lugares
+  confunde. La cuenta sin perfil no tiene dónde ir.
+- **Costo:** ninguno.
+- **Quién decidió:** agente, en la ficha (§9.6 y §9.8), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · componentes · El menú de la cuenta pasa a un fragmento compartido, con "Administradores"
+
+- **Decisión:** el menú de la foto de la cuenta es un fragmento, `cuenta-menu :: menu`, que usan la
+  cabecera privada (`layout-privado`) y la pública con sesión. El enlace "Administradores" de
+  `p1-admins` va dentro del fragmento, con la misma condición: solo si Mi perfil termina en
+  `/admin-perfil`.
+- **Alternativas:** dejar el bloque `<details>` duplicado en `layout-privado` y en la cabecera
+  pública.
+- **Por qué:** el mismo menú en los dos lados, escrito una sola vez. Al integrar, el primer intento
+  chocó justo ahí con "Administradores".
+- **Costo:** ninguno en pantalla; `PortadaConSesionMaquetaTest` ahora exige Mi perfil y
+  "Administradores" en la administración, y que la organización no tenga "Administradores".
+- **Quién decidió:** agente, sin consulta, al integrar `p1-portada` (`9c0a589eb`).
+
+### 2026-11-12 · público · Bajo tierra: cada rótulo con su franja y la letra con techo
+
+- **Decisión:** desde 600 px, cada rótulo de Bajo tierra tiene un ancho tope en % del dibujo, corta
+  por palabras sin guion y crece hacia la tierra libre; la letra crece con el dibujo, pero menos y con
+  techo (`clamp(0.875rem, 2.6cqi, 2rem)`); el área táctil de "Tu organización" no corre el texto.
+  `BajoTierraRotulosTest` mide en un navegador que los rótulos no se crucen de 600 a 1920 px, con
+  una letra de respaldo más ancha (Verdana) para cubrir el peor caso (R11-17).
+- **Alternativas:** los rótulos como `<text>` dentro del SVG (no corta en renglones y pierde la lista
+  para los lectores); líneas de llamada hacia los costados (cambia el dibujo de la diseñadora); subir
+  el punto de quiebre a 900 px (esconde el dibujo en las tabletas y no arregla el choque).
+- **Por qué:** el choque depende del largo del texto, y con "Tu organización" y "Organizaciones
+  religiosas" los textos se alargaron.
+- **Costo:** la medición usa la caja del elemento y no suma el contorno de la letra; falta sumarlo o
+  explicarlo en el Javadoc ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1).
+- **Quién decidió:** agente, en la ficha (§9.7, sección 4), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · público · Bajo tierra: "Centros comunitarios" con franja de 26 %, no 22 %
+
+- **Decisión:** la franja de "Centros comunitarios" quedó en 26 % del dibujo
+  (`huerta.css`, `[data-lugar="comunitarios"]`); la tabla de la ficha §4 decía 22 %.
+- **Alternativas:** el 22 % de la ficha.
+- **Por qué:** la ficha da los valores como punto de partida y permite ajustarlos con la medición del
+  constructor (`BajoTierraRotulosTest`). La ficha no se reescribe.
+- **Costo:** ninguno; el ajuste no estaba registrado hasta esta entrada.
+- **Quién decidió:** agente, sin consulta (constructor del lote `p1-portada`).
+
+### 2026-11-12 · proceso · Cierre de P1: las demos de /estilos que necesitan ancho ocupan la pantalla
+
+- **Decisión:** las demostraciones de `/estilos` que se arman en varias columnas (la libreta del
+  mes, la bandeja de la organización y su fila paginada, la flota, lo de bajo tierra, los
+  segmentos, el maestro) llevan `data-ancho="pantalla"`: ancho mínimo desde la tableta y la ficha
+  se desplaza de costado. La tabla pasa a todo el ancho, como el paginador, y la ficha que se
+  desplaza va con `position: relative` para que el texto para lectores no se escape.
+- **Alternativas:** dejarlas en la celda angosta del catálogo; sacarlas de la verificación visual.
+- **Por qué:** en la celda angosta sus enlaces medían 15, 16 o 24 px y la página quedaba más ancha
+  que la pantalla entre 1024 y 1440 px: 32 fallas de la verificación visual, solo en el catálogo.
+- **Costo:** ninguno en el sitio; las pantallas reales no cambian. `/estilos` sigue desbordando
+  1 px a 320 px, debajo del piso de 360 ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 15).
+- **Quién decidió:** agente, sin consulta, en el cierre de la oleada (`1606a7a60` y `0edf2811d`).
+
+### 2026-11-12 · admin · Asignaciones: los textos de la ficha con "organización" y el panel al final en el celular
+
+- **Decisión:** los textos de Asignaciones son los de la ficha `r11-p1-asignaciones`, salvo que
+  dicen "organización" donde la ficha decía "entidad" (escenario A15 de la spec, con R11-44). En el
+  celular, el panel "Estado de la asignación" quedó al final de la página; la ficha lo ponía arriba,
+  en una línea.
+- **Alternativas:** los textos literales de la ficha, con "entidad"; el panel arriba, como la ficha.
+- **Por qué:** "organización" es la palabra del sitio desde `p1-nombres`; el panel al final es lo
+  que dejó el constructor, no una elección contra la ficha.
+- **Costo:** el panel arriba queda por hacer, con la pista de que las pestañas se deslizan a 360 px
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 12).
+- **Quién decidió:** usuario ("Organización", R11-44); el panel al final, el agente sin consulta
+  (lote `p1-asignaciones`).
+
+### 2026-11-12 · importador · El CSV se lee de a 500 filas y el aviso de bienvenida se reintenta hasta 10 veces
+
+- **Decisión:** el importador lee el CSV de donantes de a tandas de 500, sin cargarlo entero.
+  Notificaciones, cuando el aviso de bienvenida llega antes que la persona, devuelve el mensaje a
+  la cola hasta 10 veces, contadas por `messageId`; después va a la cola de mensajes muertos.
+- **Alternativas:** leer el archivo entero en memoria (lo de P0); mandar el aviso a la cola de
+  muertos la primera vez; reintentar sin tope.
+- **Por qué:** con 20.000 filas el archivo entero pesa en la memoria de Donaciones, y el aviso no
+  se tiene que perder porque `persona.sincronizada` llegue un poco después; un mensaje roto no tiene
+  que girar para siempre.
+- **Costo:** el tope cuenta vueltas, no tiempo, y el conteo vive en memoria. Falta el ensayo C8/C9:
+  por eso la spec `R11-p1-importador` sigue en `active/` ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42),
+  ítem 14).
+- **Quién decidió:** agente, sin consulta (spec y lote `p1-importador`, aprobados con las opciones
+  recomendadas).
+
+### 2026-11-12 · nombres · "Organización" en lo que se ve, "Tu cuenta" si falta el nombre
+
+- **Decisión:** en los textos de pantalla, "entidad" pasa a "organización" (menú, títulos, inicio);
+  las rutas, clases y campos no cambian. Si la cuenta no tiene nombre, el menú dice "Tu cuenta". En
+  la barra del celular las palabras largas se cortan en sílabas ("Organiza-ciones"). El tipo
+  jurídico se muestra con un texto propio ("Empresa, ONG o institución" en el registro).
+- **Alternativas:** dejar "entidad"; cambiar también las rutas y las clases (fuera del alcance).
+- **Por qué:** "organización" es la palabra de la gente que dona y recibe.
+- **Costo:** sin nombre, el saludo dice "Hola, Tu cuenta"; el registro no nombra a Gubernamental;
+  sin tipo jurídico, el admin dice "Persona jurídica" y el perfil "Empresa donante"; el corte en
+  sílabas espera la opinión del usuario; las fichas de `flujos/` siguen diciendo "entidad"
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 13).
+- **Quién decidió:** usuario ("Organización", R11-44 y R11-45); "Tu cuenta", el corte en sílabas y
+  los textos del tipo jurídico, el agente sin consulta (lote `p1-nombres`).
+
+### 2026-11-12 · público · Mapa: botones debajo, lista plegada y de a 10
+
+- **Decisión:** los botones de salida del mapa de entregadas quedan debajo del mapa; la lista de
+  lugares, plegada y de a 10 con el paginador común (`?pagina=` y `?abierta=`). En el celular el
+  mapa es cuadrado. Logística devuelve el último mes con tope de 200.
+- **Alternativas:** lista abierta y entera (lo de antes); el mapa paginado (cada página movía los
+  puntos); de a 20.
+- **Por qué:** el mapa contesta "adónde llegaron" con todos los puntos; la lista es su alternativa
+  accesible y no tiene que tapar los botones.
+- **Costo:** con más de 200 entregas en el mes, el mapa muestra las más recientes y lo dice.
+- **Quién decidió:** usuario (botones y lista plegada, ampliación R11-19); el mapa cuadrado, las 10
+  por página y el tope, el agente. ADR `proposed`:
+  [mapa público por período y con tope](../adr/logistica-service/20261112-mapa-publico-por-periodo-y-con-tope.md).
+
+### 2026-11-12 · notificaciones · La bandeja: sin leer y leída, de a 20 y con búsqueda sin tildes
+
+- **Decisión:** la notificación sin leer va con fondo suave, punto y título en negrita; la leída,
+  sin fondo. La bandeja pide de a 20, con búsqueda sin tildes, categoría y orden en la dirección.
+  Notificaciones busca con `translate` en SQL nativo, y las categorías de la pantalla se arman con
+  `tipo` y `excluirTipo` ("Otras novedades" sin listar todos los tipos).
+- **Alternativas:** `unaccent`, como Donaciones; `ILIKE` solo; un valor especial `tipo=NINGUNO`;
+  las categorías dentro del servicio.
+- **Por qué:** `translate` anda en PostgreSQL y en H2 sin una extensión nueva; `ILIKE` no encuentra
+  "camion" en "camión"; las categorías cambian por rol y son de la pantalla.
+- **Costo:** `translate` cubre las vocales con tilde, la ü y la ñ, no cualquier signo. Lo que no
+  sigue la ficha (textos de los botones, marcar una fila sin mandar la página) está en
+  [DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 10.
+- **Quién decidió:** usuario (los estilos de sin leer y leída, spec `R11-p1-notificaciones`);
+  `translate` y `excluirTipo`, el agente. ADR `proposed`:
+  [bandeja por persona paginada](../adr/notificaciones-service/20261112-bandeja-por-persona-paginada-con-busqueda-sin-tildes-por-translate.md).
+
+### 2026-11-12 · admin · Inicio del admin: tarjetas que no piden listas y el error de camiones en su tarjeta
+
+- **Decisión:** el inicio del admin muestra tarjetas con conteos de los resúmenes (ya no pide las
+  propuestas); si Logística no contesta, solo la tarjeta de camiones dice que no se pudo leer y las
+  demás siguen.
+- **Alternativas:** una página de error para todo el inicio; esconder la tarjeta que falló.
+- **Por qué:** una falla de un servicio no tiene que tapar lo que sí se sabe, y esconderla haría
+  creer que no hay camiones.
+- **Costo:** para contar camiones todavía pide toda la flota, y la falla de Logística no queda en
+  los registros ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 8).
+- **Quién decidió:** usuario (las tarjetas, ficha del inicio); el error acotado a su tarjeta, el
+  agente.
+
+### 2026-11-12 · admin · Ranking: el mes en el título y "Volver al último mes"
+
+- **Decisión:** el título dice el mes que se mira y, en un mes anterior, aparece "Volver al último
+  mes". Los datos de demostración no dejan meses vacíos.
+- **Alternativas:** el mes solo en el selector; un mes vacío con su estado vacío en la demo.
+- **Por qué:** una cifra siempre con su período (tono) y una salida clara al mes actual.
+- **Costo:** la ficha del ranking (§4.9) no se reescribió, y el historial trae todos los meses
+  con todos sus puestos sin paginar ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 6).
+- **Quién decidió:** usuario (título y "Volver al último mes"); la demo sin meses vacíos, el agente.
+
+### 2026-11-12 · componente:chip · Una categoría sin ícono usa el genérico
+
+- **Decisión:** el sprite pasa a nueve símbolos (cinco nuevos) y una categoría que no tiene el suyo
+  usa `cat-generico`, en vez de quedar sin ícono.
+- **Alternativas:** sin ícono; la primera letra de la categoría.
+- **Por qué:** todos los chips iguales de alto y de forma, y una categoría nueva no rompe la lista.
+- **Costo:** una categoría nueva se ve con el genérico hasta que tenga el suyo; `/estilos` todavía
+  no muestra los nueve ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 5).
+- **Quién decidió:** agente, sin consulta (lote `p1-iconos`).
+
+### 2026-11-12 · componente:navegacion-cuenta · Los menús se cierran solos
+
+- **Decisión:** el menú de la cuenta y los menús de filtros se cierran al tocar afuera, con Esc y al
+  perder el foco, sin cambiar los estilos. Sin JavaScript funcionan como antes.
+  `MenusQueSeCierranTest` lo prueba en un navegador.
+- **Alternativas:** cerrarlos solo con el mismo botón (lo de antes).
+- **Por qué:** es lo que espera la gente de un menú (heurística de estándares).
+- **Costo:** al llegar un fragmento por HTMX se cierran todos los menús (el sondeo de una
+  importación cierra el de la cuenta), y Esc no respeta un diálogo abierto encima
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 4).
+- **Quién decidió:** usuario (R11-16: que se cierren al tocar afuera, con Esc y al perder el foco);
+  cómo, el agente sin consulta (lote `p1-menus`).
+
+### 2026-11-12 · componente:paginador · El paginador común: las 7 decisiones de su ficha y la ventana simétrica
+
+- **Decisión:** el paginador común `paginas` (`« ‹ 1 2 3 … 9 › »`; `‹ 3 de 9 ›` debajo de 600 px)
+  sigue las 7 decisiones de la [ficha](flujos/r11-p1-paginador.md#9-decisiones-y-preguntas):
+  (1) primera, última y la actual con una vecina de cada lado, sin "…" que esconda una sola página;
+  (2) extremos apagados y visibles; (3) forma corta por ancho y por `data-forma="corta"`; (4) las
+  dos formas en el marcado y el CSS elige, sin JavaScript; (5) la ventana se calcula en Java
+  (`Paginadores.de`); (6) el provisorio queda como pase hasta que nadie lo nombre; (7) sin "ir a la
+  página" ni selector de cuántas por página. Al construirlo, la ventana quedó simétrica: en la
+  última página muestra `1 … 7 8 9`.
+- **Alternativas:** las descartadas en la ficha (dos vecinas por lado, ventana fija de 5, un
+  segundo componente chico, elegir la forma en el servidor o con JavaScript); la ventana asimétrica
+  que dibujaba la ficha (`1 … 8 9`).
+- **Por qué:** un patrón conocido, igual en todas las listas, que anda sin JavaScript; la ventana
+  simétrica deja a la página actual con la misma cantidad de vecinas en cualquier punto.
+- **Costo:** la ficha (§4.1) no se reescribe; entre 600 y 700 px, con números de cuatro cifras, la
+  forma larga puede partirse en dos renglones ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 3).
+- **Quién decidió:** las 7, el agente que diseñó la ficha, aprobadas por el usuario con la
+  aprobación automática de P1 (opción recomendada en cada duda); la ventana simétrica, el agente
+  constructor sin consulta (lote `p1-paginador`).
+
+### 2026-11-12 · admin · Administradores: cuentas marcadas en el realm, alta desde el sitio
+
+- **Decisión:** el admin tiene Mi perfil y Administradores en el menú de la cuenta, fuera del menú
+  de secciones. Un admin da de alta a otro desde el sitio, con una contraseña provisoria que se
+  muestra una sola vez; la cuenta se marca con un atributo del realm. Si el alta falla, el error
+  vuelve dentro de la misma ventana (`HX-Retarget`). El historial de propuestas muestra el nombre de
+  quien decidió, que Donaciones toma del token.
+- **Alternativas:** dar de alta solo desde la consola de Keycloak; el error en una página aparte;
+  el autor como identificador, sin nombre.
+- **Por qué:** RF-AUTH-07 pide que un admin cree a otro; el error en la ventana no hace perder lo
+  escrito; un nombre se entiende, un identificador no.
+- **Costo:** el stack del usuario tiene el realm viejo: hay que reimportarlo (sin `down -v`) antes
+  de mostrar Administradores; la página con la contraseña provisoria puede quedar en el historial
+  del navegador ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 2).
+- **Quién decidió:** usuario (cuentas por atributo y contraseña provisoria, spec `R11-p1-admins`);
+  `HX-Retarget` y el nombre en el historial, el agente. ADRs `proposed`:
+  [cuentas marcadas en el realm](../adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md)
+  y [autor desde el token](../adr/donaciones-service/20261112-autor-de-la-decision-de-una-propuesta-desde-el-token.md).
+
+### 2026-11-12 · donante · "Ya doné" y Categoría filtran todas las entidades, en Donaciones
+
+- **Decisión:** Entidades del donante pide `GET /api/donantes/{id}/entidades` de a 6: la búsqueda,
+  la categoría y "Ya doné" se resuelven en Donaciones sobre todas las activas y cada entidad trae
+  si el donante ya le donó. Las categorías del filtro son las reales (las del catálogo), un pedido
+  sin categoría va en "Otros pedidos" y una entidad con lo de la categoría elegida ya cubierto
+  aparece con "Lo que pedía de … ya está cubierto". Mis donaciones suma la subcategoría (manda
+  sobre la categoría, RF-05) y las dos listas usan el componente `paginas`. El nombre de la entidad
+  va en su propia línea, con "Ya le donaste" debajo, y corta palabras largas (R11-18).
+- **Alternativas:** filtrar la página traída (lo de P0, que decía "En esta página"); un `donanteId`
+  en la ruta pública; cruzar en el cliente las donaciones del donante (pide la lista entera);
+  sacar de la lista a la entidad con todo cubierto (lleva lo asignado a SQL, más grande que el lote).
+- **Por qué:** la regla 1 del backlog (nunca la lista entera) y que el filtro diga lo que hace.
+- **Costo:** al filtrar por categoría puede aparecer una entidad sin nada pendiente de esa categoría;
+  Seguimiento pide de una vez solo los estados en curso, con tope de 100.
+- **Quién decidió:** usuario (spec `R11-p1-donante-listas`, las tres dudas con la opción
+  recomendada); los detalles, el agente.
+- **Arreglos de la ronda 1 de revisión:** una entidad que llega sin ningún pedido vigente (con
+  "Ya doné", la que ya tiene todo cubierto) se ve en "Sin pedidos pendientes" con "Hoy no pide
+  nada." (texto de la ficha) y su marca, así la pantalla muestra todas las que cuenta. La maqueta
+  dibuja una segunda página con un nombre de 60 letras sin espacios, uno de 120 con espacios y esa
+  entidad; las capturas a 360, 768, 1280 y 1920 px, como empresa y como persona, están en
+  [`evidencia/r11-p1-donante-listas/`](evidencia/r11-p1-donante-listas/).
+
+### 2026-11-12 · admin · Asignar donaciones: tres pestañas y quién sugirió cada propuesta
+
+- **Decisión:** la variante C pasa a ser la pantalla, con tres pestañas que son enlaces del servidor
+  (Propuestas, Conflictos y Destino, con la cuenta del resumen), una sola tarjeta de propuesta con
+  "Sugerida por" (el algoritmo en lenguaje llano y su puesto, "3.º de 10") y el panel "Estado de la
+  asignación" a la derecha desde 68,75 em. Se borran las variantes A, B y C, su hoja común y
+  `asignaciones.js`. Todo llega paginado del servidor (de a 10; las decididas, de a 20).
+- **Alternativas:** cargar las tres pestañas juntas y alternarlas con Alpine (tres listas por
+  visita); el panel arriba del código en el celular (cambia el orden del foco de la ficha).
+- **Por qué:** cada pestaña es una dirección que anda sin JavaScript y pide una sola página; el
+  panel va después de la lista en el código, como pide el orden del foco, y en el celular queda al
+  final.
+- **Costo:** el panel cambia de columna en 68,75 em (el quiebre ancho de los tokens), no en 1280 px
+  como dice la ficha. "Alcanza para una" solo se dice cuando compiten dos; con más, "no alcanza para
+  todas". El nombre de la organización para el aviso viaja oculto en el formulario.
+- **Quién decidió:** usuario (pestañas, variante C, sin variantes); el agente, lo demás (lote
+  `p1-asignaciones`, [ficha](flujos/r11-p1-asignaciones.md)).
+
+### 2026-11-12 · admin · Las importaciones de donantes son una pestaña de Donantes
+
+- **Decisión:** `/admin-importaciones`, pestaña "Importaciones" junto a "Donantes", con la lista de a
+  20, búsqueda por nombre del archivo y filtros Estado, Subida y Ordenar resueltos en Donaciones.
+  "Terminadas" incluye las que terminaron con filas con error; cada renglón lleva a su avance o a su
+  resultado, y el resultado ofrece descargar las filas con error en CSV.
+- **Alternativas:** una entrada propia en el menú; "Terminadas" solo para las sin error; una tabla y
+  una lista aparte para celular (se usó una sola tabla con `data-rotulo`).
+- **Por qué:** es parte del trabajo con donantes; la palabra "Terminada" vale para las dos; menos
+  marcado que mantener.
+- **Costo:** la barra de búsqueda fija al desplazarse queda para el lote dueño de `filtros.css`; las
+  importaciones viejas dicen "Archivo sin nombre guardado" y "Sin fecha guardada".
+- **Quién decidió:** usuario (ficha r11-p1-importaciones aprobada); los detalles, el agente.
+
+### 2026-11-12 · entidad · La cuenta pendiente navega lo público, sin el ingreso ni el registro
+
+- **Decisión:** con la solicitud pendiente, la cuenta puede ir a la portada, Entidades, Donaciones,
+  el Mapa, Nosotros, Para donantes, Para entidades, Legales y Contacto (también enviar el
+  formulario). Ingresar, Crear una cuenta, Recuperar, Activar y todo lo privado la siguen llevando a
+  "Recibimos la solicitud". La cuenta sin perfil sigue igual: solo puede completarlo (R11-08).
+- **Alternativas:** dejar pasar todo lo que empieza con `/publico-` (vería "Crear una cuenta" o
+  "Ingresar" y entraría en un lazo); dejar Contacto afuera.
+- **Por qué:** los botones de la pantalla volvían a la misma pantalla. Una lista explícita evita el
+  lazo, y la regla general 6 nombra el contacto con soporte entre lo que ve quien tiene sesión.
+- **Costo:** una pantalla pública nueva hay que sumarla a la lista (`EstadoDeCuenta`); una ruta
+  pública que no existe lleva a la solicitud en lugar del 404; en lo público la cuenta pendiente ve
+  el encabezado de visitante hasta R11-15 ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 4).
+- **Quién decidió:** usuario (la cuenta pendiente navega lo público, R11-08) y agente (la lista y
+  Contacto), sin consultar (lote `p0-pendiente`).
+- **Evidencia:** `PerfilPendienteTest`, [ficha pública](flujos/raices-publico-navegable.md).
+
+### 2026-11-12 · componente:envio · Lo que está dentro de un formulario no hereda su cartel de carga
+
+- **Decisión:** todo formulario con `hx-indicator` que tiene adentro un enlace o un pedido HTMX lleva
+  `hx-disinherit="hx-indicator hx-select-oob"`: "Cancelar" y "Llegó con un problema" ya no muestran
+  "Registrando…" ni traen los avisos de un envío. Se revisaron todos los formularios, no solo los
+  cuatro anotados, y `IndicadorEnFormulariosTest` falla si uno nuevo repite el defecto. "Sumar otro
+  bien" (registrar donación) queda sin cartel: cargar otro renglón es rápido y no es el envío.
+- **Alternativas:** `hx-boost="false"` en cada enlace (pierde la navegación con boost y las
+  transiciones, y hay que acordarse en cada enlace nuevo); poner el indicador en el botón de envío
+  (el envío con Enter queda sin cartel).
+- **Por qué:** se pone una sola vez, en el formulario, y no toca su propio envío.
+- **Costo:** el test lee las plantillas como texto (no ve lo que entra por `th:insert`); falta
+  comprobarlo en un navegador con un pedido lento ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 3).
+- **Quién decidió:** usuario (R11-07) y agente (cómo y el alcance), sin consultar (lote
+  `p0-indicador`).
+- **Evidencia:** [catálogo, fila del indicador](componentes.md), `IndicadorEnFormulariosTest`.
+
+### 2026-11-12 · errores · El error con sesión no pide nada a los servicios y elige su salida
+
+- **Decisión:** con sesión, 404 y 403 ofrecen "Volver a mi inicio" (el inicio del área); sin sesión,
+  "Ir al inicio" (la portada). En el 5xx, "Volver a intentar" sigue primero. El menú del error se
+  arma con lo que ya está en la sesión: la campanita va sin número y el menú de persona (con
+  Misiones) sale solo si la sesión ya guarda que la cuenta es de una persona. La cuenta sin perfil o
+  con la solicitud pendiente ve el marco público. Si algo falla al armar el marco privado, queda el
+  público: nunca una página en blanco.
+- **Alternativas:** pedir los avisos sin leer y el tipo de cuenta en la página de error (otra
+  llamada que puede fallar justo cuando algo falló); resolver el marco en cada controller y en cada
+  plantilla (se repetía).
+- **Por qué:** una página de error tiene que andar aunque los servicios no contesten.
+- **Costo:** una persona cuyo tipo todavía no quedó en la sesión ve el menú de empresa en el error;
+  con sesión, Contacto y los errores se ven más anchos que sin ella; faltan las capturas del estado
+  con sesión ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 2).
+- **Quién decidió:** agente, sin consultar (lote `p0-errores`), dentro de la ficha.
+- **Evidencia:** `ErroresConSesionTest`, `SitioControllerTest`.
+
+### 2026-11-12 · errores · Con sesión, las páginas de error y Contacto muestran la cuenta
+
+- **Decisión:** con sesión activa, las páginas 404, 403 y 5xx y las tres de Contacto (el
+  formulario, enviado y su error) usan el encabezado y el menú del área de la cuenta. Sin sesión,
+  el marco público de siempre (R11-05, regla general 6).
+- **Alternativas:** el marco público para todos, como decidía la ficha del 2026-11-07.
+- **Por qué:** con el marco de visitante ("Ingresar / Crear una cuenta") parecía que la sesión se
+  había cerrado.
+- **Costo:** cambia la decisión del 2026-11-07; la [ficha](flujos/raices-paginas-de-error.md) espera
+  el OK del usuario sobre cómo quedó. Falta probarlo con Keycloak real en un 500 de verdad.
+- **Quién decidió:** usuario (ronda de la revisión del 2026-11-11). Cómo se arma (un puerto que dice
+  el área de la sesión y un aviso acotado a las páginas de error), agente, sin consultar.
+- **Evidencia:** `ErroresConSesionTest`, `SitioControllerTest`.
+
+### 2026-11-12 · proceso · Una llamada que tarda demasiado termina en la página de falla
+
+- **Decisión:** el cliente liviano y el gateway tienen límites de espera: conexión 3 s; lectura 15 s
+  en el cliente y 10 s en el gateway; subida del CSV y de las fotos del acta 120 s y 100 s. Se
+  cambian por variable de entorno, sin tocar código. Pasado el límite, el gateway contesta 504 y el
+  cliente muestra su página de falla con el código de soporte (R11-04).
+- **Alternativas:** un solo límite para todo (la subida del CSV no entraba); otro cliente para las
+  subidas (obligaba a tocar pantallas de otros lotes); dejar que el gateway conteste 500.
+- **Por qué:** una pantalla colgada no dice nada; una falla con su código sí dice qué hacer.
+- **Costo:** 15 s puede quedar corto para correr la asignación en la demo; el 504 y los tiempos no
+  se probaron en Docker ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 1).
+- **Quién decidió:** usuario (R11-04) y agente (los valores y cómo), sin consultar (lote
+  `p0-esperas`).
+- **Evidencia:** `ClientesHttpEsperasTest`, `EsperasGatewayTest`.
+
+### 2026-11-12 · entidad · La solicitud enviada dice que la revisión suele llevar unos días hábiles
+
+- **Decisión:** "Solicitud enviada" dice "La revisión suele llevar unos días hábiles" y "Mientras
+  tanto, podés recorrer el sitio: la portada, las entidades y lo que piden". La cuenta pendiente
+  navega lo público; lo privado la sigue llevando a esa pantalla (R11-08).
+- **Alternativas:** seguir sin plazo, como fijaba la ficha; dar una cifra ("hasta 5 días hábiles").
+- **Por qué:** R11-08 pide decir cuánto suele tardar. Sin plazo, la entidad no sabe cuánto
+  esperar. Una cifra sería una promesa que nadie fijó; "unos días hábiles" orienta sin prometer.
+- **Costo:** sigue sin haber un plazo acordado (pregunta abierta 2 de la
+  [ficha](flujos/raices-publico-navegable.md)); si el equipo lo fija, el texto lo toma.
+- **Quién decidió:** usuario (decir cuánto suele tardar, R11-08) y agente (la frase sin cifra ni
+  fecha), sin consultar (lote `p0-pendiente`).
+
+### 2026-11-12 · admin · Los motivos de las filas con error, en una frase
+
+- **Decisión:** en "Filas con error" de la importación, la columna "Qué pasó" muestra una frase por
+  motivo ("La fila no tiene las columnas esperadas.", "El correo ya es de otro donante.") y no el
+  código del servicio (`FORMATO_INVALIDO`, `PERSONA_DUPLICADA_EN_CONFLICTO`). Un motivo que el
+  cliente no conoce muestra la frase de error inesperado, nunca el código.
+- **Alternativas:** escribir las frases en la plantilla (difícil de probar); que Donaciones mande el
+  texto (cambia el contrato, donde `motivo` es una lista cerrada).
+- **Por qué:** español llano y la regla 4 de los textos: sin códigos a la vista.
+- **Costo:** un motivo nuevo del servicio necesita su frase en el cliente (`AdminPersonasRest`).
+- **Quién decidió:** agente, en los arreglos del cierre de P0, sin consultar.
+- **Evidencia:** `AdminPersonasRestTest` (los datos de prueba pasan a los códigos reales).
+
+### 2026-11-12 · donante · La búsqueda de Entidades la resuelve Donaciones, sin tildes
+
+- **Decisión:** la pantalla Entidades del donante deja de volver a filtrar la página por nombre:
+  manda la búsqueda a Donaciones, que ignora tildes y mayúsculas. La cuenta con búsqueda es el total
+  del servicio ("N entidades activas tienen «x» en el nombre. Página p de n.") y el paginador
+  conserva lo buscado. En la maqueta, el adaptador busca igual, sin tildes.
+- **Alternativas:** seguir filtrando en la pantalla, sin tildes (seguía mirando una sola página).
+- **Por qué:** el pedido de la corrida: toda búsqueda ignora tildes y se resuelve en el servidor.
+  "direccion" no encontraba "Dirección de Desarrollo Social".
+- **Costo:** "Ya doné" y "Categoría" siguen filtrando la página, y lo dicen, hasta `p1-donante-listas`.
+- **Quién decidió:** usuario (regla) y agente (cómo, en los arreglos del cierre de P0).
+- **Evidencia:** `DonanteEntidadesSinMaquetaTest`.
+
+### 2026-11-12 · proceso · El ensayo de 20.000 filas alcanza en rendimiento; la cuenta, no
+
+- **Decisión:** con dos corridas en el stack propio, la importación de 20.000 filas tardó de 125 a
+  142 s sin frenar al resto del sitio (p95 menor a 0,6 s) y Donaciones no pasó de 420 MiB: el
+  importador por lotes (R11-B08) no hace falta por rendimiento. La cuenta falló porque el importador
+  no creaba empresas; se arregló pasando el representante de relleno que ya arma `PersonaMapper`.
+- **Alternativas:** que el CSV traiga el representante (cambia el contrato de la importación y pide
+  ADR); que una empresa pueda no tener representante (rompe una regla del dominio).
+- **Por qué:** es el arreglo más chico que no cambia ni el archivo ni el dominio.
+- **Costo:** falta repetir la corrida con el archivo de la guía. La lectura del CSV sin cargarlo
+  entero entra igual en esta corrida (`p1-importador`), por el pedido de que toda lista tenga
+  paginación o loteo.
+- **Quién decidió:** agente (criterios de "suficiente" de la guía y arreglo del cierre), sin
+  consultar.
+- **Evidencia:** [guía del ensayo](../testing/ensayo-importacion-20000.md#resultados-del-cierre-de-p0-2026-11-12).
+
+### 2026-11-11 · regla general · Ninguna lista llega completa: sin página, la primera de 20
+
+- **Decisión:** los listados de Donaciones (donantes, personas, donaciones, donaciones
+  independientes y entidades) devuelven siempre una página: si no se pide, la primera de 20, y como
+  mucho 100. El total viaja aparte, como número. Toda pantalla pide su página; un resumen pide 3 y
+  "Ver todas".
+- **Alternativas:** que sin página siguiera llegando todo hasta migrar el cliente (lo proponía la
+  spec del lote).
+- **Por qué:** era lo que tumbaba las pantallas del admin con 20.000 donantes, y bastaba una
+  pantalla olvidada para repetirlo.
+- **Costo:** una pantalla que no se migró ve 20 sin aviso; las que todavía piden una página de 100
+  sin paginador están en DTI-39, con su lote.
+- **Quién decidió:** usuario, al aprobar la spec `R11-p0-api-listados` (ajuste §0.2).
+- **Evidencia:** [ADR](../adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md) (`proposed`).
+
+### 2026-11-11 · regla general · La búsqueda ignora tildes y mayúsculas
+
+- **Decisión:** "Gomez" encuentra "Gómez", y "GÓMEZ" encuentra "gomez", en todas las búsquedas que
+  resuelve Donaciones. Lo hace la base.
+- **Alternativas:** dejarlo para después (lo proponía la spec del lote); normalizar en el cliente
+  (filtraría solo la página).
+- **Por qué:** quien busca no sabe cómo se cargó el nombre.
+- **Costo:** Donaciones necesita la extensión `unaccent` de PostgreSQL.
+- **Quién decidió:** usuario, al aprobar la spec (ajuste §0.1) y en el pedido de la corrida.
+- **Evidencia:** [ADR](../adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md) (`proposed`).
+
+### 2026-11-11 · componente:paginador · Un paginador provisorio, solo con piezas del catálogo
+
+- **Decisión:** hasta que exista el paginador común (R11-11), las listas del admin usan "‹ Anterior ·
+  Página N de M · Siguiente ›" debajo de la lista, armado con racimo, botón y el tono suave. Cada
+  enlace es una dirección real (`?pagina=N` con la búsqueda y los filtros); el extremo que no sigue
+  no es un enlace; con una sola página no se dibuja; al cambiar, el foco va al título de la lista.
+  Una página pedida más allá de la última muestra la última.
+- **Alternativas:** una clase nueva (el cerco del catálogo la rechaza); mostrar una página vacía
+  fuera de rango (no se sabe cómo volver).
+- **Por qué:** funciona sin JavaScript, el "atrás" vuelve a la página anterior y R11-11 lo cambia de
+  forma sin cambiar las direcciones.
+- **Costo:** no se puede saltar a una página por su número hasta R11-11.
+- **Quién decidió:** usuario (paginador provisorio en la ficha del admin) y agente (los detalles).
+- **Evidencia:** [catálogo](componentes.md#piezas-compuestas-sin-clase-propia), [ficha del admin](flujos/raices-admin-navegable.md), §4.1.
+
+### 2026-11-11 · admin · Páginas de 20 con el servicio y de 5 en la maqueta
+
+- **Decisión:** Donantes, Donaciones y Entidades del admin piden páginas de 20. La maqueta usa 5,
+  para que el paginador se vea con sus 10 donantes de ejemplo y en las capturas.
+- **Alternativas:** 20 también en la maqueta (el paginador nunca aparecería).
+- **Por qué:** 20 es el tamaño por defecto del servicio; 5 deja probar el paginador sin datos reales.
+- **Costo:** la maqueta no muestra cómo se ve una página llena.
+- **Quién decidió:** agente, sin consultar.
+
+### 2026-11-11 · admin · Lo que Donaciones no filtra no se ofrece
+
+- **Decisión:** fuera de la maqueta, Donantes ofrece tipo (Personas, Empresas, ONG, Instituciones y
+  Organismos públicos), categoría, estado y orden. No ofrece "Sin activar su cuenta" ni la columna
+  "Qué dona", porque Donaciones no los guarda. Donaciones no ofrece "Vence en los próximos 7 días"
+  ni los órdenes por vencimiento, nombre o donante: con "Ver las que vencen" muestra las del
+  depósito y dice cuántas vencen y que la lista todavía no se puede filtrar así. Entidades no ofrece
+  estado, necesidades ni tipo. Un valor de filtro que no es una de las opciones se descarta.
+- **Alternativas:** filtrar en la pantalla la página traída (engaña: parece que filtra todo); traer
+  todo para filtrar (la regla 1 lo prohíbe).
+- **Por qué:** regla 1: si el servicio no resuelve un filtro, filtrar una página da un dato falso.
+- **Costo:** esos filtros vuelven con `p2-admin-bandeja` y `p2-listas-restantes`, que cambian el
+  contrato de Donaciones (DTI-39).
+- **Quién decidió:** agente, sin consultar.
+
+### 2026-11-11 · admin · El buscador del registro trae 10 y dice cuántos coinciden
+
+- **Decisión:** al registrar una donación, "Quién dona" pide a Donaciones hasta 10 donantes activos
+  ordenados por nombre, con cuántos coinciden. Si son más, dice "Hay N donantes que coinciden.
+  Escribí más del nombre o el documento para encontrarlo." Es un buscador, no un listado: no tiene
+  paginador.
+- **Alternativas:** paginar el buscador (es una elección rápida, no una lista para recorrer).
+- **Por qué:** con 20.000 donantes el buscador no encontraba al número 21 en adelante.
+- **Costo:** quien no recuerda el nombre tiene que ir a Donantes.
+- **Quién decidió:** agente, sin consultar.
+
+### 2026-11-11 · admin · Entidades de a una página, las que piden sumarse primero
+
+- **Decisión:** Entidades del admin va de a una página de 20 con la búsqueda por nombre en Donaciones
+  (sin tildes). Las que piden sumarse vienen de Keycloak: se filtran por nombre sin tildes, van
+  primero, solo en la página 1, y cuentan en el total. La cifra de activas es un número del
+  servicio.
+- **Alternativas:** asignar la pantalla a otro lote (el revisor lo marcó como bloqueante de este).
+- **Por qué:** la regla 1 vale también para Entidades, y lo que espera una decisión va arriba.
+- **Costo:** las necesidades vigentes de la página todavía se leen en una sola llamada sin página
+  (DTI-39, ítem 2).
+- **Quién decidió:** agente, sin consultar (arreglos de la ronda 2 de `p0-admin-listados`).
+
+### 2026-11-11 · admin · El avance de la importación se actualiza solo y se puede salir
+
+- **Decisión:** la página de avance se vuelve a pedir cada 3 segundos con HTMX, solo mientras la
+  pestaña está a la vista, y cambia solo el bloque del avance. El cambio de etapa se anuncia a los
+  lectores de pantalla. Si un pedido falla, quedan las cifras de antes y un aviso. Sin JavaScript,
+  un enlace "Ver el avance". "Se actualiza sola" aparece recién cuando llegó una actualización. La
+  última importación queda en la sesión: Donantes muestra una franja hasta que se abre el resultado.
+  Un archivo que falló con filas ya leídas se muestra como importación cortada, con su resultado.
+- **Alternativas:** eventos del servidor o WebSocket (un canal nuevo, que pide ADR); recordar la
+  importación en la dirección o en el navegador.
+- **Por qué:** lo pidió el usuario (avance en vivo y poder seguir trabajando) y el sondeo ya es el
+  patrón del sitio (posición del camión, D22).
+- **Costo:** otro admin u otro navegador no ve la franja hasta la vista de importaciones (R11-20).
+  Una importación que falla sin leer ninguna fila deja vacío el bloque durante el sondeo (DTI-40,
+  ítem 7, `p1-importaciones`).
+- **Quién decidió:** usuario (en vivo, se puede salir) y agente (cómo), sin consultar.
+- **Evidencia:** [ficha del admin](flujos/raices-admin-navegable.md), R11-02 (en revisión).
+
+### 2026-11-11 · donante · El inicio de la persona: el año, aunque esté vacío, y la huerta compacta
+
+- **Decisión:** si la cuenta donó otros años pero no este, el inicio dice "Todavía no hay donaciones
+  tuyas registradas en <año>." y no que nunca donó; las cifras cuentan solo el año. La huerta de la
+  persona queda compacta (en pantalla ancha, el título al lado del dibujo) para que el año se vea
+  enseguida. El tipo de la cuenta se guarda en la sesión; sin tipo, nunca se trata como empresa.
+- **Alternativas:** el vacío de siempre ("Todavía no donaste"), que mentía para quien donó antes.
+- **Por qué:** tono: no afirmar más de lo que se sabe.
+- **Costo:** en el celular, "Tu huerta" queda debajo del saludo y de los dos botones: hay que
+  confirmar con el usuario si eso es "arriba de todo" (R11-06).
+- **Quién decidió:** agente, sin consultar (lote `p0-persona`).
+- **Evidencia:** [ficha](flujos/r11-p0-persona.md).
+
+### 2026-11-11 · donante · Mis donaciones de a una página, con los filtros en el servidor
+
+- **Decisión:** Mis donaciones pide a Donaciones una página de 12 con el mes, el estado y la
+  categoría, y cuenta el total con `X-Total-Count`. Debajo de las láminas, un paginador provisorio
+  (anterior, "Página N de M", siguiente) que conserva el mes y los filtros.
+- **Alternativas:** dejar las páginas para `p1-donante-listas` (descartada: "Ver todas las de
+  octubre (25)" llevaba a 20 sin aviso); usar ya el paginador de `p1-paginador` (todavía no existe).
+- **Por qué:** reglas 1 y 2 del backlog: ninguna lista completa, y "Ver todas" lleva al listado
+  completo paginado.
+- **Costo:** el paginador numerado lo pone `p1-paginador`.
+- **Quién decidió:** equipo (arreglos de la revisión de p0-persona, ronda 2).
+
+### 2026-11-11 · donante · El año de la persona, de a 3 por mes y con las cifras como números
+
+- **Decisión:** en el inicio de la persona, cada mes muestra sus 3 donaciones más recientes y
+  "Ver todas", que lleva a Mis donaciones filtrada por ese mes (`?mes=2026-10`). Las cifras del año
+  (donaciones, entregadas, en camino, en el depósito) y las de cada mes llegan como números: el
+  total (`X-Total-Count`) que da Donaciones para cada pedido. La persona no pide la lista entera.
+- **Alternativas:** dejar el resumen del inicio sin páginas como excepción aprobada (el usuario
+  pidió páginas o lotes en todas las listas); un endpoint nuevo de resumen del donante (cambia la
+  API de Donaciones, fuera de este lote); contar en la plantilla (rompe la regla 1).
+- **Por qué:** reglas 1 y 2 del backlog R11: nada de listas completas y un resumen con 3 y "Ver
+  todas".
+- **Costo:** el inicio hace un pedido por mes del año, más tres para las cifras. Mis donaciones
+  filtrada por mes todavía no tiene páginas: las suma `p1-donante-listas`, que conserva el `mes`.
+- **Quién decidió:** usuario (punto 4 del pedido de la corrida) y agente (arreglos de la ronda 1).
+- **Evidencia:** [ficha](flujos/r11-p0-persona.md), sección 4.
+
+### 2026-11-11 · donante · Las personas ven sus pantallas de persona (R11-06, R11-09)
+
+- **Decisión:** el tipo de la cuenta se pide a Donaciones una vez por sesión; persona (`HUMANA`) y
+  sin tipo ven Inicio y Mi perfil de `persona/` (con datos reales) y las demás pantallas comunes con
+  sus textos; solo la persona confirmada tiene Misiones en el menú y "Ver mi huerta", arriba de
+  todo. La empresa pierde la huerta y "¿Qué planta sos vos?". "Ya doné" filtra la página y lo dice.
+  Con login real, "Cómo llega tu donación" va sin el depósito de ejemplo y ofrece escribir.
+- **Alternativas:** pedir el tipo en cada pantalla o sumarlo al token; deducirlo de la razón social;
+  cablear las siete plantillas de `persona/`; una dirección fija del depósito en la configuración.
+- **Por qué:** una cuenta sin tipo nunca se trata como empresa; una sola versión de cada pantalla
+  común; ningún dato de ejemplo con login real.
+- **Costo:** sin "Tu próxima misión" ni fecha de nacimiento; "Ya doné" abarca la página hasta
+  `p1-donante-listas`; la persona tiene que escribir para saber el depósito.
+- **Quién decidió:** usuario (backlog R11, sección 3) y agente (ficha `r11-p0-persona.md`, sección 9).
+- **Evidencia:** [ficha](flujos/r11-p0-persona.md).
+
 ### 2026-11-08 · ux · Revisión de UX: portada, entidades, registro e inicio del donante
 
 - **Decisión:** a pedido del usuario, como revisión de UX/UI:
