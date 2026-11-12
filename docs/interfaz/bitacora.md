@@ -31,6 +31,125 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · público · Portada con sesión: la cuenta se ve en todo lo público, no solo en la portada
+
+- **Decisión:** con la sesión iniciada, la portada y todas las públicas que usan `layout-publico`
+  (Entregas confirmadas, Mapa, Organizaciones, Nosotros, las dos landings y Legales) muestran la
+  cuenta en lugar de "Ingresar" y "Crear una cuenta" (R11-15, lote `p1-portada`).
+- **Alternativas:** solo la portada.
+- **Por qué:** el problema ("si voy al home me salgo") vuelve al primer clic en cualquier pública.
+- **Costo:** no hay capturas de la portada con sesión ni del ancho de 768 px
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1).
+- **Quién decidió:** usuario (regla general 6 y "la misma portada", sección 3 del backlog); bajarlo a
+  todo lo público, agente en la ficha [r11-p1-portada](flujos/r11-p1-portada.md) §9.1, aprobada
+  por el usuario con las opciones recomendadas.
+
+### 2026-11-12 · público · Portada con sesión: navegación pública más la cuenta, no el marco del rol
+
+- **Decisión:** con sesión, lo público conserva su navegación (Entregas confirmadas, Mapa,
+  Organizaciones) y cambia "Ingresar" y "Crear una cuenta" por "Ir a mi inicio", destacado ("Mi
+  inicio" en la barra del celular), y la foto con el menú de la cuenta.
+- **Alternativas:** el marco privado del rol, como en las páginas de error y Contacto.
+- **Por qué:** la decisión del usuario es "la misma portada", y lo público tiene sus propios destinos.
+- **Costo:** con sesión hay dos encabezados: el del rol en errores y Contacto, y el público con la
+  cuenta en la portada y las públicas.
+- **Quién decidió:** agente, en la ficha (§9.2), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · público · La cuenta pendiente ve "Ver mi solicitud" en lo público
+
+- **Decisión:** la organización con la solicitud pendiente también ve su cuenta en lo público, con
+  "En revisión" debajo del nombre y "Ver mi solicitud" ("Mi solicitud" en el celular) en lugar de
+  "Ir a mi inicio".
+- **Alternativas:** "Ir a mi inicio" para todos, que llevaría igual a la solicitud.
+- **Por qué:** la cuenta pendiente no tiene inicio; prometerlo confunde. Cumple la regla 6 y lo que
+  R11-08 le dejaba a este lote.
+- **Costo:** en "Recibimos la solicitud", "Ver mi solicitud" apunta a la misma página y no se marca
+  como la actual ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1).
+- **Quién decidió:** agente, en la ficha (§9.3), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · público · La cuenta en lo público sale solo de la sesión, sin campanita
+
+- **Decisión:** el encabezado público con sesión no pide nada a ningún servicio: no tiene campanita
+  y arma la cuenta con lo que ya está en la sesión (`CuentasDelMenu.deLaSesion` y
+  `AreaDeLaSesion.pendiente`). Si el nombre todavía no quedó guardado, el menú dice "Tu cuenta",
+  como en errores y Contacto. Si la cuenta no se puede armar, la página sale con el encabezado de
+  visitante.
+- **Alternativas:** la campanita con el número de avisos; pedir el nombre a Donaciones o a Keycloak
+  al cargar la portada (`CuentasDelMenu.de()`).
+- **Por qué:** la portada no se tiene que caer ni frenar porque falle un servicio.
+- **Costo:** sin la campanita, los avisos sin leer no se ven desde lo público. Con ingreso real, si
+  la portada es la primera página después del login, el menú dice "Tu cuenta" hasta entrar a una
+  página privada. El error al armar la cuenta se calla sin registro.
+- **Quién decidió:** agente: la campanita, en la ficha (§9.4), aprobada por el usuario; usar
+  `deLaSesion` en lugar de `de()`, el constructor sin consulta (lote `p1-portada`).
+
+### 2026-11-12 · público · Portada con sesión: los botones de registro quedan como están
+
+- **Decisión:** con la sesión iniciada, "Quiero donar", "Soy una organización", los de "¿Qué planta
+  sos vos?" y los del cierre de la portada no cambian.
+- **Alternativas:** cambiarlos por "Ir a mi inicio" con sesión.
+- **Por qué:** la decisión fue "la misma portada" y esos botones ya llevan al inicio del área;
+  cambiarlos tocaba fragmentos de `huerta.html` fuera de Bajo tierra.
+- **Costo:** quien dona y toca "Quiero donar" con la sesión abierta va a su inicio sin aviso; conviene
+  probarlo con personas.
+- **Quién decidió:** agente, duda 1 de la ficha (§9.5), resuelta con la opción recomendada por pedido
+  del usuario.
+
+### 2026-11-12 · público · La marca de la portada dice "ir a la portada" y la cuenta sin perfil no cambia
+
+- **Decisión:** el logo de la portada se anuncia como "DonaTrack, ir a la portada", como en el resto
+  de las públicas. La cuenta sin perfil sigue como estaba: no llega a la portada y su registro ya
+  tiene "Cerrar sesión".
+- **Alternativas:** dejar "ir al inicio" en la portada; mostrar la cuenta también sin perfil.
+- **Por qué:** con sesión, "inicio" ahora es "Mi inicio", y el mismo nombre para dos lugares
+  confunde. La cuenta sin perfil no tiene dónde ir.
+- **Costo:** ninguno.
+- **Quién decidió:** agente, en la ficha (§9.6 y §9.8), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · componentes · El menú de la cuenta pasa a un fragmento compartido, con "Administradores"
+
+- **Decisión:** el menú de la foto de la cuenta es un fragmento, `cuenta-menu :: menu`, que usan la
+  cabecera privada (`layout-privado`) y la pública con sesión. El enlace "Administradores" de
+  `p1-admins` va dentro del fragmento, con la misma condición: solo si Mi perfil termina en
+  `/admin-perfil`.
+- **Alternativas:** dejar el bloque `<details>` duplicado en `layout-privado` y en la cabecera
+  pública.
+- **Por qué:** el mismo menú en los dos lados, escrito una sola vez. Al integrar, el primer intento
+  chocó justo ahí con "Administradores".
+- **Costo:** ninguno en pantalla; `PortadaConSesionMaquetaTest` ahora exige Mi perfil y
+  "Administradores" en la administración, y que la organización no tenga "Administradores".
+- **Quién decidió:** agente, sin consulta, al integrar `p1-portada` (`9c0a589eb`).
+
+### 2026-11-12 · público · Bajo tierra: cada rótulo con su franja y la letra con techo
+
+- **Decisión:** desde 600 px, cada rótulo de Bajo tierra tiene un ancho tope en % del dibujo, corta
+  por palabras sin guion y crece hacia la tierra libre; la letra crece con el dibujo, pero menos y con
+  techo (`clamp(0.875rem, 2.6cqi, 2rem)`); el área táctil de "Tu organización" no corre el texto.
+  `BajoTierraRotulosTest` mide en un navegador que los rótulos no se crucen de 600 a 1920 px, con
+  una letra de respaldo más ancha (Verdana) para cubrir el peor caso (R11-17).
+- **Alternativas:** los rótulos como `<text>` dentro del SVG (no corta en renglones y pierde la lista
+  para los lectores); líneas de llamada hacia los costados (cambia el dibujo de la diseñadora); subir
+  el punto de quiebre a 900 px (esconde el dibujo en las tabletas y no arregla el choque).
+- **Por qué:** el choque depende del largo del texto, y con "Tu organización" y "Organizaciones
+  religiosas" los textos se alargaron.
+- **Costo:** la medición usa la caja del elemento y no suma el contorno de la letra; falta sumarlo o
+  explicarlo en el Javadoc ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1).
+- **Quién decidió:** agente, en la ficha (§9.7, sección 4), aprobada por el usuario con las opciones
+  recomendadas.
+
+### 2026-11-12 · público · Bajo tierra: "Centros comunitarios" con franja de 26 %, no 22 %
+
+- **Decisión:** la franja de "Centros comunitarios" quedó en 26 % del dibujo
+  (`huerta.css`, `[data-lugar="comunitarios"]`); la tabla de la ficha §4 decía 22 %.
+- **Alternativas:** el 22 % de la ficha.
+- **Por qué:** la ficha da los valores como punto de partida y permite ajustarlos con la medición del
+  constructor (`BajoTierraRotulosTest`). La ficha no se reescribe.
+- **Costo:** ninguno; el ajuste no estaba registrado hasta esta entrada.
+- **Quién decidió:** agente, sin consulta (constructor del lote `p1-portada`).
+
 ### 2026-11-12 · proceso · Cierre de P1: las demos de /estilos que necesitan ancho ocupan la pantalla
 
 - **Decisión:** las demostraciones de `/estilos` que se arman en varias columnas (la libreta del

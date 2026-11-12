@@ -1,6 +1,6 @@
 # Flujo: la portada con sesión y los rótulos de Bajo tierra (R11-15, R11-17)
 
-> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
+> **Estado:** aprobada y construida (lote `p1-portada`, `9c0a589eb`, 2026-11-12; ver "Cómo quedó construido" al final) · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-portada` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta STANDARD).
 > Las decisiones del usuario de la sección 3 del backlog ("Portada con sesión": la misma portada, con
@@ -388,3 +388,20 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 1. Con la sesión iniciada, ¿los botones 'Quiero donar', 'Soy una entidad', los de '¿Qué planta sos vos?' y los del cierre quedan como están? Recomiendo que sí: la decisión fue 'la misma portada' y ya llevan al inicio del área. La alternativa es cambiarlos por 'Ir a mi inicio', pero eso toca fragmentos de huerta.html que están fuera de la sección Bajo tierra. **Resuelto: la opción recomendada.**
 2. No medí el choque de Bajo tierra en el navegador: el stack local no respondió desde la sandbox. La cuenta de H11 es a mano y la marqué como hipótesis. Recomiendo que el constructor tome primero la medición con getBoundingClientRect, en los anchos de la sección 7, y ajuste los valores de la tabla con ese dato. **Resuelto: la opción recomendada.**
 3. El nombre de la cuenta en el menú público va a mostrar el rol ('Donante', 'Entidad') hasta que entre R11-44 (p1-nombres). Recomiendo no esperar a ese lote: este no cambia el nombre, solo lo muestra. **Resuelto: la opción recomendada.**
+
+## Cómo quedó construido (2026-11-12)
+
+Lo de arriba no se reescribe. Las decisiones de la sección 9 están en la [bitácora](../bitacora.md),
+con quién decidió. Lo que se aparta de esta ficha o la completa:
+
+- La administración tiene Mi perfil desde R11-10, así que su menú en lo público sí lleva "Mi perfil"
+  y, además, "Administradores" (la tabla de la sección 5 decía "sin Mi perfil").
+- El menú de la cuenta es un fragmento compartido, `cuenta-menu :: menu`, que usan
+  `layout-privado` y la cabecera pública.
+- La cuenta en lo público se arma con `CuentasDelMenu.deLaSesion`: si el nombre todavía no quedó en
+  la sesión, el menú dice "Tu cuenta".
+- "Centros comunitarios" quedó con una franja de 26 %, no de 22 % (ajuste por medición, como
+  permite la sección 4).
+- Lo que falta (capturas con sesión, 768 px, el contorno de la letra en la medición y "Ver mi
+  solicitud" sin marcar en su propia pantalla) está en
+  [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 1.

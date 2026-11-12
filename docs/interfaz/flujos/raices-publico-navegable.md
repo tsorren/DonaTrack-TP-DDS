@@ -51,6 +51,11 @@ navegación; además, conviene que "Lo que viajó este mes" enlace a Entregas co
 las entregas confirmadas") y que el rótulo de la tierra enlace a Entidades ("Ver todas las
 entidades y lo que piden"). Lo demás de la portada no cambia.
 
+**Con la sesión iniciada** (R11-15, ficha [r11-p1-portada](r11-p1-portada.md), construida el
+2026-11-12): los destinos son los mismos, salvo "Ingresar" y "Crear una cuenta", que se cambian por
+"Ir a mi inicio" (o "Ver mi solicitud", con la solicitud pendiente) y la foto con el menú de la
+cuenta. Esta ficha no se reescribe: el detalle está en esa.
+
 ## 3. Recorrido
 
 ```mermaid

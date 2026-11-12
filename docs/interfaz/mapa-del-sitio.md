@@ -182,8 +182,7 @@ ya estaban ([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p
 | Mapa de entregadas | Los botones de salida quedan debajo del mapa; la lista, plegada y de a 10 (`?pagina=` y `?abierta=`) | R11-19 |
 | Asignar donaciones | Tres pestañas que son direcciones propias: Propuestas, Conflictos y Destino; se borraron las variantes A, B y C | R11-24 |
 | Ranking | "Volver al último mes" cuando se mira un mes anterior | R11-23 |
-
-Sin integrar: la portada con el encabezado de la cuenta y "Ir a mi inicio" (R11-15, `p1-portada`).
+| Portada y públicas con la sesión iniciada | La navegación pública sigue; "Ingresar" y "Crear una cuenta" se cambian por "Ir a mi inicio" (el inicio del área) y la foto con el menú de la cuenta. Con la solicitud pendiente, "Ver mi solicitud" (lleva a "Recibimos la solicitud"). Integrado después del cierre (`p1-portada`) | R11-15 |
 El registro de actividad y las notificaciones del admin entran con sus lotes de P2.
 
 ## Observaciones para el diseño
