@@ -96,7 +96,7 @@ docs/
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10, R11-p1-donante-listas)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02, R11-p0-api-listados)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -200,6 +200,7 @@ docs/
 * 📏 **Ensayo de importación de 20.000 donantes:** [testing/ensayo-importacion-20000.md](testing/ensayo-importacion-20000.md)
 * 📄 **Listados paginados y cifras de Donaciones (R11-01, implementada en la oleada P0):** [spec del lote p0-api-listados](specs/completed/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md) · ADRs `proposed`: [listados siempre paginados](adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md), [búsqueda sin tildes](adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md), [SQL nativo y lectura por lote](adr/donaciones-service/20261111-consultas-de-listado-en-sql-nativo-y-lectura-por-lote.md), [cifras del admin como conteos](adr/donaciones-service/20261111-cifras-del-admin-como-conteos-en-un-resumen.md) y [`fecha_alta` y últimos importados](adr/donaciones-service/20261111-fecha-de-alta-del-donante-y-ultimos-importados-en-el-archivo.md) · deuda: [DTI-39](adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
 * 📥 **Pantalla de importaciones del admin (R11-20, propuesta):** [spec del lote p1-importaciones](specs/active/R11-p1-importaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-importaciones.md)
+* 📄 **Entidades y Mis donaciones del donante con filtros en el servidor (R11-12, R11-13 y R11-18, propuesta):** [spec del lote p1-donante-listas](specs/active/R11-p1-donante-listas-spec.md)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
