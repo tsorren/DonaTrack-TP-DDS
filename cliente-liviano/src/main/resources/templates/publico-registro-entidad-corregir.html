@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <!--/* Corregí los datos de tu organización (ficha docs/interfaz/flujos/r11-p2-pendiente-solicitud.md,
-       4.2, R11-41): el formulario del registro de entidad en página aparte, lleno con lo que tiene
-       Donaciones (datos), sin el tipo de cuenta, el correo, la contraseña ni los términos. Mismos
-       grupos, campos, ayudas y avisos que publico-registro-entidad.html. Es un POST real a esta misma
-       dirección; al guardar vuelve a "Recibimos la solicitud". Estados: campos (lo que Donaciones
-       rechazó: el resumen arriba y el campo marcado), fallo (no se pudo guardar, con lo escrito) y
-       sinDatos (no se pudo leer: el aviso y "Volver a la solicitud", sin formulario vacío).
-       Escenarios de la maqueta: error, fallo, sin-datos y lento. */-->
+       4.2, R11-41): el mismo formulario del registro de entidad (publico-registro-entidad :: hoja) en
+       su modo corregir, en página aparte. Es un POST real a esta misma dirección; al guardar vuelve a
+       "Recibimos la solicitud". Estados (los arma hoja): campos (lo que Donaciones rechazó: el resumen
+       arriba y el campo marcado), fallo (no se pudo guardar, con lo escrito) y sinDatos (no se pudo
+       leer: el aviso y "Volver a la solicitud", sin formulario vacío). Escenarios de la maqueta: error,
+       fallo, sin-datos y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
 <head>
@@ -14,169 +13,9 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <div class="registro"
-       th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-                marcados=${escenario == 'error' ? {'que-es', 'calle'} : (campos != null ? campos : {})},
-                noGuardo=${fallo == true or escenario == 'fallo'},
-                sinLeer=${sinDatos == true or escenario == 'sin-datos'}">
-    <header class="registro-cabeza">
-      <p class="huerta-rotulo">Tu solicitud</p>
-      <h1>Corregí los datos <em>de tu organización</em></h1>
-      <p class="huerta-bajada">Cambiá lo que haga falta y guardá. El equipo revisa la solicitud con los
-        datos nuevos.</p>
-    </header>
-
-    <th:block th:if="${sinLeer}">
-      <section class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
-               aria-labelledby="sin-datos-titulo">
-        <h2 id="sin-datos-titulo">Ahora no podemos traer los datos de tu solicitud.</h2>
-        <p>Probá de nuevo en unos minutos.</p>
-        <a class="boton" data-tono="secundario" href="/publico-registro-entidad-enviada"
-           th:href="@{/publico-registro-entidad-enviada}">Volver a la solicitud</a>
-      </section>
-    </th:block>
-
-    <div class="registro-cuerpo" th:unless="${sinLeer}">
-      <nav th:replace="~{componentes/registro :: indice(${ {
-          {id: 'la-entidad', titulo: 'La organización', detalle: 'Qué es y cómo se llama'},
-          {id: 'entrega', titulo: 'Dirección de entrega', detalle: 'Adónde llega lo donado'},
-          {id: 'representa', titulo: 'Quién la representa', detalle: 'Tu nombre'},
-          {id: 'guardar', titulo: 'Guardar', detalle: 'Los cambios'} } })}"></nav>
-
-    <form class="tarjeta registro-formulario" action="/publico-registro-entidad-corregir"
-          th:action="@{/publico-registro-entidad-corregir}" method="post" data-validar
-          data-enviando="Guardando los cambios…" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <section th:if="${!#lists.isEmpty(marcados)}" class="banner resumen" data-estado="error" role="alert"
-               tabindex="-1" autofocus aria-labelledby="resumen-titulo">
-        <h2 id="resumen-titulo">Revisá estos datos antes de guardar</h2>
-        <ul>
-          <!-- Un aviso por campo marcado (un mapa literal en th:with se corta en sus comas). -->
-          <li th:each="campo : ${marcados}" th:switch="${campo}">
-            <a th:case="'entidad'" href="#entidad">Falta el nombre de la organización.</a>
-            <a th:case="'que-es'" href="#que-es">Elegí qué es tu organización.</a>
-            <a th:case="'tipo'" href="#tipo">Elegí el tipo de organización.</a>
-            <a th:case="'calle'" href="#calle">Falta la calle de la dirección de entrega.</a>
-            <a th:case="'altura'" href="#altura">Falta la altura.</a>
-            <a th:case="'localidad'" href="#localidad">Falta la localidad.</a>
-            <a th:case="'provincia'" href="#provincia">Falta la provincia.</a>
-            <a th:case="'codigo-postal'" href="#codigo-postal">Falta el código postal.</a>
-            <a th:case="'representante'" href="#representante">Falta el nombre de quien la representa.</a>
-          </li>
-        </ul>
-      </section>
-      <section th:if="${noGuardo}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus>
-        <h2>No pudimos guardar los cambios.</h2>
-        <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo en unos minutos.</p>
-      </section>
-      <p class="obligatorios">Todos los datos son obligatorios.</p>
-
-      <fieldset class="grupo registro-seccion" id="la-entidad">
-        <legend>La organización</legend>
-        <div class="campo" th:with="mal=${#lists.contains(marcados, 'entidad')}" th:data-estado="${mal} ? 'error'">
-          <label for="entidad">Nombre de la organización</label>
-          <small id="entidad-ayuda">Como la conoce el barrio. Es público.</small>
-          <p th:if="${mal}" id="entidad-error" class="campo-error">Falta el nombre de la organización.</p>
-          <input id="entidad" name="entidad" type="text" required autocomplete="organization"
-                 th:attr="aria-describedby=${mal} ? 'entidad-error entidad-ayuda' : 'entidad-ayuda',aria-invalid=${mal} ? 'true' : null"
-                 th:value="${datos?.entidad}" data-falta="Falta el nombre de la organización.">
-        </div>
-        <div class="campo" th:with="mal=${#lists.contains(marcados, 'que-es')}" th:data-estado="${mal} ? 'error'">
-          <label for="que-es">Qué es</label>
-          <small id="que-es-ayuda">Lo ven los donantes junto al nombre.</small>
-          <p th:if="${mal}" id="que-es-error" class="campo-error">Elegí qué es tu organización.</p>
-          <select id="que-es" name="queEs" required data-falta="Elegí qué es tu organización."
-                  th:attr="aria-describedby=${mal} ? 'que-es-error que-es-ayuda' : 'que-es-ayuda',aria-invalid=${mal} ? 'true' : null">
-            <option value="">Elegí una</option>
-            <option th:each="opcion : ${ {'Merendero', 'Comedor', 'Escuela', 'Hogar', 'Club', 'Biblioteca', 'Otra'} }"
-                    th:text="${opcion}" th:selected="${datos?.queEs == opcion}">Merendero</option>
-          </select>
-        </div>
-        <div class="campo" th:with="mal=${#lists.contains(marcados, 'tipo')}" th:data-estado="${mal} ? 'error'">
-          <label for="tipo">Tipo de organización</label>
-          <small id="tipo-ayuda">Si dudás, elegí la más parecida: el equipo lo revisa.</small>
-          <p th:if="${mal}" id="tipo-error" class="campo-error">Elegí el tipo de organización.</p>
-          <select id="tipo" name="tipo" required data-falta="Elegí el tipo de organización."
-                  th:attr="aria-describedby=${mal} ? 'tipo-error tipo-ayuda' : 'tipo-ayuda',aria-invalid=${mal} ? 'true' : null">
-            <option value="">Elegí una</option>
-            <option value="asociacion" th:selected="${datos?.tipo == 'asociacion'}">Asociación civil u ONG</option>
-            <option value="institucion" th:selected="${datos?.tipo == 'institucion'}">Institución: escuela, club o biblioteca</option>
-            <option value="organismo" th:selected="${datos?.tipo == 'organismo'}">Organismo público</option>
-          </select>
-        </div>
-      </fieldset>
-
-      <fieldset class="grupo registro-seccion" id="entrega" aria-describedby="direccion-ayuda">
-        <legend>Dirección de entrega</legend>
-        <small id="direccion-ayuda">Acá llegan las entregas. En público mostramos solo el barrio, nunca la
-          dirección.</small>
-        <div class="campos-par">
-          <div class="campo" th:with="mal=${#lists.contains(marcados, 'calle')}" th:data-estado="${mal} ? 'error'">
-            <label for="calle">Calle</label>
-            <p th:if="${mal}" id="calle-error" class="campo-error">Falta la calle.</p>
-            <input id="calle" name="calle" type="text" required autocomplete="address-line1"
-                   th:value="${escenario == 'error'} ? '' : ${datos?.calle}"
-                   th:attr="aria-describedby=${mal} ? 'calle-error' : null,aria-invalid=${mal} ? 'true' : null"
-                   data-falta="Falta la calle de la dirección de entrega.">
-          </div>
-          <div class="campo campo--corto" th:with="mal=${#lists.contains(marcados, 'altura')}" th:data-estado="${mal} ? 'error'">
-            <label for="altura">Altura</label>
-            <p th:if="${mal}" id="altura-error" class="campo-error">Falta la altura.</p>
-            <input id="altura" name="altura" type="text" inputmode="numeric" required
-                   th:attr="aria-describedby=${mal} ? 'altura-error' : null,aria-invalid=${mal} ? 'true' : null"
-                   th:value="${datos?.altura}" data-falta="Falta la altura.">
-          </div>
-        </div>
-        <div class="campos-par">
-          <div class="campo" th:with="mal=${#lists.contains(marcados, 'localidad')}" th:data-estado="${mal} ? 'error'">
-            <label for="localidad">Localidad</label>
-            <p th:if="${mal}" id="localidad-error" class="campo-error">Falta la localidad.</p>
-            <input id="localidad" name="localidad" type="text" required autocomplete="address-level2"
-                   th:attr="aria-describedby=${mal} ? 'localidad-error' : null,aria-invalid=${mal} ? 'true' : null"
-                   th:value="${datos?.localidad}" data-falta="Falta la localidad.">
-          </div>
-          <div class="campo" th:with="mal=${#lists.contains(marcados, 'provincia')}" th:data-estado="${mal} ? 'error'">
-            <label for="provincia">Provincia</label>
-            <p th:if="${mal}" id="provincia-error" class="campo-error">Falta la provincia.</p>
-            <input id="provincia" name="provincia" type="text" required autocomplete="address-level1"
-                   th:attr="aria-describedby=${mal} ? 'provincia-error' : null,aria-invalid=${mal} ? 'true' : null"
-                   th:value="${datos?.provincia}" data-falta="Falta la provincia.">
-          </div>
-        </div>
-        <div class="campo campo--corto" th:with="mal=${#lists.contains(marcados, 'codigo-postal')}" th:data-estado="${mal} ? 'error'">
-          <label for="codigo-postal">Código postal</label>
-          <p th:if="${mal}" id="codigo-postal-error" class="campo-error">Falta el código postal.</p>
-          <input id="codigo-postal" name="codigoPostal" type="text" required autocomplete="postal-code"
-                 th:attr="aria-describedby=${mal} ? 'codigo-postal-error' : null,aria-invalid=${mal} ? 'true' : null"
-                 th:value="${datos?.codigoPostal}" data-falta="Falta el código postal.">
-        </div>
-      </fieldset>
-
-      <fieldset class="grupo registro-seccion" id="representa">
-        <legend>Quién la representa</legend>
-        <div class="campo" th:with="mal=${#lists.contains(marcados, 'representante')}" th:data-estado="${mal} ? 'error'">
-          <label for="representante">Nombre y apellido</label>
-          <p th:if="${mal}" id="representante-error" class="campo-error">Falta el nombre de quien la representa.</p>
-          <input id="representante" name="representante" type="text" required autocomplete="name"
-                 pattern="\S+(\s+\S+)+" title="Escribí el nombre y el apellido."
-                 th:attr="aria-describedby=${mal} ? 'representante-error' : null,aria-invalid=${mal} ? 'true' : null"
-                 th:value="${datos?.representante}" data-falta="Falta el nombre de quien la representa.">
-        </div>
-        <p th:if="${datos?.correo != null}">Correo de la cuenta: <b th:text="${datos.correo}">rosa@merendero-ejemplo.test</b>.
-          Para cambiarlo, escribinos desde <a href="/publico-contacto" th:href="@{/publico-contacto}">Contacto</a>.</p>
-      </fieldset>
-
-      <section class="registro-seccion" id="guardar" aria-labelledby="guardar-titulo">
-        <h2 id="guardar-titulo">Guardar</h2>
-        <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
-                th:text="${escenario == 'lento'} ? 'Guardando los cambios…' : 'Guardar los cambios'">Guardar
-          los cambios</button>
-        <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Guardando los cambios…</p>
-        <p class="registro-salida"><a href="/publico-registro-entidad-enviada"
-           th:href="@{/publico-registro-entidad-enviada}">Volver a la solicitud sin guardar</a></p>
-      </section>
-    </form>
-    </div>
-  </div>
+  <th:block th:with="modo='corregir'">
+    <th:block th:replace="~{publico-registro-entidad :: hoja(false)}"></th:block>
+  </th:block>
 </th:block>
 </body>
 </html>

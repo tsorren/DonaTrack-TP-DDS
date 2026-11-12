@@ -2,6 +2,7 @@ package grupo5.cliente.seguridad;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,6 +30,7 @@ import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
 import grupo5.cliente.web.PublicoPortadaController;
 import grupo5.cliente.web.SolicitudEntidadController;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
@@ -260,8 +263,27 @@ class PerfilPendienteTest {
         .andExpect(content().string(containsString("Correo de la cuenta:")))
         .andExpect(content().string(not(containsString("name=\"correo\""))))
         .andExpect(content().string(not(containsString("name=\"clave\""))))
+        .andExpect(content().string(not(containsString("name=\"terminos\""))))
+        .andExpect(content().string(not(containsString("aria-label=\"Tipo de cuenta\""))))
+        .andExpect(content().string(not(containsString("¿Ya tenés cuenta?"))))
+        .andExpect(
+            content().string(containsString("action=\"/publico-registro-entidad-corregir\"")))
+        .andExpect(content().string(containsString("href=\"#guardar\"")))
         .andExpect(content().string(containsString("Guardar los cambios")))
         .andExpect(content().string(containsString("Volver a la solicitud sin guardar")));
+  }
+
+  @Test
+  void corregirYElRegistroSonElMismoFormulario() throws Exception {
+    // R11-41, ficha 4.2: Corregir es el fragmento hoja del registro en modo corregir, no una copia.
+    String corregir =
+        new String(
+            new ClassPathResource("templates/publico-registro-entidad-corregir.html")
+                .getInputStream()
+                .readAllBytes(),
+            StandardCharsets.UTF_8);
+    assertTrue(corregir.contains("publico-registro-entidad :: hoja("), "usa el fragmento hoja");
+    assertFalse(corregir.contains("<fieldset"), "no copia los campos del registro");
   }
 
   @Test
