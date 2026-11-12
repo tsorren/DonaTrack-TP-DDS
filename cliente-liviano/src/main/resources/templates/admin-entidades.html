@@ -305,7 +305,8 @@
       th:text="${enCorreccion} ? 'Esperando corrección' : (${e.estado == 'pendiente'} ? (${e.falta != null} ? 'Le falta un dato' : 'Pendiente') : (${e.estado == 'inactiva'} ? 'Inactiva' : 'Activa'))">Activa</span>
 
 <!--/* Las tres acciones de una pendiente. Aprobar no pregunta (ficha, 4.3); Pedir corrección y
-       Rechazar abren un diálogo con su campo obligatorio. */-->
+       Rechazar abren un diálogo con su campo obligatorio, que bloquea el fondo (data-bloquea,
+       R11-32: con JavaScript, showModal() desde static/js/interfaz.js; sin él, el popover). */-->
 <th:block th:fragment="acciones(e)">
   <div class="racimo">
     <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post"
@@ -319,7 +320,7 @@
     <button type="button" class="boton" data-tono="quitar" th:popovertarget="|rechazar-${e.clave}|"
             popovertarget="rechazar-hogar" th:aria-label="|Rechazar: ${e.nombre}|">Rechazar</button>
   </div>
-  <dialog class="dialogo" th:id="|corregir-${e.clave}|" id="corregir-hogar" popover
+  <dialog class="dialogo" th:id="|corregir-${e.clave}|" id="corregir-hogar" popover data-bloquea
           th:aria-labelledby="|corregir-${e.clave}-titulo|">
     <h3 class="dialogo-titulo" th:id="|corregir-${e.clave}-titulo|"
         th:text="|¿Qué tiene que corregir ${e.nombre}?|">¿Qué tiene que corregir Hogar Ejemplo Norte?</h3>
@@ -341,7 +342,7 @@
       </div>
     </form>
   </dialog>
-  <dialog class="dialogo" data-tono="quitar" th:id="|rechazar-${e.clave}|" id="rechazar-hogar" popover
+  <dialog class="dialogo" data-tono="quitar" th:id="|rechazar-${e.clave}|" id="rechazar-hogar" popover data-bloquea
           th:aria-labelledby="|rechazar-${e.clave}-titulo|">
     <h3 class="dialogo-titulo" th:id="|rechazar-${e.clave}-titulo|"
         th:text="|¿Rechazar la solicitud de ${e.nombre}?|">¿Rechazar la solicitud de Hogar Ejemplo Norte?</h3>

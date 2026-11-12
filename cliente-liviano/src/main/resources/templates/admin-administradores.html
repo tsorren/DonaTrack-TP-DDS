@@ -49,7 +49,7 @@
          th:href="@{/admin-administradores}">Volver a cargar</a>
     </section>
 
-    <dialog th:if="${filas != null}" class="dialogo" id="alta-administrador" popover
+    <dialog th:if="${filas != null}" class="dialogo" id="alta-administrador" popover data-bloquea
             aria-labelledby="alta-titulo">
       <h2 class="dialogo-titulo" id="alta-titulo">Dar de alta un administrador</h2>
       <th:block th:replace="~{admin-administradores :: formulario(true)}"></th:block>
@@ -85,7 +85,7 @@
                 <button type="button" class="boton" data-tono="secundario" data-tamano="chico"
                         th:attr="popovertarget=|otra-${c.id}|" popovertarget="otra-cuenta"
                 >Generar otra contraseña provisoria</button>
-                <dialog class="dialogo" id="otra-cuenta" th:id="|otra-${c.id}|" popover
+                <dialog class="dialogo" id="otra-cuenta" th:id="|otra-${c.id}|" popover data-bloquea
                         th:attr="aria-labelledby=|otra-titulo-${c.id}|" aria-labelledby="otra-titulo">
                   <h2 class="dialogo-titulo" id="otra-titulo" th:id="|otra-titulo-${c.id}|"
                       th:text="|¿Generar otra contraseña para ${c.nombre ?: c.correo}?|">¿Generar otra contraseña

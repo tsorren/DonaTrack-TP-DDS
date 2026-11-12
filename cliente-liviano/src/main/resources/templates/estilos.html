@@ -288,6 +288,62 @@
             </div>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.dialogo[data-bloquea]', 'La ventana que bloquea el fondo (R11-32, regla 4): confirmar algo que no se deshace o un formulario corto. Con data-bloquea, static/js/interfaz.js la abre con showModal(): el fondo queda inerte, Tab no sale, tocar afuera no la cierra (Esc y su botón sí) y la página no se desplaza; sin JavaScript es el popover de siempre. Un [data-corte] oculto es el aviso de corte de conexión que se muestra adentro. Con data-forma=&quot;pasos&quot;, un formulario en pasos: .dialogo-indicador (las marcas, .dialogo-marca y .dialogo-indicador-nombre), un .dialogo-paso por grupo con su .dialogo-paso-titulo (.dialogo-con-pasos y .dialogo-sin-pasos según haya pasos), .dialogo-resumen al final y .dialogo-botones. Acá, el último paso fijo, sin el componente pasos.', ~{::demo-dialogo-bloquea})}">
+          <th:block th:fragment="demo-dialogo-bloquea">
+            <div class="racimo">
+              <button type="button" class="boton" data-tono="secundario" popovertarget="dialogo-que-bloquea">Publicar otra necesidad</button>
+              <dialog class="dialogo" id="dialogo-que-bloquea" popover data-bloquea data-forma="pasos"
+                      aria-labelledby="dialogo-que-bloquea-titulo">
+                <h3 class="dialogo-titulo" id="dialogo-que-bloquea-titulo">Publicar otra necesidad</h3>
+                <form class="pila" data-espacio="3" data-pasos action="/estilos" method="get">
+                  <ol class="dialogo-indicador" aria-label="Pasos">
+                    <li data-estado="hecho"><span class="dialogo-marca" aria-hidden="true"></span><span
+                        class="dialogo-indicador-nombre" aria-hidden="true">Qué y cuánto</span><span
+                        class="solo-lectores">Qué y cuánto: Hecho</span></li>
+                    <li data-estado="hecho"><span class="dialogo-marca" aria-hidden="true"></span><span
+                        class="dialogo-indicador-nombre" aria-hidden="true">Cuándo</span><span
+                        class="solo-lectores">Cuándo: Hecho</span></li>
+                    <li data-estado="actual" aria-current="step"><span class="dialogo-marca" aria-hidden="true"></span><span
+                        class="dialogo-indicador-nombre" aria-hidden="true">Por qué</span><span
+                        class="solo-lectores">Por qué: Paso actual</span></li>
+                  </ol>
+                  <fieldset class="dialogo-paso">
+                    <legend class="dialogo-paso-titulo"><span class="dialogo-sin-pasos">Por qué hace
+                        falta</span><span class="dialogo-con-pasos">Paso 3 de 3: Por qué y revisar</span></legend>
+                    <div class="campo">
+                      <label for="muestra-motivo">Por qué hace falta</label>
+                      <textarea id="muestra-motivo" rows="2">Para el almuerzo de lunes a viernes.</textarea>
+                    </div>
+                    <section class="dialogo-resumen" aria-labelledby="muestra-resumen-titulo">
+                      <h4 id="muestra-resumen-titulo">Vas a publicar</h4>
+                      <dl>
+                        <dt>Qué hace falta</dt>
+                        <dd>Fideos secos (kg)</dd>
+                        <dd><button type="button" class="boton" data-tono="secundario"
+                                    aria-label="Cambiar qué hace falta">Cambiar</button></dd>
+                        <dt>Cuánto</dt>
+                        <dd>30</dd>
+                        <dd><button type="button" class="boton" data-tono="secundario"
+                                    aria-label="Cambiar cuánto">Cambiar</button></dd>
+                      </dl>
+                    </section>
+                  </fieldset>
+                  <section class="banner" data-estado="error" role="alert" data-corte hidden>
+                    <h4>No sabemos si se publicó.</h4>
+                    <p>Se cortó la conexión mientras se enviaba.</p>
+                  </section>
+                  <div class="dialogo-botones">
+                    <button type="button" class="boton" data-tono="secundario">Atrás</button>
+                    <button type="button" class="boton" data-tono="secundario" autofocus
+                            popovertarget="dialogo-que-bloquea" popovertargetaction="hide">Cancelar</button>
+                    <button type="button" class="boton" data-tono="principal"
+                            popovertarget="dialogo-que-bloquea" popovertargetaction="hide">Publicar necesidad</button>
+                  </div>
+                </form>
+              </dialog>
+            </div>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.info', 'El ícono de información: un botón de 48 px que abre un globo (popover nativo) con más información y el enlace a la página completa. Anda con toque y teclado, sin JavaScript; con posicionamiento por ancla sale arriba del botón.', ~{::demo-info})}">
           <th:block th:fragment="demo-info">
             <p>Qué podés donar <span th:replace="~{componentes/info :: info('info-de-muestra', 'Qué podés donar', 'Qué podés donar',

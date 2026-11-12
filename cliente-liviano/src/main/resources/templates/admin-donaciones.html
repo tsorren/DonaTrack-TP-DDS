@@ -233,7 +233,7 @@
         <button type="button" class="boton" data-tono="quitar" popovertarget="vencida"
                 th:aria-label="|Marcar como vencida: ${d.que}|">Marcar como vencida</button>
       </div>
-      <dialog class="dialogo" data-tono="quitar" id="vencida" popover aria-labelledby="vencida-titulo">
+      <dialog class="dialogo" data-tono="quitar" id="vencida" popover data-bloquea aria-labelledby="vencida-titulo">
         <h2 class="dialogo-titulo" id="vencida-titulo" th:text="|¿Marcar ${d.que} como vencida?|">¿Marcar Leche
           en polvo como vencida?</h2>
         <p>Deja de estar disponible para asignar y no se puede deshacer. El sistema ya marca solas, cada
@@ -246,6 +246,12 @@
             <label for="motivo">Motivo (opcional)</label>
             <textarea id="motivo" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
           </div>
+          <!--/* Sin conexión (R11-32): lo muestra static/js/interfaz.js, con la ventana abierta. */-->
+          <section class="banner" data-estado="error" role="alert" data-corte hidden>
+            <h3>No sabemos si se guardó.</h3>
+            <p>Se cortó la conexión mientras se enviaba. Revisá la señal y, antes de probar de nuevo,
+              recargá la página para ver cómo quedó.</p>
+          </section>
           <div class="racimo">
             <button class="boton" data-tono="quitar" type="submit">Marcar como vencida</button>
             <button type="button" class="boton" data-tono="secundario" popovertarget="vencida"

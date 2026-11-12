@@ -334,6 +334,55 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
   }
 
+  /**
+   * R11-32 y R11-31 (ficha r11-p2-ventanas): las ventanas de la regla 4 llevan data-bloquea sobre
+   * el popover de hoy (sin JavaScript siguen andando igual); Publicar otra necesidad es un botón
+   * que abre la ventana en pasos, con los tres grupos y sin el formulario plegado.
+   */
+  @Test
+  void lasVentanasDeLaRegla4BloqueanYPublicarVaEnPasos() throws Exception {
+    mvc.perform(get("/entidad-necesidades"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"baja-lentejas\" popover[^>]*data-bloquea.*")))
+        .andExpect(content().string(containsString("popovertarget=\"publicar-ventana\"")))
+        .andExpect(
+            content().string(matchesPattern("(?s).*id=\"publicar-ventana\"[^>]*data-bloquea.*")))
+        .andExpect(content().string(containsString("data-forma=\"pasos\"")))
+        .andExpect(content().string(containsString("Paso 2 de 3: </span>Cuándo")))
+        .andExpect(content().string(containsString("Vas a publicar")))
+        .andExpect(content().string(containsString("Elegí qué hace falta.")))
+        .andExpect(content().string(containsString("No sabemos si se publicó.")))
+        .andExpect(content().string(not(containsString("id=\"publicar\""))));
+    // Sin vigentes o de vuelta con un error: el formulario en la página, sin ventana.
+    mvc.perform(get("/entidad-necesidades?escenario=vacio"))
+        .andExpect(content().string(containsString("Publicar una necesidad")))
+        .andExpect(content().string(not(containsString("id=\"publicar-ventana\""))));
+    mvc.perform(get("/entidad-necesidades-publicar-error"))
+        .andExpect(content().string(not(containsString("id=\"publicar-ventana\""))))
+        .andExpect(content().string(containsString("Revisá dos cosas antes de publicar")));
+    mvc.perform(get("/admin-camiones"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"agregar-camion\" popover[^>]*data-bloquea.*")))
+        .andExpect(content().string(containsString("No sabemos si se guardó.")));
+    mvc.perform(get("/admin-camiones?camion=ac456ef"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"deshabilitar-ac456ef\"[^>]*data-bloquea.*")));
+    mvc.perform(get("/admin-entidades?ver=pendientes&entidad=merendero-este"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"corregir-[a-z-]+\" popover[^>]*data-bloquea.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern("(?s).*id=\"rechazar-[a-z-]+\" popover[^>]*data-bloquea.*")));
+    mvc.perform(get("/admin-donaciones-detalle"))
+        .andExpect(
+            content().string(matchesPattern("(?s).*id=\"vencida\" popover[^>]*data-bloquea.*")));
+  }
+
   @Test
   void cadaAccionDeNecesidadesLlevaASuAviso() throws Exception {
     mvc.perform(post("/entidad-necesidades-baja"))
