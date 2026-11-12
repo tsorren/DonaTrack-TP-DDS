@@ -91,7 +91,7 @@
       <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}"
          class="boton" data-tono="principal">Quiero donar</a>
       <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}"
-         class="boton" data-tono="secundario">Soy una entidad</a>
+         class="boton" data-tono="secundario">Soy una organización</a>
     </div>
   </div>
   <label th:replace="~{componentes/huerta :: pausa}"></label>
@@ -165,7 +165,7 @@
            data-dibujo="paso-2-maceta" alt="" width="97" height="92">
       <div>
         <p class="huerta-paso-numero">Paso 2</p>
-        <h3>Se asigna a una entidad</h3>
+        <h3>Se asigna a una organización</h3>
         <p>Un comedor, una escuela o un hogar que lo pidió.</p>
       </div>
     </li>
@@ -175,7 +175,7 @@
       <div>
         <p class="huerta-paso-numero">Paso 3</p>
         <h3>Las abejas lo llevan</h3>
-        <p>Sale del depósito en camión y ves en qué tramo está, hasta la puerta de la entidad.</p>
+        <p>Sale del depósito en camión y ves en qué tramo está, hasta la puerta de la organización.</p>
       </div>
     </li>
     <li class="huerta-paso">
@@ -183,7 +183,7 @@
            data-dibujo="planta-naranjo" alt="" width="90" height="230">
       <div>
         <p class="huerta-paso-numero">Paso 4</p>
-        <h3>La entidad confirma y echa raíces</h3>
+        <h3>La organización confirma y echa raíces</h3>
         <p>Con la fecha y una foto de lo entregado. Abajo se ve hasta dónde llegó.</p>
       </div>
     </li>
@@ -260,7 +260,7 @@
       <circle class="huerta-bajo-nudo" cx="892" cy="207" r="41"/>
       <path class="huerta-bajo-raiz" d="M1067.8 750.4c.9 8.6 6.3 15.3 13 19.8c1.7 1.2 3.5 2 5 3.3c35 24.6 102.5 11.2 141.5 0c1.8-.9 4.4-.9 6.4-1.2c3.7-.4 9.4-1 13.1-1.5c0 0 6.6-.8 6.6-.8c-6.3 4.5-13.2 8.4-20.2 12c-39 12-95.2 22.4-134.6 9.1c-4.3-1.5-8.6-3.3-12.7-5.6c-2.1-1.1-4-2.5-6.1-3.7c-2-1.2-3.6-3.2-5.1-5c-6-7.1-9.8-17.4-6.9-26.4l0 0z"/>
       </svg>
-      <ul class="huerta-bajo-ramas" role="list" aria-label="Qué tipos de entidad reciben cada categoría">
+      <ul class="huerta-bajo-ramas" role="list" aria-label="Qué tipos de organización reciben cada categoría">
         <li>
           <span class="huerta-bajo-categoria" data-lugar="alimentos">Alimentos</span>
           <ul role="list">
@@ -285,7 +285,7 @@
         </li>
       </ul>
       <p class="huerta-bajo-tu" data-lugar="tu-entidad">
-        <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}">Tu entidad<span
+        <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}">Tu organización<span
             class="solo-lectores">: sumala a DonaTrack</span></a>
       </p>
     </div>
@@ -293,9 +293,9 @@
       <p class="huerta-rotulo">Bajo tierra</p>
       <h2 id="raices-titulo">Cada entrega <em>echa raíces.</em></h2>
       <p>Lo que donás se ramifica por categoría y termina en comedores, merenderos, escuelas, clubes,
-        hogares y otras entidades: hoy son 46 en el mapa. Cada una pide lo que necesita y confirma lo que
+        hogares y otras organizaciones: hoy son 46 en el mapa. Cada una pide lo que necesita y confirma lo que
         recibe.</p>
-      <p><a href="/publico-entidades" th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a></p>
+      <p><a href="/publico-entidades" th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a></p>
     </div>
   </div>
 </section>
@@ -306,11 +306,11 @@
   <header class="huerta-cabeza">
     <p class="huerta-rotulo">Impacto</p>
     <h2 id="impacto-titulo">Lo que ya <em>dio frutos.</em></h2>
-    <p class="huerta-bajada">Se cuenta con la confirmación de cada entidad.<th:block th:if="${estado == ''}">
+    <p class="huerta-bajada">Se cuenta con la confirmación de cada organización.<th:block th:if="${estado == ''}">
       Actualizado el 15 de octubre de 2026, 14:30.</th:block></p>
   </header>
   <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas. Se
-    cuentan cuando cada entidad confirma lo que recibe.</p>
+    cuentan cuando cada organización confirma lo que recibe.</p>
   <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las cifras…</p>
   <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
     <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
@@ -346,11 +346,11 @@
     <p class="huerta-rotulo">Octubre de 2026</p>
     <h2 id="viajo-titulo">Lo que viajó <em>este mes.</em></h2>
     <p class="huerta-bajada" th:if="${estado == ''}">3 entregas confirmadas con su foto y 1 en camino. Cada
-      foto la sube la entidad cuando recibe la donación.</p>
+      foto la sube la organización cuando recibe la donación.</p>
     <a href="/publico-donaciones" th:href="@{/publico-donaciones}">Ver todas las entregas confirmadas</a>
   </header>
   <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">Todavía no hay entregas confirmadas este
-    mes. Cuando una entidad confirme una entrega, aparece acá con su foto.</p>
+    mes. Cuando una organización confirme una entrega, aparece acá con su foto.</p>
   <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las entregas del mes…</p>
   <div class="vacio" data-forma="filetes" th:if="${estado == 'error'}" role="alert">
     <p>No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
@@ -444,7 +444,7 @@
       <h3>Donás y ves dónde da fruto.</h3>
       <ul class="huerta-hojas" role="list">
         <li>Llevás lo que tenés al depósito.</li>
-        <li>Seguís cada donación hasta la entidad.</li>
+        <li>Seguís cada donación hasta la organización.</li>
         <li>Ves la foto cuando la recibe.</li>
       </ul>
       <div class="huerta-opcion-acciones">
@@ -476,7 +476,7 @@
     <li class="tarjeta huerta-opcion">
       <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}"
            alt="" width="144" height="245">
-      <p class="huerta-rotulo">Entidades</p>
+      <p class="huerta-rotulo">Organizaciones</p>
       <h3>Pedís lo que falta y lo recibís.</h3>
       <ul class="huerta-hojas" role="list">
         <li>Cargás lo que necesitás.</li>
@@ -485,10 +485,10 @@
       </ul>
       <div class="huerta-opcion-acciones">
         <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}" class="boton"
-           data-tono="principal">Sumar mi entidad</a>
-        <span th:replace="~{componentes/info :: info('info-entidades', 'Cómo se suma una entidad', 'Cómo se suma una entidad',
-            'Completás los datos de la entidad y de quien la representa, el equipo los revisa y, con la entidad aprobada, publicás lo que necesitás.',
-            '/publico-para-entidades', 'Ver todo para entidades')}"></span>
+           data-tono="principal">Sumar mi organización</a>
+        <span th:replace="~{componentes/info :: info('info-entidades', 'Cómo se suma una organización', 'Cómo se suma una organización',
+            'Completás los datos de la organización y de quien la representa, el equipo los revisa y, con la organización aprobada, publicás lo que necesitás.',
+            '/publico-para-entidades', 'Ver todo para organizaciones')}"></span>
       </div>
     </li>
   </ul>
@@ -505,15 +505,15 @@
     <details open><summary>¿DonaTrack cobra algún tipo de comisión o suscripción?</summary>
       <p>No. DonaTrack fue pensado como una manera de ayudar a la comunidad y lo mantiene un equipo de
         estudiantes de la UTN-FRBA. Crear tu cuenta, donar y seguir cada entrega no tiene costo, ni para
-        quien dona ni para las entidades.</p></details>
+        quien dona ni para las organizaciones.</p></details>
     <details><summary>¿Dónde entrego lo que quiero donar?</summary>
       <p>Lo llevás al depósito. El equipo lo registra al recibirlo y, desde ese momento, lo ves en tu
-        cuenta con cada paso: a qué entidad se asigna, cuándo sale y cuándo llega.</p></details>
+        cuenta con cada paso: a qué organización se asigna, cuándo sale y cuándo llega.</p></details>
     <details><summary>¿Cómo sé que mi donación llegó a destino?</summary>
-      <p>Cuando la entidad la recibe, confirma la entrega con la fecha y una foto de lo entregado. Te
+      <p>Cuando la organización la recibe, confirma la entrega con la fecha y una foto de lo entregado. Te
         avisamos y lo ves en el detalle de la donación.</p></details>
     <details><summary>¿Puedo donar sin que se muestre mi nombre?</summary>
-      <p>Sí. En tu perfil elegís si las entidades ven tu nombre o el de tu empresa, y lo podés cambiar
+      <p>Sí. En tu perfil elegís si las organizaciones ven tu nombre o el de tu empresa, y lo podés cambiar
         cuando quieras.</p></details>
     <details><summary>¿Qué pasa si una entrega no puede llegar?</summary>
       <p>La donación vuelve al depósito y sale de nuevo. Te contamos qué pasó y cuándo es la nueva
@@ -530,7 +530,7 @@
     <a href="/publico-registro-donante" th:href="@{/publico-registro-donante}" class="boton"
        data-tono="principal">Quiero donar</a>
     <a href="/publico-registro-entidad" th:href="@{/publico-registro-entidad}" class="boton"
-       data-tono="secundario">Soy una entidad</a>
+       data-tono="secundario">Soy una organización</a>
   </div>
 </section>
 
@@ -568,7 +568,7 @@
                   llegaron=${#sets.toSet(donaciones.?[estado.tono == 'entregada'].![destino])},
                   n=${#lists.size(destinos)}">
   <svg th:unless="${n == 0}" class="huerta-raices" viewBox="0 -10 600 250" role="img" focusable="false"
-       th:aria-label="|Raíces desde tus donaciones hasta ${n} entidades|">
+       th:aria-label="|Raíces desde tus donaciones hasta ${n} organizaciones|">
     <path class="huerta-raiz huerta-raiz--0" d="M300 -10V40"/>
     <th:block th:each="e, vuelta : ${destinos}"
               th:with="x=${n == 1 ? 300 : 70 + vuelta.index * 460 / (n - 1)}, llego=${llegaron.contains(e)}">
@@ -584,11 +584,11 @@
   </svg>
   <div class="huerta-tierra-texto">
     <p class="huerta-rotulo">Raíces de lo que donaste</p>
-    <h2 id="raices-titulo" th:text="${#sets.size(llegaron) == 1} ? 'Llegaste a 1 entidad.' : |Llegaste a ${#sets.size(llegaron)} entidades.|">Llegaste
-      a 2 entidades.</h2>
-    <p th:if="${n == 0}">Cuando una de tus donaciones se asigne a una entidad, su raíz va a aparecer acá.</p>
+    <h2 id="raices-titulo" th:text="${#sets.size(llegaron) == 1} ? 'Llegaste a 1 organización.' : |Llegaste a ${#sets.size(llegaron)} organizaciones.|">Llegaste
+      a 2 organizaciones.</h2>
+    <p th:if="${n == 0}">Cuando una de tus donaciones se asigne a una organización, su raíz va a aparecer acá.</p>
     <!--/* En dos renglones fijos (usuario, 2026-11-09): el texto corto y, si no entra, recortado. */-->
-    <p th:unless="${n == 0}" data-renglones="2">Desde el 1 de octubre de 2026. Raíz llena: la entidad
+    <p th:unless="${n == 0}" data-renglones="2">Desde el 1 de octubre de 2026. Raíz llena: la organización
       confirmó la entrega; punteada: todavía la espera.</p>
   </div>
 </section>

@@ -83,7 +83,7 @@ class PublicoEntidadesControllerTest {
 
     mvc.perform(get("/publico-entidades"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Otras entidades")))
+        .andExpect(content().string(containsString("Otras organizaciones")))
         .andExpect(content().string(containsString("Parroquia Ejemplo")))
         .andExpect(content().string(containsString("de las 31 que están en DonaTrack")))
         .andExpect(content().string(containsString("Al 10 de noviembre de 2026")))
@@ -103,7 +103,7 @@ class PublicoEntidadesControllerTest {
     mvc.perform(get("/publico-entidades"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Comedores y merenderos")))
-        .andExpect(content().string(not(containsString("Otras entidades"))));
+        .andExpect(content().string(not(containsString("Otras organizaciones"))));
   }
 
   @Test
@@ -123,6 +123,7 @@ class PublicoEntidadesControllerTest {
     mvc.perform(get("/publico-entidades"))
         .andExpect(status().isOk())
         .andExpect(
-            content().string(containsString("Ninguna entidad tiene necesidades vigentes ahora.")));
+            content()
+                .string(containsString("Ninguna organización tiene necesidades vigentes ahora.")));
   }
 }

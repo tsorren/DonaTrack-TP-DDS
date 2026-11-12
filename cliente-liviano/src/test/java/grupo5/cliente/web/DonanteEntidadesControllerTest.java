@@ -71,13 +71,13 @@ class DonanteEntidadesControllerTest {
 
     mvc.perform(get("/donante-entidades?pagina=2"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("7 entidades activas. Página 2 de 2.")))
+        .andExpect(content().string(containsString("7 organizaciones activas. Página 2 de 2.")))
         .andExpect(content().string(containsString("Piden 20 unidades · Hasta el 15 de noviembre")))
         .andExpect(content().string(containsString("Actualizado\n        hoy, 7 de noviembre")))
         .andExpect(content().string(not(containsString("<progress"))))
         .andExpect(content().string(not(containsString("solo está dibujada"))))
         // B7: el componente paginas, no el nav propio
-        .andExpect(content().string(containsString("aria-label=\"Páginas de entidades\"")))
+        .andExpect(content().string(containsString("aria-label=\"Páginas de organizaciones\"")))
         .andExpect(content().string(containsString("aria-label=\"Página anterior\"")))
         .andExpect(content().string(not(containsString(">Página anterior</a>"))));
     verify(entidades).entidades(DONANTE, new Consulta("", null, false, 2));
@@ -97,8 +97,8 @@ class DonanteEntidadesControllerTest {
 
     mvc.perform(get("/donante-entidades"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Por ahora no hay entidades activas.")))
-        .andExpect(content().string(not(containsString("entidades activas. Página"))))
+        .andExpect(content().string(containsString("Por ahora no hay organizaciones activas.")))
+        .andExpect(content().string(not(containsString("organizaciones activas. Página"))))
         .andExpect(content().string(not(containsString("class=\"paginas\""))));
   }
 
@@ -121,7 +121,8 @@ class DonanteEntidadesControllerTest {
         .andExpect(
             content()
                 .string(
-                    containsString("14 entidades coinciden con lo que elegiste. Página 2 de 3.")))
+                    containsString(
+                        "14 organizaciones coinciden con lo que elegiste. Página 2 de 3.")))
         .andExpect(content().string(containsString("Club Ejemplo")))
         .andExpect(content().string(not(containsString("En esta página"))))
         .andExpect(content().string(containsString("ya=si&amp;nombre=comedor&amp;pagina=3")))
@@ -135,12 +136,13 @@ class DonanteEntidadesControllerTest {
     when(entidades.entidades(eq(DONANTE), any())).thenReturn(vista(List.of(), 0, 1, 1));
 
     mvc.perform(get("/donante-entidades?ya=si"))
-        .andExpect(content().string(containsString("Todavía no le donaste a ninguna entidad.")))
+        .andExpect(
+            content().string(containsString("Todavía no le donaste a ninguna organización.")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "Cuando el depósito asigne una de tus donaciones, la entidad aparece acá.")))
+                        "Cuando el depósito asigne una de tus donaciones, la organización aparece acá.")))
         .andExpect(content().string(containsString("Ver todas")));
   }
 
@@ -151,7 +153,7 @@ class DonanteEntidadesControllerTest {
 
     mvc.perform(get("/donante-entidades?categoria=ropa&ya=si"))
         .andExpect(
-            content().string(containsString("Ninguna entidad coincide con lo que elegiste.")))
+            content().string(containsString("Ninguna organización coincide con lo que elegiste.")))
         .andExpect(
             content().string(containsString("Probá con otra categoría o sacá los filtros.")));
   }
@@ -184,7 +186,8 @@ class DonanteEntidadesControllerTest {
         .andExpect(
             content()
                 .string(
-                    containsString("5 entidades coinciden con lo que elegiste. Página 1 de 1.")))
+                    containsString(
+                        "5 organizaciones coinciden con lo que elegiste. Página 1 de 1.")))
         .andExpect(content().string(not(containsString("id=\"grupo-3\""))))
         .andExpect(content().string(containsString("Lo que pedía de Higiene ya está cubierto.")));
     verify(entidades).entidades(DONANTE, new Consulta("", HIGIENE, false, 1));
@@ -225,7 +228,8 @@ class DonanteEntidadesControllerTest {
         .andExpect(
             content()
                 .string(
-                    containsString("3 entidades coinciden con lo que elegiste. Página 1 de 1.")))
+                    containsString(
+                        "3 organizaciones coinciden con lo que elegiste. Página 1 de 1.")))
         .andExpect(content().string(containsString("Sin pedidos pendientes")))
         .andExpect(
             content()

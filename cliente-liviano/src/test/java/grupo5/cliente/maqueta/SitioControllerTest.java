@@ -182,7 +182,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-entidades-detalle?entidad=comedor"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Entidades"))
+        .andExpect(model().attribute("seccion", "Organizaciones"))
         .andExpect(content().string(containsString("Empresa donante")))
         .andExpect(content().string(not(containsString("entidad=comedor\""))));
     mvc.perform(get("/donante-incentivos")).andExpect(status().isNotFound());
@@ -233,11 +233,12 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-detalle?donacion=pan"))
         .andExpect(content().string(containsString("No encontramos esa donación.")));
     mvc.perform(get("/donante-entidades?nombre=zzz"))
-        .andExpect(content().string(containsString("Ninguna entidad activa se llama así.")));
+        .andExpect(content().string(containsString("Ninguna organización activa se llama así.")));
     // Sin tildes ni mayúsculas, como la búsqueda de Donaciones (R11-13).
     mvc.perform(get("/donante-entidades?nombre=CLÚB"))
         .andExpect(content().string(containsString("Club Ejemplo Norte")))
-        .andExpect(content().string(containsString("1 entidad activa tiene «CLÚB» en el nombre.")));
+        .andExpect(
+            content().string(containsString("1 organización activa tiene «CLÚB» en el nombre.")));
     // R11-18: la segunda página de la maqueta trae los nombres largos y una entidad sin pedidos.
     mvc.perform(get("/donante-entidades?pagina=2"))
         .andExpect(
@@ -323,9 +324,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No encontramos esa necesidad.")));
     mvc.perform(get("/entidad-necesidades?escenario=conflicto"))
         .andExpect(
-            content().string(containsString("Otra persona de tu entidad cambió esta necesidad")));
+            content()
+                .string(containsString("Otra persona de tu organización cambió esta necesidad")));
     mvc.perform(get("/entidad-necesidades?escenario=entidad-inactiva"))
-        .andExpect(content().string(containsString("Tu entidad no está activa")))
+        .andExpect(content().string(containsString("Tu organización no está activa")))
         .andExpect(content().string(not(containsString("Publicar necesidad"))));
     mvc.perform(get("/entidad-necesidades-publicar-error"))
         .andExpect(content().string(containsString("Revisá dos cosas antes de publicar")))
@@ -444,18 +446,19 @@ class SitioControllerTest {
     mvc.perform(post("/donante-perfil-guardado").param("mostrar", "no"))
         .andExpect(redirectedUrl("/donante-perfil-guardado"));
     mvc.perform(get("/donante-perfil-guardado"))
-        .andExpect(content().string(containsString("Las entidades ya no ven tu nombre")))
+        .andExpect(content().string(containsString("Las organizaciones ya no ven tu nombre")))
         .andExpect(content().string(containsString("ven «Empresa donante · Sostenedor»")))
-        .andExpect(content().string(containsString("la entidad ve tu categoría como donante")));
+        .andExpect(
+            content().string(containsString("la organización ve tu categoría como donante")));
     mvc.perform(get("/donante-perfil-guardado?mostrar=si"))
-        .andExpect(content().string(containsString("Las entidades ven tu nombre")));
+        .andExpect(content().string(containsString("Las organizaciones ven tu nombre")));
     mvc.perform(post("/donante-perfil-guardado").param("seccion", "datos"))
         .andExpect(redirectedUrl("/donante-perfil-guardado?seccion=datos"));
     mvc.perform(post("/donante-perfil-guardado").param("seccion", "otra"))
         .andExpect(redirectedUrl("/donante-perfil-guardado"));
     mvc.perform(get("/donante-perfil-guardado?seccion=datos"))
         .andExpect(content().string(containsString("Guardamos los datos de tu cuenta")))
-        .andExpect(content().string(not(containsString("Las entidades ya no ven tu nombre"))));
+        .andExpect(content().string(not(containsString("Las organizaciones ya no ven tu nombre"))));
     mvc.perform(get("/donante-perfil-guardado?seccion=avisos"))
         .andExpect(content().string(containsString("Guardamos cómo te avisamos")));
     mvc.perform(get("/publico-legales"))
@@ -687,7 +690,7 @@ class SitioControllerTest {
     mvc.perform(get("/publico-portada"))
         // El enlace a la landing de donantes, en la tarjeta de quien dona (usuario, 2026-11-08).
         .andExpect(content().string(containsString("Qué podés donar")))
-        .andExpect(content().string(containsString("Cómo se suma una entidad")));
+        .andExpect(content().string(containsString("Cómo se suma una organización")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
@@ -936,7 +939,7 @@ class SitioControllerTest {
   void lasEntidadesDelAdminSeApruebanCorrigenORechazan() throws Exception {
     // Una sola lista, de la A a la Z; el estado es un filtro al lado de la búsqueda.
     mvc.perform(get("/admin-entidades?entidad=comedor"))
-        .andExpect(model().attribute("seccion", "Entidades"))
+        .andExpect(model().attribute("seccion", "Organizaciones"))
         .andExpect(content().string(containsString("Activas · 46")))
         .andExpect(content().string(containsString("Pendientes · 3")))
         .andExpect(content().string(containsString("Inactivas · 3")))
@@ -950,9 +953,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))
         .andExpect(content().string(containsString("Pendientes · 0")))
-        .andExpect(content().string(containsString("Ninguna entidad pide sumarse por ahora.")));
+        .andExpect(
+            content().string(containsString("Ninguna organización pide sumarse por ahora.")));
     mvc.perform(get("/admin-entidades?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las entidades.")));
+        .andExpect(content().string(containsString("No pudimos cargar las organizaciones.")));
     mvc.perform(get("/admin-entidades-aprobada"))
         .andExpect(content().string(containsString("Aprobaste a Hogar Ejemplo Norte.")))
         .andExpect(content().string(containsString("Pendientes · 2")))
@@ -962,7 +966,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Esperando")))
         .andExpect(content().string(containsString("Le pedimos a Merendero Ejemplo Este")))
         .andExpect(
-            content().string(containsString("acciones vuelven cuando la entidad la reenvíe.")))
+            content().string(containsString("acciones vuelven cuando la organización la reenvíe.")))
         .andExpect(content().string(not(containsString("Aprobar: Merendero Ejemplo Este"))));
     mvc.perform(get("/admin-entidades-rechazada"))
         .andExpect(
@@ -1317,7 +1321,7 @@ class SitioControllerTest {
         .andExpect(status().isOk())
         .andExpect(model().attribute("seccion", "Mi perfil"))
         .andExpect(content().string(containsString("aria-label=\"Secciones de tu perfil\"")))
-        .andExpect(content().string(containsString("Datos de la entidad")))
+        .andExpect(content().string(containsString("Datos de la organización")))
         .andExpect(content().string(containsString("Calle Ejemplo 450, Localidad Ejemplo")))
         .andExpect(content().string(containsString("No se cambia desde acá")))
         .andExpect(content().string(not(containsString("Cómo te ven"))))
@@ -1325,7 +1329,7 @@ class SitioControllerTest {
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "avisos"))
         .andExpect(redirectedUrl("/entidad-perfil-guardado?seccion=avisos"));
     mvc.perform(get("/entidad-perfil-guardado?seccion=datos"))
-        .andExpect(content().string(containsString("Guardamos los datos de tu entidad.")));
+        .andExpect(content().string(containsString("Guardamos los datos de tu organización.")));
     mvc.perform(get("/entidad-perfil-guardado?seccion=avisos"))
         .andExpect(content().string(containsString("Guardamos cómo te avisamos.")));
     mvc.perform(get("/entidad-perfil?escenario=lento"))

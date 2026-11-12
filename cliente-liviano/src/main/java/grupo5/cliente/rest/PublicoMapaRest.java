@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 class PublicoMapaRest implements PublicoMapaPuerto {
 
   private static final String NOTA =
-      "Todavía no mostramos qué entidad recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas.";
+      "Todavía no mostramos qué organización recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas.";
   private static final int DIAS_DEL_MES = 30;
   private static final int LIMITE = 200;
   private static final double MIL = 10_000.0;

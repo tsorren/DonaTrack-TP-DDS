@@ -19,7 +19,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-entidades', ~{::contenido})}">
 <head>
-  <title>Entidades - DonaTrack</title>
+  <title>Organizaciones - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -41,22 +41,22 @@
              paginas=${misEntidades.paginas},
              lista=${entidades},
              dibujada=${pagina <= misEntidades.dibujadas},
-             activas=|${total} ${total == 1 ? 'entidad activa' : 'entidades activas'}|">
+             activas=|${total} ${total == 1 ? 'organización activa' : 'organizaciones activas'}|">
   <div class="entidades" data-v="entidades">
     <header>
-      <p class="rotulo" th:text="${seccion}">Entidades</p>
+      <p class="rotulo" th:text="${seccion}">Organizaciones</p>
       <h1>Quiénes reciben <em>las donaciones</em></h1>
-      <p class="bajada">Lo que piden hoy las entidades activas, por categoría, y cuánto recibió cada necesidad. Actualizado
+      <p class="bajada">Lo que piden hoy las organizaciones activas, por categoría, y cuánto recibió cada necesidad. Actualizado
         [[${misEntidades.actualizado}]].</p>
     </header>
 
     <th:block th:if="${escenario == 'error'}">
-      <section th:replace="~{datos-donante :: error('No pudimos cargar las entidades.', '/donante-entidades')}"></section>
+      <section th:replace="~{datos-donante :: error('No pudimos cargar las organizaciones.', '/donante-entidades')}"></section>
     </th:block>
 
     <section th:if="${escenario == 'vacio' or (escenario == '' and sinEntidades)}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Por ahora no hay entidades activas.</h2>
-      <p>Cuando una entidad se sume y la aprueben, aparece acá con lo que pide.</p>
+      <h2 id="vacio-titulo">Por ahora no hay organizaciones activas.</h2>
+      <p>Cuando una organización se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
 
     <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra): al lado
@@ -64,7 +64,7 @@
            (las reales con Donaciones), no una lista fija. */-->
     <form hx-boost="true" th:if="${(escenario == '' and !sinEntidades) or escenario == 'lento'}" class="filtros-barra" role="search"
           action="/donante-entidades" th:action="@{/donante-entidades}"
-          method="get" aria-label="Buscar entidades">
+          method="get" aria-label="Buscar organizaciones">
       <div class="campo filtro-buscar">
         <label for="nombre">Buscar por nombre</label>
         <div class="filtro-buscar-fila">
@@ -81,7 +81,7 @@
     </form>
 
     <th:block th:if="${escenario == 'lento'}">
-      <p class="cargando" role="status">Cargando las entidades…</p>
+      <p class="cargando" role="status">Cargando las organizaciones…</p>
       <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
     </th:block>
 
@@ -89,13 +89,13 @@
       <!--/* El resultado, sobre el total que da el servidor (R11-12): la categoría y "Ya doné" filtran
              todas las entidades activas, no la página. Al llegar desde el paginador, el foco va acá. */-->
       <p class="resultado" role="status" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
-         th:text="${filtrado} ? (${total == 0} ? (${soloYa and categoria == '' and busca == ''} ? 'Todavía no le donaste a ninguna entidad.' : 'Ninguna entidad coincide con lo que elegiste.') : |${total} ${total == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste. Página ${pagina} de ${paginas}.|)
-                 : (${busca != ''} ? (${total == 0} ? 'Ninguna entidad activa se llama así.' : |${total} ${total == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre. Página ${pagina} de ${paginas}.|)
+         th:text="${filtrado} ? (${total == 0} ? (${soloYa and categoria == '' and busca == ''} ? 'Todavía no le donaste a ninguna organización.' : 'Ninguna organización coincide con lo que elegiste.') : |${total} ${total == 1 ? 'organización coincide' : 'organizaciones coinciden'} con lo que elegiste. Página ${pagina} de ${paginas}.|)
+                 : (${busca != ''} ? (${total == 0} ? 'Ninguna organización activa se llama así.' : |${total} ${total == 1 ? 'organización activa tiene' : 'organizaciones activas tienen'} «${busca}» en el nombre. Página ${pagina} de ${paginas}.|)
                  : |${activas}. Página ${pagina} de ${paginas}.|)">46
-        entidades activas. Página 1 de 8.</p>
+        organizaciones activas. Página 1 de 8.</p>
 
       <section th:if="${(busca != '' or filtrado) and total == 0}" class="vacio" aria-labelledby="sin-resultados">
-        <h2 id="sin-resultados" th:text="${soloYa and categoria == '' and busca == ''} ? 'Cuando el depósito asigne una de tus donaciones, la entidad aparece acá.' : (${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.')">Probá
+        <h2 id="sin-resultados" th:text="${soloYa and categoria == '' and busca == ''} ? 'Cuando el depósito asigne una de tus donaciones, la organización aparece acá.' : (${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.')">Probá
           con otra parte del nombre.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
@@ -173,7 +173,7 @@
     <section class="tarjeta lamina como-donar" aria-labelledby="como-titulo">
       <h2 id="como-titulo">Cómo llega tu donación</h2>
       <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
-        entidad. Desde que la registran, ves cada paso en Mis donaciones.</p>
+        organización. Desde que la registran, ves cada paso en Mis donaciones.</p>
       <!--/* El depósito de ejemplo, solo en la maqueta: con datos reales todavía no hay de dónde sacarlo
              (R11-09) y se ofrece escribir para saberlo. */-->
       <p th:if="${depositoDeEjemplo}" class="deposito"><b>Depósito Central Ejemplo</b>

@@ -55,9 +55,9 @@
     <section th:if="${escenario == 'vacio' or (escenario == '' and miInicio.donaciones.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
       <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
-        hasta que la entidad confirme la entrega.</p>
+        hasta que la organización confirme la entrega.</p>
       <a class="boton" data-tono="secundario" href="/donante-entidades"
-         th:href="@{/donante-entidades}">Conocer las entidades</a>
+         th:href="@{/donante-entidades}">Conocer las organizaciones</a>
     </section>
 
     <div th:if="${conDatos}" class="inicio-cuerpo">
@@ -74,7 +74,7 @@
             <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
                  data-dibujo="planta-naranjo" alt="" width="90" height="230">
             <b th:text="${miInicio.entregadasDelMes}">2</b>
-            <span>entregas confirmadas por las entidades en [[${miInicio.nombreDelMes()}]]</span>
+            <span>entregas confirmadas por las organizaciones en [[${miInicio.nombreDelMes()}]]</span>
           </li>
           <li class="huerta-cifra">
             <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
@@ -86,7 +86,7 @@
             <img src="/img/ilustraciones/arbol-triangular.svg" th:src="@{/img/ilustraciones/arbol-triangular.svg}"
                  data-dibujo="arbol-triangular" alt="" width="134" height="278">
             <b th:text="${entidades}">3</b>
-            <span>entidades reciben tus donaciones desde el [[${miInicio.desde}]]</span>
+            <span>organizaciones reciben tus donaciones desde el [[${miInicio.desde}]]</span>
           </li>
         </ul>
         <!--/* El hito de lo acumulado (brief: el juego se insinúa). */-->
@@ -155,8 +155,8 @@
                 <a href="/donante-donaciones?estado=pendiente"
                    th:href="@{/donante-donaciones(estado='pendiente')}"
                    th:text="|${#lists.size(sinDestino)} esperan destino|">2 esperan destino</a>
-                <span th:text="|${#strings.listJoin(sinDestino.![titulo], ' y ')}: se asignan cuando una entidad pida algo así.|">Arroz
-                  largo fino y Zapatillas: se asignan cuando una entidad pida algo así.</span>
+                <span th:text="|${#strings.listJoin(sinDestino.![titulo], ' y ')}: se asignan cuando una organización pida algo así.|">Arroz
+                  largo fino y Zapatillas: se asignan cuando una organización pida algo así.</span>
               </li>
             </ul>
           </section>

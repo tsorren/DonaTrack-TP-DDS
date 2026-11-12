@@ -36,7 +36,7 @@
         <label><input type="radio" name="tipo" value="persona" th:checked="${!organizacion}"> Una
           persona</label>
         <label><input type="radio" name="tipo" value="organizacion" th:checked="${organizacion}"> Una
-          organización</label>
+          empresa, ONG o institución</label>
       </fieldset>
       <div class="racimo">
         <button class="boton" data-tono="secundario" type="submit">Cambiar</button>
@@ -114,7 +114,7 @@
       </th:block>
 
       <th:block th:if="${organizacion}">
-        <h2>La organización</h2>
+        <h2>La empresa, ONG o institución</h2>
         <div class="grilla" data-espacio="3">
           <div class="campo">
             <label for="razon-social">Razón social *</label>
@@ -146,7 +146,7 @@
         <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="correo">Correo *</label>
           <small id="correo-ayuda">Usamos el correo para que active su cuenta; no lo mostramos a las
-            entidades.</small>
+            organizaciones.</small>
           <p th:if="${conError}" id="correo-error" class="campo-error">El correo no parece completo: falta la
             @. Por ejemplo: ana@ejemplo.org.</p>
           <input id="correo" name="correo" type="email" required autocomplete="off"

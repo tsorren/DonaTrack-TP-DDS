@@ -4,6 +4,7 @@ import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 
 import grupo5.cliente.puertos.DonantePerfilPuerto;
 import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.DonantePerfilVista;
 import java.util.List;
 import java.util.Locale;
@@ -52,21 +53,15 @@ class DonantePerfilRest implements DonantePerfilPuerto {
     DonacionesApi.Persona p = d.persona() == null ? SIN_PERSONA : d.persona();
     DonacionesApi.Direccion dir = p.direccion() == null ? SIN_DIRECCION : p.direccion();
     // Sin tipo no es empresa (R11-06): solo JURIDICA lleva razón social y CUIT.
-    Tipo cuentaDe = tipo(p);
-    boolean empresa = cuentaDe == Tipo.EMPRESA;
-    String tipo =
-        switch (cuentaDe) {
-          case EMPRESA -> "Empresa donante";
-          case PERSONA -> "Persona donante";
-          case SIN_TIPO -> "Donante";
-        };
+    boolean empresa = tipo(p) == Tipo.EMPRESA;
+    String tipo = comoDonante(p);
     List<DonacionesApi.Medio> medios =
         p.mediosDeContacto() == null ? List.of() : p.mediosDeContacto();
     String correo = medio(medios, "CORREO");
     return new DonantePerfilVista(
         nombre(p),
         correo == null ? tipo : tipo + " · " + correo,
-        anonimo(empresa, categoria(donante)),
+        anonimo(empresa ? tipo : null, categoria(donante)),
         Boolean.FALSE.equals(d.mostrarNombre()),
         empresa ? p.rubro() : null,
         empresa ? p.documento() : null,
@@ -83,6 +78,32 @@ class DonantePerfilRest implements DonantePerfilPuerto {
         empresa ? null : p.nombre(),
         empresa ? null : p.apellido(),
         empresa ? null : documento(p));
+  }
+
+  /** El nombre y el tipo de donante con un solo pedido a Donaciones (R11-44). */
+  @Override
+  public CuentaVista cuenta(UUID donante) {
+    DonacionesApi.Donante d = api.donante(donante);
+    DonacionesApi.Persona p = d == null || d.persona() == null ? SIN_PERSONA : d.persona();
+    return new CuentaVista(nombre(p), comoDonante(p));
+  }
+
+  /**
+   * Qué tipo de donante es, en palabras (R11-45): la persona jurídica dice su tipo jurídico y nunca
+   * "organización", que es quien recibe. Sin tipo jurídico, empresa, como hasta ahora.
+   */
+  private static String comoDonante(DonacionesApi.Persona p) {
+    return switch (tipo(p)) {
+      case PERSONA -> "Persona donante";
+      case SIN_TIPO -> "Donante";
+      case EMPRESA ->
+          switch (p.tipoJuridico() == null ? "" : p.tipoJuridico()) {
+            case "ONG" -> "ONG donante";
+            case "INSTITUCION" -> "Institución donante";
+            case "GUBERNAMENTAL" -> "Donante gubernamental";
+            default -> "Empresa donante";
+          };
+    };
   }
 
   @Override
@@ -112,10 +133,13 @@ class DonantePerfilRest implements DonantePerfilPuerto {
         : p.tipoDocumento() + " " + numero;
   }
 
-  /** Lo que ve la entidad sin el nombre: "Empresa donante · Sostenedor" o "Donante Sostenedor". */
-  private static String anonimo(boolean empresa, String categoria) {
-    if (empresa) {
-      return categoria == null ? "Empresa donante" : "Empresa donante · " + categoria;
+  /**
+   * Lo que ve la organización sin el nombre: "Empresa donante · Sostenedor" (o el tipo jurídico que
+   * tenga: "ONG donante · Sostenedor") o "Donante Sostenedor".
+   */
+  private static String anonimo(String juridica, String categoria) {
+    if (juridica != null) {
+      return categoria == null ? juridica : juridica + " · " + categoria;
     }
     return categoria == null ? "Donante" : "Donante " + categoria;
   }

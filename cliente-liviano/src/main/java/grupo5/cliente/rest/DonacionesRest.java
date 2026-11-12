@@ -92,7 +92,7 @@ class DonacionesRest implements DonacionesPuerto {
       List.of("En depósito", "Asignada", "Lista para entregar", "En camino", "Entregada");
 
   /** El destino de una donación asignada a una entidad cuyo nombre no se pudo leer. */
-  static final String SIN_NOMBRE = "una entidad";
+  static final String SIN_NOMBRE = "una organización";
 
   private final DonacionesApi api;
   private final LogisticaApi logistica;
@@ -216,7 +216,7 @@ class DonacionesRest implements DonacionesPuerto {
     DonacionesApi.Donacion d = lista.get(posicion);
     Donacion fila = donacion(d, (long) lista.size() - posicion, entidades(List.of(d)));
     String estado = normalizado(d.estadoActual());
-    String entidad = fila.destino() == null ? "la entidad" : fila.destino();
+    String entidad = fila.destino() == null ? "la organización" : fila.destino();
     LocalDateTime llego = ENTREGADA.equals(estado) ? desde(d, estado) : null;
     String foto = llego == null ? null : foto(d.id());
     String pie =
@@ -498,7 +498,7 @@ class DonacionesRest implements DonacionesPuerto {
       case ASIGNADA -> "Asignada, espera el camión";
       case LISTA -> "Lista para entregar, espera el camión";
       case TRASLADO -> "Salió el " + desde.format(DIA_Y_HORA);
-      case PUERTA -> "Llegó a la entidad el " + desde.format(DIA_Y_HORA);
+      case PUERTA -> "Llegó a la organización el " + desde.format(DIA_Y_HORA);
       case ENTREGADA -> "Entrega confirmada el " + desde.format(DIA);
       case FALLIDA -> "No pudo llegar el " + desde.format(DIA);
       case VENCIDA -> "Venció en el depósito el " + desde.format(DIA);

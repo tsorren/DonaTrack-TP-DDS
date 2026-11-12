@@ -121,7 +121,7 @@ final class DonanteDonaciones {
     Categoria categoria = categoria(d);
     String estado = normalizado(d.estadoActual());
     String destino = entidades.get(d.entidadBeneficiariaId());
-    String entidad = destino == null ? "la entidad" : destino;
+    String entidad = destino == null ? "la organización" : destino;
     LocalDateTime desde = desde(d, estado);
     return new DonanteDonacionVista(
         d.id().toString(),

@@ -71,7 +71,7 @@
 
     <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
-      <p>Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por
+      <p>Cuando a una donación se le asigne una organización, vas a ver acá su camino y, cuando salga, por
         dónde va el camión.</p>
       <a class="boton" data-tono="secundario" href="/donante-donaciones"
          th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
@@ -130,7 +130,7 @@
           </th:block>
         </ol>
         <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
-           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía esperan destino: aparecen acá cuando se les asigne una entidad. Las que ya llegaron, con la foto de la entidad, están en Mis donaciones.|">Arroz
+           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía esperan destino: aparecen acá cuando se les asigne una organización. Las que ya llegaron, con la foto de la organización, están en Mis donaciones.|">Arroz
           largo fino y Zapatillas todavía esperan destino.</p>
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
@@ -146,7 +146,7 @@
        (donante-seguimiento.css). */-->
 <th:block th:fragment="mapa">
   <div class="seguimiento-dibujo mapa-real" data-mapa data-mapa-puntos=".entrega[data-lat]" role="region"
-       aria-label="Mapa de tus entregas en curso: el depósito, por dónde va cada una y la entidad que la recibe. La lista de abajo tiene los mismos datos."
+       aria-label="Mapa de tus entregas en curso: el depósito, por dónde va cada una y la organización que la recibe. La lista de abajo tiene los mismos datos."
        data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
        data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack">
     <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En la lista están las mismas
@@ -158,7 +158,7 @@
     <template data-mapa-globo-deposito>
       <div class="mapa-globo-cuerpo">
         <p class="mapa-globo-nombre">Depósito de DonaTrack</p>
-        <p>De acá salen tus donaciones hacia cada entidad.</p>
+        <p>De acá salen tus donaciones hacia cada organización.</p>
       </div>
     </template>
   </div>

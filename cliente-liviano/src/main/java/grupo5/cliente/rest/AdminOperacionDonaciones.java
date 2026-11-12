@@ -334,7 +334,7 @@ final class AdminOperacionDonaciones {
     String registrada = d.fechaRegistro() == null ? "" : DIA.format(d.fechaRegistro());
     historial.add(
         registrada + ": llegó al depósito" + (deposito == null ? "" : " de " + deposito) + ".");
-    String hacia = entidad == null ? "la entidad" : entidad;
+    String hacia = entidad == null ? "la organización" : entidad;
     List<DonacionesApi.Cambio> cambios = d.historial() == null ? List.of() : d.historial();
     cambios.stream()
         .filter(c -> c.timestamp() != null && c.estadoAnterior() != null)

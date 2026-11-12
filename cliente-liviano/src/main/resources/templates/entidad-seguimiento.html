@@ -48,7 +48,7 @@
   <section th:if="${escenario == 'vacio' or (escenario == '' and #lists.isEmpty(vienen))}" class="vacio"
            aria-labelledby="vacio-titulo">
     <h2 id="vacio-titulo">No tenés entregas por recibir.</h2>
-    <p>Cuando se asigne una donación a tu entidad, vas a ver acá por dónde viene y cuándo llega a tu
+    <p>Cuando se asigne una donación a tu organización, vas a ver acá por dónde viene y cuándo llega a tu
       puerta.</p>
     <a class="boton" data-tono="secundario" href="/entidad-necesidades"
        th:href="@{/entidad-necesidades}">Ver tus necesidades</a>

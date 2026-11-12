@@ -25,7 +25,7 @@ public class SolicitudesDeEntidad {
   private static final String ROL = "ENTIDAD";
   private static final String PLANTILLA = "RESPONSABLE_ENTIDAD";
   private static final String SOLICITUD = "solicitudEntidad";
-  private static final String SIN_NOMBRE = "Entidad sin razón social registrada";
+  private static final String SIN_NOMBRE = "Organización sin razón social registrada";
 
   /**
    * Lo que ve quien aprueba: qué entidad es, con qué cuenta pidió sumarse y su persona jurídica.

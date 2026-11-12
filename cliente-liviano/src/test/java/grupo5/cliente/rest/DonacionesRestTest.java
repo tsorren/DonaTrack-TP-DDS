@@ -313,7 +313,7 @@ class DonacionesRestTest {
 
     donaciones.verify();
     // Tiene destino aunque no se sepa el nombre; la que no tiene, sigue sin destino.
-    assertEquals("una entidad", libro.get(1).destino());
+    assertEquals("una organización", libro.get(1).destino());
     assertNull(libro.get(0).destino());
     assertEquals(3, libro.size());
   }
@@ -322,7 +322,7 @@ class DonacionesRestTest {
   void laQueLlegoALaEntidadSigueEnCaminoParaElDonanteConSuNota() {
     assertEquals(EstadoEntrega.EN_CAMINO, DonacionesRest.estadoEntrega(Comun.PUERTA));
     assertEquals(
-        "Llegó a la entidad el 8 de noviembre, 18:20",
+        "Llegó a la organización el 8 de noviembre, 18:20",
         DonacionesRest.nota(Comun.PUERTA, java.time.LocalDateTime.of(2026, 11, 8, 18, 20)));
     assertEquals(
         "El camión llegó a Comedor Ejemplo. Falta que confirme la recepción.",

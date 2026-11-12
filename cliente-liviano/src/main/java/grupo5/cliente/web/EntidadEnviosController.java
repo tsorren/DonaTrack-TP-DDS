@@ -95,7 +95,7 @@ public class EntidadEnviosController {
     } catch (HttpClientErrorException.Conflict otraPersona) {
       return Envios.listo(
           NECESIDADES + "?necesidad=" + clave + "#" + clave,
-          "Otra persona de tu entidad cambió esta necesidad mientras la editabas. Revisala y, si"
+          "Otra persona de tu organización cambió esta necesidad mientras la editabas. Revisala y, si"
               + " hace falta, guardá tus cambios de nuevo.",
           atributos);
     }

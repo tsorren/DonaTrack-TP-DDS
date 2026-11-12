@@ -62,7 +62,7 @@ public class DonanteEntidadesController {
             donante.get(), new Consulta(nombre, categoria, "si".equals(ya), numero));
     model.addAttribute("misEntidades", misEntidades);
     model.addAttribute(
-        "paginador", Paginadores.de(pedido, "Páginas de entidades", misEntidades.tramo()));
+        "paginador", Paginadores.de(pedido, "Páginas de organizaciones", misEntidades.tramo()));
     return vista;
   }
 }

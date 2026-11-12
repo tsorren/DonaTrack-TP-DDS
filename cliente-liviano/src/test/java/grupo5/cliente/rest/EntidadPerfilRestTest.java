@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.EntidadPerfilVista;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -89,5 +90,21 @@ class EntidadPerfilRestTest {
     assertNull(perfil.medio());
     assertEquals(
         "Todavía no aceptaste los términos y la política de privacidad.", perfil.legales());
+  }
+
+  @Test
+  void laCuentaDelMenuEsLaRazonSocialSinPedirLaConstancia() {
+    servidor
+        .expect(requestTo(BASE + "entidades/" + ENTIDAD))
+        .andRespond(
+            withSuccess(
+                "{\"juridica\": {\"razonSocial\": \"Merendero Ejemplo\"}}",
+                MediaType.APPLICATION_JSON));
+
+    CuentaVista cuenta = adaptador.cuenta(ENTIDAD);
+
+    servidor.verify();
+    assertEquals("Merendero Ejemplo", cuenta.nombre());
+    assertEquals("Organización", cuenta.rol());
   }
 }

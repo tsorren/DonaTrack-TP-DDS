@@ -14,7 +14,7 @@ flowchart LR
   subgraph Publico["Público"]
     L[Landing] --> DR[Donaciones realizadas]
     L --> MP[Mapa de entregadas]
-    L --> EN[Entidades y necesidades]
+    L --> EN[Organizaciones y necesidades]
     L --> NO[Nosotros]
     L --> LD[Landing donante]
     L --> LB[Landing beneficiario]
@@ -23,7 +23,7 @@ flowchart LR
     L --> IS[Iniciar sesión]
     L --> RE[Registrarse: elegir]
     RE --> RD[Registro de donante]
-    RE --> RN[Registro de entidad]
+    RE --> RN[Registro de organización]
     IS --> RC[Recuperar contraseña]
     IS --> AC[Activar cuenta]
   end
@@ -35,7 +35,7 @@ flowchart LR
     ID --> ND[Notificaciones]
     ID --> PD[Mi perfil]
   end
-  subgraph Entidad
+  subgraph Entidad["Organización"]
     IE[Inicio] --> NE[Necesidades] --> DN[Detalle de necesidad]
     IE --> DRc[Donaciones recibidas]
     IE --> SE[Seguir entregas] --> CR[Confirmar recepción]
@@ -46,9 +46,9 @@ flowchart LR
     IA[Inicio] --> DOa[Donantes]
     DOa --> RDo[Registrar donante]
     DOa --> CSV[Importar CSV, con su resultado por fila]
-    IA --> ENa[Entidades]
-    ENa --> REn[Registrar entidad]
-    ENa --> AE[Aprobar entidades]
+    IA --> ENa[Organizaciones]
+    ENa --> REn[Registrar organización]
+    ENa --> AE[Aprobar organizaciones]
     IA --> DO[Donaciones]
     DO --> RDn[Registrar donación]
     DO --> DV[Detalle y vencimiento]
@@ -147,6 +147,19 @@ Ninguna pantalla nueva ni ningún nivel más. Lo que cambia en el recorrido, del
 | Misiones e insignias | En el menú solo de la persona. La empresa que entra por la dirección ve un aviso con "Ir a tu inicio" | R11-06, RF-07 |
 | Páginas de error y Contacto | Con sesión activa, el encabezado y el menú del área de la cuenta; la salida es "Volver a mi inicio" (el inicio del área). Sin sesión, el marco público y "Ir al inicio" (la portada) | R11-05 |
 | "Recibimos la solicitud" (entidad pendiente) | La cuenta con la solicitud pendiente puede ir a la portada, Entidades, Donaciones, el Mapa, Nosotros, Para donantes, Para entidades, Legales y Contacto. Lo privado, Ingresar, Crear una cuenta, Recuperar y Activar la siguen llevando a "Recibimos la solicitud" | R11-08 |
+
+## Nombres visibles (oleada P1, lote `p1-nombres`)
+
+Ninguna ruta cambia: `/donante-entidades`, `/admin-entidades`, `/publico-entidades` y las pantallas
+`entidad-*` siguen igual. Cambia lo que se lee (R11-44, R11-45):
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Menú del donante y del admin, títulos y rótulos | Entidades | Organizaciones |
+| Área de quien recibe (renglón debajo del nombre de la cuenta) | Entidad | Organización |
+| Registro, landing y registro del admin | Entidad / entidad beneficiaria | Organización |
+| Saludo y menú de la cuenta | El rol ("Donante", "Entidad", "Administración") | El nombre y apellido, la razón social o el nombre de quien administra; el rol, debajo |
+| Tipo del donante persona jurídica (Donantes del admin, Mi perfil, registro) | Organización | Su tipo jurídico: Empresa, ONG, Institución o Gubernamental |
 
 Lo que la sección 10 del backlog suma al mapa (perfil del admin, vista de importaciones, registro de
 actividad y notificaciones del admin) entra con sus lotes de P1 y P2 de esta corrida.

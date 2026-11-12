@@ -43,7 +43,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
-  <title>Entidades - DonaTrack</title>
+  <title>Organizaciones - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -91,12 +91,12 @@
     <header class="mesa-cabecera">
       <div>
         <p class="rotulo">Administración</p>
-        <h1>Entidades</h1>
+        <h1>Organizaciones</h1>
         <p th:if="${conDatos}" th:text="|Elegí una para ver su ficha. Al ${adminEntidades.al}.|">Elegí una para ver su ficha. Al 15 de octubre de 2026, 18:30.</p>
       </div>
       <div class="racimo">
         <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
-           th:href="@{/admin-entidades-registrar}">Registrar entidad</a>
+           th:href="@{/admin-entidades-registrar}">Registrar organización</a>
       </div>
     </header>
 
@@ -111,7 +111,7 @@
 
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos cargar las entidades.</h2>
+      <h2 id="error-titulo">No pudimos cargar las organizaciones.</h2>
       <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-entidades')}">escribinos
@@ -125,10 +125,10 @@
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <!--/* Al cambiar de página, el foco vuelve al título de la lista. */-->
       <h2 id="lista-titulo" class="solo-lectores" tabindex="-1"
-          th:autofocus="${paginador != null and paginador.cambio}">Todas las entidades</h2>
+          th:autofocus="${paginador != null and paginador.cambio}">Todas las organizaciones</h2>
 
       <th:block th:if="${escenario == 'lento'}">
-        <p class="cargando" role="status">Cargando las entidades…</p>
+        <p class="cargando" role="status">Cargando las organizaciones…</p>
         <div class="esqueleto" data-forma="hueco"></div>
       </th:block>
 
@@ -147,7 +147,7 @@
             <button class="boton" data-tono="secundario" type="submit">Buscar</button>
           </div>
         </div>
-        <div class="filtros" role="group" aria-label="Filtrar las entidades">
+        <div class="filtros" role="group" aria-label="Filtrar las organizaciones">
           <th:block th:unless="${paginada}">
           <details th:replace="~{componentes/filtros :: menu('ver', 'Estado', ${fVer}, ${ {
               {valor: '', texto: 'Todas · ' + cuantasTodas}, {valor: 'activas', texto: 'Activas · ' + cuantasActivas},
@@ -169,8 +169,8 @@
 
       <p th:if="${conDatos and paginada and !#lists.isEmpty(lista)}" role="status"
          th:with="n=${adminEntidades.enPaginas.total}, activasTexto=${#numbers.formatInteger(adminEntidades.activas, 1, 'POINT')}"
-         th:text="${q != ''} ? (${n == 1} ? 'Coincide 1 entidad.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} entidades.|) : |Se ven ${#lists.size(lista)} de las ${#numbers.formatInteger(n, 1, 'POINT')} entidades; ${activasTexto} están activas. Primero, las que piden sumarse; después, por nombre, de la A a la Z.|">Se
-        ven 20 de las 152 entidades; 46 están activas. Primero, las que piden sumarse; después, por nombre, de la A a la
+         th:text="${q != ''} ? (${n == 1} ? 'Coincide 1 organización.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|) : |Se ven ${#lists.size(lista)} de las ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones; ${activasTexto} están activas. Primero, las que piden sumarse; después, por nombre, de la A a la Z.|">Se
+        ven 20 de las 152 organizaciones; 46 están activas. Primero, las que piden sumarse; después, por nombre, de la A a la
         Z.</p>
       <p th:if="${conDatos and !paginada and !#lists.isEmpty(lista)}" role="status"
          th:text="${otrosFiltros} ? (${#lists.size(lista) == 1} ? |Coincide 1 de ${cuantasDelEstado}.| : |Coinciden ${#lists.size(lista)} de ${cuantasDelEstado}.|) : |Se ven ${#lists.size(lista)} de las ${cuantasDelEstado}, por nombre, de la A a la Z.|">Se
@@ -178,9 +178,9 @@
 
       <section th:if="${conDatos and #lists.isEmpty(lista)}" class="vacio" aria-labelledby="vacio-titulo">
         <h3 id="vacio-titulo"
-            th:text="${!otrosFiltros and fVer == 'pendientes'} ? 'Ninguna entidad pide sumarse por ahora.' : (${!otrosFiltros and fVer == 'inactivas'} ? 'No hay entidades inactivas.' : 'Ninguna entidad coincide con lo que buscaste.')">Ninguna
-          entidad pide sumarse por ahora.</h3>
-        <p th:if="${!otrosFiltros and fVer == 'pendientes'}">Cuando una entidad se registre, aparece acá para que
+            th:text="${!otrosFiltros and fVer == 'pendientes'} ? 'Ninguna organización pide sumarse por ahora.' : (${!otrosFiltros and fVer == 'inactivas'} ? 'No hay organizaciones inactivas.' : 'Ninguna organización coincide con lo que buscaste.')">Ninguna
+          organización pide sumarse por ahora.</h3>
+        <p th:if="${!otrosFiltros and fVer == 'pendientes'}">Cuando una organización se registre, aparece acá para que
           la revises.</p>
         <a class="boton" data-tono="secundario" href="/admin-entidades" th:href="@{/admin-entidades}">Ver
           todas</a>
@@ -225,7 +225,7 @@
                   <div th:if="${e.direccion != null}"><dt>Dirección:</dt> <dd th:text="${e.direccion}">Calle Ejemplo 1234</dd></div>
                 </th:block>
                 <div th:if="${e.estado == 'inactiva' and e.motivo != null}"><dt>Motivo de la baja:</dt> <dd th:text="${e.motivo}">La
-                  entidad pidió la baja.</dd></div>
+                  organización pidió la baja.</dd></div>
               </dl>
             </div>
 
@@ -280,7 +280,7 @@
 
             <div th:if="${e.estado == 'pendiente'}" data-parte="acciones">
               <p th:if="${enCorreccion}">Le pedimos que corrija su solicitud.
-                Las acciones vuelven cuando la entidad la reenvíe.</p>
+                Las acciones vuelven cuando la organización la reenvíe.</p>
               <th:block th:unless="${enCorreccion}">
                 <th:block th:replace="~{:: acciones(${e})}"></th:block>
               </th:block>
@@ -328,7 +328,7 @@
       <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
       <div class="campo">
         <label th:for="|correccion-${e.clave}|" for="correccion-hogar">Qué tiene que corregir *</label>
-        <small th:id="|correccion-${e.clave}-ayuda|" id="correccion-hogar-ayuda">Le llega a la entidad. Por
+        <small th:id="|correccion-${e.clave}-ayuda|" id="correccion-hogar-ayuda">Le llega a la organización. Por
           ejemplo: "Falta la constancia de domicilio".</small>
         <textarea th:id="|correccion-${e.clave}|" id="correccion-hogar" name="correccion" rows="3" required autofocus
                   th:aria-describedby="|correccion-${e.clave}-ayuda|"
@@ -349,7 +349,7 @@
           th:action="@{/admin-entidades-rechazada}" method="post">
       <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
       <div class="campo">
-        <label th:for="|motivo-${e.clave}|" for="motivo-hogar">Motivo, que le llega a la entidad *</label>
+        <label th:for="|motivo-${e.clave}|" for="motivo-hogar">Motivo, que le llega a la organización *</label>
         <textarea th:id="|motivo-${e.clave}|" id="motivo-hogar" name="motivo" rows="3" required
                   placeholder="Contanos el motivo"></textarea>
       </div>

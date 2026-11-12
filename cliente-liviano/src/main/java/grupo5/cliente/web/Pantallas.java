@@ -86,7 +86,7 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
               new Seccion("Mis donaciones", "Donaciones", ICONO_DONACIONES, "donante-donaciones"),
-              new Seccion("Entidades", "entidades", "donante-entidades"),
+              new Seccion("Organizaciones", "entidades", "donante-entidades"),
               new Seccion("Seguimiento", ICONO_SEGUIMIENTO, "donante-seguimiento")),
           Area.ENTIDAD,
           List.of(
@@ -99,7 +99,7 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
               new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
-              new Seccion("Entidades", "entidades", "admin-entidades"),
+              new Seccion("Organizaciones", "entidades", "admin-entidades"),
               new Seccion("Donaciones", ICONO_DONACIONES, "admin-donaciones"),
               new Seccion("Asignar donaciones", "Asignar", ICONO_SEGUIMIENTO, "admin-asignaciones"),
               new Seccion("Camiones", "camiones", "admin-camiones"),
@@ -314,7 +314,7 @@ public class Pantallas {
       if (area == null) {
         return;
       }
-      CuentaVista cuenta = cuentas.de(area.prefijo()).orElse(null);
+      CuentaVista cuenta = cuentas.deLaSesion(area.prefijo()).orElse(null);
       if (cuenta == null) {
         return;
       }

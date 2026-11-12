@@ -79,13 +79,18 @@ resumen:
 13. Sin urgencia artificial, culpa ni promesas que no se pueden comprobar
     ([cómo no escribimos](tono-y-comunicacion.md#cómo-no-escribimos)).
 14. Una cuenta dice de qué es: "Coinciden 1.234 donantes." es el total del servicio; si un filtro
-    solo mira la página que se ve, lo dice ("En esta página, 2 entidades a las que ya donaste.").
+    solo mira la página que se ve, lo dice ("En esta página, 2 organizaciones a las que ya donaste.").
 15. Un motivo o un estado que llega del servicio como código (`FORMATO_INVALIDO`) se muestra con su
     frase ("La fila no tiene las columnas esperadas."); uno que el cliente no conoce, con la frase de
     error inesperado, nunca el código.
 16. Un plazo que nadie fijó se dice como lo habitual, sin cifra ni fecha: "La revisión suele llevar
     unos días hábiles." ([cifras](tono-y-comunicacion.md#cifras-y-datos)). Si el equipo fija un plazo,
     el texto lo toma.
+17. Quien recibe se llama **Organización** en todo texto visible; "entidad" queda en el código, las
+    rutas y la API (R11-45). El donante persona jurídica dice su tipo: Empresa, ONG, Institución o
+    Gubernamental ([personas y organizaciones](tono-y-comunicacion.md#personas-organizaciones-y-fotos)).
+18. El saludo y el menú de la cuenta dicen su nombre (nombre y apellido o razón social), nunca el
+    rol; el rol va debajo, como dato. Sin el nombre, "Tu cuenta" (R11-44).
 
 ## Reglas generales de la revisión del 2026-11-11
 
@@ -120,7 +125,7 @@ Cada ficha de flujo contesta estas preguntas (RNF-UI-01):
 | # | Heurística | Pregunta |
 |---|---|---|
 | 1 | Visibilidad del estado | ¿El usuario sabe siempre qué está pasando y si su acción funcionó? |
-| 2 | Lenguaje del usuario | ¿Las palabras son las de una entidad o un donante, no las del sistema? |
+| 2 | Lenguaje del usuario | ¿Las palabras son las de una organización o un donante, no las del sistema? |
 | 3 | Control y libertad | ¿Puede deshacer, volver o cancelar sin perder lo cargado? |
 | 4 | Consistencia | ¿Lo que se parece se comporta igual en todo el sitio? |
 | 5 | Prevención de errores | ¿El diseño evita el error antes de tener que avisarlo? |

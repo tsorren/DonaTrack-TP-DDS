@@ -79,7 +79,7 @@
         no tenés donaciones.</h2>
       <p>Cuando lleves algo al depósito y lo registren, aparece acá, en el mes en que donaste.</p>
       <a class="boton" data-tono="secundario" href="/donante-entidades"
-         th:href="@{/donante-entidades}">Conocer las entidades</a>
+         th:href="@{/donante-entidades}">Conocer las organizaciones</a>
     </section>
 
     <div th:if="${conDatos}" id="anio">
@@ -170,8 +170,8 @@
             <div><dt>En camino</dt><dd th:text="${miAnio.enCamino}">1</dd></div>
             <div><dt>En el depósito</dt><dd th:text="${miAnio.enDeposito}">2</dd></div>
           </dl>
-          <p th:text="|Del 1 de enero al ${miAnio.hoy} de ${anio}, según las confirmaciones de las entidades. Actualizado hoy, ${miAnio.actualizado}.|">Del
-            1 de enero al 15 de octubre de 2026, según las confirmaciones de las entidades. Actualizado hoy,
+          <p th:text="|Del 1 de enero al ${miAnio.hoy} de ${anio}, según las confirmaciones de las organizaciones. Actualizado hoy, ${miAnio.actualizado}.|">Del
+            1 de enero al 15 de octubre de 2026, según las confirmaciones de las organizaciones. Actualizado hoy,
             15 de octubre, 16:25.</p>
         </section>
 

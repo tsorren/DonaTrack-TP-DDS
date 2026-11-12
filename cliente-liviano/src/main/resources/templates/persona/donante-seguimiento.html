@@ -47,7 +47,7 @@
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
-      <p>Cuando a una donación se le asigne una entidad, vas a ver acá su camino y, cuando salga, por
+      <p>Cuando a una donación se le asigne una organización, vas a ver acá su camino y, cuando salga, por
         dónde va el camión.</p>
       <a class="boton" data-tono="secundario" href="/donante-donaciones"
          th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
@@ -98,7 +98,7 @@
           </th:block>
         </ol>
         <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
-           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía ${#lists.size(sinDestino) == 1 ? 'espera' : 'esperan'} destino: aparece acá cuando se le asigne una entidad. Las que ya llegaron, con la foto de la entidad, están en Mis donaciones.|">Fideos
+           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía ${#lists.size(sinDestino) == 1 ? 'espera' : 'esperan'} destino: aparece acá cuando se le asigne una organización. Las que ya llegaron, con la foto de la organización, están en Mis donaciones.|">Fideos
           secos todavía espera destino.</p>
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Ver Mis donaciones</a>

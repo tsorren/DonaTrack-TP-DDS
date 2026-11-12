@@ -142,7 +142,14 @@ class DonanteNotificacionesMaqueta implements DonanteNotificacionesPuerto {
 
   private static Aviso deNecesidad(String id, String fecha, String texto, boolean leida) {
     return new Aviso(
-        id, fecha, TITULOS.get(NECESIDADES), texto, NECESIDADES, ENTIDADES, "Ver Entidades", leida);
+        id,
+        fecha,
+        TITULOS.get(NECESIDADES),
+        texto,
+        NECESIDADES,
+        ENTIDADES,
+        "Ver Organizaciones",
+        leida);
   }
 
   /** Un aviso de una donación: lleva a su detalle, con la clave que va antes del guion del id. */

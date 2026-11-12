@@ -50,7 +50,7 @@ public class AdminEntidadesController {
         "paginador",
         Paginadores.de(
             pedido,
-            "Páginas de entidades",
+            "Páginas de organizaciones",
             datos == null || datos.enPaginas() == null ? null : datos.enPaginas().registradas()));
     return vista;
   }

@@ -129,7 +129,7 @@ class DonacionesMaqueta implements DonacionesPuerto {
                   MERENDERO,
                   "2 de octubre de 2026",
                   ENTREGADA,
-                  "Entrega confirmada el 9 de octubre, con foto de la entidad"),
+                  "Entrega confirmada el 9 de octubre, con foto de la organización"),
               new Donacion(
                   "fideos",
                   1,
@@ -141,7 +141,7 @@ class DonacionesMaqueta implements DonacionesPuerto {
                   COMEDOR,
                   "1 de octubre de 2026",
                   ENTREGADA,
-                  "Entrega confirmada el 5 de octubre, con foto de la entidad")),
+                  "Entrega confirmada el 5 de octubre, con foto de la organización")),
           // Con sus subcategorías de ejemplo (RF-05, R11-13): la maqueta filtra por su categoría
           List.of(
               new Categoria(

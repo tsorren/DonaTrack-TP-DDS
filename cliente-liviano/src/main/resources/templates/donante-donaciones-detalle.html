@@ -99,7 +99,7 @@
           </section>
 
           <section class="detalle-foto" aria-labelledby="foto-titulo">
-            <h2 id="foto-titulo">La foto de la entidad</h2>
+            <h2 id="foto-titulo">La foto de la organización</h2>
             <figure th:if="${detalle.foto}" class="tarjeta foto">
               <img src="/img/ejemplo-entrega.svg" th:src="@{${detalle.foto}}" th:alt="${detalle.fotoAlt}"
                    alt="Cajas con la ropa de abrigo junto a la puerta del merendero" width="640" height="400">
@@ -112,7 +112,7 @@
               octubre.</p>
             <p th:if="${detalle.foto == null and detalle.pieFoto == null}" class="foto-falta"
                th:text="${destino == null}
-                 ? 'Todavía sin destino: espera una necesidad que le corresponda. Cuando se le asigne una entidad, vas a ver acá a cuál y cuándo sale.'
+                 ? 'Todavía sin destino: espera una necesidad que le corresponda. Cuando se le asigne una organización, vas a ver acá a cuál y cuándo sale.'
                  : |Falta confirmar la entrega: la confirma ${destino} con la foto.|">Falta confirmar la
               entrega: la confirma Comedor Barrio Ejemplo con la foto.</p>
           </section>

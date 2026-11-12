@@ -154,7 +154,7 @@
              href="/donante-entidades" th:href="@{/donante-entidades}">Ver a quién donar</a>
         </div>
         <details th:if="${h?.donacion != null}" id="huerta-mensaje">
-          <summary class="boton" data-tono="secundario">Ver el mensaje de la entidad</summary>
+          <summary class="boton" data-tono="secundario">Ver el mensaje de la organización</summary>
           <blockquote>
             <p th:text="${h.mensaje}">Las galletitas acompañaron la merienda del viernes. ¡Gracias por acordarte de
               nosotros!</p>
@@ -202,7 +202,7 @@
   </section>
 
   <p>Las misiones cuentan tus donaciones: las que llevás al depósito y, en Impacto Real, las que la
-    entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+    organización confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
 </th:block>
 </body>
 </html>

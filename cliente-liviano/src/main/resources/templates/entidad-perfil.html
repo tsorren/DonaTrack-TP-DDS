@@ -32,7 +32,7 @@
     <p class="perfil-cuenta" th:text="${ficha.cuentaLinea}">Comedor · Marta, comedor@ejemplo.org</p>
 
     <p th:if="${guardo == 'datos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
-      Guardamos los datos de tu entidad.</p>
+      Guardamos los datos de tu organización.</p>
     <p th:if="${guardo == 'avisos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
       Guardamos cómo te avisamos.</p>
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
@@ -54,7 +54,7 @@
            JavaScript; al guardar vuelve a la misma. */-->
     <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
     <nav class="pestanas-lista" aria-label="Secciones de tu perfil" x-on:keydown="teclear">
-      <a class="pestana" id="pestana-datos" href="#datos" x-on:click="elegir">Datos de la entidad</a>
+      <a class="pestana" id="pestana-datos" href="#datos" x-on:click="elegir">Datos de la organización</a>
       <a class="pestana" id="pestana-como-te-avisamos" href="#como-te-avisamos" x-on:click="elegir">Avisos</a>
     </nav>
 
@@ -62,10 +62,10 @@
     <form action="/entidad-perfil-guardado" th:action="@{/entidad-perfil-guardado#datos(seccion='datos')}"
           method="post" class="formulario perfil-seccion" aria-labelledby="datos-titulo"
           th:aria-busy="${lento} ? 'true' : null">
-      <h2 id="datos-titulo">Datos de la entidad</h2>
+      <h2 id="datos-titulo">Datos de la organización</h2>
       <p class="obligatorios">Todos los datos son obligatorios, salvo los que dicen «opcional».</p>
       <div class="campo">
-        <label for="entidad">Nombre de la entidad</label>
+        <label for="entidad">Nombre de la organización</label>
         <input id="entidad" name="entidad" type="text" required autocomplete="organization"
                th:value="${ficha.nombre}" value="Comedor Barrio Ejemplo" placeholder="Por ejemplo: Comedor Barrio Ejemplo">
       </div>
@@ -97,7 +97,7 @@
         <p><b th:text="${ficha.direccion}">Calle Ejemplo 450, Localidad Ejemplo, Buenos Aires</b></p>
         <p class="nota">No se cambia desde acá: es a donde van los camiones. Para cambiarla,
           <a href="/publico-contacto" th:href="@{/publico-contacto(volver='/entidad-perfil')}">escribinos</a>
-          y la revisamos como cuando sumaste tu entidad.</p>
+          y la revisamos como cuando sumaste tu organización.</p>
       </div>
       <fieldset class="perfil-grupo">
         <legend>Quién la representa</legend>
@@ -123,7 +123,7 @@
     <form action="/entidad-perfil-guardado" th:action="@{/entidad-perfil-guardado#como-te-avisamos(seccion='avisos')}"
           method="post" class="formulario perfil-seccion" aria-labelledby="avisos-titulo">
       <h2 id="avisos-titulo">Cómo te avisamos</h2>
-      <p>Te avisamos cuando se asigna una donación a tu entidad, cuando sale hacia vos, si tiene un
+      <p>Te avisamos cuando se asigna una donación a tu organización, cuando sale hacia vos, si tiene un
         problema y cuando llega a tu puerta. Los avisos también quedan en
         <a href="/entidad-notificaciones" th:href="@{/entidad-notificaciones}">Notificaciones</a>.</p>
       <div class="campo">

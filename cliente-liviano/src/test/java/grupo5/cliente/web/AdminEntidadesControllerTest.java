@@ -118,7 +118,7 @@ class AdminEntidadesControllerTest {
     mvc.perform(get("/admin-entidades").param("buscar", " jose ").param("pagina", "2"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Página 2 de 3")))
-        .andExpect(content().string(containsString("Coinciden 45 entidades.")))
+        .andExpect(content().string(containsString("Coinciden 45 organizaciones.")))
         .andExpect(content().string(containsString("Buscar por nombre</label>")))
         .andExpect(content().string(containsString("pagina=3")))
         .andExpect(content().string(containsString("entidad=e1&amp;buscar=jose&amp;pagina=2")))

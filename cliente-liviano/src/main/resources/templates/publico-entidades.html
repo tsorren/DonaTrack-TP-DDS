@@ -11,7 +11,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-entidades', ~{::contenido})}">
 <head>
-  <title>Entidades - DonaTrack</title>
+  <title>Organizaciones - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -46,16 +46,16 @@
            2026-11-08: "mover el árbol con las 6 entidades al hero"). */-->
     <header class="publica-cabeza">
       <div>
-        <p class="rotulo">Entidades</p>
-        <h1>Lo que piden <em>las entidades</em></h1>
-        <p class="lectura-bajada">Comedores, escuelas, hogares y otras entidades de la comunidad publican lo
-          que les hace falta. Lo que donás se asigna a una entidad que lo pidió.</p>
+        <p class="rotulo">Organizaciones</p>
+        <h1>Lo que piden <em>las organizaciones</em></h1>
+        <p class="lectura-bajada">Comedores, escuelas, hogares y otras organizaciones de la comunidad publican lo
+          que les hace falta. Lo que donás se asigna a una organización que lo pidió.</p>
       </div>
       <div th:if="${escenario == '' and n > 0}" class="cifra-fruto" aria-live="polite">
         <p th:if="${q == '' and !filtrado}"><b class="fruto" th:text="${n}">6</b>
-          <span th:text="|entidades con necesidades vigentes, de las ${v.total} que están en DonaTrack. Al ${v.fecha}.|">entidades con necesidades vigentes, de las 46 que están en DonaTrack. Al 15 de octubre de 2026.</span></p>
+          <span th:text="|organizaciones con necesidades vigentes, de las ${v.total} que están en DonaTrack. Al ${v.fecha}.|">organizaciones con necesidades vigentes, de las 46 que están en DonaTrack. Al 15 de octubre de 2026.</span></p>
         <p th:unless="${q == '' and !filtrado}"><b class="fruto" th:text="${n}">2</b>
-          <span th:text="|${n == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que buscaste. Al ${v.fecha}.|">entidades
+          <span th:text="|${n == 1 ? 'organización coincide' : 'organizaciones coinciden'} con lo que buscaste. Al ${v.fecha}.|">organizaciones
             coinciden con lo que buscaste.</span></p>
       </div>
     </header>
@@ -84,35 +84,35 @@
     </form>
 
     <th:block th:if="${escenario == 'error'}">
-      <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar las entidades.',
+      <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar las organizaciones.',
           'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-entidades', true)}"></section>
     </th:block>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Ninguna entidad tiene necesidades vigentes ahora.</h2>
+      <h2 id="vacio-titulo">Ninguna organización tiene necesidades vigentes ahora.</h2>
       <p>Cuando una publique lo que le hace falta, aparece acá.</p>
       <a class="boton" data-tono="secundario" href="/publico-registro-entidad"
-         th:href="@{/publico-registro-entidad}">Sumar mi entidad</a>
+         th:href="@{/publico-registro-entidad}">Sumar mi organización</a>
     </section>
 
     <!--/* Sin resultados: qué no se encontró y cómo volver a ver todas. */-->
     <section th:if="${escenario == '' and n == 0}" class="vacio" aria-labelledby="sin-titulo">
       <th:block th:if="${q != '' and elegida != null}">
-        <h2 id="sin-titulo" th:text="|Ninguna entidad con «${q}» en el nombre pide ${elegida.enFrase} ahora.|">Ninguna
-          entidad con «biblioteca» en el nombre pide alimentos ahora.</h2>
+        <h2 id="sin-titulo" th:text="|Ninguna organización con «${q}» en el nombre pide ${elegida.enFrase} ahora.|">Ninguna
+          organización con «biblioteca» en el nombre pide alimentos ahora.</h2>
         <p>Probá con otra categoría o con otra parte del nombre.</p>
       </th:block>
       <th:block th:if="${q != '' and elegida == null}">
-        <h2 id="sin-titulo" th:text="|No encontramos entidades con «${q}» en el nombre.|">No encontramos
-          entidades con «texto» en el nombre.</h2>
+        <h2 id="sin-titulo" th:text="|No encontramos organizaciones con «${q}» en el nombre.|">No encontramos
+          organizaciones con «texto» en el nombre.</h2>
         <p>Probá con otra parte del nombre o sacá el filtro.</p>
       </th:block>
       <th:block th:if="${q == '' and elegida == null and filtrado}">
-        <h2 id="sin-titulo">Ninguna entidad tiene necesidades con esos filtros ahora.</h2>
+        <h2 id="sin-titulo">Ninguna organización tiene necesidades con esos filtros ahora.</h2>
         <p>Probá con otro tipo de necesidad o sacá los filtros.</p>
       </th:block>
       <th:block th:if="${q == '' and elegida != null}">
-        <h2 id="sin-titulo" th:text="|Ninguna entidad pide ${elegida.enFrase} ahora.|">Ninguna entidad pide
+        <h2 id="sin-titulo" th:text="|Ninguna organización pide ${elegida.enFrase} ahora.|">Ninguna organización pide
           útiles escolares ahora.</h2>
         <p>Cuando una lo publique, aparece acá.</p>
       </th:block>
@@ -121,7 +121,7 @@
     </section>
 
     <th:block th:if="${escenario == 'lento'}">
-      <p class="cargando" role="status">Cargando las entidades…</p>
+      <p class="cargando" role="status">Cargando las organizaciones…</p>
       <ul class="pila" data-espacio="2" role="list" aria-busy="true">
         <li th:each="i : ${#numbers.sequence(1, 4)}" class="esqueleto"></li>
       </ul>
@@ -136,7 +136,7 @@
         del todo. Al <th:block th:text="${v.fecha}">15 de octubre de 2026</th:block>. <span
         th:replace="~{componentes/info :: info('info-satisfechas', 'Cómo se cuenta «Necesidades satisfechas»',
           'Necesidades satisfechas',
-          ${'Cuenta cuántas de las necesidades que cada entidad publicó para ' + v.periodo + ' ya se cubrieron del todo, sobre el total de ese mes. Cuenta necesidades, no kilos ni litros.'},
+          ${'Cuenta cuántas de las necesidades que cada organización publicó para ' + v.periodo + ' ya se cubrieron del todo, sobre el total de ese mes. Cuenta necesidades, no kilos ni litros.'},
           null, null)}"></span></p>
       <div th:replace="~{publico-entidades :: grupos}"></div>
     </th:block>
@@ -146,8 +146,8 @@
          th:href="@{/publico-registro-donante}">Quiero donar</a>
       <p>¿Ya tenés cuenta? <a href="/publico-ingresar"
          th:href="@{/publico-ingresar}">Ingresar</a></p>
-      <p>¿Representás a una entidad? <a href="/publico-registro-entidad"
-         th:href="@{/publico-registro-entidad}">Sumar mi entidad</a></p>
+      <p>¿Representás a una organización? <a href="/publico-registro-entidad"
+         th:href="@{/publico-registro-entidad}">Sumar mi organización</a></p>
     </div>
   </div>
 </th:block>
@@ -172,13 +172,13 @@
        {titulo: 'Escuelas y bibliotecas', tipos: {'Escuela', 'Biblioteca'}},
        {titulo: 'Hogares', tipos: {'Hogar'}},
        {titulo: 'Clubes', tipos: {'Club'}},
-       {titulo: 'Otras entidades', tipos: {'Otra'}} } }">
+       {titulo: 'Otras organizaciones', tipos: {'Otra'}} } }">
   <th:block th:each="g, vuelta : ${grupos}" th:with="suyas=${visibles.?[#lists.contains(#root.g.tipos, tipo)]}">
   <section th:unless="${suyas.isEmpty()}" class="pila" data-espacio="2" th:attr="aria-labelledby=${'grupo-' + vuelta.count}">
     <h2 th:id="${'grupo-' + vuelta.count}" class="racimo">
       <th:block th:text="${g.titulo}">Comedores y merenderos</th:block>
       <span class="texto-chico" data-tono="suave"
-            th:text="${#lists.size(suyas) == 1 ? '1 entidad' : #lists.size(suyas) + ' entidades'}">2 entidades</span></h2>
+            th:text="${#lists.size(suyas) == 1 ? '1 organización' : #lists.size(suyas) + ' organizaciones'}">2 organizaciones</span></h2>
     <ul class="pila" data-espacio="3" role="list">
       <li th:each="e : ${suyas}"
           th:with="pedidos=${e.pedidos.?[('__${categoria}__' == '' or cat == '__${categoria}__') and ('__${tipoPedido}__' == '' or tipo == '__${tipoPedido}__') and (!__${soloEmergencia}__ or emergencia)]},

@@ -14,7 +14,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
 <head>
-  <title>Sumá tu entidad - Crear una cuenta - DonaTrack</title>
+  <title>Sumá tu organización - Crear una cuenta - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -30,7 +30,7 @@
 
     <div class="registro-cuerpo">
       <nav th:replace="~{componentes/registro :: indice(${ {
-          {id: 'la-entidad', titulo: 'La entidad', detalle: 'Qué es y cómo se llama'},
+          {id: 'la-entidad', titulo: 'La organización', detalle: 'Qué es y cómo se llama'},
           {id: 'entrega', titulo: 'Dirección de entrega', detalle: 'Adónde llega lo donado'},
           {id: 'representa', titulo: 'Quién la representa', detalle: 'Con qué entrás'},
           {id: 'confirmar', titulo: 'Confirmar', detalle: 'Enviar la solicitud'} } })}"></nav>
@@ -42,7 +42,7 @@
                aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá dos cosas antes de enviar</h2>
         <ul>
-          <li><a href="#que-es">Elegí qué es tu entidad</a></li>
+          <li><a href="#que-es">Elegí qué es tu organización</a></li>
           <li><a href="#calle">Falta la calle de la dirección de entrega</a></li>
         </ul>
       </section>
@@ -56,22 +56,22 @@
             '/publico-registro-entidad', false)}"></section>
       </th:block>
       <p class="obligatorios">Todos los datos son obligatorios. El equipo de DonaTrack revisa cada
-        solicitud antes de sumar la entidad.</p>
+        solicitud antes de sumar la organización.</p>
 
       <fieldset class="grupo registro-seccion" id="la-entidad">
-        <legend>La entidad</legend>
+        <legend>La organización</legend>
         <div class="campo">
-          <label for="entidad">Nombre de la entidad</label>
+          <label for="entidad">Nombre de la organización</label>
           <small id="entidad-ayuda">Como la conoce el barrio. Es público.</small>
           <input id="entidad" name="entidad" type="text" required autocomplete="organization"
-                 aria-describedby="entidad-ayuda" th:value="${completarPerfil} ? ${param.entidad} : (${escrito} ? 'Merendero Ejemplo Oeste' : null)" placeholder="Por ejemplo: Comedor Barrio Ejemplo" data-falta="Falta el nombre de la entidad.">
+                 aria-describedby="entidad-ayuda" th:value="${completarPerfil} ? ${param.entidad} : (${escrito} ? 'Merendero Ejemplo Oeste' : null)" placeholder="Por ejemplo: Comedor Barrio Ejemplo" data-falta="Falta el nombre de la organización.">
         </div>
         <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="que-es">Qué es</label>
           <small id="que-es-ayuda">Lo ven los donantes junto al nombre.</small>
-          <p th:if="${conError}" id="que-es-error" class="campo-error">Elegí qué es tu entidad.</p>
+          <p th:if="${conError}" id="que-es-error" class="campo-error">Elegí qué es tu organización.</p>
           <select id="que-es" name="queEs" required
-                  th:attr="aria-describedby=${conError} ? 'que-es-error que-es-ayuda' : 'que-es-ayuda',aria-invalid=${conError} ? 'true' : null" data-falta="Elegí qué es tu entidad.">
+                  th:attr="aria-describedby=${conError} ? 'que-es-error que-es-ayuda' : 'que-es-ayuda',aria-invalid=${conError} ? 'true' : null" data-falta="Elegí qué es tu organización.">
             <option value="">Elegí una</option>
             <option th:each="opcion : ${ {'Merendero', 'Comedor', 'Escuela', 'Hogar', 'Club', 'Biblioteca', 'Otra'} }"
                     th:text="${opcion}"
@@ -186,7 +186,7 @@
 <section th:fragment="comoSigue(paso)" class="como-sigue" aria-labelledby="como-sigue-titulo">
   <h2 id="como-sigue-titulo">Cómo sigue</h2>
   <ol class="tramo" role="list"
-      th:with="pasos=${ {'Completás la solicitud.', 'El equipo la revisa.', 'Publicás lo que le hace falta a tu entidad y confirmás lo que recibís.'} }">
+      th:with="pasos=${ {'Completás la solicitud.', 'El equipo la revisa.', 'Publicás lo que le hace falta a tu organización y confirmás lo que recibís.'} }">
     <li th:each="texto, i : ${pasos}" class="tramo-paso"
         th:classappend="${i.count < paso ? 'tramo-paso--hecho' : (i.count == paso ? 'tramo-paso--actual' : 'tramo-paso--falta')}"
         th:aria-current="${i.count == paso} ? 'step' : null">

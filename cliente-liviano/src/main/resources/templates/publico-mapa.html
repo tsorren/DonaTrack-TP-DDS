@@ -44,13 +44,13 @@
              cuantas=${listaDelMapa.entregas()},
              conTope=${categoria == '' and mapaPublico.conTope()},
              hay=${escenario == '' and lugares > 0},
-             unidad=${v.conEntidades ? (lugares == 1 ? 'entidad' : 'entidades') : (lugares == 1 ? 'lugar' : 'lugares')}">
+             unidad=${v.conEntidades ? (lugares == 1 ? 'organización' : 'organizaciones') : (lugares == 1 ? 'lugar' : 'lugares')}">
   <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="publica mapa">
     <header class="publica-cabeza">
       <p class="rotulo">Mapa</p>
       <h1>Adónde llegaron <em>las donaciones</em></h1>
-      <p th:if="${v.conEntidades}" class="lectura-bajada">Cada punto es una entidad que confirmó entregas en el último mes. La ubicación
+      <p th:if="${v.conEntidades}" class="lectura-bajada">Cada punto es una organización que confirmó entregas en el último mes. La ubicación
         es aproximada: mostramos el barrio, nunca la dirección.</p>
       <p th:unless="${v.conEntidades}" class="lectura-bajada">Cada punto es un lugar donde se confirmaron entregas en el
         último mes. Mostramos la localidad, nunca la dirección.</p>
@@ -69,12 +69,12 @@
             lugares.</span></p>
         <p th:unless="${conTope}"><b class="fruto" th:text="${#numbers.formatInteger(cuantas, 1, 'POINT')}">10</b>
           <span th:text="|${cuantas == 1 ? 'entrega' : 'entregas'}${elegida == null ? (cuantas == 1 ? ' confirmada' : ' confirmadas') : ' de ' + elegida.enFrase} en ${#numbers.formatInteger(lugares, 1, 'POINT')} ${unidad}, ${v.rango}.|">entregas
-            confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026.</span></p>
+            confirmadas en 5 organizaciones, del 16 de septiembre al 15 de octubre de 2026.</span></p>
         <p class="nota" th:text="|Actualizado el ${v.actualizado}.|">Actualizado el 15 de octubre de 2026, 14:30.</p>
       </div>
     </div>
 
-    <p th:if="${hay and v.nota != null}" class="texto-chico" data-tono="suave" th:text="${v.nota}">Todavía no mostramos qué entidad recibió cada entrega.</p>
+    <p th:if="${hay and v.nota != null}" class="texto-chico" data-tono="suave" th:text="${v.nota}">Todavía no mostramos qué organización recibió cada entrega.</p>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar el mapa de entregas.',
@@ -91,11 +91,11 @@
                marcador por cada punto de la lista oculta de abajo; sin JavaScript queda el aviso y la
                lista, con los mismos datos (RF-CL-06). */-->
         <div class="mapa-dibujo mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
-             aria-label="Mapa de las entidades con entregas confirmadas. La lista tiene los mismos datos."
-             th:aria-label="${v.conEntidades} ? 'Mapa de las entidades con entregas confirmadas. La lista tiene los mismos datos.' : 'Mapa de los lugares con entregas confirmadas. La lista tiene los mismos datos.'"
+             aria-label="Mapa de las organizaciones con entregas confirmadas. La lista tiene los mismos datos."
+             th:aria-label="${v.conEntidades} ? 'Mapa de las organizaciones con entregas confirmadas. La lista tiene los mismos datos.' : 'Mapa de los lugares con entregas confirmadas. La lista tiene los mismos datos.'"
              data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}">
-          <p class="mapa-real-aviso" th:text="|Para ver el mapa hace falta JavaScript. En la lista están ${v.conEntidades ? 'las mismas entidades' : 'los mismos lugares'}, con sus entregas.|">Para ver el mapa hace falta JavaScript. En la lista están las mismas
-            entidades, con sus entregas.</p>
+          <p class="mapa-real-aviso" th:text="|Para ver el mapa hace falta JavaScript. En la lista están ${v.conEntidades ? 'las mismas organizaciones' : 'los mismos lugares'}, con sus entregas.|">Para ver el mapa hace falta JavaScript. En la lista están las mismas
+            organizaciones, con sus entregas.</p>
         </div>
         <!--/* Los puntos del mapa: todos los del período, con la página de la lista en que está cada
                uno. Oculta para todos: la lista visible ya lo dice (no se lee dos veces). */-->
@@ -120,7 +120,7 @@
           <a class="boton" data-tono="secundario" href="/publico-donaciones"
              th:href="@{/publico-donaciones}">Ver las fotos de cada entrega</a>
           <a class="boton" data-tono="secundario" href="/publico-entidades"
-             th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+             th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
         </div>
       </div>
 
@@ -130,7 +130,7 @@
                hx-target="#lista-del-mapa" hx-select="#lista-del-mapa" hx-swap="outerHTML show:none"
                hx-select-oob="#lista-del-mapa-aviso:innerHTML">
         <h2 id="lista-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
-            th:text="${v.conEntidades} ? 'Entidad por entidad' : 'Lugar por lugar'">Entidad por entidad</h2>
+            th:text="${v.conEntidades} ? 'Organización por organización' : 'Lugar por lugar'">Organización por organización</h2>
         <template data-mapa-error-pagina>
           <div class="banner" data-estado="error" role="alert">
             <p>No pudimos traer esta página de la lista.</p>
@@ -181,16 +181,16 @@
       <section th:if="${escenario == '' and lugares == 0}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo" th:text="|Todavía no hay entregas de ${elegida.enFrase} en el último mes.|">Todavía no
           hay entregas de útiles escolares en el último mes.</h2>
-        <p>Cuando una entidad confirme una entrega de esta categoría, aparece en el mapa.</p>
+        <p>Cuando una organización confirme una entrega de esta categoría, aparece en el mapa.</p>
         <a class="boton" data-tono="secundario" href="/publico-mapa"
            th:href="@{/publico-mapa}">Ver todas las categorías</a>
       </section>
 
       <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
-        <p>Se cuentan cuando cada entidad confirma lo que recibe.</p>
+        <p>Se cuentan cuando cada organización confirma lo que recibe.</p>
         <a class="boton" data-tono="secundario" href="/publico-entidades"
-           th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+           th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
       </section>
     </div>
 

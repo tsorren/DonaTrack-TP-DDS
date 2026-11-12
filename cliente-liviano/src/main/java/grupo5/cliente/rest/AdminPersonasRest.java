@@ -55,6 +55,10 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   private static final DateTimeFormatter AL =
       DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, HH:mm", Comun.ES_AR);
   private static final String JURIDICA = "JURIDICA";
+
+  /** El tipo del renglón de una persona jurídica que no es empresa (sin texto en pantalla). */
+  private static final String JURIDICA_NO_EMPRESA = "organizacion";
+
   private static final DateTimeFormatter HORA =
       DateTimeFormatter.ofPattern("HH:mm:ss", Comun.ES_AR);
   private static final String IMPORTANDO = "importando";
@@ -162,7 +166,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   }
 
   /**
-   * Los filtros que Donaciones resuelve (R11-01): el tipo de persona o de organización, el estado
+   * Los filtros que Donaciones resuelve (R11-01): el tipo de persona o el tipo jurídico, el estado
    * (activo o dado de baja), la categoría de lo que donó y el orden por alta o por nombre. "Sin
    * activar su cuenta" no lo guarda Donaciones, y qué dona cada uno no viene en la fila: no se
    * ofrecen.
@@ -182,7 +186,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
             new Opcion("empresa", "Empresas"),
             new Opcion("ong", "ONG"),
             new Opcion("institucion", "Instituciones"),
-            new Opcion("gubernamental", "Organismos públicos")),
+            new Opcion("gubernamental", "Gubernamentales")),
         categorias,
         List.of(
             new Opcion("", "Todos los estados"),
@@ -257,14 +261,21 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     return completo.trim();
   }
 
-  /** El tipo del filtro y su texto: una persona, una empresa o cualquier otra organización. */
+  /**
+   * El tipo del renglón y su texto: una persona, una empresa u otra persona jurídica, que muestra
+   * su tipo jurídico (R11-45: "organización" es quien recibe, no un tipo de donante).
+   */
   private static String[] tipo(Persona persona) {
     if (persona == null || !JURIDICA.equals(persona.tipo())) {
       return new String[] {PERSONA, "Persona"};
     }
-    return "EMPRESA".equals(persona.tipoJuridico())
-        ? new String[] {"empresa", "Empresa"}
-        : new String[] {"organizacion", "Organización"};
+    return switch (persona.tipoJuridico() == null ? "" : persona.tipoJuridico()) {
+      case "EMPRESA" -> new String[] {"empresa", "Empresa"};
+      case "ONG" -> new String[] {JURIDICA_NO_EMPRESA, "ONG"};
+      case "INSTITUCION" -> new String[] {JURIDICA_NO_EMPRESA, "Institución"};
+      case "GUBERNAMENTAL" -> new String[] {JURIDICA_NO_EMPRESA, "Gubernamental"};
+      default -> new String[] {JURIDICA_NO_EMPRESA, "Persona jurídica"};
+    };
   }
 
   private static String documento(Persona persona) {

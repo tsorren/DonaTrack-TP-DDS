@@ -130,9 +130,10 @@ class DonanteEntidadesSinMaquetaTest {
             content()
                 .string(
                     containsString(
-                        "7 entidades activas tienen «direccion» en el nombre. Página 1 de 2.")))
+                        "7 organizaciones activas tienen «direccion» en el nombre. Página 1 de 2.")))
         .andExpect(
             content().string(containsString("/donante-entidades?nombre=direccion&amp;pagina=2")))
-        .andExpect(content().string(not(containsString("Ninguna entidad activa se llama así."))));
+        .andExpect(
+            content().string(not(containsString("Ninguna organización activa se llama así."))));
   }
 }

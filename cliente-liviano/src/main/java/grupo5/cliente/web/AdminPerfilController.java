@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdministradorActual;
+import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,12 +39,17 @@ public class AdminPerfilController {
   private final DirectorioDeAdministradores directorio;
   private final AdministradorActual actual;
   private final Pantallas pantallas;
+  private final CuentasDelMenu cuentas;
 
   AdminPerfilController(
-      DirectorioDeAdministradores directorio, AdministradorActual actual, Pantallas pantallas) {
+      DirectorioDeAdministradores directorio,
+      AdministradorActual actual,
+      Pantallas pantallas,
+      CuentasDelMenu cuentas) {
     this.directorio = directorio;
     this.actual = actual;
     this.pantallas = pantallas;
+    this.cuentas = cuentas;
   }
 
   @GetMapping("/" + PANTALLA)
@@ -68,6 +74,8 @@ public class AdminPerfilController {
       try {
         directorio.cambiarNombre(
             cuenta, DatosDeAdministrador.limpio(nombre), DatosDeAdministrador.limpio(apellido));
+        // El menú y el saludo vuelven a pedir el nombre: ya es el nuevo (R11-44).
+        cuentas.olvidar(pedido);
         return Envios.listo(PANTALLA, GUARDADO, atributos);
       } catch (RestClientException noRespondio) {
         model.addAttribute("errorGuardar", true);

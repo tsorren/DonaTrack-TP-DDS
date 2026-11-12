@@ -47,8 +47,8 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   private static final String PERSONA_TEXTO = "Persona";
   private static final String EMPRESA = "empresa";
   private static final String EMPRESA_TEXTO = "Empresa";
-  private static final String ORGANIZACION = "organizacion";
-  private static final String ORGANIZACION_TEXTO = "Organización";
+  private static final String ORGANIZACION = "ong";
+  private static final String ORGANIZACION_TEXTO = "ONG";
   private static final String ACTIVO = "activo";
   private static final String PENDIENTE = "pendiente";
   private static final String ALIMENTOS = "alimentos";
@@ -187,7 +187,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
               new Opcion("", "Todos los tipos"),
               new Opcion(PERSONA, "Personas"),
               new Opcion(EMPRESA, "Empresas"),
-              new Opcion(ORGANIZACION, "Organizaciones")),
+              new Opcion(ORGANIZACION, ORGANIZACION_TEXTO)),
           List.of(
               new Opcion("", "Todas las categorías"),
               new Opcion(ALIMENTOS, ALIMENTOS_TEXTO),
@@ -462,7 +462,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   /** En la maqueta el formulario lo atiende SitioController y no guarda nada. */
   @Override
   public void registrarEntidad(PersonaNueva.Juridica juridica) {
-    throw new UnsupportedOperationException("La maqueta no registra entidades");
+    throw new UnsupportedOperationException("La maqueta no registra organizaciones");
   }
 
   /** La lista entera de ejemplo: la pantalla busca y filtra sobre ella. */
@@ -474,7 +474,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   /** En la maqueta el formulario lo atiende SitioController y no aprueba nada. */
   @Override
   public String aprobarEntidad(String clave) {
-    throw new UnsupportedOperationException("La maqueta no aprueba entidades");
+    throw new UnsupportedOperationException("La maqueta no aprueba organizaciones");
   }
 
   /**

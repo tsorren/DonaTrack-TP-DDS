@@ -18,15 +18,15 @@
       </svg>
       <p class="recibido-sello">Solicitud recibida</p>
     </div>
-    <h1>Recibimos la solicitud <em>de tu entidad</em></h1>
+    <h1>Recibimos la solicitud <em>de tu organización</em></h1>
     <p class="lectura-bajada">El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar
       unos días hábiles. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés
-      ingresar y publicar lo que le hace falta a tu entidad.</p>
-    <p>Mientras tanto, podés recorrer el sitio: la portada, las entidades y lo que piden.</p>
+      ingresar y publicar lo que le hace falta a tu organización.</p>
+    <p>Mientras tanto, podés recorrer el sitio: la portada, las organizaciones y lo que piden.</p>
     <section th:replace="~{publico-registro-entidad :: comoSigue(2)}"></section>
     <div class="salidas">
       <a class="boton" data-tono="principal" href="/publico-entidades"
-         th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+         th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
       <a class="boton" data-tono="secundario" href="/publico-portada"
          th:href="@{/publico-portada}">Ir a la portada</a>
       <th:block th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></th:block>

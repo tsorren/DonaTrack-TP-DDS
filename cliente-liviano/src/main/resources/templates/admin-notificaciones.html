@@ -28,7 +28,7 @@
              temas=${ {
       {valor: '', texto: 'Todas las categorías'},
       {valor: 'donantes', texto: 'Donantes para confirmar', icono: 'persona'},
-      {valor: 'entidades', texto: 'Entidades para aprobar', icono: 'entidad'},
+      {valor: 'entidades', texto: 'Organizaciones para aprobar', icono: 'entidad'},
       {valor: 'vencer', texto: 'Donaciones por vencer', icono: 'reloj'},
       {valor: 'logistica', texto: 'Problemas de logística', icono: 'camion'},
       {valor: 'asignaciones', texto: 'Asignaciones', icono: 'asigna'},
@@ -38,7 +38,7 @@
       {id: 'a1', fecha: '2026-10-15T18:42', tema: 'importaciones', leida: false, destino: '/admin-donantes-importado',
        texto: 'Terminó la importación de donantes-octubre.csv: 19.100 donantes nuevos, 754 actualizados y 126 filas con error.'},
       {id: 'a2', fecha: '2026-10-15T18:20', tema: 'entidades', leida: false, destino: '/admin-entidades?ver=pendientes',
-       texto: '3 entidades piden sumarse: Hogar Ejemplo Norte, Merendero Ejemplo Este y Comedor Ejemplo Oeste.'},
+       texto: '3 organizaciones piden sumarse: Hogar Ejemplo Norte, Merendero Ejemplo Este y Comedor Ejemplo Oeste.'},
       {id: 'a3', fecha: '2026-10-15T15:10', tema: 'donantes', leida: false, destino: '/admin-donantes?estado=pendiente',
        texto: 'Lucía Ejemplo y Asociación Vecinal Ejemplo se registraron y todavía no activaron su cuenta.'},
       {id: 'a4', fecha: '2026-10-15T00:00', tema: 'asignaciones', leida: true, destino: '/admin-asignaciones',
@@ -67,7 +67,7 @@
     </header>
 
     <p th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Marcaste las notificaciones como leídas. Las entidades que piden sumarse siguen esperando tu
+       autofocus>Marcaste las notificaciones como leídas. Las organizaciones que piden sumarse siguen esperando tu
       decisión.</p>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las notificaciones…</p>
@@ -87,7 +87,7 @@
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay notificaciones.</h2>
-      <p>Te avisamos acá cuando una entidad pida sumarse, cuando termine una importación, cuando la
+      <p>Te avisamos acá cuando una organización pida sumarse, cuando termine una importación, cuando la
         asignación genere propuestas y cuando cambie el estado de un camión.</p>
     </section>
 

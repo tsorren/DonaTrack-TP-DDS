@@ -11,7 +11,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-entidades', ~{::contenido})}">
 <head>
-  <title>Entidades - DonaTrack</title>
+  <title>Organizaciones - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -64,24 +64,24 @@
              dibujada=${pagina <= 2}">
   <div class="entidades" id="persona-entidades">
     <header>
-      <p class="rotulo" th:text="${seccion}">Entidades</p>
+      <p class="rotulo" th:text="${seccion}">Organizaciones</p>
       <h1>Quiénes reciben <em>las donaciones</em></h1>
-      <p class="bajada">Entidades activas y lo que piden hoy. Cada una pide lo que necesita y confirma
+      <p class="bajada">Organizaciones activas y lo que piden hoy. Cada una pide lo que necesita y confirma
         lo que recibe. Actualizado hoy, 15 de octubre, 16:25.</p>
     </header>
 
     <th:block th:if="${escenario == 'error'}">
-      <section th:replace="~{datos-donante :: error('No pudimos cargar las entidades.', '/donante-entidades')}"></section>
+      <section th:replace="~{datos-donante :: error('No pudimos cargar las organizaciones.', '/donante-entidades')}"></section>
     </th:block>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Por ahora no hay entidades activas.</h2>
-      <p>Cuando una entidad se sume y la aprueben, aparece acá con lo que pide.</p>
+      <h2 id="vacio-titulo">Por ahora no hay organizaciones activas.</h2>
+      <p>Cuando una organización se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
 
     <form hx-boost="true" th:if="${escenario == '' or escenario == 'lento'}" class="filtro" role="search"
           action="/donante-entidades" th:action="@{/donante-entidades}"
-          method="get" aria-label="Buscar entidades">
+          method="get" aria-label="Buscar organizaciones">
       <div class="campo">
         <label for="nombre">Buscar por nombre</label>
         <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}" placeholder="Por ejemplo: Ana Ejemplo">
@@ -93,7 +93,7 @@
     </form>
 
     <th:block th:if="${escenario == 'lento'}">
-      <p class="cargando" role="status">Cargando las entidades…</p>
+      <p class="cargando" role="status">Cargando las organizaciones…</p>
       <div class="lista ejemplares-reserva" aria-busy="true">
         <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
         <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
@@ -103,14 +103,14 @@
     <th:block th:if="${escenario == ''}">
       <!--/* El resultado de la búsqueda, para que se lea después de buscar. */-->
       <p class="resultado" role="status" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
-         th:text="${soloYa} ? (${lista.isEmpty()} ? (${busca == ''} ? 'Todavía no le donaste a ninguna entidad.' : 'Ninguna entidad coincide con lo que elegiste.') : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste. Página 1 de 1.|)
-                 : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre.|)
-                 : |46 entidades activas. Página ${pagina} de 8.|)">46
-        entidades activas. Página 1 de 8.</p>
+         th:text="${soloYa} ? (${lista.isEmpty()} ? (${busca == ''} ? 'Todavía no le donaste a ninguna organización.' : 'Ninguna organización coincide con lo que elegiste.') : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'organización coincide' : 'organizaciones coinciden'} con lo que elegiste. Página 1 de 1.|)
+                 : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna organización activa se llama así.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'organización activa tiene' : 'organizaciones activas tienen'} «${busca}» en el nombre.|)
+                 : |46 organizaciones activas. Página ${pagina} de 8.|)">46
+        organizaciones activas. Página 1 de 8.</p>
 
       <section th:if="${(busca != '' or soloYa) and lista.isEmpty()}" class="vacio"
                aria-labelledby="sin-resultados">
-        <h2 id="sin-resultados" th:text="${soloYa} ? (${busca == ''} ? 'Cuando el depósito asigne una de tus donaciones, la entidad aparece acá.' : 'Probá con otra parte del nombre o sacá el filtro.') : 'Probá con otra parte del nombre.'">Probá con otra parte del nombre.</h2>
+        <h2 id="sin-resultados" th:text="${soloYa} ? (${busca == ''} ? 'Cuando el depósito asigne una de tus donaciones, la organización aparece acá.' : 'Probá con otra parte del nombre o sacá el filtro.') : 'Probá con otra parte del nombre.'">Probá con otra parte del nombre.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
       </section>
@@ -171,7 +171,7 @@
     <section class="tarjeta lamina como-donar" aria-labelledby="como-titulo">
       <h2 id="como-titulo">Cómo llega tu donación</h2>
       <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
-        entidad. Desde que la registran, ves cada paso en Mis donaciones.</p>
+        organización. Desde que la registran, ves cada paso en Mis donaciones.</p>
       <p class="deposito"><b>Depósito Central Ejemplo</b>
         <span>Calle Ejemplo 1234, Ciudad Ejemplo</span>
         <span>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</span></p>

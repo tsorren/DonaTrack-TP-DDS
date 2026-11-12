@@ -5,6 +5,7 @@ import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 import grupo5.cliente.puertos.EntidadPerfilPuerto;
 import grupo5.cliente.rest.DonacionesApi.Medio;
 import grupo5.cliente.rest.DonacionesApi.Persona;
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.EntidadPerfilVista;
 import java.util.List;
 import java.util.Locale;
@@ -68,6 +69,15 @@ class EntidadPerfilRest implements EntidadPerfilPuerto {
             ? null
             : predeterminado.tipo().toLowerCase(Locale.ROOT),
         legales(api.legales(entidad)));
+  }
+
+  /** La razón social con un solo pedido a Donaciones, sin la constancia (R11-44). */
+  @Override
+  public CuentaVista cuenta(UUID entidad) {
+    DonacionesApi.Entidad datos = api.entidad(entidad);
+    return new CuentaVista(
+        datos == null || datos.juridica() == null ? null : datos.juridica().razonSocial(),
+        ORGANIZACION);
   }
 
   private static Persona vacia() {

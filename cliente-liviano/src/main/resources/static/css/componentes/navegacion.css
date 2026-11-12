@@ -43,6 +43,10 @@
   line-height: 1.15;
   text-align: center;
   text-decoration: none;
+  /* "Organizaciones" (R11-45) no entra entera en una celda de la barra del celular: se corta en
+     sílabas (el sitio está en es-AR) y, si el navegador no sabe cortar, en cualquier letra. */
+  hyphens: auto;
+  overflow-wrap: anywhere;
 }
 
 .navegacion:where([data-zona="publica"]) a {
@@ -249,6 +253,8 @@
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     font-size: 0.95rem;
+    hyphens: manual;
+    overflow-wrap: normal;
   }
 
   .navegacion a:hover {

@@ -12,6 +12,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.DonantePerfilVista;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -175,5 +176,31 @@ class DonantePerfilRestTest {
     adaptador.mostrarNombre(DONANTE, true);
 
     assertDoesNotThrow(() -> apis.verify());
+  }
+
+  @Test
+  void laCuentaDelMenuEsElNombreYElTipoConUnSoloPedido() {
+    apis.expect(requestTo(DONACIONES)).andRespond(withSuccess(EMPRESA, MediaType.APPLICATION_JSON));
+
+    CuentaVista cuenta = adaptador.cuenta(DONANTE);
+
+    apis.verify();
+    assertEquals("Distribuidora Ejemplo SA", cuenta.nombre());
+    assertEquals("Empresa donante", cuenta.rol());
+  }
+
+  @Test
+  void elDonanteJuridicoQueNoEsEmpresaDiceSuTipoYNoOrganizacion() {
+    apis.expect(requestTo(DONACIONES))
+        .andRespond(
+            withSuccess(
+                "{\"persona\": {\"tipo\": \"JURIDICA\", \"razonSocial\": \"Fundación Ejemplo\","
+                    + " \"tipoJuridico\": \"ONG\"}}",
+                MediaType.APPLICATION_JSON));
+
+    CuentaVista cuenta = adaptador.cuenta(DONANTE);
+
+    assertEquals("Fundación Ejemplo", cuenta.nombre());
+    assertEquals("ONG donante", cuenta.rol());
   }
 }
