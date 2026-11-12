@@ -99,6 +99,10 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
 
 ### donante-inicio (nivel 1)
 
+> **Tablero (R11-25, 2026-11-12, en revisión):** el bloque "Donación por donación" pasa al boceto A,
+> con tres columnas de a 3 donaciones y un paginador en cada una; el detalle, en la ficha
+> [r11-p2-tablero](r11-p2-tablero.md).
+
 ```text
 [Inicio]  Hola, Distribuidora Ejemplo SA
           bajada
