@@ -70,16 +70,20 @@ final class AdminOperacionDonaciones {
           "vencida",
           List.of("VENCIDA"));
 
+  private static final String VENCE = "vence";
+
   /**
-   * Los órdenes que resuelve Donaciones: por fecha de registro. Vencen antes, por nombre y por
-   * donante no los da el contrato de R11-01 y no se ofrecen.
+   * Los órdenes que resuelve Donaciones: por fecha de registro y, desde R11-34, "Vencen antes" (el
+   * vencimiento más próximo de sus bienes primero). Por nombre y por donante no los ofrece la ficha
+   * r11-p2-admin-bandeja §4.2.
    */
   private static final List<Criterio> CRITERIOS =
       List.of(
           new Criterio(
               "", "Registradas más recientes", "Primero, las registradas más recientemente."),
           new Criterio(
-              "antigua", "Registradas más antiguas", "Primero, las registradas hace más tiempo."));
+              "antigua", "Registradas más antiguas", "Primero, las registradas hace más tiempo."),
+          new Criterio(VENCE, "Vencen antes", "Primero, las que vencen antes."));
 
   private final DonacionesApi api;
   private final LocalDateTime ahora;
@@ -108,8 +112,8 @@ final class AdminOperacionDonaciones {
             pedida.registrada(),
             pedida.donante(),
             pedida.donacion());
-    // Donaciones no filtra por vencimiento: "vencen pronto" muestra las del depósito y dice cuántas
-    // vencen, sin filtrar en el cliente.
+    // R11-34: "vencen pronto" son las del depósito con algún bien que vence en los próximos 7 días,
+    // filtradas y ordenadas en Donaciones (venceHasta y orden=vence).
     String estado = consulta.pronto() ? DEPOSITO : consulta.estado();
     DonacionesApi.Resumen resumen = api.resumen();
     Tramo<DonacionesApi.Donacion> pagina =
@@ -122,8 +126,8 @@ final class AdminOperacionDonaciones {
         new Tramo<>(filas, pagina.total(), pagina.pagina(), pagina.paginas()),
         consulta,
         CRITERIOS,
-        false,
-        consulta.pronto() ? porVencer(resumen.porVencer()) : null,
+        true,
+        null,
         resumen(resumen),
         categorias(),
         donante(consulta.donante()),
@@ -207,7 +211,10 @@ final class AdminOperacionDonaciones {
       String estado, ConsultaDonaciones consulta, int pagina) {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     ESTADOS.getOrDefault(estado, List.of()).forEach(e -> filtros.add("estado", e));
-    filtros.add("orden", "antigua".equals(consulta.orden()) ? "antiguas" : "recientes");
+    filtros.add("orden", orden(consulta));
+    if (consulta.pronto()) {
+      filtros.add("venceHasta", ahora.toLocalDate().plusDays(PRONTO).toString());
+    }
     // R11-34: la búsqueda, la categoría, el período y el donante, resueltos en Donaciones
     if (!consulta.buscar().isEmpty()) {
       filtros.add("q", consulta.buscar());
@@ -228,6 +235,15 @@ final class AdminOperacionDonaciones {
     filtros.add("page", String.valueOf(pagina));
     filtros.add("size", String.valueOf(POR_PAGINA));
     return filtros;
+  }
+
+  /** El orden de Donaciones; "vencen pronto" sin otro orden elegido va por "Vencen antes". */
+  private static String orden(ConsultaDonaciones consulta) {
+    return switch (consulta.orden()) {
+      case "antigua" -> "antiguas";
+      case VENCE -> VENCE;
+      default -> consulta.pronto() ? VENCE : "recientes";
+    };
   }
 
   /**
@@ -380,7 +396,8 @@ final class AdminOperacionDonaciones {
         : direccion.calle() + " " + direccion.altura();
   }
 
-  private static String estado(String normalizado) {
+  /** El estado de la pantalla ({@code deposito}, {@code asignada}, …) de uno de Donaciones. */
+  static String estado(String normalizado) {
     return switch (normalizado) {
       case ASIGNADA, LISTA, FALLIDA -> EN_ASIGNADA;
       case TRASLADO, PUERTA -> EN_CAMINO;
@@ -472,32 +489,5 @@ final class AdminOperacionDonaciones {
 
   private static String numero(long valor) {
     return NumberFormat.getIntegerInstance(Comun.ES_AR).format(valor);
-  }
-
-  /**
-   * Cuántas del depósito vencen en los próximos 7 días y cuál primero, porque la lista no se puede
-   * filtrar por vencimiento.
-   */
-  private static String porVencer(DonacionesApi.PorVencer porVencer) {
-    long cantidad = porVencer == null || porVencer.cantidad() == null ? 0 : porVencer.cantidad();
-    if (cantidad == 0) {
-      return "Ninguna donación del depósito vence en los próximos 7 días.";
-    }
-    String cuantas =
-        cantidad == 1
-            ? "1 donación del depósito vence en los próximos 7 días"
-            : numero(cantidad) + " donaciones del depósito vencen en los próximos 7 días";
-    DonacionesApi.Proxima proxima = porVencer.proxima();
-    String primera =
-        proxima == null || proxima.fechaVencimiento() == null
-            ? ""
-            : "; la primera"
-                + (proxima.descripcion() == null ? "" : ", " + proxima.descripcion() + ",")
-                + " el "
-                + DIA.format(proxima.fechaVencimiento());
-    return cuantas
-        + primera
-        + ". Esta lista todavía no se puede filtrar por vencimiento: te mostramos todas las del"
-        + " depósito.";
   }
 }

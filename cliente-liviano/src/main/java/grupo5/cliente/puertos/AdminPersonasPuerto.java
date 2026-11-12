@@ -2,6 +2,7 @@ package grupo5.cliente.puertos;
 
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminImportacionesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
@@ -22,6 +23,13 @@ public interface AdminPersonasPuerto {
    * lista entera. Los filtros que la fuente no ofrece se descartan.
    */
   AdminDonantesVista donantes(ConsultaDonantes consulta);
+
+  /**
+   * Las 3 donaciones más recientes del donante {@code clave} y cuántas registró, para su ficha
+   * (R11-34): una página de 3 con su total, nunca la lista entera. Una clave que no es de un
+   * donante da 0 y ninguna.
+   */
+  SusDonaciones donacionesDe(String clave);
 
   /**
    * El avance de la importación {@code archivo} (su id), que se subió con el nombre {@code nombre},

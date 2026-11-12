@@ -83,6 +83,17 @@ public class DonacionIndependienteRepositoryJpaAdapter
           + " JOIN donaciones.subcategoria s ON s.id = nc.id_subcategoria"
           + " WHERE ic.id_donacion_independiente = di.id AND s.id_categoria = :categoriaId)";
 
+  // R11-34: el vencimiento más próximo de sus bienes (nulo si ninguno vence)
+  private static final String PRIMER_VENCIMIENTO =
+      "(SELECT min(nv.fecha_vencimiento) FROM donaciones.item_donacion_independiente iv"
+          + " JOIN donaciones.item_donacion_normalizado nv ON nv.id = iv.id_item_normalizado"
+          + " WHERE iv.id_donacion_independiente = di.id)";
+
+  private static final String VENCE_A_MAS_TARDAR =
+      "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente ih"
+          + " JOIN donaciones.item_donacion_normalizado nh ON nh.id = ih.id_item_normalizado"
+          + " WHERE ih.id_donacion_independiente = di.id AND nh.fecha_vencimiento <= :venceHasta)";
+
   // En depósito con algún bien que vence en el rango (resumen del admin)
   private static final String POR_VENCER =
       " FROM donaciones.donacion_independiente di"
@@ -277,6 +288,7 @@ public class DonacionIndependienteRepositoryJpaAdapter
             .siHay(c.entidadId(), "di.id_beneficiario_asignado = :entidadId", "entidadId")
             .siHay(c.necesidadId(), "di.id_necesidad = :necesidadId", "necesidadId")
             .siHay(c.id(), "di.id = :id", "id")
+            .siHay(c.venceHasta(), VENCE_A_MAS_TARDAR, "venceHasta")
             .siHay(
                 c.desde() == null ? null : c.desde().atStartOfDay(),
                 "di.fecha_registro >= :desde",
@@ -299,6 +311,7 @@ public class DonacionIndependienteRepositoryJpaAdapter
           case ANTIGUAS -> "di.fecha_registro ASC, di.id";
           case ATENCION -> ATENCION + ", di.fecha_registro DESC, di.id";
           case RECIENTES -> "di.fecha_registro DESC, di.id";
+          case VENCE -> PRIMER_VENCIMIENTO + " ASC NULLS LAST, di.fecha_registro DESC, di.id";
         };
     List<UUID> ids = consulta.ids(em, "di.id", orden, c.paginado());
     List<DonacionIndependiente> pagina =

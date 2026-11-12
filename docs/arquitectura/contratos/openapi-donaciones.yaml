@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.12.0
+  version: 1.13.0
   description: >-
     API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
     1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
@@ -32,6 +32,8 @@ info:
     `GET /donaciones-independientes/conteos` da las cifras de una organización.
     Desde 1.12.0 (R11-42), `GET /api/donaciones/resumen/evolucion` da los gráficos del inicio del
     admin: registradas y entregas confirmadas de los últimos 12 meses, por mes y por categoría.
+    Desde 1.13.0 (R11-34), `GET /donaciones-independientes` acepta `venceHasta` y `orden=VENCE`,
+    y `GET /api/donantes` acepta `altaDesde` y `altaHasta` (cambios aditivos, todos opcionales).
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -122,6 +124,16 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: venceHasta
+          in: query
+          required: false
+          description: >-
+            Desde 1.13.0 (R11-34): las que tienen algún bien que vence a más tardar ese día
+            (inclusivo), aunque la fecha ya haya pasado. Las que no tienen bienes con vencimiento no
+            entran. Se combina con `estado=EN_DEPOSITO` para "vencen en los próximos 7 días".
+          schema:
+            type: string
+            format: date
         - $ref: '#/components/parameters/Q'
         - name: orden
           in: query
@@ -131,10 +143,12 @@ paths:
             (R11-43), ATENCION: lo que la organización tiene que atender primero, por grupos
             (EN_PUERTA; ENTREGA_FALLIDA y VENCIDA; EN_TRASLADO; ASIGNACION_REALIZADA,
             LISTA_PARA_ENTREGAR y EN_DEPOSITO; ENTREGADA) y, dentro de cada grupo, la más reciente
-            primero; desempata por id.
+            primero; desempata por id. Desde 1.13.0 (R11-34), VENCE: el vencimiento más próximo de
+            sus bienes primero y las que no vencen al final; desempata por la más reciente y por
+            id.
           schema:
             type: string
-            enum: [RECIENTES, ANTIGUAS, ATENCION]
+            enum: [RECIENTES, ANTIGUAS, ATENCION, VENCE]
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -1104,6 +1118,18 @@ paths:
           required: false
           description: Donó alguna vez un bien de una subcategoría de esta categoría.
           schema: { type: string, format: uuid }
+        - name: altaDesde
+          in: query
+          required: false
+          description: Desde 1.13.0 (R11-34). Día de alta como donante mínimo, inclusivo.
+          schema: { type: string, format: date }
+        - name: altaHasta
+          in: query
+          required: false
+          description: >-
+            Desde 1.13.0 (R11-34). Día de alta como donante máximo, inclusivo. Si es anterior a
+            `altaDesde`, responde 400.
+          schema: { type: string, format: date }
         - name: orden
           in: query
           required: false
@@ -1125,7 +1151,9 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/DonanteOutputDTO' }
         '400':
-          description: Tipo, orden o paginado inválidos, o `q` de más de 100 caracteres (ERR-CSR-003)
+          description: >-
+            Tipo, orden, fecha o paginado inválidos, `altaDesde` posterior a `altaHasta`, o `q` de
+            más de 100 caracteres (ERR-CSR-003)
   /api/donantes/{id}:
     get:
       summary: Consultar donante por ID

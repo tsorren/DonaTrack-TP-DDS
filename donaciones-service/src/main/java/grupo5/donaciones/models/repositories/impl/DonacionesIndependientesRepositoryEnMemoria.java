@@ -62,6 +62,13 @@ public class DonacionesIndependientesRepositoryEnMemoria
     if (c.orden() != OrdenDonacionesIndependientes.ANTIGUAS) {
       porFecha = porFecha.reversed();
     }
+    if (c.orden() == OrdenDonacionesIndependientes.VENCE) {
+      porFecha =
+          Comparator.comparing(
+                  DonacionesIndependientesRepositoryEnMemoria::primerVencimiento,
+                  Comparator.nullsLast(Comparator.<LocalDate>naturalOrder()))
+              .thenComparing(porFecha);
+    }
     if (c.orden() == OrdenDonacionesIndependientes.ATENCION) {
       porFecha =
           Comparator.comparingInt(
@@ -81,6 +88,7 @@ public class DonacionesIndependientesRepositoryEnMemoria
                 di -> c.entidadId() == null || c.entidadId().equals(di.getEntidadBeneficiariaId()))
             .filter(di -> c.necesidadId() == null || c.necesidadId().equals(di.getNecesidadId()))
             .filter(di -> c.id() == null || c.id().equals(di.getId()))
+            .filter(di -> c.venceHasta() == null || venceAMasTardar(di, c.venceHasta()))
             .filter(
                 di -> c.desde() == null || !di.getFechaRegistro().toLocalDate().isBefore(c.desde()))
             .filter(
@@ -96,6 +104,20 @@ public class DonacionesIndependientesRepositoryEnMemoria
             .sorted(porFecha.thenComparing(DonacionIndependiente::getId))
             .toList();
     return Tramo.de(filtradas, c.paginado());
+  }
+
+  /** El vencimiento más próximo de sus bienes; null si ninguno vence (R11-34). */
+  private static LocalDate primerVencimiento(DonacionIndependiente di) {
+    return di.getItems().stream()
+        .map(i -> i.bien().bienOriginal().fechaVencimiento())
+        .filter(Objects::nonNull)
+        .min(Comparator.naturalOrder())
+        .orElse(null);
+  }
+
+  private static boolean venceAMasTardar(DonacionIndependiente di, LocalDate dia) {
+    LocalDate vence = primerVencimiento(di);
+    return vence != null && !vence.isAfter(dia);
   }
 
   private static TipoEstadoDonacion tipo(DonacionIndependiente di) {

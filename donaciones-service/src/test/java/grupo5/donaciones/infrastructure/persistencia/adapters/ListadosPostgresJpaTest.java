@@ -820,6 +820,86 @@ class ListadosPostgresJpaTest {
    * Una asignada a la organización, con el estado y la fecha de registro puestos en la base: el
    * orden y los conteos leen esas columnas.
    */
+  // R11-34: el filtro "vence a más tardar" y el orden por el vencimiento más próximo
+  @Test
+  void independientes_venceHastaYOrdenVence_laMasProximaPrimeroYSinVencimientoAlFinal() {
+    UUID subcategoriaId = crearSubcategoria();
+    Donante donante = donanteDe(humana("Ana", "Vence"), true, LocalDateTime.now());
+    LocalDate dia = LocalDate.of(2027, 3, 10);
+    UUID sinVencimiento = queVence(donante, subcategoriaId, null);
+    UUID tarde = queVence(donante, subcategoriaId, dia.plusDays(30));
+    UUID justo = queVence(donante, subcategoriaId, dia);
+    UUID antes = queVence(donante, subcategoriaId, dia.minusDays(3));
+
+    Tramo<DonacionIndependiente> hastaElDia = independientes.buscar(porVencimiento(dia));
+    Tramo<DonacionIndependiente> todas = independientes.buscar(porVencimiento(null));
+
+    assertEquals(
+        List.of(antes, justo),
+        hastaElDia.elementos().stream().map(DonacionIndependiente::getId).toList());
+    assertEquals(2, hastaElDia.total());
+    assertEquals(
+        List.of(antes, justo, tarde, sinVencimiento),
+        todas.elementos().stream().map(DonacionIndependiente::getId).toList());
+  }
+
+  private static CriterioDonacionesIndependientes porVencimiento(LocalDate venceHasta) {
+    return new CriterioDonacionesIndependientes(
+        Set.of(),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        OrdenDonacionesIndependientes.VENCE,
+        PRIMERA,
+        null,
+        venceHasta);
+  }
+
+  /** Una en el depósito con un bien que vence {@code fecha} (null: no vence). */
+  private UUID queVence(Donante donante, UUID subcategoriaId, LocalDate fecha) {
+    Bien leche = new Bien("Leche en polvo", null, fecha, null, 1.0, 0.01);
+    Donacion donacion = DonacionMother.segmentada(donante.getId(), leche, 10);
+    donaciones.save(donacion);
+    ItemDonacionNormalizado normalizado =
+        itemsNormalizados.save(
+            new ItemDonacionNormalizado(
+                donacion.getId(), BienMother.aceptado(leche, subcategoriaId), 10));
+    DonacionIndependiente independiente = independiente(normalizado);
+    independientes.save(independiente);
+    return independiente.getId();
+  }
+
+  // R11-34: el período de alta, con días inclusivos
+  @Test
+  void donantes_porPeriodoDeAlta_diasInclusivos() {
+    LocalDateTime dia = LocalDateTime.of(2026, 11, 10, 23, 59);
+    donanteDe(humana("Ana", "Antes"), true, dia.minusDays(5));
+    Donante enElDia = donanteDe(humana("Ana", "Justo"), true, dia);
+    donanteDe(humana("Ana", "Despues"), true, dia.plusDays(1));
+
+    Tramo<Donante> delDia =
+        donantes.buscar(
+            new CriterioDonantes(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                OrdenDonantes.NUEVOS,
+                PRIMERA,
+                dia.toLocalDate(),
+                dia.toLocalDate()));
+
+    assertEquals(List.of(enElDia.getId()), ids(delDia));
+    assertEquals(1, delDia.total());
+  }
+
   private UUID asignadaEn(
       Donante donante,
       UUID subcategoriaId,

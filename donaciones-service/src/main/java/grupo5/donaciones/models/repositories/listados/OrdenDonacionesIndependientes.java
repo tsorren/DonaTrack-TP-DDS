@@ -4,8 +4,9 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDona
 
 /**
  * Orden de {@code GET /donaciones-independientes}: por fecha de registro, como {@link
- * OrdenPorFecha}, o {@code ATENCION} (R11-43), lo que la organización tiene que atender primero.
- * Desempata por id.
+ * OrdenPorFecha}, {@code ATENCION} (R11-43), lo que la organización tiene que atender primero, o
+ * {@code VENCE} (R11-34), el vencimiento más próximo de sus bienes primero y las que no vencen al
+ * final. Desempata por la fecha de registro, la más reciente primero, y por id.
  */
 public enum OrdenDonacionesIndependientes {
   RECIENTES,
@@ -15,7 +16,9 @@ public enum OrdenDonacionesIndependientes {
    * (asignada, lista para entregar y en depósito); recibidas. Dentro de cada grupo, la más reciente
    * primero.
    */
-  ATENCION;
+  ATENCION,
+  /** El vencimiento más próximo de sus bienes primero; las que no vencen, al final. */
+  VENCE;
 
   /** El grupo de {@code ATENCION} de un estado: 0 es el primero. */
   public static int grupoDeAtencion(TipoEstadoDonacion estado) {

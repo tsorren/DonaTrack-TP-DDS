@@ -30,6 +30,8 @@ import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
+import grupo5.cliente.vistas.AdminDonantesVista.Reciente;
+import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.ConsultaDonantes;
 import grupo5.cliente.vistas.CuentaVista;
@@ -182,6 +184,33 @@ class AdminDonantesControllerTest {
         .andExpect(content().string(not(containsString("Página 1 de 1"))))
         .andExpect(content().string(not(containsString("null"))));
     verify(personas).donantes(new ConsultaDonantes("ana", null, null, null, null, 1));
+  }
+
+  @Test
+  void laFichaMuestraSusDonacionesConElTotalYElPeriodoDeAltaLlegaALaConsulta() throws Exception {
+    when(personas.donacionesDe("d1"))
+        .thenReturn(
+            new SusDonaciones(
+                12,
+                List.of(new Reciente("x1", "Arroz · 25 kg", "deposito", "9 de noviembre")),
+                true));
+    mvc.perform(get("/admin-donantes?alta=7-dias").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Sus donaciones · 12 registradas")))
+        .andExpect(content().string(containsString("Arroz · 25 kg — En el depósito")))
+        .andExpect(content().string(containsString("Ver sus 12 donaciones")))
+        .andExpect(content().string(not(containsString("null"))));
+    verify(personas).donantes(new ConsultaDonantes("", null, null, null, null, 1, "7-dias"));
+  }
+
+  @Test
+  void siSusDonacionesNoCarganLaFichaLoDiceYElRestoSeMuestra() throws Exception {
+    when(personas.donacionesDe("d1")).thenThrow(new ResourceAccessException("caído"));
+    mvc.perform(get("/admin-donantes").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Ana Ejemplo")))
+        .andExpect(content().string(containsString("No pudimos cargar sus donaciones.")))
+        .andExpect(content().string(containsString("Ver sus donaciones")));
   }
 
   @Test

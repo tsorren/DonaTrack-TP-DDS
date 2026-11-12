@@ -32,13 +32,7 @@ public record AdminDonacionesVista(
 
   /** Las opciones de la pastilla "Registrada": la primera es "Cualquier fecha". */
   public static final List<Opcion> PERIODOS =
-      List.of(
-          new Opcion("", "Cualquier fecha"),
-          new Opcion("hoy", "Hoy"),
-          new Opcion("7-dias", "Últimos 7 días"),
-          new Opcion("30-dias", "Últimos 30 días"),
-          new Opcion("este-mes", "Este mes"),
-          new Opcion("mes-anterior", "El mes anterior"));
+      PeriodoFijo.OPCIONES.stream().map(p -> new Opcion(p.clave(), p.texto())).toList();
 
   public AdminDonacionesVista {
     criterios = List.copyOf(criterios);

@@ -908,11 +908,18 @@ class SitioControllerTest {
         // R11-34: una bandeja; la ficha del primero es la de partida y lleva a sus donaciones
         .andExpect(content().string(containsString("class=\"maestro\"")))
         .andExpect(content().string(containsString("data-elegido=\"partida\"")))
-        .andExpect(content().string(containsString("Ver sus donaciones")))
+        // El primero no tiene donaciones: la ficha lo dice y no ofrece verlas (ficha §4.1)
+        .andExpect(content().string(containsString("Todavía no tiene donaciones registradas.")))
+        .andExpect(content().string(not(containsString("Sus donaciones · 0"))))
         .andExpect(content().string(containsString("Cerrar la ficha")))
         .andExpect(
             content().string(containsString("href=\"/admin-donantes?importar=abrir#importar\"")));
     // Importar queda plegado; "Importar CSV" lo abre sin dejar la lista (RF-20).
+    // Ana tiene donaciones de ejemplo: el total, las más recientes y el enlace con el número
+    mvc.perform(get("/admin-donantes?donante=ana"))
+        .andExpect(content().string(containsString("Sus donaciones · ")))
+        .andExpect(content().string(containsString("Ver sus ")))
+        .andExpect(content().string(containsString("Correo:")));
     mvc.perform(get("/admin-donantes?donante=juan"))
         .andExpect(content().string(containsString("aria-current=\"true\"")))
         .andExpect(content().string(containsString("href=\"/admin-donaciones?donante=juan\"")))

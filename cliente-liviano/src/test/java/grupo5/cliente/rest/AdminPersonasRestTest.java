@@ -464,6 +464,115 @@ class AdminPersonasRestTest {
   }
 
   @Test
+  void elPeriodoDeAltaLoResuelveDonacionesConDiasInclusivosYLaPastillaSeOfrece() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", JSON));
+    // El reloj marca el 10 de noviembre en Buenos Aires: los últimos 7 días van del 4 al 10
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/api/donantes?altaDesde=2026-11-04&altaHasta=2026-11-10"
+                    + "&orden=nuevos&page=0&size=20"))
+        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
+        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+
+    AdminDonantesVista vista =
+        adaptador.donantes(new ConsultaDonantes("", "", "", "", "", 1, "7-dias"));
+
+    assertEquals("7-dias", vista.consulta().alta());
+    assertTrue(vista.consulta().filtrada());
+    assertEquals(6, vista.opciones().altas().size());
+    assertEquals("", vista.opciones().altas().getFirst().valor());
+    donaciones.verify();
+  }
+
+  @Test
+  void laFichaTraeElContactoConElPredeterminadoPrimeroYSiOcultaSuNombre() {
+    String conContacto =
+        """
+        [{"idDonante": "00000000-0000-4000-8000-000000000001", "activo": true,
+          "mostrarNombre": false,
+          "persona": {"tipo": "HUMANA", "nombre": "Ana", "apellido": "Ejemplo",
+                      "direccion": {"calle": "Calle Ejemplo", "altura": 123, "localidad": "CABA"},
+                      "mediosDeContacto": [
+                        {"tipo": "CORREO", "esPredeterminado": false,
+                         "direccionCorreo": "otro@ejemplo.test"},
+                        {"tipo": "WHATSAPP", "esPredeterminado": true, "codigoArea": "11",
+                         "numero": "5555-0000"},
+                        {"tipo": "CORREO", "esPredeterminado": true,
+                         "direccionCorreo": "ana@ejemplo.test"}]}},
+         {"idDonante": "00000000-0000-4000-8000-000000000002", "activo": true,
+          "persona": {"tipo": "HUMANA", "nombre": "Juan", "apellido": "Ejemplo"}}]
+        """;
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes?orden=nuevos&page=0&size=20"))
+        .andRespond(withSuccess(conContacto, JSON).header(Paginas.TOTAL, "2"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
+        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "2"));
+
+    AdminDonantesVista vista = adaptador.donantes(ConsultaDonantes.primera());
+
+    AdminDonantesVista.Contacto ana = vista.donantes().filas().get(0).contacto();
+    assertEquals("ana@ejemplo.test", ana.correo());
+    assertEquals("11 5555-0000 (WhatsApp)", ana.telefono());
+    assertEquals("Calle Ejemplo 123, CABA", ana.direccion());
+    assertTrue(ana.ocultaNombre());
+    AdminDonantesVista.Contacto juan = vista.donantes().filas().get(1).contacto();
+    assertTrue(juan.sinMedios());
+    assertNull(juan.direccion());
+    assertFalse(juan.ocultaNombre());
+    donaciones.verify();
+  }
+
+  @Test
+  void susDonacionesSonUnaPaginaDeTresConElTotalDeDonaciones() {
+    UUID ana = UUID.fromString("00000000-0000-4000-8000-000000000001");
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?donanteId="
+                    + ana
+                    + "&orden=recientes&page=0&size=3"))
+        .andRespond(
+            withSuccess(
+                    """
+                    [{"id": "00000000-0000-4000-8000-0000000000d1", "descripcion": "Arroz",
+                      "estadoActual": "EN_DEPOSITO", "fechaRegistro": "2026-11-09T10:00:00",
+                      "cantidad": 25, "items": []}]
+                    """,
+                    JSON)
+                .header(Paginas.TOTAL, "12"));
+
+    AdminDonantesVista.SusDonaciones suyas = adaptador.donacionesDe(ana.toString());
+
+    assertTrue(suyas.cargaron());
+    assertEquals(12, suyas.total());
+    assertEquals(1, suyas.recientes().size());
+    assertEquals("00000000-0000-4000-8000-0000000000d1", suyas.recientes().getFirst().clave());
+    assertEquals("deposito", suyas.recientes().getFirst().estado());
+    assertTrue(suyas.recientes().getFirst().que().startsWith("Arroz · "));
+    donaciones.verify();
+  }
+
+  @Test
+  void unaClaveQueNoEsUnIdNoPideSusDonaciones() {
+    AdminDonantesVista.SusDonaciones suyas = adaptador.donacionesDe("ana");
+
+    assertEquals(0, suyas.total());
+    assertTrue(suyas.recientes().isEmpty());
+    donaciones.verify();
+  }
+
+  @Test
   void unFiltroQueNoEsDeLasOpcionesSeDescarta() {
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))

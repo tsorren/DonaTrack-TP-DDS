@@ -7,9 +7,11 @@
        estado, el vencimiento y el orden ya resueltos por la fuente: la plantilla no filtra, no ordena
        ni cuenta. Las cifras de la cabecera son números de la fuente. Debajo de la tabla, el paginador
        provisorio (pieza paginador, ?pagina=N); cambiar el filtro vuelve a la página 1.
-       ?vence=pronto (desde el inicio): solo las del depósito que vencen en 7 días, con su título. Si
-       la fuente no filtra por vencimiento (adminDonaciones.conVence en false), el filtro no se ofrece
-       y ?vence=pronto muestra las del depósito con cuántas vencen (adminDonaciones.porVencer).
+       ?vence=pronto (desde el inicio): solo las del depósito que vencen en 7 días, con su título y,
+       sin otro orden elegido, la más próxima primero (desde R11-34 lo resuelve Donaciones con
+       venceHasta y orden=vence). Si una fuente no filtrara por vencimiento (adminDonaciones.conVence
+       en false), el filtro no se ofrece y ?vence=pronto muestra las del depósito con cuántas vencen
+       (adminDonaciones.porVencer).
        ?estado=deposito|asignada|camino|entregada|vencida filtra por estado; ?orden= ordena según los
        criterios que da la fuente (adminDonaciones.criterios). El formulario lleva hx-boost: filtra y
        ordena sin recargar ni volver arriba. ?escenario=vacio, lento y error.

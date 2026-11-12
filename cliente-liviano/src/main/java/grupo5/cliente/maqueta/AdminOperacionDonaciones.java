@@ -4,6 +4,7 @@ import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Bien;
 import grupo5.cliente.vistas.AdminDonacionesVista.Criterio;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
+import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.ConsultaDonaciones;
 import grupo5.cliente.vistas.Tramo;
 import java.util.ArrayList;
@@ -214,6 +215,26 @@ final class AdminOperacionDonaciones {
   /** Los donantes de ejemplo por su clave en Donantes (la ficha lleva a sus donaciones). */
   private static final Map<String, String> DONANTES =
       Map.of("ana", ANA, "juan", JUAN, "fundacion", FUNDACION, "distribuidora", DISTRIBUIDORA);
+
+  /**
+   * Las 3 donaciones de ejemplo más recientes del donante {@code clave} y cuántas son, para su
+   * ficha en Donantes (R11-34); 0 y ninguna si no tiene.
+   */
+  static AdminDonantesVista.SusDonaciones susDonaciones(String clave) {
+    String nombre = DONANTES.get(clave);
+    List<Donacion> suyas =
+        todas("").stream().filter(d -> !d.nueva() && d.donante().equals(nombre)).toList();
+    return new AdminDonantesVista.SusDonaciones(
+        suyas.size(),
+        suyas.stream()
+            .limit(3)
+            .map(
+                d ->
+                    new AdminDonantesVista.Reciente(
+                        d.clave(), d.que() + " · " + d.cantidad(), d.estado(), d.registrada()))
+            .toList(),
+        true);
+  }
 
   /** La donación de ejemplo con esa clave; si no hay, la primera (la leche en polvo). */
   static Donacion detalle(String clave, String accion) {

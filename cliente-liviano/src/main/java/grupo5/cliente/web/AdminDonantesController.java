@@ -4,6 +4,7 @@ import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.ConsultaDonantes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +14,8 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
@@ -50,6 +53,8 @@ public class AdminDonantesController {
   /** La última importación que subió el admin en esta sesión. */
   static final String SESION = "adminDonantesImportacion";
 
+  private static final Logger LOG = LoggerFactory.getLogger(AdminDonantesController.class);
+
   private static final String DONANTES = "admin-donantes";
   private static final String MODELO = "adminDonantes";
   private static final String IMPORTAR_ERROR = "importar-error";
@@ -71,6 +76,7 @@ public class AdminDonantesController {
       @RequestParam(required = false) String tipo,
       @RequestParam(required = false) String dona,
       @RequestParam(required = false) String estado,
+      @RequestParam(required = false) String alta,
       @RequestParam(required = false) String orden,
       @RequestParam(required = false) String donante,
       HttpServletRequest pedido,
@@ -78,7 +84,7 @@ public class AdminDonantesController {
       Model model) {
     String vista = pantallas.mostrar(DONANTES, model);
     ConsultaDonantes consulta =
-        new ConsultaDonantes(buscar, tipo, dona, estado, orden, Paginadores.pedida(pedido));
+        new ConsultaDonantes(buscar, tipo, dona, estado, orden, Paginadores.pedida(pedido), alta);
     AdminDonantesVista datos = personas.donantes(consulta).conImportacion(franja(sesion));
     lista(datos, pedido, model);
     elegido(datos, donante, model);
@@ -89,17 +95,26 @@ public class AdminDonantesController {
    * La bandeja (R11-34): {@code donanteElegido}, la clave del donante cuya ficha se abre (el pedido
    * con {@code ?donante=} si está en la página; si no, el primero, de partida) y {@code
    * donantePartida}, si es el de partida (en el celular su ficha no se abre sola). La ficha usa el
-   * renglón: no se pide nada más.
+   * renglón y pide aparte sus 3 donaciones más recientes con el total ({@code susDonaciones}); si
+   * Donaciones no responde, la ficha lo dice y el resto se muestra igual.
    */
-  private static void elegido(AdminDonantesVista datos, String pedido, Model model) {
+  private void elegido(AdminDonantesVista datos, String pedido, Model model) {
     if (datos.donantes() == null || datos.donantes().filas().isEmpty()) {
       return;
     }
     boolean enLaPagina =
         pedido != null && datos.donantes().filas().stream().anyMatch(d -> d.clave().equals(pedido));
-    model.addAttribute(
-        "donanteElegido", enLaPagina ? pedido : datos.donantes().filas().getFirst().clave());
+    String clave = enLaPagina ? pedido : datos.donantes().filas().getFirst().clave();
+    model.addAttribute("donanteElegido", clave);
     model.addAttribute("donantePartida", !enLaPagina);
+    SusDonaciones suyas;
+    try {
+      suyas = personas.donacionesDe(clave);
+    } catch (RestClientException noRespondio) {
+      LOG.warn("No se pudieron leer las donaciones del donante {}", clave, noRespondio);
+      suyas = SusDonaciones.noCargaron();
+    }
+    model.addAttribute("susDonaciones", suyas);
   }
 
   @GetMapping("/" + DONANTES + "-{accion:importando|importado|importar-error}")

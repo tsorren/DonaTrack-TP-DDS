@@ -26,7 +26,10 @@
        elige su donante (?donante=<clave>, en la misma página, con los filtros) y su ficha va dentro
        del renglón; desde 53,75 em, a la derecha y fija al desplazarse. Sin pedir ninguno, la ficha
        es la del primero (data-elegido="partida"): en el celular no se abre sola. La ficha lleva a
-       sus donaciones (admin-donaciones?donante=<clave>).
+       sus donaciones (admin-donaciones?donante=<clave>): muestra el contacto del renglón
+       (d.contacto) y sus 3 donaciones más recientes con el total (susDonaciones, una página de 3
+       pedida aparte; si no cargó, lo dice). La pastilla Alta (?alta=, un período fijo) se dibuja
+       solo si la fuente filtra por fecha de alta (opciones.altas).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'importando', 'importado' o
          'importar-error'.
@@ -64,6 +67,8 @@
              vacio=${escenario == 'vacio' or (conDatos and n == 0 and !filtrado)},
              abrirImportar=${accion == 'importar-error' or vacio or (param.importar != null and param.importar[0] == 'abrir')},
              estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
+             palabras=${ {deposito: 'En el depósito', asignada: 'Asignada', camino: 'En camino',
+                          entregada: 'Entregada', vencida: 'Vencida'} },
              sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} },
              imp=${datos.importacion}">
   <div class="mesa" data-pantalla="donantes">
@@ -175,6 +180,9 @@
             <details th:replace="~{componentes/filtros :: menu('dona', 'Qué dona', ${c.dona}, ${opciones.categorias})}"></details>
           </th:block>
           <details th:replace="~{componentes/filtros :: menu('estado', 'Estado de la cuenta', ${c.estado}, ${opciones.estados})}"></details>
+          <th:block th:if="${#lists.size(opciones.altas) > 1}">
+            <details th:replace="~{componentes/filtros :: menu('alta', 'Alta', ${c.alta}, ${opciones.altas})}"></details>
+          </th:block>
           <details th:replace="~{componentes/filtros :: menu('orden', 'Más nuevos primero', ${c.orden}, ${opciones.ordenes})}"></details>
           <a th:if="${filtrado or c.orden != ''}" class="filtros-sacar" href="/admin-donantes"
              th:href="@{/admin-donantes}">Sacar los filtros</a>
@@ -198,7 +206,8 @@
              th:hx-get="@{|${base}donante=${d.clave}|}" hx-push-url="true"
              th:aria-current="${d.clave == donanteElegido and !donantePartida} ? 'true' : null">
             <span><b th:text="${d.nombre}">Ana Ejemplo</b>
-              <small th:text="|${d.tipoTexto} · ${d.documento}|">Persona · DNI 20.000.001</small></span>
+              <small th:text="|${d.tipoTexto} · ${d.documento}|">Persona · DNI 20.000.001</small>
+              <small th:if="${d.alta != null}" th:text="|Alta: ${d.alta}|">Alta: 14 de octubre</small></span>
             <span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
                 th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
                 th:text="${estados[d.estado]}">Activo</th:block></span>
@@ -220,10 +229,44 @@
               <p><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
                   th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
                   th:text="${estados[d.estado]}">Activo</th:block></span></p>
+              <p th:if="${d.estado == 'baja'}">Dado de baja. Sus donaciones registradas se siguen viendo.</p>
+            </div>
+            <!--/* El contacto (R11-34): los medios que tenga y la dirección; lo ve solo administración. */-->
+            <div th:if="${d.contacto != null}" data-parte="contacto" class="pila" data-espacio="2"
+                 th:with="k=${d.contacto}">
+              <h4>Contacto</h4>
+              <dl>
+                <div th:if="${k.correo != null}"><dt>Correo:</dt> <dd th:text="${k.correo}">ana@ejemplo.test</dd></div>
+                <div th:if="${k.telefono != null}"><dt>Teléfono:</dt> <dd th:text="${k.telefono}">11 5555-0000</dd></div>
+                <div th:if="${k.direccion != null}"><dt>Dirección:</dt> <dd th:text="${k.direccion}">Calle Ejemplo
+                  123, CABA</dd></div>
+              </dl>
+              <p th:if="${k.sinMedios()}">Sin correo ni teléfono cargados.</p>
+              <p th:if="${k.ocultaNombre}">Pidió que su nombre no se muestre a las organizaciones.</p>
+            </div>
+            <!--/* Sus donaciones (R11-34): las 3 más recientes y el total, un número de Donaciones. */-->
+            <div th:if="${susDonaciones != null}" data-parte="donaciones" class="pila" data-espacio="2"
+                 th:with="s=${susDonaciones}">
+              <h4 th:if="${s.cargaron and s.total > 0}"
+                  th:text="${s.total == 1} ? 'Sus donaciones · 1 registrada' : |Sus donaciones · ${#numbers.formatInteger(s.total, 1, 'POINT')} registradas|">Sus
+                donaciones · 3 registradas</h4>
+              <h4 th:unless="${s.cargaron and s.total > 0}">Sus donaciones</h4>
+              <p th:unless="${s.cargaron}">No pudimos cargar sus donaciones.</p>
+              <p th:if="${s.cargaron and s.total == 0}">Todavía no tiene donaciones registradas.</p>
+              <ul th:if="${s.cargaron and !#lists.isEmpty(s.recientes)}" class="lista pila" data-espacio="1"
+                  role="list">
+                <li th:each="r : ${s.recientes}"><a href="/admin-donaciones?donante=ana"
+                    th:href="@{/admin-donaciones(donante=${d.clave},donacion=${r.clave})}"
+                    th:text="|${r.que} — ${palabras[r.estado]} — ${r.registrada}|">Arroz · 25 kg — En el depósito —
+                  11 de octubre</a></li>
+              </ul>
             </div>
             <div data-parte="acciones" class="racimo">
-              <a class="boton" data-tono="secundario" href="/admin-donaciones?donante=ana"
-                 th:href="@{/admin-donaciones(donante=${d.clave})}">Ver sus donaciones</a>
+              <a th:if="${susDonaciones == null or !susDonaciones.cargaron or susDonaciones.total > 0}"
+                 class="boton" data-tono="secundario" href="/admin-donaciones?donante=ana"
+                 th:href="@{/admin-donaciones(donante=${d.clave})}"
+                 th:text="${susDonaciones == null or !susDonaciones.cargaron} ? 'Ver sus donaciones' : (${susDonaciones.total == 1} ? 'Ver su donación' : |Ver sus ${#numbers.formatInteger(susDonaciones.total, 1, 'POINT')} donaciones|)">Ver
+                sus 3 donaciones</a>
               <a class="boton" data-tono="secundario" href="/admin-donaciones-registrar?donante=ana"
                  th:href="@{/admin-donaciones-registrar(donante=${d.clave})}">Registrar una donación</a>
               <a class="boton" data-tono="secundario" data-parte="cerrar" href="/admin-donantes"

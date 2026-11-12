@@ -28,7 +28,9 @@ public record AdminDonantesVista(
   /**
    * Lo que se puede filtrar y ordenar. Cada lista empieza con su opción "todos" (valor ''). {@code
    * categorias} vacía: no hay filtro "Qué dona". {@code conDona} y {@code conAlta}: si la fuente da
-   * qué dona cada donante y su fecha de alta (sin eso, la columna no se muestra).
+   * qué dona cada donante y su fecha de alta (sin eso, la columna no se muestra). {@code altas}
+   * (R11-34): los períodos fijos del filtro Alta ({@link #periodos()}); vacía si la fuente no
+   * filtra por fecha de alta (la pastilla no se dibuja).
    */
   public record Opciones(
       List<Opcion> tipos,
@@ -36,13 +38,31 @@ public record AdminDonantesVista(
       List<Opcion> estados,
       List<Opcion> ordenes,
       boolean conDona,
-      boolean conAlta) {
+      boolean conAlta,
+      List<Opcion> altas) {
 
     public Opciones {
       tipos = List.copyOf(tipos);
       categorias = List.copyOf(categorias);
       estados = List.copyOf(estados);
       ordenes = List.copyOf(ordenes);
+      altas = altas == null ? List.of() : List.copyOf(altas);
+    }
+
+    /** Sin el filtro Alta: las opciones de antes de R11-34. */
+    public Opciones(
+        List<Opcion> tipos,
+        List<Opcion> categorias,
+        List<Opcion> estados,
+        List<Opcion> ordenes,
+        boolean conDona,
+        boolean conAlta) {
+      this(tipos, categorias, estados, ordenes, conDona, conAlta, List.of());
+    }
+
+    /** Los períodos fijos del filtro Alta, con "Cualquier fecha" primero. */
+    public static List<Opcion> periodos() {
+      return PeriodoFijo.OPCIONES.stream().map(p -> new Opcion(p.clave(), p.texto())).toList();
     }
 
     /** {@code valor} si es una de {@code opciones}; si no, '' (todos). */
@@ -57,7 +77,8 @@ public record AdminDonantesVista(
   /**
    * Un renglón. {@code tipo} es {@code persona}, {@code empresa} u {@code organizacion}; {@code
    * estado}, {@code activo}, {@code pendiente} o {@code baja}; {@code dona}, la categoría del
-   * filtro. {@code alta}, {@code dona} y {@code donaTexto} son null si no se saben.
+   * filtro. {@code alta}, {@code dona} y {@code donaTexto} son null si no se saben. {@code
+   * contacto} (R11-34), lo que muestra la ficha; null si la fuente no lo da.
    */
   public record Donante(
       String clave,
@@ -68,7 +89,66 @@ public record AdminDonantesVista(
       String alta,
       String estado,
       String dona,
-      String donaTexto) {}
+      String donaTexto,
+      Contacto contacto) {
+
+    /** Sin el contacto: el renglón de antes de R11-34. */
+    public Donante(
+        String clave,
+        String nombre,
+        String tipo,
+        String tipoTexto,
+        String documento,
+        String alta,
+        String estado,
+        String dona,
+        String donaTexto) {
+      this(clave, nombre, tipo, tipoTexto, documento, alta, estado, dona, donaTexto, null);
+    }
+
+    /** El mismo renglón con su contacto. */
+    public Donante conContacto(Contacto otro) {
+      return new Donante(
+          clave, nombre, tipo, tipoTexto, documento, alta, estado, dona, donaTexto, otro);
+    }
+  }
+
+  /**
+   * El contacto de un donante para su ficha (R11-34): {@code correo}, {@code telefono} y {@code
+   * direccion} ya escritos, null si no los cargó; {@code ocultaNombre}, si pidió que su nombre no
+   * se muestre a las organizaciones.
+   */
+  public record Contacto(String correo, String telefono, String direccion, boolean ocultaNombre) {
+
+    /** Si no tiene correo ni teléfono cargados. */
+    public boolean sinMedios() {
+      return correo == null && telefono == null;
+    }
+  }
+
+  /**
+   * Sus donaciones en la ficha del donante (R11-34): {@code total}, cuántas registró (un número de
+   * Donaciones); {@code recientes}, las 3 más recientes; {@code cargaron}, false si Donaciones no
+   * respondió (la ficha lo dice y deja el enlace a Donaciones).
+   */
+  public record SusDonaciones(long total, List<Reciente> recientes, boolean cargaron) {
+
+    public SusDonaciones {
+      recientes = recientes == null ? List.of() : List.copyOf(recientes);
+    }
+
+    /** Las que no se pudieron leer. */
+    public static SusDonaciones noCargaron() {
+      return new SusDonaciones(0, List.of(), false);
+    }
+  }
+
+  /**
+   * Una de sus donaciones más recientes: {@code clave}, la de la donación en Donaciones; {@code
+   * que}, "Arroz · 25 kg"; {@code estado}, {@code deposito}, {@code asignada}, {@code camino},
+   * {@code entregada} o {@code vencida}; {@code registrada}, "10 de noviembre".
+   */
+  public record Reciente(String clave, String que, String estado, String registrada) {}
 
   /**
    * Una importación de un CSV y su avance (R11-02). {@code accion} es la pantalla que le toca:

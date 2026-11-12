@@ -3,6 +3,7 @@ package grupo5.cliente.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -640,7 +641,7 @@ class AdminOperacionRestTest {
     assertEquals(true, leche.prontaAVencer());
     assertEquals("entregada", vista.donaciones().filas().get(0).estado());
     assertEquals("asignada", vista.donaciones().filas().get(2).estado());
-    assertFalse(vista.conVence());
+    assertTrue(vista.conVence());
     assertNull(vista.porVencer());
     assertEquals(
         "1 en el depósito · 1 asignada · 0 en camino · 1 entrega confirmada en noviembre. Al 10 de"
@@ -649,8 +650,9 @@ class AdminOperacionRestTest {
     donaciones.verify();
   }
 
+  // R11-34: "vencen pronto" lo filtra y lo ordena Donaciones (venceHasta y orden=vence)
   @Test
-  void elEstadoYElOrdenLosResuelveDonacionesYVencenProntoMuestraElDeposito() {
+  void elEstadoYElOrdenLosResuelveDonacionesYVencenProntoLoFiltraDonaciones() {
     donaciones
         .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
         .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
@@ -671,7 +673,21 @@ class AdminOperacionRestTest {
         .expect(
             requestTo(
                 DONACIONES
-                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=recientes&page=0&size=20"))
+                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=vence"
+                    + "&venceHasta=2026-11-17&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=antiguas"
+                    + "&venceHasta=2026-11-17&page=0&size=20"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
@@ -681,15 +697,19 @@ class AdminOperacionRestTest {
         adaptador.donaciones(new ConsultaDonaciones("camino", false, "antigua", 2), "");
     AdminDonacionesVista pronto =
         adaptador.donaciones(new ConsultaDonaciones(null, true, "nombre", 1), "");
+    AdminDonacionesVista prontoPorRegistro =
+        adaptador.donaciones(new ConsultaDonaciones(null, true, "antigua", 1), "");
 
     assertEquals(2, enCamino.donaciones().pagina());
     assertEquals("antigua", enCamino.consulta().orden());
+    // "nombre" no es un orden de la fuente: queda el de partida, que con "vencen pronto" es vence
     assertEquals("", pronto.consulta().orden());
+    assertTrue(pronto.conVence());
+    assertNull(pronto.porVencer());
+    assertEquals("antigua", prontoPorRegistro.consulta().orden());
     assertEquals(
-        "1 donación del depósito vence en los próximos 7 días; la primera, Leche en polvo, el 12"
-            + " de noviembre. Esta lista todavía no se puede filtrar por vencimiento: te mostramos"
-            + " todas las del depósito.",
-        pronto.porVencer());
+        List.of("", "antigua", "vence"),
+        pronto.criterios().stream().map(AdminDonacionesVista.Criterio::valor).toList());
     donaciones.verify();
   }
 

@@ -48,10 +48,12 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Por qué:** con una tabla y un detalle aparte, revisar varias donaciones era ir y volver; la
   bandeja deja la lista a la vista. Sin buscador ni quién decidió, Todas las decididas no servía
   para contestar "¿quién descartó esto y por qué?".
-- **Costo:** quedan para después el filtro y el orden por vencimiento en Donaciones (sigue el
-  texto de límite de `?vence=pronto`), la pastilla de fecha de alta en Donantes (no se dibuja), el
-  contacto y las 3 últimas donaciones en la ficha del donante, y el pictograma de la categoría en
-  el renglón de Donaciones. La ficha de la donación del renglón cuesta una lectura por clave.
+- **Costo:** en la primera entrega quedaron afuera el filtro y el orden por vencimiento en
+  Donaciones, la pastilla de fecha de alta en Donantes y el contacto y las 3 últimas donaciones en
+  la ficha del donante; los arreglos de la ronda 1 (2026-11-12) los suman (`venceHasta`,
+  `orden=VENCE`, `altaDesde` y `altaHasta`, OpenAPI de Donaciones 1.13.0; el texto de límite de
+  `?vence=pronto` se va). Queda para después el pictograma de la categoría en el renglón de
+  Donaciones. La ficha de la donación del renglón cuesta una lectura por clave.
 - **Quién decidió:** usuario (diseño aprobado con las opciones recomendadas, 2026-11-12) y equipo
   (lo de la construcción).
 - **Evidencia:** [ficha r11-p2-admin-bandeja](flujos/r11-p2-admin-bandeja.md); capturas de la

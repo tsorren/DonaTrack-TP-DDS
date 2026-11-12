@@ -7,11 +7,14 @@ import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.rest.DonacionesApi.Archivo;
 import grupo5.cliente.rest.DonacionesApi.Persona;
 import grupo5.cliente.vistas.AdminDonantesVista;
+import grupo5.cliente.vistas.AdminDonantesVista.Contacto;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
+import grupo5.cliente.vistas.AdminDonantesVista.Reciente;
+import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminImportacionesVista;
@@ -22,6 +25,7 @@ import grupo5.cliente.vistas.Tramo;
 import java.text.Collator;
 import java.text.NumberFormat;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -29,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
@@ -71,6 +76,10 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   static final int POR_PAGINA = 20;
 
   private static final int FILAS_POR_PAGINA = 20;
+
+  /** De a 3 (R11-34): las donaciones más recientes de la ficha del donante. */
+  private static final int RECIENTES = 3;
+
   private static final int ULTIMOS = 5;
   private static final String MOTIVO_INESPERADO =
       "No pudimos cargar esta fila por un problema nuestro. Probá subirla de nuevo.";
@@ -142,12 +151,14 @@ class AdminPersonasRest implements AdminPersonasPuerto {
             Opciones.elegido(pedida.dona(), opciones.categorias()),
             Opciones.elegido(pedida.estado(), opciones.estados()),
             Opciones.elegido(pedida.orden(), opciones.ordenes()),
-            pedida.pagina());
+            pedida.pagina(),
+            Opciones.elegido(pedida.alta(), opciones.altas()));
+    LocalDate hoy = LocalDate.now(reloj.withZone(Comun.ARGENTINA));
     Tramo<DonacionesApi.Donante> pagina =
         Paginas.pedir(
             consulta.pagina(),
             POR_PAGINA,
-            numero -> donaciones.donantes(filtros(consulta, numero, POR_PAGINA)));
+            numero -> donaciones.donantes(filtros(consulta, hoy, numero, POR_PAGINA)));
     Tramo<Donante> donantes =
         new Tramo<>(
             pagina.filas().stream().map(AdminPersonasRest::donante).toList(),
@@ -168,9 +179,9 @@ class AdminPersonasRest implements AdminPersonasPuerto {
 
   /**
    * Los filtros que Donaciones resuelve (R11-01): el tipo de persona o el tipo jurídico, el estado
-   * (activo o dado de baja), la categoría de lo que donó y el orden por alta o por nombre. "Sin
-   * activar su cuenta" no lo guarda Donaciones, y qué dona cada uno no viene en la fila: no se
-   * ofrecen.
+   * (activo o dado de baja), la categoría de lo que donó, el período de alta (R11-34) y el orden
+   * por alta o por nombre. "Sin activar su cuenta" no lo guarda Donaciones, y qué dona cada uno no
+   * viene en la fila: no se ofrecen.
    */
   private Opciones opciones() {
     List<Opcion> categorias = new ArrayList<>();
@@ -198,11 +209,12 @@ class AdminPersonasRest implements AdminPersonasPuerto {
             new Opcion("antiguo", "Más antiguos primero"),
             new Opcion(NOMBRE, "Por nombre, de la A a la Z")),
         false,
-        true);
+        true,
+        Opciones.periodos());
   }
 
   private static MultiValueMap<String, String> filtros(
-      ConsultaDonantes consulta, int pagina, int tamanio) {
+      ConsultaDonantes consulta, LocalDate hoy, int pagina, int tamanio) {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     if (!consulta.buscar().isEmpty()) {
       filtros.add("q", consulta.buscar());
@@ -219,6 +231,11 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     }
     if (!consulta.dona().isEmpty()) {
       filtros.add("categoriaId", consulta.dona());
+    }
+    LocalDate[] alta = consulta.periodoDeAlta(hoy);
+    if (alta[0] != null) {
+      filtros.add("altaDesde", alta[0].toString());
+      filtros.add("altaHasta", alta[1].toString());
     }
     filtros.add(
         "orden",
@@ -245,7 +262,106 @@ class AdminPersonasRest implements AdminPersonasPuerto {
         donante.fechaAlta() == null ? null : Comun.DIA_Y_ANIO.format(donante.fechaAlta()),
         estado,
         null,
-        null);
+        null,
+        contacto(persona, donante.mostrarNombre()));
+  }
+
+  /**
+   * El contacto de la ficha (R11-34): el correo y el teléfono que tenga (el predeterminado
+   * primero), la dirección y si pidió que su nombre no se muestre a las organizaciones.
+   */
+  private static Contacto contacto(Persona persona, Boolean mostrarNombre) {
+    List<DonacionesApi.Medio> medios =
+        persona == null || persona.mediosDeContacto() == null
+            ? List.of()
+            : persona.mediosDeContacto().stream()
+                .filter(Objects::nonNull)
+                .sorted(
+                    Comparator.comparing(
+                        (DonacionesApi.Medio m) -> !Boolean.TRUE.equals(m.esPredeterminado())))
+                .toList();
+    String correo =
+        medios.stream()
+            .filter(m -> "CORREO".equals(m.tipo()))
+            .map(DonacionesApi.Medio::direccionCorreo)
+            .filter(c -> c != null && !c.isBlank())
+            .findFirst()
+            .orElse(null);
+    String telefono =
+        medios.stream()
+            .filter(m -> !"CORREO".equals(m.tipo()))
+            .map(AdminPersonasRest::telefono)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+    return new Contacto(
+        correo,
+        telefono,
+        direccion(persona == null ? null : persona.direccion()),
+        Boolean.FALSE.equals(mostrarNombre));
+  }
+
+  /** "11 5555-0000", o "11 5555-0000 (WhatsApp)"; null sin número. */
+  private static String telefono(DonacionesApi.Medio medio) {
+    if (medio.numero() == null || medio.numero().isBlank()) {
+      return null;
+    }
+    String numero =
+        medio.codigoArea() == null || medio.codigoArea().isBlank()
+            ? medio.numero()
+            : medio.codigoArea() + " " + medio.numero();
+    return "WHATSAPP".equals(medio.tipo()) ? numero + " (WhatsApp)" : numero;
+  }
+
+  /** "Calle Ejemplo 123, CABA"; null sin calle. */
+  private static String direccion(DonacionesApi.Direccion direccion) {
+    if (direccion == null || direccion.calle() == null || direccion.calle().isBlank()) {
+      return null;
+    }
+    String calle =
+        direccion.altura() == null
+            ? direccion.calle()
+            : direccion.calle() + " " + direccion.altura();
+    return direccion.localidad() == null || direccion.localidad().isBlank()
+        ? calle
+        : calle + ", " + direccion.localidad();
+  }
+
+  @Override
+  public SusDonaciones donacionesDe(String clave) {
+    UUID id;
+    try {
+      id = UUID.fromString(clave == null ? "" : clave.strip());
+    } catch (IllegalArgumentException noEsUnId) {
+      return new SusDonaciones(0, List.of(), true);
+    }
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("donanteId", id.toString());
+    filtros.add("orden", "recientes");
+    filtros.add("page", "0");
+    filtros.add("size", String.valueOf(RECIENTES));
+    ResponseEntity<List<DonacionesApi.Donacion>> respuesta = donaciones.pagina(filtros);
+    List<DonacionesApi.Donacion> filas =
+        Objects.requireNonNullElse(respuesta.getBody(), List.<DonacionesApi.Donacion>of());
+    List<Reciente> recientes =
+        filas.stream()
+            .filter(d -> d.id() != null)
+            .limit(RECIENTES)
+            .map(AdminPersonasRest::reciente)
+            .toList();
+    return new SusDonaciones(Paginas.total(respuesta, filas, 0, RECIENTES), recientes, true);
+  }
+
+  private static Reciente reciente(DonacionesApi.Donacion d) {
+    String que =
+        (d.descripcion() == null ? "Donación" : d.descripcion())
+            + " · "
+            + Comun.cantidad(d.cantidad(), Comun.categoria(d));
+    return new Reciente(
+        d.id().toString(),
+        que,
+        AdminOperacionDonaciones.estado(Comun.normalizado(d.estadoActual())),
+        d.fechaRegistro() == null ? "" : Comun.DIA.format(d.fechaRegistro()));
   }
 
   static String nombre(Persona persona) {

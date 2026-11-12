@@ -4,7 +4,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Qué página de donaciones pide el admin (R11-01), tal como llega en la dirección: {@code estado}
@@ -37,8 +36,6 @@ public record ConsultaDonaciones(
 
   private static final int LARGO = 100;
   private static final String CLAVE = "[A-Za-z0-9-]{1,64}";
-  private static final Set<String> PERIODOS =
-      Set.of("hoy", "7-dias", "30-dias", "este-mes", "mes-anterior");
 
   public ConsultaDonaciones {
     estado = estado != null && ESTADOS.contains(estado) && !pronto ? estado : "";
@@ -47,7 +44,7 @@ public record ConsultaDonaciones(
     buscar = buscar == null ? "" : buscar.strip();
     buscar = buscar.length() > LARGO ? buscar.substring(0, LARGO) : buscar;
     categoria = clave(categoria);
-    registrada = registrada != null && PERIODOS.contains(registrada) ? registrada : "";
+    registrada = PeriodoFijo.valida(registrada);
     donante = clave(donante);
     donacion = clave(donacion);
   }
@@ -96,17 +93,7 @@ public record ConsultaDonaciones(
 
   /** Desde y hasta del período de registro elegido (días inclusivos); null si no hay período. */
   public LocalDate[] periodo(LocalDate hoy) {
-    return switch (registrada) {
-      case "hoy" -> new LocalDate[] {hoy, hoy};
-      case "7-dias" -> new LocalDate[] {hoy.minusDays(6), hoy};
-      case "30-dias" -> new LocalDate[] {hoy.minusDays(29), hoy};
-      case "este-mes" -> new LocalDate[] {hoy.withDayOfMonth(1), hoy};
-      case "mes-anterior" -> {
-        LocalDate primero = hoy.withDayOfMonth(1).minusMonths(1);
-        yield new LocalDate[] {primero, primero.withDayOfMonth(primero.lengthOfMonth())};
-      }
-      default -> new LocalDate[2];
-    };
+    return PeriodoFijo.de(registrada, hoy);
   }
 
   private static String clave(String valor) {

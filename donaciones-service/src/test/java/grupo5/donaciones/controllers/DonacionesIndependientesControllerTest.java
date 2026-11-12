@@ -222,7 +222,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             LocalDate.of(2026, 11, 1),
             LocalDate.of(2026, 11, 5),
             necesidadId,
-            id);
+            id,
+            LocalDate.of(2026, 11, 19));
     ParametrosListado listado = new ParametrosListado(3, 25, "campera", "ANTIGUAS");
     when(donacionesIndependientesService.obtenerConFiltros(esperado, listado))
         .thenReturn(new Pagina<>(List.of(), 0));
@@ -243,7 +244,8 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
                 .param("desde", "2026-11-01")
                 .param("hasta", "2026-11-05")
                 .param("necesidadId", necesidadId.toString())
-                .param("id", id.toString()))
+                .param("id", id.toString())
+                .param("venceHasta", "2026-11-19"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(0));
 
