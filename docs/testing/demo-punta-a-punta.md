@@ -88,6 +88,12 @@ docker compose logs notificaciones-service | grep "SENDGRID-MOCK"
 
 Abrí el enlace del log (vale 30 minutos y se puede usar una vez), elegí la clave nueva y volvé a entrar. Una cuenta que no existe ve la misma pantalla, pero no genera ningún correo. Si el correo no llega, mirá el log de Keycloak: con RabbitMQ caído la persona no ve ningún error, y la señal es `KC-SERVICES0026`. La prueba automática de todo este recorrido es `scripts/e2e_correo_de_cuenta.py`.
 
+## Ingresar con Google
+
+"Continuar con Google" aparece en el login de Keycloak solo si Google está habilitado: hacen falta `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` y `GOOGLE_HABILITADO=true` en el `.env`, y como el realm se importa con la base vacía, `docker compose down -v` y volver a levantar. Sin eso el botón no aparece.
+
+Si el email de Google ya tiene una cuenta en DonaTrack, Keycloak pide confirmar el vínculo y **la contraseña de esa cuenta**; una cuenta nueva se crea y entra directo. Una cuenta que no tiene contraseña no puede vincularse todavía (RF-AUTH-04, pendiente de D12): que recupere su clave y después vincule. Como no hace falta una cuenta de Google para probar el flujo, `scripts/e2e_google_vinculacion.py` lo simula con un segundo realm.
+
 ## La sesión en PostgreSQL
 
 El navegador solo lleva un id de sesión (cookie `SESSION`, no `JSESSIONID`); los tokens quedan en el servidor,

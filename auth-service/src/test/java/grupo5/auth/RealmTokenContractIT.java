@@ -134,6 +134,7 @@ class RealmTokenContractIT {
             .withEnv("AUTH_ADMIN_PASSWORD", ADMIN_DONATRACK_CLAVE)
             .withEnv("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID)
             .withEnv("GOOGLE_CLIENT_SECRET", GOOGLE_CLIENT_SECRET)
+            .withEnv("GOOGLE_HABILITADO", "true")
             .withCommand("start-dev", "--import-realm")
             .withExposedPorts(8080)
             .waitingFor(
@@ -374,8 +375,28 @@ class RealmTokenContractIT {
     assertEquals("google", google.get("providerId").asText());
     assertTrue(google.get("enabled").asBoolean());
     assertEquals(GOOGLE_CLIENT_ID, google.get("config").get("clientId").asText());
-    // D4: el flujo por defecto pide la clave para vincular Google con una cuenta que ya existe.
-    assertEquals("first broker login", google.get("firstBrokerLoginFlowAlias").asText());
+    // D4: el flujo propio pide la clave para vincular Google con una cuenta que ya existe.
+    assertEquals("donatrack first broker login", google.get("firstBrokerLoginFlowAlias").asText());
+  }
+
+  @Test
+  void elFlujoDeVinculacionPideLaClaveYNoOfreceElCaminoPorEmail() throws Exception {
+    String alias =
+        URLEncoder.encode("donatrack first broker login", StandardCharsets.UTF_8)
+            .replace("+", "%20");
+    JsonNode ejecuciones =
+        admin("/admin/realms/" + REALM + "/authentication/flows/" + alias + "/executions");
+    List<String> autenticadores = new ArrayList<>();
+    for (JsonNode ejecucion : ejecuciones) {
+      if (ejecucion.hasNonNull("providerId")) {
+        autenticadores.add(ejecucion.get("providerId").asText());
+      }
+    }
+
+    assertTrue(autenticadores.contains("idp-confirm-link"), autenticadores.toString());
+    assertTrue(autenticadores.contains("idp-username-password-form"), autenticadores.toString());
+    // El camino por email de Keycloak mandaría el correo por SMTP, que acá no hay.
+    assertFalse(autenticadores.contains("idp-email-verification"), autenticadores.toString());
   }
 
   // Keycloak crea default-roles-donatrack con offline_access antes de leer el JSON, y el import

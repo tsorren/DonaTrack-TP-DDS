@@ -115,9 +115,9 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | ID | Requerimiento | Criterio de aceptación `[PROPOSED]` | Origen |
 |---|---|---|---|
 | RF-AUTH-01 | Inicio de sesión con email y contraseña | Login correcto → sesión iniciada; credenciales inválidas → mensaje genérico (no revela si el email existe) | RQ-E6-04, UI/UX 4 |
-| RF-AUTH-02 | Inicio de sesión con Google | Botón "Continuar con Google" en el login; flujo OIDC completo | RQ-E6-05, D3 |
-| RF-AUTH-03 | Vinculación de una cuenta Google a una cuenta existente con el mismo email | Si el email ya existe, se pide la contraseña de esa cuenta antes de vincular | D4 |
-| RF-AUTH-04 | Excepción de vinculación para cuentas sin contraseña (importadas por CSV o creadas en el depósito) | La vinculación se habilita cuando Google informa `email_verified=true`; el mecanismo final depende de la D12 | D4, D12 🎓 |
+| RF-AUTH-02 | Inicio de sesión con Google | Botón "Continuar con Google" en el login; flujo OIDC completo. **Hecho (2026-11-12):** el texto lo pone el tema de Keycloak y el proveedor se enciende con `GOOGLE_HABILITADO`; probado con un Google simulado, falta un proyecto real de Google ([ADR](../adr/auth-service/20261112-vinculacion-de-google-por-contrasena-con-flujo-propio-de-keycloak.md)) | RQ-E6-05, D3 |
+| RF-AUTH-03 | Vinculación de una cuenta Google a una cuenta existente con el mismo email | Si el email ya existe, se pide la contraseña de esa cuenta antes de vincular. **Hecho (2026-11-12):** flujo propio `donatrack first broker login`, sin el camino por email; la contraseña se pide también si Google dice que el email no está verificado | D4 |
+| RF-AUTH-04 | Excepción de vinculación para cuentas sin contraseña (importadas por CSV o creadas en el depósito) | La vinculación se habilita cuando Google informa `email_verified=true`; el mecanismo final depende de la D12. **Sin implementar:** hoy una cuenta sin contraseña no puede vincularse; el camino provisional es recuperar la clave y vincular, y queda verificado | D4, D12 🎓 |
 | RF-AUTH-05 | Autorregistro de donantes | Desde "Registrarse" → elegir "Soy Donante"; al primer login se completa el perfil (§4.3) | UI/UX 3, D10, D11 |
 | RF-AUTH-06 | Autorregistro de entidades beneficiarias, con aprobación | La cuenta queda **pendiente**; el rol `ENTIDAD` se asigna cuando un admin aprueba | UI/UX 3, D10 |
 | RF-AUTH-07 | Alta de administradores | Solo un admin crea otro admin; el primero sale de un *seed* configurado por variables de entorno | D10 |

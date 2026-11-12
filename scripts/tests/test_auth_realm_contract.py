@@ -297,38 +297,41 @@ class CatalogoDePermisosTests(unittest.TestCase):
 
 
 class GoogleTests(unittest.TestCase):
-    """RX-01: Google como identity provider, credenciales por variable; D4 con el flujo default."""
+    """RX-01: Google como identity provider, credenciales por variable; D4 con un flujo propio."""
 
     def setUp(self):
         proveedores = cargar_realm().get("identityProviders", [])
         self.assertEqual([p.get("alias") for p in proveedores], ["google"])
         self.google = proveedores[0]
 
-    def test_proveedor_google_habilitado(self):
+    def test_proveedor_google_habilitado_por_variable(self):
+        # Sin credenciales de Google el botón no tiene que aparecer: se enciende con GOOGLE_HABILITADO.
         self.assertEqual(self.google.get("providerId"), "google")
-        self.assertIs(self.google.get("enabled"), True)
+        self.assertEqual(self.google.get("enabled"), "${GOOGLE_HABILITADO}")
 
     def test_credenciales_por_variable(self):
         cfg = self.google.get("config", {})
         self.assertEqual(cfg.get("clientId"), "${GOOGLE_CLIENT_ID}")
         self.assertEqual(cfg.get("clientSecret"), "${GOOGLE_CLIENT_SECRET}")
 
-    def test_primer_ingreso_con_el_flujo_por_defecto(self):
-        """`first broker login` pide la clave para vincular una cuenta existente (D4)."""
-        self.assertEqual(self.google.get("firstBrokerLoginFlowAlias"), "first broker login")
+    def test_primer_ingreso_con_el_flujo_propio(self):
+        """`donatrack first broker login` pide la clave para vincular una cuenta existente (D4)."""
+        self.assertEqual(self.google.get("firstBrokerLoginFlowAlias"), "donatrack first broker login")
         self.assertIs(self.google.get("trustEmail"), False)
 
     def test_variables_opcionales_en_el_compose_y_en_los_env(self):
         kc = bloque_servicio(leer("docker-compose.yml"), "keycloak") or ""
         self.assertIn("GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}", kc)
         self.assertIn("GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}", kc)
+        self.assertIn("GOOGLE_HABILITADO=${GOOGLE_HABILITADO:-false}", kc)
         for archivo in [".env.example", ".env"]:
             env = variables_env(leer(archivo))
-            for var in ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]:
+            for var in ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_HABILITADO"]:
                 self.assertIn(var, env, "%s no define %s" % (archivo, var))
         texto = leer("scripts", "generar-env-db.sh")
         self.assertIn('GOOGLE_CLIENT_ID=', texto)
         self.assertIn('GOOGLE_CLIENT_SECRET=', texto)
+        self.assertIn('GOOGLE_HABILITADO=false', texto)
 
 
 class EnvTrackeadoTests(unittest.TestCase):
