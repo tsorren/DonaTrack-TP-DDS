@@ -210,6 +210,56 @@ class DonanteInicioControllerTest {
   }
 
   @Test
+  void conHtmxLaRespuestaRenuevaLosPiesDeLasOtrasColumnasConLasPaginasVigentes() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 2, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 2), columna(48, 1), 0));
+
+    // Se tocó "›" en "En camino": el pie de "Ya llegó" que viene en la respuesta (y que HTMX pone
+    // en lugar del viejo con hx-select-oob) ya lleva camino=2.
+    mvc.perform(
+            get("/donante-inicio?camino=2")
+                .header("HX-Request", "true")
+                .header("X-Tablero", "camino"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("id=\"pie-llego\"")))
+        .andExpect(content().string(containsString("id=\"pie-camino\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/donante-inicio?camino=2&amp;llego=2#tablero-llego\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "hx-select-oob=\"#pie-tener,#pie-llego,#reintentar-tener,#reintentar-llego\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "hx-select-oob=\"#pie-tener,#pie-camino,#reintentar-tener,#reintentar-camino\"")));
+  }
+
+  @Test
+  void elVolverAIntentarDeUnaColumnaQueNoCargoLlevaLaDireccionVigente() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 2, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 2), null, 0));
+
+    mvc.perform(
+            get("/donante-inicio?camino=2")
+                .header("HX-Request", "true")
+                .header("X-Tablero", "camino"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        Pattern.compile(
+                            "(?s).*href=\"/donante-inicio\\?camino=2\"\\s+id=\"reintentar-llego\".*"))));
+  }
+
+  @Test
   void unaColumnaQueNoCargaNoTumbaLasOtras() throws Exception {
     when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
     when(inicios.tablero(DONANTE, 1, 1, 1))

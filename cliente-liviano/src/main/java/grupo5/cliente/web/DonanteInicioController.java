@@ -27,7 +27,9 @@ import org.thymeleaf.context.LazyContextVariable;
  * propio parámetro ({@code tener}, {@code camino} y {@code llego}) y arma su paginador: cada flecha
  * cambia solo el suyo, conserva los otros y lleva el ancla de la columna (sin JavaScript, la
  * pantalla baja hasta ella). Con JavaScript, la columna manda {@code X-Tablero} con su nombre: solo
- * esa toma el foco, y la respuesta va sin el ancla, así HTMX no mueve la pantalla.
+ * esa toma el foco, y la respuesta va sin el ancla, así HTMX no mueve la pantalla. Como cada
+ * paginador se arma con la dirección de este pedido, la plantilla hace que HTMX renueve también los
+ * pies de las otras dos columnas (hx-select-oob): sus enlaces no vuelven a una página vieja.
  */
 @Controller
 public class DonanteInicioController {
