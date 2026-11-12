@@ -264,6 +264,7 @@ public class DonacionIndependienteRepositoryJpaAdapter
             .siHay(c.categoriaId(), DE_LA_CATEGORIA, "categoriaId")
             .siHay(c.entidadId(), "di.id_beneficiario_asignado = :entidadId", "entidadId")
             .siHay(c.necesidadId(), "di.id_necesidad = :necesidadId", "necesidadId")
+            .siHay(c.id(), "di.id = :id", "id")
             .siHay(
                 c.desde() == null ? null : c.desde().atStartOfDay(),
                 "di.fecha_registro >= :desde",

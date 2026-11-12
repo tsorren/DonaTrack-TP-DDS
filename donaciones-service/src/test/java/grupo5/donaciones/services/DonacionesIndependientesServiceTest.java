@@ -587,6 +587,30 @@ class DonacionesIndependientesServiceTest {
                 null, null, null, null, null, null, null, necesidadId)));
   }
 
+  @Test
+  void obtenerConFiltros_porIdYEntidad_devuelveSoloEsaSiEsDeLaEntidad_R1143() {
+    UUID entidadId = UUID.randomUUID();
+    DonacionIndependiente pedida = DonacionIndependienteMother.enDeposito(1);
+    pedida.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, entidadId));
+    DonacionIndependiente otraDeLaEntidad = DonacionIndependienteMother.enDeposito(1);
+    otraDeLaEntidad.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, entidadId));
+    DonacionIndependiente deOtraEntidad = DonacionIndependienteMother.enDeposito(1);
+    deOtraEntidad.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
+    guardar(pedida, otraDeLaEntidad, deOtraEntidad);
+
+    assertEquals(
+        List.of(pedida.getId()),
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(
+                null, null, null, null, entidadId, null, null, null, pedida.getId())));
+    // La de otra entidad, pedida con la entidad propia, no aparece
+    assertEquals(
+        List.of(),
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(
+                null, null, null, null, entidadId, null, null, null, deOtraEntidad.getId())));
+  }
+
   private static DonacionIndependiente deLaDonacion(Donacion original, UUID subcategoriaId) {
     DonacionIndependiente base =
         DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);

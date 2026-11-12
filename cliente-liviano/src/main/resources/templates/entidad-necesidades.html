@@ -278,10 +278,16 @@
               recepción</a>
           </li>
         </ul>
-        <!--/* R11-43: se muestran las 3 más urgentes; las cifras de arriba son todas. */-->
-        <p th:if="${n.hayMasEntregas()}"
-           th:text="|Mostramos ${#lists.size(n.entregas)} de ${n.puerta + n.camino + n.problema} entregas en curso.|">Mostramos
-          3 de 5 entregas en curso.</p>
+        <!--/* R11-43: se muestran las 3 más urgentes; las cifras de arriba son todas. El resto, en
+               Donaciones recibidas con los estados en curso (regla 2: resumen con "Ver todas"). */-->
+        <p th:if="${n.hayMasEntregas()}">
+          <th:block th:text="|Mostramos ${#lists.size(n.entregas)} de ${n.puerta + n.camino + n.problema} entregas en curso.|">Mostramos
+            3 de 5 entregas en curso.</th:block>
+          <a class="enlace"
+             href="/entidad-recibidas?estado=en-tu-puerta&amp;estado=con-problema&amp;estado=en-camino&amp;estado=por-salir"
+             th:href="@{/entidad-recibidas(estado=${ {'en-tu-puerta', 'con-problema', 'en-camino', 'por-salir'} })}">Ver
+            todas</a>
+        </p>
         <a class="enlace" href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Ver en Seguir entregas</a>
       </section>

@@ -8,7 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 /** Confirmar recepción (RF-12): las entregas que esperan la confirmación y el acta. */
 public interface EntidadConfirmarPuerto {
 
-  List<EntidadEntregaVista> entregas(UUID entidad);
+  /**
+   * La entrega {@code pedida} (la clave del acta, {@code ?entrega=}) si espera la confirmación y,
+   * como mucho, otra que también espera, para ofrecerla después; sin {@code pedida}, las que la
+   * maqueta muestre. No es una lista: el acta no pagina (R11-43).
+   */
+  List<EntidadEntregaVista> entregas(UUID entidad, String pedida);
 
   /** El día de hoy, para la firma del acta ("15 de octubre de 2026"). */
   String hoy();

@@ -170,7 +170,7 @@ Escenario: Los filtros de Organizaciones
 | C6 | `conteos` trae los 8 estados siempre, `entregadasEnElMes` y `porNecesidad`; otra organización recibe 403; sin `entidadId`, 400. | Tests del controller (permisos) y del servicio. |
 | C7 | `orden=ATENCION` devuelve primero `EN_PUERTA`, después las con problema, en camino, por salir y recibidas. | Test del repositorio con base. |
 | C8 | Ninguna clase del cliente llama a `DonacionesApi.asignadas` (ya no existe) ni a un seguimiento de la organización sin `idDonacion`. | `grep` y tests de los adaptadores con `MockRestServiceServer` que esperan las URLs exactas. |
-| C9 | Recibidas, Seguir entregas y Confirmar recepción muestran el paginador `paginas` cuando hay más de 20, y cambiar de página conserva los filtros. | Tests de los controllers y verificación visual. |
+| C9 | Recibidas, Seguir entregas y Confirmar recepción muestran el paginador `paginas` cuando hay más de 20, y cambiar de página conserva los filtros. Confirmar recepción es un acta sin lista: en vez del paginador, pide solo la donación de su clave y una página de 2 (§6.4), sin ningún tope de 100. | Tests de los controllers y verificación visual. |
 | C10 | En Organizaciones, los tres filtros se ofrecen fuera de la maqueta, cada estado con su cantidad, y "Sacar los filtros" vuelve a todas. | Test de `AdminPersonasEntidades` y verificación visual. |
 | C11 | Las cinco pantallas pasan `-Pvisual` (axe, toque y desborde) en 360, 1280 y 1920 px. | `-Pvisual` sobre `entidad-seguimiento`, `admin-ranking`, `entidad-recibidas`, `entidad-necesidades` y `admin-entidades`. |
 | C12 | `mvn clean test` de los cuatro módulos y `spotless:check`, en verde; los OpenAPI escritos coinciden con el código. | Gate 2 y el job de contratos del PR. |
@@ -242,7 +242,7 @@ Respuesta de `conteos`:
 |---|---|---|
 | Recibidas | 1 página de 100 asignadas; filtra, agrupa y cuenta en memoria; las recibidas, solo las del mes. | 1 página de 20 (`entidadId`, `estado` según los filtros elegidos, `orden=ATENCION`) + 1 conteo. El paginador conserva los filtros. |
 | Seguir entregas | 1 página de 100 asignadas + todas las entregas de Logística. | 1 página de 20 de las que no llegaron + 1 conteo (las cifras por estado) + 1 seguimiento de Logística con los `idDonacion` de la página. |
-| Confirmar recepción | Todas las entregas de Logística + 1 página de 100 asignadas. | 1 página de 20 de Donaciones (`EN_PUERTA`, `EN_TRASLADO`) + 1 seguimiento con sus `idDonacion`. Confirmar: 1 seguimiento con `idDonacion=clave`. |
+| Confirmar recepción | Todas las entregas de Logística + 1 página de 100 asignadas. | Arreglos de la revisión (ronda 1): el acta no tiene lista, así que pide 1 página de 1 de Donaciones con `id=clave` (y la organización) + 1 página de 2 de las que esperan (`EN_PUERTA`, `EN_TRASLADO`, `orden=ATENCION`) para ofrecer la que sigue + 1 seguimiento con sus `idDonacion`. Confirmar: 1 seguimiento con `idDonacion=clave`. |
 | Necesidades | Las necesidades + 1 página de 100 asignadas agrupadas por necesidad. | Las necesidades + 1 conteo (con `porNecesidad`) + por cada vigente, 2 páginas de 3 (en curso y recibidas, con `necesidadId`). |
 | Notificaciones | 1 página de avisos + todas las entregas + 1 página de 100 asignadas. | 1 página de avisos + 1 seguimiento con los `idDonacion` de los avisos de entrega en camino. |
 | Ranking | Todo el historial. | 1 página de 12 meses (+ `/{periodo}` si el mes pedido está en otra página). |

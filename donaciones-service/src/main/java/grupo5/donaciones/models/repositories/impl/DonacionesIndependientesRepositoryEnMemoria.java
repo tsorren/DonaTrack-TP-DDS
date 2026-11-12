@@ -77,6 +77,7 @@ public class DonacionesIndependientesRepositoryEnMemoria
             .filter(
                 di -> c.entidadId() == null || c.entidadId().equals(di.getEntidadBeneficiariaId()))
             .filter(di -> c.necesidadId() == null || c.necesidadId().equals(di.getNecesidadId()))
+            .filter(di -> c.id() == null || c.id().equals(di.getId()))
             .filter(
                 di -> c.desde() == null || !di.getFechaRegistro().toLocalDate().isBefore(c.desde()))
             .filter(

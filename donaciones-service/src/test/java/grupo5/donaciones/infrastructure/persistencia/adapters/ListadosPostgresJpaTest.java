@@ -649,6 +649,43 @@ class ListadosPostgresJpaTest {
     assertEquals(3, soloLasQueEsperan.total());
   }
 
+  // R11-43: el acta de Confirmar recepción lee solo la donación pedida, de esa organización
+  @Test
+  void independientes_porIdDeLaOrganizacion_soloEsaYNuncaLaDeOtra() {
+    UUID subcategoriaId = crearSubcategoria();
+    Donante donante = donanteDe(humana("Ana", "Acta"), true, LocalDateTime.now());
+    UUID comedor = entidadLlamada("Comedor Acta");
+    UUID otroComedor = entidadLlamada("Comedor Vecino");
+    LocalDateTime base = LocalDateTime.of(2026, 11, 1, 10, 0);
+    UUID pedida = asignadaEn(donante, subcategoriaId, comedor, null, "EN_PUERTA", base);
+    asignadaEn(donante, subcategoriaId, comedor, null, "EN_PUERTA", base.plusDays(1));
+    UUID ajena = asignadaEn(donante, subcategoriaId, otroComedor, null, "EN_PUERTA", base);
+
+    Tramo<DonacionIndependiente> laPedida = independientes.buscar(porId(comedor, pedida));
+    Tramo<DonacionIndependiente> laAjena = independientes.buscar(porId(comedor, ajena));
+
+    assertEquals(
+        List.of(pedida), laPedida.elementos().stream().map(DonacionIndependiente::getId).toList());
+    assertEquals(1, laPedida.total());
+    assertEquals(0, laAjena.total());
+  }
+
+  private static CriterioDonacionesIndependientes porId(UUID entidadId, UUID id) {
+    return new CriterioDonacionesIndependientes(
+        Set.of(TipoEstadoDonacion.EN_PUERTA, TipoEstadoDonacion.EN_TRASLADO),
+        null,
+        null,
+        null,
+        entidadId,
+        null,
+        null,
+        null,
+        null,
+        OrdenDonacionesIndependientes.ATENCION,
+        new Paginado(0, 1),
+        id);
+  }
+
   // R11-43 (C6): las cifras de una organización, por estado y por necesidad, en una consulta
   @Test
   void independientes_conteosDeUnaOrganizacion_porNecesidadYEstado() {

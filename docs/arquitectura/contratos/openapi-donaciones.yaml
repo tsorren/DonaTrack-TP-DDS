@@ -25,7 +25,7 @@ info:
     lo lista de a una página y `POST /api/actividad` anota lo que pasa fuera de Donaciones;
     `POST /api/entidades` acepta `origen` (opcional).
     Desde 1.11.0 (R11-43), `GET /api/entidades` filtra por `estado`, `conNecesidades` y `rubro`;
-    `GET /donaciones-independientes` acepta `orden=ATENCION`, y
+    `GET /donaciones-independientes` acepta `orden=ATENCION` e `id` (solo esa donación), y
     `GET /donaciones-independientes/conteos` da las cifras de una organización.
 servers:
   - url: http://localhost:8080
@@ -104,6 +104,16 @@ paths:
           in: query
           required: false
           description: Las donaciones que cubren esa necesidad, en cualquier período (HB-18). Su estado dice si están en camino o entregadas.
+          schema:
+            type: string
+            format: uuid
+        - name: id
+          in: query
+          required: false
+          description: >-
+            Desde 1.11.0 (R11-43): solo esa donación. La organización, que no puede leer
+            `/donaciones-independientes/{id}`, la pide con su `entidadId`; si es de otra
+            organización, la página llega vacía.
           schema:
             type: string
             format: uuid

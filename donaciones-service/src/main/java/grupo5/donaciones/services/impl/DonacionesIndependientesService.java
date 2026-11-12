@@ -149,7 +149,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
                 listado.texto(),
                 listado.orden(
                     OrdenDonacionesIndependientes.class, OrdenDonacionesIndependientes.RECIENTES),
-                listado.paginado()));
+                listado.paginado(),
+                filtro.id()));
     return new Pagina<>(donacionIndependienteMapper.toDTOs(tramo.elementos()), (int) tramo.total());
   }
 
