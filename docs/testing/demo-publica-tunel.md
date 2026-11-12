@@ -15,10 +15,15 @@ El navegador abre cuatro orígenes; cada uno tiene su túnel (`docker-compose.tu
 | `tunel-minio` | 9000 | Fotos con URL prefirmada (donaciones, incentivos, logística) |
 | `tunel-gateway` | 8086 | Fotos de las actas de logística |
 
-Bases, RabbitMQ, n8n, Adminer y las consolas no tienen túnel: solo se ven desde la PC.
+Cada túnel publica el puerto entero, no solo lo que usa el sitio: por `tunel-keycloak` también se abre la
+consola de administración de Keycloak (`/admin`), protegida solo por `KC_BOOTSTRAP_ADMIN_PASSWORD` de
+`.env.publica` (aleatoria). Bases, RabbitMQ, n8n, Adminer y la consola de MinIO no tienen túnel: se ven desde
+la PC y, como el compose base publica sus puertos en todas las interfaces, también desde la red local.
 
 ## Requisitos
 
+- El servicio `cliente-liviano` en el compose base (PR 969) y el seeder con `docker-compose.seed.yml` y
+  [demo-seeder.md](demo-seeder.md) (PR 976). Sin ellos el script falla.
 - Docker con 8 GB o más para su VM (`docker info` → `Total Memory`). Medido el 2026-11-12: el stack con n8n
   y los datos del seeder usa unos 4 GB; con 4,8 GB el motor de Docker falló a mitad del seeder.
 - Bash (Git Bash en Windows), `openssl` y salida a internet.
