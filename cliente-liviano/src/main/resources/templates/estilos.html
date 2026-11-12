@@ -864,6 +864,22 @@
           </th:block>
         </div>
       </div>
+      <!--/* Fuera de la grilla, a todo el ancho: la forma larga necesita el ancho de una lista. */-->
+      <div th:replace="~{componentes/muestra :: muestra('.paginas', 'El único paginador del sitio (componentes/paginas :: paginas(p), con p un vistas.Paginador que arma web.Paginadores.de), debajo de todo listado completo y centrado. Desde 37,5 em, la forma larga: « ‹ 1 2 3 … 9 › », con la primera y la última siempre (.paginas-extremo), tres números seguidos alrededor de la actual (.paginas-numero, la actual con aria-current=&quot;page&quot;) y un hueco (.paginas-hueco) que nunca esconde una sola página. En el celular, o con data-forma=&quot;corta&quot; (componentes/paginas :: corta(p), para una columna angosta), ‹ 3 de 9 › (.paginas-lugar). Lo que no sigue se ve apagado (data-estado=&quot;apagado&quot;) y no es un enlace. Los enlaces son direcciones reales que conservan la búsqueda y los filtros: anda sin JavaScript. Con una sola página no se dibuja. Achicá la ventana para ver la forma corta; los de esta muestra vuelven acá.', ~{::demo-paginas})}">
+        <th:block th:fragment="demo-paginas">
+          <div id="paginas" class="pila" data-espacio="3">
+            <p data-tono="suave">En la primera de 9:</p>
+            <nav th:replace="~{componentes/paginas :: paginas(${paginasPrimera})}"></nav>
+            <p data-tono="suave" th:text="|En la ${paginasMedio.pagina} de 9 (tocá un número):|">En la 5 de 9 (tocá un número):</p>
+            <nav th:replace="~{componentes/paginas :: paginas(${paginasMedio})}"></nav>
+            <p data-tono="suave">En la última de 9:</p>
+            <nav th:replace="~{componentes/paginas :: paginas(${paginasUltima})}"></nav>
+            <p data-tono="suave">Forma corta en cualquier ancho (data-forma="corta"), en la 3 de 9:</p>
+            <nav th:replace="~{componentes/paginas :: corta(${paginasCorta})}"></nav>
+            <p data-tono="suave">Con una sola página no se dibuja nada.</p>
+          </div>
+        </th:block>
+      </div>
     </section>
   </div>
 </th:block>

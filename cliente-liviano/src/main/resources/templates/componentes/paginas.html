@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!--/* Componente paginas (R11-11, ficha docs/interfaz/flujos/r11-p1-paginador.md): el único
+       paginador del sitio, debajo de todo listado completo. Hoja: static/css/componentes/paginas.css.
+       Catálogo: docs/interfaz/componentes.md.
+       - Forma larga (desde 37,5 em): « ‹ 1 2 3 … 9 › », con la primera y la última siempre.
+       - Forma corta (celular, o data-forma="corta" en una columna angosta): ‹ 3 de 9 ›.
+       Las dos están en el marcado y la hoja oculta con display: none la que no va: sin JavaScript
+       anda igual, y el lector de pantalla oye una sola.
+       - Cada enlace es una dirección real (?pagina=N con la búsqueda, los filtros y el orden que
+         había, la arma web.Paginadores.de): sin JavaScript carga la página entera; con hx-boost
+         cambia solo el main y el foco va al título de la lista (p.cambio).
+       - Lo que no sigue (« y ‹ en la primera, › y » en la última), la actual y el "…" son span: no
+         son enlaces ni reciben el foco. Los apagados y el "…" no se leen.
+       Fragmentos:
+       - paginas(p): p es un vistas.Paginador, o null (una sola página: no se dibuja nada).
+       - corta(p): el mismo, siempre en la forma corta (las columnas del tablero de la empresa).
+       - armar(p, forma): el de los dos; forma es null o 'corta'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="paginas(p)" th:replace="~{componentes/paginas :: armar(${p}, null)}"></nav>
+
+<nav th:fragment="corta(p)" th:replace="~{componentes/paginas :: armar(${p}, 'corta')}"></nav>
+
+<nav th:fragment="armar(p, forma)" th:if="${p != null}" class="paginas" th:data-forma="${forma}"
+     th:aria-label="${p.nombre}" aria-label="Páginas de donantes">
+  <ol>
+    <li class="paginas-extremo">
+      <a th:if="${p.primera != null}" hx-boost="true" th:href="${p.primera}" href="?pagina=1"
+         aria-label="Primera página">«</a>
+      <span th:unless="${p.primera != null}" data-estado="apagado" aria-hidden="true">«</span>
+    </li>
+    <li>
+      <a th:if="${p.anterior != null}" hx-boost="true" th:href="${p.anterior}" href="?pagina=4"
+         aria-label="Página anterior">‹</a>
+      <span th:unless="${p.anterior != null}" data-estado="apagado" aria-hidden="true">‹</span>
+    </li>
+    <li th:each="c : ${p.tramos}" class="paginas-numero" th:classappend="${c.hueco()} ? 'paginas-hueco'">
+      <span th:if="${c.hueco()}" aria-hidden="true">…</span>
+      <span th:if="${c.actual()}" aria-current="page"><span class="solo-lectores">Página </span><th:block
+          th:text="${#numbers.formatInteger(c.numero, 1, 'POINT')}">5</th:block></span>
+      <a th:if="${!c.hueco() and !c.actual()}" hx-boost="true" th:href="${c.direccion}" href="?pagina=6"
+         th:aria-label="|Página ${#numbers.formatInteger(c.numero, 1, 'POINT')}|" aria-label="Página 6"
+         th:text="${#numbers.formatInteger(c.numero, 1, 'POINT')}">6</a>
+    </li>
+    <li class="paginas-lugar">
+      <span aria-hidden="true"
+            th:text="|${#numbers.formatInteger(p.pagina, 1, 'POINT')} de ${#numbers.formatInteger(p.paginas, 1, 'POINT')}|">5 de 9</span>
+      <span class="solo-lectores"
+            th:text="|Página ${#numbers.formatInteger(p.pagina, 1, 'POINT')} de ${#numbers.formatInteger(p.paginas, 1, 'POINT')}|">Página 5 de 9</span>
+    </li>
+    <li>
+      <a th:if="${p.siguiente != null}" hx-boost="true" th:href="${p.siguiente}" href="?pagina=6"
+         aria-label="Página siguiente">›</a>
+      <span th:unless="${p.siguiente != null}" data-estado="apagado" aria-hidden="true">›</span>
+    </li>
+    <li class="paginas-extremo">
+      <a th:if="${p.ultima != null}" hx-boost="true" th:href="${p.ultima}" href="?pagina=9"
+         aria-label="Última página">»</a>
+      <span th:unless="${p.ultima != null}" data-estado="apagado" aria-hidden="true">»</span>
+    </li>
+  </ol>
+</nav>
+</body>
+</html>

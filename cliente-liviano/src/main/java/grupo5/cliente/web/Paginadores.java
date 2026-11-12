@@ -6,9 +6,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * Arma el paginador provisorio (R11-01) de una lista con la dirección del pedido: cada enlace es la
- * misma pantalla con {@code ?pagina=} cambiado y la búsqueda, los filtros y el orden que había, así
- * funciona sin JavaScript y el "atrás" del navegador vuelve a la página anterior.
+ * Arma el paginador (R11-01; componente paginas de R11-11) de una lista con la dirección del
+ * pedido: cada enlace es la misma pantalla con {@code ?pagina=} cambiado y la búsqueda, los filtros
+ * y el orden que había, así funciona sin JavaScript y el "atrás" del navegador vuelve a la página
+ * anterior.
  */
 final class Paginadores {
 
@@ -18,16 +19,14 @@ final class Paginadores {
 
   /** El paginador de {@code tramo}, o null si entra en una sola página (no se dibuja). */
   static Paginador de(HttpServletRequest pedido, String nombre, Tramo<?> tramo) {
-    if (tramo == null || tramo.paginas() <= 1) {
+    if (tramo == null) {
       return null;
     }
-    int pagina = tramo.pagina();
-    return new Paginador(
+    return Paginador.de(
         nombre,
-        pagina,
+        tramo.pagina(),
         tramo.paginas(),
-        pagina > 1 ? direccion(pedido, pagina - 1) : null,
-        pagina < tramo.paginas() ? direccion(pedido, pagina + 1) : null,
+        pagina -> direccion(pedido, pagina),
         pedido.getParameter(PAGINA) != null);
   }
 

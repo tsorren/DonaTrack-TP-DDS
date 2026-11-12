@@ -36,6 +36,11 @@ class PaginadoresTest {
     assertEquals("/admin-donantes?buscar=ana&tipo=persona&pagina=1", p.anterior());
     assertEquals("/admin-donantes?buscar=ana&tipo=persona&pagina=3", p.siguiente());
     assertEquals(true, p.cambio());
+    // R11-11: primera, última y cada número también conservan la búsqueda y los filtros.
+    assertEquals("/admin-donantes?buscar=ana&tipo=persona&pagina=1", p.primera());
+    assertEquals("/admin-donantes?buscar=ana&tipo=persona&pagina=3", p.ultima());
+    assertEquals("/admin-donantes?buscar=ana&tipo=persona&pagina=1", p.tramos().get(0).direccion());
+    assertNull(p.tramos().get(1).direccion());
   }
 
   @Test
