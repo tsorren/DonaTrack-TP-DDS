@@ -83,10 +83,17 @@ final class AdminOperacionDonaciones {
 
   private final DonacionesApi api;
   private final LocalDateTime ahora;
+  private final AutoresDelHistorial autores;
 
   AdminOperacionDonaciones(DonacionesApi api, LocalDateTime ahora) {
+    this(api, ahora, AutoresDelHistorial.con(null));
+  }
+
+  /** {@code autores} pone el nombre de la cuenta que hizo cada cambio del historial (R11-10). */
+  AdminOperacionDonaciones(DonacionesApi api, LocalDateTime ahora, AutoresDelHistorial autores) {
     this.api = api;
     this.ahora = ahora;
+    this.autores = autores;
   }
 
   AdminDonacionesVista vista(ConsultaDonaciones pedida) {
@@ -322,7 +329,7 @@ final class AdminOperacionDonaciones {
   }
 
   /** Cada cambio de estado, del más viejo al más nuevo, con quién lo hizo si se sabe. */
-  private static List<String> historial(DonacionesApi.Donacion d, String deposito, String entidad) {
+  private List<String> historial(DonacionesApi.Donacion d, String deposito, String entidad) {
     List<String> historial = new ArrayList<>();
     String registrada = d.fechaRegistro() == null ? "" : DIA.format(d.fechaRegistro());
     historial.add(
@@ -335,7 +342,7 @@ final class AdminOperacionDonaciones {
         .forEach(
             c -> {
               String dia = DIA.format(c.timestamp());
-              String por = c.actor() == null || c.actor().isBlank() ? "" : c.actor();
+              String por = autores.de(c.actor());
               switch (Comun.normalizado(c.estadoNuevo())) {
                 case ASIGNADA ->
                     historial.add(

@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.persistencia.adapters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -203,6 +204,32 @@ class PropuestasRepositoryJpaTest {
     assertEquals(
         EstadoPropuesta.APROBADA, propuestas.findById(propuesta.getId()).orElseThrow().getEstado());
     assertEquals(1, contar("posible_fragmentacion"));
+  }
+
+  @Test
+  void guardar_alDecidir_persisteQuienYCuandoDecidio() {
+    Propuesta propuesta = propuestaCon(donacion);
+    propuestas.save(propuesta);
+
+    Propuesta leida = propuestas.findById(propuesta.getId()).orElseThrow();
+    leida.rechazar("sub-de-carla");
+    propuestas.save(leida);
+
+    Propuesta decidida = propuestas.findById(propuesta.getId()).orElseThrow();
+    assertEquals("sub-de-carla", decidida.getDecididaPor());
+    assertEquals(
+        leida.getFechaDecision().truncatedTo(ChronoUnit.MILLIS),
+        decidida.getFechaDecision().truncatedTo(ChronoUnit.MILLIS));
+  }
+
+  @Test
+  void guardar_unaPendiente_dejaLaDecisionEnNull() {
+    Propuesta propuesta = propuestaCon(donacion);
+    propuestas.save(propuesta);
+
+    Propuesta leida = propuestas.findById(propuesta.getId()).orElseThrow();
+    assertNull(leida.getDecididaPor());
+    assertNull(leida.getFechaDecision());
   }
 
   @Test

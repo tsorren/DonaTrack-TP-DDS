@@ -81,6 +81,8 @@ public class PropuestaMapper {
         propuesta.getEstado(),
         propuesta.getFechaCreacion(),
         necesidadDTO,
-        fragmentacionesDTO);
+        fragmentacionesDTO,
+        propuesta.getDecididaPor(),
+        propuesta.getFechaDecision());
   }
 }

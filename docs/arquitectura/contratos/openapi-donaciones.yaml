@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.9.0
+  version: 1.10.0
   description: >-
     API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
     1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
@@ -9,6 +9,8 @@ info:
     independientes y entidades paginan, buscan y ordenan en la base: el cuerpo sigue siendo un
     arreglo, el total va en `X-Total-Count` y, sin `page` ni `size`, devuelven la página 0 de 20
     (ninguno devuelve la lista completa). `q` busca "contiene" sin distinguir mayúsculas ni tildes.
+    Desde 1.10.0 (R11-10) cada propuesta dice quién la aprobó o descartó y cuándo
+    (`decididaPor`, `fechaDecision`).
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -553,12 +555,22 @@ paths:
       responses:
         '200':
           description: Listado de propuestas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropuestaDTO'
   /api/asignaciones/propuestas/{id}/estado:
     put:
       summary: Actualizar estado de una propuesta de asignación
       description: >
         Al aprobar se valida que la necesidad siga activa y que ninguna donación de la propuesta
-        pertenezca a la propia entidad beneficiaria.
+        pertenezca a la propia entidad beneficiaria. Desde 1.10.0 (R11-10) la decisión queda a
+        nombre de la cuenta del token (su `sub`), nunca de un dato que mande el cliente: se guarda
+        en `decididaPor` con `fechaDecision` y, al aprobar, es el `actor` del cambio de estado de
+        cada donación asignada. Sin token (seguridad deshabilitada), "SISTEMA". Ruta, cuerpo,
+        respuestas y errores no cambian.
       operationId: actualizarEstadoPropuesta
       parameters:
         - name: id
@@ -1397,6 +1409,36 @@ components:
         type: integer
         minimum: 0
   schemas:
+    PropuestaDTO:
+      type: object
+      description: Propuesta de asignación de donaciones a una necesidad.
+      properties:
+        id: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [PENDIENTE, APROBADA, DESCARTADA]
+        fechaCreacion: { type: string, format: date-time }
+        necesidad:
+          type: object
+          nullable: true
+          description: Resumen de la necesidad que satisface.
+        fragmentaciones:
+          type: array
+          items:
+            type: object
+            description: Donación independiente y cantidad que aporta.
+        decididaPor:
+          type: string
+          nullable: true
+          description: >
+            Desde 1.10.0 (R11-10). Id de la cuenta que la aprobó o descartó (el `sub` del token);
+            "SISTEMA" si se decidió sin cuenta; `null` mientras está pendiente o si se decidió
+            antes de este cambio. No es un nombre: quien lo muestra lo traduce.
+        fechaDecision:
+          type: string
+          format: date-time
+          nullable: true
+          description: Desde 1.10.0 (R11-10). Cuándo se aprobó o descartó; `null` si no se sabe.
     ResumenAdminDTO:
       type: object
       description: Cifras del inicio del administrador (R11-01), cada una contada en la base.

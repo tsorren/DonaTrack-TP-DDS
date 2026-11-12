@@ -228,7 +228,7 @@ class AprobacionPropuestaTransaccionalJpaTest {
 
     assertThrows(
         IllegalStateException.class,
-        () -> service.actualizarEstado(propuesta.getId(), EstadoPropuesta.APROBADA));
+        () -> service.actualizarEstado(propuesta.getId(), EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     // La primera fragmentación llegó a guardarse y a pedirse al broker, y después se revirtió
     verify(logisticaBroker, times(2)).solicitarEntrega(any());
@@ -241,11 +241,27 @@ class AprobacionPropuestaTransaccionalJpaTest {
 
   @Test
   void aprobar_cuandoTodoSale_confirmaLasAsignacionesYLaPropuestaJuntas() {
-    service.actualizarEstado(propuesta.getId(), EstadoPropuesta.APROBADA);
+    service.actualizarEstado(propuesta.getId(), EstadoPropuesta.APROBADA, "sub-de-ana");
 
     verify(logisticaBroker, times(2)).solicitarEntrega(any());
     assertEquals(2, contarDonaciones("estado_actual = 'ASIGNACION_REALIZADA'"));
     assertEquals(
         EstadoPropuesta.APROBADA, propuestas.findById(propuesta.getId()).orElseThrow().getEstado());
+  }
+
+  // R11-10: la propuesta y el cambio de estado de cada donación quedan a nombre de quien aprobó
+  @Test
+  void aprobar_quedaANombreDeLaCuentaQueAprobo() {
+    service.actualizarEstado(propuesta.getId(), EstadoPropuesta.APROBADA, "sub-de-ana");
+
+    assertEquals(
+        "sub-de-ana", propuestas.findById(propuesta.getId()).orElseThrow().getDecididaPor());
+    assertEquals(
+        2,
+        jdbc.queryForObject(
+            "SELECT count(*) FROM donaciones.cambio_estado_donacion_independiente c"
+                + " JOIN donaciones.estado_donacion_independiente e ON e.id = c.id_estado_nuevo"
+                + " WHERE e.tipo = 'ASIGNACION_REALIZADA' AND c.actor = 'sub-de-ana'",
+            Integer.class));
   }
 }

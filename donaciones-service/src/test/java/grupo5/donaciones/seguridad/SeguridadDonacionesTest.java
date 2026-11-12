@@ -1,6 +1,7 @@
 package grupo5.donaciones.seguridad;
 
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -23,6 +24,8 @@ import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteRespo
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.dto.personas.AceptarLegalesDTO;
+import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +53,7 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   private static final UUID AJENO = UUID.randomUUID();
   private static final String NECESIDADES = "/api/necesidades";
   private static final String INDEPENDIENTES = "/donaciones-independientes";
+  private static final String SUB_DE_ANA = "6f1c0d2e-sub-de-ana";
 
   private final ObjectMapper json = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -72,6 +76,12 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
                     "EDITAR_DATOS_ORGANIZACION");
             case "entidad-sin-permisos" -> token("ENTIDAD", ENTIDAD);
             case "admin" -> token("ADMIN", AJENO);
+            case "admin-ana" ->
+                Jwt.withTokenValue("t")
+                    .header("alg", "none")
+                    .subject(SUB_DE_ANA)
+                    .claim("roles", List.of("ADMIN"))
+                    .build();
             case "servicio" -> token("SERVICIO", AJENO);
             default -> throw new BadJwtException("token desconocido");
           };
@@ -332,5 +342,31 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
                 .content("{}"),
             "donante")
         .andExpect(status().isBadRequest());
+  }
+
+  // R11-10: aprobar o descartar queda a nombre de la cuenta del token, no de "SISTEMA"
+  @Test
+  void decidirUnaPropuesta_quedaANombreDelSubDelToken() throws Exception {
+    UUID propuesta = UUID.randomUUID();
+
+    pedir(
+            conCuerpo(
+                put("/api/asignaciones/propuestas/" + propuesta + "/estado"),
+                new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null)),
+            "admin-ana")
+        .andExpect(status().isOk());
+
+    verify(propuestaDeAsignacionService)
+        .actualizarEstado(propuesta, EstadoPropuesta.APROBADA, SUB_DE_ANA);
+  }
+
+  @Test
+  void decidirUnaPropuesta_esSoloDelAdmin() throws Exception {
+    pedir(
+            conCuerpo(
+                put("/api/asignaciones/propuestas/" + UUID.randomUUID() + "/estado"),
+                new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null)),
+            "donante")
+        .andExpect(status().isForbidden());
   }
 }

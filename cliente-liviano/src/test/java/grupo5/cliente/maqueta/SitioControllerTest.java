@@ -90,15 +90,38 @@ class SitioControllerTest {
     mvc.perform(get("/perfil")).andExpect(status().isNotFound());
   }
 
+  // R11-10: cada administrador tiene su Mi perfil y la lista de Administradores, en el menú de la
+  // cuenta (antes la administración no tenía Mi perfil).
   @Test
-  void laAdministracionNoTieneMiPerfil() throws Exception {
+  void laAdministracionTieneMiPerfilYAdministradores() throws Exception {
     mvc.perform(get("/admin-inicio"))
         .andExpect(status().isOk())
-        .andExpect(content().string(not(containsString("/admin-perfil"))));
+        .andExpect(content().string(containsString("href=\"/admin-perfil\"")))
+        .andExpect(content().string(containsString("href=\"/admin-administradores\"")));
     mvc.perform(get("/admin-perfil"))
         .andExpect(status().isOk())
-        .andExpect(view().name("sin-dibujar"))
+        .andExpect(view().name("admin-perfil"))
         .andExpect(model().attribute("seccion", "Mi perfil"));
+    mvc.perform(get("/admin-administradores"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin-administradores"))
+        .andExpect(model().attribute("seccion", "Administradores"));
+  }
+
+  @Test
+  void lasPantallasDeAdministracionMuestranSusEstadosEnLaMaqueta() throws Exception {
+    mvc.perform(get("/admin-perfil").param("escenario", "vacio"))
+        .andExpect(content().string(containsString("Todavía no cargaste tu nombre.")));
+    mvc.perform(get("/admin-perfil").param("escenario", "error"))
+        .andExpect(content().string(containsString("No pudimos traer tus datos ahora.")));
+    mvc.perform(get("/admin-administradores").param("escenario", "error"))
+        .andExpect(
+            content()
+                .string(containsString("No pudimos traer las cuentas de administración ahora.")));
+    mvc.perform(get("/admin-administradores-nuevo")).andExpect(status().isOk());
+    mvc.perform(get("/admin-administradores-alta"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("K7pQ-m4Rt-x9Wa-2Lse")));
   }
 
   @Test

@@ -1,6 +1,7 @@
 package grupo5.cliente.rest;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -55,19 +57,39 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   private final DonacionesApi donaciones;
   private final Clock reloj;
   private final AdminOperacionRegistro registro;
+  private final DirectorioDeAdministradores cuentas;
 
+  /** {@code cuentas} da el nombre de quien hizo cada cambio del historial (R11-10). */
   @Autowired
+  AdminOperacionRest(
+      LogisticaApi logistica,
+      DonacionesApi donaciones,
+      Clock reloj,
+      ObjectProvider<DirectorioDeAdministradores> cuentas) {
+    this(logistica, donaciones, reloj, RestClient.create(), cuentas.getIfAvailable());
+  }
+
   AdminOperacionRest(LogisticaApi logistica, DonacionesApi donaciones, Clock reloj) {
-    this(logistica, donaciones, reloj, RestClient.create());
+    this(logistica, donaciones, reloj, RestClient.create(), null);
   }
 
   /** {@code subidas} sube las fotos a la dirección firmada (los tests le pasan uno simulado). */
   AdminOperacionRest(
       LogisticaApi logistica, DonacionesApi donaciones, Clock reloj, RestClient subidas) {
+    this(logistica, donaciones, reloj, subidas, null);
+  }
+
+  AdminOperacionRest(
+      LogisticaApi logistica,
+      DonacionesApi donaciones,
+      Clock reloj,
+      RestClient subidas,
+      DirectorioDeAdministradores cuentas) {
     this.logistica = logistica;
     this.donaciones = donaciones;
     this.reloj = reloj;
     this.registro = new AdminOperacionRegistro(donaciones, subidas);
+    this.cuentas = cuentas;
   }
 
   @Override
@@ -119,7 +141,9 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   @Override
   public AdminDonacionesVista.Donacion donacion(String clave, String accion) {
     return new AdminOperacionDonaciones(
-            donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)))
+            donaciones,
+            LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)),
+            AutoresDelHistorial.con(cuentas))
         .detalle(clave);
   }
 

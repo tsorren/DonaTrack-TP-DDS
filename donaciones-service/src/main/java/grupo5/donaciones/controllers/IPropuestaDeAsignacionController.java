@@ -6,6 +6,7 @@ import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 public interface IPropuestaDeAsignacionController {
 
@@ -15,5 +16,6 @@ public interface IPropuestaDeAsignacionController {
 
   ResponseEntity<List<PropuestaDTO>> listar();
 
-  ResponseEntity<Void> actualizarEstado(UUID id, ActualizarEstadoRequestDTO request);
+  ResponseEntity<Void> actualizarEstado(
+      UUID id, ActualizarEstadoRequestDTO request, Authentication autenticacion);
 }

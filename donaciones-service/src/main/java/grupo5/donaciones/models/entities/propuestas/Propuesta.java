@@ -24,6 +24,11 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   private EstadoPropuesta estado;
   private LocalDateTime fechaCreacion;
 
+  /** Id de la cuenta que la aprobó o descartó ("SISTEMA" si no hubo cuenta); null si pendiente. */
+  private String decididaPor;
+
+  private LocalDateTime fechaDecision;
+
   public Propuesta() {
     this.id = UUID.randomUUID();
     this.posiblesFragmentaciones = new ArrayList<>();
@@ -43,11 +48,25 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
       EstadoPropuesta estado,
       LocalDateTime fechaCreacion,
       List<PosibleFragmentacion> posiblesFragmentaciones) {
+    this(id, necesidadQueSatisfaceId, estado, fechaCreacion, posiblesFragmentaciones, null, null);
+  }
+
+  /** Constructor de reconstitución con la decisión ya tomada (quién y cuándo). */
+  public Propuesta(
+      UUID id,
+      UUID necesidadQueSatisfaceId,
+      EstadoPropuesta estado,
+      LocalDateTime fechaCreacion,
+      List<PosibleFragmentacion> posiblesFragmentaciones,
+      String decididaPor,
+      LocalDateTime fechaDecision) {
     this.id = id;
     this.necesidadQueSatisfaceId = necesidadQueSatisfaceId;
     this.estado = estado;
     this.fechaCreacion = fechaCreacion;
     this.posiblesFragmentaciones = new ArrayList<>(posiblesFragmentaciones);
+    this.decididaPor = decididaPor;
+    this.fechaDecision = fechaDecision;
   }
 
   public void asociarNecesidad(UUID necesidadId) {
@@ -99,9 +118,10 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
     }
 
-    String actorFinal = (actor == null || actor.isBlank()) ? "SISTEMA" : actor;
+    String actorFinal = actorODefecto(actor);
 
     this.estado = EstadoPropuesta.APROBADA;
+    registrarDecision(actorFinal);
     this.registrarEvento(
         new PropuestaAprobada(
             this.id,
@@ -113,9 +133,23 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   }
 
   public void rechazar() {
+    rechazar(null);
+  }
+
+  public void rechazar(String actor) {
     if (this.estado != EstadoPropuesta.PENDIENTE) {
       throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     this.estado = EstadoPropuesta.DESCARTADA;
+    registrarDecision(actorODefecto(actor));
+  }
+
+  private void registrarDecision(String actor) {
+    this.decididaPor = actor;
+    this.fechaDecision = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  private static String actorODefecto(String actor) {
+    return (actor == null || actor.isBlank()) ? "SISTEMA" : actor;
   }
 }

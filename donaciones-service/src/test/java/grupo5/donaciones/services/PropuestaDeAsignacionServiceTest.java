@@ -1,6 +1,7 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
@@ -155,7 +156,9 @@ class PropuestaDeAsignacionServiceTest {
             EstadoPropuesta.APROBADA,
             java.time.LocalDateTime.now(),
             necesidadResumen,
-            List.of());
+            List.of(),
+            "sub-de-ana",
+            null);
 
     when(propuestaRepository.findAll()).thenReturn(List.of(propuesta));
     when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
@@ -178,10 +181,13 @@ class PropuestaDeAsignacionServiceTest {
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
     when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
 
-    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
-    verify(eventPublisher, times(1)).publishEvent(any(PropuestaAprobada.class));
+    assertEquals("sub-de-ana", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
+    verify(eventPublisher, times(1))
+        .publishEvent(argThat((PropuestaAprobada e) -> "sub-de-ana".equals(e.actor())));
     verify(propuestaRepository).save(propuesta);
   }
 
@@ -199,7 +205,7 @@ class PropuestaDeAsignacionServiceTest {
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     assertEquals(ErrorCatalog.NECESIDAD_INACTIVA, ex.getError());
     assertEquals(EstadoPropuesta.PENDIENTE, propuesta.getEstado());
@@ -219,7 +225,7 @@ class PropuestaDeAsignacionServiceTest {
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, ex.getError());
     verify(necesidadRepository, never()).findById(any());
@@ -250,7 +256,7 @@ class PropuestaDeAsignacionServiceTest {
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     assertEquals(ErrorCatalog.DONACION_A_SI_MISMO, ex.getError());
     assertEquals(EstadoPropuesta.PENDIENTE, propuesta.getEstado());
@@ -278,10 +284,13 @@ class PropuestaDeAsignacionServiceTest {
     when(donacionRepository.findById(independiente.getId())).thenReturn(Optional.of(independiente));
     when(donacionesRepository.findById(donacionOriginalId)).thenReturn(Optional.of(donacion));
 
-    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
-    verify(eventPublisher, times(1)).publishEvent(any(PropuestaAprobada.class));
+    assertEquals("sub-de-ana", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
+    verify(eventPublisher, times(1))
+        .publishEvent(argThat((PropuestaAprobada e) -> "sub-de-ana".equals(e.actor())));
   }
 
   @Test
@@ -296,7 +305,7 @@ class PropuestaDeAsignacionServiceTest {
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
     when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
 
-    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
   }
@@ -315,9 +324,11 @@ class PropuestaDeAsignacionServiceTest {
     Propuesta propuesta = new Propuesta();
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
 
-    service.actualizarEstado(id, EstadoPropuesta.DESCARTADA);
+    service.actualizarEstado(id, EstadoPropuesta.DESCARTADA, "sub-de-carla");
 
     assertEquals(EstadoPropuesta.DESCARTADA, propuesta.getEstado());
+    assertEquals("sub-de-carla", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
     verify(propuestaRepository).save(propuesta);
   }
 
@@ -328,7 +339,7 @@ class PropuestaDeAsignacionServiceTest {
 
     assertThrows(
         RecursoNoEncontradoException.class,
-        () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+        () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
   }
 
   @Test

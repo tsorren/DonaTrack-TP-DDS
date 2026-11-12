@@ -19,6 +19,8 @@ public class PropuestasPersistenciaMapper {
     entity.setNecesidadId(domain.getNecesidadQueSatisfaceId());
     entity.setEstado(domain.getEstado());
     entity.setFechaCreacion(domain.getFechaCreacion());
+    entity.setDecididaPor(domain.getDecididaPor());
+    entity.setFechaDecision(domain.getFechaDecision());
     // Las fragmentaciones no tienen identidad en el dominio: se reemplazan
     entity.getFragmentaciones().clear();
     for (PosibleFragmentacion f : domain.getPosiblesFragmentaciones()) {
@@ -41,6 +43,8 @@ public class PropuestasPersistenciaMapper {
         entity.getNecesidadId(),
         entity.getEstado(),
         entity.getFechaCreacion(),
-        fragmentaciones);
+        fragmentaciones,
+        entity.getDecididaPor(),
+        entity.getFechaDecision());
   }
 }

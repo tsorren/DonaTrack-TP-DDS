@@ -54,7 +54,8 @@ public class Pantallas {
    * Pantallas que el layout privado enlaza fuera del menú; si no están dibujadas, muestran la
    * página de sin dibujar.
    */
-  private static final Map<String, String> FUERA_DEL_MENU = Map.of("perfil", "Mi perfil");
+  private static final Map<String, String> FUERA_DEL_MENU =
+      Map.of("perfil", "Mi perfil", "administradores", "Administradores");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
@@ -279,9 +280,11 @@ public class Pantallas {
         .toList();
   }
 
-  /** La dirección de Mi perfil del área, o nula si no tiene (la administración). */
+  /**
+   * La dirección de Mi perfil del área: cada una tiene la suya (la administración, desde R11-10).
+   */
   private static String miPerfil(Area area) {
-    return area.requierePersona() ? "/" + area.prefijo() + "-perfil" : null;
+    return "/" + area.prefijo() + "-perfil";
   }
 
   /**

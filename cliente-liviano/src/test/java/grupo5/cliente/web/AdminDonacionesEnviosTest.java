@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.AdminOperacionPuerto.BienNuevo;
 import grupo5.cliente.puertos.AdminOperacionPuerto.DonacionNueva;
+import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
@@ -31,6 +32,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -60,6 +62,8 @@ import org.springframework.web.client.HttpClientErrorException;
 class AdminDonacionesEnviosTest {
 
   private static final String ID = "6f1c2c1e-0000-4000-8000-0000000000d1";
+  // R11-10: el historial guarda la cuenta (el sub de la sesión), no el nombre del menú
+  private static final String CUENTA_DE_LEO = "6f1c2c1e-0000-4000-8000-00000000001e";
 
   @TestConfiguration
   static class Reloj {
@@ -71,6 +75,7 @@ class AdminDonacionesEnviosTest {
   }
 
   @MockitoBean private AdminOperacionPuerto operacion;
+  @MockitoBean private AdministradorActual administrador;
   @Autowired private MockMvc mvc;
 
   private static final Donacion LECHE =
@@ -94,6 +99,7 @@ class AdminDonacionesEnviosTest {
   @BeforeEach
   void unaDonacion() {
     when(operacion.donacion(ID, "")).thenReturn(LECHE);
+    when(administrador.cuenta(any())).thenReturn(Optional.of(CUENTA_DE_LEO));
   }
 
   @Test
@@ -137,7 +143,7 @@ class AdminDonacionesEnviosTest {
   }
 
   @Test
-  void marcarVencidaGuardaConElNombreDelAdminYVuelveAlDetalle() throws Exception {
+  void marcarVencidaGuardaConLaCuentaDelAdminYVuelveAlDetalle() throws Exception {
     mvc.perform(
             post("/admin-donaciones-detalle-vencida")
                 .param("donacion", ID)
@@ -147,14 +153,14 @@ class AdminDonacionesEnviosTest {
             flash()
                 .attribute(
                     Envios.AVISO, "La marcaste como vencida el 10 de noviembre de 2026, 18:30."));
-    verify(operacion).marcarVencida(ID, "Leo Ejemplo", "Se rompió el envase");
+    verify(operacion).marcarVencida(ID, CUENTA_DE_LEO, "Se rompió el envase");
   }
 
   @Test
   void siCambioALaVezNoLaMarca() throws Exception {
     doThrow(HttpClientErrorException.create(HttpStatus.CONFLICT, "Conflict", null, null, null))
         .when(operacion)
-        .marcarVencida(ID, "Leo Ejemplo", null);
+        .marcarVencida(ID, CUENTA_DE_LEO, null);
 
     mvc.perform(post("/admin-donaciones-detalle-vencida").param("donacion", ID))
         .andExpect(redirectedUrl("/admin-donaciones-detalle?donacion=" + ID))

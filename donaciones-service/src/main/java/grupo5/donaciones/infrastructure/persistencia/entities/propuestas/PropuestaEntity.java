@@ -34,6 +34,12 @@ public class PropuestaEntity {
   @Column(name = "fecha_creacion", nullable = false)
   private LocalDateTime fechaCreacion;
 
+  @Column(name = "decidida_por")
+  private String decididaPor;
+
+  @Column(name = "fecha_decision")
+  private LocalDateTime fechaDecision;
+
   @OneToMany(mappedBy = "propuesta", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PosibleFragmentacionEntity> fragmentaciones = new ArrayList<>();
 }

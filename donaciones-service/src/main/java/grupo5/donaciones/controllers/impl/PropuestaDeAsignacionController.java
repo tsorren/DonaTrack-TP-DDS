@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/asignaciones")
 @RequiredArgsConstructor
 public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionController {
+
+  private static final String SISTEMA = "SISTEMA";
 
   private final IPropuestaDeAsignacionService service;
 
@@ -53,8 +57,23 @@ public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionCo
   @Override
   @PutMapping("/propuestas/{id}/estado")
   public ResponseEntity<Void> actualizarEstado(
-      @PathVariable UUID id, @Valid @RequestBody ActualizarEstadoRequestDTO request) {
-    service.actualizarEstado(id, request.estado());
+      @PathVariable UUID id,
+      @Valid @RequestBody ActualizarEstadoRequestDTO request,
+      Authentication autenticacion) {
+    service.actualizarEstado(id, request.estado(), autorDe(autenticacion));
     return ResponseEntity.ok().build();
+  }
+
+  /**
+   * El autor sale del token de quien llama (su {@code sub}), nunca de un dato del cliente. Sin
+   * token (seguridad deshabilitada), "SISTEMA".
+   */
+  private static String autorDe(Authentication autenticacion) {
+    if (autenticacion != null
+        && autenticacion.getCredentials() instanceof Jwt token
+        && token.getSubject() != null) {
+      return token.getSubject();
+    }
+    return SISTEMA;
   }
 }

@@ -55,7 +55,8 @@ class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
   void listar_deberiaRetornar200YListaDePropuestas() throws Exception {
     UUID propId = UUID.randomUUID();
     PropuestaDTO dto =
-        new PropuestaDTO(propId, EstadoPropuesta.PENDIENTE, LocalDateTime.now(), null, List.of());
+        new PropuestaDTO(
+            propId, EstadoPropuesta.PENDIENTE, LocalDateTime.now(), null, List.of(), null, null);
 
     when(propuestaDeAsignacionService.listarPropuestas()).thenReturn(List.of(dto));
 
@@ -83,7 +84,7 @@ class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(header().exists("X-Trace-Id"));
 
     verify(propuestaDeAsignacionService, times(1))
-        .actualizarEstado(propId, EstadoPropuesta.APROBADA);
+        .actualizarEstado(propId, EstadoPropuesta.APROBADA, "SISTEMA");
   }
 
   @Test

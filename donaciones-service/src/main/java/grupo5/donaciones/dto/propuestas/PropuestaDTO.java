@@ -10,4 +10,6 @@ public record PropuestaDTO(
     EstadoPropuesta estado,
     LocalDateTime fechaCreacion,
     NecesidadResumenDTO necesidad,
-    List<GrupoFragmentacionDTO> fragmentaciones) {}
+    List<GrupoFragmentacionDTO> fragmentaciones,
+    String decididaPor,
+    LocalDateTime fechaDecision) {}

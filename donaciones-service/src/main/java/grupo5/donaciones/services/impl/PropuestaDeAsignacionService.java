@@ -105,7 +105,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
    */
   @Override
   @Transactional
-  public void actualizarEstado(UUID id, EstadoPropuesta estado) {
+  public void actualizarEstado(UUID id, EstadoPropuesta estado, String actor) {
     Propuesta propuesta =
         propuestaRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
@@ -115,11 +115,11 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
           // Si ya no está pendiente, aceptar() informa la transición inválida.
           validarAprobable(propuesta);
         }
-        propuesta.aceptar("SISTEMA");
+        propuesta.aceptar(actor);
         propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
         propuesta.clearDomainEvents();
       }
-      case DESCARTADA -> propuesta.rechazar();
+      case DESCARTADA -> propuesta.rechazar(actor);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 

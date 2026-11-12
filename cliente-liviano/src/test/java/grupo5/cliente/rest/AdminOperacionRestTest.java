@@ -3,6 +3,10 @@ package grupo5.cliente.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
@@ -14,6 +18,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
@@ -27,6 +32,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
@@ -494,6 +500,75 @@ class AdminOperacionRestTest {
     assertNull(adaptador.donacion(D3, "detalle"));
     assertNull(adaptador.donacion("no-es-un-id", "detalle"));
     donaciones.verify();
+  }
+
+  @Test
+  void elHistorialMuestraElNombreDeLaCuentaQueHizoCadaCambio() {
+    String cuentaDeAna = "6f1c2c1e-0000-4000-8000-0000000000aa";
+    DirectorioDeAdministradores cuentas = mock(DirectorioDeAdministradores.class);
+    when(cuentas.cuenta(cuentaDeAna))
+        .thenReturn(
+            Optional.of(
+                new DirectorioDeAdministradores.Administrador(
+                    cuentaDeAna, "Ana", "Pérez", "ana.perez@ejemplo.org", null, true)));
+    RestClient.Builder deDonaciones = RestClient.builder();
+    MockRestServiceServer api = MockRestServiceServer.bindTo(deDonaciones).build();
+    AdminOperacionRest conCuentas =
+        new AdminOperacionRest(
+            null,
+            ClientesHttp.cliente(deDonaciones, DONACIONES, DonacionesApi.class),
+            Clock.fixed(Instant.parse("2026-11-10T21:30:00Z"), ZoneOffset.UTC),
+            RestClient.create(),
+            cuentas);
+    api.expect(requestTo(DONACIONES + "/donaciones-independientes/" + D1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%1$s", "descripcion": "Arroz", "estadoActual": "Vencida",
+                 "fechaRegistro": "2026-11-01T10:00:00", "cantidad": 25,
+                 "entidadBeneficiariaId": "%2$s", "donacionOriginalId": "%3$s",
+                 "historial": [
+                   {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-03T09:00:00",
+                    "estadoAnterior": "EnDeposito", "actor": "SISTEMA"},
+                   {"estadoNuevo": "EnDeposito", "timestamp": "2026-11-04T09:00:00",
+                    "estadoAnterior": "AsignacionRealizada"},
+                   {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-05T09:00:00",
+                    "estadoAnterior": "EnDeposito", "actor": "%4$s"},
+                   {"estadoNuevo": "Vencida", "timestamp": "2026-11-06T10:15:00",
+                    "estadoAnterior": "EnDeposito", "actor": "%4$s"}],
+                 "items": []}"""
+                    .formatted(D1, E1, O1, cuentaDeAna),
+                MediaType.APPLICATION_JSON));
+    api.expect(requestTo(DONACIONES + "/api/donaciones/" + O1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "donante": {"persona": {"nombre": "Ana", "apellido": "Ejemplo"}},
+                 "deposito": {"calle": "Av. Ejemplo", "altura": 1234}}"""
+                    .formatted(O1),
+                MediaType.APPLICATION_JSON));
+    api.expect(requestTo(DONACIONES + "/api/entidades/" + E1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}"""
+                    .formatted(E1),
+                MediaType.APPLICATION_JSON));
+
+    AdminDonacionesVista.Donacion detalle = conCuentas.donacion(D1, "detalle");
+
+    assertEquals(
+        List.of(
+            "1 de noviembre: llegó al depósito de Av. Ejemplo 1234.",
+            "3 de noviembre: quedó asignada a Comedor Ejemplo.",
+            "4 de noviembre: volvió al depósito.",
+            "5 de noviembre: quedó asignada a Comedor Ejemplo. La aprobó Ana Pérez.",
+            "6 de noviembre, 10:15: quedó vencida; la marcó Ana Pérez. Dejó de estar disponible"
+                + " para asignar."),
+        detalle.historial());
+    // Cada cuenta se busca una sola vez por detalle.
+    verify(cuentas, times(1)).cuenta(cuentaDeAna);
+    api.verify();
   }
 
   @Test

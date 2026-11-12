@@ -12,7 +12,11 @@ public interface IPropuestaDeAsignacionService {
 
   List<PropuestaDTO> listarPropuestas();
 
-  void actualizarEstado(UUID id, EstadoPropuesta estado);
+  /**
+   * Aprueba o descarta una propuesta a nombre de {@code actor}: el id de la cuenta que decide (el
+   * {@code sub} del token), o "SISTEMA" si no hay cuenta.
+   */
+  void actualizarEstado(UUID id, EstadoPropuesta estado, String actor);
 
   List<EjecucionAsignacionDTO> historialEjecuciones();
 }

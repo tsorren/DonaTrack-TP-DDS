@@ -83,9 +83,9 @@
   </a>
   <!--/* La campana de la administración (usuario, ronda 2026-11-09: "agregá la bell de notificaciones"):
          la misma pieza, hacia admin-notificaciones, con 3 sin leer en la maqueta y ninguna después de
-         marcarlas como leídas. La administración no tiene Mi perfil, así que se reconoce por su cuenta.
+         marcarlas como leídas. Se reconoce por su Mi perfil (R11-10: la administración tiene el suyo).
          Un agregado: no cambia la de los otros roles ni el controlador. */-->
-  <a th:if="${perfil == null and cuenta != null and cuenta.rol == 'Administración'}"
+  <a th:if="${perfil != null and #strings.endsWith(perfil, '/admin-perfil')}"
      th:with="pantalla=${#execInfo.processedTemplateName},
               sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}"
      class="armazon-avisos" href="/admin-notificaciones" th:href="@{/admin-notificaciones}"
@@ -110,6 +110,10 @@
       <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
       <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
          th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
+      <!--/* Las cuentas de administración (R11-10, ficha r11-p1-admins.md §2): solo en el área admin. */-->
+      <a th:if="${perfil != null and #strings.endsWith(perfil, '/admin-perfil')}" href="/admin-administradores"
+         th:href="@{/admin-administradores}"
+         th:aria-current="${seccion == 'Administradores'} ? 'page' : null">Administradores</a>
       <!--/* El cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y Cerrar
              sesión (POST con CSRF), de #955. */-->
       <a th:if="${cuenta.cambiarClave}" href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a>

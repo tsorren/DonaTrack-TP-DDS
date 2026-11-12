@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--/* Mi perfil de la administración (R11-10, ficha docs/interfaz/flujos/r11-p1-admins.md §4.1): el
+       nombre y el apellido de la cuenta, que es el que queda en lo que aprueba; el correo y la fecha
+       de alta como texto (el correo es el ingreso y no se cambia desde acá); el enlace a cambiar la
+       contraseña (la consola de la cuenta del proveedor de ingreso, como el menú) y a Administradores.
+       El modelo (web.AdminPerfilController): miPerfil (DirectorioDeAdministradores.Administrador, o
+       null si no se pudo traer), nombre y apellido (lo escrito o lo guardado), errores (por campo),
+       creada (la fecha de alta, en texto), errorCarga, errorGuardar y codigo (el de
+       soporte). Sin pestañas: son dos campos. En la maqueta,
+       ?escenario=vacio muestra la cuenta sin nombre cargado y ?escenario=error, la falla al traerla. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Mi perfil - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="mesa"
+       th:with="sinNombre=${miPerfil != null and miPerfil.nombreCompleto() == null},
+                eNombre=${errores['nombre']}, eApellido=${errores['apellido']}">
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Administración</p>
+        <h1>Mi perfil</h1>
+        <p>Tus datos de administración. Tu nombre es el que queda en lo que aprobás.</p>
+      </div>
+    </header>
+
+    <section th:if="${errorCarga}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-carga-titulo">
+      <h2 id="error-carga-titulo">No pudimos traer tus datos ahora.</h2>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto" th:href="@{/publico-contacto(codigo=${codigo},volver='/admin-perfil')}">escribinos
+          con este código</a>.</p>
+      <p th:if="${codigo}" class="aviso-codigo">Código: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
+      <a class="boton" data-tono="secundario" href="/admin-perfil" th:href="@{/admin-perfil}">Volver a
+        cargar</a>
+    </section>
+
+    <section th:if="${errorGuardar}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
+             aria-labelledby="error-guardar-titulo">
+      <h2 id="error-guardar-titulo">No pudimos guardar tus datos. Siguen como estaban.</h2>
+      <p>Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto" th:href="@{/publico-contacto(codigo=${codigo},volver='/admin-perfil')}">escribinos
+          con este código</a>.</p>
+      <p th:if="${codigo}" class="aviso-codigo">Código: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
+    </section>
+
+    <form th:if="${miPerfil != null}" class="formulario tarjeta pila" data-espacio="3"
+          action="/admin-perfil" th:action="@{/admin-perfil}" method="post" hx-boost="true"
+          hx-indicator="#enviando-admin-perfil" hx-select-oob="#avisos" novalidate
+          aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo">Tus datos</h2>
+      <p th:if="${sinNombre and errores.isEmpty()}" class="nota">Todavía no cargaste tu nombre. Con él vamos a
+        mostrar quién aprobó cada cosa.</p>
+      <div class="grilla" data-espacio="3">
+        <div class="campo" th:data-estado="${eNombre != null} ? 'error'">
+          <label for="nombre">Nombre</label>
+          <p th:if="${eNombre}" id="nombre-error" class="campo-error" th:text="${eNombre}">Escribí tu nombre.</p>
+          <input id="nombre" name="nombre" type="text" required maxlength="255" autocomplete="given-name"
+                 th:value="${nombre}" th:autofocus="${eNombre != null}"
+                 th:attr="aria-describedby=${eNombre != null} ? 'nombre-error' : null,aria-invalid=${eNombre != null} ? 'true' : null">
+        </div>
+        <div class="campo" th:data-estado="${eApellido != null} ? 'error'">
+          <label for="apellido">Apellido</label>
+          <p th:if="${eApellido}" id="apellido-error" class="campo-error" th:text="${eApellido}">Escribí tu apellido.</p>
+          <input id="apellido" name="apellido" type="text" required maxlength="255" autocomplete="family-name"
+                 th:value="${apellido}" th:autofocus="${eNombre == null and eApellido != null}"
+                 th:attr="aria-describedby=${eApellido != null} ? 'apellido-error' : null,aria-invalid=${eApellido != null} ? 'true' : null">
+        </div>
+      </div>
+      <dl class="pila" data-espacio="1">
+        <dt>Correo</dt>
+        <dd><b th:text="${miPerfil.correo}">ana.perez@ejemplo.org</b><br>
+          <small>Es el correo con el que entrás. No se cambia desde acá.</small></dd>
+      </dl>
+      <p th:if="${creada != null}" th:text="|Cuenta creada el ${creada}.|">Cuenta creada el 12 de noviembre
+        de 2026.</p>
+      <div class="racimo">
+        <button class="boton" data-tono="principal" type="submit">Guardar los cambios</button>
+      </div>
+      <p th:replace="~{envio :: indicador('enviando-admin-perfil', 'Guardando…')}"></p>
+    </form>
+
+    <section class="pila" data-espacio="2" aria-labelledby="contrasena-titulo">
+      <h2 id="contrasena-titulo">Contraseña</h2>
+      <p th:if="${cuenta != null and cuenta.cambiarClave != null}"><a th:href="${cuenta.cambiarClave}"
+            href="#">Cambiar la contraseña</a></p>
+      <p th:unless="${cuenta != null and cuenta.cambiarClave != null}">La contraseña se cambia desde la
+        página de tu cuenta, al entrar con tu correo.</p>
+    </section>
+
+    <section class="pila" data-espacio="2" aria-labelledby="administracion-titulo">
+      <h2 id="administracion-titulo">Administración</h2>
+      <p><a href="/admin-administradores" th:href="@{/admin-administradores}">Ver quiénes administran
+        DonaTrack</a></p>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
