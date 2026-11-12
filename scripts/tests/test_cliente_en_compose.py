@@ -189,6 +189,40 @@ class IngresoRealTests(unittest.TestCase):
         for ruta in ("/publico-registro-donante", "/publico-ingresar"):
             self.assertIn('sitio() + "%s"' % ruta, self.test)
 
+    def test_una_cuenta_sin_perfil_cae_en_la_pantalla_de_elegir_el_tipo_y_la_tarjeta_existe(self):
+        # El recorrido asumió primero que, al registrarse, se llegaba directo al formulario del donante. No:
+        # PerfilPendiente manda a la cuenta sin perfil al destino de EstadoDeCuenta.SIN_PERFIL, que es esta pantalla.
+        estado = leer("cliente-liviano", "src", "main", "java", "grupo5", "cliente", "seguridad", "EstadoDeCuenta.java")
+        primera = re.search(r'SIN_PERFIL\("([^"]+)"', estado).group(1)
+        self.assertEqual(primera, "/publico-registro")
+        self.assertIn('url.equals(sitio() + "%s")' % primera, self.test)
+        self.assertIn("~{componentes/registro :: tipos(''", leer(self.templates, "publico-registro.html"))
+        tarjeta = re.search(r'<a href="/publico-registro-donante\?tipo=persona"[^>]*class="tarjeta registro-tipo"', leer(self.templates, "componentes", "registro.html"))
+        self.assertIsNotNone(tarjeta, "falta la tarjeta de persona donante en el fragmento de tipos")
+        self.assertIn("a.registro-tipo[href*='tipo=persona']", self.test)
+
+    def test_cuando_algo_falla_el_recorrido_dice_donde_se_quedo_el_navegador(self):
+        self.assertEqual(self.test.count("diagnostico(pagina,"), 2)
+        self.assertIn('diagnostico(pagina, "donante", PISTA_DEL_DONANTE)', self.test)
+        self.assertIn('diagnostico(pagina, "admin", PISTA_DEL_ADMIN)', self.test)
+        cuerpo = re.search(r"private static String diagnostico\(.*?\n  \}\n", self.test, re.S).group(0)
+        for dato in ("pagina.url()", "pagina.title()", "innerText", "screenshot"):
+            self.assertIn(dato, cuerpo)
+        # El parámetro también aparece en la firma: lo que importa es que la pista se muestre, y solo si el
+        # navegador sigue en Keycloak.
+        self.assertRegex(cuerpo, r"if \(enKeycloak\(pagina\.url\(\)\)\) \{\s*datos\.append\(\"\\nPista: \"\)\.append\(pistaSiSigueEnKeycloak\);")
+
+    def test_si_el_admin_sigue_en_el_login_la_pista_apunta_a_la_clave_y_al_env(self):
+        # Fue lo que pasó en la primera corrida real: Keycloak dijo "Usuario o contraseña incorrectos".
+        pista = re.search(r"PISTA_DEL_ADMIN =(.*?);", self.test, re.S).group(1)
+        for dato in ("INGRESO_REAL_ADMIN_EMAIL", "INGRESO_REAL_ADMIN_PASSWORD", "AUTH_ADMIN_PASSWORD", "del .env", "docker compose down -v"):
+            self.assertIn(dato, pista)
+
+    def test_el_admin_espera_la_url_de_su_area_sin_esperar_a_que_la_pagina_termine_de_cargar(self):
+        # Esperar el evento load hacía vencer el test si el inicio del admin tarda en pintarse.
+        self.assertIn("setWaitUntil(WaitUntilState.COMMIT)", self.test)
+        self.assertIn('enElSitio(url) && url.contains("/admin-")', self.test)
+
     def test_las_pantallas_protegidas_que_usa_son_de_areas_que_existen(self):
         area = leer("cliente-liviano", "src", "main", "java", "grupo5", "cliente", "seguridad", "Area.java")
         for prefijo in ("donante", "admin"):

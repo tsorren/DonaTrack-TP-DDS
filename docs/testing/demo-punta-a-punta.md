@@ -41,7 +41,7 @@ apagada.** Para que ellos también exijan token, exportá antes `GATEWAY_SEGURID
 | Rol | Cómo entrar | Qué ver |
 |---|---|---|
 | **Público** | Sin ingresar | La portada, el mapa, las entidades y el contacto (`/publico-*`) |
-| **Donante** | "Crear mi cuenta de donante" en la portada | Keycloak pide email y clave; el sitio pide completar el perfil; desde ahí se puede cerrar sesión |
+| **Donante** | "Crear mi cuenta de donante" en la portada | Keycloak pide email y clave; el sitio muestra las tarjetas del tipo de cuenta (persona, empresa, entidad); con "Persona donante" se llega al formulario del perfil; desde ahí se puede cerrar sesión |
 | **Entidad** | "Sumar mi entidad" | Mismo ingreso; la cuenta queda esperando que el admin la apruebe |
 | **Admin** | "Ingresar" con `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD` del `.env` | Llega a su área (`/admin-inicio`) |
 
@@ -59,7 +59,7 @@ INGRESO_REAL_ADMIN_PASSWORD=<AUTH_ADMIN_PASSWORD del .env> \
 mvn test -pl cliente-liviano -Pvisual -Dtest=IngresoConKeycloakRealTest
 ```
 
-Deja los videos en `cliente-liviano/target/ingreso-real/`. Cada corrida crea una cuenta de donante nueva en
+**La cuenta admin sale de `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD` del `.env` solo cuando se importa el realm**, o sea con la base de Postgres vacía. Si cambiaste esos valores después, la cuenta conserva la clave vieja y el recorrido del admin se queda en el login de Keycloak ("Usuario o contraseña incorrectos"): hacé `docker compose down -v` y volvé a levantar, o probá la clave a mano en http://localhost:8180/realms/donatrack/account. Deja los videos en `cliente-liviano/target/ingreso-real/`. Si un paso falla, el mensaje dice dónde se quedó el navegador (URL, título y texto visible) y deja una captura en esa misma carpeta. Cada corrida crea una cuenta de donante nueva en
 Keycloak. Sin `INGRESO_REAL_URL` el test no corre. Necesita los navegadores de Playwright instalados
 (`mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chromium"`).
 
