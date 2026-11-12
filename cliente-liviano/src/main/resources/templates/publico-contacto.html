@@ -12,7 +12,7 @@
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
+      th:replace="~{${marco ?: 'layout-publico'} :: pagina(~{::title}, 'publico-paginas', ~{::contenido})}">
 <head>
   <title>Contacto - DonaTrack</title>
 </head>

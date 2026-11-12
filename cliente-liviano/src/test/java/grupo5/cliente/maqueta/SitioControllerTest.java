@@ -524,13 +524,82 @@ class SitioControllerTest {
     html = error(403, "/entidad-inicio", "");
     assertTrue(html.contains("Esta página no es para tu"));
     assertTrue(html.contains("<title>Sin permiso - DonaTrack</title>"));
-    html = error(500, "/donante-inicio", "");
+    html = error(500, "/publico-mapa", "");
     assertTrue(html.contains("Error 500"));
-    assertTrue(html.contains("href=\"/donante-inicio\">Volver a intentar"), html);
-    assertTrue(html.contains("Ir al\n          inicio"));
-    html = error(500, "/donante-inicio", "sin-codigo");
+    assertTrue(html.contains("href=\"/publico-mapa\">Volver a intentar"), html);
+    assertTrue(html.contains("href=\"/\">Ir al inicio</a>"), html);
+    html = error(500, "/publico-mapa", "sin-codigo");
     assertTrue(!html.contains("Código para soporte"));
     assertTrue(html.contains("Si sigue, escribinos y contanos qué estabas haciendo."));
+  }
+
+  @Test
+  void conSesionLasPaginasDeErrorUsanElMarcoPrivadoYOfrecenVolverAMiInicio() throws Exception {
+    // El área de la maqueta sale de la dirección pedida; la de la cuenta real, del token.
+    String html = error(403, "/admin-donantes", "");
+    assertTrue(html.contains("class=\"raices-privado\""), html);
+    assertTrue(html.contains("Esta página no es para tu"), html);
+    assertTrue(html.contains("Cerrar sesión"), html);
+    assertTrue(!html.contains("Crear una cuenta"), html);
+    assertTrue(html.contains("href=\"/admin-inicio\">Volver a mi inicio</a>"), html);
+    assertTrue(!html.contains("aria-current"), html);
+    assertTrue(html.contains("href=\"/publico-contacto?codigo=" + CODIGO + "\""), html);
+
+    html = error(404, "/entidad-tesoro", "");
+    assertTrue(html.contains("href=\"/entidad-inicio\">Volver a mi inicio</a>"), html);
+    assertTrue(html.contains("Necesidades"), html);
+
+    html = error(500, "/donante-inicio", "");
+    assertTrue(html.contains("href=\"/donante-inicio\">Volver a intentar"), html);
+    assertTrue(html.contains("href=\"/donante-inicio\">Volver a mi inicio</a>"), html);
+    assertTrue(!html.contains("Ir al inicio"), html);
+    assertTrue(html.indexOf("Volver a intentar") < html.indexOf("Volver a mi inicio"), html);
+    assertTrue(html.contains("aria-label=\"Notificaciones\""), html);
+    assertTrue(!html.contains("armazon-avisos-cuenta"), html);
+  }
+
+  @Test
+  void unaDireccionPublicaOQueNoExisteDaLaPaginaDeErrorPublica() throws Exception {
+    for (String direccion : List.of("/publico-mapa", "/no-existe", "/")) {
+      String html = error(404, direccion, "");
+      assertTrue(html.contains("class=\"raices-publico\""), html);
+      assertTrue(html.contains("href=\"/\">Ir al inicio</a>"), html);
+      assertTrue(!html.contains("Volver a mi inicio"), html);
+    }
+  }
+
+  @Test
+  void conSesionContactoUsaElMarcoPrivadoDelRol() throws Exception {
+    mvc.perform(get("/publico-contacto?escenario=con-sesion"))
+        .andExpect(content().string(containsString("class=\"raices-privado\"")))
+        .andExpect(content().string(containsString("Cerrar sesión")))
+        .andExpect(content().string(not(containsString("Crear una cuenta"))))
+        .andExpect(content().string(not(containsString("aria-current"))))
+        .andExpect(content().string(containsString("href=\"/donante-donaciones\"")));
+    mvc.perform(get("/publico-contacto?escenario=con-sesion&area=entidad"))
+        .andExpect(content().string(containsString("href=\"/entidad-necesidades\"")));
+    mvc.perform(get("/publico-contacto?escenario=con-sesion&area=admin"))
+        .andExpect(content().string(containsString("href=\"/admin-ranking\"")));
+    mvc.perform(get("/publico-contacto"))
+        .andExpect(content().string(containsString("class=\"raices-publico\"")))
+        .andExpect(content().string(not(containsString("Cerrar sesión"))));
+  }
+
+  @Test
+  void elEnviadoConSesionVuelveAMiInicioYSinSesionALaPortada() throws Exception {
+    mvc.perform(get("/publico-contacto-enviado?escenario=con-sesion&area=entidad"))
+        .andExpect(content().string(containsString("class=\"raices-privado\"")))
+        .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
+        .andExpect(content().string(containsString("Volver a mi inicio")))
+        .andExpect(content().string(not(containsString("Ir a la portada"))));
+    mvc.perform(
+            get("/publico-contacto-enviado?escenario=con-sesion")
+                .param("volver", "/donante-seguimiento"))
+        .andExpect(content().string(containsString("Volver a Seguimiento")))
+        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+    mvc.perform(get("/publico-contacto-enviado"))
+        .andExpect(content().string(containsString("Ir a la portada")))
+        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
   }
 
   /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */

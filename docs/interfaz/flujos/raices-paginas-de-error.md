@@ -1,6 +1,7 @@
 # Flujo: Páginas de error, en Raíces
 
-> **Estado:** en revisión (cambio del marco con sesión) · **Fecha:** 2026-11-11 · **Aprobó:** usuario
+> **Estado:** construido en el lote `p0-errores` (2026-11-12); el cambio del marco con sesión espera
+> el OK del usuario sobre esta ficha · **Fecha:** 2026-11-11 · **Aprobó:** usuario
 > (2026-11-07, la ficha original); el cambio del marco con sesión es decisión del usuario del
 > 2026-11-11 ([backlog de la revisión](../backlog-revision-2026-11-11.md), sección 3, "Páginas de
 > error", y regla general 6) y espera su OK sobre esta ficha.
@@ -12,6 +13,12 @@
 > marco de las públicas para las tres"): esa decisión queda registrada abajo, en la sección 9, como
 > reemplazada. El motivo: con el marco público, quien ya había entrado veía "Ingresar / Crear una
 > cuenta" y creía que se le había cerrado la sesión.
+
+**Cómo quedó construido (2026-11-12):** el puerto `AreaDeLaSesion` dice el área de la cuenta con la
+sesión activa (el token, fuera de la maqueta; la dirección pedida o `?escenario=con-sesion`, en la
+maqueta). `Pantallas.conMarcoDeLaCuenta` arma el marco privado con lo que ya hay en la sesión y deja
+en el modelo `marco` e `inicio`; `MarcoDeLasPaginasDeError` lo pide para `/error`, y Contacto lo pide
+al armar sus tres pantallas. Las plantillas eligen el layout por `marco` y, sin él, el público.
 
 ## 1. Para quién y para qué
 

@@ -16,7 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
  */
 class PantallasTest {
 
-  private final Pantallas pantallas = new Pantallas(new DefaultResourceLoader(), null, null, null);
+  private final Pantallas pantallas =
+      new Pantallas(new DefaultResourceLoader(), null, null, null, null);
 
   @ParameterizedTest
   @ValueSource(
