@@ -1,5 +1,7 @@
 # Spec: R11 p1-importador — El importador lee el CSV por partes y no pierde avisos de bienvenida
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
+>
 > **Estado:** PROPOSED (espera la aprobación del usuario antes de construir).
 > **Nivel:** STANDARD (AGENTS.md §7.0): no cambia ningún contrato público (REST ni eventos), no
 > agrega migraciones ni dependencias y no cambia la comunicación entre servicios. Cambia el puerto
@@ -202,3 +204,14 @@ importar el mismo archivo es seguro: las filas ya importadas entran como actuali
 | Las dos pasadas leen el archivo dos veces del almacenamiento. | Es lectura secuencial de unos pocos MB; el objeto no cambia entre las dos (clave propia, nadie lo reescribe). Si la segunda pasada lee otra cantidad, el archivo termina con la cuenta real y se registra la diferencia. |
 | Cada empresa importada deja una persona humana "Representante Legal" sin documento. | `[OBSERVED]` No choca con `uq_persona_documento` (es parcial: `WHERE nro_documento IS NOT NULL`, `V4__personas.sql:13-14`), así que no frena el alta. `[INFERRED]` Con el archivo de la guía son unas 2.980 personas de relleno que pueden verse en el listado de personas del admin. Va como duda. |
 | La lectura a mitad deja una importación parcial (sección 6). | Se acepta: reimportar es seguro. El estado `ERROR` y los contadores lo muestran. |
+
+
+## Aprobación del diseño p1-importador (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Carrera del lado de Donaciones: persona.sincronizada se publica desde un hilo aparte (@Async) y puede salir después de donante.registrado. Es el origen del aviso perdido, pero el arreglo está en PersonasService y NotificacionesAsyncService, fuera de los archivos de este lote. Recomiendo dejar el reintento de Notificaciones en este lote y anotar el arreglo del orden como deuda en DTI-40 ítem 6, para otro lote. **Resuelto: la opción recomendada.**
+2. Cada empresa importada crea una persona 'Representante Legal' sin documento: unas 2.980 con el archivo de la guía, y pueden aparecer en el listado de personas del admin. Recomiendo aceptarlo para la demo y anotarlo como deuda (que el CSV traiga el representante, o que el listado oculte a los representantes), sin tocar la regla del dominio que exige un representante. **Resuelto: la opción recomendada.**
+3. Mientras dura un reintento, el consumidor de la cola notificaciones.donaciones queda frenado. Recomiendo 4 intentos cortos y medir en el ensayo el pico de la cola y cuánto tarda en volver a 0 (C9); si se ve crecer, bajar a 3 intentos antes de pensar en una cola de espera. **Resuelto: la opción recomendada.**
+4. Si la lectura se corta a mitad del archivo, ya no se descarta todo: las tandas procesadas quedan importadas y el archivo termina en ERROR con sus contadores. Recomiendo aceptarlo, porque volver a importar el mismo archivo es seguro: las filas ya importadas entran como actualizadas. **Resuelto: la opción recomendada.**
+5. No vi los registros de Notificaciones del ensayo: no sé si el aviso se perdió por la ValidationException o porque la publicación de persona.sincronizada falló y se tragó el error. Con el contenedor por defecto, una ValidationException se reencolaría, no se perdería. Recomiendo que el constructor lo confirme con una prueba antes de elegir cómo engancha el reintento. **Resuelto: la opción recomendada.**

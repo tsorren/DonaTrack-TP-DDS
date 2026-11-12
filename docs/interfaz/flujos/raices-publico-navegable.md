@@ -688,7 +688,7 @@ foto, y Donaciones no da el lugar, así que no se pueden cruzar. El HTML de la m
 
 ## Ampliación R11-19: Mapa más corto (lote `p1-mapa`)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él) (usuario)
 > Ficha de la skill `ux-flujo` para el lote `p1-mapa` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > La decisión del usuario ("Mapa público: botones debajo del mapa; lista plegada (entidad +
@@ -1016,3 +1016,12 @@ Pruebas que pide el contrato: período por defecto y explícito, tope por defect
 `X-Total-Count` mayor que lo devuelto, los tres 400, una entrega fuera del período y una sin
 coordenadas que no aparecen, en los dos adaptadores; en el cliente, que se pida con período y tope,
 que la cifra con tope use el total del header y que una página fuera de rango muestre la última.
+
+
+## Aprobación del diseño p1-mapa (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Con datos reales, Logística no dice qué entidad recibió cada entrega, así que la fila muestra el lugar (localidad) y la cantidad, no la entidad. Recomiendo dejarlo así en este lote y anotar en el backlog que mostrar la entidad necesita que el mapa público traiga la beneficiaria y cruzarla con las entidades públicas de Donaciones, lo que toca la privacidad de D24. **Resuelto: la opción recomendada.**
+2. No hay buscador en la lista, y con muchos lugares encontrar uno obliga a recorrer páginas. Recomiendo no sumarlo en este lote; si en la demo hay más de 3 páginas, que pase a P2. **Resuelto: la opción recomendada.**
+3. Sin parámetros, el endpoint deja de devolver toda la historia y devuelve los últimos 30 días. Recomiendo aceptarlo, porque el único consumidor es el cliente liviano y ya filtraba 30 días. Si oasdiff lo marca, se anota en cambios-incompatibles-aceptados.txt. **Resuelto: la opción recomendada.**

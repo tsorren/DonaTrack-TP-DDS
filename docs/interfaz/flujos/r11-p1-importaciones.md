@@ -1,6 +1,6 @@
 # Flujo: la pantalla de importaciones del admin (R11-20)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-importaciones` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > La decisión del usuario ("Avance de la importación", sección 3 del backlog: una vista de
@@ -336,3 +336,13 @@ Preguntas abiertas para el usuario (una ronda):
 
 1. Cuando existan las cuentas por admin (R11-10), ¿la lista suma una columna "Subió" con el nombre de
    quien cargó el archivo? → **Sí, en el lote que cierre R11-10 (recomendada)** · No hace falta.
+
+
+## Aprobación del diseño p1-importaciones (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Cuando existan las cuentas por admin (R11-10, lote p1-admins), ¿la lista suma una columna 'Subió' con el nombre de quien cargó el archivo? Recomiendo que sí, en el lote que cierre R11-10, sumando subido_por al archivo. **Resuelto: la opción recomendada.**
+2. V22 puede chocar con otra migración de Donaciones de la misma tanda (p1-admins también toca Donaciones). Recomiendo que la renumere el integrador, como dice la regla de la corrida. **Resuelto: la opción recomendada.**
+3. Una descarga con muchas filas con error (hasta 200 pedidos para 20.000) podría tardar. Recomiendo probarla en el cierre con el CSV del ensayo y, solo si no alcanza, pasar a un endpoint de descarga en Donaciones en otro lote. **Resuelto: la opción recomendada.**
+4. El DER de Donaciones no tiene nombre_original ni subido_en en Archivo. Recomiendo decirlo en la descripción del PR y no editar el DER de la entrega, que es un registro histórico. **Resuelto: la opción recomendada.**

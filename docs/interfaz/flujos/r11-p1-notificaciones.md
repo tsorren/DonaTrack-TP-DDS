@@ -1,6 +1,6 @@
 # Flujo: Notificaciones con páginas y estados claros (R11-14)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-notificaciones` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > La decisión del usuario "Notificaciones leídas" de la sección 3 del backlog ya está tomada: esta
@@ -337,3 +337,13 @@ agente"):
 
 Preguntas abiertas: ninguna que frene la construcción. Si el usuario quiere revisar algo, la
 primera es la 2 (los títulos por tipo).
+
+
+## Aprobación del diseño p1-notificaciones (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Se aceptan los títulos por tipo de aviso que propone la ficha (tabla de la sección 6)? Recomiendo aceptarlos así y ajustar palabras sueltas al revisar las capturas. **Resuelto: la opción recomendada.**
+2. ¿Hace falta un ADR para este lote al cerrar la oleada, como pide la guía de orquestación para los lotes que cambian un contrato? Recomiendo uno corto, propuesto, en notificaciones-service, que remita al ADR de listados paginados de P0 y deje anotado el desvío (translate en lugar de unaccent). **Resuelto: la opción recomendada.**
+3. Si p1-paginador no está integrado cuando se construya este lote: recomiendo usar el paginador provisorio, que ya existe y usa las mismas direcciones, y cambiarlo al integrar. **Resuelto: la opción recomendada.**
+4. GET /api/notificaciones, el listado general solo para el admin, sigue devolviendo todo, pero no lo usa ninguna pantalla. Recomiendo anotarlo en DTI-40 como pendiente de p2-listas-restantes en lugar de sumarlo a este lote. **Resuelto: la opción recomendada.**

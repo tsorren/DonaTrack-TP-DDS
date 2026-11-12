@@ -1,6 +1,6 @@
 # Flujo: la portada con sesión y los rótulos de Bajo tierra (R11-15, R11-17)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-portada` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta STANDARD).
 > Las decisiones del usuario de la sección 3 del backlog ("Portada con sesión": la misma portada, con
@@ -379,3 +379,12 @@ Preguntas abiertas para el usuario (como máximo 3):
 1. Con la sesión iniciada, ¿los botones "Quiero donar" y "Soy una entidad" de la portada se quedan
    como están? → "Sí, como están (Recomendada): la decisión fue 'la misma portada' y ya llevan a tu
    inicio" · "Cambiarlos por 'Ir a mi inicio' con sesión".
+
+
+## Aprobación del diseño p1-portada (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Con la sesión iniciada, ¿los botones 'Quiero donar', 'Soy una entidad', los de '¿Qué planta sos vos?' y los del cierre quedan como están? Recomiendo que sí: la decisión fue 'la misma portada' y ya llevan al inicio del área. La alternativa es cambiarlos por 'Ir a mi inicio', pero eso toca fragmentos de huerta.html que están fuera de la sección Bajo tierra. **Resuelto: la opción recomendada.**
+2. No medí el choque de Bajo tierra en el navegador: el stack local no respondió desde la sandbox. La cuenta de H11 es a mano y la marqué como hipótesis. Recomiendo que el constructor tome primero la medición con getBoundingClientRect, en los anchos de la sección 7, y ajuste los valores de la tabla con ese dato. **Resuelto: la opción recomendada.**
+3. El nombre de la cuenta en el menú público va a mostrar el rol ('Donante', 'Entidad') hasta que entre R11-44 (p1-nombres). Recomiendo no esperar a ese lote: este no cambia el nombre, solo lo muestra. **Resuelto: la opción recomendada.**

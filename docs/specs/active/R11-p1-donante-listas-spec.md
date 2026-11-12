@@ -1,5 +1,7 @@
 # Spec: R11 p1-donante-listas — Entidades y Mis donaciones, con páginas y filtros de verdad
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
+>
 > **Estado:** PROPUESTA (2026-11-12), espera la aprobación del usuario antes de construir.
 > **Lote:** `p1-donante-listas` del [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md)
 > (oleada P1, tanda 2): R11-12, R11-13 y R11-18. Salda el ítem 1 de
@@ -415,3 +417,12 @@ el test sobre PostgreSQL y `-Pvisual` con el stack propio del lote, o `[DEFERRED
    (§3.3). Recomendado: dejarla y decir "Lo que pedía de … ya está cubierto". La otra opción es
    llevar la cuenta de lo asignado a SQL para que no aparezca, que cambia la consulta de necesidades
    y es más grande que este lote.
+
+
+## Aprobación del diseño p1-donante-listas (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. 1. 'Ya doné' cuenta cualquier donación asignada a la entidad, en cualquier estado, también una que no salió del depósito o que falló. Recomiendo dejarlo así, como hoy, para que coincida con Mis donaciones. La otra opción es contar solo las entregadas. **Resuelto: la opción recomendada.**
+2. 2. Seguimiento del donante sigue leyendo una página de 100 donaciones (DonanteDonaciones.de). Recomiendo que el constructor de este lote lo pase a pedir al servidor solo los estados en curso, con un cambio de una línea en DonanteSeguimientoRest avisado como fuera de zona, y que el inicio de la empresa quede para p2-tablero. La otra opción es dejar los dos para sus lotes y anotarlo en DTI-39. **Resuelto: la opción recomendada.**
+3. 3. Al filtrar por una categoría puede aparecer una entidad cuyo pedido de esa categoría ya está cubierto. Recomiendo dejarla y mostrar 'Lo que pedía de … ya está cubierto'. La otra opción es llevar a SQL la cuenta de lo asignado para que no aparezca, que es más grande que este lote. **Resuelto: la opción recomendada.**

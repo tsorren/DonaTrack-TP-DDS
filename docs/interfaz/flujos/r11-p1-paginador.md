@@ -1,6 +1,6 @@
 # Flujo: el paginador del sitio (R11-11)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-paginador` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta STANDARD).
 > Baja a pantalla la regla general 3 ("Un solo paginador", sección 2 del backlog) y la decisión de
@@ -251,3 +251,12 @@ Decisiones de este diseño (propuesta del agente, para la [bitácora](../bitacor
 
 Preguntas abiertas para el usuario: ninguna bloqueante. La decisión del paginador (regla 3) ya
 está tomada.
+
+
+## Aprobación del diseño p1-paginador (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Choque de la clase .paginas: donante-donaciones.css y donante-entidades.css ya tienen una regla .paginas propia, en una capa que le gana a la de bloques. Recomiendo que el componente se quede con el nombre paginas, que pide el backlog, y que sus estilos apunten a la estructura interna (la lista ol y sus elementos), así no cambia el aspecto de esas dos pantallas. Cada lote del donante (p1-donante-listas y los que siguen) borra su regla local al adoptar el componente. **Resuelto: la opción recomendada.**
+2. InterfazFitnessTest rechaza las clases que no están en el catálogo. Recomiendo que el constructor anote en componentes.md, en la misma tanda, la clase paginas, lo que cuelga de ella y data-forma="corta", y que pase la fila del provisorio a 'reemplazado por paginas'. **Resuelto: la opción recomendada.**
+3. Para la prueba con personas recomiendo mirar si en el celular se entiende '3 de 9' sin los números y si en el admin hace falta escribir el número de página en listas de más de 50 páginas. Si hiciera falta, se agrega después, sin cambiar la pieza. **Resuelto: la opción recomendada.**

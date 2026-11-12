@@ -1,6 +1,6 @@
 # Spec: R11 p1-admins — Cada administrador con su cuenta
 
-> **Estado:** PROPUESTA (2026-11-12), para la parada única de aprobación de la oleada P1.
+> **Estado:** APROBADA (2026-11-12), en la parada única de aprobación de la oleada P1.
 > **Lote:** `p1-admins` (R11-10) del [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md),
 > ruta CONTRATO. Ficha de flujo: [`r11-p1-admins.md`](../../interfaz/flujos/r11-p1-admins.md).
 > **Nivel:** ARCHITECTURAL por AGENTS.md §7.0 (cambia el realm de Keycloak, el contrato REST de
@@ -15,7 +15,7 @@
 
 ---
 
-## 1. Objetivo
+## 1. Objetivo Funcional (Goal)
 
 Hoy la administración es una sola cuenta del realm, sin perfil, y lo que aprueba queda como
 "SISTEMA" (`PropuestaDeAsignacionService.java:118`, `propuesta.aceptar("SISTEMA")`). Después de este
@@ -29,9 +29,9 @@ lote:
 
 Si no entra entero, se construye en ese orden.
 
-## 2. Alcance
+## 2. Alcance Delimitado (Scope Boundaries)
 
-### Entra
+### In-Scope (entra)
 
 - **Realm (`auth-service/realm/donatrack-realm.json`):** dos atributos nuevos en el perfil de usuario
   declarativo, solo visibles y editables por la administración del realm (como `personaId`):
@@ -57,7 +57,7 @@ Si no entra entero, se construye en ese orden.
   - `PropuestaDTO` suma `decididaPor` y `fechaDecision`, opcionales.
   - OpenAPI de Donaciones al día.
 
-### No entra
+### Out-of-Scope (no entra)
 
 - Quitar o desactivar a un administrador, cambiar el correo de una cuenta, recuperar la contraseña
   por correo (RF-AUTH-13, D8): ver las dudas de la ficha.
@@ -73,7 +73,9 @@ Si no entra entero, se construye en ese orden.
   Administración (`AdminConstantes.ID_ADMIN`).
 - Renombrar rutas, clases o campos de la API.
 
-## 3. Decisiones
+## 3. Decisiones Acordadas y Trade-offs
+
+Cada decisión dice la alternativa descartada y por qué.
 
 1. **El autor se guarda como el id de la cuenta (`sub`), no como el correo ni el nombre.** El token
    no lleva datos personales (RNF-AUTH-09, y `RealmTokenContractIT` lo prueba: no se toca); el id no
@@ -96,55 +98,20 @@ Si no entra entero, se construye en ese orden.
    en un *flash attribute* (una sola lectura), con `Cache-Control: no-store`, y nunca se escribe en
    un log.
 
-## 4. Contrato antes y después
+## 4. Invariantes
 
-### 4.1 Donaciones
+1. El token no lleva nombre ni correo (RNF-AUTH-09); `RealmTokenContractIT` no se debilita.
+2. El autor de aprobar o descartar una propuesta sale del token de quien llama, nunca de un dato que
+   mande el cliente.
+3. Un alta termina con una cuenta completa (rol `ADMIN`, sin el rol por defecto) o sin cuenta: nunca a
+   medias.
+4. La contraseña provisoria no se guarda, no se loguea y se muestra una sola vez.
+5. Solo una cuenta con rol `ADMIN` puede dar de alta administradores o generar otra contraseña
+   provisoria.
+6. El contrato de Donaciones cambia solo de forma aditiva: rutas, cuerpos y errores existentes quedan
+   iguales.
 
-| | Antes | Después |
-|---|---|---|
-| `PUT /api/asignaciones/propuestas/{id}/estado` | Cuerpo `{ "estado": "APROBADA" \| "DESCARTADA" }`, `200` sin cuerpo; autor fijo "SISTEMA" | **Igual** (ruta, cuerpo, respuestas y errores). Autor: el `sub` del token. Se guarda en `propuesta.decidida_por` con `fecha_decision`, y al aprobar llega como hoy al `actor` del cambio de estado de cada donación asignada (`cambio_estado_donacion_independiente.actor`) |
-| `GET /api/asignaciones/propuestas` | `PropuestaDTO { id, estado, fechaCreacion, necesidad, fragmentaciones }` | Suma `decididaPor` (string o `null`: id de la cuenta, "SISTEMA" o `null` en las decididas antes del cambio) y `fechaDecision` (fecha y hora o `null`). Aditivo |
-| `GET /donaciones-independientes/{id}` (historial) | `actor`: "SISTEMA", un nombre o un correo | Igual de forma; en lo nuevo, `actor` es el id de la cuenta |
-| Base | `propuesta` sin autor | `V22`: `decidida_por TEXT NULL`, `fecha_decision TIMESTAMP NULL` |
-
-### 4.2 Keycloak (Admin API, por la cuenta de servicio `cliente-liviano`)
-
-Permisos que ya tiene: `manage-users`, `view-users`, `query-users`. No se suman.
-
-| Uso | Llamada |
-|---|---|
-| Lista de administradores, de a 10 | `GET /users?q=administracion:si&first={10·(página−1)}&max=10&briefRepresentation=false` |
-| Total | `GET /users/count?q=administracion:si` |
-| Estado "Todavía no entró" | `requiredActions` contiene `UPDATE_PASSWORD` (viene en la lista) |
-| Perfil propio | `GET /users/{sub}` y `PUT /users/{sub}` (solo `firstName` y `lastName`, conservando lo demás, como `cambiarAtributos`) |
-| Alta | `POST /users` con `username` y `email` = correo, `firstName`, `lastName`, `enabled: true`, `emailVerified: true`, `attributes: { administracion: [si], altaPor: [<sub>] }`, `credentials: [{ type: password, value, temporary: true }]` → id en `Location`; `POST /users/{id}/role-mappings/realm` con `ADMIN` (de `/available`); `DELETE /users/{id}/role-mappings/realm` con `default-roles-donatrack` |
-| Deshacer un alta a medias | `DELETE /users/{id}` |
-| Otra contraseña provisoria | `PUT /users/{id}/reset-password` con `{ type: password, value, temporary: true }`, solo si la cuenta tiene `UPDATE_PASSWORD` pendiente y `administracion: si` |
-| Nombre de un autor | `GET /users/{id}`, una vez por autor distinto en la misma página |
-
-### 4.3 Cliente liviano (pantallas)
-
-Todas bajo `/admin-*`: las protege la regla existente (`hasRole('ADMIN')`, `SeguridadConfig`).
-
-| Ruta | Parámetros | Respuesta |
-|---|---|---|
-| `GET /admin-perfil` | — | Página. Con `?escenario=` en `maqueta` |
-| `POST /admin-perfil` | `nombre`, `apellido` | `303` a `/admin-perfil` con el aviso, o la página con los errores de campo |
-| `GET /admin-administradores` | `pagina` (desde 1; más allá de la última, la última) | Página; con `HX-Request`, el `main` |
-| `GET /admin-administradores-nuevo` | — | El formulario de alta como página (sin JavaScript) |
-| `POST /admin-administradores` | `nombre`, `apellido`, `correo` | `303` a `/admin-administradores-alta` con la contraseña en *flash*; con errores, la ventana (o la página aparte) con lo escrito |
-| `GET /admin-administradores-alta` | — | La contraseña provisoria si viene en *flash*; si no, `303` a `/admin-administradores` con el aviso "se mostró una sola vez" |
-| `POST /admin-administradores-contrasena` | `cuenta` (id) | `303` a `/admin-administradores-alta`, o a la lista con el aviso si la cuenta ya entró |
-
-Fuera de los archivos del lote, imprescindibles (van en `fueraDeZona` del constructor):
-
-- `templates/layout-privado.html`: "Mi perfil" y "Administradores" en el menú de la cuenta del
-  admin, y la condición de la campana del admin, que hoy se apoya en `perfil == null`.
-- `web/Pantallas.java`: la dirección de Mi perfil del área admin.
-- `web/AdminDonacionesEnvios.java`: `X-Actor` con el `sub` de la sesión.
-- `rest/AdminOperacionDonaciones.java` (`historial`): el autor como nombre (§5, C8).
-
-## 5. Criterios de aceptación
+## 5. Criterios de Aceptación
 
 ```gherkin
 Escenario C1: un admin da de alta a otro
@@ -223,7 +190,68 @@ Keycloak (C1, C3, C4, C5, C9, C11), tests de controller del cliente (C10 y los e
 `RealmTokenContractIT` y `scripts/tests/test_auth_realm_contract.py` (C12, con Docker), y C2 y C8 con
 login real en el stack propio de la oleada.
 
-## 6. Compatibilidad con los clientes actuales
+## 6. Contrato antes y después
+
+### 6.1 Donaciones
+
+| | Antes | Después |
+|---|---|---|
+| `PUT /api/asignaciones/propuestas/{id}/estado` | Cuerpo `{ "estado": "APROBADA" \| "DESCARTADA" }`, `200` sin cuerpo; autor fijo "SISTEMA" | **Igual** (ruta, cuerpo, respuestas y errores). Autor: el `sub` del token. Se guarda en `propuesta.decidida_por` con `fecha_decision`, y al aprobar llega como hoy al `actor` del cambio de estado de cada donación asignada (`cambio_estado_donacion_independiente.actor`) |
+| `GET /api/asignaciones/propuestas` | `PropuestaDTO { id, estado, fechaCreacion, necesidad, fragmentaciones }` | Suma `decididaPor` (string o `null`: id de la cuenta, "SISTEMA" o `null` en las decididas antes del cambio) y `fechaDecision` (fecha y hora o `null`). Aditivo |
+| `GET /donaciones-independientes/{id}` (historial) | `actor`: "SISTEMA", un nombre o un correo | Igual de forma; en lo nuevo, `actor` es el id de la cuenta |
+| Base | `propuesta` sin autor | `V22`: `decidida_por TEXT NULL`, `fecha_decision TIMESTAMP NULL` |
+
+### 6.2 Keycloak (Admin API, por la cuenta de servicio `cliente-liviano`)
+
+Permisos que ya tiene: `manage-users`, `view-users`, `query-users`. No se suman.
+
+| Uso | Llamada |
+|---|---|
+| Lista de administradores, de a 10 | `GET /users?q=administracion:si&first={10·(página−1)}&max=10&briefRepresentation=false` |
+| Total | `GET /users/count?q=administracion:si` |
+| Estado "Todavía no entró" | `requiredActions` contiene `UPDATE_PASSWORD` (viene en la lista) |
+| Perfil propio | `GET /users/{sub}` y `PUT /users/{sub}` (solo `firstName` y `lastName`, conservando lo demás, como `cambiarAtributos`) |
+| Alta | `POST /users` con `username` y `email` = correo, `firstName`, `lastName`, `enabled: true`, `emailVerified: true`, `attributes: { administracion: [si], altaPor: [<sub>] }`, `credentials: [{ type: password, value, temporary: true }]` → id en `Location`; `POST /users/{id}/role-mappings/realm` con `ADMIN` (de `/available`); `DELETE /users/{id}/role-mappings/realm` con `default-roles-donatrack` |
+| Deshacer un alta a medias | `DELETE /users/{id}` |
+| Otra contraseña provisoria | `PUT /users/{id}/reset-password` con `{ type: password, value, temporary: true }`, solo si la cuenta tiene `UPDATE_PASSWORD` pendiente y `administracion: si` |
+| Nombre de un autor | `GET /users/{id}`, una vez por autor distinto en la misma página |
+
+### 6.3 Cliente liviano (pantallas)
+
+Todas bajo `/admin-*`: las protege la regla existente (`hasRole('ADMIN')`, `SeguridadConfig`).
+
+| Ruta | Parámetros | Respuesta |
+|---|---|---|
+| `GET /admin-perfil` | — | Página. Con `?escenario=` en `maqueta` |
+| `POST /admin-perfil` | `nombre`, `apellido` | `303` a `/admin-perfil` con el aviso, o la página con los errores de campo |
+| `GET /admin-administradores` | `pagina` (desde 1; más allá de la última, la última) | Página; con `HX-Request`, el `main` |
+| `GET /admin-administradores-nuevo` | — | El formulario de alta como página (sin JavaScript) |
+| `POST /admin-administradores` | `nombre`, `apellido`, `correo` | `303` a `/admin-administradores-alta` con la contraseña en *flash*; con errores, la ventana (o la página aparte) con lo escrito |
+| `GET /admin-administradores-alta` | — | La contraseña provisoria si viene en *flash*; si no, `303` a `/admin-administradores` con el aviso "se mostró una sola vez" |
+| `POST /admin-administradores-contrasena` | `cuenta` (id) | `303` a `/admin-administradores-alta`, o a la lista con el aviso si la cuenta ya entró |
+
+Fuera de los archivos del lote, imprescindibles (van en `fueraDeZona` del constructor):
+
+- `templates/layout-privado.html`: "Mi perfil" y "Administradores" en el menú de la cuenta del
+  admin, y la condición de la campana del admin, que hoy se apoya en `perfil == null`.
+- `web/Pantallas.java`: la dirección de Mi perfil del área admin.
+- `web/AdminDonacionesEnvios.java`: `X-Actor` con el `sub` de la sesión.
+- `rest/AdminOperacionDonaciones.java` (`historial`): el autor como nombre (§5, C8).
+
+## 7. Especificación Técnica de Diseño (Technical Design)
+
+- **Two-Gate ADR (AGENTS.md §9.1):** Gate A sí (decisión nueva: el autor de las acciones del admin
+  es el `sub` del token, y las cuentas de administración se marcan con un atributo del realm). Gate B
+  sí (toca seguridad y el contrato de Donaciones). El ADR `proposed` se escribe al cierre de la
+  oleada, como desvío acordado en la prompt de orquestación; nadie lo promueve.
+- **Plan TDD:** primero los tests rojos de dominio y servicio de propuestas (C6, C7) y el de la
+  migración `V22`; después el adaptador de Keycloak con `MockRestServiceServer` (C1, C3, C4, C5, C9,
+  C11) y los tests de controller del cliente (C10 y los estados de la ficha); al final
+  `RealmTokenContractIT` (C12) y la verificación con login real en el stack propio (C2, C8).
+- **Capas:** el controller de Donaciones solo lee el `Jwt` y delega; el dominio (`Propuesta`) recibe
+  el actor como texto y no conoce Spring ni Keycloak.
+
+## 8. Compatibilidad con los clientes actuales
 
 - **Cliente liviano:** `decidirPropuesta` no cambia. Los dos campos nuevos de `PropuestaDTO` los
   ignora hasta que los use (Jackson tolera campos de más en los records del cliente; comprobarlo en
@@ -237,7 +265,7 @@ login real en el stack propio de la oleada.
   de estado viejos con "SISTEMA" o "Administración". El cliente los muestra como dice C8.
 - **oasdiff:** el cambio es aditivo; no tiene que marcar incompatibilidades.
 
-## 7. Riesgos
+## 9. Riesgos
 
 1. **El realm se importa una sola vez.** Un Keycloak que ya tiene el realm `donatrack` no toma los
    atributos nuevos: sin el perfil declarado, Keycloak descarta `administracion` y `altaPor`, y la
@@ -258,3 +286,13 @@ login real en el stack propio de la oleada.
    otra migración en `propuesta`, va después de `V22`.
 6. **Datos personales.** El nombre del autor se lee de Keycloak al mostrar, no se copia a Donaciones.
    La contraseña provisoria no se guarda ni se loguea; los tests usan correos de `example.com`.
+
+
+## Aprobación del diseño p1-admins (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Se puede quitar o desactivar a un administrador desde el sitio? Recomiendo que no en este lote: va al backlog, y mientras tanto se hace desde la consola de Keycloak. **Resuelto: la opción recomendada.**
+2. Un admin que ya entró y olvidó su contraseña (recuperar por correo, RF-AUTH-13, sigue pendiente): recomiendo que lo resuelva otro admin desde la consola de Keycloak y que el texto lo mande a Contacto. Alternativa: dejar 'Generar otra contraseña provisoria' también para las cuentas que ya entraron. **Resuelto: la opción recomendada.**
+3. El stack de Docker del usuario ya tiene el realm importado y no toma los atributos nuevos, así que la lista de administradores quedaría vacía. Recomiendo verificar solo en el stack propio de la oleada (arranca de cero) y avisar en el informe que el stack del usuario necesita reimportar el realm, sin down -v. Hay que hacerlo antes de mostrarlo en la demo. **Resuelto: la opción recomendada.**
+4. No está probado que Keycloak 26.8 acepte q en /users/count. Recomiendo comprobarlo primero en el stack propio; si no lo acepta, contar de a páginas de 100 (son pocas cuentas) y anotarlo como deuda. **Resuelto: la opción recomendada.**

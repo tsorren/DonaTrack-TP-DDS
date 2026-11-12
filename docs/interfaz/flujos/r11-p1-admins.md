@@ -1,7 +1,6 @@
 # Flujo: Cada administrador con su cuenta
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (parada única de diseño de
-> la oleada P1)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-admins` (R11-10) del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md#p1--se-ve-en-la-demo).
 > La parte de servicios y el contrato están en la
@@ -377,3 +376,13 @@ Preguntas abiertas (para la parada de aprobación de la oleada; cada una con la 
    olvidó, ¿cómo vuelve? **Recomendado: lo resuelve otro admin desde la consola de Keycloak y el
    texto lo manda a Contacto.** Alternativa: permitir "Generar otra contraseña provisoria" también
    en cuentas que ya entraron.
+
+
+## Aprobación del diseño p1-admins (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Se puede quitar o desactivar a un administrador desde el sitio? Recomiendo que no en este lote: va al backlog, y mientras tanto se hace desde la consola de Keycloak. **Resuelto: la opción recomendada.**
+2. Un admin que ya entró y olvidó su contraseña (recuperar por correo, RF-AUTH-13, sigue pendiente): recomiendo que lo resuelva otro admin desde la consola de Keycloak y que el texto lo mande a Contacto. Alternativa: dejar 'Generar otra contraseña provisoria' también para las cuentas que ya entraron. **Resuelto: la opción recomendada.**
+3. El stack de Docker del usuario ya tiene el realm importado y no toma los atributos nuevos, así que la lista de administradores quedaría vacía. Recomiendo verificar solo en el stack propio de la oleada (arranca de cero) y avisar en el informe que el stack del usuario necesita reimportar el realm, sin down -v. Hay que hacerlo antes de mostrarlo en la demo. **Resuelto: la opción recomendada.**
+4. No está probado que Keycloak 26.8 acepte q en /users/count. Recomiendo comprobarlo primero en el stack propio; si no lo acepta, contar de a páginas de 100 (son pocas cuentas) y anotarlo como deuda. **Resuelto: la opción recomendada.**

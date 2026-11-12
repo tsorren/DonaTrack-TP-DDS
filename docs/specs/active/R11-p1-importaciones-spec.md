@@ -1,5 +1,7 @@
 # Spec: R11 p1-importaciones — La pantalla de importaciones
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
+>
 > **Estado:** PROPOSED (pendiente de aprobación del usuario). Diseño del lote `p1-importaciones` del
 > [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md) (R11-20,
 > P1, tanda 1). Ningún ADR se promueve.
@@ -296,3 +298,13 @@ Sin diseño de clases, como pide el lote: solo lo que el constructor necesita de
 | `admin-importaciones` no empieza con `admin-donantes-`, y `Pantallas` marca la sección por prefijo | Entrada explícita en `Pantallas` (fuera de los archivos del lote, imprescindible) y un test que verifica que Donantes queda marcado |
 | Cambio en el modelo `Archivo` sin ADR | Ver §7 (Two-Gate) |
 | El DER de Donaciones no tiene estas columnas | Se dice en la descripción del PR. El DER de la entrega no se edita (es un registro histórico) |
+
+
+## Aprobación del diseño p1-importaciones (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. Cuando existan las cuentas por admin (R11-10, lote p1-admins), ¿la lista suma una columna 'Subió' con el nombre de quien cargó el archivo? Recomiendo que sí, en el lote que cierre R11-10, sumando subido_por al archivo. **Resuelto: la opción recomendada.**
+2. V22 puede chocar con otra migración de Donaciones de la misma tanda (p1-admins también toca Donaciones). Recomiendo que la renumere el integrador, como dice la regla de la corrida. **Resuelto: la opción recomendada.**
+3. Una descarga con muchas filas con error (hasta 200 pedidos para 20.000) podría tardar. Recomiendo probarla en el cierre con el CSV del ensayo y, solo si no alcanza, pasar a un endpoint de descarga en Donaciones en otro lote. **Resuelto: la opción recomendada.**
+4. El DER de Donaciones no tiene nombre_original ni subido_en en Archivo. Recomiendo decirlo en la descripción del PR y no editar el DER de la entrega, que es un registro histórico. **Resuelto: la opción recomendada.**

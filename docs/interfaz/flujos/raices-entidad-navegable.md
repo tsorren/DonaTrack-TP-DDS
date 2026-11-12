@@ -291,7 +291,7 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
   (mapa del sitio) y van en el menú; el inicio suma lo que espera una decisión, que el boceto no
   tiene.
 
-#### R11-21 · El inicio del admin, por temas (en revisión)
+#### R11-21 · El inicio del admin, por temas (aprobada 2026-11-12)
 
 > **Estado:** en revisión desde el 2026-11-12 · **Aprobó:** falta el OK del usuario.
 > Sale del [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (R11-21, lote
@@ -982,3 +982,12 @@ la mandaba a "En camino". En Necesidades, su sello es "puerta". El pedido que cu
 | Paso (Recibidas, Seguir entregas, Necesidades) | "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación." | La maqueta dice "hoy"/"ayer"; con datos, la fecha |
 | Llegó (tarjeta de Inicio) | "Llegó el 8 de noviembre, 18:20." | Sin "desde el Depósito Central": el depósito no llega |
 | Breve (Lo que viene) | "llegó a tu puerta el 8 de noviembre" | — |
+
+
+## Aprobación del diseño p1-admin-inicio (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Mostrar hasta 3 propuestas con nombre? Recomiendo dejar solo el número en este lote. Si el usuario quiere los nombres, que p1-asignaciones agregue estado y tamaño de página a GET /api/asignaciones/propuestas, y recién ahí se suman 3 líneas a la tarjeta. **Resuelto: la opción recomendada.**
+2. ¿La fila 'No se pudo entregar' merece un filtro propio en la lista de Donaciones (?estado=fallida)? Recomiendo sumarlo en p2-admin-bandeja, que ya toca esos filtros. Hasta entonces, la fila sin enlace y con la aclaración. **Resuelto: la opción recomendada.**
+3. ¿'Donaciones sin asignar' se entiende como 'las que hay que asignar'? Recomiendo dejar ese nombre y anotarlo para probar con personas reales (ya figura en la ficha). La alternativa sería 'En el depósito, por asignar'. **Resuelto: la opción recomendada.**

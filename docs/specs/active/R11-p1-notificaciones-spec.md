@@ -1,5 +1,7 @@
 # Spec: R11-p1-notificaciones — Bandeja de notificaciones paginada en el servidor
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
+>
 > **Estado:** PROPOSED (2026-11-12). La aprobación es la del usuario al revisar juntos los diseños
 > de la oleada P1; ningún ADR se promueve.
 > **Nivel:** STANDARD por su forma (un endpoint existente gana parámetros, sin cambiar el cuerpo),
@@ -308,3 +310,13 @@ bandeja y los dos de marcar (leen y conservan los parámetros), y las llamadas a
 `donante-notificaciones.html`, `persona/donante-notificaciones.html` y `entidad-notificaciones.html`.
 El catálogo `/estilos` y `docs/interfaz/componentes.md` suman el fragmento nuevo y los estados de la
 fila.
+
+
+## Aprobación del diseño p1-notificaciones (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Se aceptan los títulos por tipo de aviso que propone la ficha (tabla de la sección 6)? Recomiendo aceptarlos así y ajustar palabras sueltas al revisar las capturas. **Resuelto: la opción recomendada.**
+2. ¿Hace falta un ADR para este lote al cerrar la oleada, como pide la guía de orquestación para los lotes que cambian un contrato? Recomiendo uno corto, propuesto, en notificaciones-service, que remita al ADR de listados paginados de P0 y deje anotado el desvío (translate en lugar de unaccent). **Resuelto: la opción recomendada.**
+3. Si p1-paginador no está integrado cuando se construya este lote: recomiendo usar el paginador provisorio, que ya existe y usa las mismas direcciones, y cambiarlo al integrar. **Resuelto: la opción recomendada.**
+4. GET /api/notificaciones, el listado general solo para el admin, sigue devolviendo todo, pero no lo usa ninguna pantalla. Recomiendo anotarlo en DTI-40 como pendiente de p2-listas-restantes en lugar de sumarlo a este lote. **Resuelto: la opción recomendada.**

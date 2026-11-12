@@ -1,6 +1,6 @@
 # Flujo: Asignar donaciones, con lo que propuso cada algoritmo (R11-24)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-asignaciones` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > Las decisiones del usuario de la sección 3 del backlog ("Asignaciones", "Variante de
@@ -355,3 +355,15 @@ Preguntas abiertas para el usuario (como máximo 3):
    cambia la regla de aprobación y su error.
 3. ¿Guardamos las ejecuciones en la base para que "Última asignación" no se pierda al reiniciar?
    Recomendada: **sí, en el backlog** (no lo pide R11-24 y es otra tabla).
+
+
+## Aprobación del diseño p1-asignaciones (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Sumamos «Aprobar todas las de esta página» en Propuestas? Recomiendo: todavía no. Primero hay que probar la pantalla nueva en la demo y, si aprobar de a una cansa, sumarlo con su aviso de resultado parcial. **Resuelto: la opción recomendada.**
+2. ¿Donaciones también tiene que rechazar la aprobación de una propuesta que ya no alcanza? Hoy solo la pantalla esconde el botón, y otro cliente podría asignar menos de lo propuesto. Recomiendo: sí, en un lote corto después de este, porque cambia la regla de aprobación y su error. **Resuelto: la opción recomendada.**
+3. ¿Guardamos las ejecuciones en la base? Hoy viven en memoria y después de un reinicio «Última asignación» dice que nunca corrió. Recomiendo: sí, pero en el backlog; R11-24 no lo pide y es otra tabla. **Resuelto: la opción recomendada.**
+4. El seeder (demo/seeder/seeder/vivo.py:124-126) pide GET /api/asignaciones/propuestas sin parámetros. Con la página por defecto de 20 podría no encontrar las propuestas de su corrida. Recomiendo: que el constructor cambie esa línea a ?estado=PENDIENTE&orden=reciente&size=100 y lo declare como fuera de zona. La regla de no tocar el sistema desde el seeder no aplica, porque acá cambia el sistema y el seeder solo se adapta. **Resuelto: la opción recomendada.**
+5. Si p1-admin-inicio (tanda 1) no llegó a cambiar AdminPersonasInicio para que use propuestasPendientes del resumen, ese inicio vería solo 20 propuestas. Recomiendo: que el integrador lo pase a propuestas?estado=PENDIENTE&size=3 si hace falta. **Resuelto: la opción recomendada.**
+6. V22 puede chocar con las migraciones de p2-admin-bandeja (el motivo del descarte) o de p1-admins. Recomiendo: que la renumere el integrador, como dice la regla de la corrida. **Resuelto: la opción recomendada.**
