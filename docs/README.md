@@ -202,6 +202,7 @@ docs/
 * 📥 **Pantalla de importaciones del admin (R11-20, construida 2026-11-12):** [spec del lote p1-importaciones](specs/completed/R11-p1-importaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-importaciones.md)
 * 📄 **Entidades y Mis donaciones del donante con filtros en el servidor (R11-12, R11-13 y R11-18, implementada):** [spec del lote p1-donante-listas](specs/completed/R11-p1-donante-listas-spec.md)
 * 📄 **Asignaciones con el algoritmo y el puesto de cada propuesta (R11-24, propuesta, implementada):** [spec del lote p1-asignaciones](specs/completed/R11-p1-asignaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-asignaciones.md)
+* 🗂️ **Donantes y Donaciones como bandeja, y la búsqueda de las asignaciones decididas (R11-34 y R11-35, diseño en revisión):** [ficha de flujo](interfaz/flujos/r11-p2-admin-bandeja.md)
 * 🏠 **Portada y públicas con la sesión iniciada, y Bajo tierra sin rótulos pisados (R11-15 y R11-17, construida 2026-11-12):** [ficha de flujo](interfaz/flujos/r11-p1-portada.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42), ítem 1
 * 🪟 **Ventanas que bloquean el fondo y publicar una necesidad en 3 pasos (R11-32 y R11-31, en revisión):** [ficha de flujo](interfaz/flujos/r11-p2-ventanas.md)
 * 📝 **Ver y corregir la solicitud mientras se espera (R11-41, diseño en revisión):** [ficha de flujo](interfaz/flujos/r11-p2-pendiente-solicitud.md) · deuda que salda: [DTI-41](adr/DEUDA_TECNICA.md#dti-41), ítem 4
