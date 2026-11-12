@@ -479,10 +479,8 @@ final class AdminOperacionAsignaciones {
   }
 
   private static Cubre cubre(DonacionesApi.Fragmento f, String unidad) {
-    DonacionesApi.Donacion d = f.donacionIndependiente();
-    String quien = deQuien(d);
-    return new Cubre(
-        d.id().toString(), fragmento(f, unidad) + (quien == null ? "" : " (de " + quien + ")"));
+    // fragmento() ya agrega " (de <nombre>)" si el donante no lo ocultó
+    return new Cubre(f.donacionIndependiente().id().toString(), fragmento(f, unidad));
   }
 
   // --- Destino -----------------------------------------------------------------------------------

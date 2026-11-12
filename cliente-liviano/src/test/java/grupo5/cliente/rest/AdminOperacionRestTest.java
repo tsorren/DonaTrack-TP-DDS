@@ -21,6 +21,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Cubre;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.DonacionEnJuego;
@@ -363,6 +364,41 @@ class AdminOperacionRestTest {
     assertEquals("La pide 1 propuesta.", elegida.elegida().resumen());
     assertNull(elegida.propuestas().filas().getFirst().comparar());
     donaciones.verify();
+  }
+
+  // R11-34: "La cubría" dice quién donó una sola vez, y nada si el donante ocultó su nombre
+  @Test
+  void lasDecididasDicenDeQuienEraCadaDonacionUnaSolaVez() {
+    resumen(0, 0, 0);
+    ultima("[]");
+    donaciones
+        .expect(
+            requestTo(ASIGNACIONES + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+
+    donaciones
+        .expect(requestTo(RECIENTES))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "estado": "APROBADA",
+                  "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 35,
+                                "entidadNombre": "Comedor Ejemplo", "unidad": "KILOGRAMO"},
+                  "fragmentaciones": [
+                    {"cantidadNecesaria": 25, "donacionIndependiente":
+                      {"id": "%s", "descripcion": "Arroz", "cantidad": 25,
+                       "quienDono": {"tipo": "HUMANA", "nombreVisible": "Ana Ejemplo"}}},
+                    {"cantidadNecesaria": 10, "donacionIndependiente":
+                      {"id": "%s", "descripcion": "Arroz", "cantidad": 10,
+                       "quienDono": {"tipo": "JURIDICA", "nombreVisible": null}}}]}]"""
+                    .formatted(P1, D_ARROZ, P2),
+                MediaType.APPLICATION_JSON));
+    AdminAsignacionesVista vista = adaptador.asignaciones(ConsultaAsignaciones.primera(), "");
+
+    assertEquals(
+        List.of(
+            new Cubre(D_ARROZ, "Arroz · 25 kg (de Ana Ejemplo)"), new Cubre(P2, "Arroz · 10 kg")),
+        vista.recientes().getFirst().cubria());
   }
 
   @Test
