@@ -327,6 +327,15 @@ figure.mapa-dibujo {
   }
 }
 
+/* Con "reducir movimiento", el aviso de «Usá Ctrl y la rueda» de MapLibre aparece sin fundido (la
+   biblioteca le pone su propia transición de opacidad, y su hoja va sin capa: solo el !important de una
+   capa le gana). */
+@media (prefers-reduced-motion: reduce) {
+  .mapa-real [class~="maplibregl-cooperative-gesture-screen"] {
+    transition: none !important;
+  }
+}
+
 /* Los controles, el globo y la atribución de MapLibre, con la estética del sitio: papel, tinta,
    esquinas redondeadas y la sombra plana de los botones. Son clases de la biblioteca (maplibregl-*),
    no del catálogo: se nombran por atributo para dejar claro que no son nuestras. */
