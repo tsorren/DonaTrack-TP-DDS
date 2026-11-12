@@ -118,7 +118,8 @@ class RealmTokenContractIT {
         new ImageFromDockerfile("donatrack/keycloak-contrato", false)
             .withFileFromPath("Dockerfile", auth.resolve("Dockerfile"))
             .withFileFromPath("realm", auth.resolve("realm"))
-            .withFileFromPath("themes", auth.resolve("themes"));
+            .withFileFromPath("themes", auth.resolve("themes"))
+            .withFileFromPath("spi", auth.resolve("spi"));
 
     keycloak =
         new GenericContainer<>(imagen)
