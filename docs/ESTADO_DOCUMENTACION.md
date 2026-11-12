@@ -63,6 +63,7 @@ docs/
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   ├── demo-seeder.md                     # Seeder de demo: seis meses de historia y lo de hoy (SPEC-10)
+│   ├── ensayo-importacion-20000.md        # Ensayo de importación de 20.000 donantes: cómo se corre y qué alcanza (R11-03)
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño de testing y alternativas
 │   ├── preprod-fiel.md                    # Preprod fiel: criterio, estado y brechas (fase 1)
@@ -307,6 +308,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
 | [`docs/testing/testing-performance.md`](testing/testing-performance.md) | Rendimiento QA | Optimización de compilación, surefire, consolidación WebMvc, scripts TIA y evaluación mvnd. | 🟢 Sincronizado |
 | [`docs/testing/demo-seeder.md`](testing/demo-seeder.md) | Demo | Cómo correr el seeder de demo (`docker-compose.seed.yml`), cuentas protagonistas y qué suple el seeder. | 🟢 Sincronizado |
+| [`docs/testing/ensayo-importacion-20000.md`](testing/ensayo-importacion-20000.md) | Demo | Guía del ensayo de importación de 20.000 filas: generador del CSV (`demo/ensayo-importacion/`), qué se mide y qué resultado alcanza. | 🟢 Sincronizado |
 | [`docs/testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) | Auditoría QA | Especificación y plan maestro de auditoría y arquitectura target de testing para ejecución con /goal. | 🟢 Sincronizado |
 | [`docs/testing/decisiones-diseno-auditoria-qa.md`](testing/decisiones-diseno-auditoria-qa.md) | Decisiones QA | Registro y fundamentación de decisiones de diseño y análisis de alternativas descartadas. | 🟢 Sincronizado |
 | [`docs/testing/preprod-fiel.md`](testing/preprod-fiel.md) | Preprod fiel | Criterio de 12 propiedades para un preprod fiel, medición de CI/CD e `integration-tests` sobre `origin/main` y brechas B1–B12. Fase 1 de 3. | 🟢 Sincronizado |
