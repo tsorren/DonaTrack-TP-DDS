@@ -196,6 +196,7 @@ docs/
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🎬 **Seeder de demo (propuesta):** [SPEC-10](specs/active/SPEC-10-seeder-de-demo.md) · [testing/demo-seeder.md](testing/demo-seeder.md)
+* 📄 **Listados paginados y cifras de Donaciones (R11-01, propuesta):** [spec del lote p0-api-listados](specs/active/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
