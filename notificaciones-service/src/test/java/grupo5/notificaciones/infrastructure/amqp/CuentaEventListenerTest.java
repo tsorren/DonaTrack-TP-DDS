@@ -70,10 +70,12 @@ class CuentaEventListenerTest {
   @Test
   void limpiaElTraceIdAunqueElProcesamientoFalle() {
     correoAcepta = false;
+    EventoCuentaEnlaceSolicitadoV1 evento = evento();
+    String messageId = UUID.randomUUID().toString();
 
     assertThrows(
         AmqpRejectAndDontRequeueException.class,
-        () -> listener.onEnlaceSolicitado(evento(), UUID.randomUUID().toString(), "a1b2c3"));
+        () -> listener.onEnlaceSolicitado(evento, messageId, "a1b2c3"));
 
     assertNull(MDC.get("traceId"));
   }

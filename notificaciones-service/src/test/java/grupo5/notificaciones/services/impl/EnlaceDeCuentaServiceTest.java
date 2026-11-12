@@ -75,9 +75,12 @@ class EnlaceDeCuentaServiceTest {
           "https://phishing.example.com/?volver=" + PREFIJO + "x",
           "https://phishing.example.com/" + PREFIJO + "x"
         }) {
+      EventoCuentaEnlaceSolicitadoV1 conEnlaceAjeno = evento(ajeno);
+      String messageId = UUID.randomUUID().toString();
+
       assertThrows(
           AmqpRejectAndDontRequeueException.class,
-          () -> servicio.procesar(evento(ajeno), UUID.randomUUID().toString()),
+          () -> servicio.procesar(conEnlaceAjeno, messageId),
           ajeno);
     }
     assertEquals(0, destinatarios.size());
@@ -87,10 +90,11 @@ class EnlaceDeCuentaServiceTest {
   @Test
   void siElCorreoSeRechazaVaALaColaDeMuertosSinReencolar() {
     correoAcepta = false;
+    EventoCuentaEnlaceSolicitadoV1 evento = evento(ENLACE);
+    String messageId = UUID.randomUUID().toString();
 
     assertThrows(
-        AmqpRejectAndDontRequeueException.class,
-        () -> servicio.procesar(evento(ENLACE), UUID.randomUUID().toString()));
+        AmqpRejectAndDontRequeueException.class, () -> servicio.procesar(evento, messageId));
   }
 
   @Test
