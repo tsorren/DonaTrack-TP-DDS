@@ -124,8 +124,10 @@ administrador y la lista de necesidades y navegar. Anotar si algo tarda o se tra
 
 ## Qué resultado se considera suficiente
 
-`[PROPOSED]` Criterio de esta guía, no fijado por la cátedra. Si falla alguno, se anota cuál y se
-sube R11-B08 (importador por lotes) a la entrega 6.
+`[PROPOSED]` Criterio de esta guía, no fijado por la cátedra. Si falla alguno de rendimiento (2 a
+5), se anota cuál y R11-B08 (importador por lotes) entra en esta misma corrida, con el lote
+`p1-importador`. Si falla la cuenta (1) por un defecto del importador, se arregla el defecto y se
+repite la corrida: no es un problema de lotes.
 
 | # | Qué | Suficiente cuando |
 |---|---|---|
@@ -141,7 +143,7 @@ el fin de la importación (las horas están en la primera columna):
 ```bash
 awk '$1 >= "HH:MM:SS" && $1 <= "HH:MM:SS"' /tmp/ensayo-respuesta.log \
   | awk '{ print $3 }' | sort -n | awk '{ t[NR] = $1 } END { print "pedidos:", NR, " p95:", t[int(NR*0.95)], " máximo:", t[NR] }'
-awk '$2 != 200' /tmp/ensayo-respuesta.log   # respuestas con error
+awk '$1 >= "HH:MM:SS" && $1 <= "HH:MM:SS" && $2 != 200' /tmp/ensayo-respuesta.log   # respuestas con error
 ```
 
 ## Qué se anota
@@ -158,10 +160,40 @@ Una tabla con una fila por corrida, en el cierre de la oleada:
 | Pico de memoria de Donaciones y de Notificaciones | |
 | Pico de mensajes pendientes en RabbitMQ y tiempo hasta vaciarse | |
 | Cuáles de los cinco criterios se cumplieron | |
-| Decisión: alcanza, o sube R11-B08 a la entrega 6 | |
+| Decisión: alcanza, o R11-B08 entra en esta corrida (`p1-importador`) | |
 
 Si no alcanza, el ítem R11-B08 trae el arreglo: importador por lotes, lectura del CSV sin cargarlo
-entero en memoria y avisos de bienvenida que no saturen Notificaciones.
+entero en memoria y avisos de bienvenida que no saturen Notificaciones. Aunque el ensayo alcance,
+la lectura del CSV sin cargarlo entero entra igual en esta corrida: el usuario pidió que toda lista
+tenga paginación o loteo ([DTI-40](../adr/DEUDA_TECNICA.md#dti-40), ítem 4).
+
+## Resultados del cierre de P0 (2026-11-12)
+
+Dos corridas en el stack propio de la corrida, sembrado con el seeder de demo, subiendo el CSV por
+el gateway. Rama `E6_backlog_r11_p0`, commit `5ae4e6429`. Generador con los valores por defecto
+(20.000 filas, 400 duplicados, 200 con error, semilla 2026, serie 88).
+
+| Dato | Corrida 1 (archivo de la guía) | Corrida 2 (empresas pasadas a personas, serie 87) |
+|---|---|---|
+| Duración de la importación | 124,7 s | 142,4 s |
+| Total, creadas, actualizadas y con error | 20.000 · 16.485 · 338 · 3.177 | 20.000 · 19.322 · 479 · 199 |
+| Tiempo de respuesta durante la importación | p95 0,597 s, máximo 0,775 s (1.130 pedidos, 0 errores) | p95 0,590 s, máximo 0,823 s (1.281 pedidos, 0 errores) |
+| Pico de memoria | Donaciones 377,6 MiB, Notificaciones 315,5 MiB | Donaciones 413,6 MiB, Notificaciones 315,5 MiB |
+| RabbitMQ | 0 pendientes; 0 en colas de mensajes muertos | Igual |
+| Criterios cumplidos | 2, 3, 4 y 5. **No cumple el 1** | 2, 3, 4 y 5; la cuenta suma 20.000 (el archivo convertido no da exactamente 19.400 y 400) |
+
+- **Por qué falla la cuenta de la corrida 1.** `[OBSERVED]` El importador no podía crear empresas:
+  armaba la persona jurídica sin representantes y el dominio la rechaza (`ERR-VAL-104`). Unas 2.980
+  empresas del archivo se sumaron a las 200 filas con error esperadas. Se arregló en
+  `867cd738e` (el alta lleva el representante de relleno que ya arma `PersonaMapper`), con su
+  prueba. **Falta repetir la corrida 1** con el archivo de la guía, sin convertir nada, para dar el
+  ensayo por suficiente.
+- **Decisión de rendimiento.** El tiempo, la respuesta del sitio y la memoria alcanzan con holgura:
+  R11-B08 no hace falta para la demo por rendimiento. La lectura del CSV por partes entra igual por
+  el pedido del usuario (arriba).
+- **Notificaciones.** En la corrida 1 se perdió un aviso de bienvenida (un `donante.registrado` que
+  falló en `EventoMapper` y se descartó sin cola de mensajes muertos). Anotado en
+  [DTI-40](../adr/DEUDA_TECNICA.md#dti-40), ítem 6.
 
 ## Para repetir o ajustar
 

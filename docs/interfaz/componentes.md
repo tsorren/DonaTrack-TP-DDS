@@ -202,6 +202,15 @@ queda para cuando una variante necesite ganarle a otro bloque. Los botones propi
 `data-zona`) o, el del mapa, solo su lugar en la hoja; `boton--google` sigue en la hoja de su pantalla
 como clase heredada, hasta la fase 3.
 
+## Piezas compuestas sin clase propia
+
+Fragmentos que arman su forma solo con piezas de este catálogo. No suman clases: el cerco
+(`InterfazFitnessTest`) rechaza las que no están acá.
+
+| Pieza | Fragmento | Parámetros | Cómo se arma | Cuándo se usa | Equivalente |
+|---|---|---|---|---|---|
+| Paginador provisorio (desde el 2026-11-11, R11-01; lotes `p0-admin-listados` y `p0-persona`) | `paginador :: paginador(p)` (`templates/paginador.html`), con `p` un `vistas.Paginador` que arma `web.Paginadores.de(...)`, o `null` | `p.nombre` (el nombre del `<nav>`, por ejemplo "Páginas de donantes"), `p.pagina`, `p.paginas`, `p.anterior` y `p.siguiente` (direcciones, o `null` en el extremo) | Un `<nav class="racimo" data-alinea="centro">` con "‹ Anterior" y "Siguiente ›" como `a.boton` de tono secundario y `hx-boost`, y en el medio "Página N de M" con `aria-current="page"`. El extremo que no sigue es un `span` con `data-tono="suave"`: no es un enlace ni recibe el foco. Con una sola página no se dibuja. Las direcciones son reales (`?pagina=N` con la búsqueda y los filtros): anda sin JavaScript | Debajo de Donantes, Donaciones, Entidades y las filas con error del admin. Mis donaciones y Entidades del donante siguen con su propio `nav.paginas` (clase heredada: "Página anterior · Página N de M · Página siguiente"). El componente `paginas` de R11-11 (lote `p1-paginador`) reemplaza a los dos sin cambiar las direcciones | Material: Data tables (paginación) |
+
 ## Alpine (D31)
 
 `static/js/interfaz.js` registra los `Alpine.data()`. Cada uno entra acá con su nombre, qué estado

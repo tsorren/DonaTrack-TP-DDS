@@ -31,6 +31,167 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · admin · Los motivos de las filas con error, en una frase
+
+- **Decisión:** en "Filas con error" de la importación, la columna "Qué pasó" muestra una frase por
+  motivo ("La fila no tiene las columnas esperadas.", "El correo ya es de otro donante.") y no el
+  código del servicio (`FORMATO_INVALIDO`, `PERSONA_DUPLICADA_EN_CONFLICTO`). Un motivo que el
+  cliente no conoce muestra la frase de error inesperado, nunca el código.
+- **Alternativas:** escribir las frases en la plantilla (difícil de probar); que Donaciones mande el
+  texto (cambia el contrato, donde `motivo` es una lista cerrada).
+- **Por qué:** español llano y la regla 4 de los textos: sin códigos a la vista.
+- **Costo:** un motivo nuevo del servicio necesita su frase en el cliente (`AdminPersonasRest`).
+- **Quién decidió:** agente, en los arreglos del cierre de P0, sin consultar.
+- **Evidencia:** `AdminPersonasRestTest` (los datos de prueba pasan a los códigos reales).
+
+### 2026-11-12 · donante · La búsqueda de Entidades la resuelve Donaciones, sin tildes
+
+- **Decisión:** la pantalla Entidades del donante deja de volver a filtrar la página por nombre:
+  manda la búsqueda a Donaciones, que ignora tildes y mayúsculas. La cuenta con búsqueda es el total
+  del servicio ("N entidades activas tienen «x» en el nombre. Página p de n.") y el paginador
+  conserva lo buscado. En la maqueta, el adaptador busca igual, sin tildes.
+- **Alternativas:** seguir filtrando en la pantalla, sin tildes (seguía mirando una sola página).
+- **Por qué:** el pedido de la corrida: toda búsqueda ignora tildes y se resuelve en el servidor.
+  "direccion" no encontraba "Dirección de Desarrollo Social".
+- **Costo:** "Ya doné" y "Categoría" siguen filtrando la página, y lo dicen, hasta `p1-donante-listas`.
+- **Quién decidió:** usuario (regla) y agente (cómo, en los arreglos del cierre de P0).
+- **Evidencia:** `DonanteEntidadesSinMaquetaTest`.
+
+### 2026-11-12 · proceso · El ensayo de 20.000 filas alcanza en rendimiento; la cuenta, no
+
+- **Decisión:** con dos corridas en el stack propio, la importación de 20.000 filas tardó de 125 a
+  142 s sin frenar al resto del sitio (p95 menor a 0,6 s) y Donaciones no pasó de 420 MiB: el
+  importador por lotes (R11-B08) no hace falta por rendimiento. La cuenta falló porque el importador
+  no creaba empresas; se arregló pasando el representante de relleno que ya arma `PersonaMapper`.
+- **Alternativas:** que el CSV traiga el representante (cambia el contrato de la importación y pide
+  ADR); que una empresa pueda no tener representante (rompe una regla del dominio).
+- **Por qué:** es el arreglo más chico que no cambia ni el archivo ni el dominio.
+- **Costo:** falta repetir la corrida con el archivo de la guía. La lectura del CSV sin cargarlo
+  entero entra igual en esta corrida (`p1-importador`), por el pedido de que toda lista tenga
+  paginación o loteo.
+- **Quién decidió:** agente (criterios de "suficiente" de la guía y arreglo del cierre), sin
+  consultar.
+- **Evidencia:** [guía del ensayo](../testing/ensayo-importacion-20000.md#resultados-del-cierre-de-p0-2026-11-12).
+
+### 2026-11-11 · regla general · Ninguna lista llega completa: sin página, la primera de 20
+
+- **Decisión:** los listados de Donaciones (donantes, personas, donaciones, donaciones
+  independientes y entidades) devuelven siempre una página: si no se pide, la primera de 20, y como
+  mucho 100. El total viaja aparte, como número. Toda pantalla pide su página; un resumen pide 3 y
+  "Ver todas".
+- **Alternativas:** que sin página siguiera llegando todo hasta migrar el cliente (lo proponía la
+  spec del lote).
+- **Por qué:** era lo que tumbaba las pantallas del admin con 20.000 donantes, y bastaba una
+  pantalla olvidada para repetirlo.
+- **Costo:** una pantalla que no se migró ve 20 sin aviso; las que todavía piden una página de 100
+  sin paginador están en DTI-39, con su lote.
+- **Quién decidió:** usuario, al aprobar la spec `R11-p0-api-listados` (ajuste §0.2).
+- **Evidencia:** [ADR](../adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md) (`proposed`).
+
+### 2026-11-11 · regla general · La búsqueda ignora tildes y mayúsculas
+
+- **Decisión:** "Gomez" encuentra "Gómez", y "GÓMEZ" encuentra "gomez", en todas las búsquedas que
+  resuelve Donaciones. Lo hace la base.
+- **Alternativas:** dejarlo para después (lo proponía la spec del lote); normalizar en el cliente
+  (filtraría solo la página).
+- **Por qué:** quien busca no sabe cómo se cargó el nombre.
+- **Costo:** Donaciones necesita la extensión `unaccent` de PostgreSQL.
+- **Quién decidió:** usuario, al aprobar la spec (ajuste §0.1) y en el pedido de la corrida.
+- **Evidencia:** [ADR](../adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md) (`proposed`).
+
+### 2026-11-11 · componente:paginador · Un paginador provisorio, solo con piezas del catálogo
+
+- **Decisión:** hasta que exista el paginador común (R11-11), las listas del admin usan "‹ Anterior ·
+  Página N de M · Siguiente ›" debajo de la lista, armado con racimo, botón y el tono suave. Cada
+  enlace es una dirección real (`?pagina=N` con la búsqueda y los filtros); el extremo que no sigue
+  no es un enlace; con una sola página no se dibuja; al cambiar, el foco va al título de la lista.
+  Una página pedida más allá de la última muestra la última.
+- **Alternativas:** una clase nueva (el cerco del catálogo la rechaza); mostrar una página vacía
+  fuera de rango (no se sabe cómo volver).
+- **Por qué:** funciona sin JavaScript, el "atrás" vuelve a la página anterior y R11-11 lo cambia de
+  forma sin cambiar las direcciones.
+- **Costo:** no se puede saltar a una página por su número hasta R11-11.
+- **Quién decidió:** usuario (paginador provisorio en la ficha del admin) y agente (los detalles).
+- **Evidencia:** [catálogo](componentes.md#piezas-compuestas-sin-clase-propia), [ficha del admin](flujos/raices-admin-navegable.md), §4.1.
+
+### 2026-11-11 · admin · Páginas de 20 con el servicio y de 5 en la maqueta
+
+- **Decisión:** Donantes, Donaciones y Entidades del admin piden páginas de 20. La maqueta usa 5,
+  para que el paginador se vea con sus 10 donantes de ejemplo y en las capturas.
+- **Alternativas:** 20 también en la maqueta (el paginador nunca aparecería).
+- **Por qué:** 20 es el tamaño por defecto del servicio; 5 deja probar el paginador sin datos reales.
+- **Costo:** la maqueta no muestra cómo se ve una página llena.
+- **Quién decidió:** agente, sin consultar.
+
+### 2026-11-11 · admin · Lo que Donaciones no filtra no se ofrece
+
+- **Decisión:** fuera de la maqueta, Donantes ofrece tipo (Personas, Empresas, ONG, Instituciones y
+  Organismos públicos), categoría, estado y orden. No ofrece "Sin activar su cuenta" ni la columna
+  "Qué dona", porque Donaciones no los guarda. Donaciones no ofrece "Vence en los próximos 7 días"
+  ni los órdenes por vencimiento, nombre o donante: con "Ver las que vencen" muestra las del
+  depósito y dice cuántas vencen y que la lista todavía no se puede filtrar así. Entidades no ofrece
+  estado, necesidades ni tipo. Un valor de filtro que no es una de las opciones se descarta.
+- **Alternativas:** filtrar en la pantalla la página traída (engaña: parece que filtra todo); traer
+  todo para filtrar (la regla 1 lo prohíbe).
+- **Por qué:** regla 1: si el servicio no resuelve un filtro, filtrar una página da un dato falso.
+- **Costo:** esos filtros vuelven con `p2-admin-bandeja` y `p2-listas-restantes`, que cambian el
+  contrato de Donaciones (DTI-39).
+- **Quién decidió:** agente, sin consultar.
+
+### 2026-11-11 · admin · El buscador del registro trae 10 y dice cuántos coinciden
+
+- **Decisión:** al registrar una donación, "Quién dona" pide a Donaciones hasta 10 donantes activos
+  ordenados por nombre, con cuántos coinciden. Si son más, dice "Hay N donantes que coinciden.
+  Escribí más del nombre o el documento para encontrarlo." Es un buscador, no un listado: no tiene
+  paginador.
+- **Alternativas:** paginar el buscador (es una elección rápida, no una lista para recorrer).
+- **Por qué:** con 20.000 donantes el buscador no encontraba al número 21 en adelante.
+- **Costo:** quien no recuerda el nombre tiene que ir a Donantes.
+- **Quién decidió:** agente, sin consultar.
+
+### 2026-11-11 · admin · Entidades de a una página, las que piden sumarse primero
+
+- **Decisión:** Entidades del admin va de a una página de 20 con la búsqueda por nombre en Donaciones
+  (sin tildes). Las que piden sumarse vienen de Keycloak: se filtran por nombre sin tildes, van
+  primero, solo en la página 1, y cuentan en el total. La cifra de activas es un número del
+  servicio.
+- **Alternativas:** asignar la pantalla a otro lote (el revisor lo marcó como bloqueante de este).
+- **Por qué:** la regla 1 vale también para Entidades, y lo que espera una decisión va arriba.
+- **Costo:** las necesidades vigentes de la página todavía se leen en una sola llamada sin página
+  (DTI-39, ítem 2).
+- **Quién decidió:** agente, sin consultar (arreglos de la ronda 2 de `p0-admin-listados`).
+
+### 2026-11-11 · admin · El avance de la importación se actualiza solo y se puede salir
+
+- **Decisión:** la página de avance se vuelve a pedir cada 3 segundos con HTMX, solo mientras la
+  pestaña está a la vista, y cambia solo el bloque del avance. El cambio de etapa se anuncia a los
+  lectores de pantalla. Si un pedido falla, quedan las cifras de antes y un aviso. Sin JavaScript,
+  un enlace "Ver el avance". "Se actualiza sola" aparece recién cuando llegó una actualización. La
+  última importación queda en la sesión: Donantes muestra una franja hasta que se abre el resultado.
+  Un archivo que falló con filas ya leídas se muestra como importación cortada, con su resultado.
+- **Alternativas:** eventos del servidor o WebSocket (un canal nuevo, que pide ADR); recordar la
+  importación en la dirección o en el navegador.
+- **Por qué:** lo pidió el usuario (avance en vivo y poder seguir trabajando) y el sondeo ya es el
+  patrón del sitio (posición del camión, D22).
+- **Costo:** otro admin u otro navegador no ve la franja hasta la vista de importaciones (R11-20).
+  Una importación que falla sin leer ninguna fila deja vacío el bloque durante el sondeo (DTI-40,
+  ítem 7, `p1-importaciones`).
+- **Quién decidió:** usuario (en vivo, se puede salir) y agente (cómo), sin consultar.
+- **Evidencia:** [ficha del admin](flujos/raices-admin-navegable.md), R11-02 (en revisión).
+
+### 2026-11-11 · donante · El inicio de la persona: el año, aunque esté vacío, y la huerta compacta
+
+- **Decisión:** si la cuenta donó otros años pero no este, el inicio dice "Todavía no hay donaciones
+  tuyas registradas en <año>." y no que nunca donó; las cifras cuentan solo el año. La huerta de la
+  persona queda compacta (en pantalla ancha, el título al lado del dibujo) para que el año se vea
+  enseguida. El tipo de la cuenta se guarda en la sesión; sin tipo, nunca se trata como empresa.
+- **Alternativas:** el vacío de siempre ("Todavía no donaste"), que mentía para quien donó antes.
+- **Por qué:** tono: no afirmar más de lo que se sabe.
+- **Costo:** en el celular, "Tu huerta" queda debajo del saludo y de los dos botones: hay que
+  confirmar con el usuario si eso es "arriba de todo" (R11-06).
+- **Quién decidió:** agente, sin consultar (lote `p0-persona`).
+- **Evidencia:** [ficha](flujos/r11-p0-persona.md).
+
 ### 2026-11-11 · donante · Mis donaciones de a una página, con los filtros en el servidor
 
 - **Decisión:** Mis donaciones pide a Donaciones una página de 12 con el mes, el estado y la

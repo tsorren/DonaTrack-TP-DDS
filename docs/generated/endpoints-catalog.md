@@ -1,14 +1,14 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 123
+> **Total de Endpoints:** 124
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
 ## Microservicio: DonaTrack - Donaciones Service API (`openapi-donaciones.yaml`)
 
-* **Versión:** `1.8.0`
-* **Descripción:** API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde 1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
+* **Versión:** `1.9.0`
+* **Descripción:** >-
 * **Servidor Local:** `http://localhost:8080`
 
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
@@ -17,7 +17,8 @@
 | `GET` | `/donaciones-independientes/{id}` | `obtenerDonacionIndependientePorId` | `-` | `200 (DonacionIndependienteResponseDTO), 404 (-)` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | `cambiarEstadoDonacionIndependiente` | `CambioEstadoDonacionIndependienteRequestDTO` | `200 (DonacionIndependienteResponseDTO), 400 (-), 409 (-)` |
 | `POST` | `/api/donaciones` | `registrarDonacion` | `DonacionInputDTO` | `201 (DonacionOutputDTO), 400 (-), 409 (-)` |
-| `GET` | `/api/donaciones` | `listarDonaciones` | `-` | `200 (DonacionOutputDTO)` |
+| `GET` | `/api/donaciones` | `listarDonaciones` | `-` | `200 (DonacionOutputDTO), 400 (-)` |
+| `GET` | `/api/donaciones/resumen` | `obtenerResumenAdmin` | `-` | `200 (ResumenAdminDTO), 401 (-), 403 (-)` |
 | `POST` | `/api/donaciones/fotos` | `solicitarSubidaFoto` | `SolicitudSubidaFotoInputDTO` | `200 (SubidaFotoOutputDTO), 400 (-)` |
 | `GET` | `/api/donaciones/contadores` | `obtenerContadoresPublicos` | `-` | `200 (ContadoresPublicosDTO)` |
 | `GET` | `/api/donaciones/destacadas` | `listarDestacadas` | `-` | `200 (DonacionDestacadaDTO), 400 (-)` |
@@ -40,7 +41,7 @@
 | `PUT` | `/api/entidades/{id}` | `actualizarEntidad` | `-` | `200 (-), 400 (-), 404 (-), 409 (-)` |
 | `DELETE` | `/api/entidades/{id}` | `eliminarEntidad` | `-` | `204 (-), 404 (-)` |
 | `POST` | `/api/donantes` | `registrarDonante` | `-` | `200 (-), 201 (-), 404 (-), 409 (-)` |
-| `GET` | `/api/donantes` | `listarDonantes` | `-` | `200 (-)` |
+| `GET` | `/api/donantes` | `listarDonantes` | `-` | `200 (DonanteOutputDTO), 400 (-)` |
 | `GET` | `/api/donantes/{id}` | `obtenerDonantePorId` | `-` | `200 (-), 404 (-)` |
 | `DELETE` | `/api/donantes/{id}` | `eliminarDonante` | `-` | `204 (-), 404 (-)` |
 | `PATCH` | `/api/donantes/{id}/preferencias` | `actualizarPreferenciasDonante` | `PreferenciasDonanteDTO` | `200 (-), 400 (-), 403 (-), 404 (-)` |
@@ -62,7 +63,7 @@
 | `GET` | `/api/items-normalizados/pendientes` | `listarItemsNormalizadosPendientes` | `-` | `200 (ItemDonacionNormalizadoOutputDTO)` |
 | `GET` | `/api/items-normalizados/{id}` | `obtenerItemNormalizadoPorId` | `-` | `200 (ItemDonacionNormalizadoOutputDTO), 404 (-)` |
 | `PATCH` | `/api/items-normalizados/{id}` | `actualizarEstadoItemNormalizado` | `ItemDonacionNormalizadoPatchDTO` | `200 (ItemDonacionNormalizadoOutputDTO), 400 (-), 404 (-)` |
-| `GET` | `/api/personas` | `listarPersonasDonaciones` | `-` | `200 (PersonaOutputDTO)` |
+| `GET` | `/api/personas` | `listarPersonasDonaciones` | `-` | `200 (-), 400 (PersonaOutputDTO)` |
 | `POST` | `/api/personas` | `crearPersonaDonaciones` | `PersonaInputDTO` | `201 (PersonaOutputDTO), 400 (-)` |
 | `PUT` | `/api/personas/{id}` | `actualizarPersonaDonaciones` | `PersonaInputDTO` | `200 (PersonaOutputDTO), 400 (-), 404 (-), 409 (-)` |
 | `DELETE` | `/api/personas/{id}` | `eliminarPersonaDonaciones` | `-` | `204 (-), 404 (-)` |

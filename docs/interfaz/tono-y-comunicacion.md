@@ -1,7 +1,7 @@
 # Tono y comunicación
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-31 · parte del [proceso de diseño](README.md)**
+> **Versión 1.1 · 2026-11-12 (cifras y cuentas de la revisión del 2026-11-11) · parte del [proceso de diseño](README.md)**
 > Fuente: el [Brief de Tono y Comunicación v1.0](identidad/brief-tono-y-comunicacion-v1.0.pdf) del
 > equipo. Este documento lo lleva a la interfaz: qué se escribe en cada pantalla y qué no. Si el
 > equipo saca una versión nueva del brief, se actualiza este archivo y nada más. Lo marcado
@@ -105,6 +105,14 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
 - Sin comparar entidades ni donantes (rankings, tablas de posiciones) sin un criterio claro y
   comparable.
 - Una estimación no se presenta como resultado. Si falta un dato, se dice cuál y por qué.
+- Una cuenta dice de qué es *(extensión, revisión del 2026-11-11)*. "Coinciden 1.234 donantes." es
+  el total del servicio, no lo que entra en la pantalla. Si algo solo mira la página que se ve, lo
+  dice: "En esta página, 2 entidades a las que ya donaste.". Si son demasiados para una lista
+  corta, se pide más precisión sin culpa: "Hay 41 donantes que coinciden. Escribí más del nombre o el documento para encontrarlo.".
+- Un período sin datos no afirma más de lo que se sabe *(extensión)*: "Todavía no hay donaciones
+  tuyas registradas en 2026." en lugar de "Nunca donaste", si la cuenta donó otros años.
+- Lo que la plataforma todavía no puede hacer se dice como límite, no se esconde *(extensión)*:
+  "Esta lista todavía no se puede filtrar por vencimiento: te mostramos todas las del depósito."
 
 ## Personas, entidades y fotos
 

@@ -132,6 +132,22 @@ plantilla muestra "sin dibujar". Desde F7 (2026-11-07) ningún enlace del sitio 
 dibujar": lo comprueba `SitioControllerTest`. La administración no tiene Mi perfil, como dice este
 mapa.
 
+## Cambios de la revisión del 2026-11-11 (oleada P0, 2026-11-12)
+
+Ninguna pantalla nueva ni ningún nivel más. Lo que cambia en el recorrido, del
+[backlog de la revisión](backlog-revision-2026-11-11.md):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donantes → Importar CSV | La subida lleva a "Importando" (`admin-donantes-importando`, nivel 3), que se actualiza sola, y al terminar a "Importación terminada" (`admin-donantes-importado`, con el resumen y las filas con error de a página) o a la de error. Se puede salir: en Donantes, una franja recuerda la importación hasta que se abre el resultado | R11-02 |
+| Donantes, Donaciones y Entidades del admin | De a una página, con la búsqueda y los filtros en la dirección: el "atrás" del navegador vuelve a la página anterior | R11-01 |
+| Inicio del donante persona → Mis donaciones | Cada mes del año muestra 3 donaciones y "Ver todas", que lleva a Mis donaciones de ese mes (`?mes=AAAA-MM`, nivel 2) | R11-06 |
+| Inicio y Mi perfil del donante | Con login real, la persona ve los suyos (`persona/`) y la empresa los de la empresa | R11-06 |
+| Misiones e insignias | En el menú solo de la persona. La empresa que entra por la dirección ve un aviso con "Ir a tu inicio" | R11-06, RF-07 |
+
+Lo que la sección 10 del backlog suma al mapa (perfil del admin, vista de importaciones, registro de
+actividad y notificaciones del admin) entra con sus lotes de P1 y P2 de esta corrida.
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,

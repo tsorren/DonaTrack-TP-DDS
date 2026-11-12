@@ -1,7 +1,7 @@
 # Patrones, estados y textos
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 2 · 2026-10-31 (remite al tono común) · parte del [proceso de diseño](README.md)**
+> **Versión 3 · 2026-11-12 (reglas generales de la revisión del 2026-11-11) · parte del [proceso de diseño](README.md)**
 
 Cubre RNF-UI-01 a RNF-UI-06 de [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md).
 La cátedra pide **patrones** conocidos (Material Design, Human Interface Guidelines), no una
@@ -24,6 +24,8 @@ librería: cada componente cita, en su ficha de flujo, el patrón que sigue.
 | Tabla o lista | Material: Data tables / Lists | Escritorio: tabla. Celular: cada fila como tarjeta | `<table>` con `<th scope>` |
 | Navegación por rol | Material: Navigation bar / Tabs | Secciones del rol; la actual, marcada | `<nav>` con `aria-current="page"` |
 | Mapa | — | Siempre acompañado de una lista con los mismos datos | RF-CL-06; "última actualización" visible (RF-CL-07) |
+| Paginador | Material: Data tables (paginación) | Debajo de todo listado completo que se pide de a una página (regla general 3). Hasta R11-11, el provisorio "‹ Anterior · Página N de M · Siguiente ›" ([catálogo](componentes.md#piezas-compuestas-sin-clase-propia)) | `<nav>` con nombre propio; la página actual con `aria-current="page"`; el extremo que no sigue no es un enlace; al cambiar de página, el foco va al título de la lista |
+| Avance de un proceso largo | Material: Progress indicators (determinado) | Algo que tarda minutos y sigue en el servidor aunque se salga (la importación del CSV) | La cifra en texto, no solo la barra; el cambio de etapa se anuncia en una región `aria-live`; sin JavaScript, un enlace "Ver el avance" |
 
 ## Estados que toda pantalla contempla
 
@@ -76,6 +78,27 @@ resumen:
     ([cifras](tono-y-comunicacion.md#cifras-y-datos)).
 13. Sin urgencia artificial, culpa ni promesas que no se pueden comprobar
     ([cómo no escribimos](tono-y-comunicacion.md#cómo-no-escribimos)).
+14. Una cuenta dice de qué es: "Coinciden 1.234 donantes." es el total del servicio; si un filtro
+    solo mira la página que se ve, lo dice ("En esta página, 2 entidades a las que ya donaste.").
+15. Un motivo o un estado que llega del servicio como código (`FORMATO_INVALIDO`) se muestra con su
+    frase ("La fila no tiene las columnas esperadas."); uno que el cliente no conoce, con la frase de
+    error inesperado, nunca el código.
+
+## Reglas generales de la revisión del 2026-11-11
+
+Valen en todo el sitio. Salen del [backlog de la revisión](backlog-revision-2026-11-11.md#2-reglas-generales-nuevas)
+y las decidió el usuario. La columna de la derecha dice cuánto está hecho al cierre de la oleada P0
+(2026-11-12); lo que falta tiene su lote en esta corrida.
+
+| # | Regla | Hecho al cierre de P0 |
+|---|---|---|
+| 1 | **Nunca se traen todos los resultados.** Las listas se piden de a una página, con la búsqueda (sin tildes ni mayúsculas) y los filtros resueltos en el servidor. Los contadores se piden como números. Si el servicio no resuelve un filtro, la pantalla no lo ofrece: filtrar una sola página engaña | Donaciones pagina y cuenta en la base; las pantallas del admin y Mis donaciones van de a una página. Lo que falta, en [DTI-39](../adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](../adr/DEUDA_TECNICA.md#dti-40) |
+| 2 | **Listas, tres casos.** Listado completo: páginas numeradas. Resumen dentro de otra pantalla: 3 elementos y "Ver todas", que lleva al listado completo paginado. Contenido muy visual: carrusel con flechas | El año de la persona (3 por mes y "Ver todas" a Mis donaciones del mes). El carrusel no existe todavía (R11-B09) |
+| 3 | **Un solo paginador.** `« ‹ 1 2 3 … 9 › »`, con primera y última; en el celular, `‹ 3 de 9 ›`. Conserva la búsqueda y los filtros. Una página pedida más allá de la última muestra la última, nunca una lista vacía | Provisorio: "‹ Anterior · Página N de M · Siguiente ›" en el admin y "Página anterior / Página siguiente" en Mis donaciones y Entidades del donante; el definitivo, con `p1-paginador` (R11-11) |
+| 4 | **Ventanas, tres niveles.** Ventana que bloquea el fondo para confirmar algo que no se deshace y formularios cortos; desplegable liviano que se cierra tocando afuera o con Esc; página aparte para procesos largos o con fotos | No: `p1-menus` y `p2-ventanas` |
+| 5 | **Qué queda fijo al desplazarse.** El encabezado con el menú; el buscador y los filtros en los listados; el botón principal en el celular | No: `p2-armazon` |
+| 6 | **Con sesión, siempre se ve la cuenta.** Portada, páginas de error y contacto muestran el encabezado de quien está logueado | No: `p0-errores` (no arrancó) y `p1-portada` |
+| 7 | **Ilustraciones complejas, por encargo.** Logo, maceta o abeja posada se generan como imagen con un prompt escrito por Claude, no se dibujan a mano en el código | Sin cambios en P0; va a [`direccion-de-arte.md`](direccion-de-arte.md) con R11-B01 a R11-B03 |
 
 ## Ayudas por flujo crítico (RNF-UI-04)
 

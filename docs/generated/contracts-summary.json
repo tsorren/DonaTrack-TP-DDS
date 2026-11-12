@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-11T18:17:23.378Z",
+  "generatedAt": "2026-11-12T03:53:39.998Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 123,
+    "endpointsCount": 124,
     "schemasCount": 28,
     "eventsCount": 9
   },
@@ -11,7 +11,7 @@
     {
       "title": "DonaTrack - Donaciones Service API",
       "fileName": "openapi-donaciones.yaml",
-      "version": "1.8.0",
+      "version": "1.9.0",
       "serverUrl": "http://localhost:8080",
       "endpoints": [
         {
@@ -67,7 +67,20 @@
           "operationId": "listarDonaciones",
           "requestBody": "-",
           "responses": {
-            "200": "DonacionOutputDTO"
+            "200": "DonacionOutputDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/donaciones/resumen",
+          "method": "GET",
+          "summary": "Cifras del inicio del administrador",
+          "operationId": "obtenerResumenAdmin",
+          "requestBody": "-",
+          "responses": {
+            "200": "ResumenAdminDTO",
+            "401": "-",
+            "403": "-"
           }
         },
         {
@@ -324,7 +337,8 @@
           "operationId": "listarDonantes",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "DonanteOutputDTO",
+            "400": "-"
           }
         },
         {
@@ -569,7 +583,8 @@
           "operationId": "listarPersonasDonaciones",
           "requestBody": "-",
           "responses": {
-            "200": "PersonaOutputDTO"
+            "200": "-",
+            "400": "PersonaOutputDTO"
           }
         },
         {

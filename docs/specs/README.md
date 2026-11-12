@@ -83,5 +83,6 @@ Al completar la implementación y pasar todos los Quality Gates, el archivo se t
 |:---:|---|:---:|:---:|---|
 | **SPEC-01** | [`SPEC-01-consolidacion-nivel-4-agent-first.md`](completed/SPEC-01-consolidacion-nivel-4-agent-first.md) | ARCHITECTURAL | `COMPLETED` | Consolidación del repositorio a Nivel 4 (Agent-First Pleno): arnés SDD, suite de 7 skills, generated knowledge, benchmark evals y governance checks. |
 | **SPEC-02** | [`SPEC-02-harness-skill-review-pr-adversarial-grepai.md`](completed/SPEC-02-harness-skill-review-pr-adversarial-grepai.md) | ARCHITECTURAL | `COMPLETED` | Implementación de la skill canónica `review-pr`, protocolo GrepAI-First, scripts CLI de contexto y ADR de formalización. |
+| **R11-p0-api-listados** | [`R11-p0-api-listados-spec.md`](completed/R11-p0-api-listados-spec.md) | ARCHITECTURAL | `IMPLEMENTADA` | Lote `p0-api-listados` del backlog R11 (2026-11-11): los listados de Donaciones paginan, buscan sin tildes, filtran y cuentan en la base; resumen del admin como conteos. Cerrada el 2026-11-12 con C3, C9 y C10 sin verificar ([DTI-40](../adr/DEUDA_TECNICA.md#dti-40)). |
 
 

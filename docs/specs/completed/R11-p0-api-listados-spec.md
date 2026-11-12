@@ -1,8 +1,19 @@
 # Spec: R11 p0-api-listados — El servicio de donaciones pagina, busca y cuenta
 
-> **Estado:** PROPOSED (2026-11-11). Diseño del lote `p0-api-listados` del
+> **Estado:** IMPLEMENTADA (2026-11-12, cierre de la oleada P0). Aprobada por el usuario el
+> 2026-11-11 con los ajustes de §0; construida en `b3f8fc179` y cerrada en la rama
+> `E6_backlog_r11_p0`. Pasó a `docs/specs/completed/` en el cierre documental de P0. Quedan sin
+> verificar C3 y C9 (sin el test de base que piden) y C10 (oasdiff no se corrió en local): están
+> en [DTI-40](../../adr/DEUDA_TECNICA.md#dti-40). Diseño del lote `p0-api-listados` del
 > [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md) (R11-01,
-> parte de servicio). La aprobación es la del usuario antes de construir; ningún ADR se promueve.
+> parte de servicio). Ningún ADR se promueve.
+> **ADRs (`proposed`, escritos después del código):** [listados paginados sin lista completa](../../adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md),
+> [búsqueda sin tildes con `unaccent`](../../adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md),
+> [consultas de listado en SQL nativo y lectura por lote](../../adr/donaciones-service/20261111-consultas-de-listado-en-sql-nativo-y-lectura-por-lote.md),
+> [cifras del admin como conteos](../../adr/donaciones-service/20261111-cifras-del-admin-como-conteos-en-un-resumen.md) y
+> [`fecha_alta` y `ultimos` en el modelo](../../adr/donaciones-service/20261111-fecha-de-alta-del-donante-y-ultimos-importados-en-el-archivo.md).
+> El §7 dice "no hace falta ADR": quedó superado por los ajustes de §0 (una extensión nueva de
+> PostgreSQL y el retiro del modo sin página), ver cada ADR.
 > **Nivel:** ARCHITECTURAL por AGENTS.md §7.0 (cambia el contrato REST de Donaciones y suma una
 > migración), escrita con el formato corto de la ruta STANDARD de `define-spec`, como pide el lote.
 > **Fecha:** 2026-11-11
@@ -107,7 +118,7 @@ Decisiones del diseñador del lote (sin matriz 5D, como pide el lote):
 - **Alternativa elegida para la respuesta:** arreglo en el cuerpo y total en `X-Total-Count`, igual
   que `/api/entidades`. Descartadas: un sobre `{elementos, total}` (rompe a todos los clientes
   actuales, que esperan un arreglo) y el `Page` de Spring (lo mismo, y ata el contrato al framework).
-- **Sin página, como hoy:** los pedidos sin `page` ni `size` siguen devolviendo todo, para no romper
+- **Reemplazado por §0.** **Sin página, como hoy:** los pedidos sin `page` ni `size` siguen devolviendo todo, para no romper
   a nadie antes de `p0-admin-listados`. Descartado: un tope por defecto ya en este lote, porque
   cortaría en silencio la lista que el cliente y el seeder esperan completa.
 - **Cifras del admin en una sola ruta** (`/api/donaciones/resumen`). Descartado: un conteo por ruta
@@ -115,7 +126,7 @@ Decisiones del diseñador del lote (sin matriz 5D, como pide el lote):
   sirve para "por vencer" ni para "entregadas en el mes").
 - **`fecha_alta` nueva en `donante`** para el orden "Más nuevos primero" que ya ofrece la pantalla.
   Descartado: ordenar por id (es un UUID al azar) o sacar el orden.
-- **Búsqueda con `LIKE` sin extensiones.** Descartado `pg_trgm`/`unaccent`: una extensión nueva de
+- **Reemplazado por §0.** **Búsqueda con `LIKE` sin extensiones.** Descartado `pg_trgm`/`unaccent`: una extensión nueva de
   PostgreSQL por un volumen (20.000 filas) que un recorrido resuelve.
 
 ### 3.1 Reglas comunes de los cuatro listados
@@ -129,9 +140,9 @@ nueva de formato.
 | Total | Header `X-Total-Count`: cuántos cumplen la búsqueda y los filtros, sin contar la página. Se manda también en los pedidos sin página. |
 | `page` | Desde 0. Si falta y viene `size`, vale 0. |
 | `size` | 1 a 100. Si falta y viene `page`, vale 20. |
-| Sin `page` ni `size` | Devuelve todos los que cumplen los filtros, en el mismo orden de hoy. Es el modo de compatibilidad (§4); el OpenAPI lo marca como "a retirar". |
+| Sin `page` ni `size` | **Reemplazado por §0.** Devuelve todos los que cumplen los filtros, en el mismo orden de hoy. Es el modo de compatibilidad (§4); el OpenAPI lo marca como "a retirar". |
 | Con `page` o `size` | Ordena según `orden` (o su valor por defecto) y devuelve ese tramo. El orden siempre desempata por `id`, para que una fila no salte de página. |
-| `q` | Texto con espacios recortados; vacío es lo mismo que no mandarlo. "Contiene", sin distinguir mayúsculas (`lower(...) LIKE lower('%q%')`), con `%`, `_` y `\` escapados. Hasta 100 caracteres. |
+| `q` | **Reemplazado por §0.1 (también sin tildes).** Texto con espacios recortados; vacío es lo mismo que no mandarlo. "Contiene", sin distinguir mayúsculas (`lower(...) LIKE lower('%q%')`), con `%`, `_` y `\` escapados. Hasta 100 caracteres. |
 | Errores | `page` negativo, `size` fuera de 1..100, `q` de más de 100 caracteres o un valor de `orden` desconocido: 400 con `ERR-CSR-003`, como `/api/entidades`. |
 | Permisos | Los mismos `@PreAuthorize` de hoy en cada ruta. |
 | Página fuera de rango | 200 con arreglo vacío y el `X-Total-Count` real. |
@@ -288,7 +299,7 @@ aceptación C9 lo mide. Los filtros por estado, donante, entidad, necesidad y pe
 
 Invariantes que el lote no puede romper:
 
-- Un pedido sin `page` ni `size` devuelve el mismo cuerpo que antes del cambio (salvo el campo nuevo
+- **Reemplazado por §0.** Un pedido sin `page` ni `size` devuelve el mismo cuerpo que antes del cambio (salvo el campo nuevo
   `fechaAlta`).
 - `X-Total-Count` es siempre el total con los filtros aplicados, nunca el largo de la página.
 - Ningún listado paginado ni ninguna cifra lee todas las filas de una tabla en memoria.
@@ -300,7 +311,7 @@ Invariantes que el lote no puede romper:
 
 | Consumidor | Qué pide hoy | Qué le pasa |
 |---|---|---|
-| Cliente liviano, `DonacionesApi` | `/api/donantes?canal`, `/api/personas?tipo`, `/donaciones-independientes` con filtros, `/api/donaciones`, `/api/donaciones/contadores` | Nada: sin `page` ni `size` recibe el mismo arreglo, en el mismo orden. Ignora el header nuevo y el campo `fechaAlta` (los records de Jackson no fallan con campos desconocidos: se verifica en C10). |
+| Cliente liviano, `DonacionesApi` | `/api/donantes?canal`, `/api/personas?tipo`, `/donaciones-independientes` con filtros, `/api/donaciones`, `/api/donaciones/contadores` | **Reemplazado por §0.** Nada: sin `page` ni `size` recibe el mismo arreglo, en el mismo orden. Ignora el header nuevo y el campo `fechaAlta` (los records de Jackson no fallan con campos desconocidos: se verifica en C10). |
 | Seeder de demo (`demo/seeder/seeder/cuentas.py:88`, `vivo.py:145`) | `GET /api/personas` completo y `/donaciones-independientes/{id}` | Nada. El seeder inserta en `donante` por API, así que `fecha_alta` toma su valor por defecto. |
 | `integration-tests`, Postman, k6 | Altas y lecturas por id | Nada. |
 | Otros servicios | Ninguno consulta estas rutas. | — |
@@ -335,6 +346,7 @@ Escenario C3: Sin consulta por fila
   Entonces la cantidad de sentencias SQL es la misma con 5 filas que con 20 (contada con las estadísticas de Hibernate)
 
 Escenario C4: Los clientes sin página siguen igual
+  # Reemplazado por §0.2: sin page ni size llega la página 0 de 20, con X-Total-Count real.
   Dados los mismos datos
   Cuando se pide GET /api/donantes, /api/personas?tipo=JURIDICA, /donaciones-independientes?entidadId=<x> y /api/donaciones sin page ni size
   Entonces el cuerpo es el mismo arreglo, en el mismo orden, que antes del cambio (más fechaAlta en donantes)
@@ -380,8 +392,8 @@ Además: `mvn clean test -pl donaciones-service -am` y `mvn test -pl api-gateway
 | Dos implementaciones de cada repositorio (JPA y en memoria) que den resultados distintos. | Los tests de servicio corren contra la de memoria y los de base contra PostgreSQL con los mismos casos (C1, C2, C5). |
 | El orden "de siempre" de los pedidos sin página no está definido hoy (`findAll()`). | C4 fija el orden que devuelve hoy cada repositorio y lo conserva; los pedidos paginados sí lo definen. |
 | `fecha_alta` de los donantes existentes es la hora de la migración: en una base con historia, "más nuevos" no distingue a los viejos entre sí (desempatan por id). | Aceptado: la base de la demo se arma después de la migración. Queda dicho en el OpenAPI. |
-| La búsqueda no ignora tildes: "Gomez" no encuentra "Gómez". | Aceptado en este lote; queda como duda. |
-| El modo sin página sigue trayendo todo, que es justo lo que rompe la demo. | Lo usan solo los clientes que migra `p0-admin-listados`. Retirarlo (tope de tamaño por defecto) es un paso posterior, ya anotado como "a retirar" en el OpenAPI. |
+| **Reemplazado por §0.** La búsqueda no ignora tildes: "Gomez" no encuentra "Gómez". | Aceptado en este lote; queda como duda. |
+| **Reemplazado por §0.** El modo sin página sigue trayendo todo, que es justo lo que rompe la demo. | Lo usan solo los clientes que migra `p0-admin-listados`. Retirarlo (tope de tamaño por defecto) es un paso posterior, ya anotado como "a retirar" en el OpenAPI. |
 | Pool de 5 conexiones compartido con el importador (backlog §9). | Las consultas nuevas son cortas y de solo lectura; el ensayo de 20.000 filas es R11-03. |
 | `estado` repetible cambia el tipo del parámetro en el OpenAPI. | Ver §4; si oasdiff lo marca, se registra con su motivo. |
 | `DonanteOutputDTO` es la respuesta de otras rutas (`/{id}`, alta, preferencias). | `fechaAlta` aparece en todas: es aditivo y se documenta en cada una. |
@@ -409,3 +421,58 @@ usuario; `fecha_alta` es un ajuste aditivo del modelo, como `activo` en `V8`. Ga
 
 Las rutas y los nombres de parámetros de §3 son el contrato; las clases y consultas las decide el
 constructor siguiendo los adaptadores que ya existen.
+
+## 8. Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen de la revisión de integración de la oleada P0, hecha por un revisor separado del
+constructor (`[INFERRED]` por cómo la orquesta el workflow: lee la rama y los informes, no el
+razonamiento del constructor), y del cierre con el stack propio. Lo pendiente está
+en [DTI-40](../../adr/DEUDA_TECNICA.md#dti-40).
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración de la oleada P0 del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  [OBSERVED] Sin página llega la página 0 de 20: los consumidores del cliente liviano se migraron
+  en p0-admin-listados (misma rama). Los que piden una página de 100 sin paginador: DTI-39.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED. Dominio sin JPA (LecturaPorLote, criterios del dominio); SQL en los adaptadores.
+
+V3 Contracts/integration:
+  [INFERRED] C10: oasdiff no se corrió en local; las dos líneas de R11-01 en
+  cambios-incompatibles-aceptados.txt se confirman con el job de contratos del PR (DTI-40).
+
+V4 Tests/coverage:
+  [OBSERVED] C3 solo con dobles de prueba (never().findById); C9 sin test de volumen (DTI-40).
+  [VERIFIED] ListadosPostgresJpaTest: 11 tests sobre postgres:16-alpine con Flyway completo (V21).
+  [VERIFIED] mvn clean test -pl donaciones-service,api-gateway,cliente-liviano -am en verde en el
+  cierre (1.141 tests en donaciones-service), con el stack del usuario detenido.
+
+V5 Scope violations:
+  [OBSERVED] Fuera de zona, declarado: demo/seeder/seeder/cuentas.py recorre páginas.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta en los informes del lote; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED. Mismos @PreAuthorize; el resumen es solo ADMIN; los contadores públicos no
+  exponen datos personales.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, DEUDA_TECNICA (DTI-39 y
+  DTI-40) y docs/generated regenerado (OpenAPI 1.9.0) en el cierre documental.
+
+Menores, sin corregir: DonanteMapper.toOutputDTOs no filtra personaId nulos; borde del mes de
+entregadasEnElMes (reloj de Buenos Aires contra UTC) sin test. Ambos en DTI-40.
+```
+
+Ensayo de volumen real (cierre de P0, stack propio con 35.848 donantes): Donantes del admin
+respondió en 0,05 s por página, también la última, y la búsqueda "ibanez" en 0,12 s
+([guía del ensayo](../../testing/ensayo-importacion-20000.md#resultados-del-cierre-de-p0-2026-11-12)).

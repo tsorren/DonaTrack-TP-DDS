@@ -91,13 +91,13 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-39) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-40) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
 │   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10)
-│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
+│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02, R11-p0-api-listados)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
 │   ├── README.md                          # Visión general y reglas de regeneración
@@ -198,7 +198,7 @@ docs/
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🎬 **Seeder de demo (propuesta):** [SPEC-10](specs/active/SPEC-10-seeder-de-demo.md) · [testing/demo-seeder.md](testing/demo-seeder.md)
 * 📏 **Ensayo de importación de 20.000 donantes:** [testing/ensayo-importacion-20000.md](testing/ensayo-importacion-20000.md)
-* 📄 **Listados paginados y cifras de Donaciones (R11-01, propuesta):** [spec del lote p0-api-listados](specs/active/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md)
+* 📄 **Listados paginados y cifras de Donaciones (R11-01, implementada en la oleada P0):** [spec del lote p0-api-listados](specs/completed/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md) · ADRs `proposed`: [listados siempre paginados](adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md), [búsqueda sin tildes](adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md), [SQL nativo y lectura por lote](adr/donaciones-service/20261111-consultas-de-listado-en-sql-nativo-y-lectura-por-lote.md), [cifras del admin como conteos](adr/donaciones-service/20261111-cifras-del-admin-como-conteos-en-un-resumen.md) y [`fecha_alta` y últimos importados](adr/donaciones-service/20261111-fecha-de-alta-del-donante-y-ultimos-importados-en-el-archivo.md) · deuda: [DTI-39](adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
