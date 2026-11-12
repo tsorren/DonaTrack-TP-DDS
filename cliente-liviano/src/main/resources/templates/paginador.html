@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!--/* El paginador provisorio de las listas que se piden de a una página (R11-01, ficha
+       docs/interfaz/flujos/raices-admin-navegable.md, §4.1 "R11-01"): "‹ Anterior · Página N de M ·
+       Siguiente ›", debajo de la tabla, igual en el celular. Vale hasta que exista el componente de
+       páginas de R11-11, que lo reemplaza sin cambiar las direcciones. No es una pantalla: su nombre
+       no empieza con un rol. Solo usa piezas del catálogo (racimo, botón y el tono suave).
+       - Los enlaces son direcciones reales (?pagina=N con la búsqueda y los filtros que había): sin
+         JavaScript funcionan, y con HTMX (hx-boost) cambian solo el main, sin volver arriba.
+       - El extremo que no sigue se ve apagado y no es un enlace: no recibe el foco.
+       - Con una sola página, el controller no arma el paginador y no se dibuja nada.
+       Fragmentos:
+       - paginador(p): p es un vistas.Paginador (nombre, pagina, paginas, anterior, siguiente), o
+         null. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="paginador(p)" th:if="${p != null}" class="racimo" data-alinea="centro"
+     data-espacio="3" th:aria-label="${p.nombre}" aria-label="Páginas de donantes">
+  <a th:if="${p.anterior != null}" class="boton" data-tono="secundario"
+     hx-boost="true" th:href="${p.anterior}" href="?pagina=2">‹ Anterior</a>
+  <span th:unless="${p.anterior != null}" data-tono="suave">‹ Anterior</span>
+  <span aria-current="page" th:text="|Página ${#numbers.formatInteger(p.pagina, 1, 'POINT')} de ${#numbers.formatInteger(p.paginas, 1, 'POINT')}|">Página 3 de 62</span>
+  <a th:if="${p.siguiente != null}" class="boton" data-tono="secundario"
+     hx-boost="true" th:href="${p.siguiente}" href="?pagina=4">Siguiente ›</a>
+  <span th:unless="${p.siguiente != null}" data-tono="suave">Siguiente ›</span>
+</nav>
+</body>
+</html>

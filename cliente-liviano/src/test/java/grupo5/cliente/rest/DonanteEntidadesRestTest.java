@@ -61,7 +61,8 @@ class DonanteEntidadesRestTest {
                 "[{\"id\": \"%s\", \"nombre\": \"Legumbres\", \"categoria\":".formatted(LEGUMBRES)
                     + " {\"nombre\": \"Alimentos\", \"unidad\": \"KILOGRAMO\"}}]",
                 MediaType.APPLICATION_JSON));
-    apis.expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+    apis.expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(
             withSuccess(
                 "[{\"id\": \"%s\", \"entidadBeneficiariaId\": \"%s\", \"cantidad\": 1}]"
@@ -102,7 +103,8 @@ class DonanteEntidadesRestTest {
                 "[{\"id\": \"%s\", \"razonSocial\": \"Hogar Ejemplo\"}]".formatted(HOGAR),
                 MediaType.APPLICATION_JSON));
     apis.expect(requestTo("http://donaciones/api/subcategorias")).andRespond(withServerError());
-    apis.expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+    apis.expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     apis.expect(requestTo("http://donaciones/api/necesidades/publicas?entidadId=" + HOGAR))
         .andRespond(

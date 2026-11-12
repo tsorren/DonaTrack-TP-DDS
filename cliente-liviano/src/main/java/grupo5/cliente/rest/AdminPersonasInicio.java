@@ -1,35 +1,28 @@
 package grupo5.cliente.rest;
 
-import grupo5.cliente.rest.DonacionesApi.Donacion;
-import grupo5.cliente.vistas.AdminEntidadesVista;
-import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
 import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import org.springframework.util.LinkedMultiValueMap;
+import java.util.Map;
 
 /**
- * El inicio del admin con lo que dan Donaciones y Logística: las solicitudes, las donaciones del
- * depósito que vencen en 7 días, las propuestas pendientes y las cifras, contando listas. Lo que no
- * se puede saber (cuándo llegó la solicitud más antigua, qué le falta mandar, la entidad y la
- * unidad de una propuesta) no se escribe.
+ * El inicio del admin con lo que dan Donaciones y Logística: las solicitudes (con el nombre que ya
+ * traen), las propuestas pendientes y las cifras. Desde R11-01 las cifras y lo que vence son
+ * números de {@code GET /api/donaciones/resumen}: ninguna lista se trae para contarla. Lo que no se
+ * puede saber (cuándo llegó la solicitud más antigua, qué le falta mandar, la entidad y la unidad
+ * de una propuesta) no se escribe.
  */
 final class AdminPersonasInicio {
 
   private static final DateTimeFormatter FECHA =
       DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'de' yyyy", Comun.ES_AR);
   private static final DateTimeFormatter MES = DateTimeFormatter.ofPattern("MMMM", Comun.ES_AR);
-  private static final String EN_DEPOSITO = "ENDEPOSITO";
-  private static final int DIAS_PARA_VENCER = 7;
 
   private final DonacionesApi donaciones;
   private final LogisticaApi logistica;
@@ -39,22 +32,14 @@ final class AdminPersonasInicio {
     this.logistica = logistica;
   }
 
-  /** Arma el inicio con las entidades ya leídas y la cuenta de donantes activos. */
-  AdminInicioVista inicio(
-      LocalDateTime ahora, String al, AdminEntidadesVista entidades, long donantes) {
+  /** Arma el inicio con los nombres de las entidades que piden sumarse. */
+  AdminInicioVista inicio(LocalDateTime ahora, String al, List<String> pendientes) {
     LocalDate hoy = ahora.toLocalDate();
-    List<String> pendientes =
-        entidades.todas().stream()
-            .filter(e -> "pendiente".equals(e.estado()))
-            .map(Entidad::nombre)
-            .toList();
-    List<Donacion> todas = donaciones.buscar(new LinkedMultiValueMap<>());
-    List<Donacion> vencen =
-        todas.stream()
-            .filter(d -> EN_DEPOSITO.equals(Comun.normalizado(d.estadoActual())))
-            .filter(d -> vence(d, hoy) != null)
-            .sorted(Comparator.comparing(d -> vence(d, hoy)))
-            .toList();
+    DonacionesApi.Resumen resumen = donaciones.resumen();
+    Map<String, Long> porEstado =
+        resumen.donacionesPorEstado() == null ? Map.of() : resumen.donacionesPorEstado();
+    DonacionesApi.PorVencer porVencer = resumen.porVencer();
+    long vencen = porVencer == null ? 0 : numero(porVencer.cantidad());
     List<String> propuestas =
         donaciones.propuestas().stream()
             .filter(p -> "PENDIENTE".equals(p.estado()) && p.necesidad() != null)
@@ -65,25 +50,21 @@ final class AdminPersonasInicio {
             pendientes.size(),
             pendientes,
             null,
-            vencen.size(),
-            vencen.isEmpty() ? null : primera(vencen.get(0), hoy),
+            (int) vencen,
+            vencen == 0 || porVencer.proxima() == null ? null : primera(porVencer.proxima(), hoy),
             propuestas.size(),
             propuestas);
     List<LogisticaApi.Camion> camiones = logistica.camiones(null);
-    YearMonth mes = YearMonth.from(hoy);
+    DonacionesApi.EntregadasEnElMes entregadas = resumen.entregadasEnElMes();
     Cifras cifras =
         new Cifras(
-            contar(todas, EN_DEPOSITO),
-            contar(todas, Comun.ASIGNADA) + contar(todas, Comun.LISTA),
-            contar(todas, Comun.TRASLADO) + contar(todas, Comun.PUERTA),
-            todas.stream()
-                .filter(d -> Comun.ENTREGADA.equals(Comun.normalizado(d.estadoActual())))
-                .map(d -> Comun.desde(d, Comun.ENTREGADA))
-                .filter(cuando -> cuando != null && YearMonth.from(cuando).equals(mes))
-                .count(),
+            contar(porEstado, "EN_DEPOSITO"),
+            contar(porEstado, "ASIGNACION_REALIZADA") + contar(porEstado, "LISTA_PARA_ENTREGAR"),
+            contar(porEstado, "EN_TRASLADO") + contar(porEstado, "EN_PUERTA"),
+            entregadas == null ? 0 : numero(entregadas.cantidad()),
             MES.format(hoy),
-            entidades.activas(),
-            donantes,
+            numero(resumen.entidadesActivas()),
+            resumen.donantes() == null ? 0 : numero(resumen.donantes().activos()),
             camiones.stream().filter(c -> "EN_RUTA".equals(c.estado())).count(),
             camiones.stream().filter(c -> "DISPONIBLE".equals(c.estado())).count());
     String fecha = FECHA.format(hoy);
@@ -95,28 +76,20 @@ final class AdminPersonasInicio {
         cifras);
   }
 
-  private static long contar(List<Donacion> donaciones, String estado) {
-    return donaciones.stream()
-        .filter(d -> estado.equals(Comun.normalizado(d.estadoActual())))
-        .count();
+  private static long contar(Map<String, Long> porEstado, String estado) {
+    return numero(porEstado.get(estado));
   }
 
-  /** La fecha de vencimiento más cercana de sus ítems, si cae entre hoy y dentro de 7 días. */
-  private static LocalDate vence(Donacion d, LocalDate hoy) {
-    if (d.items() == null) {
+  private static long numero(Long valor) {
+    return valor == null ? 0 : valor;
+  }
+
+  /** "La primera, Leche en polvo, vence el 13 de noviembre, en 2 días." */
+  private static String primera(DonacionesApi.Proxima proxima, LocalDate hoy) {
+    LocalDate fecha = proxima.fechaVencimiento();
+    if (fecha == null) {
       return null;
     }
-    return d.items().stream()
-        .filter(i -> i != null && i.bien() != null && i.bien().bien() != null)
-        .map(i -> i.bien().bien().fechaVencimiento())
-        .filter(Objects::nonNull)
-        .filter(f -> !f.isBefore(hoy) && !f.isAfter(hoy.plusDays(DIAS_PARA_VENCER)))
-        .min(Comparator.naturalOrder())
-        .orElse(null);
-  }
-
-  private static String primera(Donacion d, LocalDate hoy) {
-    LocalDate fecha = vence(d, hoy);
     long dias = ChronoUnit.DAYS.between(hoy, fecha);
     String cuando =
         switch ((int) dias) {
@@ -124,9 +97,9 @@ final class AdminPersonasInicio {
           case 1 -> "vence el " + Comun.DIA.format(fecha) + ", en 1 día";
           default -> "vence el " + Comun.DIA.format(fecha) + ", en " + dias + " días";
         };
-    return d.descripcion() == null || d.descripcion().isBlank()
+    return proxima.descripcion() == null || proxima.descripcion().isBlank()
         ? "La primera " + cuando + "."
-        : "La primera, " + d.descripcion() + ", " + cuando + ".";
+        : "La primera, " + proxima.descripcion() + ", " + cuando + ".";
   }
 
   private static String propuesta(DonacionesApi.NecesidadResumen necesidad) {

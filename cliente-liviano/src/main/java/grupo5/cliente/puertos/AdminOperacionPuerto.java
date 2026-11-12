@@ -4,6 +4,7 @@ import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.core.io.InputStreamSource;
@@ -38,8 +39,17 @@ public interface AdminOperacionPuerto {
    */
   String decidirPropuesta(String propuesta, boolean aprobar, String motivo);
 
-  /** Todas las donaciones; la maqueta muestra con {@code vencida} la que se marcó vencida. */
-  AdminDonacionesVista donaciones(String accion);
+  /**
+   * Una página de donaciones con el filtro y el orden de {@code consulta} (R11-01): nunca la lista
+   * entera. La maqueta muestra con {@code vencida} la que se marcó vencida.
+   */
+  AdminDonacionesVista donaciones(ConsultaDonaciones consulta, String accion);
+
+  /**
+   * Una donación con su historial, pedida por su clave; null si no existe (la maqueta da la primera
+   * de ejemplo).
+   */
+  AdminDonacionesVista.Donacion donacion(String clave, String accion);
 
   /**
    * Marca vencida una donación del depósito; {@code actor} queda en su historial. Si cambió a la
@@ -47,8 +57,11 @@ public interface AdminOperacionPuerto {
    */
   void marcarVencida(String donacion, String actor, String motivo);
 
-  /** Los donantes para elegir y los que coinciden con {@code buscar} (null: sin búsqueda). */
-  AdminDonacionesRegistroVista registro(String buscar);
+  /**
+   * Los donantes que coinciden con {@code buscar} (null: sin búsqueda), como máximo 10 y con
+   * cuántos coinciden, y el elegido por su clave ({@code donante}, null si no hay).
+   */
+  AdminDonacionesRegistroVista registro(String buscar, String donante);
 
   /**
    * Registra una donación con sus bienes (y la foto de cada uno, si la tiene). Un donante dado de

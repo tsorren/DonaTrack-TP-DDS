@@ -638,3 +638,22 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 6. **Avisos.** El aviso a la entidad "llegó a tu puerta" no existe (la maqueta tiene el tema "En tu puerta"). Las notificaciones anteriores a la V5 y las de un emisor que no manda el id quedan en "Otras novedades" o sin enlace al detalle.
 7. **Token del cliente.** El cliente no distingue un endpoint público de uno privado: sin sesión llama sin token y deja que la API conteste 401 o 200 (`ErroresHttp` convierte el 401 en "Ingresar").
 8. **Pantallas de F2.** El Mapa muestra lugares y no entidades (Logística no dice qué entidad recibió y Donaciones no da el lugar de las entregas: falta un id de entrega o de donación en el DTO público); `MisionDTO` no trae la unidad del avance ni la donación que completó cada misión; Misiones no está en el menú de la persona fuera de maqueta (decidir de dónde sale que la cuenta es `HUMANA` sin una llamada por pantalla) y su escena de huerta a 360 px tiene enlaces de 22 a 45 px (escena de 46 rem con desplazamiento propio o lista de las 8 macetas: decisión de diseño).
+
+---
+
+## DTI-39 — Listas del cliente liviano que todavía no se piden de a una página (R11-01)
+<a id="dti-39"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | — (implementa R11-01 del [backlog de la revisión del 2026-11-11](../interfaz/backlog-revision-2026-11-11.md); contrato en la [spec `R11-p0-api-listados`](../specs/active/R11-p0-api-listados-spec.md)) |
+| Decision status | `proposed` |
+| Decidido por | Usuario (2026-11-11, ajustes al aprobar R11 P0 en la [ficha del admin](../interfaz/flujos/raices-admin-navegable.md)): ninguna lista llega completa; cada una se pide de a una página o con un tope |
+| Implementation status | `[OBSERVED] partial` (2026-11-11, lote `p0-admin-listados`) — **hecho:** Donantes y Donaciones del admin de a una página con el paginador provisorio, la búsqueda del registro (hasta 10, con cuántos coinciden), las cifras del inicio desde `GET /api/donaciones/resumen`, las personas de las solicitudes por `id` y el avance de la importación sin la lista. **Falta:** los ítems de abajo |
+| Target | `cliente-liviano` · `donaciones-service` |
+| Cuándo se saldará | Ítems 1 y 2 con R11-13 y R11-12 (lote `p1-donante-listas`) y el paginador definitivo de R11-11; el 3 y el 4, con un lote propio de la ola P1 o P2 |
+
+1. **Una página de 100 en lugar de una lista.** `DonacionesApi.donaciones(donanteId)` y `asignadas(entidadId)` piden una página de 100 (el tope del servicio) porque desde R11-01 el servicio manda 20 si no se pide página. Las usan Mis donaciones y Entidades del donante, su inicio y su seguimiento, y Recibidas, Confirmar recepción, Necesidades y Notificaciones de la entidad. Con más de 100 donaciones, esas pantallas no ven las más viejas. Cada una tiene que pedir su página con su paginador (las listas) o un número del servicio (las cifras y los cruces).
+2. **Entidades del admin.** `admin-entidades` pide la primera página de 100 de `GET /api/entidades`: su plantilla no tiene paginador (fuera de la zona del lote). Con más de 100 entidades registradas, faltan las demás.
+3. **Vencen pronto.** `GET /donaciones-independientes` no filtra ni ordena por vencimiento: en Donaciones del admin, "Vencen en los próximos 7 días" muestra las del depósito con cuántas vencen (del resumen) y el filtro no se ofrece. Los órdenes "Vencen antes", "Por nombre" y "Por donante" tampoco se ofrecen.
+4. **Donantes.** Donaciones no guarda "sin activar su cuenta" ni qué dona cada donante en la fila: esos filtros y la columna "Qué dona" no se ofrecen fuera de la maqueta. Las filas con error de una importación se ven de a 20; no hay descarga.

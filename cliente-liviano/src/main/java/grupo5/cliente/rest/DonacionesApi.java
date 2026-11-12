@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,18 +36,26 @@ import org.springframework.web.service.annotation.PutExchange;
  */
 interface DonacionesApi {
 
+  /** El tamaño de página más grande que acepta Donaciones (R11-01). */
+  int TOPE = 100;
+
   // --- Donaciones independientes ---------------------------------------------------------------
 
-  @GetExchange("/donaciones-independientes")
+  /**
+   * Las de un donante, de a una página del tamaño más grande que acepta Donaciones ({@link #TOPE}).
+   * Desde R11-01 el servicio ya no manda todas cuando no se pide página (manda 20): las pantallas
+   * que muestran estas donaciones como lista se paginan en su lote (R11-13); hasta entonces, como
+   * mucho las {@link #TOPE} más recientes.
+   */
+  @GetExchange("/donaciones-independientes?size=" + TOPE)
   List<Donacion> donaciones(@RequestParam UUID donanteId);
 
-  /** Las asignadas a una entidad beneficiaria. */
-  @GetExchange("/donaciones-independientes")
+  /**
+   * Las asignadas a una entidad beneficiaria, con el mismo tope de una página de {@link #TOPE}
+   * (R11-01): se cruzan con sus entregas y sus necesidades; ver la deuda en la ficha del admin.
+   */
+  @GetExchange("/donaciones-independientes?size=" + TOPE)
   List<Donacion> asignadas(@RequestParam UUID entidadId);
-
-  /** Con cualquier filtro; sin {@code donanteId} ni {@code entidadId} la puede pedir solo ADMIN. */
-  @GetExchange("/donaciones-independientes")
-  List<Donacion> buscar(@RequestParam MultiValueMap<String, String> filtros);
 
   /**
    * Una página con filtros ({@code page}, {@code size}); el total viene en {@code X-Total-Count}.
@@ -65,9 +74,16 @@ interface DonacionesApi {
 
   // --- Donaciones originales -------------------------------------------------------------------
 
-  /** Solo ADMIN. */
+  /**
+   * Solo ADMIN. Siempre de a una página (R11-01): {@code page}, {@code size}, {@code donanteId},
+   * {@code desde}, {@code hasta}, {@code q} y {@code orden}; el total, en {@code X-Total-Count}.
+   */
   @GetExchange("/api/donaciones")
-  List<Original> originales();
+  ResponseEntity<List<Original>> originales(@RequestParam MultiValueMap<String, String> filtros);
+
+  /** Solo ADMIN: las cifras del inicio del admin, cada una contada en Donaciones (R11-01). */
+  @GetExchange("/api/donaciones/resumen")
+  Resumen resumen();
 
   /** La donación original, para saber quién donó: el donante (dueño) o ADMIN. */
   @GetExchange("/api/donaciones/{id}")
@@ -148,9 +164,13 @@ interface DonacionesApi {
 
   // --- Personas, donantes y legales ------------------------------------------------------------
 
-  /** ADMIN o el token técnico; {@code tipo}: HUMANA o JURIDICA. */
+  /**
+   * ADMIN o el token técnico. De a una página (R11-01): {@code tipo} (HUMANA o JURIDICA), {@code
+   * tipoJuridico}, {@code q}, {@code page}, {@code size} e {@code id}, repetible hasta 100, para
+   * leer varias de una vez.
+   */
   @GetExchange("/api/personas")
-  List<Persona> personas(@RequestParam(required = false) String tipo);
+  ResponseEntity<List<Persona>> personas(@RequestParam MultiValueMap<String, String> filtros);
 
   /** ADMIN o el token técnico. */
   @PostExchange("/api/personas")
@@ -167,9 +187,14 @@ interface DonacionesApi {
   @PutExchange("/api/personas/{id}/legales")
   Legales aceptarLegales(@PathVariable UUID id, @RequestBody AceptarLegales aceptar);
 
-  /** Solo ADMIN; {@code canal}, opcional. */
+  /**
+   * Solo ADMIN. De a una página (R11-01), con la búsqueda y los filtros resueltos en Donaciones:
+   * {@code q}, {@code tipo}, {@code tipoJuridico}, {@code activo}, {@code categoriaId}, {@code
+   * canal}, {@code orden} (nuevos, antiguos o nombre), {@code page} y {@code size}; el total, en
+   * {@code X-Total-Count}.
+   */
   @GetExchange("/api/donantes")
-  List<Donante> donantes(@RequestParam(required = false) String canal);
+  ResponseEntity<List<Donante>> donantes(@RequestParam MultiValueMap<String, String> filtros);
 
   /** El donante (el id es el de su persona) o ADMIN. */
   @GetExchange("/api/donantes/{id}")
@@ -190,6 +215,7 @@ interface DonacionesApi {
   @GetExchange("/api/donantes/archivos/{id}")
   Archivo archivo(@PathVariable UUID id);
 
+  /** De a una página; el total, en {@code X-Total-Count} (y en {@code conError} del avance). */
   @GetExchange("/api/donantes/archivos/{id}/filas-con-error")
   List<FilaConError> filasConError(
       @PathVariable UUID id,
@@ -285,9 +311,17 @@ interface DonacionesApi {
       Double volumenUnitario,
       Integer cantidad) {}
 
-  /** {@code idDonante} es el id de su persona (en Donaciones, {@code Donante.id == personaId}). */
+  /**
+   * {@code idDonante} es el id de su persona (en Donaciones, {@code Donante.id == personaId});
+   * {@code fechaAlta}, la de su primer registro como donante.
+   */
   record Donante(
-      UUID idDonante, UUID personaId, Persona persona, Boolean activo, Boolean mostrarNombre) {}
+      UUID idDonante,
+      UUID personaId,
+      Persona persona,
+      Boolean activo,
+      Boolean mostrarNombre,
+      LocalDateTime fechaAlta) {}
 
   /**
    * El cuerpo del alta: {@code idDonante} es su persona; {@code descripcion} e ítems, obligatorios.
@@ -429,7 +463,10 @@ interface DonacionesApi {
 
   record Preferencias(boolean mostrarNombre) {}
 
-  /** El avance de un CSV: {@code estado} y los contadores de filas. */
+  /**
+   * El avance de un CSV: {@code estado} y los contadores de filas; {@code ultimos}, los últimos
+   * donantes procesados, el más reciente primero (hasta 5).
+   */
   record Archivo(
       UUID id,
       String path,
@@ -438,7 +475,34 @@ interface DonacionesApi {
       Integer procesadas,
       Integer creadas,
       Integer actualizadas,
-      Integer conError) {}
+      Integer conError,
+      List<Ultimo> ultimos) {}
+
+  /** Un donante que leyó el archivo: su nombre visible y {@code NUEVO} o {@code ACTUALIZADO}. */
+  record Ultimo(String nombre, String resultado) {}
+
+  /**
+   * Las cifras del inicio del admin. {@code donacionesPorEstado}: los 8 estados (EN_DEPOSITO…),
+   * cada uno con su cantidad.
+   */
+  record Resumen(
+      Map<String, Long> donacionesPorEstado,
+      EntregadasEnElMes entregadasEnElMes,
+      PorVencer porVencer,
+      CuantosDonantes donantes,
+      Long entidadesActivas,
+      Long propuestasPendientes,
+      OffsetDateTime calculadoEn) {}
+
+  /** {@code mes}: "2026-11". */
+  record EntregadasEnElMes(String mes, Long cantidad) {}
+
+  /** {@code proxima}: la de vencimiento más cercano, o null. */
+  record PorVencer(Integer dias, Long cantidad, Proxima proxima) {}
+
+  record Proxima(UUID id, String descripcion, LocalDate fechaVencimiento) {}
+
+  record CuantosDonantes(Long total, Long activos) {}
 
   record FilaConError(Integer linea, String motivo, String codigo) {}
 

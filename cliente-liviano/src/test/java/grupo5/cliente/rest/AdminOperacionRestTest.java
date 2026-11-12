@@ -21,6 +21,7 @@ import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -311,6 +312,17 @@ class AdminOperacionRestTest {
   private static final String D2 = "6f1c2c1e-0000-4000-8000-0000000000d2";
   private static final String D3 = "6f1c2c1e-0000-4000-8000-0000000000d3";
   private static final String O1 = "6f1c2c1e-0000-4000-8000-0000000000f1";
+  private static final String H1 = "6f1c2c1e-0000-4000-8000-0000000000a9";
+
+  /** El resumen de Donaciones: las cifras de la cabecera, ya contadas allá. */
+  private static final String RESUMEN =
+      """
+      {"donacionesPorEstado": {"EN_DEPOSITO": 1, "ASIGNACION_REALIZADA": 1, "ENTREGADA": 1},
+       "entregadasEnElMes": {"mes": "2026-11", "cantidad": 1},
+       "porVencer": {"dias": 7, "cantidad": 1,
+                     "proxima": {"descripcion": "Leche en polvo", "fechaVencimiento": "2026-11-12"}},
+       "donantes": {"total": 3, "activos": 2}, "entidadesActivas": 1, "propuestasPendientes": 0}
+      """;
 
   /**
    * Una en el depósito que vence en 2 días (el donante ocultó su nombre, pero el admin lo ve en la
@@ -334,7 +346,7 @@ class AdminOperacionRestTest {
            "unidad": "KILOGRAMO"}, "bien": {"descripcion": "Arroz", "estado": "NUEVO"}}}]},
         {"id": "%2$s", "descripcion": "Leche en polvo", "estadoActual": "EnDeposito",
          "fechaRegistro": "2026-11-08T10:00:00", "cantidad": 10, "donacionOriginalId": "%5$s",
-         "quienDono": {"tipo": "HUMANA", "nombreVisible": null},
+         "quienDono": {"tipo": "HUMANA", "nombreVisible": null, "donanteId": "%6$s"},
          "items": [{"cantidad": 10, "bien": {"categoria": {"id": "%4$s", "nombre": "Alimentos",
            "unidad": "UNIDADES"}, "bien": {"descripcion": "Leche en polvo",
            "fechaVencimiento": "2026-11-12", "estado": "NUEVO"}}}]},
@@ -343,60 +355,144 @@ class AdminOperacionRestTest {
          "items": []}
       ]
       """
-          .formatted(D1, D2, D3, E1, O1);
+          .formatted(D1, D2, D3, E1, O1, H1);
 
   @Test
-  void lasDonacionesVienenConQuienDonoElDepositoLaEntidadYElHistorial() {
+  void lasDonacionesSonUnaPaginaConLosNombresDeQuienesDonaronYLasCifrasDelResumen() {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donaciones"))
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes?orden=recientes&page=0&size=20"))
+        .andRespond(
+            withSuccess(INDEPENDIENTES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "43"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/personas?id=" + H1 + "&size=20"))
         .andRespond(
             withSuccess(
                 """
-                [{"id": "%s", "donante": {"persona": {"nombre": "Ana", "apellido": "Ejemplo"}},
-                  "deposito": {"calle": "Av. Ejemplo", "altura": 1234}}]"""
-                    .formatted(O1),
+                [{"tipo": "HUMANA", "id": "%s", "nombre": "Ana", "apellido": "Ejemplo"}]"""
+                    .formatted(H1),
                 MediaType.APPLICATION_JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades"))
-        .andRespond(
-            withSuccess(
-                """
-                [{"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}]"""
-                    .formatted(E1),
-                MediaType.APPLICATION_JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/donaciones-independientes"))
-        .andRespond(withSuccess(INDEPENDIENTES, MediaType.APPLICATION_JSON));
 
-    AdminDonacionesVista vista = adaptador.donaciones("");
+    AdminDonacionesVista vista = adaptador.donaciones(new ConsultaDonaciones("", false, "", 1), "");
 
     assertEquals(
-        List.of(D2, D3, D1),
-        vista.todas().stream().map(AdminDonacionesVista.Donacion::clave).toList());
-    AdminDonacionesVista.Donacion leche = vista.todas().get(0);
+        List.of(D1, D2, D3),
+        vista.donaciones().filas().stream().map(AdminDonacionesVista.Donacion::clave).toList());
+    assertEquals(43, vista.donaciones().total());
+    assertEquals(3, vista.donaciones().paginas());
+    AdminDonacionesVista.Donacion leche = vista.donaciones().filas().get(1);
     assertEquals("Ana Ejemplo", leche.donante());
-    assertEquals("Av. Ejemplo 1234", leche.deposito());
     assertEquals("12 de noviembre, en 2 días", leche.vence());
     assertEquals("10 u", leche.corto());
     assertEquals("Nuevo", leche.bien());
     assertEquals(true, leche.prontaAVencer());
-    AdminDonacionesVista.Donacion arroz = vista.todas().get(2);
-    assertEquals("entregada", arroz.estado());
-    assertEquals("Comedor Ejemplo", arroz.entidad());
-    assertEquals(
-        List.of(
-            "1 de noviembre: llegó al depósito.",
-            "3 de noviembre: quedó asignada a Comedor Ejemplo. La aprobó Leo.",
-            "5 de noviembre, 14:30: salió en camino.",
-            "5 de noviembre: Comedor Ejemplo confirmó que la recibió."),
-        arroz.historial());
-    assertEquals("asignada", vista.todas().get(1).estado());
-    assertEquals(List.of(D3, D2, D1), vista.ordenes().get("reciente"));
-    assertEquals(List.of(D1, D3, D2), vista.ordenes().get("nombre"));
+    assertEquals("entregada", vista.donaciones().filas().get(0).estado());
+    assertEquals("asignada", vista.donaciones().filas().get(2).estado());
+    assertFalse(vista.conVence());
+    assertNull(vista.porVencer());
     assertEquals(
         "1 en el depósito · 1 asignada · 0 en camino · 1 entrega confirmada en noviembre. Al 10 de"
             + " noviembre de 2026, 18:30.",
         vista.resumen());
+    donaciones.verify();
+  }
+
+  @Test
+  void elEstadoYElOrdenLosResuelveDonacionesYVencenProntoMuestraElDeposito() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?estado=EN_TRASLADO&estado=EN_PUERTA"
+                    + "&orden=antiguas&page=1&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "21"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=recientes&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+
+    AdminDonacionesVista enCamino =
+        adaptador.donaciones(new ConsultaDonaciones("camino", false, "antigua", 2), "");
+    AdminDonacionesVista pronto =
+        adaptador.donaciones(new ConsultaDonaciones(null, true, "nombre", 1), "");
+
+    assertEquals(2, enCamino.donaciones().pagina());
+    assertEquals("antigua", enCamino.consulta().orden());
+    assertEquals("", pronto.consulta().orden());
+    assertEquals(
+        "1 donación del depósito vence en los próximos 7 días; la primera, Leche en polvo, el 12"
+            + " de noviembre. Esta lista todavía no se puede filtrar por vencimiento: te mostramos"
+            + " todas las del depósito.",
+        pronto.porVencer());
+    donaciones.verify();
+  }
+
+  @Test
+  void elDetalleSePidePorSuIdConSuOriginalYSuEntidad() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes/" + D1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%1$s", "descripcion": "Arroz", "estadoActual": "ENTREGADA",
+                 "fechaRegistro": "2026-11-01T10:00:00", "cantidad": 25,
+                 "entidadBeneficiariaId": "%2$s", "donacionOriginalId": "%3$s",
+                 "historial": [
+                   {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-03T09:00:00",
+                    "estadoAnterior": "EnDeposito", "actor": "Leo"},
+                   {"estadoNuevo": "EnTraslado", "timestamp": "2026-11-05T14:30:00",
+                    "estadoAnterior": "ListaParaEntregar"},
+                   {"estadoNuevo": "Entregada", "timestamp": "2026-11-05T17:00:00",
+                    "estadoAnterior": "EnTraslado"}],
+                 "items": []}"""
+                    .formatted(D1, E1, O1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/" + O1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "donante": {"persona": {"nombre": "Ana", "apellido": "Ejemplo"}},
+                 "deposito": {"calle": "Av. Ejemplo", "altura": 1234}}"""
+                    .formatted(O1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades/" + E1))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "juridica": {"razonSocial": "Comedor Ejemplo"}}"""
+                    .formatted(E1),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/donaciones-independientes/" + D3))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+    AdminDonacionesVista.Donacion detalle = adaptador.donacion(D1, "detalle");
+
+    assertEquals("entregada", detalle.estado());
+    assertEquals("Ana Ejemplo", detalle.donante());
+    assertEquals("Av. Ejemplo 1234", detalle.deposito());
+    assertEquals("Comedor Ejemplo", detalle.entidad());
+    assertEquals(
+        List.of(
+            "1 de noviembre: llegó al depósito de Av. Ejemplo 1234.",
+            "3 de noviembre: quedó asignada a Comedor Ejemplo. La aprobó Leo.",
+            "5 de noviembre, 14:30: salió en camino.",
+            "5 de noviembre: Comedor Ejemplo confirmó que la recibió."),
+        detalle.historial());
+    assertNull(adaptador.donacion(D3, "detalle"));
+    assertNull(adaptador.donacion("no-es-un-id", "detalle"));
     donaciones.verify();
   }
 
@@ -433,35 +529,39 @@ class AdminOperacionRestTest {
           .formatted(D1, D2, D3);
 
   @Test
-  void registroListaLosDonantesActivosYBuscaPorNombreODocumento() {
+  void registroBuscaEnDonacionesHasta10YTraeAlElegidoPorSuId() {
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donantes"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+        .expect(
+            requestTo(DONACIONES + "/api/donantes?q=jose&activo=true&orden=nombre&page=0&size=10"))
+        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "37"));
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donantes"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+        .expect(requestTo(DONACIONES + "/api/donantes/" + D2))
+        .andRespond(
+            withSuccess(
+                """
+                {"idDonante": "%s", "activo": true,
+                 "persona": {"razonSocial": "Distribuidora Ejemplo SA", "tipoDocumento": "CUIT",
+                             "documento": "30-00000001-0"}}"""
+                    .formatted(D2),
+                MediaType.APPLICATION_JSON));
     donaciones
-        .expect(requestTo(DONACIONES + "/api/donantes"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON));
+        .expect(requestTo(DONACIONES + "/api/donantes/" + D3))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
-    AdminDonacionesRegistroVista sinBuscar = adaptador.registro(null);
+    AdminDonacionesRegistroVista sinBuscar = adaptador.registro(null, null);
+    assertEquals(List.of(), sinBuscar.donantes());
+    assertEquals(List.of(), sinBuscar.encontrados());
+    assertEquals(0, sinBuscar.coinciden());
+    AdminDonacionesRegistroVista buscados = adaptador.registro(" jose ", null);
+    assertEquals(3, buscados.encontrados().size());
+    assertEquals(37, buscados.coinciden());
     assertEquals(
         List.of(
-            new AdminDonacionesRegistroVista.Donante(D1, "Ana Ejemplo", "DNI 20.000.001"),
             new AdminDonacionesRegistroVista.Donante(
                 D2, "Distribuidora Ejemplo SA", "CUIT 30-00000001-0")),
-        sinBuscar.donantes());
-    assertEquals(List.of(), sinBuscar.encontrados());
-    assertEquals(
-        List.of(D2),
-        adaptador.registro("distri").encontrados().stream()
-            .map(AdminDonacionesRegistroVista.Donante::clave)
-            .toList());
-    assertEquals(
-        List.of(D1),
-        adaptador.registro("20000001").encontrados().stream()
-            .map(AdminDonacionesRegistroVista.Donante::clave)
-            .toList());
+        adaptador.registro(null, D2).donantes());
+    assertEquals(List.of(), adaptador.registro(null, D3).donantes());
+    assertEquals(List.of(), adaptador.registro(null, "no-es-un-id").donantes());
     donaciones.verify();
   }
 

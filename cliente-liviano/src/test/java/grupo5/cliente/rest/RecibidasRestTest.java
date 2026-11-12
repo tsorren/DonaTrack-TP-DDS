@@ -76,7 +76,8 @@ class RecibidasRestTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD))
         .andRespond(withSuccess(OCHO, MediaType.APPLICATION_JSON));
     // "Hoy" es el 8 de noviembre de 2026, 18:30 en Buenos Aires.
     Clock hoy = Clock.fixed(Instant.parse("2026-11-08T21:30:00Z"), ZoneOffset.UTC);
@@ -139,7 +140,8 @@ class RecibidasRestTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD))
         .andRespond(
             withSuccess(
                 """

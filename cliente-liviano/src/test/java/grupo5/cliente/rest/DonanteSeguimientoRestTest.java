@@ -64,7 +64,8 @@ class DonanteSeguimientoRestTest {
   }
 
   private void conDonaciones() {
-    apis.expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+    apis.expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(withSuccess(DOS, MediaType.APPLICATION_JSON));
     apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
         .andRespond(

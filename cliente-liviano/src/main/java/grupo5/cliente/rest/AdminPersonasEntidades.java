@@ -12,11 +12,11 @@ import grupo5.cliente.vistas.AdminEntidadesVista.Necesidad;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,7 +32,12 @@ import org.springframework.util.MultiValueMap;
 final class AdminPersonasEntidades {
 
   private static final String ACTIVA = "activa";
-  private static final String JURIDICA = "JURIDICA";
+
+  /**
+   * El tamaño de página más grande que acepta Donaciones: la lista de entidades registradas se pide
+   * de a una página de este tamaño (ver la deuda en la ficha: falta su paginador).
+   */
+  private static final int TOPE = 100;
 
   private final DonacionesApi donaciones;
   private final ObjectProvider<SolicitudesDeEntidad> solicitudes;
@@ -44,25 +49,56 @@ final class AdminPersonasEntidades {
   }
 
   AdminEntidadesVista entidades(String al) {
+    MultiValueMap<String, String> pagina = new LinkedMultiValueMap<>();
+    pagina.add("page", "0");
+    pagina.add("size", String.valueOf(TOPE));
     List<DonacionesApi.Entidad> registradas =
-        Objects.requireNonNullElse(
-            donaciones.entidades(new LinkedMultiValueMap<>()).getBody(), List.of());
+        Objects.requireNonNullElse(donaciones.entidades(pagina).getBody(), List.of());
     Map<UUID, List<Necesidad>> necesidades = necesidadesVigentes();
     List<Entidad> todas = new ArrayList<>();
     registradas.forEach(e -> todas.add(registrada(e, necesidades.getOrDefault(e.id(), List.of()))));
     SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
     List<Pendiente> pendientes = cuentas == null ? List.of() : cuentas.pendientes();
     if (!pendientes.isEmpty()) {
-      Map<UUID, Persona> juridicas =
-          donaciones.personas(JURIDICA).stream()
-              .filter(p -> p.id() != null)
-              .collect(Collectors.toMap(Persona::id, Function.identity(), (a, b) -> a));
+      Map<UUID, Persona> juridicas = personas(pendientes);
       pendientes.forEach(p -> todas.add(pendiente(p, juridicas.get(p.personaId()))));
     }
     Collator orden = Collator.getInstance(Comun.ES_AR);
     todas.sort(Comparator.comparing(Entidad::nombre, orden));
     long activas = todas.stream().filter(e -> ACTIVA.equals(e.estado())).count();
     return new AdminEntidadesVista(activas, al, todas);
+  }
+
+  /** Los nombres de las entidades que piden sumarse, como los traen sus solicitudes. */
+  List<String> pendientes() {
+    SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
+    return cuentas == null
+        ? List.of()
+        : cuentas.pendientes().stream().map(Pendiente::razonSocial).toList();
+  }
+
+  /**
+   * Solo las personas de las solicitudes, por su identificador (R11-01), de a {@link #TOPE}: con el
+   * CSV hay miles de jurídicas donantes y no se traen todas para cruzarlas.
+   */
+  private Map<UUID, Persona> personas(List<Pendiente> pendientes) {
+    List<String> ids =
+        pendientes.stream()
+            .map(Pendiente::personaId)
+            .filter(Objects::nonNull)
+            .map(UUID::toString)
+            .distinct()
+            .toList();
+    Map<UUID, Persona> juridicas = new HashMap<>();
+    for (int desde = 0; desde < ids.size(); desde += TOPE) {
+      MultiValueMap<String, String> lote = new LinkedMultiValueMap<>();
+      ids.subList(desde, Math.min(ids.size(), desde + TOPE)).forEach(id -> lote.add("id", id));
+      lote.add("size", String.valueOf(TOPE));
+      Objects.requireNonNullElse(donaciones.personas(lote).getBody(), List.<Persona>of()).stream()
+          .filter(p -> p.id() != null)
+          .forEach(p -> juridicas.putIfAbsent(p.id(), p));
+    }
+    return juridicas;
   }
 
   /** Aprueba la solicitud de la cuenta {@code clave} y devuelve el nombre de la entidad. */

@@ -13,6 +13,8 @@
 > ficha sigue aprobado. Sale del
 > [backlog de la revisión](../backlog-revision-2026-11-11.md#p0--sin-esto-la-demo-falla): ninguna
 > pantalla del admin pide una lista completa, y el avance de la importación se ve en vivo.
+> Construido el 2026-11-11 (falta la aprobación del usuario); lo que queda sin paginar, en
+> [DTI-39](../../adr/DEUDA_TECNICA.md#dti-39).
 
 ## Ajustes del usuario al aprobar R11 P0 (2026-11-11) — mandan sobre el resto
 

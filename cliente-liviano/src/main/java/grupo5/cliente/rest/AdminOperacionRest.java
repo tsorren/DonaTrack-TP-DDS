@@ -8,6 +8,7 @@ import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Clock;
@@ -70,8 +71,8 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   }
 
   @Override
-  public AdminDonacionesRegistroVista registro(String buscar) {
-    return registro.registro(buscar);
+  public AdminDonacionesRegistroVista registro(String buscar, String donante) {
+    return registro.registro(buscar, donante);
   }
 
   @Override
@@ -109,10 +110,17 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   }
 
   @Override
-  public AdminDonacionesVista donaciones(String accion) {
+  public AdminDonacionesVista donaciones(ConsultaDonaciones consulta, String accion) {
     return new AdminOperacionDonaciones(
             donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)))
-        .vista();
+        .vista(consulta);
+  }
+
+  @Override
+  public AdminDonacionesVista.Donacion donacion(String clave, String accion) {
+    return new AdminOperacionDonaciones(
+            donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)))
+        .detalle(clave);
   }
 
   @Override

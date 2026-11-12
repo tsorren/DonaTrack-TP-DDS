@@ -9,19 +9,28 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
+import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
+import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
+import grupo5.cliente.vistas.ConsultaDonantes;
+import grupo5.cliente.vistas.Tramo;
+import java.text.Collator;
 import java.text.NumberFormat;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -42,7 +51,19 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   private static final DateTimeFormatter AL =
       DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, HH:mm", Comun.ES_AR);
   private static final String JURIDICA = "JURIDICA";
-  private static final int FILAS_A_LA_VISTA = 20;
+  private static final DateTimeFormatter HORA =
+      DateTimeFormatter.ofPattern("HH:mm:ss", Comun.ES_AR);
+  private static final String IMPORTANDO = "importando";
+  private static final String IMPORTADO = "importado";
+  private static final String ACTIVO = "activo";
+  private static final String NOMBRE = "nombre";
+  private static final String PERSONA = "persona";
+
+  /** De a 20 donantes y de a 20 filas con error por página (ficha, decisiones de R11). */
+  static final int POR_PAGINA = 20;
+
+  private static final int FILAS_POR_PAGINA = 20;
+  private static final int ULTIMOS = 5;
 
   private final DonacionesApi donaciones;
   private final Clock reloj;
@@ -67,7 +88,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   public AdminInicioVista inicio() {
     LocalDateTime ahora = LocalDateTime.now(reloj.withZone(Comun.ARGENTINA));
     String al = AL.format(ahora);
-    return inicio.inicio(ahora, al, entidades.entidades(al), donantes().activos());
+    return inicio.inicio(ahora, al, entidades.pendientes());
   }
 
   @Override
@@ -91,31 +112,116 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   // --- Donantes --------------------------------------------------------------------------------
 
   @Override
-  public AdminDonantesVista donantes() {
-    List<Donante> todos =
-        donaciones.donantes(null).stream().map(AdminPersonasRest::donante).toList();
-    List<String> nuevos = todos.stream().map(Donante::clave).toList();
-    List<String> porNombre =
-        todos.stream()
-            .sorted(Comparator.comparing(Donante::nombre, String.CASE_INSENSITIVE_ORDER))
-            .map(Donante::clave)
-            .toList();
-    long activos = todos.stream().filter(d -> "activo".equals(d.estado())).count();
-    return new AdminDonantesVista(
-        activos, ahora(), todos, nuevos, nuevos.reversed(), porNombre, "la lista");
+  public AdminDonantesVista donantes(ConsultaDonantes pedida) {
+    Opciones opciones = opciones();
+    ConsultaDonantes consulta =
+        new ConsultaDonantes(
+            pedida.buscar(),
+            Opciones.elegido(pedida.tipo(), opciones.tipos()),
+            Opciones.elegido(pedida.dona(), opciones.categorias()),
+            Opciones.elegido(pedida.estado(), opciones.estados()),
+            Opciones.elegido(pedida.orden(), opciones.ordenes()),
+            pedida.pagina());
+    Tramo<DonacionesApi.Donante> pagina =
+        Paginas.pedir(
+            consulta.pagina(),
+            POR_PAGINA,
+            numero -> donaciones.donantes(filtros(consulta, numero, POR_PAGINA)));
+    Tramo<Donante> donantes =
+        new Tramo<>(
+            pagina.filas().stream().map(AdminPersonasRest::donante).toList(),
+            pagina.total(),
+            pagina.pagina(),
+            pagina.paginas());
+    return new AdminDonantesVista(activos(), ahora(), donantes, consulta, opciones, null);
+  }
+
+  /** Cuántos donantes activos hay: el total de una página de uno, sin traer la lista. */
+  private long activos() {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add(ACTIVO, "true");
+    filtros.add("size", "1");
+    ResponseEntity<List<DonacionesApi.Donante>> respuesta = donaciones.donantes(filtros);
+    return Paginas.total(respuesta, List.of(), 1, 1);
+  }
+
+  /**
+   * Los filtros que Donaciones resuelve (R11-01): el tipo de persona o de organización, el estado
+   * (activo o dado de baja), la categoría de lo que donó y el orden por alta o por nombre. "Sin
+   * activar su cuenta" no lo guarda Donaciones, y qué dona cada uno no viene en la fila: no se
+   * ofrecen.
+   */
+  private Opciones opciones() {
+    List<Opcion> categorias = new ArrayList<>();
+    categorias.add(new Opcion("", "Todas las categorías"));
+    Collator castellano = Collator.getInstance(Comun.ES_AR);
+    donaciones.categorias().stream()
+        .filter(c -> c.id() != null && c.nombre() != null)
+        .sorted(Comparator.comparing(DonacionesApi.Categoria::nombre, castellano))
+        .forEach(c -> categorias.add(new Opcion(c.id().toString(), c.nombre())));
+    return new Opciones(
+        List.of(
+            new Opcion("", "Todos los tipos"),
+            new Opcion(PERSONA, "Personas"),
+            new Opcion("empresa", "Empresas"),
+            new Opcion("ong", "ONG"),
+            new Opcion("institucion", "Instituciones"),
+            new Opcion("gubernamental", "Organismos públicos")),
+        categorias,
+        List.of(
+            new Opcion("", "Todos los estados"),
+            new Opcion(ACTIVO, "Activos"),
+            new Opcion("baja", "Dados de baja")),
+        List.of(
+            new Opcion("", "Más nuevos primero"),
+            new Opcion("antiguo", "Más antiguos primero"),
+            new Opcion(NOMBRE, "Por nombre, de la A a la Z")),
+        false,
+        true);
+  }
+
+  private static MultiValueMap<String, String> filtros(
+      ConsultaDonantes consulta, int pagina, int tamanio) {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    if (!consulta.buscar().isEmpty()) {
+      filtros.add("q", consulta.buscar());
+    }
+    switch (consulta.tipo()) {
+      case PERSONA -> filtros.add("tipo", "HUMANA");
+      case "" -> {
+        // Todos los tipos.
+      }
+      default -> filtros.add("tipoJuridico", consulta.tipo().toUpperCase(Locale.ROOT));
+    }
+    if (!consulta.estado().isEmpty()) {
+      filtros.add(ACTIVO, String.valueOf(ACTIVO.equals(consulta.estado())));
+    }
+    if (!consulta.dona().isEmpty()) {
+      filtros.add("categoriaId", consulta.dona());
+    }
+    filtros.add(
+        "orden",
+        switch (consulta.orden()) {
+          case "antiguo" -> "antiguos";
+          case NOMBRE -> NOMBRE;
+          default -> "nuevos";
+        });
+    filtros.add("page", String.valueOf(pagina));
+    filtros.add("size", String.valueOf(tamanio));
+    return filtros;
   }
 
   private static Donante donante(DonacionesApi.Donante donante) {
     Persona persona = donante.persona();
     String[] tipo = tipo(persona);
-    String estado = Boolean.FALSE.equals(donante.activo()) ? "baja" : "activo";
+    String estado = Boolean.FALSE.equals(donante.activo()) ? "baja" : ACTIVO;
     return new Donante(
         String.valueOf(donante.idDonante()),
         nombre(persona),
         tipo[0],
         tipo[1],
         documento(persona),
-        null,
+        donante.fechaAlta() == null ? null : Comun.DIA_Y_ANIO.format(donante.fechaAlta()),
         estado,
         null,
         null);
@@ -138,7 +244,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   /** El tipo del filtro y su texto: una persona, una empresa o cualquier otra organización. */
   private static String[] tipo(Persona persona) {
     if (persona == null || !JURIDICA.equals(persona.tipo())) {
-      return new String[] {"persona", "Persona"};
+      return new String[] {PERSONA, "Persona"};
     }
     return "EMPRESA".equals(persona.tipoJuridico())
         ? new String[] {"empresa", "Empresa"}
@@ -176,47 +282,94 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   }
 
   @Override
-  public Importacion importacion(UUID id, String nombre) {
+  public Importacion importacion(UUID id, String nombre, String ejemplo, int pagina) {
     if (id == null) {
       return null;
     }
     Archivo avance = donaciones.archivo(id);
-    String accion =
-        switch (avance.estado() == null ? "" : avance.estado()) {
-          case "PROCESADO", "PROCESADO_CON_ERRORES" -> "importado";
-          case "ERROR" -> "importar-error";
-          default -> "importando";
-        };
-    List<FilaConError> filas =
-        "importado".equals(accion) && avance.conError() != null && avance.conError() > 0
-            ? donaciones.filasConError(id, 0, FILAS_A_LA_VISTA).stream()
-                .map(f -> new FilaConError("Fila " + numero(f.linea()), f.motivo()))
-                .toList()
-            : List.of();
-    String resultado =
-        numero(avance.procesadas())
-            + " filas leídas: "
-            + numero(avance.creadas())
-            + " donantes nuevos, "
-            + numero(avance.actualizadas())
-            + " actualizados y "
-            + numero(avance.conError())
-            + " filas con error.";
+    int procesadas = entero(avance.procesadas());
+    int conError = entero(avance.conError());
+    String[] etapa = etapa(avance.estado(), procesadas, avance.totalFilas());
+    String accion = etapa[0];
+    Tramo<FilaConError> filas = null;
+    if (IMPORTADO.equals(accion)) {
+      int paginas = Tramo.paginas(conError, FILAS_POR_PAGINA);
+      int mostrada = Math.clamp(pagina, 1, paginas);
+      List<FilaConError> deLaPagina =
+          conError == 0
+              ? List.of()
+              : donaciones.filasConError(id, mostrada - 1, FILAS_POR_PAGINA).stream()
+                  .map(f -> new FilaConError("Fila " + numero(f.linea()), f.motivo()))
+                  .toList();
+      filas = new Tramo<>(deLaPagina, conError, mostrada, paginas);
+    }
     String ver =
         UriComponentsBuilder.fromPath("/admin-donantes-importado")
             .queryParam("archivo", id)
-            .queryParamIfPresent("nombre", Optional.ofNullable(nombre))
+            .queryParamIfPresent(NOMBRE, Optional.ofNullable(nombre))
             .encode()
             .toUriString();
     return new Importacion(
         accion,
-        nombre == null ? "El archivo" : nombre,
+        etapa[1],
+        nombre == null || nombre.isBlank() ? null : nombre,
         avance.totalFilas() == null ? null : numero(avance.totalFilas()),
-        numero(avance.procesadas()),
-        null,
-        resultado,
-        numero(avance.conError()),
+        numero(procesadas),
+        numero(avance.creadas()),
+        numero(avance.actualizadas()),
+        numero(conError),
+        procesadas,
+        avance.totalFilas(),
+        resultado(procesadas, avance.creadas(), avance.actualizadas(), conError),
+        ultimos(avance.ultimos()),
         filas,
-        ver);
+        ver,
+        HORA.format(LocalDateTime.now(reloj.withZone(Comun.ARGENTINA))));
+  }
+
+  /** Los últimos que leyó el archivo, con su nombre y si fue nuevo o actualizado. */
+  private static List<Ultimo> ultimos(List<DonacionesApi.Ultimo> ultimos) {
+    if (ultimos == null) {
+      return List.of();
+    }
+    return ultimos.stream()
+        .filter(u -> u != null && u.nombre() != null && !u.nombre().isBlank())
+        .limit(ULTIMOS)
+        .map(u -> new Ultimo(u.nombre(), "NUEVO".equals(u.resultado()) ? "Nuevo" : "Actualizado"))
+        .toList();
+  }
+
+  /**
+   * La pantalla y la etapa que le tocan al estado de Donaciones. Un {@code ERROR} con filas leídas
+   * es una importación cortada a mitad de camino: esas filas quedaron guardadas.
+   */
+  private static String[] etapa(String estado, int procesadas, Integer total) {
+    return switch (estado == null ? "" : estado) {
+      case "PENDIENTE" -> new String[] {IMPORTANDO, "esperando"};
+      case "PROCESADO", "PROCESADO_CON_ERRORES" -> new String[] {IMPORTADO, "terminada"};
+      case "ERROR" ->
+          procesadas > 0
+              ? new String[] {IMPORTADO, "cortada"}
+              : new String[] {"importar-error", "error"};
+      default -> new String[] {IMPORTANDO, total == null ? "leyendo" : IMPORTANDO};
+    };
+  }
+
+  /** "20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error." */
+  private static String resultado(
+      int procesadas, Integer creadas, Integer actualizadas, int conError) {
+    String leidas = numero(procesadas) + " filas leídas: " + numero(creadas) + " donantes nuevos";
+    return conError == 0
+        ? leidas + " y " + numero(actualizadas) + " actualizados."
+        : leidas
+            + ", "
+            + numero(actualizadas)
+            + " actualizados y "
+            + numero(conError)
+            + " filas con error.";
+  }
+
+  private static int entero(Integer valor) {
+    return valor == null ? 0 : valor;
   }
 }

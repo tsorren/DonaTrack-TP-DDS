@@ -33,7 +33,7 @@ class DetalleDonacionRestTest {
   private static final String UTILES = "6f1c2c1e-0000-4000-8000-000000000002";
   private static final String ENTREGA = "6f1c2c1e-0000-4000-8000-0000000000f1";
   private static final String LISTA =
-      "http://donaciones/donaciones-independientes?donanteId=" + DONANTE;
+      "http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE;
   private static final String COMEDOR = "Comedor Barrio Ejemplo";
 
   /** Una entregada (la primera) y una que no pudo llegar, con su motivo. */

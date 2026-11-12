@@ -765,12 +765,36 @@ class SitioControllerTest {
     mvc.perform(get("/admin-donantes?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar los donantes.")))
         .andExpect(content().string(containsString("role=\"alert\"")));
+    // R11-01: la lista llega de a una página (en la maqueta, de a 5), con su paginador.
+    mvc.perform(get("/admin-donantes"))
+        .andExpect(content().string(containsString("Página 1 de 2")))
+        .andExpect(content().string(containsString("href=\"/admin-donantes?pagina=2\"")));
+    mvc.perform(get("/admin-donantes?pagina=2"))
+        .andExpect(content().string(containsString("Página 2 de 2")));
+    // R11-02: el avance no carga la lista, se actualiza solo y dice los últimos importados.
     mvc.perform(get("/admin-donantes-importando"))
-        .andExpect(content().string(containsString("Procesando: 8.400 de 20.000 filas.")))
-        .andExpect(content().string(containsString("Todos los donantes")));
+        .andExpect(content().string(containsString("8.400 de 20.000 filas")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Donantes nuevos: 7.950 · Actualizados: 410 · Filas con error: 40")))
+        .andExpect(content().string(containsString("Últimos importados")))
+        .andExpect(content().string(containsString("every 3s")))
+        .andExpect(content().string(not(containsString("Todos los donantes"))));
+    mvc.perform(get("/admin-donantes-importando?escenario=esperando"))
+        .andExpect(content().string(containsString("Todavía no empezó a importarse")));
+    mvc.perform(get("/admin-donantes-importando?escenario=leyendo"))
+        .andExpect(content().string(containsString("filas por ahora.")));
+    mvc.perform(get("/admin-donantes-importado?escenario=cortada"))
+        .andExpect(content().string(containsString("La importación se cortó en la fila 8.400.")));
     mvc.perform(get("/admin-donantes-importado"))
-        .andExpect(content().string(containsString("19.100 donantes nuevos, 754 actualizados")))
-        .andExpect(content().string(containsString("Falta el apellido.")));
+        .andExpect(content().string(containsString("19.100 donantes nuevos, 774 actualizados")))
+        .andExpect(content().string(containsString("Falta el apellido.")))
+        .andExpect(content().string(containsString("Página 1 de 7")))
+        .andExpect(content().string(not(containsString("every 3s"))));
+    mvc.perform(get("/admin-donantes-importado?escenario=sin-errores"))
+        .andExpect(content().string(containsString("Todas las filas se importaron sin errores.")));
     mvc.perform(get("/admin-donantes-importar-error"))
         .andExpect(content().string(containsString("No se importó ninguna fila.")));
     mvc.perform(post("/admin-donantes-importando"))

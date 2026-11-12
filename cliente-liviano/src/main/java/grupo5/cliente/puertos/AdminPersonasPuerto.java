@@ -4,6 +4,7 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
+import grupo5.cliente.vistas.ConsultaDonantes;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,13 +15,21 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface AdminPersonasPuerto {
 
-  AdminDonantesVista donantes();
+  /**
+   * Una página de donantes con la búsqueda y los filtros de {@code consulta} (R11-01): nunca la
+   * lista entera. Los filtros que la fuente no ofrece se descartan.
+   */
+  AdminDonantesVista donantes(ConsultaDonantes consulta);
 
   /**
-   * El avance de la importación {@code archivo} (su id), que se subió con el nombre {@code nombre}.
-   * Fuera de la maqueta, sin {@code archivo} no hay importación: null.
+   * El avance de la importación {@code archivo} (su id), que se subió con el nombre {@code nombre},
+   * con la página {@code pagina} (desde 1) de sus filas con error si ya terminó (R11-02). {@code
+   * ejemplo} es la pantalla pedida ({@code importando}, {@code importado} o {@code importar-error})
+   * y, si hay, su escenario después de dos puntos ({@code importando:esperando}): la maqueta elige
+   * con eso su ejemplo y el adaptador REST lo ignora. Fuera de la maqueta, sin {@code archivo} no
+   * hay importación: null.
    */
-  Importacion importacion(UUID archivo, String nombre);
+  Importacion importacion(UUID archivo, String nombre, String ejemplo, int pagina);
 
   /** Sube el CSV y devuelve el id de la importación. */
   UUID importar(MultipartFile archivo);

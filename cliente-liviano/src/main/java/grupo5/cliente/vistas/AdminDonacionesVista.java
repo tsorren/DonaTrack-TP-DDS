@@ -1,20 +1,34 @@
 package grupo5.cliente.vistas;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- * Donaciones del admin (RF-15 y RF-16) y el detalle de una: todas las donaciones, en el orden de
- * partida (primero las del depósito que vencen antes), cada otro orden como la lista de claves
- * ({@code reciente}, {@code antigua}, {@code nombre} y {@code donante}) y las cifras de la cabecera
- * con su fecha.
+ * Donaciones del admin (RF-15 y RF-16), de a una página (R11-01). {@code donaciones} es la página
+ * que se muestra, ya filtrada y ordenada por la fuente, con su total; {@code consulta}, el filtro y
+ * el orden que quedaron aplicados (un orden que la fuente no ofrece se toma como el de partida);
+ * {@code criterios}, los órdenes que se pueden elegir (el primero es el de partida, valor '');
+ * {@code conVence}, si la fuente filtra "vencen en los próximos 7 días" (si no, el filtro no se
+ * ofrece y {@code porVencer} dice cuántas vencen); {@code resumen}, las cifras de la cabecera con
+ * su fecha.
  */
 public record AdminDonacionesVista(
-    List<Donacion> todas, Map<String, List<String>> ordenes, String resumen) {
+    Tramo<Donacion> donaciones,
+    ConsultaDonaciones consulta,
+    List<Criterio> criterios,
+    boolean conVence,
+    String porVencer,
+    String resumen) {
 
   public AdminDonacionesVista {
-    todas = List.copyOf(todas);
-    ordenes = Map.copyOf(ordenes);
+    criterios = List.copyOf(criterios);
+  }
+
+  /** Un orden de la lista: su valor en la dirección, su texto y el título de la tabla. */
+  public record Criterio(String valor, String texto, String caption) {}
+
+  /** {@code valor} si es uno de {@code criterios}; si no, '' (el de partida). */
+  public static String elegido(String valor, List<Criterio> criterios) {
+    return valor != null && criterios.stream().anyMatch(c -> c.valor().equals(valor)) ? valor : "";
   }
 
   /**

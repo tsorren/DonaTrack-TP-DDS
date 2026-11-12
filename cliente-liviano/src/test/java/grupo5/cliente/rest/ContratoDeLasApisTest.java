@@ -73,7 +73,7 @@ class ContratoDeLasApisTest {
     filtros.add("estado", "ENTREGADA");
     filtros.add("necesidadId", ID.toString());
 
-    List<DonacionesApi.Donacion> lista = donaciones.buscar(filtros);
+    List<DonacionesApi.Donacion> lista = donaciones.pagina(filtros).getBody();
 
     servidor.verify();
     assertThat(lista)

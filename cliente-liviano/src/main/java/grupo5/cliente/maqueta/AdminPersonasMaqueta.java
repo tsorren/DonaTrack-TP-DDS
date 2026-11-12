@@ -6,15 +6,23 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
+import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
+import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
 import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
+import grupo5.cliente.vistas.ConsultaDonantes;
+import grupo5.cliente.vistas.Tramo;
 import java.text.Collator;
+import java.text.Normalizer;
+import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -151,41 +159,249 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
               ALIMENTOS,
               ALIMENTOS_TEXTO));
 
-  /** La lista ya va de los más nuevos a los más antiguos. */
-  private static final List<String> NUEVOS = DONANTES.stream().map(Donante::clave).toList();
-
-  private static final List<String> POR_NOMBRE =
+  /**
+   * Los mismos, de la A a la Z (la lista de partida ya va de los más nuevos a los más antiguos).
+   */
+  private static final List<Donante> POR_NOMBRE =
       DONANTES.stream()
           .sorted(Comparator.comparing(Donante::nombre, Collator.getInstance(ES_AR)))
-          .map(Donante::clave)
           .toList();
 
-  /** La importación de la ficha: 20.000 filas, con su avance y su resultado. */
-  private static final Importacion IMPORTACION =
-      new Importacion(
-          "importando",
-          "donantes-octubre.csv",
-          "20.000",
-          "8.400",
-          "15 de octubre de 2026, 18:42",
-          "20.000 filas leídas: 19.100 donantes nuevos, 754 actualizados, 20 sin cambios porque el"
-              + " donante está dado de baja y 126 filas con error.",
-          "126",
-          List.of(
-              new FilaConError("Fila 15", "Falta el apellido."),
-              new FilaConError("Fila 202", "El correo ya es de otra persona, con otro documento."),
-              new FilaConError("Fila 3.410", "Tiene 6 columnas y el encabezado tiene 8.")),
-          "/admin-donantes-importado");
+  /**
+   * De a 5 por página en la maqueta (en el sistema, de a 20): con sus 10 donantes de ejemplo, el
+   * paginador provisorio se ve y se puede probar.
+   */
+  static final int POR_PAGINA = 5;
 
-  @Override
-  public AdminDonantesVista donantes() {
-    return new AdminDonantesVista(
-        86, AL, DONANTES, NUEVOS, NUEVOS.reversed(), POR_NOMBRE, "la lista de ejemplo");
+  private static final String IMPORTANDO = "importando";
+  private static final String IMPORTADO = "importado";
+  private static final String TERMINADA = "terminada";
+
+  private static final Opciones OPCIONES =
+      new Opciones(
+          List.of(
+              new Opcion("", "Todos los tipos"),
+              new Opcion(PERSONA, "Personas"),
+              new Opcion(EMPRESA, "Empresas"),
+              new Opcion(ORGANIZACION, "Organizaciones")),
+          List.of(
+              new Opcion("", "Todas las categorías"),
+              new Opcion(ALIMENTOS, ALIMENTOS_TEXTO),
+              new Opcion(ROPA, "Ropa"),
+              new Opcion(ESCOLARES, ESCOLARES_TEXTO),
+              new Opcion(MUEBLES, "Muebles")),
+          List.of(
+              new Opcion("", "Todos los estados"),
+              new Opcion(ACTIVO, "Activos"),
+              new Opcion(PENDIENTE, "Sin activar su cuenta"),
+              new Opcion("baja", "Dados de baja")),
+          List.of(
+              new Opcion("", "Más nuevos primero"),
+              new Opcion("antiguo", "Más antiguos primero"),
+              new Opcion("nombre", "Por nombre, de la A a la Z")),
+          true,
+          true);
+
+  private static final String ARCHIVO = "donantes-octubre.csv";
+  private static final String HORA = "18:34:12";
+  private static final String AVANCE = "/admin-donantes-importado";
+
+  private static final List<Ultimo> ULTIMOS =
+      List.of(
+          new Ultimo("Ana Ejemplo", "Nuevo"),
+          new Ultimo("Juan Ejemplo", "Actualizado"),
+          new Ultimo("Supermercado Ejemplo SRL", "Nuevo"),
+          new Ultimo("Carla Ejemplo", "Nuevo"),
+          new Ultimo("Fundación Ejemplo Sur", "Actualizado"));
+
+  /** Las 126 filas con error de la ficha: las tres de ejemplo, repetidas a lo largo del archivo. */
+  private static final List<FilaConError> FILAS_CON_ERROR =
+      IntStream.range(0, 126)
+          .mapToObj(
+              i ->
+                  switch (i % 3) {
+                    case 0 -> new FilaConError(fila(15 + i * 150), "Falta el apellido.");
+                    case 1 ->
+                        new FilaConError(
+                            fila(202 + i * 150),
+                            "El correo ya es de otra persona, con otro documento.");
+                    default ->
+                        new FilaConError(
+                            fila(3410 + i * 150), "Tiene 6 columnas y el encabezado tiene 8.");
+                  })
+          .toList();
+
+  private static String fila(int numero) {
+    return "Fila " + NumberFormat.getIntegerInstance(ES_AR).format(numero);
   }
 
   @Override
-  public Importacion importacion(UUID archivo, String nombre) {
-    return IMPORTACION;
+  public AdminDonantesVista donantes(ConsultaDonantes pedida) {
+    ConsultaDonantes consulta =
+        new ConsultaDonantes(
+            pedida.buscar(),
+            Opciones.elegido(pedida.tipo(), OPCIONES.tipos()),
+            Opciones.elegido(pedida.dona(), OPCIONES.categorias()),
+            Opciones.elegido(pedida.estado(), OPCIONES.estados()),
+            Opciones.elegido(pedida.orden(), OPCIONES.ordenes()),
+            pedida.pagina());
+    List<Donante> orden =
+        switch (consulta.orden()) {
+          case "nombre" -> POR_NOMBRE;
+          case "antiguo" -> DONANTES.reversed();
+          default -> DONANTES;
+        };
+    String buscado = sinTildes(consulta.buscar());
+    List<Donante> encontrados =
+        orden.stream()
+            .filter(d -> consulta.tipo().isEmpty() || consulta.tipo().equals(d.tipo()))
+            .filter(d -> consulta.dona().isEmpty() || consulta.dona().equals(d.dona()))
+            .filter(d -> consulta.estado().isEmpty() || consulta.estado().equals(d.estado()))
+            .filter(
+                d ->
+                    buscado.isEmpty()
+                        || sinTildes(d.nombre()).contains(buscado)
+                        || sinTildes(d.documento()).contains(buscado))
+            .toList();
+    return new AdminDonantesVista(
+        86, AL, Tramo.de(encontrados, consulta.pagina(), POR_PAGINA), consulta, OPCIONES, null);
+  }
+
+  /** Sin tildes ni mayúsculas, como busca Donaciones: "gomez" encuentra "Gómez". */
+  private static String sinTildes(String texto) {
+    return Normalizer.normalize(texto, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "")
+        .toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * La importación de la ficha (20.000 filas) en la pantalla pedida. Escenarios del avance: {@code
+   * esperando}, {@code leyendo} y {@code cortada}; del resultado, {@code sin-errores}.
+   */
+  @Override
+  public Importacion importacion(UUID archivo, String nombre, String ejemplo, int pagina) {
+    return switch (ejemplo == null ? "" : ejemplo) {
+      case "importando:esperando" ->
+          new Importacion(
+              IMPORTANDO,
+              "esperando",
+              ARCHIVO,
+              null,
+              "0",
+              "0",
+              "0",
+              "0",
+              0,
+              null,
+              null,
+              List.of(),
+              null,
+              AVANCE,
+              HORA);
+      case "importando:leyendo" ->
+          new Importacion(
+              IMPORTANDO,
+              "leyendo",
+              ARCHIVO,
+              null,
+              "500",
+              "480",
+              "15",
+              "5",
+              500,
+              null,
+              null,
+              ULTIMOS,
+              null,
+              AVANCE,
+              HORA);
+      case "importando:cortada", "importado:cortada" ->
+          new Importacion(
+              IMPORTADO,
+              "cortada",
+              ARCHIVO,
+              "20.000",
+              "8.400",
+              "7.950",
+              "410",
+              "40",
+              8400,
+              20000,
+              null,
+              List.of(),
+              Tramo.de(FILAS_CON_ERROR.subList(0, 40), pagina, 20),
+              AVANCE,
+              HORA);
+      case "importado:sin-errores" ->
+          new Importacion(
+              IMPORTADO,
+              TERMINADA,
+              ARCHIVO,
+              "20.000",
+              "20.000",
+              "19.874",
+              "126",
+              "0",
+              20000,
+              20000,
+              "20.000 filas leídas: 19.874 donantes nuevos y 126 actualizados.",
+              List.of(),
+              Tramo.de(List.of(), 1, 20),
+              AVANCE,
+              HORA);
+      case String e when e.startsWith(IMPORTADO) ->
+          new Importacion(
+              IMPORTADO,
+              TERMINADA,
+              ARCHIVO,
+              "20.000",
+              "20.000",
+              "19.100",
+              "774",
+              "126",
+              20000,
+              20000,
+              "20.000 filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con"
+                  + " error.",
+              List.of(),
+              Tramo.de(FILAS_CON_ERROR, pagina, 20),
+              AVANCE,
+              HORA);
+      case String e when e.startsWith("importar-error") ->
+          new Importacion(
+              "importar-error",
+              "error",
+              ARCHIVO,
+              null,
+              "0",
+              "0",
+              "0",
+              "0",
+              0,
+              null,
+              null,
+              List.of(),
+              null,
+              AVANCE,
+              HORA);
+      default ->
+          new Importacion(
+              IMPORTANDO,
+              IMPORTANDO,
+              ARCHIVO,
+              "20.000",
+              "8.400",
+              "7.950",
+              "410",
+              "40",
+              8400,
+              20000,
+              null,
+              ULTIMOS,
+              null,
+              AVANCE,
+              HORA);
+    };
   }
 
   /** En la maqueta el formulario lo atiende SitioController y no sube nada. */

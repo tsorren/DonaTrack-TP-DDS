@@ -11,6 +11,7 @@ import grupo5.cliente.vistas.AdminCamionesVista.Rendimiento;
 import grupo5.cliente.vistas.AdminCamionesVista.Viaje;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -96,8 +97,13 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
               new Decidida(MERENDERO, "Harina, 10 kg", "Descartada")));
 
   @Override
-  public AdminDonacionesVista donaciones(String accion) {
-    return AdminOperacionDonaciones.vista(accion);
+  public AdminDonacionesVista donaciones(ConsultaDonaciones consulta, String accion) {
+    return AdminOperacionDonaciones.vista(consulta, accion);
+  }
+
+  @Override
+  public AdminDonacionesVista.Donacion donacion(String clave, String accion) {
+    return AdminOperacionDonaciones.detalle(clave, accion);
   }
 
   @Override
@@ -107,7 +113,7 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
 
   /** Cualquier búsqueda encuentra a Ana y a Juan, como mostraba la plantilla. */
   @Override
-  public AdminDonacionesRegistroVista registro(String buscar) {
+  public AdminDonacionesRegistroVista registro(String buscar, String donante) {
     return new AdminDonacionesRegistroVista(
         List.of(
             ANA_EJEMPLO,
@@ -116,7 +122,8 @@ class AdminOperacionMaqueta implements AdminOperacionPuerto {
             JUAN_EJEMPLO,
             new AdminDonacionesRegistroVista.Donante(
                 "pedro-ejemplo", "Pedro Ejemplo", "DNI 20.000.003")),
-        buscar == null ? List.of() : List.of(ANA_EJEMPLO, JUAN_EJEMPLO));
+        buscar == null ? List.of() : List.of(ANA_EJEMPLO, JUAN_EJEMPLO),
+        buscar == null ? 0 : 2);
   }
 
   @Override

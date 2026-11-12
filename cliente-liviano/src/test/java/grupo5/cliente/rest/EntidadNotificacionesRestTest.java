@@ -35,7 +35,7 @@ class EntidadNotificacionesRestTest {
   private static final String SEGUIMIENTO =
       "http://logistica/api/entregas/seguimiento/beneficiarios/" + ENTIDAD;
   private static final String ASIGNADAS =
-      "http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD;
+      "http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD;
 
   private final RestClient.Builder builder = RestClient.builder();
   private final MockRestServiceServer servidor = MockRestServiceServer.bindTo(builder).build();

@@ -78,7 +78,9 @@
       </div>
     </section>
 
-    <!--/* Las cifras: actividad y resultado registrado, con período y fecha; cada número, con su nombre. */-->
+    <!--/* Las cifras: actividad y resultado registrado, con período y fecha; cada número, con su nombre y
+           separador de miles. Desde R11-01 cada una es un número que da su servicio, no el largo de una
+           lista (ficha raices-admin-navegable, §4.10). */-->
     <section th:if="${escenario != 'error'}" class="todo" aria-labelledby="todo-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="todo-titulo">Cómo está todo</h2>
@@ -89,19 +91,19 @@
           <section class="registro-mesa" aria-labelledby="registro-donaciones">
             <h3 id="registro-donaciones">Donaciones</h3>
             <dl>
-              <div><dt>En el depósito</dt><dd th:text="${c.enDeposito}">7</dd></div>
-              <div><dt>Asignadas</dt><dd th:text="${c.asignadas}">4</dd></div>
-              <div><dt>En camino</dt><dd th:text="${c.enCamino}">1</dd></div>
-              <div><dt th:text="|Entregas confirmadas en ${c.mes}|">Entregas confirmadas en octubre</dt><dd th:text="${c.entregadasEnElMes}">9</dd></div>
+              <div><dt>En el depósito</dt><dd th:text="${#numbers.formatInteger(c.enDeposito, 1, 'POINT')}">7</dd></div>
+              <div><dt>Asignadas</dt><dd th:text="${#numbers.formatInteger(c.asignadas, 1, 'POINT')}">4</dd></div>
+              <div><dt>En camino</dt><dd th:text="${#numbers.formatInteger(c.enCamino, 1, 'POINT')}">1</dd></div>
+              <div><dt th:text="|Entregas confirmadas en ${c.mes}|">Entregas confirmadas en octubre</dt><dd th:text="${#numbers.formatInteger(c.entregadasEnElMes, 1, 'POINT')}">9</dd></div>
             </dl>
           </section>
           <section class="registro-mesa" aria-labelledby="registro-red">
             <h3 id="registro-red">La red</h3>
             <dl>
-              <div><dt>Entidades activas</dt><dd th:text="${c.entidadesActivas}">46</dd></div>
-              <div><dt>Donantes</dt><dd th:text="${c.donantes}">86</dd></div>
-              <div><dt>Camiones en ruta</dt><dd th:text="${c.camionesEnRuta}">1</dd></div>
-              <div><dt>Camiones libres</dt><dd th:text="${c.camionesLibres}">3</dd></div>
+              <div><dt>Entidades activas</dt><dd th:text="${#numbers.formatInteger(c.entidadesActivas, 1, 'POINT')}">46</dd></div>
+              <div><dt>Donantes</dt><dd th:text="${#numbers.formatInteger(c.donantes, 1, 'POINT')}">86</dd></div>
+              <div><dt>Camiones en ruta</dt><dd th:text="${#numbers.formatInteger(c.camionesEnRuta, 1, 'POINT')}">1</dd></div>
+              <div><dt>Camiones libres</dt><dd th:text="${#numbers.formatInteger(c.camionesLibres, 1, 'POINT')}">3</dd></div>
             </dl>
           </section>
         </div>

@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,13 +23,14 @@ import grupo5.cliente.puertos.AdminOperacionPuerto.DonacionNueva;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
+import grupo5.cliente.vistas.ConsultaDonaciones;
+import grupo5.cliente.vistas.Tramo;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -71,30 +73,56 @@ class AdminDonacionesEnviosTest {
   @MockitoBean private AdminOperacionPuerto operacion;
   @Autowired private MockMvc mvc;
 
+  private static final Donacion LECHE =
+      new Donacion(
+          ID,
+          "Leche en polvo",
+          "10 unidades",
+          "10 u",
+          "Ana Ejemplo",
+          "8 de noviembre",
+          "deposito",
+          "12 de noviembre, en 2 días",
+          true,
+          "Nuevo",
+          null,
+          null,
+          false,
+          null,
+          List.of("8 de noviembre: llegó al depósito."));
+
   @BeforeEach
   void unaDonacion() {
-    when(operacion.donaciones(""))
+    when(operacion.donacion(ID, "")).thenReturn(LECHE);
+  }
+
+  @Test
+  void laListaPideSuPaginaConElFiltroYMuestraElPaginador() throws Exception {
+    ConsultaDonaciones consulta = new ConsultaDonaciones("deposito", false, "antigua", 2);
+    when(operacion.donaciones(consulta, ""))
         .thenReturn(
             new AdminDonacionesVista(
+                new Tramo<>(List.of(LECHE), 21, 2, 2),
+                consulta,
                 List.of(
-                    new Donacion(
-                        ID,
-                        "Leche en polvo",
-                        "10 unidades",
-                        "10 u",
-                        "Ana Ejemplo",
-                        "8 de noviembre",
-                        "deposito",
-                        "12 de noviembre, en 2 días",
-                        true,
-                        "Nuevo",
-                        null,
-                        null,
-                        false,
-                        null,
-                        List.of("8 de noviembre: llegó al depósito."))),
-                Map.of(),
+                    new AdminDonacionesVista.Criterio(
+                        "", "Registradas más recientes", "Recientes."),
+                    new AdminDonacionesVista.Criterio(
+                        "antigua", "Registradas más antiguas", "Antiguas.")),
+                false,
+                null,
                 "1 en el depósito."));
+
+    mvc.perform(get("/admin-donaciones?estado=deposito&orden=antigua&pagina=2"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Leche en polvo")))
+        .andExpect(content().string(containsString("Página 2 de 2")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donaciones?estado=deposito&amp;orden=antigua&amp;pagina=1\"")))
+        .andExpect(content().string(not(containsString("En los próximos 7 días"))));
   }
 
   @Test
@@ -144,13 +172,22 @@ class AdminDonacionesEnviosTest {
   void registrarBuscaDonantesYLasPantallasDeResultadoNoExisten() throws Exception {
     AdminDonacionesRegistroVista.Donante ana =
         new AdminDonacionesRegistroVista.Donante(ANA, "Ana Ejemplo", "DNI 20.000.001");
-    when(operacion.registro("ana"))
-        .thenReturn(new AdminDonacionesRegistroVista(List.of(ana), List.of(ana)));
+    when(operacion.registro("ana", null))
+        .thenReturn(new AdminDonacionesRegistroVista(List.of(ana), List.of(ana), 1));
+    when(operacion.registro("a", null))
+        .thenReturn(new AdminDonacionesRegistroVista(List.of(), List.of(ana), 137));
 
     mvc.perform(get("/admin-donaciones-registrar?buscar=ana"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("1 donante coincide con la búsqueda.")))
         .andExpect(content().string(containsString("donante=" + ANA)));
+    mvc.perform(get("/admin-donaciones-registrar?buscar=a"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Hay 137 donantes que coinciden. Escribí más del nombre o el documento"
+                            + " para encontrarlo.")));
     mvc.perform(get("/admin-donaciones-registrada")).andExpect(status().isNotFound());
     mvc.perform(get("/admin-donaciones-registrar-error")).andExpect(status().isNotFound());
   }

@@ -67,7 +67,8 @@ class DonanteInicioRestTest {
   void armaLasCifrasDelMesLasNoticiasYLasSinLeer() {
     apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
-    apis.expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+    apis.expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
     apis.expect(requestTo("http://donaciones/api/entidades/publicas"))
         .andRespond(
@@ -102,7 +103,8 @@ class DonanteInicioRestTest {
   void sinNotificacionesNiLogisticaElInicioSaleIgual() {
     apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
         .andRespond(withServerError());
-    apis.expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
+    apis.expect(
+            requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     apis.expect(
             requestTo(
