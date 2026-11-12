@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Notificaciones Service API
-  version: 1.3.0
+  version: 1.4.0
   description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 servers:
   - url: http://localhost:8081
@@ -804,7 +804,9 @@ components:
       type: string
       description: >-
         Los tipos que acepta el filtro de la bandeja (tipo y excluirTipo); otro valor da 400. En la
-        respuesta, tipoEvento sigue siendo texto libre.
+        respuesta, tipoEvento sigue siendo texto libre. IMPORTACION_TERMINADA, IMPORTACION_CORTADA y
+        MENSAJE_CONTACTO (1.4.0, R11-30) son los avisos de la Administración: nacen del evento
+        importacion.terminada.v1 y del aviso de contacto, no se aceptan en POST /api/notificaciones/eventos.
       enum:
         - DONANTE_REGISTRADO
         - DONANTE_INACTIVO
@@ -815,6 +817,9 @@ components:
         - DONACION_EN_CAMINO
         - ENTREGA_FALLIDA
         - DONACION_VENCIDA
+        - IMPORTACION_TERMINADA
+        - IMPORTACION_CORTADA
+        - MENSAJE_CONTACTO
     NotificacionDTO:
       type: object
       required:
@@ -844,18 +849,21 @@ components:
           type: string
           nullable: true
           description: >-
-            Tipo del evento que originó la notificación (HB-09). Hoy: DONANTE_REGISTRADO, DONANTE_INACTIVO,
-            MISION_CUMPLIDA, SUBIO_CATEGORIA, DONACION_ASIGNADA, DONACION_RECIBIDA, DONACION_EN_CAMINO,
-            ENTREGA_FALLIDA y DONACION_VENCIDA. Texto libre a propósito, no un enum: un tipo nuevo no
-            rompe a los clientes. Nulo en las notificaciones anteriores a HB-09 y en los avisos directos
-            (por ejemplo, el de un mensaje de contacto nuevo).
+            Tipo del evento que originó la notificación (HB-09). Hoy: los valores de TipoEvento
+            (DONANTE_REGISTRADO, DONANTE_INACTIVO, MISION_CUMPLIDA, SUBIO_CATEGORIA, DONACION_ASIGNADA,
+            DONACION_RECIBIDA, DONACION_EN_CAMINO, ENTREGA_FALLIDA, DONACION_VENCIDA y, desde 1.4.0,
+            IMPORTACION_TERMINADA, IMPORTACION_CORTADA y MENSAJE_CONTACTO). Texto libre a propósito, no un
+            enum: un tipo nuevo no rompe a los clientes. Nulo en las notificaciones anteriores a HB-09 y
+            en los avisos de contacto guardados antes de 1.4.0.
         referenciaId:
           type: string
           format: uuid
           nullable: true
           description: >-
-            Id de la donación a la que se refiere el aviso (HB-09). Nulo si el emisor del evento no la
-            informó, en las anteriores a HB-09 y en los avisos que no hablan de una donación.
+            Id de la donación a la que se refiere el aviso (HB-09); en IMPORTACION_TERMINADA e
+            IMPORTACION_CORTADA, el id del archivo importado (R11-30). Nulo si el emisor del evento no la
+            informó, en las anteriores a HB-09 y en los avisos que no hablan de una donación ni de un
+            archivo.
     MensajeContactoInputDTO:
       type: object
       required:

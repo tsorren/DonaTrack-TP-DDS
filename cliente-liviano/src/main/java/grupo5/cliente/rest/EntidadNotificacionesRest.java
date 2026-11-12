@@ -118,8 +118,7 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
     String tema = tema(n.tipoEvento());
     UUID entrega = n.referenciaId() == null ? null : entregaDe.get(n.referenciaId());
     boolean confirmable = EN_CAMINO.equals(n.tipoEvento()) && entrega != null;
-    String titulo =
-        n.tipoEvento() == null ? NOVEDAD : TITULOS.getOrDefault(n.tipoEvento(), NOVEDAD);
+    String titulo = titulo(n.tipoEvento());
     return new Novedad(
         n.id().toString(),
         tema,
@@ -134,6 +133,12 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
         null);
   }
 
+  /** El título del aviso según su tipo; sin tipo o de otro, "Novedad" (también en la campanita). */
+  static String titulo(String tipoEvento) {
+    // Map.of no admite buscar con null: sin tipo, "Novedad".
+    return tipoEvento == null ? NOVEDAD : TITULOS.getOrDefault(tipoEvento, NOVEDAD);
+  }
+
   static String tema(String tipoEvento) {
     // List.of no admite buscar con null: sin tipo, "Otras novedades".
     if (tipoEvento == null) {
@@ -146,7 +151,7 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
         .orElse(Bandejas.OTRAS);
   }
 
-  private static String destino(String tema) {
+  static String destino(String tema) {
     return switch (tema) {
       case "camino" -> A_RECIBIDAS + "?estado=en-camino";
       case "asignadas" -> A_RECIBIDAS + "?estado=por-salir";

@@ -6,6 +6,7 @@ import grupo5.notificaciones.dto.input.EventoDonacionEntregaFallidaV1;
 import grupo5.notificaciones.dto.input.EventoDonacionRecibidaV1;
 import grupo5.notificaciones.dto.input.EventoDonacionVencidaV1;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
+import grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
@@ -64,6 +65,9 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
 
+  // Routing Key de Importaciones (R11-30): viaja por la misma cola
+  public static final String ROUTING_KEY_IMPORTACION_TERMINADA = "importacion.terminada.v1";
+
   /**
    * Claves de donaciones.exchange que tienen handler en DonacionEventListener. Se bindean una por
    * una: un comodín traería hechos ajenos (donacion.segmentada.v1, donante.dado-de-baja.v1) que no
@@ -77,7 +81,8 @@ public class RabbitMQConfig {
           ROUTING_KEY_DONACION_ENTREGA_FALLIDA,
           ROUTING_KEY_DONACION_VENCIDA,
           ROUTING_KEY_DONANTE_REGISTRADO,
-          ROUTING_KEY_PERSONA_SINCRONIZADA);
+          ROUTING_KEY_PERSONA_SINCRONIZADA,
+          ROUTING_KEY_IMPORTACION_TERMINADA);
 
   // Legacy (Preservado hasta migración definitiva en Paso 3)
   public static final String EXCHANGE_NOTIFICACIONES = "notificaciones.exchange";
@@ -204,6 +209,9 @@ public class RabbitMQConfig {
     // Mapeos de Donantes
     idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
     idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+
+    // Mapeo de Importaciones (R11-30)
+    idClassMapping.put(ROUTING_KEY_IMPORTACION_TERMINADA, EventoImportacionTerminadaV1.class);
 
     // Mapeos de Incentivos
     idClassMapping.put(ROUTING_KEY_DONANTE_INACTIVO, EventoIncentivoDonanteInactivoV1.class);

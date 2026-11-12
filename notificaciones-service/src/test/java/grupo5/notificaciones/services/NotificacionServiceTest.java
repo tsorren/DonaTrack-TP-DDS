@@ -13,12 +13,15 @@ import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO;
 import grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO;
+import grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionAsignada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteInactivo;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EntregaFallida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
+import grupo5.notificaciones.models.entities.notificaciones.eventos.ImportacionTerminada;
 import grupo5.notificaciones.models.entities.notificaciones.events.NotificacionCreada;
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -463,5 +466,61 @@ class NotificacionServiceTest {
     assertEquals(adminId, guardada.getValue().getPersonaId());
     assertEquals(EstadoNotificacion.PENDIENTE, guardada.getValue().getEstadoNotificacion());
     verify(eventPublisher).publishEvent(any(NotificacionCreada.class));
+  }
+
+  /** C6 (R11-30): el aviso de contacto se guarda con su tipo, sin referencia. */
+  @Test
+  void notificarPersona_guardaElAvisoConTipoMensajeContacto() {
+    service.notificarPersona(UUID.randomUUID(), "Nuevo mensaje de contacto Nº 8, sobre otra cosa.");
+
+    ArgumentCaptor<Notificacion> guardada = ArgumentCaptor.forClass(Notificacion.class);
+    verify(repository).save(guardada.capture());
+    assertEquals(TipoEvento.MENSAJE_CONTACTO.name(), guardada.getValue().getTipoEvento());
+    assertNull(guardada.getValue().getReferenciaId());
+  }
+
+  private static EventoImportacionTerminadaV1 importacionTerminada(String resultado) {
+    return new EventoImportacionTerminadaV1(
+        UUID.randomUUID(), resultado, 70, 70, 10, 10, 50, TEST_DATE_TIME, TEST_DATE_TIME);
+  }
+
+  /** C4 (R11-30): el evento se convierte en un aviso para la Administración y se guarda. */
+  @Test
+  void procesar_importacionTerminada_guardaElAvisoDeLaAdministracion() {
+    Persona administracion = personaConCorreoQueSiempreEnvia("Administracion");
+    EventoImportacionTerminadaV1 evento =
+        importacionTerminada(EventoImportacionTerminadaV1.TERMINADA_CON_ERRORES);
+    ImportacionTerminada entidad =
+        new ImportacionTerminada(
+            administracion,
+            false,
+            new ImportacionTerminada.Cifras(70, 10, 10, 50),
+            TEST_DATE_TIME,
+            TEST_DATE_TIME);
+    entidad.asociarReferencia(evento.archivoId());
+    when(mapper.toEntity(evento)).thenReturn(entidad);
+
+    service.procesar(evento, UUID.randomUUID().toString());
+
+    List<Notificacion> guardadas = notificacionesGuardadas(1);
+    assertEquals(administracion.getId(), guardadas.get(0).getPersonaId());
+    assertEquals(TipoEvento.IMPORTACION_TERMINADA.name(), guardadas.get(0).getTipoEvento());
+    assertEquals(evento.archivoId(), guardadas.get(0).getReferenciaId());
+  }
+
+  /** C5 (R11-30): el mismo message_id otra vez no deja un segundo aviso. */
+  @Test
+  void procesar_importacionTerminadaDuplicadaEnInbox_noGuardaOtroAviso() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate);
+    EventoImportacionTerminadaV1 evento =
+        importacionTerminada(EventoImportacionTerminadaV1.TERMINADA);
+    when(jdbcTemplate.update(anyString(), any(UUID.class), any(LocalDateTime.class))).thenReturn(0);
+
+    serviceConDb.procesar(evento, UUID.randomUUID().toString());
+
+    verify(repository, never()).saveAll(any());
+    verify(mapper, never()).toEntity(evento);
   }
 }

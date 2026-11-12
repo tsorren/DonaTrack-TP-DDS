@@ -14,6 +14,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoImportacionTerminadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
@@ -57,6 +58,7 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_DONANTE_DADO_DE_BAJA = "donante.dado-de-baja.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
+  public static final String ROUTING_KEY_IMPORTACION_TERMINADA = "importacion.terminada.v1";
 
   // Comando dirigido a un proveedor de logística: entrega.solicitada.<proveedorId>.v1. El alias de
   // tipo es fijo y no depende del proveedor, para que el mapeo clase -> __TypeId__ no sea ambiguo.
@@ -172,6 +174,7 @@ public class RabbitMQConfig {
     idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
     idClassMapping.put(ROUTING_KEY_DONANTE_DADO_DE_BAJA, EventoDonanteDadoDeBajaV1.class);
     idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+    idClassMapping.put(ROUTING_KEY_IMPORTACION_TERMINADA, EventoImportacionTerminadaV1.class);
     idClassMapping.put(TYPE_ID_ENTREGA_SOLICITADA, EventoEntregaSolicitadaV1.class);
     idClassMapping.put(TYPE_ID_ENTREGA_CANCELADA, EventoEntregaCanceladaV1.class);
     idClassMapping.put("ruta.asignada", EventoRutaAsignada.class);

@@ -2,6 +2,8 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -16,6 +18,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.InfrastructureException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.comunicaciones.EventoImportacionTerminadaV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
@@ -68,6 +71,7 @@ class ImportadorServiceTest {
   private ValidadorPersonaDuplicada validadorDuplicados;
   private IPersonasService personaService;
   private IDonantesService donantesService;
+  private IDonacionesEventPublisher publisher;
   private ImportadorService service;
 
   @BeforeEach
@@ -79,6 +83,7 @@ class ImportadorServiceTest {
     validadorDuplicados = mock(ValidadorPersonaDuplicada.class);
     personaService = mock(IPersonasService.class);
     donantesService = mock(IDonantesService.class);
+    publisher = mock(IDonacionesEventPublisher.class);
 
     service =
         new ImportadorService(
@@ -90,7 +95,8 @@ class ImportadorServiceTest {
             personaService,
             donantesService,
             storage,
-            AlmacenamientoFixtures.propiedades());
+            AlmacenamientoFixtures.propiedades(),
+            publisher);
   }
 
   @Test
@@ -412,7 +418,8 @@ class ImportadorServiceTest {
             personaService,
             donantesService,
             storage,
-            AlmacenamientoFixtures.propiedades());
+            AlmacenamientoFixtures.propiedades(),
+            publisher);
     UUID archivoId = UUID.randomUUID();
     Archivo archivo =
         archivoEnStorage(
@@ -449,6 +456,120 @@ class ImportadorServiceTest {
     assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());
     assertEquals(2, archivo.getTotalFilas());
     assertEquals(2, archivo.getProcesadas());
+  }
+
+  /** C1 (R11-30): al terminar sin errores se avisa una sola vez, con las cifras y sin el nombre. */
+  @Test
+  void procesarImportacionAsincronica_alTerminarSinErrores_publicaImportacionTerminadaUnaVez() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo =
+        archivoEnStorageConNombre(
+            "padron-con-datos.csv", java.time.LocalDateTime.of(2026, 11, 12, 18, 30));
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    PadronFixtures.entregar(
+        lectorCSV, new FilaPadron(2, Map.of("TipoPersona", "HUMANA", "Nombre", "Ana")));
+    when(validadorDuplicados.buscarDuplicado(any(Persona.class))).thenReturn(Optional.empty());
+    when(personaService.crearPersona(any(PersonaInputDTO.class))).thenReturn(humanaCreada());
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    EventoImportacionTerminadaV1 evento = eventoPublicado();
+    assertEquals(archivo.getId(), evento.archivoId());
+    assertEquals(EventoImportacionTerminadaV1.TERMINADA, evento.resultado());
+    assertEquals(1, evento.totalFilas());
+    assertEquals(1, evento.procesadas());
+    assertEquals(1, evento.creadas());
+    assertEquals(0, evento.actualizadas());
+    assertEquals(0, evento.conError());
+    assertEquals(java.time.LocalDateTime.of(2026, 11, 12, 18, 30), evento.subidoEn());
+    assertNotNull(evento.fecha());
+    org.assertj.core.api.Assertions.assertThat(evento.toString())
+        .doesNotContain("padron-con-datos");
+  }
+
+  /** C2 (R11-30): con filas con error, el resultado lo dice y lleva cuántas. */
+  @Test
+  void procesarImportacionAsincronica_conFilasConError_publicaTerminadaConErrores() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    PadronFixtures.entregar(lectorCSV, new FilaPadron(2, null), new FilaPadron(3, null));
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    EventoImportacionTerminadaV1 evento = eventoPublicado();
+    assertEquals(EventoImportacionTerminadaV1.TERMINADA_CON_ERRORES, evento.resultado());
+    assertEquals(2, evento.conError());
+    assertEquals(2, evento.procesadas());
+    assertNull(evento.subidoEn());
+  }
+
+  /** C3 (R11-30): si se corta, se avisa CORTADA con las filas que se leyeron. */
+  @Test
+  void procesarImportacionAsincronica_siSeCorta_publicaCortadaConLasFilasLeidas() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    when(lectorCSV.contarFilas(any(InputStream.class)))
+        .thenThrow(new RuntimeException("Error de I/O"));
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    EventoImportacionTerminadaV1 evento = eventoPublicado();
+    assertEquals(EventoImportacionTerminadaV1.CORTADA, evento.resultado());
+    assertNull(evento.totalFilas());
+    assertEquals(0, evento.procesadas());
+  }
+
+  /** Si no se puede guardar el estado final, no se avisa nada (spec, invariantes). */
+  @Test
+  void procesarImportacionAsincronica_siNoPuedeGuardarElError_noPublica() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    org.mockito.Mockito.doThrow(new IllegalStateException("base caída"))
+        .when(archivoRepository)
+        .save(archivo);
+
+    org.junit.jupiter.api.Assertions.assertThrows(
+        IllegalStateException.class, () -> service.procesarImportacionAsincronica(archivoId));
+
+    verify(publisher, never()).publicarImportacionTerminada(any());
+  }
+
+  /** Si el aviso no sale, la importación igual queda terminada: no pasa a ERROR. */
+  @Test
+  void procesarImportacionAsincronica_siFallaElAviso_elArchivoQuedaProcesado() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    PadronFixtures.entregar(lectorCSV, new FilaPadron(2, null));
+    org.mockito.Mockito.doThrow(new IllegalStateException("broker caído"))
+        .when(publisher)
+        .publicarImportacionTerminada(any());
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());
+    verify(publisher, times(1)).publicarImportacionTerminada(any());
+  }
+
+  private EventoImportacionTerminadaV1 eventoPublicado() {
+    ArgumentCaptor<EventoImportacionTerminadaV1> captor =
+        ArgumentCaptor.forClass(EventoImportacionTerminadaV1.class);
+    verify(publisher, times(1)).publicarImportacionTerminada(captor.capture());
+    return captor.getValue();
+  }
+
+  private Archivo archivoEnStorageConNombre(String nombre, java.time.LocalDateTime subidoEn) {
+    String clave = UUID.randomUUID() + ".csv";
+    storage.guardar(
+        AlmacenamientoFixtures.BUCKET_PADRONES,
+        clave,
+        new ByteArrayInputStream(new byte[] {1}),
+        1,
+        "text/csv");
+    return new Archivo(clave, nombre, subidoEn);
   }
 
   private static List<FilaPadron> filasValidas(int primeraLinea, int cantidad) {

@@ -7,10 +7,13 @@
 //   así sirve también para los formularios que llegan en un panel nuevo.
 // - La entrada de la página en el historial se marca como de HTMX: así, al volver con Atrás hasta la
 //   página tal como se abrió, HTMX la trae de nuevo (sin la marca, solo cambiaba la dirección).
-// - Los menús desplegables (<details>: la cuenta y las pastillas de filtro) se cierran al tocar afuera,
+// - Los menús desplegables (<details>: la cuenta, la campanita y las pastillas de filtro) se cierran al tocar afuera,
 //   con Esc (el foco vuelve a su botón) y al pasar el foco a otro lado; abrir uno cierra el que
 //   estaba abierto. Sin JavaScript abren y cierran solo con su botón, como un <details> común.
 // - Los menús que quedaron abiertos se cierran al llegar el panel nuevo.
+// - La campanita (R11-29, componentes/campanita.html) pide su lista cada vez que se abre: el toggle del <details>
+//   dispara campanita:abrir, que es el hx-trigger de su hx-get. Si la respuesta llega con el
+//   desplegable ya cerrado, se descarta.
 if (!history.state) {
   history.replaceState({ htmx: true }, "", location.href);
 }
@@ -29,7 +32,7 @@ document.addEventListener("change", (evento) => {
   }
 });
 
-const MENUS = "details.navegacion-cuenta, details.filtros-pildora";
+const MENUS = "details.navegacion-cuenta, details.campanita, details.filtros-pildora";
 
 function cerrarMenus(excepto) {
   document.querySelectorAll(MENUS).forEach((menu) => {
@@ -70,6 +73,28 @@ document.addEventListener("focusout", (evento) => {
     }
   }, 0);
 });
-document.addEventListener("htmx:afterSettle", () => {
+// La lista de la campanita llega por HTMX adentro del propio menú: ese intercambio no lo cierra.
+document.addEventListener("htmx:afterSettle", (evento) => {
+  if (evento.target instanceof Element && evento.target.closest(MENUS)) {
+    return;
+  }
   cerrarMenus(null);
+});
+
+// El toggle no burbujea: se escucha en la captura.
+document.addEventListener(
+  "toggle",
+  (evento) => {
+    const campanita = evento.target;
+    if (campanita instanceof HTMLDetailsElement && campanita.matches(".campanita") && campanita.open) {
+      globalThis.htmx?.trigger(campanita, "campanita:abrir");
+    }
+  },
+  true,
+);
+document.addEventListener("htmx:beforeSwap", (evento) => {
+  const campanita = evento.detail.elt?.closest?.("details.campanita");
+  if (campanita && !campanita.open) {
+    evento.detail.shouldSwap = false;
+  }
 });

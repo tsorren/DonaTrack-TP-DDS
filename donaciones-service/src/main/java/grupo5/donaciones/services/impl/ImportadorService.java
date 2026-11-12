@@ -4,6 +4,7 @@ import grupo5.common.exceptions.DonaTrackException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.config.AlmacenamientoProperties;
+import grupo5.donaciones.dto.comunicaciones.EventoImportacionTerminadaV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
@@ -11,6 +12,7 @@ import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.donantes.Archivo;
+import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.donantes.FilaConError;
 import grupo5.donaciones.models.entities.donantes.MotivoErrorFila;
 import grupo5.donaciones.models.entities.personas.Humana;
@@ -22,6 +24,7 @@ import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.models.repositories.listados.PersonaEnListado;
+import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -30,6 +33,8 @@ import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +64,7 @@ public class ImportadorService implements IImportadorService {
   private final IDonantesService donantesService;
   private final StoragePort storage;
   private final AlmacenamientoProperties almacenamiento;
+  private final IDonacionesEventPublisher eventPublisher;
   private static final Logger log = LoggerFactory.getLogger(ImportadorService.class);
 
   public ImportadorService(
@@ -70,7 +76,8 @@ public class ImportadorService implements IImportadorService {
       IPersonasService personaService,
       IDonantesService donantesService,
       StoragePort storage,
-      AlmacenamientoProperties almacenamiento) {
+      AlmacenamientoProperties almacenamiento,
+      IDonacionesEventPublisher eventPublisher) {
     this.archivoRepository = archivoRepository;
     this.lectorCSV = lectorCSV;
     this.personaMapper = personaMapper;
@@ -80,6 +87,7 @@ public class ImportadorService implements IImportadorService {
     this.donantesService = donantesService;
     this.storage = storage;
     this.almacenamiento = almacenamiento;
+    this.eventPublisher = eventPublisher;
   }
 
   @Async
@@ -117,6 +125,41 @@ public class ImportadorService implements IImportadorService {
       archivo.marcarComoError();
       archivoRepository.save(archivo);
     }
+    avisarFin(archivo);
+  }
+
+  /**
+   * Un aviso por importación, con el estado final ya guardado (R11-30). Si el aviso no sale, la
+   * importación igual queda terminada: el estado se ve en Importaciones.
+   */
+  private void avisarFin(Archivo archivo) {
+    try {
+      eventPublisher.publicarImportacionTerminada(
+          new EventoImportacionTerminadaV1(
+              archivo.getId(),
+              resultadoDe(archivo.getEstado()),
+              archivo.getTotalFilas(),
+              archivo.getProcesadas(),
+              archivo.getCreadas(),
+              archivo.getActualizadas(),
+              archivo.getConError(),
+              archivo.getSubidoEn(),
+              LocalDateTime.now(ZoneId.systemDefault())));
+    } catch (RuntimeException e) {
+      log.warn(
+          "No se pudo avisar el fin de la importación del archivo {}: {}",
+          archivo.getId(),
+          e.getClass().getSimpleName());
+    }
+  }
+
+  /** Nombres propios del evento, para no atar el contrato al enum interno. */
+  private static String resultadoDe(EstadoArchivo estado) {
+    return switch (estado) {
+      case PROCESADO -> EventoImportacionTerminadaV1.TERMINADA;
+      case PROCESADO_CON_ERRORES -> EventoImportacionTerminadaV1.TERMINADA_CON_ERRORES;
+      default -> EventoImportacionTerminadaV1.CORTADA;
+    };
   }
 
   /**

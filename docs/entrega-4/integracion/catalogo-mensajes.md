@@ -13,7 +13,7 @@
 - **Idempotencia:** todo mensaje lleva su identificador único como propiedad AMQP estándar `messageId`, no como campo del payload. **Confirmado** en la reunión del 15/9 ("el protocolo AMQP ya trae Message ID en el encabezado, no hace falta duplicarlo").
 - **Versionado:** routing key versionado (`.v1`) + nombre de clase versionado (`Evento<Nombre>V1`, sin sufijo `DTO`). Confirmado como patrón ya en uso en la rama `E4_n_bd`.
 - **Retry/DLQ (lado consumidor):** `notificaciones-service` ya declara `notificaciones.dlx` y las colas `notificaciones.donaciones.dlq` / `notificaciones.incentivos.dlq` (`RabbitMQConfig`). Sigue pendiente en el resto de los consumidores (mandato de la reunión del 15/9, tres reintentos y luego Dead Letter Exchange). No es responsabilidad de Donaciones configurarlo del lado de quien consume.
-- **Bindings de Notificaciones:** `notificaciones.donaciones` se bindea solo con las 7 claves que procesa (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`), así que `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola. Antes se bindeaba con los comodines `donacion.#`, `donante.#` y `persona.#` y esos mensajes terminaban en la DLQ (test T18, resuelto; DTI-16, ítem 10).
+- **Bindings de Notificaciones:** `notificaciones.donaciones` se bindea solo con las 8 claves que procesa (desde R11-30 también `importacion.terminada.v1`) (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`), así que `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola. Antes se bindeaba con los comodines `donacion.#`, `donante.#` y `persona.#` y esos mensajes terminaban en la DLQ (test T18, resuelto; DTI-16, ítem 10).
 - **`fecha`:** timestamp real del hecho de negocio, no `now()` del publisher.
 
 ## Donaciones nunca declara colas en su propio exchange
@@ -117,4 +117,16 @@ Regla formalizada en el [ADR 20261007-broker-de-integracion-con-logistica](../..
 - **Publicación:** `mandatory=true` + publisher confirms; el broker espera el acuse. Si RabbitMQ devuelve el mensaje (no hay cola para esa routing key), el envío es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: se reintenta con el mismo proveedor.
 - **Consumidor:** cada instancia de logística declara su cola `logistica.<instancia>.entregas.solicitadas` bindeada con la clave exacta de su `LOGISTICA_INSTANCIA_ID`. Debe deduplicar por `donacionIndependienteId` (`EntregaSolicitadaEventListener` usa `existsByIdDonacion`).
 - **Consecuencia esperada:** el proveedor crea la Entrega. Los avances vuelven siempre por `logistica.exchange`: todo proveedor, AMQP o HTTP, informa publicando los eventos existentes (el HTTP es solo de ida).
+- **Compatibilidad futura:** aditivo permitido; un cambio incompatible es v2.
+
+## ImportacionTerminadaV1
+
+> Agregado el 2026-11-12 (R11-30, [spec R11-p2-campanita](../../specs/active/R11-p2-campanita-spec.md)).
+
+- **Tipo:** Event · **Productor:** Donaciones · **Consumidor:** Notificaciones
+- **Routing key:** `importacion.terminada.v1` (misma cola `notificaciones.donaciones`, con su DLQ)
+- **Trigger:** termina o se corta una importación de donantes (`ImportadorService.procesarImportacionAsincronica`), una vez por importación, después de guardar el estado final del archivo. Si ese guardado falla, no se publica.
+- **Payload:** `archivoId: UUID`, `resultado: TERMINADA|TERMINADA_CON_ERRORES|CORTADA`, `totalFilas: Integer?`, `procesadas: Integer`, `creadas: Integer`, `actualizadas: Integer`, `conError: Integer`, `subidoEn: DateTime?` (hora de Buenos Aires sin zona), `fecha: DateTime` — schema [`evento-importacion-terminada-v1.schema.json`](../../arquitectura/contratos/schemas/evento-importacion-terminada-v1.schema.json)
+- **No lleva** el nombre del archivo ni datos de los donantes (el nombre puede traer datos personales).
+- **Consecuencia esperada:** Notificaciones guarda un aviso para la persona de la Administración (`AdminConstantes.ID_ADMIN`) con `tipoEvento` `IMPORTACION_TERMINADA` o `IMPORTACION_CORTADA` y `referenciaId` = `archivoId`. El evento no dice a quién avisar: lo decide el consumidor.
 - **Compatibilidad futura:** aditivo permitido; un cambio incompatible es v2.

@@ -557,4 +557,54 @@ class EventoMapperTest {
     assertEquals("DONACION_VENCIDA", notificacion.getTipoEvento());
     assertEquals(donacionId, notificacion.getReferenciaId());
   }
+
+  private grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1 importacion(
+      String resultado) {
+    return new grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1(
+        UUID.randomUUID(), resultado, 70, 70, 10, 10, 50, null, TEST_DATE_TIME);
+  }
+
+  /** C4 (R11-30): el aviso de importación va a la persona de la Administración. */
+  @Test
+  void toEntity_importacionTerminada_vaALaAdministracionConElArchivoComoReferencia() {
+    Persona administracion =
+        new Persona(
+            grupo5.notificaciones.config.AdminConstantes.ID_ADMIN,
+            new ArrayList<>(),
+            "Administradora Sistema",
+            TipoPersona.HUMANA);
+    when(personaRepository.findById(administracion.getId()))
+        .thenReturn(Optional.of(administracion));
+    var evento = importacion("TERMINADA_CON_ERRORES");
+
+    Notificacion notificacion = mapper.toEntity(evento).generarNotificaciones().getFirst();
+
+    assertEquals(administracion.getId(), notificacion.getPersonaId());
+    assertEquals("IMPORTACION_TERMINADA", notificacion.getTipoEvento());
+    assertEquals(evento.archivoId(), notificacion.getReferenciaId());
+  }
+
+  @Test
+  void toEntity_importacionCortada_llevaElTipoDeCortada() {
+    Persona administracion =
+        new Persona(
+            grupo5.notificaciones.config.AdminConstantes.ID_ADMIN,
+            new ArrayList<>(),
+            "Administradora Sistema",
+            TipoPersona.HUMANA);
+    when(personaRepository.findById(administracion.getId()))
+        .thenReturn(Optional.of(administracion));
+
+    Notificacion notificacion =
+        mapper.toEntity(importacion("CORTADA")).generarNotificaciones().getFirst();
+
+    assertEquals("IMPORTACION_CORTADA", notificacion.getTipoEvento());
+  }
+
+  @Test
+  void toEntity_importacionConResultadoDesconocido_lanzaValidacion() {
+    var evento = importacion("A_MEDIAS");
+
+    assertThrows(ValidationException.class, () -> mapper.toEntity(evento));
+  }
 }
