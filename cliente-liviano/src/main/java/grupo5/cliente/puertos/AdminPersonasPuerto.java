@@ -3,8 +3,10 @@ package grupo5.cliente.puertos;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminImportacionesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.ConsultaDonantes;
+import grupo5.cliente.vistas.ConsultaImportaciones;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +32,20 @@ public interface AdminPersonasPuerto {
    * hay importación: null.
    */
   Importacion importacion(UUID archivo, String nombre, String ejemplo, int pagina);
+
+  /**
+   * Una página de importaciones de donantes, en curso e históricas, con la búsqueda y los filtros
+   * de {@code consulta} resueltos en la fuente (R11-20): nunca la lista entera; las que siguen en
+   * curso, como un número. {@code ejemplo} es el escenario de la maqueta ({@code vacia}, {@code
+   * sin-resultados} o {@code con-viejas}); el adaptador REST lo ignora.
+   */
+  AdminImportacionesVista importaciones(ConsultaImportaciones consulta, String ejemplo);
+
+  /**
+   * Las filas con error de la importación {@code archivo}, para bajarlas como CSV (R11-20). Se
+   * piden de a tandas mientras se escribe el archivo.
+   */
+  DescargaDeFilas filasConError(UUID archivo);
 
   /** Sube el CSV y devuelve el id de la importación. */
   UUID importar(MultipartFile archivo);

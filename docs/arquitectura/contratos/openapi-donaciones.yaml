@@ -11,6 +11,8 @@ info:
     (ninguno devuelve la lista completa). `q` busca "contiene" sin distinguir mayúsculas ni tildes.
     Desde 1.10.0 (R11-10) cada propuesta dice quién la aprobó o descartó y cuándo
     (`decididaPor`, `fechaDecision`).
+    Desde 1.10.0 (R11-20), `GET /api/donantes/archivos` lista las importaciones de donantes con el
+    mismo patrón, y el archivo informa el nombre con que se subió y cuándo (campos opcionales).
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -878,6 +880,70 @@ paths:
         '403': { description: El donante no es el del token }
         '404': { description: Donante no encontrado }
   /api/donantes/archivos:
+    get:
+      summary: Listar las importaciones de donantes (solo ADMIN)
+      description: >
+        Desde 1.10.0 (R11-20). Una página de importaciones, en curso e históricas, con la
+        búsqueda y los filtros resueltos en la base; el total va en `X-Total-Count`. Sin `page` ni
+        `size`, la página 0 de 20. `q` busca en el nombre con que se subió el archivo (las
+        importaciones anteriores a 1.10.0 no lo tienen y no coinciden con ninguna búsqueda). Para
+        contar las que están en curso sin traer la lista, pedir
+        `estado=PENDIENTE&estado=PROCESANDO&size=1` y leer `X-Total-Count`.
+      operationId: listarArchivosDonantes
+      parameters:
+        - $ref: '#/components/parameters/Q'
+        - name: estado
+          in: query
+          required: false
+          description: Uno o varios estados, repitiendo el parámetro (`estado=PENDIENTE&estado=PROCESANDO`).
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [PENDIENTE, PROCESANDO, PROCESADO, PROCESADO_CON_ERRORES, ERROR]
+        - name: desde
+          in: query
+          required: false
+          description: >
+            Primer día de subida (AAAA-MM-DD, inclusivo), en la hora de Buenos Aires. Con `desde`
+            o `hasta`, las importaciones sin fecha de subida quedan afuera.
+          schema: { type: string, format: date }
+        - name: hasta
+          in: query
+          required: false
+          description: Último día de subida (AAAA-MM-DD, inclusivo), en la hora de Buenos Aires.
+          schema: { type: string, format: date }
+        - name: orden
+          in: query
+          required: false
+          description: >
+            `recientes` (por defecto) o `antiguas`, por la fecha de subida; las que no la tienen,
+            siempre al final. Desempata por id.
+          schema:
+            type: string
+            enum: [recientes, antiguas]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Una página de importaciones
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArchivoDonantesResponse'
+        '400':
+          description: >
+            `page`, `size`, `q`, `estado`, `orden` o una fecha inválidos, o `desde` posterior a
+            `hasta` (ERR-CSR-003)
+        '401': { description: Sin token }
+        '403': { description: El token no es de ADMIN }
     post:
       summary: Cargar archivo/padrón de donantes para procesamiento asíncrono
       description: >
@@ -889,8 +955,8 @@ paths:
         required: true
         description: >
           El padrón como multipart/form-data. El servicio lo guarda en el almacenamiento de
-          objetos (MinIO) con una clave propia; el nombre del archivo solo se usa para validar la
-          extensión .csv. Reemplaza al cuerpo JSON {path} con una ruta del servidor (cambio no
+          objetos (MinIO) con una clave propia; el nombre del archivo se usa para validar la
+          extensión .csv y, desde 1.10.0, se guarda como `nombre`. Reemplaza al cuerpo JSON {path} con una ruta del servidor (cambio no
           aditivo aprobado en la Entrega 6).
         content:
           multipart/form-data:
@@ -1800,6 +1866,21 @@ components:
               resultado:
                 type: string
                 enum: [NUEVO, ACTUALIZADO]
+        nombre:
+          type: string
+          nullable: true
+          maxLength: 255
+          description: >
+            Desde 1.10.0 (R11-20): el nombre con que se subió el archivo, sin la ruta del
+            navegador. Null en las importaciones anteriores a 1.10.0.
+        subidoEn:
+          type: string
+          format: date-time
+          nullable: true
+          description: >
+            Desde 1.10.0 (R11-20): cuándo se subió, en la hora local de Argentina y sin zona (como
+            `fechaAlta` del donante), por ejemplo 2026-10-15T18:02:00. Null en las importaciones
+            anteriores a 1.10.0.
     FilaConErrorResponse:
       type: object
       required: [linea, motivo]

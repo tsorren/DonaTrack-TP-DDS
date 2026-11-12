@@ -2,6 +2,7 @@ package grupo5.cliente.rest;
 
 import grupo5.cliente.cuentas.SolicitudesDeEntidad;
 import grupo5.cliente.puertos.AdminPersonasPuerto;
+import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.rest.DonacionesApi.Archivo;
 import grupo5.cliente.rest.DonacionesApi.Persona;
@@ -13,8 +14,10 @@ import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
 import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminImportacionesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.ConsultaDonantes;
+import grupo5.cliente.vistas.ConsultaImportaciones;
 import grupo5.cliente.vistas.Tramo;
 import java.text.Collator;
 import java.text.NumberFormat;
@@ -80,6 +83,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   private final Clock reloj;
   private final AdminPersonasEntidades entidades;
   private final AdminPersonasInicio inicio;
+  private final AdminPersonasImportaciones importaciones;
 
   /**
    * Las solicitudes de entidad las da Keycloak, fuera de la maqueta; sin ellas, no hay pendientes.
@@ -93,6 +97,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     this.reloj = reloj;
     this.entidades = new AdminPersonasEntidades(donaciones, solicitudes);
     this.inicio = new AdminPersonasInicio(donaciones, logistica);
+    this.importaciones = new AdminPersonasImportaciones(donaciones);
   }
 
   @Override
@@ -293,11 +298,27 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   }
 
   @Override
-  public Importacion importacion(UUID id, String nombre, String ejemplo, int pagina) {
+  public AdminImportacionesVista importaciones(ConsultaImportaciones consulta, String ejemplo) {
+    return importaciones.importaciones(consulta, ahora());
+  }
+
+  @Override
+  public DescargaDeFilas filasConError(UUID archivo) {
+    return importaciones.filasConError(archivo);
+  }
+
+  /**
+   * El nombre y la fecha de subida salen de Donaciones (R11-20); {@code nombre} de la dirección
+   * queda como respaldo de las importaciones que no lo guardaron.
+   */
+  @Override
+  public Importacion importacion(UUID id, String respaldo, String ejemplo, int pagina) {
     if (id == null) {
       return null;
     }
     Archivo avance = donaciones.archivo(id);
+    String nombre =
+        avance.nombre() != null && !avance.nombre().isBlank() ? avance.nombre() : respaldo;
     int procesadas = entero(avance.procesadas());
     int conError = entero(avance.conError());
     String[] etapa = etapa(avance.estado(), procesadas, avance.totalFilas());
@@ -317,7 +338,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     String ver =
         UriComponentsBuilder.fromPath("/admin-donantes-importado")
             .queryParam("archivo", id)
-            .queryParamIfPresent(NOMBRE, Optional.ofNullable(nombre))
+            .queryParamIfPresent(NOMBRE, Optional.ofNullable(respaldo))
             .encode()
             .toUriString();
     return new Importacion(
@@ -335,7 +356,10 @@ class AdminPersonasRest implements AdminPersonasPuerto {
         ultimos(avance.ultimos()),
         filas,
         ver,
-        HORA.format(LocalDateTime.now(reloj.withZone(Comun.ARGENTINA))));
+        HORA.format(LocalDateTime.now(reloj.withZone(Comun.ARGENTINA))),
+        avance.subidoEn() == null ? null : AL.format(avance.subidoEn()),
+        avance.subidoEn() == null ? null : avance.subidoEn().toString(),
+        id.toString());
   }
 
   /** Los últimos que leyó el archivo, con su nombre y si fue nuevo o actualizado. */

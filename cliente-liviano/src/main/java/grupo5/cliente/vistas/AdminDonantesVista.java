@@ -80,7 +80,10 @@ public record AdminDonantesVista(
    * barra (total null: la barra no tiene medida). {@code resultado} es la frase con lo que pasó;
    * {@code ultimos}, los últimos donantes que leyó el archivo; {@code filas}, la página de filas
    * con error que se muestra; {@code avance}, la dirección de la página de avance; {@code hora},
-   * cuándo se leyó ("18:34:12").
+   * cuándo se leyó ("18:34:12"). {@code subido} ("15 de octubre de 2026, 18:02") y {@code
+   * subidoIso} (R11-20): cuándo se subió el archivo, según Donaciones; null si no lo guardó. {@code
+   * id}, el de la importación en Donaciones (null en la maqueta): arma la descarga de las filas con
+   * error.
    */
   public record Importacion(
       String accion,
@@ -97,10 +100,51 @@ public record AdminDonantesVista(
       List<Ultimo> ultimos,
       Tramo<FilaConError> filas,
       String avance,
-      String hora) {
+      String hora,
+      String subido,
+      String subidoIso,
+      String id) {
 
     public Importacion {
       ultimos = ultimos == null ? List.of() : List.copyOf(ultimos);
+    }
+
+    /** Sin la fecha de subida ni el id: la forma anterior a R11-20. */
+    public Importacion(
+        String accion,
+        String etapa,
+        String archivo,
+        String total,
+        String procesadas,
+        String creadas,
+        String actualizadas,
+        String conError,
+        int leidas,
+        Integer totalFilas,
+        String resultado,
+        List<Ultimo> ultimos,
+        Tramo<FilaConError> filas,
+        String avance,
+        String hora) {
+      this(
+          accion,
+          etapa,
+          archivo,
+          total,
+          procesadas,
+          creadas,
+          actualizadas,
+          conError,
+          leidas,
+          totalFilas,
+          resultado,
+          ultimos,
+          filas,
+          avance,
+          hora,
+          null,
+          null,
+          null);
     }
 
     /** Si todavía se está importando: la página de avance se sigue actualizando sola. */

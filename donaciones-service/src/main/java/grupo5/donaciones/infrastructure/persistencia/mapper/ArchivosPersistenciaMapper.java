@@ -21,6 +21,8 @@ public class ArchivosPersistenciaMapper {
     ArchivoEntity entity = new ArchivoEntity();
     entity.setId(domain.getId());
     entity.setPath(domain.getPath());
+    entity.setNombreOriginal(domain.getNombreOriginal());
+    entity.setSubidoEn(domain.getSubidoEn());
     entity.setEstado(domain.getEstado());
     entity.setTotalFilas(domain.getTotalFilas());
     entity.setCreadas(domain.getCreadas());
@@ -35,6 +37,8 @@ public class ArchivosPersistenciaMapper {
         new Archivo(
             entity.getId(),
             entity.getPath(),
+            entity.getNombreOriginal(),
+            entity.getSubidoEn(),
             entity.getEstado(),
             entity.getTotalFilas(),
             entity.getCreadas(),

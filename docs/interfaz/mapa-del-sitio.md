@@ -96,6 +96,7 @@ flowchart LR
 | Camiones | Admin | 2 | RF-18 | pág. 13 (menú) | E1 |
 | Ranking | Admin | 2 | RF-19 | — | E6 |
 | Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
+| Donantes → Importaciones (`/admin-importaciones`: en curso e históricas, con búsqueda y filtros) | Admin | 2 → 3 | RF-20 | [r11-p1-importaciones](flujos/r11-p1-importaciones.md) | E6 |
 
 ## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
 

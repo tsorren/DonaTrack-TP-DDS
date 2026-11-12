@@ -62,6 +62,7 @@
              sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} },
              imp=${datos.importacion}">
   <div class="mesa">
+    <nav th:replace="~{admin-importaciones :: pestanas('donantes')}"></nav>
     <!--/* El encabezado a todo el ancho, con las dos acciones al costado (ronda 2026-11-09); en el celular,
            debajo. La cifra es un número de la fuente, no el largo de la lista. */-->
     <header class="mesa-cabecera">
@@ -88,6 +89,7 @@
         la importación de donantes-octubre.csv.</h2>
       <a class="boton" data-tono="secundario" th:href="@{${imp.avance}}" href="/admin-donantes-importando"
          th:text="${imp.enCurso()} ? 'Ver el avance' : 'Ver el resultado'">Ver el avance</a>
+      <a href="/admin-importaciones" th:href="@{/admin-importaciones}">Ver todas las importaciones</a>
     </section>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando los donantes…</p>
@@ -218,12 +220,17 @@
        vuelve a pedir solo mientras importa: no contiene el foco ni una región que se lea sola. */-->
 <th:block th:fragment="avance" th:with="imp=${importacion}">
   <div class="mesa">
-    <p class="rotulo"><a href="/admin-donantes" th:href="@{/admin-donantes}">Donantes</a> › Importación</p>
+    <p class="rotulo"><a href="/admin-importaciones" th:href="@{/admin-importaciones}">Importaciones</a>
+      › <th:block th:text="${imp.archivo != null} ? ${imp.archivo} : 'Archivo sin nombre guardado'">donantes-octubre.csv</th:block></p>
     <p id="avance-etapa" class="solo-lectores" role="status"></p>
     <div id="avance-aviso" role="status"></div>
     <th:block th:replace="~{admin-donantes :: bloque-avance}"></th:block>
-    <p><a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Volver
-      a Donantes</a></p>
+    <p class="racimo">
+      <a class="boton" data-tono="secundario" href="/admin-importaciones"
+         th:href="@{/admin-importaciones}">Ver todas las importaciones</a>
+      <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Volver
+        a Donantes</a>
+    </p>
   </div>
 </th:block>
 
@@ -246,7 +253,9 @@
   <h1 th:if="${imp.enCurso()}" th:text="${imp.archivo != null} ? |Importando ${imp.archivo}| : 'Importando el archivo'">Importando
     donantes-octubre.csv</h1>
   <h1 th:if="${etapa == 'terminada'}">Importación terminada</h1>
-  <h1 th:if="${etapa == 'cortada'}" th:text="|Importación de ${archivo}|">Importación de donantes-octubre.csv</h1>
+  <h1 th:if="${etapa == 'cortada'}" th:text="${imp.archivo != null} ? |Importación de ${archivo}| : 'Importación del archivo sin nombre guardado'">Importación de donantes-octubre.csv</h1>
+  <p th:if="${imp.subido != null}">Subido el <time th:datetime="${imp.subidoIso}" th:text="${imp.subido}"
+     datetime="2026-10-15T18:02:00">15 de octubre de 2026, 18:02</time>.</p>
 
   <!--/* Mientras importa. */-->
   <section th:if="${imp.enCurso()}" class="tarjeta pila" data-espacio="3" aria-labelledby="avance-cifras">
@@ -320,8 +329,15 @@
   <th:block th:if="${imp.filas != null}">
     <p th:if="${etapa == 'terminada' and imp.filas.total == 0}">Todas las filas se importaron sin errores.</p>
     <section th:if="${imp.filas.total > 0}" class="pila" data-espacio="3" aria-labelledby="filas-titulo">
-      <h2 id="filas-titulo" tabindex="-1" th:text="|Filas con error · ${imp.conError}|"
-          th:autofocus="${paginador != null and paginador.cambio}">Filas con error · 126</h2>
+      <div class="racimo" data-alinea="entre">
+        <h2 id="filas-titulo" tabindex="-1" th:text="|Filas con error · ${imp.conError}|"
+            th:autofocus="${paginador != null and paginador.cambio}">Filas con error · 126</h2>
+        <!--/* R11-20: baja un CSV con todas las filas con error, armado de a tandas. */-->
+        <a th:if="${imp.id != null}" class="boton" data-tono="secundario" download
+           href="/admin-donantes-importado/filas-con-error.csv"
+           th:href="@{/admin-donantes-importado/filas-con-error.csv(archivo=${imp.id})}">Descargar
+          las filas con error</a>
+      </div>
       <table class="tabla">
         <caption class="solo-lectores">Las filas que no se importaron y qué pasó con cada una</caption>
         <thead>

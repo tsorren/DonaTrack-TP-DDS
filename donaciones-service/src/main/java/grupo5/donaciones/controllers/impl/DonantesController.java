@@ -12,6 +12,7 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
@@ -102,6 +103,14 @@ public class DonantesController implements IDonantesController {
                   archivo.getOriginalFilename(), archivo.getSize(), contenido));
       return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
     }
+  }
+
+  /** R11-20: las importaciones, de a una página, con el total en {@code X-Total-Count}. */
+  @Override
+  @GetMapping("/archivos")
+  public ResponseEntity<List<ArchivoOutputDTO>> listarArchivosDonantes(
+      FiltroArchivos filtro, ParametrosListado listado) {
+    return Paginas.conTotal(archivoDonantesService.listar(filtro, listado));
   }
 
   @Override

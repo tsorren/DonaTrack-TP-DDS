@@ -1,6 +1,6 @@
 # Flujo: la pantalla de importaciones del admin (R11-20)
 
-> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
+> **Estado:** construida (lote `p1-importaciones`, 2026-11-12) · antes aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-importaciones` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > La decisión del usuario ("Avance de la importación", sección 3 del backlog: una vista de

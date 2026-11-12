@@ -189,6 +189,10 @@
 /admin-donantes-registrar-error
 /admin-donantes-registrado
 /admin-donantes-registrado?escenario=ya-era
+/admin-importaciones
+/admin-importaciones?escenario=vacia
+/admin-importaciones?escenario=sin-resultados
+/admin-importaciones?escenario=con-viejas
 /admin-entidades
 /admin-entidades?ver=pendientes
 /admin-entidades?ver=inactivas

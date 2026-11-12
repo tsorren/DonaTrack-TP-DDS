@@ -11,7 +11,14 @@ import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.donantes.FilaConError;
 import grupo5.donaciones.models.entities.donantes.MotivoErrorFila;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioArchivos;
+import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -151,5 +158,78 @@ class ArchivoDonantesRepositoryJpaAdapterTest {
     repository.deleteAll();
 
     assertTrue(repository.buscarFilasConError(archivo.getId(), 0, 10).isEmpty());
+  }
+
+  // --- R11-20: la lista de importaciones, en la base --------------------------------------------
+
+  @Test
+  void guardarYLeer_conNombreYFechaDeSubida_losConserva_C7() {
+    LocalDateTime cuando = LocalDateTime.of(2026, 10, 15, 18, 2);
+    Archivo original = new Archivo("/tmp/h.csv", "donantes-octubre.csv", cuando);
+
+    repository.save(original);
+    Archivo leido = repository.findById(original.getId()).orElseThrow();
+
+    assertEquals("donantes-octubre.csv", leido.getNombreOriginal());
+    assertEquals(cuando, leido.getSubidoEn());
+  }
+
+  @Test
+  void buscar_porNombreSinTildesYEnHoraArgentina_C2_C4() {
+    repository.save(
+        new Archivo("/tmp/i.csv", "padrón-octubre.csv", LocalDateTime.of(2026, 10, 15, 23, 30)));
+    repository.save(
+        new Archivo("/tmp/j.csv", "donantes.csv", LocalDateTime.of(2026, 10, 16, 0, 10)));
+    repository.save(new Archivo("/tmp/k.csv"));
+    LocalDate dia = LocalDate.of(2026, 10, 15);
+
+    Tramo<Archivo> porNombre = repository.buscar(criterio(Set.of(), null, null, "PADRON"));
+    Tramo<Archivo> delDia = repository.buscar(criterio(Set.of(), dia, dia, null));
+    Tramo<Archivo> desdeElSiguiente =
+        repository.buscar(criterio(Set.of(), dia.plusDays(1), null, null));
+
+    assertEquals(1, porNombre.total());
+    assertEquals("padrón-octubre.csv", porNombre.elementos().get(0).getNombreOriginal());
+    assertEquals(1, delDia.total());
+    assertEquals("/tmp/i.csv", delDia.elementos().get(0).getPath());
+    assertEquals(1, desdeElSiguiente.total());
+    assertEquals("/tmp/j.csv", desdeElSiguiente.elementos().get(0).getPath());
+  }
+
+  @Test
+  void buscar_porEstadoYConLasViejasAlFinal_C3_C5() {
+    Archivo vieja = new Archivo("/tmp/l.csv");
+    repository.save(vieja);
+    Archivo procesando = new Archivo("/tmp/m.csv", "m.csv", LocalDateTime.of(2026, 10, 2, 9, 0));
+    procesando.marcarComoProcesando();
+    repository.save(procesando);
+    repository.save(new Archivo("/tmp/n.csv", "n.csv", LocalDateTime.of(2026, 10, 1, 9, 0)));
+
+    Tramo<Archivo> enCurso =
+        repository.buscar(
+            new CriterioArchivos(
+                Set.of(EstadoArchivo.PENDIENTE, EstadoArchivo.PROCESANDO),
+                null,
+                null,
+                null,
+                OrdenPorFecha.RECIENTES,
+                new Paginado(0, 1)));
+    Tramo<Archivo> antiguas =
+        repository.buscar(
+            new CriterioArchivos(
+                Set.of(), null, null, null, OrdenPorFecha.ANTIGUAS, new Paginado(0, 20)));
+
+    assertEquals(3, enCurso.total());
+    assertEquals(1, enCurso.elementos().size());
+    assertEquals("/tmp/m.csv", enCurso.elementos().get(0).getPath());
+    assertEquals(
+        List.of("/tmp/n.csv", "/tmp/m.csv", "/tmp/l.csv"),
+        antiguas.elementos().stream().map(Archivo::getPath).toList());
+  }
+
+  private static CriterioArchivos criterio(
+      Set<EstadoArchivo> estados, LocalDate desde, LocalDate hasta, String q) {
+    return new CriterioArchivos(
+        estados, desde, hasta, q, OrdenPorFecha.RECIENTES, new Paginado(0, 20));
   }
 }

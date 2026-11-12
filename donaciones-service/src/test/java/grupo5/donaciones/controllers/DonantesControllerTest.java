@@ -22,14 +22,17 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
+import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
@@ -278,5 +281,122 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
         .perform(get("/api/donantes/archivos/{id}/filas-con-error", archivoId).param("size", "101"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  // --- R11-20: la lista de importaciones ---------------------------------------------------------
+
+  @Test
+  void listarArchivosDonantes_devuelveLaPaginaConElTotalYLosCamposNuevos_C1() throws Exception {
+    UUID archivoId = UUID.randomUUID();
+    ArchivoOutputDTO output =
+        new ArchivoOutputDTO(
+            archivoId,
+            archivoId + ".csv",
+            "PROCESANDO",
+            20000,
+            8400,
+            7950,
+            410,
+            40,
+            List.of(),
+            "donantes-octubre.csv",
+            LocalDateTime.of(2026, 10, 15, 18, 2));
+    when(archivoDonantesService.listar(
+            new FiltroArchivos(
+                List.of(EstadoArchivo.PENDIENTE, EstadoArchivo.PROCESANDO),
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 10, 31)),
+            new ParametrosListado(0, 1, "octubre", "antiguas")))
+        .thenReturn(new Pagina<>(List.of(output), 2));
+
+    mockMvc
+        .perform(
+            get("/api/donantes/archivos")
+                .param("estado", "PENDIENTE")
+                .param("estado", "PROCESANDO")
+                .param("desde", "2026-10-01")
+                .param("hasta", "2026-10-31")
+                .param("q", "octubre")
+                .param("orden", "antiguas")
+                .param("page", "0")
+                .param("size", "1"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "2"))
+        .andExpect(jsonPath("$[0].id").value(archivoId.toString()))
+        .andExpect(jsonPath("$[0].nombre").value("donantes-octubre.csv"))
+        .andExpect(jsonPath("$[0].subidoEn").value("2026-10-15T18:02:00"))
+        .andExpect(jsonPath("$[0].procesadas").value(8400));
+  }
+
+  @Test
+  void listarArchivosDonantes_sinParametros_pideLaPrimeraPaginaPorDefecto() throws Exception {
+    when(archivoDonantesService.listar(
+            new FiltroArchivos(null, null, null), ParametrosListado.primeraPagina()))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(get("/api/donantes/archivos"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"))
+        .andExpect(jsonPath("$").isEmpty());
+  }
+
+  @Test
+  void listarArchivosDonantes_conEstadoQueNoExiste_DeberiaRetornarBadRequest_C6() throws Exception {
+    mockMvc
+        .perform(get("/api/donantes/archivos").param("estado", "OTRO"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+    verifyNoInteractions(archivoDonantesService);
+  }
+
+  @Test
+  void listarArchivosDonantes_conFechaImposible_DeberiaRetornarBadRequest_C6() throws Exception {
+    mockMvc
+        .perform(get("/api/donantes/archivos").param("desde", "2026-13-01"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+    verifyNoInteractions(archivoDonantesService);
+  }
+
+  @Test
+  void listarArchivosDonantes_conTamanioFueraDeRango_DeberiaRetornarBadRequest_C6()
+      throws Exception {
+    when(archivoDonantesService.listar(
+            new FiltroArchivos(null, null, null), new ParametrosListado(null, 101, null, null)))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get("/api/donantes/archivos").param("size", "101"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void cargarArchivoDonantes_respondeElNombreYLaFechaDeSubida_C7() throws Exception {
+    MockMultipartFile archivo =
+        new MockMultipartFile(
+            "archivo", "donantes-octubre.csv", "text/csv", "TipoPersona\nHumana\n".getBytes());
+    ArchivoOutputDTO output =
+        new ArchivoOutputDTO(
+            UUID.randomUUID(),
+            UUID.randomUUID() + ".csv",
+            "PENDIENTE",
+            null,
+            0,
+            0,
+            0,
+            0,
+            List.of(),
+            "donantes-octubre.csv",
+            LocalDateTime.of(2026, 10, 15, 18, 2));
+    when(archivoDonantesService.cargarArchivoDonantes(any(ArchivoDonantesSubido.class)))
+        .thenReturn(output);
+
+    mockMvc
+        .perform(multipart("/api/donantes/archivos").file(archivo))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.nombre").value("donantes-octubre.csv"))
+        .andExpect(jsonPath("$.subidoEn").value("2026-10-15T18:02:00"));
   }
 }

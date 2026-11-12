@@ -4,6 +4,7 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.services.ParametrosListado;
@@ -28,6 +29,9 @@ public interface IDonantesController {
   ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(MultipartFile archivo) throws IOException;
 
   ResponseEntity<ArchivoOutputDTO> obtenerArchivoDonantes(UUID id);
+
+  ResponseEntity<List<ArchivoOutputDTO>> listarArchivosDonantes(
+      FiltroArchivos filtro, ParametrosListado listado);
 
   ResponseEntity<List<FilaConErrorDTO>> obtenerFilasConError(UUID id, Integer page, Integer size);
 }

@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
+import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
@@ -10,11 +11,13 @@ import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
 import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
+import grupo5.cliente.vistas.AdminImportacionesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.AdminInicioVista.Camiones;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
 import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import grupo5.cliente.vistas.ConsultaDonantes;
+import grupo5.cliente.vistas.ConsultaImportaciones;
 import grupo5.cliente.vistas.Tramo;
 import java.text.Collator;
 import java.text.Normalizer;
@@ -279,8 +282,47 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
    * La importación de la ficha (20.000 filas) en la pantalla pedida. Escenarios del avance: {@code
    * esperando}, {@code leyendo} y {@code cortada}; del resultado, {@code sin-errores}.
    */
+  /** Las importaciones de ejemplo de la ficha r11-p1-importaciones; el escenario elige cuáles. */
+  @Override
+  public AdminImportacionesVista importaciones(ConsultaImportaciones consulta, String ejemplo) {
+    return AdminImportacionesDeEjemplo.importaciones(consulta, ejemplo);
+  }
+
+  /** Las 126 filas con error de ejemplo. */
+  @Override
+  public DescargaDeFilas filasConError(UUID archivo) {
+    return AdminImportacionesDeEjemplo.filasConError(FILAS_CON_ERROR);
+  }
+
   @Override
   public Importacion importacion(UUID archivo, String nombre, String ejemplo, int pagina) {
+    return conSubida(ejemplo(ejemplo, pagina));
+  }
+
+  /** Con la fecha de subida de la ficha ("Subido el 15 de octubre de 2026, 18:02."). */
+  private static Importacion conSubida(Importacion i) {
+    return new Importacion(
+        i.accion(),
+        i.etapa(),
+        i.archivo(),
+        i.total(),
+        i.procesadas(),
+        i.creadas(),
+        i.actualizadas(),
+        i.conError(),
+        i.leidas(),
+        i.totalFilas(),
+        i.resultado(),
+        i.ultimos(),
+        i.filas(),
+        i.avance(),
+        i.hora(),
+        "15 de octubre de 2026, 18:02",
+        "2026-10-15T18:02:00",
+        "00000000-0000-4000-8000-000000000001");
+  }
+
+  private Importacion ejemplo(String ejemplo, int pagina) {
     return switch (ejemplo == null ? "" : ejemplo) {
       case "importando:esperando" ->
           new Importacion(

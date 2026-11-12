@@ -31,6 +31,20 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · admin · Las importaciones de donantes son una pestaña de Donantes
+
+- **Decisión:** `/admin-importaciones`, pestaña "Importaciones" junto a "Donantes", con la lista de a
+  20, búsqueda por nombre del archivo y filtros Estado, Subida y Ordenar resueltos en Donaciones.
+  "Terminadas" incluye las que terminaron con filas con error; cada renglón lleva a su avance o a su
+  resultado, y el resultado ofrece descargar las filas con error en CSV.
+- **Alternativas:** una entrada propia en el menú; "Terminadas" solo para las sin error; una tabla y
+  una lista aparte para celular (se usó una sola tabla con `data-rotulo`).
+- **Por qué:** es parte del trabajo con donantes; la palabra "Terminada" vale para las dos; menos
+  marcado que mantener.
+- **Costo:** la barra de búsqueda fija al desplazarse queda para el lote dueño de `filtros.css`; las
+  importaciones viejas dicen "Archivo sin nombre guardado" y "Sin fecha guardada".
+- **Quién decidió:** usuario (ficha r11-p1-importaciones aprobada); los detalles, el agente.
+
 ### 2026-11-12 · entidad · La cuenta pendiente navega lo público, sin el ingreso ni el registro
 
 - **Decisión:** con la solicitud pendiente, la cuenta puede ir a la portada, Entidades, Donaciones,

@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.CuentasDelMenu;
+import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.seguridad.UsuarioActual;
 import grupo5.cliente.vistas.AdminDonantesVista;
@@ -396,5 +397,89 @@ class AdminDonantesControllerTest {
         .andExpect(redirectedUrl("/admin-donantes-importar-error"));
     mvc.perform(get("/admin-donantes-importar-error").with(admin()))
         .andExpect(content().string(containsString("No se importó ninguna fila.")));
+  }
+
+  // --- R11-20 --------------------------------------------------------------------------------
+
+  private static Importacion conId(String accion, String etapa, String id, String subido) {
+    return new Importacion(
+        accion,
+        etapa,
+        "donantes-octubre.csv",
+        "100",
+        "100",
+        "60",
+        "10",
+        "30",
+        100,
+        100,
+        "100 filas leídas: 60 donantes nuevos, 10 actualizados y 30 filas con error.",
+        List.of(),
+        "importado".equals(accion)
+            ? new Tramo<>(List.of(new FilaConError("Fila 21", "Falta el correo.")), 30, 1, 2)
+            : null,
+        "/v",
+        "18:40:00",
+        subido,
+        "2026-10-15T18:02",
+        id);
+  }
+
+  @Test
+  void elResultadoLlevaALaListaDiceLaFechaYOfreceLaDescarga() throws Exception {
+    when(personas.importacion(ARCHIVO, null, "importado", 1))
+        .thenReturn(
+            conId("importado", "terminada", ARCHIVO.toString(), "15 de octubre de 2026, 18:02"));
+    mvc.perform(get("/admin-donantes-importado?archivo=" + ARCHIVO).with(admin()))
+        .andExpect(content().string(containsString("Importaciones</a>")))
+        .andExpect(content().string(containsString("› donantes-octubre.csv")))
+        .andExpect(content().string(containsString("15 de octubre de 2026, 18:02")))
+        .andExpect(content().string(containsString("Ver todas las importaciones")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "/admin-donantes-importado/filas-con-error.csv?archivo=" + ARCHIVO)))
+        .andExpect(content().string(not(containsString("null"))));
+  }
+
+  @Test
+  void siPasaAErrorSinFilasMientrasSeActualizaVaLaPaginaEntera_C15() throws Exception {
+    when(personas.importacion(ARCHIVO, null, "importando", 1))
+        .thenReturn(conId("importar-error", "error", ARCHIVO.toString(), null));
+    mvc.perform(
+            get("/admin-donantes-importando?archivo=" + ARCHIVO + "&etapa=importando")
+                .header("HX-Request", "true")
+                .with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(
+            header().string("HX-Redirect", "/admin-donantes-importar-error?archivo=" + ARCHIVO));
+  }
+
+  @Test
+  void unaImportacionQueYaNoExisteVuelveALaListaConElAviso() throws Exception {
+    when(personas.importacion(ARCHIVO, null, "importado", 1))
+        .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "", null, null, null));
+    mvc.perform(get("/admin-donantes-importado?archivo=" + ARCHIVO).with(admin()))
+        .andExpect(redirectedUrl("/admin-importaciones"))
+        .andExpect(flash().attribute(Envios.AVISO, "No encontramos esa importación."));
+  }
+
+  @Test
+  void laDescargaBajaUnCsvConElNombreDelArchivo_C14() throws Exception {
+    when(personas.filasConError(ARCHIVO))
+        .thenReturn(
+            new DescargaDeFilas(
+                "donantes-octubre.csv",
+                salida -> salida.write("\uFEFFFila;Qué pasó;Código\r\n21;Falta el correo.;\r\n")));
+    mvc.perform(
+            get("/admin-donantes-importado/filas-con-error.csv?archivo=" + ARCHIVO).with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Type", containsString("text/csv")))
+        .andExpect(
+            header()
+                .string(
+                    "Content-Disposition", containsString("filas-con-error-donantes-octubre.csv")))
+        .andExpect(content().string(containsString("21;Falta el correo.;")));
   }
 }

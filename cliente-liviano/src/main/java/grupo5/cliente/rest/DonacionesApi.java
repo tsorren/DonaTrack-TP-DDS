@@ -213,6 +213,15 @@ interface DonacionesApi {
   @PostExchange(value = "/api/donantes/archivos", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
   Archivo importarDonantes(@RequestBody MultiValueMap<String, ?> partes);
 
+  /**
+   * Solo ADMIN (R11-20): las importaciones de a una página, con {@code q} (en el nombre del
+   * archivo), {@code estado} (repetible), {@code desde}, {@code hasta}, {@code orden} ({@code
+   * recientes} o {@code antiguas}), {@code page} y {@code size}; el total, en {@code
+   * X-Total-Count}.
+   */
+  @GetExchange("/api/donantes/archivos")
+  ResponseEntity<List<Archivo>> archivos(@RequestParam MultiValueMap<String, String> filtros);
+
   @GetExchange("/api/donantes/archivos/{id}")
   Archivo archivo(@PathVariable UUID id);
 
@@ -466,7 +475,9 @@ interface DonacionesApi {
 
   /**
    * El avance de un CSV: {@code estado} y los contadores de filas; {@code ultimos}, los últimos
-   * donantes procesados, el más reciente primero (hasta 5).
+   * donantes procesados, el más reciente primero (hasta 5). {@code nombre} y {@code subidoEn}
+   * (R11-20): con qué nombre y cuándo se subió (hora de Argentina); null en las importaciones
+   * anteriores a que Donaciones los guardara.
    */
   record Archivo(
       UUID id,
@@ -477,7 +488,9 @@ interface DonacionesApi {
       Integer creadas,
       Integer actualizadas,
       Integer conError,
-      List<Ultimo> ultimos) {}
+      List<Ultimo> ultimos,
+      String nombre,
+      LocalDateTime subidoEn) {}
 
   /** Un donante que leyó el archivo: su nombre visible y {@code NUEVO} o {@code ACTUALIZADO}. */
   record Ultimo(String nombre, String resultado) {}

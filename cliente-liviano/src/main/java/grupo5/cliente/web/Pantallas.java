@@ -57,6 +57,13 @@ public class Pantallas {
   private static final Map<String, String> FUERA_DEL_MENU =
       Map.of("perfil", "Mi perfil", "administradores", "Administradores");
 
+  /**
+   * Pantallas que son parte de una sección aunque su nombre no empiece con el de ella: la pestaña
+   * Importaciones es de Donantes (R11-20).
+   */
+  private static final Map<String, String> EN_LA_SECCION =
+      Map.of("admin-importaciones", "admin-donantes");
+
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
   private static final String ICONO_INICIO = "inicio";
@@ -236,12 +243,13 @@ public class Pantallas {
     String prefijo = pantalla.substring(0, pantalla.indexOf('-'));
     Optional<Area> area = Area.deRuta(prefijo);
     List<Seccion> menu = conMisiones ? MENU_PERSONA : area.map(MENUS::get).orElse(List.of());
+    String deLaSeccion = EN_LA_SECCION.getOrDefault(pantalla, pantalla);
     Seccion actual =
         menu.stream()
             .filter(
                 seccion ->
-                    pantalla.equals(seccion.pantalla())
-                        || pantalla.startsWith(seccion.pantalla() + "-"))
+                    deLaSeccion.equals(seccion.pantalla())
+                        || deLaSeccion.startsWith(seccion.pantalla() + "-"))
             .findFirst()
             .orElse(null);
     String fueraDelMenu = FUERA_DEL_MENU.get(pantalla.substring(prefijo.length() + 1));
