@@ -22,7 +22,7 @@ public class LectorDonantesCSV implements CargadorDonantes {
 
   private static final Logger log = LoggerFactory.getLogger(LectorDonantesCSV.class);
   public static final String BOM =
-      "﻿"; // Carácter BOM invisible al inicio de algunos archivos UTF-8
+      "\uFEFF"; // Carácter BOM invisible al inicio de algunos archivos UTF-8
 
   private final DonanteParser donanteParser;
 
