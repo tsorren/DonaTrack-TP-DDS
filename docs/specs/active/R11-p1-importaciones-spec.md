@@ -38,7 +38,7 @@ pueden descargar.
 ### In-Scope (dentro del alcance)
 
 1. **Donaciones guarda el nombre y la fecha de subida** de cada archivo. Migración nueva
-   `V22__archivo_nombre_y_fecha_de_subida.sql` (la siguiente a `V21`; si choca al integrar, la
+   `V23__archivo_nombre_y_fecha_de_subida.sql` (la siguiente a `V21`; si choca al integrar, la
    renumera el integrador):
    - `archivo.nombre_original VARCHAR(255) NULL`: el nombre con que se subió, sin la ruta del
      navegador, recortado a 255 caracteres.
@@ -146,8 +146,8 @@ conteo, no una lista.
 
 | Campo | Tipo | Qué es |
 |---|---|---|
-| `nombre` | `string`, nullable | El nombre con que se subió el archivo. `null` en las importaciones anteriores a `V22` |
-| `subidoEn` | `string` `date-time` (hora local de Argentina, sin zona, como `fechaAlta`), nullable | Cuándo se subió. `null` en las anteriores a `V22` |
+| `nombre` | `string`, nullable | El nombre con que se subió el archivo. `null` en las importaciones anteriores a `V23` |
+| `subidoEn` | `string` `date-time` (hora local de Argentina, sin zona, como `fechaAlta`), nullable | Cuándo se subió. `null` en las anteriores a `V23` |
 
 `path` sigue siendo la clave interna del almacenamiento y no se muestra. La descripción del
 `requestBody` del `POST` cambia de "el nombre solo se usa para validar la extensión" a "se usa
@@ -258,7 +258,7 @@ Lista completa:
   avance por id; los campos nuevos no lo afectan. No se cambia.
 - **Ensayo de 20.000 filas** (`demo/ensayo-importacion/`): igual que el seeder.
 - **Gateway:** la ruta ya está en la allowlist; no hay ruta pública nueva.
-- **Base:** `V22` solo agrega columnas que aceptan `NULL` y un índice; no reescribe filas.
+- **Base:** `V23` solo agrega columnas que aceptan `NULL` y un índice; no reescribe filas.
 
 ## 7. Especificación Técnica de Diseño
 
@@ -273,7 +273,7 @@ Sin diseño de clases, como pide el lote: solo lo que el constructor necesita de
 - **Dónde se toca:** `DonantesController` y `IDonantesController` (el `GET` nuevo),
   `IArchivoDonantesService` y `ArchivoDonantesService` (listado y `Clock` para `subidoEn`), `Archivo`
   (los dos datos nuevos), `IArchivoDonantesRepository` con su adaptador JPA y su versión en memoria,
-  `ArchivoEntity`, `ArchivosPersistenciaMapper`, `ArchivoOutputDTO`, `V22`. En el cliente:
+  `ArchivoEntity`, `ArchivosPersistenciaMapper`, `ArchivoOutputDTO`, `V23`. En el cliente:
   `DonacionesApi`, el puerto de personas del admin con sus adaptadores REST y de maqueta, el
   controller nuevo, `AdminDonantesController` (el `HX-Redirect`, la descarga y el nombre), `Pantallas`
   (la sección), las plantillas `admin-importaciones.html`, `admin-donantes.html`,
