@@ -209,6 +209,7 @@ docs/
 * 📋 **Tablero del inicio de la empresa donante, tres columnas paginadas (R11-25, diseño en revisión):** [ficha de flujo](interfaz/flujos/r11-p2-tablero.md)
 * 📥 **Importador de donantes por partes (R11-B08, implementada salvo el ensayo):** [spec del lote p1-importador](specs/active/R11-p1-importador-spec.md) · [ensayo de 20.000 filas](testing/ensayo-importacion-20000.md) · deuda: [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
 * 🗂️ **Registro de actividad de administración (R11-26, diseño en revisión):** [spec del lote p2-actividad](specs/active/R11-p2-actividad-spec.md) · [ficha de flujo](interfaz/flujos/r11-p2-actividad.md)
+* 🔔 **Campanita con desplegable y avisos de la administración (R11-29 y R11-30, en diseño):** [spec del lote p2-campanita](specs/active/R11-p2-campanita-spec.md) · [ficha de flujo](interfaz/flujos/r11-p2-campanita.md)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
