@@ -4,6 +4,7 @@ import grupo5.common.repositories.CrudRepositoryJpaAdapter;
 import grupo5.donaciones.infrastructure.persistencia.entities.propuestas.PropuestaEntity;
 import grupo5.donaciones.infrastructure.persistencia.mapper.PropuestasPersistenciaMapper;
 import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataPropuestaRepository;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import java.util.List;
@@ -52,5 +53,10 @@ public class PropuestaRepositoryJpaAdapter
   @Transactional(readOnly = true)
   public List<Propuesta> findAll() {
     return super.findAll();
+  }
+
+  @Override
+  public long contarEnEstado(EstadoPropuesta estado) {
+    return springDataRepo.countByEstado(estado);
   }
 }

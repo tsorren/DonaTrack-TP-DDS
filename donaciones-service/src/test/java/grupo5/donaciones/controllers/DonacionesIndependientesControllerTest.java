@@ -12,11 +12,13 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -182,13 +184,15 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             null);
 
     when(donacionesIndependientesService.obtenerConFiltros(
-            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null)))
-        .thenReturn(List.of(response));
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null),
+            ParametrosListado.primeraPagina()))
+        .thenReturn(new Pagina<>(List.of(response), 120));
 
     mockMvc
         .perform(get("/donaciones-independientes"))
         .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(header().string("X-Total-Count", "120"))
         .andExpect(jsonPath("$.size()").value(1))
         .andExpect(jsonPath("$[0].id").value(id.toString()))
         .andExpect(jsonPath("$[0].descripcion").value("Descripcion"))
@@ -205,7 +209,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
     UUID necesidadId = UUID.randomUUID();
     FiltroDonacionesIndependientes esperado =
         new FiltroDonacionesIndependientes(
-            TipoEstadoDonacion.EN_DEPOSITO,
+            List.of(TipoEstadoDonacion.EN_DEPOSITO, TipoEstadoDonacion.ENTREGADA),
             subcategoriaId,
             categoriaId,
             donanteId,
@@ -213,12 +217,19 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             LocalDate.of(2026, 11, 1),
             LocalDate.of(2026, 11, 5),
             necesidadId);
-    when(donacionesIndependientesService.obtenerConFiltros(esperado)).thenReturn(List.of());
+    ParametrosListado listado = new ParametrosListado(3, 25, "campera", "ANTIGUAS");
+    when(donacionesIndependientesService.obtenerConFiltros(esperado, listado))
+        .thenReturn(new Pagina<>(List.of(), 0));
 
     mockMvc
         .perform(
             get(RUTA)
                 .param("estado", "EN_DEPOSITO")
+                .param("estado", "ENTREGADA")
+                .param("page", "3")
+                .param("size", "25")
+                .param("q", "campera")
+                .param("orden", "ANTIGUAS")
                 .param("subcategoriaId", subcategoriaId.toString())
                 .param("categoriaId", categoriaId.toString())
                 .param("donanteId", donanteId.toString())
@@ -229,7 +240,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(0));
 
-    verify(donacionesIndependientesService).obtenerConFiltros(esperado);
+    verify(donacionesIndependientesService).obtenerConFiltros(esperado, listado);
   }
 
   @Test
@@ -239,7 +250,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
 
-    verify(donacionesIndependientesService, never()).obtenerConFiltros(any());
+    verify(donacionesIndependientesService, never()).obtenerConFiltros(any(), any());
   }
 
   @Test
@@ -252,7 +263,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
 
   @Test
   void obtenerTodas_conDesdePosteriorAHasta_retorna400() throws Exception {
-    when(donacionesIndependientesService.obtenerConFiltros(any()))
+    when(donacionesIndependientesService.obtenerConFiltros(any(), any()))
         .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
 
     mockMvc

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.common.seguridad.SeguridadAutoConfiguration;
 import grupo5.donaciones.controllers.AbstractDonacionesWebMvcTest;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
@@ -24,6 +25,7 @@ import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.dto.personas.AceptarLegalesDTO;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
@@ -83,6 +85,15 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
           .claim("permisos", List.of(permisos))
           .build();
     }
+  }
+
+  // R11-01: los listados devuelven una página; sin datos, una vacía
+  @BeforeEach
+  void listadosVacios() {
+    when(donantesService.buscar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
+    when(donacionesIndependientesService.obtenerConFiltros(any(), any()))
+        .thenReturn(new Pagina<>(List.of(), 0));
+    when(donacionesService.buscar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
   }
 
   private ResultActions pedir(MockHttpServletRequestBuilder pedido, String token) throws Exception {
@@ -253,6 +264,13 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
 
     pedir(get("/api/donantes/" + DONANTE), "donante").andExpect(status().isOk());
     pedir(get("/api/donantes/" + AJENO), "donante").andExpect(status().isForbidden());
+  }
+
+  @Test
+  void elResumenDelInicioEsSoloDelAdmin_R1101() throws Exception {
+    pedir(get("/api/donaciones/resumen"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen"), "entidad").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen"), "admin").andExpect(status().isOk());
   }
 
   @Test

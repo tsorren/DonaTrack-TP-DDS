@@ -6,4 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SpringDataDonanteRepository extends JpaRepository<DonanteEntity, UUID> {}
+public interface SpringDataDonanteRepository extends JpaRepository<DonanteEntity, UUID> {
+
+  long countByActivoTrue();
+}

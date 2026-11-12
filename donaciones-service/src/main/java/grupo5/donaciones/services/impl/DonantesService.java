@@ -3,22 +3,27 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioDonantes;
+import grupo5.donaciones.models.repositories.listados.OrdenDonantes;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.EstadoRegistroDonante;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import grupo5.donaciones.services.mappers.DonanteMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -89,42 +94,21 @@ public class DonantesService implements IDonantesService {
   }
 
   @Override
-  public List<DonanteOutputDTO> listarDonantesPorContacto(String canal) {
-    List<Donante> donantes = donantesRepository.findAll();
-
-    if (canal == null || canal.isBlank()) {
-      return donantes.stream().map(donanteMapper::toOutputDTO).toList();
-    }
-
+  public Pagina<DonanteOutputDTO> buscar(FiltroDonantes filtro, ParametrosListado listado) {
     // Filtrar por canal es para contactar: un donante de baja o una persona anonimizada no aplican
-    return donantes.stream()
-        .filter(Donante::estaActivo)
-        .filter(this::personaNoAnonimizada)
-        .map(donanteMapper::toOutputDTO)
-        .filter(
-            d ->
-                d.persona() != null
-                    && d.persona().mediosDeContacto() != null
-                    && d.persona().mediosDeContacto().stream()
-                        .anyMatch(
-                            medio -> {
-                              if (medio == null) return false;
-                              String tipoMedio =
-                                  medio
-                                      .getClass()
-                                      .getSimpleName()
-                                      .replace("OutputDTO", "")
-                                      .toUpperCase();
-                              return canal.equalsIgnoreCase(tipoMedio);
-                            }))
-        .toList();
-  }
-
-  private boolean personaNoAnonimizada(Donante donante) {
-    return personasRepository
-        .findById(donante.personaId())
-        .map(persona -> !persona.estaAnonimizada())
-        .orElse(false);
+    String canal = filtro.canal() == null || filtro.canal().isBlank() ? null : filtro.canal();
+    Tramo<Donante> tramo =
+        donantesRepository.buscar(
+            new CriterioDonantes(
+                listado.texto(),
+                filtro.tipo(),
+                filtro.tipoJuridico(),
+                filtro.activo(),
+                filtro.categoriaId(),
+                canal,
+                listado.orden(OrdenDonantes.class, OrdenDonantes.NUEVOS),
+                listado.paginado()));
+    return new Pagina<>(donanteMapper.toOutputDTOs(tramo.elementos()), (int) tramo.total());
   }
 
   @Override

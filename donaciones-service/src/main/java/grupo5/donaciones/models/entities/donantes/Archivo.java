@@ -3,6 +3,8 @@ package grupo5.donaciones.models.entities.donantes;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -20,6 +22,10 @@ public class Archivo implements AggregateRoot {
   private int creadas;
   private int actualizadas;
   private int conError;
+  private final List<UltimoImportado> ultimos = new ArrayList<>();
+
+  /** Cuántos donantes recién procesados se recuerdan para mostrar el avance (R11-01). */
+  public static final int ULTIMOS_RECORDADOS = 5;
 
   public Archivo(String path) {
     this.id = UUID.randomUUID();
@@ -58,8 +64,38 @@ public class Archivo implements AggregateRoot {
     this.creadas++;
   }
 
+  /** Cuenta la fila creada y recuerda al donante entre los últimos procesados. */
+  public void registrarCreada(String nombre) {
+    registrarCreada();
+    recordar(new UltimoImportado(nombre, UltimoImportado.Resultado.NUEVO));
+  }
+
   public void registrarActualizada() {
     this.actualizadas++;
+  }
+
+  /** Cuenta la fila actualizada y recuerda al donante entre los últimos procesados. */
+  public void registrarActualizada(String nombre) {
+    registrarActualizada();
+    recordar(new UltimoImportado(nombre, UltimoImportado.Resultado.ACTUALIZADO));
+  }
+
+  /** Los últimos procesados, el más reciente primero; a lo sumo {@link #ULTIMOS_RECORDADOS}. */
+  public List<UltimoImportado> getUltimos() {
+    return List.copyOf(ultimos);
+  }
+
+  /** Reconstitución desde la base, en el orden guardado (el más reciente primero). */
+  public void restaurarUltimos(List<UltimoImportado> guardados) {
+    ultimos.clear();
+    guardados.stream().limit(ULTIMOS_RECORDADOS).forEach(ultimos::add);
+  }
+
+  private void recordar(UltimoImportado ultimo) {
+    ultimos.add(0, ultimo);
+    if (ultimos.size() > ULTIMOS_RECORDADOS) {
+      ultimos.remove(ULTIMOS_RECORDADOS);
+    }
   }
 
   public void registrarError() {

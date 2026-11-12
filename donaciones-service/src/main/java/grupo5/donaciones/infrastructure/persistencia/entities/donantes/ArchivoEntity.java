@@ -36,4 +36,8 @@ public class ArchivoEntity {
 
   @Column(name = "con_error", nullable = false)
   private int conError;
+
+  /** Los últimos donantes procesados (R11-01): una línea por donante, RESULTADO y nombre. */
+  @Column(name = "ultimos", columnDefinition = "TEXT")
+  private String ultimos;
 }

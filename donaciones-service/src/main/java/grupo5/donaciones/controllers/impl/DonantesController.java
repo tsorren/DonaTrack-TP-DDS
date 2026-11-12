@@ -12,9 +12,11 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -62,9 +64,8 @@ public class DonantesController implements IDonantesController {
   @Override
   @GetMapping
   public ResponseEntity<List<DonanteOutputDTO>> listarDonantes(
-      @RequestParam(value = "canal", required = false) String canal) {
-    List<DonanteOutputDTO> donantes = donantesService.listarDonantesPorContacto(canal);
-    return ResponseEntity.ok(donantes);
+      FiltroDonantes filtro, ParametrosListado listado) {
+    return Paginas.conTotal(donantesService.buscar(filtro, listado));
   }
 
   @Override

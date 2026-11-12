@@ -105,6 +105,9 @@ public class ArchivoDonantesService implements IArchivoDonantesService {
         archivo.getProcesadas(),
         archivo.getCreadas(),
         archivo.getActualizadas(),
-        archivo.getConError());
+        archivo.getConError(),
+        archivo.getUltimos().stream()
+            .map(u -> new ArchivoOutputDTO.UltimoDTO(u.nombre(), u.resultado().name()))
+            .toList());
   }
 }

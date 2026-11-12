@@ -21,6 +21,17 @@ public interface SpringDataDonacionIndependienteRepository
 
   long countByEstadoActual(TipoEstadoDonacion estadoActual);
 
+  @Query(
+      "select d.estadoActual as estado, count(d) as cantidad"
+          + " from DonacionIndependienteEntity d group by d.estadoActual")
+  List<ConteoPorEstado> contarPorEstado();
+
+  interface ConteoPorEstado {
+    TipoEstadoDonacion getEstado();
+
+    long getCantidad();
+  }
+
   // HB-01: fecha_entrega solo se guarda junto con fotos publicables (V15)
   List<DonacionIndependienteEntity>
       findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(

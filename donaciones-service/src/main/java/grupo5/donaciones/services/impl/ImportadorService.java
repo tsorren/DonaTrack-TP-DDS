@@ -21,6 +21,7 @@ import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.ports.CargadorDonantes.FilaPadron;
 import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
+import grupo5.donaciones.models.repositories.listados.PersonaEnListado;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -156,13 +157,13 @@ public class ImportadorService implements IImportadorService {
             personaId, personaMapper.mapToActualizacionParcial(campos));
         // Recién con la fila válida y aplicada se registra el rol (y se publica donante.registrado)
         donantesService.registrarSiNoExiste(personaId);
-        archivo.registrarActualizada();
+        archivo.registrarActualizada(PersonaEnListado.nombreVisible(personaClon));
       } else {
         log.info("Creando nueva persona y donante...");
         PersonaOutputDTO personaCreada =
             personaService.crearPersona(transformarAPersonaInputDTO(personaClon, campos));
         donantesService.crearDonante(new DonanteInputDTO(personaCreada.id()));
-        archivo.registrarCreada();
+        archivo.registrarCreada(PersonaEnListado.nombreVisible(personaClon));
       }
       return Optional.empty();
     } catch (Exception e) {

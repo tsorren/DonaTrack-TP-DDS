@@ -7,4 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpringDataEntidadBeneficiariaRepository
-    extends JpaRepository<EntidadBeneficiariaEntity, UUID> {}
+    extends JpaRepository<EntidadBeneficiariaEntity, UUID> {
+
+  long countByActivoTrue();
+}

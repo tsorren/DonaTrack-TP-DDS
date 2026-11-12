@@ -6,11 +6,15 @@ import static grupo5.donaciones.seguridad.Acceso.PUBLICO;
 import static grupo5.donaciones.seguridad.Acceso.SU_DONACION;
 
 import grupo5.donaciones.controllers.IDonacionesController;
+import grupo5.donaciones.dto.donaciones.FiltroDonaciones;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.ResumenAdminDTO;
 import grupo5.donaciones.services.IDonacionesService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.impl.ContadoresPublicosService;
+import grupo5.donaciones.services.impl.ResumenAdminService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -31,11 +35,15 @@ public class DonacionesController implements IDonacionesController {
 
   private final IDonacionesService service;
   private final ContadoresPublicosService contadoresPublicosService;
+  private final ResumenAdminService resumenAdminService;
 
   public DonacionesController(
-      IDonacionesService service, ContadoresPublicosService contadoresPublicosService) {
+      IDonacionesService service,
+      ContadoresPublicosService contadoresPublicosService,
+      ResumenAdminService resumenAdminService) {
     this.service = service;
     this.contadoresPublicosService = contadoresPublicosService;
+    this.resumenAdminService = resumenAdminService;
   }
 
   @Override
@@ -50,8 +58,16 @@ public class DonacionesController implements IDonacionesController {
 
   @Override
   @GetMapping
-  public ResponseEntity<List<DonacionOutputDTO>> listarDonaciones() {
-    return ResponseEntity.ok(service.listarDonaciones());
+  public ResponseEntity<List<DonacionOutputDTO>> listarDonaciones(
+      FiltroDonaciones filtro, ParametrosListado listado) {
+    return Paginas.conTotal(service.buscar(filtro, listado));
+  }
+
+  /** Las cifras del inicio del admin (R11-01). Solo ADMIN, como el resto de la clase. */
+  @Override
+  @GetMapping("/resumen")
+  public ResponseEntity<ResumenAdminDTO> obtenerResumen() {
+    return ResponseEntity.ok(resumenAdminService.calcular());
   }
 
   /** Público (RF-01, HB-02): sin token cuando el gateway aplique la allowlist. */

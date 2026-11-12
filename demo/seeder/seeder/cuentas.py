@@ -83,12 +83,22 @@ def _persona_de_entidad(e: Entidad) -> dict:
     }
 
 
+TAMANIO_PAGINA = 100  # el máximo de los listados de Donaciones (R11-01)
+
+
 def ya_sembrado(donaciones: Api, mundo: Mundo) -> bool:
+    """Busca el correo del primer donante recorriendo /api/personas de a una página (R11-01:
+    ningún listado devuelve la lista completa). Corta en cuanto lo encuentra."""
     correo = mundo.donantes[0].correo
-    personas = donaciones.get("/api/personas") or []
-    if isinstance(personas, dict):  # por si la lista viene paginada
-        personas = personas.get("content", [])
-    return any(correo in str(p) for p in personas)
+    pagina = 0
+    while True:
+        personas = donaciones.get(
+            "/api/personas", params={"page": pagina, "size": TAMANIO_PAGINA}) or []
+        if any(correo in str(p) for p in personas):
+            return True
+        if len(personas) < TAMANIO_PAGINA:
+            return False
+        pagina += 1
 
 
 def crear_cuentas(mundo: Mundo, donaciones: Api, keycloak: Keycloak, clave: str) -> None:

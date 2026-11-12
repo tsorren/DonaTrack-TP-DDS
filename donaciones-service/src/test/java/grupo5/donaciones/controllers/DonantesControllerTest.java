@@ -1,6 +1,7 @@
 package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -21,10 +22,12 @@ import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
+import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import java.time.LocalDate;
 import java.time.Month;
@@ -107,12 +110,50 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
     UUID donanteId = UUID.randomUUID();
     DonanteOutputDTO output = new DonanteOutputDTO(donanteId, null, true);
 
-    when(donantesService.listarDonantesPorContacto(null)).thenReturn(List.of(output));
+    when(donantesService.buscar(any(), any())).thenReturn(new Pagina<>(List.of(output), 31));
 
     mockMvc
         .perform(get("/api/donantes"))
         .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "31"))
         .andExpect(jsonPath("$.size()").value(1));
+
+    verify(donantesService).buscar(FiltroDonantes.ninguno(), ParametrosListado.primeraPagina());
+  }
+
+  @Test
+  void listarDonantes_pasaBusquedaFiltrosOrdenYPagina_R1101() throws Exception {
+    UUID categoriaId = UUID.randomUUID();
+    when(donantesService.buscar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(
+            get("/api/donantes")
+                .param("q", "gómez")
+                .param("canal", "CORREO")
+                .param("tipo", "HUMANA")
+                .param("activo", "true")
+                .param("categoriaId", categoriaId.toString())
+                .param("orden", "NOMBRE")
+                .param("page", "1")
+                .param("size", "50"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"));
+
+    verify(donantesService)
+        .buscar(
+            new FiltroDonantes("CORREO", TipoPersona.HUMANA, null, true, categoriaId),
+            new ParametrosListado(1, 50, "gómez", "NOMBRE"));
+  }
+
+  @Test
+  void listarDonantes_conTipoDesconocido_devuelve400SinConsultar() throws Exception {
+    mockMvc
+        .perform(get("/api/donantes").param("tipo", "MARCIANA"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+
+    verifyNoInteractions(donantesService);
   }
 
   @Test

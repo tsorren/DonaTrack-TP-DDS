@@ -1,8 +1,14 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.8.0
-  description: API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde 1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
+  version: 1.9.0
+  description: >-
+    API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
+    1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
+    algorítmica. Desde 1.9.0 (R11-01) los listados de donantes, personas, donaciones, donaciones
+    independientes y entidades paginan, buscan y ordenan en la base: el cuerpo sigue siendo un
+    arreglo, el total va en `X-Total-Count` y, sin `page` ni `size`, devuelven la página 0 de 20
+    (ninguno devuelve la lista completa). `q` busca "contiene" sin distinguir mayúsculas ni tildes.
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -10,22 +16,32 @@ paths:
   /donaciones-independientes:
     get:
       summary: Listar donaciones independientes con filtros
+      description: >
+        Una página de las que cumplen los filtros (R11-01), por fecha de registro. Los filtros se
+        combinan con Y; los valores repetidos de `estado`, con O.
       operationId: listarDonacionesIndependientes
       parameters:
         - name: estado
           in: query
           required: false
+          description: >
+            Uno o varios estados, repitiendo el parámetro (`estado=EN_DEPOSITO&estado=ENTREGADA`);
+            desde 1.9.0. Un solo valor se manda igual que antes.
+          style: form
+          explode: true
           schema:
-            type: string
-            enum:
-              - EN_DEPOSITO
-              - ASIGNACION_REALIZADA
-              - EN_TRASLADO
-              - EN_PUERTA
-              - LISTA_PARA_ENTREGAR
-              - ENTREGADA
-              - ENTREGA_FALLIDA
-              - VENCIDA
+            type: array
+            items:
+              type: string
+              enum:
+                - EN_DEPOSITO
+                - ASIGNACION_REALIZADA
+                - EN_TRASLADO
+                - EN_PUERTA
+                - LISTA_PARA_ENTREGAR
+                - ENTREGADA
+                - ENTREGA_FALLIDA
+                - VENCIDA
         - name: subcategoriaId
           in: query
           required: false
@@ -73,9 +89,22 @@ paths:
           schema:
             type: string
             format: uuid
+        - $ref: '#/components/parameters/Q'
+        - name: orden
+          in: query
+          required: false
+          description: Por fecha de registro; RECIENTES (la más nueva primero) si se omite.
+          schema:
+            type: string
+            enum: [RECIENTES, ANTIGUAS]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
-          description: Lista de donaciones independientes
+          description: Página de donaciones independientes. `q` busca en la descripción de sus bienes.
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
           content:
             application/json:
               schema:
@@ -83,7 +112,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
         '400':
-          description: Fecha mal formada o `desde` posterior a `hasta` (ERR-CSR-003)
+          description: >-
+            Fecha mal formada, `desde` posterior a `hasta`, estado u orden desconocido, o `page`,
+            `size` o `q` fuera de rango (ERR-CSR-003)
   /donaciones-independientes/{id}:
     get:
       summary: Consultar donación independiente por ID
@@ -160,16 +191,66 @@ paths:
           description: Datos de donación inválidos, incluida la falta de descripción (obligatoria desde la persistencia en PostgreSQL, D-32)
     get:
       summary: Listar donaciones
+      description: Una página de las donaciones que cumplen los filtros (R11-01), por fecha.
       operationId: listarDonaciones
+      parameters:
+        - name: donanteId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+        - name: desde
+          in: query
+          required: false
+          description: Fecha mínima, inclusiva.
+          schema: { type: string, format: date }
+        - name: hasta
+          in: query
+          required: false
+          description: Fecha máxima, inclusiva. Si es anterior a `desde`, responde 400.
+          schema: { type: string, format: date }
+        - $ref: '#/components/parameters/Q'
+        - name: orden
+          in: query
+          required: false
+          description: Por fecha; RECIENTES si se omite.
+          schema:
+            type: string
+            enum: [RECIENTES, ANTIGUAS]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
-          description: Listado de donaciones
+          description: Página de donaciones. `q` busca en la descripción de la donación y en la de sus bienes.
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/DonacionOutputDTO'
+        '400':
+          description: Fecha mal formada, `desde` posterior a `hasta`, orden desconocido o paginado fuera de rango (ERR-CSR-003)
+  /api/donaciones/resumen:
+    get:
+      summary: Cifras del inicio del administrador
+      description: >
+        Solo ADMIN (R11-01). Cada cifra es un conteo en la base, sin traer listas. Sin las
+        entidades pendientes de aprobación, que vienen de Auth. El mes en curso y "por vencer"
+        salen del reloj del servicio (America/Argentina/Buenos_Aires).
+      operationId: obtenerResumenAdmin
+      responses:
+        '200':
+          description: Resumen calculado en el momento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenAdminDTO'
+        '401':
+          description: Sin token o token inválido
+        '403':
+          description: El token no es de un administrador
   /api/donaciones/fotos:
     post:
       summary: Pedir una URL prefirmada para subir la foto de un bien
@@ -201,8 +282,8 @@ paths:
         Ruta pública (RF-01, HB-02): sin token cuando el gateway aplique la allowlist (D26). Totales
         desde el inicio, sin datos personales. donantesActivos cuenta los donantes activos con al
         menos una donación; donacionesRealizadas, las donaciones independientes en ENTREGADA (la
-        entidad confirmó la recepción); beneficiariosActivos, las entidades de
-        GET /api/entidades/publicas.
+        entidad confirmó la recepción); beneficiariosActivos, las entidades beneficiarias activas.
+        Desde 1.9.0 cada cifra es un conteo en la base (R11-01).
       operationId: obtenerContadoresPublicos
       responses:
         '200':
@@ -516,29 +597,30 @@ paths:
     get:
       summary: Listar entidades beneficiarias
       description: >
-        Incluye las entidades dadas de baja; cada una expone `activo`. Sin `page` ni `size`
-        devuelve todas, en el mismo orden de siempre. Con alguno de los dos ordena por razón
-        social y devuelve ese tramo (HB-15). El cuerpo es siempre un arreglo; el total de las que
-        cumplen el filtro va en el header `X-Total-Count`.
+        Incluye las entidades dadas de baja; cada una expone `activo`. Ordena por razón social y
+        devuelve un tramo (HB-15), resuelto en la base. Desde 1.9.0 (R11-01), sin `page` ni `size`
+        devuelve la página 0 de 20, ya no todas. El cuerpo es siempre un arreglo; el total de las
+        que cumplen el filtro va en el header `X-Total-Count`.
       operationId: listarEntidadesBeneficiarias
       parameters:
         - name: nombre
           in: query
           required: false
-          description: Razón social que contiene este texto, sin distinguir mayúsculas.
+          description: Razón social que contiene este texto, sin distinguir mayúsculas ni tildes.
           schema:
             type: string
+            maxLength: 100
         - name: page
           in: query
           required: false
-          description: Número de página, desde 0. Por defecto 0 si se manda `size`.
+          description: Número de página, desde 0. Por defecto 0.
           schema:
             type: integer
             minimum: 0
         - name: size
           in: query
           required: false
-          description: Tamaño de página. Por defecto 20 si se manda `page`.
+          description: Tamaño de página. Por defecto 20.
           schema:
             type: integer
             minimum: 1
@@ -552,7 +634,7 @@ paths:
               schema:
                 type: integer
         '400':
-          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
+          description: '`page` negativo, `size` fuera de 1..100 o `nombre` de más de 100 caracteres (ERR-CSR-003)'
   /api/entidades/publicas:
     get:
       summary: Listar entidades beneficiarias activas (ruta pública)
@@ -669,19 +751,65 @@ paths:
     get:
       summary: Listar donantes
       description: >
-        Sin `canal` incluye los donantes dados de baja; cada uno expone `activo`. Con `canal`
-        devuelve solo los donantes activos cuya persona no está anonimizada, porque el filtro
-        sirve para contactarlos.
+        Una página de los donantes que cumplen los filtros (R11-01). Sin `canal` incluye los
+        donantes dados de baja; cada uno expone `activo`. Con `canal` devuelve solo los donantes
+        activos cuya persona no está anonimizada, porque el filtro sirve para contactarlos.
       operationId: listarDonantes
       parameters:
         - name: canal
           in: query
           required: false
-          description: Tipo de medio de contacto (por ejemplo `CORREO` o `TELEFONO`).
+          description: >-
+            Tipo de medio de contacto: `CORREO`, `TELEFONO` (estándar) o `WHATSAPP`. Uno
+            desconocido no devuelve ninguno.
           schema: { type: string }
+        - name: q
+          in: query
+          required: false
+          description: >-
+            Contiene, sin distinguir mayúsculas ni tildes, en el nombre, el apellido, la razón
+            social o el número de documento. Hasta 100 caracteres.
+          schema: { type: string, maxLength: 100 }
+        - name: tipo
+          in: query
+          required: false
+          schema: { type: string, enum: [HUMANA, JURIDICA] }
+        - name: tipoJuridico
+          in: query
+          required: false
+          description: Solo jurídicas de ese tipo.
+          schema: { type: string, enum: [GUBERNAMENTAL, ONG, EMPRESA, INSTITUCION] }
+        - name: activo
+          in: query
+          required: false
+          schema: { type: boolean }
+        - name: categoriaId
+          in: query
+          required: false
+          description: Donó alguna vez un bien de una subcategoría de esta categoría.
+          schema: { type: string, format: uuid }
+        - name: orden
+          in: query
+          required: false
+          description: >-
+            NUEVOS (por fecha de alta, el más nuevo primero; por defecto), ANTIGUOS o NOMBRE
+            (razón social, o apellido y nombre, sin tildes).
+          schema: { type: string, enum: [NUEVOS, ANTIGUOS, NOMBRE] }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
         '200':
-          description: Listado de donantes
+          description: Página de donantes
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DonanteOutputDTO' }
+        '400':
+          description: Tipo, orden o paginado inválidos, o `q` de más de 100 caracteres (ERR-CSR-003)
   /api/donantes/{id}:
     get:
       summary: Consultar donante por ID
@@ -1046,15 +1174,51 @@ paths:
   /api/personas:
     get:
       summary: Listar personas registradas
+      description: >
+        Una página de las personas que cumplen los filtros, por nombre (R11-01). Con `id` es una
+        lectura por lote de esas personas.
       operationId: listarPersonasDonaciones
       parameters:
         - name: tipo
           in: query
           required: false
           schema: { type: string, enum: [HUMANA, JURIDICA] }
+        - name: tipoJuridico
+          in: query
+          required: false
+          schema: { type: string, enum: [GUBERNAMENTAL, ONG, EMPRESA, INSTITUCION] }
+        - name: id
+          in: query
+          required: false
+          description: Una o varias personas, repitiendo el parámetro; hasta 100. Un id que no existe no aparece.
+          style: form
+          explode: true
+          schema:
+            type: array
+            maxItems: 100
+            items: { type: string, format: uuid }
+        - name: q
+          in: query
+          required: false
+          description: >-
+            Contiene, sin distinguir mayúsculas ni tildes, en el nombre, el apellido, la razón
+            social o el número de documento.
+          schema: { type: string, maxLength: 100 }
+        - name: orden
+          in: query
+          required: false
+          description: Solo NOMBRE (por defecto).
+          schema: { type: string, enum: [NOMBRE] }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
       responses:
+        '400':
+          description: Más de 100 `id`, tipo u orden desconocido, o paginado fuera de rango (ERR-CSR-003)
         '200':
-          description: Listado de personas
+          description: Página de personas
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
           content:
             application/json:
               schema:
@@ -1198,7 +1362,124 @@ paths:
         '400': { description: Proveedor vacío o no configurado }
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Número de página, desde 0. Por defecto 0 (R11-01).
+      schema:
+        type: integer
+        minimum: 0
+    Size:
+      name: size
+      in: query
+      required: false
+      description: Tamaño de página. Por defecto 20; nunca se devuelve la lista completa (R11-01).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+    Q:
+      name: q
+      in: query
+      required: false
+      description: >-
+        Texto buscado: "contiene", sin distinguir mayúsculas ni tildes ("gomez" encuentra
+        "Gómez"). Vacío es lo mismo que no mandarlo. Hasta 100 caracteres.
+      schema:
+        type: string
+        maxLength: 100
+  headers:
+    XTotalCount:
+      description: Cantidad que cumple los filtros, sin contar la paginación (R11-01).
+      schema:
+        type: integer
+        minimum: 0
   schemas:
+    ResumenAdminDTO:
+      type: object
+      description: Cifras del inicio del administrador (R11-01), cada una contada en la base.
+      required:
+        - donacionesPorEstado
+        - entregadasEnElMes
+        - porVencer
+        - donantes
+        - entidadesActivas
+        - propuestasPendientes
+        - calculadoEn
+      properties:
+        donacionesPorEstado:
+          type: object
+          description: Cuántas donaciones independientes hay en cada estado; los 8 siempre presentes, con 0 si no hay.
+          additionalProperties:
+            type: integer
+            format: int64
+            minimum: 0
+          example:
+            EN_DEPOSITO: 12
+            ASIGNACION_REALIZADA: 3
+            EN_TRASLADO: 1
+            EN_PUERTA: 0
+            LISTA_PARA_ENTREGAR: 2
+            ENTREGADA: 30
+            ENTREGA_FALLIDA: 0
+            VENCIDA: 1
+        entregadasEnElMes:
+          type: object
+          required: [mes, cantidad]
+          properties:
+            mes: { type: string, description: 'Mes en curso, AAAA-MM', example: '2026-11' }
+            cantidad:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Las que pasaron a ENTREGADA en el mes
+        porVencer:
+          type: object
+          required: [dias, cantidad]
+          properties:
+            dias: { type: integer, description: 'Cuántos días adelante mira, desde hoy' }
+            cantidad:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Las que siguen en depósito con algún bien que vence en esos días
+            proxima:
+              type: object
+              nullable: true
+              description: La de vencimiento más cercano; null si no hay ninguna
+              properties:
+                id: { type: string, format: uuid }
+                descripcion: { type: string }
+                fechaVencimiento: { type: string, format: date }
+        donantes:
+          type: object
+          required: [total, activos]
+          properties:
+            total: { type: integer, format: int64, minimum: 0 }
+            activos: { type: integer, format: int64, minimum: 0 }
+        entidadesActivas: { type: integer, format: int64, minimum: 0 }
+        propuestasPendientes:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Propuestas de asignación que esperan respuesta
+        calculadoEn: { type: string, format: date-time }
+    DonanteOutputDTO:
+      type: object
+      required: [idDonante, activo, mostrarNombre]
+      properties:
+        idDonante: { type: string, format: uuid, description: Es el id de su persona }
+        persona: { $ref: '#/components/schemas/PersonaOutputDTO' }
+        activo: { type: boolean }
+        mostrarNombre: { type: boolean, description: HB-20 }
+        fechaAlta:
+          type: string
+          format: date-time
+          description: >-
+            Desde 1.9.0 (R11-01): primer registro como donante; una reactivación no la cambia. Los
+            donantes previos a la migración V21 tienen la fecha de la migración.
     ContadoresPublicosDTO:
       type: object
       description: Contadores públicos de la landing (HB-02).
@@ -1461,6 +1742,22 @@ components:
           description: >
             Filas que no se importaron, también las mal formadas (HB-14). El detalle está en
             GET /api/donantes/archivos/{id}/filas-con-error
+        ultimos:
+          type: array
+          maxItems: 5
+          description: >
+            Desde 1.9.0 (R11-01): los últimos donantes procesados, el más reciente primero, para
+            mostrar el avance. Se guardan con el progreso, de a 500 filas. Vacío al empezar.
+          items:
+            type: object
+            required: [nombre, resultado]
+            properties:
+              nombre:
+                type: string
+                description: Razón social, o apellido y nombre, tal como vino en el padrón
+              resultado:
+                type: string
+                enum: [NUEVO, ACTUALIZADO]
     FilaConErrorResponse:
       type: object
       required: [linea, motivo]

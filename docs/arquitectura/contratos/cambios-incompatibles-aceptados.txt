@@ -37,3 +37,14 @@ PUT /api/necesidades/{id} added required request body
 # liviano, integration-tests) leen el estado como texto. Como en HB-19, oasdiff clasifica "enum
 # value added" como aviso; en un request no rompe a quien no lo manda. [INFERRED] Se confirma con
 # la salida del job de contratos del PR; si lo marca como error, las líneas van acá.
+
+# R11-01 (p0-api-listados, 2026-11-11; spec R11-p0-api-listados §0): Donaciones 1.9.0.
+# 1) `estado` de GET /donaciones-independientes pasa de un valor a uno o varios repetidos (style
+#    form, explode): quien manda un solo valor sigue igual, pero oasdiff lo ve como cambio de tipo.
+# 2) `nombre` de GET /api/entidades queda acotado a 100 caracteres, el mismo tope que `q`.
+# Lo que oasdiff no ve, aprobado por el usuario: sin page ni size los listados devuelven la página
+# 0 de 20 (antes, todo). El seeder de demo ya recorre páginas; los consumidores del cliente
+# liviano los migra p0-admin-listados. [INFERRED] oasdiff no se pudo correr local (sin la imagen);
+# el texto exacto de cada línea se confirma con el job de contratos del PR y se corrige acá.
+GET /donaciones-independientes for the 'query' request parameter 'estado', the type/format was changed from 'string'/'' to 'array'/''
+GET /api/entidades for the 'query' request parameter 'nombre', the maxLength was set to '100'

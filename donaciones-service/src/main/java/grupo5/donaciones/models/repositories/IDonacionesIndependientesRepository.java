@@ -3,12 +3,34 @@ package grupo5.donaciones.models.repositories;
 import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
+import grupo5.donaciones.models.repositories.listados.PorVencer;
+import grupo5.donaciones.models.repositories.listados.Tramo;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public interface IDonacionesIndependientesRepository extends CrudRepository<DonacionIndependiente> {
+
+  /** Una página con la búsqueda, los filtros y el orden resueltos (R11-01). */
+  Tramo<DonacionIndependiente> buscar(CriterioDonacionesIndependientes criterio);
+
+  /** Cuántas hay en cada estado; los estados sin donaciones no aparecen. */
+  Map<TipoEstadoDonacion, Long> contarPorEstado();
+
+  /**
+   * Cuántas donaciones pasaron a {@code estado} con un cambio en {@code [desde, hasta)} (entregadas
+   * en el mes del resumen del admin).
+   */
+  long contarQuePasaronA(TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta);
+
+  /**
+   * Las que siguen en depósito con algún bien que vence entre {@code desde} y {@code hasta}
+   * (inclusivos): cuántas son y cuál vence primero.
+   */
+  PorVencer buscarPorVencer(LocalDate desde, LocalDate hasta);
 
   List<DonacionIndependiente> findEnDeposito();
 

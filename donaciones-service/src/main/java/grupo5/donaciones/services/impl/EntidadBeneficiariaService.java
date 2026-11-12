@@ -13,12 +13,12 @@ import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioEntidades;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -82,29 +82,30 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
     return mapper.toOutputDTO(entidad);
   }
 
-  public List<EntidadBeneficiariaOutputDTO> obtenerTodas() {
-    return repository.findAll().stream().map(mapper::toOutputDTO).toList();
-  }
-
   @Override
   public Pagina<EntidadBeneficiariaOutputDTO> buscar(String nombre, Integer page, Integer size) {
-    validarPaginado(page, size);
-    return buscarEn(obtenerTodas(), nombre, page, size);
+    Tramo<EntidadBeneficiaria> tramo = repository.buscar(criterio(nombre, false, page, size));
+    return new Pagina<>(mapper.toOutputDTOs(tramo.elementos()), (int) tramo.total());
   }
 
   @Override
   public Pagina<EntidadPublicaDTO> buscarPublicas(String nombre, Integer page, Integer size) {
-    validarPaginado(page, size);
-    List<EntidadBeneficiariaOutputDTO> activas =
-        obtenerTodas().stream().filter(e -> e.activo() && e.juridica() != null).toList();
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = buscarEn(activas, nombre, page, size);
+    Tramo<EntidadBeneficiaria> tramo = repository.buscar(criterio(nombre, true, page, size));
     return new Pagina<>(
-        pagina.elementos().stream()
+        mapper.toOutputDTOs(tramo.elementos()).stream()
+            .filter(e -> e.juridica() != null)
             .map(
                 e ->
                     new EntidadPublicaDTO(e.id(), e.juridica().razonSocial(), e.juridica().rubro()))
             .toList(),
-        pagina.total());
+        (int) tramo.total());
+  }
+
+  /** Sin {@code page} ni {@code size}, la página 0 de 20 (R11-01): nunca la lista completa. */
+  private static CriterioEntidades criterio(
+      String nombre, boolean soloActivas, Integer page, Integer size) {
+    ParametrosListado listado = new ParametrosListado(page, size, nombre, null);
+    return new CriterioEntidades(listado.texto(), soloActivas, listado.paginado());
   }
 
   /** También lo usa {@link ArchivoDonantesService} para las filas con error del padrón. */
@@ -113,45 +114,6 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
         || (size != null && (size < 1 || size > TAMANIO_PAGINA_MAXIMO))) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
-  }
-
-  /** Filtra por nombre y pagina; {@code page} y {@code size} ya validados. */
-  private static Pagina<EntidadBeneficiariaOutputDTO> buscarEn(
-      List<EntidadBeneficiariaOutputDTO> entidades, String nombre, Integer page, Integer size) {
-    boolean paginado = page != null || size != null;
-    int pagina = page == null ? 0 : page;
-    int tamanio = size == null ? TAMANIO_PAGINA_POR_DEFECTO : size;
-
-    // ponytail: filtra y pagina en memoria sobre findAll(); pasar a una consulta paginada cuando
-    // el volumen lo pida.
-    String buscado = nombre == null ? null : nombre.toLowerCase(Locale.ROOT);
-    List<EntidadBeneficiariaOutputDTO> filtradas =
-        entidades.stream()
-            .filter(
-                e ->
-                    buscado == null
-                        || (razonSocial(e) != null
-                            && razonSocial(e).toLowerCase(Locale.ROOT).contains(buscado)))
-            .toList();
-    if (!paginado) {
-      return new Pagina<>(filtradas, filtradas.size());
-    }
-    // Sin paginado se respeta el orden de siempre; paginando hace falta un orden estable.
-    List<EntidadBeneficiariaOutputDTO> tramo =
-        filtradas.stream()
-            .sorted(
-                Comparator.comparing(
-                        EntidadBeneficiariaService::razonSocial,
-                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
-                    .thenComparing(EntidadBeneficiariaOutputDTO::id))
-            .skip((long) pagina * tamanio)
-            .limit(tamanio)
-            .toList();
-    return new Pagina<>(tramo, filtradas.size());
-  }
-
-  private static String razonSocial(EntidadBeneficiariaOutputDTO entidad) {
-    return entidad.juridica() == null ? null : entidad.juridica().razonSocial();
   }
 
   @Override
