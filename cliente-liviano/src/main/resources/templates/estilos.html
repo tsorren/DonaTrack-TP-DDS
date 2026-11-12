@@ -721,7 +721,7 @@
               th:with="temasMuestra=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
                        {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'}} },
                        relojMuestra=${#temporals.createDateTime('2026-10-15T18:30')}">
-            <div class="pila buzon-bandeja" data-espacio="4">
+            <div class="pila buzon-bandeja" data-espacio="4" data-ancho="pantalla">
               <form class="buzon" action="/donante-notificaciones-leidas" th:action="@{/donante-notificaciones-leidas}"
                     method="post" x-data="buzon" x-on:change="cambiar">
                 <div class="buzon-cabeza">

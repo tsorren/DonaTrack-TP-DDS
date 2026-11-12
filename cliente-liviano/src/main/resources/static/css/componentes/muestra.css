@@ -45,6 +45,14 @@
   overflow-x: auto;
 }
 
+/* El ancho de una pantalla: desde la tableta la fila de la bandeja se arma en columnas (punto, casilla, ícono,
+   mensaje, tema, cuándo, acción) y en una celda angosta del catálogo se rompe. La ficha se desplaza de costado. */
+@media (min-width: 53.75em) {
+  .muestra-demo [data-ancho="pantalla"] {
+    min-width: 40rem;
+  }
+}
+
 .muestra-demo [data-ventana] {
   position: relative;
   min-width: 20rem;
