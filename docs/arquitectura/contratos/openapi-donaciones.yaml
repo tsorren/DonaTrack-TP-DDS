@@ -1949,8 +1949,8 @@ components:
           type: string
           nullable: true
           description: >
-            Lo que tocó: la propuesta, la donación, el donante, el archivo, la organización, el
-            `sub` de la cuenta o el id del camión. Nulo en `ASIGNACION_CORRIDA`.
+            Lo que tocó: la propuesta, la ejecución de la asignación, la donación, el donante, el
+            archivo, la organización, el `sub` de la cuenta o el id del camión.
         detalle:
           type: string
           nullable: true

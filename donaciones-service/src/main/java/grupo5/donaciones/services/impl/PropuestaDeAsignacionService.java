@@ -41,6 +41,7 @@ import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
 import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
 import grupo5.donaciones.models.repositories.listados.StockEnPropuestas;
 import grupo5.donaciones.models.repositories.listados.Tramo;
+import grupo5.donaciones.services.EjecucionRealizada;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import grupo5.donaciones.services.ParametrosListado;
@@ -92,7 +93,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final DonacionIndependienteMapper donacionIndependienteMapper;
 
   @Override
-  public List<PropuestaDTO> ejecutarAsignacion() {
+  public EjecucionRealizada ejecutarAsignacion() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
     // "Satisfecha" depende de lo asignado, que no guarda la necesidad (DTI-06)
     List<Necesidad> necesidades =
@@ -109,7 +110,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     EjecucionAsignacion ejecucion = new EjecucionAsignacion(propuestas.size());
     asignacionRepository.save(ejecucion);
 
-    return propuestaMapper.toDTOsSinCalculo(propuestas);
+    return new EjecucionRealizada(ejecucion.getId(), propuestaMapper.toDTOsSinCalculo(propuestas));
   }
 
   @Override

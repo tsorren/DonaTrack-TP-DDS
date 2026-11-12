@@ -26,6 +26,7 @@ import grupo5.donaciones.dto.entidadBeneficiaria.OrigenEntidad;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
+import grupo5.donaciones.services.EjecucionRealizada;
 import grupo5.donaciones.services.ResultadoRegistro;
 import java.util.List;
 import java.util.UUID;
@@ -74,14 +75,16 @@ class RegistroDeActividadEnLasAccionesTest extends AbstractDonacionesWebMvcTest 
   }
 
   @Test
-  void correrLaAsignacion_registraCuantasPropuestasNuevasHubo() throws Exception {
+  void correrLaAsignacion_registraLaEjecucionYCuantasPropuestasNuevasHubo() throws Exception {
     PropuestaDTO propuesta = mock(PropuestaDTO.class);
+    UUID ejecucion = UUID.randomUUID();
     when(propuestaDeAsignacionService.ejecutarAsignacion())
-        .thenReturn(List.of(propuesta, propuesta, propuesta));
+        .thenReturn(new EjecucionRealizada(ejecucion, List.of(propuesta, propuesta, propuesta)));
 
     mockMvc.perform(post("/api/asignaciones/ejecuciones")).andExpect(status().isCreated());
 
-    verify(actividadService).registrar(AccionDeAdministracion.ASIGNACION_CORRIDA, null, "3");
+    verify(actividadService)
+        .registrar(AccionDeAdministracion.ASIGNACION_CORRIDA, ejecucion.toString(), "3");
   }
 
   @Test

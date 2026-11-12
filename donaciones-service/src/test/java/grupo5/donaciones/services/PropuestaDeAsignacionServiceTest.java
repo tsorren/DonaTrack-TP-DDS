@@ -68,6 +68,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 
 class PropuestaDeAsignacionServiceTest {
@@ -150,13 +151,17 @@ class PropuestaDeAsignacionServiceTest {
         .thenReturn(List.of(propuesta));
     when(propuestaMapper.toDTOsSinCalculo(List.of(propuesta))).thenReturn(List.of(dto));
 
-    List<PropuestaDTO> resultado = service.ejecutarAsignacion();
+    EjecucionRealizada resultado = service.ejecutarAsignacion();
 
-    assertEquals(1, resultado.size());
-    assertEquals(dto, resultado.getFirst());
+    assertEquals(List.of(dto), resultado.propuestas());
 
     verify(propuestaRepository).save(propuesta);
-    verify(asignacionRepository).save(any(EjecucionAsignacion.class));
+    // R11-26: devuelve el id de la ejecución que guardó, para el registro de actividad.
+    ArgumentCaptor<EjecucionAsignacion> guardada =
+        ArgumentCaptor.forClass(EjecucionAsignacion.class);
+    verify(asignacionRepository).save(guardada.capture());
+    assertEquals(guardada.getValue().getId(), resultado.ejecucionId());
+    assertEquals(1, guardada.getValue().getCantidadPropuestasGeneradas());
   }
 
   @Test

@@ -11,6 +11,7 @@ import grupo5.donaciones.dto.propuestas.FiltroPropuestas;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.dto.propuestas.ResumenPropuestasDTO;
 import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
+import grupo5.donaciones.services.EjecucionRealizada;
 import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import grupo5.donaciones.services.ParametrosListado;
@@ -47,10 +48,13 @@ public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionCo
   @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping("/ejecuciones")
   public ResponseEntity<List<PropuestaDTO>> ejecutar() {
-    List<PropuestaDTO> nuevas = service.ejecutarAsignacion();
+    EjecucionRealizada corrida = service.ejecutarAsignacion();
+    List<PropuestaDTO> nuevas = corrida.propuestas();
     // R11-26: con un token de ADMIN queda en el registro; el del scheduler o de servicio, no.
     actividad.registrar(
-        AccionDeAdministracion.ASIGNACION_CORRIDA, null, String.valueOf(nuevas.size()));
+        AccionDeAdministracion.ASIGNACION_CORRIDA,
+        corrida.ejecucionId().toString(),
+        String.valueOf(nuevas.size()));
     return ResponseEntity.status(HttpStatus.CREATED).body(nuevas);
   }
 

@@ -15,6 +15,7 @@ import grupo5.donaciones.dto.propuestas.ResumenPropuestasDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
+import grupo5.donaciones.services.EjecucionRealizada;
 import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +29,8 @@ class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
 
   @Test
   void ejecutar_deberiaRetornar201YPropuestasGeneradas() throws Exception {
-    when(propuestaDeAsignacionService.ejecutarAsignacion()).thenReturn(List.of());
+    when(propuestaDeAsignacionService.ejecutarAsignacion())
+        .thenReturn(new EjecucionRealizada(UUID.randomUUID(), List.of()));
 
     mockMvc
         .perform(post("/api/asignaciones/ejecuciones"))

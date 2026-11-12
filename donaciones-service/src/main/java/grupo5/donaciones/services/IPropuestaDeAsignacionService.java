@@ -7,12 +7,12 @@ import grupo5.donaciones.dto.propuestas.FiltroPropuestas;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.dto.propuestas.ResumenPropuestasDTO;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
-import java.util.List;
 import java.util.UUID;
 
 public interface IPropuestaDeAsignacionService {
 
-  List<PropuestaDTO> ejecutarAsignacion();
+  /** Genera las propuestas nuevas y guarda la ejecución en el historial. */
+  EjecucionRealizada ejecutarAsignacion();
 
   /**
    * Una página de propuestas con los filtros y el orden pedidos ({@code orden}: {@code puesto} o
