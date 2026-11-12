@@ -447,7 +447,7 @@
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.huerta-bajo', 'Bajo tierra (componentes/huerta :: raices, cuarta ronda): las raíces del dibujo de la diseñadora como SVG decorativo (.huerta-bajo-dibujo, con .huerta-bajo-raiz, -trazo, -punteada, -nudo y -halo pintados con los tokens de la tierra) y, encima, la lista real de categorías (.huerta-bajo-categoria) y tipos de organización (.huerta-bajo-entidad), puesta con data-lugar en porcentajes del dibujo. .huerta-bajo-tu es la invitación «Tu organización», que lleva al registro. Por debajo de 37,5 em el dibujo se oculta y la misma lista se ve como tres raíces apiladas. Achicá la ventana para verlo.', ~{::demo-huerta-bajo})}">
           <th:block th:fragment="demo-huerta-bajo">
-            <section th:replace="~{componentes/huerta :: raices}"></section>
+            <div data-ancho="pantalla"><section th:replace="~{componentes/huerta :: raices}"></section></div>
           </th:block>
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.subida', 'La zona para subir fotos: un campo con el control nativo de archivos (la cámara o la galería del celular; sin JavaScript anda igual y manda lo elegido) y, con JavaScript, la vista previa de cada imagen con su nombre y un botón Quitar. data-estado=&quot;error&quot; pone el recuadro en el color del problema. Probala: elegí una imagen.', ~{::demo-subida})}">
@@ -617,7 +617,7 @@
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.almanaque', 'Un año mes a mes, para la persona que dona. El mes con donaciones (data-mes=&quot;con&quot;) es un enlace a su lista, con la cuenta y una planta por donación; el mes sin donaciones (sin) y el que viene (por-venir) se ven neutros, nunca como falta. El mes actual lleva data-hoy y la marca Este mes.', ~{::demo-almanaque})}">
           <th:block th:fragment="demo-almanaque">
-            <ol class="almanaque" role="list" aria-label="Ejemplo: donaciones por mes">
+            <ol class="almanaque" role="list" aria-label="Ejemplo: donaciones por mes" data-ancho="pantalla">
               <li data-mes="sin"><div><b>Julio</b><span class="solo-lectores">Sin donaciones</span></div></li>
               <li data-mes="con"><a href="#componentes"><b>Agosto</b><span>1 donación</span>
                 <span data-plantas aria-hidden="true"><img src="/img/ilustraciones/planta-naranjo.svg"
@@ -695,7 +695,7 @@
                        {valor: 'recibidas', texto: 'Donaciones recibidas', icono: 'tilde'}} },
                        relojMuestra=${#temporals.createDateTime('2026-10-15T18:30')}">
             <form class="buzon" action="/entidad-notificaciones-leidas" th:action="@{/entidad-notificaciones-leidas}"
-                  method="post" x-data="buzon" x-on:change="cambiar">
+                  method="post" x-data="buzon" x-on:change="cambiar" data-ancho="pantalla">
               <div class="buzon-cabeza">
                 <label hidden x-bind:hidden="sinCasillas"><input type="checkbox" x-ref="todas"> Seleccionar todas</label>
                 <button class="boton" data-tono="secundario" data-tamano="chico" type="submit" x-text="rotulo">Marcar
@@ -749,7 +749,7 @@
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.segmentos', 'Un selector de pocas vistas de la misma lista: enlaces reales, la que se ve con aria-current=&quot;page&quot;, una pastilla de papel sin borde verde. En el celular ocupa el ancho.', ~{::demo-segmentos})}">
           <th:block th:fragment="demo-segmentos">
-            <nav class="segmentos" aria-label="Qué organizaciones ver (muestra)">
+            <nav class="segmentos" aria-label="Qué organizaciones ver (muestra)" data-ancho="pantalla">
               <a href="/estilos" th:href="@{/estilos}" aria-current="page">Activas · 46</a>
               <a href="/estilos" th:href="@{/estilos}">Pendientes · 3</a>
               <a href="/estilos" th:href="@{/estilos}">Inactivas · 3</a>
@@ -764,7 +764,7 @@
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.maestro', 'Una lista para elegir de a uno y su ficha (.maestro-ficha), dentro del renglón elegido: en el celular, justo debajo y en una columna; desde la tableta, a la derecha. El elegido, con papel claro, sombra suave y un indicador redondeado a la izquierda, sin borde verde. La ficha, por partes (data-parte): la identidad, el resumen con su filete verde claro (a la derecha en pantalla ancha) y las necesidades en dos columnas.', ~{::demo-maestro})}">
           <th:block th:fragment="demo-maestro">
-            <ul class="maestro" role="list">
+            <ul class="maestro" role="list" data-ancho="pantalla">
               <li>
                 <a href="/estilos" th:href="@{/estilos}" aria-current="true">
                   <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"/></svg>
@@ -812,7 +812,7 @@
               <div><dt>Capacidad de la flota</dt> <dd>11.500 kg</dd></div>
               <div><dt>Disponible ahora</dt> <dd>6.500 kg</dd></div>
             </dl>
-            <ul class="flota" role="list">
+            <ul class="flota" role="list" data-ancho="pantalla">
               <li>
                 <a href="/estilos" th:href="@{/estilos}" aria-current="true" data-estado="ruta">
                   <span data-parte="cabeza"><span><b data-parte="patente">AB 123 CD</b>
@@ -875,25 +875,26 @@
             </ul>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">
-          <th:block th:fragment="demo-tabla">
-            <table class="tabla">
-              <caption>Donantes de ejemplo</caption>
-              <thead>
-                <tr><th scope="col">Nombre</th><th scope="col">Tipo</th><th scope="col">Estado</th></tr>
-              </thead>
-              <tbody>
-                <tr><th scope="row">Ana Ejemplo</th><td data-rotulo="Tipo">Persona</td><td data-rotulo="Estado">Activo</td></tr>
-                <tr><th scope="row">Distribuidora Ejemplo SA</th><td data-rotulo="Tipo">Empresa</td><td data-rotulo="Estado">Activo</td></tr>
-              </tbody>
-            </table>
-          </th:block>
-        </div>
         <div th:replace="~{componentes/muestra :: muestra('.htmx-indicator (indicador de envío)', 'El indicador de un formulario que guarda de verdad (envio :: indicador). Oculto hasta que HTMX le pone .htmx-request mientras dura el pedido; entonces se ve como un .cargando. El formulario lleva hx-boost, hx-indicator con su id y hx-select-oob=&quot;#avisos&quot;, y el aviso del servidor llega a la región de avisos. Acá, como se ve durante el pedido.', ~{::demo-envio})}">
           <th:block th:fragment="demo-envio">
             <p class="cargando htmx-indicator htmx-request" role="status">Guardando…</p>
           </th:block>
         </div>
+      </div>
+      <!--/* Fuera de la grilla, a todo el ancho: desde la tableta grande la tabla necesita el ancho de una lista. */-->
+      <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">
+        <th:block th:fragment="demo-tabla">
+          <table class="tabla">
+            <caption>Donantes de ejemplo</caption>
+            <thead>
+              <tr><th scope="col">Nombre</th><th scope="col">Tipo</th><th scope="col">Estado</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Ana Ejemplo</th><td data-rotulo="Tipo">Persona</td><td data-rotulo="Estado">Activo</td></tr>
+              <tr><th scope="row">Distribuidora Ejemplo SA</th><td data-rotulo="Tipo">Empresa</td><td data-rotulo="Estado">Activo</td></tr>
+            </tbody>
+          </table>
+        </th:block>
       </div>
       <!--/* Fuera de la grilla, a todo el ancho: la forma larga necesita el ancho de una lista. */-->
       <div th:replace="~{componentes/muestra :: muestra('.paginas', 'El único paginador del sitio (componentes/paginas :: paginas(p), con p un vistas.Paginador que arma web.Paginadores.de), debajo de todo listado completo y centrado. Desde 37,5 em, la forma larga: « ‹ 1 2 3 … 9 › », con la primera y la última siempre (.paginas-extremo), tres números seguidos alrededor de la actual (.paginas-numero, la actual con aria-current=&quot;page&quot;) y un hueco (.paginas-hueco) que nunca esconde una sola página. En el celular, o con data-forma=&quot;corta&quot; (componentes/paginas :: corta(p), para una columna angosta), ‹ 3 de 9 › (.paginas-lugar). Lo que no sigue se ve apagado (data-estado=&quot;apagado&quot;) y no es un enlace. Los enlaces son direcciones reales que conservan la búsqueda y los filtros: anda sin JavaScript. Con una sola página no se dibuja. Achicá la ventana para ver la forma corta; los de esta muestra vuelven acá.', ~{::demo-paginas})}">
