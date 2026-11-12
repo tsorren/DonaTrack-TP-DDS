@@ -59,22 +59,25 @@ class ReglasDeAccesoGatewayTest {
         ""
       })
   void unaEntradaMalEscritaCortaElArranque(String entrada) {
-    assertThatThrownBy(() -> reglasCon(List.of(entrada)))
+    List<String> rutas = List.of(entrada);
+
+    assertThatThrownBy(() -> reglasCon(rutas))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("MÉTODO /ruta");
   }
 
   @Test
   void unaEntradaMalaCortaAunqueHayaBuenas() {
-    assertThatThrownBy(() -> reglasCon(List.of("GET /api/ok", "FETCH /api/mal")))
-        .isInstanceOf(IllegalStateException.class);
+    List<String> rutas = List.of("GET /api/ok", "FETCH /api/mal");
+
+    assertThatThrownBy(() -> reglasCon(rutas)).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   void laListaDevueltaNoSePuedeModificar() {
-    ReglasDeAccesoGateway reglas = reglasCon(List.of("GET /api/entregas/mapa"));
+    List<String> publicas = reglasCon(List.of("GET /api/entregas/mapa")).rutasPublicas();
 
-    assertThatThrownBy(() -> reglas.rutasPublicas().add("/api/otra"))
+    assertThatThrownBy(() -> publicas.add("/api/otra"))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 }

@@ -69,14 +69,15 @@ class AuditoriaDelActorTest {
 
   @Test
   void sinTokenNiEncabezadoElActorEsObligatorio() {
+    Authentication autenticacionSinSub = conToken(tokenSinSub());
+
     IllegalArgumentException sinNada =
         assertThrows(IllegalArgumentException.class, () -> AuditoriaDelActor.de(null, null));
     IllegalArgumentException enBlanco =
         assertThrows(IllegalArgumentException.class, () -> AuditoriaDelActor.de(null, "  "));
     IllegalArgumentException tokenSinSub =
         assertThrows(
-            IllegalArgumentException.class,
-            () -> AuditoriaDelActor.de(conToken(tokenSinSub()), null));
+            IllegalArgumentException.class, () -> AuditoriaDelActor.de(autenticacionSinSub, null));
 
     assertTrue(sinNada.getMessage().contains("X-Actor"));
     assertTrue(enBlanco.getMessage().contains("X-Actor"));

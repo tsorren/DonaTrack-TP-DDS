@@ -37,7 +37,12 @@ class IngresoConKeycloakRealTest {
 
   /** La base del sitio. Se lee al correr y no al cargar la clase: sin la variable no hay nada. */
   private static String sitio() {
-    return System.getenv("INGRESO_REAL_URL").replaceAll("/+$", "");
+    String base = System.getenv("INGRESO_REAL_URL");
+    int fin = base.length();
+    while (fin > 0 && base.charAt(fin - 1) == '/') {
+      fin--;
+    }
+    return base.substring(0, fin);
   }
 
   private static Playwright playwright;

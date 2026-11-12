@@ -139,8 +139,9 @@ class TokenDePruebasTest {
   void unRechazoCortaSinMostrarElSecretoNiLaRespuestaDeKeycloak() {
     estado.set(401);
     respuesta.set("{\"error\":\"unauthorized_client\",\"error_description\":\"secreto s3cr\"}");
+    TokenDePruebas token = token();
 
-    IllegalStateException error = assertThrows(IllegalStateException.class, () -> token().token());
+    IllegalStateException error = assertThrows(IllegalStateException.class, token::token);
 
     assertTrue(error.getMessage().contains("401"));
     assertTrue(error.getMessage().contains("PRUEBAS_CLIENT_SECRET"));
@@ -151,8 +152,9 @@ class TokenDePruebasTest {
   @Test
   void unaRespuestaSinAccessTokenCorta() {
     respuesta.set("{\"otra\":\"cosa\"}");
+    TokenDePruebas token = token();
 
-    IllegalStateException error = assertThrows(IllegalStateException.class, () -> token().token());
+    IllegalStateException error = assertThrows(IllegalStateException.class, token::token);
 
     assertTrue(error.getMessage().contains("access_token"));
   }
@@ -160,8 +162,9 @@ class TokenDePruebasTest {
   @Test
   void conKeycloakCaidoCortaDiciendoAQuienLePidio() {
     keycloak.stop(0);
+    TokenDePruebas token = token();
 
-    IllegalStateException error = assertThrows(IllegalStateException.class, () -> token().token());
+    IllegalStateException error = assertThrows(IllegalStateException.class, token::token);
 
     assertTrue(error.getMessage().contains(url));
   }
