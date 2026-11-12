@@ -152,6 +152,16 @@ body {
     z-index: var(--capa-encabezado-fijo);
   }
 
+  /* La pública corta su menú en una, dos o tres filas según el ancho, y esos cortes no caen en los
+     puntos de quiebre: medida el 2026-11-12 en publico-donaciones, publico-entidades y la portada,
+     mide 12,25 rem hasta 640 px, 8,875 rem de 660 a 900 px y 5,5 rem desde 920 px. Para que la
+     barra de filtros se pegue siempre justo debajo, la cabecera mide al menos lo que dice su
+     medida, con lo de adentro centrado. */
+  body > header.raices-cabecera {
+    min-height: var(--medida-cabecera-fija);
+    align-content: center;
+  }
+
   :root:has(body > .armazon) {
     --medida-cabecera-fija: 8rem;
     --medida-filtros-fijos: 18rem;

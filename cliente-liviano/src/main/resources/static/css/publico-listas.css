@@ -186,3 +186,33 @@
     gap: 2rem 3rem;
   }
 }
+
+/* El filtro queda fijo (R11-33, ficha r11-p2-armazon §4.2), salvo en el Mapa, que ya deja fijo el
+   mapa. El `position: sticky` del formulario (componentes/filtros.css) no alcanza acá: la barra
+   solo contiene el formulario y la cifra, y el formulario se iría con ella. En la tableta angosta
+   la barra se disuelve (`display: contents`) y el formulario queda fijo dentro de la página, junto
+   a la lista; desde 53,75 em, con el formulario y la cifra en la misma fila, queda fija la barra
+   entera, con su papel y su filete. */
+@media (min-width: 37.5em) and (min-height: 37.5em) {
+  .publica-barra:has(> form.filtro:not([action$="/publico-mapa"])) {
+    display: contents;
+  }
+}
+
+@media (min-width: 53.75em) and (min-height: 37.5em) {
+  .publica-barra:has(> form.filtro:not([action$="/publico-mapa"])) {
+    position: sticky;
+    top: var(--medida-cabecera-fija);
+    z-index: var(--capa-filtros-fijos);
+    display: grid;
+    padding-block: var(--espacio-2);
+    border-bottom: 1px solid var(--color-filete);
+    background: var(--color-papel);
+    box-shadow: 0 -0.375rem 0 var(--color-papel);
+  }
+
+  .publica-barra > form.filtro {
+    position: static;
+    box-shadow: none;
+  }
+}

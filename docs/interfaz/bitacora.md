@@ -31,6 +31,44 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · armazón · Cabecera y filtros fijos desde la tableta, botón fijo en el celular y pantalla de carga sin JavaScript
+
+- **Decisión:** desde la tableta (ventana de 37,5 em de alto o más) la cabecera con el menú queda
+  fija arriba y la barra de búsqueda y filtros (`.filtros-barra` y `form.filtro`, salvo el Mapa
+  público) queda fija justo debajo mientras se recorre el listado; en el celular arriba no queda
+  nada (el menú ya está fijo abajo) y el botón de Confirmar recepción queda pegado encima del menú
+  (`data-fijo="celular"`). La pantalla de carga es un `body::before` oculto en reposo que una
+  animación muestra 0,3 s y funde en 0,2 s, sin JavaScript, con precarga de Archivo y DM Sans y
+  letras de respaldo ajustadas (lote `p2-armazon`, R11-33 y R11-40; las 8 decisiones de la ficha).
+- **Alternativas:** fijar la cabecera también en el celular (con el menú y la barra se come más de
+  un tercio de la pantalla); esconderla al bajar y mostrarla al subir (pide JavaScript); quitar la
+  pantalla de carga con JavaScript al llegar las letras (rompe la condición del backlog); medir las
+  alturas con JavaScript (rompe RNF-CL-02); fijar el filtro del Mapa (ya fija el mapa).
+- **Por qué:** con listas largas, el menú y los filtros se perdían al bajar; la pantalla de carga
+  tapa el salto de las letras sin demorar la página más de medio segundo.
+- **Desvíos de la construcción:** con "reducir movimiento" no hay pantalla de carga (la animación
+  no corre y el papel no aparece). En el celular, la barra queda fija solo con la ventana de 45 em
+  de alto o más y hasta dos pastillas; la de tres pastillas o más y `form.filtro` se desplazan con
+  la página, para no comerse más de un cuarto del alto (arreglos de la ronda 1). En Entregas
+  confirmadas el formulario está en `.publica-barra` con la cifra: en la tableta angosta la barra
+  se disuelve (`display: contents`) y desde 53,75 em queda fija la barra entera (ronda 2).
+- **Valores medidos** (2026-11-12, con las letras cargadas, redondeados hacia arriba a 1/8 rem):
+  cabecera privada de 5 secciones, 8 rem hasta 68,75 em y 4,5 rem desde ahí; la de la
+  administración, 11,375 rem hasta 53,75 em y 8 rem desde ahí; la pública, 12,25 rem, 8,875 rem
+  desde 53,75 em y 5,5 rem desde 68,75 em. La pública corta su menú a 660 y 920 px, fuera de los
+  puntos de quiebre: por eso mide al menos su medida (`min-height`) y la barra no deja hueco
+  (ronda 2). Barra de filtros más alta: 18 rem en la tableta, 14,5 rem desde 53,75 em, 11 rem desde
+  68,75 em y 9,875 rem (157 px) en el celular alto.
+- **Costo:** la pantalla de carga aparece en cada página que se carga entera, no solo en la primera
+  de la visita (CSS no las distingue); de 660 a 900 px y de 920 a 1100 px la cabecera pública
+  queda 54 px más alta de lo que pide su contenido. El botón fijo del celular, por ahora, solo en
+  Confirmar recepción.
+- **Quién decidió:** usuario (ficha aprobada con las opciones recomendadas, 2026-11-12) y equipo
+  (los desvíos de la construcción).
+- **Evidencia:** [ficha r11-p2-armazon](flujos/r11-p2-armazon.md); `ArmazonFijoTest` (perfil
+  visual) y las capturas de la verificación visual (`publico-portada`, `donante-inicio`,
+  `donante-entidades`, `admin-donantes`, `entidad-seguimiento-confirmar`).
+
 ### 2026-11-12 · admin · Donantes y Donaciones como bandeja; Todas las decididas se busca y guarda el motivo
 
 - **Decisión:** Donaciones y Donantes del admin pasan a ser una bandeja (`.maestro`, el bloque de

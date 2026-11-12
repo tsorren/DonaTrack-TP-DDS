@@ -37,12 +37,16 @@ class ArmazonFijoTest {
   private static final String CARGA_VISIBLE =
       "() => getComputedStyle(document.body, '::before').visibility === 'visible'";
 
-  /** La cabecera, la barra y la distancia entre las dos, medidas en la ventana. */
+  /**
+   * La cabecera, la barra y la distancia entre las dos, medidas en la ventana. La barra es la que
+   * queda fija: `.filtros-barra`, la barra de una pública (`.publica-barra`) o su `form.filtro`.
+   */
   private static final String CABECERA_Y_BARRA =
       """
       () => {
         const c = document.querySelector('body > header').getBoundingClientRect();
-        const b = document.querySelector('.filtros-barra').getBoundingClientRect();
+        const b = [...document.querySelectorAll('.filtros-barra, .publica-barra, form.filtro')]
+          .find(e => getComputedStyle(e).position === 'sticky').getBoundingClientRect();
         return [Math.round(c.top), Math.round(c.bottom), Math.round(b.top)];
       }
       """;
@@ -105,8 +109,9 @@ class ArmazonFijoTest {
   @Test
   void laCabeceraYLaBarraQuedanFijasSinHuecoEntreEllas() {
     List<String> fallas = new ArrayList<>();
-    for (int ancho : List.of(768, 1280, 1920)) {
-      for (String ruta : List.of("/admin-donantes", "/donante-entidades")) {
+    // 960 px: entre los dos últimos puntos de quiebre, donde la cabecera pública ya va en una fila.
+    for (int ancho : List.of(768, 960, 1280, 1920)) {
+      for (String ruta : List.of("/admin-donantes", "/donante-entidades", "/publico-donaciones")) {
         conPagina(
             ancho,
             900,
