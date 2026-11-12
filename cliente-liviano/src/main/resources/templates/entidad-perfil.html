@@ -28,7 +28,7 @@
              ficha=${perfilEntidad}">
   <div class="perfil">
     <p class="rotulo">Mi perfil</p>
-    <h1 th:text="${cuenta.rol}">Comedor Barrio Ejemplo</h1>
+    <h1 th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</h1>
     <p class="perfil-cuenta" th:text="${ficha.cuentaLinea}">Comedor · Marta, comedor@ejemplo.org</p>
 
     <p th:if="${guardo == 'datos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.

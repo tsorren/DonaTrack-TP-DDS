@@ -78,4 +78,25 @@ class NombresVisiblesTest {
         .doesNotContain("Hola, Organización")
         .doesNotContain("Hola, Administración");
   }
+
+  /**
+   * Con R11-44 el nombre de la cuenta es el de la organización y el rol, "Organización": las
+   * pantallas que nombran a la organización toman el nombre, no el rol (cierre de P1, con login
+   * real decían "asignadas al Organización").
+   */
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "/entidad-perfil",
+        "/entidad-recibidas",
+        "/entidad-seguimiento",
+        "/entidad-seguimiento-confirmar"
+      })
+  void laOrganizacionSeNombraConSuNombreYNoConElRol(String ruta) throws Exception {
+    assertThat(textoVisible(ruta))
+        .contains("Comedor Barrio Ejemplo")
+        .doesNotContain("al Organización")
+        .doesNotContain("a Organización,")
+        .doesNotContain("por Organización");
+  }
 }

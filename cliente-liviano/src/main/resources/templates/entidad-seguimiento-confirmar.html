@@ -259,7 +259,7 @@
           </fieldset>
 
           <div class="firma">
-            <p class="firma-quien" th:text="|Recibe ${cuenta.nombre}, por ${cuenta.rol}, el ${hoyActa}|">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
+            <p class="firma-quien" th:text="|Recibe ${cuenta.nombre}, el ${hoyActa}|">Recibe Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
             <button class="boton" data-tono="principal" type="submit"
                     th:disabled="${escenario == 'lento'}"
                     th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar

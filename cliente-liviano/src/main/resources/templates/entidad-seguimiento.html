@@ -31,7 +31,7 @@
   <header class="cabecera-entidad">
     <p class="rotulo" th:text="${seccion}">Seguir entregas</p>
     <h1>Lo que viene a tu puerta</h1>
-    <p>Las entregas asignadas al <th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block>,
+    <p>Las entregas asignadas a <th:block th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</th:block>,
       desde que salen del depósito hasta que confirmás la recepción. Tu dirección es exacta; la del
       camión, aproximada. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
     <th:block th:if="${conDatos and sinLeer > 0}">
@@ -175,7 +175,7 @@
                su dirección exacta sobre la tierra. */-->
         <circle class="subte-estacion" cx="450" cy="80" r="22"/>
         <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="38"
-              th:text="|Tu puerta · ${cuenta.rol}|">Tu puerta · Comedor Barrio Ejemplo</text>
+              th:text="|Tu puerta · ${cuenta.nombre}|">Tu puerta · Comedor Barrio Ejemplo</text>
         <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="62">Calle Ejemplo 450</text>
       </svg>
     </figure>
