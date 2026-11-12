@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--/* Raíces: los pictogramas de categoría, impresos, que comparten las pantallas (uno por categoría
-       del catálogo). Cada pantalla los incluye una vez y los usa con <use href="#cat-…">. No es una
-       pantalla: su nombre no empieza con un rol, así que SitioController no la muestra. */-->
+       del catálogo y uno genérico, cat-generico, de respaldo para la que no tenga el suyo). Cada
+       pantalla los incluye una vez y los usa con <use href="#cat-…">. No es una pantalla: su nombre no empieza con un rol, así que SitioController no la muestra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <svg th:fragment="categorias" class="iconos" aria-hidden="true" focusable="false">
@@ -9,6 +9,11 @@
   <symbol id="cat-ropa" viewBox="0 0 100 100"><path d="M38 28L44 26Q50 32 56 26L62 28L76 38L70 48L64 44V74H36V44L30 48L24 38Z"/></symbol>
   <symbol id="cat-muebles" viewBox="0 0 100 100"><path d="M36 20H64V42H59V46H68V54H66V78H60V54H40V78H34V54H32V46H41V42H36Z"/></symbol>
   <symbol id="cat-escolares" viewBox="0 0 100 100"><g transform="translate(-6 1)"><path d="M30 76L34 60L64 30L74 40L44 70Z"/><path d="M68 26L72 22Q75 19 78 22L82 26Q85 29 82 32L78 36Z"/></g></symbol>
+  <symbol id="cat-higiene" viewBox="0 0 100 100"><path d="M36 46H64V76Q64 80 60 80H40Q36 80 36 76Z"/><path d="M44 36H56V46H44Z"/><path d="M42 24H64V31H56V36H44V31H42Z"/></symbol>
+  <symbol id="cat-juguetes" viewBox="0 0 100 100"><path d="M26 50Q26 46 30 46H70Q74 46 74 50V70Q74 74 70 74H30Q26 74 26 70Z"/><path d="M32 46V38Q32 35 35 35H43Q46 35 46 38V46ZM54 46V38Q54 35 57 35H65Q68 35 68 38V46Z"/></symbol>
+  <symbol id="cat-blanqueria" viewBox="0 0 100 100"><path d="M28 30H70Q76 30 76 36Q76 42 70 42H28Z"/><path d="M26 46H74V58H26Z"/><path d="M22 62H78V74H22Z"/></symbol>
+  <symbol id="cat-electrodomesticos" viewBox="0 0 100 100"><path fill-rule="evenodd" d="M28 22H72V78H28ZM34 28H46V34H34ZM36 56a14 14 0 1 0 28 0a14 14 0 1 0-28 0Z"/></symbol>
+  <symbol id="cat-generico" viewBox="0 0 100 100"><path fill-rule="evenodd" d="M28 44H72V76H28ZM42 52H58V57H42Z"/><path d="M24 30H76V40H24Z"/></symbol>
 </svg>
 </body>
 </html>

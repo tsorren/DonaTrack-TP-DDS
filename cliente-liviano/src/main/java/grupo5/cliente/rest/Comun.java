@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,14 +38,25 @@ final class Comun {
   static final String ASIGNADA = "ASIGNACIONREALIZADA";
   static final String LISTA = "LISTAPARAENTREGAR";
 
-  /** El sprite de categorías tiene cuatro íconos; una categoría sin el suyo no muestra ninguno. */
-  private static final Map<String, String> ICONOS =
-      Map.of(
-          "aliment", "cat-alimentos",
-          "ropa", "cat-ropa",
-          "vestim", "cat-ropa",
-          "escolar", "cat-escolares",
-          "mueble", "cat-muebles");
+  /** El ícono de respaldo: para una categoría que el sprite todavía no dibuja. */
+  static final String ICONO_GENERICO = "cat-generico";
+
+  /**
+   * Qué ícono del sprite va con cada pista del nombre de una categoría. El orden importa y está
+   * fijado: si un nombre trae dos pistas ("Muebles Escolares"), gana la primera de la lista.
+   */
+  private static final List<Map.Entry<String, String>> ICONOS =
+      List.of(
+          Map.entry("aliment", "cat-alimentos"),
+          Map.entry("ropa", "cat-ropa"),
+          Map.entry("vestim", "cat-ropa"),
+          Map.entry("mueble", "cat-muebles"),
+          Map.entry("escolar", "cat-escolares"),
+          Map.entry("higien", "cat-higiene"),
+          Map.entry("limpieza", "cat-higiene"),
+          Map.entry("juguet", "cat-juguetes"),
+          Map.entry("blanquer", "cat-blanqueria"),
+          Map.entry("electrodom", "cat-electrodomesticos"));
 
   private static final Map<String, String> UNIDADES =
       Map.of(
@@ -94,13 +106,14 @@ final class Comun {
     return unidad == null ? String.valueOf(cantidad) : cantidad + " " + unidad;
   }
 
+  /** El ícono del sprite para el nombre de una categoría; si no tiene el suyo, el genérico. */
   static String icono(String nombre) {
     String minusculas = nombre.toLowerCase(Locale.ROOT);
-    return ICONOS.entrySet().stream()
+    return ICONOS.stream()
         .filter(e -> minusculas.contains(e.getKey()))
         .map(Map.Entry::getValue)
         .findFirst()
-        .orElse(null);
+        .orElse(ICONO_GENERICO);
   }
 
   private Comun() {}
