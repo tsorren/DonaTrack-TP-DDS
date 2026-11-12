@@ -40,7 +40,6 @@ cifra-fruto
 cifras
 cifras-titulo
 clave-fila
-como-donar
 como-sigue
 confirmada
 confirmada--recien
@@ -62,7 +61,6 @@ decision-nombres
 decisiones
 decisiones-lista
 demora
-deposito
 detalle
 detalle-cabecera
 detalle-cuerpo
@@ -80,12 +78,6 @@ dibujo-tierra
 donaciones
 donaciones-pie
 donaron
-ejemplar
-ejemplar-sello
-ejemplar-tipo
-ejemplar-ya
-ejemplares
-ejemplares-reserva
 ejemplo-inicial
 ejemplos
 ejemplos-lista
@@ -173,7 +165,6 @@ pedido-va
 pedidos
 pedidos-inicio
 pedidos-lista
-pedidos-mas
 pedidos-renglones
 pedidos-ver
 perfil
@@ -260,8 +251,6 @@ tramo-paso--falta
 tramo-paso--hecho
 tramo-seccion
 tramo-sello
-ver-mas
-ver-menos
 viene
 viene-detalle
 viene-lista
