@@ -1,7 +1,7 @@
 # Patrones, estados y textos
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 3 · 2026-11-12 (reglas generales de la revisión del 2026-11-11) · parte del [proceso de diseño](README.md)**
+> **Versión 3.1 · 2026-11-12 (reglas generales de la revisión del 2026-11-11; segunda tanda de P0) · parte del [proceso de diseño](README.md)**
 
 Cubre RNF-UI-01 a RNF-UI-06 de [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md).
 La cátedra pide **patrones** conocidos (Material Design, Human Interface Guidelines), no una
@@ -36,7 +36,7 @@ librería: cada componente cita, en su ficha de flujo, el patrón que sigue.
 | Cargando | Más de 300 ms de espera | Esqueleto o indicador con texto |
 | Éxito | Una acción salió bien | Aviso breve que dice qué pasó |
 | Error de datos | El formulario tiene algo mal | El error junto al campo, en palabras simples, y cómo arreglarlo |
-| Error del servidor | Algo falló de nuestro lado | Banner con disculpa breve, qué hacer y código de seguimiento (`traceId`) |
+| Error del servidor | Algo falló de nuestro lado, o un servicio no contestó a tiempo | Banner con disculpa breve, qué hacer y código de seguimiento (`traceId`). Una espera que pasa su límite termina acá, nunca en una pantalla colgada (R11-04). Con sesión, con el encabezado de la cuenta (regla general 6) |
 | Sin permiso | El rol no puede ver esto | Mensaje claro y un camino de vuelta |
 | Deshabilitado | Falta un paso previo | El control se ve inactivo y se explica por qué |
 
@@ -83,6 +83,9 @@ resumen:
 15. Un motivo o un estado que llega del servicio como código (`FORMATO_INVALIDO`) se muestra con su
     frase ("La fila no tiene las columnas esperadas."); uno que el cliente no conoce, con la frase de
     error inesperado, nunca el código.
+16. Un plazo que nadie fijó se dice como lo habitual, sin cifra ni fecha: "La revisión suele llevar
+    unos días hábiles." ([cifras](tono-y-comunicacion.md#cifras-y-datos)). Si el equipo fija un plazo,
+    el texto lo toma.
 
 ## Reglas generales de la revisión del 2026-11-11
 
@@ -97,7 +100,7 @@ y las decidió el usuario. La columna de la derecha dice cuánto está hecho al 
 | 3 | **Un solo paginador.** `« ‹ 1 2 3 … 9 › »`, con primera y última; en el celular, `‹ 3 de 9 ›`. Conserva la búsqueda y los filtros. Una página pedida más allá de la última muestra la última, nunca una lista vacía | Provisorio: "‹ Anterior · Página N de M · Siguiente ›" en el admin y "Página anterior / Página siguiente" en Mis donaciones y Entidades del donante; el definitivo, con `p1-paginador` (R11-11) |
 | 4 | **Ventanas, tres niveles.** Ventana que bloquea el fondo para confirmar algo que no se deshace y formularios cortos; desplegable liviano que se cierra tocando afuera o con Esc; página aparte para procesos largos o con fotos | No: `p1-menus` y `p2-ventanas` |
 | 5 | **Qué queda fijo al desplazarse.** El encabezado con el menú; el buscador y los filtros en los listados; el botón principal en el celular | No: `p2-armazon` |
-| 6 | **Con sesión, siempre se ve la cuenta.** Portada, páginas de error y contacto muestran el encabezado de quien está logueado | No: `p0-errores` (no arrancó) y `p1-portada` |
+| 6 | **Con sesión, siempre se ve la cuenta.** Portada, páginas de error y contacto muestran el encabezado de quien está logueado | Páginas de error y Contacto, hechas (R11-05, `p0-errores`): el marco del área, con "Volver a mi inicio", sin pedir nada a los servicios; en revisión del usuario. Falta la portada (`p1-portada`, R11-15). La cuenta sin perfil o con la solicitud pendiente sigue con el marco público, también en lo público que ya puede navegar (R11-08): lo resuelve `p1-portada` |
 | 7 | **Ilustraciones complejas, por encargo.** Logo, maceta o abeja posada se generan como imagen con un prompt escrito por Claude, no se dibujan a mano en el código | Sin cambios en P0; va a [`direccion-de-arte.md`](direccion-de-arte.md) con R11-B01 a R11-B03 |
 
 ## Ayudas por flujo crítico (RNF-UI-04)

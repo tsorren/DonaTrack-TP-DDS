@@ -31,6 +31,87 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · entidad · La cuenta pendiente navega lo público, sin el ingreso ni el registro
+
+- **Decisión:** con la solicitud pendiente, la cuenta puede ir a la portada, Entidades, Donaciones,
+  el Mapa, Nosotros, Para donantes, Para entidades, Legales y Contacto (también enviar el
+  formulario). Ingresar, Crear una cuenta, Recuperar, Activar y todo lo privado la siguen llevando a
+  "Recibimos la solicitud". La cuenta sin perfil sigue igual: solo puede completarlo (R11-08).
+- **Alternativas:** dejar pasar todo lo que empieza con `/publico-` (vería "Crear una cuenta" o
+  "Ingresar" y entraría en un lazo); dejar Contacto afuera.
+- **Por qué:** los botones de la pantalla volvían a la misma pantalla. Una lista explícita evita el
+  lazo, y la regla general 6 nombra el contacto con soporte entre lo que ve quien tiene sesión.
+- **Costo:** una pantalla pública nueva hay que sumarla a la lista (`EstadoDeCuenta`); una ruta
+  pública que no existe lleva a la solicitud en lugar del 404; en lo público la cuenta pendiente ve
+  el encabezado de visitante hasta R11-15 ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 4).
+- **Quién decidió:** usuario (la cuenta pendiente navega lo público, R11-08) y agente (la lista y
+  Contacto), sin consultar (lote `p0-pendiente`).
+- **Evidencia:** `PerfilPendienteTest`, [ficha pública](flujos/raices-publico-navegable.md).
+
+### 2026-11-12 · componente:envio · Lo que está dentro de un formulario no hereda su cartel de carga
+
+- **Decisión:** todo formulario con `hx-indicator` que tiene adentro un enlace o un pedido HTMX lleva
+  `hx-disinherit="hx-indicator hx-select-oob"`: "Cancelar" y "Llegó con un problema" ya no muestran
+  "Registrando…" ni traen los avisos de un envío. Se revisaron todos los formularios, no solo los
+  cuatro anotados, y `IndicadorEnFormulariosTest` falla si uno nuevo repite el defecto. "Sumar otro
+  bien" (registrar donación) queda sin cartel: cargar otro renglón es rápido y no es el envío.
+- **Alternativas:** `hx-boost="false"` en cada enlace (pierde la navegación con boost y las
+  transiciones, y hay que acordarse en cada enlace nuevo); poner el indicador en el botón de envío
+  (el envío con Enter queda sin cartel).
+- **Por qué:** se pone una sola vez, en el formulario, y no toca su propio envío.
+- **Costo:** el test lee las plantillas como texto (no ve lo que entra por `th:insert`); falta
+  comprobarlo en un navegador con un pedido lento ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 3).
+- **Quién decidió:** usuario (R11-07) y agente (cómo y el alcance), sin consultar (lote
+  `p0-indicador`).
+- **Evidencia:** [catálogo, fila del indicador](componentes.md), `IndicadorEnFormulariosTest`.
+
+### 2026-11-12 · errores · El error con sesión no pide nada a los servicios y elige su salida
+
+- **Decisión:** con sesión, 404 y 403 ofrecen "Volver a mi inicio" (el inicio del área); sin sesión,
+  "Ir al inicio" (la portada). En el 5xx, "Volver a intentar" sigue primero. El menú del error se
+  arma con lo que ya está en la sesión: la campanita va sin número y el menú de persona (con
+  Misiones) sale solo si la sesión ya guarda que la cuenta es de una persona. La cuenta sin perfil o
+  con la solicitud pendiente ve el marco público. Si algo falla al armar el marco privado, queda el
+  público: nunca una página en blanco.
+- **Alternativas:** pedir los avisos sin leer y el tipo de cuenta en la página de error (otra
+  llamada que puede fallar justo cuando algo falló); resolver el marco en cada controller y en cada
+  plantilla (se repetía).
+- **Por qué:** una página de error tiene que andar aunque los servicios no contesten.
+- **Costo:** una persona cuyo tipo todavía no quedó en la sesión ve el menú de empresa en el error;
+  con sesión, Contacto y los errores se ven más anchos que sin ella; faltan las capturas del estado
+  con sesión ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 2).
+- **Quién decidió:** agente, sin consultar (lote `p0-errores`), dentro de la ficha.
+- **Evidencia:** `ErroresConSesionTest`, `SitioControllerTest`.
+
+### 2026-11-12 · errores · Con sesión, las páginas de error y Contacto muestran la cuenta
+
+- **Decisión:** con sesión activa, las páginas 404, 403 y 5xx y las tres de Contacto (el
+  formulario, enviado y su error) usan el encabezado y el menú del área de la cuenta. Sin sesión,
+  el marco público de siempre (R11-05, regla general 6).
+- **Alternativas:** el marco público para todos, como decidía la ficha del 2026-11-07.
+- **Por qué:** con el marco de visitante ("Ingresar / Crear una cuenta") parecía que la sesión se
+  había cerrado.
+- **Costo:** cambia la decisión del 2026-11-07; la [ficha](flujos/raices-paginas-de-error.md) espera
+  el OK del usuario sobre cómo quedó. Falta probarlo con Keycloak real en un 500 de verdad.
+- **Quién decidió:** usuario (ronda de la revisión del 2026-11-11). Cómo se arma (un puerto que dice
+  el área de la sesión y un aviso acotado a las páginas de error), agente, sin consultar.
+- **Evidencia:** `ErroresConSesionTest`, `SitioControllerTest`.
+
+### 2026-11-12 · proceso · Una llamada que tarda demasiado termina en la página de falla
+
+- **Decisión:** el cliente liviano y el gateway tienen límites de espera: conexión 3 s; lectura 15 s
+  en el cliente y 10 s en el gateway; subida del CSV y de las fotos del acta 120 s y 100 s. Se
+  cambian por variable de entorno, sin tocar código. Pasado el límite, el gateway contesta 504 y el
+  cliente muestra su página de falla con el código de soporte (R11-04).
+- **Alternativas:** un solo límite para todo (la subida del CSV no entraba); otro cliente para las
+  subidas (obligaba a tocar pantallas de otros lotes); dejar que el gateway conteste 500.
+- **Por qué:** una pantalla colgada no dice nada; una falla con su código sí dice qué hacer.
+- **Costo:** 15 s puede quedar corto para correr la asignación en la demo; el 504 y los tiempos no
+  se probaron en Docker ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 1).
+- **Quién decidió:** usuario (R11-04) y agente (los valores y cómo), sin consultar (lote
+  `p0-esperas`).
+- **Evidencia:** `ClientesHttpEsperasTest`, `EsperasGatewayTest`.
+
 ### 2026-11-12 · entidad · La solicitud enviada dice que la revisión suele llevar unos días hábiles
 
 - **Decisión:** "Solicitud enviada" dice "La revisión suele llevar unos días hábiles" y "Mientras
@@ -41,7 +122,8 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   esperar. Una cifra sería una promesa que nadie fijó; "unos días hábiles" orienta sin prometer.
 - **Costo:** sigue sin haber un plazo acordado (pregunta abierta 2 de la
   [ficha](flujos/raices-publico-navegable.md)); si el equipo lo fija, el texto lo toma.
-- **Quién decidió:** equipo, con el backlog de la revisión del 2026-11-11.
+- **Quién decidió:** usuario (decir cuánto suele tardar, R11-08) y agente (la frase sin cifra ni
+  fecha), sin consultar (lote `p0-pendiente`).
 
 ### 2026-11-12 · admin · Los motivos de las filas con error, en una frase
 

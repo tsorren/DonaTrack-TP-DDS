@@ -107,23 +107,23 @@ Valen en todo el sitio desde esta ronda. Al ejecutarlas pasan a
 
 #### Estado de P0 al cierre de la oleada (2026-11-12)
 
-Rama `E6_backlog_r11_p0`. Lotes integrados: `p0-api-listados`, `p0-persona`, `p0-ensayo` y
-`p0-admin-listados`, más los arreglos del cierre (`867cd738e`). Los lotes `p0-esperas`,
-`p0-errores`, `p0-indicador` y `p0-pendiente` no llegaron a construir: su carpeta de trabajo no se
-pudo llevar al commit de partida (lo bloquearon el control de comandos destructivos y la protección
-de escritura de `.claude/`), y ninguno dejó un commit. Todos los pendientes son de esta corrida; cada
-uno dice con qué lote se cierra.
+Rama `E6_backlog_r11_p0`. Primera tanda: `p0-api-listados`, `p0-persona`, `p0-ensayo` y
+`p0-admin-listados`, más los arreglos del cierre (`867cd738e`). Segunda tanda (2026-11-12): los
+lotes `p0-esperas` (`db81e5fcf`), `p0-errores` (`f8fc74281` y arreglos `926843bea`), `p0-indicador`
+(`48fee1275`) y `p0-pendiente` (`b97aefaa5` y arreglos `c5c16c9dd`), que en la primera no habían
+podido arrancar porque su carpeta de trabajo no se pudo llevar al commit de partida. Todos los
+pendientes son de esta corrida; cada uno dice con qué lote se cierra.
 
 | ID | Estado | Qué quedó y qué falta |
 |---|---|---|
 | R11-01 | **Parcial** | Hecho: Donaciones pagina, busca sin tildes, filtra y cuenta en la base los cuatro listados y `/api/entidades` (página 0 de 20 si no se pide, tope 100, total en `X-Total-Count`); `GET /api/donaciones/resumen`; contadores públicos con conteos; lectura por lote; `V21`. Donantes, Donaciones y Entidades del admin van de a una página con el paginador provisorio; el buscador del registro trae hasta 10 y cuántos coinciden; el inicio del admin toma sus cifras del resumen. Falta: las listas del donante y de la entidad que piden una página de 100 sin paginador ([DTI-39](../adr/DEUDA_TECNICA.md#dti-39), lotes `p1-donante-listas` y `p2-listas-restantes`); el inicio del admin todavía pide todas las propuestas y todos los camiones, y Asignaciones todas las propuestas y ejecuciones ([DTI-40](../adr/DEUDA_TECNICA.md#dti-40), `p1-admin-inicio` y `p1-asignaciones`); el filtro por vencimiento y otros órdenes (`p2-admin-bandeja`); las pruebas C3 y C9 y la confirmación de oasdiff (DTI-40). |
 | R11-02 | **Parcial** | Hecho: el avance se actualiza solo cada 3 s mientras la pestaña está a la vista, con procesadas, nuevos, actualizados, con error y los últimos importados; se puede salir y una franja recuerda la importación; al terminar, resumen y filas con error de a 20, con el motivo en una frase en español llano (arreglo del cierre). Falta: una importación que falla sin leer ninguna fila deja vacío el bloque del avance durante el sondeo ([DTI-40](../adr/DEUDA_TECNICA.md#dti-40), ítem 7, lote `p1-importaciones`); la descarga de las filas con error (`p1-importaciones`); la aprobación del usuario de los cambios R11 de la [ficha del admin](flujos/raices-admin-navegable.md) (en revisión). |
 | R11-03 | **Parcial** | Hecho: generador del CSV de 20.000 filas (`demo/ensayo-importacion/`), [guía](../testing/ensayo-importacion-20000.md) y dos corridas en el stack propio. El rendimiento alcanza: 125 a 142 s, p95 del sitio menor a 0,6 s, Donaciones por debajo de 420 MiB, colas en 0. La corrida 1 no dio la cuenta porque el importador no creaba empresas; se arregló en el cierre. Falta: repetir la corrida 1 con el archivo de la guía, sin convertir nada. |
-| R11-04 | **No hecho** | El lote `p0-esperas` no arrancó (carpeta de trabajo sin mover al commit de partida). Hay que relanzarlo en esta corrida. |
-| R11-05 | **No hecho** | Mismo motivo, lote `p0-errores`. Hay que relanzarlo en esta corrida; la ficha de errores tiene que registrar que cambia la decisión del 2026-11-07. |
+| R11-04 | **Hecho, con pendientes** | Hecho (`p0-esperas`): límites de conexión (3 s), de lectura (15 s en el cliente liviano, 10 s en el gateway) y de subida (120 s y 100 s, para el CSV de donantes y las fotos del acta), todos por variable de entorno. Una llamada que se pasa termina en la página de falla con su código de soporte, no en una pantalla colgada; el gateway contesta 504. Falta: probar el 504 y los tiempos en el stack de Docker (Gate 3/4, `[DEFERRED_NO_DOCKER]` en esta corrida, porque el stack era del usuario) y los arreglos menores de la revisión ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 1). Si en la demo una operación lenta del admin (correr la asignación) pasa los 15 s, se sube `CLIENTE_HTTP_TIMEOUT_LECTURA` y `GATEWAY_TIMEOUT_LECTURA` sin tocar código |
+| R11-05 | **Hecho, en revisión del usuario** | Hecho (`p0-errores`): con sesión activa, las páginas 404, 403 y 5xx y las tres de Contacto usan el marco privado del área, con "Volver a mi inicio"; sin sesión, o con una cuenta sin perfil o con la solicitud pendiente, el marco público de siempre. El marco no pide nada a los servicios (la campanita va sin número). La [ficha de errores](flujos/raices-paginas-de-error.md) registra que cambia la decisión del 2026-11-07. Falta: el OK del usuario sobre ese cambio de la ficha; probarlo con Keycloak real (un 500 de verdad, no solo MockMvc); las capturas del estado con sesión y el ancho del contenido en el marco privado ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 2) |
 | R11-06 | **Hecho, con dos pendientes** | Con login real, la persona ve sus pantallas: inicio "Tu año, mes a mes" con la huerta arriba, perfil de persona, Misiones solo para persona y "Ya doné" en Entidades; la empresa no ve la huerta. Mis donaciones va de a 12 por página con el mes y los filtros en el servidor. Falta: la verificación visual de las rutas de persona (`?cuenta=persona`), que no se corrió ([DTI-40](../adr/DEUDA_TECNICA.md#dti-40), ítem 7, lote `p1-donante-listas`), y confirmar con el usuario si en el celular "Tu huerta" debajo del saludo y de los dos botones cumple "arriba de todo". |
-| R11-07 | **No hecho** | Mismo motivo, lote `p0-indicador`. Hay que relanzarlo en esta corrida. |
-| R11-08 | **No hecho** | Mismo motivo, lote `p0-pendiente`. Hay que relanzarlo en esta corrida. |
+| R11-07 | **Hecho, con un pendiente** | Hecho (`p0-indicador`): todo formulario con `hx-indicator` que tiene adentro un enlace o un pedido HTMX lleva `hx-disinherit="hx-indicator hx-select-oob"`. Se revisaron todos los formularios, no solo los cuatro anotados: se arreglaron también Camiones, Donantes, los dos Mi perfil del donante y Necesidades. `IndicadorEnFormulariosTest` falla si un formulario nuevo repite el defecto. Falta: comprobar en un navegador que tocar "Cancelar" o "Llegó con un problema" con un pedido lento ya no muestra el cartel ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 3) |
+| R11-08 | **Hecho, con pendientes** | Hecho (`p0-pendiente`): la cuenta con la solicitud pendiente navega la portada, Entidades, Donaciones, el Mapa, Nosotros, Para donantes, Para entidades, Legales y Contacto; lo privado, el ingreso y el registro la siguen llevando a "Recibimos la solicitud". Esa pantalla dice que "la revisión suele llevar unos días hábiles" y que mientras tanto puede recorrer el sitio. Falta: que el equipo fije un plazo real (pregunta abierta 2 de la [ficha pública](flujos/raices-publico-navegable.md)); con la cuenta pendiente, lo público muestra el encabezado de visitante (lote `p1-portada`, R11-15); ver y corregir la solicitud (lote `p2-pendiente-solicitud`, R11-41); los tests y el espaciado que pidió la revisión ([DTI-41](../adr/DEUDA_TECNICA.md#dti-41), ítem 4) |
 | R11-09 | **Hecho** | Con login real no se muestra el depósito de ejemplo; como no hay de dónde leer los datos reales del depósito, se sacó la dirección (la opción que dejaba el ítem) y la franja ofrece escribir para saber dónde queda. El depósito de ejemplo se ve solo en la maqueta. |
 
 ### P1 · Se ve en la demo
@@ -312,18 +312,21 @@ paginan en la base. La decisión D28 de
 
 ## 10. Documentos a actualizar al ejecutar
 
-La columna "Al día" dice qué quedó escrito en el cierre documental de la oleada P0 (2026-11-12).
+La columna "Al día" dice qué quedó escrito en los cierres documentales de la oleada P0 (2026-11-12:
+primera tanda y segunda tanda, con `p0-esperas`, `p0-errores`, `p0-indicador` y `p0-pendiente`).
 
 | Documento | Qué cambia | Al día |
 |---|---|---|
-| [`bitacora.md`](bitacora.md) | Las decisiones de la sección 3, con fecha y quién decidió. | Las de P0, cada una con quién decidió. Las de P1 y P2 se escriben al ejecutar su lote |
-| [`patrones-y-microcopy.md`](patrones-y-microcopy.md) | Reglas 1 a 6. | Sí: las 7 reglas, con qué tiene hecho cada una, el paginador provisorio y el avance de un proceso largo |
-| [`componentes.md`](componentes.md) y `/estilos` | Paginador, franja de ayuda, ventana por pasos, desplegable de la campanita. | El paginador provisorio (sin clases nuevas). El definitivo es de `p1-paginador`; la franja, la ventana por pasos y la campanita, de sus lotes |
+| [`bitacora.md`](bitacora.md) | Las decisiones de la sección 3, con fecha y quién decidió. | Las de P0, las dos tandas, cada una con quién decidió (en la segunda: límites de espera, marco con sesión en errores y Contacto, qué dice el error con sesión, el indicador que no se hereda y la cuenta pendiente). Las de P1 y P2 se escriben al ejecutar su lote |
+| [`patrones-y-microcopy.md`](patrones-y-microcopy.md) | Reglas 1 a 6. | Sí: las 7 reglas, con qué tiene hecho cada una (la 6, con errores y Contacto hechos), el paginador provisorio, el avance de un proceso largo, una espera que se corta y un plazo que nadie fijó |
+| [`componentes.md`](componentes.md) y `/estilos` | Paginador, franja de ayuda, ventana por pasos, desplegable de la campanita. | El paginador provisorio (sin clases nuevas) y la regla de `hx-disinherit` en la fila del indicador (R11-07, la escribió `p0-indicador`). El definitivo es de `p1-paginador`; la franja, la ventana por pasos y la campanita, de sus lotes |
 | [`direccion-de-arte.md`](direccion-de-arte.md) | Regla 7 y la definición del logo cuando exista. | No: ningún lote de P0 la tocó |
-| [`mapa-del-sitio.md`](mapa-del-sitio.md) | Perfil del admin, vista de importaciones, registro de actividad, notificaciones del admin. | Lo de P0 (avance y resultado de la importación, "Ver todas" del año de la persona, Misiones solo para persona). Lo demás, con sus lotes de P1 y P2 |
-| `flujos/raices-paginas-de-error.md` | El marco con sesión (cambia la decisión del 2026-11-07). | No: el lote `p0-errores` no arrancó |
+| [`mapa-del-sitio.md`](mapa-del-sitio.md) | Perfil del admin, vista de importaciones, registro de actividad, notificaciones del admin. | Lo de P0 (avance y resultado de la importación, "Ver todas" del año de la persona, Misiones solo para persona, errores y Contacto con el marco de la cuenta, lo que navega la cuenta pendiente). Lo demás, con sus lotes de P1 y P2 |
+| `flujos/raices-paginas-de-error.md` | El marco con sesión (cambia la decisión del 2026-11-07). | Sí, por `p0-errores`: el marco con sesión y cómo quedó construido. Espera el OK del usuario sobre el cambio |
+| `flujos/raices-publico-navegable.md` | No estaba en la lista. | Sí, por `p0-pendiente`: lo que navega la cuenta pendiente y "unos días hábiles" (R11-08) |
+| [`tono-y-comunicacion.md`](tono-y-comunicacion.md) | No estaba en la lista. | Sí: cómo se dice un plazo que nadie fijó (R11-08) |
 | `flujos/raices-admin-navegable.md` | Inicio del admin con gráficos; Asignaciones con la variante C. | Los cambios R11-01 y R11-02 (en revisión, falta la aprobación del usuario). Los gráficos y la variante C, con sus lotes |
-| [`DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md) | Una deuda nueva de paginado y rendimiento (R11-01, R11-43, R11-B08). | Sí: DTI-39 y DTI-40 |
-| [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md) | RF-20 y RF-AUTH-07 con su estado; contrato paginado de donantes y donaciones. | Sí: RF-05, RF-06, RF-07, RF-15, RF-20 y RF-AUTH-07 con su estado, HB-15 al día y HB-24 (listados paginados) |
-| ADRs de Donaciones | No estaba en la lista. | Cinco ADR `proposed` del lote `p0-api-listados`, escritos después del código |
+| [`DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md) | Una deuda nueva de paginado y rendimiento (R11-01, R11-43, R11-B08). | Sí: DTI-39 y DTI-40. La segunda tanda no deja deuda de paginado; lo que deja abierto va en [DTI-41](../adr/DEUDA_TECNICA.md#dti-41) |
+| [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md) | RF-20 y RF-AUTH-07 con su estado; contrato paginado de donantes y donaciones. | Sí: RF-05, RF-06, RF-07, RF-15, RF-20 y RF-AUTH-07 con su estado, HB-15 al día y HB-24 (listados paginados); en la segunda tanda, RF-AUTH-06, RI-GW-01, RF-CL-08 y RNF-UI-06 |
+| ADRs de Donaciones | No estaba en la lista. | Cinco ADR `proposed` del lote `p0-api-listados`, escritos después del código. La segunda tanda no tiene lotes de contrato ni decisiones nuevas de arquitectura: ningún ADR |
 
