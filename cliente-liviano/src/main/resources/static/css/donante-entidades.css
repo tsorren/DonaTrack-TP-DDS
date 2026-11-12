@@ -13,6 +13,30 @@
   margin: 0 0 1.25rem;
 }
 
+/* Las tarjetas privadas conservan el formato de publico-entidades, pero señalan el vínculo previo
+   de la persona o empresa donante sin cambiar la composición de la tarjeta. */
+[data-privado="si"] .plegable[data-ya="si"] {
+  opacity: 0.68;
+  filter: grayscale(0.65);
+}
+
+/* La persona ve las entidades con la misma composición vegetal de la landing. Las que ya recibieron
+   una donación se atenúan, pero conservan la misma tarjeta y sus acciones. */
+#persona-entidades .huerta-opcion[data-ya="si"] {
+  opacity: 0.62;
+  filter: grayscale(0.7);
+}
+
+#persona-entidades .huerta-opcion > .chip {
+  align-self: flex-start;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
 /* --- La franja de ayuda: "Cómo llega tu donación" (R11-28) ------------------------------------- */
 /* En el celular, el ícono va arriba del título para que el texto use todo el ancho; desde 37,5 em,
    a la izquierda. */

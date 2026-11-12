@@ -19,7 +19,7 @@
    distingue del papel (usuario, 2026-11-08): fondo más claro, borde suave, esquinas redondeadas y un
    texto de ejemplo atenuado (placeholder). Al enfocarlo, el borde y el anillo verdes. */
 .campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea) {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.625rem 0.875rem;
   border: 1.5px solid var(--color-borde-control);
   border-radius: var(--radio-boton);

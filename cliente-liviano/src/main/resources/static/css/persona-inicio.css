@@ -89,7 +89,7 @@
 #anio-lado a:not(.noticia-texto) {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 

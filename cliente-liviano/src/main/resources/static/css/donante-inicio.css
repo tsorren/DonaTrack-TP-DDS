@@ -237,7 +237,7 @@
 [data-v="columna"] > ul > li a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-tinta);
   font-weight: 800;
   text-underline-offset: 0.2em;
@@ -327,7 +327,7 @@
   flex: 1 1 100%;
   order: 1;
   /* 48 px de toque aunque la noticia entre en una línea (piso del gate visual). */
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -339,7 +339,7 @@
 
 /* Toda la noticia es el toque del enlace (al menos 3 rem de alto). */
 .noticias-inicio .noticia {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 .noticias-inicio .noticia-texto::after {
@@ -399,6 +399,6 @@
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }

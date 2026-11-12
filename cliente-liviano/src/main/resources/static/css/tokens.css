@@ -273,6 +273,8 @@
   --espacio-3: var(--p-espacio-3);
   --espacio-4: var(--p-espacio-4);
   --espacio-5: var(--p-espacio-5);
+  /* Piso común para controles que se usan con el dedo (48 px). */
+  --medida-toque-minimo: 3rem;
   --tamano-chico: var(--p-texto-1);
   --tamano-base: var(--p-texto-2);
   --tamano-grande: var(--p-texto-3);
@@ -282,6 +284,8 @@
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
+  /* Desde acá, el menú público entra en una línea de la cabecera; antes, la barra de abajo. */
+  --medida-quiebre-menu: 56em;
   /* El estrato de las barras (de la corrida Raíces cálida, lo único que el usuario conservó,
      2026-11-06): donde la cabecera, el pie y la barra del menú tocan la página, la línea de paja de
      las raíces y una franja de humus, como el corte de suelo. */
