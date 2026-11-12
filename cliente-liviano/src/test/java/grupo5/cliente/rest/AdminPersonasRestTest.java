@@ -256,17 +256,6 @@ class AdminPersonasRestTest {
                  "calculadoEn": "2026-11-10T18:30:00-03:00"}
                 """,
                 JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/asignaciones/propuestas"))
-        .andRespond(
-            withSuccess(
-                """
-                [{"id": "00000000-0000-4000-8000-0000000000a1", "estado": "PENDIENTE",
-                  "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 25}},
-                 {"id": "00000000-0000-4000-8000-0000000000a2", "estado": "APROBADA",
-                  "necesidad": {"descripcion": "Fideos", "cantidadNecesitada": 5}}]
-                """,
-                JSON));
     logistica
         .expect(requestTo("http://logistica/api/camiones"))
         .andRespond(
@@ -283,17 +272,32 @@ class AdminPersonasRestTest {
     assertEquals("Martes 10 de noviembre de 2026", inicio.fecha());
     assertEquals("10 de noviembre de 2026, 18:30", inicio.al());
     assertEquals(
-        "Hoy esperan tu decisión 1 entidad y 1 propuesta de asignación. 1 donación vence en los"
-            + " próximos 7 días.",
+        "Hoy esperan tu decisión 1 organización y 1 propuesta de asignación. Hay 2 donaciones sin"
+            + " asignar en el depósito; 1 vence en los próximos 7 días.",
         inicio.resumen());
     assertEquals(1, inicio.decisiones().entidades());
     assertEquals(
         "La primera, Leche en polvo, vence el 12 de noviembre, en 2 días.",
         inicio.decisiones().primeraQueVence());
-    assertEquals(List.of("Arroz, 25."), inicio.decisiones().listaPropuestas());
-    assertNull(inicio.decisiones().notaEntidades());
+    // Las propuestas, con el número del resumen: la lista no se pide (DTI-40, ítem 1).
+    assertEquals(1, inicio.decisiones().propuestas());
+    assertEquals(0, inicio.decisiones().entidadesDeMas());
+    assertEquals(2, inicio.decisiones().sinAsignar());
     assertEquals(
-        new AdminInicioVista.Cifras(2, 2, 2, 1, "noviembre", 1, 20001, 1, 2), inicio.cifras());
+        new AdminInicioVista.Cifras(
+            2,
+            2,
+            2,
+            0,
+            0,
+            1,
+            "en noviembre, del 1 al 10",
+            9,
+            1,
+            20001,
+            20003,
+            new AdminInicioVista.Camiones(1, 2)),
+        inicio.cifras());
     donaciones.verify();
   }
 

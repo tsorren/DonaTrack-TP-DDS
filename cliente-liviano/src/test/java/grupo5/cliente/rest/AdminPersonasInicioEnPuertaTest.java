@@ -33,7 +33,6 @@ class AdminPersonasInicioEnPuertaTest {
                 null,
                 null,
                 null));
-    when(donaciones.propuestas()).thenReturn(List.of());
     when(logistica.camiones(any())).thenReturn(List.of());
 
     AdminInicioVista inicio =
@@ -48,5 +47,6 @@ class AdminPersonasInicioEnPuertaTest {
     assertEquals(0, inicio.decisiones().vencen());
     verify(donaciones, never()).pagina(any());
     verify(donaciones, never()).donantes(any());
+    verify(donaciones, never()).propuestas();
   }
 }

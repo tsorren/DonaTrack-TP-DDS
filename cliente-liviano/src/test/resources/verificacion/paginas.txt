@@ -175,6 +175,7 @@
 /admin-inicio?escenario=vacio
 /admin-inicio?escenario=lento
 /admin-inicio?escenario=error
+/admin-inicio?escenario=error-camiones
 /admin-donantes
 /admin-donantes?escenario=vacio
 /admin-donantes?escenario=lento

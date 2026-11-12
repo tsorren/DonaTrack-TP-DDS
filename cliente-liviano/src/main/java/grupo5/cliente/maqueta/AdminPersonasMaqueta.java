@@ -11,6 +11,7 @@ import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
 import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminInicioVista;
+import grupo5.cliente.vistas.AdminInicioVista.Camiones;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
 import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import grupo5.cliente.vistas.ConsultaDonantes;
@@ -434,24 +435,26 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
     throw new UnsupportedOperationException("La maqueta no aprueba entidades");
   }
 
-  /** El inicio de la ficha: 3 entidades, 4 donaciones que vencen y 2 propuestas. */
+  /**
+   * El inicio de la ficha (R11-21): 3 organizaciones, 7 donaciones sin asignar (4 vencen) y 2
+   * propuestas; las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas.
+   */
   @Override
   public AdminInicioVista inicio() {
     return new AdminInicioVista(
         "Jueves 15 de octubre de 2026",
-        "Hoy esperan tu decisión 3 entidades y 2 propuestas de asignación. 4 donaciones vencen en"
-            + " los próximos 7 días.",
+        "Hoy esperan tu decisión 3 organizaciones y 2 propuestas de asignación. Hay 7 donaciones"
+            + " sin asignar en el depósito; 4 vencen en los próximos 7 días.",
         new Decisiones(
             3,
             List.of("Hogar Ejemplo Norte", "Merendero Ejemplo Este", "Comedor Ejemplo Oeste"),
-            "La más antigua llegó el 9 de octubre. A una le falta la constancia de domicilio.",
+            0,
+            7,
             4,
             "La primera, Leche en polvo, vence el 17 de octubre, en 2 días.",
-            2,
-            List.of(
-                "Leche en polvo, 10 unidades, para Merendero Ejemplo Sur.",
-                "Arroz, 25 kg, para Comedor Barrio Ejemplo.")),
+            2),
         AL,
-        new Cifras(7, 4, 1, 9, "octubre", 46, 86, 1, 3));
+        new Cifras(
+            7, 4, 1, 1, 2, 9, "en octubre, del 1 al 15", 1_284, 46, 86, 92, new Camiones(1, 3)));
   }
 }
