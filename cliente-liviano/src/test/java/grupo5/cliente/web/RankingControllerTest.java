@@ -47,7 +47,7 @@ class RankingControllerTest {
   void sinFechaDeCalculoNoLaInventaYUnMesQueNoEstaMuestraElUltimo() throws Exception {
     mvc.perform(get("/admin-ranking?mes=2020-01"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("El ranking de octubre de 2026")))
+        .andExpect(content().string(containsString("Ranking de donantes de octubre de 2026")))
         .andExpect(content().string(containsString("Ana Ejemplo")))
         .andExpect(content().string(not(containsString("Calculado el"))))
         .andExpect(

@@ -98,6 +98,23 @@ class GuionTest(unittest.TestCase):
                     self.assertEqual(esperada, inc.categoria)
                     self.assertEqual(sum(inc.por_mes.values()), inc.total_donaciones)
 
+    def test_cada_mes_cerrado_del_ranking_tiene_al_menos_diez_puestos(self):
+        for hoy, mundo in self.mundos.items():
+            cerrados = guion.rankings_cerrados(mundo)
+            with self.subTest(hoy=hoy):
+                # Una racha pide tres meses seguidos: los dos primeros de la ventana no pueden
+                # tener ranking, y de ahí hasta el último mes cerrado no falta ninguno
+                self.assertGreaterEqual(len(cerrados), 4)
+                ultimo_cerrado = hoy.replace(day=1) - timedelta(days=1)
+                self.assertEqual(ultimo_cerrado.month, cerrados[-1][0].month)
+                for primero, filas in cerrados:
+                    self.assertGreaterEqual(len(filas), 10, primero)
+                    cantidades = [cantidad for _, cantidad in filas]
+                    self.assertEqual(cantidades, sorted(cantidades, reverse=True))
+                meses = [primero for primero, _ in cerrados]
+                for anterior, siguiente in zip(meses, meses[1:]):
+                    self.assertEqual((anterior + timedelta(days=32)).replace(day=1), siguiente)
+
     def test_entregas_y_rutas_cruzan_ids(self):
         for mundo in self.mundos.values():
             entregadas = {i.id for _, i in mundo.independientes()

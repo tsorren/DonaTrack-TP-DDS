@@ -1122,15 +1122,21 @@ class SitioControllerTest {
     mvc.perform(get("/admin-ranking"))
         .andExpect(model().attribute("seccion", "Ranking"))
         .andExpect(content().string(containsString("Septiembre de 2026")))
+        .andExpect(content().string(containsString("Ranking de donantes de septiembre de 2026")))
+        .andExpect(content().string(not(containsString("Volver al último mes"))))
         .andExpect(content().string(containsString("misiones que cada donante completó en el mes")))
         .andExpect(
             content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("hx-boost=\"true\"")))
         .andExpect(content().string(containsString("<caption>")));
     mvc.perform(get("/admin-ranking?mes=2026-08"))
-        .andExpect(content().string(containsString("El ranking de agosto de 2026")))
+        .andExpect(content().string(containsString("Ranking de donantes de agosto de 2026")))
         .andExpect(content().string(containsString("value=\"2026-08\" checked")))
-        .andExpect(content().string(containsString("Sacar los filtros")));
+        .andExpect(content().string(containsString("Volver al último mes")))
+        .andExpect(content().string(not(containsString("Sacar los filtros"))));
+    mvc.perform(get("/admin-ranking?mes=2026-09"))
+        .andExpect(content().string(containsString("Ranking de donantes de septiembre de 2026")))
+        .andExpect(content().string(not(containsString("Volver al último mes"))));
     mvc.perform(get("/admin-ranking?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay ningún ranking")));
     mvc.perform(get("/admin-ranking?escenario=error"))

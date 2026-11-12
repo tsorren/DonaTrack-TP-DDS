@@ -50,7 +50,7 @@ class Donante:
     documento: str
     telefono: str
     direccion: Direccion
-    perfil: str  # estrella, constante, empresa, inactivo, nuevo, relleno
+    perfil: str  # estrella, constante, empresa, inactivo, nuevo, relleno, misionero_a, misionero_b
     alta: date
     genero: str = "PREFIERO_NO_DECIR"
     nacimiento: date | None = None
@@ -339,6 +339,23 @@ _NOMBRES = [
     ("Sol", "Luna", "NO_BINARIO"), ("Mariano", "Medina", "HOMBRE"),
 ]
 
+# Quienes completan misiones para que el Ranking tenga puestos: 12 por cada grupo (ver
+# _fechas_misionero). Todos sintéticos, con el mismo dominio de demo que el resto del elenco.
+_MISIONEROS = [
+    ("Candela", "Arce", "MUJER"), ("Bruno", "Barrios", "HOMBRE"),
+    ("Renata", "Campos", "MUJER"), ("Thiago", "Duarte", "HOMBRE"),
+    ("Malena", "Echeverría", "MUJER"), ("Bautista", "Fariña", "HOMBRE"),
+    ("Pilar", "Gallo", "MUJER"), ("Lisandro", "Heredia", "HOMBRE"),
+    ("Josefina", "Iglesias", "MUJER"), ("Dante", "Jara", "HOMBRE"),
+    ("Emilia", "Krause", "MUJER"), ("Gael", "Lucero", "HOMBRE"),
+    ("Carolina", "Maidana", "MUJER"), ("Franco", "Núñez", "HOMBRE"),
+    ("Delfina", "Orellana", "MUJER"), ("Ciro", "Peralta", "HOMBRE"),
+    ("Luna", "Quinteros", "MUJER"), ("Manuel", "Rolón", "HOMBRE"),
+    ("Ailén", "Salazar", "MUJER"), ("Tobías", "Trejo", "HOMBRE"),
+    ("Zoe", "Urquiza", "MUJER"), ("Ulises", "Valdez", "HOMBRE"),
+    ("Mora", "Wagner", "MUJER"), ("Axel", "Yáñez", "HOMBRE"),
+]
+
 _EMPRESAS_RELLENO = [
     ("Panificadora La Espiga S.R.L.", "Alimentos"),
     ("Textil Riachuelo S.A.", "Indumentaria"),
@@ -486,6 +503,16 @@ def _elenco(hoy: date, azar: random.Random) -> tuple[list[Donante], list[Entidad
             dias(azar.randint(60, VENTANA_DIAS)), rubro=rubro, contacto=("Equipo", "RSE"),
         ))
 
+    for i, (nombre, apellido, genero) in enumerate(_MISIONEROS):
+        perfil = "misionero_a" if i < len(_MISIONEROS) // 2 else "misionero_b"
+        indice = i % (len(_MISIONEROS) // 2)
+        donantes.append(Donante(
+            f"misionero{i:02d}", f"{_slug(nombre)}.{_slug(apellido)}@{DOMINIO}", "HUMANA",
+            nombre, apellido, f"9030{i:04d}", f"115555{i + 500:04d}",
+            _DIRECCIONES_DONANTE[(i + 1) % len(_DIRECCIONES_DONANTE)], perfil,
+            _fechas_misionero(perfil, indice, hoy)[0] - timedelta(days=1), genero=genero,
+            nacimiento=date(1970 + i, (i * 5) % 12 + 1, 3 + i)))
+
     entidades = [
         Entidad("comedor", f"comedor.lospibes@{DOMINIO}", "Comedor Los Pibes de Barracas", "ONG",
                 "Comedor comunitario", "30900100011", "1155550201", _DIRECCIONES_ENTIDAD[0],
@@ -595,6 +622,25 @@ _ESTRELLA = [(-6, 20), (-6, 27), (-5, 8), (-5, 22), (-4, 3), (-4, 6), (-4, 9), (
              (-3, 5), (-3, 19), (-2, 3), (-2, 17), (-1, 1), (-1, 15)]
 
 
+def _fechas_misionero(perfil: str, indice: int, hoy: date) -> list[date]:
+    """Las donaciones de quien completa misiones, ancladas a los meses (las rachas cuentan meses).
+
+    El grupo A dona desde seis meses atrás: Racha Inicial se cumple en el mes -4, Explorador (tres
+    categorías en una donación) en el -3 y Gran Aporte (50 bienes juntos) en el -2. El grupo B
+    dona desde el -3 y cumple Racha Inicial en el -1. Así cada mes cerrado desde el -4 tiene al
+    menos 10 puestos (12 por grupo, de sobra). La última donación cae en las últimas dos semanas
+    y media, como la de los de relleno: el aviso de inactividad no los alcanza.
+    """
+    base = hoy.replace(day=1)
+    meses = [-6, -5, -4, -3, -2] if perfil == "misionero_a" else [-3, -2, -1]
+    fechas = []
+    for n, mes in enumerate(meses):
+        dia = 20 + indice % 6 if mes == -6 else 2 + (indice * 3 + n * 5) % 24
+        fechas.append(_sumar_meses(base, mes).replace(day=dia))
+    fechas.append(hoy - timedelta(days=2 + (indice * 5) % 17))
+    return sorted(fechas)
+
+
 def _calendario(donante: Donante, hoy: date, azar: random.Random) -> list[int]:
     if donante.perfil == "estrella":
         fechas = [_sumar_meses(hoy.replace(day=1), meses).replace(day=dia)
@@ -604,6 +650,9 @@ def _calendario(donante: Donante, hoy: date, azar: random.Random) -> list[int]:
         return [(hoy - f).days for f in fechas]
     if donante.perfil in _CALENDARIOS:
         return _CALENDARIOS[donante.perfil]
+    if donante.perfil.startswith("misionero"):
+        indice = int(donante.clave.removeprefix("misionero")) % (len(_MISIONEROS) // 2)
+        return [(hoy - f).days for f in _fechas_misionero(donante.perfil, indice, hoy)]
     desde = (hoy - donante.alta).days
     cantidad = azar.randint(1, 5)
     dias = sorted({azar.randint(3, max(4, desde)) for _ in range(cantidad)}, reverse=True)
@@ -613,6 +662,12 @@ def _calendario(donante: Donante, hoy: date, azar: random.Random) -> list[int]:
         dias[-1] = azar.randint(2, 18)
     return sorted(set(dias), reverse=True)
 
+
+# Cinco subcategorías de cinco categorías: la donación de Explorador y la de Gran Aporte llevan
+# de sobra (tres categorías, 50 bienes) porque lo que queda en el depósito sin destino se
+# reubica después en otra subcategoría y con otra cantidad (_acotar_stock)
+_VARIAS = ["No Perecederos", "Ropa de Invierno", "Cuadernos y papelería", "Higiene personal",
+           "Toallas"]
 
 # Sesgo de lo que dona cada protagonista, por subcategoría
 _PREFERENCIAS = {
@@ -625,6 +680,16 @@ _PREFERENCIAS = {
         ["Higiene personal", "Mochilas y cartucheras"], ["No Perecederos"],
         ["Ropa de Invierno", "Frutas"], ["Muebles Escolares"], ["Frutas", "Higiene personal"],
         ["No Perecederos"],
+    ],
+    # Una por mes: la cuarta junta tres categorías (Explorador) y la quinta pasa los 50 bienes
+    # (Gran Aporte); ver _fechas_misionero
+    "misionero_a": [
+        ["No Perecederos"], ["Higiene personal"], ["Cuadernos y papelería"], _VARIAS, _VARIAS,
+        ["Ropa de Invierno"],
+    ],
+    "misionero_b": [
+        ["No Perecederos"], ["Higiene personal"], ["Ropa de Invierno"],
+        ["Cuadernos y papelería"],
     ],
     "empresa": [
         ["No Perecederos", "Limpieza del hogar"], ["Cuadernos y papelería", "Higiene personal"],
@@ -692,7 +757,8 @@ class _Constructor:
                 }) or demandadas
                 subcategorias = self.azar.sample(
                     abiertas, min(len(abiertas), self.azar.choice([1, 1, 2])))
-            grande = donante.perfil == "empresa" or (donante.perfil == "estrella" and n == 6)
+            grande = (donante.perfil == "empresa" or (donante.perfil == "estrella" and n == 6)
+                      or (donante.perfil == "misionero_a" and n == 4))
             donacion = Donacion(
                 self.ids.nuevo(), donante.clave, fecha, "", self.azar.choice(list(_DEPOSITOS)),
                 nombre_oculto=not donante.mostrar_nombre or (
@@ -1078,6 +1144,21 @@ def ranking_de(mundo: Mundo, anio: int, mes: int) -> list[tuple[str, int]]:
             filas.append((clave, cantidad))
     filas.sort(key=lambda f: (-f[1], mundo.donante(f[0]).denominacion))
     return filas
+
+
+def rankings_cerrados(mundo: Mundo) -> list[tuple[date, list[tuple[str, int]]]]:
+    """Los meses cerrados de la ventana que tienen ranking, con sus puestos, del más viejo al más
+    nuevo. Los primeros meses no lo tienen: nadie puede cumplir una misión antes de tres meses
+    de racha, y el ranking se arma al cerrar el primer mes con misiones cumplidas."""
+    primero = mundo.hoy.replace(day=1)
+    mes = mundo.inicio.replace(day=1)
+    cerrados = []
+    while mes < primero:
+        filas = ranking_de(mundo, mes.year, mes.month)
+        if filas:
+            cerrados.append((mes, filas))
+        mes = (mes + timedelta(days=32)).replace(day=1)
+    return cerrados
 
 
 def construir_mundo(hoy: date, semilla: int) -> Mundo:
