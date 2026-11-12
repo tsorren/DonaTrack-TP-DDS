@@ -34,10 +34,11 @@
 .buzon-cabeza label {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  /* Sin relleno ni hueco: la casilla de 48 px ya trae 14 px de aire a cada lado de su marca. */
+  gap: 0;
   min-height: 3rem;
   margin: 0;
-  padding-left: 0.875rem;
+  padding-left: 0;
   font-weight: 700;
   cursor: pointer;
 }
@@ -81,12 +82,73 @@
   }
 }
 
-.buzon-cabeza input,
-.buzon-casilla input {
-  width: 1.25rem;
-  height: 1.25rem;
+/* Las casillas (la de cada fila y la de «Seleccionar todas»): el control mide 48 × 48 px, toda el
+   área que se toca, y la marca que se ve sigue de 20 px, dibujada al centro con fondos: el filete
+   y, adentro, el relleno. Marcada, del verde de acción con el tilde (dos trazos en diagonal, el
+   corto y el largo); a medias, con una raya. El foco, un anillo alrededor de la marca. Con los
+   colores forzados del sistema vuelve la casilla nativa de 20 px, con aire dentro de la etiqueta. */
+.buzon-cabeza input[type="checkbox"],
+.buzon-casilla input[type="checkbox"] {
+  flex: none;
+  box-sizing: border-box;
+  width: 3rem;
+  height: 3rem;
   margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-boton);
+  appearance: none;
+  background:
+    linear-gradient(var(--color-superficie), var(--color-superficie)) center / 1rem 1rem no-repeat,
+    linear-gradient(var(--color-borde-control), var(--color-borde-control)) center / 1.25rem 1.25rem
+      no-repeat;
   cursor: pointer;
+}
+
+.buzon-cabeza input[type="checkbox"]:checked,
+.buzon-casilla input[type="checkbox"]:checked {
+  background:
+    linear-gradient(
+        45deg,
+        transparent calc(50% - 1px),
+        var(--color-texto-sobre-accion) calc(50% - 1px) calc(50% + 1px),
+        transparent calc(50% + 1px)
+      )
+      calc(50% - 0.25rem) calc(50% + 0.125rem) / 0.375rem 0.375rem no-repeat,
+    linear-gradient(
+        -45deg,
+        transparent calc(50% - 1px),
+        var(--color-texto-sobre-accion) calc(50% - 1px) calc(50% + 1px),
+        transparent calc(50% + 1px)
+      )
+      calc(50% + 0.1875rem) calc(50% - 0.0625rem) / 0.625rem 0.625rem no-repeat,
+    linear-gradient(var(--color-accion-primaria), var(--color-accion-primaria)) center / 1.25rem
+      1.25rem no-repeat;
+}
+
+.buzon-cabeza input[type="checkbox"]:indeterminate {
+  background:
+    linear-gradient(var(--color-texto-sobre-accion), var(--color-texto-sobre-accion)) center /
+      0.625rem 0.125rem no-repeat,
+    linear-gradient(var(--color-accion-primaria), var(--color-accion-primaria)) center / 1.25rem
+      1.25rem no-repeat;
+}
+
+.buzon-cabeza input[type="checkbox"]:focus-visible,
+.buzon-casilla input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: -0.625rem;
+}
+
+@media (forced-colors: active) {
+  .buzon-cabeza input[type="checkbox"],
+  .buzon-casilla input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.875rem;
+    appearance: auto;
+    background: none;
+  }
 }
 
 .buzon-columnas {
