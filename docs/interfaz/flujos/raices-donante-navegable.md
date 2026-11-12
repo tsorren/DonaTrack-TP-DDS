@@ -505,7 +505,7 @@ corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), sin DTI ni
 | donante-donaciones-detalle | "Figura como" (nombre visible) | HB-20 |
 | donante-entidades | Búsqueda por nombre, paginado, solo activas, tipo y zona | HB-08 y HB-15 (hoy `GET /api/entidades` devuelve todo, con las dadas de baja) |
 | donante-entidades | Lo que pide cada entidad, con cuánto recibió y cuánto falta | HB-18 |
-| donante-entidades | Lo que la empresa ya donó a cada entidad | No hay filtro de las donaciones de un donante por entidad asignada (HB-04 es del lado de la entidad) |
+| donante-entidades | Lo que la empresa ya donó a cada entidad | Al día (R11-12, `p1-donante-listas`, 2026-11-12): `GET /api/donantes/{id}/entidades` da `yaLeDono` y filtra con `soloDonadas`; la categoría, con `categoriaId`. Mis donaciones filtra también por subcategoría (`subcategoriaId`, RF-05) |
 | donante-entidades | Dirección y horario del depósito | No hay endpoint de depósitos |
 | donante-notificaciones | Tipo de evento e id de la donación en `NotificacionDTO` | Sin ellos no se pone el sello ni se enlaza al detalle (hoy trae solo `mensaje`) |
 | donante-notificaciones | Avisos "recibida en el depósito" y "lista para entregar" | No están en `EventoNotificableDTO`; RF-08 pide asignación y recepción (HB-09) |

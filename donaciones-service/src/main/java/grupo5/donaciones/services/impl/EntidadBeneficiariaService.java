@@ -7,9 +7,11 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
@@ -19,7 +21,11 @@ import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,19 +40,22 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   private final INecesidadesRepository necesidadesRepository;
   private final EntidadBeneficiariaMapper mapper;
   private final CancelacionDeEntregas cancelacionDeEntregas;
+  private final IDonantesRepository donantesRepository;
 
   public EntidadBeneficiariaService(
       IEntidadesBeneficiariasRepository repository,
       IPersonasRepository personasRepository,
       INecesidadesRepository necesidadesRepository,
       EntidadBeneficiariaMapper mapper,
-      CancelacionDeEntregas cancelacionDeEntregas) {
+      CancelacionDeEntregas cancelacionDeEntregas,
+      IDonantesRepository donantesRepository) {
 
     this.repository = repository;
     this.personasRepository = personasRepository;
     this.necesidadesRepository = necesidadesRepository;
     this.mapper = mapper;
     this.cancelacionDeEntregas = cancelacionDeEntregas;
+    this.donantesRepository = donantesRepository;
   }
 
   @Override
@@ -89,16 +98,60 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   @Override
-  public Pagina<EntidadPublicaDTO> buscarPublicas(String nombre, Integer page, Integer size) {
-    Tramo<EntidadBeneficiaria> tramo = repository.buscar(criterio(nombre, true, page, size));
+  public Pagina<EntidadPublicaDTO> buscarPublicas(
+      String nombre, UUID categoriaId, Integer page, Integer size) {
+    Tramo<EntidadBeneficiaria> tramo =
+        repository.buscar(criterioPublico(nombre, categoriaId, null, page, size));
+    return new Pagina<>(publicas(tramo), (int) tramo.total());
+  }
+
+  @Override
+  public Pagina<EntidadParaDonanteDTO> buscarParaDonante(
+      UUID donanteId,
+      String nombre,
+      UUID categoriaId,
+      boolean soloDonadas,
+      Integer page,
+      Integer size) {
+    CriterioEntidades criterio =
+        criterioPublico(nombre, categoriaId, soloDonadas ? donanteId : null, page, size);
+    if (!donantesRepository.existsById(donanteId)) {
+      throw new RecursoNoEncontradoException(donanteId);
+    }
+    Tramo<EntidadBeneficiaria> tramo = repository.buscar(criterio);
+    List<EntidadPublicaDTO> pagina = publicas(tramo);
+    // Una sola consulta para toda la página (R11-12, A9)
+    Set<UUID> donadas =
+        repository.recibieronDe(donanteId, pagina.stream().map(EntidadPublicaDTO::id).toList());
     return new Pagina<>(
-        mapper.toOutputDTOs(tramo.elementos()).stream()
-            .filter(e -> e.juridica() != null)
+        pagina.stream()
             .map(
                 e ->
-                    new EntidadPublicaDTO(e.id(), e.juridica().razonSocial(), e.juridica().rubro()))
+                    new EntidadParaDonanteDTO(
+                        e.id(), e.razonSocial(), e.rubro(), donadas.contains(e.id())))
             .toList(),
         (int) tramo.total());
+  }
+
+  /** Las de la página con su jurídica, en el DTO público (D26). */
+  private List<EntidadPublicaDTO> publicas(Tramo<EntidadBeneficiaria> tramo) {
+    return mapper.toOutputDTOs(tramo.elementos()).stream()
+        .filter(e -> e.juridica() != null)
+        .map(e -> new EntidadPublicaDTO(e.id(), e.juridica().razonSocial(), e.juridica().rubro()))
+        .toList();
+  }
+
+  /** Las activas, con la búsqueda, la categoría y "ya doné"; valida el paginado antes de leer. */
+  private static CriterioEntidades criterioPublico(
+      String nombre, UUID categoriaId, UUID donadasPor, Integer page, Integer size) {
+    ParametrosListado listado = new ParametrosListado(page, size, nombre, null);
+    return new CriterioEntidades(
+        listado.texto(),
+        true,
+        categoriaId,
+        LocalDate.now(ZoneId.systemDefault()),
+        donadasPor,
+        listado.paginado());
   }
 
   /** Sin {@code page} ni {@code size}, la página 0 de 20 (R11-01): nunca la lista completa. */

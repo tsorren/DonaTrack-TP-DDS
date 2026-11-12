@@ -39,6 +39,19 @@ public record MisDonacionesVista(
       EstadoEntrega estado,
       String nota) {}
 
-  /** Una opción del filtro de categoría. */
-  public record Categoria(String valor, String texto) {}
+  /**
+   * Una opción del filtro de categoría, con sus subcategorías para el filtro "Subcategoría" (RF-05,
+   * R11-13; vacía si no tiene o no se saben).
+   */
+  public record Categoria(String valor, String texto, List<Categoria> subcategorias) {
+
+    public Categoria {
+      subcategorias = subcategorias == null ? List.of() : List.copyOf(subcategorias);
+    }
+
+    /** Sin subcategorías. */
+    public Categoria(String valor, String texto) {
+      this(valor, texto, List.of());
+    }
+  }
 }

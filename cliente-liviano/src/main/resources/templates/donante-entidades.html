@@ -6,7 +6,10 @@
        recibió nada, en 0 %). Las entidades a las que tu empresa ya les donó quedan atenuadas (papel
        gris y la marca "Ya le donaste" en palabras), sin borde de selección.
        Búsqueda y filtros en una barra (componentes/filtros, .filtros-barra): por nombre (?nombre=),
-       categoría (?categoria=alimentos|ropa|muebles|escolares) y "Ya doné" (?ya=si). Paginado de seis
+       categoría (?categoria=, una de las de la vista: con Donaciones, su id; en la maqueta,
+       alimentos|ropa|muebles|escolares) y "Ya doné" (?ya=si). Los tres los resuelve el puerto sobre
+       todas las entidades activas (R11-12, lote p1-donante-listas): la plantilla no vuelve a filtrar
+       y el total y las páginas son los del filtro. Paginado de seis con el componente paginas
        (?pagina=2 a 8: la maqueta solo dibuja la primera) y ?escenario=vacio, error y lento. Sin
        detalle ni botón "Donar": la entidad la elige el admin (RF-17). "Cómo llega tu donación" es
        texto fijo: queda también con error y vacío. Lo propio de la pantalla va con data-v.
@@ -25,18 +28,20 @@
 
 <th:block th:fragment="cuerpo"
     th:with="entidades=${misEntidades.entidades},
+             categorias=${misEntidades.categorias},
              busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
-             categoria=${param.categoria != null and {'alimentos', 'ropa', 'muebles', 'escolares'}.contains(param.categoria[0]) ? param.categoria[0] : ''},
-             sinEntidades=${misEntidades.total == 0 and busca == ''},
+             pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
+             categoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
+             elegida=${categoria == '' ? null : categorias.^[valor == #root.categoria]},
              soloYa=${param.ya != null and param.ya[0] == 'si'},
              filtrado=${categoria != '' or soloYa},
-             pagina=${param.pagina != null and param.pagina[0].matches('[1-9][0-9]{0,3}')
-                    and #conversions.convert(param.pagina[0], 'java.lang.Integer') <= misEntidades.paginas
-                    ? #conversions.convert(param.pagina[0], 'java.lang.Integer') : 1},
-             porYa=${soloYa ? entidades.?[!ya.isEmpty()] : entidades},
-             lista=${categoria == '' ? porYa : porYa.?[!pide.?[cat == 'cat-' + #root.categoria].isEmpty()]},
+             total=${misEntidades.total},
+             sinEntidades=${total == 0 and busca == '' and !filtrado},
+             pagina=${misEntidades.pagina},
+             paginas=${misEntidades.paginas},
+             lista=${entidades},
              dibujada=${pagina <= misEntidades.dibujadas},
-             activas=|${misEntidades.total} ${misEntidades.total == 1 ? 'entidad activa' : 'entidades activas'}|">
+             activas=|${total} ${total == 1 ? 'entidad activa' : 'entidades activas'}|">
   <div class="entidades" data-v="entidades">
     <header>
       <p class="rotulo" th:text="${seccion}">Entidades</p>
@@ -55,7 +60,8 @@
     </section>
 
     <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra): al lado
-           de la búsqueda en pantalla ancha, debajo en el celular. */-->
+           de la búsqueda en pantalla ancha, debajo en el celular. Las categorías son las de la vista
+           (las reales con Donaciones), no una lista fija. */-->
     <form hx-boost="true" th:if="${(escenario == '' and !sinEntidades) or escenario == 'lento'}" class="filtros-barra" role="search"
           action="/donante-entidades" th:action="@{/donante-entidades}"
           method="get" aria-label="Buscar entidades">
@@ -67,10 +73,7 @@
         </div>
       </div>
       <div class="filtros" role="group" aria-label="Filtrar los pedidos">
-        <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${categoria}, ${ {
-            {valor: '', texto: 'Todas las categorías'}, {valor: 'alimentos', texto: 'Alimentos'},
-            {valor: 'ropa', texto: 'Ropa'}, {valor: 'muebles', texto: 'Muebles'},
-            {valor: 'escolares', texto: 'Útiles escolares'} } })}"></details>
+        <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${categoria}, ${misEntidades.opcionesDeCategoria()})}"></details>
         <label th:replace="~{componentes/filtros :: interruptor('ya', 'si', 'Ya doné', ${soloYa})}"></label>
         <a th:if="${busca != '' or filtrado}" class="filtros-sacar" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
@@ -83,17 +86,16 @@
     </th:block>
 
     <th:block th:if="${escenario == '' and !sinEntidades}">
-      <!--/* "Ya doné" filtra la página que se ve (el filtro de todo el listado es de p1-donante-listas):
-             el resultado lo dice (ficha r11-p0-persona.md). */-->
-      <p class="resultado" role="status"
-         th:text="${soloYa and categoria == ''} ? (${lista.isEmpty()} ? 'En esta página no hay entidades a las que hayas donado.' : |En esta página, ${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad a la que' : 'entidades a las que'} ya donaste.|)
-                 : (${filtrado} ? (${lista.isEmpty()} ? 'Ninguna entidad coincide con lo que elegiste.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste.|)
-                 : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${misEntidades.total} ${misEntidades.total == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre. Página ${pagina} de ${misEntidades.paginas}.|)
-                 : |${activas}. Página ${pagina} de ${misEntidades.paginas}.|))">46
+      <!--/* El resultado, sobre el total que da el servidor (R11-12): la categoría y "Ya doné" filtran
+             todas las entidades activas, no la página. Al llegar desde el paginador, el foco va acá. */-->
+      <p class="resultado" role="status" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
+         th:text="${filtrado} ? (${total == 0} ? (${soloYa and categoria == '' and busca == ''} ? 'Todavía no le donaste a ninguna entidad.' : 'Ninguna entidad coincide con lo que elegiste.') : |${total} ${total == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste. Página ${pagina} de ${paginas}.|)
+                 : (${busca != ''} ? (${total == 0} ? 'Ninguna entidad activa se llama así.' : |${total} ${total == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre. Página ${pagina} de ${paginas}.|)
+                 : |${activas}. Página ${pagina} de ${paginas}.|)">46
         entidades activas. Página 1 de 8.</p>
 
-      <section th:if="${(busca != '' or filtrado) and lista.isEmpty()}" class="vacio" aria-labelledby="sin-resultados">
-        <h2 id="sin-resultados" th:text="${soloYa and categoria == ''} ? 'Probá en otra página o sacá el filtro.' : (${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.')">Probá
+      <section th:if="${(busca != '' or filtrado) and total == 0}" class="vacio" aria-labelledby="sin-resultados">
+        <h2 id="sin-resultados" th:text="${soloYa and categoria == '' and busca == ''} ? 'Cuando el depósito asigne una de tus donaciones, la entidad aparece acá.' : (${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.')">Probá
           con otra parte del nombre.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Ver todas</a>
@@ -107,48 +109,51 @@
 
       <svg th:replace="~{iconos :: categorias}"></svg>
 
-      <!--/* El avance de los pedidos, por categoría: cada pedido es un renglón con su ícono, la
-             entidad, lo que falta y la barra de lo recibido con su porcentaje; los pedidos de una
-             entidad a la que tu empresa ya le donó, atenuados y con la marca en palabras. */-->
+      <!--/* El avance de los pedidos, por categoría (las de la vista, en su orden): cada pedido es un
+             renglón con la entidad, lo que falta y la barra de lo recibido con su porcentaje; los
+             pedidos de una entidad a la que ya le donaste, atenuados y con la marca en palabras.
+             Con una categoría elegida, solo su grupo; una entidad que llegó por esa categoría pero ya
+             no tiene nada pendiente de ella lo dice en su renglón. Los pedidos sin categoría conocida
+             van en "Otros pedidos": ninguna necesidad vigente queda sin mostrarse. */-->
       <th:block th:if="${dibujada or busca != '' or filtrado}">
-        <th:block th:each="g : ${ { {cat: 'cat-alimentos', nombre: 'Alimentos'}, {cat: 'cat-ropa', nombre: 'Ropa'},
-                                    {cat: 'cat-muebles', nombre: 'Muebles'}, {cat: 'cat-escolares', nombre: 'Útiles escolares'} } }"
-                  th:with="enGrupo=${lista.?[!pide.?[cat == #root.g.cat].isEmpty()]}">
-        <section th:unless="${enGrupo.isEmpty() or (categoria != '' and g.cat != 'cat-' + categoria)}" data-v="grupo" th:aria-labelledby="|grupo-${g.cat}|">
-          <h2 th:id="|grupo-${g.cat}|">
-            <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos" th:href="|#${g.cat}|"/></svg>
-            <span th:text="${g.nombre}">Alimentos</span></h2>
+        <th:block th:each="g : ${categorias}"
+                  th:with="enGrupo=${lista.?[!pide.?[categoria == #root.g.valor].isEmpty()]},
+                           cubiertas=${categoria == g.valor ? lista.?[pide.?[categoria == #root.g.valor].isEmpty()] : {}}">
+        <section th:unless="${(enGrupo.isEmpty() and cubiertas.isEmpty()) or (categoria != '' and g.valor != categoria)}" data-v="grupo" th:aria-labelledby="|grupo-${gStat.count}|">
+          <h2 th:id="|grupo-${gStat.count}|">
+            <svg th:if="${g.icono != null}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos" th:href="|#${g.icono}|"/></svg>
+            <span th:text="${g.texto}">Alimentos</span></h2>
           <ul data-v="renglones" role="list">
             <th:block th:each="e : ${enGrupo}">
-              <li th:each="p : ${e.pide.?[cat == #root.g.cat]}" th:data-ya="${e.ya.isEmpty()} ? null : 'si'"
-                  th:with="pct=${p.recibido == null or p.total == null or p.total == 0 ? 0 : p.recibido * 100 / p.total}">
-                <b th:text="${p.que}">Lentejas secas</b>
-                <span data-v="quien"><th:block th:text="${e.nombre}">Comedor Barrio Ejemplo</th:block><th:block
-                      th:unless="${e.ya.isEmpty()}"><span data-v="ya-donaste">Ya le donaste</span></th:block></span>
-                <progress th:if="${p.recibido != null}" class="progreso" max="40" value="10" th:max="${p.total}" th:value="${p.recibido}"
-                          th:aria-label="|${p.que} para ${e.nombre}: recibió el ${pct} %|"
-                          aria-label="Lentejas secas para Comedor Barrio Ejemplo: recibió el 25 %"
-                          th:text="|${pct} %|">25 %</progress>
-                <span th:if="${p.recibido != null}" data-v="cuanto" th:text="|${pct} %|" aria-hidden="true">25 %</span>
-                <span data-v="falta" th:text="|${p.falta} · ${p.cuando}|">Faltan 30 de 40 kg este mes · Se repite cada mes</span>
-              </li>
+              <th:block th:each="p : ${e.pide.?[categoria == #root.g.valor]}">
+                <li th:replace="~{donante-entidades :: renglon(${e}, ${p})}"></li>
+              </th:block>
             </th:block>
+            <li th:each="e : ${cubiertas}" th:data-ya="${e.ya} ? 'si' : null">
+              <span th:replace="~{donante-entidades :: quien(${e})}"></span>
+              <span data-v="falta" th:text="|Lo que pedía de ${g.texto} ya está cubierto.|">Lo que pedía de
+                Alimentos ya está cubierto.</span>
+            </li>
           </ul>
         </section>
         </th:block>
+        <th:block th:if="${categoria == ''}" th:with="otros=${lista.?[!pide.?[categoria == null].isEmpty()]}">
+          <section th:unless="${otros.isEmpty()}" data-v="grupo" aria-labelledby="grupo-otros">
+            <h2 id="grupo-otros"><span>Otros pedidos</span></h2>
+            <ul data-v="renglones" role="list">
+              <th:block th:each="e : ${otros}">
+                <th:block th:each="p : ${e.pide.?[categoria == null]}">
+                  <li th:replace="~{donante-entidades :: renglon(${e}, ${p})}"></li>
+                </th:block>
+              </th:block>
+            </ul>
+          </section>
+        </th:block>
       </th:block>
 
-      <!--/* El paginador conserva la búsqueda, la categoría y "Ya doné"; los que no se eligieron no se
-             escriben (la categoría sale de la lista fija de arriba). La búsqueda la resuelve
-             Donaciones, sin tildes y sobre todas las activas (R11-13): la pantalla no vuelve a
-             filtrar por nombre. */-->
-      <nav class="paginas" aria-label="Páginas de entidades"
-           th:with="filtros=${(busca == '' ? '' : '&nombre=' + #uris.escapeQueryParam(busca)) + (categoria == '' ? '' : '&categoria=' + categoria) + (soloYa ? '&ya=si' : '')}">
-        <a th:if="${pagina > 1}" class="boton" data-tono="secundario" href="/donante-entidades"
-           hx-boost="true" th:href="@{${'/donante-entidades?pagina=' + (pagina - 1) + filtros}}">Página anterior</a>
-        <a th:if="${pagina < misEntidades.paginas}" class="boton" data-tono="secundario" href="/donante-entidades?pagina=2"
-           hx-boost="true" th:href="@{${'/donante-entidades?pagina=' + (pagina + 1) + filtros}}">Página siguiente</a>
-      </nav>
+      <!--/* El paginador común (componentes/paginas, R11-11): conserva la búsqueda, la categoría y
+             "Ya doné" en la dirección (lo arma el controller); con una sola página no se dibuja. */-->
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </th:block>
 
     <section class="tarjeta lamina como-donar" aria-labelledby="como-titulo">
@@ -169,5 +174,21 @@
     </section>
   </div>
 </th:block>
+<!--/* Un pedido de una entidad: qué, de quién (el nombre en su línea y "Ya le donaste" debajo, R11-18),
+       la barra de lo recibido con su porcentaje cuando se sabe y lo que falta. */-->
+<li th:fragment="renglon(e, p)" th:data-ya="${e.ya} ? 'si' : null"
+    th:with="pct=${p.recibido == null or p.total == null or p.total == 0 ? 0 : p.recibido * 100 / p.total}">
+  <b th:text="${p.que}">Lentejas secas</b>
+  <span th:replace="~{donante-entidades :: quien(${e})}"></span>
+  <progress th:if="${p.recibido != null}" class="progreso" max="40" value="10" th:max="${p.total}" th:value="${p.recibido}"
+            th:aria-label="|${p.que} para ${e.nombre}: recibió el ${pct} %|"
+            aria-label="Lentejas secas para Comedor Barrio Ejemplo: recibió el 25 %"
+            th:text="|${pct} %|">25 %</progress>
+  <span th:if="${p.recibido != null}" data-v="cuanto" th:text="|${pct} %|" aria-hidden="true">25 %</span>
+  <span data-v="falta" th:text="|${p.falta} · ${p.cuando}|">Faltan 30 de 40 kg este mes · Se repite cada mes</span>
+</li>
+
+<span th:fragment="quien(e)" data-v="quien"><span data-v="nombre" th:text="${e.nombre}">Comedor Barrio
+    Ejemplo</span><span th:if="${e.ya}" data-v="ya-donaste">Ya le donaste</span></span>
 </body>
 </html>

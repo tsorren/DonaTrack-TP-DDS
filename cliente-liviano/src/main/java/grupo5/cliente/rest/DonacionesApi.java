@@ -131,6 +131,15 @@ interface DonacionesApi {
   ResponseEntity<List<EntidadPublica>> entidadesPublicas(
       @RequestParam MultiValueMap<String, String> filtros);
 
+  /**
+   * Las entidades activas vistas por un donante (R11-12): el donante dueño o ADMIN. Con {@code
+   * nombre}, {@code categoriaId}, {@code soloDonadas}, {@code page} y {@code size}; el total viene
+   * en {@code X-Total-Count} y cada una dice si ese donante ya le donó.
+   */
+  @GetExchange("/api/donantes/{id}/entidades")
+  ResponseEntity<List<EntidadParaDonante>> entidadesParaDonante(
+      @PathVariable UUID id, @RequestParam MultiValueMap<String, String> filtros);
+
   /** Solo ADMIN. */
   @PostExchange("/api/entidades")
   Entidad registrarEntidad(@RequestBody EntidadNueva entidad);
@@ -380,6 +389,8 @@ interface DonacionesApi {
   record Entidad(UUID id, Persona juridica, Boolean activo) {}
 
   record EntidadPublica(UUID id, String razonSocial, String rubro) {}
+
+  record EntidadParaDonante(UUID id, String razonSocial, String rubro, boolean yaLeDono) {}
 
   record EntidadNueva(UUID juridicaId) {}
 

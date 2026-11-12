@@ -63,9 +63,14 @@ class DonanteSeguimientoRestTest {
             hoy);
   }
 
+  /** Solo las que están en curso, de una vez y del lado del servicio (R11-13). */
   private void conDonaciones() {
     apis.expect(
-            requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
+            requestTo(
+                "http://donaciones/donaciones-independientes?donanteId="
+                    + DONANTE
+                    + "&estado=ASIGNACION_REALIZADA&estado=LISTA_PARA_ENTREGAR&estado=EN_TRASLADO"
+                    + "&estado=EN_PUERTA&estado=ENTREGA_FALLIDA&estado=VENCIDA&page=0&size=100"))
         .andRespond(withSuccess(DOS, MediaType.APPLICATION_JSON));
     apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
         .andRespond(

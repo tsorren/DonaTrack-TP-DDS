@@ -112,17 +112,15 @@ class DonacionesRest implements DonacionesPuerto {
   /**
    * Una página, con los filtros resueltos por Donaciones (R11-01): el mes por la fecha de registro
    * (desde y hasta inclusivos), el estado como los estados de Donaciones que lo forman y la
-   * categoría solo si es una de las del filtro. El total, de {@code X-Total-Count}. Una página más
-   * allá de la última pide la última.
+   * subcategoría o, sin ella, la categoría, solo si son de las del filtro (R11-13). El total, de
+   * {@code X-Total-Count}. Una página más allá de la última pide la última.
    */
   @Override
   public MisDonacionesVista misDonaciones(UUID donante, Consulta consulta) {
     List<MisDonacionesVista.Categoria> categorias =
-        api.categorias().stream()
-            .map(c -> new MisDonacionesVista.Categoria(c.id().toString(), c.nombre()))
-            .toList();
-    boolean conCategoria =
-        categorias.stream().anyMatch(c -> c.valor().equals(consulta.categoria()));
+        api.categorias().stream().map(DonacionesRest::categoriaDelFiltro).toList();
+    String subcategoria = consulta.subcategoriaEn(categorias);
+    String categoria = subcategoria == null ? consulta.categoriaEn(categorias) : null;
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     filtros.add("donanteId", donante.toString());
     if (consulta.mes() != null) {
@@ -132,8 +130,11 @@ class DonacionesRest implements DonacionesPuerto {
     if (consulta.estado() != null) {
       ESTADOS.get(consulta.estado()).forEach(e -> filtros.add("estado", e));
     }
-    if (conCategoria) {
-      filtros.add("categoriaId", consulta.categoria());
+    // La subcategoría ya dice la categoría: con ella no se manda categoriaId (R11-13)
+    if (subcategoria != null) {
+      filtros.add("subcategoriaId", subcategoria);
+    } else if (categoria != null) {
+      filtros.add("categoriaId", categoria);
     }
     int pagina = consulta.pagina();
     ResponseEntity<List<DonacionesApi.Donacion>> respuesta = pedirPagina(filtros, pagina);
@@ -165,6 +166,21 @@ class DonacionesRest implements DonacionesPuerto {
         total,
         pagina,
         paginas);
+  }
+
+  /**
+   * Una categoría del filtro con sus subcategorías por nombre (RF-05: categoría o subcategoría).
+   */
+  private static MisDonacionesVista.Categoria categoriaDelFiltro(DonacionesApi.Categoria c) {
+    List<MisDonacionesVista.Categoria> subcategorias =
+        c.subcategorias() == null
+            ? List.of()
+            : c.subcategorias().stream()
+                .filter(sub -> sub.id() != null && sub.nombre() != null)
+                .sorted(Comparator.comparing(DonacionesApi.Subcategoria::nombre))
+                .map(sub -> new MisDonacionesVista.Categoria(sub.id().toString(), sub.nombre()))
+                .toList();
+    return new MisDonacionesVista.Categoria(c.id().toString(), c.nombre(), subcategorias);
   }
 
   private ResponseEntity<List<DonacionesApi.Donacion>> pedirPagina(

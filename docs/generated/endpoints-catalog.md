@@ -1,13 +1,13 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 124
+> **Total de Endpoints:** 126
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
 ## Microservicio: DonaTrack - Donaciones Service API (`openapi-donaciones.yaml`)
 
-* **Versión:** `1.9.0`
+* **Versión:** `1.10.0`
 * **Descripción:** >-
 * **Servidor Local:** `http://localhost:8080`
 
@@ -32,7 +32,7 @@
 | `GET` | `/api/necesidades/{id}/periodos` | `listarPeriodosDeNecesidad` | `-` | `200 (PeriodoNecesidadDTO), 404 (-)` |
 | `POST` | `/api/asignaciones/ejecuciones` | `ejecutarAsignacion` | `-` | `201 (-)` |
 | `GET` | `/api/asignaciones/ejecuciones` | `historialEjecucionesAsignacion` | `-` | `200 (-)` |
-| `GET` | `/api/asignaciones/propuestas` | `listarPropuestasAsignacion` | `-` | `200 (-)` |
+| `GET` | `/api/asignaciones/propuestas` | `listarPropuestasAsignacion` | `-` | `200 (PropuestaDTO)` |
 | `PUT` | `/api/asignaciones/propuestas/{id}/estado` | `actualizarEstadoPropuesta` | `-` | `200 (-), 409 (-)` |
 | `POST` | `/api/entidades` | `registrarEntidadBeneficiaria` | `-` | `200 (-), 201 (-), 400 (-), 404 (-), 409 (-)` |
 | `GET` | `/api/entidades` | `listarEntidadesBeneficiarias` | `-` | `200 (-), 400 (-)` |
@@ -44,7 +44,9 @@
 | `GET` | `/api/donantes` | `listarDonantes` | `-` | `200 (DonanteOutputDTO), 400 (-)` |
 | `GET` | `/api/donantes/{id}` | `obtenerDonantePorId` | `-` | `200 (-), 404 (-)` |
 | `DELETE` | `/api/donantes/{id}` | `eliminarDonante` | `-` | `204 (-), 404 (-)` |
+| `GET` | `/api/donantes/{id}/entidades` | `listarEntidadesParaDonante` | `-` | `200 (EntidadParaDonanteDTO), 400 (-), 401 (-), 403 (-), 404 (-)` |
 | `PATCH` | `/api/donantes/{id}/preferencias` | `actualizarPreferenciasDonante` | `PreferenciasDonanteDTO` | `200 (-), 400 (-), 403 (-), 404 (-)` |
+| `GET` | `/api/donantes/archivos` | `listarArchivosDonantes` | `-` | `200 (ArchivoDonantesResponse), 400 (-), 401 (-), 403 (-)` |
 | `POST` | `/api/donantes/archivos` | `cargarArchivoDonantes` | `-` | `202 (ArchivoDonantesResponse), 400 (-), 413 (-), 415 (-)` |
 | `GET` | `/api/donantes/archivos/{id}` | `obtenerArchivoDonantes` | `-` | `200 (ArchivoDonantesResponse), 404 (-)` |
 | `GET` | `/api/donantes/archivos/{id}/filas-con-error` | `listarFilasConErrorDelArchivo` | `-` | `200 (FilaConErrorResponse), 400 (-), 404 (-)` |

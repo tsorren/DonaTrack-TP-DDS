@@ -71,9 +71,10 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   @GetMapping("/publicas")
   public ResponseEntity<List<EntidadPublicaDTO>> obtenerPublicas(
       @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) UUID categoriaId,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size) {
-    return conTotal(service.buscarPublicas(nombre, page, size));
+    return conTotal(service.buscarPublicas(nombre, categoriaId, page, size));
   }
 
   private static <T> ResponseEntity<List<T>> conTotal(Pagina<T> pagina) {

@@ -3,8 +3,6 @@ package grupo5.cliente.web;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -15,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.puertos.DonanteEntidadesPuerto;
+import grupo5.cliente.puertos.DonanteEntidadesPuerto.Consulta;
 import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.DonanteEntidadesVista;
 import java.util.List;
@@ -76,8 +75,10 @@ class DonanteEntidadesSinMaquetaTest {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     when(menu.de(any()))
         .thenReturn(Optional.of(new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante")));
-    when(entidades.entidades(eq(DONANTE), anyString(), anyInt()))
-        .thenReturn(new DonanteEntidadesVista(List.of(), 0, 1, 1, "hoy, 7 de noviembre, 19:40"));
+    when(entidades.entidades(eq(DONANTE), any()))
+        .thenReturn(
+            new DonanteEntidadesVista(
+                List.of(), 0, 1, 1, 1, List.of(), "hoy, 7 de noviembre, 19:40"));
 
     mvc.perform(get("/donante-entidades").with(user("donante")))
         .andExpect(status().isOk())
@@ -98,24 +99,28 @@ class DonanteEntidadesSinMaquetaTest {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     when(menu.de(any()))
         .thenReturn(Optional.of(new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante")));
-    when(entidades.entidades(DONANTE, "direccion", 1))
+    when(entidades.entidades(DONANTE, new Consulta("direccion", null, false, 1)))
         .thenReturn(
             new DonanteEntidadesVista(
                 List.of(
                     new DonanteEntidadesVista.Entidad(
                         "Dirección de Desarrollo Social Ejemplo",
-                        List.of(),
+                        false,
                         List.of(
                             new DonanteEntidadesVista.Pedido(
                                 "Arroz",
+                                "alimentos",
                                 "cat-alimentos",
                                 "Piden 10 kg",
                                 "Sin fecha de cierre",
                                 null,
                                 10)))),
                 7,
+                1,
                 2,
                 2,
+                List.of(
+                    new DonanteEntidadesVista.Categoria("alimentos", "Alimentos", "cat-alimentos")),
                 "hoy, 7 de noviembre, 19:40"));
 
     mvc.perform(get("/donante-entidades?nombre=direccion").with(user("donante")))
@@ -127,7 +132,7 @@ class DonanteEntidadesSinMaquetaTest {
                     containsString(
                         "7 entidades activas tienen «direccion» en el nombre. Página 1 de 2.")))
         .andExpect(
-            content().string(containsString("/donante-entidades?pagina=2&amp;nombre=direccion")))
+            content().string(containsString("/donante-entidades?nombre=direccion&amp;pagina=2")))
         .andExpect(content().string(not(containsString("Ninguna entidad activa se llama así."))));
   }
 }

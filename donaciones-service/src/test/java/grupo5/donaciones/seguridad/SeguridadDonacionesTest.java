@@ -1,5 +1,6 @@
 package grupo5.donaciones.seguridad;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -274,6 +275,23 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
 
     pedir(get("/api/donantes/" + DONANTE), "donante").andExpect(status().isOk());
     pedir(get("/api/donantes/" + AJENO), "donante").andExpect(status().isForbidden());
+  }
+
+  // R11-12 (A6): "Ya doné" solo existe bajo el donante dueño, o el admin
+  @Test
+  void lasEntidadesDelDonanteSonSoloSuyasODelAdmin() throws Exception {
+    when(entidadBeneficiariaService.buscarParaDonante(
+            any(), any(), any(), anyBoolean(), any(), any()))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), "donante").andExpect(status().isOk());
+    pedir(get("/api/donantes/" + AJENO + "/entidades"), "donante")
+        .andExpect(status().isForbidden());
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), "entidad")
+        .andExpect(status().isForbidden());
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), null)
+        .andExpect(status().isUnauthorized());
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), "admin").andExpect(status().isOk());
   }
 
   @Test

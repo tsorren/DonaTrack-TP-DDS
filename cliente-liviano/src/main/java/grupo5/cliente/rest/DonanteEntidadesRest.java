@@ -6,12 +6,16 @@ import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
 
 import grupo5.cliente.puertos.DonanteEntidadesPuerto;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
+import grupo5.cliente.rest.DonacionesApi.EntidadParaDonante;
 import grupo5.cliente.rest.DonacionesApi.Subcategoria;
 import grupo5.cliente.vistas.DonanteEntidadesVista;
 import grupo5.cliente.vistas.DonanteEntidadesVista.Entidad;
 import grupo5.cliente.vistas.DonanteEntidadesVista.Pedido;
+import grupo5.cliente.vistas.Tramo;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,10 +31,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 
 /**
- * Entidades del donante desde Donaciones: una página de las públicas ({@code
- * /api/entidades/publicas}, el total en {@code X-Total-Count}), las necesidades vigentes de cada
- * una, la categoría y la unidad de su subcategoría, y si el donante ya le donó (sus donaciones con
- * esa entidad). Lo recibido de cada necesidad no lo da la API (HB-18): el renglón va sin barra.
+ * Entidades del donante desde Donaciones (R11-12): una página de {@code
+ * /api/donantes/{id}/entidades} con la búsqueda, la categoría y "Ya doné" resueltas en el servicio
+ * sobre todas las activas (el total en {@code X-Total-Count} y, en cada una, si el donante ya le
+ * donó), las necesidades vigentes de cada una y la categoría y la unidad de su subcategoría. Las
+ * categorías del filtro y de los grupos salen del mismo catálogo de subcategorías. Lo recibido de
+ * cada necesidad no lo da la API (HB-18): el renglón va sin barra.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -49,32 +55,40 @@ class DonanteEntidadesRest implements DonanteEntidadesPuerto {
   }
 
   @Override
-  public DonanteEntidadesVista entidades(UUID donante, String nombre, int pagina) {
-    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
-    if (nombre != null && !nombre.isBlank()) {
-      filtros.add("nombre", nombre.strip());
-    }
-    filtros.add("page", String.valueOf(pagina - 1));
-    filtros.add("size", String.valueOf(POR_PAGINA));
-    ResponseEntity<List<DonacionesApi.EntidadPublica>> respuesta = api.entidadesPublicas(filtros);
-    List<DonacionesApi.EntidadPublica> publicas =
-        respuesta.getBody() == null ? List.of() : respuesta.getBody();
-    long total = total(respuesta, publicas.size());
+  public DonanteEntidadesVista entidades(UUID donante, Consulta consulta) {
     Map<UUID, Subcategoria> subcategorias = subcategorias();
-    Map<UUID, List<String>> yaDonadas =
-        api.donaciones(donante).stream()
-            .filter(d -> d.entidadBeneficiariaId() != null)
-            .collect(
-                Collectors.groupingBy(
-                    DonacionesApi.Donacion::entidadBeneficiariaId,
-                    Collectors.mapping(d -> d.id().toString(), Collectors.toList())));
+    List<DonanteEntidadesVista.Categoria> categorias = categorias(subcategorias);
+    // Una categoría que no está entre las del filtro no se manda (no filtra)
+    boolean conCategoria =
+        categorias.stream().anyMatch(c -> c.valor().equals(consulta.categoria()));
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    if (!consulta.nombre().isEmpty()) {
+      filtros.add("nombre", consulta.nombre());
+    }
+    if (conCategoria) {
+      filtros.add("categoriaId", consulta.categoria());
+    }
+    if (consulta.soloDonadas()) {
+      filtros.add("soloDonadas", "true");
+    }
+    int pagina = consulta.pagina();
+    ResponseEntity<List<EntidadParaDonante>> respuesta = pedirPagina(donante, filtros, pagina);
+    long total = total(respuesta);
+    int paginas = Tramo.paginas(total, POR_PAGINA);
+    if (pagina > paginas) {
+      pagina = paginas;
+      respuesta = pedirPagina(donante, filtros, pagina);
+      total = total(respuesta);
+      paginas = Tramo.paginas(total, POR_PAGINA);
+    }
+    List<EntidadParaDonante> lista = respuesta.getBody() == null ? List.of() : respuesta.getBody();
     List<Entidad> entidades =
-        publicas.stream()
+        lista.stream()
             .map(
                 e ->
                     new Entidad(
                         e.razonSocial(),
-                        yaDonadas.getOrDefault(e.id(), List.of()),
+                        e.yaLeDono(),
                         api.necesidadesPublicas(e.id()).stream()
                             .map(
                                 n ->
@@ -85,16 +99,27 @@ class DonanteEntidadesRest implements DonanteEntidadesPuerto {
                                             : subcategorias.get(n.idSubcategoria())))
                             .toList()))
             .toList();
-    int paginas = (int) Math.max(1, (total + POR_PAGINA - 1) / POR_PAGINA);
     return new DonanteEntidadesVista(
         entidades,
         total,
+        pagina,
         paginas,
         paginas,
+        categorias,
         "hoy, " + LocalDateTime.now(reloj.withZone(ARGENTINA)).format(DIA_Y_HORA));
   }
 
-  private static long total(ResponseEntity<?> respuesta, int enLaPagina) {
+  private ResponseEntity<List<EntidadParaDonante>> pedirPagina(
+      UUID donante, MultiValueMap<String, String> filtros, int pagina) {
+    MultiValueMap<String, String> conPagina = new LinkedMultiValueMap<>(filtros);
+    conPagina.set("page", String.valueOf(pagina - 1));
+    conPagina.set("size", String.valueOf(POR_PAGINA));
+    return api.entidadesParaDonante(donante, conPagina);
+  }
+
+  /** El total de {@code X-Total-Count}; sin la cabecera, lo que vino en la página. */
+  private static long total(ResponseEntity<List<EntidadParaDonante>> respuesta) {
+    int enLaPagina = respuesta.getBody() == null ? 0 : respuesta.getBody().size();
     String total = respuesta.getHeaders().getFirst("X-Total-Count");
     try {
       return total == null ? enLaPagina : Long.parseLong(total);
@@ -114,18 +139,36 @@ class DonanteEntidadesRest implements DonanteEntidadesPuerto {
     }
   }
 
+  /** Las categorías de las subcategorías, por nombre, con el ícono de cada una. */
+  private static List<DonanteEntidadesVista.Categoria> categorias(
+      Map<UUID, Subcategoria> subcategorias) {
+    Map<UUID, Categoria> porId = new LinkedHashMap<>();
+    subcategorias.values().stream()
+        .map(Subcategoria::categoria)
+        .filter(c -> c != null && c.id() != null && c.nombre() != null)
+        .forEach(c -> porId.putIfAbsent(c.id(), c));
+    return porId.values().stream()
+        .sorted(Comparator.comparing(Categoria::nombre))
+        .map(
+            c ->
+                new DonanteEntidadesVista.Categoria(
+                    c.id().toString(), c.nombre(), Comun.icono(c.nombre())))
+        .toList();
+  }
+
   private static Pedido pedido(DonacionesApi.NecesidadPublica n, Subcategoria sub) {
     Categoria categoria = sub == null ? null : sub.categoria();
     String unidad = sub == null ? null : sub.unidad();
     if (unidad == null && categoria != null) {
       unidad = categoria.unidad();
     }
-    String cat =
-        categoria == null || categoria.nombre() == null ? null : Comun.icono(categoria.nombre());
+    boolean conCategoria =
+        categoria != null && categoria.id() != null && categoria.nombre() != null;
     int cantidad = Objects.requireNonNullElse(n.cantidadNecesitada(), 0);
     return new Pedido(
         n.descripcion(),
-        cat,
+        conCategoria ? categoria.id().toString() : null,
+        conCategoria ? Comun.icono(categoria.nombre()) : null,
         "Piden " + Comun.cantidad(cantidad, new Categoria(null, null, unidad, null, null, null)),
         n.fechaFin() == null ? "Sin fecha de cierre" : "Hasta el " + n.fechaFin().format(DIA),
         null,

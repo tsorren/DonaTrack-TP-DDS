@@ -31,6 +31,24 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · donante · "Ya doné" y Categoría filtran todas las entidades, en Donaciones
+
+- **Decisión:** Entidades del donante pide `GET /api/donantes/{id}/entidades` de a 6: la búsqueda,
+  la categoría y "Ya doné" se resuelven en Donaciones sobre todas las activas y cada entidad trae
+  si el donante ya le donó. Las categorías del filtro son las reales (las del catálogo), un pedido
+  sin categoría va en "Otros pedidos" y una entidad con lo de la categoría elegida ya cubierto
+  aparece con "Lo que pedía de … ya está cubierto". Mis donaciones suma la subcategoría (manda
+  sobre la categoría, RF-05) y las dos listas usan el componente `paginas`. El nombre de la entidad
+  va en su propia línea, con "Ya le donaste" debajo, y corta palabras largas (R11-18).
+- **Alternativas:** filtrar la página traída (lo de P0, que decía "En esta página"); un `donanteId`
+  en la ruta pública; cruzar en el cliente las donaciones del donante (pide la lista entera);
+  sacar de la lista a la entidad con todo cubierto (lleva lo asignado a SQL, más grande que el lote).
+- **Por qué:** la regla 1 del backlog (nunca la lista entera) y que el filtro diga lo que hace.
+- **Costo:** al filtrar por categoría puede aparecer una entidad sin nada pendiente de esa categoría;
+  Seguimiento pide de una vez solo los estados en curso, con tope de 100.
+- **Quién decidió:** usuario (spec `R11-p1-donante-listas`, las tres dudas con la opción
+  recomendada); los detalles, el agente.
+
 ### 2026-11-12 · admin · Las importaciones de donantes son una pestaña de Donantes
 
 - **Decisión:** `/admin-importaciones`, pestaña "Importaciones" junto a "Donantes", con la lista de a

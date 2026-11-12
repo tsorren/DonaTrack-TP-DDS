@@ -16,18 +16,9 @@
   column-gap: 1rem;
 }
 
-/* El paginador provisorio, debajo de las láminas (hasta el componente de p1-paginador). */
-.paginas {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem 1rem;
-  margin: 2rem 0 0;
-}
-
-.paginas p {
-  margin: 0;
+/* El paginador es el componente paginas (R11-11): debajo de las láminas, con aire. */
+.donaciones > .paginas {
+  margin-top: 2rem;
 }
 
 /* El pie, centrado y en el 80 % del ancho, con aire sobre las láminas (usuario, 2026-11-09). */

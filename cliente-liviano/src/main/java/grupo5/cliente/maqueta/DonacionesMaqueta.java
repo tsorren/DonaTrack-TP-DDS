@@ -142,10 +142,24 @@ class DonacionesMaqueta implements DonacionesPuerto {
                   "1 de octubre de 2026",
                   ENTREGADA,
                   "Entrega confirmada el 5 de octubre, con foto de la entidad")),
+          // Con sus subcategorías de ejemplo (RF-05, R11-13): la maqueta filtra por su categoría
           List.of(
-              new Categoria(ALIMENTOS, TEXTO_ALIMENTOS),
-              new Categoria(ROPA, TEXTO_ROPA),
-              new Categoria("escolares", UTILES)),
+              new Categoria(
+                  ALIMENTOS,
+                  TEXTO_ALIMENTOS,
+                  List.of(
+                      new Categoria("arroz", "Arroz"),
+                      new Categoria("fideos", "Fideos"),
+                      new Categoria(LENTEJAS, "Legumbres"),
+                      new Categoria("leche", "Leche en polvo"))),
+              new Categoria(
+                  ROPA,
+                  TEXTO_ROPA,
+                  List.of(
+                      new Categoria("abrigo", "Ropa de abrigo"),
+                      new Categoria("calzado", "Calzado"))),
+              new Categoria(
+                  "escolares", UTILES, List.of(new Categoria("utiles-escolares", UTILES)))),
           "hoy, 15 de octubre, 16:25");
 
   /** Lo que suma el detalle a cada donación, como en viaje-datos ("hoy" es el 15 de octubre). */

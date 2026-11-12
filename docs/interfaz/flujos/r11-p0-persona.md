@@ -65,7 +65,7 @@ flowchart TD
   inicio -->|Ver mi huerta| misiones[Misiones e insignias]
   inicio --> donaciones[Mis donaciones] --> detalle[Detalle]
   inicio --> entidades[Entidades]
-  entidades -->|Ya doné| yadone[Solo las de esta página a las que donó]
+  entidades -->|Ya doné| yadone[Todas las que recibieron algo suyo, de a 6]
   yadone -->|Ver todas| entidades
   inicio --> seguimiento[Seguimiento]
   persona --> perfil[Mi perfil: nombre, apellido, documento]
@@ -250,8 +250,8 @@ Cambios, y por qué:
 | Perfil persona | Error del servidor | Banner | "No pudimos guardar tu elección." + escribinos |
 | Perfil persona | Sin tipo | Como "Con datos" | "Donante · ana@correo-ejemplo.test" |
 | Entidades | Con datos | Barra con búsqueda, Categoría y Ya doné; tarjetas; paginador | "46 entidades activas. Página 1 de 8." |
-| Entidades | Ya doné, con resultados | Solo las de la página a las que donó | "En esta página, 2 entidades a las que ya donaste." |
-| Entidades | Ya doné, sin resultados | Caja vacía con "Ver todas" | "En esta página no hay entidades a las que hayas donado." / "Probá en otra página o sacá el filtro." |
+| Entidades | Ya doné, con resultados | Todas a las que donó, de a 6, con el paginador (R11-12, `p1-donante-listas`) | "2 entidades coinciden con lo que elegiste. Página 1 de 1." |
+| Entidades | Ya doné, sin resultados | Caja vacía con "Ver todas" | "Todavía no le donaste a ninguna entidad." / "Cuando el depósito asigne una de tus donaciones, la entidad aparece acá." |
 | Entidades | Vacío | Caja vacía | "Por ahora no hay entidades activas." |
 | Entidades | Error del servidor | Caja de error | "No pudimos cargar las entidades." + Reintentar |
 | Entidades | Cómo llega (real) | Texto sin dirección, con enlace | "¿No sabés dónde queda el depósito? Escribinos y te pasamos la dirección y el horario." |
@@ -270,7 +270,7 @@ Cambios, y por qué:
 | Cifras del año | "<N> donaciones registradas" · "Actualizado hoy, <día>, <hora>." | Cifra con período y fecha (RF-CL-07) |
 | Renglón del perfil | "Persona donante · <correo>"; sin tipo, "Donante · <correo>" | Nunca "Empresa" en la persona |
 | Documento | "Documento" + ayuda "No se cambia desde acá. Si está mal, escribinos." | La ayuda es la del CUIT de la empresa |
-| Resultado Ya doné | "En esta página, <N> entidad(es) a la(s) que ya donaste." | Dice el alcance real del filtro |
+| Resultado Ya doné | "<N> entidades coinciden con lo que elegiste. Página <p> de <n>." | Desde `p1-donante-listas` (R11-12) el filtro recorre todas, en Donaciones |
 | Cómo llega, sin depósito | "¿No sabés dónde queda el depósito? Escribinos y te pasamos la dirección y el horario." | Contacto con `volver=/donante-entidades` |
 | Mis donaciones, título | Persona: "Lo que donaste" · Empresa: "Lo que donó tu empresa" | |
 
@@ -298,7 +298,7 @@ invita sin presionar.
 
 | # | Heurística | Cómo la cumple | Riesgo que queda |
 |---|---|---|---|
-| 1 | Visibilidad del estado | Cada pantalla dice cuándo se actualizó; el filtro dice que abarca la página | Hasta `p1-donante-listas`, "Ya doné" no recorre todo el listado |
+| 1 | Visibilidad del estado | Cada pantalla dice cuándo se actualizó; el filtro dice que abarca la página Saldado con `p1-donante-listas` (2026-11-12): "Ya doné" y Categoría recorren todo el listado |
 | 2 | Lenguaje del usuario | "Lo que donaste", "Documento", "Tu huerta"; sin "persona humana" ni "jurídica" | "Persona donante" en el perfil es un rótulo, no un nombre |
 | 3 | Control y libertad | "Ver todas" saca los filtros; el atrás funciona; la huerta es un enlace, no un paso obligado | — |
 | 4 | Consistencia | Una sola versión de Entidades, Mis donaciones, Seguimiento y Notificaciones para los dos tipos, con los mismos filtros y paginador | "Ver mi huerta" lleva a una pantalla que se llama "Misiones e insignias" |
@@ -338,7 +338,8 @@ Decisiones de esta ficha (propuesta del agente, con la regla de la corrida de no
    cablear las siete plantillas de `persona/` a datos reales (duplica pantallas que solo cambian una
    frase, y la de Entidades es anterior a los filtros nuevos).
 4. **"Ya doné" filtra la página, como la empresa, y lo dice.** El filtro de todo el listado es de
-   `p1-donante-listas`. Descartado: ocultarlo hasta P1 (el usuario lo pidió ahora) y filtrar en el
+   `p1-donante-listas` (hecho el 2026-11-12: Donaciones resuelve "Ya doné" y Categoría sobre todas y
+   la pantalla dice cuántas coinciden). Descartado: ocultarlo hasta P1 (el usuario lo pidió ahora) y filtrar en el
    navegador sobre una lista completa (regla 1 del backlog).
 5. **Sin la dirección del depósito con login real**, con el enlace a Contacto. El backlog lo permite
    ("o se saca la dirección hasta tenerlos"). Descartado: una dirección fija en la configuración (es

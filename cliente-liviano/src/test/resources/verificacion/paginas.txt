@@ -136,6 +136,7 @@
 /donante-donaciones?escenario=lento
 /donante-donaciones?mes=2026-10
 /donante-donaciones?pagina=2
+/donante-donaciones?subcategoria=arroz
 /donante-donaciones-detalle
 /donante-donaciones-detalle?donacion=arroz
 /donante-donaciones-detalle?donacion=utiles
@@ -149,6 +150,8 @@
 /donante-entidades?escenario=vacio
 /donante-entidades?escenario=lento
 /donante-entidades?escenario=error
+/donante-entidades?categoria=alimentos
+/donante-entidades?ya=si&pagina=2
 /donante-notificaciones
 /donante-notificaciones?escenario=vacio
 /donante-notificaciones?escenario=lento

@@ -13,6 +13,9 @@ info:
     (`decididaPor`, `fechaDecision`).
     Desde 1.10.0 (R11-20), `GET /api/donantes/archivos` lista las importaciones de donantes con el
     mismo patrón, y el archivo informa el nombre con que se subió y cuándo (campos opcionales).
+    Desde 1.10.0 (R11-12), `GET /api/entidades/publicas` acepta `categoriaId` (opcional) y
+    `GET /api/donantes/{id}/entidades` da las entidades activas vistas por un donante, con el
+    filtro "solo a las que doné" y la marca `yaLeDono`.
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -655,7 +658,8 @@ paths:
       description: >
         Ruta pública (D26, HB-08): solo entidades activas, con un DTO propio sin documento,
         dirección, medios de contacto ni representantes. Mismos `nombre`, `page`, `size` y header
-        `X-Total-Count` que `GET /api/entidades`.
+        `X-Total-Count` que `GET /api/entidades`. Desde 1.10.0 (R11-12), `categoriaId` opcional;
+        sin él, la respuesta es la misma que en 1.9.0.
       operationId: listarEntidadesPublicas
       parameters:
         - name: nombre
@@ -663,6 +667,7 @@ paths:
           required: false
           schema:
             type: string
+        - $ref: '#/components/parameters/CategoriaDeLaEntidad'
         - name: page
           in: query
           required: false
@@ -691,7 +696,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/EntidadPublicaDTO'
         '400':
-          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
+          description: >-
+            `page` negativo, `size` fuera de 1..100 o `categoriaId` mal escrito (ERR-CSR-003)
   /api/entidades/{id}:
     get:
       summary: Consultar entidad beneficiaria por ID
@@ -853,6 +859,73 @@ paths:
       responses:
         '204':
           description: Donante dado de baja (o ya lo estaba)
+        '404':
+          description: Donante no encontrado
+  /api/donantes/{id}/entidades:
+    get:
+      summary: Listar las entidades activas vistas por un donante
+      description: >
+        R11-12. Las entidades activas, con la misma búsqueda y el mismo orden que
+        `GET /api/entidades/publicas` (por razón social sin tildes y después por id). Los filtros se
+        combinan con Y y el total de `X-Total-Count` los cuenta a todos. Solo el propio donante o el
+        administrador. `yaLeDono` dice si alguna donación de ese donante quedó asignada a la
+        entidad, en cualquier estado; se calcula para la página con una sola consulta.
+      operationId: listarEntidadesParaDonante
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: nombre
+          in: query
+          required: false
+          description: Busca en la razón social sin distinguir mayúsculas ni tildes.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/CategoriaDeLaEntidad'
+        - name: soloDonadas
+          in: query
+          required: false
+          description: >
+            Con `true`, solo las que recibieron al menos una donación de ese donante, en cualquier
+            estado.
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Una página de entidades activas
+          headers:
+            X-Total-Count:
+              description: Cantidad de entidades que cumplen todos los filtros.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntidadParaDonanteDTO'
+        '400':
+          description: >-
+            `page` negativo, `size` fuera de 1..100 o un UUID mal escrito (ERR-CSR-003)
+        '401':
+          description: Sin token
+        '403':
+          description: Otro donante, una entidad o una cuenta sin rol de donante
         '404':
           description: Donante no encontrado
   /api/donantes/{id}/preferencias:
@@ -1468,6 +1541,17 @@ components:
       schema:
         type: string
         maxLength: 100
+    CategoriaDeLaEntidad:
+      name: categoriaId
+      in: query
+      required: false
+      description: >-
+        Desde 1.10.0 (R11-12). Solo las entidades con al menos una necesidad activa y no vencida
+        (sin fecha límite o con fecha límite desde hoy) de una subcategoría de esa categoría. No
+        descuenta lo ya asignado. Una categoría que no existe no da error: no coincide ninguna.
+      schema:
+        type: string
+        format: uuid
   headers:
     XTotalCount:
       description: Cantidad que cumple los filtros, sin contar la paginación (R11-01).
@@ -1660,6 +1744,23 @@ components:
           type: string
         rubro:
           type: string
+    EntidadParaDonanteDTO:
+      type: object
+      description: >
+        Una entidad activa vista por un donante (R11-12): lo de `EntidadPublicaDTO` y si ese donante
+        ya le donó.
+      required: [id, razonSocial, yaLeDono]
+      properties:
+        id:
+          type: string
+          format: uuid
+        razonSocial:
+          type: string
+        rubro:
+          type: string
+        yaLeDono:
+          type: boolean
+          description: Alguna donación de ese donante quedó asignada a la entidad, en cualquier estado.
     Unidad:
       type: string
       enum: [UNIDADES, KILOGRAMO, LITROS, METRO, METRO_CUADRADO, METRO_CUBICO]

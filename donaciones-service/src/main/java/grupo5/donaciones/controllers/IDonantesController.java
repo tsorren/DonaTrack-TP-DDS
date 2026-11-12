@@ -7,6 +7,7 @@ import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
+import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.services.ParametrosListado;
 import java.io.IOException;
 import java.util.List;
@@ -21,6 +22,9 @@ public interface IDonantesController {
       FiltroDonantes filtro, ParametrosListado listado);
 
   ResponseEntity<DonanteOutputDTO> obtenerDonante(UUID id);
+
+  ResponseEntity<List<EntidadParaDonanteDTO>> listarEntidades(
+      UUID id, String nombre, UUID categoriaId, boolean soloDonadas, Integer page, Integer size);
 
   ResponseEntity<DonanteOutputDTO> actualizarPreferencias(UUID id, PreferenciasDonanteDTO dto);
 

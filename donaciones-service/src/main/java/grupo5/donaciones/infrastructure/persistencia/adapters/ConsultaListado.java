@@ -39,6 +39,12 @@ final class ConsultaListado {
     return this;
   }
 
+  /** Un parámetro más de la última condición (una que usa dos). */
+  ConsultaListado parametro(String parametro, Object valor) {
+    parametros.put(parametro, valor);
+    return this;
+  }
+
   /** Agrega la condición solo si el valor no es nulo. */
   ConsultaListado siHay(Object valor, String condicion, String parametro) {
     return valor == null ? this : donde(condicion, parametro, valor);

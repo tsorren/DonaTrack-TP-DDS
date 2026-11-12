@@ -113,6 +113,7 @@ class ListadosPostgresJpaTest {
     independientes.deleteAll();
     itemsNormalizados.deleteAll();
     donaciones.deleteAll();
+    jdbc.update("DELETE FROM donaciones.necesidad");
     jdbc.update("DELETE FROM donaciones.deposito");
     jdbc.update("DELETE FROM donaciones.donante");
     jdbc.update("DELETE FROM donaciones.entidad_beneficiaria");
@@ -321,6 +322,92 @@ class ListadosPostgresJpaTest {
         todas.elementos().stream().map(EntidadBeneficiaria::getId).toList());
     assertEquals(1, activas.total());
     assertEquals(1, entidades.contarActivas());
+  }
+
+  // R11-12 (A1 a A5 y A8): categoría y "ya doné" en SQL, las mismas reglas que en memoria
+  @Test
+  void entidades_porCategoriaYSoloDonadas_yLaMarcaDeLaPagina() {
+    UUID subcategoriaId = crearSubcategoria();
+    UUID categoriaId =
+        jdbc.queryForObject(
+            "SELECT id_categoria FROM donaciones.subcategoria WHERE id = ?",
+            UUID.class,
+            subcategoriaId);
+    LocalDate hoy = LocalDate.now();
+    UUID activa = entidadLlamada("Comedor Activo");
+    UUID deBaja = entidadLlamada("Comedor De Baja");
+    UUID vencida = entidadLlamada("Comedor Vencido");
+    UUID donada = entidadLlamada("Hogar Donado");
+    necesidad(activa, subcategoriaId, true, hoy);
+    necesidad(deBaja, subcategoriaId, false, null);
+    necesidad(vencida, subcategoriaId, true, hoy.minusDays(1));
+    Donante donante = donanteDe(humana("Ana", "Díaz"), true, LocalDateTime.now());
+    asignarA(donante, subcategoriaId, donada);
+    asignarA(donante, subcategoriaId, activa);
+    Donante otro = donanteDe(humana("Otro", "Donante"), true, LocalDateTime.now());
+    asignarA(otro, subcategoriaId, vencida);
+
+    Tramo<EntidadBeneficiaria> deLaCategoria =
+        entidades.buscar(new CriterioEntidades(null, true, categoriaId, hoy, null, PRIMERA));
+    Tramo<EntidadBeneficiaria> deOtraCategoria =
+        entidades.buscar(new CriterioEntidades(null, true, UUID.randomUUID(), hoy, null, PRIMERA));
+    Tramo<EntidadBeneficiaria> donadas =
+        entidades.buscar(new CriterioEntidades(null, true, null, hoy, donante.getId(), PRIMERA));
+    Tramo<EntidadBeneficiaria> combinadas =
+        entidades.buscar(
+            new CriterioEntidades(
+                "comedor", true, categoriaId, hoy, donante.getId(), new Paginado(0, 1)));
+    Tramo<EntidadBeneficiaria> sinFiltros =
+        entidades.buscar(new CriterioEntidades(null, true, PRIMERA));
+
+    assertEquals(List.of(activa), idsDe(deLaCategoria));
+    assertEquals(1, deLaCategoria.total());
+    assertEquals(0, deOtraCategoria.total());
+    // Por razón social: "Comedor Activo" antes que "Hogar Donado"
+    assertEquals(List.of(activa, donada), idsDe(donadas));
+    assertEquals(2, donadas.total());
+    assertEquals(List.of(activa), idsDe(combinadas));
+    assertEquals(1, combinadas.total());
+    assertEquals(4, sinFiltros.total());
+    assertEquals(
+        Set.of(activa, donada),
+        entidades.recibieronDe(donante.getId(), List.of(activa, deBaja, vencida, donada)));
+    assertEquals(Set.of(), entidades.recibieronDe(donante.getId(), List.of()));
+  }
+
+  private UUID entidadLlamada(String razonSocial) {
+    Juridica juridica = juridica(razonSocial, TipoJuridico.ONG);
+    personas.save(juridica);
+    return entidades.save(new EntidadBeneficiaria(juridica.getId())).getId();
+  }
+
+  private void necesidad(UUID entidadId, UUID subcategoriaId, boolean activa, LocalDate hasta) {
+    jdbc.update(
+        "INSERT INTO donaciones.necesidad (id, tipo_necesidad, subcategoria_id,"
+            + " entidad_beneficiaria_id, cantidad_necesitada, descripcion, fecha_inicio, activa,"
+            + " fecha_limite) VALUES (?, 'EXTRAORDINARIA', ?, ?, 10, 'Arroz', now(), ?, ?)",
+        UUID.randomUUID(),
+        subcategoriaId,
+        entidadId,
+        activa,
+        hasta);
+  }
+
+  private void asignarA(Donante donante, UUID subcategoriaId, UUID entidadId) {
+    Bien arroz = BienMother.alimentoPerecedero("Arroz");
+    Donacion donacion = DonacionMother.segmentada(donante.getId(), arroz, 10);
+    donaciones.save(donacion);
+    ItemDonacionNormalizado normalizado =
+        itemsNormalizados.save(
+            new ItemDonacionNormalizado(
+                donacion.getId(), BienMother.aceptado(arroz, subcategoriaId), 10));
+    DonacionIndependiente asignada = independiente(normalizado);
+    asignada.asignar(ACTOR, new DestinoAsignacion(null, null, entidadId));
+    independientes.save(asignada);
+  }
+
+  private static List<UUID> idsDe(Tramo<EntidadBeneficiaria> tramo) {
+    return tramo.elementos().stream().map(EntidadBeneficiaria::getId).toList();
   }
 
   // ===================== donaciones e independientes =====================

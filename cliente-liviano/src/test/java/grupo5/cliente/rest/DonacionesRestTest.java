@@ -205,6 +205,38 @@ class DonacionesRestTest {
     assertEquals(3, vista.donaciones().size());
   }
 
+  /** B6 (RF-05): con una subcategoría se manda solo esa; la categoría elegida es la suya. */
+  @Test
+  void laSubcategoriaSeMandaSolaYSuCategoriaQuedaElegida() {
+    String arroz = "6f1c2c1e-0000-4000-8000-0000000000d1";
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(
+            withSuccess(
+                ("[{\"id\": \"%s\", \"nombre\": \"Alimentos\", \"unidad\": \"KILOGRAMO\","
+                        + " \"subcategorias\": [{\"id\": \"%s\", \"nombre\": \"Arroz\"}]}]")
+                    .formatted(ALIMENTOS, arroz),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(PRIMERA.replace("&page=0", "&subcategoriaId=" + arroz + "&page=0")))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header("X-Total-Count", "0"));
+    DonacionesRest adaptador =
+        new DonacionesRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+            Clock.systemUTC());
+
+    Consulta consulta = new Consulta(null, null, "otra-cosa", arroz, 1);
+    MisDonacionesVista vista = adaptador.misDonaciones(DONANTE, consulta);
+
+    donaciones.verify();
+    assertEquals(ALIMENTOS, consulta.categoriaEn(vista.categorias()));
+    assertEquals(
+        List.of(new Categoria(arroz, "Arroz")), vista.categorias().getFirst().subcategorias());
+  }
+
   /** Los otros cuatro estados, sin historial, sin ítems y con un ítem sin bien: ninguno falla. */
   private static final String CUATRO =
       """

@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,6 +18,7 @@ import grupo5.cliente.vistas.MisDonacionesVista.Donacion;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -88,7 +90,9 @@ class MisDonacionesControllerTest {
                       "1 de octubre de 2026",
                       EstadoEntrega.ENTREGADA,
                       "Entrega confirmada el 5 de octubre")),
-              List.of(new Categoria(ALIMENTOS, "Alimentos"), new Categoria(MUEBLES, MOBILIARIO)),
+              List.of(
+                  new Categoria(ALIMENTOS, "Alimentos", List.of(new Categoria("arroz", "Arroz"))),
+                  new Categoria(MUEBLES, MOBILIARIO)),
               "hoy, 7 de noviembre, 19:40");
         }
 
@@ -178,7 +182,13 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(not(containsString("Fideos secos"))))
         .andExpect(
             content()
-                .string(containsString("href=\"/donante-donaciones?pagina=2&amp;mes=2026-10\"")))
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?mes=2026-10&amp;donante="
+                            + DONANTE
+                            + "&amp;pagina=2\"")))
+        // B7: el componente paginas, el mismo de las otras listas
+        .andExpect(content().string(containsString("aria-label=\"Páginas de tus donaciones\"")))
         .andExpect(content().string(not(containsString("Página anterior"))));
 
     mvc.perform(get("/donante-donaciones?mes=2026-10&pagina=2").session(sesion))
@@ -188,7 +198,7 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(not(containsString("Silla plegable"))))
         .andExpect(
             content()
-                .string(containsString("href=\"/donante-donaciones?pagina=1&amp;mes=2026-10\"")))
+                .string(containsString("href=\"/donante-donaciones?mes=2026-10&amp;pagina=1\"")))
         .andExpect(content().string(not(containsString("Página siguiente"))));
 
     // Una página de más muestra la última; una mal escrita, la primera.
@@ -205,6 +215,31 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(containsString("No hay donaciones con esos filtros.")))
         .andExpect(content().string(not(containsString("Todavía no tenés donaciones"))))
         .andExpect(content().string(not(containsString("todavía no tiene donaciones"))));
+  }
+
+  /** La opción {@code valor} del select, marcada como elegida. */
+  private static Pattern elegida(String valor, String texto) {
+    return Pattern.compile(
+        "(?s).*value=\"" + valor + "\"\\s+selected=\"selected\">" + texto + "</option>.*");
+  }
+
+  /** B6 (RF-05): la subcategoría elegida queda marcada y la categoría muestra la suya. */
+  @Test
+  void laSubcategoriaQuedaElegidaConSuCategoria() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(
+            get("/donante-donaciones?categoria="
+                    + MUEBLES
+                    + "&subcategoria=arroz&donante="
+                    + DONANTE)
+                .session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("<label for=\"subcategoria\">Subcategoría</label>")))
+        .andExpect(content().string(matchesPattern(elegida("arroz", "Arroz"))))
+        .andExpect(content().string(matchesPattern(elegida(ALIMENTOS, "Alimentos"))))
+        .andExpect(content().string(containsString("Fideos secos")))
+        .andExpect(content().string(not(containsString("Silla plegable"))));
   }
 
   @Test

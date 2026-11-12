@@ -25,6 +25,7 @@ import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
+import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
@@ -398,5 +399,65 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.nombre").value("donantes-octubre.csv"))
         .andExpect(jsonPath("$.subidoEn").value("2026-10-15T18:02:00"));
+  }
+
+  // ===================== GET /api/donantes/{id}/entidades (R11-12) =====================
+
+  @Test
+  void listarEntidades_pasaLosFiltrosYDevuelveLaMarcaYElTotal() throws Exception {
+    UUID donante = UUID.randomUUID();
+    UUID categoria = UUID.randomUUID();
+    UUID entidad = UUID.randomUUID();
+    when(entidadBeneficiariaService.buscarParaDonante(donante, "comedor", categoria, true, 1, 6))
+        .thenReturn(
+            new Pagina<>(
+                List.of(new EntidadParaDonanteDTO(entidad, "Comedor Sur", "Alimentos", true)), 7));
+
+    mockMvc
+        .perform(
+            get("/api/donantes/" + donante + "/entidades")
+                .param("nombre", "comedor")
+                .param("categoriaId", categoria.toString())
+                .param("soloDonadas", "true")
+                .param("page", "1")
+                .param("size", "6"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "7"))
+        .andExpect(jsonPath("$[0].id").value(entidad.toString()))
+        .andExpect(jsonPath("$[0].razonSocial").value("Comedor Sur"))
+        .andExpect(jsonPath("$[0].rubro").value("Alimentos"))
+        .andExpect(jsonPath("$[0].yaLeDono").value(true));
+  }
+
+  @Test
+  void listarEntidades_sinSoloDonadas_lasPideTodas() throws Exception {
+    UUID donante = UUID.randomUUID();
+    when(entidadBeneficiariaService.buscarParaDonante(donante, null, null, false, null, null))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(get("/api/donantes/" + donante + "/entidades"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"));
+  }
+
+  @Test
+  void listarEntidades_conUnaCategoriaMalEscrita_responde400() throws Exception {
+    mockMvc
+        .perform(get("/api/donantes/" + UUID.randomUUID() + "/entidades").param("categoriaId", "x"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+    verifyNoInteractions(entidadBeneficiariaService);
+  }
+
+  @Test
+  void listarEntidades_conUnDonanteQueNoExiste_responde404() throws Exception {
+    UUID donante = UUID.randomUUID();
+    when(entidadBeneficiariaService.buscarParaDonante(donante, null, null, false, null, null))
+        .thenThrow(new RecursoNoEncontradoException(donante));
+
+    mockMvc
+        .perform(get("/api/donantes/" + donante + "/entidades"))
+        .andExpect(status().isNotFound());
   }
 }

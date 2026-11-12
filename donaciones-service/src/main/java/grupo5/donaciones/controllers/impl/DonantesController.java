@@ -15,8 +15,10 @@ import grupo5.donaciones.dto.donantes.FilaConErrorDTO;
 import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
+import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
@@ -46,11 +48,15 @@ public class DonantesController implements IDonantesController {
 
   private final IDonantesService donantesService;
   private final IArchivoDonantesService archivoDonantesService;
+  private final IEntidadBeneficiariaService entidadesService;
 
   public DonantesController(
-      IDonantesService donantesService, IArchivoDonantesService archivoDonantesService) {
+      IDonantesService donantesService,
+      IArchivoDonantesService archivoDonantesService,
+      IEntidadBeneficiariaService entidadesService) {
     this.donantesService = donantesService;
     this.archivoDonantesService = archivoDonantesService;
+    this.entidadesService = entidadesService;
   }
 
   @Override
@@ -75,6 +81,24 @@ public class DonantesController implements IDonantesController {
   public ResponseEntity<DonanteOutputDTO> obtenerDonante(@PathVariable("id") UUID id) {
     DonanteOutputDTO donante = donantesService.obtenerPorId(id);
     return ResponseEntity.ok(donante);
+  }
+
+  /**
+   * R11-12: las entidades activas vistas por el donante, con la búsqueda, la categoría y "solo a
+   * las que doné" resueltas en Donaciones, de a una página y con el total en {@code X-Total-Count}.
+   */
+  @Override
+  @PreAuthorize(DONANTE + SU_ID)
+  @GetMapping("/{id}/entidades")
+  public ResponseEntity<List<EntidadParaDonanteDTO>> listarEntidades(
+      @PathVariable("id") UUID id,
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) UUID categoriaId,
+      @RequestParam(defaultValue = "false") boolean soloDonadas,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return Paginas.conTotal(
+        entidadesService.buscarParaDonante(id, nombre, categoriaId, soloDonadas, page, size));
   }
 
   @Override
