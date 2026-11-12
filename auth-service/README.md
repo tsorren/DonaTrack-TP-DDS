@@ -73,6 +73,20 @@ El correo de recuperar la clave y el de verificar el email **no salen por SMTP**
 - El enlace y el email **no se escriben en ningún log del SPI**. Ojo: el logger de eventos de Keycloak sí imprime el `username` (acá, el email) cuando falla el envío.
 - **Prueba de punta a punta** contra el stack del compose local levantado, parado en la raíz del repo: `python scripts/e2e_correo_de_cuenta.py` (en Windows, `py scripts\e2e_correo_de_cuenta.py`). Lee las credenciales del `.env` y no hace falta exportar nada. Necesita la API de administración de RabbitMQ (puerto 15672), que la imagen del compose local trae y la del preprod no.
 
+## Ingresar con Google: las credenciales (E2-05)
+
+"Continuar con Google" **no funciona con credenciales vacías o inventadas**: Google responde `Error 401: invalid_client` ("The OAuth client was not found"), porque no conoce ese `GOOGLE_CLIENT_ID`. Hace falta un cliente OAuth propio en Google Cloud (es gratis y no requiere verificar la app):
+
+1. En <https://console.cloud.google.com/> creá un proyecto (o elegí uno).
+2. *APIs y servicios → Pantalla de consentimiento de OAuth*: tipo **Externo**, nombre `DonaTrack` y tu email de soporte. Los permisos son solo `openid` y `email` (no sensibles). Mientras la app está en modo **Pruebas**, solo pueden ingresar los emails que agregues en **Usuarios de prueba**: agregá el tuyo, o Google responde "Acceso bloqueado: la app no completó la verificación".
+3. *Credenciales → Crear credenciales → ID de cliente de OAuth*: tipo **Aplicación web**. En **URI de redireccionamiento autorizados** poné exactamente `${KC_HOSTNAME}/realms/donatrack/broker/google/endpoint`, o sea `http://localhost:8180/realms/donatrack/broker/google/endpoint` con el `.env` de ejemplo (el `google` del final es el alias del proveedor en el realm). No hace falta ningún origen de JavaScript.
+4. Copiá `.env.google.example` a **`.env.google`** (Git lo ignora: lleva un secreto) y pegá el ID y el secreto del cliente. **No pongas el secreto en el `.env` ni en el repo** (RNF-AUTH-05).
+5. Levantá el stack sumando ese archivo: `docker compose --env-file .env --env-file .env.google up -d --build`. El realm se importa con la base vacía, así que si ya estaba levantado hacé `docker compose down -v` antes.
+   - **Sin borrar los datos**, también se puede cargar en la consola de Keycloak (*Identity providers → google*: ID y secreto del cliente, y activarlo).
+6. Probá: en el login aparece "o · Continuar con Google"; al tocarlo, Google pide la cuenta y vuelve a Keycloak. Con un email nuevo se crea la cuenta; con uno que ya tiene cuenta se pide su contraseña (D4).
+
+Para probar **el flujo** sin cuenta de Google (cuenta nueva, vínculo por contraseña), `python scripts/e2e_google_vinculacion.py` lo simula con un segundo realm; lo que no prueba es lo propio de Google: sus pantallas y estas credenciales.
+
 ## Cuenta de pruebas `donatrack-pruebas` (E2-07)
 
 Cliente confidencial con **solo client credentials** y una cuenta de servicio con el rol `ADMIN` y nada más (sin el rol por defecto, sin roles de `realm-management`). La usan `integration-tests`, k6 y Postman para llamar a los servicios cuando la seguridad está encendida (`run-preprod-tests.sh --auth`). Su token lleva `roles` = `ADMIN` y `aud` con `donatrack-api`, y no tiene `permisos` ni `personaId`. Su secreto sale de `PRUEBAS_CLIENT_SECRET`.

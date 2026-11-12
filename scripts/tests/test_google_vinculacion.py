@@ -206,6 +206,53 @@ class TemaEnEspanolTests(unittest.TestCase):
         self.assertEqual(realm()["identityProviders"][0]["displayName"], "Google")
 
 
+class CredencialesDeGoogleTests(unittest.TestCase):
+    """Sin credenciales verdaderas Google responde `invalid_client`. Que se sepa cómo conseguirlas y que el secreto no
+    termine en el repo."""
+
+    def test_el_archivo_con_el_secreto_lo_ignora_git_y_hay_un_ejemplo_sin_secretos(self):
+        self.assertRegex(leer(".gitignore"), r"(?m)^\.env\.google$")
+        ejemplo = leer(".env.google.example")
+        variables = dict(re.findall(r"(?m)^([A-Z_]+)=(.*)$", ejemplo))
+        self.assertEqual(sorted(variables), ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_HABILITADO"])
+        self.assertEqual(variables["GOOGLE_CLIENT_ID"], "")
+        self.assertEqual(variables["GOOGLE_CLIENT_SECRET"], "")
+        self.assertEqual(variables["GOOGLE_HABILITADO"], "true")
+        self.assertIn("invalid_client", ejemplo)
+
+    def test_las_credenciales_no_van_en_el_env_versionable(self):
+        for archivo in (".env", ".env.example"):
+            self.assertRegex(leer(archivo), r"(?m)^GOOGLE_CLIENT_SECRET=$", archivo)
+
+    def test_el_readme_explica_como_crear_el_cliente_oauth_y_el_redirect_exacto(self):
+        texto = leer("auth-service", "README.md")
+        seccion = texto[texto.index("## Ingresar con Google: las credenciales (E2-05)"):texto.index("## Cuenta de pruebas")]
+        for fragmento in ("invalid_client", "console.cloud.google.com", "Usuarios de prueba", "Aplicación web", "openid",
+                          "${KC_HOSTNAME}/realms/donatrack/broker/google/endpoint", "http://localhost:8180/realms/donatrack/broker/google/endpoint",
+                          ".env.google", "--env-file .env --env-file .env.google", "down -v", "RNF-AUTH-05",
+                          "**No pongas el secreto en el `.env` ni en el repo**"):
+            self.assertIn(fragmento, seccion)
+
+    def test_el_redirect_que_se_pide_registrar_es_el_del_alias_del_proveedor(self):
+        alias = realm()["identityProviders"][0]["alias"]
+        self.assertEqual(alias, "google")
+        self.assertIn("/realms/donatrack/broker/%s/endpoint" % alias, leer("auth-service", "README.md"))
+        self.assertEqual(realm()["realm"], "donatrack")
+
+    def test_la_guia_de_la_demo_remite_al_readme_y_no_pide_poner_el_secreto_en_el_env(self):
+        guia = leer("docs", "testing", "demo-punta-a-punta.md")
+        self.assertIn("invalid_client", guia)
+        self.assertIn("auth-service/README.md#ingresar-con-google-las-credenciales-e2-05", guia)
+        self.assertIn(".env.google", guia)
+        self.assertIn("(en `.env.google`, que Git ignora, no en el `.env`)", guia)
+        self.assertNotIn("hacen falta `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` y `GOOGLE_HABILITADO=true` en el `.env`", guia)
+
+    def test_el_compose_toma_las_tres_variables_de_google(self):
+        for compose in COMPOSES:
+            for variable in ("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_HABILITADO"):
+                self.assertRegex(bloque(compose, "keycloak"), r"- %s=" % variable, compose)
+
+
 class ContratoDelRealmYContextoDeBuildTests(unittest.TestCase):
     def test_el_it_espera_el_flujo_propio_y_prueba_que_no_hay_camino_por_email(self):
         it = leer(*IT)

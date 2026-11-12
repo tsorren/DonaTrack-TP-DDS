@@ -90,7 +90,7 @@ Abrí el enlace del log (vale 30 minutos y se puede usar una vez), elegí la cla
 
 ## Ingresar con Google
 
-"Continuar con Google" aparece en el login de Keycloak solo si Google está habilitado: hacen falta `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` y `GOOGLE_HABILITADO=true` en el `.env`, y como el realm se importa con la base vacía, `docker compose down -v` y volver a levantar. Sin eso el botón no aparece.
+"Continuar con Google" aparece en el login de Keycloak solo si Google está habilitado, y **para que funcione hacen falta credenciales verdaderas**: con valores vacíos o inventados el botón aparece, pero Google responde `Error 401: invalid_client`. Cómo crearlas en Google Cloud y dónde ponerlas (en `.env.google`, que Git ignora, no en el `.env`) está en el [README de auth-service](../../auth-service/README.md#ingresar-con-google-las-credenciales-e2-05); se levanta con `docker compose --env-file .env --env-file .env.google up -d --build`.
 
 Si el email de Google ya tiene una cuenta en DonaTrack, Keycloak pide confirmar el vínculo y **la contraseña de esa cuenta**; una cuenta nueva se crea y entra directo. Una cuenta que no tiene contraseña no puede vincularse todavía (RF-AUTH-04, pendiente de D12): que recupere su clave y después vincule. Como no hace falta una cuenta de Google para probar el flujo, `scripts/e2e_google_vinculacion.py` lo simula con un segundo realm.
 
