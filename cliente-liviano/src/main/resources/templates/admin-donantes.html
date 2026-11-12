@@ -98,7 +98,7 @@
       </th:block>
 
       <th:block th:if="${accion == 'importado'}">
-        <p class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+        <p class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
            th:text="${importacion.terminada != null} ? |Importación terminada el ${importacion.terminada}.| : 'Importación terminada.'">Importación
           terminada el 15 de octubre de 2026, 18:42.</p>
         <p th:text="${importacion.resultado}">20.000 filas leídas: 19.100 donantes nuevos, 754 actualizados, 20 sin cambios porque el

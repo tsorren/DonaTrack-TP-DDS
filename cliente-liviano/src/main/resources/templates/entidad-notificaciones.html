@@ -47,7 +47,7 @@
     </header>
 
     <!--/* El éxito, con el foco; en el sistema, en la región aria-live del layout. */-->
-    <section th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+    <section th:if="${accion == 'leidas'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
              aria-labelledby="leidas-titulo">
       <h2 id="leidas-titulo">Marcaste las novedades como leídas.</h2>
       <p>Las entregas que esperan en tu puerta siguen esperando tu confirmación.</p>

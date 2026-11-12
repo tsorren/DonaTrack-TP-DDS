@@ -7,7 +7,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.75rem 1.5rem;
   border: 0;
   /* Esquinas de 10 px (piel Huerta, 2026-11-08). */

@@ -39,6 +39,9 @@
       <p th:if="${persona and nueva}"
          th:text="|Gracias por sumarte${v.nombre != null ? ', ' + v.nombre : ''}. Sos donante ${v.categoria}. Todavía no completaste ninguna misión. Al ${v.actualizado}.|">Gracias por sumarte, Martina. Sos donante Colaborador. Todavía no
         completaste ninguna misión. Al 15 de octubre de 2026, 16:25.</p>
+      <th:block th:if="${persona}">
+        <aside th:replace="~{componentes/pista :: pista('misiones', 'Tu huerta crece con tus donaciones', 'Cada planta representa una misión. Revisá qué completaste, qué está en curso y cuál es el próximo paso.')}"></aside>
+      </th:block>
     </header>
 
     <p th:if="${persona and v.nota != null and (escenario == '' or nueva)}" class="texto-chico" data-tono="suave"

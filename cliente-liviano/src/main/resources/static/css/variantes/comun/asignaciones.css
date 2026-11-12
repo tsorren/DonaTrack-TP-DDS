@@ -83,7 +83,7 @@
   grid-template-columns: 2.25rem 1fr auto;
   align-items: center;
   gap: var(--espacio-2);
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: var(--espacio-1) var(--espacio-2);
   border-radius: var(--radio-boton);
   background: var(--color-papel);
@@ -123,7 +123,7 @@
 [data-variante^="asignaciones"] [data-forma="enlace"] {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   margin: 0;
   padding: 0;
   border: 0;
@@ -263,7 +263,7 @@
 [data-variante^="asignaciones"] [data-forma="enlaces"] > a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 /* Marcas en palabras: ganó, se recalculó, hay conflicto. Pastillas redondas, sin borde. */

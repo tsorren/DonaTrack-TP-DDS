@@ -66,7 +66,7 @@
       </div>
     </header>
 
-    <p th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'leidas'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Marcaste las notificaciones como leídas. Las entidades que piden sumarse siguen esperando tu
       decisión.</p>
 

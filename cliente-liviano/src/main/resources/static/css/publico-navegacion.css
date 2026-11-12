@@ -6,18 +6,27 @@
 
 /* La barra no tapa el pie. */
 body {
-  padding-bottom: 4.5rem;
+  padding-bottom: 5rem;
 }
 
-@media (min-width: 37.5em) {
+/* La marca a la izquierda y el menú a la derecha: en el celular, de él se ven Ingresar y Crear
+   cuenta (las secciones van en la barra de abajo). */
+.raices-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+/* Desde que el menú entra en una línea (--medida-quiebre-menu), arriba, en la cabecera. */
+@media (min-width: 56em) {
   body {
     padding-bottom: 0;
   }
 
   .raices-cabecera {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    justify-content: flex-start;
     gap: 0.5rem 2rem;
   }
 

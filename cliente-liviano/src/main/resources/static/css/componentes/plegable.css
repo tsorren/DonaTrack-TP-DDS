@@ -19,7 +19,7 @@
   display: grid;
   gap: var(--espacio-3) var(--espacio-4);
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: var(--espacio-3);
   border-radius: var(--radio-lamina);
   cursor: pointer;

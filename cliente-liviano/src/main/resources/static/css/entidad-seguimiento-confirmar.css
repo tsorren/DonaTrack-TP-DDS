@@ -12,7 +12,7 @@
 .volver {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-acento);
   font-weight: 700;
   font-size: 0.875rem;
@@ -200,7 +200,7 @@ main .etiqueta-titulo {
 .problema {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-acento);
   text-underline-offset: 0.25em;
 }

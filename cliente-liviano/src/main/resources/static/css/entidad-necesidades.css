@@ -66,7 +66,7 @@
 .cifra dt {
   display: flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -74,7 +74,7 @@
 .cifra dt a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-enlace);
 }
 
@@ -150,7 +150,7 @@
   grid-template-columns: 4rem minmax(0, 1fr);
   gap: 0.75rem 1rem;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 1rem;
   border-radius: var(--radio-lamina);
   list-style: none;
@@ -465,7 +465,7 @@ main [data-cantero] > summary h3 {
 .enlace {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-enlace);
   font-weight: 700;
   text-underline-offset: 0.25em;
@@ -569,7 +569,7 @@ main [data-cantero] > summary h3 {
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font: 800 1.25rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
 }

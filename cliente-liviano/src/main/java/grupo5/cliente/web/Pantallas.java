@@ -51,10 +51,12 @@ public class Pantallas {
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
+  /* Los íconos del menú: el símbolo nav-<icono> de iconos :: navegacion (usuario, 2026-11-12). */
   private static final String ICONO_INICIO = "inicio";
   private static final String ICONO_DONACIONES = "donaciones";
+  private static final String ICONO_ENTIDADES = "entidades";
   private static final String ICONO_SEGUIMIENTO = "seguimiento";
-  private static final String ICONO_INCENTIVOS = "incentivos";
+  private static final String ICONO_ESTRELLA = "estrella";
 
   /** Una sección del menú: su nombre, el corto de la barra del celular, su ícono y su pantalla. */
   private record Seccion(String texto, String textoCorto, String icono, String pantalla) {
@@ -71,24 +73,23 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
               new Seccion("Mis donaciones", "Donaciones", ICONO_DONACIONES, "donante-donaciones"),
-              new Seccion("Entidades", "entidades", "donante-entidades"),
+              new Seccion("Entidades", ICONO_ENTIDADES, "donante-entidades"),
               new Seccion("Seguimiento", ICONO_SEGUIMIENTO, "donante-seguimiento")),
           Area.ENTIDAD,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "entidad-inicio"),
-              new Seccion("Necesidades", "cat-alimentos", "entidad-necesidades"),
-              new Seccion(
-                  "Donaciones recibidas", "Recibidas", ICONO_DONACIONES, "entidad-recibidas"),
+              new Seccion("Necesidades", "necesidades", "entidad-necesidades"),
+              new Seccion("Donaciones", ICONO_DONACIONES, "entidad-recibidas"),
               new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
           Area.ADMIN,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
-              new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
-              new Seccion("Entidades", "entidades", "admin-entidades"),
+              new Seccion("Donantes", "donantes", "admin-donantes"),
+              new Seccion("Entidades", ICONO_ENTIDADES, "admin-entidades"),
               new Seccion("Donaciones", ICONO_DONACIONES, "admin-donaciones"),
-              new Seccion("Asignar donaciones", "Asignar", ICONO_SEGUIMIENTO, "admin-asignaciones"),
+              new Seccion("Asignar donaciones", "Asignar", "asignar", "admin-asignaciones"),
               new Seccion("Camiones", "camiones", "admin-camiones"),
-              new Seccion("Ranking", ICONO_INCENTIVOS, "admin-ranking")));
+              new Seccion("Ranking", ICONO_ESTRELLA, "admin-ranking")));
 
   /** El recorrido de la donación en camino; viaje-datos toma de acá los avances de los pasos. */
   private static final List<PasoRecorrido> PASOS =

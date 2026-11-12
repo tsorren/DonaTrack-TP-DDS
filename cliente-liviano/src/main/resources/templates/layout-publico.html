@@ -24,7 +24,8 @@
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
-<body class="raices-publico">
+<body class="raices-publico" hx-indicator="#indicador-carga">
+<p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="raices-cabecera">
   <a class="marca" href="/publico-portada" th:href="@{/publico-portada}"

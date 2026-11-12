@@ -13,6 +13,62 @@ if (!history.state) {
 }
 
 let conPuntero = false;
+let solicitudesEnCurso = 0;
+let temporizadorIndicador;
+const CLAVE_PISTAS = "donatrack_pistas";
+
+function indicadorCarga(visible) {
+  const indicador = document.getElementById("indicador-carga");
+  if (indicador) indicador.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+document.addEventListener("htmx:beforeRequest", () => {
+  solicitudesEnCurso += 1;
+  if (solicitudesEnCurso === 1) {
+    clearTimeout(temporizadorIndicador);
+    temporizadorIndicador = setTimeout(() => indicadorCarga(true), 300);
+  }
+});
+
+document.addEventListener("htmx:afterRequest", () => {
+  solicitudesEnCurso = Math.max(0, solicitudesEnCurso - 1);
+  if (solicitudesEnCurso === 0) {
+    clearTimeout(temporizadorIndicador);
+    indicadorCarga(false);
+  }
+});
+
+function pistasCerradas() {
+  const cookie = document.cookie.split("; ").find((parte) => parte.startsWith(`${CLAVE_PISTAS}=`));
+  if (!cookie) return new Set();
+  return new Set(decodeURIComponent(cookie.slice(CLAVE_PISTAS.length + 1)).split(",").filter(Boolean));
+}
+
+function actualizarPistas() {
+  const cerradas = pistasCerradas();
+  document.querySelectorAll("[data-pista]").forEach((pista) => {
+    const cerrada = cerradas.has(pista.dataset.pistaId);
+    pista.hidden = cerrada;
+    pista.setAttribute("aria-hidden", String(cerrada));
+  });
+}
+
+function cerrarPista(pista) {
+  const cerradas = pistasCerradas();
+  cerradas.add(pista.dataset.pistaId);
+  document.cookie = `${CLAVE_PISTAS}=${encodeURIComponent([...cerradas].join(","))}; Max-Age=31536000; Path=/; SameSite=Lax`;
+  actualizarPistas();
+}
+
+document.addEventListener("click", (evento) => {
+  const boton = evento.target.closest("[data-pista-cerrar]");
+  const pista = boton && boton.closest("[data-pista]");
+  if (pista) cerrarPista(pista);
+});
+
+document.addEventListener("DOMContentLoaded", actualizarPistas);
+document.addEventListener("htmx:afterSettle", actualizarPistas);
+
 document.addEventListener("pointerdown", () => {
   conPuntero = true;
 });

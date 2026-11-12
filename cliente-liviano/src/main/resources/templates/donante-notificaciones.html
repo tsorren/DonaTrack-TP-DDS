@@ -55,11 +55,14 @@
     <header class="pila" data-espacio="2">
       <p class="rotulo">Notificaciones</p>
       <h1>Noticias de <em>tus donaciones</em></h1>
-      <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+      <p th:if="${leidas}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
          th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo: marcaste la notificación.</p>
       <p th:if="${conDatos}" class="bajada"
          th:text="${sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.|">4
         sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
+      <th:block th:if="${conDatos}">
+        <aside th:replace="~{componentes/pista :: pista('notificaciones', 'Organizá tus notificaciones', 'Podés buscar, filtrar y ordenar los avisos. También podés elegir si querés verlos agrupados o sin agrupar.')}"></aside>
+      </th:block>
     </header>
 
     <section th:if="${escenario == 'vacio' or (escenario == '' and bandeja.avisos.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">

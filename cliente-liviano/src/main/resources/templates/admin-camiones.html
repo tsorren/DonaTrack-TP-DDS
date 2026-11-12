@@ -89,12 +89,12 @@
     </header>
 
     <th:block th:if="${conAviso}">
-      <p th:if="${accion == 'agregado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+      <p th:if="${accion == 'agregado'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
          autofocus>Agregaste el camión AF 345 KL. Queda disponible para las próximas rutas.</p>
-      <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+      <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
          autofocus>Deshabilitaste el camión AC 456 EF. No se le van a asignar rutas hasta que lo vuelvas a
         habilitar.</p>
-      <p th:if="${accion == 'habilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+      <p th:if="${accion == 'habilitado'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
          autofocus>Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las próximas rutas.</p>
     </th:block>
 

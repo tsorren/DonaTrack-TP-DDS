@@ -91,13 +91,13 @@
       </div>
     </header>
 
-    <p th:if="${accion == 'aprobada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'aprobada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus necesidades y recibir donaciones. Le
       avisamos por correo.</p>
-    <p th:if="${accion == 'correccion'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'correccion'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Le pedimos a Merendero Ejemplo Este que corrija su solicitud. Sigue en la lista hasta que
       la vuelva a enviar.</p>
-    <p th:if="${accion == 'rechazada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'rechazada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Rechazaste la solicitud de Comedor Ejemplo Oeste. Le enviamos el motivo por correo.</p>
 
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"

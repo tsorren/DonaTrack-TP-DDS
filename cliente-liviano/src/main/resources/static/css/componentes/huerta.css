@@ -19,7 +19,7 @@
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -412,6 +412,12 @@
   opacity: 0;
 }
 
+/* La abeja vista desde arriba, con las alas abiertas: abejas.js la muestra en los tramos casi
+   verticales del vuelo del hero (DonaTrack_Flight logic.svg); quieta, va la de perfil. */
+.huerta-abeja [data-pose="giro"] {
+  opacity: 0;
+}
+
 .huerta-abeja:nth-of-type(1) {
   top: 30%;
   left: 3%;
@@ -590,7 +596,7 @@
 .huerta-tierra a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -1030,7 +1036,7 @@
 .huerta-opcion-acciones > a:not(.boton) {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -1093,7 +1099,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.75rem 0;
   color: var(--color-tinta);
   font-size: 1.05rem;
@@ -1283,7 +1289,7 @@
   grid-row: 1 / span 2;
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 

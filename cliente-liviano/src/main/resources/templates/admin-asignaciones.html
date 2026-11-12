@@ -45,13 +45,13 @@
         asignación: hoy, 0:00 · generó 2 propuestas.</p>
     </header>
 
-    <p th:if="${accion == 'aprobada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'aprobada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Aprobaste la propuesta para Comedor Barrio Ejemplo. Las donaciones quedaron asignadas y salen
       del depósito cuando se arme la ruta.</p>
-    <p th:if="${accion == 'descartada'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'descartada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para
       otra asignación.</p>
-    <p th:if="${accion == 'corrida'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'corrida'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus th:text="${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ninguna necesidad nueva.'">La
       asignación no encontró donaciones para ninguna necesidad nueva.</p>
     <section th:if="${fallo != ''}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus

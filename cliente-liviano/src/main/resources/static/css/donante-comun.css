@@ -31,7 +31,7 @@ main h1 em {
 .volver {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-acento);
   font-weight: 700;
   text-underline-offset: 0.25em;
@@ -75,7 +75,7 @@ main h1 em {
 }
 
 .filtro :is(select, input) {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.5rem 0.75rem;
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-boton);
@@ -103,7 +103,7 @@ main h1 em {
 
 /* El botón, al centro del alto del campo y no del rótulo (plan de la ronda, regla 2). */
 .filtro > .boton {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 .filtro .boton {
@@ -113,7 +113,7 @@ main h1 em {
 .filtro-sacar {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 

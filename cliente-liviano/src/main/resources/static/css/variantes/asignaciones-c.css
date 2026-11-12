@@ -34,7 +34,7 @@
 }
 
 [data-variante="asignaciones-c"] [data-lista="pasos"] > li > a {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-tinta);
 }
 
@@ -118,13 +118,13 @@
 [data-variante="asignaciones-c"] [data-forma="resumen"] > a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 [data-variante="asignaciones-c"] [data-lista="ranking"] a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -137,7 +137,7 @@
 [data-variante="asignaciones-c"] [data-forma="atajos"] a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 [data-variante="asignaciones-c"] [data-forma="atajos"] a {

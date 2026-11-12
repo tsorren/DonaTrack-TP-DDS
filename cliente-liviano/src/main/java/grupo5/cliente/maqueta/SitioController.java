@@ -34,7 +34,7 @@ class SitioController {
   private static final String MOTIVOS = "incompleta|danada|otro";
 
   /** IDs de notificaciones que pueden viajar en el formulario de la bandeja. */
-  private static final String NOTIFICACION_ID = "[A-Za-z0-9-]+";
+  private static final String NOTIFICACION_ID = "[A-Za-z0-9:.-]+";
 
   private final Pantallas pantallas;
 

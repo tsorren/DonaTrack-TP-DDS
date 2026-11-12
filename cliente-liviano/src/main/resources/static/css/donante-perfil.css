@@ -65,7 +65,7 @@
 .perfil-legales a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 /* --- Los datos de la cuenta y los avisos (nota de Nico, 2026-11-04) ------------------------------ */

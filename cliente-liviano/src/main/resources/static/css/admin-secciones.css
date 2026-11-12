@@ -16,7 +16,7 @@
 
 /* El renglón de cada solicitud se toca entero: al menos el alto de un toque. */
 #solicitudes summary {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding-block: var(--espacio-2);
 }
 
@@ -34,7 +34,7 @@
 .tabla tbody th a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 /* Los datos de una solicitud y de una donación: el rótulo arriba y el dato debajo, sin sangría. */
@@ -74,7 +74,7 @@
 .mesa form.racimo > .boton {
   box-sizing: border-box;
   height: 3rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 .mesa form.racimo > .boton {

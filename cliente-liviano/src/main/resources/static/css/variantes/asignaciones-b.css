@@ -73,7 +73,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--espacio-1);
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0 var(--espacio-3);
   border-radius: 999px;
   background: var(--color-acento-claro);
@@ -108,7 +108,7 @@
 [data-variante="asignaciones-b"] #libres .tabla td > a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 @media (min-width: 53.75em) {

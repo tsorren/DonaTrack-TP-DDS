@@ -17,6 +17,7 @@ espacios del nombre cambiados por guiones (`Asset 1.svg` → `Asset-1.svg`,
 | `DonaTrack_Paso1-*` a `DonaTrack_Paso4-*` | Los cuatro pasos de "Cómo funciona" |
 | `DonaTrack_Orange-*`, `_Cotton-*`, `_Pine-*`, `_Mint-*`, `_ElephantEars-*`, `_Apple.*`, `_Plum.*` | Las plantas (crecidas y en flor) |
 | `DonaTrack_Retry-*` | La maceta de reintentar |
+| `necesidades.svg` | El ícono de Necesidades del menú de la entidad (la mano con el corazón; usuario, 2026-11-12), en `templates/iconos.html` como `nav-necesidades` |
 | `Asset-1.svg` a `Asset-3.svg`, `DonaTrack-33.svg`, `DonaTrack_Artboard-1-14.svg` | Piezas sueltas sin nombre de la entrega |
 
 Decisión de identidad: [ADR de la piel Huerta](../../../adr/cliente-liviano/20261110-piel-huerta-con-abejas-como-identidad-del-cliente-liviano.md) (`proposed`).
