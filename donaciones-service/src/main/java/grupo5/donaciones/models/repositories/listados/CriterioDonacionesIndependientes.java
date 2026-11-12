@@ -9,7 +9,8 @@ import java.util.UUID;
  * Búsqueda de donaciones independientes (R11-01). Un campo nulo no filtra; {@code estados} vacío
  * tampoco. {@code donanteId}: las que salen de una donación de ese donante. {@code entidadId}: la
  * entidad asignada. {@code desde} y {@code hasta} acotan la fecha de registro y son inclusivos.
- * {@code q} busca en la descripción de sus bienes.
+ * {@code q} busca en la descripción de sus bienes. {@code orden}: por fecha o, con {@code ATENCION}
+ * (R11-43), por lo que hay que atender primero.
  */
 public record CriterioDonacionesIndependientes(
     Set<TipoEstadoDonacion> estados,
@@ -21,7 +22,7 @@ public record CriterioDonacionesIndependientes(
     LocalDate hasta,
     UUID necesidadId,
     String q,
-    OrdenPorFecha orden,
+    OrdenDonacionesIndependientes orden,
     Paginado paginado) {
 
   public CriterioDonacionesIndependientes {

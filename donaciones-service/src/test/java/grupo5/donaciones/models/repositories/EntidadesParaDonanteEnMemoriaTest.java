@@ -2,6 +2,7 @@ package grupo5.donaciones.models.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.fixtures.BienMother;
 import grupo5.donaciones.fixtures.CategoriaMother;
 import grupo5.donaciones.fixtures.DonacionMother;
@@ -116,6 +117,39 @@ class EntidadesParaDonanteEnMemoriaTest {
     assertEquals(
         List.of(activa), tramo.elementos().stream().map(EntidadBeneficiaria::getId).toList());
     assertEquals(1, tramo.total());
+  }
+
+  // R11-43: los filtros de Organizaciones del admin, las mismas reglas que en SQL
+  @Test
+  void organizaciones_porEstadoNecesidadesVigentesYRubroSinTildes() {
+    UUID centro = entidadDelRubro("Barrio Norte", "Centro Comunitario");
+    UUID comedor = entidadDelRubro("Comedor Sur", "Comedor");
+    UUID deBaja = entidadDelRubro("Merendero De Baja", "Merendero");
+    entidades.findById(deBaja).orElseThrow().darDeBaja();
+    pide(centro, HOY.plusDays(5));
+    pide(comedor, HOY.minusDays(1));
+
+    assertEquals(List.of(deBaja), ids(organizaciones(new FiltroOrganizaciones(false, null, null))));
+    assertEquals(
+        List.of(centro, comedor), ids(organizaciones(new FiltroOrganizaciones(true, null, null))));
+    assertEquals(List.of(centro), ids(organizaciones(new FiltroOrganizaciones(null, true, null))));
+    assertEquals(
+        List.of(comedor, deBaja), ids(organizaciones(new FiltroOrganizaciones(null, false, null))));
+    assertEquals(
+        List.of(centro),
+        ids(organizaciones(new FiltroOrganizaciones(null, null, "  centro comunitário "))));
+    assertEquals(List.of(), ids(organizaciones(new FiltroOrganizaciones(true, true, "Comedor"))));
+  }
+
+  private CriterioEntidades organizaciones(FiltroOrganizaciones filtro) {
+    return new CriterioEntidades(null, false, null, HOY, null, filtro, PRIMERA);
+  }
+
+  private UUID entidadDelRubro(String razonSocial, String rubro) {
+    Juridica juridica =
+        new Juridica(PersonaMother.juanPerez(), razonSocial, TipoJuridico.ONG, rubro);
+    personas.save(juridica);
+    return entidades.save(new EntidadBeneficiaria(juridica.getId())).getId();
   }
 
   @Test

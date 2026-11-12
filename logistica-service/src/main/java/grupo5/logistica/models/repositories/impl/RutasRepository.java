@@ -5,6 +5,7 @@ import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -40,5 +41,13 @@ public class RutasRepository extends CrudRepositoryEnMemoria<Ruta> implements IR
         .filter(ruta -> Objects.equals(ruta.getCamionId(), camionId))
         .filter(ruta -> Objects.equals(ruta.getFecha(), fecha))
         .toList();
+  }
+
+  @Override
+  public List<Ruta> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return ids.stream().distinct().map(storage::get).filter(Objects::nonNull).toList();
   }
 }

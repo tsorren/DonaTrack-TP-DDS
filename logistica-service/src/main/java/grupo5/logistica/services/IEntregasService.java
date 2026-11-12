@@ -23,10 +23,19 @@ public interface IEntregasService {
 
   SeguimientoEntregaResponseDTO obtenerSeguimientoPorDonacion(UUID idDonacion);
 
-  List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria);
+  /**
+   * Una página de las entregas de la organización (R11-43), en cualquier estado salvo que se pidan
+   * estados, con las donaciones pedidas; cada página se arma con una lectura de rutas, una de
+   * camiones y una de las entregas de esas rutas.
+   */
+  SeguimientosDeEntregas listarSeguimientoPorBeneficiaria(
+      UUID idBeneficiaria, ConsultaSeguimiento consulta);
 
-  /** Entregas activas (pendientes, en traslado o en la puerta) de un donante (RF-09, HB-16). */
-  List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId);
+  /**
+   * Una página de las entregas de un donante (RF-09, HB-16, R11-43): sin estados pedidos, las
+   * activas (pendientes, en traslado o en la puerta).
+   */
+  SeguimientosDeEntregas listarSeguimientoPorDonante(UUID donanteId, ConsultaSeguimiento consulta);
 
   EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO dto);
 

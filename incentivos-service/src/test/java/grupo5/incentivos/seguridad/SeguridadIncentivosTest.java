@@ -1,5 +1,6 @@
 package grupo5.incentivos.seguridad;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,6 +17,7 @@ import grupo5.incentivos.controllers.MetricasIncentivosController;
 import grupo5.incentivos.controllers.MisionesDonacionController;
 import grupo5.incentivos.controllers.ProcesosIncentivosController;
 import grupo5.incentivos.controllers.RankingController;
+import grupo5.incentivos.dto.HistorialDeRankings;
 import grupo5.incentivos.services.IGestionDonanteService;
 import grupo5.incentivos.services.IInactividadService;
 import grupo5.incentivos.services.IInsigniasService;
@@ -168,6 +170,7 @@ class SeguridadIncentivosTest {
 
   @Test
   void elRankingGeneralPideRolYPermisoPeroNoDueno() throws Exception {
+    when(rankingService.obtenerHistorial(0, 12)).thenReturn(new HistorialDeRankings(List.of(), 0));
     pedir(get(INCENTIVOS + "/ranking/historial"), "donante").andExpect(status().isOk());
     pedir(get(INCENTIVOS + "/ranking/ultimo"), "donante").andExpect(status().isNoContent());
     pedir(get(INCENTIVOS + "/ranking/historial"), "donante-sin-permisos")

@@ -11,12 +11,14 @@ import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataDona
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.listados.ConteoAsignadas;
 import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
-import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
+import grupo5.donaciones.models.repositories.listados.OrdenDonacionesIndependientes;
 import grupo5.donaciones.models.repositories.listados.PorVencer;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +45,17 @@ public class DonacionIndependienteRepositoryJpaAdapter
     implements IDonacionesIndependientesRepository {
 
   // Filtros del listado (R11-01): lo que mira otras tablas va en un EXISTS
+  /**
+   * R11-43: el grupo de cada estado en el orden de lo que hay que atender (el mismo que {@link
+   * OrdenDonacionesIndependientes#grupoDeAtencion}).
+   */
+  private static final String ATENCION =
+      "CASE di.estado_actual WHEN 'EN_PUERTA' THEN 0"
+          + " WHEN 'ENTREGA_FALLIDA' THEN 1 WHEN 'VENCIDA' THEN 1"
+          + " WHEN 'EN_TRASLADO' THEN 2"
+          + " WHEN 'ASIGNACION_REALIZADA' THEN 3 WHEN 'LISTA_PARA_ENTREGAR' THEN 3"
+          + " WHEN 'EN_DEPOSITO' THEN 3 WHEN 'ENTREGADA' THEN 4 ELSE 5 END";
+
   private static final String DEL_DONANTE =
       "EXISTS (SELECT 1 FROM donaciones.donacion dn WHERE dn.id = di.id_donacion"
           + " AND dn.id_donante = :donanteId)";
@@ -269,9 +282,11 @@ public class DonacionIndependienteRepositoryJpaAdapter
           ConsultaListado.patron(c.q()));
     }
     String orden =
-        c.orden() == OrdenPorFecha.RECIENTES
-            ? "di.fecha_registro DESC, di.id"
-            : "di.fecha_registro ASC, di.id";
+        switch (c.orden()) {
+          case ANTIGUAS -> "di.fecha_registro ASC, di.id";
+          case ATENCION -> ATENCION + ", di.fecha_registro DESC, di.id";
+          case RECIENTES -> "di.fecha_registro DESC, di.id";
+        };
     List<UUID> ids = consulta.ids(em, "di.id", orden, c.paginado());
     List<DonacionIndependiente> pagina =
         ConsultaListado.enOrden(
@@ -307,6 +322,58 @@ public class DonacionIndependienteRepositoryJpaAdapter
             .setParameter("hasta", hasta)
             .getSingleResult();
     return ((Number) total).longValue();
+  }
+
+  @Override
+  public long contarQuePasaronA(
+      TipoEstadoDonacion estado,
+      LocalDateTime desde,
+      LocalDateTime hasta,
+      UUID entidadId,
+      UUID necesidadId) {
+    Query consulta =
+        em.createNativeQuery(
+                "SELECT count(DISTINCT c.id_donacion_independiente)"
+                    + " FROM donaciones.cambio_estado_donacion_independiente c"
+                    + " JOIN donaciones.estado_donacion_independiente e ON e.id = c.id_estado_nuevo"
+                    + " JOIN donaciones.donacion_independiente di"
+                    + " ON di.id = c.id_donacion_independiente"
+                    + " WHERE e.tipo = :estado AND c.\"timestamp\" >= :desde"
+                    + " AND c.\"timestamp\" < :hasta AND di.id_beneficiario_asignado = :entidad"
+                    + (necesidadId == null ? "" : " AND di.id_necesidad = :necesidad"))
+            .setParameter("estado", estado.name())
+            .setParameter("desde", desde)
+            .setParameter("hasta", hasta)
+            .setParameter("entidad", entidadId);
+    if (necesidadId != null) {
+      consulta.setParameter("necesidad", necesidadId);
+    }
+    return ((Number) consulta.getSingleResult()).longValue();
+  }
+
+  @Override
+  public List<ConteoAsignadas> contarAsignadas(UUID entidadId, UUID necesidadId) {
+    Query consulta =
+        em.createNativeQuery(
+            "SELECT di.id_necesidad, di.estado_actual, count(*)"
+                + " FROM donaciones.donacion_independiente di"
+                + " WHERE di.id_beneficiario_asignado = :entidad"
+                + (necesidadId == null ? "" : " AND di.id_necesidad = :necesidad")
+                + " GROUP BY di.id_necesidad, di.estado_actual");
+    consulta.setParameter("entidad", entidadId);
+    if (necesidadId != null) {
+      consulta.setParameter("necesidad", necesidadId);
+    }
+    List<?> filas = consulta.getResultList();
+    return filas.stream()
+        .map(Object[].class::cast)
+        .map(
+            fila ->
+                new ConteoAsignadas(
+                    fila[0] == null ? null : ConsultaListado.uuid(fila[0]),
+                    TipoEstadoDonacion.valueOf((String) fila[1]),
+                    ((Number) fila[2]).longValue()))
+        .toList();
   }
 
   @Override

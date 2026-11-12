@@ -9,6 +9,8 @@ import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.EstadoOrganizacion;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
@@ -64,13 +66,25 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
     return ResponseEntity.ok(service.obtenerEntidad(id));
   }
 
+  /**
+   * Organizaciones del admin. R11-43: {@code estado} ({@code ACTIVA} o {@code BAJA}; otro valor da
+   * 400), {@code conNecesidades} y {@code rubro}; sin ellos, todas.
+   */
   @Override
   @GetMapping
   public ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas(
       @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) EstadoOrganizacion estado,
+      @RequestParam(required = false) Boolean conNecesidades,
+      @RequestParam(required = false) String rubro,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size) {
-    return conTotal(service.buscar(nombre, page, size));
+    return conTotal(
+        service.buscar(
+            nombre,
+            new FiltroOrganizaciones(EstadoOrganizacion.activa(estado), conNecesidades, rubro),
+            page,
+            size));
   }
 
   @Override

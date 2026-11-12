@@ -1,8 +1,8 @@
 # Spec: R11-p2-listas-restantes — Las listas que faltan
 
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
-> **Estado:** PROPOSED (2026-11-12). Espera la aprobación del usuario antes de construir; ningún ADR
-> se promueve.
+> **Estado:** implementada (2026-11-12, lote `p2-listas-restantes`), sin verificar todavía con el
+> stack propio (Gate 3 y 4, paso de verificación de la oleada). Ningún ADR se promueve.
 > **Nivel:** STANDARD por su forma (endpoints que ya existen ganan parámetros y uno nuevo de
 > conteos), ruta CONTRATO del [manifiesto](../../interfaz/backlog-revision-2026-11-11.manifiesto.json):
 > cambia el comportamiento de contratos públicos, así que lleva esta spec antes del código.

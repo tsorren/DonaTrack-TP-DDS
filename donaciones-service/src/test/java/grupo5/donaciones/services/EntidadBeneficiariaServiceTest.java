@@ -21,6 +21,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.fixtures.PersonaMother;
@@ -43,6 +44,8 @@ import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -432,7 +435,7 @@ class EntidadBeneficiariaServiceTest {
   void buscar_sinParametros_devuelveLaPrimeraPaginaOrdenadaPorNombreConElTotal_R1101() {
     conEntidades(COMEDOR_SUR, BANCO_DE_ROPA);
 
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, null);
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, null, null);
 
     assertEquals(List.of(BANCO_DE_ROPA, COMEDOR_SUR), nombres(pagina));
     assertEquals(2, pagina.total());
@@ -447,7 +450,7 @@ class EntidadBeneficiariaServiceTest {
     }
     conEntidades(razonesSociales);
 
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, null);
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, null, null);
 
     assertEquals(EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO, pagina.elementos().size());
     assertEquals(razonesSociales.length, pagina.total());
@@ -457,7 +460,8 @@ class EntidadBeneficiariaServiceTest {
   void buscar_porNombre_filtraPorContieneSinDistinguirMayusculas() {
     conEntidades(COMEDOR_SUR, BANCO_DE_ROPA, COMEDOR_NORTE);
 
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar("comedor", null, null);
+    Pagina<EntidadBeneficiariaOutputDTO> pagina =
+        serviceConBusqueda.buscar("comedor", null, null, null);
 
     assertEquals(List.of(COMEDOR_NORTE, COMEDOR_SUR), nombres(pagina));
     assertEquals(2, pagina.total());
@@ -469,10 +473,10 @@ class EntidadBeneficiariaServiceTest {
 
     assertEquals(
         List.of("Asociación Gómez", "Comedor Gomez"),
-        nombres(serviceConBusqueda.buscar("gomez", null, null)));
+        nombres(serviceConBusqueda.buscar("gomez", null, null, null)));
     assertEquals(
         List.of("Asociación Gómez", "Comedor Gomez"),
-        nombres(serviceConBusqueda.buscar("GÓMEZ", null, null)));
+        nombres(serviceConBusqueda.buscar("GÓMEZ", null, null, null)));
   }
 
   @Test
@@ -480,14 +484,14 @@ class EntidadBeneficiariaServiceTest {
     entidadSinJuridica();
     entidadLlamada(COMEDOR_SUR);
 
-    assertEquals(List.of(COMEDOR_SUR), nombres(serviceConBusqueda.buscar("sur", null, null)));
+    assertEquals(List.of(COMEDOR_SUR), nombres(serviceConBusqueda.buscar("sur", null, null, null)));
   }
 
   @Test
   void buscar_paginado_ordenaPorNombreYRecortaConElTotalDeLasFiltradas() {
     conEntidades(COMEDOR_SUR, BANCO_DE_ROPA, ABRIGO_YA);
 
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, 1, 2);
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, 1, 2);
 
     assertEquals(List.of(COMEDOR_SUR), nombres(pagina));
     assertEquals(3, pagina.total());
@@ -498,7 +502,8 @@ class EntidadBeneficiariaServiceTest {
     entidadSinJuridica();
     entidadLlamada(ABRIGO_YA);
 
-    assertEquals(Arrays.asList(ABRIGO_YA, null), nombres(serviceConBusqueda.buscar(null, 0, 2)));
+    assertEquals(
+        Arrays.asList(ABRIGO_YA, null), nombres(serviceConBusqueda.buscar(null, null, 0, 2)));
   }
 
   @Test
@@ -508,7 +513,7 @@ class EntidadBeneficiariaServiceTest {
         enMemoria.findAll().stream().map(EntidadBeneficiaria::getId).sorted().toList();
 
     List<UUID> ids =
-        serviceConBusqueda.buscar(null, 0, 2).elementos().stream()
+        serviceConBusqueda.buscar(null, null, 0, 2).elementos().stream()
             .map(EntidadBeneficiariaOutputDTO::id)
             .toList();
 
@@ -519,7 +524,7 @@ class EntidadBeneficiariaServiceTest {
   void buscar_conSoloSize_empiezaPorLaPrimeraPagina() {
     conEntidades(COMEDOR_SUR, ABRIGO_YA);
 
-    assertEquals(List.of(ABRIGO_YA), nombres(serviceConBusqueda.buscar(null, null, 1)));
+    assertEquals(List.of(ABRIGO_YA), nombres(serviceConBusqueda.buscar(null, null, null, 1)));
   }
 
   @Test
@@ -531,7 +536,7 @@ class EntidadBeneficiariaServiceTest {
     }
     conEntidades(razonesSociales);
 
-    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, 0, null);
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, 0, null);
 
     assertEquals(EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO, pagina.elementos().size());
     assertEquals(razonesSociales.length, pagina.total());
@@ -544,7 +549,25 @@ class EntidadBeneficiariaServiceTest {
     assertEquals(
         List.of(COMEDOR_SUR),
         nombres(
-            serviceConBusqueda.buscar(null, 0, EntidadBeneficiariaService.TAMANIO_PAGINA_MAXIMO)));
+            serviceConBusqueda.buscar(
+                null, null, 0, EntidadBeneficiariaService.TAMANIO_PAGINA_MAXIMO)));
+  }
+
+  @Test
+  void buscar_pasaLosFiltrosDeOrganizacionesAlCriterio() {
+    when(repository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+    FiltroOrganizaciones filtro = new FiltroOrganizaciones(false, true, "Comedor");
+
+    service.buscar("sur", filtro, 1, 5);
+
+    ArgumentCaptor<CriterioEntidades> criterio = ArgumentCaptor.forClass(CriterioEntidades.class);
+    verify(repository).buscar(criterio.capture());
+    assertEquals(filtro, criterio.getValue().filtro());
+    assertEquals("sur", criterio.getValue().nombre());
+    assertEquals(false, criterio.getValue().soloActivas());
+    assertEquals(new Paginado(1, 5), criterio.getValue().paginado());
+    // conNecesidades mira el día de hoy
+    assertEquals(LocalDate.now(ZoneId.systemDefault()), criterio.getValue().hoy());
   }
 
   @Test
@@ -553,7 +576,8 @@ class EntidadBeneficiariaServiceTest {
     for (Integer[] invalida : new Integer[][] {{-1, null}, {0, 0}, {0, maximo + 1}}) {
       ValidationException ex =
           assertThrows(
-              ValidationException.class, () -> service.buscar(null, invalida[0], invalida[1]));
+              ValidationException.class,
+              () -> service.buscar(null, null, invalida[0], invalida[1]));
       assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
     }
     verify(repository, never()).buscar(any());

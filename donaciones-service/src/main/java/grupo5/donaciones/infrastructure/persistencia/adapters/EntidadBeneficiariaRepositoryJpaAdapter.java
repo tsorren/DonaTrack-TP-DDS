@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.persistencia.adapters;
 
 import grupo5.common.repositories.CrudRepositoryJpaAdapter;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.infrastructure.persistencia.entities.beneficiarios.EntidadBeneficiariaEntity;
 import grupo5.donaciones.infrastructure.persistencia.mapper.EntidadesBeneficiariasPersistenciaMapper;
 import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataEntidadBeneficiariaRepository;
@@ -33,6 +34,13 @@ public class EntidadBeneficiariaRepositoryJpaAdapter
           + " WHERE n.entidad_beneficiaria_id = e.id AND n.activa"
           + " AND s.id_categoria = :categoriaId"
           + " AND (n.fecha_limite IS NULL OR n.fecha_limite >= :hoy))";
+
+  /** R11-43: alguna necesidad activa y no vencida en {@code :hoy}, de cualquier categoría. */
+  private static final String TIENE_NECESIDADES =
+      "EXISTS (SELECT 1 FROM donaciones.necesidad nv"
+          + " WHERE nv.entidad_beneficiaria_id = e.id AND nv.activa"
+          + " AND (nv.fecha_limite IS NULL OR nv.fecha_limite >= :hoy))";
+
   private static final String RECIBIO_DEL_DONANTE =
       "EXISTS (SELECT 1 FROM donaciones.donacion_independiente di"
           + " JOIN donaciones.donacion d ON d.id = di.id_donacion"
@@ -68,6 +76,7 @@ public class EntidadBeneficiariaRepositoryJpaAdapter
           .parametro("hoy", criterio.hoy());
     }
     consulta.siHay(criterio.donadasPor(), RECIBIO_DEL_DONANTE, "donadasPor");
+    filtrarOrganizaciones(consulta, criterio);
     List<UUID> ids =
         consulta.ids(
             em,
@@ -80,6 +89,25 @@ public class EntidadBeneficiariaRepositoryJpaAdapter
             springDataRepo.findAllById(ids).stream().map(toDomain).toList(),
             EntidadBeneficiaria::getId);
     return new Tramo<>(pagina, consulta.total(em));
+  }
+
+  /** Estado, necesidades vigentes y rubro de Organizaciones del admin (R11-43). */
+  private static void filtrarOrganizaciones(ConsultaListado consulta, CriterioEntidades criterio) {
+    FiltroOrganizaciones filtro = criterio.filtro();
+    if (filtro.activa() != null) {
+      consulta.donde(filtro.activa() ? "e.activo" : "NOT e.activo");
+    }
+    if (filtro.conNecesidades() != null) {
+      consulta
+          .donde(filtro.conNecesidades() ? TIENE_NECESIDADES : "NOT " + TIENE_NECESIDADES)
+          .parametro("hoy", criterio.hoy());
+    }
+    if (filtro.rubro() != null) {
+      consulta.donde(
+          ConsultaListado.sinTildes("trim(j.rubro)") + " = " + ConsultaListado.sinTildes(":rubro"),
+          "rubro",
+          filtro.rubro());
+    }
   }
 
   @Override

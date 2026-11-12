@@ -51,12 +51,12 @@ interface DonacionesApi {
   List<Donacion> donaciones(@RequestParam UUID donanteId);
 
   /**
-   * Las asignadas a una entidad beneficiaria, con el mismo tope de una página de {@link #TOPE}
-   * (R11-01): se cruzan con sus entregas y sus necesidades. Las pantallas de la entidad pasan a
-   * pedir su página o un número del servicio en el lote {@code p2-listas-restantes} (DTI-39).
+   * Las cifras de las asignadas a una organización (R11-43): cuántas en cada estado, cuántas
+   * recibió en el mes en curso y lo mismo por necesidad. Con {@code necesidadId}, solo de esa.
+   * Reemplaza leer todas las asignadas para contarlas.
    */
-  @GetExchange("/donaciones-independientes?size=" + TOPE)
-  List<Donacion> asignadas(@RequestParam UUID entidadId);
+  @GetExchange("/donaciones-independientes/conteos")
+  Conteos conteos(@RequestParam UUID entidadId, @RequestParam(required = false) UUID necesidadId);
 
   /**
    * Una página con filtros ({@code page}, {@code size}); el total viene en {@code X-Total-Count}.
@@ -576,6 +576,20 @@ interface DonacionesApi {
 
   /** {@code mes}: "2026-11". */
   record EntregadasEnElMes(String mes, Long cantidad) {}
+
+  /**
+   * Las cifras de una organización (R11-43). {@code porEstado}: los 8 estados, con 0 si no hay;
+   * {@code porNecesidad}: solo las necesidades con alguna asignada.
+   */
+  record Conteos(
+      List<PorEstado> porEstado,
+      EntregadasEnElMes entregadasEnElMes,
+      List<PorNecesidad> porNecesidad) {}
+
+  /** {@code estado}: EN_DEPOSITO, ASIGNACION_REALIZADA… */
+  record PorEstado(String estado, Long cantidad) {}
+
+  record PorNecesidad(UUID necesidadId, List<PorEstado> porEstado) {}
 
   /** {@code proxima}: la de vencimiento más cercano, o null. */
   record PorVencer(Integer dias, Long cantidad, Proxima proxima) {}

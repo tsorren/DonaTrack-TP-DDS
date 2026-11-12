@@ -3,6 +3,7 @@ package grupo5.donaciones.services;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import java.util.UUID;
@@ -19,7 +20,12 @@ public interface IEntidadBeneficiariaService {
    * 0, por defecto 0; {@code size} entre 1 y 100, por defecto 20; R11-01: sin parámetros ya no
    * devuelve todas). El total cuenta las que cumplen el filtro.
    */
-  Pagina<EntidadBeneficiariaOutputDTO> buscar(String nombre, Integer page, Integer size);
+  /**
+   * Organizaciones del admin: por razón social y, desde R11-43, por estado, necesidades vigentes y
+   * rubro ({@code filtro}; nulo no filtra). Una página, nunca la lista completa.
+   */
+  Pagina<EntidadBeneficiariaOutputDTO> buscar(
+      String nombre, FiltroOrganizaciones filtro, Integer page, Integer size);
 
   /**
    * Lo mismo que {@link #buscar} sobre las entidades activas, con el DTO público (D26): sin

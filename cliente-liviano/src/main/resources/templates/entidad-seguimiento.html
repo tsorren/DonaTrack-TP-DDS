@@ -83,7 +83,8 @@
               class="estado" th:data-estado="${g.clave}"><th:block
               th:replace="~{componentes/sello :: sello(${g.clave})}"></th:block><th:block
               th:text="${g.nombre}">Esperan tu confirmación</th:block></span></dt>
-          <dd th:text="${#lists.size(vienen.?[grupo == #root.g.clave])}">2</dd>
+          <!--/* R11-43: con los datos reales, la cifra la cuenta Donaciones (la lista es una página). */-->
+          <dd th:text="${recibidas.cuantas != null ? recibidas.cuantas[g.clave] : #lists.size(vienen.?[grupo == #root.g.clave])}">2</dd>
         </div>
       </dl>
     </section>
@@ -216,6 +217,7 @@
              th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
         </li>
       </ol>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
       <p>Las que ya recibiste, con su foto, están en Donaciones recibidas.
         <a href="/entidad-recibidas?estado=recibidas" th:href="@{/entidad-recibidas(estado='recibidas')}">Ver
           las recibidas</a></p>

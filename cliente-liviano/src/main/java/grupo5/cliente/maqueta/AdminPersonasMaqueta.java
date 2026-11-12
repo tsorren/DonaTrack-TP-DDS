@@ -467,7 +467,8 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
 
   /** La lista entera de ejemplo: la pantalla busca y filtra sobre ella. */
   @Override
-  public AdminEntidadesVista entidades(String buscar, int pagina) {
+  public AdminEntidadesVista entidades(
+      String buscar, AdminEntidadesVista.Filtro filtro, int pagina) {
     return AdminPersonasEntidadesDeEjemplo.ENTIDADES;
   }
 

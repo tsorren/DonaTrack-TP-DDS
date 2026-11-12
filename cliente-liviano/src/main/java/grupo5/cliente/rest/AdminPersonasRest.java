@@ -112,8 +112,9 @@ class AdminPersonasRest implements AdminPersonasPuerto {
   }
 
   @Override
-  public AdminEntidadesVista entidades(String buscar, int pagina) {
-    return entidades.entidades(ahora(), buscar, pagina);
+  public AdminEntidadesVista entidades(
+      String buscar, AdminEntidadesVista.Filtro filtro, int pagina) {
+    return entidades.entidades(ahora(), buscar, filtro, pagina);
   }
 
   @Override

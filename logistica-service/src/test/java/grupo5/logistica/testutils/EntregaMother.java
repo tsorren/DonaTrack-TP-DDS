@@ -52,6 +52,28 @@ public final class EntregaMother {
         null);
   }
 
+  /**
+   * Una entrega (reconstituida) de la organización {@code beneficiaria} en {@code estado}, con su
+   * hora de arribo y de salida (o null), para el seguimiento paginado (R11-43).
+   */
+  public static Entrega deLaOrganizacion(
+      UUID beneficiaria, EstadoEntrega estado, Instant arribo, Instant salida) {
+    return new Entrega(
+        UUID.randomUUID(),
+        null,
+        UUID.randomUUID(),
+        beneficiaria,
+        direccion(),
+        estado,
+        List.of(),
+        arribo == null ? null : LocalDateTime.ofInstant(arribo, ZoneOffset.UTC),
+        salida == null ? null : LocalDateTime.ofInstant(salida, ZoneOffset.UTC),
+        List.of(),
+        10f,
+        2f,
+        null);
+  }
+
   public static Direccion direccion() {
     return direccionEn(null);
   }

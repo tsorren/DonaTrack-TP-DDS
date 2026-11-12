@@ -67,7 +67,9 @@ class DonanteInicioRestTest {
 
   @Test
   void armaLasCifrasDelMesLasNoticiasYLasSinLeer() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     apis.expect(
             requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
@@ -103,7 +105,9 @@ class DonanteInicioRestTest {
 
   @Test
   void sinNotificacionesNiLogisticaElInicioSaleIgual() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withServerError());
     apis.expect(
             requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))

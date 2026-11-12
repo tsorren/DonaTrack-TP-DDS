@@ -11,8 +11,10 @@ import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.repositories.ICamionRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import org.springframework.context.annotation.Profile;
@@ -83,5 +85,13 @@ public class CamionRepositoryMongoAdapter
   private static UUID rutaEnTraslado(SpringDataRutaMongoRepository rutaRepo, CamionDocument doc) {
     Optional<RutaDocument> ruta = rutaRepo.findFirstByIdCamionAndEstado(doc.getId(), EN_TRASLADO);
     return ruta.map(RutaDocument::getId).orElse(null);
+  }
+
+  @Override
+  public List<Camion> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findAllById(Set.copyOf(ids)));
   }
 }

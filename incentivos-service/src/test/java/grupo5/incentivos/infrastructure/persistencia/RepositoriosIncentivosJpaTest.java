@@ -389,6 +389,26 @@ class RepositoriosIncentivosJpaTest {
   }
 
   @Test
+  void deberiaTraerElHistorialDelMesMasRecienteAlMasViejoDeAUnaPagina() {
+    List.of(
+            YearMonth.of(2025, Month.NOVEMBER),
+            YearMonth.of(2026, Month.FEBRUARY),
+            YearMonth.of(2025, Month.DECEMBER),
+            YearMonth.of(2026, Month.JANUARY))
+        .forEach(periodo -> rankingRepository.save(RankingMensualMother.conNEntradas(periodo, 2)));
+
+    List<RankingMensual> primera = rankingRepository.buscarHistorial(0, 3);
+    List<RankingMensual> segunda = rankingRepository.buscarHistorial(1, 3);
+
+    assertEquals(
+        List.of("2026-02", "2026-01", "2025-12"),
+        primera.stream().map(r -> r.getPeriodo().toString()).toList());
+    assertEquals(List.of("2025-11"), segunda.stream().map(r -> r.getPeriodo().toString()).toList());
+    assertEquals(2, primera.get(0).getEntradas().size());
+    assertEquals(4, rankingRepository.count());
+  }
+
+  @Test
   void deberiaGuardarElUltimoMesDeLaRachaComoTexto() {
     DonanteIncentivos donante = DonanteIncentivosMother.colaboradorConMisionRacha(3);
     donante.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 10));

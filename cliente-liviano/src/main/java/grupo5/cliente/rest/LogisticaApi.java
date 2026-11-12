@@ -29,12 +29,23 @@ interface LogisticaApi {
   @GetExchange("/api/entregas/seguimiento/donaciones/{idDonacion}")
   Seguimiento seguimiento(@PathVariable UUID idDonacion);
 
-  /** Las entregas de una entidad, también las ya entregadas (las filtra quien llama). */
-  @GetExchange("/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}")
-  List<Seguimiento> seguimientoDeEntidad(@PathVariable UUID idBeneficiaria);
+  /** El tamaño de página más grande que acepta Logística en los seguimientos (R11-43). */
+  int TOPE = 100;
 
-  /** Las entregas activas de un donante (HB-16); las creadas antes de HB-16 no tienen donante. */
-  @GetExchange("/api/entregas/seguimiento/donantes/{donanteId}")
+  /**
+   * Una página de las entregas de una entidad, en cualquier estado (R11-43): {@code filtros} lleva
+   * {@code idDonacion} y {@code estado} (repetibles), {@code page} y {@code size}; el total va en
+   * {@code X-Total-Count}. Quien llama pide solo las donaciones que muestra.
+   */
+  @GetExchange("/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}")
+  List<Seguimiento> seguimientoDeEntidad(
+      @PathVariable UUID idBeneficiaria, @RequestParam MultiValueMap<String, String> filtros);
+
+  /**
+   * Las entregas activas de un donante (HB-16); las creadas antes de HB-16 no tienen donante. Desde
+   * R11-43 Logística pagina: se pide la página más grande ({@link #TOPE}).
+   */
+  @GetExchange("/api/entregas/seguimiento/donantes/{donanteId}?size=" + TOPE)
   List<Seguimiento> seguimientoDeDonante(@PathVariable UUID donanteId);
 
   @GetExchange("/api/entregas/{id}")

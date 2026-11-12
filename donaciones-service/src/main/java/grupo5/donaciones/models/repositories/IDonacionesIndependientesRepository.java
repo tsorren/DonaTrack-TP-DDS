@@ -3,6 +3,7 @@ package grupo5.donaciones.models.repositories;
 import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.repositories.listados.ConteoAsignadas;
 import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
 import grupo5.donaciones.models.repositories.listados.LecturaPorLote;
 import grupo5.donaciones.models.repositories.listados.PorVencer;
@@ -27,6 +28,24 @@ public interface IDonacionesIndependientesRepository
    * en el mes del resumen del admin).
    */
   long contarQuePasaronA(TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta);
+
+  /**
+   * Lo mismo que {@link #contarQuePasaronA(TipoEstadoDonacion, LocalDateTime, LocalDateTime)} sobre
+   * las asignadas a una organización y, si no es nula, a una necesidad (R11-43).
+   */
+  long contarQuePasaronA(
+      TipoEstadoDonacion estado,
+      LocalDateTime desde,
+      LocalDateTime hasta,
+      UUID entidadId,
+      UUID necesidadId);
+
+  /**
+   * Cuántas asignadas a la organización hay por necesidad y estado (R11-43), con una sola consulta.
+   * Con {@code necesidadId}, solo las de esa necesidad. Las combinaciones sin donaciones no
+   * aparecen.
+   */
+  List<ConteoAsignadas> contarAsignadas(UUID entidadId, UUID necesidadId);
 
   /**
    * Las que siguen en depósito con algún bien que vence entre {@code desde} y {@code hasta}

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.fixtures.BienMother;
 import grupo5.donaciones.fixtures.DonacionMother;
 import grupo5.donaciones.fixtures.PersonaMother;
@@ -36,11 +37,13 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.listados.ConteoAsignadas;
 import grupo5.donaciones.models.repositories.listados.CriterioDonaciones;
 import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
 import grupo5.donaciones.models.repositories.listados.CriterioDonantes;
 import grupo5.donaciones.models.repositories.listados.CriterioEntidades;
 import grupo5.donaciones.models.repositories.listados.CriterioPersonas;
+import grupo5.donaciones.models.repositories.listados.OrdenDonacionesIndependientes;
 import grupo5.donaciones.models.repositories.listados.OrdenDonantes;
 import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
 import grupo5.donaciones.models.repositories.listados.Paginado;
@@ -375,6 +378,55 @@ class ListadosPostgresJpaTest {
     assertEquals(Set.of(), entidades.recibieronDe(donante.getId(), List.of()));
   }
 
+  // R11-43 (C5): estado, necesidades vigentes y rubro en SQL; el total respeta los filtros
+  @Test
+  void entidades_porEstadoNecesidadesYRubro_sinTildesNiMayusculas() {
+    UUID subcategoriaId = crearSubcategoria();
+    LocalDate hoy = LocalDate.now();
+    UUID centro = entidadDelRubro("Barrio Norte", "Centro Comunitario");
+    UUID comedor = entidadDelRubro("Comedor Sur", "Comedor");
+    UUID sinRubro = entidadDelRubro("Hogar Sin Necesidad", "Hogar");
+    UUID deBaja = entidadDelRubro("Merendero De Baja", "Merendero");
+    jdbc.update("UPDATE donaciones.entidad_beneficiaria SET activo = false WHERE id = ?", deBaja);
+    necesidad(centro, subcategoriaId, true, null);
+    necesidad(comedor, subcategoriaId, true, hoy.minusDays(1));
+    necesidad(sinRubro, subcategoriaId, false, null);
+
+    Tramo<EntidadBeneficiaria> bajas = conFiltro(new FiltroOrganizaciones(false, null, null), hoy);
+    Tramo<EntidadBeneficiaria> activas = conFiltro(new FiltroOrganizaciones(true, null, null), hoy);
+    Tramo<EntidadBeneficiaria> conNecesidades =
+        conFiltro(new FiltroOrganizaciones(null, true, null), hoy);
+    Tramo<EntidadBeneficiaria> sinNecesidades =
+        conFiltro(new FiltroOrganizaciones(null, false, null), hoy);
+    Tramo<EntidadBeneficiaria> delRubro =
+        conFiltro(new FiltroOrganizaciones(null, null, "centro comunitário"), hoy);
+    Tramo<EntidadBeneficiaria> activasConNecesidadDelRubro =
+        conFiltro(new FiltroOrganizaciones(true, true, "Comedor"), hoy);
+
+    assertEquals(List.of(deBaja), idsDe(bajas));
+    assertEquals(1, bajas.total());
+    assertEquals(3, activas.total());
+    // La vencida ayer y la inactiva no cuentan como vigentes
+    assertEquals(List.of(centro), idsDe(conNecesidades));
+    assertEquals(1, conNecesidades.total());
+    assertEquals(List.of(comedor, sinRubro, deBaja), idsDe(sinNecesidades));
+    assertEquals(3, sinNecesidades.total());
+    assertEquals(List.of(centro), idsDe(delRubro));
+    assertEquals(0, activasConNecesidadDelRubro.total());
+  }
+
+  private Tramo<EntidadBeneficiaria> conFiltro(FiltroOrganizaciones filtro, LocalDate hoy) {
+    return entidades.buscar(new CriterioEntidades(null, false, null, hoy, null, filtro, PRIMERA));
+  }
+
+  private UUID entidadDelRubro(String razonSocial, String rubro) {
+    Juridica juridica = juridica(razonSocial, TipoJuridico.ONG);
+    personas.save(juridica);
+    UUID id = entidades.save(new EntidadBeneficiaria(juridica.getId())).getId();
+    jdbc.update("UPDATE donaciones.juridica SET rubro = ? WHERE id = ?", rubro, id);
+    return id;
+  }
+
   private UUID entidadLlamada(String razonSocial) {
     Juridica juridica = juridica(razonSocial, TipoJuridico.ONG);
     personas.save(juridica);
@@ -475,7 +527,7 @@ class ListadosPostgresJpaTest {
                 null,
                 null,
                 "FIDEOS",
-                OrdenPorFecha.RECIENTES,
+                OrdenDonacionesIndependientes.RECIENTES,
                 PRIMERA));
     Tramo<DonacionIndependiente> dosEstados =
         independientes.buscar(
@@ -489,7 +541,7 @@ class ListadosPostgresJpaTest {
                 null,
                 null,
                 null,
-                OrdenPorFecha.ANTIGUAS,
+                OrdenDonacionesIndependientes.ANTIGUAS,
                 new Paginado(0, 1)));
     Tramo<DonacionIndependiente> otroTexto =
         independientes.buscar(
@@ -503,7 +555,7 @@ class ListadosPostgresJpaTest {
                 null,
                 null,
                 "arroz",
-                OrdenPorFecha.RECIENTES,
+                OrdenDonacionesIndependientes.RECIENTES,
                 PRIMERA));
     Map<TipoEstadoDonacion, Long> porEstado = independientes.contarPorEstado();
 
@@ -528,6 +580,167 @@ class ListadosPostgresJpaTest {
             TipoEstadoDonacion.ASIGNACION_REALIZADA,
             LocalDateTime.now().minusDays(10),
             LocalDateTime.now().minusDays(5)));
+  }
+
+  // R11-43 (C7): lo que hay que atender primero, y dentro de cada grupo la más reciente
+  @Test
+  void independientes_ordenAtencion_porGrupoYDespuesLaMasReciente() {
+    UUID subcategoriaId = crearSubcategoria();
+    Donante donante = donanteDe(humana("Ana", "Orden"), true, LocalDateTime.now());
+    UUID comedor = entidadLlamada("Comedor Atencion");
+    LocalDateTime base = LocalDateTime.of(2026, 11, 1, 10, 0);
+    UUID recibida =
+        asignadaEn(donante, subcategoriaId, comedor, null, "ENTREGADA", base.plusDays(9));
+    UUID porSalir =
+        asignadaEn(donante, subcategoriaId, comedor, null, "ASIGNACION_REALIZADA", base);
+    UUID enDeposito =
+        asignadaEn(donante, subcategoriaId, comedor, null, "EN_DEPOSITO", base.plusDays(2));
+    UUID enCamino = asignadaEn(donante, subcategoriaId, comedor, null, "EN_TRASLADO", base);
+    UUID vencida = asignadaEn(donante, subcategoriaId, comedor, null, "VENCIDA", base);
+    UUID fallida =
+        asignadaEn(donante, subcategoriaId, comedor, null, "ENTREGA_FALLIDA", base.plusDays(1));
+    UUID enPuertaVieja = asignadaEn(donante, subcategoriaId, comedor, null, "EN_PUERTA", base);
+    UUID enPuertaNueva =
+        asignadaEn(donante, subcategoriaId, comedor, null, "EN_PUERTA", base.plusDays(3));
+
+    Tramo<DonacionIndependiente> atencion =
+        independientes.buscar(
+            new CriterioDonacionesIndependientes(
+                Set.of(),
+                null,
+                null,
+                null,
+                comedor,
+                null,
+                null,
+                null,
+                null,
+                OrdenDonacionesIndependientes.ATENCION,
+                PRIMERA));
+    Tramo<DonacionIndependiente> soloLasQueEsperan =
+        independientes.buscar(
+            new CriterioDonacionesIndependientes(
+                Set.of(TipoEstadoDonacion.EN_PUERTA, TipoEstadoDonacion.EN_TRASLADO),
+                null,
+                null,
+                null,
+                comedor,
+                null,
+                null,
+                null,
+                null,
+                OrdenDonacionesIndependientes.ATENCION,
+                new Paginado(0, 2)));
+
+    assertEquals(
+        List.of(
+            enPuertaNueva,
+            enPuertaVieja,
+            fallida,
+            vencida,
+            enCamino,
+            enDeposito,
+            porSalir,
+            recibida),
+        atencion.elementos().stream().map(DonacionIndependiente::getId).toList());
+    assertEquals(
+        List.of(enPuertaNueva, enPuertaVieja),
+        soloLasQueEsperan.elementos().stream().map(DonacionIndependiente::getId).toList());
+    assertEquals(3, soloLasQueEsperan.total());
+  }
+
+  // R11-43 (C6): las cifras de una organización, por estado y por necesidad, en una consulta
+  @Test
+  void independientes_conteosDeUnaOrganizacion_porNecesidadYEstado() {
+    UUID subcategoriaId = crearSubcategoria();
+    Donante donante = donanteDe(humana("Ana", "Conteo"), true, LocalDateTime.now());
+    UUID comedor = entidadLlamada("Comedor Conteos");
+    UUID otra = entidadLlamada("Otra Organizacion");
+    UUID arroz = necesidadDe(comedor, subcategoriaId);
+    LocalDateTime hoy = LocalDateTime.now();
+    asignadaEn(donante, subcategoriaId, comedor, arroz, "EN_PUERTA", hoy);
+    asignadaEn(donante, subcategoriaId, comedor, arroz, "EN_PUERTA", hoy);
+    asignadaEn(donante, subcategoriaId, comedor, arroz, "ENTREGADA", hoy);
+    asignadaEn(donante, subcategoriaId, comedor, null, "EN_TRASLADO", hoy);
+    asignadaEn(donante, subcategoriaId, otra, null, "EN_PUERTA", hoy);
+
+    Set<ConteoAsignadas> todas = Set.copyOf(independientes.contarAsignadas(comedor, null));
+    Set<ConteoAsignadas> deArroz = Set.copyOf(independientes.contarAsignadas(comedor, arroz));
+
+    assertEquals(
+        Set.of(
+            new ConteoAsignadas(arroz, TipoEstadoDonacion.EN_PUERTA, 2),
+            new ConteoAsignadas(arroz, TipoEstadoDonacion.ENTREGADA, 1),
+            new ConteoAsignadas(null, TipoEstadoDonacion.EN_TRASLADO, 1)),
+        todas);
+    assertEquals(
+        Set.of(
+            new ConteoAsignadas(arroz, TipoEstadoDonacion.EN_PUERTA, 2),
+            new ConteoAsignadas(arroz, TipoEstadoDonacion.ENTREGADA, 1)),
+        deArroz);
+    // Las cuatro del comedor pasaron hoy por ASIGNACION_REALIZADA; tres son de la necesidad
+    assertEquals(
+        4,
+        independientes.contarQuePasaronA(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA,
+            hoy.minusDays(1),
+            hoy.plusDays(1),
+            comedor,
+            null));
+    assertEquals(
+        3,
+        independientes.contarQuePasaronA(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA,
+            hoy.minusDays(1),
+            hoy.plusDays(1),
+            comedor,
+            arroz));
+    assertEquals(
+        0,
+        independientes.contarQuePasaronA(
+            TipoEstadoDonacion.ENTREGADA, hoy.minusDays(1), hoy.plusDays(1), comedor, null));
+  }
+
+  /**
+   * Una asignada a la organización, con el estado y la fecha de registro puestos en la base: el
+   * orden y los conteos leen esas columnas.
+   */
+  private UUID asignadaEn(
+      Donante donante,
+      UUID subcategoriaId,
+      UUID entidadId,
+      UUID necesidadId,
+      String estado,
+      LocalDateTime registro) {
+    Bien arroz = BienMother.alimentoPerecedero("Arroz");
+    Donacion donacion = DonacionMother.segmentada(donante.getId(), arroz, 10);
+    donaciones.save(donacion);
+    ItemDonacionNormalizado normalizado =
+        itemsNormalizados.save(
+            new ItemDonacionNormalizado(
+                donacion.getId(), BienMother.aceptado(arroz, subcategoriaId), 10));
+    DonacionIndependiente asignada = independiente(normalizado);
+    asignada.asignar(ACTOR, new DestinoAsignacion(necesidadId, null, entidadId));
+    independientes.save(asignada);
+    jdbc.update(
+        "UPDATE donaciones.donacion_independiente SET estado_actual = ?, fecha_registro = ?"
+            + " WHERE id = ?",
+        estado,
+        registro,
+        asignada.getId());
+    return asignada.getId();
+  }
+
+  private UUID necesidadDe(UUID entidadId, UUID subcategoriaId) {
+    UUID id = UUID.randomUUID();
+    jdbc.update(
+        "INSERT INTO donaciones.necesidad (id, tipo_necesidad, subcategoria_id,"
+            + " entidad_beneficiaria_id, cantidad_necesitada, descripcion, fecha_inicio, activa)"
+            + " VALUES (?, 'EXTRAORDINARIA', ?, ?, 10, 'Arroz', now(), true)",
+        id,
+        subcategoriaId,
+        entidadId);
+    return id;
   }
 
   @Test

@@ -17,11 +17,21 @@ import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataR
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
+import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import grupo5.logistica.models.repositories.TramoDeEntregas;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -43,6 +53,9 @@ public class EntregasRepositoryJpaAdapter
   private final SpringDataDireccionRepository direccionRepo;
   private final SpringDataRutaRepository rutaRepo;
   private final EntregaPersistenciaMapper mapper;
+
+  /** Lo usa solo el seguimiento paginado (R11-43); fuera de un contexto de Spring queda nulo. */
+  @PersistenceContext private EntityManager em;
 
   public EntregasRepositoryJpaAdapter(
       SpringDataEntregaRepository springDataRepo,
@@ -184,6 +197,64 @@ public class EntregasRepositoryJpaAdapter
     return springDataRepo.findByDonanteIdOrderByIdEntregaAsc(donanteId).stream()
         .map(mapper::toDomain)
         .toList();
+  }
+
+  /**
+   * El seguimiento en JPQL (R11-43): solo las condiciones de los filtros presentes, el orden de
+   * {@link CriterioSeguimiento#ORDEN} y el tramo pedido; el total, con los mismos filtros.
+   */
+  @Override
+  public TramoDeEntregas buscarSeguimiento(CriterioSeguimiento criterio) {
+    List<String> condiciones = new ArrayList<>();
+    Map<String, Object> parametros = new LinkedHashMap<>();
+    if (criterio.idBeneficiaria() != null) {
+      condiciones.add("e.idBeneficiario = :beneficiaria");
+      parametros.put("beneficiaria", criterio.idBeneficiaria());
+    }
+    if (criterio.donanteId() != null) {
+      condiciones.add("e.donanteId = :donante");
+      parametros.put("donante", criterio.donanteId());
+    }
+    if (!criterio.estados().isEmpty()) {
+      condiciones.add("e.estado IN :estados");
+      parametros.put("estados", criterio.estados());
+    }
+    if (!criterio.idsDonacion().isEmpty()) {
+      condiciones.add("e.idDonacion IN :donaciones");
+      parametros.put("donaciones", criterio.idsDonacion());
+    }
+    String donde = condiciones.isEmpty() ? "" : " WHERE " + String.join(" AND ", condiciones);
+    TypedQuery<EntregaEntity> pagina =
+        em.createQuery(
+            "SELECT e FROM EntregaEntity e"
+                + donde
+                + " ORDER BY CASE WHEN e.horaArribo IS NULL THEN 0 ELSE 1 END,"
+                + " e.horaArribo DESC NULLS FIRST, e.horaSalida DESC NULLS FIRST, e.idEntrega",
+            EntregaEntity.class);
+    TypedQuery<Long> total =
+        em.createQuery("SELECT COUNT(e) FROM EntregaEntity e" + donde, Long.class);
+    parametros.forEach(
+        (nombre, valor) -> {
+          pagina.setParameter(nombre, valor);
+          total.setParameter(nombre, valor);
+        });
+    List<Entrega> entregas =
+        pagina
+            .setFirstResult(Math.toIntExact(criterio.desplazamiento()))
+            .setMaxResults(criterio.tamanio())
+            .getResultList()
+            .stream()
+            .map(mapper::toDomain)
+            .toList();
+    return new TramoDeEntregas(entregas, total.getSingleResult());
+  }
+
+  @Override
+  public List<Entrega> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(Set.copyOf(ids)).stream().map(mapper::toDomain).toList();
   }
 
   private static int indiceEnRuta(UUID idEntrega, List<UUID> ordenVisita) {

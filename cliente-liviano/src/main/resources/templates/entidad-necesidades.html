@@ -278,6 +278,10 @@
               recepción</a>
           </li>
         </ul>
+        <!--/* R11-43: se muestran las 3 más urgentes; las cifras de arriba son todas. */-->
+        <p th:if="${n.hayMasEntregas()}"
+           th:text="|Mostramos ${#lists.size(n.entregas)} de ${n.puerta + n.camino + n.problema} entregas en curso.|">Mostramos
+          3 de 5 entregas en curso.</p>
         <a class="enlace" href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Ver en Seguir entregas</a>
       </section>
@@ -294,6 +298,13 @@
               th:text="|${d.quien ?: (cat == null ? (empresa ? 'Una empresa donante' : 'Un donante') : (empresa ? 'Empresa donante · ' : 'Donante ') + cat)} · ${d.cuanto} · ${d.cuando}|">Distribuidora
             Ejemplo SA · 10 kg · 10 de octubre</li>
         </ul>
+        <!--/* R11-43: las 3 más recientes; el resto, en Donaciones recibidas. */-->
+        <p th:if="${n.hayMasRecibidas()}">
+          <th:block th:text="|Mostramos las ${#lists.size(n.donaron)} más recientes de ${n.recibidas} recibidas.|">Mostramos
+            las 3 más recientes de 8 recibidas.</th:block>
+          <a class="enlace" href="/entidad-recibidas?estado=recibidas"
+             th:href="@{/entidad-recibidas(estado='recibidas')}">Ver todas</a>
+        </p>
       </section>
     </div>
 
@@ -401,9 +412,9 @@ con este código</a>.</p>
           confirmala antes de darla de baja.</p>
         <!--/* Según si salió (usuario, 2026-11-02): lo que salió llega igual; lo que no,
                vuelve al depósito y se asigna a otra entidad. */-->
-        <th:block th:with="salieron=${#lists.size(n.entregas.?[tono == 'en-camino'])},
-                           noSalieron=${#lists.size(n.entregas.?[tono == 'pendiente'])},
-                           noLlegaron=${#lists.size(n.entregas.?[tono == 'con-problema'])}">
+        <th:block th:with="salieron=${n.salieron},
+                           noSalieron=${n.noSalieron},
+                           noLlegaron=${n.noLlegaron}">
           <p th:if="${salieron > 0}"
              th:text="${salieron == 1} ? '1 entrega ya salió del depósito: llega igual y queda asentado lo que recibas.' : |${salieron} entregas ya salieron del depósito: llegan igual y queda asentado lo que recibas.|">1
             entrega ya salió del depósito: llega igual y queda asentado lo que recibas.</p>

@@ -8,8 +8,9 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDona
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.models.repositories.listados.ConteoAsignadas;
 import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
-import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
+import grupo5.donaciones.models.repositories.listados.OrdenDonacionesIndependientes;
 import grupo5.donaciones.models.repositories.listados.PorVencer;
 import grupo5.donaciones.models.repositories.listados.TextoBuscado;
 import grupo5.donaciones.models.repositories.listados.Tramo;
@@ -55,8 +56,15 @@ public class DonacionesIndependientesRepositoryEnMemoria
     Set<UUID> deLaCategoria = c.categoriaId() == null ? Set.of() : subcategoriasDe(c.categoriaId());
     Comparator<DonacionIndependiente> porFecha =
         Comparator.comparing(DonacionIndependiente::getFechaRegistro);
-    if (c.orden() == OrdenPorFecha.RECIENTES) {
+    if (c.orden() != OrdenDonacionesIndependientes.ANTIGUAS) {
       porFecha = porFecha.reversed();
+    }
+    if (c.orden() == OrdenDonacionesIndependientes.ATENCION) {
+      porFecha =
+          Comparator.comparingInt(
+                  (DonacionIndependiente di) ->
+                      OrdenDonacionesIndependientes.grupoDeAtencion(tipo(di)))
+              .thenComparing(porFecha);
     }
     List<DonacionIndependiente> filtradas =
         storage.values().stream()
@@ -131,6 +139,48 @@ public class DonacionesIndependientesRepositoryEnMemoria
                                 && !cambio.getTimestamp().isBefore(desde)
                                 && cambio.getTimestamp().isBefore(hasta)))
         .count();
+  }
+
+  @Override
+  public long contarQuePasaronA(
+      TipoEstadoDonacion estado,
+      LocalDateTime desde,
+      LocalDateTime hasta,
+      UUID entidadId,
+      UUID necesidadId) {
+    return storage.values().stream()
+        .filter(di -> entidadId.equals(di.getEntidadBeneficiariaId()))
+        .filter(di -> necesidadId == null || necesidadId.equals(di.getNecesidadId()))
+        .filter(
+            di ->
+                di.getHistorial().stream()
+                    .anyMatch(
+                        cambio ->
+                            cambio.getEstadoNuevo() != null
+                                && cambio.getEstadoNuevo().getTipo() == estado
+                                && !cambio.getTimestamp().isBefore(desde)
+                                && cambio.getTimestamp().isBefore(hasta)))
+        .count();
+  }
+
+  @Override
+  public List<ConteoAsignadas> contarAsignadas(UUID entidadId, UUID necesidadId) {
+    Map<UUID, Map<TipoEstadoDonacion, Long>> conteo = new HashMap<>();
+    storage.values().stream()
+        .filter(di -> entidadId.equals(di.getEntidadBeneficiariaId()))
+        .filter(di -> necesidadId == null || necesidadId.equals(di.getNecesidadId()))
+        .filter(di -> tipo(di) != null)
+        .forEach(
+            di ->
+                conteo
+                    .computeIfAbsent(di.getNecesidadId(), id -> new HashMap<>())
+                    .merge(tipo(di), 1L, Long::sum));
+    return conteo.entrySet().stream()
+        .flatMap(
+            n ->
+                n.getValue().entrySet().stream()
+                    .map(e -> new ConteoAsignadas(n.getKey(), e.getKey(), e.getValue())))
+        .toList();
   }
 
   @Override

@@ -24,6 +24,9 @@ info:
     Desde 1.11.0 (R11-26) hay un registro de actividad de administración: `GET /api/actividad`
     lo lista de a una página y `POST /api/actividad` anota lo que pasa fuera de Donaciones;
     `POST /api/entidades` acepta `origen` (opcional).
+    Desde 1.11.0 (R11-43), `GET /api/entidades` filtra por `estado`, `conNecesidades` y `rubro`;
+    `GET /donaciones-independientes` acepta `orden=ATENCION`, y
+    `GET /donaciones-independientes/conteos` da las cifras de una organización.
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -108,10 +111,15 @@ paths:
         - name: orden
           in: query
           required: false
-          description: Por fecha de registro; RECIENTES (la más nueva primero) si se omite.
+          description: >-
+            Por fecha de registro; RECIENTES (la más nueva primero) si se omite. Desde 1.11.0
+            (R11-43), ATENCION: lo que la organización tiene que atender primero, por grupos
+            (EN_PUERTA; ENTREGA_FALLIDA y VENCIDA; EN_TRASLADO; ASIGNACION_REALIZADA,
+            LISTA_PARA_ENTREGAR y EN_DEPOSITO; ENTREGADA) y, dentro de cada grupo, la más reciente
+            primero; desempata por id.
           schema:
             type: string
-            enum: [RECIENTES, ANTIGUAS]
+            enum: [RECIENTES, ANTIGUAS, ATENCION]
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -130,6 +138,39 @@ paths:
           description: >-
             Fecha mal formada, `desde` posterior a `hasta`, estado u orden desconocido, o `page`,
             `size` o `q` fuera de rango (ERR-CSR-003)
+  /donaciones-independientes/conteos:
+    get:
+      summary: Cifras de las donaciones asignadas a una organización (R11-43)
+      description: >-
+        Cuántas asignadas tiene la organización en cada estado, cuántas recibió en el mes en curso
+        (las que pasaron a ENTREGADA, con el reloj de Buenos Aires, como el resumen del admin) y lo
+        mismo por necesidad. Con `necesidadId`, todo se cuenta sobre esa necesidad. Los mismos
+        permisos que el listado: ADMIN, o la organización sobre sí misma con `VER_DONACIONES`.
+      operationId: contarDonacionesDeEntidad
+      parameters:
+        - name: entidadId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: necesidadId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Las cifras de la organización
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConteosDeEntidadDTO'
+        '400':
+          description: Sin `entidadId` o con un id mal formado
+        '403':
+          description: Otra organización, o sin `VER_DONACIONES`
   /donaciones-independientes/{id}:
     get:
       summary: Consultar donación independiente por ID
@@ -754,9 +795,31 @@ paths:
         Incluye las entidades dadas de baja; cada una expone `activo`. Ordena por razón social y
         devuelve un tramo (HB-15), resuelto en la base. Desde 1.9.0 (R11-01), sin `page` ni `size`
         devuelve la página 0 de 20, ya no todas. El cuerpo es siempre un arreglo; el total de las
-        que cumplen el filtro va en el header `X-Total-Count`.
+        que cumplen el filtro va en el header `X-Total-Count`. Desde 1.11.0 (R11-43), `estado`,
+        `conNecesidades` y `rubro`, opcionales; sin ellos, la respuesta es la misma que en 1.10.0.
       operationId: listarEntidadesBeneficiarias
       parameters:
+        - name: estado
+          in: query
+          required: false
+          description: ACTIVA o BAJA; sin él, las dos. Otro valor da 400.
+          schema:
+            type: string
+            enum: [ACTIVA, BAJA]
+        - name: conNecesidades
+          in: query
+          required: false
+          description: >-
+            true, las que tienen alguna necesidad activa y no vencida hoy; false, las que no tienen
+            ninguna.
+          schema:
+            type: boolean
+        - name: rubro
+          in: query
+          required: false
+          description: Igual al rubro de la jurídica, sin distinguir mayúsculas ni tildes.
+          schema:
+            type: string
         - name: nombre
           in: query
           required: false
@@ -788,7 +851,7 @@ paths:
               schema:
                 type: integer
         '400':
-          description: '`page` negativo, `size` fuera de 1..100 o `nombre` de más de 100 caracteres (ERR-CSR-003)'
+          description: '`page` negativo, `size` fuera de 1..100, `nombre` de más de 100 caracteres o un `estado` que no existe (ERR-CSR-003)'
   /api/entidades/publicas:
     get:
       summary: Listar entidades beneficiarias activas (ruta pública)
@@ -1924,6 +1987,46 @@ components:
             Desde 1.11.0 (R11-26), opcional: `SOLICITUD` al aprobar la solicitud de una
             organización; `ADMIN` (por defecto) al registrarla la administración. Solo cambia la
             acción que queda en el registro de actividad.
+    ConteosDeEntidadDTO:
+      type: object
+      description: Las cifras de una organización (R11-43), contadas por el servicio.
+      properties:
+        porEstado:
+          type: array
+          description: Los 8 estados, siempre, en el orden del ciclo de vida, con 0 si no hay.
+          items:
+            $ref: '#/components/schemas/ConteoPorEstado'
+        entregadasEnElMes:
+          type: object
+          properties:
+            mes: { type: string, example: '2026-11', description: 'AAAA-MM' }
+            cantidad: { type: integer, format: int64 }
+        porNecesidad:
+          type: array
+          description: Solo las necesidades con alguna asignada; en cada una, los estados con alguna.
+          items:
+            type: object
+            properties:
+              necesidadId: { type: string, format: uuid }
+              porEstado:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConteoPorEstado'
+    ConteoPorEstado:
+      type: object
+      properties:
+        estado:
+          type: string
+          enum:
+            - EN_DEPOSITO
+            - ASIGNACION_REALIZADA
+            - EN_TRASLADO
+            - EN_PUERTA
+            - LISTA_PARA_ENTREGAR
+            - ENTREGADA
+            - ENTREGA_FALLIDA
+            - VENCIDA
+        cantidad: { type: integer, format: int64 }
     PropuestaDTO:
       type: object
       description: Propuesta de asignación de donaciones a una necesidad.

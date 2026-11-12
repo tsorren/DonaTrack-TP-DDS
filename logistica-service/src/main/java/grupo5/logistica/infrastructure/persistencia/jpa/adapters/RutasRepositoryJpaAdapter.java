@@ -8,7 +8,9 @@ import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -75,5 +77,13 @@ public class RutasRepositoryJpaAdapter
       return List.of();
     }
     return springDataRepo.findByIdCamionAndFecha(camionId, fecha).stream().map(toDomain).toList();
+  }
+
+  @Override
+  public List<Ruta> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(Set.copyOf(ids)).stream().map(toDomain).toList();
   }
 }

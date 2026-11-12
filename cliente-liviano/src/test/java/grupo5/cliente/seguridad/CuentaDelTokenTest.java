@@ -1,6 +1,7 @@
 package grupo5.cliente.seguridad;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -84,12 +85,14 @@ class CuentaDelTokenTest {
 
   @Test
   void laEntidadEsLaPersonaDelTokenYUnaEntidadEnElPedidoNoLaCambia() throws Exception {
-    when(recibidas.recibidas(any())).thenReturn(new RecibidasVista(List.of(), "", "", null));
+    // R11-43: la pantalla pide su página (grupos y número de página)
+    when(recibidas.recibidas(any(), any(), anyInt()))
+        .thenReturn(new RecibidasVista(List.of(), "", "", null));
 
     mvc.perform(get("/entidad-recibidas").param("entidad", OTRA.toString()).with(conRol("ENTIDAD")))
         .andExpect(status().isOk());
 
-    verify(recibidas).recibidas(PERSONA);
-    verify(recibidas, never()).recibidas(OTRA);
+    verify(recibidas).recibidas(eq(PERSONA), any(), anyInt());
+    verify(recibidas, never()).recibidas(eq(OTRA), any(), anyInt());
   }
 }

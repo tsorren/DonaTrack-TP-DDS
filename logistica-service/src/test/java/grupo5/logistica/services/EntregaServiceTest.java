@@ -1,6 +1,7 @@
 package grupo5.logistica.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.BusinessStateException;
@@ -9,6 +10,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.ConsultaSeguimiento;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
@@ -16,6 +18,7 @@ import grupo5.logistica.dto.entregas.EntregasDelMapaPublico;
 import grupo5.logistica.dto.entregas.PosicionCamionDTO;
 import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
+import grupo5.logistica.dto.entregas.SeguimientosDeEntregas;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.PosicionCamion;
@@ -33,9 +36,11 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
+import grupo5.logistica.models.repositories.TramoDeEntregas;
 import grupo5.logistica.services.impl.EntregasService;
 import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
@@ -47,9 +52,11 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class EntregaServiceTest {
 
@@ -446,49 +453,137 @@ class EntregaServiceTest {
   }
 
   @Test
-  void listarSeguimientoPorBeneficiaria_retornaSeguimientosDelBeneficiario() {
+  void listarSeguimientoPorBeneficiaria_sinParametros_pideLaPrimeraPaginaDe20YDaElTotal() {
     UUID idBeneficiaria = UUID.randomUUID();
     Entrega entrega = EntregaMother.pendiente();
-    when(entregasRepository.findByIdBeneficiaria(idBeneficiaria)).thenReturn(List.of(entrega));
+    when(entregasRepository.buscarSeguimiento(any()))
+        .thenReturn(new TramoDeEntregas(List.of(entrega), 45));
 
-    List<SeguimientoEntregaResponseDTO> resultado =
-        entregasService.listarSeguimientoPorBeneficiaria(idBeneficiaria);
+    SeguimientosDeEntregas resultado =
+        entregasService.listarSeguimientoPorBeneficiaria(
+            idBeneficiaria, ConsultaSeguimiento.primeraPagina());
 
-    assertEquals(1, resultado.size());
-    assertEquals(entrega.getId(), resultado.getFirst().idEntrega());
+    assertEquals(45, resultado.total());
+    assertEquals(entrega.getId(), resultado.seguimientos().getFirst().idEntrega());
+    ArgumentCaptor<CriterioSeguimiento> criterio =
+        ArgumentCaptor.forClass(CriterioSeguimiento.class);
+    verify(entregasRepository).buscarSeguimiento(criterio.capture());
+    assertEquals(
+        new CriterioSeguimiento(idBeneficiaria, null, Set.of(), Set.of(), 0, 20),
+        criterio.getValue());
   }
 
   @Test
-  void listarSeguimientoPorDonante_devuelveSoloLasPendientesYEnTraslado() {
-    UUID donanteId = UUID.randomUUID();
-    Entrega pendiente = EntregaMother.pendiente();
-    Entrega enTraslado = EntregaMother.pendiente();
-    enTraslado.asignarRuta(UUID.randomUUID());
-    enTraslado.iniciarRuta("Chofer");
-    Entrega entregada = EntregaMother.pendiente();
-    entregada.asignarRuta(UUID.randomUUID());
-    entregada.iniciarRuta("Chofer");
-    entregada.confirmarEntrega("Actor", "https://storage.donatrack.org/f.jpg");
-    Entrega enPuerta = EntregaMother.pendiente();
-    enPuerta.asignarRuta(UUID.randomUUID());
-    enPuerta.iniciarRuta("Chofer");
-    enPuerta.llegarAPuerta("SIMULADOR");
-    when(entregasRepository.findByDonanteId(donanteId))
-        .thenReturn(List.of(pendiente, enTraslado, entregada, enPuerta));
+  void listarSeguimientoPorBeneficiaria_pasaEstadosYDonacionesAlRepositorio() {
+    UUID idBeneficiaria = UUID.randomUUID();
+    UUID donacion = UUID.randomUUID();
+    when(entregasRepository.buscarSeguimiento(any())).thenReturn(new TramoDeEntregas(List.of(), 0));
 
-    List<SeguimientoEntregaResponseDTO> resultado =
-        entregasService.listarSeguimientoPorDonante(donanteId);
+    entregasService.listarSeguimientoPorBeneficiaria(
+        idBeneficiaria,
+        new ConsultaSeguimiento(List.of(EstadoEntrega.EN_PUERTA), List.of(donacion), 2, 5));
+
+    verify(entregasRepository)
+        .buscarSeguimiento(
+            new CriterioSeguimiento(
+                idBeneficiaria, null, Set.of(EstadoEntrega.EN_PUERTA), Set.of(donacion), 2, 5));
+  }
+
+  @Test
+  void listarSeguimiento_conPaginaFueraDeRango_lanzaValidacion() {
+    UUID id = UUID.randomUUID();
+    List<ConsultaSeguimiento> invalidas =
+        List.of(
+            new ConsultaSeguimiento(null, null, -1, null),
+            new ConsultaSeguimiento(null, null, null, 0),
+            new ConsultaSeguimiento(null, null, null, 101),
+            new ConsultaSeguimiento(
+                null,
+                java.util.stream.Stream.generate(UUID::randomUUID).limit(101).toList(),
+                null,
+                null));
+    for (ConsultaSeguimiento consulta : invalidas) {
+      assertThrows(
+          ValidationException.class,
+          () -> entregasService.listarSeguimientoPorBeneficiaria(id, consulta));
+      assertThrows(
+          ValidationException.class,
+          () -> entregasService.listarSeguimientoPorDonante(id, consulta));
+    }
+    verify(entregasRepository, never()).buscarSeguimiento(any());
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_sinEstados_pideSoloLasActivas() {
+    UUID donanteId = UUID.randomUUID();
+    when(entregasRepository.buscarSeguimiento(any())).thenReturn(new TramoDeEntregas(List.of(), 0));
+
+    entregasService.listarSeguimientoPorDonante(donanteId, ConsultaSeguimiento.primeraPagina());
 
     // HB-22: la que espera en la puerta sigue activa
-    assertEquals(
-        List.of(pendiente.getId(), enTraslado.getId(), enPuerta.getId()),
-        resultado.stream().map(SeguimientoEntregaResponseDTO::idEntrega).toList());
+    verify(entregasRepository)
+        .buscarSeguimiento(
+            new CriterioSeguimiento(
+                null,
+                donanteId,
+                Set.of(EstadoEntrega.PENDIENTE, EstadoEntrega.EN_TRASLADO, EstadoEntrega.EN_PUERTA),
+                Set.of(),
+                0,
+                20));
   }
 
   @Test
   void listarSeguimientoPorDonante_sinDonante_lanzaValidacion() {
+    ConsultaSeguimiento consulta = ConsultaSeguimiento.primeraPagina();
     assertThrows(
-        ValidationException.class, () -> entregasService.listarSeguimientoPorDonante(null));
+        ValidationException.class,
+        () -> entregasService.listarSeguimientoPorDonante(null, consulta));
+  }
+
+  /**
+   * C3 de R11-43: una página de entregas en dos rutas se arma con una lectura de rutas, una de
+   * camiones y una de las paradas que faltan, no una por entrega ni por parada.
+   */
+  @Test
+  void listarSeguimiento_armaLaPaginaConUnaLecturaDeRutasCamionesYParadas() {
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta rutaA = new Ruta(LocalDate.of(2026, 10, 22), UUID.randomUUID(), camion.getId());
+    Ruta rutaB = new Ruta(LocalDate.of(2026, 10, 23), UUID.randomUUID(), camion.getId());
+    List<Entrega> pagina = new java.util.ArrayList<>();
+    List<Entrega> otras = new java.util.ArrayList<>();
+    for (int i = 0; i < 20; i++) {
+      Ruta ruta = i % 2 == 0 ? rutaA : rutaB;
+      Entrega deLaPagina = EntregaMother.pendiente();
+      Entrega otra = EntregaMother.pendiente();
+      ruta.agregarEntrega(deLaPagina.getId());
+      ruta.agregarEntrega(otra.getId());
+      deLaPagina.asignarRuta(ruta.getId());
+      otra.asignarRuta(ruta.getId());
+      pagina.add(deLaPagina);
+      otras.add(otra);
+    }
+    when(entregasRepository.buscarSeguimiento(any())).thenReturn(new TramoDeEntregas(pagina, 45));
+    when(rutasRepository.findByIds(any())).thenReturn(List.of(rutaA, rutaB));
+    when(camionRepository.findByIds(any())).thenReturn(List.of(camion));
+    when(entregasRepository.findByIds(any())).thenReturn(otras);
+
+    SeguimientosDeEntregas resultado =
+        entregasService.listarSeguimientoPorBeneficiaria(
+            UUID.randomUUID(), ConsultaSeguimiento.primeraPagina());
+
+    assertEquals(20, resultado.seguimientos().size());
+    assertEquals(45, resultado.total());
+    SeguimientoEntregaResponseDTO primero = resultado.seguimientos().getFirst();
+    assertEquals("AB123CD", primero.patenteCamion());
+    assertEquals(20, primero.totalParadas());
+    assertEquals(1, primero.ordenVisita());
+    verify(rutasRepository, times(1)).findByIds(Set.of(rutaA.getId(), rutaB.getId()));
+    verify(camionRepository, times(1)).findByIds(Set.of(camion.getId()));
+    verify(entregasRepository, times(1))
+        .findByIds(otras.stream().map(Entrega::getId).collect(java.util.stream.Collectors.toSet()));
+    verify(rutasRepository, never()).findById(any());
+    verify(camionRepository, never()).findById(any());
+    verify(entregasRepository, never()).findById(any());
   }
 
   // ===================== adjuntarFotoRecepcion() =====================

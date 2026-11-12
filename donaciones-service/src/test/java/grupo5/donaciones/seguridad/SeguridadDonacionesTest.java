@@ -21,6 +21,7 @@ import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
@@ -251,6 +252,29 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isOk());
     pedir(get(INDEPENDIENTES).param("entidadId", AJENO.toString()), "entidad")
         .andExpect(status().isForbidden());
+  }
+
+  // R11-43: los conteos piden lo mismo que el listado de la organización
+  @Test
+  void laOrganizacionVeSusConteosYNoLosDeOtra() throws Exception {
+    when(donacionesIndependientesService.conteos(any(), any()))
+        .thenReturn(
+            new ConteosDeEntidadDTO(
+                List.of(), new ConteosDeEntidadDTO.EntregadasEnElMes("2026-11", 0), List.of()));
+
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", ENTIDAD.toString()), "entidad")
+        .andExpect(status().isOk());
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", AJENO.toString()), "entidad")
+        .andExpect(status().isForbidden());
+    pedir(
+            get(INDEPENDIENTES + "/conteos").param("entidadId", ENTIDAD.toString()),
+            "entidad-sin-permisos")
+        .andExpect(status().isForbidden());
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", DONANTE.toString()), "donante")
+        .andExpect(status().isForbidden());
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", ENTIDAD.toString()), "admin")
+        .andExpect(status().isOk());
+    pedir(get(INDEPENDIENTES + "/conteos"), "entidad").andExpect(status().isBadRequest());
   }
 
   @Test

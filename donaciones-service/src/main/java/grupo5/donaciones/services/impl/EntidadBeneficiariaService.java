@@ -7,6 +7,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
@@ -92,8 +93,20 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   @Override
-  public Pagina<EntidadBeneficiariaOutputDTO> buscar(String nombre, Integer page, Integer size) {
-    Tramo<EntidadBeneficiaria> tramo = repository.buscar(criterio(nombre, false, page, size));
+  public Pagina<EntidadBeneficiariaOutputDTO> buscar(
+      String nombre, FiltroOrganizaciones filtro, Integer page, Integer size) {
+    // Sin page ni size, la página 0 de 20 (R11-01): nunca la lista completa
+    ParametrosListado listado = new ParametrosListado(page, size, nombre, null);
+    Tramo<EntidadBeneficiaria> tramo =
+        repository.buscar(
+            new CriterioEntidades(
+                listado.texto(),
+                false,
+                null,
+                null,
+                null,
+                filtro == null ? FiltroOrganizaciones.NINGUNO : filtro,
+                listado.paginado()));
     return new Pagina<>(mapper.toOutputDTOs(tramo.elementos()), (int) tramo.total());
   }
 
@@ -152,13 +165,6 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
         LocalDate.now(ZoneId.systemDefault()),
         donadasPor,
         listado.paginado());
-  }
-
-  /** Sin {@code page} ni {@code size}, la página 0 de 20 (R11-01): nunca la lista completa. */
-  private static CriterioEntidades criterio(
-      String nombre, boolean soloActivas, Integer page, Integer size) {
-    ParametrosListado listado = new ParametrosListado(page, size, nombre, null);
-    return new CriterioEntidades(listado.texto(), soloActivas, listado.paginado());
   }
 
   /** También lo usa {@link ArchivoDonantesService} para las filas con error del padrón. */

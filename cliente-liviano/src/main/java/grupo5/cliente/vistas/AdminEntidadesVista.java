@@ -19,11 +19,39 @@ public record AdminEntidadesVista(
 
   /**
    * Una página de las registradas (R11-01). {@code buscar}, el nombre que se buscó en el servidor,
-   * sin distinguir mayúsculas ni tildes ('' si no); {@code total}, cuántas cumplen la búsqueda
-   * contando las que piden sumarse; {@code registradas}, el tramo que pidió el servicio, para el
-   * paginador. Las que piden sumarse van primero y solo en la página 1.
+   * sin distinguir mayúsculas ni tildes ('' si no); {@code total}, cuántas cumplen la búsqueda y
+   * los filtros contando las que piden sumarse; {@code registradas}, el tramo que pidió el
+   * servicio, para el paginador. Las que piden sumarse van primero y solo en la página 1. Desde
+   * R11-43, {@code inactivas} y {@code pendientes} cuentan todas las de baja y todas las que piden
+   * sumarse, como {@code activas}: no dependen de la búsqueda ni de los filtros.
    */
-  public record EnPaginas(String buscar, long total, Tramo<Entidad> registradas) {}
+  public record EnPaginas(
+      String buscar, long total, Tramo<Entidad> registradas, long inactivas, long pendientes) {}
+
+  /**
+   * Los filtros de la lista (R11-43): {@code ver} es {@code activas}, {@code pendientes}, {@code
+   * inactivas} o '' (todas); {@code pedidos}, {@code con}, {@code sin} o '' (necesidades vigentes);
+   * {@code tipo}, el rubro ('' si no). Un valor que no es uno de esos queda en ''.
+   */
+  public record Filtro(String ver, String pedidos, String tipo) {
+
+    private static final List<String> VER = List.of("activas", "pendientes", "inactivas");
+    private static final List<String> PEDIDOS = List.of("con", "sin");
+
+    /** Los rubros que ofrece el menú Tipo. */
+    public static final List<String> TIPOS =
+        List.of(
+            "Comedor", "Merendero", "Escuela", "Hogar", "Club", "Biblioteca", "Centro comunitario");
+
+    /** Sin filtros. Va después de las listas: el constructor las usa. */
+    public static final Filtro NINGUNO = new Filtro("", "", "");
+
+    public Filtro {
+      ver = ver != null && VER.contains(ver) ? ver : "";
+      pedidos = pedidos != null && PEDIDOS.contains(pedidos) ? pedidos : "";
+      tipo = tipo != null && TIPOS.contains(tipo) ? tipo : "";
+    }
+  }
 
   /**
    * Una entidad. {@code clave} la elige en la dirección y viaja al aprobarla; {@code estado} es
