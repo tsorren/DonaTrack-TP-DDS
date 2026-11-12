@@ -1,7 +1,7 @@
 # Tono y comunicación
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1.4 · 2026-11-12 (cifras y cuentas de la revisión del 2026-11-11; plazos sin fijar; cifra con tope y lo que muestra una página, oleada P1; un botón no promete un lugar que la cuenta no tiene, `p1-portada`) · parte del [proceso de diseño](README.md)**
+> **Versión 1.5 · 2026-11-12 (cifras y cuentas de la revisión del 2026-11-11; plazos sin fijar; cifra con tope y lo que muestra una página, oleada P1; un botón no promete un lugar que la cuenta no tiene, `p1-portada`; lo que no sabemos si se guardó, la bandeja compartida y cómo se dice un gráfico, oleada P2) · parte del [proceso de diseño](README.md)**
 > Fuente: el [Brief de Tono y Comunicación v1.0](identidad/brief-tono-y-comunicacion-v1.0.pdf) del
 > equipo. Este documento lo lleva a la interfaz: qué se escribe en cada pantalla y qué no. Si el
 > equipo saca una versión nueva del brief, se actualiza este archivo y nada más. Lo marcado
@@ -125,6 +125,16 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
   solicitud pendiente, lo público dice "Ver mi solicitud", no "Ir a mi inicio", porque esa cuenta
   todavía no tiene inicio. Con la cuenta activa, "Ir a mi inicio" ("Mi inicio" en la barra del
   celular).
+- Lo que no sabemos no se afirma *(extensión, oleada P2, R11-32)*: si se corta la conexión al
+  enviar, la ventana dice "No sabemos si se guardó." y cómo comprobarlo, con lo escrito todavía a la
+  vista. Ni "Se guardó" ni "No se guardó" sin saberlo.
+- Un gráfico nombra la actividad como actividad *(extensión, oleada P2, R11-42)*: "registradas" y
+  "entregas confirmadas", con el período en la frase ("En los últimos 12 meses se registraron 1.424
+  donaciones…"). Una serie de entregas mayor que la de registradas en un mes no es un error: son
+  entregas de donaciones de meses anteriores, y la tabla lo deja leer.
+- Lo compartido se dice compartido *(extensión, oleada P2, R11-30)*: la bandeja de la
+  Administración aclara que es la misma para todas las cuentas y que abrir un aviso lo marca leído
+  para todos.
 
 ## Personas, organizaciones y fotos
 

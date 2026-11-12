@@ -10,6 +10,17 @@
 > implementa esta decisión (migración `V25__actividad_de_administracion.sql`, OpenAPI de Donaciones
 > 1.11.0, pantalla `admin-actividad`). Código existente no es aprobación: si el revisor rechaza el
 > ADR, puede hacer falta revertir.
+>
+> **Nota del cierre documental de la oleada P2 (2026-11-12).** El constructor lo escribió en el
+> mismo lote, pero después de construir: como los demás ADR de las rutas CONTRATO de la oleada, es
+> un desvío acordado del ciclo ARCHITECTURAL (la decisión quedó registrada después del código, no
+> antes). El cierre no lo duplica; solo agrega dos hechos posteriores: `[OBSERVED]` en los arreglos
+> de la ronda 1 (`18195a3b1`), `ejecutarAsignacion` devuelve `EjecucionRealizada(ejecucionId,
+> propuestas)` y `ASIGNACION_CORRIDA` guarda el id de la ejecución en `objeto_id` (antes, nulo); el
+> cuerpo de la respuesta HTTP no cambió. `[VERIFIED]` `run-preprod-tests.sh` en el cierre (contrato, integración y E2E 26/26 en el stack propio) y
+> el recorrido con login real de la administración pasaron con el registro. El desvío
+> transaccional de abajo sigue abierto y quedó como deuda en
+> [DTI-43](../DEUDA_TECNICA.md#dti-43). La spec pasó a `completed/`.
 
 ## Contexto y Problema
 
@@ -98,7 +109,7 @@ o si se pide la transacción común (un cambio en cada servicio).
 
 ## Enlaces
 
-- Spec: [R11-p2-actividad](../../specs/active/R11-p2-actividad-spec.md)
+- Spec: [R11-p2-actividad](../../specs/completed/R11-p2-actividad-spec.md)
 - Ficha: [r11-p2-actividad](../../interfaz/flujos/r11-p2-actividad.md)
 - Contrato: [openapi-donaciones.yaml](../../arquitectura/contratos/openapi-donaciones.yaml) (1.11.0)
-- Deuda: [DTI-42](../DEUDA_TECNICA.md#dti-42), ítem 2
+- Deuda: [DTI-42](../DEUDA_TECNICA.md#dti-42), ítem 2, y [DTI-43](../DEUDA_TECNICA.md#dti-43)

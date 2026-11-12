@@ -31,6 +31,268 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · proceso · Cierre de P2: las decisiones de ocho lotes, escritas al cierre
+
+- **Decisión:** las doce entradas que siguen (hasta la de "armazón", sin incluirla) son las decisiones de diseño de los lotes
+  de P2 que no escribieron su entrada (`p2-tablero`, `p2-entidades-donante`, `p2-ventanas`,
+  `p2-portada-detalles`, `p2-pendiente-solicitud`, `p2-listas-restantes`, `p2-admin-graficos` y
+  `p2-campanita`). Cada una dice si la decidió el usuario (su ficha o su spec, aprobadas con las
+  opciones recomendadas) o un agente sin consultar.
+- **Alternativas:** dejar las decisiones solo en las fichas y en los informes de los constructores.
+- **Por qué:** la bitácora es el registro común del sitio; las fichas de `p2-tablero`, `p2-ventanas`
+  y `p2-entidades-donante` pedían anotarlas al construir.
+- **Costo:** se escribieron después de construir; lo que quedó abierto está en
+  [DTI-43](../adr/DEUDA_TECNICA.md#dti-43).
+- **Quién decidió:** agente (cierre documental de P2).
+- **Evidencia:** [estado de P2](backlog-revision-2026-11-11.md#estado-de-p2-al-cierre-de-la-oleada-2026-11-12).
+
+### 2026-11-12 · donante · Tablero de la empresa: tres columnas de a 3 y cada una con su página
+
+- **Decisión:** (R11-25, lote `p2-tablero`) el inicio de la empresa muestra el boceto A en el
+  orden Para tener en cuenta · En camino o por salir · Ya llegó; cada columna trae como mucho 3
+  donaciones, su total en la cabeza y su paginador corto (`‹ 1 de 16 ›`), y guarda su página en
+  la dirección (`?tener=`, `?camino=`, `?llego=`), así recargar o compartir conserva las tres. Con
+  JavaScript cambia solo la columna tocada y el foco va a su título; sin JavaScript, la página
+  entera baja hasta la columna (`#tablero-…`). "Esperan destino" es una cifra dentro de Para tener
+  en cuenta, sin lista ni "Ver todas".
+- **Alternativas:** una sola página para las tres columnas (cambiar una cambiaba todas); "Ver
+  todas" hacia Mis donaciones en cada columna (la ficha lo descartó: el tablero ya pagina);
+  reemplazar la grilla entera con HTMX (cambiaba las otras columnas mientras se leían).
+- **Por qué:** el tablero crecía sin límite; con tres paginadores independientes cada columna se
+  recorre sin perder las otras.
+- **Costo:** el resto del inicio sigue leyendo la lista de 100 y cada flecha arma el inicio entero
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 16, y [DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 1).
+- **Quién decidió:** usuario (ficha [r11-p2-tablero](flujos/r11-p2-tablero.md) aprobada con las
+  opciones recomendadas, 2026-11-12).
+- **Evidencia:** `DonanteInicioControllerTest`; `paginas.txt` con `?escenario=muchas`; recorrido
+  con login real del cierre de P2.
+
+### 2026-11-12 · donante · Tablero: la columna tocada se nombra en una cabecera y la altura queda reservada
+
+- **Decisión:** con HTMX, la columna que cambió se identifica con una cabecera propia
+  (`X-Tablero`, en `hx-headers`, permitido por la CSP) y la respuesta sale sin el `id` de la
+  columna, para que HTMX no salte al ancla; los pies y el "Volver a intentar" de las otras columnas
+  se renuevan con `hx-select-oob`, sin volver a anunciar su aviso. Las columnas de más de una
+  página reservan el alto de 3 donaciones, así el paginador no se mueve bajo el dedo. Si falla una
+  columna, falla solo esa (también la cifra de las que esperan destino) y "entregas en curso hoy"
+  vuelve a contarse sobre la lista de antes.
+- **Alternativas:** usar `HX-Target` (deja de llegar después del primer cambio, porque el destino
+  pierde su `id`); un escucha en `interfaz.js` (es de otro lote y la CSP no deja `hx-on`); armar
+  `hx-swap-oob` en el servidor (cambiaba el controller); mostrar una cifra parcial si falla una
+  columna.
+- **Por qué:** sigue el patrón que ya usa el sitio (`#avisos`), anda igual sin JavaScript y una
+  falla no tapa lo que sí cargó.
+- **Costo:** la reserva supone filas de 4,5 rem; con notas largas el paginador puede subir igual;
+  HTMX deja un aviso en la consola cuando la columna no tiene pie
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 1).
+- **Quién decidió:** agente (constructor de `p2-tablero`, sin consulta).
+- **Evidencia:** `conHtmxLaColumnaTocadaTomaElFocoYNoLlevaElAncla` y los tests del controller.
+
+### 2026-11-12 · donante · Organizaciones: una tarjeta por organización, con los pedidos de la categoría primero
+
+- **Decisión:** (R11-27, lote `p2-entidades-donante`) cada organización es una sola tarjeta, de
+  igual alto que las de su fila, con sus pedidos adentro: primero los de la categoría elegida (o
+  todos, si no hay), después el resto, y 3 a la vista; los demás, en "Ver N más", un plegable
+  dentro del pie de la tarjeta. La categoría pasa a ser un filtro. Las tarjetas "Ya le donaste" se
+  atenúan: papel de la página con un filete por dentro en lugar de la sombra.
+- **Alternativas:** seguir agrupando por categoría (una organización partida en varios renglones);
+  `.plegable` del catálogo (es una tarjeta: quedaba una tarjeta dentro de otra); armar el orden con
+  `T()` en la plantilla (Thymeleaf 3.1 restringe las clases estáticas); un método nuevo en la vista
+  (la ficha pedía no cambiar vista ni controller).
+- **Por qué:** quien dona busca a quién ayudar, no una categoría suelta; la tarjeta entera responde
+  "qué pide esta organización".
+- **Costo:** "Ya le donaste" queda dentro del título y suma al nombre accesible; en la versión de
+  persona, la búsqueda y los filtros siguen sobre los datos de ejemplo de su primera página; las
+  tarjetas atenuadas casi no se distinguen y queda aire en las de poco contenido
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 3).
+- **Quién decidió:** usuario (sección 3 del backlog y la ficha del donante, §10, aprobada con las
+  opciones recomendadas) y agente (los detalles de la construcción).
+- **Evidencia:** `DonanteEntidadesControllerTest`; [ficha del donante](flujos/raices-donante-navegable.md).
+
+### 2026-11-12 · donante · "Cómo llega tu donación" es una franja de ayuda arriba de la lista
+
+- **Decisión:** (R11-28) la ayuda del depósito es una franja con otro fondo (agua) e ícono de
+  información, arriba de la búsqueda, con los datos reales del depósito. Es un fragmento propio
+  (`donante-entidades :: ayuda(conDeposito)`) que usa también la persona; su ícono copia el dibujo
+  de `componentes/info` con `data-v`. En el celular el ícono va arriba del título; desde 37,5 em, a
+  la izquierda.
+- **Alternativas:** una tarjeta más de la lista (se confundía con las organizaciones); usar el
+  componente `info` tal cual (lo convertía en un botón); sumar clases nuevas.
+- **Por qué:** se lee como ayuda y no como una organización más, sin agrandar el catálogo.
+- **Costo:** a 360 px ocupa la primera pantalla; es una pieza de pantalla con `data-v`, no un bloque
+  del catálogo ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 3; [catálogo](componentes.md)).
+- **Quién decidió:** usuario (la franja, sección 3 del backlog) y agente (cómo se armó).
+- **Evidencia:** capturas de `donante-entidades` en la verificación visual del cierre.
+
+### 2026-11-12 · componente:dialogo · Las ventanas de la regla 4 bloquean el fondo con `showModal()`
+
+- **Decisión:** (R11-32, lote `p2-ventanas`, las 13 decisiones de la ficha) las ventanas de
+  confirmar algo que no se deshace y de formularios cortos llevan `data-bloquea`; con JavaScript se
+  abren con `showModal()` sobre el mismo `<dialog popover>`: fondo inerte y quieto, el foco no sale
+  con Tab y vuelve al botón, tocar afuera no cierra y Esc y "Cancelar" sí. Sin JavaScript, el popover
+  de siempre. Un solo escucha de clics en el documento. Si se corta la conexión al enviar, el aviso
+  va dentro de la ventana ("No sabemos si se guardó."). Al guardar el historial de HTMX se cierran.
+- **Alternativas:** quitar y devolver el atributo `popover` al abrir (no hizo falta: los tres
+  motores aceptan `showModal()` sobre un popover); bloquear todas las ventanas (la foto de una
+  entrega es para mirar); el plugin Focus de Alpine (dependencia nueva).
+- **Por qué:** la regla 4 pide que esas ventanas bloqueen; con lo nativo del navegador, sin perder
+  la confirmación sin JavaScript.
+- **Costo:** "Pedir corrección" y "Rechazar" de Organizaciones no tienen aviso de corte (sus
+  formularios no usan `hx-boost`); cambia una decisión `proposed` del cliente, registrada en un
+  [ADR `proposed`](../adr/cliente-liviano/20261112-ventanas-que-bloquean-el-fondo-con-showmodal-sobre-el-dialogo-con-popover.md)
+  sin editar el original ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 4).
+- **Quién decidió:** usuario (ficha [r11-p2-ventanas](flujos/r11-p2-ventanas.md) aprobada con las
+  opciones recomendadas) y agente (dónde va el aviso de corte, las ventanas de Organizaciones sin él).
+- **Evidencia:** `laVentanaQueBloqueaRetieneElFocoEnLosTresMotores` (Chromium, Firefox y WebKit).
+
+### 2026-11-12 · organización · Publicar otra necesidad, en una ventana de 3 pasos
+
+- **Decisión:** (R11-31) la ventana tiene tres pasos, "Qué y cuánto", "Cuándo" y "Por qué y
+  revisar", con "Paso N de 3", "Atrás", "Siguiente" y un resumen con "Cambiar". Los textos de error
+  de cada campo vienen en el HTML, ocultos, y se muestran al revisar un paso o al enviar: un campo
+  que falta en un paso oculto lleva a ese paso. "Siguiente" lleva el foco al primer campo con error.
+  "Hasta cuándo" es obligatoria solo con "Una sola vez". Cancelar no pregunta y guarda lo escrito
+  hasta recargar. Sin necesidades vigentes, el formulario sigue en la página. En el celular, el
+  indicador muestra solo las marcas (el lector oye "<paso>: Hecho / Paso actual / Falta") y el
+  resumen pone el nombre de cada dato en su renglón.
+- **Alternativas:** el bloque que se desplegaba en la página; `novalidate` y revisar todo a mano;
+  nombres de paso más largos.
+- **Por qué:** el formulario era corto pero se veía largo; partido en pasos se lee de a poco y el
+  resumen deja revisar antes de publicar.
+- **Costo:** a 360 px el paso 3 se desplaza por dentro; el orden visual de los botones en el
+  celular no coincide con el del foco; una fecha pasada con "Cada semana" no deja avanzar
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 4).
+- **Quién decidió:** usuario (ficha aprobada) y agente (los errores en el HTML, el foco diferido al
+  enviar, el resumen del celular).
+- **Evidencia:** `publicarOtraNecesidadVaEnTresPasos` y `target/capturas/ventanas/`.
+
+### 2026-11-12 · público · Abejas que se funden y títulos que no cortan donde caiga
+
+- **Decisión:** (R11-36, lote `p2-portada-detalles`) cada abeja se funde al pasar por detrás de una
+  maceta, en los dos sentidos: opacidad 0 justo donde cambia de capa y entera a 10 puntos del
+  recorrido. El fundido lo hace el JavaScript del recorrido, cuadro por cuadro. Con "reducir
+  movimiento" (también si se activa en vuelo) vuelven quietas y delante; con la pausa, quedan donde
+  estaban. (R11-38) "lo que donás" y "echa raíces" van enteros en su renglón: el título del cierre
+  de la portada con `nowrap` en la parte destacada y el pie con espacios que no se cortan.
+- **Alternativas:** una transición de CSS (chocaba con la regla de que los tiempos viven en
+  `movimiento.css`); fundir solo al entrar (el salto al salir también se ve).
+- **Por qué:** las abejas desaparecían de golpe y los títulos partían la frase destacada.
+- **Costo:** las abejas todavía saltan de lugar antes de la primera ubicación del script, y si se
+  pausa en pleno cambio de capa una abeja puede quedar casi invisible
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 5).
+- **Quién decidió:** usuario (los dos ítems, sección 3 del backlog) y agente (cómo se construyó).
+- **Evidencia:** `AbejasYRenglonesTest` (perfil `visual`); captura `publico-portada-1280.png`.
+
+### 2026-11-12 · organización · La solicitud pendiente se ve y se corrige en una página aparte
+
+- **Decisión:** (R11-41, lote `p2-pendiente-solicitud`) "Recibimos la solicitud" muestra "Lo que nos
+  enviaste" con los datos que tiene Donaciones y "Corregir los datos", que lleva a una página
+  propia (`publico-registro-entidad-corregir`) con el formulario del registro lleno, sin correo,
+  contraseña ni términos. El formulario es el mismo fragmento del registro en modo corregir, y los
+  dos modos comparten el resumen de errores y los avisos por campo. Si el equipo ya la aprobó,
+  "Ingresar de nuevo" vuelve a pedir la sesión sin pedir la clave.
+- **Alternativas:** un tercer modo dentro de la hoja de registro (expresiones de tres ramas y
+  riesgo para el registro); dos resúmenes de errores (era justo la diferencia que marcó la
+  revisión); dejar editar el correo (es de solo lectura y viene del token).
+- **Por qué:** quien espera puede revisar y arreglar lo que mandó sin volver a registrarse; la
+  regla 4 manda los formularios largos a una página aparte.
+- **Costo:** en el registro, los enlaces del resumen terminan ahora con punto; todo 400 dice
+  "Falta …" aunque el dato esté y sea inválido, y todo 409 dice "ya aprobada"; "Guardar los
+  cambios" no queda fijo en el celular ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 6).
+- **Quién decidió:** usuario (ficha [r11-p2-pendiente-solicitud](flujos/r11-p2-pendiente-solicitud.md)
+  aprobada con las opciones recomendadas) y agente (la plantilla propia, el modo con `th:with`, el
+  resumen unificado).
+- **Evidencia:** `PerfilPendienteTest`, `SolicitudEntidadServiceTest`; recorrido de la cuenta
+  pendiente en el cierre (11 de 11).
+
+### 2026-11-12 · organización · Las listas de la organización van de a una página y sus cifras son conteos
+
+- **Decisión:** (R11-43, lote `p2-listas-restantes`) Recibidas y Seguir entregas van de a 20 con el
+  paginador común, primero lo que hay que atender (en la puerta, con problema, en camino, por salir
+  y recibidas); Recibidas muestra todas las recibidas, no solo las del mes, con "N este mes". Cada
+  necesidad muestra 3 en curso y 3 recibidas con "Ver todas". Confirmar recepción no tiene
+  paginador: el acta lee solo su donación y ofrece la siguiente que espera. El menú "Mes" del
+  ranking muestra los 12 meses de la página y el paginador recorre los años; un mes de otra página
+  se muestra igual. Organizaciones del admin recupera Estado, Necesidades y Tipo.
+- **Alternativas:** seguir escondiendo las recibidas de meses anteriores (con páginas ya no hace
+  falta); ordenar por el último cambio (más caro); una lista de a 20 en el acta (muestra una sola
+  entrega); 20 meses por página en el ranking (llenaba el menú).
+- **Por qué:** ninguna de esas pantallas puede traer todo (regla 1), y una cifra sacada del largo
+  de una página engaña.
+- **Costo:** dentro de cada grupo el orden es por fecha de registro; "Ver todas" de una necesidad
+  lleva a Recibidas sin filtrar por la necesidad; con `?mes=` de otra página el menú queda sin
+  opción marcada; el inicio de la organización sigue con una página de 100
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 7).
+- **Quién decidió:** usuario (spec [R11-p2-listas-restantes](../specs/completed/R11-p2-listas-restantes-spec.md)
+  aprobada con las opciones recomendadas) y agente (el acta sin paginador y el filtro `id`, en los
+  arreglos de la revisión).
+- **Evidencia:** `EntidadNecesidadesControllerTest`, `EntidadConfirmarControllerTest`,
+  `RankingServiceTest`; dos [ADR `proposed`](../adr/20261112-seguimientos-de-logistica-e-historial-del-ranking-paginados-por-defecto.md).
+
+### 2026-11-12 · admin · Inicio del admin: dos gráficos de 12 meses, cada uno con su tabla
+
+- **Decisión:** (R11-42, lote `p2-admin-graficos`) al final de "Cómo está todo", a todo el ancho,
+  dos gráficos de los últimos 12 meses contando el actual, "Mes a mes" y "Por categoría", con dos
+  series: registradas y entregas confirmadas, en pares de columnas (no una dentro de otra). Cada
+  uno tiene una frase con lo más importante y su tabla siempre visible. Registradas va en contorno
+  de tinta suave con relleno beige y entregas confirmadas, llena del acento: se distinguen por la
+  forma, el lugar en el par, la leyenda y la tabla. El tope de la escala es el primer 10, 20, 50,
+  100, 200… que alcanza la cifra más alta. Una falla muestra su aviso dentro de la tarjeta, sin
+  tapar las cifras.
+- **Alternativas:** un selector de período o 6 meses; una tercera serie de vencidas; una librería
+  de gráficos en JavaScript (dependencia nueva, no anda sin JavaScript); dos rellenos de color (el
+  acento y la tinta suave no llegan a 3:1 entre sí); usar `.tabla` (en el celular hace tarjetas).
+- **Por qué:** el usuario pidió gráficos además de las cifras (cambia el "sin gráficos" de la ficha);
+  una tabla al lado hace accesible el dibujo.
+- **Costo:** a 360 px los rótulos de los meses se leen pegados; los colores de las series viven en
+  la hoja de la pantalla; los enlaces a Donaciones filtrada quedan para después
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 8).
+- **Quién decidió:** usuario (ficha R11-42 aprobada con las opciones recomendadas) y agente (los
+  colores, la escala, las frases de empate y "solo el 1", la tabla sin `.tabla`).
+- **Evidencia:** `AdminInicioControllerTest`, `AdminPersonasInicioTest`; [sección de la ficha](flujos/raices-entidad-navegable.md#r11-42--los-últimos-12-meses-en-gráficos);
+  [ADR `proposed`](../adr/donaciones-service/20261112-evolucion-del-admin-en-un-recurso-aparte-contada-por-mes-con-limites-como-parametros.md).
+
+### 2026-11-12 · componente:campanita · La campanita abre las 5 sin leer y "Ver todas"
+
+- **Decisión:** (R11-29, lote `p2-campanita`) la campanita de la cabecera privada es un desplegable
+  liviano (`<details>`) con las 5 sin leer más nuevas, con título y hace cuánto, y "Ver todas". La
+  lista se pide cada vez que se abre (si llega con el desplegable ya cerrado, se descarta); nunca
+  con cada pantalla ni sondeando. Cada fila es un botón que marca el aviso como leído y lleva a lo
+  que nombra; el destino lo calcula el servidor desde la notificación. Sin JavaScript, la campana
+  lleva a la bandeja sin leer. Es un componente compartido (`componentes/campanita`).
+- **Alternativas:** precargar la lista en cada página (una llamada más siempre); mandar el destino
+  desde el navegador (habría que validarlo contra redirecciones abiertas); el estilo dentro de
+  `privado.css` (como decía la spec; un componente propio no agranda la hoja ni las heredadas).
+- **Por qué:** se mira lo nuevo sin dejar la pantalla; la campanita no cuesta nada hasta que se abre.
+- **Costo:** se perdió la marca de pantalla actual (`aria-current`) en la bandeja del rol; el
+  fragmento viejo `buzon(...)` sigue porque lo usa la bandeja de la persona en la maqueta
+  ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 9).
+- **Quién decidió:** usuario (sección 3 del backlog y ficha [r11-p2-campanita](flujos/r11-p2-campanita.md)
+  aprobada) y agente (el evento propio de apertura, el componente aparte, conservar `buzon`).
+- **Evidencia:** test de la campanita abierta en `VerificacionVisualTest` y capturas
+  `target/capturas/campanita/*-abierta-{360,1280,1920}.png`.
+
+### 2026-11-12 · admin · Una bandeja compartida para la Administración, con el aviso de importación terminada
+
+- **Decisión:** (R11-30) la administración tiene campanita con número real y una bandeja compartida
+  por todas sus cuentas (`ID_ADMIN`), de a 20, con la misma forma que las otras dos; la bajada dice
+  que abrir un aviso lo marca leído para todos. Llegan "Terminó una importación" (con o sin errores)
+  y "Una importación se cortó", con la fecha de subida y las cifras, sin el nombre del archivo, y
+  los mensajes de contacto. Los dos avisos de importación llevan a la página del archivo, que elige
+  resultado, avance o error.
+- **Alternativas:** una bandeja por cuenta de admin (pide copiar las cuentas en Notificaciones);
+  avisar solo a quien subió el archivo (no se guarda quién); un aviso por llamada REST en lugar de
+  un evento.
+- **Por qué:** reusa el destinatario que ya existía para el contacto; el evento solo cuenta el hecho
+  y Notificaciones elige a quién avisar.
+- **Costo:** si un admin abre un aviso, los demás no lo ven como nuevo; cada importación manda un
+  correo a la dirección de la Administración ([DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 9).
+- **Quién decidió:** usuario (spec y ficha aprobadas con las opciones recomendadas: bandeja
+  compartida y correo por importación) y agente (los ejemplos de la maqueta: solo los avisos que
+  hoy genera algún servicio).
+- **Evidencia:** [ADR `proposed`](../adr/20261112-aviso-de-importacion-terminada-por-evento-amqp-a-la-bandeja-compartida-de-la-administracion.md);
+  recorrido de la administración en el cierre.
+
 ### 2026-11-12 · armazón · Cabecera y filtros fijos desde la tableta, botón fijo en el celular y pantalla de carga sin JavaScript
 
 - **Decisión:** desde la tableta (ventana de 37,5 em de alto o más) la cabecera con el menú queda

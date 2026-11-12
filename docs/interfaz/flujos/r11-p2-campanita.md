@@ -5,7 +5,7 @@
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta CONTRATO).
 > Las decisiones del usuario "Campanita" y "Avance de la importación" de la sección 3 del backlog ya
 > están tomadas: esta ficha las baja a pantallas, no las reabre. El contrato va en la
-> [spec corta del lote](../../specs/active/R11-p2-campanita-spec.md).
+> [spec corta del lote](../../specs/completed/R11-p2-campanita-spec.md).
 > La campanita no es una pantalla: es una pieza de la cabecera del área privada
 > (`layout-privado.html`), por eso tiene ficha propia. Lo que esta ficha dice de la bandeja del admin
 > manda sobre la parte de Notificaciones de la [ficha del admin](raices-admin-navegable.md); cómo se

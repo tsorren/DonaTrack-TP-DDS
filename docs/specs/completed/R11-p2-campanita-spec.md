@@ -1,5 +1,7 @@
 # Spec: R11-p2-campanita — La campanita con desplegable y los avisos de la administración
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P2, rama `E6_backlog_r11_p2`): construida e integrada, con la bandeja real del admin desde los arreglos de la ronda 1, y verificada con el stack propio; pasa a `completed/`. ADR `proposed`, escrito después del código: [aviso de importación terminada por AMQP](../../adr/20261112-aviso-de-importacion-terminada-por-evento-amqp-a-la-bandeja-compartida-de-la-administracion.md). Desvíos de la construcción: el fragmento `buzon(...)` no se borró (lo usa la bandeja de la persona en la maqueta) y el estilo del desplegable es un componente propio (`componentes/campanita.css`), no `privado.css`. Lo que quedó pendiente está en [DTI-43](../../adr/DEUDA_TECNICA.md#dti-43), ítem 9. Lo que sigue sobre "PROPOSED" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
 > **Estado:** PROPOSED (2026-11-12). La aprobación es la del usuario al revisar juntos los diseños
 > de la oleada P2; ningún ADR se promueve.
@@ -12,9 +14,9 @@
 > **Base:** `e9331b3a2`.
 > **Relación:** ítems R11-29 y R11-30 del [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md);
 > pantallas en la [ficha de flujo del lote](../../interfaz/flujos/r11-p2-campanita.md). Usa la bandeja
-> paginada de [R11-p1-notificaciones](../completed/R11-p1-notificaciones-spec.md) y las páginas de
-> importación de [R11-p1-importaciones](../completed/R11-p1-importaciones-spec.md). El evento sigue la
-> topología de [SPEC-03](SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md)
+> paginada de [R11-p1-notificaciones](R11-p1-notificaciones-spec.md) y las páginas de
+> importación de [R11-p1-importaciones](R11-p1-importaciones-spec.md). El evento sigue la
+> topología de [SPEC-03](../active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md)
 > (`donaciones.exchange` → `notificaciones.donaciones`).
 
 ---
@@ -342,3 +344,49 @@ Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió apro
    **Resuelto: la opción recomendada.**
 4. ¿Los textos de los avisos de importación ('Terminó una importación', 'Una importación se cortó', con fecha de subida y cifras) están bien? Recomiendo aceptarlos así y ajustar palabras sueltas al ver las capturas.
    **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P2 para el lote `p2-campanita` (`f608af8bb` y arreglos `aba332675`). La revisión la hizo el
+revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta el
+workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo redactó
+el agente del cierre documental de P2 con lo que consta en los commits y en
+[DTI-43](../../adr/DEUDA_TECNICA.md#dti-43), ítem 9, donde está lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  Ver DTI-43, ítem 9.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre.
+
+V3 Contracts/integration:
+  [OBSERVED] Evento importacion.terminada.v1 nuevo y OpenAPI de Notificaciones 1.4.0; ADR
+  `proposed` escrito después del código (desvío acordado).
+
+V4 Tests/coverage:
+  [VERIFIED] run-preprod-tests.sh en el cierre (smoke 4/4; contrato, integración y E2E 26/26,
+  stack propio) y recorrido con login real de la administración. Sin caso de contrato del
+  evento nuevo en integration-tests (DTI-43, ítem 9).
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA en el cierre documental de P2.
+```

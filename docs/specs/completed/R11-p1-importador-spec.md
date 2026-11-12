@@ -1,5 +1,7 @@
 # Spec: R11 p1-importador — El importador lee el CSV por partes y no pierde avisos de bienvenida
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P2, rama `E6_backlog_r11_p2`): construida en P1 e integrada; el ensayo de 20.000 filas se hizo en el cierre de P2 con el stack propio y cumple C8 y C9 (20.000 leídas, 19.400 nuevas, 400 actualizadas y 200 con error en 151 s; colas y `.dlq` en 0); pasa a `completed/`. Sin ADR, como dice abajo. Lo que quedó pendiente está en [DTI-40](../../adr/DEUDA_TECNICA.md#dti-40) (ítems 4 y 6) y [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 14. Lo que sigue sobre "pendiente de aprobación" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
 >
 > **Estado:** PROPOSED (espera la aprobación del usuario antes de construir).
@@ -234,3 +236,47 @@ eventos por el mismo listener en el orden de la cola (`ReintentoPersonaFaltanteT
 la tabla sobre el consumidor frenado ya no aplica. Queda abierto que el tope cuenta entregas y no
 tiempo; si en el ensayo (C9) llega algún aviso a la DLQ, el arreglo es el orden de publicación en
 Donaciones (duda 1).
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P1 para el lote `p1-importador` (`494e34a26` y arreglos `4c5b486dc` y `50166a746`). La revisión la hizo el
+revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta el
+workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo redactó
+el agente del cierre documental de P2 con lo que consta en los commits y en
+[DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 14 (ensayo) y DTI-43, ítem 13, donde está lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  Ver DTI-42, ítem 14 (ensayo) y DTI-43, ítem 13.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre.
+
+V3 Contracts/integration:
+  [OBSERVED] Sin cambio de contrato en el cierre; ADR del lote escrito en P1.
+
+V4 Tests/coverage:
+  [VERIFIED] Ensayo de 20.000 filas en el cierre de P2 (19.400 creadas, 400 actualizadas y 200 con
+  error en 151 s; Donaciones con 396 MiB de máximo; colas y DLQ en 0): C8 y C9 cumplidos.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA en el cierre documental de P2.
+```

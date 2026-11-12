@@ -1,5 +1,7 @@
 # Spec: R11 p2-actividad — El registro de actividad de administración
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P2, rama `E6_backlog_r11_p2`): construida e integrada, y verificada con el stack propio (`run-preprod-tests.sh`, 26/26); pasa a `completed/`. ADR `proposed`, escrito por el constructor después del código: [registro de actividad](../../adr/donaciones-service/20261112-registro-de-actividad-de-administracion-en-donaciones.md). `[OBSERVED]` Desvío de §4: la fila se guarda después de la acción y no en su transacción; lo decide el revisor ([DTI-43](../../adr/DEUDA_TECNICA.md#dti-43), ítem 2). Lo que sigue sobre "pendiente de aprobación" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
 > **Estado:** PROPOSED (pendiente de aprobación del usuario). Diseño del lote `p2-actividad` del
 > [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md) (R11-26,
@@ -410,3 +412,48 @@ Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió apro
    **Resuelto: la opción recomendada.**
 6. El seeder corre con una cuenta de admin, así que la demo va a mostrar muchas filas a su nombre. Recomiendo dejarlo así (es lo que pasó) y mostrar 'Solo lo mío' en la demo.
    **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P2 para el lote `p2-actividad` (`268ba1dff` y arreglos `18195a3b1`). La revisión la hizo el
+revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta el
+workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo redactó
+el agente del cierre documental de P2 con lo que consta en los commits y en
+[DTI-43](../../adr/DEUDA_TECNICA.md#dti-43), ítem 2, donde está lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  Ver DTI-43, ítem 2.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre.
+
+V3 Contracts/integration:
+  [OBSERVED] V25 y OpenAPI de Donaciones 1.11.0; ADR `proposed` del lote, anotado en el cierre.
+  Desvío transaccional abierto (DTI-43, ítem 2).
+
+V4 Tests/coverage:
+  [VERIFIED] run-preprod-tests.sh en el cierre (smoke 4/4; contrato, integración y E2E 26/26,
+  stack propio) y recorrido con login real de la administración.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA en el cierre documental de P2.
+```

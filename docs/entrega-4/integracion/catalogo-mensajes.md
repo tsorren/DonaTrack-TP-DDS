@@ -121,7 +121,7 @@ Regla formalizada en el [ADR 20261007-broker-de-integracion-con-logistica](../..
 
 ## ImportacionTerminadaV1
 
-> Agregado el 2026-11-12 (R11-30, [spec R11-p2-campanita](../../specs/active/R11-p2-campanita-spec.md)).
+> Agregado el 2026-11-12 (R11-30, [spec R11-p2-campanita](../../specs/completed/R11-p2-campanita-spec.md)).
 
 - **Tipo:** Event · **Productor:** Donaciones · **Consumidor:** Notificaciones
 - **Routing key:** `importacion.terminada.v1` (misma cola `notificaciones.donaciones`, con su DLQ)

@@ -6,7 +6,7 @@
 > CONTRATO). La decisión del usuario ("Cuentas de administración", sección 3 del backlog: cuenta y
 > perfil por admin, un admin crea otro **y registro de actividad**, todo en la entrega 6) ya está
 > tomada: esta ficha la baja a pantallas, no la reabre. Va con su spec:
-> [`R11-p2-actividad-spec.md`](../../specs/active/R11-p2-actividad-spec.md), que define dónde se
+> [`R11-p2-actividad-spec.md`](../../specs/completed/R11-p2-actividad-spec.md), que define dónde se
 > guarda la actividad y cómo se consulta.
 > Depende de R11-10 (lote `p1-admins`, hecho): cada admin tiene su cuenta y el `sub` de su token
 > identifica a quien hace cada acción ([ficha r11-p1-admins](r11-p1-admins.md),
@@ -37,7 +37,7 @@ Leído en `e9331b3a2`. `[V]` es leído en el código; `[H]`, hipótesis.
 | Qué quiere lograr | "Quiero ver quién hizo qué y cuándo, y encontrar rápido una acción: por persona, por tipo de acción o por fecha." |
 | Dispositivo principal | Escritorio; en el celular tiene que poder leerse y filtrarse |
 | Requerimientos | R11-26 (backlog P2), RI-SVC-04 (el autor sale del `sub` del token, no de `X-Actor`), RF-AUTH-07 (un admin crea otro: el alta queda registrada), RNF-AUTH-09 (el token no lleva datos personales), RNF-UI-02 (nada a más de 3 niveles), RNF-UI-05, RNF-UI-06, RF-CL-07 (toda cifra que cambia dice cuándo se leyó), RNF-CL-02 (sin JavaScript, igual funciona). Reglas generales 1, 2, 3 y 5 del backlog |
-| Datos que usa | `GET /api/actividad` (nuevo, solo ADMIN, paginado, con filtros por quién, acción y fecha, total en `X-Total-Count`) y `POST /api/actividad` (nuevo, solo para anotar lo que se hace fuera de Donaciones). Los nombres de las cuentas, de Keycloak, como hoy. Detalle en la [spec](../../specs/active/R11-p2-actividad-spec.md) |
+| Datos que usa | `GET /api/actividad` (nuevo, solo ADMIN, paginado, con filtros por quién, acción y fecha, total en `X-Total-Count`) y `POST /api/actividad` (nuevo, solo para anotar lo que se hace fuera de Donaciones). Los nombres de las cuentas, de Keycloak, como hoy. Detalle en la [spec](../../specs/completed/R11-p2-actividad-spec.md) |
 | Boceto de E1 | Sin boceto: la pantalla es de la revisión del 2026-11-11 |
 
 ## 2. Dónde está en el sitio
@@ -359,7 +359,7 @@ Van a la [bitácora](../bitacora.md) al construir.
    ayuda lo dice.
 
 Preguntas abiertas para el usuario: ninguna de pantalla. Las del contrato están en la
-[spec](../../specs/active/R11-p2-actividad-spec.md#9-dudas), cada una con la opción recomendada.
+[spec](../../specs/completed/R11-p2-actividad-spec.md#9-dudas), cada una con la opción recomendada.
 
 ## Aprobación del diseño p2-actividad (2026-11-12)
 

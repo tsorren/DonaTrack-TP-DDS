@@ -1,5 +1,7 @@
 # Spec: R11-p2-listas-restantes — Las listas que faltan
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P2, rama `E6_backlog_r11_p2`): construida e integrada, y verificada con el stack propio (`run-preprod-tests.sh`, 26/26); pasa a `completed/`. Aunque abajo dice "ADR: ninguno nuevo", el cierre registró dos ADR `proposed` después del código, porque dos endpoints que ya existían cambian lo que devuelven sin parámetros: [seguimientos e historial paginados por defecto](../../adr/20261112-seguimientos-de-logistica-e-historial-del-ranking-paginados-por-defecto.md) y [cifras de la organización como conteos](../../adr/donaciones-service/20261112-cifras-de-la-organizacion-como-conteos-y-orden-de-lo-que-hay-que-atender.md). Lo que quedó pendiente está en [DTI-43](../../adr/DEUDA_TECNICA.md#dti-43), ítem 7.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
 > **Estado:** implementada (2026-11-12, lote `p2-listas-restantes`), sin verificar todavía con el
 > stack propio (Gate 3 y 4, paso de verificación de la oleada). Ningún ADR se promueve.
@@ -292,3 +294,48 @@ Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió apro
    **Resuelto: la opción recomendada.**
 6. Para que el cambio sea completo hay que tocar archivos que no están en la lista: LogisticaApi, IncentivosApi, RankingRest, los puertos y vistas de Recibidas, Seguimiento y Ranking, sus controllers web y la maqueta, y los OpenAPI de los tres servicios. Recomiendo autorizarlos como imprescindibles para el constructor y nombrarlos en su fueraDeZona.
    **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P2 para el lote `p2-listas-restantes` (`dbd73deb4` y arreglos `a1b90f19e`). La revisión la hizo el
+revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta el
+workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo redactó
+el agente del cierre documental de P2 con lo que consta en los commits y en
+[DTI-43](../../adr/DEUDA_TECNICA.md#dti-43), ítem 7, donde está lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  Ver DTI-43, ítem 7.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre.
+
+V3 Contracts/integration:
+  [OBSERVED] Dos seguimientos de Logística y el historial del ranking cambian su respuesta sin
+  parámetros (primera página); ADR `proposed` escrito después del código (desvío acordado).
+
+V4 Tests/coverage:
+  [VERIFIED] run-preprod-tests.sh en el cierre (smoke 4/4; contrato, integración y E2E 26/26,
+  stack propio) y recorrido con login real de cada rol.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA en el cierre documental de P2.
+```
