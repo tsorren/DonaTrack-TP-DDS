@@ -14,6 +14,7 @@ import grupo5.donaciones.controllers.impl.LegalesController;
 import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
+import grupo5.donaciones.controllers.impl.SolicitudEntidadController;
 import grupo5.donaciones.controllers.impl.SubcategoriasController;
 import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IArchivoDonantesService;
@@ -28,6 +29,7 @@ import grupo5.donaciones.services.ILegalesService;
 import grupo5.donaciones.services.INecesidadesService;
 import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
+import grupo5.donaciones.services.ISolicitudEntidadService;
 import grupo5.donaciones.services.ISubcategoriasService;
 import grupo5.donaciones.services.impl.ContadoresPublicosService;
 import grupo5.donaciones.services.impl.ResumenAdminService;
@@ -53,6 +55,7 @@ import org.springframework.test.web.servlet.MockMvc;
   NecesidadesController.class,
   PersonasController.class,
   PropuestaDeAsignacionController.class,
+  SolicitudEntidadController.class,
   SubcategoriasController.class
 })
 @Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
@@ -85,6 +88,8 @@ public abstract class AbstractDonacionesWebMvcTest {
   @MockitoBean protected IPersonasService personasService;
 
   @MockitoBean protected IPropuestaDeAsignacionService propuestaDeAsignacionService;
+
+  @MockitoBean protected ISolicitudEntidadService solicitudEntidadService;
 
   @MockitoBean protected ISubcategoriasService subcategoriasService;
 

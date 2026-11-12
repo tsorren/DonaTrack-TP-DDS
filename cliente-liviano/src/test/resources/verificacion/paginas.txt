@@ -130,6 +130,15 @@
 /publico-registro-entidad?escenario=error
 /publico-registro-entidad-error
 /publico-registro-entidad-enviada
+/publico-registro-entidad-enviada?escenario=con-sesion-pendiente
+/publico-registro-entidad-enviada?escenario=corregida
+/publico-registro-entidad-enviada?escenario=sin-datos
+/publico-registro-entidad-enviada?escenario=aprobada
+/publico-registro-entidad-corregir
+/publico-registro-entidad-corregir?escenario=error
+/publico-registro-entidad-corregir?escenario=fallo
+/publico-registro-entidad-corregir?escenario=sin-datos
+/publico-registro-entidad-corregir?escenario=lento
 /donante-inicio
 /donante-inicio?escenario=vacio
 /donante-inicio?escenario=error

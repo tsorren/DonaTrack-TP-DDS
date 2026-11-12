@@ -198,6 +198,17 @@ interface DonacionesApi {
   Legales aceptarLegales(@PathVariable UUID id, @RequestBody AceptarLegales aceptar);
 
   /**
+   * La solicitud de entidad que espera la aprobación (R11-41): la propia cuenta, sin rol, o ADMIN.
+   * 409 si ya no está pendiente.
+   */
+  @GetExchange("/api/personas/{id}/solicitud-entidad")
+  SolicitudEntidad solicitudEntidad(@PathVariable UUID id);
+
+  @PutExchange("/api/personas/{id}/solicitud-entidad")
+  SolicitudEntidad corregirSolicitudEntidad(
+      @PathVariable UUID id, @RequestBody SolicitudEntidad solicitud);
+
+  /**
    * Solo ADMIN. De a una página (R11-01), con la búsqueda y los filtros resueltos en Donaciones:
    * {@code q}, {@code tipo}, {@code tipoJuridico}, {@code activo}, {@code categoriaId}, {@code
    * canal}, {@code orden} (nuevos, antiguos o nombre), {@code page} y {@code size}; el total, en
@@ -510,6 +521,19 @@ interface DonacionesApi {
       Boolean vigenteAceptada) {}
 
   record AceptarLegales(int version) {}
+
+  record SolicitudEntidad(
+      String razonSocial,
+      String rubro,
+      String tipoJuridico,
+      DireccionDeLaSolicitud direccion,
+      Representante representante,
+      String correo) {}
+
+  record DireccionDeLaSolicitud(
+      String calle, Integer altura, String codigoPostal, String localidad, String provincia) {}
+
+  record Representante(String nombre, String apellido) {}
 
   record DonanteNuevo(UUID idPersona) {}
 

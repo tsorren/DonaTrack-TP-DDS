@@ -208,7 +208,7 @@ portada con sesión ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1). Todo lo
 | R11-38 | "Mirá hasta dónde llega lo que donás" y "Lo que donás echa raíces" cortan el renglón donde caiga. | Corte fijo antes de la parte destacada: "lo que donás" y "echa raíces" van enteros en su renglón. | `componentes/huerta.html:528`, `pie.html:10` |
 | R11-39 | El texto bajo "Entrega por entrega" es un párrafo suelto. | Formato de aviso, con ícono y estructura. | `donante-seguimiento.html:132-135`, `donante-seguimiento.css:312` |
 | R11-40 | El texto aparece con una letra de respaldo y salta al llegar la definitiva. | Pantalla de carga breve. Condición: tiene que irse sola aunque falle el JavaScript (ver sección 7). | `tokens.css:6-31`, `app.css:10` |
-| R11-41 | La entidad sin aprobar no puede revisar lo que envió. | Ver y corregir la solicitud mientras espera. | R11-08 |
+| R11-41 | La entidad sin aprobar no puede revisar lo que envió. | Ver y corregir la solicitud mientras espera. **Hecho (`p2-pendiente-solicitud`, 2026-11-12):** "Recibimos la solicitud" muestra "Lo que nos enviaste" con los datos de Donaciones y "Corregir los datos" lleva al formulario del registro lleno, en página aparte; Donaciones suma `GET` y `PUT /api/personas/{id}/solicitud-entidad` con el token de la cuenta (409 si el equipo ya la aprobó). | R11-08 |
 | R11-42 | El inicio del admin no tiene gráficos. | Gráficos de evolución (por mes, por categoría). | R11-21 |
 | R11-43 | Seguir entregas y el historial del ranking tampoco tienen tope. | Paginado en el servidor. | `EntregasService.java:335`, incentivos `ranking/historial` · R11-11 |
 

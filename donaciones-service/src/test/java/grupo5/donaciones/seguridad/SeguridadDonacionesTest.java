@@ -25,7 +25,9 @@ import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteRespo
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.dto.personas.AceptarLegalesDTO;
+import grupo5.donaciones.dto.personas.SolicitudEntidadDTO;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import java.util.List;
 import java.util.UUID;
@@ -52,6 +54,7 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   private static final UUID DONANTE = UUID.randomUUID();
   private static final UUID ENTIDAD = UUID.randomUUID();
   private static final UUID AJENO = UUID.randomUUID();
+  private static final UUID PENDIENTE = UUID.randomUUID();
   private static final String NECESIDADES = "/api/necesidades";
   private static final String INDEPENDIENTES = "/donaciones-independientes";
   private static final String SUB_DE_ANA = "6f1c0d2e-sub-de-ana";
@@ -84,6 +87,11 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
                     .claim("roles", List.of("ADMIN"))
                     .build();
             case "servicio" -> token("SERVICIO", AJENO);
+            case "pendiente" ->
+                Jwt.withTokenValue("t")
+                    .header("alg", "none")
+                    .claim("personaId", PENDIENTE.toString())
+                    .build();
             default -> throw new BadJwtException("token desconocido");
           };
     }
@@ -344,6 +352,29 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isOk());
     pedir(get("/api/personas/" + AJENO + "/legales"), "donante").andExpect(status().isForbidden());
     pedir(get("/api/personas/" + DONANTE + "/legales"), null).andExpect(status().isUnauthorized());
+  }
+
+  // R11-41: la cuenta sin rol lee y corrige solo su solicitud; el admin, cualquiera
+  @Test
+  void laSolicitudDeEntidadLaLeeYLaCorrigeSoloLaPropiaCuentaOElAdmin() throws Exception {
+    SolicitudEntidadDTO solicitud =
+        new SolicitudEntidadDTO(
+            "Merendero Ejemplo",
+            "Merendero",
+            TipoJuridico.ONG,
+            new SolicitudEntidadDTO.Direccion(
+                "Calle Ejemplo", 1234, "1000", "Localidad", "Provincia"),
+            new SolicitudEntidadDTO.Representante("Rosa", "Ejemplo"),
+            null);
+    String propia = "/api/personas/" + PENDIENTE + "/solicitud-entidad";
+    String ajena = "/api/personas/" + AJENO + "/solicitud-entidad";
+
+    pedir(get(propia), "pendiente").andExpect(status().isOk());
+    pedir(conCuerpo(put(propia), solicitud), "pendiente").andExpect(status().isOk());
+    pedir(get(ajena), "admin").andExpect(status().isOk());
+    pedir(get(ajena), "pendiente").andExpect(status().isForbidden());
+    pedir(conCuerpo(put(ajena), solicitud), "pendiente").andExpect(status().isForbidden());
+    pedir(get(propia), null).andExpect(status().isUnauthorized());
   }
 
   @Test

@@ -6,6 +6,7 @@ import grupo5.cliente.web.Pantallas;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Component;
  * error toma el área de la dirección que se pidió (el {@code /donante-inicio} de {@code
  * /donante-inicio?respuesta=403}). En lo público, {@code ?escenario=con-sesion} muestra además la
  * cuenta en el encabezado y {@code ?escenario=con-sesion-pendiente}, la de la entidad con la
- * solicitud en revisión (docs/interfaz/flujos/r11-p1-portada.md). Lo demás, sin sesión.
+ * solicitud en revisión (docs/interfaz/flujos/r11-p1-portada.md), igual que las pantallas de la
+ * solicitud (r11-p2-pendiente-solicitud.md). Lo demás, sin sesión.
  */
 @Component
 @Profile("maqueta")
@@ -23,6 +25,10 @@ class AreaDeLaSesionMaqueta implements AreaDeLaSesion {
 
   private static final String CON_SESION = "con-sesion";
   private static final String CON_SESION_PENDIENTE = "con-sesion-pendiente";
+  private static final String ENVIADA = "/publico-registro-entidad-enviada";
+  private static final String CORREGIR = "/publico-registro-entidad-corregir";
+  private static final Set<String> ESCENARIOS_DE_LA_SOLICITUD =
+      Set.of("corregida", "sin-datos", "aprobada");
 
   @Override
   public Optional<Area> activa(HttpServletRequest pedido) {
@@ -40,12 +46,26 @@ class AreaDeLaSesionMaqueta implements AreaDeLaSesion {
 
   @Override
   public Optional<Area> pendiente(HttpServletRequest pedido) {
-    if (!CON_SESION_PENDIENTE.equals(pedido.getParameter("escenario"))) {
+    if (!CON_SESION_PENDIENTE.equals(pedido.getParameter("escenario"))
+        && !esDeLaSolicitud(pedido)) {
       return Optional.empty();
     }
     return Optional.of(
         Optional.ofNullable(pedido.getParameter("area"))
             .flatMap(Area::deRuta)
             .orElse(Area.ENTIDAD));
+  }
+
+  /**
+   * Las pantallas de la solicitud (R11-41) se ven con la cuenta pendiente: Corregir siempre, y
+   * "Recibimos la solicitud" en sus escenarios con datos (corregida, sin datos y aprobada).
+   */
+  private static boolean esDeLaSolicitud(HttpServletRequest pedido) {
+    String ruta = pedido.getRequestURI();
+    String escenario = pedido.getParameter("escenario");
+    return CORREGIR.equals(ruta)
+        || (ENVIADA.equals(ruta)
+            && escenario != null
+            && ESCENARIOS_DE_LA_SOLICITUD.contains(escenario));
   }
 }
