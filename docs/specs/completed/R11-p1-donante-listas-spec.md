@@ -1,5 +1,7 @@
 # Spec: R11 p1-donante-listas — Entidades y Mis donaciones, con páginas y filtros de verdad
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P1, rama `E6_backlog_r11_p1`): construida e integrada; pasa a `completed/`. ADR `proposed`, escrito después del código: [organizaciones vistas por un donante](../../adr/donaciones-service/20261112-entidades-vistas-por-un-donante-en-un-recurso-propio-con-la-marca-ya-le-dono.md). Lo que quedó pendiente está en [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42). Lo que sigue sobre "pendiente de aprobación" o "sin ADR" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
 >
 > **Estado:** PROPUESTA (2026-11-12), espera la aprobación del usuario antes de construir.
@@ -426,3 +428,50 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 1. 1. 'Ya doné' cuenta cualquier donación asignada a la entidad, en cualquier estado, también una que no salió del depósito o que falló. Recomiendo dejarlo así, como hoy, para que coincida con Mis donaciones. La otra opción es contar solo las entregadas. **Resuelto: la opción recomendada.**
 2. 2. Seguimiento del donante sigue leyendo una página de 100 donaciones (DonanteDonaciones.de). Recomiendo que el constructor de este lote lo pase a pedir al servidor solo los estados en curso, con un cambio de una línea en DonanteSeguimientoRest avisado como fuera de zona, y que el inicio de la empresa quede para p2-tablero. La otra opción es dejar los dos para sus lotes y anotarlo en DTI-39. **Resuelto: la opción recomendada.**
 3. 3. Al filtrar por una categoría puede aparecer una entidad cuyo pedido de esa categoría ya está cubierto. Recomiendo dejarla y mostrar 'Lo que pedía de … ya está cubierto'. La otra opción es llevar a SQL la cuenta de lo asignado para que no aparezca, que es más grande que este lote. **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P1 para el lote `p1-donante-listas` (`4b1b47b7e` y arreglos de las rondas 1 y 2 en `bcb2d02b6` y `a848415ae`). La revisión la hizo
+el revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta
+el workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo
+redactó el agente del cierre documental con lo que consta en los commits y en
+[DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 9, donde está todo lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración de la oleada P1 del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  [OBSERVED] Seguimiento pide una página de 100 con los estados en curso: con más de 100, la cifra
+  "Esperan destino" se queda corta sin aviso.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre. ADR `proposed` escrito después del código (desvío acordado).
+
+V3 Contracts/integration:
+  [OBSERVED] Ruta nueva GET /api/donantes/{id}/entidades, aditiva (OpenAPI de Donaciones).
+
+V4 Tests/coverage:
+  [VERIFIED] Reactor en verde en el cierre (common-lib, Donaciones, Notificaciones, Logística,
+  cliente liviano y gateway), auth-service 34/34, spotless:check en verde, Gate 3 30/30 en el
+  stack propio y verificación visual de 18 pantallas en verde (HEAD 0edf2811d).
+  Lo que no tiene test, en DTI-42 ítem 9.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED. La marca "Ya le donó" se calcula para el donante del pedido.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA (DTI-42) en el cierre documental. Gate 4 sin corrida registrada (DTI-42 ítem 15).
+```

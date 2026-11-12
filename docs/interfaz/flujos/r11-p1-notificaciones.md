@@ -5,7 +5,7 @@
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > La decisión del usuario "Notificaciones leídas" de la sección 3 del backlog ya está tomada: esta
 > ficha la baja a pantallas, no la reabre. El contrato del servicio va en la
-> [spec corta del lote](../../specs/active/R11-p1-notificaciones-spec.md).
+> [spec corta del lote](../../specs/completed/R11-p1-notificaciones-spec.md).
 > Actualiza, sin reemplazarlas, las secciones de Notificaciones de las fichas de
 > [donante](raices-donante-navegable.md#donante-notificaciones-nivel-2) y
 > [entidad](raices-entidad-navegable.md#43-entidad-notificaciones-y-entidad-notificaciones-leidas):

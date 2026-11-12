@@ -6,7 +6,7 @@
 > La decisión del usuario ("Avance de la importación", sección 3 del backlog: una vista de
 > importaciones actuales e históricas, con búsqueda y filtros) ya está tomada: esta ficha la baja a
 > pantallas, no la reabre. Va con su spec:
-> [`R11-p1-importaciones-spec.md`](../../specs/active/R11-p1-importaciones-spec.md).
+> [`R11-p1-importaciones-spec.md`](../../specs/completed/R11-p1-importaciones-spec.md).
 > Amplía, sin reemplazarla, la [ficha del admin](raices-admin-navegable.md): el avance y el
 > resultado de una importación (R11-02) siguen como están ahí; esta ficha suma la lista de todas las
 > importaciones, la descarga de las filas con error y los dos pendientes de P0 que se cierran con
@@ -36,7 +36,7 @@ Leído en `ebe332642`. `[V]` es leído en el código; `[H]`, hipótesis.
 | Qué quiere lograr | "Quiero ver qué archivos se importaron, cuáles siguen y cuáles tuvieron filas con error, y abrir el que me interesa." |
 | Dispositivo principal | Escritorio; en el celular tiene que poder leerse y abrir una importación |
 | Requerimientos | RF-20 (importar donantes por CSV con progreso y resultado por fila), RNF-UI-02 (nada a más de 3 niveles), RNF-UI-05 (cada acción con su mensaje), RNF-UI-06 (indicador si tarda), RF-CL-07 (toda cifra que cambia dice cuándo se leyó), RNF-CL-02 (sin JavaScript, igual funciona). Reglas generales 1, 2, 3 y 5 del backlog |
-| Datos que usa | `GET /api/donantes/archivos` (nuevo, paginado, con búsqueda y filtros), `GET /api/donantes/archivos/{id}` y `GET /api/donantes/archivos/{id}/filas-con-error` (ya existen; suman campos opcionales). Detalle en la [spec](../../specs/active/R11-p1-importaciones-spec.md) |
+| Datos que usa | `GET /api/donantes/archivos` (nuevo, paginado, con búsqueda y filtros), `GET /api/donantes/archivos/{id}` y `GET /api/donantes/archivos/{id}/filas-con-error` (ya existen; suman campos opcionales). Detalle en la [spec](../../specs/completed/R11-p1-importaciones-spec.md) |
 | Boceto de E1 | Sin boceto: la vista es de la revisión del 2026-11-11 |
 
 ## 2. Dónde está en el sitio

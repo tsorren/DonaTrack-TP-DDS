@@ -1,7 +1,7 @@
 # Tono y comunicación
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1.2 · 2026-11-12 (cifras y cuentas de la revisión del 2026-11-11; plazos sin fijar) · parte del [proceso de diseño](README.md)**
+> **Versión 1.3 · 2026-11-12 (cifras y cuentas de la revisión del 2026-11-11; plazos sin fijar; cifra con tope y lo que muestra una página, oleada P1) · parte del [proceso de diseño](README.md)**
 > Fuente: el [Brief de Tono y Comunicación v1.0](identidad/brief-tono-y-comunicacion-v1.0.pdf) del
 > equipo. Este documento lo lleva a la interfaz: qué se escribe en cada pantalla y qué no. Si el
 > equipo saca una versión nueva del brief, se actualiza este archivo y nada más. Lo marcado
@@ -116,6 +116,11 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
 - Un plazo que nadie fijó se dice como lo habitual, sin cifra ni fecha *(extensión, revisión del
   2026-11-11, R11-08)*: "La revisión suele llevar unos días hábiles." Una cifra ("hasta 5 días
   hábiles") sería una promesa; callar el plazo deja a la persona sin saber cuánto esperar.
+- Una cifra con tope dice el total y lo que se muestra *(extensión, oleada P1, R11-19)*: "Hubo 340
+  entregas en el último mes. El mapa muestra las 200 más recientes." Nunca el tope como si fuera el
+  total.
+- Una lista paginada dice qué parte se ve y de cuántas *(extensión, oleada P1, R11-11)*:
+  "Mostrando 1 a 20 de 57 notificaciones." con la palabra de lo que se lista, no "resultados".
 
 ## Personas, organizaciones y fotos
 

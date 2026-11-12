@@ -1,5 +1,7 @@
 # Spec: R11-p1-notificaciones — Bandeja de notificaciones paginada en el servidor
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P1, rama `E6_backlog_r11_p1`): construida e integrada; pasa a `completed/`. ADR `proposed`, escrito después del código: [bandeja paginada](../../adr/notificaciones-service/20261112-bandeja-por-persona-paginada-con-busqueda-sin-tildes-por-translate.md). Lo que quedó pendiente está en [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42). Lo que sigue sobre "pendiente de aprobación" o "sin ADR" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
 >
 > **Estado:** PROPOSED (2026-11-12). La aprobación es la del usuario al revisar juntos los diseños
@@ -320,3 +322,50 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 2. ¿Hace falta un ADR para este lote al cerrar la oleada, como pide la guía de orquestación para los lotes que cambian un contrato? Recomiendo uno corto, propuesto, en notificaciones-service, que remita al ADR de listados paginados de P0 y deje anotado el desvío (translate en lugar de unaccent). **Resuelto: la opción recomendada.**
 3. Si p1-paginador no está integrado cuando se construya este lote: recomiendo usar el paginador provisorio, que ya existe y usa las mismas direcciones, y cambiarlo al integrar. **Resuelto: la opción recomendada.**
 4. GET /api/notificaciones, el listado general solo para el admin, sigue devolviendo todo, pero no lo usa ninguna pantalla. Recomiendo anotarlo en DTI-40 como pendiente de p2-listas-restantes en lugar de sumarlo a este lote. **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P1 para el lote `p1-notificaciones` (`2e56394d1` y arreglos de la ronda 1 en `702bcfe88`). La revisión la hizo
+el revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta
+el workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo
+redactó el agente del cierre documental con lo que consta en los commits y en
+[DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 10, donde está todo lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración de la oleada P1 del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  [OBSERVED] GET /api/notificaciones (general) sigue sin página (DTI-40, ítem 3).
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre. ADR `proposed` escrito después del código (desvío acordado).
+
+V3 Contracts/integration:
+  [OBSERVED] Misma ruta y mismo cuerpo, con parámetros nuevos opcionales y X-Total-Count
+  (OpenAPI de Notificaciones 1.3.0, V6).
+
+V4 Tests/coverage:
+  [VERIFIED] Reactor en verde en el cierre (common-lib, Donaciones, Notificaciones, Logística,
+  cliente liviano y gateway), auth-service 34/34, spotless:check en verde, Gate 3 30/30 en el
+  stack propio y verificación visual de 18 pantallas en verde (HEAD 0edf2811d).
+  Lo que no tiene test, en DTI-42 ítem 10.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED. El dueño de cada notificación lo controla el servicio (MARCAR_SU_NOTIFICACION).
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA (DTI-42) en el cierre documental. Gate 4 sin corrida registrada (DTI-42 ítem 15).
+```

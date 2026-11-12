@@ -1,7 +1,7 @@
 # Patrones, estados y textos
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 3.1 · 2026-11-12 (reglas generales de la revisión del 2026-11-11; segunda tanda de P0) · parte del [proceso de diseño](README.md)**
+> **Versión 3.2 · 2026-11-12 (reglas generales de la revisión del 2026-11-11; cierre de la oleada P1) · parte del [proceso de diseño](README.md)**
 
 Cubre RNF-UI-01 a RNF-UI-06 de [`requerimientos-e6.md`](../requerimientos/requerimientos-e6.md).
 La cátedra pide **patrones** conocidos (Material Design, Human Interface Guidelines), no una
@@ -24,7 +24,7 @@ librería: cada componente cita, en su ficha de flujo, el patrón que sigue.
 | Tabla o lista | Material: Data tables / Lists | Escritorio: tabla. Celular: cada fila como tarjeta | `<table>` con `<th scope>` |
 | Navegación por rol | Material: Navigation bar / Tabs | Secciones del rol; la actual, marcada | `<nav>` con `aria-current="page"` |
 | Mapa | — | Siempre acompañado de una lista con los mismos datos | RF-CL-06; "última actualización" visible (RF-CL-07) |
-| Paginador | Material: Data tables (paginación) | Debajo de todo listado completo que se pide de a una página (regla general 3). Hasta R11-11, el provisorio "‹ Anterior · Página N de M · Siguiente ›" ([catálogo](componentes.md#piezas-compuestas-sin-clase-propia)) | `<nav>` con nombre propio; la página actual con `aria-current="page"`; el extremo que no sigue no es un enlace; al cambiar de página, el foco va al título de la lista |
+| Paginador | Material: Data tables (paginación) | Debajo de todo listado completo que se pide de a una página (regla general 3): el componente `.paginas` (`componentes/paginas :: paginas(p)`, R11-11), `« ‹ 1 2 3 … 9 › »` y, en el celular o con `data-forma="corta"`, `‹ 3 de 9 ›`. La ventana muestra la primera, la última y la actual con una vecina de cada lado; un "…" nunca esconde una sola página ([catálogo](componentes.md)) | `<nav>` con nombre propio; la página actual con `aria-current="page"` y "Página 5 de 9" para el lector; el extremo que no sigue se ve apagado y no es un enlace; al cambiar de página, el foco va al título de la lista |
 | Avance de un proceso largo | Material: Progress indicators (determinado) | Algo que tarda minutos y sigue en el servidor aunque se salga (la importación del CSV) | La cifra en texto, no solo la barra; el cambio de etapa se anuncia en una región `aria-live`; sin JavaScript, un enlace "Ver el avance" |
 
 ## Estados que toda pantalla contempla
@@ -91,22 +91,32 @@ resumen:
     Gubernamental ([personas y organizaciones](tono-y-comunicacion.md#personas-organizaciones-y-fotos)).
 18. El saludo y el menú de la cuenta dicen su nombre (nombre y apellido o razón social), nunca el
     rol; el rol va debajo, como dato. Sin el nombre, "Tu cuenta" (R11-44).
+19. Una cifra con tope dice el total y lo que se muestra: "340 entregas confirmadas del 13 de
+    octubre al 12 de noviembre de 2026. El mapa muestra las 200 más recientes, en 37 lugares." El
+    total sale del servicio como número (R11-19).
+20. Una lista de a páginas dice qué tramo se ve y de cuánto: "Mostrando 1 a 20 de 57
+    notificaciones."; en el celular, la forma corta "1 a 20 de 57". Una acción que alcanza a toda la
+    cuenta y no solo a la página lo dice junto al botón (R11-14).
+21. Un dato secreto que se muestra una sola vez lo dice antes de mostrarse y no se vuelve a ver al
+    volver atrás: la contraseña provisoria de un admin nuevo (R11-10). Nunca va en un aviso que
+    queda en pantalla ni en la dirección.
 
 ## Reglas generales de la revisión del 2026-11-11
 
 Valen en todo el sitio. Salen del [backlog de la revisión](backlog-revision-2026-11-11.md#2-reglas-generales-nuevas)
-y las decidió el usuario. La columna de la derecha dice cuánto está hecho al cierre de la oleada P0
-(2026-11-12); lo que falta tiene su lote en esta corrida.
+y las decidió el usuario. La columna de la derecha dice cuánto está hecho al cierre de la oleada P1
+(2026-11-12); lo que falta tiene su lote en esta corrida o está en
+[DTI-42](../adr/DEUDA_TECNICA.md#dti-42).
 
-| # | Regla | Hecho al cierre de P0 |
+| # | Regla | Hecho al cierre de P1 |
 |---|---|---|
-| 1 | **Nunca se traen todos los resultados.** Las listas se piden de a una página, con la búsqueda (sin tildes ni mayúsculas) y los filtros resueltos en el servidor. Los contadores se piden como números. Si el servicio no resuelve un filtro, la pantalla no lo ofrece: filtrar una sola página engaña | Donaciones pagina y cuenta en la base; las pantallas del admin y Mis donaciones van de a una página. Lo que falta, en [DTI-39](../adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](../adr/DEUDA_TECNICA.md#dti-40) |
-| 2 | **Listas, tres casos.** Listado completo: páginas numeradas. Resumen dentro de otra pantalla: 3 elementos y "Ver todas", que lleva al listado completo paginado. Contenido muy visual: carrusel con flechas | El año de la persona (3 por mes y "Ver todas" a Mis donaciones del mes). El carrusel no existe todavía (R11-B09) |
-| 3 | **Un solo paginador.** `« ‹ 1 2 3 … 9 › »`, con primera y última; en el celular, `‹ 3 de 9 ›`. Conserva la búsqueda y los filtros. Una página pedida más allá de la última muestra la última, nunca una lista vacía | Provisorio: "‹ Anterior · Página N de M · Siguiente ›" en el admin y "Página anterior / Página siguiente" en Mis donaciones y Entidades del donante; el definitivo, con `p1-paginador` (R11-11) |
-| 4 | **Ventanas, tres niveles.** Ventana que bloquea el fondo para confirmar algo que no se deshace y formularios cortos; desplegable liviano que se cierra tocando afuera o con Esc; página aparte para procesos largos o con fotos | No: `p1-menus` y `p2-ventanas` |
-| 5 | **Qué queda fijo al desplazarse.** El encabezado con el menú; el buscador y los filtros en los listados; el botón principal en el celular | No: `p2-armazon` |
-| 6 | **Con sesión, siempre se ve la cuenta.** Portada, páginas de error y contacto muestran el encabezado de quien está logueado | Páginas de error y Contacto, hechas (R11-05, `p0-errores`): el marco del área, con "Volver a mi inicio", sin pedir nada a los servicios; en revisión del usuario. Falta la portada (`p1-portada`, R11-15). La cuenta sin perfil o con la solicitud pendiente sigue con el marco público, también en lo público que ya puede navegar (R11-08): lo resuelve `p1-portada` |
-| 7 | **Ilustraciones complejas, por encargo.** Logo, maceta o abeja posada se generan como imagen con un prompt escrito por Claude, no se dibujan a mano en el código | Sin cambios en P0; va a [`direccion-de-arte.md`](direccion-de-arte.md) con R11-B01 a R11-B03 |
+| 1 | **Nunca se traen todos los resultados.** Las listas se piden de a una página, con la búsqueda (sin tildes ni mayúsculas) y los filtros resueltos en el servidor. Los contadores se piden como números. Si el servicio no resuelve un filtro, la pantalla no lo ofrece: filtrar una sola página engaña | Donaciones pagina y cuenta en la base; las pantallas del admin, Entidades y Mis donaciones del donante, las dos bandejas de notificaciones, Importaciones y Asignaciones van de a una página; el mapa público pide un período con tope. Siguen trayendo listas enteras: los camiones del inicio del admin, las solicitudes de organización de Keycloak para contarlas, el historial del ranking, las necesidades vigentes del admin, las pantallas de la organización y el inicio del donante (página de 100). Lo que falta, en [DTI-39](../adr/DEUDA_TECNICA.md#dti-39), [DTI-40](../adr/DEUDA_TECNICA.md#dti-40) y [DTI-42](../adr/DEUDA_TECNICA.md#dti-42) |
+| 2 | **Listas, tres casos.** Listado completo: páginas numeradas. Resumen dentro de otra pantalla: 3 elementos y "Ver todas", que lleva al listado completo paginado. Contenido muy visual: carrusel con flechas | El año de la persona (3 por mes y "Ver todas" a Mis donaciones del mes) y, en P1, las organizaciones que piden sumarse en el inicio del admin (3 nombres y "y N más"). El carrusel no existe todavía (R11-B09) |
+| 3 | **Un solo paginador.** `« ‹ 1 2 3 … 9 › »`, con primera y última; en el celular, `‹ 3 de 9 ›`. Conserva la búsqueda y los filtros. Una página pedida más allá de la última muestra la última, nunca una lista vacía | Hecho (R11-11, `p1-paginador`): el componente `.paginas` en todas las listas paginadas. Las del admin todavía pasan por el pase `paginador.html`, que se borra cuando ninguna plantilla lo nombre |
+| 4 | **Ventanas, tres niveles.** Ventana que bloquea el fondo para confirmar algo que no se deshace y formularios cortos; desplegable liviano que se cierra tocando afuera o con Esc; página aparte para procesos largos o con fotos | Desplegables livianos, hecho (R11-16, `p1-menus`): el menú de la cuenta y los de filtros se cierran tocando afuera, con Esc y al perder el foco. Las ventanas que bloquean el fondo, no: `p2-ventanas` (R11-32); los diálogos siguen con `<dialog popover>`, que oscurece y se cierra tocando afuera |
+| 5 | **Qué queda fijo al desplazarse.** El encabezado con el menú; el buscador y los filtros en los listados; el botón principal en el celular | No: `p2-armazon` (R11-33). En P1 ningún lote fijó la barra de filtros: Importaciones, Notificaciones, Entidades del donante y Asignaciones lo esperan |
+| 6 | **Con sesión, siempre se ve la cuenta.** Portada, páginas de error y contacto muestran el encabezado de quien está logueado | Páginas de error y Contacto, hechas (R11-05, `p0-errores`): el marco del área, con "Volver a mi inicio", sin pedir nada a los servicios; en revisión del usuario. Falta la portada: el lote `p1-portada` (R11-15) está construido pero no se integró en P1 ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1). La cuenta sin perfil o con la solicitud pendiente sigue con el marco público, también en lo público que ya puede navegar (R11-08) |
+| 7 | **Ilustraciones complejas, por encargo.** Logo, maceta o abeja posada se generan como imagen con un prompt escrito por Claude, no se dibujan a mano en el código | Sin cambios en P0 ni en P1; va a [`direccion-de-arte.md`](direccion-de-arte.md) con R11-B01 a R11-B03 |
 
 ## Ayudas por flujo crítico (RNF-UI-04)
 

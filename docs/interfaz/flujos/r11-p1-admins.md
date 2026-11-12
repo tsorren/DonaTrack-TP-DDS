@@ -4,7 +4,7 @@
 > Ficha de la skill `ux-flujo` para el lote `p1-admins` (R11-10) del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md#p1--se-ve-en-la-demo).
 > La parte de servicios y el contrato están en la
-> [spec del lote](../../specs/active/R11-p1-admins-spec.md).
+> [spec del lote](../../specs/completed/R11-p1-admins-spec.md).
 > Pantallas nuevas: `admin-perfil` (Mi perfil) y `admin-administradores` (Administradores), con el
 > alta de un administrador y la contraseña provisoria. La decisión del usuario ya está tomada
 > (sección 3 del backlog, "Cuentas de administración"): cuenta y perfil por admin, un admin crea a
@@ -20,7 +20,7 @@
 | Qué quiere lograr | "Quiero que cada compañera entre con su cuenta, y que se sepa quién aprobó cada cosa." |
 | Dispositivo principal | Escritorio; tiene que andar en el celular (360 px) |
 | Requerimientos | RF-AUTH-07 (solo un admin crea otro admin; el primero sale del *seed*), RF-AUTH-12 (cambiar la contraseña con la sesión iniciada), RNF-AUTH-09 (sin datos personales en el token), RNF-UI-01 a 06 |
-| Datos que usa | Las cuentas del proveedor de ingreso (Keycloak), por la cuenta de servicio del sitio. Quién decidió una propuesta, de Donaciones. Detalle en la [spec](../../specs/active/R11-p1-admins-spec.md#4-contrato-antes-y-después) |
+| Datos que usa | Las cuentas del proveedor de ingreso (Keycloak), por la cuenta de servicio del sitio. Quién decidió una propuesta, de Donaciones. Detalle en la [spec](../../specs/completed/R11-p1-admins-spec.md#4-contrato-antes-y-después) |
 | Boceto de E1 | Sin boceto. Sigue el patrón de Mi perfil del donante ([ficha](raices-mi-perfil.md)) y el de los listados del admin ([ficha](raices-admin-navegable.md)) |
 
 ## 2. Dónde está en el sitio

@@ -1,5 +1,7 @@
 # Spec: R11 p1-importaciones — La pantalla de importaciones
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P1, rama `E6_backlog_r11_p1`): construida e integrada; pasa a `completed/`. ADR `proposed`, escrito después del código: [historial de importaciones](../../adr/donaciones-service/20261112-historial-de-importaciones-con-nombre-y-fecha-de-subida-en-el-archivo.md). Lo que quedó pendiente está en [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42). Lo que sigue sobre "pendiente de aprobación" o "sin ADR" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
 >
 > **Estado:** PROPOSED (pendiente de aprobación del usuario). Diseño del lote `p1-importaciones` del
@@ -308,3 +310,51 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 2. V22 puede chocar con otra migración de Donaciones de la misma tanda (p1-admins también toca Donaciones). Recomiendo que la renumere el integrador, como dice la regla de la corrida. **Resuelto: la opción recomendada.**
 3. Una descarga con muchas filas con error (hasta 200 pedidos para 20.000) podría tardar. Recomiendo probarla en el cierre con el CSV del ensayo y, solo si no alcanza, pasar a un endpoint de descarga en Donaciones en otro lote. **Resuelto: la opción recomendada.**
 4. El DER de Donaciones no tiene nombre_original ni subido_en en Archivo. Recomiendo decirlo en la descripción del PR y no editar el DER de la entrega, que es un registro histórico. **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P1 para el lote `p1-importaciones` (`41e7c9902` y la renumeración de la migración a V23 en `6fba26549` y `07b2526d4`). La revisión la hizo
+el revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta
+el workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo
+redactó el agente del cierre documental con lo que consta en los commits y en
+[DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 7, donde está todo lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración de la oleada P1 del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  [OBSERVED] Cuando el sondeo responde HX-Redirect, AdminDonantesController igual pide y tira una
+  página de donantes.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre. ADR `proposed` escrito después del código (desvío acordado).
+
+V3 Contracts/integration:
+  [OBSERVED] GET /api/donantes/archivos paginado y con filtros; columnas nuevas en archivo (V23),
+  que faltan en el DER.
+
+V4 Tests/coverage:
+  [VERIFIED] Reactor en verde en el cierre (common-lib, Donaciones, Notificaciones, Logística,
+  cliente liviano y gateway), auth-service 34/34, spotless:check en verde, Gate 3 30/30 en el
+  stack propio y verificación visual de 18 pantallas en verde (HEAD 0edf2811d).
+  Lo que no tiene test, en DTI-42 ítem 7.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED. Solo ADMIN; la descarga de filas con error no suma datos que la pantalla no mostrara.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA (DTI-42) en el cierre documental. Gate 4 sin corrida registrada (DTI-42 ítem 15).
+```

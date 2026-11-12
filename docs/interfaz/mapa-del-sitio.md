@@ -1,7 +1,7 @@
 # Mapa del sitio
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-30 · une el mapa de E1 con las pantallas de E6**
+> **Versión 1.1 · 2026-11-12 (cierre de la oleada P1 de la revisión del 2026-11-11) · une el mapa de E1 con las pantallas de E6**
 
 Fuentes: [`Mapa del Sitio.pdf`](../entregas/1/interfaz/Mapa%20del%20Sitio.pdf) de E1 y la tabla de pantallas de
 [`requerimientos-e6.md` §6.2](../requerimientos/requerimientos-e6.md). Regla: ninguna función clave
@@ -55,6 +55,9 @@ flowchart LR
     IA --> AS[Asignaciones] --> PR[Propuesta]
     IA --> CA[Camiones]
     IA --> RK[Ranking]
+    IA --> PA[Mi perfil]
+    IA --> AD[Administradores] --> AN[Dar de alta un administrador]
+    DOa --> IM[Importaciones]
   end
 ```
 
@@ -65,31 +68,31 @@ flowchart LR
 | Landing | Público | 1 | RF-01 | pág. 1 | E1 |
 | Donaciones realizadas | Público | 2 | RF-01 | pág. 2 | E1 |
 | Mapa de entregadas | Público | 2 | RF-02 | págs. 2 y 23 | E1 |
-| Entidades y necesidades | Público | 2 | RF-22 | — | E6 (D26) |
+| Organizaciones y necesidades | Público | 2 | RF-22 | — | E6 (D26) |
 | Nosotros | Público | 2 | RF-01 | pág. 3 | E1 |
 | Landing donante / beneficiario | Público | 2 | RF-01 | — | E1 (sin boceto) |
 | Legales y privacidad | Público | 2 | RF-01 | pie de página | E6 |
 | Contacto | Público | 2 | RF-01 (HB-21) | pie de página y avisos de error | E6 (Raíces, 2026-11-02) |
 | Iniciar sesión | Público | 2 | RF-04 | pág. 4 | E1 |
 | Registrarse: elegir | Público | 2 | RF-03 | pág. 5 | E1 |
-| Registro de donante / entidad | Público | 3 | RF-03 | pág. 11 (entidad) | E1 |
+| Registro de donante / organización | Público | 3 | RF-03 | pág. 11 (entidad) | E1 |
 | Recuperar contraseña / Activar cuenta | Público | 3 | RF-AUTH | — | E6 |
 | Inicio del donante | Donante | 1 | — | pág. 15 | E1 |
 | Mis donaciones → detalle | Donante | 2 → 3 | RF-05 | pág. 16 | E1 |
-| Beneficiarios | Donante | 2 | RF-06 | pág. 17 | E1 |
+| Beneficiarios (en el menú, "Organizaciones") | Donante | 2 | RF-06 | pág. 17 | E1 |
 | Misiones e insignias | Donante humano | 2 | RF-07 | pág. 18 | E1 |
 | Seguir entregas | Donante | 2 | RF-09 | pág. 19 | E1 |
 | Notificaciones | Donante | 2 | RF-08 | pág. 6 | E1 |
-| Mi perfil | Donante y entidad | 2 | RI-AUTH-02 | menú de usuario (pág. 14) | E6 |
-| Inicio de la entidad | Entidad | 1 | — | pág. 24 | E1 |
-| Necesidades → detalle | Entidad | 2 → 3 | RF-10 | págs. 26 y 29–31 | E1 |
-| Donaciones recibidas | Entidad | 2 | RF-11 | pág. 27 | E1 |
-| Seguir entregas → **Confirmar recepción** | Entidad | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
-| Notificaciones | Entidad | 2 | RF-13 | — | E1 |
+| Mi perfil | Donante, organización y admin (el admin, desde R11-10) | 2 | RI-AUTH-02 | menú de usuario (pág. 14) | E6 |
+| Inicio de la organización | Organización | 1 | — | pág. 24 | E1 |
+| Necesidades → detalle | Organización | 2 → 3 | RF-10 | págs. 26 y 29–31 | E1 |
+| Donaciones recibidas | Organización | 2 | RF-11 | pág. 27 | E1 |
+| Seguir entregas → **Confirmar recepción** | Organización | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
+| Notificaciones | Organización | 2 | RF-13 | — | E1 |
 | Inicio del admin | Admin | 1 | — | pág. 13 | E1 |
 | Donantes → registrar donante | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
-| Entidades → registrar entidad | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
-| Entidades → aprobar entidades | Admin | 2 → 3 | RF-21 | — | E6 |
+| Organizaciones → registrar organización | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
+| Organizaciones → aprobar organizaciones | Admin | 2 → 3 | RF-21 | — | E6 |
 | Donaciones → registrar donación | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Donaciones → detalle y vencimiento | Admin | 2 → 3 | RF-16 | pág. 13 (menú) | E1 |
 | Asignaciones → propuesta | Admin | 2 → 3 | RF-17 | — | E6 |
@@ -97,6 +100,8 @@ flowchart LR
 | Ranking | Admin | 2 | RF-19 | — | E6 |
 | Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
 | Donantes → Importaciones (`/admin-importaciones`: en curso e históricas, con búsqueda y filtros) | Admin | 2 → 3 | RF-20 | [r11-p1-importaciones](flujos/r11-p1-importaciones.md) | E6 |
+| Mi perfil del admin (`/admin-perfil`, desde el menú de la cuenta) | Admin | 2 | RI-AUTH-02, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
+| Administradores → dar de alta (`/admin-administradores`, desde el menú de la cuenta; la ventana o, sin JavaScript, `/admin-administradores-nuevo`; el resultado con la contraseña provisoria, `/admin-administradores-alta`) | Admin | 2 → 3 | RF-AUTH-07, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
 
 ## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
 
@@ -130,8 +135,9 @@ La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes
 
 Lo público que no tiene plantilla no existe y muestra la página 404; lo privado que no tiene
 plantilla muestra "sin dibujar". Desde F7 (2026-11-07) ningún enlace del sitio lleva a "sin
-dibujar": lo comprueba `SitioControllerTest`. La administración no tiene Mi perfil, como dice este
-mapa.
+dibujar": lo comprueba `SitioControllerTest`. Hasta la oleada P1 la administración no tenía Mi
+perfil; desde R11-10 (`p1-admins`, 2026-11-12) tiene Mi perfil y Administradores en el menú de la
+cuenta, fuera del menú de secciones.
 
 ## Cambios de la revisión del 2026-11-11 (oleada P0, 2026-11-12)
 
@@ -161,8 +167,24 @@ Ninguna ruta cambia: `/donante-entidades`, `/admin-entidades`, `/publico-entidad
 | Saludo y menú de la cuenta | El rol ("Donante", "Entidad", "Administración") | El nombre y apellido, la razón social o el nombre de quien administra; el rol, debajo |
 | Tipo del donante persona jurídica (Donantes del admin, Mi perfil, registro) | Organización | Su tipo jurídico: Empresa, ONG, Institución o Gubernamental |
 
-Lo que la sección 10 del backlog suma al mapa (perfil del admin, vista de importaciones, registro de
-actividad y notificaciones del admin) entra con sus lotes de P1 y P2 de esta corrida.
+## Cambios de la oleada P1 (2026-11-12)
+
+Dos pantallas nuevas del admin, ninguna a más de 3 niveles. Lo demás cambia dentro de pantallas que
+ya estaban ([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p1-al-cierre-de-la-oleada-2026-11-12)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú de la cuenta del admin | "Mi perfil" (`/admin-perfil`) y "Administradores" (`/admin-administradores`, de a 10, con "Dar de alta un administrador"). No suman secciones al menú principal | R11-10 |
+| Donantes del admin | Pestañas "Donantes · Importaciones"; Importaciones (`/admin-importaciones`) lleva al avance o al resultado de cada una, y el resultado ofrece descargar las filas con error | R11-20 |
+| Todas las listas paginadas | El paginador `« ‹ 1 2 3 … 9 › »` (`‹ 3 de 9 ›` en el celular), que conserva la búsqueda y los filtros en la dirección | R11-11 |
+| Organizaciones del donante | "Categoría" y "Ya doné" filtran todas las organizaciones en el servidor; al cambiar de página el filtro sigue | R11-12 |
+| Notificaciones del donante y de la organización | De a 20, con búsqueda, categoría y orden en la dirección | R11-14 |
+| Mapa de entregadas | Los botones de salida quedan debajo del mapa; la lista, plegada y de a 10 (`?pagina=` y `?abierta=`) | R11-19 |
+| Asignar donaciones | Tres pestañas que son direcciones propias: Propuestas, Conflictos y Destino; se borraron las variantes A, B y C | R11-24 |
+| Ranking | "Volver al último mes" cuando se mira un mes anterior | R11-23 |
+
+Sin integrar: la portada con el encabezado de la cuenta y "Ir a mi inicio" (R11-15, `p1-portada`).
+El registro de actividad y las notificaciones del admin entran con sus lotes de P2.
 
 ## Observaciones para el diseño
 

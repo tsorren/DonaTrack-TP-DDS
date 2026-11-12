@@ -31,6 +31,182 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · proceso · Cierre de P1: las demos de /estilos que necesitan ancho ocupan la pantalla
+
+- **Decisión:** las demostraciones de `/estilos` que se arman en varias columnas (la libreta del
+  mes, la bandeja de la organización y su fila paginada, la flota, lo de bajo tierra, los
+  segmentos, el maestro) llevan `data-ancho="pantalla"`: ancho mínimo desde la tableta y la ficha
+  se desplaza de costado. La tabla pasa a todo el ancho, como el paginador, y la ficha que se
+  desplaza va con `position: relative` para que el texto para lectores no se escape.
+- **Alternativas:** dejarlas en la celda angosta del catálogo; sacarlas de la verificación visual.
+- **Por qué:** en la celda angosta sus enlaces medían 15, 16 o 24 px y la página quedaba más ancha
+  que la pantalla entre 1024 y 1440 px: 32 fallas de la verificación visual, solo en el catálogo.
+- **Costo:** ninguno en el sitio; las pantallas reales no cambian. `/estilos` sigue desbordando
+  1 px a 320 px, debajo del piso de 360 ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 15).
+- **Quién decidió:** agente, sin consulta, en el cierre de la oleada (`1606a7a60` y `0edf2811d`).
+
+### 2026-11-12 · admin · Asignaciones: los textos de la ficha con "organización" y el panel al final en el celular
+
+- **Decisión:** los textos de Asignaciones son los de la ficha `r11-p1-asignaciones`, salvo que
+  dicen "organización" donde la ficha decía "entidad" (escenario A15 de la spec, con R11-44). En el
+  celular, el panel "Estado de la asignación" quedó al final de la página; la ficha lo ponía arriba,
+  en una línea.
+- **Alternativas:** los textos literales de la ficha, con "entidad"; el panel arriba, como la ficha.
+- **Por qué:** "organización" es la palabra del sitio desde `p1-nombres`; el panel al final es lo
+  que dejó el constructor, no una elección contra la ficha.
+- **Costo:** el panel arriba queda por hacer, con la pista de que las pestañas se deslizan a 360 px
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 12).
+- **Quién decidió:** usuario ("Organización", R11-44); el panel al final, el agente sin consulta
+  (lote `p1-asignaciones`).
+
+### 2026-11-12 · importador · El CSV se lee de a 500 filas y el aviso de bienvenida se reintenta hasta 10 veces
+
+- **Decisión:** el importador lee el CSV de donantes de a tandas de 500, sin cargarlo entero.
+  Notificaciones, cuando el aviso de bienvenida llega antes que la persona, devuelve el mensaje a
+  la cola hasta 10 veces, contadas por `messageId`; después va a la cola de mensajes muertos.
+- **Alternativas:** leer el archivo entero en memoria (lo de P0); mandar el aviso a la cola de
+  muertos la primera vez; reintentar sin tope.
+- **Por qué:** con 20.000 filas el archivo entero pesa en la memoria de Donaciones, y el aviso no
+  se tiene que perder porque `persona.sincronizada` llegue un poco después; un mensaje roto no tiene
+  que girar para siempre.
+- **Costo:** el tope cuenta vueltas, no tiempo, y el conteo vive en memoria. Falta el ensayo C8/C9:
+  por eso la spec `R11-p1-importador` sigue en `active/` ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42),
+  ítem 14).
+- **Quién decidió:** agente, sin consulta (spec y lote `p1-importador`, aprobados con las opciones
+  recomendadas).
+
+### 2026-11-12 · nombres · "Organización" en lo que se ve, "Tu cuenta" si falta el nombre
+
+- **Decisión:** en los textos de pantalla, "entidad" pasa a "organización" (menú, títulos, inicio);
+  las rutas, clases y campos no cambian. Si la cuenta no tiene nombre, el menú dice "Tu cuenta". En
+  la barra del celular las palabras largas se cortan en sílabas ("Organiza-ciones"). El tipo
+  jurídico se muestra con un texto propio ("Empresa, ONG o institución" en el registro).
+- **Alternativas:** dejar "entidad"; cambiar también las rutas y las clases (fuera del alcance).
+- **Por qué:** "organización" es la palabra de la gente que dona y recibe.
+- **Costo:** sin nombre, el saludo dice "Hola, Tu cuenta"; el registro no nombra a Gubernamental;
+  sin tipo jurídico, el admin dice "Persona jurídica" y el perfil "Empresa donante"; el corte en
+  sílabas espera la opinión del usuario; las fichas de `flujos/` siguen diciendo "entidad"
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 13).
+- **Quién decidió:** usuario ("Organización", R11-44 y R11-45); "Tu cuenta", el corte en sílabas y
+  los textos del tipo jurídico, el agente sin consulta (lote `p1-nombres`).
+
+### 2026-11-12 · público · Mapa: botones debajo, lista plegada y de a 10
+
+- **Decisión:** los botones de salida del mapa de entregadas quedan debajo del mapa; la lista de
+  lugares, plegada y de a 10 con el paginador común (`?pagina=` y `?abierta=`). En el celular el
+  mapa es cuadrado. Logística devuelve el último mes con tope de 200.
+- **Alternativas:** lista abierta y entera (lo de antes); el mapa paginado (cada página movía los
+  puntos); de a 20.
+- **Por qué:** el mapa contesta "adónde llegaron" con todos los puntos; la lista es su alternativa
+  accesible y no tiene que tapar los botones.
+- **Costo:** con más de 200 entregas en el mes, el mapa muestra las más recientes y lo dice.
+- **Quién decidió:** usuario (botones y lista plegada, ampliación R11-19); el mapa cuadrado, las 10
+  por página y el tope, el agente. ADR `proposed`:
+  [mapa público por período y con tope](../adr/logistica-service/20261112-mapa-publico-por-periodo-y-con-tope.md).
+
+### 2026-11-12 · notificaciones · La bandeja: sin leer y leída, de a 20 y con búsqueda sin tildes
+
+- **Decisión:** la notificación sin leer va con fondo suave, punto y título en negrita; la leída,
+  sin fondo. La bandeja pide de a 20, con búsqueda sin tildes, categoría y orden en la dirección.
+  Notificaciones busca con `translate` en SQL nativo, y las categorías de la pantalla se arman con
+  `tipo` y `excluirTipo` ("Otras novedades" sin listar todos los tipos).
+- **Alternativas:** `unaccent`, como Donaciones; `ILIKE` solo; un valor especial `tipo=NINGUNO`;
+  las categorías dentro del servicio.
+- **Por qué:** `translate` anda en PostgreSQL y en H2 sin una extensión nueva; `ILIKE` no encuentra
+  "camion" en "camión"; las categorías cambian por rol y son de la pantalla.
+- **Costo:** `translate` cubre las vocales con tilde, la ü y la ñ, no cualquier signo. Lo que no
+  sigue la ficha (textos de los botones, marcar una fila sin mandar la página) está en
+  [DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 10.
+- **Quién decidió:** usuario (los estilos de sin leer y leída, spec `R11-p1-notificaciones`);
+  `translate` y `excluirTipo`, el agente. ADR `proposed`:
+  [bandeja por persona paginada](../adr/notificaciones-service/20261112-bandeja-por-persona-paginada-con-busqueda-sin-tildes-por-translate.md).
+
+### 2026-11-12 · admin · Inicio del admin: tarjetas que no piden listas y el error de camiones en su tarjeta
+
+- **Decisión:** el inicio del admin muestra tarjetas con conteos de los resúmenes (ya no pide las
+  propuestas); si Logística no contesta, solo la tarjeta de camiones dice que no se pudo leer y las
+  demás siguen.
+- **Alternativas:** una página de error para todo el inicio; esconder la tarjeta que falló.
+- **Por qué:** una falla de un servicio no tiene que tapar lo que sí se sabe, y esconderla haría
+  creer que no hay camiones.
+- **Costo:** para contar camiones todavía pide toda la flota, y la falla de Logística no queda en
+  los registros ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 8).
+- **Quién decidió:** usuario (las tarjetas, ficha del inicio); el error acotado a su tarjeta, el
+  agente.
+
+### 2026-11-12 · admin · Ranking: el mes en el título y "Volver al último mes"
+
+- **Decisión:** el título dice el mes que se mira y, en un mes anterior, aparece "Volver al último
+  mes". Los datos de demostración no dejan meses vacíos.
+- **Alternativas:** el mes solo en el selector; un mes vacío con su estado vacío en la demo.
+- **Por qué:** una cifra siempre con su período (tono) y una salida clara al mes actual.
+- **Costo:** la ficha del ranking (§4.9) no se reescribió, y el historial trae todos los meses
+  con todos sus puestos sin paginar ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 6).
+- **Quién decidió:** usuario (título y "Volver al último mes"); la demo sin meses vacíos, el agente.
+
+### 2026-11-12 · componente:chip · Una categoría sin ícono usa el genérico
+
+- **Decisión:** el sprite pasa a nueve símbolos (cinco nuevos) y una categoría que no tiene el suyo
+  usa `cat-generico`, en vez de quedar sin ícono.
+- **Alternativas:** sin ícono; la primera letra de la categoría.
+- **Por qué:** todos los chips iguales de alto y de forma, y una categoría nueva no rompe la lista.
+- **Costo:** una categoría nueva se ve con el genérico hasta que tenga el suyo; `/estilos` todavía
+  no muestra los nueve ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 5).
+- **Quién decidió:** agente, sin consulta (lote `p1-iconos`).
+
+### 2026-11-12 · componente:navegacion-cuenta · Los menús se cierran solos
+
+- **Decisión:** el menú de la cuenta y los menús de filtros se cierran al tocar afuera, con Esc y al
+  perder el foco, sin cambiar los estilos. Sin JavaScript funcionan como antes.
+  `MenusQueSeCierranTest` lo prueba en un navegador.
+- **Alternativas:** cerrarlos solo con el mismo botón (lo de antes).
+- **Por qué:** es lo que espera la gente de un menú (heurística de estándares).
+- **Costo:** al llegar un fragmento por HTMX se cierran todos los menús (el sondeo de una
+  importación cierra el de la cuenta), y Esc no respeta un diálogo abierto encima
+  ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 4).
+- **Quién decidió:** usuario (R11-16: que se cierren al tocar afuera, con Esc y al perder el foco);
+  cómo, el agente sin consulta (lote `p1-menus`).
+
+### 2026-11-12 · componente:paginador · El paginador común: las 7 decisiones de su ficha y la ventana simétrica
+
+- **Decisión:** el paginador común `paginas` (`« ‹ 1 2 3 … 9 › »`; `‹ 3 de 9 ›` debajo de 600 px)
+  sigue las 7 decisiones de la [ficha](flujos/r11-p1-paginador.md#9-decisiones-y-preguntas):
+  (1) primera, última y la actual con una vecina de cada lado, sin "…" que esconda una sola página;
+  (2) extremos apagados y visibles; (3) forma corta por ancho y por `data-forma="corta"`; (4) las
+  dos formas en el marcado y el CSS elige, sin JavaScript; (5) la ventana se calcula en Java
+  (`Paginadores.de`); (6) el provisorio queda como pase hasta que nadie lo nombre; (7) sin "ir a la
+  página" ni selector de cuántas por página. Al construirlo, la ventana quedó simétrica: en la
+  última página muestra `1 … 7 8 9`.
+- **Alternativas:** las descartadas en la ficha (dos vecinas por lado, ventana fija de 5, un
+  segundo componente chico, elegir la forma en el servidor o con JavaScript); la ventana asimétrica
+  que dibujaba la ficha (`1 … 8 9`).
+- **Por qué:** un patrón conocido, igual en todas las listas, que anda sin JavaScript; la ventana
+  simétrica deja a la página actual con la misma cantidad de vecinas en cualquier punto.
+- **Costo:** la ficha (§4.1) no se reescribe; entre 600 y 700 px, con números de cuatro cifras, la
+  forma larga puede partirse en dos renglones ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 3).
+- **Quién decidió:** las 7, el agente que diseñó la ficha, aprobadas por el usuario con la
+  aprobación automática de P1 (opción recomendada en cada duda); la ventana simétrica, el agente
+  constructor sin consulta (lote `p1-paginador`).
+
+### 2026-11-12 · admin · Administradores: cuentas marcadas en el realm, alta desde el sitio
+
+- **Decisión:** el admin tiene Mi perfil y Administradores en el menú de la cuenta, fuera del menú
+  de secciones. Un admin da de alta a otro desde el sitio, con una contraseña provisoria que se
+  muestra una sola vez; la cuenta se marca con un atributo del realm. Si el alta falla, el error
+  vuelve dentro de la misma ventana (`HX-Retarget`). El historial de propuestas muestra el nombre de
+  quien decidió, que Donaciones toma del token.
+- **Alternativas:** dar de alta solo desde la consola de Keycloak; el error en una página aparte;
+  el autor como identificador, sin nombre.
+- **Por qué:** RF-AUTH-07 pide que un admin cree a otro; el error en la ventana no hace perder lo
+  escrito; un nombre se entiende, un identificador no.
+- **Costo:** el stack del usuario tiene el realm viejo: hay que reimportarlo (sin `down -v`) antes
+  de mostrar Administradores; la página con la contraseña provisoria puede quedar en el historial
+  del navegador ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 2).
+- **Quién decidió:** usuario (cuentas por atributo y contraseña provisoria, spec `R11-p1-admins`);
+  `HX-Retarget` y el nombre en el historial, el agente. ADRs `proposed`:
+  [cuentas marcadas en el realm](../adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md)
+  y [autor desde el token](../adr/donaciones-service/20261112-autor-de-la-decision-de-una-propuesta-desde-el-token.md).
+
 ### 2026-11-12 · donante · "Ya doné" y Categoría filtran todas las entidades, en Donaciones
 
 - **Decisión:** Entidades del donante pide `GET /api/donantes/{id}/entidades` de a 6: la búsqueda,

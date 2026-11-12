@@ -8,7 +8,7 @@
 > **Reemplaza** la sección 4.7 de la [ficha del admin](raices-admin-navegable.md#47-admin-asignaciones)
 > (allí queda un aviso que trae hasta acá) y lleva a la pantalla real la
 > [variante C](../plan-ronda-2026-11-09-tarde.md) de la ronda del 2026-11-09. El contrato que
-> necesita está en la [spec del lote](../../specs/active/R11-p1-asignaciones-spec.md).
+> necesita está en la [spec del lote](../../specs/completed/R11-p1-asignaciones-spec.md).
 
 ## 0. Qué pasa hoy (evidencia)
 
@@ -33,7 +33,7 @@ Leído en `ebe332642`. `[V]` es leído en el código; `[H]`, hipótesis.
 | Qué quiere lograr | "Ver qué propuso cada algoritmo, aprobar lo que no tiene problemas, resolver lo que choca y, si quiero, mirar adónde puede ir una donación en particular" |
 | Dispositivo principal | Escritorio primero; también el celular |
 | Requerimientos | RF-17 ("elegir la entidad final según los algoritmos": el admin ve el resultado de los algoritmos y aprueba una propuesta); RF-CL-07 (toda cifra que cambia dice cuándo se actualizó); RNF-CL-02 (sin JavaScript, igual funciona); RNF-UI-02 (nada a más de 3 niveles); regla 1 del backlog (nunca la lista completa) |
-| Datos que usa | Donaciones: `GET /api/asignaciones/propuestas` (con página y filtros, y con el algoritmo, el puesto y la situación de cada una), `GET /api/asignaciones/propuestas/resumen`, `GET /api/asignaciones/donaciones`, `GET /api/asignaciones/ejecuciones?page=0&size=1`, `POST /api/asignaciones/ejecuciones`, `PUT /api/asignaciones/propuestas/{id}/estado`. Todo en la [spec](../../specs/active/R11-p1-asignaciones-spec.md) |
+| Datos que usa | Donaciones: `GET /api/asignaciones/propuestas` (con página y filtros, y con el algoritmo, el puesto y la situación de cada una), `GET /api/asignaciones/propuestas/resumen`, `GET /api/asignaciones/donaciones`, `GET /api/asignaciones/ejecuciones?page=0&size=1`, `POST /api/asignaciones/ejecuciones`, `PUT /api/asignaciones/propuestas/{id}/estado`. Todo en la [spec](../../specs/completed/R11-p1-asignaciones-spec.md) |
 | Boceto de E1 | Sin boceto para esta pantalla. Punto de partida: la variante C de la ronda del 2026-11-09 |
 
 ## 2. Dónde está en el sitio

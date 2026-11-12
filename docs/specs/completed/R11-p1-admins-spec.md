@@ -1,5 +1,7 @@
 # Spec: R11 p1-admins — Cada administrador con su cuenta
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P1, rama `E6_backlog_r11_p1`): construida e integrada; pasa a `completed/`. ADR `proposed`, escrito después del código: [cuentas de administración](../../adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md) y [autor de la decisión](../../adr/donaciones-service/20261112-autor-de-la-decision-de-una-propuesta-desde-el-token.md). Lo que quedó pendiente está en [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42). Lo que sigue sobre "pendiente de aprobación" o "sin ADR" queda superado.
+>
 > **Estado:** APROBADA (2026-11-12), en la parada única de aprobación de la oleada P1.
 > **Lote:** `p1-admins` (R11-10) del [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md),
 > ruta CONTRATO. Ficha de flujo: [`r11-p1-admins.md`](../../interfaz/flujos/r11-p1-admins.md).
@@ -296,3 +298,53 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 2. Un admin que ya entró y olvidó su contraseña (recuperar por correo, RF-AUTH-13, sigue pendiente): recomiendo que lo resuelva otro admin desde la consola de Keycloak y que el texto lo mande a Contacto. Alternativa: dejar 'Generar otra contraseña provisoria' también para las cuentas que ya entraron. **Resuelto: la opción recomendada.**
 3. El stack de Docker del usuario ya tiene el realm importado y no toma los atributos nuevos, así que la lista de administradores quedaría vacía. Recomiendo verificar solo en el stack propio de la oleada (arranca de cero) y avisar en el informe que el stack del usuario necesita reimportar el realm, sin down -v. Hay que hacerlo antes de mostrarlo en la demo. **Resuelto: la opción recomendada.**
 4. No está probado que Keycloak 26.8 acepte q en /users/count. Recomiendo comprobarlo primero en el stack propio; si no lo acepta, contar de a páginas de 100 (son pocas cuentas) y anotarlo como deuda. **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P1 para el lote `p1-admins` (`9a19085f8` y arreglos de la ronda 1 en `72aac06c7`). La revisión la hizo
+el revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta
+el workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo
+redactó el agente del cierre documental con lo que consta en los commits y en
+[DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 2, donde está todo lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración de la oleada P1 del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  [OBSERVED] El stack del usuario tiene el realm viejo: sin reimportarlo, Administradores y Mi perfil
+  del admin no andan en la demo.
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre. ADR `proposed` escrito después del código (desvío acordado).
+
+V3 Contracts/integration:
+  [INFERRED] Que `/users/count` acepte `q` en Keycloak 26.8 y los tres casos nuevos de
+  RealmTokenContractIT no constan como corridos.
+
+V4 Tests/coverage:
+  [VERIFIED] Reactor en verde en el cierre (common-lib, Donaciones, Notificaciones, Logística,
+  cliente liviano y gateway), auth-service 34/34, spotless:check en verde, Gate 3 30/30 en el
+  stack propio y verificación visual de 18 pantallas en verde (HEAD 0edf2811d).
+  Lo que no tiene test, en DTI-42 ítem 2.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  [INFERRED] La página con la contraseña provisoria puede quedar en el historial del navegador
+  (falta `hx-history="false"`). [OBSERVED] Si falla el DELETE que deshace un alta a medias, la
+  cuenta queda y la pantalla dice "No se creó nada".
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA (DTI-42) en el cierre documental. Gate 4 sin corrida registrada (DTI-42 ítem 15).
+```

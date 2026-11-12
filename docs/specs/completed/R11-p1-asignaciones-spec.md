@@ -1,5 +1,7 @@
 # Spec: R11 p1-asignaciones — Cada propuesta dice qué algoritmo la sugirió y en qué puesto
 
+> **Cerrada el 2026-11-12** (cierre documental de la oleada P1, rama `E6_backlog_r11_p1`): construida e integrada; pasa a `completed/`. ADR `proposed`, escrito después del código: [sugerencia de cada algoritmo y situación](../../adr/donaciones-service/20261112-propuestas-con-la-sugerencia-de-cada-algoritmo-y-su-situacion-calculada-en-donaciones.md). Lo que quedó pendiente está en [DTI-42](../../adr/DEUDA_TECNICA.md#dti-42). Lo que sigue sobre "pendiente de aprobación" o "sin ADR" queda superado.
+>
 > **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario; ver la sección final de aprobación). Lo que sigue sobre "pendiente de aprobación" queda superado.
 >
 > **Estado:** PROPOSED (2026-11-12). Falta la aprobación del usuario. Diseño del lote
@@ -420,3 +422,50 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 4. El seeder (demo/seeder/seeder/vivo.py:124-126) pide GET /api/asignaciones/propuestas sin parámetros. Con la página por defecto de 20 podría no encontrar las propuestas de su corrida. Recomiendo: que el constructor cambie esa línea a ?estado=PENDIENTE&orden=reciente&size=100 y lo declare como fuera de zona. La regla de no tocar el sistema desde el seeder no aplica, porque acá cambia el sistema y el seeder solo se adapta. **Resuelto: la opción recomendada.**
 5. Si p1-admin-inicio (tanda 1) no llegó a cambiar AdminPersonasInicio para que use propuestasPendientes del resumen, ese inicio vería solo 20 propuestas. Recomiendo: que el integrador lo pase a propuestas?estado=PENDIENTE&size=3 si hace falta. **Resuelto: la opción recomendada.**
 6. V22 puede chocar con las migraciones de p2-admin-bandeja (el motivo del descarte) o de p1-admins. Recomiendo: que la renumere el integrador, como dice la regla de la corrida. **Resuelto: la opción recomendada.**
+
+## Cierre (2026-11-12): revisión y lo que quedó
+
+Resumen del cierre de la oleada P1 para el lote `p1-asignaciones` (`1557422c1`). La revisión la hizo
+el revisor del workflow `backlog-r11`, separado del constructor (`[INFERRED]` por cómo lo orquesta
+el workflow: lee la rama y los informes, no el razonamiento del constructor). Este bloque lo
+redactó el agente del cierre documental con lo que consta en los commits y en
+[DTI-42](../../adr/DEUDA_TECNICA.md#dti-42), ítem 12, donde está todo lo pendiente.
+
+```text
+=== REVIEW CONTRACT ===
+
+Mode: INDEPENDENT_REVIEW (revisión de integración de la oleada P1 del workflow backlog-r11)
+Task Level: ARCHITECTURAL
+
+V1 Regression risks:
+  [OBSERVED] Sin página, /propuestas y /ejecuciones devuelven 20: el seeder y tres colecciones de
+  Postman piden `orden=reciente&size=100` (cambios-incompatibles-aceptados.txt).
+
+V2 Architecture/invariant violations:
+  NONE_DETECTED en el cierre. ADR `proposed` escrito después del código (desvío acordado).
+
+V3 Contracts/integration:
+  [OBSERVED] Donaciones no rechaza aprobar una propuesta SIN_STOCK: la protege solo la pantalla.
+
+V4 Tests/coverage:
+  [VERIFIED] Reactor en verde en el cierre (common-lib, Donaciones, Notificaciones, Logística,
+  cliente liviano y gateway), auth-service 34/34, spotless:check en verde, Gate 3 30/30 en el
+  stack propio y verificación visual de 18 pantallas en verde (HEAD 0edf2811d).
+  Lo que no tiene test, en DTI-42 ítem 12.
+
+V5 Scope violations:
+  NONE_DETECTED.
+
+V6 Evidence integrity:
+  NONE_DETECTED.
+
+V7 SonarCloud pre-flight:
+  [TESTS_NOT_EXECUTED_BY_EVALUATOR] No consta; lo mide el Quality Gate del PR.
+
+V8 Security/privacy:
+  NONE_DETECTED. Mismos permisos de ADMIN.
+
+V9 Documentation graph integrity:
+  [OBSERVED] Spec movida a completed/ con README, ESTADO_DOCUMENTACION, specs/README y
+  DEUDA_TECNICA (DTI-42) en el cierre documental. Gate 4 sin corrida registrada (DTI-42 ítem 15).
+```
