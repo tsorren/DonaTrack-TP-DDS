@@ -207,6 +207,7 @@ class AdministradoresConIngresoTest {
                 .param("correo", "usado@ejemplo.org"))
         .andExpect(status().isOk())
         .andExpect(view().name("admin-administradores-nuevo"))
+        .andExpect(header().doesNotExist("HX-Retarget"))
         .andExpect(content().string(containsString("Ya hay una cuenta con este correo")))
         .andExpect(content().string(containsString("value=\"usado@ejemplo.org\"")))
         .andExpect(content().string(containsString("value=\"Bruno\"")));
@@ -225,6 +226,73 @@ class AdministradoresConIngresoTest {
                     containsString(
                         "Revisá el correo: tiene que tener la forma nombre@organizacion.org.")));
     verify(directorio).alta(any(), anyString(), anyString());
+  }
+
+  // C3, con HTMX: la ventana sigue abierta; vuelve solo su formulario, no la página aparte.
+  @Test
+  void conHtmxElErrorVuelveALaVentanaAbiertaConLoEscrito() throws Exception {
+    when(directorio.alta(any(), anyString(), anyString())).thenThrow(new CorreoEnUso());
+
+    MvcResult usado =
+        mvc.perform(
+                post("/admin-administradores")
+                    .with(como("ADMIN"))
+                    .with(csrf())
+                    .header("HX-Request", "true")
+                    .param("nombre", "Bruno")
+                    .param("apellido", "Díaz")
+                    .param("correo", "usado@ejemplo.org"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin-administradores :: ventana"))
+            .andExpect(header().string("HX-Retarget", "#alta-formulario"))
+            .andExpect(header().string("HX-Reselect", "#alta-formulario"))
+            .andExpect(header().string("HX-Reswap", "outerHTML"))
+            .andExpect(content().string(containsString("id=\"alta-formulario\"")))
+            .andExpect(content().string(containsString("Ya hay una cuenta con este correo")))
+            .andExpect(content().string(containsString("value=\"usado@ejemplo.org\"")))
+            .andExpect(content().string(containsString("value=\"Bruno\"")))
+            .andExpect(content().string(containsString("value=\"Díaz\"")))
+            // El Cancelar es el de la ventana (la cierra), no el enlace de la página aparte.
+            .andExpect(content().string(containsString("popovertargetaction=\"hide\"")))
+            .andExpect(content().string(not(containsString("<h1>Dar de alta un administrador"))))
+            .andReturn();
+    assertThat(usado.getResponse().getContentAsString()).doesNotContain("<html");
+
+    mvc.perform(
+            post("/admin-administradores")
+                .with(como("ADMIN"))
+                .with(csrf())
+                .header("HX-Request", "true")
+                .param("nombre", "")
+                .param("apellido", "Díaz")
+                .param("correo", "bruno.ejemplo.org"))
+        .andExpect(view().name("admin-administradores :: ventana"))
+        .andExpect(header().string("HX-Retarget", "#alta-formulario"))
+        .andExpect(content().string(containsString("Escribí el nombre.")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(containsString("value=\"bruno.ejemplo.org\"")));
+  }
+
+  // C4, con HTMX: el error del servicio también queda en la ventana abierta.
+  @Test
+  void conHtmxUnAltaQueNoTerminaQuedaEnLaVentana() throws Exception {
+    when(directorio.alta(any(), anyString(), anyString()))
+        .thenThrow(new AltaIncompleta(new RestClientException("rol")));
+
+    mvc.perform(
+            post("/admin-administradores")
+                .with(como("ADMIN"))
+                .with(csrf())
+                .header("HX-Request", "true")
+                .param("nombre", "Bruno")
+                .param("apellido", "Díaz")
+                .param("correo", "bruno.diaz@ejemplo.org"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin-administradores :: ventana"))
+        .andExpect(header().string("HX-Retarget", "#alta-formulario"))
+        .andExpect(
+            content().string(containsString("No pudimos dar de alta la cuenta. No se creó nada.")))
+        .andExpect(content().string(containsString("value=\"bruno.diaz@ejemplo.org\"")));
   }
 
   // C4

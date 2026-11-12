@@ -3,14 +3,17 @@
        administrar DonaTrack, de a 10 por página y con el total del servicio, sin buscador (son pocas
        cuentas). En el escritorio, una tabla; en 360 px, la misma tabla como tarjetas (.tabla con
        data-rotulo). "Dar de alta un administrador" abre una ventana (popover) con el formulario;
-       con un error de datos, el formulario vuelve en su página aparte (admin-administradores-nuevo).
+       con un error de datos o del servicio, con HTMX vuelve solo el formulario (fragmento ventana) y
+       reemplaza al de la ventana, que sigue abierta; sin JavaScript, vuelve en su página aparte
+       (admin-administradores-nuevo).
        "Generar otra contraseña provisoria" está solo en las cuentas que todavía no entraron y pide
        confirmar en otra ventana, porque la anterior deja de servir.
        El modelo (web.AdminAdministradoresController): filas (List<Fila>, o null si el servicio no
        respondió), total (el del servicio), paginador (null con una sola página), codigo (el de
        soporte) y errores (vacío: el formulario de la ventana arranca limpio).
        Fragmentos:
-       - formulario(enDialogo): el alta; lo usa también admin-administradores-nuevo. */-->
+       - formulario(enDialogo): el alta; lo usa también admin-administradores-nuevo.
+       - ventana: el formulario de la ventana solo, para la respuesta HTMX de un alta con error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -101,9 +104,16 @@
   </div>
 </th:block>
 
+<!--/* La respuesta HTMX de un alta con error: el formulario de la ventana, con lo escrito y el error
+       junto al campo. El controller lo manda a reemplazar #alta-formulario (HX-Retarget). */-->
+<th:block th:fragment="ventana">
+  <th:block th:replace="~{admin-administradores :: formulario(true)}"></th:block>
+</th:block>
+
 <!--/* El alta: nombre, apellido y correo. Va al POST real (admin-administradores); con un error de
-       datos o del servicio vuelve en la página aparte, con lo escrito y el error junto al campo. */-->
-<form th:fragment="formulario(enDialogo)" class="pila" data-espacio="3"
+       datos o del servicio vuelve con lo escrito y el error junto al campo: con HTMX, en la ventana
+       abierta (fragmento ventana); sin JavaScript, en la página aparte. */-->
+<form th:fragment="formulario(enDialogo)" id="alta-formulario" class="pila" data-espacio="3"
       th:classappend="${enDialogo} ? '' : 'formulario tarjeta'"
       th:with="eNombre=${errores != null ? errores['nombre'] : null},
                eApellido=${errores != null ? errores['apellido'] : null},

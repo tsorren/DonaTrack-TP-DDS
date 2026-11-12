@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--/* Dar de alta un administrador como página aparte (R11-10, ficha docs/interfaz/flujos/
        r11-p1-admins.md §4.3): el mismo formulario de la ventana de Administradores
-       (admin-administradores :: formulario). Llega acá sin JavaScript o cuando el alta vuelve con un
-       error de datos o del servicio, con lo escrito conservado. El modelo
+       (admin-administradores :: formulario). Llega acá sin JavaScript: al abrirla de forma directa o
+       cuando el alta vuelve con un error de datos o del servicio (con HTMX, en cambio, el error vuelve
+       a la ventana abierta), con lo escrito conservado. El modelo
        (web.AdminAdministradoresController): errores (por campo), nombre, apellido y correo (lo
        escrito), errorAlta y codigo. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"

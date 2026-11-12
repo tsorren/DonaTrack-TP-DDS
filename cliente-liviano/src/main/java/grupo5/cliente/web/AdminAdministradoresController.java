@@ -35,6 +35,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * loguea, y esa pantalla va con {@code Cache-Control: no-store}. Recargarla o volver con el
  * navegador lleva a la lista con el aviso de que ya se mostró. En la maqueta, la pantalla de la
  * contraseña sin envío muestra una de ejemplo.
+ *
+ * <p>Un alta con error de datos o del servicio: con HTMX vuelve solo el formulario de la ventana,
+ * que sigue abierta (ficha §4.3); sin JavaScript, la página aparte {@code
+ * admin-administradores-nuevo}.
  */
 @Controller
 public class AdminAdministradoresController {
@@ -43,6 +47,10 @@ public class AdminAdministradoresController {
   static final String NUEVO = PANTALLA + "-nuevo";
   static final String ALTA = PANTALLA + "-alta";
   static final String PROVISORIA = "provisoria";
+
+  /** El id del formulario del alta, el mismo en la ventana y en la página aparte. */
+  static final String FORMULARIO = "alta-formulario";
+
   static final String YA_MOSTRADA =
       "La contraseña provisoria se mostró una sola vez. Si no la anotaste, generá otra desde la"
           + " cuenta.";
@@ -131,6 +139,7 @@ public class AdminAdministradoresController {
       @RequestParam(required = false) String correo,
       Model model,
       HttpServletRequest pedido,
+      HttpServletResponse respuesta,
       RedirectAttributes atributos) {
     String propia = cuentaDe(pedido);
     Map<String, String> errores = DatosDeAdministrador.alta(nombre, apellido, correo);
@@ -160,6 +169,15 @@ public class AdminAdministradoresController {
     model.addAttribute("nombre", nombre);
     model.addAttribute("apellido", apellido);
     model.addAttribute("correo", correo);
+    if (pedido.getHeader("HX-Request") != null) {
+      // Con HTMX la ventana sigue abierta: vuelve solo su formulario, con los errores junto al
+      // campo
+      // y lo escrito, y reemplaza al que está adentro de la ventana (no a la lista).
+      respuesta.setHeader("HX-Retarget", "#" + FORMULARIO);
+      respuesta.setHeader("HX-Reselect", "#" + FORMULARIO);
+      respuesta.setHeader("HX-Reswap", "outerHTML");
+      return PANTALLA + " :: ventana";
+    }
     return vista;
   }
 
