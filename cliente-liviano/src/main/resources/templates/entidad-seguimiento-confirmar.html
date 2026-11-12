@@ -171,7 +171,8 @@
               action="/entidad-seguimiento-sellada-lentejas"
               th:action="@{/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
               method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
-              hx-boost="true" hx-indicator="#enviando-entidad-seguimiento-confirmar" hx-select-oob="#avisos">
+              hx-boost="true" hx-indicator="#enviando-entidad-seguimiento-confirmar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
           <p class="obligatorios" th:text="${problema} ? 'Son obligatorios las fotos, qué pasó y el remito; cuánto llegó, si llegó menos.' : 'Los dos datos son obligatorios: las fotos y el remito.'">Los
             dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">

@@ -439,7 +439,8 @@ con este código</a>.</p>
     otra necesidad</summary>
   <form action="/entidad-necesidades-publicada"
         th:action="@{/entidad-necesidades-publicada}" method="post"
-        class="formulario" hx-boost="true" hx-indicator="#enviando-entidad-necesidades" hx-select-oob="#avisos">
+        class="formulario" hx-boost="true" hx-indicator="#enviando-entidad-necesidades" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
     <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
              autofocus aria-labelledby="resumen-titulo">
       <h2 id="resumen-titulo">Revisá dos cosas antes de publicar</h2>

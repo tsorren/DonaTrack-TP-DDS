@@ -29,7 +29,8 @@
 
     <form class="formulario" action="/admin-entidades-registrada" th:action="@{/admin-entidades-registrada}"
           method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null" hx-boost="true"
-          hx-indicator="#enviando-admin-entidades-registrar" hx-select-oob="#avisos">
+          hx-indicator="#enviando-admin-entidades-registrar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá 1 dato para seguir.</h2>

@@ -95,6 +95,7 @@
     <div class="pestanas-panel" id="datos">
     <form action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#datos(seccion='datos')}"
           hx-boost="true" hx-indicator="#enviando-donante-perfil-datos" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob"
           method="post" class="formulario perfil-seccion" aria-labelledby="datos-titulo">
       <h2 id="datos-titulo">Datos de tu cuenta</h2>
       <p class="obligatorios">Todos los datos son obligatorios, salvo los que dicen «opcional».</p>
@@ -169,6 +170,7 @@
     <div class="pestanas-panel" id="como-te-avisamos">
     <form action="/donante-perfil-guardado" th:action="@{/donante-perfil-guardado#como-te-avisamos(seccion='avisos')}"
           hx-boost="true" hx-indicator="#enviando-donante-perfil-avisos" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob"
           method="post" class="formulario perfil-seccion" aria-labelledby="avisos-titulo">
       <h2 id="avisos-titulo">Cómo te avisamos</h2>
       <p>Te avisamos cuando tu donación se asigna a una entidad, cuando sale y cuando la entidad

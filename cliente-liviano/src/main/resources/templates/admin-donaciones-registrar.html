@@ -104,7 +104,8 @@
 
     <form class="formulario" action="/admin-donaciones-registrada" th:action="@{/admin-donaciones-registrada}"
           method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
-          hx-boost="true" hx-indicator="#enviando-admin-donaciones-registrar" hx-select-oob="#avisos">
+          hx-boost="true" hx-indicator="#enviando-admin-donaciones-registrar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
       <input th:if="${donante != null}" type="hidden" name="donante" th:value="${donante.clave}"
              value="ana-ejemplo">
       <p class="obligatorios">* obligatorio</p>

@@ -123,7 +123,8 @@
 
       <form class="pila" data-espacio="3" action="/admin-donantes-importando"
             th:action="@{/admin-donantes-importando}" method="post" enctype="multipart/form-data"
-            hx-boost="true" hx-indicator="#enviando-admin-donantes" hx-select-oob="#avisos">
+            hx-boost="true" hx-indicator="#enviando-admin-donantes" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
         <div class="campo" th:data-estado="${accion == 'importar-error'} ? 'error'">
           <label for="archivo">Archivo de donantes</label>
           <small id="archivo-ayuda">Un archivo CSV separado por comas, con una fila de encabezado. Hasta

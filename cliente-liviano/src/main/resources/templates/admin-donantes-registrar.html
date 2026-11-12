@@ -45,7 +45,8 @@
 
     <form class="formulario" action="/admin-donantes-registrado" th:action="@{/admin-donantes-registrado}"
           method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null" hx-boost="true"
-          hx-indicator="#enviando-admin-donantes-registrar" hx-select-oob="#avisos">
+          hx-indicator="#enviando-admin-donantes-registrar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
       <input type="hidden" name="tipo" th:value="${organizacion} ? 'organizacion' : 'persona'" value="persona">
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
