@@ -285,6 +285,306 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
   (mapa del sitio) y van en el menú; el inicio suma lo que espera una decisión, que el boceto no
   tiene.
 
+#### R11-21 · El inicio del admin, por temas (en revisión)
+
+> **Estado:** en revisión desde el 2026-11-12 · **Aprobó:** falta el OK del usuario.
+> Sale del [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (R11-21, lote
+> `p1-admin-inicio`, ruta STANDARD, solo `cliente-liviano`). **Manda sobre el esquema de arriba y
+> sobre las filas `admin-inicio` de §5, §6 y §8**; lo demás de la ficha sigue aprobado. La decisión
+> de la ronda ("Inicio del admin: tarjetas de cifras, pendientes arriba y, además, gráficos") ya
+> está tomada: esta parte no la reabre. Los gráficos son R11-42 y no entran acá; las tarjetas dejan
+> el lugar para sumarlos sin rearmar la pantalla.
+
+##### 1. Para quién y para qué
+
+| | |
+|---|---|
+| Quién | La persona de Administración, en el escritorio, al empezar el día o entre una tarea y otra |
+| Tono | Pantalla de trabajo: claro, útil, tranquilizador ([tono](../tono-y-comunicacion.md#tono-según-la-pantalla)) |
+| Qué quiere lograr | "Ver de un vistazo qué me espera hoy y cómo está todo, sin contar nada a mano" |
+| Dispositivo principal | Escritorio; en el celular se lee entera, una tarjeta debajo de la otra |
+| Requerimientos | RF-16, RF-17, RF-18 y RF-21, resumidos (como hasta ahora). Regla general 1 (ninguna lista entera) y regla 2 (un resumen muestra 3 elementos y lleva a la lista completa) del backlog |
+| Datos que usa | `GET /api/donaciones/resumen` (los 8 estados, las entregas del mes, lo que vence, los donantes activos y en total, las organizaciones activas y `propuestasPendientes`); las solicitudes pendientes de Keycloak (con su nombre); `GET /api/camiones` (la flota, ver Decisiones). **Deja de pedir** `GET /api/asignaciones/propuestas` |
+| Boceto de E1 | Pág. 13 (menú con saludo). Sin cambio respecto de lo de arriba |
+
+Qué cambia respecto de hoy (evidencia del backlog: `admin-inicio.html:82-123` y
+`admin-inicio.css:106-175`):
+
+- Las cifras de "Cómo está todo" eran dos registros planos de cuatro números, sin jerarquía y sin
+  decir de qué período es cada uno. Pasan a **tarjetas por tema** (Donaciones por estado, Entregas,
+  La red y Camiones), cada una con su título, su período y su salida a la lista.
+- Las frases que arma el adaptador ("Hoy esperan tu decisión 1234 entidades…") llevaban el número
+  crudo. Toda cifra, en la frase o en la tarjeta, va con separador de miles ("1.234").
+- Lo que espera una acción sigue arriba y suma **"Donaciones sin asignar"** (las del depósito),
+  que pide el backlog.
+- Las propuestas se cuentan con el número del resumen, sin traer la lista (DTI-40, ítem 1).
+
+##### 2. Dónde está en el sitio
+
+Sin cambio: `admin-inicio`, nivel 1 del admin, primer ítem del menú ([mapa del
+sitio](../mapa-del-sitio.md)). Cada tarjeta lleva a una pantalla de nivel 2 que ya existe.
+
+##### 3. Recorrido
+
+```mermaid
+flowchart TD
+  ingresar([Ingresar, cuenta del admin]) --> inicio[admin-inicio]
+  inicio -->|Revisar organizaciones| ent[admin-entidades]
+  inicio -->|Ver las del depósito| dep[admin-donaciones?estado=deposito]
+  inicio -->|Ver las que vencen| ven[admin-donaciones?vence=pronto]
+  inicio -->|Revisar propuestas| asg[admin-asignaciones]
+  inicio -->|Cada estado de la tarjeta Donaciones| est[admin-donaciones?estado=...]
+  inicio -->|Ver donantes| don[admin-donantes]
+  inicio -->|Ver camiones| cam[admin-camiones]
+  inicio -->|Donaciones no responde| err[Aviso de error de la página, con código]
+  inicio -->|Logística no responde| errcam[Solo la tarjeta Camiones con su aviso]
+  inicio -->|Nada espera una acción| vacio[Aviso: hoy no hay nada que espere tu decisión]
+  err -->|Volver a cargar| inicio
+  errcam -->|Volver a cargar| inicio
+```
+
+Desvíos considerados:
+
+- **Volver:** cada salida es un enlace común; el "atrás" del navegador vuelve al inicio.
+- **Error del servidor de Donaciones** (el resumen no llega): la página muestra el aviso de error
+  con su código, como hoy. Ninguna tarjeta se dibuja con ceros: un cero sería un dato falso.
+- **Error de Logística** (la flota no llega): solo la tarjeta Camiones muestra su aviso; el resto
+  de la página se ve. Es un servicio aparte y no tiene por qué tapar lo demás.
+- **Error de Keycloak** (las solicitudes no llegan): como hoy, la página entera muestra su error
+  (la llamada vive en `AdminPersonasRest`, fuera de los archivos del lote).
+- **Sin conexión o lento:** el estado Cargando de siempre (`?escenario=lento`).
+- **Sin permiso:** sin cambio (ver Desvíos de la ficha).
+- **Una lista vacía:** la tarjeta de lo que espera con 0 no se dibuja; si las tres dan 0, un solo
+  aviso tranquilo en su lugar.
+
+##### 4. Pantalla
+
+Patrones conocidos que sigue ([criterios de la cátedra](../criterios-catedra-ux-ui.md)):
+
+- **Tarjetas, un tema por tarjeta** (§5): cada tarjeta tiene un título, sus cifras y una sola
+  salida principal.
+- **Bandeja de pendientes arriba del panel de cifras:** lo que espera una acción va primero, donde
+  la mirada empieza (el recorrido en F, §3), y el resumen de cifras debajo.
+- **Divulgación progresiva** (§6, principio 3): el inicio da el número y como mucho 3 nombres; el
+  detalle está en la lista, a un toque.
+- **Resumen dentro de otra pantalla** (regla general 2 del backlog): 3 elementos y "Ver todas",
+  que lleva a la lista completa y paginada.
+
+Escritorio (1280 px y más), con los datos de la maqueta:
+
+```text
+Inicio
+Hola, Leo
+Jueves 15 de octubre de 2026
+Hoy esperan tu decisión 3 organizaciones y 2 propuestas de asignación.
+Hay 7 donaciones sin asignar en el depósito; 4 vencen en los próximos 7 días.
+
+Lo que espera tu decisión
+┌─ ORGANIZACIONES ────────┐ ┌─ DONACIONES SIN ASIGNAR ─┐ ┌─ PROPUESTAS DE ASIGNACIÓN ┐
+│ 3 piden sumarse         │ │ 7 en el depósito          │ │ 2 esperan tu revisión     │
+│ · Hogar Ejemplo Norte   │ │ 4 vencen en los próximos  │ │ Cada una dice qué         │
+│ · Merendero Ejemplo Este│ │ 7 días. La primera, Leche │ │ donación va a qué         │
+│ · Comedor Ejemplo Oeste │ │ en polvo, vence el 17 de  │ │ organización.             │
+│                         │ │ octubre, en 2 días.       │ │                           │
+│ [Revisar organizaciones]│ │ [Ver las que vencen]      │ │ [Revisar propuestas]      │
+│                         │ │ Ver las 7 del depósito    │ │                           │
+└─────────────────────────┘ └───────────────────────────┘ └───────────────────────────┘
+
+Cómo está todo
+Al 15 de octubre de 2026, 18:30.
+┌─ DONACIONES, POR ESTADO (ahora) ──────────────────────┐ ┌─ ENTREGAS CONFIRMADAS ───┐
+│     7  En el depósito, sin asignar          Ver ›     │ │     9  en octubre,        │
+│     4  Asignadas, por salir                 Ver ›     │ │        del 1 al 15        │
+│     1  En camino o en la puerta             Ver ›     │ │ 1.284  en total, desde la │
+│     1  No se pudo entregar: se ve entre las asignadas │ │        primera registrada │
+│     2  Vencidas en el depósito              Ver ›     │ │ Las confirma cada         │
+│ Ver todas las donaciones                              │ │ organización con su foto. │
+└───────────────────────────────────────────────────────┘ └───────────────────────────┘
+┌─ LA RED (ahora) ──────────────────┐ ┌─ CAMIONES (ahora) ────────────────────────────┐
+│    46  organizaciones activas     │ │     1  en ruta                                 │
+│    86  donantes activos, de 92    │ │     3  libres                                  │
+│        registrados                │ │ Ver camiones                                   │
+│ Ver donantes                      │ │                                                │
+└───────────────────────────────────┘ └────────────────────────────────────────────────┘
+```
+
+Celular (360 px): el mismo orden, una tarjeta debajo de la otra: las tres de lo que espera, después
+Donaciones por estado, Entregas confirmadas, La red y Camiones. El botón de cada tarjeta, a todo el
+ancho de la tarjeta.
+
+Reglas de la pantalla:
+
+- **Jerarquía de cada cifra:** el número grande, en la letra de cifras, alineado a la derecha de
+  su columna para que las cifras de una tarjeta se lean en fila; el nombre al lado, en la letra de
+  texto. El título de la tarjeta, como el rótulo de las etiquetas de herbario de hoy.
+- **Separador de miles en todo número**, también en las frases que arma `AdminPersonasInicio`
+  (la cabecera, "3 piden sumarse", "vencen en los próximos 7 días", "de 92 registrados"). Formato
+  es-AR: punto para los miles.
+- **Período en cada tarjeta:** "ahora" en las que cuentan cómo están las cosas en este momento
+  (por estado, la red, camiones); el mes y sus días en las entregas del mes ("en octubre, del 1 al
+  15"); "en total, desde la primera registrada" en el total. La fecha y hora de lectura va una vez,
+  debajo de "Cómo está todo", y sale de `calculadoEn` del resumen.
+- **Organizaciones:** el número es el de las solicitudes; los nombres, **como mucho 3**. Si hay
+  más, debajo de la lista: "y 12 más". El botón lleva a la lista completa.
+- **Donaciones sin asignar:** el número es el de `EN_DEPOSITO`. Si alguna vence en 7 días, la
+  frase de lo que vence y el botón "Ver las que vencen" (principal); "Ver las 7 del depósito" como
+  enlace. Si ninguna vence, el botón principal es "Ver las del depósito" y la frase dice "Ninguna
+  vence en los próximos 7 días.".
+- **Propuestas:** solo el número (`propuestasPendientes`), sin nombres, y "Revisar propuestas".
+- **Donaciones por estado:** los 8 estados del contrato en 5 filas, con el mismo agrupado que la
+  lista de Donaciones del admin, para que el número del inicio sea el que se ve al entrar:
+
+  | Fila | Estados que suma | Enlace |
+  |---|---|---|
+  | En el depósito, sin asignar | `EN_DEPOSITO` | `admin-donaciones?estado=deposito` |
+  | Asignadas, por salir | `ASIGNACION_REALIZADA` + `LISTA_PARA_ENTREGAR` | `?estado=asignada` |
+  | En camino o en la puerta | `EN_TRASLADO` + `EN_PUERTA` | `?estado=camino` |
+  | No se pudo entregar | `ENTREGA_FALLIDA` | Sin enlace propio: la lista la muestra entre las asignadas, y la fila lo dice |
+  | Vencidas en el depósito | `VENCIDA` | `?estado=vencida` |
+
+  `ENTREGADA` no va en esta tarjeta: es el total de la tarjeta Entregas confirmadas. Una fila en 0
+  se muestra igual, con su 0 (es un dato que llegó, no uno que falta), sin el enlace "Ver ›".
+- **La red:** organizaciones activas (`entidadesActivas`) y donantes activos, con el total de
+  registrados al lado (`donantes.activos` y `donantes.total`).
+- **Camiones:** en ruta y libres, contados sobre la flota como hasta ahora.
+- Sin gráficos, sin porcentajes y sin comparar con el mes anterior: no hay dato para hacerlo bien
+  todavía (R11-42).
+
+##### 5. Estados
+
+| Estado | Qué se ve | Texto |
+|---|---|---|
+| Con datos | La cabecera, las tarjetas de lo que espera con algo y las cuatro de cifras | Ver Textos |
+| Vacío: nada espera una acción (`?escenario=vacio`) | La cabecera sin la frase de resumen, el aviso en lugar de las tres tarjetas de arriba y las cuatro de cifras | "Hoy no hay nada que espere tu decisión." · "Ninguna organización pide sumarse, no hay donaciones sin asignar en el depósito y no hay propuestas de asignación para revisar." |
+| Vacío en una sola tarjeta de lo que espera | Esa tarjeta no se dibuja; las otras ocupan el lugar | — |
+| Una fila de estado en 0 | La fila con su 0 y sin "Ver ›" | "0 Vencidas en el depósito" |
+| Plataforma sin entregas todavía | La tarjeta con sus ceros y una frase | "Todavía no hay entregas confirmadas." · "Se cuentan cuando cada organización confirma lo que recibe, con su foto." |
+| Cargando (`?escenario=lento`) | La cabecera y el lugar de cada tarjeta, sin números inventados | "Cargando tu inicio…" |
+| Error de Donaciones (`?escenario=error`) | La cabecera y el aviso de error en lugar de todo lo demás, como hoy | "No pudimos cargar tu inicio." · "Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · "Código: a1b2c3d4e5f6" · "Volver a cargar" |
+| Error de Logística (`?escenario=error-camiones`) | Todo con datos menos la tarjeta Camiones, que muestra su aviso | "No pudimos cargar los camiones." · "El resto de las cifras está al día. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · "Código: a1b2c3d4e5f6" · "Volver a cargar" |
+| Sin permiso | No se dibuja (ver Desvíos de la ficha) | "Esta pantalla es para la administración." · "Ir a tu inicio" |
+
+##### 6. Textos
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Cabecera, con todo | "Hoy esperan tu decisión 3 organizaciones y 2 propuestas de asignación." · "Hay 7 donaciones sin asignar en el depósito; 4 vencen en los próximos 7 días." | Con separador de miles |
+| Cabecera, en singular | "Hoy espera tu decisión 1 organización." · "Hay 1 donación sin asignar en el depósito; vence en los próximos 7 días." · "Hay 7 donaciones sin asignar en el depósito; 1 vence en los próximos 7 días." | — |
+| Cabecera, sin vencimientos | "Hay 7 donaciones sin asignar en el depósito." | — |
+| Título de la sección de arriba | "Lo que espera tu decisión" | Sin cambio |
+| Tarjeta 1 | "Organizaciones" · "3 piden sumarse" / "1 pide sumarse" · los nombres · "y 12 más" · "Revisar organizaciones" | Nombres como mucho 3 |
+| Tarjeta 2 | "Donaciones sin asignar" · "7 en el depósito" · "4 vencen en los próximos 7 días. La primera, Leche en polvo, vence el 17 de octubre, en 2 días." · "Ver las que vencen" · "Ver las 7 del depósito" | Sin descripción: "La primera vence el 17 de octubre, en 2 días."; hoy: "…vence hoy." |
+| Tarjeta 2, sin vencimientos | "Ninguna vence en los próximos 7 días." · "Ver las del depósito" | — |
+| Tarjeta 3 | "Propuestas de asignación" · "2 esperan tu revisión" / "1 espera tu revisión" · "Cada una dice qué donación va a qué organización." · "Revisar propuestas" | La frase explica qué hay detrás del botón (§6, principio 4) |
+| Título de la sección de cifras | "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." | Sin cambio |
+| Tarjeta Donaciones | "Donaciones, por estado" · "ahora" · las 5 filas · "Ver ›" (con nombre accesible "Ver las donaciones en el depósito", etc.) · "No se pudo entregar: se ve entre las asignadas" · "Ver todas las donaciones" | — |
+| Tarjeta Entregas | "Entregas confirmadas" · "9 en octubre, del 1 al 15" · "1.284 en total, desde la primera registrada" · "Las confirma cada organización con su foto." | Resultado registrado, no impacto ([tono](../tono-y-comunicacion.md#cifras-y-datos)). El "del 1 al N" sale del día de `calculadoEn` |
+| Tarjeta La red | "La red" · "ahora" · "46 organizaciones activas" · "86 donantes activos, de 92 registrados" · "Ver donantes" | — |
+| Tarjeta Camiones | "Camiones" · "ahora" · "1 en ruta" · "3 libres" · "Ver camiones" | — |
+| Con datos del seed | "20.412 donantes activos, de 20.530 registrados" | Ejemplo de formato con miles, no dato de maqueta |
+
+Datos de maqueta: los de la ficha (jueves 15 de octubre de 2026, 18:30; Leo), con los nuevos
+coherentes con el resto: 1 donación que no se pudo entregar (el aceite de girasol de la
+entidad, §6), 2 vencidas, 1.284 entregas confirmadas en total y 92 donantes registrados.
+
+Filtro de tono: lo pendiente dice pendiente ("esperan tu revisión", "sin asignar"); cada cifra
+dice su período; "No se pudo entregar" dice qué pasó, sin culpa; sin urgencia (las que vencen se
+dicen con su fecha, sin "¡urgente!"); entregas confirmadas como resultado registrado, no como
+impacto.
+
+**"Organización":** los textos nuevos ya dicen "organización" por la decisión de la ronda (§3 del
+backlog). El código, las rutas y los campos siguen con "entidad"; el lote `p1-nombres` cambia el
+resto del sitio y en esta pantalla no tiene nada que tocar.
+
+##### 7. Accesibilidad
+
+- Orden del foco: menú, la cabecera, las tarjetas de arriba de izquierda a derecha (cada una, su
+  botón y su enlace), después las de cifras en el orden del esquema.
+- Cada tarjeta es una `section` con su `h3` y `aria-labelledby`; las cifras, una lista de
+  definiciones (`dt` el nombre, `dd` el número), como hoy. El número va primero a la vista, pero
+  el lector lee "En el depósito, sin asignar: 7".
+- Los "Ver ›" de cada fila llevan un nombre accesible completo ("Ver las donaciones en el
+  depósito"), no solo "Ver".
+- Mientras carga, cada sección con `aria-busy="true"` y el texto "Cargando tu inicio…" en
+  `role="status"`. El error de la página y el de Camiones, con `role="alert"` y el foco no se mueve
+  solo.
+- Contraste AA en los números grandes y en los rótulos; el número no depende del color para
+  entenderse. Objetivos de toque de 44 px en el celular.
+- Las cifras de una tarjeta alineadas a la derecha usan números tabulares para que no bailen.
+
+##### 8. Revisión de usabilidad
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | Cada tarjeta dice su período y la sección, la hora de lectura; lo que espera, con su cuenta en el título | Las cifras no se actualizan solas: hay que volver a cargar |
+| 2 | Lenguaje del usuario | "Sin asignar", "esperan tu revisión", "no se pudo entregar": sin los nombres del enum | — |
+| 3 | Control y libertad | Cada tarjeta es un enlace común; "atrás" vuelve al inicio | — |
+| 4 | Consistencia | Las filas por estado suman como la lista de Donaciones y enlazan a su mismo filtro: el número del inicio es el que se ve al entrar | `ENTREGA_FALLIDA` no tiene filtro propio en la lista; la fila lo dice |
+| 5 | Prevención de errores | El inicio no decide nada: solo lleva a donde se decide | — |
+| 6 | Reconocer antes que recordar | Los nombres de las organizaciones y la primera que vence se ven sin entrar | Las propuestas no muestran nombres hasta que el servicio filtre por pendientes |
+| 7 | Flexibilidad | Cada fila por estado es un atajo a su lista filtrada | — |
+| 8 | Diseño minimalista | Tres tarjetas de lo que espera y cuatro de cifras, sin gráficos; las tarjetas en 0 no se dibujan | Con R11-42 suman gráficos: tienen que entrar en las tarjetas, no debajo de todo |
+| 9 | Recuperarse de errores | Error de Donaciones: aviso con código y "Volver a cargar"; error de Logística: solo la tarjeta Camiones | El error de Keycloak sigue tapando toda la página |
+| 10 | Ayuda | La frase de cada tarjeta de arriba explica qué hay detrás del botón; Entregas dice quién las confirma | — |
+
+Los 7 factores:
+
+- **Útil:** muestra lo que hay que hacer hoy antes que lo que ya pasó.
+- **Usable:** un número por fila, con su nombre al lado y su salida.
+- **Deseable:** sobria como la mesa de trabajo de hoy, con más orden.
+- **Valioso:** el admin no cuenta nada a mano ni entra a cada lista para saber cuántas hay.
+- **Ubicable:** cada cifra lleva a la lista que la explica.
+- **Accesible:** lista de definiciones, nombres accesibles completos y AA.
+- **Creíble:** cada cifra con su período y su hora; ningún cero en lugar de un dato que no llegó.
+
+Para probar con personas reales: si "Donaciones sin asignar" se entiende como "las que hay que
+asignar" o como "las que se olvidaron"; y si la persona de Administración busca primero las que
+vencen o las del depósito.
+
+##### 9. Decisiones y preguntas
+
+Decisiones (agente, 2026-11-12; quedan a confirmar con el OK del usuario):
+
+- **Donaciones sin asignar = las del depósito (`EN_DEPOSITO`).** Es el único estado en que una
+  donación todavía no tiene destino. Se descartó contar también las vencidas (ya no se pueden
+  asignar) y las que no se pudieron entregar (ya tienen destino y vuelven por otro camino).
+- **Las propuestas, solo con su número.** El resumen ya trae `propuestasPendientes`; traer 3
+  nombres sin la lista entera necesita que `GET /api/asignaciones/propuestas` filtre por estado y
+  pagine, y eso es de Donaciones (fuera del módulo del lote). Se descartó seguir trayendo la lista
+  entera para mostrar nombres (lo prohíbe la regla 1).
+- **Los camiones siguen contándose sobre la flota.** DTI-40, ítem 1, deja el conteo por estado a
+  `p2-listas-restantes`, que suma el número en Logística. La flota es corta; se descartó pedir un
+  endpoint nuevo desde un lote de solo `cliente-liviano`.
+- **5 filas para los 8 estados**, con el agrupado de la lista de Donaciones del admin. Se descartó
+  mostrar los 8 por separado: "lista para entregar" y "en la puerta" son pasos internos que el
+  admin no filtra por separado, y la cifra del inicio no coincidiría con la de la lista.
+- **El error de Logística no tapa la página.** Se descartó el error de página entera para un
+  servicio que solo alimenta una tarjeta.
+- **"Organización" ya en esta pantalla**, aunque el cambio general sea de `p1-nombres` (tanda 3):
+  la pantalla se reescribe ahora y escribirla dos veces no suma nada.
+- **Sin gráficos** (R11-42), pero las tarjetas de cifras tienen lugar para sumar uno adentro.
+
+Qué toca la construcción (solo `cliente-liviano`):
+
+- `AdminInicioVista`: `Decisiones` suma las donaciones sin asignar y "cuántas más" organizaciones
+  (los nombres, como mucho 3), y deja la lista de propuestas; `Cifras` pasa a las cuatro tarjetas
+  (las 5 filas por estado con su enlace, las entregas del mes con sus días y en total, la red con
+  activos y registrados, y los camiones, que pueden faltar si Logística no respondió).
+- `AdminPersonasInicio`: deja de llamar a `donaciones.propuestas()`; arma las frases con separador
+  de miles; agrupa los estados; atrapa la falla de Logística para la tarjeta Camiones; toma la hora
+  de `calculadoEn`.
+- `admin-inicio.html` y `admin-inicio.css`: las tarjetas, los estados nuevos
+  (`?escenario=error-camiones`) y la jerarquía de cada cifra.
+- **Fuera de los archivos del lote, imprescindible:** `maqueta/AdminPersonasMaqueta.java` (arma
+  la misma vista con los datos de ejemplo de arriba) y los tests que construyen `AdminInicioVista`
+  o miran sus textos (`AdminPersonasRestTest`, `AdminPersonasInicioEnPuertaTest`,
+  `AdminInicioControllerTest`). Se tocan solo para la forma nueva de la vista, sin debilitar
+  ninguna aserción.
+
+Preguntas abiertas: ninguna que frene la construcción. Las dos que quedan para el usuario van en
+el reporte del lote (nombres de las propuestas y si la fila "No se pudo entregar" merece su
+filtro).
+
 ### 4.5 `entidad-seguimiento`
 
 Ampliación del 2026-11-07 (F5). Es la pantalla de RF-14: el mapa de las entregas que la entidad
