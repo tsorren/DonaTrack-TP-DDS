@@ -716,6 +716,37 @@
             </form>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.buzon-bandeja', 'La fila de la bandeja paginada del donante y de la entidad (componentes/buzon :: pagina y :: aviso, R11-14): el título (.buzon-titulo), en negrita solo si no se leyó y con «Sin leer: » o «Leída: » para el lector; el mensaje entero y el vínculo aparte (.buzon-vinculo), en peso normal y subrayado. La sin leer tiene fondo suave y punto; la leída va sin fondo, en el tono apagado y con el sobre cerrado de «Marcar como no leída». Debajo, cuántas se muestran (.buzon-total, con .buzon-total-largo y .buzon-total-corto) y el paginador.', ~{::demo-buzon-bandeja})}">
+          <th:block th:fragment="demo-buzon-bandeja"
+              th:with="temasMuestra=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
+                       {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'}} },
+                       relojMuestra=${#temporals.createDateTime('2026-10-15T18:30')}">
+            <div class="pila buzon-bandeja" data-espacio="4">
+              <form class="buzon" action="/donante-notificaciones-leidas" th:action="@{/donante-notificaciones-leidas}"
+                    method="post" x-data="buzon" x-on:change="cambiar">
+                <div class="buzon-cabeza">
+                  <button class="boton" data-tono="secundario" data-tamano="chico" type="submit" x-text="rotulo">Marcar
+                    todas como leídas</button>
+                  <p class="buzon-nota texto-chico">Son las 4 sin leer de tu cuenta, también las de otras páginas.</p>
+                </div>
+                <section class="buzon-grupo" aria-label="Notificaciones (muestra)">
+                  <ol role="list">
+                    <li th:replace="~{componentes/buzon :: aviso(${ {id: 'p1', fecha: '2026-10-15T18:20', titulo: 'Donación en camino',
+                        texto: 'Tus lentejas salieron del depósito hacia Comedor Barrio Ejemplo.', tema: 'camino',
+                        destino: '/estilos', vinculo: 'Ver la donación', boton: null, que: null, nota: null} },
+                        ${relojMuestra}, ${temasMuestra}, false)}"></li>
+                    <li th:replace="~{componentes/buzon :: aviso(${ {id: 'p2', fecha: '2026-10-10T11:05', titulo: 'Donación entregada',
+                        texto: 'Tu donación de fideos llegó a Comedor Barrio Ejemplo.', tema: 'entregadas',
+                        destino: '/estilos', vinculo: 'Ver la donación', boton: null, que: null, nota: null} },
+                        ${relojMuestra}, ${temasMuestra}, true)}"></li>
+                  </ol>
+                </section>
+              </form>
+              <p class="buzon-total"><span class="buzon-total-largo">Mostrando 1 a 20 de 57 notificaciones.</span><span
+                  class="buzon-total-corto">1 a 20 de 57</span></p>
+            </div>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.segmentos', 'Un selector de pocas vistas de la misma lista: enlaces reales, la que se ve con aria-current=&quot;page&quot;, una pastilla de papel sin borde verde. En el celular ocupa el ancho.', ~{::demo-segmentos})}">
           <th:block th:fragment="demo-segmentos">
             <nav class="segmentos" aria-label="Qué entidades ver (muestra)">

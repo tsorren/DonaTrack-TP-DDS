@@ -5,10 +5,12 @@
        buzón (componentes/buzon): «Todas | Sin leer», la búsqueda, Categoría, Ordenar y Agrupar (get
        con hx-boost), y la lista con «Seleccionar todas», «Marcar todas como leídas» y una fila por
        aviso: qué pasó (enlaza al detalle de la donación), a qué está asociado y hace cuánto.
-       Los avisos vienen del controller (bandeja: de la maqueta o de Notificaciones), cada uno con su
-       categoría: en la maqueta, la de su carta; con datos reales, la de su tipo de evento (HB-09),
-       "Otras novedades" si no tiene tipo o es de otro. El menú de
-       Categoría muestra solo las que tienen avisos. "Ahora" lo da la bandeja (en la maqueta, el 15 de
+       Los avisos vienen del controller de a una página de 20 (R11-14, ficha
+       docs/interfaz/flujos/r11-p1-notificaciones.md: bandeja, de la maqueta o de Notificaciones, que
+       resuelve la página, "Sin leer", la búsqueda, la categoría y el orden), cada uno con su título y
+       su categoría: en la maqueta, la de su carta; con datos reales, la de su tipo de evento (HB-09),
+       "Otras novedades" si no tiene tipo o es de otro. El menú de Categoría muestra todas las del
+       rol. "N sin leer" es el número de la cuenta. "Ahora" lo da la bandeja (en la maqueta, el 15 de
        octubre de 2026, 16:25); sin leer, los 4 más nuevos (la campana dice 4). Marcar es un
        formulario post real que va a donante-notificaciones-leidas; fuera de la maqueta lo guarda
        DonanteNotificacionesEnvioController y vuelve con el aviso.
@@ -28,29 +30,22 @@
   <th:block th:replace="~{datos-donante :: donante(~{donante-notificaciones :: cuerpo})}"></th:block>
 </th:block>
 
-<!--/* La bandeja viene del controller (bandeja: de la maqueta o de Notificaciones); marcadas y
-       noLeidas son los de la maqueta, que vuelve de marcar sin guardar. */-->
+<!--/* La bandeja viene del controller (bandeja: una página de la maqueta o de Notificaciones, con su
+       total, las sin leer de la cuenta y las categorías del rol; paginador). marcadas y noLeidas son
+       los de la maqueta, que vuelve de marcar sin guardar. La cuenta no tiene avisos cuando la
+       página viene vacía sin ningún filtro puesto. */-->
 <th:block th:fragment="cuerpo">
 <th:block
-    th:with="conDatos=${escenario == '' and !bandeja.avisos.isEmpty()},
-             marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
+    th:with="marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
              noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
-             todosLosTemas=${ {
-      {valor: '', texto: 'Todas las categorías'},
-      {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
-      {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'},
-      {valor: 'asignadas', texto: 'Donaciones asignadas', icono: 'asigna'},
-      {valor: 'deposito', texto: 'En el depósito', icono: 'caja'},
-      {valor: 'necesidades', texto: 'Necesidades', icono: 'necesidad'},
-      {valor: 'problemas', texto: 'Problemas en la entrega', icono: 'problema'},
-      {valor: 'otras', texto: 'Otras novedades', icono: 'mision'} } },
-             deDonaciones=${bandeja.avisos.![ {id: id, fecha: fecha, texto: texto, tema: tema, destino: destino,
-                 leida: !#lists.contains(#strings.listSplit(#root.noLeidas, ','), id)
-                     and (leida or #root.marcadas == 'todas'
-                     or #lists.contains(#strings.listSplit(#root.marcadas, ','), id))} ]},
-             presentes=${deDonaciones.![tema]},
-             temas=${todosLosTemas.?[valor == '' or #root.presentes.contains(valor)]},
-             sinLeerAhora=${#lists.size(deDonaciones.?[!leida])}">
+             filas=${bandeja.pagina.filas},
+             conFiltros=${param.ver != null or (param.buscar != null and !#strings.isEmpty(#strings.trim(param.buscar[0])))
+                 or (param.tema != null and param.tema[0] != '')},
+             cuentaVacia=${bandeja.pagina.total == 0 and !conFiltros},
+             conDatos=${escenario == '' and !cuentaVacia},
+             sinLeerAhora=${marcadas == 'todas' ? 0 : bandeja.sinLeer
+                 - #lists.size(filas.?[!leida and #lists.contains(#strings.listSplit(#root.marcadas, ','), id)])
+                 + #lists.size(filas.?[leida and #lists.contains(#strings.listSplit(#root.noLeidas, ','), id)])}">
   <div class="pila" data-espacio="4">
     <header class="pila" data-espacio="2">
       <p class="rotulo">Notificaciones</p>
@@ -62,7 +57,7 @@
         sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
     </header>
 
-    <section th:if="${escenario == 'vacio' or (escenario == '' and bandeja.avisos.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or (escenario == '' and cuentaVacia)}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
       <p>Te avisamos cuando se asigne una donación a una entidad, cuando salga el camión y cuando la
         entidad confirme la entrega.</p>
@@ -83,8 +78,8 @@
     </th:block>
 
     <th:block th:if="${conDatos}">
-      <div th:replace="~{componentes/buzon :: buzon(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
-           '/donante-notificaciones-leidas', ${bandeja.ahora}, ${ {deDonaciones} }, ${temas}, ${marcadas == 'todas'})}"></div>
+      <div th:replace="~{componentes/buzon :: pagina(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
+           '/donante-notificaciones-leidas', ${bandeja}, ${sinLeerAhora}, ${paginador}, ${marcadas}, ${noLeidas})}"></div>
     </th:block>
   </div>
 </th:block>

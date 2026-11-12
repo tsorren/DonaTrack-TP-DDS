@@ -2,6 +2,7 @@ package grupo5.notificaciones.contracts;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.Request;
@@ -108,5 +109,50 @@ class OpenApiContractDriftTest {
                     "/api/contacto/4821/respuesta", Request.Method.POST, json(200, mensaje)));
 
     assertFalse(report.hasErrors(), "Mensajes de contacto: " + report.getMessages());
+  }
+
+  @Test
+  void bandeja_pedidoPaginadoConFiltrosYRespuestaConElTotal_cumplenElContrato() {
+    OpenApiInteractionValidator validator = validador();
+    String ruta = "/api/notificaciones/persona/6f1c2b9e-3d4a-4b5c-8d6e-7f8091a2b3c4";
+    SimpleRequest pedido =
+        SimpleRequest.Builder.get(ruta)
+            .withQueryParam("leida", "false")
+            .withQueryParam("q", "camion")
+            .withQueryParam("tipo", "DONACION_EN_CAMINO")
+            .withQueryParam("excluirTipo", "DONACION_ASIGNADA", "ENTREGA_FALLIDA")
+            .withQueryParam("orden", "antiguas")
+            .withQueryParam("page", "1")
+            .withQueryParam("size", "20")
+            .build();
+    SimpleResponse pagina =
+        SimpleResponse.Builder.status(200)
+            .withContentType("application/json")
+            .withHeader("X-Total-Count", "45")
+            .withBody(
+                """
+                [{"id": "6f1c2b9e-3d4a-4b5c-8d6e-7f8091a2b3c5", "mensaje": "El camión salió",
+                  "estado": "ENVIADA", "fechaCreacion": "2026-10-15T14:30:00Z", "leida": false,
+                  "fechaLectura": null, "tipoEvento": "DONACION_EN_CAMINO", "referenciaId": null}]
+                """)
+            .build();
+
+    ValidationReport report =
+        validator
+            .validateRequest(pedido)
+            .merge(validator.validateResponse(ruta, Request.Method.GET, pagina));
+
+    assertFalse(report.hasErrors(), "La bandeja debe cumplir el contrato: " + report.getMessages());
+  }
+
+  @Test
+  void bandeja_conUnTamanioFueraDeRango_noCumpleElContrato() {
+    SimpleRequest pedido =
+        SimpleRequest.Builder.get(
+                "/api/notificaciones/persona/6f1c2b9e-3d4a-4b5c-8d6e-7f8091a2b3c4")
+            .withQueryParam("size", "101")
+            .build();
+
+    assertTrue(validador().validateRequest(pedido).hasErrors());
   }
 }

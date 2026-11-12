@@ -2,6 +2,7 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.DonanteNotificacionesPuerto;
+import grupo5.cliente.vistas.DonanteNotificacionesVista;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,9 +11,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Las notificaciones del donante con la bandeja del puerto; también la pantalla de después de
- * marcar de la maqueta, que usa la misma hoja. El atributo es {@code bandeja}. Sin cuenta, manda a
- * ingresar.
+ * Las notificaciones del donante con la bandeja del puerto, de a una página con los filtros de la
+ * dirección (R11-14); también la pantalla de después de marcar de la maqueta, que usa la misma
+ * hoja. Los atributos son {@code bandeja} y {@code paginador} (null con una sola página). Sin
+ * cuenta, manda a ingresar.
  */
 @Controller
 public class DonanteNotificacionesController {
@@ -40,7 +42,11 @@ public class DonanteNotificacionesController {
       return "redirect:/publico-ingresar";
     }
     String vista = pantallas.mostrarDonante(pantalla, donante.get(), model, pedido);
-    model.addAttribute("bandeja", notificaciones.bandeja(donante.get()));
+    DonanteNotificacionesVista bandeja =
+        notificaciones.bandeja(donante.get(), BandejaDeNotificaciones.consulta(pedido));
+    model.addAttribute("bandeja", bandeja);
+    model.addAttribute(
+        "paginador", Paginadores.de(pedido, BandejaDeNotificaciones.PAGINAS, bandeja.pagina()));
     return vista;
   }
 }

@@ -20,7 +20,17 @@
        temas>, ?orden=viejas (sin él, más nuevas primero) y ?agrupar=no (sin él, por fecha).
 
        Fragmentos:
-       - buzon(ruta, rutaLeidas, ahora, fuentes, temas, todasLeidas): la barra y la lista. ruta es la
+       - pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas): la bandeja paginada
+         (R11-14, ficha docs/interfaz/flujos/r11-p1-notificaciones.md) de las notificaciones del
+         donante y de la entidad: la barra, la lista de una página que ya filtró la fuente,
+         «Mostrando X a Y de N» y el paginador (componentes/paginas). La lista dice cuántas sin
+         leer tiene la cuenta junto a «Marcar todas como leídas» y vuelve a la misma página después
+         de marcar. Detalle en su comentario.
+       - aviso(n, reloj, temas, leida): una fila de la bandeja paginada: título (en negrita solo
+         sin leer), mensaje y vínculo aparte; tilde para marcarla leída y sobre cerrado para
+         dejarla sin leer.
+       - buzon(ruta, rutaLeidas, ahora, fuentes, temas, todasLeidas): la barra y la lista que filtra
+         en la plantilla, con datos de ejemplo (la bandeja del admin, hasta p2-campanita). ruta es la
          pantalla ('/admin-notificaciones'); rutaLeidas, a dónde va el post; ahora, el "ahora" de la
          maqueta en ISO ('2026-10-15T18:30'); fuentes, una lista de listas de notificaciones {id,
          fecha (ISO), texto, tema, destino, leida} y, si hace falta, boton (el texto de la acción
@@ -31,7 +41,8 @@
        - cuando(fecha, reloj): hace cuánto: recién, hace X minutos, hace X horas, ayer, hace X días,
          hace X semanas y, desde el mes anterior, la fecha ("12 de septiembre").
        - icono(nombre): el ícono de una categoría (camion, puerta, caja, tilde, asigna, necesidad,
-         problema, mision, entidad, persona, reloj, archivo, ranking), decorativo. */-->
+         problema, mision, entidad, persona, reloj, archivo, ranking) o de una acción (tilde, sobre:
+         el sobre cerrado de «Marcar como no leída»), decorativo. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="buzon(ruta, rutaLeidas, ahora, fuentes, temas, todasLeidas)" class="pila" data-espacio="4"
@@ -132,6 +143,171 @@
   </form>
 </div>
 
+<!--/* La bandeja paginada (R11-14, ficha docs/interfaz/flujos/r11-p1-notificaciones.md): la misma
+       barra, pero la página, "Sin leer", la búsqueda, la categoría y el orden ya vienen resueltos
+       por la fuente (en el sistema, Notificaciones). Agrupar por fecha agrupa dentro de la página.
+       b es la vista de la bandeja: b.pagina (un vistas.Tramo con los avisos, el total con los
+       filtros, la página y cuántas hay), b.temas (todas las categorías del rol) y b.ahora. sinLeer,
+       las sin leer de la cuenta (el conteo del servicio). paginador, el del componente paginas (null
+       con una sola página). marcadas y noLeidas, lo que la maqueta marcó sin guardar ('todas' o los
+       ids separados por coma; '' en el sistema). Cada aviso tiene id, fecha, titulo, texto, tema,
+       destino, vinculo, leida, boton, que y nota. 20 por página (vistas.ConsultaBandeja). */-->
+<div th:fragment="pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas)" class="pila buzon-bandeja"
+     data-espacio="4"
+     th:with="temas=${b.temas}, tramo=${b.pagina},
+              fVer=${param.ver != null and param.ver[0] == 'sin-leer' ? 'sin-leer' : ''},
+              fTema=${param.tema != null and param.tema[0] != '' and #lists.contains(temas.![valor], param.tema[0]) ? param.tema[0] : ''},
+              fOrden=${param.orden != null and param.orden[0] == 'viejas' ? 'viejas' : ''},
+              fAgrupar=${param.agrupar == null ? 'no' : (param.agrupar[0] == 'no' ? 'no' : '')},
+              q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+              reloj=${#temporals.createDateTime(b.ahora)},
+              dHoy=${reloj.toLocalDate().toString()},
+              dAyer=${reloj.toLocalDate().minusDays(1).toString()},
+              dLunes=${reloj.toLocalDate().minusDays(reloj.getDayOfWeek().getValue() - 1).toString()},
+              todas=${marcadas == 'todas'},
+              lMarcadas=${#strings.listSplit(marcadas, ',')},
+              lNoLeidas=${#strings.listSplit(noLeidas, ',')},
+              sinLeerPagina=${#lists.size(tramo.filas.?[#root.lNoLeidas.contains(id) or (!leida and !#root.todas and !#root.lMarcadas.contains(id))])},
+              grupos=${fAgrupar == 'no' ? { {texto: '', desde: '0', hasta: '9'} } : {
+                  {texto: 'Hoy', desde: dHoy, hasta: '9'}, {texto: 'Ayer', desde: dAyer, hasta: dHoy},
+                  {texto: 'Esta semana', desde: dLunes, hasta: dAyer},
+                  {texto: 'Antes', desde: '0', hasta: (dLunes < dAyer ? dLunes : dAyer)} } },
+              orden=${fAgrupar == 'no' ? {0} : (fOrden == 'viejas' ? {3, 2, 1, 0} : {0, 1, 2, 3})},
+              filtrado=${q != '' or fTema != ''},
+              vuelta=${(fVer != '' ? '&ver=sin-leer' : '') + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
+                  + (fTema != '' ? '&tema=' + fTema : '') + (fOrden != '' ? '&orden=' + fOrden : '')
+                  + (param.agrupar != null ? '&agrupar=' + fAgrupar : '') + (tramo.pagina > 1 ? '&pagina=' + tramo.pagina : '')},
+              desde=${(tramo.pagina - 1) * 20 + 1},
+              hasta=${(tramo.pagina - 1) * 20 + #lists.size(tramo.filas)}">
+
+  <!--/* La barra: un solo formulario get, como la del buzón de siempre. Cambiar un filtro vuelve a
+         la página 1. */-->
+  <form hx-boost="true" class="filtros-barra" action="#" th:action="${ruta}" method="get" role="search"
+        data-al-cambiar>
+    <nav class="segmentos" aria-label="Qué notificaciones ver"
+         th:with="resto=${(q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '') + (fTema != '' ? '&tema=' + fTema : '')
+                  + (fOrden != '' ? '&orden=' + fOrden : '') + (fAgrupar != '' ? '&agrupar=' + fAgrupar : '')}">
+      <a href="#" th:href="${resto == '' ? ruta : ruta + '?' + #strings.substring(resto, 1)}"
+         th:attr="aria-current=${fVer == ''} ? 'page' : null">Todas</a>
+      <a href="#" th:href="${ruta + '?ver=sin-leer' + resto}"
+         th:attr="aria-current=${fVer != ''} ? 'page' : null">Sin leer</a>
+    </nav>
+    <input th:if="${fVer != ''}" type="hidden" name="ver" value="sin-leer">
+    <div class="campo filtro-buscar">
+      <label for="buscar-notificaciones">Buscar en las notificaciones</label>
+      <div class="filtro-buscar-fila">
+        <input id="buscar-notificaciones" name="buscar" type="search" autocomplete="off" maxlength="100"
+               th:value="${q}" placeholder="Por ejemplo: camión">
+        <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+      </div>
+    </div>
+    <div class="filtros" role="group" aria-label="Filtrar y ordenar las notificaciones">
+      <details th:replace="~{componentes/filtros :: menu('tema', 'Categoría', ${fTema}, ${temas})}"></details>
+      <details th:replace="~{componentes/filtros :: menu('orden', 'Ordenar: más nuevas primero', ${fOrden}, ${ {
+          {valor: '', texto: 'Más nuevas primero'}, {valor: 'viejas', texto: 'Más viejas primero'} } })}"></details>
+      <details th:replace="~{componentes/filtros :: menu('agrupar', 'Agrupar: por fecha', ${fAgrupar}, ${ {
+          {valor: '', texto: 'Por fecha'}, {valor: 'no', texto: 'Sin agrupar'} } })}"></details>
+      <a th:if="${filtrado or fOrden != '' or fVer != '' or param.agrupar != null}" class="filtros-sacar" href="#"
+         th:href="${ruta}">Sacar los filtros</a>
+    </div>
+  </form>
+
+  <p th:if="${filtrado and tramo.total > 0}" role="status"
+     th:text="${tramo.total == 1} ? 'Coincide 1 notificación.' : |Coinciden ${#numbers.formatInteger(tramo.total, 1, 'POINT')} notificaciones.|">Coinciden
+    12 notificaciones.</p>
+
+  <section th:if="${tramo.total == 0 and fVer != '' and !filtrado}" class="vacio" aria-labelledby="buzon-vacio">
+    <h2 id="buzon-vacio">No tenés notificaciones sin leer.</h2>
+    <p>Las que ya leíste siguen en Todas.</p>
+    <a class="boton" data-tono="secundario" href="#" th:href="${ruta}">Ver todas</a>
+  </section>
+  <section th:if="${tramo.total == 0 and (fVer == '' or filtrado)}" class="vacio" aria-labelledby="buzon-vacio">
+    <h2 id="buzon-vacio">Ninguna notificación coincide con lo que buscaste.</h2>
+    <p>Probá con otras palabras o sacá los filtros.</p>
+    <a class="boton" data-tono="secundario" href="#" th:href="${ruta}">Ver todas</a>
+  </section>
+
+  <!--/* La lista: un formulario post real (con CSRF) que vuelve a esta misma página con sus filtros. */-->
+  <th:block th:if="${tramo.total > 0}">
+  <form class="buzon" action="#" th:action="${vuelta == '' ? rutaLeidas : rutaLeidas + '?' + #strings.substring(vuelta, 1)}"
+        method="post" x-data="buzon" x-on:change="cambiar" aria-labelledby="buzon-lista">
+    <h2 id="buzon-lista" class="solo-lectores" tabindex="-1"
+        th:autofocus="${paginador != null and paginador.cambio}">Tus notificaciones</h2>
+    <div class="buzon-cabeza">
+      <label th:if="${sinLeerPagina > 0}" hidden x-bind:hidden="sinCasillas"><input type="checkbox"
+             x-ref="todas"> Seleccionar todas</label>
+      <button th:if="${sinLeer > 0}" class="boton" data-tono="secundario" data-tamano="chico" type="submit"
+              x-text="rotulo">Marcar todas como leídas</button>
+      <p th:if="${sinLeer > 0}" class="buzon-nota texto-chico"
+         th:text="${sinLeer == 1} ? 'Es la única sin leer de tu cuenta.' : |Son las ${#numbers.formatInteger(sinLeer, 1, 'POINT')} sin leer de tu cuenta, también las de otras páginas.|">Son
+        las 4 sin leer de tu cuenta, también las de otras páginas.</p>
+      <p th:unless="${sinLeer > 0}">Todas leídas.</p>
+    </div>
+    <div class="buzon-columnas" aria-hidden="true"><span>Mensaje</span><span>Asociada a</span><span>Hace
+      cuánto</span></div>
+    <th:block th:each="gi : ${orden}" th:with="g=${grupos[gi]},
+              deGrupo=${tramo.filas.?[fecha >= #root.g.desde and fecha < #root.g.hasta]}">
+      <section th:unless="${#lists.isEmpty(deGrupo)}" class="buzon-grupo"
+               th:attr="aria-labelledby=${g.texto != ''} ? |grupo-${gi}| : null, aria-label=${g.texto == ''} ? 'Notificaciones' : null">
+        <h2 th:if="${g.texto != ''}" th:id="|grupo-${gi}|" th:text="${g.texto}">Hoy</h2>
+        <ol role="list">
+          <th:block th:each="n : ${deGrupo}">
+            <li th:replace="~{componentes/buzon :: aviso(${n}, ${reloj}, ${temas},
+                ${!lNoLeidas.contains(n.id) and (n.leida or todas or lMarcadas.contains(n.id))})}"></li>
+          </th:block>
+        </ol>
+      </section>
+    </th:block>
+  </form>
+
+  <p class="buzon-total">
+    <span class="buzon-total-largo"
+          th:text="|Mostrando ${#numbers.formatInteger(desde, 1, 'POINT')} a ${#numbers.formatInteger(hasta, 1, 'POINT')} de ${#numbers.formatInteger(tramo.total, 1, 'POINT')} notificaciones${filtrado or fVer != '' ? ' con esos filtros' : ''}.|">Mostrando
+      1 a 20 de 57 notificaciones.</span>
+    <span class="buzon-total-corto"
+          th:text="|${#numbers.formatInteger(desde, 1, 'POINT')} a ${#numbers.formatInteger(hasta, 1, 'POINT')} de ${#numbers.formatInteger(tramo.total, 1, 'POINT')}|">1
+      a 20 de 57</span>
+  </p>
+  <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+  </th:block>
+</div>
+
+<!--/* Un aviso de la bandeja paginada: el título (en negrita solo si no se leyó), el mensaje entero y
+       el vínculo aparte, en peso normal y subrayado (o, si tiene, el botón de su acción principal).
+       leida ya viene resuelta. El tilde la marca como leída; el sobre cerrado, como no leída. */-->
+<li th:fragment="aviso(n, reloj, temas, leida)" class="buzon-fila"
+    th:with="tema=${temas.^[valor == '__${n.tema}__']}"
+    th:attr="data-leida=${leida} ? 'si' : 'no'">
+  <label th:unless="${leida}" class="buzon-casilla"><input type="checkbox" name="elegidas" th:value="${n.id}"
+         value="n1"><span class="solo-lectores" th:text="|Elegir: ${n.titulo}|">Elegir</span></label>
+  <div class="buzon-mensaje">
+    <p class="buzon-titulo"><span class="solo-lectores" th:text="${leida} ? 'Leída: ' : 'Sin leer: '">Sin
+      leer: </span><strong th:unless="${leida}" th:text="${n.titulo}">Donación en camino</strong><th:block
+        th:if="${leida}" th:text="${n.titulo}"></th:block></p>
+    <p th:text="${n.texto}">El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+    <p th:if="${n.nota != null}" class="texto-chico" th:text="${n.nota}">Confirmaste la recepción.</p>
+    <a th:if="${n.boton == null}" class="buzon-vinculo" href="#" th:href="${n.destino}"><th:block
+        th:text="${n.vinculo}">Ver la donación</th:block><span class="solo-lectores">: <th:block
+        th:text="${n.titulo}">Donación en camino</th:block>, <time
+        th:replace="~{componentes/buzon :: cuando(${n.fecha}, ${reloj})}"></time></span></a>
+    <a th:unless="${n.boton == null}" class="boton" data-tono="principal" data-tamano="chico" href="#"
+       th:href="${n.destino}"><th:block th:text="${n.boton}">Confirmar recepción</th:block><span
+        class="solo-lectores" th:text="|: ${n.que}|">: lentejas</span></a>
+  </div>
+  <div class="buzon-meta">
+    <svg th:replace="~{componentes/buzon :: icono(${tema.icono})}"></svg>
+    <span class="chip"><span class="solo-lectores">Asociada a: </span><th:block th:text="${tema.texto}">Donaciones
+      en camino</th:block></span>
+    <time th:replace="~{componentes/buzon :: cuando(${n.fecha}, ${reloj})}"></time>
+  </div>
+  <button th:unless="${leida}" class="buzon-accion" type="submit" name="marcar" th:value="${n.id}" value="n1"
+          title="Marcar como leída"><svg th:replace="~{componentes/buzon :: icono('tilde')}"></svg><span
+      class="solo-lectores" th:text="|Marcar como leída: ${n.titulo}|">Marcar como leída</span></button>
+  <button th:if="${leida}" class="buzon-accion" type="submit" name="no-leer" th:value="${n.id}" value="n1"
+          title="Marcar como no leída"><svg th:replace="~{componentes/buzon :: icono('sobre')}"></svg><span
+      class="solo-lectores" th:text="|Marcar como no leída: ${n.titulo}|">Marcar como no leída</span></button>
+</li>
+
 <li th:fragment="fila(n, reloj, temas, todasLeidas)" class="buzon-fila"
     th:with="leida=${todasLeidas or n.leida}, tema=${temas.^[valor == '__${n.tema}__']}"
     th:attr="data-leida=${leida} ? 'si' : 'no'">
@@ -157,7 +333,7 @@
           title="Marcar como leída"><svg th:replace="~{componentes/buzon :: icono('tilde')}"></svg><span
       class="solo-lectores" th:text="|Marcar como leída: ${n.texto}|">Marcar como leída</span></button>
   <button th:if="${leida}" class="buzon-accion" type="submit" name="no-leer" th:value="${n.id}" value="n1"
-          title="Marcar como no leída"><svg th:replace="~{componentes/buzon :: icono('tilde')}"></svg><span
+          title="Marcar como no leída"><svg th:replace="~{componentes/buzon :: icono('sobre')}"></svg><span
       class="solo-lectores" th:text="|Marcar como no leída: ${n.texto}|">Marcar como no leída</span></button>
 </li>
 
@@ -184,6 +360,7 @@
   <path th:if="${nombre == 'puerta'}" d="M6 21V3h12v18M3 21h18M14.5 12v.01"/>
   <path th:if="${nombre == 'caja'}" d="M3 8l9-4 9 4v9l-9 4-9-4zM3 8l9 4 9-4M12 12v9"/>
   <path th:if="${nombre == 'tilde'}" d="M4 12.5l5 5L20 6.5"/>
+  <path th:if="${nombre == 'sobre'}" d="M3 6h18v12H3zM3 6l9 7 9-7"/>
   <path th:if="${nombre == 'asigna'}" d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>
   <path th:if="${nombre == 'necesidad'}" d="M12 20s-7.5-4.6-7.5-10.2A4 4 0 0 1 12 7.4a4 4 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/>
   <path th:if="${nombre == 'problema'}" d="M12 3.5l9 16H3zM12 10v4M12 17v.01"/>
