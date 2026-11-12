@@ -1,6 +1,6 @@
 # Flujo: ver y corregir la solicitud mientras se espera (R11-41)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** falta la aprobación del usuario
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-pendiente-solicitud` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta STANDARD,
 > módulos `cliente-liviano` y `donaciones-service`).
@@ -419,3 +419,16 @@ Preguntas abiertas para el usuario (como máximo 3):
    DTI-42, ítem 1" · "Dejarlo para otro lote".
 3. ¿La tarjeta muestra la fecha de la última corrección? → "No (Recomendada): Donaciones no guarda
    esa fecha y sumarla pide una migración" · "Sí, con una columna nueva en la persona".
+
+## Aprobación del diseño p2-pendiente-solicitud (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. ¿El equipo se entera de que una solicitud se corrigió? Recomiendo que no en este lote: quien aprueba lee los datos en el momento y ya ve lo corregido. Avisarle con una notificación pediría un evento y un aviso nuevos en Notificaciones.
+   **Resuelto: la opción recomendada.**
+2. En 'Recibimos la solicitud', ¿'Ver mi solicitud' del encabezado se marca como la página actual (aria-current)? Recomiendo que sí, en este lote: es un atributo en navegacion-publica.html (fuera de los archivos del lote) y resuelve lo que falta de DTI-42, ítem 1.
+   **Resuelto: la opción recomendada.**
+3. ¿La tarjeta muestra la fecha de la última corrección? Recomiendo que no: Donaciones no guarda esa fecha y agregarla pediría una migración.
+   **Resuelto: la opción recomendada.**
+4. No corrí revision-ui ni pedí la aprobación del usuario (la corrida no frena a preguntar). Por eso la ficha queda 'en revisión'. Recomiendo pasarla por revision-ui en modo flujo antes de construir.
+   **Resuelto: la opción recomendada.**

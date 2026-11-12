@@ -104,7 +104,7 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
 
 ### donante-inicio (nivel 1)
 
-> **Tablero (R11-25, 2026-11-12, en revisión):** el bloque "Donación por donación" pasa al boceto A,
+> **Tablero (R11-25, 2026-11-12, aprobada):** el bloque "Donación por donación" pasa al boceto A,
 > con tres columnas de a 3 donaciones y un paginador en cada una; el detalle, en la ficha
 > [r11-p2-tablero](r11-p2-tablero.md).
 
@@ -179,7 +179,7 @@ menú marca Mis donaciones.
 
 ### donante-entidades (nivel 2)
 
-> **Actualización R11-27 y R11-28 (2026-11-12, en revisión):** una tarjeta por organización, de
+> **Actualización R11-27 y R11-28 (2026-11-12, aprobada):** una tarjeta por organización, de
 > alto igual, con lo que pide adentro, y "Cómo llega tu donación" como franja de ayuda arriba de la
 > lista. Lo que dice la [sección 10](#10-organizaciones-una-tarjeta-por-organización-y-la-franja-de-ayuda-r11-27-y-r11-28)
 > manda sobre esta pantalla en las secciones 4, 5, 6 y 8; lo de abajo queda como estaba antes.
@@ -210,7 +210,7 @@ menú marca Mis donaciones.
 
 ### donante-notificaciones (nivel 2)
 
-> **Actualización R11-14 (2026-11-12, en revisión):** la bandeja va de a 20 por página, con los
+> **Actualización R11-14 (2026-11-12, aprobada):** la bandeja va de a 20 por página, con los
 > filtros resueltos en Notificaciones, y cambia cómo se ven las leídas y las sin leer, sus vínculos
 > y el ícono de "Marcar como no leída". Lo que dice la
 > [ficha del lote `p1-notificaciones`](r11-p1-notificaciones.md) sobre la bandeja manda sobre esta
@@ -350,7 +350,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 
 ### donante-entidades
 
-> **R11-27 y R11-28 (2026-11-12, en revisión):** la bajada, la franja y los textos nuevos de la
+> **R11-27 y R11-28 (2026-11-12, aprobada):** la bajada, la franja y los textos nuevos de la
 > tarjeta están en la [sección 10.6](#106-textos); los estados, en la [10.5](#105-estados).
 
 | Elemento | Texto | Nota |
@@ -510,7 +510,7 @@ Preguntas abiertas para el usuario (siguen abiertas después de elegir el sitio 
 
 ## 10. Organizaciones: una tarjeta por organización y la franja de ayuda (R11-27 y R11-28)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** falta el OK del usuario
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Lote `p2-entidades-donante` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta STANDARD).
 > Las decisiones ya las tomó el usuario (sección 3 del backlog, filas "Entidades (donante)" y
@@ -893,3 +893,14 @@ corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), sin DTI ni
 | donante-entidades | Dirección y horario del depósito | No hay endpoint de depósitos |
 | donante-notificaciones | Tipo de evento e id de la donación en `NotificacionDTO` | Sin ellos no se pone el sello ni se enlaza al detalle (hoy trae solo `mensaje`) |
 | donante-notificaciones | Avisos "recibida en el depósito" y "lista para entregar" | No están en `EventoNotificableDTO`; RF-08 pide asignación y recepción (HB-09) |
+
+## Aprobación del diseño p2-entidades-donante (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. Tests que cambian al construir: DonanteEntidadesControllerTest (líneas 182, 191, 205, 233 y 251) comprueba los grupos por categoría (id="grupo-2", 'Otros pedidos', 'Sin pedidos pendientes'). Esos archivos están fuera de los tres del lote. Recomiendo que el constructor los adapte al nuevo marcado, para que sigan comprobando lo mismo sin debilitarlos, y lo anote en fueraDeZona.
+   **Resuelto: la opción recomendada.**
+2. Si la persona deja de usar las clases .ejemplar*, quedan sin uso en clases-heredadas.txt. Recomiendo que el constructor las saque de esa lista, que solo puede bajar, en el mismo lote.
+   **Resuelto: la opción recomendada.**
+3. Riesgo: la 'i' de la franja es el mismo dibujo del botón de información y alguien puede intentar tocarla. Recomiendo dejarla así y probarlo en la demo; si confunde, se cambia por otro dibujo sin tocar el resto.
+   **Resuelto: la opción recomendada.**

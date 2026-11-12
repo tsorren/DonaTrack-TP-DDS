@@ -1,5 +1,6 @@
 # Spec: R11-p2-listas-restantes — Las listas que faltan
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
 > **Estado:** PROPOSED (2026-11-12). Espera la aprobación del usuario antes de construir; ningún ADR
 > se promueve.
 > **Nivel:** STANDARD por su forma (endpoints que ya existen ganan parámetros y uno nuevo de
@@ -274,3 +275,20 @@ Respuesta de `conteos`:
 | Una donación en `EN_PUERTA` en Donaciones cuya entrega en Logística ya cambió. | Confirmar muestra solo las que Logística también tiene esperando; la página puede quedar con menos de 20. |
 | El inicio de la organización y el seguimiento del donante siguen con un tope de 100. | Quedan en DTI-39 ítem 1 con su lote. |
 | Los puestos de un mes del ranking llegan todos. | Fuera de este lote; ver dudas. |
+
+## Aprobación del diseño p2-listas-restantes (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. El backlog (DTI-40) también le asigna a este lote GET /api/notificaciones general, la cuenta de camiones por estado y las mediciones C3 y C9, pero notificaciones-service y esas pantallas no están en los archivos del encargo. Recomiendo pasarlas a un lote propio de P2 y anotarlo en DTI-40, en vez de agrandar este.
+   **Resuelto: la opción recomendada.**
+2. Los puestos de un mes del ranking llegan todos dentro de cada mes, y con 20.000 donantes un mes podría tener miles. Recomiendo un lote siguiente con GET /ranking/{periodo}/entradas paginado; para la demo alcanza, porque el seed tiene 12 a 15 puestos por mes.
+   **Resuelto: la opción recomendada.**
+3. Recibidas deja de esconder las recibidas de meses anteriores (decisión 2). Recomiendo aceptarlo: con paginador no hace falta esconderlas, y la cifra del mes queda visible.
+   **Resuelto: la opción recomendada.**
+4. Dentro de cada grupo el orden pasa a ser por fecha de registro en lugar de la del último cambio. Recomiendo aceptarlo para la demo y pasar al último cambio solo si se nota.
+   **Resuelto: la opción recomendada.**
+5. El inicio de la organización (entidad-inicio) sigue leyendo 100 asignadas. Recomiendo dejarlo fuera de este lote y registrarlo en DTI-39 con el lote del tablero; la alternativa es sumarlo acá con el conteo y una página de 3.
+   **Resuelto: la opción recomendada.**
+6. Para que el cambio sea completo hay que tocar archivos que no están en la lista: LogisticaApi, IncentivosApi, RankingRest, los puertos y vistas de Recibidas, Seguimiento y Ranking, sus controllers web y la maqueta, y los OpenAPI de los tres servicios. Recomiendo autorizarlos como imprescindibles para el constructor y nombrarlos en su fueraDeZona.
+   **Resuelto: la opción recomendada.**

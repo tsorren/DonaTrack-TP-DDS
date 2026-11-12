@@ -1,6 +1,6 @@
 # Flujo: ventanas que bloquean el fondo y publicar en 3 pasos (R11-32 y R11-31)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-ventanas` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta STANDARD).
 > Baja a pantalla la regla general 4 ("Ventanas, tres niveles", sección 2 del backlog) y la decisión
@@ -508,3 +508,16 @@ informe del lote:
 - El cambio de la regla del módulo (`cliente-liviano/AGENTS.md`) corrige el ADR
   [diálogo con `popover`](../../adr/cliente-liviano/20261104-dialogo-con-popover-y-fragmentos-solo-donde-hay-estructura-en-el-cliente-liviano.md)
   (`proposed`), como pide la sección 7 del backlog: necesita su nota.
+
+## Aprobación del diseño p2-ventanas (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. Las dos ventanas de Administradores (dar de alta y generar otra contraseña provisoria, en admin-administradores.html:50 y :81) entran en la regla 4 pero no son archivos de este lote. Recomiendo que el constructor les agregue data-bloquea (una línea en cada una) y lo anote como fueraDeZona; si no, quedan como deuda en DTI-42.
+   **Resuelto: la opción recomendada.**
+2. La muestra de /estilos (estilos.html:277) y la fila .dialogo de componentes.md tendrían que mostrar la ventana que bloquea y la ventana en pasos. Recomiendo actualizarlas en la misma tanda de construcción, porque el test de componentes del catálogo puede rechazar las clases nuevas (paso, pasos-indicador).
+   **Resuelto: la opción recomendada.**
+3. El cambio de la regla de diálogos de cliente-liviano/AGENTS.md corrige el ADR proposed del diálogo con popover, y la sección 7.5 del backlog pide su nota. Recomiendo que el constructor o el cierre escriban una nota de remisión o un ADR sucesor proposed, sin editar el texto del ADR original ni promoverlo.
+   **Resuelto: la opción recomendada.**
+4. Que showModal() funcione en un <dialog> que además tiene el atributo popover, y que preventDefault en el clic anule popovertarget, está marcado como hipótesis [H] en la ficha. Recomiendo comprobarlo en Chrome, Firefox y Safari con un test de navegador antes de cerrar el lote. Si falla, la alternativa es quitar el atributo popover al abrir y devolverlo al cerrar.
+   **Resuelto: la opción recomendada.**

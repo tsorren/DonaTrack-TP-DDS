@@ -1,6 +1,6 @@
 # Flujo: Donantes y Donaciones como bandeja, y la búsqueda de las asignaciones decididas (R11-34 y R11-35)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** falta la aprobación del usuario
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-admin-bandeja` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, tanda 2, ruta
 > STANDARD). Las decisiones del usuario de la sección 3 del backlog ("Donantes y Donaciones
@@ -544,3 +544,18 @@ respecto de la ficha del admin) y la fila del [mapa del sitio](../mapa-del-sitio
    inicio ya lleva a "Vencen en los próximos 7 días" y hoy muestra un límite en su lugar.
 3. **¿Se abre la ficha del primero en el celular, al entrar?** Recomendada: **no** (decisión 4):
    en el teléfono se entra a buscar, y la lista tiene que verse primero.
+
+## Aprobación del diseño p2-admin-bandeja (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. Filtro por fecha de alta en Donantes: hoy Donaciones no lo resuelve, y sumarlo (altaDesde/altaHasta sobre fecha_alta) cae fuera de los archivos del lote. Recomiendo sumarlo, porque la decisión del usuario sobre filtros pide un rango de fechas siempre. Si no se suma, la pastilla Alta no se dibuja.
+   **Resuelto: la opción recomendada.**
+2. Filtro y orden por vencimiento en Donaciones (venceHasta y el orden VENCE en /donaciones-independientes): el estado de R11-01 los deja para este lote, pero la lista de archivos del manifiesto no los nombra. Recomiendo hacerlos en este lote: el inicio ya lleva a 'Vencen en los próximos 7 días' y hoy en su lugar muestra un aviso de límite.
+   **Resuelto: la opción recomendada.**
+3. En el celular, ¿la ficha del primero se abre sola al entrar? Recomiendo que no: en el teléfono se entra a buscar y la lista tiene que verse primero. La ficha se abre solo cuando se toca un renglón.
+   **Resuelto: la opción recomendada.**
+4. Pendiente de verificar al construir: que el resumen de propuestas o un pedido con size=1 pueda dar como número cuántas decididas no tienen fecha (para el aviso del período). Recomiendo sumar ese campo al GET /api/asignaciones/propuestas/resumen.
+   **Resuelto: la opción recomendada.**
+5. Superposición con p2-ventanas (tanda 1): ese lote cambia el diálogo de 'Marcar como vencida' de admin-donaciones.html. Recomiendo que el constructor de este lote parta de lo que deje p2-ventanas y solo mueva el diálogo a la ficha, sin cambiar cómo se comporta.
+   **Resuelto: la opción recomendada.**

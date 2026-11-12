@@ -1,5 +1,6 @@
 # Spec: R11-p2-campanita — La campanita con desplegable y los avisos de la administración
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
 > **Estado:** PROPOSED (2026-11-12). La aprobación es la del usuario al revisar juntos los diseños
 > de la oleada P2; ningún ADR se promueve.
 > **Nivel:** STANDARD por su forma (ningún endpoint REST cambia; se suma un evento AMQP y tres
@@ -328,3 +329,16 @@ permite; si no, `[DEFERRED_NO_DOCKER]`.
 | R6 | La campanita se dibuja en las páginas de error y Contacto con sesión (R11-05): el desplegable no puede romperlas | El fragmento se pide recién al abrir; si falla, muestra su error dentro del desplegable |
 | R7 | Cambia `layout-privado.html`, que tocan otros lotes de la oleada | El cambio se limita al bloque de la campanita; el integrador resuelve choques en ese bloque |
 | R8 | Tres valores nuevos del enum y un cliente anterior | El cliente ya trata un tipo desconocido como "Novedad" (§4) |
+
+## Aprobación del diseño p2-campanita (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. ¿Bandeja compartida para todos los admins (si uno abre un aviso, queda leído para todos)? Recomiendo sí para esta entrega, porque reusa lo que ya existe y la bajada de la pantalla lo dice. La bandeja por cuenta quedaría en el backlog.
+   **Resuelto: la opción recomendada.**
+2. ¿Cada importación debería mandar además un correo a admin@donatrack.com, como ya pasa con el aviso de contacto (riesgo R3)? Recomiendo aceptarlo: es un correo por importación, no por fila. Si molesta en la demo, se apaga ese medio de contacto y no el aviso.
+   **Resuelto: la opción recomendada.**
+3. ¿La franja 'Se está importando…' de Donantes debería verla cualquier admin, no solo el que subió el archivo? Recomiendo dejarla como está, en la memoria de la sesión, y que el aviso de la campanita cubra al resto. Cambiarla pide guardar quién subió el archivo.
+   **Resuelto: la opción recomendada.**
+4. ¿Los textos de los avisos de importación ('Terminó una importación', 'Una importación se cortó', con fecha de subida y cifras) están bien? Recomiendo aceptarlos así y ajustar palabras sueltas al ver las capturas.
+   **Resuelto: la opción recomendada.**

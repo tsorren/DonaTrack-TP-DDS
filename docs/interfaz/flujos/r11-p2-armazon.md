@@ -1,6 +1,6 @@
 # Flujo: lo que queda fijo y la pantalla de carga (R11-33, R11-40)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** falta la aprobación del usuario
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-armazon` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta STANDARD).
 > Baja a pantalla la regla general 5 ("Qué queda fijo al desplazarse", sección 2 del backlog) y la
@@ -424,3 +424,18 @@ un atributo):
 
 Preguntas abiertas para el usuario: ninguna bloqueante. Las dudas que dejó el diseño, con su
 opción recomendada, van en el reporte del lote.
+
+## Aprobación del diseño p2-armazon (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. La pantalla de carga aparece en cada página que se carga entera, no solo en la primera de la visita, porque CSS no puede distinguirlas. Recomiendo dejarla así para la demo y, si molesta al recorrerla, pasar a backlog 'solo la primera vista de la visita' con una marca del servidor (una cookie de sesión y un aviso al modelo). Hoy eso es código Java fuera del lote.
+   **Resuelto: la opción recomendada.**
+2. La barra de filtros fija en el celular mide entre un cuarto y un tercio del alto, sumada al menú de abajo. Recomiendo fijarla solo en celulares de 45 em de alto o más, como dice la ficha, y mirarla en la prueba con personas. Si se siente que tapa la lista, que en el celular no quede fija.
+   **Resuelto: la opción recomendada.**
+3. Las seis piezas que ya se quedan quietas al bajar (índice del registro, etiqueta del acta, Cómo sigue, panel de Asignaciones y los dos mapas) quedarían tapadas por el encabezado fijo. Recomiendo autorizar al constructor a cambiar esa línea de top en cada hoja. Es fuera de zona pero imprescindible para que nada quede superpuesto.
+   **Resuelto: la opción recomendada.**
+4. El botón fijo de Confirmar recepción se puede tocar antes de cargar las fotos. Recomiendo dejarlo así: el navegador marca lo obligatorio y el servidor ya tiene su pantalla de error. Hay que mirarlo en la prueba con personas.
+   **Resuelto: la opción recomendada.**
+5. No medí el alto real de las cabeceras ni de la barra, ni probé el fundido en un navegador: la ficha deja los valores para que los mida el constructor en 768, 1280 y 1920 px. Recomiendo que la comprobación del lote incluya los seis criterios de la sección 9 de la ficha.
+   **Resuelto: la opción recomendada.**

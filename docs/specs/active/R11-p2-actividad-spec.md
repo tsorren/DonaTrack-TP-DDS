@@ -1,5 +1,6 @@
 # Spec: R11 p2-actividad — El registro de actividad de administración
 
+> **Aprobada el 2026-11-12** con las opciones recomendadas (aprobación automática pedida por el usuario para P1 y P2; ver "Aprobación del diseño" al final).
 > **Estado:** PROPOSED (pendiente de aprobación del usuario). Diseño del lote `p2-actividad` del
 > [backlog de la revisión del 2026-11-11](../../interfaz/backlog-revision-2026-11-11.md) (R11-26,
 > P2, tanda 1, ruta CONTRATO). Ningún ADR se promueve.
@@ -392,3 +393,20 @@ Cada una con la opción que recomienda el diseñador.
 4. **El ADR.** Recomiendo que el constructor lo escriba `proposed` antes del código, como pide
    AGENTS.md §7.3. Alternativa: escribirlo en el cierre documental de la oleada, como en P1 (desvío
    ya acordado entonces).
+
+## Aprobación del diseño p2-actividad (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. Ruta en el gateway: RutasGateway no tiene /api/actividad y el gateway no es de este lote; el sitio llama a Donaciones directo. Recomiendo sumar la línea y su caso en RutasGatewayTest al integrar.
+   **Resuelto: la opción recomendada.**
+2. Camiones y cuentas: ¿entran al registro anotados por el sitio (POST /api/actividad)? Recomiendo que sí, con el catálogo cerrado y el autor del token. Aceptamos el riesgo de que, si falla la anotación, esa acción no quede registrada (se escribe un WARN con el traceId).
+   **Resuelto: la opción recomendada.**
+3. ¿Copiar las propuestas ya decididas en V25? Recomiendo que sí: son datos reales con autor y fecha.
+   **Resuelto: la opción recomendada.**
+4. ADR: recomiendo que el constructor lo escriba como proposed antes del código, como pide AGENTS.md §7.3, y no en el cierre como se hizo en P1.
+   **Resuelto: la opción recomendada.**
+5. [INFERRED] Sin verificar: que Keycloak 26 acepte search y q juntos en /users. Recomiendo que el constructor lo pruebe en el stack propio y, si no anda, filtre en dos pasos acotados a 21.
+   **Resuelto: la opción recomendada.**
+6. El seeder corre con una cuenta de admin, así que la demo va a mostrar muchas filas a su nombre. Recomiendo dejarlo así (es lo que pasó) y mostrar 'Solo lo mío' en la demo.
+   **Resuelto: la opción recomendada.**

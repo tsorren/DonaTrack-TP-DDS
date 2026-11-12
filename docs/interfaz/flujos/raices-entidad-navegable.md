@@ -217,7 +217,7 @@ Recibidas en octubre (6)
 
 ### 4.3 `entidad-notificaciones` y `entidad-notificaciones-leidas`
 
-> **Actualización R11-14 (2026-11-12, en revisión):** la bandeja va de a 20 por página, con los
+> **Actualización R11-14 (2026-11-12, aprobada):** la bandeja va de a 20 por página, con los
 > filtros resueltos en Notificaciones, y cambia cómo se ven las leídas y las sin leer, sus vínculos
 > y el ícono de "Marcar como no leída". Lo que dice la
 > [ficha del lote `p1-notificaciones`](r11-p1-notificaciones.md) sobre la bandeja manda sobre esta
@@ -284,7 +284,7 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
 
 - Sin audacia de más: es la mesa de trabajo de quien decide (la del primer prototipo, sobria). Las cifras van
   sin gráficos y con su fecha.
-  > **Cambia con R11-42 (2026-11-12, en revisión):** el inicio suma dos gráficos, mes a mes y por
+  > **Cambia con R11-42 (2026-11-12, aprobada):** el inicio suma dos gráficos, mes a mes y por
   > categoría, cada uno con su tabla al lado. Ver
   > [R11-42 · Los últimos 12 meses, en gráficos](#r11-42--los-últimos-12-meses-en-gráficos). Decidió
   > el usuario en la ronda del 2026-11-11 ("Inicio del admin: … y, además, gráficos").
@@ -297,7 +297,7 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
 
 #### R11-21 · El inicio del admin, por temas (aprobada 2026-11-12)
 
-> **Estado:** en revisión desde el 2026-11-12 · **Aprobó:** falta el OK del usuario.
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Sale del [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (R11-21, lote
 > `p1-admin-inicio`, ruta STANDARD, solo `cliente-liviano`). **Manda sobre el esquema de arriba y
 > sobre las filas `admin-inicio` de §5, §6 y §8**; lo demás de la ficha sigue aprobado. La decisión
@@ -305,7 +305,7 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
 > está tomada: esta parte no la reabre. Los gráficos son R11-42 y no entran acá; las tarjetas dejan
 > el lugar para sumarlos sin rearmar la pantalla.
 >
-> **Desde R11-42 (2026-11-12, en revisión):** lo que esta parte dice "sin gráficos" (§4, regla
+> **Desde R11-42 (2026-11-12, aprobada):** lo que esta parte dice "sin gráficos" (§4, regla
 > final; §8, heurística 8; §9, última decisión) lo reemplaza
 > [R11-42 · Los últimos 12 meses, en gráficos](#r11-42--los-últimos-12-meses-en-gráficos). El resto
 > de R11-21 sigue igual.
@@ -602,7 +602,7 @@ filtro).
 
 #### R11-42 · Los últimos 12 meses, en gráficos
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** falta el OK del usuario.
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Sale del [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (R11-42, lote
 > `p2-admin-graficos`, P2, ruta CONTRATO, `donaciones-service` y `cliente-liviano`). La decisión de
 > la ronda ("Inicio del admin: tarjetas de cifras, pendientes arriba y, además, gráficos (cambia el
@@ -1378,3 +1378,16 @@ Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda 
 1. ¿Mostrar hasta 3 propuestas con nombre? Recomiendo dejar solo el número en este lote. Si el usuario quiere los nombres, que p1-asignaciones agregue estado y tamaño de página a GET /api/asignaciones/propuestas, y recién ahí se suman 3 líneas a la tarjeta. **Resuelto: la opción recomendada.**
 2. ¿La fila 'No se pudo entregar' merece un filtro propio en la lista de Donaciones (?estado=fallida)? Recomiendo sumarlo en p2-admin-bandeja, que ya toca esos filtros. Hasta entonces, la fila sin enlace y con la aclaración. **Resuelto: la opción recomendada.**
 3. ¿'Donaciones sin asignar' se entiende como 'las que hay que asignar'? Recomiendo dejar ese nombre y anotarlo para probar con personas reales (ya figura en la ficha). La alternativa sería 'En el depósito, por asignar'. **Resuelto: la opción recomendada.**
+
+## Aprobación del diseño p2-admin-graficos (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. ¿Cada mes y cada categoría de la tabla deberían llevar a la lista de Donaciones filtrada? Recomiendo que no en este lote: hoy esa lista no filtra por fecha ni por categoría (admin-donaciones.html:95-110). Esos filtros se pueden sumar en p2-admin-bandeja, que ya trabaja sobre esa lista, y recién entonces poner los enlaces.
+   **Resuelto: la opción recomendada.**
+2. ¿El seed reparte las donaciones en varios meses? Si todas tienen la misma fecha de registro, el gráfico mes a mes muestra una sola columna. Recomiendo comprobarlo en la verificación con el stack propio. Si pasa, se anota para el lote del seeder y no se toca el sistema.
+   **Resuelto: la opción recomendada.**
+3. ¿Hace falta poder elegir otro período, por ejemplo el año anterior? Recomiendo que no por ahora: 12 meses fijos alcanzan para la demo y no suman estados ni textos.
+   **Resuelto: la opción recomendada.**
+4. Al integrar, el aumento de versión de openapi-donaciones.yaml (1.10.0 → 1.11.0) puede chocar con otros lotes de P2 que también cambian el contrato de Donaciones. Recomiendo que el integrador junte todo en una sola versión menor.
+   **Resuelto: la opción recomendada.**

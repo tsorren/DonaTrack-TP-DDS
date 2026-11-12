@@ -1,6 +1,6 @@
 # Flujo: La campanita con desplegable y los avisos de la administración (R11-29, R11-30)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (parada de diseño de la oleada P2)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-campanita` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta CONTRATO).
 > Las decisiones del usuario "Campanita" y "Avance de la importación" de la sección 3 del backlog ya
@@ -333,3 +333,16 @@ Decisiones de esta ficha (propuesta del agente; van a la [bitácora](../bitacora
 
 Preguntas abiertas: ninguna que frene la construcción. Las dudas para el usuario van en el reporte
 del lote; la primera es la 1 (bandeja compartida).
+
+## Aprobación del diseño p2-campanita (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. ¿Bandeja compartida para todos los admins (si uno abre un aviso, queda leído para todos)? Recomiendo sí para esta entrega, porque reusa lo que ya existe y la bajada de la pantalla lo dice. La bandeja por cuenta quedaría en el backlog.
+   **Resuelto: la opción recomendada.**
+2. ¿Cada importación debería mandar además un correo a admin@donatrack.com, como ya pasa con el aviso de contacto (riesgo R3)? Recomiendo aceptarlo: es un correo por importación, no por fila. Si molesta en la demo, se apaga ese medio de contacto y no el aviso.
+   **Resuelto: la opción recomendada.**
+3. ¿La franja 'Se está importando…' de Donantes debería verla cualquier admin, no solo el que subió el archivo? Recomiendo dejarla como está, en la memoria de la sesión, y que el aviso de la campanita cubra al resto. Cambiarla pide guardar quién subió el archivo.
+   **Resuelto: la opción recomendada.**
+4. ¿Los textos de los avisos de importación ('Terminó una importación', 'Una importación se cortó', con fecha de subida y cifras) están bien? Recomiendo aceptarlos así y ajustar palabras sueltas al ver las capturas.
+   **Resuelto: la opción recomendada.**

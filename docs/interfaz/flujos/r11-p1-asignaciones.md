@@ -206,7 +206,7 @@ La piden 2 propuestas y alcanza para una.
 
 ### 4.5 Todas las decididas (`?vista=decididas`)
 
-> **Desde R11 P2 (2026-11-12, en revisión):** esta sección la amplía la ficha
+> **Desde R11 P2 (2026-11-12, aprobada):** esta sección la amplía la ficha
 > [Donantes y Donaciones como bandeja](r11-p2-admin-bandeja.md#43-admin-asignacionesvistadecididas--todas-las-decididas)
 > (lote `p2-admin-bandeja`, R11-35): búsqueda, filtros por estado, categoría, fecha y quién
 > decidió, el autor y la fecha en cada renglón y el motivo del descarte guardado.

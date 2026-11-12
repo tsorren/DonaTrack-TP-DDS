@@ -1,6 +1,6 @@
 # Flujo: el tablero del inicio de la empresa donante (R11-25)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-tablero` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta STANDARD).
 > La decisión del usuario de la sección 3 del backlog ("Tablero del inicio de la empresa":
@@ -329,3 +329,16 @@ Preguntas abiertas para el usuario (con la opción recomendada):
 3. **La pastilla de la cabeza con la cifra** ("Ya llegó · 48"), ¿o la cifra entre paréntesis, como
    el boceto ("Ya llegó (48)")? → **Con el punto medio (recomendada):** dentro de la pastilla de color se lee más limpio que con
    paréntesis. · Entre paréntesis, como el boceto.
+
+## Aprobación del diseño p2-tablero (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. La cifra 'entregas en curso hoy' de arriba hoy sale de la lista de hasta 100 donaciones, fuera del bloque del tablero. ¿Pasa a salir de los totales de las columnas (En camino o por salir más Para tener en cuenta)? Recomiendo que sí: así las cifras de arriba y las del tablero dicen lo mismo. Hacerlo toca una línea de donante-inicio.html fuera del bloque.
+   **Resuelto: la opción recomendada.**
+2. El resto del inicio (las cifras del mes, el hito, el recorrido, las raíces y las noticias) sigue leyendo la lista de hasta 100 donaciones, así que el adaptador todavía la pide. Recomiendo anotarlo como deuda (un ítem en DTI-42) para un lote propio: cambiarlo toca el componente de la huerta y las noticias, fuera de este lote.
+   **Resuelto: la opción recomendada.**
+3. La cifra en la cabeza de cada columna, ¿con punto medio ('Ya llegó · 48') o entre paréntesis como el boceto ('Ya llegó (48)')? Recomiendo el punto medio: dentro de la pastilla de color se lee más limpio.
+   **Resuelto: la opción recomendada.**
+4. Para quien construya: hay que comprobar en el navegador que el paginador, con hx-swap 'show:none', cambie la columna sin subir la pantalla y que el foco vaya al título. También hay que actualizar DonanteInicioRestTest, DonanteInicioControllerTest y verificacion/paginas.txt (sumar ?escenario=muchas y una página 2). Recomiendo que el constructor lo verifique a 360, 1280 y 1920 px.
+   **Resuelto: la opción recomendada.**
