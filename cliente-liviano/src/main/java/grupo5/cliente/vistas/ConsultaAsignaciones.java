@@ -8,10 +8,16 @@ import java.util.Set;
  * {@code algoritmo}, el filtro "Ver" de Propuestas ({@code parecido}, {@code menos-recibieron},
  * {@code las-dos} o '', todas); {@code categoria}, el filtro de Destino (la clave de la categoría o
  * ''); {@code donacion}, la donación elegida en Destino (o ''); {@code pagina}, desde 1. Un valor
- * que no se entiende es el de siempre.
+ * que no se entiende es el de siempre. {@code decididas}: la búsqueda de Todas las decididas
+ * (R11-35); nunca nula.
  */
 public record ConsultaAsignaciones(
-    String pestana, String algoritmo, String categoria, String donacion, int pagina) {
+    String pestana,
+    String algoritmo,
+    String categoria,
+    String donacion,
+    int pagina,
+    ConsultaDecididas decididas) {
 
   public static final String PROPUESTAS = "propuestas";
   public static final String CONFLICTOS = "conflictos";
@@ -31,6 +37,18 @@ public record ConsultaAsignaciones(
     categoria = categoria != null && categoria.matches(CLAVE) ? categoria : "";
     donacion = donacion != null && donacion.matches(CLAVE) ? donacion : "";
     pagina = Math.max(1, pagina);
+    decididas = decididas == null ? ConsultaDecididas.ninguna() : decididas;
+  }
+
+  /** Sin la búsqueda de las decididas. */
+  public ConsultaAsignaciones(
+      String pestana, String algoritmo, String categoria, String donacion, int pagina) {
+    this(pestana, algoritmo, categoria, donacion, pagina, null);
+  }
+
+  /** La misma consulta con la búsqueda de Todas las decididas. */
+  public ConsultaAsignaciones conDecididas(ConsultaDecididas busqueda) {
+    return new ConsultaAsignaciones(pestana, algoritmo, categoria, donacion, pagina, busqueda);
   }
 
   /** La pestaña de entrada, sin filtros. */

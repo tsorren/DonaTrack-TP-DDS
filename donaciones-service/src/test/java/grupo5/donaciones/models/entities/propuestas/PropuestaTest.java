@@ -363,4 +363,33 @@ class PropuestaTest {
     assertThrows(BusinessStateException.class, () -> propuesta.rechazar("sub-de-ana"));
     assertEquals("sub-de-carla", propuesta.getDecididaPor());
   }
+
+  // R11-35: el motivo del descarte se guarda recortado; vacío es lo mismo que no anotarlo
+  @Test
+  void rechazar_conMotivo_loGuardaRecortado() {
+    Propuesta propuesta = new Propuesta();
+
+    propuesta.rechazar("sub-de-carla", "  El merendero cerró por vacaciones.  ");
+
+    assertEquals("El merendero cerró por vacaciones.", propuesta.getMotivoDescarte());
+  }
+
+  @Test
+  void rechazar_conMotivoEnBlanco_noGuardaMotivo() {
+    Propuesta propuesta = new Propuesta();
+
+    propuesta.rechazar("sub-de-carla", "   ");
+
+    assertNull(propuesta.getMotivoDescarte());
+  }
+
+  @Test
+  void aceptar_noTieneMotivoDeDescarte() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+
+    propuesta.aceptar("sub-de-ana");
+
+    assertNull(propuesta.getMotivoDescarte());
+  }
 }

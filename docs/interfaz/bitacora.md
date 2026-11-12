@@ -31,6 +31,32 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · admin · Donantes y Donaciones como bandeja; Todas las decididas se busca y guarda el motivo
+
+- **Decisión:** Donaciones y Donantes del admin pasan a ser una bandeja (`.maestro`, el bloque de
+  Entidades): el renglón abre su ficha en la misma página, al lado y fija al desplazarse desde
+  53,75 em; en el celular, la del primero no se abre sola y la elegida trae "Cerrar la ficha".
+  Todas las decididas suma búsqueda por organización o donación, pastillas de estado, categoría,
+  fecha (períodos fijos), quién decidió (Vos, las cuentas por su nombre o "Antes de las cuentas")
+  y el orden por la fecha de la decisión; Donaciones guarda el motivo del descarte (hasta 500
+  caracteres, `V26`) y lo muestra en la decidida (lote `p2-admin-bandeja`, R11-34 y R11-35).
+- **Alternativas:** el período como `?desde=&hasta=` libres en la dirección (descartado: los
+  períodos fijos ya son la regla de las otras listas y no piden validar fechas a mano); "Antes de
+  las cuentas" como dos valores, SISTEMA y sin autor (descartado: para quien mira es lo mismo);
+  buscar el nombre de la organización también en la base en memoria (descartado: solo PostgreSQL
+  tiene las organizaciones juntas; en memoria se busca por lo que pide y lo que se donó).
+- **Por qué:** con una tabla y un detalle aparte, revisar varias donaciones era ir y volver; la
+  bandeja deja la lista a la vista. Sin buscador ni quién decidió, Todas las decididas no servía
+  para contestar "¿quién descartó esto y por qué?".
+- **Costo:** quedan para después el filtro y el orden por vencimiento en Donaciones (sigue el
+  texto de límite de `?vence=pronto`), la pastilla de fecha de alta en Donantes (no se dibuja), el
+  contacto y las 3 últimas donaciones en la ficha del donante, y el pictograma de la categoría en
+  el renglón de Donaciones. La ficha de la donación del renglón cuesta una lectura por clave.
+- **Quién decidió:** usuario (diseño aprobado con las opciones recomendadas, 2026-11-12) y equipo
+  (lo de la construcción).
+- **Evidencia:** [ficha r11-p2-admin-bandeja](flujos/r11-p2-admin-bandeja.md); capturas de la
+  verificación visual (`admin-donantes`, `admin-donaciones`, `admin-asignaciones`).
+
 ### 2026-11-12 · admin · Registro de actividad: pestaña de Administradores, sin detalle propio
 
 - **Decisión:** la actividad de administración (R11-26, lote `p2-actividad`) es la pestaña

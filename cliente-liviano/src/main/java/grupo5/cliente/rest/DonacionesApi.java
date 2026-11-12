@@ -630,7 +630,8 @@ interface DonacionesApi {
   /**
    * Una propuesta de asignación. Desde R11-24: {@code sugeridaPor} (vacía si se generó antes),
    * {@code situacion} (LIBRE, EN_CONFLICTO o SIN_STOCK; null si no está pendiente) y cuántas otras
-   * pendientes cubren la misma necesidad.
+   * pendientes cubren la misma necesidad. Quién la decidió y cuándo ({@code decididaPor}, el id de
+   * la cuenta o "SISTEMA"; null en las de antes de R11-10) y, desde R11-35, el motivo del descarte.
    */
   record Propuesta(
       UUID id,
@@ -640,7 +641,10 @@ interface DonacionesApi {
       List<Fragmento> fragmentaciones,
       List<Sugerencia> sugeridaPor,
       String situacion,
-      Integer otrasPendientesMismaNecesidad) {}
+      Integer otrasPendientesMismaNecesidad,
+      String decididaPor,
+      LocalDateTime fechaDecision,
+      String motivoDescarte) {}
 
   /** {@code entidadId}, {@code entidadNombre} y {@code unidad}, desde R11-24. */
   record NecesidadResumen(
@@ -668,7 +672,9 @@ interface DonacionesApi {
   record Sugerencia(
       String algoritmo, Integer puesto, Integer deCuantas, Boolean eligioLasDonaciones) {}
 
-  record ResumenPropuestas(Long pendientes, Long libres, Long enConflicto, Long sinStock) {}
+  /** {@code decididasSinFecha}, desde R11-35: las decididas sin fecha guardada. */
+  record ResumenPropuestas(
+      Long pendientes, Long libres, Long enConflicto, Long sinStock, Long decididasSinFecha) {}
 
   record DonacionEnPropuestas(
       Donacion donacionIndependiente,

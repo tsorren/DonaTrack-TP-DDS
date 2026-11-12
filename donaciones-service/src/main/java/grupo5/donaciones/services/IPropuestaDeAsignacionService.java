@@ -15,12 +15,14 @@ public interface IPropuestaDeAsignacionService {
   EjecucionRealizada ejecutarAsignacion();
 
   /**
-   * Una página de propuestas con los filtros y el orden pedidos ({@code orden}: {@code puesto} o
-   * {@code reciente}), resueltos en la base (R11-24).
+   * Una página de propuestas con los filtros y el orden pedidos ({@code orden}: {@code puesto},
+   * {@code reciente}, {@code decision_reciente} o {@code decision_antigua}), resueltos en la base
+   * (R11-24; la búsqueda de las decididas, R11-35). Un período con el comienzo después del final da
+   * 400.
    */
   Pagina<PropuestaDTO> listarPropuestas(FiltroPropuestas filtro, ParametrosListado listado);
 
-  /** Cuántas pendientes hay en cada situación (R11-24). */
+  /** Cuántas pendientes hay en cada situación (R11-24) y cuántas decididas no tienen fecha. */
   ResumenPropuestasDTO resumen();
 
   /**
@@ -35,6 +37,12 @@ public interface IPropuestaDeAsignacionService {
    * {@code sub} del token), o "SISTEMA" si no hay cuenta.
    */
   void actualizarEstado(UUID id, EstadoPropuesta estado, String actor);
+
+  /**
+   * Como {@link #actualizarEstado(UUID, EstadoPropuesta, String)}; al descartar, guarda {@code
+   * motivo} recortado (R11-35; vacío o nulo, sin motivo). Al aprobar, {@code motivo} se ignora.
+   */
+  void actualizarEstado(UUID id, EstadoPropuesta estado, String actor, String motivo);
 
   /** Una página del historial, de la más reciente a la más vieja (R11-24). */
   Pagina<EjecucionAsignacionDTO> historialEjecuciones(ParametrosListado listado);

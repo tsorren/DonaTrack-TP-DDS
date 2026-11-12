@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -41,16 +42,51 @@ public class AdminDonacionesController {
       @RequestParam(required = false) String estado,
       @RequestParam(required = false) String vence,
       @RequestParam(required = false) String orden,
+      @RequestParam(required = false) String buscar,
+      @RequestParam(required = false) String categoria,
+      @RequestParam(required = false) String registrada,
+      @RequestParam(required = false) String donante,
+      @RequestParam(required = false) String donacion,
       Model model,
       HttpServletRequest pedido) {
     String vista = pantallas.mostrar("admin-donaciones", model);
     ConsultaDonaciones consulta =
-        new ConsultaDonaciones(estado, "pronto".equals(vence), orden, Paginadores.pedida(pedido));
-    AdminDonacionesVista datos = operacion.donaciones(consulta, "");
+        new ConsultaDonaciones(
+            estado,
+            "pronto".equals(vence),
+            orden,
+            Paginadores.pedida(pedido),
+            buscar,
+            categoria,
+            registrada,
+            donante,
+            donacion);
+    AdminDonacionesVista datos = elegida(operacion.donaciones(consulta, ""));
     model.addAttribute("adminDonaciones", datos);
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de donaciones", datos.donaciones()));
     return vista;
+  }
+
+  /**
+   * La bandeja (R11-34): la ficha de la pedida con {@code ?donacion=} (aunque no esté en la página)
+   * o, si no se pidió ninguna, la de la primera de la página, de partida. Una lectura por clave.
+   */
+  private AdminDonacionesVista elegida(AdminDonacionesVista datos) {
+    String pedida = datos.consulta().donacion();
+    boolean dePartida = pedida.isEmpty();
+    if (dePartida) {
+      if (datos.donaciones() == null || datos.donaciones().filas().isEmpty()) {
+        return datos;
+      }
+      pedida = datos.donaciones().filas().getFirst().clave();
+    }
+    try {
+      return datos.conElegida(operacion.donacion(pedida, ""), dePartida);
+    } catch (RestClientException sinFicha) {
+      // Sin la ficha, la lista se ve igual: el renglón sigue llevando al detalle
+      return datos;
+    }
   }
 
   /** El detalle, pedido por su clave ({@code ?donacion=}): ya no se busca en la lista entera. */

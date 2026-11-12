@@ -22,6 +22,11 @@
        cortada; en el resultado, sin-errores y cortada. Importar es un formulario real (POST,
        multipart) que lleva a admin-donantes-importando; el archivo que no se acepta es
        admin-donantes-importar-error.
+       R11-34 (ficha r11-p2-admin-bandeja §4.1): la lista es una bandeja (.maestro): cada renglón
+       elige su donante (?donante=<clave>, en la misma página, con los filtros) y su ficha va dentro
+       del renglón; desde 53,75 em, a la derecha y fija al desplazarse. Sin pedir ninguno, la ficha
+       es la del primero (data-elegido="partida"): en el celular no se abre sola. La ficha lleva a
+       sus donaciones (admin-donaciones?donante=<clave>).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'importando', 'importado' o
          'importar-error'.
@@ -61,7 +66,7 @@
              estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
              sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} },
              imp=${datos.importacion}">
-  <div class="mesa">
+  <div class="mesa" data-pantalla="donantes">
     <nav th:replace="~{admin-importaciones :: pestanas('donantes')}"></nav>
     <!--/* El encabezado a todo el ancho, con las dos acciones al costado (ronda 2026-11-09); en el celular,
            debajo. La cifra es un número de la fuente, no el largo de la lista. */-->
@@ -184,33 +189,57 @@
         <p>Probá con otra parte del nombre o del documento, o sacá los filtros.</p>
         <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Ver todos</a>
       </section>
-      <table th:if="${conDatos and n > 0}" class="tabla">
-        <caption class="solo-lectores">Donantes</caption>
-        <thead>
-          <tr>
-            <th scope="col">Nombre</th>
-            <th scope="col">Tipo</th>
-            <th th:if="${opciones.conDona}" scope="col">Qué dona</th>
-            <th scope="col">Documento</th>
-            <th th:if="${opciones.conAlta}" scope="col">Alta</th>
-            <th scope="col">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="d : ${tramo.filas}">
-            <th scope="row" th:text="${d.nombre}">Ana Ejemplo</th>
-            <td data-rotulo="Tipo" th:text="${d.tipoTexto}">Persona</td>
-            <td th:if="${opciones.conDona}" data-rotulo="Qué dona" th:text="${d.donaTexto} ?: '—'">Alimentos</td>
-            <td data-rotulo="Documento" th:text="${d.documento}">DNI 20.000.001</td>
-            <td th:if="${opciones.conAlta}" data-rotulo="Alta" th:text="${d.alta} ?: '—'">14 de octubre</td>
-            <td data-rotulo="Estado"><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
+      <!--/* La bandeja (R11-34). Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con
+             HTMX, hx-get pide la misma dirección sin el ancla. */-->
+      <ul th:if="${conDatos and n > 0}" class="maestro" role="list" th:with="base=${c.direccion()}">
+        <li th:each="d : ${tramo.filas}" th:id="|donante-${d.clave}|"
+            th:attr="data-elegido=${d.clave == donanteElegido and donantePartida} ? 'partida' : null">
+          <a href="#" th:href="@{|${base}donante=${d.clave}|} + |#donante-${d.clave}|"
+             th:hx-get="@{|${base}donante=${d.clave}|}" hx-push-url="true"
+             th:aria-current="${d.clave == donanteElegido and !donantePartida} ? 'true' : null">
+            <span><b th:text="${d.nombre}">Ana Ejemplo</b>
+              <small th:text="|${d.tipoTexto} · ${d.documento}|">Persona · DNI 20.000.001</small></span>
+            <span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
                 th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
-                th:text="${estados[d.estado]}">Activo</th:block></span></td>
-          </tr>
-        </tbody>
-      </table>
+                th:text="${estados[d.estado]}">Activo</th:block></span>
+          </a>
+          <section th:if="${d.clave == donanteElegido}" id="ficha" class="tarjeta maestro-ficha"
+                   aria-labelledby="ficha-titulo">
+            <div data-parte="identidad">
+              <div>
+                <h3 id="ficha-titulo" th:text="${d.nombre}">Ana Ejemplo</h3>
+                <p th:text="${d.tipoTexto}">Persona</p>
+              </div>
+              <dl>
+                <div><dt>Documento:</dt> <dd th:text="${d.documento}">DNI 20.000.001</dd></div>
+                <div th:if="${d.donaTexto != null}"><dt>Qué dona:</dt> <dd th:text="${d.donaTexto}">Alimentos</dd></div>
+                <div th:if="${d.alta != null}"><dt>Alta:</dt> <dd th:text="${d.alta}">14 de octubre</dd></div>
+              </dl>
+            </div>
+            <div data-parte="resumen">
+              <p><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
+                  th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
+                  th:text="${estados[d.estado]}">Activo</th:block></span></p>
+            </div>
+            <div data-parte="acciones" class="racimo">
+              <a class="boton" data-tono="secundario" href="/admin-donaciones?donante=ana"
+                 th:href="@{/admin-donaciones(donante=${d.clave})}">Ver sus donaciones</a>
+              <a class="boton" data-tono="secundario" href="/admin-donaciones-registrar?donante=ana"
+                 th:href="@{/admin-donaciones-registrar(donante=${d.clave})}">Registrar una donación</a>
+              <a class="boton" data-tono="secundario" data-parte="cerrar" href="/admin-donantes"
+                 th:href="@{${base}} + |#donante-${d.clave}|">Cerrar la ficha</a>
+            </div>
+          </section>
+        </li>
+      </ul>
+      <p th:if="${conDatos and n > 0}"
+         th:with="cuantas=${#lists.size(tramo.filas)},
+                  desde=${tramo.pagina < tramo.paginas ? (tramo.pagina - 1) * cuantas + 1 : tramo.total - cuantas + 1},
+                  hasta=${desde + cuantas - 1}"
+         th:text="|Mostrando ${desde} a ${hasta} de ${#numbers.formatInteger(n, 1, 'POINT')} donantes.|">Mostrando 1
+        a 12 de 12 donantes.</p>
       <th:block th:if="${conDatos}">
-        <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
       </th:block>
     </section>
   </div>

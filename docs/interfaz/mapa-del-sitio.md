@@ -187,6 +187,16 @@ ya estaban ([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p
 | Portada y públicas con la sesión iniciada | La navegación pública sigue; "Ingresar" y "Crear una cuenta" se cambian por "Ir a mi inicio" (el inicio del área) y la foto con el menú de la cuenta. Con la solicitud pendiente, "Ver mi solicitud" (lleva a "Recibimos la solicitud"). Integrado después del cierre (`p1-portada`) | R11-15 |
 El registro de actividad y las notificaciones del admin entran con sus lotes de P2.
 
+## Cambios de la oleada P2: lote `p2-admin-bandeja` (2026-11-12)
+
+Ninguna pantalla nueva ni ningún nivel más ([ficha](flujos/r11-p2-admin-bandeja.md)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donaciones del admin | Bandeja: cada renglón abre su ficha en la misma página (`?donacion=`), al lado desde la tableta y fija al desplazarse; en el celular, debajo del renglón y con "Cerrar la ficha". Desde la ficha: "Ver las propuestas que la piden" (Asignar donaciones, Destino) y "Marcar como vencida". `admin-donaciones-detalle` sigue para los enlaces que llegan de afuera | R11-34 |
+| Donantes del admin → Donaciones | La ficha del donante lleva a sus donaciones (`/admin-donaciones?donante=`), que se ven con "De <nombre> · Quitar" | R11-34 |
+| Asignar donaciones → Todas las decididas | Búsqueda y filtros (estado, categoría, fecha, quién decidió) y orden por la fecha de la decisión; cada decidida lleva a la ficha de sus donaciones en Donaciones | R11-35 |
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,

@@ -11,7 +11,9 @@ import java.util.stream.Stream;
  * Conflictos, la donación elegida en Destino y Todas las decididas, que trae {@code decididas}),
  * {@code recientes} (las 3 últimas decididas, en Propuestas), {@code donaciones} (Destino, paso 1)
  * y {@code elegida} (Destino, paso 2; null si la donación pedida ya no está en ninguna pendiente).
- * Lo que no corresponde a la pestaña es null o vacío.
+ * Lo que no corresponde a la pestaña es null o vacío. En Todas las decididas (R11-35), {@code
+ * autores} son las opciones de "Decidió" (la primera, "Cualquiera") y {@code sinFecha}, cuántas
+ * decididas no tienen fecha guardada (un número de Donaciones).
  */
 public record AdminAsignacionesVista(
     ConsultaAsignaciones consulta,
@@ -22,7 +24,9 @@ public record AdminAsignacionesVista(
     Tramo<Decidida> decididas,
     List<Opcion> categorias,
     Tramo<DonacionEnJuego> donaciones,
-    DonacionEnJuego elegida) {
+    DonacionEnJuego elegida,
+    List<Opcion> autores,
+    long sinFecha) {
 
   /** Los nombres de los algoritmos en pantalla (ficha, sección 6). */
   public static final String PARECIDO = "Parecido con lo pedido";
@@ -32,6 +36,52 @@ public record AdminAsignacionesVista(
   public AdminAsignacionesVista {
     recientes = recientes == null ? List.of() : List.copyOf(recientes);
     categorias = categorias == null ? List.of() : List.copyOf(categorias);
+    autores = autores == null ? List.of() : List.copyOf(autores);
+  }
+
+  /** Sin lo de Todas las decididas de R11-35. */
+  public AdminAsignacionesVista(
+      ConsultaAsignaciones consulta,
+      Cuentas cuentas,
+      String ultima,
+      Tramo<Propuesta> propuestas,
+      List<Decidida> recientes,
+      Tramo<Decidida> decididas,
+      List<Opcion> categorias,
+      Tramo<DonacionEnJuego> donaciones,
+      DonacionEnJuego elegida) {
+    this(
+        consulta,
+        cuentas,
+        ultima,
+        propuestas,
+        recientes,
+        decididas,
+        categorias,
+        donaciones,
+        elegida,
+        List.of(),
+        0);
+  }
+
+  /** Las opciones de "Estado" de Todas las decididas. */
+  public List<Opcion> estadosDecididas() {
+    return List.of(
+        new Opcion("", "Todas"),
+        new Opcion(ConsultaDecididas.APROBADAS, "Aprobadas"),
+        new Opcion(ConsultaDecididas.DESCARTADAS, "Descartadas"));
+  }
+
+  /** Las opciones de "Decidida": los períodos fijos. */
+  public List<Opcion> periodosDecididas() {
+    return ConsultaDecididas.PERIODOS_OPCIONES;
+  }
+
+  /** Las opciones del orden de Todas las decididas. */
+  public List<Opcion> ordenesDecididas() {
+    return List.of(
+        new Opcion("", "Más recientes primero"),
+        new Opcion(ConsultaDecididas.ANTIGUAS, "Más antiguas primero"));
   }
 
   /** Las opciones del filtro "Ver" de Propuestas: la primera es "Todas". */
@@ -98,8 +148,39 @@ public record AdminAsignacionesVista(
   /** Un algoritmo que la sugirió: su nombre llano y su puesto con el total ("3.º de 10"). */
   public record Sugerencia(String algoritmo, String puesto) {}
 
-  /** Una propuesta decidida: {@code estado} es "Aprobada" o "Descartada". */
-  public record Decidida(String entidad, String que, String estado) {}
+  /**
+   * Una propuesta decidida: {@code estado} es "Aprobada" o "Descartada". Desde R11-35: {@code
+   * categoria} (la de la necesidad, o null), {@code quien} (la frase con quién y cuándo: "Aprobó
+   * Ana Pérez el 12 de noviembre de 2026, 10:15.", o la de las decididas sin dato), {@code motivo}
+   * (lo que anotó al descartar; '' si se descartó sin motivo; null si no se muestra: aprobada o en
+   * las 3 recientes) y {@code cubria} (las donaciones que la cubrían, con la clave de cada una para
+   * su ficha).
+   */
+  public record Decidida(
+      String entidad,
+      String que,
+      String estado,
+      String categoria,
+      String quien,
+      String motivo,
+      List<Cubre> cubria) {
+
+    public Decidida {
+      cubria = cubria == null ? List.of() : List.copyOf(cubria);
+    }
+
+    /** Sin los datos de R11-35. */
+    public Decidida(String entidad, String que, String estado) {
+      this(entidad, que, estado, null, null, null, List.of());
+    }
+
+    public boolean descartada() {
+      return "Descartada".equals(estado);
+    }
+  }
+
+  /** Una donación que cubría una decidida: su clave y "Arroz · 25 kg (de Ana Ejemplo)". */
+  public record Cubre(String clave, String texto) {}
 
   /**
    * Una donación que está en alguna propuesta pendiente (Destino): {@code que} ("Arroz · 25 kg"),

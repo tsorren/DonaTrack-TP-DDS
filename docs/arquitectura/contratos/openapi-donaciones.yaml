@@ -16,6 +16,9 @@ info:
     donaciones que están en propuestas pendientes.
     Desde 1.11.0 (R11-41) la cuenta cuya solicitud de entidad espera la aprobación lee y corrige
     lo que envió (`/api/personas/{id}/solicitud-entidad`).
+    Desde 1.12.0 (R11-35) el motivo con que se descarta una propuesta se guarda
+    (`motivoDescarte`) y el listado de propuestas busca las decididas por texto, categoría, autor
+    y período de la decisión, y las ordena por la fecha de la decisión.
     Desde 1.10.0 (R11-20), `GET /api/donantes/archivos` lista las importaciones de donantes con el
     mismo patrón, y el archivo informa el nombre con que se subió y cuándo (campos opcionales).
     Desde 1.10.0 (R11-12), `GET /api/entidades/publicas` acepta `categoriaId` (opcional) y
@@ -664,7 +667,9 @@ paths:
         Desde 1.10.0 (R11-24) filtra, ordena y pagina en la base: sin `page` ni `size` devuelve la
         página 0 de 20 (antes, todas). Los filtros se combinan con Y; los valores repetidos de un
         mismo filtro, con O. Cada propuesta dice qué algoritmo la sugirió y en qué puesto
-        (`sugeridaPor`) y, si está pendiente, su `situacion`.
+        (`sugeridaPor`) y, si está pendiente, su `situacion`. Desde 1.12.0 (R11-35), para Todas
+        las decididas: `q`, `categoriaId`, `decididaPor`, `decididaDesde`, `decididaHasta` y los
+        órdenes por la fecha de la decisión (cambio aditivo).
       operationId: listarPropuestasAsignacion
       parameters:
         - name: estado
@@ -701,13 +706,47 @@ paths:
           required: false
           description: Las que piden esta donación independiente.
           schema: { type: string, format: uuid }
+        - name: q
+          in: query
+          required: false
+          description: >-
+            Desde 1.12.0 (R11-35). "Contiene", sin distinguir mayúsculas ni tildes, en el nombre de
+            la organización de la necesidad, lo que pide la necesidad o la descripción de las
+            donaciones que la cubren. Hasta 100 caracteres.
+          schema: { type: string, maxLength: 100 }
+        - name: categoriaId
+          in: query
+          required: false
+          description: Desde 1.12.0 (R11-35). La categoría de la necesidad que cubre.
+          schema: { type: string, format: uuid }
+        - name: decididaPor
+          in: query
+          required: false
+          description: >-
+            Desde 1.12.0 (R11-35). El `sub` de la cuenta que la decidió. `SISTEMA` junta las
+            decididas sin cuenta y las que no tienen autor guardado (las de antes de 1.10.0).
+          schema: { type: string, maxLength: 100 }
+        - name: decididaDesde
+          in: query
+          required: false
+          description: >-
+            Desde 1.12.0 (R11-35). Primer día (inclusive) de la fecha de la decisión. Las que no
+            tienen fecha guardada no entran en un período.
+          schema: { type: string, format: date }
+        - name: decididaHasta
+          in: query
+          required: false
+          description: Desde 1.12.0 (R11-35). Último día (inclusive) de la fecha de la decisión.
+          schema: { type: string, format: date }
         - name: orden
           in: query
           required: false
           description: >-
             `puesto` (por defecto): el mejor puesto primero y, con `situacion=EN_CONFLICTO`, juntas
-            las que compiten por la misma donación. `reciente`: la más nueva primero.
-          schema: { type: string, enum: [puesto, reciente] }
+            las que compiten por la misma donación. `reciente`: la más nueva primero. Desde 1.12.0
+            (R11-35): `decision_reciente` (la decidida más recientemente primero; las que no
+            tienen fecha, al final) y `decision_antigua` (las que no tienen fecha, primero).
+          schema: { type: string, enum: [puesto, reciente, decision_reciente, decision_antigua] }
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -724,12 +763,15 @@ paths:
                   $ref: '#/components/schemas/PropuestaDTO'
         '400':
           description: >-
-            Un `estado`, `situacion`, `algoritmo` u `orden` desconocido, `page` negativo o `size`
-            fuera de 1..100 (ERR-CSR-003)
+            Un `estado`, `situacion`, `algoritmo` u `orden` desconocido, `page` negativo, `size`
+            fuera de 1..100, una fecha mal escrita o `decididaDesde` después de `decididaHasta`
+            (ERR-CSR-003)
   /api/asignaciones/propuestas/resumen:
     get:
       summary: Cuántas propuestas pendientes hay en cada situación
-      description: Desde 1.10.0 (R11-24). Contado en la base.
+      description: >-
+        Desde 1.10.0 (R11-24). Contado en la base. Desde 1.12.0 (R11-35) suma cuántas decididas
+        no tienen fecha de decisión guardada.
       operationId: resumenPropuestasAsignacion
       responses:
         '200':
@@ -782,16 +824,36 @@ paths:
         nombre de la cuenta del token (su `sub`), nunca de un dato que mande el cliente: se guarda
         en `decididaPor` con `fechaDecision` y, al aprobar, es el `actor` del cambio de estado de
         cada donación asignada. Sin token (seguridad deshabilitada), "SISTEMA". Ruta, cuerpo,
-        respuestas y errores no cambian.
+        respuestas y errores no cambian. Desde 1.12.0 (R11-35), al descartar se guarda
+        `justificacion` como `motivoDescarte` (recortada; vacía es lo mismo que no mandarla); al
+        aprobar se ignora.
       operationId: actualizarEstadoPropuesta
       parameters:
         - name: id
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: [APROBADA, DESCARTADA] }
+                justificacion:
+                  type: string
+                  nullable: true
+                  maxLength: 500
+                  description: El motivo del descarte. Desde 1.12.0 (R11-35), hasta 500 caracteres.
       responses:
         '200':
           description: Estado actualizado
+        '400':
+          description: >-
+            Sin `estado`, o una `justificacion` de más de 500 caracteres (ERR-CSR-003; el tope,
+            desde 1.12.0)
         '409':
           description: >
             La necesidad ya no está activa (NECESIDAD_INACTIVA), una donación es de la propia
@@ -2113,6 +2175,14 @@ components:
           type: integer
           minimum: 0
           description: Desde 1.10.0 (R11-24). Otras pendientes para la misma necesidad.
+        motivoDescarte:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: >-
+            Desde 1.12.0 (R11-35). El motivo que anotó la cuenta al descartarla; `null` si se
+            aprobó, si no se anotó o si se descartó antes de este cambio. Texto de la
+            administración: quien lo muestra lo escapa.
     SugerenciaDTO:
       type: object
       description: Desde 1.10.0 (R11-24). Un algoritmo que sugirió la propuesta.
@@ -2129,6 +2199,12 @@ components:
         libres: { type: integer, minimum: 0 }
         enConflicto: { type: integer, minimum: 0 }
         sinStock: { type: integer, minimum: 0 }
+        decididasSinFecha:
+          type: integer
+          minimum: 0
+          description: >-
+            Desde 1.12.0 (R11-35). Aprobadas o descartadas sin fecha de decisión guardada: no
+            entran en un período de `decididaDesde` y `decididaHasta`.
     DonacionEnPropuestasDTO:
       type: object
       description: Desde 1.10.0 (R11-24). Una donación pedida por al menos una pendiente.

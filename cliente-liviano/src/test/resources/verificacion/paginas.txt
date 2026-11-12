@@ -201,6 +201,7 @@
 /admin-inicio?escenario=evolucion-corta
 /admin-inicio?escenario=evolucion-vacia
 /admin-donantes
+/admin-donantes?donante=juan
 /admin-donantes?escenario=vacio
 /admin-donantes?escenario=lento
 /admin-donantes?escenario=error
@@ -248,6 +249,9 @@
 /admin-donaciones?escenario=error
 /admin-donaciones?vence=pronto
 /admin-donaciones?vence=pronto&escenario=vacio
+/admin-donaciones?donacion=fideos
+/admin-donaciones?buscar=leche&categoria=alimentos
+/admin-donaciones?donante=ana
 /admin-donaciones-detalle
 /admin-donaciones-detalle?donacion=fideos
 /admin-donaciones-detalle?escenario=cambio
@@ -269,6 +273,9 @@
 /admin-asignaciones?pestana=destino&donacion=arroz-ana
 /admin-asignaciones?algoritmo=las-dos
 /admin-asignaciones?vista=decididas
+/admin-asignaciones?vista=decididas&estado=descartadas
+/admin-asignaciones?vista=decididas&decidida=7-dias
+/admin-asignaciones?vista=decididas&buscar=nada-parecido
 /admin-asignaciones-aprobada
 /admin-asignaciones-descartada
 /admin-asignaciones-error

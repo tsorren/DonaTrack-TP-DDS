@@ -72,14 +72,34 @@ public class AdminDonantesController {
       @RequestParam(required = false) String dona,
       @RequestParam(required = false) String estado,
       @RequestParam(required = false) String orden,
+      @RequestParam(required = false) String donante,
       HttpServletRequest pedido,
       HttpSession sesion,
       Model model) {
     String vista = pantallas.mostrar(DONANTES, model);
     ConsultaDonantes consulta =
         new ConsultaDonantes(buscar, tipo, dona, estado, orden, Paginadores.pedida(pedido));
-    lista(personas.donantes(consulta).conImportacion(franja(sesion)), pedido, model);
+    AdminDonantesVista datos = personas.donantes(consulta).conImportacion(franja(sesion));
+    lista(datos, pedido, model);
+    elegido(datos, donante, model);
     return vista;
+  }
+
+  /**
+   * La bandeja (R11-34): {@code donanteElegido}, la clave del donante cuya ficha se abre (el pedido
+   * con {@code ?donante=} si está en la página; si no, el primero, de partida) y {@code
+   * donantePartida}, si es el de partida (en el celular su ficha no se abre sola). La ficha usa el
+   * renglón: no se pide nada más.
+   */
+  private static void elegido(AdminDonantesVista datos, String pedido, Model model) {
+    if (datos.donantes() == null || datos.donantes().filas().isEmpty()) {
+      return;
+    }
+    boolean enLaPagina =
+        pedido != null && datos.donantes().filas().stream().anyMatch(d -> d.clave().equals(pedido));
+    model.addAttribute(
+        "donanteElegido", enLaPagina ? pedido : datos.donantes().filas().getFirst().clave());
+    model.addAttribute("donantePartida", !enLaPagina);
   }
 
   @GetMapping("/" + DONANTES + "-{accion:importando|importado|importar-error}")

@@ -168,7 +168,7 @@ class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(header().exists("X-Trace-Id"));
 
     verify(propuestaDeAsignacionService, times(1))
-        .actualizarEstado(propId, EstadoPropuesta.APROBADA, "SISTEMA");
+        .actualizarEstado(propId, EstadoPropuesta.APROBADA, "SISTEMA", null);
   }
 
   @Test
@@ -184,5 +184,77 @@ class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
         .andExpect(jsonPath("$.errors[0].field").value("estado"));
+  }
+
+  // R11-35: el motivo del descarte llega al servicio, con tope de 500 caracteres
+  @Test
+  void actualizarEstado_alDescartar_pasaElMotivo() throws Exception {
+    UUID propId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            put("/api/asignaciones/propuestas/" + propId + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"estado\":\"DESCARTADA\",\"justificacion\":\"Cerró en diciembre.\"}"))
+        .andExpect(status().isOk());
+
+    verify(propuestaDeAsignacionService)
+        .actualizarEstado(propId, EstadoPropuesta.DESCARTADA, "SISTEMA", "Cerró en diciembre.");
+  }
+
+  @Test
+  void actualizarEstado_conUnMotivoDeMasDe500_respondeBadRequest() throws Exception {
+    UUID propId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            put("/api/asignaciones/propuestas/" + propId + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        new ActualizarEstadoRequestDTO(
+                            EstadoPropuesta.DESCARTADA, "a".repeat(501)))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void listar_conLaBusquedaDeDecididas_laEntiende() throws Exception {
+    UUID categoria = UUID.randomUUID();
+    when(propuestaDeAsignacionService.listarPropuestas(any(), any()))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(
+            get(
+                "/api/asignaciones/propuestas?estado=APROBADA&estado=DESCARTADA&q=arroz"
+                    + "&decididaPor=SISTEMA&decididaDesde=2026-11-01&decididaHasta=2026-11-12"
+                    + "&orden=decision_reciente&categoriaId="
+                    + categoria))
+        .andExpect(status().isOk());
+
+    verify(propuestaDeAsignacionService)
+        .listarPropuestas(
+            new FiltroPropuestas(
+                List.of(EstadoPropuesta.APROBADA, EstadoPropuesta.DESCARTADA),
+                null,
+                null,
+                null,
+                categoria,
+                "SISTEMA",
+                java.time.LocalDate.of(2026, 11, 1),
+                java.time.LocalDate.of(2026, 11, 12)),
+            new ParametrosListado(null, null, "arroz", "decision_reciente"));
+  }
+
+  @Test
+  void resumen_devuelveLasDecididasSinFecha() throws Exception {
+    when(propuestaDeAsignacionService.resumen())
+        .thenReturn(new ResumenPropuestasDTO(11, 8, 2, 1, 6));
+
+    mockMvc
+        .perform(get("/api/asignaciones/propuestas/resumen"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.decididasSinFecha").value(6));
   }
 }

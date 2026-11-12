@@ -905,17 +905,22 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donantes"))
         .andExpect(
             content().string(containsString("86 donantes activos, al 15 de octubre de 2026")))
-        .andExpect(
-            content().string(containsString("<caption class=\"solo-lectores\">Donantes</caption>")))
-        .andExpect(content().string(containsString("scope=\"row\"")))
-        .andExpect(content().string(containsString("data-rotulo=\"Documento\"")))
+        // R11-34: una bandeja; la ficha del primero es la de partida y lleva a sus donaciones
+        .andExpect(content().string(containsString("class=\"maestro\"")))
+        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
+        .andExpect(content().string(containsString("Ver sus donaciones")))
+        .andExpect(content().string(containsString("Cerrar la ficha")))
         .andExpect(
             content().string(containsString("href=\"/admin-donantes?importar=abrir#importar\"")));
     // Importar queda plegado; "Importar CSV" lo abre sin dejar la lista (RF-20).
+    mvc.perform(get("/admin-donantes?donante=juan"))
+        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donaciones?donante=juan\"")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
     mvc.perform(get("/admin-donantes?importar=abrir"))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
         .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")))
-        .andExpect(content().string(containsString("scope=\"row\"")));
+        .andExpect(content().string(containsString("class=\"maestro\"")));
     mvc.perform(get("/admin-donantes?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay donantes registrados.")));
     mvc.perform(get("/admin-donantes?escenario=lento"))
@@ -1036,9 +1041,32 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("7 en el depósito · 4 asignadas · 1 en camino")))
         .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
-        .andExpect(content().string(containsString("data-rotulo=\"Vence\"")))
+        // R11-34: una bandeja; la ficha de partida es la de la primera y en el celular no se abre
+        // sola
+        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
         .andExpect(
-            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=leche\"")));
+            content()
+                .string(containsString("href=\"/admin-donaciones?donacion=leche#donacion-leche\"")))
+        .andExpect(content().string(containsString("Buscar por lo que se donó")))
+        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")))
+        .andExpect(content().string(containsString("Ver las propuestas que la piden")));
+    mvc.perform(get("/admin-donaciones?donacion=arroz"))
+        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    // La pedida que no está en la página (los fideos están en la segunda) igual muestra su ficha
+    mvc.perform(get("/admin-donaciones?donacion=fideos"))
+        .andExpect(content().string(containsString("Cerrar la ficha")))
+        .andExpect(content().string(containsString("Solo se puede marcar como vencida")));
+    mvc.perform(get("/admin-donaciones?buscar=leche&categoria=alimentos"))
+        .andExpect(content().string(containsString("Coincide 1 donación.")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+    mvc.perform(get("/admin-donaciones?donante=ana"))
+        .andExpect(content().string(containsString("De Ana Ejemplo")))
+        .andExpect(content().string(containsString("Quitar el filtro: De Ana Ejemplo")))
+        .andExpect(content().string(not(containsString("Leche en polvo · 10 u"))));
+    mvc.perform(get("/admin-donaciones?registrada=hoy"))
+        .andExpect(
+            content().string(containsString("Ninguna donación coincide con lo que buscaste.")));
     mvc.perform(get("/admin-donaciones?vence=pronto"))
         .andExpect(content().string(containsString("Vencen en los próximos 7 días")))
         .andExpect(content().string(containsString("Queso · 6 kg")))
@@ -1138,7 +1166,27 @@ class SitioControllerTest {
             content()
                 .string(containsString("Esa donación ya no está en ninguna propuesta pendiente.")));
     mvc.perform(get("/admin-asignaciones?vista=decididas"))
-        .andExpect(content().string(containsString("Decididas · 7")));
+        .andExpect(content().string(containsString("Decididas · 7")))
+        .andExpect(content().string(containsString("Buscar por organización o donación")))
+        .andExpect(content().string(containsString("Aprobó Leo Gómez el 9 de noviembre de 2026")))
+        .andExpect(content().string(containsString("Sin motivo anotado.")))
+        .andExpect(content().string(containsString("Mostrando 1 a 7 de 7 propuestas decididas.")));
+    // R11-35: la búsqueda y los filtros de Todas las decididas
+    mvc.perform(get("/admin-asignaciones?vista=decididas&estado=descartadas"))
+        .andExpect(content().string(containsString("Coinciden 2 propuestas decididas.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Motivo: «El comedor ya consiguió galletitas de otra donación.»")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+    mvc.perform(get("/admin-asignaciones?vista=decididas&decidida=7-dias"))
+        .andExpect(content().string(containsString("Hay 2 decididas de antes de que guardáramos")));
+    mvc.perform(get("/admin-asignaciones?vista=decididas&buscar=nada-parecido"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Ninguna propuesta decidida coincide con lo que buscaste.")));
     mvc.perform(get("/admin-asignaciones-aprobada"))
         .andExpect(content().string(containsString("Aprobaste la propuesta para Comedor Barrio")))
         .andExpect(content().string(containsString("Propuestas sin problemas · 3")));

@@ -171,3 +171,39 @@
     --medida-columna: 22rem;
   }
 }
+
+/* Todas las decididas (R11-35): cada renglón, con la categoría al lado de lo que pedía. */
+[data-pantalla="asignaciones"] [data-parte="decidida-cabeza"] {
+  margin: 0;
+}
+
+/* --- Donaciones y Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja) ------------------- */
+
+/* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
+   lista se ve primero. "Cerrar la ficha" vuelve al renglón. */
+:is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
+  display: none;
+}
+
+:is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li > a > span:not(.estado) {
+  gap: var(--espacio-1);
+}
+
+/* Desde la tableta: la ficha a la derecha, fija al desplazarse (el renglón elegido no queda fijo);
+   la de partida se ve y "Cerrar la ficha" ya no hace falta. */
+@media (min-width: 53.75em) {
+  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
+    display: grid;
+  }
+
+  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro-ficha {
+    position: sticky;
+    top: var(--espacio-4);
+    max-height: calc(100vh - 2 * var(--espacio-4));
+    overflow-y: auto;
+  }
+
+  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) [data-parte="cerrar"] {
+    display: none;
+  }
+}

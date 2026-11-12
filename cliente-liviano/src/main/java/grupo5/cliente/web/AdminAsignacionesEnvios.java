@@ -23,6 +23,7 @@ class AdminAsignacionesEnvios {
 
   private static final String LISTA = "admin-asignaciones";
   private static final int LARGO = 200;
+  private static final int LARGO_DEL_MOTIVO = 500;
   private static final String SIN_ASIGNAR = " No se asignó nada; podés descartar la propuesta.";
 
   private final AdminOperacionPuerto operacion;
@@ -78,11 +79,20 @@ class AdminAsignacionesEnvios {
       @RequestParam(required = false) String organizacion,
       @RequestParam(required = false) String pestana,
       RedirectAttributes atributos) {
+    // R11-35: el motivo se guarda; Donaciones acepta hasta 500 caracteres (el campo ya lo topea)
+    if (motivo != null && motivo.strip().length() > LARGO_DEL_MOTIVO) {
+      return Envios.listo(
+          volver(pestana),
+          "El motivo puede tener hasta 500 caracteres. Acortalo y volvé a descartar.",
+          atributos);
+    }
     operacion.decidirPropuesta(propuesta, false, motivo);
+    boolean conMotivo = motivo != null && !motivo.isBlank();
     return Envios.listo(
         volver(pestana),
         "Descartaste la propuesta"
             + para(organizacion)
+            + (conMotivo ? " y guardamos el motivo" : "")
             + ". Las donaciones siguen en el depósito para otra asignación.",
         atributos);
   }

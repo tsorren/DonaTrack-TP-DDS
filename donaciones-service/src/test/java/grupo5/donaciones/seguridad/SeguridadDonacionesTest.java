@@ -438,7 +438,7 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isOk());
 
     verify(propuestaDeAsignacionService)
-        .actualizarEstado(propuesta, EstadoPropuesta.APROBADA, SUB_DE_ANA);
+        .actualizarEstado(propuesta, EstadoPropuesta.APROBADA, SUB_DE_ANA, null);
   }
 
   // R11-26: el registro de actividad es solo del admin, para leerlo y para anotar

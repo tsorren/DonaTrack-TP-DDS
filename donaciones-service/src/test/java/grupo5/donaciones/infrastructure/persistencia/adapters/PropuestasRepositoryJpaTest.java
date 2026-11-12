@@ -32,12 +32,14 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.BusquedaDecididas;
 import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
 import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
 import grupo5.donaciones.models.repositories.listados.Paginado;
 import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
 import grupo5.donaciones.models.repositories.listados.StockEnPropuestas;
 import grupo5.donaciones.models.repositories.listados.Tramo;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -491,5 +493,149 @@ class PropuestasRepositoryJpaTest {
 
   private static List<UUID> ids(Tramo<PropuestaEnListado> tramo) {
     return tramo.elementos().stream().map(p -> p.propuesta().getId()).toList();
+  }
+
+  // --- R11-35: el motivo del descarte y la búsqueda de las decididas ----------------------------
+
+  private static CriterioPropuestas decididas(OrdenPropuestas orden, BusquedaDecididas busqueda) {
+    return new CriterioPropuestas(
+        Set.of(EstadoPropuesta.APROBADA, EstadoPropuesta.DESCARTADA),
+        Set.of(),
+        null,
+        false,
+        null,
+        orden,
+        new Paginado(0, 20),
+        busqueda);
+  }
+
+  private void decididaEl(Propuesta p, String cuando) {
+    jdbc.update(
+        "UPDATE donaciones.propuesta SET fecha_decision = CAST(? AS timestamp) WHERE id = ?",
+        cuando,
+        p.getId());
+  }
+
+  @Test
+  void guardar_alDescartarConMotivo_loConserva() {
+    Propuesta propuesta = propuestaCon(donacion);
+    propuestas.save(propuesta);
+
+    Propuesta leida = propuestas.findById(propuesta.getId()).orElseThrow();
+    leida.rechazar("sub-de-carla", "El merendero cerró por vacaciones.");
+    propuestas.save(leida);
+
+    assertEquals(
+        "El merendero cerró por vacaciones.",
+        propuestas.findById(propuesta.getId()).orElseThrow().getMotivoDescarte());
+  }
+
+  @Test
+  void buscar_lasDecididas_porTextoCategoriaAutorYPeriodo() {
+    Propuesta deAna = pidiendo(necesidad, donacion, 1);
+    deAna.aceptar("sub-de-ana");
+    Propuesta deCarla = pidiendo(otraNecesidad, otraDonacion, 1);
+    deCarla.rechazar("sub-de-carla", "No hace falta.");
+    Propuesta deSistema = pidiendo(otraNecesidad, otraDonacion, 1);
+    deSistema.aceptar(null);
+    Propuesta sinAutor = pidiendo(otraNecesidad, otraDonacion, 1);
+    propuestas.saveAll(List.of(deAna, deCarla, deSistema, sinAutor));
+    jdbc.update(
+        "UPDATE donaciones.propuesta SET estado = 'APROBADA', decidida_por = NULL,"
+            + " fecha_decision = NULL WHERE id = ?",
+        sinAutor.getId());
+    decididaEl(deAna, "2026-11-10 10:00:00");
+    decididaEl(deCarla, "2026-11-12 23:30:00");
+    decididaEl(deSistema, "2026-10-01 09:00:00");
+
+    // Lo donado: "Fideos secos", sin tildes ni mayúsculas
+    assertEquals(
+        4,
+        propuestas
+            .buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas("FIDEOS", null, null, null, null)))
+            .total());
+    // La organización de la necesidad
+    assertEquals(
+        4,
+        propuestas
+            .buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas("comedor", null, null, null, null)))
+            .total());
+    assertEquals(
+        0,
+        propuestas
+            .buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas("lentejas", null, null, null, null)))
+            .total());
+
+    UUID categoria = jdbc.queryForObject("SELECT id FROM donaciones.categoria LIMIT 1", UUID.class);
+    assertEquals(
+        4,
+        propuestas
+            .buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas(null, categoria, null, null, null)))
+            .total());
+    assertEquals(
+        0,
+        propuestas
+            .buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas(null, UUID.randomUUID(), null, null, null)))
+            .total());
+
+    assertEquals(
+        List.of(deCarla.getId()),
+        ids(
+            propuestas.buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas(null, null, "sub-de-carla", null, null)))));
+    // SISTEMA junta las de SISTEMA y las que no tienen autor
+    assertEquals(
+        Set.of(deSistema.getId(), sinAutor.getId()),
+        Set.copyOf(
+            ids(
+                propuestas.buscar(
+                    decididas(
+                        OrdenPropuestas.DECISION_RECIENTE,
+                        new BusquedaDecididas(null, null, "SISTEMA", null, null))))));
+
+    // Días inclusivos; la que no tiene fecha no entra
+    assertEquals(
+        List.of(deCarla.getId(), deAna.getId()),
+        ids(
+            propuestas.buscar(
+                decididas(
+                    OrdenPropuestas.DECISION_RECIENTE,
+                    new BusquedaDecididas(
+                        null,
+                        null,
+                        null,
+                        LocalDate.of(2026, 11, 10),
+                        LocalDate.of(2026, 11, 12))))));
+
+    // Por la fecha de la decisión: las que no la tienen, al final o primero
+    assertEquals(
+        List.of(deCarla.getId(), deAna.getId(), deSistema.getId(), sinAutor.getId()),
+        ids(
+            propuestas.buscar(
+                decididas(OrdenPropuestas.DECISION_RECIENTE, BusquedaDecididas.ninguna()))));
+    assertEquals(
+        List.of(sinAutor.getId(), deSistema.getId(), deAna.getId(), deCarla.getId()),
+        ids(
+            propuestas.buscar(
+                decididas(OrdenPropuestas.DECISION_ANTIGUA, BusquedaDecididas.ninguna()))));
+
+    assertEquals(1, propuestas.contarDecididasSinFecha());
   }
 }

@@ -2,6 +2,7 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
@@ -49,6 +50,7 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.BusquedaDecididas;
 import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
 import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
 import grupo5.donaciones.models.repositories.listados.Paginado;
@@ -61,6 +63,7 @@ import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -721,5 +724,94 @@ class PropuestaDeAsignacionServiceTest {
     when(donacionAsignada.getDonacionOriginalId()).thenReturn(donacionOriginalId);
     when(donacionAsignada.getPesoTotal()).thenReturn(peso);
     when(donacionAsignada.getVolumenTotal()).thenReturn(volumen);
+  }
+
+  // --- R11-35: la búsqueda de las decididas y el motivo del descarte ----------------------------
+
+  @Test
+  void listarPropuestas_conLaBusquedaDeDecididas_laPasaAlRepositorio() {
+    when(propuestaRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+    UUID categoria = UUID.randomUUID();
+
+    service.listarPropuestas(
+        new FiltroPropuestas(
+            List.of(EstadoPropuesta.APROBADA, EstadoPropuesta.DESCARTADA),
+            null,
+            null,
+            null,
+            categoria,
+            "sub-de-ana",
+            LocalDate.of(2026, 11, 1),
+            LocalDate.of(2026, 11, 12)),
+        new ParametrosListado(null, null, "  arroz ", "decision_reciente"));
+
+    verify(propuestaRepository)
+        .buscar(
+            new CriterioPropuestas(
+                Set.of(EstadoPropuesta.APROBADA, EstadoPropuesta.DESCARTADA),
+                Set.of(),
+                null,
+                false,
+                null,
+                OrdenPropuestas.DECISION_RECIENTE,
+                new Paginado(0, 20),
+                new BusquedaDecididas(
+                    "arroz",
+                    categoria,
+                    "sub-de-ana",
+                    LocalDate.of(2026, 11, 1),
+                    LocalDate.of(2026, 11, 12))));
+  }
+
+  @Test
+  void listarPropuestas_conElPeriodoAlReves_esUnErrorDelPedido() {
+    FiltroPropuestas filtro =
+        new FiltroPropuestas(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            LocalDate.of(2026, 11, 12),
+            LocalDate.of(2026, 11, 1));
+    ParametrosListado listado = ParametrosListado.primeraPagina();
+
+    assertThrows(ValidationException.class, () -> service.listarPropuestas(filtro, listado));
+  }
+
+  @Test
+  void actualizarEstado_alDescartarConMotivo_loGuarda() {
+    UUID id = UUID.randomUUID();
+    Propuesta propuesta = new Propuesta();
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+
+    service.actualizarEstado(
+        id, EstadoPropuesta.DESCARTADA, "sub-de-carla", " El merendero cerró por vacaciones. ");
+
+    assertEquals("El merendero cerró por vacaciones.", propuesta.getMotivoDescarte());
+    verify(propuestaRepository).save(propuesta);
+  }
+
+  @Test
+  void actualizarEstado_alAprobarConMotivo_loIgnora() {
+    UUID id = UUID.randomUUID();
+    Propuesta propuesta = new Propuesta();
+    Necesidad necesidad = necesidadActivaDe(UUID.randomUUID());
+    propuesta.asociarNecesidad(necesidad.getId());
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana", "No hace falta.");
+
+    assertNull(propuesta.getMotivoDescarte());
+  }
+
+  @Test
+  void resumen_cuentaLasDecididasSinFecha() {
+    when(propuestaRepository.contarPendientesPorSituacion()).thenReturn(Map.of());
+    when(propuestaRepository.contarDecididasSinFecha()).thenReturn(4L);
+
+    assertEquals(new ResumenPropuestasDTO(0, 0, 0, 0, 4), service.resumen());
   }
 }

@@ -1,5 +1,8 @@
 package grupo5.cliente.vistas;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Qué página de donantes pide el admin (R11-01): la búsqueda por nombre o documento y los filtros
  * de la pantalla, tal como llegan en la dirección. {@code tipo}, {@code dona}, {@code estado} y
@@ -26,5 +29,28 @@ public record ConsultaDonantes(
   /** Si hay búsqueda o algún filtro (el orden no cuenta). */
   public boolean filtrada() {
     return !buscar.isEmpty() || !tipo.isEmpty() || !dona.isEmpty() || !estado.isEmpty();
+  }
+
+  /**
+   * La dirección de la lista con esta búsqueda y estos filtros, sin la página ni el elegido
+   * (R11-34): la base de cada renglón de la bandeja ({@code donante=} se suma al final).
+   */
+  public String direccion() {
+    StringBuilder d = new StringBuilder("/admin-donantes?");
+    sumar(d, "buscar", buscar);
+    sumar(d, "tipo", tipo);
+    sumar(d, "dona", dona);
+    sumar(d, "estado", estado);
+    sumar(d, "orden", orden);
+    return d.toString();
+  }
+
+  private static void sumar(StringBuilder d, String nombre, String valor) {
+    if (!valor.isEmpty()) {
+      d.append(nombre)
+          .append('=')
+          .append(URLEncoder.encode(valor, StandardCharsets.UTF_8))
+          .append('&');
+    }
   }
 }

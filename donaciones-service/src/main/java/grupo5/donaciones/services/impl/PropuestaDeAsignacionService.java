@@ -36,6 +36,7 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.BusquedaDecididas;
 import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
 import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
 import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
@@ -125,6 +126,11 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
         algoritmo = enumDe(TipoAlgoritmo.class, pedido);
       }
     }
+    if (filtro.decididaDesde() != null
+        && filtro.decididaHasta() != null
+        && filtro.decididaDesde().isAfter(filtro.decididaHasta())) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
     Tramo<PropuestaEnListado> tramo =
         propuestaRepository.buscar(
             new CriterioPropuestas(
@@ -134,7 +140,13 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
                 ambos,
                 filtro.donacion(),
                 listado.orden(OrdenPropuestas.class, OrdenPropuestas.PUESTO),
-                listado.paginado()));
+                listado.paginado(),
+                new BusquedaDecididas(
+                    listado.texto(),
+                    filtro.categoriaId(),
+                    ParametrosListado.texto(filtro.decididaPor()),
+                    filtro.decididaDesde(),
+                    filtro.decididaHasta())));
     return new Pagina<>(propuestaMapper.toDTOs(tramo.elementos()), (int) tramo.total());
   }
 
@@ -144,7 +156,12 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     long libres = conteo.getOrDefault(SituacionPropuesta.LIBRE, 0L);
     long enConflicto = conteo.getOrDefault(SituacionPropuesta.EN_CONFLICTO, 0L);
     long sinStock = conteo.getOrDefault(SituacionPropuesta.SIN_STOCK, 0L);
-    return new ResumenPropuestasDTO(libres + enConflicto + sinStock, libres, enConflicto, sinStock);
+    return new ResumenPropuestasDTO(
+        libres + enConflicto + sinStock,
+        libres,
+        enConflicto,
+        sinStock,
+        propuestaRepository.contarDecididasSinFecha());
   }
 
   @Override
@@ -190,6 +207,17 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   @Override
   @Transactional
   public void actualizarEstado(UUID id, EstadoPropuesta estado, String actor) {
+    decidir(id, estado, actor, null);
+  }
+
+  /** Como el de tres; al descartar guarda el motivo (R11-35). La misma transacción única. */
+  @Override
+  @Transactional
+  public void actualizarEstado(UUID id, EstadoPropuesta estado, String actor, String motivo) {
+    decidir(id, estado, actor, motivo);
+  }
+
+  private void decidir(UUID id, EstadoPropuesta estado, String actor, String motivo) {
     Propuesta propuesta =
         propuestaRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
@@ -203,7 +231,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
         propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
         propuesta.clearDomainEvents();
       }
-      case DESCARTADA -> propuesta.rechazar(actor);
+      case DESCARTADA -> propuesta.rechazar(actor, motivo);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 

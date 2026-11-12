@@ -1,9 +1,12 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
+import grupo5.cliente.vistas.ConsultaDecididas;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpStatus;
@@ -22,7 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
  * ({@code -aprobada}, {@code -descartada}, {@code -error} y {@code -corrida}) son de la maqueta:
  * fuera de ella el envío vuelve a la lista con el aviso ({@link AdminAsignacionesEnvios}) y esas
  * direcciones no existen. En la maqueta, {@code -corrida?escenario=nuevas} pide la acción {@code
- * nuevas} (las propuestas de hoy).
+ * nuevas} (las propuestas de hoy). Todas las decididas (R11-35) lleva en la dirección la búsqueda
+ * ({@code ?buscar=}) y los filtros ({@code ?estado=}, {@code ?categoria=}, {@code ?decidida=},
+ * {@code ?decidio=} y {@code ?orden=}); "Vos" es la cuenta de la sesión.
  */
 @Controller
 public class AdminAsignacionesController {
@@ -30,12 +35,26 @@ public class AdminAsignacionesController {
   private static final String LISTA = "admin-asignaciones";
 
   private final AdminOperacionPuerto operacion;
+  private final ObjectProvider<AdministradorActual> administrador;
   private final Pantallas pantallas;
   private final boolean maqueta;
 
+  /**
+   * La cuenta de la sesión, para "Decidió: Vos" (R11-35); '' si no hay quien la diga (sin ella,
+   * "Vos" no filtra).
+   */
+  private String vos(HttpServletRequest pedido) {
+    AdministradorActual actual = administrador.getIfAvailable();
+    return actual == null ? "" : actual.cuenta(pedido).orElse("");
+  }
+
   AdminAsignacionesController(
-      AdminOperacionPuerto operacion, Pantallas pantallas, Environment entorno) {
+      AdminOperacionPuerto operacion,
+      ObjectProvider<AdministradorActual> administrador,
+      Pantallas pantallas,
+      Environment entorno) {
     this.operacion = operacion;
+    this.administrador = administrador;
     this.pantallas = pantallas;
     this.maqueta = entorno.acceptsProfiles(Profiles.of("maqueta"));
   }
@@ -54,6 +73,11 @@ public class AdminAsignacionesController {
       @RequestParam(required = false) String categoria,
       @RequestParam(required = false) String donacion,
       @RequestParam(required = false) String escenario,
+      @RequestParam(required = false) String buscar,
+      @RequestParam(required = false) String estado,
+      @RequestParam(required = false) String decidida,
+      @RequestParam(required = false) String decidio,
+      @RequestParam(required = false) String orden,
       Model model,
       HttpServletRequest pedido) {
     String pantalla = pedido.getRequestURI().substring(1);
@@ -67,7 +91,10 @@ public class AdminAsignacionesController {
     }
     ConsultaAsignaciones consulta =
         ConsultaAsignaciones.de(
-            pestana, vista, algoritmo, categoria, donacion, Paginadores.pedida(pedido));
+                pestana, vista, algoritmo, categoria, donacion, Paginadores.pedida(pedido))
+            .conDecididas(
+                new ConsultaDecididas(
+                    buscar, estado, categoria, decidida, decidio, orden, vos(pedido)));
     AdminAsignacionesVista datos = operacion.asignaciones(consulta, accion);
     model.addAttribute("asignaciones", datos);
     model.addAttribute("paginador", paginador(pedido, datos));

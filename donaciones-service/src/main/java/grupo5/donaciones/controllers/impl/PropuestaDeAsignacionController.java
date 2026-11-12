@@ -102,7 +102,7 @@ public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionCo
       @PathVariable UUID id,
       @Valid @RequestBody ActualizarEstadoRequestDTO request,
       Authentication autenticacion) {
-    service.actualizarEstado(id, request.estado(), autorDe(autenticacion));
+    service.actualizarEstado(id, request.estado(), autorDe(autenticacion), request.justificacion());
     actividad.propuestaDecidida(id, request.estado());
     return ResponseEntity.ok().build();
   }

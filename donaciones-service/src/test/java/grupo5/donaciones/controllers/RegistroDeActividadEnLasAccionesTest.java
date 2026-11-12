@@ -62,7 +62,7 @@ class RegistroDeActividadEnLasAccionesTest extends AbstractDonacionesWebMvcTest 
     UUID id = UUID.randomUUID();
     doThrow(new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA))
         .when(propuestaDeAsignacionService)
-        .actualizarEstado(eq(id), any(), any());
+        .actualizarEstado(eq(id), any(), any(), any());
 
     mockMvc
         .perform(

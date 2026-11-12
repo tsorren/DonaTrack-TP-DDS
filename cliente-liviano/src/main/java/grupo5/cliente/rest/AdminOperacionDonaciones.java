@@ -102,16 +102,19 @@ final class AdminOperacionDonaciones {
             pedida.estado(),
             pedida.pronto(),
             AdminDonacionesVista.elegido(pedida.orden(), CRITERIOS),
-            pedida.pagina());
+            pedida.pagina(),
+            pedida.buscar(),
+            pedida.categoria(),
+            pedida.registrada(),
+            pedida.donante(),
+            pedida.donacion());
     // Donaciones no filtra por vencimiento: "vencen pronto" muestra las del depósito y dice cuántas
     // vencen, sin filtrar en el cliente.
     String estado = consulta.pronto() ? DEPOSITO : consulta.estado();
     DonacionesApi.Resumen resumen = api.resumen();
     Tramo<DonacionesApi.Donacion> pagina =
         Paginas.pedir(
-            consulta.pagina(),
-            POR_PAGINA,
-            numero -> api.pagina(filtros(estado, consulta.orden(), numero)));
+            consulta.pagina(), POR_PAGINA, numero -> api.pagina(filtros(estado, consulta, numero)));
     Map<UUID, String> nombres = nombres(pagina.filas());
     List<Donacion> filas =
         pagina.filas().stream().map(d -> fila(d, nombre(d, nombres), null, null)).toList();
@@ -121,7 +124,48 @@ final class AdminOperacionDonaciones {
         CRITERIOS,
         false,
         consulta.pronto() ? porVencer(resumen.porVencer()) : null,
-        resumen(resumen));
+        resumen(resumen),
+        categorias(),
+        donante(consulta.donante()),
+        null,
+        false);
+  }
+
+  /** Las categorías del catálogo, para la pastilla Categoría (R11-34). */
+  private List<AdminDonacionesVista.Opcion> categorias() {
+    return Objects.requireNonNullElse(api.categorias(), List.<DonacionesApi.Categoria>of()).stream()
+        .filter(c -> c.id() != null && c.nombre() != null)
+        .map(c -> new AdminDonacionesVista.Opcion(c.id().toString(), c.nombre()))
+        .toList();
+  }
+
+  /**
+   * El nombre del donante del filtro que llega desde su ficha (R11-34), en una lectura de a uno;
+   * "el donante elegido" si no se encuentra; null si no hay filtro.
+   */
+  private String donante(String clave) {
+    UUID id = uuid(clave);
+    if (id == null) {
+      return null;
+    }
+    MultiValueMap<String, String> lote = new LinkedMultiValueMap<>();
+    lote.add("id", id.toString());
+    lote.add("size", "1");
+    return Objects.requireNonNullElse(
+            api.personas(lote).getBody(), List.<DonacionesApi.Persona>of())
+        .stream()
+        .map(AdminOperacionDonaciones::nombre)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse("el donante elegido");
+  }
+
+  private static UUID uuid(String clave) {
+    try {
+      return clave == null || clave.isEmpty() ? null : UUID.fromString(clave);
+    } catch (IllegalArgumentException noEsUnId) {
+      return null;
+    }
   }
 
   /** La donación por su id, con quién la donó, el depósito y la entidad; null si no existe. */
@@ -159,10 +203,28 @@ final class AdminOperacionDonaciones {
     return fila(d, donante == null ? visible(d) : donante, deposito(original), entidad);
   }
 
-  private static MultiValueMap<String, String> filtros(String estado, String orden, int pagina) {
+  private MultiValueMap<String, String> filtros(
+      String estado, ConsultaDonaciones consulta, int pagina) {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     ESTADOS.getOrDefault(estado, List.of()).forEach(e -> filtros.add("estado", e));
-    filtros.add("orden", "antigua".equals(orden) ? "antiguas" : "recientes");
+    filtros.add("orden", "antigua".equals(consulta.orden()) ? "antiguas" : "recientes");
+    // R11-34: la búsqueda, la categoría, el período y el donante, resueltos en Donaciones
+    if (!consulta.buscar().isEmpty()) {
+      filtros.add("q", consulta.buscar());
+    }
+    UUID categoria = uuid(consulta.categoria());
+    if (categoria != null) {
+      filtros.add("categoriaId", categoria.toString());
+    }
+    UUID donante = uuid(consulta.donante());
+    if (donante != null) {
+      filtros.add("donanteId", donante.toString());
+    }
+    LocalDate[] periodo = consulta.periodo(ahora.toLocalDate());
+    if (periodo[0] != null) {
+      filtros.add("desde", periodo[0].toString());
+      filtros.add("hasta", periodo[1].toString());
+    }
     filtros.add("page", String.valueOf(pagina));
     filtros.add("size", String.valueOf(POR_PAGINA));
     return filtros;
