@@ -20,6 +20,7 @@ import jakarta.persistence.PersistenceContext;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -113,6 +114,16 @@ public class DonacionIndependienteRepositoryJpaAdapter
   @Transactional(readOnly = true)
   public Optional<DonacionIndependiente> findById(UUID id) {
     return super.findById(id);
+  }
+
+  /** Una consulta para todas (la página de propuestas, R11-24). */
+  @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findAllById(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(ids).stream().map(mapper::toDomain).toList();
   }
 
   @Override

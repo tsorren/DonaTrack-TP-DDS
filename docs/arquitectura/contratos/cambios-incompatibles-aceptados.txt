@@ -56,3 +56,11 @@ GET /api/entidades for the 'query' request parameter 'nombre', the maxLength was
 # único consumidor es el cliente liviano, que ya se quedaba con 30 días y ahora los pide. Los
 # parámetros nuevos son opcionales: [INFERRED] oasdiff no los marca como error; si el job de
 # contratos del PR marca algo, la línea exacta va acá.
+
+# R11-24 (p1-asignaciones, 2026-11-12; spec R11-p1-asignaciones): Donaciones 1.10.0.
+# GET /api/asignaciones/propuestas y GET /api/asignaciones/ejecuciones pasan a paginar en la base:
+# sin page ni size devuelven la página 0 de 20 (antes, todas), con el total en X-Total-Count. El
+# cuerpo sigue siendo un arreglo y los campos nuevos son opcionales. Los consumidores del repo
+# (cliente liviano, seeder de demo) se migran en el mismo lote. oasdiff no ve el cambio de
+# comportamiento; los parámetros nuevos son opcionales. [INFERRED] Si el job de contratos del PR
+# marca alguna línea como error, va acá.

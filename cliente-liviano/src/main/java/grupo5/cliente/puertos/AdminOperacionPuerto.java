@@ -4,6 +4,7 @@ import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
+import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,17 +28,23 @@ public interface AdminOperacionPuerto {
    */
   String cambiarCamion(String camion, boolean habilitado, String motivo);
 
-  AdminAsignacionesVista asignaciones();
+  /**
+   * Una pestaña de Asignar donaciones (R11-24), con lo que pide {@code consulta}: siempre de a una
+   * página y con las cifras del resumen, nunca la lista entera.
+   */
+  AdminAsignacionesVista asignaciones(ConsultaAsignaciones consulta, String accion);
 
   /** Corre la asignación ahora y devuelve cuántas propuestas generó. */
   int correrAsignacion();
 
   /**
-   * Aprueba o descarta la propuesta y devuelve el nombre de la entidad que la pidió. Una aprobación
-   * que no se puede hacer (la necesidad ya no está activa, la donación es de la misma entidad, la
-   * propuesta cambió) es el 409 de Donaciones.
+   * Aprueba o descarta la propuesta. Al aprobar, devuelve cuántas otras pendientes se quedaron sin
+   * lo que pedían por esta aprobación (pasaron a Conflictos); al descartar, 0. Una aprobación que
+   * no se puede hacer (la necesidad ya no está activa, la donación es de la misma organización, la
+   * propuesta cambió) es el 409 de Donaciones. El nombre de la organización para el aviso viaja en
+   * el formulario: no se pide la lista para buscarlo.
    */
-  String decidirPropuesta(String propuesta, boolean aprobar, String motivo);
+  int decidirPropuesta(String propuesta, boolean aprobar, String motivo);
 
   /**
    * Una página de donaciones con el filtro y el orden de {@code consulta} (R11-01): nunca la lista

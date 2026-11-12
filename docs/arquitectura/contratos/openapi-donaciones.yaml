@@ -11,6 +11,9 @@ info:
     (ninguno devuelve la lista completa). `q` busca "contiene" sin distinguir mayúsculas ni tildes.
     Desde 1.10.0 (R11-10) cada propuesta dice quién la aprobó o descartó y cuándo
     (`decididaPor`, `fechaDecision`).
+    Desde 1.10.0 (R11-24) las propuestas de asignación filtran, ordenan y paginan en la base y
+    dicen qué algoritmo las sugirió y en qué puesto; se suman el resumen por situación y las
+    donaciones que están en propuestas pendientes.
     Desde 1.10.0 (R11-20), `GET /api/donantes/archivos` lista las importaciones de donantes con el
     mismo patrón, y el archivo informa el nombre con que se subió y cuándo (campos opcionales).
     Desde 1.10.0 (R11-12), `GET /api/entidades/publicas` acepta `categoriaId` (opcional) y
@@ -543,29 +546,153 @@ paths:
   /api/asignaciones/ejecuciones:
     post:
       summary: Ejecutar algoritmo de asignación y generar propuestas
+      description: >
+        Desde 1.10.0 (R11-24) cada propuesta generada trae `sugeridaPor`, y la necesidad trae la
+        organización y la unidad. `situacion` viene `null` y `otrasPendientesMismaNecesidad` en 0:
+        la situación se calcula al listar (`GET /api/asignaciones/propuestas`).
       operationId: ejecutarAsignacion
       responses:
         '201':
           description: Propuestas generadas
-    get:
-      summary: Historial de ejecuciones de asignación
-      operationId: historialEjecucionesAsignacion
-      responses:
-        '200':
-          description: Historial de ejecuciones
-  /api/asignaciones/propuestas:
-    get:
-      summary: Listar propuestas de asignación
-      operationId: listarPropuestasAsignacion
-      responses:
-        '200':
-          description: Listado de propuestas
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/PropuestaDTO'
+    get:
+      summary: Historial de ejecuciones de asignación
+      description: >
+        Desde 1.10.0 (R11-24) pagina en la base, de la más reciente a la más vieja: sin `page` ni
+        `size` devuelve la página 0 de 20 (antes, todas). `size=1` da la última corrida.
+      operationId: historialEjecucionesAsignacion
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Historial de ejecuciones
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+        '400':
+          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
+  /api/asignaciones/propuestas:
+    get:
+      summary: Listar propuestas de asignación
+      description: >
+        Desde 1.10.0 (R11-24) filtra, ordena y pagina en la base: sin `page` ni `size` devuelve la
+        página 0 de 20 (antes, todas). Los filtros se combinan con Y; los valores repetidos de un
+        mismo filtro, con O. Cada propuesta dice qué algoritmo la sugirió y en qué puesto
+        (`sugeridaPor`) y, si está pendiente, su `situacion`.
+      operationId: listarPropuestasAsignacion
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: string, enum: [PENDIENTE, APROBADA, DESCARTADA] }
+        - name: situacion
+          in: query
+          required: false
+          description: >-
+            Solo pendientes en esa situación. LIBRE: todo lo que pide alcanza y nadie más lo pide.
+            EN_CONFLICTO: alcanza para ella sola, pero otra pendiente pide la misma donación o la
+            misma necesidad. SIN_STOCK: alguna donación ya no tiene lo que pide.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: string, enum: [LIBRE, EN_CONFLICTO, SIN_STOCK] }
+        - name: algoritmo
+          in: query
+          required: false
+          description: >-
+            Las que sugirió ese algoritmo (solo o con el otro); AMBOS, las que sugirieron los dos.
+            Sin distinguir mayúsculas.
+          schema:
+            type: string
+            enum: [COMPATIBILIDAD_SEMANTICA, PRIORIDAD_SUBATENDIDOS, AMBOS]
+        - name: donacion
+          in: query
+          required: false
+          description: Las que piden esta donación independiente.
+          schema: { type: string, format: uuid }
+        - name: orden
+          in: query
+          required: false
+          description: >-
+            `puesto` (por defecto): el mejor puesto primero y, con `situacion=EN_CONFLICTO`, juntas
+            las que compiten por la misma donación. `reciente`: la más nueva primero.
+          schema: { type: string, enum: [puesto, reciente] }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Una página de propuestas
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropuestaDTO'
+        '400':
+          description: >-
+            Un `estado`, `situacion`, `algoritmo` u `orden` desconocido, `page` negativo o `size`
+            fuera de 1..100 (ERR-CSR-003)
+  /api/asignaciones/propuestas/resumen:
+    get:
+      summary: Cuántas propuestas pendientes hay en cada situación
+      description: Desde 1.10.0 (R11-24). Contado en la base.
+      operationId: resumenPropuestasAsignacion
+      responses:
+        '200':
+          description: Cuentas de pendientes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenPropuestasDTO'
+  /api/asignaciones/donaciones:
+    get:
+      summary: Donaciones que están en alguna propuesta pendiente
+      description: >
+        Desde 1.10.0 (R11-24). Por cada donación: lo que queda en el depósito, cuánto piden las
+        pendientes y en cuántas está. Primero las que no alcanzan para todas, después por fecha de
+        registro.
+      operationId: listarDonacionesEnPropuestas
+      parameters:
+        - name: categoriaId
+          in: query
+          required: false
+          description: Solo donaciones de una subcategoría de esta categoría.
+          schema: { type: string, format: uuid }
+        - name: soloEnConflicto
+          in: query
+          required: false
+          description: Solo las que no alcanzan para todas las pendientes que las piden.
+          schema: { type: boolean, default: false }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Una página de donaciones
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionEnPropuestasDTO'
+        '400':
+          description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
   /api/asignaciones/propuestas/{id}/estado:
     put:
       summary: Actualizar estado de una propuesta de asignación
@@ -1571,12 +1698,17 @@ components:
         necesidad:
           type: object
           nullable: true
-          description: Resumen de la necesidad que satisface.
+          description: >-
+            Resumen de la necesidad que satisface. Desde 1.10.0 (R11-24) suma `entidadId`,
+            `entidadNombre` y `unidad`.
         fragmentaciones:
           type: array
           items:
             type: object
-            description: Donación independiente y cantidad que aporta.
+            description: >-
+              Donación independiente y cantidad que aporta. Desde 1.10.0 (R11-24) suma
+              `disponible` (lo que queda en el depósito) y `pedidaEnOtras` (lo que piden de ella
+              las otras pendientes) y `otrasPropuestas` (cuántas otras pendientes la piden).
         decididaPor:
           type: string
           nullable: true
@@ -1589,6 +1721,49 @@ components:
           format: date-time
           nullable: true
           description: Desde 1.10.0 (R11-10). Cuándo se aprobó o descartó; `null` si no se sabe.
+        sugeridaPor:
+          type: array
+          description: >
+            Desde 1.10.0 (R11-24). Qué algoritmo la sugirió y en qué puesto de su lista de esa
+            corrida. Vacío si se generó antes de este cambio. Si la sugirieron los dos, la que
+            tiene `eligioLasDonaciones` en true es la del algoritmo cuyas donaciones quedaron.
+          items:
+            $ref: '#/components/schemas/SugerenciaDTO'
+        situacion:
+          type: string
+          nullable: true
+          enum: [LIBRE, EN_CONFLICTO, SIN_STOCK]
+          description: Desde 1.10.0 (R11-24). Solo en pendientes listadas; `null` en el resto.
+        otrasPendientesMismaNecesidad:
+          type: integer
+          minimum: 0
+          description: Desde 1.10.0 (R11-24). Otras pendientes para la misma necesidad.
+    SugerenciaDTO:
+      type: object
+      description: Desde 1.10.0 (R11-24). Un algoritmo que sugirió la propuesta.
+      properties:
+        algoritmo: { type: string, enum: [COMPATIBILIDAD_SEMANTICA, PRIORIDAD_SUBATENDIDOS] }
+        puesto: { type: integer, minimum: 1, description: 1 es la primera de su lista. }
+        deCuantas: { type: integer, minimum: 1, description: Cuántas propuso en esa corrida. }
+        eligioLasDonaciones: { type: boolean }
+    ResumenPropuestasDTO:
+      type: object
+      description: Desde 1.10.0 (R11-24). Pendientes en total y por situación.
+      properties:
+        pendientes: { type: integer, minimum: 0 }
+        libres: { type: integer, minimum: 0 }
+        enConflicto: { type: integer, minimum: 0 }
+        sinStock: { type: integer, minimum: 0 }
+    DonacionEnPropuestasDTO:
+      type: object
+      description: Desde 1.10.0 (R11-24). Una donación pedida por al menos una pendiente.
+      properties:
+        donacionIndependiente:
+          $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
+        disponible: { type: integer, minimum: 0, description: Lo que queda en el depósito. }
+        pedidaEnPendientes: { type: integer, minimum: 0 }
+        propuestasPendientes: { type: integer, minimum: 0 }
+        alcanza: { type: boolean, description: '`pedidaEnPendientes` no supera `disponible`.' }
     ResumenAdminDTO:
       type: object
       description: Cifras del inicio del administrador (R11-01), cada una contada en la base.

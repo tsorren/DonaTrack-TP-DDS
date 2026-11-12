@@ -49,6 +49,24 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Quién decidió:** usuario (spec `R11-p1-donante-listas`, las tres dudas con la opción
   recomendada); los detalles, el agente.
 
+### 2026-11-12 · admin · Asignar donaciones: tres pestañas y quién sugirió cada propuesta
+
+- **Decisión:** la variante C pasa a ser la pantalla, con tres pestañas que son enlaces del servidor
+  (Propuestas, Conflictos y Destino, con la cuenta del resumen), una sola tarjeta de propuesta con
+  "Sugerida por" (el algoritmo en lenguaje llano y su puesto, "3.º de 10") y el panel "Estado de la
+  asignación" a la derecha desde 68,75 em. Se borran las variantes A, B y C, su hoja común y
+  `asignaciones.js`. Todo llega paginado del servidor (de a 10; las decididas, de a 20).
+- **Alternativas:** cargar las tres pestañas juntas y alternarlas con Alpine (tres listas por
+  visita); el panel arriba del código en el celular (cambia el orden del foco de la ficha).
+- **Por qué:** cada pestaña es una dirección que anda sin JavaScript y pide una sola página; el
+  panel va después de la lista en el código, como pide el orden del foco, y en el celular queda al
+  final.
+- **Costo:** el panel cambia de columna en 68,75 em (el quiebre ancho de los tokens), no en 1280 px
+  como dice la ficha. "Alcanza para una" solo se dice cuando compiten dos; con más, "no alcanza para
+  todas". El nombre de la organización para el aviso viaja oculto en el formulario.
+- **Quién decidió:** usuario (pestañas, variante C, sin variantes); el agente, lo demás (lote
+  `p1-asignaciones`, [ficha](flujos/r11-p1-asignaciones.md)).
+
 ### 2026-11-12 · admin · Las importaciones de donantes son una pestaña de Donantes
 
 - **Decisión:** `/admin-importaciones`, pestaña "Importaciones" junto a "Donantes", con la lista de a

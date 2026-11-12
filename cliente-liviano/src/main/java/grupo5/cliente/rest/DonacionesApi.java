@@ -246,11 +246,28 @@ interface DonacionesApi {
   @PostExchange("/api/asignaciones/ejecuciones")
   List<Propuesta> correrAsignacion();
 
+  /** De a una página, la más reciente primero (R11-24): {@code size=1} da la última corrida. */
   @GetExchange("/api/asignaciones/ejecuciones")
-  List<Ejecucion> ejecuciones();
+  ResponseEntity<List<Ejecucion>> ejecuciones(@RequestParam MultiValueMap<String, String> filtros);
 
+  /**
+   * De a una página (R11-24), filtrada en Donaciones: {@code estado}, {@code situacion}, {@code
+   * algoritmo}, {@code donacion}, {@code orden}, {@code page} y {@code size}.
+   */
   @GetExchange("/api/asignaciones/propuestas")
-  List<Propuesta> propuestas();
+  ResponseEntity<List<Propuesta>> propuestas(@RequestParam MultiValueMap<String, String> filtros);
+
+  /** Cuántas pendientes hay en cada situación (R11-24), contadas en Donaciones. */
+  @GetExchange("/api/asignaciones/propuestas/resumen")
+  ResumenPropuestas resumenPropuestas();
+
+  /**
+   * Las donaciones que están en alguna propuesta pendiente, de a una página (R11-24): {@code
+   * categoriaId}, {@code soloEnConflicto}, {@code page} y {@code size}.
+   */
+  @GetExchange("/api/asignaciones/donaciones")
+  ResponseEntity<List<DonacionEnPropuestas>> donacionesEnPropuestas(
+      @RequestParam MultiValueMap<String, String> filtros);
 
   /** {@code estado}: APROBADA o RECHAZADA. */
   @PutExchange("/api/asignaciones/propuestas/{id}/estado")
@@ -531,17 +548,55 @@ interface DonacionesApi {
 
   record FilaConError(Integer linea, String motivo, String codigo) {}
 
+  /**
+   * Una propuesta de asignación. Desde R11-24: {@code sugeridaPor} (vacía si se generó antes),
+   * {@code situacion} (LIBRE, EN_CONFLICTO o SIN_STOCK; null si no está pendiente) y cuántas otras
+   * pendientes cubren la misma necesidad.
+   */
   record Propuesta(
       UUID id,
       String estado,
       LocalDateTime fechaCreacion,
       NecesidadResumen necesidad,
-      List<Fragmento> fragmentaciones) {}
+      List<Fragmento> fragmentaciones,
+      List<Sugerencia> sugeridaPor,
+      String situacion,
+      Integer otrasPendientesMismaNecesidad) {}
 
+  /** {@code entidadId}, {@code entidadNombre} y {@code unidad}, desde R11-24. */
   record NecesidadResumen(
-      UUID id, String descripcion, Integer cantidadNecesitada, String tipo, String estado) {}
+      UUID id,
+      String descripcion,
+      Integer cantidadNecesitada,
+      String tipo,
+      String estado,
+      UUID entidadId,
+      String entidadNombre,
+      String unidad) {}
 
-  record Fragmento(Donacion donacionIndependiente, Integer cantidadNecesaria) {}
+  /**
+   * Lo que pide de una donación. Desde R11-24: lo que queda de ella ({@code disponible}), lo que
+   * piden las otras pendientes y cuántas son.
+   */
+  record Fragmento(
+      Donacion donacionIndependiente,
+      Integer cantidadNecesaria,
+      Integer disponible,
+      Integer pedidaEnOtras,
+      Integer otrasPropuestas) {}
+
+  /** {@code algoritmo}: COMPATIBILIDAD_SEMANTICA o PRIORIDAD_SUBATENDIDOS. */
+  record Sugerencia(
+      String algoritmo, Integer puesto, Integer deCuantas, Boolean eligioLasDonaciones) {}
+
+  record ResumenPropuestas(Long pendientes, Long libres, Long enConflicto, Long sinStock) {}
+
+  record DonacionEnPropuestas(
+      Donacion donacionIndependiente,
+      Integer disponible,
+      Integer pedidaEnPendientes,
+      Integer propuestasPendientes,
+      Boolean alcanza) {}
 
   record Ejecucion(UUID id, LocalDateTime fechaEjecucion, Integer cantidadPropuestasGeneradas) {}
 

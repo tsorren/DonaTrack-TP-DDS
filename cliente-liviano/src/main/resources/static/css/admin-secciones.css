@@ -119,3 +119,55 @@
     --espacio-relleno: var(--espacio-4);
   }
 }
+
+/* --- Asignar donaciones (R11-24, ficha r11-p1-asignaciones) ------------------------------------- */
+
+/* La lista y el panel: uno debajo del otro en el celular; desde el ancho de escritorio, el panel a
+   la derecha, fijo al desplazarse. */
+[data-pantalla="asignaciones"] [data-parte="cuerpo"] {
+  display: grid;
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+[data-pantalla="asignaciones"] [data-lista="propuestas"] {
+  gap: var(--espacio-3);
+}
+
+/* La franja del choque: la marca, la frase y el enlace, en un renglón que baja si no entra. */
+[data-pantalla="asignaciones"] [data-parte="franja"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-2);
+}
+
+/* Cada donación de Destino se toca entera. */
+[data-pantalla="asignaciones"] [data-parte="donacion"] {
+  min-height: 3rem;
+}
+
+[data-pantalla="asignaciones"] dd {
+  margin: 0;
+}
+
+/* Los enlaces con forma de botón (volver, ver todas) miden lo que su texto. */
+[data-pantalla="asignaciones"] .pila > a.boton {
+  align-self: flex-start;
+}
+
+@media (min-width: 68.75em) {
+  [data-pantalla="asignaciones"] [data-parte="cuerpo"] {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+
+  [data-pantalla="asignaciones"] [data-parte="panel"] {
+    position: sticky;
+    top: var(--espacio-4);
+  }
+
+  /* Dos tarjetas por fila. */
+  [data-pantalla="asignaciones"] [data-lista="propuestas"] {
+    --medida-columna: 22rem;
+  }
+}

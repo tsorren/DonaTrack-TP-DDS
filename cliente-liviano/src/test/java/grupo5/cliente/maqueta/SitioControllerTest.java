@@ -1044,22 +1044,41 @@ class SitioControllerTest {
   void lasPropuestasSeApruebanODescartan() throws Exception {
     mvc.perform(get("/admin-asignaciones"))
         .andExpect(model().attribute("seccion", "Asignar donaciones"))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 2")))
-        .andExpect(content().string(containsString("Cubre 10 de las 12 unidades")))
+        .andExpect(content().string(containsString("Propuestas sin problemas · 4")))
+        .andExpect(content().string(containsString("Cubre 10 de 12 unidades")))
         .andExpect(
             content()
                 .string(
                     containsString(
                         "aria-label=\"Aprobar: propuesta para Comedor Barrio Ejemplo\"")))
-        .andExpect(content().string(containsString("Decididas · 7")));
+        .andExpect(content().string(containsString("Hay 4 propuestas en conflicto.")))
+        .andExpect(content().string(containsString("Ver todas las decididas")));
     mvc.perform(get("/admin-asignaciones?escenario=vacio"))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
     mvc.perform(get("/admin-asignaciones?escenario=corriendo"))
         .andExpect(content().string(containsString("Corriendo la asignación…")));
+    mvc.perform(get("/admin-asignaciones?algoritmo=las-dos"))
+        .andExpect(content().string(containsString("Propuestas sin problemas · 1")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Las donaciones son las que eligió Quienes menos recibieron.")));
+    mvc.perform(get("/admin-asignaciones?pestana=conflictos"))
+        .andExpect(content().string(containsString("con 1 propuesta más: alcanza para una.")))
+        .andExpect(
+            content().string(not(containsString("Aprobar: propuesta para Hogar Ejemplo Centro"))));
+    mvc.perform(get("/admin-asignaciones?pestana=destino"))
+        .andExpect(content().string(containsString("¿Adónde va")))
+        .andExpect(content().string(containsString("2 propuestas · no alcanza")));
+    mvc.perform(get("/admin-asignaciones?pestana=destino&donacion=otra"))
+        .andExpect(
+            content()
+                .string(containsString("Esa donación ya no está en ninguna propuesta pendiente.")));
+    mvc.perform(get("/admin-asignaciones?vista=decididas"))
+        .andExpect(content().string(containsString("Decididas · 7")));
     mvc.perform(get("/admin-asignaciones-aprobada"))
         .andExpect(content().string(containsString("Aprobaste la propuesta para Comedor Barrio")))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 1")))
-        .andExpect(content().string(containsString("Decididas · 8")));
+        .andExpect(content().string(containsString("Propuestas sin problemas · 3")));
     mvc.perform(get("/admin-asignaciones-descartada"))
         .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
     mvc.perform(get("/admin-asignaciones-error"))
@@ -1067,14 +1086,14 @@ class SitioControllerTest {
         .andExpect(
             content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
     mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
-        .andExpect(content().string(containsString("de la misma entidad que la")));
+        .andExpect(content().string(containsString("de la misma organización que la")));
     mvc.perform(get("/admin-asignaciones-error?escenario=cambio"))
         .andExpect(content().string(containsString("Volvimos a cargar la lista.")));
     mvc.perform(post("/admin-asignaciones-corrida"))
         .andExpect(redirectedUrl("/admin-asignaciones-corrida"));
     mvc.perform(get("/admin-asignaciones-corrida?escenario=nuevas"))
         .andExpect(content().string(containsString("generó 2 propuestas nuevas.")))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
+        .andExpect(content().string(containsString("Propuestas sin problemas · 6")));
   }
 
   @Test

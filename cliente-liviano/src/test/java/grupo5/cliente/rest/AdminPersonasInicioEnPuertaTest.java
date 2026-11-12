@@ -47,6 +47,6 @@ class AdminPersonasInicioEnPuertaTest {
     assertEquals(0, inicio.decisiones().vencen());
     verify(donaciones, never()).pagina(any());
     verify(donaciones, never()).donantes(any());
-    verify(donaciones, never()).propuestas();
+    verify(donaciones, never()).propuestas(any());
   }
 }

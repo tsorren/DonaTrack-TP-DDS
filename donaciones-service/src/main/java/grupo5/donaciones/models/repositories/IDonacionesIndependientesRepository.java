@@ -4,6 +4,7 @@ import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
+import grupo5.donaciones.models.repositories.listados.LecturaPorLote;
 import grupo5.donaciones.models.repositories.listados.PorVencer;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
@@ -12,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public interface IDonacionesIndependientesRepository extends CrudRepository<DonacionIndependiente> {
+public interface IDonacionesIndependientesRepository
+    extends CrudRepository<DonacionIndependiente>, LecturaPorLote<DonacionIndependiente> {
 
   /** Una página con la búsqueda, los filtros y el orden resueltos (R11-01). */
   Tramo<DonacionIndependiente> buscar(CriterioDonacionesIndependientes criterio);

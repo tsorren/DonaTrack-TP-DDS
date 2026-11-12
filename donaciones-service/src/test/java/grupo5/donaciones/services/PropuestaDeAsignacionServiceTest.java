@@ -16,12 +16,16 @@ import static org.mockito.Mockito.when;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
+import grupo5.donaciones.dto.propuestas.FiltroPropuestas;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
+import grupo5.donaciones.dto.propuestas.ResumenPropuestasDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -34,6 +38,8 @@ import grupo5.donaciones.models.entities.propuestas.GestorPropuestasDeAsignacion
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.PropuestaAprobada;
+import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
@@ -43,14 +49,22 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
+import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
+import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,7 +126,8 @@ class PropuestaDeAsignacionServiceTest {
             donantesRepository,
             donacionesEventPublisher,
             logisticaBroker,
-            acumulados);
+            acumulados,
+            mock(DonacionIndependienteMapper.class));
   }
 
   @Test
@@ -133,7 +148,7 @@ class PropuestaDeAsignacionServiceTest {
     when(acumulados.estaSatisfecha(satisfecha)).thenReturn(true);
     when(gestorPropuestas.generarPropuestas(eq(List.of(necesidad)), eq(List.of(donacion)), any()))
         .thenReturn(List.of(propuesta));
-    when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
+    when(propuestaMapper.toDTOsSinCalculo(List.of(propuesta))).thenReturn(List.of(dto));
 
     List<PropuestaDTO> resultado = service.ejecutarAsignacion();
 
@@ -160,15 +175,73 @@ class PropuestaDeAsignacionServiceTest {
             "sub-de-ana",
             null);
 
-    when(propuestaRepository.findAll()).thenReturn(List.of(propuesta));
-    when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
+    PropuestaEnListado enListado = new PropuestaEnListado(propuesta, null, 0, Map.of());
+    when(propuestaRepository.buscar(any())).thenReturn(new Tramo<>(List.of(enListado), 45));
+    when(propuestaMapper.toDTOs(List.of(enListado))).thenReturn(List.of(dto));
 
-    List<PropuestaDTO> resultado = service.listarPropuestas();
+    Pagina<PropuestaDTO> resultado =
+        service.listarPropuestas(
+            new FiltroPropuestas(
+                List.of(EstadoPropuesta.PENDIENTE),
+                List.of(SituacionPropuesta.EN_CONFLICTO),
+                "prioridad_subatendidos",
+                null),
+            new ParametrosListado(1, 10, null, null));
 
-    assertEquals(1, resultado.size());
-    assertEquals(EstadoPropuesta.APROBADA, resultado.getFirst().estado());
-    verify(propuestaRepository).findAll();
-    verify(propuestaMapper).toDTO(propuesta);
+    assertEquals(1, resultado.elementos().size());
+    assertEquals(45, resultado.total());
+    assertEquals(EstadoPropuesta.APROBADA, resultado.elementos().getFirst().estado());
+    verify(propuestaRepository)
+        .buscar(
+            new CriterioPropuestas(
+                Set.of(EstadoPropuesta.PENDIENTE),
+                Set.of(SituacionPropuesta.EN_CONFLICTO),
+                TipoAlgoritmo.PRIORIDAD_SUBATENDIDOS,
+                false,
+                null,
+                OrdenPropuestas.PUESTO,
+                new Paginado(1, 10)));
+  }
+
+  @Test
+  void listarPropuestas_conAmbos_pideLasQueSugirieronLosDos() {
+    when(propuestaRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+
+    service.listarPropuestas(
+        new FiltroPropuestas(null, null, "AMBOS", null),
+        new ParametrosListado(null, null, null, "reciente"));
+
+    verify(propuestaRepository)
+        .buscar(
+            new CriterioPropuestas(
+                Set.of(),
+                Set.of(),
+                null,
+                true,
+                null,
+                OrdenPropuestas.RECIENTE,
+                new Paginado(0, 20)));
+  }
+
+  @Test
+  void listarPropuestas_conUnAlgoritmoDesconocido_esUnErrorDelPedido() {
+    FiltroPropuestas filtro = new FiltroPropuestas(null, null, "OTRO", null);
+    ParametrosListado listado = ParametrosListado.primeraPagina();
+
+    assertThrows(ValidationException.class, () -> service.listarPropuestas(filtro, listado));
+  }
+
+  // A8: el resumen suma las tres situaciones
+  @Test
+  void resumen_sumaLasTresSituaciones() {
+    when(propuestaRepository.contarPendientesPorSituacion())
+        .thenReturn(
+            Map.of(
+                SituacionPropuesta.LIBRE, 8L,
+                SituacionPropuesta.EN_CONFLICTO, 2L,
+                SituacionPropuesta.SIN_STOCK, 1L));
+
+    assertEquals(new ResumenPropuestasDTO(11, 8, 2, 1), service.resumen());
   }
 
   @Test
@@ -346,14 +419,15 @@ class PropuestaDeAsignacionServiceTest {
   void historialEjecuciones_debeRetornarLoDelRepositorioMapeado() {
     EjecucionAsignacion entity = mock(EjecucionAsignacion.class);
     EjecucionAsignacionDTO dto = mock(EjecucionAsignacionDTO.class);
-    when(asignacionRepository.obtenerHistorial()).thenReturn(List.of(entity));
+    when(asignacionRepository.historial(new Paginado(0, 1)))
+        .thenReturn(new Tramo<>(List.of(entity), 3));
     when(ejecucionMapper.toDTO(entity)).thenReturn(dto);
 
-    List<EjecucionAsignacionDTO> resultado = service.historialEjecuciones();
+    Pagina<EjecucionAsignacionDTO> resultado =
+        service.historialEjecuciones(new ParametrosListado(0, 1, null, null));
 
-    assertEquals(1, resultado.size());
-    assertEquals(dto, resultado.getFirst());
-    verify(asignacionRepository).obtenerHistorial();
+    assertEquals(List.of(dto), resultado.elementos());
+    assertEquals(3, resultado.total());
     verify(ejecucionMapper).toDTO(entity);
   }
 

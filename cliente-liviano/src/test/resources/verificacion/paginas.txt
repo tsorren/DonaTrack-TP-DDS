@@ -232,6 +232,11 @@
 /admin-asignaciones?escenario=lento
 /admin-asignaciones?escenario=error
 /admin-asignaciones?escenario=corriendo
+/admin-asignaciones?pestana=conflictos
+/admin-asignaciones?pestana=destino
+/admin-asignaciones?pestana=destino&donacion=arroz-ana
+/admin-asignaciones?algoritmo=las-dos
+/admin-asignaciones?vista=decididas
 /admin-asignaciones-aprobada
 /admin-asignaciones-descartada
 /admin-asignaciones-error

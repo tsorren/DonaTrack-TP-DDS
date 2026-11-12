@@ -2,8 +2,10 @@ package grupo5.donaciones.infrastructure.persistencia.mapper;
 
 import grupo5.donaciones.infrastructure.persistencia.entities.propuestas.PosibleFragmentacionEntity;
 import grupo5.donaciones.infrastructure.persistencia.entities.propuestas.PropuestaEntity;
+import grupo5.donaciones.infrastructure.persistencia.entities.propuestas.SugerenciaPropuestaEmbeddable;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.SugerenciaDeAlgoritmo;
 import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,14 @@ public class PropuestasPersistenciaMapper {
       fila.setCantidad(f.getCantidadNecesaria());
       entity.getFragmentaciones().add(fila);
     }
+    entity.getSugerencias().clear();
+    for (SugerenciaDeAlgoritmo s : domain.getSugerencias()) {
+      entity
+          .getSugerencias()
+          .add(
+              new SugerenciaPropuestaEmbeddable(
+                  s.algoritmo(), s.puesto(), s.deCuantas(), s.eligioLasDonaciones()));
+    }
     return entity;
   }
 
@@ -38,13 +48,25 @@ public class PropuestasPersistenciaMapper {
         entity.getFragmentaciones().stream()
             .map(f -> new PosibleFragmentacion(f.getDonacionIndependienteId(), f.getCantidad()))
             .toList();
-    return new Propuesta(
-        entity.getId(),
-        entity.getNecesidadId(),
-        entity.getEstado(),
-        entity.getFechaCreacion(),
-        fragmentaciones,
-        entity.getDecididaPor(),
-        entity.getFechaDecision());
+    Propuesta propuesta =
+        new Propuesta(
+            entity.getId(),
+            entity.getNecesidadId(),
+            entity.getEstado(),
+            entity.getFechaCreacion(),
+            fragmentaciones,
+            entity.getDecididaPor(),
+            entity.getFechaDecision());
+    propuesta.reconstituirSugerencias(
+        entity.getSugerencias().stream()
+            .map(
+                s ->
+                    new SugerenciaDeAlgoritmo(
+                        s.getAlgoritmo(),
+                        s.getPuesto(),
+                        s.getDeCuantas(),
+                        Boolean.TRUE.equals(s.getEligioLasDonaciones())))
+            .toList());
+    return propuesta;
   }
 }

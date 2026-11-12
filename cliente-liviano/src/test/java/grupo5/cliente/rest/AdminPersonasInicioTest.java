@@ -97,7 +97,7 @@ class AdminPersonasInicioTest {
             new Camiones(1, 1)),
         inicio.cifras());
     assertEquals("15 de octubre de 2026, 18:30", inicio.al());
-    verify(donaciones, never()).propuestas();
+    verify(donaciones, never()).propuestas(any());
   }
 
   @Test

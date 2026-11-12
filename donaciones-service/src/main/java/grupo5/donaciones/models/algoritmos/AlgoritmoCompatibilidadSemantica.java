@@ -2,6 +2,7 @@ package grupo5.donaciones.models.algoritmos;
 
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import java.util.Comparator;
 import java.util.List;
@@ -12,6 +13,11 @@ public class AlgoritmoCompatibilidadSemantica extends AlgoritmoAsignacion {
 
   public AlgoritmoCompatibilidadSemantica(ComparadorTexto comparadorTexto) {
     this.comparadorTexto = comparadorTexto;
+  }
+
+  @Override
+  public TipoAlgoritmo tipo() {
+    return TipoAlgoritmo.COMPATIBILIDAD_SEMANTICA;
   }
 
   @Override

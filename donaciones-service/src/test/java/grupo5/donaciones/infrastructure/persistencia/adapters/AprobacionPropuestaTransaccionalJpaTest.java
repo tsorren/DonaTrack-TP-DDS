@@ -45,6 +45,7 @@ import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
+import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
@@ -116,6 +117,7 @@ class AprobacionPropuestaTransaccionalJpaTest {
   @MockitoBean private PropuestaMapper propuestaMapper;
   @MockitoBean private EjecucionAsignacionMapper ejecucionMapper;
   @MockitoBean private DireccionMapper direccionMapper;
+  @MockitoBean private DonacionIndependienteMapper donacionIndependienteMapper;
 
   private NecesidadExtraordinaria necesidad;
   private Propuesta propuesta;

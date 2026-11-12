@@ -33,7 +33,7 @@ lee todas las propuestas y todas las ejecuciones, con una llamada por necesidad
    algoritmo, el puesto en la lista de ese algoritmo en esa corrida (1 = la primera), cuántas
    propuso ese algoritmo en esa corrida, y si sus donaciones son las que quedaron en la propuesta.
    Cuando los dos sugieren la misma necesidad, la propuesta que queda (la del segundo) lleva las dos
-   sugerencias. Migración nueva `V22` (la siguiente a `V21`): tabla hija de `propuesta`.
+   sugerencias. Migración nueva `V24` (la siguiente a `V23`; la ficha la llamaba `V22`): tabla hija de `propuesta`.
 2. **La respuesta de la propuesta suma campos** (aditivo): las sugerencias, la situación (libre, en
    conflicto, ya no alcanza), cuántas otras pendientes cubren la misma necesidad, la organización
    y la unidad de la necesidad, y por cada donación lo que hay hoy en el depósito y lo que piden de
@@ -148,7 +148,7 @@ Reglas de los campos nuevos:
 
 | Campo | Regla |
 |---|---|
-| `sugeridaPor` | Una entrada por algoritmo. Vacío (`[]`, nunca null) en las propuestas creadas antes de `V22`. Exactamente una con `eligioLasDonaciones: true` cuando no está vacío |
+| `sugeridaPor` | Una entrada por algoritmo. Vacío (`[]`, nunca null) en las propuestas creadas antes de `V24`. Exactamente una con `eligioLasDonaciones: true` cuando no está vacío |
 | `puesto`, `deCuantas` | `1 ≤ puesto ≤ deCuantas ≤ 10` (el tope de `AlgoritmoAsignacion`) |
 | `disponible` | Cantidad de esa donación independiente que sigue `EN_DEPOSITO`; 0 si ya no está en el depósito |
 | `pedidaEnOtras` | Suma de lo que piden de esa donación las **otras** propuestas `PENDIENTE` |
@@ -263,10 +263,10 @@ Escenario A2: Los dos sugieren la misma necesidad
   Y solo la de PRIORIDAD_SUBATENDIDOS tiene eligioLasDonaciones en true
 
 Escenario A3: Las sugerencias se guardan
-  Dado una propuesta con dos sugerencias guardada con V22
+  Dado una propuesta con dos sugerencias guardada con V24
   Cuando se lee de nuevo, o se aprueba y se lee
   Entonces devuelve las dos sugerencias iguales
-  Y una propuesta creada antes de V22 devuelve sugeridaPor []
+  Y una propuesta creada antes de V24 devuelve sugeridaPor []
 
 Escenario A4: Página por defecto y errores
   Dado 45 propuestas
@@ -371,7 +371,7 @@ Escenario A18: Gates
 ### Archivos
 
 Del lote: `donaciones-service` (propuestas de asignación: dominio, algoritmos, gestor, servicio,
-mapper, controller, DTOs, adaptador JPA, `V22__sugerencias_de_propuesta.sql`, tests);
+mapper, controller, DTOs, adaptador JPA, `V24__sugerencias_de_propuesta.sql`, tests);
 `cliente-liviano`: `templates/admin-asignaciones.html`, `templates/variantes/asignaciones-*.html`
 (se borran), `web/AdminAsignacionesController.java`, la parte de asignaciones de
 `rest/AdminOperacionRest.java` y su hoja de estilo.
@@ -398,7 +398,7 @@ construir.
 ### Plan de tests (primero el test, después el código)
 
 1. Gestor y algoritmos con dobles: puesto, total y las dos sugerencias (A1, A2).
-2. Adaptador JPA y `V22` sobre PostgreSQL con datos de antes (A3).
+2. Adaptador JPA y `V24` sobre PostgreSQL con datos de antes (A3).
 3. Consultas de listado, situación, filtros, resumen y donaciones en juego sobre PostgreSQL (A4 a
    A9), con el conteo de sentencias (A7).
 4. Controller con MockMvc: parámetros, header, 400 y permisos (A4, A10).

@@ -4,11 +4,16 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
+import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
+import grupo5.donaciones.dto.propuestas.DonacionEnPropuestasDTO;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
+import grupo5.donaciones.dto.propuestas.FiltroPropuestas;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
+import grupo5.donaciones.dto.propuestas.ResumenPropuestasDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -21,6 +26,8 @@ import grupo5.donaciones.models.entities.propuestas.GestorPropuestasDeAsignacion
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.PropuestaAprobada;
+import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
@@ -29,16 +36,27 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
+import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
+import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
+import grupo5.donaciones.models.repositories.listados.StockEnPropuestas;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
+import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -53,6 +71,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionService {
 
   private static final Logger log = LoggerFactory.getLogger(PropuestaDeAsignacionService.class);
+  private static final String AMBOS = "AMBOS";
 
   private final GestorPropuestasDeAsignacion gestorPropuestas;
   private final IDonacionesIndependientesRepository donacionRepository;
@@ -70,6 +89,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final IDonacionesEventPublisher donacionesEventPublisher;
   private final ILogisticaBroker logisticaBroker;
   private final AcumuladosDeAsignacion acumulados;
+  private final DonacionIndependienteMapper donacionIndependienteMapper;
 
   @Override
   public List<PropuestaDTO> ejecutarAsignacion() {
@@ -89,12 +109,75 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     EjecucionAsignacion ejecucion = new EjecucionAsignacion(propuestas.size());
     asignacionRepository.save(ejecucion);
 
-    return propuestas.stream().map(propuestaMapper::toDTO).toList();
+    return propuestaMapper.toDTOsSinCalculo(propuestas);
   }
 
   @Override
-  public List<PropuestaDTO> listarPropuestas() {
-    return propuestaRepository.findAll().stream().map(propuestaMapper::toDTO).toList();
+  public Pagina<PropuestaDTO> listarPropuestas(FiltroPropuestas filtro, ParametrosListado listado) {
+    TipoAlgoritmo algoritmo = null;
+    boolean ambos = false;
+    if (filtro.algoritmo() != null && !filtro.algoritmo().isBlank()) {
+      String pedido = filtro.algoritmo().trim().toUpperCase(Locale.ROOT);
+      if (AMBOS.equals(pedido)) {
+        ambos = true;
+      } else {
+        algoritmo = enumDe(TipoAlgoritmo.class, pedido);
+      }
+    }
+    Tramo<PropuestaEnListado> tramo =
+        propuestaRepository.buscar(
+            new CriterioPropuestas(
+                filtro.estado() == null ? Set.of() : Set.copyOf(filtro.estado()),
+                filtro.situacion() == null ? Set.of() : Set.copyOf(filtro.situacion()),
+                algoritmo,
+                ambos,
+                filtro.donacion(),
+                listado.orden(OrdenPropuestas.class, OrdenPropuestas.PUESTO),
+                listado.paginado()));
+    return new Pagina<>(propuestaMapper.toDTOs(tramo.elementos()), (int) tramo.total());
+  }
+
+  @Override
+  public ResumenPropuestasDTO resumen() {
+    Map<SituacionPropuesta, Long> conteo = propuestaRepository.contarPendientesPorSituacion();
+    long libres = conteo.getOrDefault(SituacionPropuesta.LIBRE, 0L);
+    long enConflicto = conteo.getOrDefault(SituacionPropuesta.EN_CONFLICTO, 0L);
+    long sinStock = conteo.getOrDefault(SituacionPropuesta.SIN_STOCK, 0L);
+    return new ResumenPropuestasDTO(libres + enConflicto + sinStock, libres, enConflicto, sinStock);
+  }
+
+  @Override
+  public Pagina<DonacionEnPropuestasDTO> donacionesEnPendientes(
+      UUID categoriaId, boolean soloEnConflicto, ParametrosListado listado) {
+    Tramo<StockEnPropuestas> tramo =
+        propuestaRepository.buscarDonacionesEnPendientes(
+            categoriaId, soloEnConflicto, listado.paginado());
+    Map<UUID, DonacionIndependienteResponseDTO> dtos = new HashMap<>();
+    donacionIndependienteMapper
+        .toDTOs(
+            donacionRepository.findAllById(
+                tramo.elementos().stream().map(StockEnPropuestas::donacionId).toList()))
+        .forEach(dto -> dtos.put(dto.id(), dto));
+    return new Pagina<>(
+        tramo.elementos().stream()
+            .map(
+                s ->
+                    new DonacionEnPropuestasDTO(
+                        dtos.get(s.donacionId()),
+                        s.disponible(),
+                        s.pedidaEnPendientes(),
+                        s.propuestasPendientes(),
+                        s.alcanza()))
+            .toList(),
+        (int) tramo.total());
+  }
+
+  private static <E extends Enum<E>> E enumDe(Class<E> tipo, String valor) {
+    try {
+      return Enum.valueOf(tipo, valor);
+    } catch (IllegalArgumentException e) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
   }
 
   /**
@@ -165,8 +248,10 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   }
 
   @Override
-  public List<EjecucionAsignacionDTO> historialEjecuciones() {
-    return asignacionRepository.obtenerHistorial().stream().map(ejecucionMapper::toDTO).toList();
+  public Pagina<EjecucionAsignacionDTO> historialEjecuciones(ParametrosListado listado) {
+    Tramo<EjecucionAsignacion> tramo = asignacionRepository.historial(listado.paginado());
+    return new Pagina<>(
+        tramo.elementos().stream().map(ejecucionMapper::toDTO).toList(), (int) tramo.total());
   }
 
   @EventListener

@@ -29,6 +29,10 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
 
   private LocalDateTime fechaDecision;
 
+  /** Qué algoritmos la sugirieron y en qué puesto (R11-24); vacía en las anteriores a V24. */
+  @Getter(AccessLevel.NONE)
+  private List<SugerenciaDeAlgoritmo> sugerencias = new ArrayList<>();
+
   public Propuesta() {
     this.id = UUID.randomUUID();
     this.posiblesFragmentaciones = new ArrayList<>();
@@ -75,6 +79,27 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
 
   public List<PosibleFragmentacion> getPosiblesFragmentaciones() {
     return List.copyOf(posiblesFragmentaciones);
+  }
+
+  public List<SugerenciaDeAlgoritmo> getSugerencias() {
+    return List.copyOf(sugerencias);
+  }
+
+  /**
+   * Registra que {@code sugerencia.algoritmo()} la sugirió. Un algoritmo aparece una sola vez: una
+   * segunda sugerencia suya reemplaza a la primera.
+   */
+  public void registrarSugerencia(SugerenciaDeAlgoritmo sugerencia) {
+    if (sugerencia == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    sugerencias.removeIf(s -> s.algoritmo() == sugerencia.algoritmo());
+    sugerencias.add(sugerencia);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirSugerencias(List<SugerenciaDeAlgoritmo> guardadas) {
+    this.sugerencias = new ArrayList<>(guardadas);
   }
 
   void setId(UUID id) {
