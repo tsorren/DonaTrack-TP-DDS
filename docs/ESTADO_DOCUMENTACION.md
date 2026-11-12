@@ -62,6 +62,7 @@ docs/
 │   ├── auditoria-arquitectura-testing.md  # 🏛️ Auditoría integral y Blueprint de Arquitectura de Testing y QA (Documento Maestro)
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
+│   ├── demo-seeder.md                     # Seeder de demo: seis meses de historia y lo de hoy (SPEC-10)
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño de testing y alternativas
 │   ├── preprod-fiel.md                    # Preprod fiel: criterio, estado y brechas (fase 1)
@@ -100,7 +101,7 @@ docs/
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-09)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -170,6 +171,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/specs/active/SPEC-07-api-gateway-etapa-1.md`](specs/active/SPEC-07-api-gateway-etapa-1.md) | Especificación SDD | API gateway, etapa 1 (F1 del plan, ADR-E6-02): Spring Cloud Gateway WebMVC con `common-lib`, tabla de rutas como allowlist, rutas públicas escritas sin aplicar, `X-Trace-Id` y servicio en el compose. `APPROVED_BY_USER`. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-08-conexion-de-pantallas.md`](specs/active/SPEC-08-conexion-de-pantallas.md) | Especificación SDD | Conexión de pantallas del cliente liviano a las APIs (F2 y F3 del plan del cliente): esqueleto compartido (contrato del cliente con los cuatro servicios, claves de los puertos, conteo de sin leer, pieza común de envío con aviso en `#avisos` e indicador), cinco frentes por rol con lista cerrada de archivos, huecos HB-21 (Contacto) y HB-23 (camiones deshabilitados) y lo que queda fuera. `PROPOSED` (la aprobación es el merge). Los textos nuevos de los frentes quedan en las fichas `raices-*` de `docs/interfaz/flujos/` (Contacto, Mi perfil, Seguir entregas y las navegables), con "Pendiente de OK del usuario"; en Contacto, el campo trampa del ADR de HB-21 va en el cliente. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md`](specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md) | Especificación SDD | Cierre de E6, demo punta a punta (2026-11-11): S2083, Entidades y necesidades, Mapa y Misiones sin controller (F2), `EN_PUERTA` (HB-22), tipo y referencia de la notificación (HB-09), token del usuario hacia las cuatro APIs (F5), y después la demo (F6) y el barrido de Sonar. Un frente por rama sobre `ENTREGA_6`, integradas en `E6_cierre_control` (índices compartidos solo del integrador). `PROPOSED` (la aprobación es el merge). | 🟢 Sincronizado |
+| [`docs/specs/active/SPEC-10-seeder-de-demo.md`](specs/active/SPEC-10-seeder-de-demo.md) | Especificación SDD | Seeder de demo (2026-11-11): historia de seis meses escrita con el formato de cada servicio, cuentas y catálogo por API, y lo de hoy por los flujos reales. Solo cambia el seeder; los huecos del sistema quedan como hallazgos. `PROPOSED` (la aprobación es el merge). | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
 | [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
@@ -305,6 +307,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/auth-service/20261112-correo-de-cuenta-por-rabbitmq-con-spi-de-keycloak.md`](adr/auth-service/20261112-correo-de-cuenta-por-rabbitmq-con-spi-de-keycloak.md) | ADR (propuesto) | Correo de recuperación de clave y de verificación de email por RabbitMQ con un SPI de Keycloak; el enlace no se persiste; riesgos del SPI interno y de la opción de build. | 🟡 Propuesto |
 | [`docs/testing/demo-punta-a-punta.md`](testing/demo-punta-a-punta.md) | Demo E6 | Cómo levantar el sitio con Keycloak y los servicios por el gateway, el recorrido por rol, el recorrido automático con Playwright y por qué `localhost:8180` funciona dentro del contenedor (emisor único). Sin correr todavía con Docker. | 🟡 Sin verificar |
 | [`docs/testing/testing-performance.md`](testing/testing-performance.md) | Rendimiento QA | Optimización de compilación, surefire, consolidación WebMvc, scripts TIA y evaluación mvnd. | 🟢 Sincronizado |
+| [`docs/testing/demo-seeder.md`](testing/demo-seeder.md) | Demo | Cómo correr el seeder de demo (`docker-compose.seed.yml`), cuentas protagonistas y qué suple el seeder. | 🟢 Sincronizado |
 | [`docs/testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) | Auditoría QA | Especificación y plan maestro de auditoría y arquitectura target de testing para ejecución con /goal. | 🟢 Sincronizado |
 | [`docs/testing/decisiones-diseno-auditoria-qa.md`](testing/decisiones-diseno-auditoria-qa.md) | Decisiones QA | Registro y fundamentación de decisiones de diseño y análisis de alternativas descartadas. | 🟢 Sincronizado |
 | [`docs/testing/preprod-fiel.md`](testing/preprod-fiel.md) | Preprod fiel | Criterio de 12 propiedades para un preprod fiel, medición de CI/CD e `integration-tests` sobre `origin/main` y brechas B1–B12. Fase 1 de 3. | 🟢 Sincronizado |
