@@ -54,9 +54,34 @@
 
 /* El lugar de una parte que espera: papel gris tierra, sin datos inventados. */
 .esqueleto {
+  position: relative;
+  overflow: hidden;
   min-height: 9rem;
   border-radius: var(--radio-lamina);
   background: var(--color-pendiente-fondo);
+}
+
+/* La ola: un brillo que cruza el papel de izquierda a derecha mientras carga (usuario, 2026-11-12).
+   Va encima del fondo, así sirve aunque una pantalla cambie el papel. Con "reducir movimiento"
+   la animación no existe y el brillo queda fuera del lugar: se ve el papel quieto. */
+.esqueleto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--color-superficie) 65%, transparent) 50%,
+    transparent 80%
+  );
+  translate: -100% 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .esqueleto::after {
+    animation: var(--movimiento-animacion-ola);
+  }
 }
 
 .esqueleto[data-forma="punteado"] {

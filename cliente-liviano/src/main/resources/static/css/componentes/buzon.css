@@ -52,10 +52,13 @@
   margin-left: auto;
 }
 
+/* La casilla, del tamaño de una común (usuario, 2026-11-12: un cuarto de los 48 px de antes); lo
+   que se toca es la etiqueta, que mide 48 px (--medida-toque-minimo). */
 .buzon-cabeza input,
 .buzon-casilla input {
-  width: var(--medida-toque-minimo);
-  height: var(--medida-toque-minimo);
+  flex: none;
+  width: calc(var(--medida-toque-minimo) / 4);
+  height: calc(var(--medida-toque-minimo) / 4);
   margin: 0;
   cursor: pointer;
 }

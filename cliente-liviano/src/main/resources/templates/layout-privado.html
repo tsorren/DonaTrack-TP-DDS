@@ -29,34 +29,45 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <nav id="menu" class="navegacion" aria-label="Secciones">
+  <!--/* El menú del rol. Con hasta 5 secciones (donante y entidad), en el celular una barra oscura
+         abajo con un ícono sobre cada nombre (usuario, 2026-11-12); desde la tableta, en la cabecera,
+         sin íconos. La administración, con 7, va directo a un botón de menú (hamburguesa) que abre
+         todas las secciones, con su ícono, en un panel de pantalla completa con la marca
+         (data-forma="panel"; usuario, 2026-11-12). El panel es una ventana del navegador (popover): anda
+         sin JavaScript, y sin popover se ve la lista entera. */-->
+  <nav th:unless="${#lists.size(navegacion) > 5}" id="menu" class="navegacion" aria-label="Secciones">
+    <svg th:replace="~{iconos :: navegacion}"></svg>
     <ul role="list">
       <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
-          th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
-      <!--/* Con más de 5 secciones (la administración), en el celular la barra muestra las 4 primeras y
-             "Más", que abre todas en una hoja desde abajo, una fila por sección (pulido, 2026-11-03,
-             alternativa del usuario; A/B del panel, F). Es una ventana del navegador (popover): anda sin
-             JavaScript. Desde la tableta, "Más" no se ve: el menú entra entero en la cabecera. */-->
-      <li th:if="${#lists.size(navegacion) > 5}" class="navegacion-mas">
-        <button type="button" popovertarget="menu-completo"><span aria-hidden="true">+</span>
-          Más</button>
-        <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
-             aria-labelledby="menu-completo-titulo">
-          <div class="navegacion-hoja-cabecera">
-            <!--/* "Todas las secciones": el menú ya se llama "Secciones" (pulido de Nico, 2026-11-04). */-->
-            <p id="menu-completo-titulo" class="navegacion-hoja-titulo">Todas las secciones</p>
-            <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
-                    popovertargetaction="hide">Cerrar</button>
-          </div>
-          <!--/* Al abrirse, el foco entra a la hoja, en la primera sección (autofocus de la ventana). */-->
-          <ul role="list">
-            <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
-                th:autofocus="${vuelta.first}"
-                th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
-          </ul>
-        </div>
-      </li>
+          th:aria-current="${opcion.actual} ? 'page' : null"><svg class="navegacion-icono" aria-hidden="true"
+          focusable="false"><use href="#nav-inicio" th:href="|#nav-${opcion.icono}|"></use></svg><span
+          th:text="${opcion.texto}">Sección</span></a></li>
     </ul>
+  </nav>
+  <nav th:if="${#lists.size(navegacion) > 5}" id="menu" class="navegacion" data-forma="panel"
+       aria-label="Secciones">
+    <svg th:replace="~{iconos :: navegacion}"></svg>
+    <button class="navegacion-abrir" type="button" popovertarget="menu-completo"><svg viewBox="0 0 24 24"
+        aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span
+        class="solo-lectores">Menú</span></button>
+    <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
+         aria-labelledby="menu-completo-titulo">
+      <div class="navegacion-hoja-cabecera">
+        <p class="marca"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18"
+           height="24"><span>Dona<em>Track</em></span></p>
+        <p id="menu-completo-titulo" class="solo-lectores">Secciones</p>
+        <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
+                popovertargetaction="hide">Cerrar</button>
+      </div>
+      <!--/* Al abrirse, el foco entra al panel, en la primera sección (autofocus de la ventana). */-->
+      <ul role="list">
+        <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+            th:autofocus="${vuelta.first}"
+            th:aria-current="${opcion.actual} ? 'page' : null"><svg class="navegacion-icono" aria-hidden="true"
+            focusable="false"><use href="#nav-inicio" th:href="|#nav-${opcion.icono}|"></use></svg><span
+            th:text="${opcion.texto}">Sección</span></a></li>
+      </ul>
+    </div>
   </nav>
   <!--/* El acceso fijo a Notificaciones del donante y de la entidad (fichas raices-donante-navegable.md
          y raices-entidad-navegable.md, sección 2): no es una sección del menú; va en todas las

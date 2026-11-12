@@ -238,6 +238,8 @@
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
+  /* Desde acá, el menú público entra en una línea de la cabecera; antes, la barra de abajo. */
+  --medida-quiebre-menu: 56em;
   /* El estrato de las barras (de la corrida Raíces cálida, lo único que el usuario conservó,
      2026-11-06): donde la cabecera, el pie y la barra del menú tocan la página, la línea de paja de
      las raíces y una franja de humus, como el corte de suelo. */
