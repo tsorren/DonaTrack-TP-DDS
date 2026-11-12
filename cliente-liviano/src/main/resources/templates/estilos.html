@@ -417,7 +417,43 @@
             </details>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.filtros', 'Una fila de filtros como la de LinkedIn: cada filtro con opciones es una pastilla que abre su menú (componentes/filtros :: menu) y uno de sí o no es una pastilla que se prende (componentes/filtros :: interruptor). Con un filtro elegido, la pastilla va llena de verde y dice lo elegido; .filtros-sacar los saca todos. Con búsqueda, el formulario es la barra (form.filtros-barra): .filtro-buscar con su .filtro-buscar-fila (el campo y Buscar) y, al lado en pantalla ancha o debajo en el celular, los filtros.', ~{::demo-filtros})}">
+        <div th:replace="~{componentes/muestra :: muestra('.campanita', 'La campanita de la cabecera privada de los tres roles (componentes/campanita :: campana(area, sinLeer), R11-29 y R11-30): la campana con el número de sin leer es el summary de un details y abre un desplegable (.campanita-panel) con la cabecera (.campanita-cabeza), hasta 5 sin leer (.campanita-filas: cada fila, un botón .campanita-fila con el título y hace cuánto) y siempre «Ver todas» (.campanita-todas). La lista la trae HTMX al abrir (componentes/campanita :: lista); acá se ve abierta con la lista de ejemplo, sin ninguna sin leer y con el error. En la cabecera, el desplegable cuelga de la campana (22 rem) y en el celular ocupa el ancho con 16 px de margen; acá queda debajo de la campana.', ~{::demo-campanita})}">
+          <th:block th:fragment="demo-campanita">
+            <div class="pila" data-espacio="3">
+              <th:block th:each="caso : ${ {
+                  {clave: 'lista', titulo: 'Con sin leer', sinLeer: 12, campanita: {ahora: '2026-10-15T16:25', sinLeer: 12, filas: {
+                      {id: 'd1', titulo: 'Donación en camino', fecha: '2026-10-15T14:20'},
+                      {id: 'd2', titulo: 'Donación entregada', fecha: '2026-10-14T11:05'},
+                      {id: 'd3', titulo: 'Subiste de categoría', fecha: '2026-10-12T09:30'},
+                      {id: 'd4', titulo: 'Misión cumplida', fecha: '2026-10-01T17:00'},
+                      {id: 'd5', titulo: 'Donación asignada', fecha: '2026-09-28T10:00'} } } },
+                  {clave: 'vacio', titulo: 'Sin ninguna sin leer', sinLeer: 0, campanita: {ahora: '2026-10-15T16:25', sinLeer: 0, filas: {}} },
+                  {clave: 'error', titulo: 'Notificaciones no contestó', sinLeer: 0, campanita: null} } }">
+                <details class="campanita" open th:with="area='donante', campanita=${caso.campanita}">
+                  <summary class="armazon-avisos"
+                           th:aria-label="${caso.sinLeer > 0} ? |Notificaciones, ${caso.sinLeer} sin leer (muestra: ${caso.titulo})| : |Notificaciones (muestra: ${caso.titulo})|">
+                    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+                      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+                    </svg>
+                    <b th:if="${caso.sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${caso.sinLeer}">12</b>
+                  </summary>
+                  <div class="campanita-panel" role="group" th:aria-labelledby="|muestra-campanita-${caso.clave}|">
+                    <div class="campanita-cabeza">
+                      <p class="campanita-titulo" th:id="|muestra-campanita-${caso.clave}|"
+                         th:text="|Notificaciones (${caso.titulo})|">Notificaciones</p>
+                    </div>
+                    <div class="campanita-estado">
+                      <th:block th:replace="~{componentes/campanita :: lista}"></th:block>
+                    </div>
+                    <a class="campanita-todas" href="/donante-notificaciones"
+                       th:href="@{/donante-notificaciones}">Ver todas las notificaciones</a>
+                  </div>
+                </details>
+              </th:block>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.filtros','Una fila de filtros como la de LinkedIn: cada filtro con opciones es una pastilla que abre su menú (componentes/filtros :: menu) y uno de sí o no es una pastilla que se prende (componentes/filtros :: interruptor). Con un filtro elegido, la pastilla va llena de verde y dice lo elegido; .filtros-sacar los saca todos. Con búsqueda, el formulario es la barra (form.filtros-barra): .filtro-buscar con su .filtro-buscar-fila (el campo y Buscar) y, al lado en pantalla ancha o debajo en el celular, los filtros.', ~{::demo-filtros})}">
           <th:block th:fragment="demo-filtros">
             <form class="filtros-barra" action="/estilos" th:action="@{/estilos}" method="get" role="search">
               <div class="campo filtro-buscar">

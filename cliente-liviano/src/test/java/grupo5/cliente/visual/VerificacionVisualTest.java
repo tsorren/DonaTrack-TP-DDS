@@ -160,6 +160,37 @@ class VerificacionVisualTest {
   private static final String SITIO = "sitio";
 
   /**
+   * Con la campanita abierta: null si el desplegable entra en la pantalla, empieza debajo de la
+   * campana y lo que está en el centro de cada fila y de «Ver todas» es del desplegable; si no, qué
+   * falla.
+   */
+  private static final String CAMPANITA_MAL_UBICADA =
+      """
+      () => {
+        const panel = document.querySelector('details.campanita[open] .campanita-panel');
+        const campana = document.querySelector('details.campanita[open] > summary');
+        if (!panel || !campana) return 'el desplegable no se abrió';
+        const p = panel.getBoundingClientRect(), c = campana.getBoundingClientRect();
+        if (p.left < 0 || p.right > document.documentElement.clientWidth) {
+          return 'se sale de la pantalla: ' + Math.round(p.left) + ' a ' + Math.round(p.right);
+        }
+        if (p.top < c.bottom - 1) return 'tapa la campana';
+        const tocables = [...panel.querySelectorAll('.campanita-fila, .campanita-todas')];
+        if (tocables.length < 2) return 'faltan las filas o Ver todas';
+        for (const t of tocables) {
+          const r = t.getBoundingClientRect();
+          const x = r.left + r.width / 2, y = r.top + r.height / 2;
+          if (y > window.innerHeight) continue;
+          const arriba = document.elementFromPoint(x, y);
+          if (!arriba || !t.contains(arriba)) {
+            return 'algo tapa "' + t.textContent.trim().slice(0, 30) + '"';
+          }
+        }
+        return null;
+      }
+      """;
+
+  /**
    * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
    * secciones a la izquierda, una o dos variantes lado a lado, ancho y página a elección y
    * desplazamiento a la par. Un enlace con {@code #izq=<variante>&der=<variante>&ancho=<px>} abre
@@ -515,6 +546,50 @@ class VerificacionVisualTest {
         }
       }
     }
+  }
+
+  /**
+   * C18 (spec R11-p2-campanita): donante-inicio y admin-inicio con la campanita abierta, en los
+   * anchos de referencia. Abre el details con un toque, espera la lista de la maqueta (HTMX) y deja
+   * la captura en {@code target/capturas/campanita/}. El piso (axe, toque y desborde) se mide con
+   * el desplegable abierto, y además: el desplegable entra en la pantalla, empieza debajo de la
+   * campana (no la tapa) y nada se le superpone (lo que está en el centro de cada fila es la fila).
+   */
+  @Test
+  void laCampanitaAbiertaEntraEnLaPantallaYNoTapaLaCampana() throws IOException {
+    Path carpeta = CAPTURAS.resolve("campanita");
+    Files.createDirectories(carpeta);
+    List<Falla> fallas = new ArrayList<>();
+    Opcion sitio = new Opcion("");
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      for (String ruta : List.of("/donante-inicio", "/admin-inicio")) {
+        for (int ancho : AnchosDeReferencia.REFERENCIA) {
+          if (!abrir(pagina, ruta, sitio, ancho, fallas)) {
+            continue;
+          }
+          pagina.locator("details.campanita > summary").click();
+          pagina.locator("details.campanita[open] .campanita-filas").waitFor();
+          pagina.evaluate("() => window.scrollTo(0, 0)");
+          pagina.screenshot(
+              new Page.ScreenshotOptions()
+                  .setPath(carpeta.resolve(nombreDeCaptura(ruta, sitio, "abierta-" + ancho)))
+                  .setAnimations(ScreenshotAnimations.DISABLED));
+          revisarAccesibilidad(pagina, ruta, SITIO, ancho, fallas);
+          revisarToque(pagina, ruta, SITIO, ancho, fallas);
+          revisarDesborde(pagina, ruta, SITIO, ancho, fallas);
+          if (pagina.evaluate(CAMPANITA_MAL_UBICADA) instanceof String problema) {
+            fallas.add(new Falla(ruta, SITIO, ancho, "campanita", problema));
+          }
+        }
+      }
+    }
+    JsonMapper.builder()
+        .build()
+        .writerWithDefaultPrettyPrinter()
+        .writeValue(carpeta.resolve("reporte.json"), fallas);
+    assertThat(fallas).as("Detalle en %s", carpeta.resolve("reporte.json")).isEmpty();
   }
 
   /**

@@ -105,3 +105,20 @@
   --medida-columna: 9rem;
   gap: var(--espacio-3);
 }
+
+/* La campanita abierta del catálogo (R11-29): /estilos va con el marco público, sin la cabecera
+   privada que la ubica (privado.css). El desplegable queda en el flujo, debajo de la campana, con el
+   ancho que tiene en la computadora; la campana conserva su tamaño de toque. */
+.muestra-demo .campanita > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-width: 3rem;
+  min-height: 3rem;
+}
+
+.muestra-demo .campanita-panel {
+  position: static;
+  width: auto;
+  max-width: 22rem;
+}

@@ -192,6 +192,11 @@
 /entidad-notificaciones?escenario=nada-sin-leer
 /entidad-notificaciones?escenario=lento
 /entidad-notificaciones?escenario=error
+/admin-notificaciones
+/admin-notificaciones-leidas
+/admin-notificaciones?escenario=vacio
+/admin-notificaciones?escenario=lento
+/admin-notificaciones?escenario=error
 /admin-inicio
 /admin-inicio?escenario=vacio
 /admin-inicio?escenario=lento
