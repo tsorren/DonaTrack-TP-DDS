@@ -468,6 +468,11 @@ Donaciones › Registrar donación
 
 ### 4.7 `admin-asignaciones`
 
+> **Desde R11 (2026-11-12, en revisión):** esta sección la reemplaza la ficha
+> [Asignar donaciones, con lo que propuso cada algoritmo](r11-p1-asignaciones.md) (lote
+> `p1-asignaciones`, R11-24): pestañas Propuestas / Conflictos / Destino y el algoritmo y el puesto
+> de cada propuesta. Lo de abajo queda como estaba antes de R11.
+
 ```text
 Asignar donaciones
 Última asignación: hoy, 0:00 · generó 2 propuestas.      [Correr la asignación ahora]
