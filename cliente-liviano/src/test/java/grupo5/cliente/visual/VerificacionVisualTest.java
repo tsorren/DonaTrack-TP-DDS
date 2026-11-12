@@ -562,6 +562,12 @@ class VerificacionVisualTest {
       assertThat(ventana.locator(".dialogo-resumen").innerText())
           .contains("30")
           .contains("Una sola vez, hasta el 30 de octubre.");
+      // axe mide colores ya mezclados: si el fundido de la ventana no terminó, ve la tinta y el
+      // papel a media opacidad y reporta un contraste que en pantalla no existe.
+      pagina.waitForFunction(
+          "() => getComputedStyle(document.getElementById('publicar-ventana')).opacity === '1'"
+              + " && document.getAnimations().every(a => a.playState !== 'running'"
+              + " || a.effect.getComputedTiming().iterations === Infinity)");
       assertThat(
               new AxeBuilder(pagina)
                   .withTags(NORMAS_AXE).analyze().getViolations().stream()
