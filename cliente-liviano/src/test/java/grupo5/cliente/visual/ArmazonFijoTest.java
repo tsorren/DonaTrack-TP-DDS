@@ -158,6 +158,103 @@ class ArmazonFijoTest {
         });
   }
 
+  /**
+   * Ficha §4.2 y criterio 4 (revisión de p2-armazon, ronda 1): en un celular de 390 × 844, una
+   * barra fija entra en un cuarto del alto y en --medida-filtros-fijos; la de la administración,
+   * con cinco pastillas, no queda fija.
+   */
+  @Test
+  void enElCelularSoloQuedaFijaLaBarraQueEntraEnUnCuartoDelAlto() {
+    List<String> fallas = new ArrayList<>();
+    for (String ruta :
+        List.of("/admin-donantes", "/admin-donaciones", "/donante-entidades", "/admin-camiones")) {
+      conPagina(
+          390,
+          844,
+          false,
+          pagina -> {
+            pagina.navigate(url(ruta));
+            List<?> medidas =
+                (List<?>)
+                    pagina.evaluate(
+                        """
+                        () => {
+                          const b = document.querySelector('.filtros-barra');
+                          const prueba = document.createElement('div');
+                          prueba.style.height = 'var(--medida-filtros-fijos)';
+                          document.body.append(prueba);
+                          const medida = prueba.getBoundingClientRect().height;
+                          prueba.remove();
+                          return [getComputedStyle(b).position === 'sticky',
+                            b.getBoundingClientRect().height, medida];
+                        }
+                        """);
+            boolean fija = Boolean.TRUE.equals(medidas.get(0));
+            double alto = ((Number) medidas.get(1)).doubleValue();
+            double medida = ((Number) medidas.get(2)).doubleValue();
+            if (fija && (alto >= 844 / 4.0 || alto > medida + 0.5)) {
+              fallas.add(ruta + ": mide " + alto + " px, la medida es " + medida + " px");
+            }
+          });
+    }
+    assertThat(fallas).as("Barras fijas que pasan un cuarto del alto o su medida").isEmpty();
+    conPagina(
+        390,
+        844,
+        false,
+        pagina -> {
+          pagina.navigate(url("/admin-donantes"));
+          assertThat(posicion(pagina, ".filtros-barra")).isNotEqualTo("sticky");
+        });
+  }
+
+  @Test
+  void enElCelularConTabYShiftTabElFocoNoQuedaTapado() {
+    List<String> tapados = new ArrayList<>();
+    for (String ruta : List.of("/admin-donantes", "/donante-entidades")) {
+      conPagina(
+          390,
+          844,
+          false,
+          pagina -> {
+            pagina.navigate(url(ruta));
+            pagina.locator("form.filtros-barra .filtro-buscar-fila button").focus();
+            for (int i = 0; i < 30; i++) {
+              pagina.keyboard().press("Tab");
+              anotarSiEstaTapado(pagina, ruta + " (Tab)", tapados);
+            }
+            for (int i = 0; i < 30; i++) {
+              pagina.keyboard().press("Shift+Tab");
+              anotarSiEstaTapado(pagina, ruta + " (Shift+Tab)", tapados);
+            }
+          });
+    }
+    assertThat(tapados).isEmpty();
+  }
+
+  private static void anotarSiEstaTapado(Page pagina, String donde, List<String> tapados) {
+    Object tapado =
+        pagina.evaluate(
+            """
+            () => {
+              const f = document.activeElement;
+              if (!f || !f.closest('main') || f.closest('.filtros-barra')) return null;
+              const r = f.getBoundingClientRect();
+              const b = document.querySelector('.filtros-barra');
+              const fija = getComputedStyle(b).position === 'sticky';
+              const despues = b.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING;
+              const tope = fija && despues ? b.getBoundingClientRect().bottom : 0;
+              const menu = document.querySelector('nav.navegacion');
+              const piso = menu ? menu.getBoundingClientRect().top : innerHeight;
+              return r.top < tope - 1 || r.bottom > piso + 1
+                ? (f.textContent || f.name || f.tagName).trim().slice(0, 30) : null;
+            }
+            """);
+    if (tapado instanceof String nombre) {
+      tapados.add(donde + ": " + nombre);
+    }
+  }
+
   @Test
   void enElCelularElBotonDeConfirmarQuedaEncimaDelMenuHastaElFinal() {
     conPagina(

@@ -167,10 +167,15 @@ body {
   }
 }
 
-/* En el celular la barra de filtros queda fija si la ventana mide 45 em de alto o más. */
+/* En el celular la barra de filtros queda fija si la ventana mide 45 em de alto o más y la barra
+   tiene hasta dos pastillas (componentes/filtros.css). --medida-filtros-fijos es el alto de la más
+   alta de esas barras, medido el 2026-11-12 de 360 a 412 px con las letras cargadas y redondeado
+   hacia arriba a 1/8 rem (157 px, en admin-camiones y donante-entidades). Sin barra fija, no suma
+   nada. Un :has no puede ir dentro de otro, por eso la condición se escribe sobre la página; con
+   :where pesa como :root, menos que las medidas de la tableta de arriba, que mandan desde 37,5 em. */
 @media (min-height: 45em) {
-  :root {
-    --medida-filtros-fijos: 12rem;
+  :root:where(:has(.filtros-barra):not(:has(.filtros-pildora ~ .filtros-pildora ~ .filtros-pildora))) {
+    --medida-filtros-fijos: 9.875rem;
   }
 }
 
