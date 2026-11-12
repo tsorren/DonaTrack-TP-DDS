@@ -299,19 +299,22 @@ public class Pantallas {
       return;
     }
     try {
-      Optional<Area> area = sesion.activa(pedido);
-      CuentaVista cuenta = area.flatMap(a -> cuentas.de(a.prefijo())).orElse(null);
+      Area area = sesion.activa(pedido).orElse(null);
+      if (area == null) {
+        return;
+      }
+      CuentaVista cuenta = cuentas.de(area.prefijo()).orElse(null);
       if (cuenta == null) {
         return;
       }
       List<Seccion> menu =
-          area.get() == Area.DONANTE && esPersona(pedido) ? MENU_PERSONA : MENUS.get(area.get());
+          area == Area.DONANTE && esPersona(pedido) ? MENU_PERSONA : MENUS.get(area);
       model.addAttribute("navegacion", opciones(menu, null));
       model.addAttribute("seccion", null);
       model.addAttribute("cuenta", cuenta);
       model.addAttribute("sinLeer", 0L);
-      model.addAttribute("perfil", miPerfil(area.get()));
-      model.addAttribute("inicio", area.get().inicio());
+      model.addAttribute("perfil", miPerfil(area));
+      model.addAttribute("inicio", area.inicio());
       model.addAttribute("marco", MARCO_PRIVADO);
     } catch (RuntimeException noSePudoArmar) {
       // Una página de error nunca falla por su marco: "marco" es lo último que se pone, y sin él la
