@@ -308,6 +308,8 @@ services:
       # Google como identity provider (RX-01). Opcionales: vacías, el botón de Google no anda y lo demás sí (RX-13).
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      # El ingreso con Google se enciende con GOOGLE_HABILITADO=true junto con las dos credenciales (SPEC-06 E2-05).
+      - GOOGLE_HABILITADO=${GOOGLE_HABILITADO:-false}
     depends_on:
       postgres:
         condition: service_healthy

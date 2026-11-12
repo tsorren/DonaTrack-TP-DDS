@@ -41,7 +41,7 @@ apagada.** Para que ellos también exijan token, exportá antes `GATEWAY_SEGURID
 | Rol | Cómo entrar | Qué ver |
 |---|---|---|
 | **Público** | Sin ingresar | La portada, el mapa, las entidades y el contacto (`/publico-*`) |
-| **Donante** | "Crear mi cuenta de donante" en la portada | Keycloak pide email y clave; el sitio pide completar el perfil; desde ahí se puede cerrar sesión |
+| **Donante** | "Crear mi cuenta de donante" en la portada | Keycloak pide email y clave; el sitio muestra las tarjetas del tipo de cuenta (persona, empresa, entidad); con "Persona donante" se llega al formulario del perfil; desde ahí se puede cerrar sesión |
 | **Entidad** | "Sumar mi entidad" | Mismo ingreso; la cuenta queda esperando que el admin la apruebe |
 | **Admin** | "Ingresar" con `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD` del `.env` | Llega a su área (`/admin-inicio`) |
 
@@ -59,7 +59,7 @@ INGRESO_REAL_ADMIN_PASSWORD=<AUTH_ADMIN_PASSWORD del .env> \
 mvn test -pl cliente-liviano -Pvisual -Dtest=IngresoConKeycloakRealTest
 ```
 
-Deja los videos en `cliente-liviano/target/ingreso-real/`. Cada corrida crea una cuenta de donante nueva en
+**La cuenta admin sale de `AUTH_ADMIN_EMAIL` y `AUTH_ADMIN_PASSWORD` del `.env` solo cuando se importa el realm**, o sea con la base de Postgres vacía. Si cambiaste esos valores después, la cuenta conserva la clave vieja y el recorrido del admin se queda en el login de Keycloak ("Usuario o contraseña incorrectos"): hacé `docker compose down -v` y volvé a levantar, o probá la clave a mano en http://localhost:8180/realms/donatrack/account. Deja los videos en `cliente-liviano/target/ingreso-real/`. Si un paso falla, el mensaje dice dónde se quedó el navegador (URL, título y texto visible) y deja una captura en esa misma carpeta. Cada corrida crea una cuenta de donante nueva en
 Keycloak. Sin `INGRESO_REAL_URL` el test no corre. Necesita los navegadores de Playwright instalados
 (`mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chromium"`).
 
@@ -87,6 +87,12 @@ docker compose logs notificaciones-service | grep "SENDGRID-MOCK"
 ```
 
 Abrí el enlace del log (vale 30 minutos y se puede usar una vez), elegí la clave nueva y volvé a entrar. Una cuenta que no existe ve la misma pantalla, pero no genera ningún correo. Si el correo no llega, mirá el log de Keycloak: con RabbitMQ caído la persona no ve ningún error, y la señal es `KC-SERVICES0026`. La prueba automática de todo este recorrido es `scripts/e2e_correo_de_cuenta.py`.
+
+## Ingresar con Google
+
+"Continuar con Google" aparece en el login de Keycloak solo si Google está habilitado, y **para que funcione hacen falta credenciales verdaderas**: con valores vacíos o inventados el botón aparece, pero Google responde `Error 401: invalid_client`. Cómo crearlas en Google Cloud y dónde ponerlas (en `.env.google`, que Git ignora, no en el `.env`) está en el [README de auth-service](../../auth-service/README.md#ingresar-con-google-las-credenciales-e2-05); se levanta con `docker compose --env-file .env --env-file .env.google up -d --build`.
+
+Si el email de Google ya tiene una cuenta en DonaTrack, Keycloak pide confirmar el vínculo y **la contraseña de esa cuenta**; una cuenta nueva se crea y entra directo. Una cuenta que no tiene contraseña no puede vincularse todavía (RF-AUTH-04, pendiente de D12): que recupere su clave y después vincule. Como no hace falta una cuenta de Google para probar el flujo, `scripts/e2e_google_vinculacion.py` lo simula con un segundo realm.
 
 ## La sesión en PostgreSQL
 

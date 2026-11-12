@@ -30,6 +30,7 @@ pw() { openssl rand -hex 16; }
   echo "AUTH_ADMIN_PASSWORD=$(pw)"
   echo "GOOGLE_CLIENT_ID="
   echo "GOOGLE_CLIENT_SECRET="
+  echo "GOOGLE_HABILITADO=false"
   echo "RABBITMQ_PASS=$(pw)"
   echo "MINIO_ROOT_USER=donatrack-minio"
   echo "MINIO_ROOT_PASSWORD=$(pw)"

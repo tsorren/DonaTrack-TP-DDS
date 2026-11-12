@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Prueba de punta a punta del correo de cuenta (SPEC-06 E2-06): Keycloak -> SPI -> RabbitMQ.
+r"""Prueba de punta a punta del correo de cuenta (SPEC-06 E2-06): Keycloak -> SPI -> RabbitMQ.
 
 Hace lo que haría una persona con un navegador, pero contra un stack ya levantado: pide recuperar la clave,
 lee el evento que publicó el SPI, abre el enlace de ese evento, cambia la clave y comprueba que entra con la

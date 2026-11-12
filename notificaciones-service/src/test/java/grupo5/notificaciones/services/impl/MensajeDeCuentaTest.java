@@ -67,7 +67,9 @@ class MensajeDeCuentaTest {
 
   @Test
   void unTipoDesconocidoNoSeArma() {
-    assertThrows(IllegalArgumentException.class, () -> MensajeDeCuenta.armar(evento("OTRO")));
+    EventoCuentaEnlaceSolicitadoV1 desconocido = evento("OTRO");
+
+    assertThrows(IllegalArgumentException.class, () -> MensajeDeCuenta.armar(desconocido));
   }
 
   @Test

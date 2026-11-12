@@ -47,7 +47,7 @@ public class EnlaceDeCuentaService {
 
   /**
    * Si falla algo irreparable (enlace ajeno, correo rechazado) rechaza el mensaje sin reencolarlo:
-   * va a la cola de mensajes muertos, donde se ve que una cuenta no recibió su correo. Como todo
+   * va a la cola de mensajes muertos, donde se ve que una cuenta no recibió su correo. Como todx
    * corre en una transacción, también se deshace la marca del inbox y el mensaje se puede
    * reprocesar.
    */

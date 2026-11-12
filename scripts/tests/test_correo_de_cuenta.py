@@ -128,8 +128,10 @@ class TopologiaTests(unittest.TestCase):
         self.assertIn('QUEUE_NOTIFICACIONES_AUTH = "notificaciones.auth"', self.config)
         self.assertIn('QUEUE_NOTIFICACIONES_AUTH_DLQ = "notificaciones.auth.dlq"', self.config)
         cola = re.search(r"public Queue queueNotificacionesAuth\(\) \{(.*?)\}", self.config, re.S).group(1)
-        self.assertIn('"x-dead-letter-exchange", DLX_NOTIFICACIONES', cola)
-        self.assertIn('"x-dead-letter-routing-key", QUEUE_NOTIFICACIONES_AUTH_DLQ', cola)
+        self.assertIn('ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES', cola)
+        self.assertIn('ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_AUTH_DLQ', cola)
+        self.assertIn('ARG_DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange"', self.config)
+        self.assertIn('ARG_DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key"', self.config)
         self.assertIn("| `notificaciones.auth` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.auth.dlq` |", self.catalogo)
 
     def test_el_binding_toma_solo_las_claves_de_cuenta(self):

@@ -32,6 +32,10 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class RabbitMQConfig {
 
+  // Argumentos de RabbitMQ para el Dead Letter
+  private static final String ARG_DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
+  private static final String ARG_DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
+
   // Exchanges de Emisores (Topología Pub/Sub DDD)
   public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
   public static final String EXCHANGE_INCENTIVOS = "incentivos.exchange";
@@ -127,24 +131,24 @@ public class RabbitMQConfig {
   @Bean
   public Queue queueNotificacionesDonaciones() {
     return QueueBuilder.durable(QUEUE_NOTIFICACIONES_DONACIONES)
-        .withArgument("x-dead-letter-exchange", DLX_NOTIFICACIONES)
-        .withArgument("x-dead-letter-routing-key", QUEUE_NOTIFICACIONES_DONACIONES_DLQ)
+        .withArgument(ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES)
+        .withArgument(ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_DONACIONES_DLQ)
         .build();
   }
 
   @Bean
   public Queue queueNotificacionesIncentivos() {
     return QueueBuilder.durable(QUEUE_NOTIFICACIONES_INCENTIVOS)
-        .withArgument("x-dead-letter-exchange", DLX_NOTIFICACIONES)
-        .withArgument("x-dead-letter-routing-key", QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ)
+        .withArgument(ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES)
+        .withArgument(ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ)
         .build();
   }
 
   @Bean
   public Queue queueNotificacionesAuth() {
     return QueueBuilder.durable(QUEUE_NOTIFICACIONES_AUTH)
-        .withArgument("x-dead-letter-exchange", DLX_NOTIFICACIONES)
-        .withArgument("x-dead-letter-routing-key", QUEUE_NOTIFICACIONES_AUTH_DLQ)
+        .withArgument(ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES)
+        .withArgument(ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_AUTH_DLQ)
         .build();
   }
 

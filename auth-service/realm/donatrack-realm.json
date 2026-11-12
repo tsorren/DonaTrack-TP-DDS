@@ -2,6 +2,7 @@
   "realm": "donatrack",
   "enabled": true,
   "displayName": "DonaTrack",
+  "displayNameHtml": "Dona<em>Track</em>",
   "loginTheme": "donatrack",
   "internationalizationEnabled": true,
   "supportedLocales": ["es"],
@@ -381,16 +382,103 @@
       "alias": "google",
       "displayName": "Google",
       "providerId": "google",
-      "enabled": true,
+      "enabled": "${GOOGLE_HABILITADO}",
       "trustEmail": false,
       "storeToken": false,
       "linkOnly": false,
-      "firstBrokerLoginFlowAlias": "first broker login",
+      "firstBrokerLoginFlowAlias": "donatrack first broker login",
       "config": {
         "clientId": "${GOOGLE_CLIENT_ID}",
         "clientSecret": "${GOOGLE_CLIENT_SECRET}",
         "syncMode": "IMPORT",
         "defaultScope": "openid email"
+      }
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "alias": "donatrack first broker login",
+      "description": "Primer ingreso con Google (SPEC-06 E2-05). Como el de fábrica, pero si el email ya tiene cuenta se pide su contraseña (D4, RF-AUTH-03), sin el camino por email de Keycloak.",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "idp-review-profile",
+          "authenticatorConfig": "donatrack review profile config",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "donatrack first broker login User creation or linking",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "donatrack first broker login User creation or linking",
+      "description": "Crea la cuenta si el email es nuevo; si ya existe, pasa a vincularla.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "idp-create-user-if-unique",
+          "authenticatorConfig": "donatrack create unique user config",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "donatrack first broker login Handle Existing Account",
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "donatrack first broker login Handle Existing Account",
+      "description": "El email ya tiene cuenta: se confirma el vínculo y se pide su contraseña (D4). Sin contraseña no se puede vincular acá (RF-AUTH-04, pendiente de D12).",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "idp-confirm-link",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "idp-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "donatrack review profile config",
+      "config": {
+        "update.profile.on.first.login": "missing"
+      }
+    },
+    {
+      "alias": "donatrack create unique user config",
+      "config": {
+        "require.password.update.after.registration": "false"
       }
     }
   ]
