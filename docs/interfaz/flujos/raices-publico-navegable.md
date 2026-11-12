@@ -272,6 +272,11 @@ perfil" (la entidad conserva "Enviar la solicitud"). Si Donaciones o Keycloak fa
 pudimos guardar tu perfil" (o "No pudimos enviar la solicitud") conserva lo escrito. El nombre y
 apellido de quien representa a la empresa o a la entidad pide al menos dos palabras.
 
+**Ver y corregir la solicitud** (R11-41, 2026-11-12): con la cuenta pendiente, "Recibimos la
+solicitud" suma "Lo que nos enviaste" y "Corregir los datos" lleva a
+`publico-registro-entidad-corregir`. El diseño está en la ficha
+[r11-p2-pendiente-solicitud](r11-p2-pendiente-solicitud.md), que amplía esta sección.
+
 ### 4.8 Recuperar la contraseña (`publico-recuperar`)
 
 ```text
