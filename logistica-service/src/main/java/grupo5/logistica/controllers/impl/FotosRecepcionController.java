@@ -2,7 +2,6 @@ package grupo5.logistica.controllers.impl;
 
 import static grupo5.logistica.seguridad.Acceso.ADMIN;
 import static grupo5.logistica.seguridad.Acceso.CONFIRMAR_SU_ENTREGA;
-import static grupo5.logistica.seguridad.Acceso.VER_SU_ENTREGA;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
@@ -53,7 +52,8 @@ public class FotosRecepcionController {
         .body(fotosRecepcionService.subir(id, contenidos));
   }
 
-  @PreAuthorize(VER_SU_ENTREGA)
+  // Demo pública (merge local): la portada muestra estas fotos con <img>, que no manda token.
+  @PreAuthorize("permitAll()")
   @GetMapping("/{fotoId}")
   public ResponseEntity<Void> leer(
       @PathVariable("id") UUID id, @PathVariable("fotoId") UUID fotoId) {

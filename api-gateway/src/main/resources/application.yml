@@ -52,4 +52,5 @@ donatrack:
       - GET /api/entidades/publicas
       - GET /api/necesidades/publicas
       - GET /api/entregas/mapa
+      - GET /api/entregas/*/fotos/*
       - POST /api/contacto

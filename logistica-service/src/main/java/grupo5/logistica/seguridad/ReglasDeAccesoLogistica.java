@@ -10,6 +10,6 @@ public class ReglasDeAccesoLogistica implements ReglasDeAcceso {
 
   @Override
   public List<String> rutasPublicas() {
-    return List.of("/api/entregas/mapa");
+    return List.of("/api/entregas/mapa", "/api/entregas/*/fotos/*");
   }
 }
