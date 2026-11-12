@@ -47,7 +47,9 @@ public class RutasGateway {
         "/api/asignaciones/**",
         "/api/subcategorias/**",
         "/api/logistica/proveedores",
-        "/api/logistica/proveedor-preferido");
+        "/api/logistica/proveedor-preferido",
+        // Merge local (demo): el cliente liviano llama a esta ruta sin /api.
+        "/donaciones-independientes/**");
   }
 
   @Bean
