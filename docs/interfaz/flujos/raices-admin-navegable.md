@@ -14,6 +14,21 @@
 > [backlog de la revisión](../backlog-revision-2026-11-11.md#p0--sin-esto-la-demo-falla): ninguna
 > pantalla del admin pide una lista completa, y el avance de la importación se ve en vivo.
 
+## Ajustes del usuario al aprobar R11 P0 (2026-11-11) — mandan sobre el resto
+
+1. **Búsqueda sin tildes:** buscar "Gomez" encuentra "Gómez". Lo resuelve el servicio
+   (spec `R11-p0-api-listados`, §0).
+2. **Ninguna lista llega completa.** El servicio ya no devuelve todo cuando no se pide página: sin
+   página manda las primeras 20. Por eso este lote migra **todos** los consumidores del cliente
+   liviano de `/api/donantes`, `/api/personas`, `/donaciones-independientes`, `/api/donaciones` y
+   `/api/entidades`, no solo las pantallas del admin: cada uno pide página (con el paginador
+   provisorio "‹ Anterior · Página N de M · Siguiente ›") o, si es un resumen dentro de otra
+   pantalla, 3 elementos y "Ver todas". Mis donaciones queda con el paginador provisorio hasta su
+   rediseño en P1 (R11-13). Lo que toque fuera de los archivos del lote, en `fueraDeZona`.
+3. **"Los últimos importados" se muestra:** sale del campo `ultimos` del avance de la importación
+   (spec §0.3). Ya no se oculta.
+4. Lo demás del diseño, aprobado como está.
+
 ## 1. Para quién y para qué
 
 | | |

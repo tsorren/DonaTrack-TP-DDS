@@ -14,6 +14,40 @@
 
 ---
 
+## 0. Ajustes del usuario al aprobar (2026-11-11) — mandan sobre el resto de la spec
+
+El usuario aprobó la spec con estos cambios. Donde el resto del documento diga otra cosa, vale esto.
+
+1. **La búsqueda ignora tildes y mayúsculas.** "Gomez" encuentra "Gómez" y al revés. Se hace en la
+   base: `V21` crea la extensión `unaccent` (viene con la imagen oficial de PostgreSQL) y las
+   búsquedas comparan `lower(unaccent(...))` contra `lower(unaccent(q))`. Los repositorios en
+   memoria normalizan igual (`java.text.Normalizer`, forma NFD, sin marcas). Suma el escenario C2b:
+   `q=gomez` encuentra a "Gómez" y `q=GÓMEZ` encuentra a "Gomez".
+2. **Toda lista tiene página o tope, ya en este lote.** Se retira el modo "sin página devuelve todo":
+   - Sin `page` ni `size`, los cuatro listados devuelven la página 0 de 20, con `X-Total-Count`.
+     `size` máximo 100. Nadie recibe una lista completa.
+   - Quien necesita recorrer todo (el seeder, un proceso interno) pide página por página o por id
+     (`GET /api/personas?id=…`, hasta 100). Este lote pasa el seeder de demo
+     (`demo/seeder/seeder/cuentas.py`, `vivo.py`) a recorrer páginas; se avisa en `fueraDeZona`.
+   - Los consumidores del cliente liviano los migra `p0-admin-listados` (tanda 2): todos, no solo
+     las pantallas del admin (ver su ficha).
+   - `GET /api/entidades` y `/api/entidades/publicas` pasan a paginar en SQL (hoy leen todo y cortan
+     en memoria), con el mismo contrato de HB-15. Entra en este lote.
+   - El escenario C4 cambia: sin `page` ni `size` se recibe la página 0 de 20, en el orden por
+     defecto, con `X-Total-Count` real. El OpenAPI lo dice así, y si oasdiff lo marca, se registra
+     en `cambios-incompatibles-aceptados.txt` con este motivo.
+   - Los demás listados completos del backlog §9 (mapa, seguimientos, notificaciones, historial del
+     ranking) se paginan en esta misma corrida, en sus lotes de P1 y P2 (R11-19, R11-14, R11-43).
+3. **"Los últimos importados" sale de este lote.** `GET /api/donantes/archivos/{id}` suma un campo
+   opcional `ultimos`: los 5 últimos donantes procesados del archivo, con nombre visible y
+   `resultado` (`NUEVO` o `ACTUALIZADO`), guardado junto con el avance cada 500 filas. Aditivo.
+4. **Fecha de alta en el seed.** Se acepta que los donantes existentes tomen la hora de la
+   migración. El seeder no cambia por esto.
+5. El filtro "Sin activar su cuenta" no existe del lado de Donaciones y hoy no filtra nada: no se
+   agrega en este lote (decisión del diseñador, aceptada).
+
+---
+
 ## 1. Objetivo Funcional (Goal)
 
 Con 20.000 donantes importados por CSV, las pantallas del admin piden todos los donantes y todas
@@ -58,12 +92,12 @@ filtrar en el cliente.
 - Las entidades pendientes de aprobación: vienen de Auth (`SolicitudesDeEntidad`). Este lote da la
   lectura por lote de sus personas (`GET /api/personas?id=…`), nada más.
 - `GET /api/entidades` y `/api/entidades/publicas`: ya paginan (HB-15), aunque en memoria. Pasarlos
-  a SQL queda para otro lote.
+  a SQL queda para otro lote. **Reemplazado por §0.**
 - Los otros listados completos del backlog §9 (`/api/entregas/mapa`, seguimiento, notificaciones,
   historial del ranking): son de otros servicios y otros lotes.
-- Búsqueda sin tildes (`unaccent`) y búsqueda por trigramas (`pg_trgm`): no se agregan extensiones.
+- Búsqueda sin tildes (`unaccent`) y búsqueda por trigramas (`pg_trgm`): no se agregan extensiones. **Reemplazado por §0.**
 - Poner un tope a los pedidos sin página: llega después de que `p0-admin-listados` migre el cliente
-  (ver §6 y dudas).
+  (ver §6 y dudas). **Reemplazado por §0.**
 - Rutas nuevas en el gateway: todo lo nuevo cae dentro de prefijos que ya enruta (§3.7).
 
 ## 3. Decisiones Acordadas y Trade-offs: el contrato antes y después
