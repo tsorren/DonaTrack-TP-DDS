@@ -36,9 +36,13 @@ import org.springframework.util.MultiValueMap;
  */
 final class DonanteDonaciones {
 
-  /** Los estados de Donaciones con destino y sin entregar: lo que sigue Seguimiento. */
+  /**
+   * Los estados de Donaciones sin entregar: lo que sigue Seguimiento. {@code EN_DEPOSITO} va porque
+   * de ahí salen la cifra "Esperan destino" y el pie con sus nombres.
+   */
   private static final List<String> EN_CURSO =
       List.of(
+          "EN_DEPOSITO",
           "ASIGNACION_REALIZADA",
           "LISTA_PARA_ENTREGAR",
           "EN_TRASLADO",
@@ -62,9 +66,10 @@ final class DonanteDonaciones {
   }
 
   /**
-   * Las que Seguimiento puede mostrar (R11-13, duda 2 de la spec p1-donante-listas): solo las que
-   * ya tienen destino y todavía no se entregaron, pedidas al servidor por estado. Así la página del
-   * tope ({@link DonacionesApi#TOPE}) ya no se llena de entregadas ni de las que esperan destino.
+   * Las que Seguimiento puede mostrar (R11-13, duda 2 de la spec p1-donante-listas): las que
+   * todavía no se entregaron, pedidas al servidor por estado. Las que van en curso salen en la
+   * lista y el mapa; las que están en el depósito, en la cifra y el pie de las que esperan destino.
+   * Así la página del tope ({@link DonacionesApi#TOPE}) ya no se llena de entregadas.
    */
   static List<DonanteDonacionVista> enCurso(
       DonacionesApi api,

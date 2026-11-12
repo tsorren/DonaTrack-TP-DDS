@@ -63,13 +63,17 @@ class DonanteSeguimientoRestTest {
             hoy);
   }
 
-  /** Solo las que están en curso, de una vez y del lado del servicio (R11-13). */
+  /**
+   * Solo las que no se entregaron, de una vez y del lado del servicio (R11-13): las que van en
+   * curso y las que están en el depósito, que Seguimiento cuenta como las que esperan destino.
+   */
   private void conDonaciones() {
     apis.expect(
             requestTo(
                 "http://donaciones/donaciones-independientes?donanteId="
                     + DONANTE
-                    + "&estado=ASIGNACION_REALIZADA&estado=LISTA_PARA_ENTREGAR&estado=EN_TRASLADO"
+                    + "&estado=EN_DEPOSITO&estado=ASIGNACION_REALIZADA&estado=LISTA_PARA_ENTREGAR"
+                    + "&estado=EN_TRASLADO"
                     + "&estado=EN_PUERTA&estado=ENTREGA_FALLIDA&estado=VENCIDA&page=0&size=100"))
         .andRespond(withSuccess(DOS, MediaType.APPLICATION_JSON));
     apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
@@ -124,5 +128,26 @@ class DonanteSeguimientoRestTest {
     assertTrue(vista.puntos().isEmpty());
     assertNull(vista.donaciones().get(1).seguimiento());
     assertEquals(2, vista.donaciones().size());
+  }
+
+  /**
+   * La que está en el depósito llega a la vista pendiente y sin destino: es la que la pantalla
+   * cuenta en "Esperan destino" y nombra en el pie.
+   */
+  @Test
+  void laQueEstaEnElDepositoLlegaComoPendienteSinDestino() {
+    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    conDonaciones();
+
+    DonanteSeguimientoVista vista = adaptador.seguimiento(DONANTE);
+
+    apis.verify();
+    DonanteDonacionVista arroz = vista.donaciones().getFirst();
+    assertEquals(ARROZ, arroz.clave());
+    assertEquals("Arroz largo fino", arroz.titulo());
+    assertEquals(EstadoEntrega.PENDIENTE, arroz.estado());
+    assertEquals("pendiente", arroz.estado().tono());
+    assertNull(arroz.destino());
   }
 }
