@@ -238,6 +238,16 @@ class SitioControllerTest {
     mvc.perform(get("/donante-entidades?nombre=CLÚB"))
         .andExpect(content().string(containsString("Club Ejemplo Norte")))
         .andExpect(content().string(containsString("1 entidad activa tiene «CLÚB» en el nombre.")));
+    // R11-18: la segunda página de la maqueta trae los nombres largos y una entidad sin pedidos.
+    mvc.perform(get("/donante-entidades?pagina=2"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("CooperativaDeTrabajoYAyudaMutuaDelBarrioEjemploNorteYAledaño")))
+        .andExpect(content().string(containsString("Hoy no pide nada.")));
+    mvc.perform(get("/donante-entidades?pagina=2&cuenta=persona"))
+        .andExpect(content().string(containsString("y el Deporte Sur")))
+        .andExpect(content().string(containsString("Página 2 de 8.")));
     mvc.perform(get("/donante-entidades?escenario=error"))
         .andExpect(content().string(containsString("role=\"alert\"")))
         .andExpect(content().string(containsString("Cómo llega tu donación")));

@@ -34,8 +34,10 @@
   fill: var(--color-tinta);
 }
 
+/* R11-18: un nombre largo, aun sin espacios, corta dentro de la etiqueta. */
 main .ejemplar h2 {
   margin: 0;
+  overflow-wrap: anywhere;
   font-size: 1.375rem;
   line-height: 1.15;
 }

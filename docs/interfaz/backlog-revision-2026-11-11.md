@@ -138,7 +138,7 @@ pendientes son de esta corrida; cada uno dice con qué lote se cierra.
 | R11-15 | La portada con sesión muestra el encabezado de visitante. | Encabezado con la cuenta y "Ir a mi inicio". | `publico-portada.html:25-35`, `PublicoPortadaController.java:25-29`, `layout-privado.html:26` |
 | R11-16 | El menú de la cuenta no se cierra al tocar afuera; las pastillas de filtros tampoco. | Se cierran tocando afuera, con Esc y al perder el foco. | `layout-privado.html:103-117`, `navegacion.css:303-390`, `paneles.js:29-31` |
 | R11-17 | En "Bajo tierra" de la portada los rótulos se pisan entre sí. | Colocación que aguante textos largos y anchos intermedios. | `componentes/huerta.html:237-290`, `huerta.css:698-857` |
-| R11-18 | En Entidades, como empresa, los nombres de las entidades se ven pisados. | Verificar con captura y corregir. Se resuelve solo si entra R11-27. **Hecho (`p1-donante-listas`, 2026-11-12):** el nombre va en su propia línea, corta palabras largas, y "Ya le donaste" va debajo; capturas a 360, 1280 y 1920 px sin desbordes. | `donante-entidades.css:158-258` |
+| R11-18 | En Entidades, como empresa, los nombres de las entidades se ven pisados. | Verificar con captura y corregir. Se resuelve solo si entra R11-27. **Hecho (`p1-donante-listas`, 2026-11-12):** el nombre va en su propia línea, corta palabras largas, y "Ya le donaste" va debajo; capturas a 360, 768, 1280 y 1920 px, como empresa y como persona, con un nombre de 60 letras sin espacios y uno de 120 con espacios (la segunda página de la maqueta), sin desbordes ([evidencia](evidencia/r11-p1-donante-listas/)). | `donante-entidades.css:158-258` |
 | R11-19 | En el mapa público los botones quedan al final de una lista sin tope. | Botones debajo del mapa; lista plegada (entidad + cantidad) y paginada; las entregas del período se piden al servidor con tope. | `publico-mapa.html:106-157`, `PublicoMapaRest.java:63-66`, `EntregasService.java:133` · R11-11 |
 | R11-20 | No hay dónde ver las importaciones hechas. | Vista de importaciones: en curso e históricas, con búsqueda y filtros. **Construida** (`p1-importaciones`, 2026-11-12): `/admin-importaciones` y `GET /api/donantes/archivos`; ficha [r11-p1-importaciones](flujos/r11-p1-importaciones.md). | `DonantesController.java:94,114`, tabla `archivo` · R11-02 |
 | R11-21 | El inicio del admin muestra cifras crudas, sin separador de miles ni jerarquía. | Tarjetas por tema, lo que espera una acción arriba y el resumen de cifras por estado. | `admin-inicio.html:82-123`, `admin-inicio.css:106-175` · R11-01 |
@@ -207,9 +207,14 @@ pendientes son de esta corrida; cada uno dice con qué lote se cierra.
    en su revisión con login real. Hay que ver con qué configuración corre el cliente del seed antes
    de planificar R11-B07.
 3. **Nombres pisados en Entidades (R11-18).** No se pudo reproducir leyendo el código: hace falta una
-   captura. `[VERIFIED]` (2026-11-12, `p1-donante-listas`): las capturas de `-Pvisual` a 360, 1280 y
-   1920 px, como empresa y como persona, no muestran nombres pisados ni desbordes después del arreglo
-   (nombre en su línea, `overflow-wrap: anywhere`, la marca debajo).
+   captura. `[VERIFIED]` (2026-11-12, `p1-donante-listas`, arreglos ronda 1): la segunda página de
+   la maqueta trae un nombre de 60 letras sin espacios y uno de 120 con espacios. Las capturas de
+   `-Pvisual` a 360, 1280 y 1920 px y las de Chrome sin ventana a 768 px, como empresa
+   (`/donante-entidades?pagina=2` y `?ya=si`) y como persona (`?cuenta=persona&pagina=2`), no
+   muestran nombres pisados ni desbordes, y `-Pvisual` no encuentra desbordes en los anchos
+   intermedios (414 a 1440). Arreglo: nombre en su línea, `overflow-wrap: anywhere` (también en el
+   título de la tarjeta de persona) y la marca debajo. Capturas en
+   [`evidencia/r11-p1-donante-listas/`](evidencia/r11-p1-donante-listas/).
 4. **Pantalla de carga (R11-40).** Choca con la mejora progresiva (RNF-CL-02: lo esencial funciona
    sin JavaScript) y demora siempre la primera vista. Propuesta del agente: que se oculte por CSS con
    un tope de tiempo, sin depender de JavaScript.

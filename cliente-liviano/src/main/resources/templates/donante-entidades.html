@@ -10,7 +10,7 @@
        alimentos|ropa|muebles|escolares) y "Ya doné" (?ya=si). Los tres los resuelve el puerto sobre
        todas las entidades activas (R11-12, lote p1-donante-listas): la plantilla no vuelve a filtrar
        y el total y las páginas son los del filtro. Paginado de seis con el componente paginas
-       (?pagina=2 a 8: la maqueta solo dibuja la primera) y ?escenario=vacio, error y lento. Sin
+       (?pagina=2 a 8: la maqueta dibuja las dos primeras; la segunda, con nombres largos, R11-18) y ?escenario=vacio, error y lento. Sin
        detalle ni botón "Donar": la entidad la elige el admin (RF-17). "Cómo llega tu donación" es
        texto fijo: queda también con error y vacío. Lo propio de la pantalla va con data-v.
        Los datos vienen del controller (misEntidades: de la maqueta, la primera página de 46; o de
@@ -102,7 +102,7 @@
       </section>
 
       <section th:if="${busca == '' and !filtrado and !dibujada}" class="vacio" aria-labelledby="no-dibujada">
-        <h2 id="no-dibujada">En la maqueta solo está dibujada la primera página.</h2>
+        <h2 id="no-dibujada">En la maqueta solo están dibujadas las dos primeras páginas.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Volver a la página 1</a>
       </section>
@@ -146,6 +146,20 @@
                   <li th:replace="~{donante-entidades :: renglon(${e}, ${p})}"></li>
                 </th:block>
               </th:block>
+            </ul>
+          </section>
+        </th:block>
+        <!--/* Las que llegaron sin ningún pedido vigente (por ejemplo, con "Ya doné", una que ya tiene
+               todo cubierto): el total del servidor las cuenta, así que también se ven, con su marca.
+               Con una categoría elegida ya salen en su grupo como "cubierto". */-->
+        <th:block th:if="${categoria == ''}" th:with="sinPedidos=${lista.?[pide.isEmpty()]}">
+          <section th:unless="${sinPedidos.isEmpty()}" data-v="grupo" aria-labelledby="grupo-sin-pedidos">
+            <h2 id="grupo-sin-pedidos"><span>Sin pedidos pendientes</span></h2>
+            <ul data-v="renglones" role="list">
+              <li th:each="e : ${sinPedidos}" th:data-ya="${e.ya} ? 'si' : null">
+                <span th:replace="~{donante-entidades :: quien(${e})}"></span>
+                <span data-v="falta">Hoy no pide nada.</span>
+              </li>
             </ul>
           </section>
         </th:block>

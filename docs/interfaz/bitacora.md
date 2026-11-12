@@ -48,6 +48,12 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   Seguimiento pide de una vez solo los estados en curso, con tope de 100.
 - **Quién decidió:** usuario (spec `R11-p1-donante-listas`, las tres dudas con la opción
   recomendada); los detalles, el agente.
+- **Arreglos de la ronda 1 de revisión:** una entidad que llega sin ningún pedido vigente (con
+  "Ya doné", la que ya tiene todo cubierto) se ve en "Sin pedidos pendientes" con "Hoy no pide
+  nada." (texto de la ficha) y su marca, así la pantalla muestra todas las que cuenta. La maqueta
+  dibuja una segunda página con un nombre de 60 letras sin espacios, uno de 120 con espacios y esa
+  entidad; las capturas a 360, 768, 1280 y 1920 px, como empresa y como persona, están en
+  [`evidencia/r11-p1-donante-listas/`](evidencia/r11-p1-donante-listas/).
 
 ### 2026-11-12 · admin · Asignar donaciones: tres pestañas y quién sugirió cada propuesta
 

@@ -154,6 +154,7 @@
 /donante-entidades?escenario=error
 /donante-entidades?categoria=alimentos
 /donante-entidades?ya=si&pagina=2
+/donante-entidades?ya=si
 /donante-notificaciones
 /donante-notificaciones?escenario=vacio
 /donante-notificaciones?escenario=lento
@@ -271,6 +272,8 @@
 /donante-inicio?cuenta=persona&escenario=vacio
 /donante-perfil?cuenta=persona
 /donante-entidades?cuenta=persona&ya=si
+# R11-18: la segunda página de la maqueta, con los nombres largos.
+/donante-entidades?cuenta=persona&pagina=2
 /donante-inicio?cuenta=empresa
 /entidad-seguimiento
 /entidad-seguimiento?escenario=vacio

@@ -4,7 +4,8 @@
        entidad (persona/datos-persona). Cada pedido es la pieza de la empresa (donante-entidades ::
        pedido). Búsqueda por nombre (?nombre=), "Ya doné" (?ya=si, sobre todas, R11-12: las de ejemplo
        son las seis de la primera página), el paginador común (componentes/paginas, lo arma el
-       controller: ?pagina=2 a 8, la maqueta dibuja la primera) y ?escenario=vacio, error y lento.
+       controller: ?pagina=2 a 8, la maqueta dibuja las dos primeras; la segunda, con nombres largos
+       y una entidad sin pedidos, R11-18) y ?escenario=vacio, error y lento.
        Los textos del resultado son los de la versión común. Solo para la maqueta (?cuenta=persona): con login real la persona ve la versión común
        (ficha r11-p0-persona.md). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -45,12 +46,22 @@
       {nombre: 'Biblioteca Popular Ejemplo', icono: 'cat-muebles', tipo: 'Biblioteca popular en la zona centro', ya: {},
        pide: { {que: 'Sillas', falta: 'Faltan 4 de 8 unidades', cuando: 'Hasta el 31 de diciembre', recibido: 4, total: 8} } }
     } },
+             segunda=${ {
+      {nombre: 'CooperativaDeTrabajoYAyudaMutuaDelBarrioEjemploNorteYAledaño', icono: 'cat-ropa',
+       tipo: 'Cooperativa de trabajo en la zona norte', ya: {},
+       pide: { {que: 'Frazadas', falta: 'Faltan 8 de 12 unidades', cuando: 'Hasta el 15 de noviembre', recibido: 4, total: 12} } },
+      {nombre: 'Asociación Civil de Vecinos y Amigos del Barrio Ejemplo para la Ayuda Comunitaria, la Educación Popular y el Deporte Sur',
+       icono: 'cat-alimentos', tipo: 'Asociación civil en la zona sur', ya: {},
+       pide: { {que: 'Arroz', falta: 'Faltan 18 de 30 kg este mes', cuando: 'Se repite cada mes', recibido: 12, total: 30} } },
+      {nombre: 'Comedor Ejemplo Este', icono: 'cat-alimentos', tipo: 'Comedor comunitario en la zona este', ya: {}, pide: {} }
+    } },
              busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
              pagina=${misEntidades != null ? misEntidades.pagina : 1},
              soloYa=${param.ya != null and param.ya[0] == 'si'},
-             porNombre=${busca == '' ? entidades : entidades.?[#strings.containsIgnoreCase(nombre, #root.busca)]},
+             deLaPagina=${pagina == 2 and busca == '' and !soloYa ? segunda : entidades},
+             porNombre=${busca == '' ? deLaPagina : entidades.?[#strings.containsIgnoreCase(nombre, #root.busca)]},
              lista=${soloYa ? porNombre.?[!ya.isEmpty()] : porNombre},
-             dibujada=${pagina <= 1}">
+             dibujada=${pagina <= 2}">
   <div class="entidades" id="persona-entidades">
     <header>
       <p class="rotulo" th:text="${seccion}">Entidades</p>
@@ -94,7 +105,7 @@
       <p class="resultado" role="status" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
          th:text="${soloYa} ? (${lista.isEmpty()} ? (${busca == ''} ? 'Todavía no le donaste a ninguna entidad.' : 'Ninguna entidad coincide con lo que elegiste.') : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste. Página 1 de 1.|)
                  : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre.|)
-                 : (${dibujada} ? '46 entidades activas. Página 1 de 8.' : |46 entidades activas. Página ${pagina} de 8.|))">46
+                 : |46 entidades activas. Página ${pagina} de 8.|)">46
         entidades activas. Página 1 de 8.</p>
 
       <section th:if="${(busca != '' or soloYa) and lista.isEmpty()}" class="vacio"
@@ -106,7 +117,7 @@
 
       <section th:if="${busca == '' and !soloYa and !dibujada}" class="vacio"
                aria-labelledby="no-dibujada">
-        <h2 id="no-dibujada">En la maqueta solo está dibujada la primera página.</h2>
+        <h2 id="no-dibujada">En la maqueta solo están dibujadas las dos primeras páginas.</h2>
         <a class="boton" data-tono="secundario" href="/donante-entidades"
            th:href="@{/donante-entidades}">Volver a la página 1</a>
       </section>

@@ -203,6 +203,50 @@ class DonanteEntidadesControllerTest {
         .andExpect(content().string(containsString("Pañales")));
   }
 
+  /**
+   * B1 e I2: una entidad que llega sin pedidos vigentes (con "Ya doné", una que ya tiene todo
+   * cubierto) también se ve, con su marca, para que la pantalla muestre todas las que cuenta.
+   */
+  @Test
+  void unaEntidadSinPedidosVigentesTambienSeVe() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), any()))
+        .thenReturn(
+            vista(
+                List.of(
+                    new Entidad("Hogar Ejemplo", true, List.of(frazadas())),
+                    new Entidad("Club Ejemplo", true, List.of(frazadas())),
+                    new Entidad("Comedor Ejemplo Este", true, List.of())),
+                3,
+                1,
+                1));
+
+    mvc.perform(get("/donante-entidades?ya=si"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("3 entidades coinciden con lo que elegiste. Página 1 de 1.")))
+        .andExpect(content().string(containsString("Sin pedidos pendientes")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<span data-v=\"nombre\">Comedor Ejemplo Este</span><span data-v=\"ya-donaste\">Ya le donaste</span>")))
+        .andExpect(content().string(containsString("Hoy no pide nada.")));
+  }
+
+  /** Con una categoría elegida, la entidad sin pedidos sale en su grupo y no se repite. */
+  @Test
+  void conCategoriaLaEntidadSinPedidosNoSeRepite() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), any()))
+        .thenReturn(vista(List.of(new Entidad("Comedor Ejemplo Este", true, List.of())), 1, 1, 1));
+
+    mvc.perform(get("/donante-entidades?categoria=ropa"))
+        .andExpect(content().string(containsString("Lo que pedía de Ropa ya está cubierto.")))
+        .andExpect(content().string(not(containsString("Sin pedidos pendientes"))));
+  }
+
   /** R11-18: el nombre va en su propia línea y la marca debajo, en otro elemento. */
   @Test
   void elNombreYLaMarcaVanSeparados() throws Exception {

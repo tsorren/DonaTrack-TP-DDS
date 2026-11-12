@@ -9,14 +9,18 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
- * La primera página de entidades de ejemplo, la que escribía la plantilla: seis de 46, en 8
- * páginas, con lo que pide cada una y si la empresa ya le donó. La búsqueda por nombre (sin tildes,
- * como Donaciones), la categoría y "Ya doné" los resuelve este puerto sobre esas seis, como si
- * fueran todas (R11-12): con un filtro, el resultado entra en una página.
+ * Las entidades de ejemplo de 46, en 8 páginas, con lo que pide cada una y si la empresa ya le
+ * donó. Están dibujadas las dos primeras: la primera, la que escribía la plantilla (seis); la
+ * segunda, tres para comprobar la pantalla con nombres largos (R11-18: uno de 60 letras sin
+ * espacios y uno de 120 con espacios) y con una entidad a la que ya le donaste que no pide nada
+ * pendiente. La búsqueda por nombre (sin tildes, como Donaciones), la categoría y "Ya doné" los
+ * resuelve este puerto sobre las dibujadas, como si fueran todas (R11-12): con un filtro, el
+ * resultado entra en una página.
  */
 @Component
 @ConditionalOnProperty(
@@ -32,6 +36,30 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
   private static final String NOVIEMBRE_15 = "Hasta el 15 de noviembre";
   private static final String NOVIEMBRE_30 = "Hasta el 30 de noviembre";
   private static final String SILLAS = "Sillas";
+
+  /** La segunda página dibujada: los nombres largos y una entidad sin nada pendiente. */
+  private static final List<Entidad> SEGUNDA =
+      List.of(
+          new Entidad(
+              "CooperativaDeTrabajoYAyudaMutuaDelBarrioEjemploNorteYAledaño",
+              false,
+              List.of(
+                  new Pedido(
+                      "Frazadas", "ropa", ROPA, "Faltan 8 de 12 unidades", NOVIEMBRE_15, 4, 12))),
+          new Entidad(
+              "Asociación Civil de Vecinos y Amigos del Barrio Ejemplo para la Ayuda Comunitaria,"
+                  + " la Educación Popular y el Deporte Sur",
+              true,
+              List.of(
+                  new Pedido(
+                      "Arroz",
+                      "alimentos",
+                      ALIMENTOS,
+                      "Faltan 18 de 30 kg este mes",
+                      CADA_MES,
+                      12,
+                      30))),
+          new Entidad("Comedor Ejemplo Este", true, List.of()));
 
   private static final DonanteEntidadesVista ENTIDADES =
       new DonanteEntidadesVista(
@@ -159,7 +187,7 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
           46,
           1,
           8,
-          1,
+          2,
           List.of(
               new Categoria("alimentos", "Alimentos", ALIMENTOS),
               new Categoria("ropa", "Ropa", ROPA),
@@ -174,10 +202,11 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
             ? consulta.categoria()
             : null;
     if (consulta.nombre().isEmpty() && categoria == null && !consulta.soloDonadas()) {
+      int pagina = Math.min(consulta.pagina(), ENTIDADES.paginas());
       return new DonanteEntidadesVista(
-          ENTIDADES.entidades(),
+          pagina == 2 ? SEGUNDA : ENTIDADES.entidades(),
           ENTIDADES.total(),
-          Math.min(consulta.pagina(), ENTIDADES.paginas()),
+          pagina,
           ENTIDADES.paginas(),
           ENTIDADES.dibujadas(),
           ENTIDADES.categorias(),
@@ -185,7 +214,7 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
     }
     String buscado = sinTildes(consulta.nombre());
     List<Entidad> coinciden =
-        ENTIDADES.entidades().stream()
+        Stream.concat(ENTIDADES.entidades().stream(), SEGUNDA.stream())
             .filter(e -> sinTildes(e.nombre()).contains(buscado))
             .filter(e -> !consulta.soloDonadas() || e.ya())
             .filter(
