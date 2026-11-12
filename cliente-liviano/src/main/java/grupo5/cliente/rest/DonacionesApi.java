@@ -86,6 +86,13 @@ interface DonacionesApi {
   @GetExchange("/api/donaciones/resumen")
   Resumen resumen();
 
+  /**
+   * Solo ADMIN: los gráficos del inicio del admin (R11-42), los últimos 12 meses por mes y por
+   * categoría, contados en Donaciones.
+   */
+  @GetExchange("/api/donaciones/resumen/evolucion")
+  Evolucion evolucion();
+
   /** La donación original, para saber quién donó: el donante (dueño) o ADMIN. */
   @GetExchange("/api/donaciones/{id}")
   Original donacion(@PathVariable UUID id);
@@ -576,6 +583,26 @@ interface DonacionesApi {
 
   /** {@code mes}: "2026-11". */
   record EntregadasEnElMes(String mes, Long cantidad) {}
+
+  /**
+   * Los gráficos del inicio del admin (R11-42). {@code desde} y {@code hasta}: "2025-11" y
+   * "2026-10", o null si no hay ninguna donación; {@code otras}: la suma de las categorías que
+   * pasan de 8, o null.
+   */
+  record Evolucion(
+      String desde,
+      String hasta,
+      List<MesEvolucion> meses,
+      List<CategoriaEvolucion> categorias,
+      OtrasCategorias otras,
+      OffsetDateTime calculadoEn) {}
+
+  /** {@code entregadas}: las que pasaron a ENTREGADA en el mes. */
+  record MesEvolucion(String mes, Long registradas, Long entregadas) {}
+
+  record CategoriaEvolucion(UUID categoriaId, String nombre, Long registradas, Long entregadas) {}
+
+  record OtrasCategorias(Integer categorias, Long registradas, Long entregadas) {}
 
   /**
    * Las cifras de una organización (R11-43). {@code porEstado}: los 8 estados, con 0 si no hay;

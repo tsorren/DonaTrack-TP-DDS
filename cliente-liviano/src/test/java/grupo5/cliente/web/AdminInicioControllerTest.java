@@ -13,6 +13,9 @@ import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.AdminInicioVista.Camiones;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
 import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
+import grupo5.cliente.vistas.AdminInicioVista.Evolucion;
+import grupo5.cliente.vistas.AdminInicioVista.Fila;
+import grupo5.cliente.vistas.AdminInicioVista.Mes;
 import grupo5.cliente.vistas.CuentaVista;
 import java.util.List;
 import java.util.Optional;
@@ -184,5 +187,88 @@ class AdminInicioControllerTest {
         .andExpect(content().string(containsString(">46</dd>")))
         .andExpect(content().string(containsString("Todavía no hay entregas confirmadas.")))
         .andExpect(content().string(containsString("Se ve entre las asignadas.")));
+  }
+
+  // R11-42: los gráficos, con su tabla al lado, el mes en curso marcado y sus estados
+  private static AdminInicioVista conGraficos(Evolucion evolucion) {
+    return new AdminInicioVista(
+        "Martes 10 de noviembre de 2026",
+        null,
+        NADA,
+        "10 de noviembre de 2026, 18:30",
+        CIFRAS,
+        evolucion);
+  }
+
+  @Test
+  void losGraficosVanConSuTablaYElMesEnCursoMarcado() throws Exception {
+    Evolucion evolucion =
+        new Evolucion(
+            "de octubre a noviembre de 2026",
+            "Desde octubre de 2026, cuando se registró la primera donación, se registraron 1.230"
+                + " donaciones y se confirmaron 3 entregas.",
+            "Una entrega cuenta en el mes en que la organización la confirmó: puede ser de una"
+                + " donación registrada antes. Noviembre todavía no terminó.",
+            2_000,
+            1_000,
+            List.of(
+                new Mes("oct", "2026", "Octubre 2026", false, 1_200, 2, 60, 0),
+                new Mes("nov", null, "Noviembre 2026, del 1 al 10", true, 30, 1, 2, 0)),
+            new Fila("Total", null, 1_230, 3, 0, 0),
+            "Alimentos es la categoría con más donaciones registradas desde octubre de 2026: 1.230"
+                + " de 1.230.",
+            List.of(
+                new Fila("Alimentos", "cat-alimentos", 1_230, 3, 100, 0),
+                new Fila("Otras 3 categorías", "cat-generico", 0, 0, 0, 0)),
+            new Fila("Total", null, 1_230, 3, 0, 0));
+    when(personas.inicio()).thenReturn(conGraficos(evolucion));
+
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Mes a mes")))
+        .andExpect(content().string(containsString("Por categoría")))
+        .andExpect(content().string(containsString("de octubre a noviembre de 2026")))
+        .andExpect(content().string(containsString("se registraron 1.230")))
+        .andExpect(content().string(containsString("Noviembre 2026, del 1 al 10")))
+        .andExpect(content().string(containsString("en curso")))
+        .andExpect(content().string(containsString("data-curso=\"si\"")))
+        .andExpect(content().string(containsString("viewBox=\"0 0 20 100\"")))
+        .andExpect(content().string(containsString("y=\"40\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<caption>Donaciones registradas y entregas confirmadas, mes a"
+                            + " mes</caption>")))
+        .andExpect(content().string(containsString("<th scope=\"row\">Otras 3 categorías</th>")))
+        .andExpect(content().string(containsString("aria-hidden=\"true\"")))
+        .andExpect(content().string(containsString("Noviembre todavía no terminó.")))
+        .andExpect(content().string(containsString("href=\"#cat-alimentos\"")))
+        .andExpect(content().string(not(containsString("No pudimos cargar los gráficos."))));
+  }
+
+  @Test
+  void sinDonacionesLaTarjetaLoDiceSinDibujo() throws Exception {
+    when(personas.inicio()).thenReturn(conGraficos(Evolucion.VACIA));
+
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(content().string(containsString("Todavía no hay donaciones registradas.")))
+        .andExpect(
+            content()
+                .string(containsString("Los gráficos aparecen cuando se registre la primera.")))
+        .andExpect(content().string(not(containsString("Por categoría"))))
+        .andExpect(content().string(not(containsString("<caption>"))));
+  }
+
+  @Test
+  void siLaEvolucionNoLlegoSoloSuTarjetaMuestraElAviso() throws Exception {
+    when(personas.inicio()).thenReturn(conGraficos(null));
+
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(content().string(containsString("Los últimos 12 meses")))
+        .andExpect(content().string(containsString("No pudimos cargar los gráficos.")))
+        .andExpect(content().string(containsString("Las cifras de arriba están al día.")))
+        .andExpect(content().string(containsString(">20.412</dd>")))
+        .andExpect(content().string(not(containsString("Mes a mes"))));
   }
 }

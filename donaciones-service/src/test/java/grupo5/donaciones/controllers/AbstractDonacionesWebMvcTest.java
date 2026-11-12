@@ -32,6 +32,7 @@ import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import grupo5.donaciones.services.ISolicitudEntidadService;
 import grupo5.donaciones.services.ISubcategoriasService;
 import grupo5.donaciones.services.impl.ContadoresPublicosService;
+import grupo5.donaciones.services.impl.EvolucionAdminService;
 import grupo5.donaciones.services.impl.ResumenAdminService;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -96,6 +97,7 @@ public abstract class AbstractDonacionesWebMvcTest {
   @MockitoBean protected ContadoresPublicosService contadoresPublicosService;
 
   @MockitoBean protected ResumenAdminService resumenAdminService;
+  @MockitoBean protected EvolucionAdminService evolucionAdminService;
 
   @MockitoBean protected IActividadService actividadService;
 }

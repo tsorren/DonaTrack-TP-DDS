@@ -169,4 +169,139 @@ class AdminPersonasInicioTest {
     assertEquals("1 de noviembre de 2026, 09:00", inicio.al());
     assertEquals(0, inicio.cifras().entregadasEnTotal());
   }
+
+  // --- R11-42: los gráficos, con lo que ya cuenta Donaciones -----------------------------------
+
+  private static final OffsetDateTime CALCULADO = OffsetDateTime.parse("2026-10-15T18:30:00-03:00");
+
+  private static DonacionesApi.Evolucion doceMeses() {
+    long[] registradas = {96, 132, 88, 74, 110, 121, 138, 152, 147, 165, 143, 58};
+    long[] entregadas = {71, 104, 90, 66, 85, 102, 117, 128, 131, 139, 119, 9};
+    List<DonacionesApi.MesEvolucion> meses = new java.util.ArrayList<>();
+    for (int i = 0; i < 12; i++) {
+      meses.add(
+          new DonacionesApi.MesEvolucion(
+              java.time.YearMonth.of(2025, 11).plusMonths(i).toString(),
+              registradas[i],
+              entregadas[i]));
+    }
+    return new DonacionesApi.Evolucion(
+        "2025-11",
+        "2026-10",
+        meses,
+        List.of(
+            new DonacionesApi.CategoriaEvolucion(UUID.randomUUID(), "Alimentos", 542L, 461L),
+            new DonacionesApi.CategoriaEvolucion(UUID.randomUUID(), "Ropa", 287L, 241L),
+            new DonacionesApi.CategoriaEvolucion(UUID.randomUUID(), "Electrodomésticos", 0L, 0L)),
+        new DonacionesApi.OtrasCategorias(3, 595L, 459L),
+        CALCULADO);
+  }
+
+  @Test
+  void losGraficosTraenLosTextosDeLaFichaYLaEscalaRedondeada() {
+    AdminInicioVista.Evolucion e =
+        AdminPersonasInicio.evolucion(doceMeses(), LocalDate.parse("2026-10-15"));
+
+    assertEquals("de noviembre de 2025 a octubre de 2026", e.periodo());
+    assertEquals(
+        "En los últimos 12 meses se registraron 1.424 donaciones y se confirmaron 1.161 entregas."
+            + " El mes con más donaciones registradas fue agosto de 2026, con 165.",
+        e.frase());
+    assertEquals(
+        "Una entrega cuenta en el mes en que la organización la confirmó: puede ser de una donación"
+            + " registrada antes. Octubre todavía no terminó.",
+        e.nota());
+    assertEquals(200, e.tope());
+    assertEquals(100, e.mitad());
+    AdminInicioVista.Mes primero = e.meses().get(0);
+    assertEquals(
+        new AdminInicioVista.Mes("nov", "2025", "Noviembre 2025", false, 96, 71, 48, 36), primero);
+    assertEquals("2026", e.meses().get(2).anio());
+    assertNull(e.meses().get(3).anio());
+    AdminInicioVista.Mes ultimo = e.meses().get(11);
+    assertEquals("Octubre 2026, del 1 al 15", ultimo.nombre());
+    assertEquals(true, ultimo.enCurso());
+    assertEquals(1_424, e.total().registradas());
+    assertEquals(
+        "Alimentos es la categoría con más donaciones registradas en estos 12 meses: 542 de"
+            + " 1.424.",
+        e.fraseCategorias());
+    assertEquals(
+        new AdminInicioVista.Fila("Alimentos", "cat-alimentos", 542, 461, 91, 77),
+        e.categorias().get(0));
+    assertEquals(
+        new AdminInicioVista.Fila("Electrodomésticos", "cat-electrodomesticos", 0, 0, 0, 0),
+        e.categorias().get(2));
+    // "Otras 3 categorías" con la suma, la mayor de las barras (595 = 100)
+    assertEquals(
+        new AdminInicioVista.Fila("Otras 3 categorías", "cat-generico", 595, 459, 100, 77),
+        e.categorias().get(3));
+    assertEquals(1_424, e.totalCategorias().registradas());
+  }
+
+  @Test
+  void plataformaNueva_noDiceDoceMeses_yElEmpateNombraALasDos() {
+    DonacionesApi.Evolucion corta =
+        new DonacionesApi.Evolucion(
+            "2026-07",
+            "2026-10",
+            List.of(
+                new DonacionesApi.MesEvolucion("2026-07", 1L, 0L),
+                new DonacionesApi.MesEvolucion("2026-08", 0L, 0L),
+                new DonacionesApi.MesEvolucion("2026-09", 0L, 0L),
+                new DonacionesApi.MesEvolucion("2026-10", 3L, 1L)),
+            List.of(
+                new DonacionesApi.CategoriaEvolucion(UUID.randomUUID(), "Alimentos", 2L, 1L),
+                new DonacionesApi.CategoriaEvolucion(UUID.randomUUID(), "Ropa", 2L, 0L)),
+            null,
+            CALCULADO);
+
+    AdminInicioVista.Evolucion e =
+        AdminPersonasInicio.evolucion(corta, LocalDate.parse("2026-10-15"));
+
+    assertEquals("de julio a octubre de 2026", e.periodo());
+    assertEquals(
+        "Desde julio de 2026, cuando se registró la primera donación, se registraron 4 donaciones"
+            + " y se confirmó 1 entrega. El mes con más donaciones registradas fue octubre de"
+            + " 2026, con 3.",
+        e.frase());
+    assertEquals(10, e.tope());
+    assertEquals(
+        "Alimentos y Ropa son las categorías con más donaciones registradas desde julio de 2026:"
+            + " 2 cada una, de 4.",
+        e.fraseCategorias());
+  }
+
+  @Test
+  void sinDonacionesLosGraficosQuedanVacios() {
+    AdminInicioVista.Evolucion e =
+        AdminPersonasInicio.evolucion(
+            new DonacionesApi.Evolucion(null, null, List.of(), List.of(), null, CALCULADO),
+            LocalDate.parse("2026-10-15"));
+
+    assertEquals(true, e.vacia());
+  }
+
+  @Test
+  void siLaEvolucionNoLlegaSoloFaltanLosGraficos() {
+    when(donaciones.resumen()).thenReturn(resumen(Map.of("EN_DEPOSITO", 7L), 0, 0));
+    when(logistica.camiones(any())).thenReturn(List.of());
+    when(donaciones.evolucion()).thenThrow(new RestClientException("sin series"));
+
+    AdminInicioVista inicio = inicio(List.of());
+
+    assertNull(inicio.evolucion());
+    assertEquals(7, inicio.cifras().enDeposito());
+  }
+
+  @Test
+  void laEscalaTerminaEnUnNumeroFacil() {
+    assertEquals(10, AdminPersonasInicio.tope(0));
+    assertEquals(10, AdminPersonasInicio.tope(7));
+    assertEquals(20, AdminPersonasInicio.tope(11));
+    assertEquals(50, AdminPersonasInicio.tope(30));
+    assertEquals(100, AdminPersonasInicio.tope(100));
+    assertEquals(200, AdminPersonasInicio.tope(165));
+    assertEquals(1_000, AdminPersonasInicio.tope(600));
+  }
 }

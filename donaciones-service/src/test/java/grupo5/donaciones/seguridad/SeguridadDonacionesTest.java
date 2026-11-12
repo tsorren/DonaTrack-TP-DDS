@@ -334,6 +334,14 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   }
 
   @Test
+  void laEvolucionDelInicioEsSoloDelAdmin_R1142() throws Exception {
+    pedir(get("/api/donaciones/resumen/evolucion"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen/evolucion"), "entidad").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen/evolucion"), null).andExpect(status().isUnauthorized());
+    pedir(get("/api/donaciones/resumen/evolucion"), "admin").andExpect(status().isOk());
+  }
+
+  @Test
   void loQueNoEstaEnLaMatrizExigeAdmin() throws Exception {
     pedir(get("/api/donantes"), "entidad").andExpect(status().isForbidden());
     pedir(get("/api/donantes"), "servicio").andExpect(status().isForbidden());

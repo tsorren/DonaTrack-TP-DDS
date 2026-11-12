@@ -22,6 +22,8 @@ import jakarta.persistence.Query;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -64,6 +66,16 @@ public class DonacionIndependienteRepositoryJpaAdapter
       "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente i"
           + " JOIN donaciones.item_donacion_normalizado n ON n.id = i.id_item_normalizado"
           + " WHERE i.id_donacion_independiente = di.id AND n.id_subcategoria = :subcategoriaId)";
+
+  // R11-42: las series del inicio del admin, contadas con GROUP BY (ninguna lista se trae)
+  private static final String PASARON_A =
+      " FROM donaciones.cambio_estado_donacion_independiente c"
+          + " JOIN donaciones.estado_donacion_independiente e ON e.id = c.id_estado_nuevo";
+  private static final String EN_EL_TRAMO_DEL_CAMBIO =
+      " e.tipo = :estado AND c.\"timestamp\" >= :desde AND c.\"timestamp\" < :hasta";
+  private static final String CATEGORIA_DE_LOS_ITEMS =
+      " JOIN donaciones.item_donacion_normalizado n ON n.id = i.id_item_normalizado"
+          + " JOIN donaciones.subcategoria s ON s.id = n.id_subcategoria";
 
   private static final String DE_LA_CATEGORIA =
       "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente ic"
@@ -350,6 +362,135 @@ public class DonacionIndependienteRepositoryJpaAdapter
       consulta.setParameter("necesidad", necesidadId);
     }
     return ((Number) consulta.getSingleResult()).longValue();
+  }
+
+  @Override
+  public Optional<LocalDateTime> primeraFechaRegistro() {
+    return Optional.ofNullable(
+        em.createQuery(
+                "select min(d.fechaRegistro) from DonacionIndependienteEntity d",
+                LocalDateTime.class)
+            .getSingleResult());
+  }
+
+  @Override
+  public Map<YearMonth, Long> contarRegistradasPorMes(YearMonth desde, YearMonth hasta) {
+    return porMes(
+        desde,
+        hasta,
+        "count(*)",
+        "di.fecha_registro",
+        " FROM donaciones.donacion_independiente di WHERE",
+        null);
+  }
+
+  @Override
+  public Map<YearMonth, Long> contarQuePasaronAPorMes(
+      TipoEstadoDonacion estado, YearMonth desde, YearMonth hasta) {
+    return porMes(
+        desde,
+        hasta,
+        "count(DISTINCT c.id_donacion_independiente)",
+        "c.\"timestamp\"",
+        PASARON_A + " WHERE e.tipo = :estado AND",
+        estado);
+  }
+
+  /**
+   * Una sola consulta con una columna por mes ({@code FILTER}): los límites de cada mes van como
+   * parámetros, así se comparan con la misma conversión de zona con que se guardaron las fechas.
+   */
+  private Map<YearMonth, Long> porMes(
+      YearMonth desde,
+      YearMonth hasta,
+      String contar,
+      String fecha,
+      String desdeDonde,
+      TipoEstadoDonacion estado) {
+    List<YearMonth> meses = new ArrayList<>();
+    for (YearMonth mes = desde; !mes.isAfter(hasta); mes = mes.plusMonths(1)) {
+      meses.add(mes);
+    }
+    if (meses.isEmpty()) {
+      return Map.of();
+    }
+    StringBuilder sql = new StringBuilder("SELECT ");
+    for (int i = 0; i < meses.size(); i++) {
+      sql.append(i == 0 ? "" : ", ")
+          .append(contar)
+          .append(" FILTER (WHERE ")
+          .append(fecha)
+          .append(" >= :b")
+          .append(i)
+          .append(" AND ")
+          .append(fecha)
+          .append(" < :b")
+          .append(i + 1)
+          .append(")");
+    }
+    sql.append(desdeDonde)
+        .append(' ')
+        .append(fecha)
+        .append(" >= :b0 AND ")
+        .append(fecha)
+        .append(" < :b")
+        .append(meses.size());
+    Query consulta = em.createNativeQuery(sql.toString());
+    for (int i = 0; i <= meses.size(); i++) {
+      consulta.setParameter("b" + i, desde.plusMonths(i).atDay(1).atStartOfDay());
+    }
+    if (estado != null) {
+      consulta.setParameter("estado", estado.name());
+    }
+    Object resultado = consulta.getSingleResult();
+    Object[] fila = resultado instanceof Object[] columnas ? columnas : new Object[] {resultado};
+    Map<YearMonth, Long> conteo = new HashMap<>();
+    for (int i = 0; i < meses.size(); i++) {
+      conteo.put(meses.get(i), ((Number) fila[i]).longValue());
+    }
+    return conteo;
+  }
+
+  @Override
+  public Map<UUID, Long> contarRegistradasPorCategoria(LocalDateTime desde, LocalDateTime hasta) {
+    return porCategoria(
+        em.createNativeQuery(
+                "SELECT s.id_categoria, count(DISTINCT di.id)"
+                    + " FROM donaciones.donacion_independiente di"
+                    + " JOIN donaciones.item_donacion_independiente i"
+                    + " ON i.id_donacion_independiente = di.id"
+                    + CATEGORIA_DE_LOS_ITEMS
+                    + " WHERE di.fecha_registro >= :desde AND di.fecha_registro < :hasta"
+                    + " GROUP BY s.id_categoria")
+            .setParameter("desde", desde)
+            .setParameter("hasta", hasta));
+  }
+
+  @Override
+  public Map<UUID, Long> contarQuePasaronAPorCategoria(
+      TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta) {
+    return porCategoria(
+        em.createNativeQuery(
+                "SELECT s.id_categoria, count(DISTINCT c.id_donacion_independiente)"
+                    + PASARON_A
+                    + " JOIN donaciones.item_donacion_independiente i"
+                    + " ON i.id_donacion_independiente = c.id_donacion_independiente"
+                    + CATEGORIA_DE_LOS_ITEMS
+                    + " WHERE"
+                    + EN_EL_TRAMO_DEL_CAMBIO
+                    + " GROUP BY s.id_categoria")
+            .setParameter("estado", estado.name())
+            .setParameter("desde", desde)
+            .setParameter("hasta", hasta));
+  }
+
+  private static Map<UUID, Long> porCategoria(Query consulta) {
+    Map<UUID, Long> conteo = new HashMap<>();
+    List<?> filas = consulta.getResultList();
+    filas.stream()
+        .map(Object[].class::cast)
+        .forEach(fila -> conteo.put(ConsultaListado.uuid(fila[0]), ((Number) fila[1]).longValue()));
+    return conteo;
   }
 
   @Override

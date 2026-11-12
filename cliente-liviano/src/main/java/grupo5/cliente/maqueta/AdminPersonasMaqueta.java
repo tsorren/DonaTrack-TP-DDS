@@ -480,7 +480,8 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
 
   /**
    * El inicio de la ficha (R11-21): 3 organizaciones, 7 donaciones sin asignar (4 vencen) y 2
-   * propuestas; las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas.
+   * propuestas; las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas; y
+   * los gráficos de los últimos 12 meses (R11-42).
    */
   @Override
   public AdminInicioVista inicio() {
@@ -498,6 +499,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
             2),
         AL,
         new Cifras(
-            7, 4, 1, 1, 2, 9, "en octubre, del 1 al 15", 1_284, 46, 86, 92, new Camiones(1, 3)));
+            7, 4, 1, 1, 2, 9, "en octubre, del 1 al 15", 1_284, 46, 86, 92, new Camiones(1, 3)),
+        AdminInicioGraficosDeEjemplo.evolucion());
   }
 }

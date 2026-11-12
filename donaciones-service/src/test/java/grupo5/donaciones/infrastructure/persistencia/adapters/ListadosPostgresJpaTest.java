@@ -51,8 +51,10 @@ import grupo5.donaciones.models.repositories.listados.PorVencer;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -736,6 +738,82 @@ class ListadosPostgresJpaTest {
         0,
         independientes.contarQuePasaronA(
             TipoEstadoDonacion.ENTREGADA, hoy.minusDays(1), hoy.plusDays(1), comedor, null));
+  }
+
+  // R11-42: las series del inicio del admin, contadas con GROUP BY en la base
+  @Test
+  void independientes_seriesPorMesYPorCategoria_delTramoPedido() {
+    UUID subcategoriaId = crearSubcategoria();
+    UUID categoriaId =
+        jdbc.queryForObject(
+            "SELECT id_categoria FROM donaciones.subcategoria WHERE id = ?",
+            UUID.class,
+            subcategoriaId);
+    Donante donante = donanteDe(humana("Ana", "Series"), true, LocalDateTime.now());
+    UUID comedor = entidadLlamada("Comedor Series");
+    // Fechas a mitad de mes: la base guarda en UTC y el JVM puede estar en otra zona
+    UUID deSeptiembre =
+        asignadaEn(
+            donante,
+            subcategoriaId,
+            comedor,
+            null,
+            "EN_DEPOSITO",
+            LocalDateTime.of(2026, 9, 3, 12, 0));
+    asignadaEn(
+        donante,
+        subcategoriaId,
+        comedor,
+        null,
+        "EN_DEPOSITO",
+        LocalDateTime.of(2026, 10, 2, 12, 0));
+    asignadaEn(
+        donante,
+        subcategoriaId,
+        comedor,
+        null,
+        "EN_DEPOSITO",
+        LocalDateTime.of(2026, 10, 20, 8, 0));
+    // Fuera de los meses pedidos
+    asignadaEn(
+        donante,
+        subcategoriaId,
+        comedor,
+        null,
+        "EN_DEPOSITO",
+        LocalDateTime.of(2026, 12, 10, 9, 0));
+    jdbc.update(
+        "UPDATE donaciones.cambio_estado_donacion_independiente SET \"timestamp\" = ?"
+            + " WHERE id_donacion_independiente = ?",
+        LocalDateTime.of(2026, 10, 5, 12, 0),
+        deSeptiembre);
+    YearMonth septiembre = YearMonth.of(2026, 9);
+    YearMonth octubre = YearMonth.of(2026, 10);
+
+    assertEquals(
+        Map.of(septiembre, 1L, octubre, 2L),
+        independientes.contarRegistradasPorMes(septiembre, octubre));
+    assertEquals(
+        Map.of(septiembre, 0L, octubre, 1L),
+        independientes.contarQuePasaronAPorMes(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, septiembre, octubre));
+    LocalDateTime desde = septiembre.atDay(1).atStartOfDay();
+    LocalDateTime hasta = octubre.plusMonths(1).atDay(1).atStartOfDay();
+    assertEquals(
+        Map.of(categoriaId, 3L), independientes.contarRegistradasPorCategoria(desde, hasta));
+    assertEquals(
+        Map.of(categoriaId, 1L),
+        independientes.contarQuePasaronAPorCategoria(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, desde, hasta));
+    // La fecha se escribió sin la conversión de zona de Hibernate: alcanza con el día
+    assertEquals(
+        Optional.of(LocalDate.of(2026, 9, 3)),
+        independientes.primeraFechaRegistro().map(LocalDateTime::toLocalDate));
+  }
+
+  @Test
+  void independientes_sinNingunaNoHayPrimeraFecha() {
+    assertEquals(Optional.empty(), independientes.primeraFechaRegistro());
   }
 
   /**

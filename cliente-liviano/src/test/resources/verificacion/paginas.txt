@@ -197,6 +197,9 @@
 /admin-inicio?escenario=lento
 /admin-inicio?escenario=error
 /admin-inicio?escenario=error-camiones
+/admin-inicio?escenario=error-evolucion
+/admin-inicio?escenario=evolucion-corta
+/admin-inicio?escenario=evolucion-vacia
 /admin-donantes
 /admin-donantes?escenario=vacio
 /admin-donantes?escenario=lento

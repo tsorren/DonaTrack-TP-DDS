@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.11.0
+  version: 1.12.0
   description: >-
     API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
     1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
@@ -27,6 +27,8 @@ info:
     Desde 1.11.0 (R11-43), `GET /api/entidades` filtra por `estado`, `conNecesidades` y `rubro`;
     `GET /donaciones-independientes` acepta `orden=ATENCION` e `id` (solo esa donación), y
     `GET /donaciones-independientes/conteos` da las cifras de una organización.
+    Desde 1.12.0 (R11-42), `GET /api/donaciones/resumen/evolucion` da los gráficos del inicio del
+    admin: registradas y entregas confirmadas de los últimos 12 meses, por mes y por categoría.
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -313,6 +315,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResumenAdminDTO'
+        '401':
+          description: Sin token o token inválido
+        '403':
+          description: El token no es de un administrador
+  /api/donaciones/resumen/evolucion:
+    get:
+      summary: Gráficos del inicio del administrador
+      description: >
+        Solo ADMIN (R11-42), sin parámetros. Las donaciones independientes registradas y las que
+        pasaron a ENTREGADA (la misma cuenta que `entregadasEnElMes` del resumen) en los últimos 12
+        meses, contando el actual, por mes y por categoría. Todo se cuenta en la base, sin traer
+        listas. Si la primera donación es de hace menos de 12 meses, los meses empiezan en el suyo.
+        Los meses salen del reloj del servicio (America/Argentina/Buenos_Aires). Va aparte del
+        resumen para que una falla de las series no tape las cifras.
+      operationId: obtenerEvolucionAdmin
+      responses:
+        '200':
+          description: Series calculadas en el momento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvolucionAdminDTO'
         '401':
           description: Sin token o token inválido
         '403':
@@ -2183,6 +2207,65 @@ components:
           format: int64
           minimum: 0
           description: Propuestas de asignación que esperan respuesta
+        calculadoEn: { type: string, format: date-time }
+    EvolucionAdminDTO:
+      type: object
+      description: >
+        Gráficos del inicio del administrador (R11-42). Sin donaciones, `desde` y `hasta` son null
+        y las listas vienen vacías.
+      required:
+        - meses
+        - categorias
+        - calculadoEn
+      properties:
+        desde:
+          type: string
+          nullable: true
+          description: 'Primer mes, AAAA-MM: hace 11 meses, o el de la primera donación si es posterior'
+          example: '2025-11'
+        hasta:
+          type: string
+          nullable: true
+          description: 'El mes en curso, AAAA-MM'
+          example: '2026-10'
+        meses:
+          type: array
+          description: Uno por mes de `desde` a `hasta`, todos presentes (0 si no hay)
+          items:
+            type: object
+            required: [mes, registradas, entregadas]
+            properties:
+              mes: { type: string, example: '2025-11' }
+              registradas: { type: integer, format: int64, minimum: 0 }
+              entregadas:
+                type: integer
+                format: int64
+                minimum: 0
+                description: Las que pasaron a ENTREGADA en el mes
+        categorias:
+          type: array
+          maxItems: 8
+          description: >
+            Todas las del catálogo, también con 0, de más a menos registradas (y por nombre), como
+            mucho 8. Cada donación independiente cuenta en la categoría de la subcategoría de sus
+            bienes, sumado en todo el período.
+          items:
+            type: object
+            required: [categoriaId, nombre, registradas, entregadas]
+            properties:
+              categoriaId: { type: string, format: uuid }
+              nombre: { type: string, example: Alimentos }
+              registradas: { type: integer, format: int64, minimum: 0 }
+              entregadas: { type: integer, format: int64, minimum: 0 }
+        otras:
+          type: object
+          nullable: true
+          description: La suma de las categorías que pasan de 8; null si no hay
+          required: [categorias, registradas, entregadas]
+          properties:
+            categorias: { type: integer, minimum: 1 }
+            registradas: { type: integer, format: int64, minimum: 0 }
+            entregadas: { type: integer, format: int64, minimum: 0 }
         calculadoEn: { type: string, format: date-time }
     DonanteOutputDTO:
       type: object

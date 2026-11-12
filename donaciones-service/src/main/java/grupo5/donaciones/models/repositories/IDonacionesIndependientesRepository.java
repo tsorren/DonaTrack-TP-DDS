@@ -10,8 +10,10 @@ import grupo5.donaciones.models.repositories.listados.PorVencer;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface IDonacionesIndependientesRepository
@@ -39,6 +41,36 @@ public interface IDonacionesIndependientesRepository
       LocalDateTime hasta,
       UUID entidadId,
       UUID necesidadId);
+
+  /** La fecha de registro de la primera donación, o vacío si no hay ninguna (R11-42). */
+  Optional<LocalDateTime> primeraFechaRegistro();
+
+  /**
+   * Cuántas se registraron en cada mes de {@code desde} a {@code hasta}, los dos incluidos
+   * (R11-42), contado en la base. Un mes sin donaciones puede faltar o venir con 0.
+   */
+  Map<YearMonth, Long> contarRegistradasPorMes(YearMonth desde, YearMonth hasta);
+
+  /**
+   * Cuántas pasaron a {@code estado} en cada mes de {@code desde} a {@code hasta} (R11-42), con la
+   * misma cuenta que {@link #contarQuePasaronA(TipoEstadoDonacion, LocalDateTime, LocalDateTime)}.
+   * Un mes sin cambios puede faltar o venir con 0.
+   */
+  Map<YearMonth, Long> contarQuePasaronAPorMes(
+      TipoEstadoDonacion estado, YearMonth desde, YearMonth hasta);
+
+  /**
+   * Cuántas se registraron en {@code [desde, hasta)} por categoría de la subcategoría de sus bienes
+   * (R11-42). La clave es el id de la categoría; las categorías sin donaciones no aparecen.
+   */
+  Map<UUID, Long> contarRegistradasPorCategoria(LocalDateTime desde, LocalDateTime hasta);
+
+  /**
+   * Cuántas pasaron a {@code estado} en {@code [desde, hasta)} por categoría (R11-42), como {@link
+   * #contarRegistradasPorCategoria(LocalDateTime, LocalDateTime)}.
+   */
+  Map<UUID, Long> contarQuePasaronAPorCategoria(
+      TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta);
 
   /**
    * Cuántas asignadas a la organización hay por necesidad y estado (R11-43), con una sola consulta.

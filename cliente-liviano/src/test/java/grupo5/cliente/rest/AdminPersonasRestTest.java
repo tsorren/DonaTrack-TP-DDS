@@ -318,6 +318,21 @@ class AdminPersonasRestTest {
                  "calculadoEn": "2026-11-10T18:30:00-03:00"}
                 """,
                 JSON));
+    // R11-42: los gráficos, aparte del resumen, ya contados por Donaciones
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen/evolucion"))
+        .andRespond(
+            withSuccess(
+                """
+                {"desde": "2026-10", "hasta": "2026-11",
+                 "meses": [{"mes": "2026-10", "registradas": 4, "entregadas": 8},
+                           {"mes": "2026-11", "registradas": 2, "entregadas": 1}],
+                 "categorias": [{"categoriaId": "00000000-0000-4000-8000-0000000000c1",
+                                 "nombre": "Alimentos", "registradas": 6, "entregadas": 9}],
+                 "otras": null,
+                 "calculadoEn": "2026-11-10T18:30:00-03:00"}
+                """,
+                JSON));
     logistica
         .expect(requestTo("http://logistica/api/camiones"))
         .andRespond(
@@ -360,6 +375,9 @@ class AdminPersonasRestTest {
             20003,
             new AdminInicioVista.Camiones(1, 2)),
         inicio.cifras());
+    assertEquals("de octubre a noviembre de 2026", inicio.evolucion().periodo());
+    assertEquals("Noviembre 2026, del 1 al 10", inicio.evolucion().meses().get(1).nombre());
+    assertEquals(9, inicio.evolucion().categorias().get(0).entregadas());
     donaciones.verify();
   }
 
