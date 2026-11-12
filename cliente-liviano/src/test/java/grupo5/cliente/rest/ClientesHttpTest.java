@@ -45,7 +45,10 @@ class ClientesHttpTest {
           "{}",
           (http, token) -> http.donacionesApi(URL, token).contadores());
   private static final Caso LOGISTICA =
-      new Caso("/api/entregas/mapa", "[]", (http, token) -> http.logisticaApi(URL, token).mapa());
+      new Caso(
+          "/api/entregas/mapa?desde=2026-10-13&hasta=2026-11-12&limite=200",
+          "[]",
+          (http, token) -> http.logisticaApi(URL, token).mapa("2026-10-13", "2026-11-12", 200));
   private static final Caso NOTIFICACIONES =
       new Caso(
           "/api/notificaciones/persona/" + ID + "/no-leidas/conteo",

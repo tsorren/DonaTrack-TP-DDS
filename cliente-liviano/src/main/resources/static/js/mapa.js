@@ -14,6 +14,12 @@
      depósito y cada destino llevan su marcador (data-tipo="deposito" o "destino", con el ícono de
      <template data-mapa-icono="deposito|destino"> del contenedor) y cada entrega, su recorrido: del
      depósito a donde va el camión, lleno; de ahí al destino, punteado (lo que falta).
+   - Puntos con su fila aparte (publico-mapa, R11-19): el punto puede ser un elemento oculto
+     ([data-mapa-punto]) con data-ficha, el id de su fila en la lista paginada. Pasar, enfocar o abrir
+     la fila destaca su marcador; tocar el marcador abre su fila si está en la página que se ve, y el
+     enlace del globo la abre ahí sin recargar (si está en otra página, el enlace lleva a esa página).
+     Si otra página de la lista no llega, se muestra el aviso que trae la lista
+     (<template data-mapa-error-pagina>).
    - Este archivo no pide nada al servidor ni arma textos del negocio: copia lo que ya está.
    - Al pasar o enfocar una ficha (o al llegar con #<id de la ficha>), su marcador (y su destino y su
      recorrido) se destaca y el mapa va hasta ella; con "reducir movimiento", sin animación.
@@ -325,14 +331,145 @@
       });
     });
 
+    /* Puntos con su fila aparte (publico-mapa, R11-19): el punto es un [data-mapa-punto] oculto y su
+       fila de la lista es el elemento con id data-ficha, que puede estar en otra página. Al tocar el
+       marcador, si su fila está en la página que se ve, se abre (en la computadora, la lista va hasta
+       ella; en el celular la página no se mueve sola: el globo ofrece ir). */
+    const porFila = new Map();
+    fichas.forEach(function (ficha) {
+      if (ficha.dataset.ficha) {
+        porFila.set(ficha.dataset.ficha, ficha);
+        const m = marcadores.get(ficha);
+        m.boton.addEventListener("click", function () {
+          abrirFila(ficha.dataset.ficha, ancho.matches);
+        });
+      }
+    });
+
+    function puntoDe(elemento) {
+      const fila = elemento && elemento.closest ? elemento.closest(".estacion-ficha[id]") : null;
+      return fila ? porFila.get(fila.id) || null : null;
+    }
+
+    function abrirFila(id, llevar) {
+      const fila = document.getElementById(id);
+      const plegable = fila ? fila.querySelector("details") : null;
+      if (!plegable) {
+        return false;
+      }
+      plegable.open = true;
+      if (llevar) {
+        fila.scrollIntoView({ block: "nearest", behavior: quieto.matches ? "auto" : "smooth" });
+      }
+      return true;
+    }
+
     function desdeElAncla() {
-      const ficha = location.hash ? document.getElementById(location.hash.slice(1)) : null;
+      const id = location.hash ? location.hash.slice(1) : "";
+      const ficha = id ? porFila.get(id) || document.getElementById(id) : null;
       if (ficha && marcadores.has(ficha)) {
         irA(ficha, true);
       }
     }
     mapa.once("load", desdeElAncla);
     window.addEventListener("hashchange", desdeElAncla);
+
+    estado.actual = { porFila: porFila, puntoDe: puntoDe, abrirFila: abrirFila, irA: irA, destacar: destacar };
+  }
+
+  /* Lo que se escucha una sola vez en el documento (el script se vuelve a ejecutar tras un cambio de
+     panel con HTMX): usa siempre el mapa de la última ejecución. La lista cambia de página sin que
+     el mapa se recargue, así que las filas se buscan cada vez. */
+  const ancho = window.matchMedia("(min-width: 68.75em)");
+  const estado = window.donatrackMapa || (window.donatrackMapa = { actual: null });
+  if (!estado.escuchando) {
+    estado.escuchando = true;
+    let resaltado = null;
+    document.addEventListener("mouseover", function (evento) {
+      const a = estado.actual;
+      if (!a || a.porFila.size === 0) {
+        return;
+      }
+      const punto = a.puntoDe(evento.target);
+      if (punto !== resaltado) {
+        resaltado = punto;
+        a.destacar(punto);
+      }
+    });
+    document.addEventListener("focusin", function (evento) {
+      const a = estado.actual;
+      const punto = a ? a.puntoDe(evento.target) : null;
+      if (punto) {
+        a.irA(punto, false);
+      }
+    });
+    // toggle no sube: se escucha en la captura. Abrir una fila destaca su marcador y va hasta él.
+    document.addEventListener(
+      "toggle",
+      function (evento) {
+        const a = estado.actual;
+        const punto = a && evento.target.open ? a.puntoDe(evento.target) : null;
+        if (punto) {
+          a.irA(punto, false);
+        }
+      },
+      true,
+    );
+    // "Ver sus entregas en la lista": si la fila está en esta página, se abre ahí sin recargar.
+    document.addEventListener("click", function (evento) {
+      const enlace = evento.target.closest ? evento.target.closest("a[data-mapa-a-la-fila]") : null;
+      const a = estado.actual;
+      if (!enlace || !a) {
+        return;
+      }
+      const id = new URL(enlace.href, location.href).hash.slice(1);
+      if (a.abrirFila(id, true)) {
+        evento.preventDefault();
+        const resumen = document.querySelector("#" + CSS.escape(id) + " summary");
+        if (resumen) {
+          resumen.focus({ preventScroll: true });
+        }
+      }
+    });
+    // Otra página de la lista: la que está queda atenuada mientras llega; si no llega, el aviso.
+    function deLaLista(evento) {
+      const lista = document.getElementById("lista-del-mapa");
+      const origen = evento.detail && evento.detail.elt;
+      return lista && origen && lista.contains(origen) ? lista : null;
+    }
+    document.addEventListener("htmx:beforeRequest", function (evento) {
+      const lista = deLaLista(evento);
+      if (lista) {
+        lista.setAttribute("aria-busy", "true");
+        const previo = lista.querySelector("[data-mapa-aviso-pagina]");
+        if (previo) {
+          previo.remove();
+        }
+      }
+    });
+    document.addEventListener("htmx:afterRequest", function (evento) {
+      const lista = deLaLista(evento);
+      if (lista) {
+        lista.removeAttribute("aria-busy");
+      }
+    });
+    function sinPagina(evento) {
+      const lista = deLaLista(evento);
+      const molde = lista ? lista.querySelector("template[data-mapa-error-pagina]") : null;
+      if (!molde) {
+        return;
+      }
+      const aviso = molde.content.firstElementChild.cloneNode(true);
+      aviso.setAttribute("data-mapa-aviso-pagina", "");
+      const reintento = aviso.querySelector("[data-mapa-reintento]");
+      const direccion = evento.detail.pathInfo && evento.detail.pathInfo.requestPath;
+      if (reintento && direccion) {
+        reintento.href = direccion;
+      }
+      molde.after(aviso);
+    }
+    document.addEventListener("htmx:responseError", sinPagina);
+    document.addEventListener("htmx:sendError", sinPagina);
   }
 
   cargarMapLibre().then(function (maplibregl) {

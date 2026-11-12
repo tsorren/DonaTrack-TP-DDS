@@ -48,3 +48,11 @@ PUT /api/necesidades/{id} added required request body
 # el texto exacto de cada línea se confirma con el job de contratos del PR y se corrige acá.
 GET /donaciones-independientes for the 'query' request parameter 'estado', the type/format was changed from 'string'/'' to 'array'/''
 GET /api/entidades for the 'query' request parameter 'nombre', the maxLength was set to '100'
+
+# R11-19 (p1-mapa, 2026-11-12; ficha raices-publico-navegable.md, ampliación R11-19, sección 10):
+# Logística 1.10.0. GET /api/entregas/mapa suma `desde`, `hasta` y `limite` (opcionales) y el total
+# en `X-Total-Count`. Lo que oasdiff no ve, aprobado por el usuario (aprobación del diseño p1-mapa,
+# punto 3): sin parámetros devuelve los últimos 30 días y hasta 200 (antes, toda la historia). El
+# único consumidor es el cliente liviano, que ya se quedaba con 30 días y ahora los pide. Los
+# parámetros nuevos son opcionales: [INFERRED] oasdiff no los marca como error; si el job de
+# contratos del PR marca algo, la línea exacta va acá.

@@ -8,6 +8,10 @@ import grupo5.cliente.vistas.PublicoMapaVista;
  */
 public interface PublicoMapaPuerto {
 
-  /** Las entregas confirmadas del último mes. El filtro por categoría lo aplica la pantalla. */
-  PublicoMapaVista mapa();
+  /**
+   * Las entregas confirmadas del último mes, con tope (R11-19). El filtro por categoría y la página
+   * de la lista los arma la vista. {@code escenario} es el de la maqueta ({@code muchas}: más de
+   * una página de lugares) o null; el adaptador REST no lo usa.
+   */
+  PublicoMapaVista mapa(String escenario);
 }

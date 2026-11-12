@@ -16,9 +16,11 @@ import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.EntregasDelMapaPublico;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import grupo5.logistica.services.IEntregasService;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -30,12 +32,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @PreAuthorize(ADMIN)
 @RequestMapping("/api/entregas")
 public class EntregasController implements IEntregasController {
+  static final String HEADER_TOTAL = "X-Total-Count";
   private final IEntregasService entregasService;
 
   public EntregasController(IEntregasService entregasService) {
@@ -58,8 +62,14 @@ public class EntregasController implements IEntregasController {
   @Override
   @PreAuthorize(PUBLICO)
   @GetMapping("/mapa")
-  public ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico() {
-    return ResponseEntity.ok(entregasService.listarMapaPublico());
+  public ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico(
+      @RequestParam(name = "desde", required = false) LocalDate desde,
+      @RequestParam(name = "hasta", required = false) LocalDate hasta,
+      @RequestParam(name = "limite", required = false) Integer limite) {
+    EntregasDelMapaPublico mapa = entregasService.listarMapaPublico(desde, hasta, limite);
+    return ResponseEntity.ok()
+        .header(HEADER_TOTAL, String.valueOf(mapa.total()))
+        .body(mapa.entregas());
   }
 
   @Override

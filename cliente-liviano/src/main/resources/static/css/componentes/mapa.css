@@ -241,6 +241,54 @@ figure.mapa-dibujo {
   grid-column: 2;
 }
 
+/* --- El mapa con la lista plegada (R11-19, publico-mapa) --------------------------------------------
+   `<div class="pila" data-parte="mapa">` junta el mapa, la lista oculta de sus puntos y los botones
+   de salida (`[data-parte="salidas"]`), debajo del mapa. La lista va plegada: cada `.estacion-ficha` lleva un
+   `.plegable` (número, nombre y cantidad; abierto, el barrio y sus entregas), de a una página. */
+.mapa-cuerpo > [data-parte="mapa"] {
+  min-width: 0;
+}
+
+/* Los botones, apilados y a lo ancho en el celular ("Quiero donar" primero). */
+.mapa-cuerpo [data-parte="salidas"] > .boton {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+.estaciones:has(> .estacion-ficha > .plegable) {
+  gap: var(--espacio-2);
+}
+
+.estacion-ficha:has(> .plegable) {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.estacion-ficha:target > .plegable {
+  background: var(--color-acento-claro);
+}
+
+.estacion-ficha > .plegable > summary {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.estacion-ficha > .plegable .plegable-titulo > b {
+  overflow-wrap: anywhere;
+  font-size: var(--tamano-grande);
+}
+
+/* Mientras llega otra página de la lista (HTMX), la que está queda a la vista, atenuada. */
+.mapa-lista[aria-busy="true"] {
+  opacity: 0.6;
+}
+
+@media (min-width: 37.5em) {
+  .mapa-cuerpo [data-parte="salidas"] > .boton {
+    flex: 0 1 auto;
+  }
+}
+
 @media (min-width: 68.75em) {
   .mapa-cuerpo {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
@@ -255,6 +303,17 @@ figure.mapa-dibujo {
   .mapa-real {
     aspect-ratio: auto;
     height: min(40rem, 100vh - 2rem);
+  }
+
+  /* El mapa y los botones quedan fijos mientras se recorre la lista. */
+  .mapa-cuerpo > [data-parte="mapa"] {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .mapa-cuerpo > [data-parte="mapa"] .mapa-real {
+    aspect-ratio: auto;
+    height: min(40rem, 100vh - 10rem);
   }
 }
 

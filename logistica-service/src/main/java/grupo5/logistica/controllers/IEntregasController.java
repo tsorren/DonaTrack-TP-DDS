@@ -8,6 +8,7 @@ import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,8 @@ public interface IEntregasController {
 
   ResponseEntity<List<EntregaResponseDTO>> listar();
 
-  ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico();
+  ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico(
+      LocalDate desde, LocalDate hasta, Integer limite);
 
   ResponseEntity<EntregaResponseDTO> obtenerPorId(@PathVariable("id") UUID id);
 

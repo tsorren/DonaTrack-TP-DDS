@@ -96,6 +96,8 @@
 /publico-mapa?escenario=vacio
 /publico-mapa?escenario=lento
 /publico-mapa?escenario=error
+/publico-mapa?escenario=muchas
+/publico-mapa?escenario=muchas&pagina=2&abierta=ejemplo-12
 /publico-entidades
 /publico-entidades?categoria=alimentos
 /publico-entidades?q=comedor

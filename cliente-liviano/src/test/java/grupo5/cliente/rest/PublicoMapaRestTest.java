@@ -26,6 +26,10 @@ class PublicoMapaRestTest {
 
   private static final String LOGISTICA = "http://logistica";
 
+  /** El último mes hasta "hoy" (10 de noviembre de 2026), con el tope de 200. */
+  private static final String MAPA_DEL_MES =
+      LOGISTICA + "/api/entregas/mapa?desde=2026-10-11&hasta=2026-11-10&limite=200";
+
   private MockRestServiceServer apis;
   private PublicoMapaRest adaptador;
 
@@ -40,7 +44,7 @@ class PublicoMapaRestTest {
 
   @Test
   void agrupaLasEntregasDelUltimoMesPorLugarYDiceLoQueNoSabe() {
-    apis.expect(requestTo(LOGISTICA + "/api/entregas/mapa"))
+    apis.expect(requestTo(MAPA_DEL_MES))
         .andRespond(
             withSuccess(
                 """
@@ -53,15 +57,12 @@ class PublicoMapaRestTest {
                  {"idEntrega": "00000000-0000-4000-8000-000000000003", "latitud": -34.7,
                   "longitud": -58.5, "localidad": null, "provincia": null,
                   "fechaEntrega": "2026-10-20T15:00:00Z", "pesoTotalKG": 3},
-                 {"idEntrega": "00000000-0000-4000-8000-000000000004", "latitud": -34.8,
-                  "longitud": -58.6, "localidad": "Quilmes", "provincia": "Buenos Aires",
-                  "fechaEntrega": "2026-09-01T15:00:00Z", "pesoTotalKG": 8},
                  {"idEntrega": "00000000-0000-4000-8000-000000000005", "latitud": -34.9,
                   "longitud": -58.7, "localidad": "Sin fecha", "fechaEntrega": null}]
                 """,
                 MediaType.APPLICATION_JSON));
 
-    PublicoMapaVista mapa = adaptador.mapa();
+    PublicoMapaVista mapa = adaptador.mapa(null);
 
     apis.verify();
     assertEquals(2, mapa.estaciones().size());
@@ -88,20 +89,50 @@ class PublicoMapaRestTest {
     assertFalse(mapa.conEntidades());
     assertFalse(mapa.conCategorias());
     assertTrue(mapa.nota().startsWith("Todavía no mostramos"));
+    assertEquals(3, mapa.delPeriodo());
+    assertFalse(mapa.conTope());
+  }
+
+  @Test
+  void conMasEntregasQueElTopeLaCifraUsaElTotalDeLaCabecera() {
+    apis.expect(requestTo(MAPA_DEL_MES))
+        .andRespond(
+            withSuccess(
+                    """
+                    [{"idEntrega": "00000000-0000-4000-8000-000000000001", "latitud": -34.6037,
+                      "longitud": -58.3816, "localidad": "Palermo", "provincia": "Buenos Aires",
+                      "fechaEntrega": "2026-11-02T15:00:00Z", "pesoTotalKG": 12.5}]
+                    """,
+                    MediaType.APPLICATION_JSON)
+                .header("X-Total-Count", "340"));
+
+    PublicoMapaVista mapa = adaptador.mapa(null);
+
+    apis.verify();
+    assertEquals(340, mapa.delPeriodo());
+    assertTrue(mapa.conTope());
+    assertEquals(1, mapa.todas().size());
+  }
+
+  @Test
+  void unaCabeceraMalEscritaCuentaLasQueLlegaron() {
+    apis.expect(requestTo(MAPA_DEL_MES))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header("X-Total-Count", "x"));
+
+    assertEquals(0, adaptador.mapa(null).delPeriodo());
   }
 
   @Test
   void sinEntregasElMapaVaVacio() {
-    apis.expect(requestTo(LOGISTICA + "/api/entregas/mapa"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(MAPA_DEL_MES)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-    assertTrue(adaptador.mapa().estaciones().isEmpty());
+    assertTrue(adaptador.mapa(null).estaciones().isEmpty());
   }
 
   @Test
   void conLogisticaCaidaLaFallaSale() {
-    apis.expect(requestTo(LOGISTICA + "/api/entregas/mapa")).andRespond(withServerError());
+    apis.expect(requestTo(MAPA_DEL_MES)).andRespond(withServerError());
 
-    assertThrows(RestClientException.class, adaptador::mapa);
+    assertThrows(RestClientException.class, () -> adaptador.mapa(null));
   }
 }

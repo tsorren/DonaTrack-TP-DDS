@@ -24,8 +24,11 @@ import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.IGeocodificadorDestino;
 import grupo5.logistica.services.mappers.EntregaMapper;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,6 +47,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class EntregasService implements IEntregasService {
   private static final Logger log = LoggerFactory.getLogger(EntregasService.class);
   private static final String ACTOR_BROKER = "broker-donaciones";
+  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
+  static final int DIAS_DEL_MAPA = 30;
+  static final int LIMITE_DEL_MAPA = 200;
+  static final int LIMITE_MAXIMO_DEL_MAPA = 500;
   private final IEntregasRepository entregasRepository;
   private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
@@ -51,6 +58,7 @@ public class EntregasService implements IEntregasService {
   private final ComunicadorEventosLogistica comunicadorEventos;
   private final ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository;
   private final IGeocodificadorDestino geocodificadorDestino;
+  private final Clock reloj;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
@@ -85,7 +93,6 @@ public class EntregasService implements IEntregasService {
         null);
   }
 
-  @Autowired
   public EntregasService(
       IEntregasRepository entregasRepository,
       IRutasRepository rutasRepository,
@@ -94,6 +101,30 @@ public class EntregasService implements IEntregasService {
       ComunicadorEventosLogistica comunicadorEventos,
       @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
       @Nullable IGeocodificadorDestino geocodificadorDestino) {
+    this(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        solicitudesTransicionRepository,
+        geocodificadorDestino,
+        null);
+  }
+
+  /** {@code reloj}: el de la aplicación (hora de Argentina); sin él, el del sistema. */
+  @Autowired
+  @SuppressWarnings("java:S107")
+  public EntregasService(
+      IEntregasRepository entregasRepository,
+      IRutasRepository rutasRepository,
+      ICamionRepository camionRepository,
+      EntregaMapper entregaMapper,
+      ComunicadorEventosLogistica comunicadorEventos,
+      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
+      @Nullable IGeocodificadorDestino geocodificadorDestino,
+      @Nullable Clock reloj) {
+    this.reloj = reloj != null ? reloj : Clock.system(ARGENTINA);
     this.entregasRepository = entregasRepository;
     this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
@@ -130,12 +161,23 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<EntregaMapaPublicoResponseDTO> listarMapaPublico() {
-    return entregasRepository.findByEstado(EstadoEntrega.ENTREGADA).stream()
-        .filter(e -> e.getDestino() != null && e.getDestino().tieneCoordenadas())
-        .map(entregaMapper::toMapaPublicoResponseDTO)
-        .filter(Objects::nonNull)
-        .toList();
+  public EntregasDelMapaPublico listarMapaPublico(
+      LocalDate desde, LocalDate hasta, Integer limite) {
+    LocalDate fin = hasta != null ? hasta : LocalDate.now(reloj.withZone(ARGENTINA));
+    LocalDate inicio = desde != null ? desde : fin.minusDays(DIAS_DEL_MAPA);
+    int tope = limite != null ? limite : LIMITE_DEL_MAPA;
+    if (fin.isBefore(inicio) || tope < 1 || tope > LIMITE_MAXIMO_DEL_MAPA) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Instant desdeInstante = inicio.atStartOfDay(ARGENTINA).toInstant();
+    Instant hastaInstante = fin.plusDays(1).atStartOfDay(ARGENTINA).toInstant();
+    List<EntregaMapaPublicoResponseDTO> entregas =
+        entregasRepository.findEntregadasParaMapa(desdeInstante, hastaInstante, tope).stream()
+            .map(entregaMapper::toMapaPublicoResponseDTO)
+            .filter(Objects::nonNull)
+            .toList();
+    long total = entregasRepository.contarEntregadasParaMapa(desdeInstante, hastaInstante);
+    return new EntregasDelMapaPublico(entregas, Math.max(total, entregas.size()));
   }
 
   @Override

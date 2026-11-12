@@ -6,6 +6,8 @@ import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -71,6 +73,35 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
         .filter(entrega -> entrega.getEstadoActual() == estado)
         .sorted(Comparator.comparingInt(e -> indiceOrdenInsercion(e.getId())))
         .toList();
+  }
+
+  @Override
+  public List<Entrega> findEntregadasParaMapa(Instant desde, Instant hasta, int limite) {
+    return storage.values().stream()
+        .filter(e -> esDelMapa(e, desde, hasta))
+        .sorted(
+            Comparator.comparing(Entrega::getHoraArribo, Comparator.reverseOrder())
+                .thenComparing(Entrega::getId))
+        .limit(Math.max(0, limite))
+        .toList();
+  }
+
+  @Override
+  public long contarEntregadasParaMapa(Instant desde, Instant hasta) {
+    return storage.values().stream().filter(e -> esDelMapa(e, desde, hasta)).count();
+  }
+
+  private static boolean esDelMapa(Entrega entrega, Instant desde, Instant hasta) {
+    if (desde == null
+        || hasta == null
+        || entrega.getEstadoActual() != EstadoEntrega.ENTREGADA
+        || entrega.getHoraArribo() == null
+        || entrega.getDestino() == null
+        || !entrega.getDestino().tieneCoordenadas()) {
+      return false;
+    }
+    Instant arribo = entrega.getHoraArribo().toInstant(ZoneOffset.UTC);
+    return !arribo.isBefore(desde) && arribo.isBefore(hasta);
   }
 
   @Override
