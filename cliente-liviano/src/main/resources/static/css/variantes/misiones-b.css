@@ -118,6 +118,14 @@
   align-items: center;
 }
 
+/* "Ver toda la huerta" (el que suelta la maceta, R11-37): un toque de 48 px. */
+#huerta-ficha > a[data-suelta] {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 3rem;
+}
+
 /* Los pictogramas de categoría (iconos :: categorias) y su cuadro salvia, como en sellos.css, que esta
    pantalla no carga. */
 #misiones > .iconos {

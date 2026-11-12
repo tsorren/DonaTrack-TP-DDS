@@ -14,6 +14,11 @@
 // - La campanita (R11-29, componentes/campanita.html) pide su lista cada vez que se abre: el toggle del <details>
 //   dispara campanita:abrir, que es el hx-trigger de su hx-get. Si la respuesta llega con el
 //   desplegable ya cerrado, se descarta.
+// - Algo elegido que se suelta (R11-37, la maceta de Misiones): el enlace con [data-suelta] es el que
+//   lo suelta; con JavaScript, tocar afuera (en un lugar sin enlace, botón ni campo, y fuera de lo que
+//   lleva [data-suelta-adentro]) o apretar Esc lo toca, así vale lo mismo que el enlace y HTMX lo
+//   maneja igual. Si había un menú o una ventana abiertos, el toque o la tecla se ocupan solo de
+//   ellos. Sin JavaScript queda el enlace.
 if (!history.state) {
   history.replaceState({ htmx: true }, "", location.href);
 }
@@ -33,6 +38,28 @@ document.addEventListener("change", (evento) => {
 });
 
 const MENUS = "details.navegacion-cuenta, details.campanita, details.filtros-pildora";
+const ABIERTO = `details.navegacion-cuenta[open], details.campanita[open], details.filtros-pildora[open], dialog[open]${
+  CSS.supports("selector(:popover-open)") ? ", :popover-open" : ""
+}`;
+const ELEMENTO_DE_USO = "a, button, summary, input, select, textarea, label, [data-suelta-adentro]";
+
+function soltarLoElegido() {
+  document.querySelector("a[data-suelta]")?.click();
+}
+
+// Se anota al empezar el toque, antes de que el menú abierto se cierre: ese toque es solo para
+// cerrarlo.
+let habiaAlgoAbierto = false;
+document.addEventListener("pointerdown", () => {
+  habiaAlgoAbierto = document.querySelector(ABIERTO) !== null;
+});
+// Un toque (no un arrastre para desplazar) en un lugar sin nada que hacer suelta lo elegido.
+document.addEventListener("click", (evento) => {
+  if (evento.button === 0 && !habiaAlgoAbierto && !evento.target.closest(ELEMENTO_DE_USO)) {
+    soltarLoElegido();
+  }
+  habiaAlgoAbierto = false;
+});
 
 function cerrarMenus(excepto) {
   document.querySelectorAll(MENUS).forEach((menu) => {
@@ -53,9 +80,13 @@ document.addEventListener("keydown", (evento) => {
   }
   const conElFoco = document.activeElement?.closest(MENUS);
   const estabaAbierto = conElFoco?.open;
+  const habiaAlgo = document.querySelector(ABIERTO) !== null;
   cerrarMenus(null);
   if (estabaAbierto) {
     conElFoco.querySelector("summary")?.focus();
+  }
+  if (!habiaAlgo) {
+    soltarLoElegido();
   }
 });
 // Al pasar el foco a otro elemento de la página (con Tab, por ejemplo) el menú se cierra. Se decide

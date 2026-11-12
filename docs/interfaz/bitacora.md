@@ -57,6 +57,28 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Evidencia:** [ficha r11-p2-admin-bandeja](flujos/r11-p2-admin-bandeja.md); capturas de la
   verificación visual (`admin-donantes`, `admin-donaciones`, `admin-asignaciones`).
 
+### 2026-11-12 · donante · "Ver mi huerta" al medio, maceta que se suelta y aviso de lo que espera destino
+
+- **Decisión:** (R11-37, lote `p2-donante-detalles`) la lámina de "Ver mi huerta" va centrada (en
+  pantalla ancha, el título al lado del dibujo, los dos juntos y al medio; en el celular, uno sobre
+  otro) y el botón queda al medio del invernadero. En Misiones, con una maceta elegida, tocar afuera
+  (en un lugar sin enlace, botón ni campo, y fuera de la ficha) o apretar Esc toca "Ver toda la
+  huerta": `static/js/paneles.js` lo hace con `a[data-suelta]` y `[data-suelta-adentro]`; con un menú
+  o una ventana abiertos, el toque o la tecla solo los cierran. (R11-39) El texto bajo "Entrega por
+  entrega" pasa a un aviso (`data-v="sin-destino"`, pieza `donante-seguimiento :: sinDestino`) con el
+  ícono del reloj, el título "Todavía esperan destino", las donaciones en una lista y qué pasa después.
+- **Alternativas:** soltar con `pointerdown` (se descartó: un arrastre para desplazar en el celular
+  soltaría la maceta); soltar con Alpine (se descartó: la maceta elegida vive en la dirección y el
+  enlace ya la suelta, con o sin JavaScript); usar el aviso de "Cómo llega tu donación" (agua) tal
+  cual (se descartó: esto es información sobre una donación pendiente, va con el tono de info).
+- **Por qué:** el enlace "Ver toda la huerta" ya era la salida sin JavaScript; el JavaScript solo lo
+  toca, así vale igual con HTMX. El aviso se ve como aviso y no como un renglón perdido bajo las
+  tarjetas.
+- **Costo:** las macetas del dibujo siguen siendo blancos de toque chicos en el celular (ya lo eran).
+- **Quién decidió:** agente, dentro del backlog del 2026-11-11.
+- **Evidencia:** `DonanteDetallesTest` (perfil `visual`), `DonanteSeguimientoControllerTest` y
+  `DonanteMisionesControllerTest`.
+
 ### 2026-11-12 · admin · Registro de actividad: pestaña de Administradores, sin detalle propio
 
 - **Decisión:** la actividad de administración (R11-26, lote `p2-actividad`) es la pestaña

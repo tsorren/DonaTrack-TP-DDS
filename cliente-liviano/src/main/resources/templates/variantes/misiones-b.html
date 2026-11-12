@@ -9,7 +9,10 @@
        qué hiciste, con 3 hitos y la donación, o qué falta, sin culpa. Las misiones de una categoría que
        todavía no se abre no se nombran (usuaria, 2026-11-09). Usa los datos y los estados de
        donante-misiones (datos(vista)). ?variante=misiones-b, también con &lugar=<clave> y
-       ?escenario=vacio, lento y error. Se borra al decidir. */-->
+       ?escenario=vacio, lento y error. Soltar la maceta elegida (R11-37): con JavaScript, tocar
+       afuera de la ficha o apretar Esc toca "Ver toda la huerta" (el enlace con data-suelta; lo que
+       cuenta como adentro lleva data-suelta-adentro; static/js/paneles.js); sin JavaScript queda el
+       enlace. Se borra al decidir. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-misiones', ~{::contenido})}">
 <head>
@@ -104,6 +107,7 @@
 
     <!--/* La ficha: sin elegir, la huerta en resumen; con un lugar elegido, su detalle. */-->
     <section id="huerta-ficha" class="tarjeta" aria-labelledby="huerta-ficha-titulo" aria-live="polite"
+             data-suelta-adentro
              th:with="l=${elegido},
                       m=${l != null and l.tipo == 'mision' ? misiones.^[nombre == #root.l.titulo] : null},
                       h=${l == null ? null : (l.tipo == 'bienvenida' ? bienvenida : (m != null ? m.historia : null))},
@@ -195,7 +199,7 @@
         <p>Las misiones cuentan tus donaciones, sin plazo.</p>
       </th:block>
 
-      <a th:if="${l != null}" href="/donante-misiones"
+      <a th:if="${l != null}" data-suelta href="/donante-misiones"
          th:href="${nueva} ? @{/donante-misiones(variante='misiones-b', escenario='vacio')} + '#huerta'
                             : @{/donante-misiones(variante='misiones-b')} + '#huerta'">Ver toda la huerta</a>
     </section>

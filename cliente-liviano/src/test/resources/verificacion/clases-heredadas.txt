@@ -220,7 +220,6 @@ seguimiento-cabecera
 seguimiento-cuerpo
 seguimiento-dibujo
 seguimiento-lista
-seguimiento-pie
 seguimiento-reserva
 sello-entrega
 separador
