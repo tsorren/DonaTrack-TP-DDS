@@ -247,8 +247,10 @@ Quién la representa: Nombre y apellido · Correo electrónico · Contraseña [M
 ```
 
 **Solicitud enviada** (`publico-registro-entidad-enviada`): el sello "Solicitud recibida", qué pasa
-ahora y el mismo "Cómo sigue" con el paso 2 como actual. Salidas: "Ver las entidades y lo que
-piden" e "Ir a la portada".
+ahora, cuánto suele tardar la revisión ("unos días hábiles", R11-08), que mientras tanto puede
+recorrer lo público y el mismo "Cómo sigue" con el paso 2 como actual. Salidas: "Ver las entidades
+y lo que piden" e "Ir a la portada". Con la cuenta pendiente, esas salidas y las demás pantallas
+públicas se pueden navegar; lo privado lleva otra vez a esta pantalla (R11-08).
 
 Respecto del boceto (pág. 11): en tres grupos con título, como pedía la nota del boceto ("conviene
 partirlo en secciones claras"). Un solo representante, el que crea la cuenta; el rubro pasa a "Qué
@@ -403,7 +405,8 @@ y errores dicen lo mismo en A y en B, con estas palabras ([tono](../tono-y-comun
 | | Casilla y acción | La misma casilla · "Todos los datos son obligatorios." · "Enviar la solicitud" | |
 | | Salida | "¿Querés donar? Crear una cuenta de donante" | |
 | Solicitud enviada | Sello y título | "Solicitud recibida" · "Recibimos la solicitud de tu entidad" | |
-| | Qué pasa ahora | "El equipo de DonaTrack la revisa antes de sumarla. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés ingresar y publicar lo que le hace falta a tu entidad." | Sin plazo |
+| | Qué pasa ahora | "El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar unos días hábiles. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés ingresar y publicar lo que le hace falta a tu entidad." | R11-08 pide decir cuánto suele tardar: "unos días hábiles", sin cifra fija ni fecha, porque no hay un plazo acordado |
+| | Mientras tanto | "Mientras tanto, podés recorrer el sitio: la portada, las entidades y lo que piden." | R11-08: la cuenta pendiente navega lo público |
 | | Salidas | "Ver las entidades y lo que piden" · "Ir a la portada" | |
 
 ### 6.2 Ayudas por flujo crítico (RNF-UI-04)
@@ -492,7 +495,8 @@ llevan el prefijo del sitio (`/`).
   revisión".
 - Sin urgencia ni culpa: "Quiero donar", sin "ahora"; los pedidos no llevan cuenta regresiva (la
   fecha alcanza).
-- Sin promesas que nadie fijó: ni plazo de revisión, ni "gratis", ni elegir la entidad.
+- Sin promesas que nadie fijó: ni "gratis", ni elegir la entidad. De la revisión se dice cuánto
+  suele tardar ("unos días hábiles", R11-08), nunca una cifra ni una fecha.
 - Las entidades actúan: piden, confirman, publican. Se nombran por su tipo y su nombre.
 - La raíz, como mucho en un título por pantalla; nunca en botones, datos ni errores. Palabras que
   no van: "eco", "huella verde", "florecer", "regá", "cosechá", "sostenible" de adorno.
@@ -527,7 +531,7 @@ llevan el prefijo del sitio (`/`).
 
 | # | Heurística | Cómo la cumple | Riesgo que queda |
 |---|---|---|---|
-| 1 | Visibilidad del estado | Cada lista dice su cifra con período y fecha de actualización; cargando, vacío y error con texto; "Ingresando…", "Creando tu cuenta…"; la entidad sabe en qué paso está ("Cómo sigue", "Tu entidad todavía está en revisión") | Sin plazo de revisión, la entidad no sabe cuánto esperar (pregunta abierta) |
+| 1 | Visibilidad del estado | Cada lista dice su cifra con período y fecha de actualización; cargando, vacío y error con texto; "Ingresando…", "Creando tu cuenta…"; la entidad sabe en qué paso está ("Cómo sigue", "Tu entidad todavía está en revisión"); la solicitud enviada dice que la revisión suele llevar unos días hábiles (R11-08) | "Unos días hábiles" orienta, pero no es un plazo acordado (pregunta abierta 2) |
 | 2 | Lenguaje del usuario | "Entregas confirmadas", "Lo que piden", "Quiero donar, yo o mi empresa", "Represento a una entidad"; "Qué es" en lugar de "rubro" y "Tipo de organización" con ejemplos en lugar de "tipo jurídico" | "Tipo de organización" puede seguir siendo dudoso para alguien de un comedor |
 | 3 | Control y libertad | Navegación pública y Atrás siempre; los filtros se sacan con "Ver todas"; ante un error, lo escrito sigue (salvo la contraseña) | — |
 | 4 | Consistencia | Las mismas categorías, íconos y "Ver la foto de la entrega" que la portada; los avisos de error con código como en Contacto y Necesidades; el resumen de errores de Contacto | Los dos sitios dibujan distinto; los textos y estados, iguales |
@@ -593,7 +597,9 @@ Preguntas abiertas (no frenan la maqueta; la ficha usa la opción indicada):
 
 1. **Regla de la contraseña:** la fija el IdP (D1, pendiente). La ficha usa "Al menos 8
    caracteres".
-2. **¿Cuánto tarda la revisión de una entidad?** No hay plazo acordado; los textos no prometen uno.
+2. **¿Cuánto tarda la revisión de una entidad?** No hay plazo acordado. R11-08 pide decir cuánto
+   suele tardar: la ficha usa "unos días hábiles", sin cifra ni fecha. Si el equipo fija un
+   plazo, el texto lo toma.
 3. **Correo ya registrado al crear una cuenta:** decir que existe ayuda, pero revela cuentas
    (RNF-AUTH-10 lo pide para login y recuperación). La maqueta no lo dibuja.
 4. **¿Cuánto dura el enlace para una contraseña nueva?** Depende de D8 (pendiente); RF-AUTH-13

@@ -31,6 +31,18 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · entidad · La solicitud enviada dice que la revisión suele llevar unos días hábiles
+
+- **Decisión:** "Solicitud enviada" dice "La revisión suele llevar unos días hábiles" y "Mientras
+  tanto, podés recorrer el sitio: la portada, las entidades y lo que piden". La cuenta pendiente
+  navega lo público; lo privado la sigue llevando a esa pantalla (R11-08).
+- **Alternativas:** seguir sin plazo, como fijaba la ficha; dar una cifra ("hasta 5 días hábiles").
+- **Por qué:** R11-08 pide decir cuánto suele tardar. Sin plazo, la entidad no sabe cuánto
+  esperar. Una cifra sería una promesa que nadie fijó; "unos días hábiles" orienta sin prometer.
+- **Costo:** sigue sin haber un plazo acordado (pregunta abierta 2 de la
+  [ficha](flujos/raices-publico-navegable.md)); si el equipo lo fija, el texto lo toma.
+- **Quién decidió:** equipo, con el backlog de la revisión del 2026-11-11.
+
 ### 2026-11-12 · admin · Los motivos de las filas con error, en una frase
 
 - **Decisión:** en "Filas con error" de la importación, la columna "Qué pasó" muestra una frase por
