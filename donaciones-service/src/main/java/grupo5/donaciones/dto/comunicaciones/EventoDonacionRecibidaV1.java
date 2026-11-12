@@ -21,4 +21,5 @@ public record EventoDonacionRecibidaV1(
     @NotNull(message = "El ID de la persona beneficiaria es obligatorio")
         UUID personaBeneficiariaId,
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
-    @NotBlank(message = "La patente del camión es obligatoria") String patenteCamion) {}
+    @NotBlank(message = "La patente del camión es obligatoria") String patenteCamion,
+    UUID donacionIndependienteId) {}

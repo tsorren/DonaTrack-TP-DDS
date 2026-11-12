@@ -129,6 +129,8 @@ jobs:
     outputs:
       any-service: ${{ steps.generate-matrices.outputs.any-service }}
       any-docker-service: ${{ steps.generate-matrices.outputs.any-docker-service }}
+      # auth-service (Keycloak) no es un servicio Java: va por su propio job (auth-service), no por las matrices.
+      auth-changed: ${{ steps.generate-matrices.outputs.auth-changed }}
       services-matrix: ${{ steps.generate-matrices.outputs.services-matrix }}
       docker-matrix: ${{ steps.generate-matrices.outputs.docker-matrix }}
       enable-diagrams: 'false' # Control de ejecución: dejar en 'false' para deshabilitar generate-diagrams
@@ -160,11 +162,14 @@ jobs:
           DOCKER_SERVICES=()
 
           # Descubrimiento 100% dinámico: escanea carpetas con pom.xml
+          # auth-service (Keycloak) queda afuera de las matrices: no está en los <modules> del pom
+          # raíz y su imagen no sale de un JAR. Tiene su propio job (auth-service) y entra al preprod
+          # (E2-12 de SPEC-06) con el output auth-changed.
           ALL_SERVICES=()
           for pom in */pom.xml; do
             [ -f "$pom" ] || continue
             dir=$(dirname "$pom")
-            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
+            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" && "$dir" != "auth-service" ]]; then
               ALL_SERVICES+=("$dir")
             fi
           done
@@ -179,6 +184,13 @@ jobs:
           # Con triple punto (A...B) se compara desde el ancestro común, reflejando
           # exclusivamente los cambios introducidos por el PR.
           CHANGED_FILES=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+
+          # auth-service: cambia por su carpeta o por un cambio global (compose, Dockerfiles, pom raíz).
+          if [ "$GLOBAL_CHANGED" = "true" ] || echo "$CHANGED_FILES" | grep -q "^auth-service/"; then
+            echo "auth-changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "auth-changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
           for svc in "${ALL_SERVICES[@]}"; do
             if [ "$GLOBAL_CHANGED" = "true" ] || echo "$CHANGED_FILES" | grep -q "^${svc}/"; then
@@ -460,6 +472,79 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Job 6b: auth-service (Keycloak) — contrato del realm e imagen (SPEC-06 E2-12)
+  # ──────────────────────────────────────────────────────────────────────────
+  # auth-service no produce un JAR: su "build" es la imagen de Keycloak con el realm y el tema.
+  # Por eso no pasa por las matrices de build-and-test y docker-build. Acá:
+  #   1. Spotless del módulo de test (no está en los <modules> del pom raíz).
+  #   2. El contrato del realm con Testcontainers (RealmTokenContractIT): construye la imagen del
+  #      Dockerfile y verifica claims, vida de los tokens, fuerza bruta y rotación de refresh.
+  #   3. Si el contrato pasa, publica la imagen pr-<N> con la que valida el preprod.
+  # ──────────────────────────────────────────────────────────────────────────
+  auth-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.auth-changed == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Verificar formato (Spotless) de auth-service
+        run: mvn -B -f auth-service/pom.xml spotless:check
+
+      - name: Contrato del realm (Testcontainers sobre la imagen del Dockerfile)
+        run: mvn -B -f auth-service/pom.xml -Pcontrato-auth verify
+
+      - name: Subir reportes del contrato
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: failsafe-auth-service
+          path: auth-service/target/failsafe-reports/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Calcular el tag de la imagen
+        id: meta
+        env:
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          REPO_LOWER=$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          echo "image_tag=ghcr.io/${REPO_LOWER}/auth-service:pr-${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Construir y publicar imagen en GHCR (auth-service)
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          # Contexto propio (como `context: ./auth-service` en docker-compose): el Dockerfile copia realm/ y themes/.
+          context: ./auth-service
+          file: auth-service/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha,scope=auth-service
+          cache-to: type=gha,mode=max,scope=auth-service,ignore-error=true
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Job 7: Generar Diagramas
   # ──────────────────────────────────────────────────────────────────────────
   generate-diagrams:
@@ -622,7 +707,7 @@ jobs:
   # Job 9: Validación en Pre-Producción
   # ──────────────────────────────────────────────────────────────────────────
   preprod-validation:
-    needs: [detect-changes, build-and-test, docker-build]
+    needs: [detect-changes, build-and-test, docker-build, auth-service]
     # [FIX-PREPROD-IF] Sin always(), GitHub Actions inyecta success() implícito
     # que exige que TODAS las dependencias directas sean 'success'. Si docker-build
     # fue 'skipped' (legítimamente, sin Dockerfiles modificados), success() → false
@@ -630,7 +715,10 @@ jobs:
     # Se usa always() + condiciones explícitas para cada dependencia:
     #   - build-and-test debe ser success (compilación superada)
     #   - docker-build puede ser success O skipped (ambos son estados válidos)
-    if: ${{ always() && needs.build-and-test.result == 'success' && (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped') }}
+    #   - auth-service (E2-12) puede ser success O skipped (skipped si el PR no toca auth-service).
+    #   - build-and-test puede ser skipped solo si el PR toca únicamente auth-service y su job pasó:
+    #     el preprod también valida un cambio del realm.
+    if: ${{ always() && (needs.build-and-test.result == 'success' || (needs.build-and-test.result == 'skipped' && needs.auth-service.result == 'success')) && (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped') && (needs.auth-service.result == 'success' || needs.auth-service.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -687,6 +775,7 @@ jobs:
       - name: Validación pre-producción (run-preprod-tests.sh --images ghcr)
         env:
           DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}
+          AUTH_CHANGED: ${{ needs.detect-changes.outputs.auth-changed }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GH_REPOSITORY: ${{ github.repository }}
           RAW_BASE_REF: ${{ github.base_ref }}
@@ -696,6 +785,11 @@ jobs:
           export BASE_TAG=$(echo "$RAW_BASE_REF" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
           # D5: las fallas de servicios que el PR no modificó se marcan como heredadas.
           export CHANGED_SERVICES=$(echo "$DOCKER_MATRIX" | jq -r '[.include[].service] | join(",")')
+          # auth-service no está en la matriz Docker: si cambió, su imagen pr-<N> es obligatoria (RM-02).
+          if [[ "$AUTH_CHANGED" == "true" ]]; then
+            CHANGED_SERVICES="${CHANGED_SERVICES:+${CHANGED_SERVICES},}auth-service"
+            export CHANGED_SERVICES
+          fi
           ./run-preprod-tests.sh --images ghcr
 
       - name: Subir Reportes de Pruebas (Failsafe & Surefire)
@@ -742,7 +836,7 @@ jobs:
   # Job 10: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
-    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, auth-service, generate-diagrams, semantic-uml-diff, preprod-validation]
     if: always() && (github.event.action != 'edited' || github.event.changes.base != null)
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -776,6 +870,7 @@ jobs:
           FAILED=false
           any_service="${{ needs.detect-changes.outputs.any-service }}"
           any_docker="${{ needs.detect-changes.outputs.any-docker-service }}"
+          auth_changed="${{ needs.detect-changes.outputs.auth-changed }}"
           enable_diagrams="${{ needs.detect-changes.outputs.enable-diagrams }}"
 
           # Parámetros:
@@ -784,6 +879,8 @@ jobs:
           #   $3 = "always"      → siempre requerido
           #        "any-service"  → requerido si hay servicios modificados
           #        "any-docker"   → requerido si hay servicios con Dockerfile modificados
+          #        "auth"         → requerido si cambió auth-service (Keycloak, E2-12)
+          #        "any-or-auth"  → requerido si hay servicios modificados o cambió auth-service
           #        "sonar"        → requerido si hay servicios modificados, existe
           #                         SONAR_TOKEN y la base es main o ENTREGA_*
           #        "never"        → siempre opcional
@@ -798,6 +895,8 @@ jobs:
               always)      is_required=true ;;
               any-service) [[ "$any_service" == "true" ]] && is_required=true ;;
               any-docker)  [[ "$any_docker"  == "true" ]] && is_required=true ;;
+              auth)        [[ "$auth_changed" == "true" ]] && is_required=true ;;
+              any-or-auth) [[ "$any_service" == "true" || "$auth_changed" == "true" ]] && is_required=true ;;
               sonar)       [[ "$any_service" == "true" && "$SONAR_CONFIGURED" == "true" && ( "$BASE_REF" == "main" || "$BASE_REF" == ENTREGA_* ) ]] && is_required=true ;;
               never)       is_required=false ;;
             esac
@@ -826,10 +925,13 @@ jobs:
           # Jobs requeridos si hay servicios con código modificado
           check_job "lint-and-format"     "${{ needs.lint-and-format.result }}"     "any-service"
           check_job "build-and-test"      "${{ needs.build-and-test.result }}"      "any-service"
-          check_job "preprod-validation"  "${{ needs.preprod-validation.result }}"  "any-service"
+          check_job "preprod-validation"  "${{ needs.preprod-validation.result }}"  "any-or-auth"
 
           # Jobs requeridos solo si hay servicios con Dockerfile modificados
           check_job "docker-build"        "${{ needs.docker-build.result }}"        "any-docker"
+
+          # Contrato del realm e imagen de Keycloak: requerido solo si cambió auth-service (E2-12)
+          check_job "auth-service"        "${{ needs.auth-service.result }}"        "auth"
 
           # Requerido solo si existe SONAR_TOKEN (RM-02)
           check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "sonar"
@@ -843,7 +945,7 @@ jobs:
           check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"   "never"
 
           echo "══════════════════════════════════════════"
-          echo "  Contexto: any-service=${any_service} | any-docker=${any_docker} | enable-diagrams=${enable_diagrams}"
+          echo "  Contexto: any-service=${any_service} | any-docker=${any_docker} | auth-changed=${auth_changed} | enable-diagrams=${enable_diagrams}"
           echo "══════════════════════════════════════════"
 
           if [[ "$FAILED" == "true" ]]; then

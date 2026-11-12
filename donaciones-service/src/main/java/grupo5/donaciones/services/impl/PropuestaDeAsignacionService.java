@@ -35,6 +35,7 @@ import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -76,6 +77,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     // "Satisfecha" depende de lo asignado, que no guarda la necesidad (DTI-06)
     List<Necesidad> necesidades =
         necesidadRepository.findActivas().stream()
+            .filter(n -> n.admiteAsignaciones(LocalDate.now(ZoneId.systemDefault())))
             .filter(n -> !acumulados.estaSatisfecha(n))
             .toList();
 
@@ -125,8 +127,9 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   }
 
   /**
-   * Una propuesta solo se aprueba si su necesidad sigue activa y ninguna de sus donaciones
-   * pertenece a la propia entidad beneficiaria (una jurídica no se auto-dona).
+   * Una propuesta solo se aprueba si su necesidad sigue admitiendo asignaciones (activa y sin
+   * vencer) y ninguna de sus donaciones pertenece a la propia entidad beneficiaria (una jurídica no
+   * se auto-dona).
    */
   private void validarAprobable(Propuesta propuesta) {
     UUID necesidadId = propuesta.getNecesidadQueSatisfaceId();
@@ -134,7 +137,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
         necesidadRepository
             .findById(necesidadId)
             .orElseThrow(() -> new RecursoNoEncontradoException(necesidadId));
-    if (!necesidad.isActiva()) {
+    if (!necesidad.admiteAsignaciones(LocalDate.now(ZoneId.systemDefault()))) {
       throw new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA);
     }
 
@@ -271,7 +274,11 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
             datosBeneficiario.destino(),
             donacionAsignar.getPesoTotal(),
             donacionAsignar.getVolumenTotal(),
-            LocalDateTime.now(ZoneId.systemDefault())));
+            LocalDateTime.now(ZoneId.systemDefault()),
+            donacionesRepository
+                .findById(donacionAsignar.getDonacionOriginalId())
+                .map(Donacion::getDonanteId)
+                .orElse(null)));
   }
 
   private EventoDonacionAsignadaV1 construirEventoDonacionAsignada(

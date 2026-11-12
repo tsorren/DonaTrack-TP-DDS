@@ -11,6 +11,38 @@
         "-Dspring-boot.run.profiles=maqueta"
       ],
       "port": 8090
+    },
+    {
+      "name": "cliente-liviano-rest",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": [
+        "-pl",
+        "cliente-liviano",
+        "spring-boot:run"
+      ],
+      "port": 8090
+    },
+    {
+      "name": "incentivos",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": [
+        "-pl",
+        "incentivos-service",
+        "spring-boot:run",
+        "-Dspring-boot.run.arguments=--incentivos.rabbitmq.enabled=false --spring.rabbitmq.listener.simple.auto-startup=false"
+      ],
+      "port": 8082
+    },
+    {
+      "name": "donaciones",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": [
+        "-pl",
+        "donaciones-service",
+        "spring-boot:run",
+        "-Dspring-boot.run.arguments=--spring.rabbitmq.listener.simple.auto-startup=false"
+      ],
+      "port": 8080
     }
   ]
 }

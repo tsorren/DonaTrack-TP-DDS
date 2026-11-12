@@ -94,7 +94,8 @@ class NotificacionControllerTest {
             personaMock.getId(),
             TEST_DATE_TIME,
             personaMock.getId(),
-            "10kg de arroz");
+            "10kg de arroz",
+            null);
 
     mockMvc
         .perform(
@@ -116,7 +117,8 @@ class NotificacionControllerTest {
             TEST_DATE_TIME,
             personaMock.getId(),
             "ropa",
-            "AB123CD");
+            "AB123CD",
+            null);
 
     mockMvc
         .perform(
@@ -138,7 +140,8 @@ class NotificacionControllerTest {
             TEST_DATE_TIME,
             personaMock.getId(),
             "ropa",
-            "https://donatrack.app/mapa/123");
+            "https://donatrack.app/mapa/123",
+            null);
 
     mockMvc
         .perform(
@@ -162,7 +165,8 @@ class NotificacionControllerTest {
             "ropa",
             personaMock.getId(),
             "Nadie respondió",
-            true);
+            true,
+            null);
 
     mockMvc
         .perform(
@@ -179,7 +183,7 @@ class NotificacionControllerTest {
   void procesarEvento_conDetalleDonacionEnBlanco_deberiaResponderBadRequest() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionAsignadaDTO(
-            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "");
+            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "", null);
 
     mockMvc
         .perform(
@@ -208,7 +212,8 @@ class NotificacionControllerTest {
             TEST_DATE_TIME,
             UUID.randomUUID(),
             "5 kg de leche en polvo",
-            "Expiró tiempo de acopio");
+            "Expiró tiempo de acopio",
+            null);
 
     mockMvc
         .perform(
@@ -225,7 +230,13 @@ class NotificacionControllerTest {
   void donacionVencida_conCamposEnBlanco_deberiaResponderBadRequest() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionVencidaDTO(
-            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, UUID.randomUUID(), "", "");
+            UUID.randomUUID(),
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            UUID.randomUUID(),
+            "",
+            "",
+            null);
 
     mockMvc
         .perform(
@@ -247,7 +258,8 @@ class NotificacionControllerTest {
             LocalDateTime.now().plusDays(2),
             UUID.randomUUID(),
             "5 kg de leche en polvo",
-            "Expiró tiempo de acopio");
+            "Expiró tiempo de acopio",
+            null);
 
     mockMvc
         .perform(
@@ -391,5 +403,40 @@ class NotificacionControllerTest {
         .andExpect(status().isNoContent());
 
     verify(notificacionService, times(1)).marcarTodasComoLeidas(personaId);
+  }
+
+  @Test
+  void obtenerPorPersona_devuelveTipoEventoYReferenciaOpcionales() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    UUID donacionId = UUID.randomUUID();
+    when(notificacionService.obtenerPorPersona(personaId, null))
+        .thenReturn(
+            List.of(
+                new NotificacionDTO(
+                    UUID.randomUUID(),
+                    "Salió",
+                    "ENVIADA",
+                    TEST_DATE_TIME,
+                    false,
+                    null,
+                    "DONACION_EN_CAMINO",
+                    donacionId),
+                new NotificacionDTO(UUID.randomUUID(), "Vieja", "ENVIADA", TEST_DATE_TIME)));
+
+    mockMvc
+        .perform(get("/api/notificaciones/persona/" + personaId))
+        .andExpect(status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$[0].tipoEvento")
+                .value("DONACION_EN_CAMINO"))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$[0].referenciaId")
+                .value(donacionId.toString()))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$[1].tipoEvento")
+                .doesNotExist());
   }
 }

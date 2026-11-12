@@ -43,7 +43,8 @@
   <th:block th:replace="~{admin-entidades :: hoja('')}"></th:block>
 </th:block>
 
-<!--/* Los datos: 3 piden sumarse, 46 activas (se ven 8; 6 con necesidades vigentes) y 3 inactivas,
+<!--/* Los datos llegan en adminEntidades (maqueta.AdminPersonasEntidadesDeEjemplo o la API): 3 piden
+       sumarse, 46 activas (se ven 8; 6 con necesidades vigentes) y 3 inactivas,
        coherentes con la ficha y con las páginas públicas, ya en orden alfabético. Hogar Ejemplo Norte
        está dos veces: pendiente y, después de aprobarla, activa. Los filtros se leen en el bloque de
        afuera porque las selecciones los usan con preprocesamiento (__${…}__). */-->
@@ -56,98 +57,11 @@
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento'},
              q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
-             todas=${ {
-      {clave: 'biblioteca', estado: 'activa', nombre: 'Biblioteca Popular Ejemplo', tipo: 'Biblioteca', cat: 'muebles',
-       localidad: 'Villa Ejemplo', alta: '12 de septiembre', entregas: 0, total: 1, responsable: 'Pablo Ejemplo',
-       correo: 'biblioteca@ejemplo.org',
-       mision: 'Prestamos libros y abrimos la sala de lectura por la tarde para que los chicos hagan la tarea.',
-       necesidades: {
-         {que: 'Sillas', cat: 'muebles', falta: 'Faltan 4 de 8 unidades, hasta el 31 de diciembre'} } },
-      {clave: 'centro', estado: 'activa', nombre: 'Centro Vecinal Ejemplo', tipo: 'Centro comunitario', cat: 'alimentos',
-       localidad: 'Localidad Ejemplo', alta: '21 de abril', entregas: 2, total: 11, responsable: 'Sara Ejemplo',
-       correo: 'centro@ejemplo.org',
-       mision: 'Organizamos una olla popular los sábados y acompañamos a las familias del barrio con trámites.',
-       necesidades: {} },
-      {clave: 'club', estado: 'activa', nombre: 'Club Ejemplo Norte', tipo: 'Club', cat: 'ropa',
-       localidad: 'Ejemplo Norte', alta: '9 de agosto', entregas: 0, total: 2, responsable: 'Diego Ejemplo',
-       correo: 'club.norte@ejemplo.org',
-       mision: 'Damos fútbol y básquet gratis a chicos de 6 a 16 años, con merienda después del entrenamiento.',
-       necesidades: {
-         {que: 'Camisetas deportivas', cat: 'ropa', falta: 'Faltan 15 unidades, hasta el 30 de noviembre'} } },
-      {clave: 'club-sur', estado: 'inactiva', nombre: 'Club Ejemplo Sur', tipo: 'Club', cat: 'ropa',
-       localidad: 'Ejemplo Sur', alta: '5 de abril', baja: '20 de agosto', ultima: 'Última entrega confirmada el 2 de mayo',
-       motivo: 'La dimos de baja: no confirmó sus datos en tres meses.', responsable: 'Ana Ejemplo',
-       correo: 'club.sur@ejemplo.org',
-       mision: 'Acompañamos a los chicos del barrio con deporte los fines de semana.', necesidades: {} },
-      {clave: 'comedor', estado: 'activa', nombre: 'Comedor Barrio Ejemplo', tipo: 'Comedor', cat: 'alimentos',
-       localidad: 'Barrio Ejemplo', alta: '4 de febrero', entregas: 5, total: 32, responsable: 'Carmen Ejemplo',
-       correo: 'comedor.barrio@ejemplo.org',
-       mision: 'Damos almuerzo de lunes a viernes a unas 120 personas del barrio, la mayoría chicos y personas mayores.',
-       necesidades: {
-         {que: 'Lentejas secas', cat: 'alimentos', falta: 'Faltan 30 de 40 kg este mes'},
-         {que: 'Aceite de girasol', cat: 'alimentos', falta: 'Faltan 20 litros, hasta el 20 de octubre'},
-         {que: 'Arroz', cat: 'alimentos', falta: 'Faltan 25 de 40 kg este mes'},
-         {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 12 de 24 unidades, hasta el 25 de octubre'} } },
-      {clave: 'comedor-oeste', estado: 'pendiente', nombre: 'Comedor Ejemplo Oeste', tipo: 'Comedor', cat: 'alimentos',
-       localidad: 'Localidad Ejemplo', cuando: '14 de octubre', espera: 'Ayer', falta: null,
-       razon: 'Comedor Comunitario Ejemplo Oeste', cuit: '30-00000013-0',
-       direccion: 'Avenida Ejemplo 789, Localidad Ejemplo, Buenos Aires', responsable: 'Marta Ejemplo',
-       correo: 'comedor@ejemplo.org', constancia: 'constancia.pdf',
-       mision: 'Cocinamos la cena para las familias del barrio tres veces por semana.', necesidades: {} },
-      {clave: 'escuela', estado: 'activa', nombre: 'Escuela Ejemplo N.º 12', tipo: 'Escuela', cat: 'escolares',
-       localidad: 'Centro Ejemplo', alta: '30 de junio', entregas: 1, total: 6, responsable: 'Inés Ejemplo',
-       correo: 'escuela12@ejemplo.org',
-       mision: 'Escuela primaria con comedor escolar: 340 chicos en dos turnos.',
-       necesidades: {
-         {que: 'Sillas', cat: 'muebles', falta: 'Faltan 14 de 20 unidades, hasta el 30 de noviembre'},
-         {que: 'Útiles escolares', cat: 'escolares', falta: 'Faltan 4 cajas, hasta el 30 de noviembre'} } },
-      {clave: 'escuela3', estado: 'activa', nombre: 'Escuela Ejemplo N.º 3', tipo: 'Escuela', cat: 'escolares',
-       localidad: 'Localidad Ejemplo', alta: '30 de junio', entregas: 1, total: 4, responsable: 'Tomás Ejemplo',
-       correo: 'escuela3@ejemplo.org',
-       mision: 'Escuela secundaria con talleres de oficios a la tarde.', necesidades: {} },
-      {clave: 'hogar-casa', estado: 'activa', nombre: 'Hogar Casa Ejemplo', tipo: 'Hogar', cat: 'ropa',
-       localidad: 'Parque Ejemplo', alta: '2 de mayo', entregas: 0, total: 3, responsable: 'Elena Ejemplo',
-       correo: 'hogar.casa@ejemplo.org',
-       mision: 'Damos un lugar para vivir a 18 personas mayores sin familia que las acompañe.',
-       necesidades: {
-         {que: 'Frazadas', cat: 'ropa', falta: 'Faltan 10 de 20 unidades, hasta el 15 de noviembre'} } },
-      {clave: 'hogar', estado: 'pendiente', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar', cat: 'ropa',
-       localidad: 'Localidad Ejemplo', cuando: '9 de octubre', espera: 'Hace 6 días', falta: null,
-       razon: 'Asociación Civil Hogar Ejemplo Norte', cuit: '30-00000011-0',
-       direccion: 'Calle Ejemplo 1234, Localidad Ejemplo, Buenos Aires', responsable: 'Rosa Ejemplo',
-       correo: 'hogar@ejemplo.org', constancia: 'constancia-domicilio.pdf',
-       mision: 'Recibimos a chicos y chicas de 4 a 12 años mientras sus familias trabajan.', necesidades: {} },
-      {clave: 'hogar', estado: 'activa', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar', cat: 'ropa',
-       localidad: 'Localidad Ejemplo', alta: '15 de octubre', entregas: 0, total: 0, responsable: 'Rosa Ejemplo',
-       correo: 'hogar@ejemplo.org',
-       mision: 'Recibimos a chicos y chicas de 4 a 12 años mientras sus familias trabajan.', necesidades: {} },
-      {clave: 'hogar-oeste', estado: 'inactiva', nombre: 'Hogar Ejemplo Oeste', tipo: 'Hogar', cat: 'ropa',
-       localidad: 'Ejemplo Oeste', alta: '11 de enero', baja: '1 de octubre', ultima: 'Última entrega confirmada el 18 de septiembre',
-       motivo: 'La entidad pidió la baja: se mudó a otra localidad.', responsable: 'Julio Ejemplo',
-       correo: 'hogar.oeste@ejemplo.org',
-       mision: 'Dábamos alojamiento transitorio a mujeres con sus hijos.', necesidades: {} },
-      {clave: 'merendero-este', estado: 'pendiente', nombre: 'Merendero Ejemplo Este', tipo: 'Merendero', cat: 'alimentos',
-       localidad: 'Localidad Ejemplo', cuando: '12 de octubre', espera: 'Hace 3 días',
-       falta: 'Le falta la constancia de domicilio', razon: 'Merendero Ejemplo Este Asociación Civil',
-       cuit: '30-00000012-0', direccion: 'Pasaje Ejemplo 56, Localidad Ejemplo, Buenos Aires',
-       responsable: 'Luis Ejemplo', correo: 'merendero@ejemplo.org', constancia: null,
-       mision: 'Damos la merienda a unos 60 chicos de lunes a viernes.', necesidades: {} },
-      {clave: 'merendero-norte', estado: 'inactiva', nombre: 'Merendero Ejemplo Norte', tipo: 'Merendero', cat: 'alimentos',
-       localidad: 'Ejemplo Norte', alta: '3 de marzo', baja: '3 de julio', ultima: 'Última entrega confirmada el 21 de junio',
-       motivo: 'La entidad pidió la baja: cerró el merendero.', responsable: 'Nora Ejemplo',
-       correo: 'merendero.norte@ejemplo.org',
-       mision: 'Dábamos la merienda a los chicos del barrio los días de semana.', necesidades: {} },
-      {clave: 'merendero', estado: 'activa', nombre: 'Merendero Ejemplo Sur', tipo: 'Merendero', cat: 'alimentos',
-       localidad: 'Ejemplo Sur', alta: '18 de marzo', entregas: 3, total: 19, responsable: 'Raúl Ejemplo',
-       correo: 'merendero.sur@ejemplo.org',
-       mision: 'Damos desayuno y merienda a 80 chicos antes y después de la escuela.',
-       necesidades: {
-         {que: 'Galletitas', cat: 'alimentos', falta: 'Faltan 10 de 20 kg este mes'},
-         {que: 'Leche en polvo', cat: 'alimentos', falta: 'Faltan 20 unidades, hasta el 31 de octubre'} } } } },
+             todas=${adminEntidades.todas},
              vigentes=${todas.?[(clave != 'hogar' or (estado == 'activa') == (#root.accion == 'aprobada'))
                  and (clave != 'comedor-oeste' or #root.accion != 'rechazada')
                  and (estado != 'pendiente' or #root.escenario != 'vacio')]},
-             cuantasActivas=${accion == 'aprobada' ? 47 : 46},
+             cuantasActivas=${accion == 'aprobada' ? adminEntidades.activas + 1 : adminEntidades.activas},
              cuantasPendientes=${#lists.size(vigentes.?[estado == 'pendiente'])},
              cuantasInactivas=${#lists.size(vigentes.?[estado == 'inactiva'])},
              cuantasTodas=${cuantasActivas + cuantasPendientes + cuantasInactivas},
@@ -169,7 +83,7 @@
       <div>
         <p class="rotulo">Administración</p>
         <h1>Entidades</h1>
-        <p th:if="${conDatos}">Elegí una para ver su ficha. Al 15 de octubre de 2026, 18:30.</p>
+        <p th:if="${conDatos}" th:text="|Elegí una para ver su ficha. Al ${adminEntidades.al}.|">Elegí una para ver su ficha. Al 15 de octubre de 2026, 18:30.</p>
       </div>
       <div class="racimo">
         <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
@@ -262,14 +176,14 @@
              th:hx-get="@{|/admin-entidades?entidad=${e.clave}${consulta}|}" hx-push-url="true"
              th:aria-current="${e.clave == elegida} ? 'true' : null">
             <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
-                th:href="|#cat-${e.cat}|" href="#cat-alimentos"/></svg>
+                th:href="${e.cat != null} ? |#cat-${e.cat}| : null" href="#cat-alimentos"/></svg>
             <span><b th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
               <small th:if="${e.estado == 'activa'}"
                      th:text="|${e.tipo} · | + (${e.necesidades.isEmpty()} ? 'sin necesidades vigentes' : (${#lists.size(e.necesidades) == 1} ? '1 necesidad vigente' : |${#lists.size(e.necesidades)} necesidades vigentes|))">Comedor
                 · 4 necesidades vigentes</small>
-              <small th:if="${e.estado == 'pendiente'}" th:text="|${e.tipo} · pidió sumarse el ${e.cuando}|">Hogar ·
+              <small th:if="${e.estado == 'pendiente'}" th:text="${e.cuando != null} ? |${e.tipo} · pidió sumarse el ${e.cuando}| : |${e.tipo} · pidió sumarse|">Hogar ·
                 pidió sumarse el 9 de octubre</small>
-              <small th:if="${e.estado == 'inactiva'}" th:text="|${e.tipo} · desde el ${e.baja}|">Merendero · desde
+              <small th:if="${e.estado == 'inactiva'}" th:text="${e.baja != null} ? |${e.tipo} · desde el ${e.baja}| : ${e.tipo}">Merendero · desde
                 el 20 de agosto</small></span>
             <th:block th:replace="~{:: estado(${e}, ${enCorreccion})}"></th:block>
           </a>
@@ -279,36 +193,36 @@
                    aria-labelledby="ficha-titulo">
             <div data-parte="identidad">
               <svg class="categoria-icono" data-tamano="grande" viewBox="0 0 100 100" aria-hidden="true"
-                   focusable="false"><use th:href="|#cat-${e.cat}|" href="#cat-alimentos"/></svg>
+                   focusable="false"><use th:href="${e.cat != null} ? |#cat-${e.cat}| : null" href="#cat-alimentos"/></svg>
               <div>
                 <h2 id="ficha-titulo" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>
-                <p th:text="|${e.tipo} · ${e.localidad}|">Comedor · Barrio Ejemplo</p>
+                <p th:text="${!#strings.isEmpty(e.localidad)} ? |${e.tipo} · ${e.localidad}| : ${e.tipo}">Comedor · Barrio Ejemplo</p>
               </div>
               <dl>
-                <div><dt>Misión:</dt> <dd th:text="${e.mision}">Damos almuerzo de lunes a viernes.</dd></div>
+                <div th:if="${e.mision != null}"><dt>Misión:</dt> <dd th:text="${e.mision}">Damos almuerzo de lunes a viernes.</dd></div>
                 <th:block th:if="${e.estado == 'pendiente'}">
-                  <div><dt>Razón social:</dt> <dd th:text="${e.razon}">Asociación Civil</dd></div>
-                  <div><dt>CUIT:</dt> <dd th:text="${e.cuit}">30-00000011-0</dd></div>
-                  <div><dt>Dirección:</dt> <dd th:text="${e.direccion}">Calle Ejemplo 1234</dd></div>
+                  <div th:if="${e.razon != null}"><dt>Razón social:</dt> <dd th:text="${e.razon}">Asociación Civil</dd></div>
+                  <div th:if="${e.cuit != null}"><dt>CUIT:</dt> <dd th:text="${e.cuit}">30-00000011-0</dd></div>
+                  <div th:if="${e.direccion != null}"><dt>Dirección:</dt> <dd th:text="${e.direccion}">Calle Ejemplo 1234</dd></div>
                 </th:block>
-                <div th:if="${e.estado == 'inactiva'}"><dt>Motivo de la baja:</dt> <dd th:text="${e.motivo}">La
+                <div th:if="${e.estado == 'inactiva' and e.motivo != null}"><dt>Motivo de la baja:</dt> <dd th:text="${e.motivo}">La
                   entidad pidió la baja.</dd></div>
               </dl>
             </div>
 
             <div data-parte="resumen">
               <p th:if="${e.estado == 'activa'}"><span class="estado" data-forma="punto" data-estado="recibida"
-                  th:text="|Activa desde el ${e.alta}|">Activa desde el 4 de febrero</span></p>
+                  th:text="${e.alta != null} ? |Activa desde el ${e.alta}| : 'Activa'">Activa desde el 4 de febrero</span></p>
               <p th:if="${enCorreccion}"><span class="estado" data-forma="punto" data-estado="pendiente">Esperando
                 corrección</span></p>
               <p th:if="${e.estado == 'pendiente' and !enCorreccion}"><span class="estado" data-forma="punto"
                   th:data-estado="${e.falta != null} ? 'camino' : 'pendiente'"
-                  th:text="|Pendiente de aprobación desde el ${e.cuando}|">Pendiente de aprobación desde el 9 de
+                  th:text="${e.cuando != null} ? |Pendiente de aprobación desde el ${e.cuando}| : 'Pendiente de aprobación'">Pendiente de aprobación desde el 9 de
                 octubre</span></p>
               <p th:if="${e.estado == 'inactiva'}"><span class="estado" data-forma="punto" data-estado="inactiva"
-                  th:text="|Inactiva desde el ${e.baja}|">Inactiva desde el 20 de agosto</span></p>
+                  th:text="${e.baja != null} ? |Inactiva desde el ${e.baja}| : 'Inactiva'">Inactiva desde el 20 de agosto</span></p>
 
-              <dl th:if="${e.estado == 'activa'}">
+              <dl th:if="${e.estado == 'activa' and e.entregas != null}">
                 <div><dt>Entregas confirmadas en el mes de octubre:</dt> <dd th:text="${e.entregas}">5</dd></div>
                 <div><dt>Entregas confirmadas desde activación:</dt> <dd th:text="${e.total}">32</dd></div>
               </dl>
@@ -316,16 +230,16 @@
                 <div><dt>Lo que mandó:</dt>
                   <dd><ul th:replace="~{:: documentos(${e})}"></ul></dd></div>
               </dl>
-              <dl th:if="${e.estado == 'inactiva'}">
-                <div><dt>Estuvo activa:</dt> <dd th:text="|del ${e.alta} al ${e.baja}|">del 3 de marzo al 20 de
+              <dl th:if="${e.estado == 'inactiva' and e.ultima != null}">
+                <div th:if="${e.alta != null and e.baja != null}"><dt>Estuvo activa:</dt> <dd th:text="|del ${e.alta} al ${e.baja}|">del 3 de marzo al 20 de
                   agosto</dd></div>
                 <div><dt>Última actividad:</dt> <dd th:text="${e.ultima}">Última entrega confirmada el 21 de
                   junio</dd></div>
               </dl>
 
-              <dl data-forma="apilado">
+              <dl th:if="${e.responsable != null or e.correo != null}" data-forma="apilado">
                 <div><dt>Contacto del responsable:</dt>
-                  <dd th:text="|${e.responsable} · ${e.correo}|">Carmen Ejemplo · comedor.barrio@ejemplo.org</dd></div>
+                  <dd th:text="${e.responsable != null and e.correo != null} ? |${e.responsable} · ${e.correo}| : (${e.responsable} ?: ${e.correo})">Carmen Ejemplo · comedor.barrio@ejemplo.org</dd></div>
               </dl>
             </div>
 
@@ -338,7 +252,7 @@
               <ul th:unless="${e.necesidades.isEmpty()}" data-lista="necesidades-ficha" role="list">
                 <li th:each="n : ${e.necesidades}">
                   <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use
-                      th:href="|#cat-${n.cat}|" href="#cat-alimentos"/></svg>
+                      th:href="${n.cat != null} ? |#cat-${n.cat}| : null" href="#cat-alimentos"/></svg>
                   <span><b th:text="${n.que}">Lentejas secas</b> <small th:text="${n.falta}">Faltan 30 de 40 kg
                     este mes</small></span>
                 </li>
@@ -372,9 +286,11 @@
        Rechazar abren un diálogo con su campo obligatorio. */-->
 <th:block th:fragment="acciones(e)">
   <div class="racimo">
-    <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post">
+    <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post"
+          hx-boost="true" th:hx-indicator="|#enviando-aprobar-${e.clave}|" hx-select-oob="#avisos">
       <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
       <button class="boton" data-tono="principal" type="submit" th:aria-label="|Aprobar: ${e.nombre}|">Aprobar</button>
+      <p th:replace="~{envio :: indicador(|enviando-aprobar-${e.clave}|, 'Aprobando…')}"></p>
     </form>
     <button type="button" class="boton" data-tono="secundario" th:popovertarget="|corregir-${e.clave}|"
             popovertarget="corregir-hogar" th:aria-label="|Pedir corrección: ${e.nombre}|">Pedir corrección</button>
@@ -426,11 +342,11 @@
 
 <!--/* Lo que mandó la entidad: cada dato con su tilde o su cruz, y la palabra. */-->
 <ul th:fragment="documentos(e)" class="pila" data-espacio="1" data-lista="documentos" role="list">
-  <li><span aria-hidden="true" data-tono="exito">✓</span> CUIT <th:block th:text="${e.cuit}">30-00000011-0</th:block></li>
-  <li><span aria-hidden="true" data-tono="exito">✓</span> Dirección</li>
-  <li><span aria-hidden="true" data-tono="exito">✓</span> Responsable y correo</li>
+  <li th:if="${e.cuit != null}"><span aria-hidden="true" data-tono="exito">✓</span> CUIT <th:block th:text="${e.cuit}">30-00000011-0</th:block></li>
+  <li th:if="${e.direccion != null}"><span aria-hidden="true" data-tono="exito">✓</span> Dirección</li>
+  <li th:if="${e.responsable != null}"><span aria-hidden="true" data-tono="exito">✓</span> Responsable y correo</li>
   <li th:if="${e.constancia != null}"><span aria-hidden="true" data-tono="exito">✓</span> Constancia de domicilio</li>
-  <li th:if="${e.constancia == null}" data-tono="error"><span aria-hidden="true">✗</span> Falta la constancia de
+  <li th:if="${e.constancia == null and e.falta != null}" data-tono="error"><span aria-hidden="true">✗</span> Falta la constancia de
     domicilio</li>
 </ul>
 </body>

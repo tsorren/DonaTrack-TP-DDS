@@ -38,6 +38,16 @@ public interface EstadoDonacionIndependiente {
     iniciarRecorrido(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
   }
 
+  /** HB-22: solo desde {@code EN_TRASLADO}. */
+  default void llegarAPuerta(DonacionIndependiente d, String actor) {
+    lanzarTransicionInvalida();
+  }
+
+  default void llegarAPuerta(
+      DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
+    llegarAPuerta(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
+  }
+
   default void confirmarEntrega(DonacionIndependiente d, String actor) {
     lanzarTransicionInvalida();
   }
@@ -57,6 +67,11 @@ public interface EstadoDonacionIndependiente {
         d,
         solicitud != null ? solicitud.getJustificacion() : null,
         solicitud != null ? solicitud.getActor() : "SISTEMA");
+  }
+
+  /** HB-19: solo desde lo que todavía no salió (asignada, con o sin ruta planificada). */
+  default void liberarPorCancelacion(DonacionIndependiente d, String actor) {
+    lanzarTransicionInvalida();
   }
 
   default void retornar(DonacionIndependiente d, String actor) {

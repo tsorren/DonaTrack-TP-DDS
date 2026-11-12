@@ -225,6 +225,14 @@ public class NotificacionService {
     persistirYPublicar(mapper.toEntity(dto));
   }
 
+  /** Un aviso directo a una persona (hoy, el de mensaje de contacto nuevo a la Administración). */
+  @Transactional
+  public void notificarPersona(UUID personaId, String mensaje) {
+    Notificacion notificacion = new Notificacion(personaId, mensaje);
+    repository.save(notificacion);
+    publicarYLimpiarDomainEvents(notificacion);
+  }
+
   private void publicarYLimpiarDomainEvents(Notificacion notificacion) {
     notificacion.getDomainEvents().forEach(eventPublisher::publishEvent);
     notificacion.clearDomainEvents();
@@ -232,6 +240,11 @@ public class NotificacionService {
 
   public Optional<NotificacionDTO> obtenerPorId(UUID id) {
     return repository.findById(id).map(NotificacionService::toDTO);
+  }
+
+  /** Persona a la que se dirige la notificación; vacío si no existe (regla de pertenencia). */
+  public Optional<UUID> personaDe(UUID id) {
+    return repository.findById(id).map(Notificacion::getPersonaId);
   }
 
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId, @Nullable Boolean leida) {
@@ -276,7 +289,9 @@ public class NotificacionService {
         n.getEstadoNotificacion().name(),
         n.getFechaCreacion(),
         n.isLeida(),
-        n.getFechaLectura());
+        n.getFechaLectura(),
+        n.getTipoEvento(),
+        n.getReferenciaId());
   }
 
   @Transactional

@@ -202,6 +202,18 @@ Recibidas en octubre (6)
   maqueta lo dice en el nombre del grupo, "Recibidas en octubre".
 - Respecto del boceto (pág. 27): se mantienen las tarjetas con donante y fecha; se suman el estado,
   el filtro (RF-11) y el pedido que cubre cada una.
+- **Con los datos de Donaciones (2026-11-08):** la entidad llega por `?entidad=<id>` hasta el login.
+  Las recibidas son las entregadas en el mes en curso, y el grupo lleva ese mes ("Recibidas en
+  noviembre"). Lo que no llega se omite, sin inventarlo: el pedido que cubre (HB-17), "Ver tu
+  pedido", el aviso de novedades (HB-09) y "Esperan tu confirmación", porque la que llegó a la puerta
+  sigue en traslado (HB-22; resuelto el 2026-11-11, ver "Ajuste de HB-22" al final): va a "En camino", sin el botón. Por eso, desde la lista todavía no se
+  llega a Confirmar recepción, que sigue con la maqueta (HB-10). Textos del próximo paso, aprobados
+  por el usuario el 2026-11-08: "Asignada el 13 de octubre. Espera el camión." · "Lista para
+  entregar desde el 13 de octubre. Espera el camión." · "Salió del depósito el 14 de octubre a las
+  9:15." · "El camión no pudo llegar el 14 de octubre." · "Venció en el depósito el 14 de octubre."
+  Quién donó va siempre con su nombre (razón social, o nombre y apellido): ocultarlo llega con
+  HB-20. Si no llega, "Donó un donante". Salen "Sale del depósito el 17", "Llega mañana" y "Te
+  avisamos la nueva fecha": el sistema todavía no sabe esas fechas.
 
 ### 4.3 `entidad-notificaciones` y `entidad-notificaciones-leidas`
 
@@ -506,6 +518,33 @@ Filtro de tono:
 - Palabras que no van (brief de Raíces): "eco", "huella verde", "florecer", "regá", "cosechá" y
   "sostenible" de adorno. La metáfora va, como mucho, en un título.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Siguen
+`docs/interfaz/tono-y-comunicacion.md`: lo pendiente se dice pendiente, sin culpa ni urgencia, y no se
+promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
+
+#### Notificaciones, inicio y seguimiento
+
+| Pantalla | Elemento | Texto | Nota |
+|---|---|---|---|
+| Notificaciones | Categoría, sin el tipo de evento | "Novedades" | `NotificacionDTO` no trae el tipo ni la donación (HB-09, fuera de alcance): todas van a esa categoría y llevan a Donaciones recibidas, sin el botón de confirmar |
+| Notificaciones | Aviso al dejar una sin leer | "Dejaste la novedad sin leer." | En `#avisos`, al volver a la bandeja. Marcar como leídas usa el de la ficha: "Marcaste las novedades como leídas." |
+| Inicio | Cuándo, en "Lo que viene" | "salió del depósito el 8 de noviembre" · "lista para entregar desde el 6 de noviembre" · "asignada el 3 de noviembre" · "no pudo llegar el 4 de noviembre" · "venció en el depósito el 7 de noviembre" | Reemplazan a "llega mañana" o "sale el 17 de octubre": Donaciones da desde cuándo está así, no cuándo llega |
+| Seguir entregas | Última noticia | "Última noticia: 8 de noviembre, 18:25." | El formato ya está en la ficha; sale de `ultimaActualizacion` de Logística |
+
+#### Inicio del admin (admin-inicio)
+
+| Dónde | Texto | Por qué |
+|---|---|---|
+| Cabecera, en singular | "Hoy espera tu decisión 1 entidad." · "Hoy esperan tu decisión 1 entidad y 1 propuesta de asignación." · "1 donación vence en los próximos 7 días." | La frase de la ficha armada con las cuentas reales, con singular |
+| Títulos de las tarjetas, en singular | "1 pide sumarse" · "1 vence en los próximos 7 días" · "1 propuesta" | Ídem |
+| La primera que vence | "La primera, Leche en polvo, vence el 12 de noviembre, en 2 días." · "…, vence el 11 de noviembre, en 1 día." · "La primera, Leche en polvo, vence hoy." | La frase de la ficha con la fecha real |
+| Una propuesta | "Arroz, 25." | La propuesta no trae la unidad ni la entidad (NecesidadResumen) |
+| Sin nota de las entidades | (no se escribe "La más antigua llegó el …" ni "A una le falta …") | Keycloak no da cuándo llegó la solicitud y nadie guarda la constancia |
+| La primera que vence, sin descripción | "La primera vence el 12 de noviembre, en 2 días." | La donación no trae descripción |
+| Una propuesta sin descripción | "Una necesidad, 25." | La necesidad no trae descripción |
+
 ## 7. Accesibilidad
 
 - Zonas en las cuatro: saltar al contenido, la navegación del rol (`nav` con nombre), `main` con un
@@ -623,3 +662,17 @@ También en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huec
   camino, entregas confirmadas del mes, donantes, camiones en ruta y libres) · no hay un resumen
   agregado; contarlas obliga a traer las listas enteras de Donaciones, Logística y Usuarios en cada
   carga.
+
+## Ajuste de HB-22: "Esperan tu confirmación" con datos reales (cierre E6, 2026-11-11)
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Donaciones replica el estado `EN_PUERTA` de la
+entrega ([ADR del estado EN_PUERTA](../../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)): la donación que llegó a la puerta va a "Esperan tu confirmación" en Inicio, Donaciones
+recibidas y Seguir entregas, con el botón "Confirmar recepción". Reemplaza la nota de 2026-11-08 que
+la mandaba a "En camino". En Necesidades, su sello es "puerta". El pedido que cubre sigue sin llegar
+(HB-17): en Inicio, la tarjeta dice solo cuándo llegó.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Paso (Recibidas, Seguir entregas, Necesidades) | "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación." | La maqueta dice "hoy"/"ayer"; con datos, la fecha |
+| Llegó (tarjeta de Inicio) | "Llegó el 8 de noviembre, 18:20." | Sin "desde el Depósito Central": el depósito no llega |
+| Breve (Lo que viene) | "llegó a tu puerta el 8 de noviembre" | — |

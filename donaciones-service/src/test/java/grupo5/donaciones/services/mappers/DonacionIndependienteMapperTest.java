@@ -1,22 +1,37 @@
 package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.QuienDonoDTO;
 import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.DonacionMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.necesidades.DestinoAsignacion;
+import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,17 +44,81 @@ class DonacionIndependienteMapperTest {
 
   private ISubcategoriasRepository subcategoriasRepositoryMock;
   private ICategoriasRepository categoriasRepositoryMock;
+  private IDonacionesRepository donacionesRepositoryMock;
+  private IDonantesRepository donantesRepositoryMock;
+  private IPersonasRepository personasRepositoryMock;
   private DonacionIndependienteMapper mapper;
 
   @BeforeEach
   void setUp() {
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
+    donacionesRepositoryMock = mock(IDonacionesRepository.class);
+    donantesRepositoryMock = mock(IDonantesRepository.class);
+    personasRepositoryMock = mock(IPersonasRepository.class);
     mapper =
         new DonacionIndependienteMapper(
             subcategoriasRepositoryMock,
             categoriasRepositoryMock,
-            AlmacenamientoFixtures.fotosBienes());
+            AlmacenamientoFixtures.fotosBienes(),
+            donacionesRepositoryMock,
+            donantesRepositoryMock,
+            personasRepositoryMock);
+  }
+
+  /** Una independiente de una donación de esa persona, con el donante y la persona guardados. */
+  private DonacionIndependiente donadaPor(Persona persona, Donante donante, Donacion original) {
+    when(donacionesRepositoryMock.findById(original.getId())).thenReturn(Optional.of(original));
+    when(donantesRepositoryMock.findById(persona.getId())).thenReturn(Optional.of(donante));
+    when(personasRepositoryMock.findById(persona.getId())).thenReturn(Optional.of(persona));
+    return new DonacionIndependiente(original.getId(), List.of());
+  }
+
+  @Test
+  void quienDono_personaVisible_muestraNombreYApellido() {
+    Humana juan = PersonaMother.juanPerez();
+    DonacionIndependiente di =
+        donadaPor(juan, new Donante(juan.getId()), DonacionMother.simple(juan.getId()));
+
+    QuienDonoDTO quien = mapper.toDTO(di).quienDono();
+
+    assertEquals(new QuienDonoDTO("PERSONA", juan.getNombreCompleto(), juan.getId()), quien);
+  }
+
+  @Test
+  void quienDono_empresaQueOcultaSuNombreEnElPerfil_vaSinNombrePeroConTipoEId() {
+    Juridica empresa = PersonaMother.empresaSA();
+    Donante donante = new Donante(empresa.getId(), true, false);
+    DonacionIndependiente di = donadaPor(empresa, donante, DonacionMother.simple(empresa.getId()));
+
+    assertEquals(new QuienDonoDTO("EMPRESA", null, empresa.getId()), mapper.toDTO(di).quienDono());
+  }
+
+  @Test
+  void quienDono_donacionSinNombre_loOcultaAunqueElPerfilLoMuestre() {
+    Humana juan = PersonaMother.juanPerez();
+    Donacion original = DonacionMother.simple(juan.getId());
+    original.ocultarNombre();
+    DonacionIndependiente di = donadaPor(juan, new Donante(juan.getId()), original);
+
+    assertNull(mapper.toDTO(di).quienDono().nombreVisible());
+  }
+
+  @Test
+  void quienDono_personaAnonimizada_vaSinNombre() {
+    Humana juan = PersonaMother.juanPerez();
+    juan.anonimizar();
+    DonacionIndependiente di =
+        donadaPor(juan, new Donante(juan.getId()), DonacionMother.simple(juan.getId()));
+
+    assertNull(mapper.toDTO(di).quienDono().nombreVisible());
+  }
+
+  @Test
+  void quienDono_sinDonacionOriginalGuardada_esNulo() {
+    DonacionIndependiente di = new DonacionIndependiente(UUID.randomUUID(), List.of());
+
+    assertNull(mapper.toDTO(di).quienDono());
   }
 
   @Test
@@ -94,6 +173,26 @@ class DonacionIndependienteMapperTest {
     assertEquals(categoria.getId(), itemDto.bien().categoria().id());
     assertEquals("Alimentos", itemDto.bien().categoria().nombre());
     assertEquals("KILOGRAMO", itemDto.bien().categoria().unidad());
+    assertNull(dto.entidadBeneficiariaId());
+  }
+
+  @Test
+  void toDTO_donacionAsignada_deberiaIncluirLaEntidadBeneficiaria() {
+    DonacionIndependiente donacion = new DonacionIndependiente(UUID.randomUUID(), List.of());
+    UUID entidadId = UUID.randomUUID();
+    donacion.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), UUID.randomUUID(), entidadId));
+
+    assertEquals(entidadId, mapper.toDTO(donacion).entidadBeneficiariaId());
+  }
+
+  @Test
+  void toDTO_donacionAsignada_deberiaIncluirLaNecesidad() {
+    DonacionIndependiente donacion = new DonacionIndependiente(UUID.randomUUID(), List.of());
+    UUID necesidadId = UUID.randomUUID();
+    donacion.asignarDestino(new DestinoAsignacion(necesidadId, null, UUID.randomUUID()));
+
+    assertEquals(necesidadId, mapper.toDTO(donacion).necesidadId());
+    assertNull(mapper.toDTO(new DonacionIndependiente(UUID.randomUUID(), List.of())).necesidadId());
   }
 
   @Test
@@ -222,5 +321,17 @@ class DonacionIndependienteMapperTest {
 
     assertNotNull(dto);
     assertEquals(0, dto.historial().size());
+  }
+
+  @Test
+  void toDTO_llevaLaMarcaDeCancelacionPedida_HB19() {
+    DonacionIndependiente donacion =
+        DonacionIndependienteMother.asignada(
+            2, NecesidadMother.extraordinaria(UUID.randomUUID(), 10));
+    assertFalse(mapper.toDTO(donacion).cancelacionPedida());
+
+    donacion.pedirCancelacion();
+
+    assertTrue(mapper.toDTO(donacion).cancelacionPedida());
   }
 }

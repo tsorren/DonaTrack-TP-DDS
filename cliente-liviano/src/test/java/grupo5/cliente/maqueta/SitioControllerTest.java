@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
 import java.util.ArrayDeque;
@@ -24,9 +26,10 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.WebProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.autoconfigure.error.DefaultErrorViewResolver;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -34,16 +37,22 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultMatcher;
 
-/** La pantalla de prueba está en src/test/resources/templates/. */
-@WebMvcTest(SitioController.class)
-@Import({MaquetaConfig.class, SitioControllerTest.PaginasDeError.class})
+/**
+ * Con el contexto entero del perfil maqueta: todos los controllers y los adaptadores de maqueta de
+ * cada puerto, también los que suma la conexión de pantallas (SPEC-08), sin listarlos acá. La
+ * pantalla de prueba está en src/test/resources/templates/.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(SitioControllerTest.PaginasDeError.class)
 @ActiveProfiles("maqueta")
 class SitioControllerTest {
 
   /**
-   * En @WebMvcTest no hay DispatcherServlet de verdad, y Spring Boot no registra el resolvedor que
-   * elige templates/error/&lt;código&gt;: se registra acá, igual que en la aplicación.
+   * Con MockMvc no hay DispatcherServlet de verdad que despache el error, y el resolvedor que elige
+   * templates/error/&lt;código&gt; se registra acá, igual que en la aplicación.
    */
   @TestConfiguration
   static class PaginasDeError {
@@ -74,7 +83,8 @@ class SitioControllerTest {
   @Test
   void loQueNoEstaNiEnElMenuNiDibujadoNoExiste() throws Exception {
     mvc.perform(get("/donante-tesoro")).andExpect(status().isNotFound());
-    mvc.perform(get("/..%2Ftemplates%2Fpie")).andExpect(status().isNotFound());
+    // El firewall de Spring Security rechaza la barra codificada antes de llegar al controller.
+    mvc.perform(get("/..%2Ftemplates%2Fpie")).andExpect(status().isBadRequest());
     mvc.perform(get("/sin-dibujar")).andExpect(status().isNotFound());
     mvc.perform(get("/datos-donante")).andExpect(status().isNotFound());
     mvc.perform(get("/perfil")).andExpect(status().isNotFound());
@@ -191,6 +201,9 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
     mvc.perform(get("/donante-donaciones?estado=otro"))
         .andExpect(content().string(containsString("7 donaciones, de la más reciente")));
+    // Mis donaciones tiene su controller, pero ?cuenta= sigue cambiando la cuenta de ejemplo.
+    mvc.perform(get("/donante-donaciones?cuenta=persona"))
+        .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=ropa"))
         .andExpect(model().attribute("seccion", "Mis donaciones"))
         .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")));
@@ -256,7 +269,7 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-necesidades"))
         .andExpect(status().isOk())
         .andExpect(model().attribute("seccion", "Necesidades"))
-        .andExpect(content().string(containsString("de 40 kg recibidos")))
+        .andExpect(recibidos("10", "de 40 kg recibidos"))
         .andExpect(content().string(containsString("Llegó una parte")))
         .andExpect(content().string(containsString("aria-current=\"true\"")))
         .andExpect(content().string(containsString("popover")))
@@ -300,7 +313,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")))
         .andExpect(content().string(containsString("Cambiada hoy")))
         .andExpect(content().string(containsString("Hoy pasó de 40 a 45 kg por mes.")))
-        .andExpect(content().string(containsString("de 45 kg recibidos")));
+        .andExpect(recibidos("10", "de 45 kg recibidos"));
   }
 
   @Test
@@ -317,7 +330,7 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-necesidades?necesidad=ropa"))
         .andExpect(content().string(containsString("Donante Sostenedor · 5 unidades")))
         .andExpect(content().string(containsString("Ver los anteriores")))
-        .andExpect(content().string(containsString("de 20 litros recibidos")))
+        .andExpect(recibidos("0", "de 20 litros recibidos"))
         .andExpect(content().string(containsString("Hasta el 20 de octubre")))
         .andExpect(content().string(not(containsString("20 litros · hasta"))))
         .andExpect(content().string(containsString("Desde junio de 2026")));
@@ -501,8 +514,8 @@ class SitioControllerTest {
     String html = error(404, "/no-existe", "");
     assertTrue(html.contains("Error 404"), html);
     assertTrue(html.contains("No encontramos esta"));
-    assertTrue(html.contains("Código para soporte: <code>a1b2c3d4e5f6</code>"));
-    assertTrue(html.contains("href=\"/publico-contacto?codigo=a1b2c3d4e5f6\""));
+    assertTrue(html.contains("Código para soporte: <code>" + CODIGO + "</code>"), html);
+    assertTrue(html.contains("href=\"/publico-contacto?codigo=" + CODIGO + "\""));
     assertTrue(html.contains("class=\"raices-publico\""));
     html = error(403, "/entidad-inicio", "");
     assertTrue(html.contains("Esta página no es para tu"));
@@ -516,6 +529,9 @@ class SitioControllerTest {
     assertTrue(html.contains("Si sigue, escribinos y contanos qué estabas haciendo."));
   }
 
+  /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */
+  private static final String CODIGO = "0123456789abcdef0123456789abcdef";
+
   /** La página de error que arma Spring Boot para ese código, como después de un sendError. */
   private String error(int codigo, String direccion, String escenario) throws Exception {
     return mvc.perform(
@@ -523,7 +539,9 @@ class SitioControllerTest {
                 .param("escenario", escenario)
                 .accept(MediaType.TEXT_HTML)
                 .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, codigo)
-                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, direccion))
+                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, direccion)
+                // Lo deja TraceIdFiltro en el pedido original; el despacho de error lo hereda.
+                .requestAttr(TraceIdFiltro.CLAVE, CODIGO))
         .andExpect(status().is(codigo))
         .andReturn()
         .getResponse()
@@ -797,7 +815,7 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("aria-label=\"Aprobar: Merendero Ejemplo Este\"")))
         .andExpect(content().string(containsString("popover")))
-        .andExpect(content().string(containsString("Falta la constancia de")));
+        .andExpect(content().string(matchesPattern("(?s).*Falta la constancia de\\s+domicilio.*")));
     mvc.perform(get("/admin-entidades?ver=inactivas"))
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))
@@ -819,7 +837,8 @@ class SitioControllerTest {
     mvc.perform(get("/admin-entidades-rechazada"))
         .andExpect(
             content().string(containsString("Rechazaste la solicitud de Comedor Ejemplo Oeste.")))
-        .andExpect(content().string(not(containsString("Comedor Ejemplo Oeste</b>"))));
+        .andExpect(content().string(not(containsString("Comedor Ejemplo Oeste</b>"))))
+        .andExpect(content().string(not(containsString("pidió sumarse el 14 de octubre"))));
     mvc.perform(post("/admin-entidades-rechazada"))
         .andExpect(redirectedUrl("/admin-entidades-rechazada"));
     mvc.perform(get("/admin-entidades-registrar-error"))
@@ -979,22 +998,36 @@ class SitioControllerTest {
   }
 
   @Test
-  void elRankingDiceSuCriterioYSeFiltraPorTipoYPeriodo() throws Exception {
+  void elRankingDiceSuCriterioYSeFiltraPorMes() throws Exception {
     mvc.perform(get("/admin-ranking"))
         .andExpect(model().attribute("seccion", "Ranking"))
-        .andExpect(content().string(containsString("El ranking de octubre de 2026")))
+        .andExpect(content().string(containsString("Septiembre de 2026")))
+        .andExpect(content().string(containsString("misiones que cada donante completó en el mes")))
         .andExpect(
-            content().string(containsString("misiones que cada donante completó del 1 al 15")))
+            content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("hx-boost=\"true\"")))
         .andExpect(content().string(containsString("<caption>")));
-    mvc.perform(get("/admin-ranking?periodo=anio&tipo=persona"))
-        .andExpect(content().string(containsString("El ranking de 2026, solo personas")));
-    mvc.perform(get("/admin-ranking?periodo=siempre"))
-        .andExpect(content().string(containsString("desde marzo de 2025")));
+    mvc.perform(get("/admin-ranking?mes=2026-08"))
+        .andExpect(content().string(containsString("El ranking de agosto de 2026")))
+        .andExpect(content().string(containsString("value=\"2026-08\" checked")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
     mvc.perform(get("/admin-ranking?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay ningún ranking")));
     mvc.perform(get("/admin-ranking?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar el ranking.")));
+    mvc.perform(get("/admin-ranking?respuesta=404")).andExpect(status().isNotFound());
+  }
+
+  /** Los formularios de la persona que dona vuelven a su pantalla, como los de la empresa. */
+  @Test
+  void losFormulariosDeLaPersonaQueDonaRedirigen() throws Exception {
+    mvc.perform(post("/donante-perfil-guardado").sessionAttr("cuenta", "persona"))
+        .andExpect(redirectedUrl("/donante-perfil-guardado"));
+    mvc.perform(
+            post("/donante-notificaciones-leidas")
+                .sessionAttr("cuenta", "persona")
+                .param("marcar", "n1"))
+        .andExpect(redirectedUrl("/donante-notificaciones-leidas?marcadas=n1"));
   }
 
   /** Cada pantalla propia de la persona que dona se arma sin errores (usuario, 2026-11-10). */
@@ -1014,6 +1047,15 @@ class SitioControllerTest {
   }
 
   private static final Pattern ENLACE = Pattern.compile("href=\"([^\"]*)\"");
+
+  /** Lo recibido de una necesidad: el número en negrita y, al lado, de cuánto es la meta. */
+  private static ResultMatcher recibidos(String valor, String meta) {
+    return content()
+        .string(
+            matchesPattern(
+                Pattern.compile(
+                    "(?s).*<b>" + valor + "</b>\\s*<span>" + Pattern.quote(meta) + "</span>.*")));
+  }
 
   @Test
   void laPersonaQueDonaVeSusMisionesYLaEmpresaNo() throws Exception {

@@ -1,5 +1,10 @@
 package grupo5.notificaciones.controllers;
 
+import static grupo5.notificaciones.seguridad.Acceso.ADMIN;
+import static grupo5.notificaciones.seguridad.Acceso.ADMIN_O_SERVICIO;
+import static grupo5.notificaciones.seguridad.Acceso.MARCAR_SU_NOTIFICACION;
+import static grupo5.notificaciones.seguridad.Acceso.VER_SUS_NOTIFICACIONES;
+
 import grupo5.notificaciones.dto.ConteoNoLeidasDTO;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
@@ -12,6 +17,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,12 +27,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequiredArgsConstructor
 public class NotificacionController implements INotificacionController {
 
   private final NotificacionService service;
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping("/api/notificaciones/eventos")
   public ResponseEntity<Void> procesarEvento(@Valid @RequestBody EventoNotificableDTO dto) {
     service.procesar(dto);
@@ -37,6 +45,7 @@ public class NotificacionController implements INotificacionController {
    * @deprecated usar {@code POST /api/notificaciones/eventos} o los eventos AMQP (DTI-13).
    */
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @Deprecated(since = "ENTREGA_4", forRemoval = true)
   @PostMapping("/notificaciones")
   public ResponseEntity<Void> procesarEventoLegacy(@Valid @RequestBody EventoNotificableDTO dto) {
@@ -69,13 +78,23 @@ public class NotificacionController implements INotificacionController {
   }
 
   @Override
-  @GetMapping({"/notificaciones/persona/{personaId}", "/api/notificaciones/persona/{personaId}"})
+  @PreAuthorize(VER_SUS_NOTIFICACIONES)
+  @GetMapping("/api/notificaciones/persona/{personaId}")
   public ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(
       @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida) {
     return ResponseEntity.ok(service.obtenerPorPersona(personaId, leida));
   }
 
+  /** Alias legado de la ruta anterior, solo para QA: lo usa el ADMIN (matriz de permisos, §8). */
   @Override
+  @GetMapping("/notificaciones/persona/{personaId}")
+  public ResponseEntity<List<NotificacionDTO>> obtenerPorPersonaLegacy(
+      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida) {
+    return obtenerPorPersona(personaId, leida);
+  }
+
+  @Override
+  @PreAuthorize(VER_SUS_NOTIFICACIONES)
   @GetMapping("/api/notificaciones/persona/{personaId}/no-leidas/conteo")
   public ResponseEntity<ConteoNoLeidasDTO> contarNoLeidas(@PathVariable UUID personaId) {
     long count = service.contarNoLeidas(personaId);
@@ -83,6 +102,7 @@ public class NotificacionController implements INotificacionController {
   }
 
   @Override
+  @PreAuthorize(MARCAR_SU_NOTIFICACION)
   @PatchMapping("/api/notificaciones/{id}/leida")
   public ResponseEntity<NotificacionDTO> marcarLeida(
       @PathVariable UUID id, @RequestParam(required = false, defaultValue = "true") boolean leida) {
@@ -92,6 +112,7 @@ public class NotificacionController implements INotificacionController {
   }
 
   @Override
+  @PreAuthorize(VER_SUS_NOTIFICACIONES)
   @PatchMapping("/api/notificaciones/persona/{personaId}/marcar-todas-leidas")
   public ResponseEntity<Void> marcarTodasComoLeidas(@PathVariable UUID personaId) {
     service.marcarTodasComoLeidas(personaId);

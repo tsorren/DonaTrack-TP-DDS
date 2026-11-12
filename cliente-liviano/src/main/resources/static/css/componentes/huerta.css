@@ -336,7 +336,7 @@
 }
 
 /* Las láminas con el encuadre de los recorridos (x de 4 a 254 y y de 2 a 152 en el dibujo de
-   assets/DonaTrack_Abeja1.svg): cada lámina mide 62,77 × 78,47 y va donde la dibujó el diseño. Se
+   docs/interfaz/identidad/fuentes/DonaTrack_Abeja1.svg): cada lámina mide 62,77 × 78,47 y va donde la dibujó el diseño. Se
    apilan como en el dibujo: la derecha abajo, la izquierda en el medio y la del centro arriba. Las
    abejas van en la capa 0 (detrás de todas) o 4 (delante de todas); las mueve static/js/abejas.js. */
 .huerta-laminas {

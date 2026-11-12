@@ -41,22 +41,10 @@
              q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
              estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
              sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} },
-             todos=${ {
-      {clave: 'lucia', nombre: 'Lucía Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.004', alta: '15 de octubre', estado: 'pendiente', dona: 'alimentos', donaTexto: 'Alimentos'},
-      {clave: 'ana', nombre: 'Ana Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.001', alta: '14 de octubre', estado: 'activo', dona: 'alimentos', donaTexto: 'Alimentos'},
-      {clave: 'club', nombre: 'Asociación Vecinal Ejemplo', tipo: 'organizacion', tipoTexto: 'Organización', documento: 'CUIT 30-00000005-0', alta: '12 de octubre', estado: 'pendiente', dona: 'muebles', donaTexto: 'Muebles'},
-      {clave: 'juan', nombre: 'Juan Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.002', alta: '3 de septiembre', estado: 'activo', dona: 'escolares', donaTexto: 'Útiles escolares'},
-      {clave: 'super', nombre: 'Supermercado Ejemplo SRL', tipo: 'empresa', tipoTexto: 'Empresa', documento: 'CUIT 30-00000003-0', alta: '28 de agosto', estado: 'activo', dona: 'alimentos', donaTexto: 'Alimentos'},
-      {clave: 'fundacion', nombre: 'Fundación Ejemplo Sur', tipo: 'organizacion', tipoTexto: 'Organización', documento: 'CUIT 30-00000002-0', alta: '21 de julio', estado: 'activo', dona: 'ropa', donaTexto: 'Ropa'},
-      {clave: 'libreria', nombre: 'Librería Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', documento: 'CUIT 30-00000004-0', alta: '9 de junio', estado: 'activo', dona: 'escolares', donaTexto: 'Útiles escolares'},
-      {clave: 'pedro', nombre: 'Pedro Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.003', alta: '5 de mayo', estado: 'baja', dona: 'ropa', donaTexto: 'Ropa'},
-      {clave: 'carla', nombre: 'Carla Ejemplo', tipo: 'persona', tipoTexto: 'Persona', documento: 'DNI 20.000.005', alta: '1 de abril', estado: 'activo', dona: 'muebles', donaTexto: 'Muebles'},
-      {clave: 'distribuidora', nombre: 'Distribuidora Ejemplo SA', tipo: 'empresa', tipoTexto: 'Empresa', documento: 'CUIT 30-00000001-0', alta: '2 de marzo', estado: 'activo', dona: 'alimentos', donaTexto: 'Alimentos'} } },
+             todos=${adminDonantes.todos},
              porFiltros=${todos.?[('__${fTipo}__' == '' or tipo == '__${fTipo}__') and ('__${fDona}__' == '' or dona == '__${fDona}__') and ('__${fEstado}__' == '' or estado == '__${fEstado}__')]},
              donantes=${q == '' ? porFiltros : porFiltros.?[#strings.containsIgnoreCase(nombre, #root.q) or #strings.containsIgnoreCase(documento, #root.q)]},
-             orden=${fOrden == 'nombre' ? {'ana', 'club', 'carla', 'distribuidora', 'fundacion', 'juan', 'libreria', 'lucia', 'pedro', 'super'}
-                 : (fOrden == 'antiguo' ? {'distribuidora', 'carla', 'pedro', 'libreria', 'fundacion', 'super', 'juan', 'club', 'ana', 'lucia'}
-                 : {'lucia', 'ana', 'club', 'juan', 'super', 'fundacion', 'libreria', 'pedro', 'carla', 'distribuidora'})},
+             orden=${fOrden == 'nombre' ? adminDonantes.ordenNombre : (fOrden == 'antiguo' ? adminDonantes.ordenAntiguos : adminDonantes.ordenNuevos)},
              filtrado=${fTipo != '' or fDona != '' or fEstado != '' or q != ''},
              n=${#lists.size(donantes)}">
   <div class="mesa">
@@ -66,7 +54,7 @@
       <div>
         <p class="rotulo">Administración</p>
         <h1>Donantes</h1>
-        <p th:if="${conDatos}">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
+        <p th:if="${conDatos}" th:text="${adminDonantes.activos == 1} ? |1 donante activo, al ${adminDonantes.al}.| : |${adminDonantes.activos} donantes activos, al ${adminDonantes.al}.|">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
       </div>
       <div th:if="${escenario != 'error'}" class="racimo">
         <a class="boton" data-tono="principal" href="/admin-donantes-registrar"
@@ -102,35 +90,32 @@
       <h2 id="importar-titulo">Importar donantes desde un archivo</h2>
 
       <th:block th:if="${accion == 'importando'}">
-        <p><b>donantes-octubre.csv · 20.000 filas</b></p>
-        <p role="status">Procesando: 8.400 de 20.000 filas.</p>
+        <p><b th:text="${importacion.total != null} ? |${importacion.archivo} · ${importacion.total} filas| : ${importacion.archivo}">donantes-octubre.csv · 20.000 filas</b></p>
+        <p role="status" th:text="${importacion.total != null} ? |Procesando: ${importacion.procesadas} de ${importacion.total} filas.| : |Procesando: ${importacion.procesadas} filas.|">Procesando: 8.400 de 20.000 filas.</p>
         <p>Podés seguir usando el sitio: el resultado queda acá cuando termine.</p>
         <p><a class="boton" data-tono="secundario" href="/admin-donantes-importado"
-              th:href="@{/admin-donantes-importado}">Ver el avance</a></p>
+              th:href="@{${importacion.avance}}">Ver el avance</a></p>
       </th:block>
 
       <th:block th:if="${accion == 'importado'}">
-        <p class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus>Importación
+        <p class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
+           th:text="${importacion.terminada != null} ? |Importación terminada el ${importacion.terminada}.| : 'Importación terminada.'">Importación
           terminada el 15 de octubre de 2026, 18:42.</p>
-        <p>20.000 filas leídas: 19.100 donantes nuevos, 754 actualizados, 20 sin cambios porque el
+        <p th:text="${importacion.resultado}">20.000 filas leídas: 19.100 donantes nuevos, 754 actualizados, 20 sin cambios porque el
           donante está dado de baja y 126 filas con error.</p>
         <p>Los donantes nuevos reciben un correo para activar su cuenta.</p>
-        <table class="tabla">
-          <caption>Filas con error (las primeras 3 de 126)</caption>
+        <table th:unless="${#lists.isEmpty(importacion.filas)}" class="tabla">
+          <caption th:text="|Filas con error (las primeras ${#lists.size(importacion.filas)} de ${importacion.conError})|">Filas con error (las primeras 3 de 126)</caption>
           <thead>
             <tr><th scope="col">Fila</th><th scope="col">Qué pasó</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Fila 15</th><td data-rotulo="Qué pasó">Falta el apellido.</td></tr>
-            <tr><th scope="row">Fila 202</th><td data-rotulo="Qué pasó">El correo ya es de otra
-              persona, con otro documento.</td></tr>
-            <tr><th scope="row">Fila 3.410</th><td data-rotulo="Qué pasó">Tiene 6 columnas y el
-              encabezado tiene 8.</td></tr>
+            <tr th:each="f : ${importacion.filas}"><th scope="row" th:text="${f.fila}">Fila 15</th><td data-rotulo="Qué pasó" th:text="${f.que}">Falta el apellido.</td></tr>
           </tbody>
         </table>
         <!--/* En el sistema, descarga un CSV con las filas con error; en la maqueta vuelve acá. */-->
-        <form action="/admin-donantes-importado" th:action="@{/admin-donantes-importado}" method="post">
-          <button class="boton" data-tono="secundario" type="submit">Descargar las 126 filas con error</button>
+        <form th:unless="${#lists.isEmpty(importacion.filas)}" action="/admin-donantes-importado" th:action="@{/admin-donantes-importado}" method="post">
+          <button class="boton" data-tono="secundario" type="submit" th:text="|Descargar las ${importacion.conError} filas con error|">Descargar las 126 filas con error</button>
         </form>
       </th:block>
 
@@ -141,7 +126,8 @@
       </section>
 
       <form th:if="${accion != 'importando'}" class="pila" data-espacio="3" action="/admin-donantes-importando"
-            th:action="@{/admin-donantes-importando}" method="post" enctype="multipart/form-data">
+            th:action="@{/admin-donantes-importando}" method="post" enctype="multipart/form-data"
+            hx-boost="true" hx-indicator="#enviando-admin-donantes" hx-select-oob="#avisos">
         <div class="campo" th:data-estado="${accion == 'importar-error'} ? 'error'">
           <label for="archivo">Archivo de donantes</label>
           <small id="archivo-ayuda">Un archivo CSV separado por comas, con una fila de encabezado. Hasta
@@ -157,6 +143,7 @@
           <a th:if="${!importa and escenario != 'vacio'}" class="boton" data-tono="secundario"
              href="/admin-donantes" th:href="@{/admin-donantes}">Cerrar</a>
         </div>
+        <p th:replace="~{envio :: indicador('enviando-admin-donantes', 'Subiendo el archivo…')}"></p>
       </form>
     </section>
 
@@ -195,7 +182,7 @@
       </form>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
       <p th:if="${conDatos and filtrado and n > 0}" role="status"
-         th:text="|${n == 1 ? 'Coincide 1 donante' : 'Coinciden ' + n + ' donantes'} de la lista de ejemplo.|">Coinciden
+         th:text="|${n == 1 ? 'Coincide 1 donante' : 'Coinciden ' + n + ' donantes'} de ${adminDonantes.lista}.|">Coinciden
         3 donantes de la lista de ejemplo.</p>
       <section th:if="${conDatos and n == 0}" class="vacio" aria-labelledby="sin-titulo">
         <h3 id="sin-titulo">Ningún donante coincide con lo que buscaste.</h3>

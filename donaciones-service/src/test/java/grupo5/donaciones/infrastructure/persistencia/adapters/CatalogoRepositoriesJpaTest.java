@@ -2,6 +2,7 @@ package grupo5.donaciones.infrastructure.persistencia.adapters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -119,6 +120,21 @@ class CatalogoRepositoriesJpaTest {
     assertEquals("Arroz", leida.getNombre());
     assertEquals(Set.of("arroz blanco", "arroz integral"), textos(leida));
     assertTrue(leida.getAliases().stream().allMatch(a -> "Arroz".equals(a.subcategoriaNombre())));
+  }
+
+  @Test
+  void guardarYLeer_subcategoria_conservaSuUnidadOLaDejaNulaParaHeredar() {
+    Categoria categoria = CategoriaMother.alimentos();
+    categorias.save(categoria);
+    Subcategoria propia = CategoriaMother.arroz(categoria);
+    propia.asignarUnidad(Unidad.LITROS);
+    Subcategoria heredada = new Subcategoria(categoria.getId(), "Fideos");
+
+    subcategorias.save(propia);
+    subcategorias.save(heredada);
+
+    assertEquals(Unidad.LITROS, subcategorias.findById(propia.getId()).orElseThrow().getUnidad());
+    assertNull(subcategorias.findById(heredada.getId()).orElseThrow().getUnidad());
   }
 
   @Test

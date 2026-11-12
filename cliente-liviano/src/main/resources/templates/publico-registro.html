@@ -13,8 +13,9 @@
   <div class="registro">
     <header th:replace="~{componentes/registro :: cabeza}"></header>
     <nav th:replace="~{componentes/registro :: tipos('')}"></nav>
-    <p class="registro-salida">¿Ya tenés cuenta? <a href="/publico-ingresar"
+    <p class="registro-salida" th:unless="${completarPerfil}">¿Ya tenés cuenta? <a href="/publico-ingresar"
        th:href="@{/publico-ingresar}">Ingresar</a></p>
+    <div class="registro-salida" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 </body>

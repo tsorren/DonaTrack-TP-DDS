@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-10-28T19:52:10.190Z",
+  "generatedAt": "2026-11-11T18:17:23.378Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 104,
-    "schemasCount": 25,
+    "endpointsCount": 123,
+    "schemasCount": 28,
     "eventsCount": 9
   },
   "services": [
     {
       "title": "DonaTrack - Donaciones Service API",
       "fileName": "openapi-donaciones.yaml",
-      "version": "1.0.0",
+      "version": "1.8.0",
       "serverUrl": "http://localhost:8080",
       "endpoints": [
         {
@@ -21,7 +21,8 @@
           "operationId": "listarDonacionesIndependientes",
           "requestBody": "-",
           "responses": {
-            "200": "DonacionIndependienteResponseDTO"
+            "200": "DonacionIndependienteResponseDTO",
+            "400": "-"
           }
         },
         {
@@ -81,6 +82,27 @@
           }
         },
         {
+          "path": "/api/donaciones/contadores",
+          "method": "GET",
+          "summary": "Contadores públicos de la landing",
+          "operationId": "obtenerContadoresPublicos",
+          "requestBody": "-",
+          "responses": {
+            "200": "ContadoresPublicosDTO"
+          }
+        },
+        {
+          "path": "/api/donaciones/destacadas",
+          "method": "GET",
+          "summary": "Donaciones destacadas de la landing",
+          "operationId": "listarDestacadas",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonacionDestacadaDTO",
+            "400": "-"
+          }
+        },
+        {
           "path": "/api/donaciones/{id}",
           "method": "GET",
           "summary": "Consultar donación por ID",
@@ -96,20 +118,32 @@
           "method": "POST",
           "summary": "Registrar necesidad de entidad beneficiaria",
           "operationId": "registrarNecesidad",
-          "requestBody": "-",
+          "requestBody": "NecesidadDTO",
           "responses": {
-            "201": "-",
+            "201": "NecesidadDTO",
+            "400": "-",
             "409": "-"
           }
         },
         {
           "path": "/api/necesidades",
           "method": "GET",
-          "summary": "Listar necesidades activas",
+          "summary": "Listar necesidades",
           "operationId": "listarNecesidades",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "NecesidadDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades/publicas",
+          "method": "GET",
+          "summary": "Listar necesidades vigentes (ruta pública)",
+          "operationId": "listarNecesidadesPublicas",
+          "requestBody": "-",
+          "responses": {
+            "200": "NecesidadPublicaDTO"
           }
         },
         {
@@ -119,7 +153,7 @@
           "operationId": "obtenerNecesidadPorId",
           "requestBody": "-",
           "responses": {
-            "200": "-",
+            "200": "NecesidadDTO",
             "404": "-"
           }
         },
@@ -128,9 +162,9 @@
           "method": "PUT",
           "summary": "Actualizar necesidad existente",
           "operationId": "actualizarNecesidad",
-          "requestBody": "-",
+          "requestBody": "NecesidadDTO",
           "responses": {
-            "200": "-",
+            "200": "NecesidadDTO",
             "400": "-",
             "404": "-",
             "409": "-"
@@ -144,6 +178,17 @@
           "requestBody": "-",
           "responses": {
             "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades/{id}/periodos",
+          "method": "GET",
+          "summary": "Historia de períodos de una necesidad recurrente",
+          "operationId": "listarPeriodosDeNecesidad",
+          "requestBody": "-",
+          "responses": {
+            "200": "PeriodoNecesidadDTO",
             "404": "-"
           }
         },
@@ -209,7 +254,19 @@
           "operationId": "listarEntidadesBeneficiarias",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "-",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/entidades/publicas",
+          "method": "GET",
+          "summary": "Listar entidades beneficiarias activas (ruta pública)",
+          "operationId": "listarEntidadesPublicas",
+          "requestBody": "-",
+          "responses": {
+            "200": "EntidadPublicaDTO",
+            "400": "-"
           }
         },
         {
@@ -293,6 +350,19 @@
           }
         },
         {
+          "path": "/api/donantes/{id}/preferencias",
+          "method": "PATCH",
+          "summary": "Cambiar si la entidad ve el nombre del donante",
+          "operationId": "actualizarPreferenciasDonante",
+          "requestBody": "PreferenciasDonanteDTO",
+          "responses": {
+            "200": "-",
+            "400": "-",
+            "403": "-",
+            "404": "-"
+          }
+        },
+        {
           "path": "/api/donantes/archivos",
           "method": "POST",
           "summary": "Cargar archivo/padrón de donantes para procesamiento asíncrono",
@@ -313,6 +383,18 @@
           "requestBody": "-",
           "responses": {
             "200": "ArchivoDonantesResponse",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/donantes/archivos/{id}/filas-con-error",
+          "method": "GET",
+          "summary": "Listar las filas del padrón que no se importaron",
+          "operationId": "listarFilasConErrorDelArchivo",
+          "requestBody": "-",
+          "responses": {
+            "200": "FilaConErrorResponse",
+            "400": "-",
             "404": "-"
           }
         },
@@ -487,7 +569,7 @@
           "operationId": "listarPersonasDonaciones",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "PersonaOutputDTO"
           }
         },
         {
@@ -495,9 +577,10 @@
           "method": "POST",
           "summary": "Crear persona",
           "operationId": "crearPersonaDonaciones",
-          "requestBody": "-",
+          "requestBody": "PersonaInputDTO",
           "responses": {
-            "201": "-"
+            "201": "PersonaOutputDTO",
+            "400": "-"
           }
         },
         {
@@ -505,9 +588,10 @@
           "method": "PUT",
           "summary": "Actualizar persona",
           "operationId": "actualizarPersonaDonaciones",
-          "requestBody": "-",
+          "requestBody": "PersonaInputDTO",
           "responses": {
-            "200": "-",
+            "200": "PersonaOutputDTO",
+            "400": "-",
             "404": "-",
             "409": "-"
           }
@@ -520,6 +604,31 @@
           "requestBody": "-",
           "responses": {
             "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/personas/{id}/legales",
+          "method": "GET",
+          "summary": "Consultar la constancia de los legales de una persona",
+          "operationId": "consultarLegales",
+          "requestBody": "-",
+          "responses": {
+            "200": "LegalesDTO",
+            "403": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/personas/{id}/legales",
+          "method": "PUT",
+          "summary": "Aceptar la versión vigente de los legales",
+          "operationId": "aceptarLegales",
+          "requestBody": "AceptarLegalesDTO",
+          "responses": {
+            "200": "LegalesDTO",
+            "400": "-",
+            "403": "-",
             "404": "-"
           }
         },
@@ -761,7 +870,7 @@
     {
       "title": "DonaTrack - Logística Service API",
       "fileName": "openapi-logistica.yaml",
-      "version": "1.1.0",
+      "version": "1.9.0",
       "serverUrl": "http://localhost:8083",
       "endpoints": [
         {
@@ -818,6 +927,16 @@
           }
         },
         {
+          "path": "/api/entregas/seguimiento/donantes/{donanteId}",
+          "method": "GET",
+          "summary": "Listar seguimiento de las entregas activas de un donante (RF-09, HB-16)",
+          "operationId": "listarSeguimientoPorDonante",
+          "requestBody": "-",
+          "responses": {
+            "200": "SeguimientoEntregaResponseDTO"
+          }
+        },
+        {
           "path": "/api/entregas/{id}",
           "method": "GET",
           "summary": "Consultar entrega por ID",
@@ -849,6 +968,32 @@
           "responses": {
             "200": "EntregaResponseDTO",
             "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/entregas/{id}/fotos",
+          "method": "POST",
+          "summary": "Subir fotos de recepción (multipart a MinIO, sin metadatos)",
+          "operationId": "subirFotosRecepcion",
+          "requestBody": "-",
+          "responses": {
+            "201": "FotoRecepcionSubidaDTO",
+            "400": "-",
+            "404": "-",
+            "409": "-",
+            "413": "-",
+            "415": "-"
+          }
+        },
+        {
+          "path": "/api/entregas/{id}/fotos/{fotoId}",
+          "method": "GET",
+          "summary": "Leer una foto de recepción (redirige a una URL firmada)",
+          "operationId": "leerFotoRecepcion",
+          "requestBody": "-",
+          "responses": {
+            "302": "-",
             "404": "-"
           }
         },
@@ -1075,7 +1220,7 @@
     {
       "title": "DonaTrack - Notificaciones Service API",
       "fileName": "openapi-notificaciones.yaml",
-      "version": "1.0.0",
+      "version": "1.2.0",
       "serverUrl": "http://localhost:8081",
       "endpoints": [
         {
@@ -1143,6 +1288,37 @@
           }
         },
         {
+          "path": "/api/notificaciones/persona/{personaId}/no-leidas/conteo",
+          "method": "GET",
+          "summary": "Obtener el conteo de notificaciones no leídas de una persona",
+          "operationId": "contarNoLeidas",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/notificaciones/{id}/leida",
+          "method": "PATCH",
+          "summary": "Marcar una notificación como leída o no leída",
+          "operationId": "marcarLeida",
+          "requestBody": "-",
+          "responses": {
+            "200": "NotificacionDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/notificaciones/persona/{personaId}/marcar-todas-leidas",
+          "method": "PATCH",
+          "summary": "Marcar todas las notificaciones de una persona como leídas",
+          "operationId": "marcarTodasComoLeidas",
+          "requestBody": "-",
+          "responses": {
+            "204": "-"
+          }
+        },
+        {
           "path": "/api/notificaciones/personas",
           "method": "PUT",
           "summary": "Sincronizar réplica de persona y medios de contacto",
@@ -1172,6 +1348,53 @@
           "requestBody": "-",
           "responses": {
             "204": "-"
+          }
+        },
+        {
+          "path": "/api/contacto",
+          "method": "POST",
+          "summary": "Recibir un mensaje del formulario de contacto (HB-21)",
+          "operationId": "recibirMensajeContacto",
+          "requestBody": "MensajeContactoInputDTO",
+          "responses": {
+            "200": "-",
+            "201": "NumeroMensajeDTO",
+            "400": "ErrorResponse",
+            "429": "ErrorResponse"
+          }
+        },
+        {
+          "path": "/api/contacto",
+          "method": "GET",
+          "summary": "Listar los mensajes de contacto (solo ADMIN, con HB-13)",
+          "operationId": "listarMensajesContacto",
+          "requestBody": "-",
+          "responses": {
+            "200": "MensajeContactoDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/contacto/{numero}",
+          "method": "GET",
+          "summary": "Obtener un mensaje de contacto con su respuesta (solo ADMIN, con HB-13)",
+          "operationId": "obtenerMensajeContacto",
+          "requestBody": "-",
+          "responses": {
+            "200": "MensajeContactoDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/contacto/{numero}/respuesta",
+          "method": "POST",
+          "summary": "Responder un mensaje de contacto por correo (solo ADMIN, con HB-13)",
+          "operationId": "responderMensajeContacto",
+          "requestBody": "RespuestaContactoInputDTO",
+          "responses": {
+            "200": "MensajeContactoDTO",
+            "400": "-",
+            "404": "-"
           }
         }
       ]
@@ -1472,6 +1695,43 @@
         "nombre",
         "fecha",
         "credencialesDeAcceso"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-entrega-cancelada-v1.schema.json",
+      "title": "EventoEntregaCanceladaV1",
+      "description": "Comando AMQP que el broker de logística de donaciones-service publica en donaciones.exchange con routing key entrega.cancelada.<proveedorId>.v1 (alias __TypeId__ fijo: entrega.cancelada.v1) por el outbox del broker, recién cuando el pedido de esa entrega ya salió. Pide al proveedor que tiene la entrega que la cancele si todavía no salió (HB-19, ADR 20261109-cancelacion-de-entregas-que-no-salieron). Lleva X-Trace-Id y messageId como el pedido. Nuestra Logística lo recibe por la misma cola que el pedido.",
+      "type": "object",
+      "required": [
+        "donacionIndependienteId",
+        "motivo",
+        "fecha"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-entrega-cancelada.schema.json",
+      "title": "EventoEntregaCancelada",
+      "description": "Evento AMQP de vuelta que un proveedor de logística publica en logistica.exchange con routing key entrega.cancelada (alias __TypeId__ entrega.cancelada) cuando cancela una entrega que no había salido (HB-19, ADR 20261109-cancelacion-de-entregas-que-no-salieron). Va firmado con X-Proveedor-Id y X-Proveedor-Token como los otros cuatro eventos de vuelta. Puede repetirse: el proveedor lo vuelve a publicar si recibe otra vez la cancelación de una entrega ya cancelada.",
+      "type": "object",
+      "required": [
+        "entregaId",
+        "donacionIndependienteId",
+        "motivo",
+        "fechaCancelacion"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-entrega-en-puerta.schema.json",
+      "title": "EventoEntregaEnPuerta",
+      "description": "Evento AMQP de vuelta que un proveedor de logística publica en logistica.exchange con routing key entrega.en-puerta (alias __TypeId__ entrega.en-puerta) cuando el camión llega al destino de la entrega y la entidad todavía no confirmó (HB-22, ADR 20261111-estado-en-puerta-de-la-entrega). Va firmado con X-Proveedor-Id y X-Proveedor-Token como los otros eventos de vuelta. Es opcional: un proveedor que no lo publica sigue confirmando desde EN_TRASLADO.",
+      "type": "object",
+      "required": [
+        "entregaId",
+        "donacionIndependienteId",
+        "fechaLlegada"
       ],
       "subtypes": []
     },

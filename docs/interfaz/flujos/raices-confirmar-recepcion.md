@@ -23,7 +23,7 @@
 | Qué quiere lograr | "Dejar asentado que la entrega llegó, con la foto, rápido y sin equivocarme de entrega" |
 | Dispositivo principal | Celular primero; también la computadora |
 | Requerimientos | RF-12 (confirmar recepción exige al menos una foto válida, D27; la entrega pasa a `ENTREGADA`). RF-08 (quien donó recibe la notificación de recepción) y RF-13 (la recepción también aparece en la bandeja de la entidad). RF-01 y RF-02 (la foto de una entrega confirmada puede mostrarse en la portada y en el mapa público, con ubicación aproximada). RF-14 (solo las entregas que la entidad debe recibir). RNF-PRIV-03 y 04 (fotos privadas y sin EXIF). RNF-UI-04 a 06 (ayudas del flujo crítico, éxito y error en cada acción, `hx-indicator`). RF-CL-04 (CSRF). RNF-CL-02 (sin JavaScript, igual funciona) |
-| Datos que usa | `PATCH /api/entregas/{id}/estado` con `estado: ENTREGADA`, `actor` y `fotosRecepcion` (al menos una; 400 si falta la foto o la transición no vale; 404 si no existe). Huecos: HB-10 (subir la foto: `POST /api/entregas/{id}/fotos` multipart, hacia MinIO), HB-09 (la notificación de recepción), HB-13 (que solo la entidad destinataria confirme) y HB-16 (las entregas activas de una entidad en una llamada). El remito, la necesidad que cubre y quién donó **no están en el contrato**: el remito se suma al contrato de entregas y la necesidad y quién donó los pide el cliente a Donaciones (HB-17, [ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md), 2026-11-02). Los bultos salieron de la pantalla. En la maqueta, los datos de ejemplo de la pantalla del primer prototipo |
+| Datos que usa | `PATCH /api/entregas/{id}/estado` con `estado: ENTREGADA`, `actor` y `fotosRecepcion` (al menos una; 400 si falta la foto o la transición no vale; 404 si no existe). Huecos: HB-10 (subir la foto: `POST /api/entregas/{id}/fotos` multipart, hacia MinIO), HB-09 (la notificación de recepción), HB-13 (que solo la entidad destinataria confirme) y HB-16 (las entregas activas de una entidad en una llamada). El remito, la necesidad que cubre y quién donó **no están en el contrato**: el remito se suma al contrato de entregas y la necesidad y quién donó los pide el cliente a Donaciones (HB-17, [ADR del contrato de entregas](../../adr/20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md), 2026-11-02). Los bultos salieron de la pantalla. En la maqueta, los datos de ejemplo de la pantalla del primer prototipo. Sigue con la maqueta (2026-11-08): el acta pide la foto y la API solo acepta una URL (HB-10), y la lista no distingue la entrega que llegó a la puerta (HB-22; resuelto el 2026-11-11, ver "Ajuste de HB-22" al final) |
 | Boceto de E1 | Página 28: "Entregas a confirmar", con fecha, hora, código y contenido; una zona para soltar archivos ("Adjuntar al menos 1 imagen"), la casilla "Disclaimer legal", "Reportar problema" y "Confirmar Entregas" |
 
 ## 2. Dónde está en el sitio
@@ -235,11 +235,23 @@ Filtro de tono:
   "sostenible" puesto de adorno; tampoco "echó raíces" en un dato o un botón (la imagen de raíz, solo
   en el dibujo).
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Fuera de la maqueta, Logística no dice cuándo
+llegó la entrega a la puerta (lo completa recién al confirmar; HB-22, resuelto después: ver "Ajuste de HB-22" al final) y la
+confirmación vuelve a Seguir entregas con un aviso del servidor en lugar de Recepción confirmada.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Bajada, sin la hora de llegada | "Silla plegable, 1 unidad. Salió del depósito el 8 de noviembre a las 14:30." | Reemplaza a "Llegó hoy a las 18:20." cuando no se sabe cuándo llegó |
+| Aviso al confirmar | "Confirmaste la recepción. Le avisamos a quien donó." | En `#avisos`, al volver a Seguir entregas. No afirma que ya lo leyó (HB-09) |
+
+
 ## 7. Accesibilidad
 
 - Zonas: el enlace para saltar al contenido, la navegación de la entidad (`nav` con nombre), el
   contenido (`main`) con un `h1`; la etiqueta, el tramo y cada grupo del formulario con su `h2`.
-- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú, el menú, "Salir",
+- Orden del foco: saltar al contenido, la marca, el botón para plegar el menú, el menú, "Cuenta",
   "Seguir entregas", el campo de fotos, el remito, "Confirmar recepción" y "Llegó con un
   problema".
 - Cada campo con su `label` y su ayuda en `aria-describedby`; los obligatorios, `required` y
@@ -340,3 +352,16 @@ Preguntas abiertas, para el equipo (no cambian el prototipo):
 - El menú de la entidad del prototipo no tiene Notificaciones (RF-13, va en la campana) ni Mi
   perfil (va en la cuenta), que el mapa del sitio pone en el nivel 2: el mismo patrón aprobado en
   Seguir entregas.
+
+## Ajuste de HB-22: la entrega que llegó a la puerta (cierre E6, 2026-11-11)
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). La entrega tiene un estado nuevo, `EN_PUERTA`,
+que pone quien mueve el camión al llegar ([ADR del estado EN_PUERTA](../../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)). Fuera de la maqueta, el acta lista primero las que
+llegaron a la puerta, con la hora de llegada del historial de la donación, y después las que siguen en
+traslado (un proveedor que no informa la llegada), que también se pueden confirmar. La clave del acta
+(`?entrega=`) pasa a ser la donación, como en Donaciones recibidas, para que su botón "Confirmar
+recepción" llegue al acta; al confirmar, el cliente busca la entrega de esa donación en Logística.
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Bajada, con la hora de llegada | "Llegó a tu puerta el 8 de noviembre a las 18:20." | Solo en las `EN_PUERTA`. Las que siguen en traslado conservan "Salió del depósito el …" |

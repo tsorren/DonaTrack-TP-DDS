@@ -136,6 +136,20 @@ class RepositoriosMongoAdaptersTest {
   }
 
   @Test
+  void camionMongoAdapter_findAll_incluyeLosDeshabilitados() {
+    Camion deshabilitado = nuevoCamion();
+    deshabilitado.deshabilitar();
+    when(camionRepo.findAll())
+        .thenReturn(
+            List.of(
+                camionMapper.toDocument(nuevoCamion()), camionMapper.toDocument(deshabilitado)));
+
+    assertEquals(
+        List.of(EstadoCamion.DISPONIBLE, EstadoCamion.DESHABILITADO),
+        camiones.findAll().stream().map(Camion::getEstado).toList());
+  }
+
+  @Test
   void camionMongoAdapter_findDisponibles_devuelveLosDisponiblesSinRutaEnTraslado() {
     CamionDocument doc = camionMapper.toDocument(nuevoCamion());
     when(camionRepo.findByEstado(EstadoCamion.DISPONIBLE)).thenReturn(List.of(doc));
@@ -261,6 +275,7 @@ class RepositoriosMongoAdaptersTest {
     assertFalse(entregas.existsByIdDonacion(null));
     assertTrue(entregas.findByIdDonacion(null).isEmpty());
     assertTrue(entregas.findByIdBeneficiaria(null).isEmpty());
+    assertTrue(entregas.findByDonanteId(null).isEmpty());
   }
 
   @Test
@@ -291,7 +306,8 @@ class RepositoriosMongoAdaptersTest {
   @Test
   void entregasMongoAdapter_existsByIdDonacion_consultaPorLaDonacion() {
     UUID idDonacion = UUID.randomUUID();
-    when(entregaRepo.existsByIdDonacion(idDonacion)).thenReturn(true);
+    when(entregaRepo.existsByIdDonacionAndEstadoNot(idDonacion, EstadoEntrega.CANCELADA))
+        .thenReturn(true);
 
     assertTrue(entregas.existsByIdDonacion(idDonacion));
   }
@@ -301,7 +317,8 @@ class RepositoriosMongoAdaptersTest {
     Entrega entrega = EntregaMother.pendiente();
     UUID idDonacion = entrega.getIdDonacion();
     EntregaDocument doc = entregaMapper.toDocument(entrega);
-    when(entregaRepo.findByIdDonacion(idDonacion)).thenReturn(Optional.of(doc));
+    when(entregaRepo.findFirstByIdDonacionAndEstadoNot(idDonacion, EstadoEntrega.CANCELADA))
+        .thenReturn(Optional.of(doc));
 
     assertEquals(entrega.getId(), entregas.findByIdDonacion(idDonacion).orElseThrow().getId());
   }
@@ -314,6 +331,17 @@ class RepositoriosMongoAdaptersTest {
     when(entregaRepo.findByIdBeneficiaria(idBeneficiaria)).thenReturn(List.of(doc));
 
     assertEquals(1, entregas.findByIdBeneficiaria(idBeneficiaria).size());
+  }
+
+  @Test
+  void entregasMongoAdapter_findByDonanteId_devuelveLasEntregasDelDonante() {
+    Entrega entrega = EntregaMother.pendiente();
+    UUID donanteId = UUID.randomUUID();
+    entrega.registrarDonante(donanteId);
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
+    when(entregaRepo.findByDonanteId(donanteId)).thenReturn(List.of(doc));
+
+    assertEquals(donanteId, entregas.findByDonanteId(donanteId).getFirst().getDonanteId());
   }
 
   @Test

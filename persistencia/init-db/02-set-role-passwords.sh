@@ -2,8 +2,9 @@
 # Fija las contraseñas de los roles por servicio desde variables de entorno.
 # Corre una sola vez, en el primer arranque del contenedor (docker-entrypoint-initdb.d),
 # después de 01-init-schemas-roles.sql. Falla si falta la de algún servicio de negocio.
-# KEYCLOAK_DB_PASSWORD es opcional: docker-compose.preprod.yml usa este mismo script y todavía
-# no la pasa (SPEC-06 E2-12). Sin ella, keycloak_user queda sin contraseña y no puede iniciar sesión.
+# KEYCLOAK_DB_PASSWORD es opcional: los compose de demo e híbrido usan este mismo script y no
+# levantan Keycloak. Sin ella, keycloak_user queda sin contraseña y no puede iniciar sesión. Los
+# compose local y de preprod sí la pasan (SPEC-06 A1-01 y E2-12).
 set -eu
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \

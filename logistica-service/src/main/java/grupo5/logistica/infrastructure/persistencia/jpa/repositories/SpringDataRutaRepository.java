@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SpringDataRutaRepository extends JpaRepository<RutaEntity, UUID> {
   List<RutaEntity> findByFecha(LocalDate fecha);
 
+  List<RutaEntity> findByEstado(EstadoRuta estado);
+
   List<RutaEntity> findByIdCamion(UUID idCamion);
 
   List<RutaEntity> findByIdCamionAndFecha(UUID idCamion, LocalDate fecha);

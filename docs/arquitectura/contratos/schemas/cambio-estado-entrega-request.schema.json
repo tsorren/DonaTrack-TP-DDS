@@ -10,6 +10,7 @@
       "enum": [
         "PENDIENTE",
         "EN_TRASLADO",
+        "EN_PUERTA",
         "ENTREGADA",
         "NO_RECIBIDA",
         "REVISION"
@@ -22,11 +23,29 @@
     },
     "justificacion": {
       "type": "string",
-      "description": "Motivo obligatorio cuando el estado es NO_RECIBIDA o CANCELADA"
+      "description": "Motivo obligatorio cuando el estado es NO_RECIBIDA. CANCELADA no entra por este pedido: llega solo por el comando del broker (HB-19)"
     },
     "replanificable": {
       "type": "boolean",
       "description": "Indica si la entrega fallida puede ser replanificada automáticamente"
+    },
+    "numeroRemito": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "\\S",
+      "description": "Opcional (HB-17, DTI-29): número de remito al pasar a ENTREGADA; no se publica."
+    },
+    "reporte": {
+      "type": ["object", "null"],
+      "description": "Opcional (HB-17, DTI-29): problema contado al pasar a ENTREGADA; la entrega queda ENTREGADA igual.",
+      "properties": {
+        "motivo": { "type": "string", "enum": ["INCOMPLETA", "DANADA", "OTRO"] },
+        "detalle": { "type": ["string", "null"], "maxLength": 500, "description": "Obligatorio con OTRO." },
+        "cantidadRecibida": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "En la unidad de la donación; obligatoria con INCOMPLETA." }
+      },
+      "required": ["motivo"],
+      "additionalProperties": false
     }
   },
   "required": ["estado"],

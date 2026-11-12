@@ -20,6 +20,8 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -73,6 +75,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     TipoEstadoDonacion estado = filtro.estado();
     UUID subcategoriaId = filtro.subcategoriaId();
     UUID entidadId = filtro.entidadId();
+    UUID necesidadId = filtro.necesidadId();
 
     // ponytail: filtra en memoria sobre findAll(), como hacía este listado; pasar a una consulta
     // cuando el volumen lo pida.
@@ -85,6 +88,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         .filter(di -> subcategoriaId == null || tieneSubcategoria(di, Set.of(subcategoriaId)))
         .filter(deLaCategoria(filtro.categoriaId()))
         .filter(di -> entidadId == null || entidadId.equals(di.getEntidadBeneficiariaId()))
+        .filter(di -> necesidadId == null || necesidadId.equals(di.getNecesidadId()))
         .filter(di -> desde == null || !di.getFechaRegistro().toLocalDate().isBefore(desde))
         .filter(di -> hasta == null || !di.getFechaRegistro().toLocalDate().isAfter(hasta))
         .map(donacionIndependienteMapper::toDTO)
@@ -131,6 +135,22 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   }
 
   @Override
+  public void registrarCantidadRecibida(UUID id, double cantidadRecibida) {
+    DonacionIndependiente donacion =
+        repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    donacion.registrarCantidadRecibida(cantidadRecibida);
+    repositorio.save(donacion);
+  }
+
+  @Override
+  public void registrarFotosDeRecepcion(UUID id, LocalDateTime fechaEntrega, List<String> fotos) {
+    DonacionIndependiente donacion =
+        repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    donacion.registrarFotosDeRecepcion(fechaEntrega, fotos);
+    repositorio.save(donacion);
+  }
+
+  @Override
   public DonacionIndependienteResponseDTO cambiarEstado(
       UUID id, CambioEstadoDonacionIndependienteRequestDTO request, String actor) {
 
@@ -143,6 +163,11 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
           necesidadRepository
               .findById(request.necesidadId())
               .orElseThrow(() -> new RecursoNoEncontradoException(request.necesidadId()));
+      // HB-19 (punto 9 del ADR de la baja): como al aprobar una propuesta
+      if (request.estado() == TipoEstadoDonacion.ASIGNACION_REALIZADA
+          && !necesidad.admiteAsignaciones(LocalDate.now(ZoneId.systemDefault()))) {
+        throw new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA);
+      }
     }
 
     SolicitudCambioEstadoDonacionIndependiente solicitud =

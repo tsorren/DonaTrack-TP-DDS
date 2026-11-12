@@ -3,7 +3,6 @@ package grupo5.donaciones.models.entities.necesidades;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.donaciones.dto.NecesidadDTO;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -20,6 +19,11 @@ public abstract class Necesidad implements AggregateRoot {
 
   /** Versión de la fila al leerla (bloqueo optimista). Nula mientras no se guardó. */
   private Long version;
+
+  /** La cantidad antes del último cambio y el día del cambio; nulos si nunca cambió. */
+  private Integer cantidadAnterior;
+
+  private LocalDate fechaUltimoCambio;
 
   protected Necesidad(UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
     this.id = UUID.randomUUID();
@@ -40,6 +44,8 @@ public abstract class Necesidad implements AggregateRoot {
     this.fechaInicio = datos.fechaInicio();
     this.entidadId = datos.entidadId();
     this.version = datos.version();
+    this.cantidadAnterior = datos.cantidadAnterior();
+    this.fechaUltimoCambio = datos.fechaUltimoCambio();
   }
 
   /** Lo asigna el adaptador de persistencia después de guardar, con la versión nueva de la fila. */
@@ -67,6 +73,10 @@ public abstract class Necesidad implements AggregateRoot {
     if (cantidadNecesitada == null || cantidadNecesitada <= 0) {
       throw new ValidationException(ErrorCatalog.CANTIDAD_NECESITADA_INVALIDA);
     }
+    if (!cantidadNecesitada.equals(this.cantidadNecesitada)) {
+      this.cantidadAnterior = this.cantidadNecesitada;
+      this.fechaUltimoCambio = LocalDate.now(ZoneId.systemDefault());
+    }
     this.cantidadNecesitada = cantidadNecesitada;
   }
 
@@ -74,21 +84,32 @@ public abstract class Necesidad implements AggregateRoot {
 
   public abstract TipoNecesidad getTipoNecesidad();
 
-  protected NecesidadDTO toDTO(LocalDate fechaFin, boolean satisfecha) {
-    return new NecesidadDTO(
-        this.id,
-        this.getTipoNecesidad().name(),
-        this.entidadId, // Otro aggregate root -> ref por id
-        this.subcategoriaId, // Otro aggregate root -> ref por id
-        this.cantidadNecesitada,
-        this.descripcion,
-        satisfecha,
-        this.fechaInicio,
-        fechaFin);
+  /**
+   * Estado calculado en cada lectura (ADR 20261102 del ciclo de vida, punto 1). {@code recibido}:
+   * la suma de las donaciones entregadas, que la necesidad no conoce (DTI-06).
+   */
+  public abstract EstadoNecesidad estado(int recibido, LocalDate hoy);
+
+  /**
+   * Si puede recibir asignaciones: activa y, en una extraordinaria, sin vencer. Una necesidad
+   * {@link EstadoNecesidad#TERMINADA} deja de recibirlas.
+   */
+  public boolean admiteAsignaciones(LocalDate hoy) {
+    return isActiva();
   }
 
-  /** {@code cantidadAcumulada}: lo asignado (al período actual, en las recurrentes). */
-  public abstract NecesidadDTO toDTO(int cantidadAcumulada);
+  /**
+   * Si la salida muestra el último cambio de cantidad (el cartel de la entidad, ADR 20261102 punto
+   * 5). En una recurrente, solo mientras dure el período en que se hizo.
+   */
+  public boolean muestraUltimoCambio() {
+    return fechaUltimoCambio != null;
+  }
+
+  /** Fin del período en curso: {@code null} en una extraordinaria. */
+  public LocalDate finDelPeriodoActual() {
+    return null;
+  }
 
   private void validarNecesidad() {
 

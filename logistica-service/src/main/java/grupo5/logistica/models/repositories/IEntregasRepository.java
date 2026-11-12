@@ -15,9 +15,16 @@ public interface IEntregasRepository extends CrudRepository<Entrega> {
 
   List<Entrega> findSinRuta();
 
+  /** Si la donación tiene una entrega activa (cualquiera que no esté {@code CANCELADA}). */
   boolean existsByIdDonacion(UUID idDonacion);
 
+  /** La entrega activa de la donación: hay a lo sumo una (las canceladas quedan como historia). */
   Optional<Entrega> findByIdDonacion(UUID idDonacion);
 
+  /** Las entregas canceladas de la donación (HB-19). */
+  List<Entrega> findCanceladasByIdDonacion(UUID idDonacion);
+
   List<Entrega> findByIdBeneficiaria(UUID idBeneficiaria);
+
+  List<Entrega> findByDonanteId(UUID donanteId);
 }

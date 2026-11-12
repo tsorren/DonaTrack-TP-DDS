@@ -109,7 +109,8 @@ class FlujoEventosNotificacionesTest {
             fechaBase.plusHours(3),
             beneficiario.getId(),
             "Ropa de abrigo",
-            "AF-123-ZZ");
+            "AF-123-ZZ",
+            null);
     donacionListener.onDonacionRecibida(eventoRecibida, UUID.randomUUID().toString());
 
     // --- VERIFICACIÓN DONANTE ---

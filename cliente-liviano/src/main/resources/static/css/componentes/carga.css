@@ -76,3 +76,14 @@
 .esqueleto[data-tamano="bajo"] {
   min-height: 6rem;
 }
+
+/* El indicador de un envío (conexión de pantallas, SPEC-08): un .cargando que el hx-indicator del
+   formulario nombra. Oculto, sin ocupar lugar ni leerse, hasta que HTMX le pone .htmx-request
+   mientras dura el pedido. La pieza está en templates/envio.html. */
+.cargando.htmx-indicator {
+  display: none;
+}
+
+.cargando.htmx-indicator.htmx-request {
+  display: flex;
+}

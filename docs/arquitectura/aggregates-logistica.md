@@ -34,13 +34,15 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Aggregate Root**: `Camion` (implements `AggregateRoot`).
 *   **Referencias Externas (por ID)**: `rutaId` (UUID nulable de la ruta activa asignada).
 *   **Estados de Ciclo de Vida**: *DISPONIBLE*, *EN_RUTA*, *DESHABILITADO* (Enum `EstadoCamion`).
-*   **Componentes Internos**: `CambioEstadoCamion` (Java record de auditoría inmutable de estados).
+*   **Componentes Internos**: `CambioEstadoCamion` (Java record de auditoría inmutable de estados) y `PosicionCamion` (value object con la última posición conocida: `latitud`, `longitud` y `registradaEn`, la hora de origen del dato; ADR-E6-07).
 *   **Responsabilidad**: Modelar cada vehículo de la flota de distribución, validando sus dimensiones físicas y capacidades de carga (volumen, peso, altura) en su constructor, y controlando consistentemente la asignación a rutas y deshabilitación.
 *   **Métodos de Negocio**:
     *   `asignarARuta(UUID rutaId)`
     *   `completarRuta()`
     *   `habilitar()`
     *   `deshabilitar()`
+    *   `registrarPosicion(PosicionCamion)`: guarda la posición solo si es más nueva que la guardada; una igual o anterior se descarta (idempotencia ante reintentos o mensajes desordenados).
+*   **Posición del camión (HB-05)**: el puerto de salida `FuentePosicionCamion` (`services/`) da la posición del camión de una ruta `EN_TRASLADO` y, desde HB-22, las paradas que alcanzó (`entregasAlcanzadas`; `ActualizadorPosicionCamiones` marca esas entregas `EN_PUERTA`). Hoy lo implementa `FuentePosicionCamionSimulada` (`infrastructure/clients/`), que recorre en línea recta las coordenadas de las paradas en el orden de visita, un sub-paso por intervalo desde `horaInicioReal`, sin estado propio. `ActualizadorPosicionCamiones` (`schedulers/`) la pide cada `logistica.posicion.intervalo-ms` (30 s por defecto) y la guarda en el camión; `logistica.posicion.pasos-por-tramo` (10 por defecto) fija en cuántos sub-pasos se divide el tramo entre dos paradas; con `logistica.posicion.simulada.habilitada=false` no corre. Persistencia: subdocumento `posicion` en `camiones` (Mongo) y columnas `posicion_*` en `camion` (JPA, `V6__camion_posicion.sql`).
 *   **Paquete**: `grupo5.logistica.models.entities.camiones`
 
 ### 2.3. Agregado: Ruta
@@ -54,6 +56,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Responsabilidad**: Planificar y rastrear la ruta operativa de reparto para un vehículo y conductor específicos. Garantiza que la ruta no se pueda iniciar si no tiene entregas asignadas y emite eventos de dominio (`EventoRutaAsignada`, `EventoRutaIniciada`).
 *   **Métodos de Negocio**:
     *   `agregarEntrega(UUID entregaId)` (valida no duplicados y estado PENDIENTE).
+    *   `quitarEntrega(UUID entregaId)` (HB-19: solo en PENDIENTE; las demás paradas conservan su orden; una ruta vacía no se puede iniciar).
     *   `iniciarRuta()` (valida existencia de entregas).
     *   `completarRuta()`
 *   **Paquete**: `grupo5.logistica.models.entities.rutas`
@@ -64,18 +67,24 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `CambioEstadoEntrega` (Auditoría inmutable de cambio de estado - Java record).
     *   `Direccion` (Dirección destino - Java record en `grupo5.logistica.models.entities.rutas.direccion`).
     *   `Localidad`, `Provincia`, `Pais` (Records geográficos).
+    *   `ReporteRecepcion` (record con `MotivoReporte` `INCOMPLETA`/`DANADA`/`OTRO`, `detalle` y `cantidadRecibida`; valida que haya motivo, detalle con `OTRO` y cantidad con `INCOMPLETA`). Lo carga la entidad al confirmar si algo estuvo mal; no cambia el estado (HB-17).
+*   **Remito**: `numeroRemito` opcional (1 a 40 caracteres), cargado al confirmar; no sale en el mapa ni en los eventos (HB-17).
 *   **Propiedades Físicas**: `pesoTotalKG` y `volumenTotalM3` (magnitudes positivas validadas para cubicaje).
 *   **Referencias Externas (por ID)**:
     *   `idRuta` (UUID nulable de la ruta asignada).
     *   `idDonacion` (UUID de la donación independiente correspondiente en `donaciones-service`).
     *   `idBeneficiaria` (UUID de la entidad beneficiaria destinataria).
-*   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *ENTREGADA*, *NO_RECIBIDA*, *REVISION* (Enum `EstadoEntrega`).
-*   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado y emitiendo eventos (`EntregaConfirmada`, `EntregaFallida`).
+    *   `donanteId` (UUID nulable del donante de la donación original, replicado desde `donaciones-service` por `entrega.solicitada.v1` o `POST /api/entregas`; referencia opaca, sin datos personales ni clave foránea. Lo usa el seguimiento por donante, HB-16; las entregas anteriores al 2026-11-08 no lo tienen. Ver el [ADR de réplicas por evento](../adr/20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md)).
+*   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *EN_PUERTA*, *ENTREGADA*, *NO_RECIBIDA*, *REVISION*, *CANCELADA* (Enum `EstadoEntrega`). *EN_PUERTA* (HB-22, [ADR](../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)) es intermedio y opcional: el camión llegó y la entidad todavía no confirmó; se llega solo desde *EN_TRASLADO* (`llegarAPuerta`) y se confirma o niega igual que desde *EN_TRASLADO*, que conserva esas dos salidas. Lo pone la simulación de posición (actor `SIMULADOR`) o el `PATCH` de estado, y cuenta como entrega activa. *CANCELADA* (HB-19) es final: una donación tiene a lo sumo una entrega **activa** (no cancelada); las canceladas quedan como historia.
+*   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado y emitiendo eventos (`EntregaEnPuerta`, `EntregaConfirmada`, `EntregaFallida`, `EntregaCancelada`).
 *   **Métodos de Negocio**:
+    *   `registrarDonante(UUID donanteId)` (al crear o reconstituir la entrega; `null` la deja sin donante)
     *   `asignarRuta(UUID idRuta)`
     *   `iniciarRuta(String chofer)`
-    *   `confirmarEntrega(String entidad)`
+    *   `llegarAPuerta(String actor)` (HB-22: solo desde EN_TRASLADO; emite `EntregaEnPuerta`; no toca `horaArribo`)
+    *   `confirmarEntrega(String entidad, List<String> fotos, String numeroRemito, ReporteRecepcion reporte)` (remito y reporte opcionales; las sobrecargas sin ellos siguen)
     *   `adjuntarFotoRecepcion(String fotoURL)`
     *   `negarEntrega(String entidad, String justificacion, boolean replanificable)`
     *   `regresarAlDeposito(String administrador)`
+    *   `cancelar(String actor, String motivo)` (HB-19: solo desde PENDIENTE; deja `idRuta` en nulo y emite `EntregaCancelada`; quien llama saca la parada de la `Ruta`)
 *   **Paquete**: `grupo5.logistica.models.entities.entregas`

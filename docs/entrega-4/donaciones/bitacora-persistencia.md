@@ -14,7 +14,7 @@
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 11 cerrados. Todo el modelo de Donaciones persiste en PostgreSQL (Flyway V1 a V13) con el perfil `postgres`; el perfil por defecto sigue en memoria. Quedan en memoria en los dos perfiles el historial de corridas del algoritmo (D-36) y los reintentos hacia Notificaciones.
+- **Dónde estamos:** Pasos 0 a 11 cerrados. Todo el modelo de Donaciones persiste en PostgreSQL (Flyway V1 a V13; después, la V16 de HB-14 de E6, con las V14 y V15 en PR abiertos) con el perfil `postgres`; el perfil por defecto sigue en memoria. Quedan en memoria en los dos perfiles el historial de corridas del algoritmo (D-36) y los reintentos hacia Notificaciones.
 - **Pendiente:** discutir con el equipo D-37 (dónde guardar los proveedores descartados) y D-38 (transacciones por caso de uso); actualizar el DER de Lucid con [`cambios-der-donaciones.md`](../../arquitectura/diseno/donaciones/cambios-der-donaciones.md); una corrida de Gate 4 en verde (ver Paso 10).
 - **Próximo paso:** revisión del PR y merge a `ENTREGA_5`.
 

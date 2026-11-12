@@ -22,7 +22,7 @@
 | Qué quiere lograr | "Ver qué llegó y adónde, saber quiénes piden y qué, y entrar o crear mi cuenta para donar o para sumar mi entidad" |
 | Dispositivo principal | Ambos; la computadora primero para la empresa, el celular para la entidad |
 | Requerimientos | RF-01 (destacadas del último mes con su foto, registro y login, legales). RF-02 (mapa de entregadas, detalle por marcador con fecha, categoría y foto; ubicación aproximada, D24). RF-03 (registro: el donante queda operativo al completar el perfil; la entidad, pendiente de aprobación). RF-04 (login de los tres roles; credenciales inválidas, error genérico). RF-22 (entidades activas con necesidades vigentes, sin datos de contacto). RF-AUTH-02 (Continuar con Google), RF-AUTH-05/06, RF-AUTH-13 (recuperar). RNF-AUTH-07 (bloqueo tras varios intentos) y RNF-AUTH-10 (respuestas que no revelan cuentas). RF-CL-06 (lista junto al mapa), RF-CL-07 (cuándo se actualizó). RNF-PRIV-01/03 |
-| Datos que usa | Ninguno existe para lo público todavía: HB-01 (destacadas), HB-02 (contadores), HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `SitioController`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
+| Datos que usa | Contadores: `GET /api/donaciones/contadores` (HB-02, PR #953). Destacadas: `GET /api/donaciones/destacadas` (HB-01, PR #954). Lo demás no existe para lo público todavía: HB-07 (mapa), HB-08, HB-15 y HB-18 (entidades y necesidades), HB-11 y HB-12 (perfil y aprobación), HB-20 (constancia de los legales), IdP (RF-04, D1 pendiente). En la maqueta: los datos de ejemplo de la sección 6.3, escritos en la plantilla como en la portada; de `SitioController`, los `estados` (`EstadoEntrega.ENTREGADA` para el sello) y la foto de ejemplo; de `Escenario`, los nombres `vacio`, `lento` y `error`. Los huecos, en [Huecos de backend](#huecos-de-backend) y en la lista de la corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)) |
 | Boceto de E1 | Pág. 2 (Donaciones realizadas: mapa coloreado, galería en mosaico, "Unirse a la comunidad"), pág. 23 (mapas por región, detalle de una donación), pág. 4 (Iniciar sesión), pág. 5 (Registrarse: dos tarjetas) y pág. 11 (Registro de entidad). Entidades y necesidades no tiene boceto (D26) |
 
 ## 2. Dónde está en el sitio
@@ -219,7 +219,7 @@ por su rol).
 ```text
 Rótulo · Título · Bajada
 Quién dona: [Una empresa u organización ●] [Una persona]     ← ?tipo=persona
-Empresa: Nombre de la empresa · Tu nombre y apellido
+Empresa: Nombre de la empresa · Rubro · Tu nombre y apellido
 Persona: Nombre · Apellido
 Correo electrónico · Contraseña [Mostrar]
 Aviso del nombre visible
@@ -239,7 +239,7 @@ cuenta de Distribuidora Ejemplo SA): el donante queda operativo al completar el 
 Rótulo · Título · Bajada
 Cómo sigue: 1 Completás la solicitud (estás acá) · 2 El equipo la revisa · 3 Publicás lo que necesitás
 La entidad: Nombre · Qué es · Tipo de organización
-Dirección de entrega: Calle · Altura · Localidad · Provincia
+Dirección de entrega: Calle · Altura · Código postal · Localidad · Provincia
 Quién la representa: Nombre y apellido · Correo electrónico · Contraseña [Mostrar]
 [ ] Leí y acepto los términos y la política de privacidad (versión 1)
 [Enviar la solicitud]
@@ -253,6 +253,14 @@ piden" e "Ir a la portada".
 Respecto del boceto (pág. 11): en tres grupos con título, como pedía la nota del boceto ("conviene
 partirlo en secciones claras"). Un solo representante, el que crea la cuenta; el rubro pasa a "Qué
 es", una lista corta. El país no se pregunta: es Argentina.
+
+**En el sitio real** (fuera de la maqueta), `publico-registro`, `publico-registro-donante` y
+`publico-registro-entidad` son el paso "Completá tu perfil" de la cuenta creada en Keycloak (D11,
+RI-AUTH-02). Sin sesión llevan a crear la cuenta; con sesión y sin perfil muestran el formulario
+sin correo, contraseña ni salidas, con el rótulo "Completá tu perfil" y el botón "Guardar mi
+perfil" (la entidad conserva "Enviar la solicitud"). Si Donaciones o Keycloak fallan, el aviso "No
+pudimos guardar tu perfil" (o "No pudimos enviar la solicitud") conserva lo escrito. El nombre y
+apellido de quien representa a la empresa o a la entidad pide al menos dos palabras.
 
 ### 4.8 Recuperar la contraseña (`publico-recuperar`)
 
@@ -605,7 +613,7 @@ Hallazgos, sin corregir en esta ficha:
 Datos que la maqueta inventa porque el backend no los da hoy. Son los de la lista de la corrida
 ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), copiados acá. Sin DTI ni ADR nuevos.
 
-- Público · publico-donaciones · entregas confirmadas con foto de la última semana o el último mes, con DTO público sin el donante (HB-01) y foto legible en público (hoy las fotos son privadas con URL firmada, RNF-PRIV-03) · RF-01 no tiene endpoint; la maqueta usa 10 entregas sintéticas.
+- Público · publico-donaciones · entregas confirmadas con foto de la última semana o el último mes, con DTO público sin el donante (HB-01) y foto legible en público (hoy las fotos son privadas con URL firmada, RNF-PRIV-03) · el endpoint es `GET /api/donaciones/destacadas` (PR #954); la maqueta usa 10 entregas sintéticas.
 - Público · publico-donaciones, publico-mapa · fecha de la última actualización de los datos públicos · toda cifra dice cuándo se actualizó (tono, RF-CL-07); ningún endpoint la da; la maqueta dice "15 de octubre de 2026, 14:30".
 - Público · publico-mapa · entregas confirmadas del período con barrio o coordenadas aproximadas, categoría, fecha y foto, filtrables por categoría (HB-07) · RF-02 y D24; la maqueta dibuja un mapa fijo con su lista.
 - Público · publico-entidades · entidades activas con pedidos vigentes, barrio aproximado y "qué es", sin contacto, con búsqueda por nombre y filtro por categoría (HB-08, HB-15, HB-18) · RF-22; el "rubro" de JuridicaInputDTO es texto libre y el filtro y el ícono necesitan una lista fija (comedor, merendero, escuela, hogar, club, biblioteca, otra).
@@ -615,3 +623,56 @@ Datos que la maqueta inventa porque el backend no los da hoy. Son los de la list
 - Público · publico-recuperar · pedido de enlace de un solo uso con vencimiento y respuesta neutra (RF-AUTH-13, RNF-AUTH-10) · no hay mecanismo de envío (D8 pendiente) ni IdP (D1); la maqueta va al aviso sin mandar nada.
 - Público · publico-registro-donante · alta en el IdP y completar perfil (RI-AUTH-02, HB-11), constancia de los legales (HB-20) y quién ingresa por una empresa (D30 pendiente) · la maqueta pide el nombre de quien usa la cuenta y lleva al inicio del donante.
 - Público · publico-registro-entidad · alta de la jurídica con dirección y un representante, en estado pendiente, y su aprobación (HB-12, RF-21) · RF-03; la maqueta lleva a la solicitud enviada.
+
+### Textos de la conexión con la API
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Fuera de la maqueta, la
+portada y Entregas confirmadas leen Donaciones (contadores, HB-02; destacadas, HB-01), que no trae
+todo lo que dicen los textos de ejemplo:
+
+| Pantalla | Elemento | Texto propuesto | Por qué |
+|---|---|---|---|
+| Portada | Tercera cifra | "Donantes con al menos una donación" (en lugar de "Donaciones en camino ahora") | Donaciones no cuenta las que están en camino; cuenta los donantes con donaciones |
+| Portada | Cifras | "Entregas confirmadas" · "Entidades en el mapa", sin período | Los contadores no dicen desde cuándo cuentan |
+| Entregas confirmadas | Texto alternativo de la foto | "Foto de <lo entregado> que subió <la entidad> al confirmar la entrega" | La destacada no trae la descripción de la foto |
+| Entregas confirmadas | Lugar de cada entrega | Solo el nombre de la entidad, sin el barrio | La destacada no trae el barrio (HB-08, privacidad) |
+| Entregas confirmadas | Período y fecha | "del <hace 30 días> al <hoy>" y "Actualizado el <día y hora del pedido>" | El período lo fija la ventana de las destacadas (30 y 7 días) |
+
+Quedan fijos, sin conectar: "Lo que viajó este mes" de la portada y la fecha "Actualizado el …" de
+las cifras viven en `componentes/huerta`, que es compartido. Entidades y el Mapa se conectaron en el
+cierre de E6 (más abajo).
+
+### Textos del cierre de E6: Entidades y necesidades
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Fuera de la maqueta, la pantalla lee los datos
+públicos de Donaciones (`/api/entidades/publicas` y `/api/necesidades/publicas`) y no muestra lo que
+esa API no trae (el HTML de la maqueta no cambia):
+
+| Elemento | Texto propuesto | Por qué |
+|---|---|---|
+| Grupo de las entidades que no son de los cinco tipos | "Otras entidades" | El "rubro" es texto libre: lo que no dice comedor, merendero, escuela, biblioteca, hogar o club queda acá, para que ninguna entidad desaparezca |
+| Lo que se pide | "Piden 40 kg" (con la unidad si hay sesión; sin ella, "Piden 40"), en lugar de "Faltan 30 de 40 kg este mes", y sin barra | La API no dice cuánto llegó (HB-18) |
+| Cuándo se repite | "Se repite; este período termina el 30 de noviembre" (sin fecha, "Se repite"), en lugar de "Se repite cada mes" | La API da el fin del período, no cada cuánto se repite |
+| Qué no se muestra | La misión, la emergencia, «Necesidades satisfechas» y su nota, el filtro «Emergencias», y el enlace "Ver sus entregas en el mapa" | La API pública no los trae (HB-08, HB-18) y no se sabe qué entidades tienen entregas |
+| Categoría | Sin sesión, sin el filtro por categoría, sin los íconos ni los chips de categoría | Las subcategorías (con su categoría y su unidad) piden sesión |
+| Aviso de lo que falta | "Todavía no mostramos cuánto de cada pedido ya llegó, ni la misión de cada entidad." (arriba de la lista) | Que quien mira sepa qué no está, en lugar de creer que no existe |
+| Sin pedidos | La pantalla de "Ninguna entidad tiene necesidades vigentes ahora." | La lista vacía de la API |
+
+### Textos del cierre de E6: Mapa
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). Fuera de la maqueta, el Mapa lee el mapa
+público de Logística (`/api/entregas/mapa`): el punto exacto de cada entrega confirmada (D24,
+ADR-E6-07), la localidad, la provincia y la fecha. No trae qué entidad recibió, qué se entregó ni la
+foto, y Donaciones no da el lugar, así que no se pueden cruzar. El HTML de la maqueta no cambia:
+
+| Elemento | Texto propuesto | Por qué |
+|---|---|---|
+| Bajada | "Cada punto es un lugar donde se confirmaron entregas en el último mes. Mostramos la localidad, nunca la dirección." (en lugar de "Cada punto es una entidad… aproximada: mostramos el barrio…") | El punto es un lugar, no una entidad; las coordenadas son las exactas de D24 |
+| Título de la lista | "Lugar por lugar" (en lugar de "Entidad por entidad") | Idem |
+| Cifra | "12 entregas confirmadas en 5 lugares, del 11 de octubre al 10 de noviembre de 2026." | Idem; el período es la ventana de 30 días |
+| Nombre de un lugar | La localidad de Logística y, debajo, la provincia; sin localidad, "Lugar sin nombre" | Logística no da el nombre de la entidad |
+| Una entrega | "Entrega de 12,5 kg · 9 de noviembre"; sin peso, "Entrega confirmada" | No se sabe qué se entregó: solo el peso total |
+| Texto de lectores del mapa | "Mapa de los lugares con entregas confirmadas. La lista de al lado tiene los mismos datos." | Idem |
+| Qué no se muestra | El filtro "Qué se donó", los íconos de categoría, "Pide: …" en el globo y "Ver la foto de la entrega" | Logística no trae categoría ni foto; las fotos de cada entrega siguen en Entregas confirmadas |
+| Aviso de lo que falta | "Todavía no mostramos qué entidad recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas." (debajo de la cifra) | Que quien mira sepa qué no está, en lugar de creer que no existe |
+| Sin entregas | El estado vacío de "Todavía no hay entregas confirmadas en el último mes." | La lista vacía de la API |

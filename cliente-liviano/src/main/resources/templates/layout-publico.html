@@ -39,7 +39,7 @@
 <footer th:replace="~{pie :: pie}"></footer>
 <!--/* La región de los avisos breves, igual que en layout-privado. */-->
 <div id="avisos" class="avisos" aria-live="polite" x-data="avisos" x-on:click="cerrar"
-     x-on:mouseenter="pausar" x-on:mouseleave="seguir" x-on:focusin="pausar" x-on:focusout="seguir"></div>
+     x-on:mouseenter="pausar" x-on:mouseleave="seguir" x-on:focusin="pausar" x-on:focusout="seguir"><th:block th:if="${avisoDelServidor}"><p th:replace="~{envio :: aviso(${avisoDelServidor})}"></p></th:block></div>
 <script src="/js/publico.js" th:src="@{/js/publico.js}" defer></script>
 </body>
 </html>

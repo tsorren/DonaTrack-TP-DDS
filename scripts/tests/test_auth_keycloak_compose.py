@@ -198,7 +198,7 @@ class InitDbTests(unittest.TestCase):
         self.assertNotIn("kc-secreta", sql, "la clave no debe ir escrita dentro del SQL")
 
     def test_02_no_rompe_si_falta_la_variable_de_keycloak(self):
-        """docker-compose.preprod.yml usa este mismo script y todavía no pasa KEYCLOAK_DB_PASSWORD (E2-12)."""
+        """Los compose de demo e híbrido usan este mismo script y no pasan KEYCLOAK_DB_PASSWORD."""
         r, sql, args = self._correr_02({})
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertNotIn("keycloak", sql + args)

@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +95,19 @@ public class DonacionIndependienteRepositoryJpaAdapter
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findCancelablesPorNecesidad(UUID necesidadId) {
+    return springDataRepo
+        .findByNecesidadIdAndEstadoActualIn(
+            necesidadId,
+            List.of(
+                TipoEstadoDonacion.ASIGNACION_REALIZADA, TipoEstadoDonacion.LISTA_PARA_ENTREGAR))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
   public int sumarCantidadAsignada(UUID necesidadId, UUID periodoId) {
     if (necesidadId == null) {
       return 0;
@@ -101,22 +115,61 @@ public class DonacionIndependienteRepositoryJpaAdapter
     long suma =
         periodoId != null
             ? springDataRepo.sumarCantidadAsignadaEnPeriodo(necesidadId, periodoId)
-            : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId);
+                - springDataRepo.sumarNoRecibidoEnPeriodo(necesidadId, periodoId)
+            : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId)
+                - springDataRepo.sumarNoRecibidoSinPeriodo(necesidadId);
     return Math.toIntExact(suma);
   }
 
   @Override
   public Map<UUID, Integer> sumarCantidadAsignada(Map<UUID, UUID> periodoPorNecesidad) {
+    if (periodoPorNecesidad.isEmpty()) {
+      return new HashMap<>();
+    }
+    return delPeriodoActual(
+        periodoPorNecesidad,
+        springDataRepo.sumarCantidadAsignadaPorDestino(periodoPorNecesidad.keySet()));
+  }
+
+  @Override
+  public int sumarCantidadRecibida(UUID necesidadId, UUID periodoId) {
+    if (necesidadId == null) {
+      return 0;
+    }
+    long suma =
+        periodoId != null
+            ? springDataRepo.sumarCantidadEnPeriodoConEstado(
+                necesidadId, periodoId, TipoEstadoDonacion.ENTREGADA)
+            : springDataRepo.sumarCantidadSinPeriodoConEstado(
+                necesidadId, TipoEstadoDonacion.ENTREGADA);
+    return Math.toIntExact(suma);
+  }
+
+  @Override
+  public Map<UUID, Integer> sumarCantidadRecibida(Map<UUID, UUID> periodoPorNecesidad) {
+    if (periodoPorNecesidad.isEmpty()) {
+      return new HashMap<>();
+    }
+    return delPeriodoActual(
+        periodoPorNecesidad,
+        springDataRepo.sumarCantidadPorDestinoConEstado(
+            periodoPorNecesidad.keySet(), TipoEstadoDonacion.ENTREGADA));
+  }
+
+  private Map<UUID, Integer> delPeriodoActual(
+      Map<UUID, UUID> periodoPorNecesidad, List<SumaPorDestino> filas) {
     Map<UUID, Integer> sumas = new HashMap<>();
     periodoPorNecesidad.keySet().forEach(id -> sumas.put(id, 0));
-    if (periodoPorNecesidad.isEmpty()) {
-      return sumas;
-    }
-    for (SumaPorDestino fila :
-        springDataRepo.sumarCantidadAsignadaPorDestino(periodoPorNecesidad.keySet())) {
+    for (SumaPorDestino fila : filas) {
       // Solo cuenta el período actual de la necesidad: los anteriores ya se cerraron
       if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
         sumas.put(fila.getNecesidadId(), Math.toIntExact(fila.getCantidad()));
+      }
+    }
+    for (SumaPorDestino fila :
+        springDataRepo.sumarNoRecibidoPorDestino(periodoPorNecesidad.keySet())) {
+      if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
+        sumas.merge(fila.getNecesidadId(), -Math.toIntExact(fila.getCantidad()), Integer::sum);
       }
     }
     return sumas;
@@ -131,5 +184,28 @@ public class DonacionIndependienteRepositoryJpaAdapter
     Map<UUID, Integer> conteo = new HashMap<>();
     filas.forEach(f -> conteo.put(f.getEntidadId(), Math.toIntExact(f.getCantidad())));
     return conteo;
+  }
+
+  @Override
+  public long contarEnEstado(TipoEstadoDonacion estado) {
+    return springDataRepo.countByEstadoActual(estado);
+  }
+
+  // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta
+  @Override
+  @Transactional(readOnly = true)
+  public List<DonacionIndependiente> findDestacadasDesde(LocalDateTime desde, int limite) {
+    return springDataRepo
+        .findByEstadoActualAndFechaEntregaGreaterThanEqualOrderByFechaEntregaDescIdAsc(
+            TipoEstadoDonacion.ENTREGADA, desde, Limit.of(limite))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  public long contarDestacadasDesde(LocalDateTime desde) {
+    return springDataRepo.countByEstadoActualAndFechaEntregaGreaterThanEqual(
+        TipoEstadoDonacion.ENTREGADA, desde);
   }
 }

@@ -6,11 +6,15 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -27,7 +31,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -35,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EntregasService implements IEntregasService {
+  private static final Logger log = LoggerFactory.getLogger(EntregasService.class);
+  private static final String ACTOR_BROKER = "broker-donaciones";
   private final IEntregasRepository entregasRepository;
   private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
@@ -137,6 +146,18 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
+  public Optional<UUID> beneficiariaDe(UUID id) {
+    return entregasRepository.findById(id).map(Entrega::getIdBeneficiaria);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<UUID> donanteDeDonacion(UUID idDonacion) {
+    return entregasRepository.findByIdDonacion(idDonacion).map(Entrega::getDonanteId);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public SeguimientoEntregaResponseDTO obtenerSeguimientoPorDonacion(UUID idDonacion) {
     if (idDonacion == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -160,6 +181,24 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId) {
+    if (donanteId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    return entregasRepository.findByDonanteId(donanteId).stream()
+        .filter(EntregasService::estaActiva)
+        .map(this::construirSeguimiento)
+        .toList();
+  }
+
+  private static boolean estaActiva(Entrega entrega) {
+    return entrega.getEstadoActual() == EstadoEntrega.PENDIENTE
+        || entrega.getEstadoActual() == EstadoEntrega.EN_TRASLADO
+        || entrega.getEstadoActual() == EstadoEntrega.EN_PUERTA;
+  }
+
+  @Override
   @Transactional
   public EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto) {
     if (dto == null) {
@@ -178,18 +217,23 @@ public class EntregasService implements IEntregasService {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
+    if (request.estado() == EstadoEntrega.EN_PUERTA) {
+      // Sin solicitud de transición: la llegada no es un pedido de la entidad ni del admin (HB-22)
+      return marcarEnPuerta(id, request.actor());
+    }
+
     Entrega entrega = buscarEntrega(id);
 
     SolicitudTransicionEntrega solicitud =
         switch (request.estado()) {
-          case ENTREGADA ->
-              procesarEntregaEntregada(request.actor(), entrega, request.obtenerFotosRecepcion());
+          case ENTREGADA -> procesarEntregaEntregada(entrega, request);
           case NO_RECIBIDA ->
               procesarEntregaNoRecibida(
                   request.actor(), entrega, request.justificacion(), request.replanificable());
           case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
           case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-          case EN_TRASLADO ->
+            // CANCELADA entra solo por el comando del broker (HB-19), nunca por PATCH
+          case EN_TRASLADO, CANCELADA ->
               throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
@@ -201,6 +245,83 @@ public class EntregasService implements IEntregasService {
     publicarEventos(entrega);
     entrega.clearDomainEvents();
     return entregaMapper.toResponseDTO(entrega);
+  }
+
+  @Override
+  @Transactional
+  public EntregaResponseDTO marcarEnPuerta(UUID id, String actor) {
+    Entrega entrega = buscarEntrega(id);
+    if (entrega.getEstadoActual() == EstadoEntrega.EN_PUERTA) {
+      return entregaMapper.toResponseDTO(entrega);
+    }
+    entrega.llegarAPuerta(actor);
+    entregasRepository.save(entrega);
+    publicarEventos(entrega);
+    entrega.clearDomainEvents();
+    return entregaMapper.toResponseDTO(entrega);
+  }
+
+  /**
+   * Cancela la entrega de una donación que todavía no salió (HB-19, comando {@code
+   * entrega.cancelada.<instancia>.v1}). Idempotente: si ya estaba cancelada vuelve a publicar la
+   * confirmación, por si la primera se perdió; si ya salió, no hace nada (lo dice {@code
+   * ruta.iniciada}).
+   */
+  @Override
+  @Transactional
+  public void cancelarPorDonacion(UUID idDonacion, String motivo) {
+    if (idDonacion == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    Entrega activa = entregasRepository.findByIdDonacion(idDonacion).orElse(null);
+    if (activa == null) {
+      reconfirmarCancelacion(idDonacion, motivo);
+      return;
+    }
+    if (activa.getEstadoActual() != EstadoEntrega.PENDIENTE) {
+      log.info(
+          "Cancelación ignorada: la entrega {} de la donación {} ya salió (estado {})",
+          activa.getId(),
+          idDonacion,
+          activa.getEstadoActual());
+      return;
+    }
+
+    UUID idRuta = activa.getIdRuta();
+    activa.cancelar(ACTOR_BROKER, motivo);
+    if (idRuta != null) {
+      Ruta ruta =
+          rutasRepository
+              .findById(idRuta)
+              .orElseThrow(() -> new RecursoNoEncontradoException(idRuta));
+      ruta.quitarEntrega(activa.getId());
+      rutasRepository.save(ruta);
+    }
+    entregasRepository.save(activa);
+    publicarEventos(activa);
+    activa.clearDomainEvents();
+    log.info("Entrega {} de la donación {} cancelada ({})", activa.getId(), idDonacion, motivo);
+  }
+
+  private void reconfirmarCancelacion(UUID idDonacion, String motivo) {
+    entregasRepository.findCanceladasByIdDonacion(idDonacion).stream()
+        .max(Comparator.comparing(EntregasService::fechaUltimoCambio))
+        .ifPresentOrElse(
+            cancelada -> {
+              log.info(
+                  "Cancelación repetida: se vuelve a confirmar la entrega {}", cancelada.getId());
+              comunicadorEventos.comunicarEntregaCancelada(
+                  new EntregaCancelada(cancelada.getId(), idDonacion, motivo));
+            },
+            () ->
+                log.warn(
+                    "Cancelación ignorada: la donación {} no tiene entrega en esta instancia",
+                    idDonacion));
+  }
+
+  private static LocalDateTime fechaUltimoCambio(Entrega entrega) {
+    List<CambioEstadoEntrega> historial = entrega.getHistorialEstado();
+    return historial.isEmpty() ? LocalDateTime.MIN : historial.getLast().timeStamp();
   }
 
   @Override
@@ -234,10 +355,11 @@ public class EntregasService implements IEntregasService {
           List.of());
     }
 
-    String patenteCamion =
+    Camion camion =
         ruta.getCamionId() != null
-            ? camionRepository.findById(ruta.getCamionId()).map(Camion::getPatente).orElse(null)
+            ? camionRepository.findById(ruta.getCamionId()).orElse(null)
             : null;
+    String patenteCamion = camion != null ? camion.getPatente() : null;
 
     List<UUID> idsParadas = ruta.getEntregaIds();
     List<ParadaSeguimientoDTO> paradas = new ArrayList<>(idsParadas.size());
@@ -294,7 +416,23 @@ public class EntregasService implements IEntregasService {
         aInstantUtc(entrega.getHoraSalida()),
         aInstantUtc(entrega.getHoraArribo()),
         ultimaActualizacion,
-        List.copyOf(paradas));
+        List.copyOf(paradas),
+        posicionCamion(ruta, camion));
+  }
+
+  private static PosicionCamionDTO posicionCamion(Ruta ruta, @Nullable Camion camion) {
+    if (ruta.getEstado() != EstadoRuta.EN_TRASLADO || camion == null) {
+      return null;
+    }
+    PosicionCamion posicion = camion.getPosicion();
+    // Una posición anterior al inicio de esta ruta es de la ruta previa del camión.
+    boolean esDeEstaRuta =
+        posicion != null
+            && ruta.getHoraInicioReal() != null
+            && !posicion.registradaEn().isBefore(aInstantUtc(ruta.getHoraInicioReal()));
+    return esDeEstaRuta
+        ? new PosicionCamionDTO(posicion.latitud(), posicion.longitud(), posicion.registradaEn())
+        : null;
   }
 
   private static Instant calcularUltimaActualizacion(
@@ -345,9 +483,14 @@ public class EntregasService implements IEntregasService {
   }
 
   private static SolicitudTransicionEntrega procesarEntregaEntregada(
-      String actor, Entrega entrega, List<String> fotosRecepcion) {
+      Entrega entrega, CambioEstadoEntregaRequestDTO request) {
     SolicitudTransicionEntrega solicitud =
-        new ConfirmacionRecepcion(entrega, actor, fotosRecepcion);
+        new ConfirmacionRecepcion(
+            entrega,
+            request.actor(),
+            request.obtenerFotosRecepcion(),
+            request.numeroRemito(),
+            request.reporte() != null ? request.reporte().aDominio() : null);
 
     GestorDeEntregas.cambiarEstado(solicitud);
     return solicitud;
@@ -383,6 +526,8 @@ public class EntregasService implements IEntregasService {
         case EntregaConfirmada confirmada ->
             comunicadorEventos.comunicarEntregaExitosa(confirmada, buscarCamionDeEntrega(entrega));
         case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
+        case EntregaCancelada cancelada -> comunicadorEventos.comunicarEntregaCancelada(cancelada);
+        case EntregaEnPuerta enPuerta -> comunicadorEventos.comunicarEntregaEnPuerta(enPuerta);
       }
     }
   }

@@ -228,7 +228,7 @@
 4. **Incentivos sin DLQ** (`RabbitMQConfig`, `setDefaultRequeueRejected(false)`; sus colas no tienen argumentos `x-dead-letter-*`). Un mensaje que falla al procesarse se descarta. Se cierra con DLX y DLQ, como en Notificaciones.
 5. **Schedulers de Incentivos sin lock distribuido** (`InactividadJob`, `RachaJob`, `RankingMensualJob`; 0 referencias a ShedLock en código y poms). Con más de una réplica, cada job corre una vez por réplica. El ADR de ShedLock (`proposed`) ponía como condición tener PostgreSQL, que #889 ya incorpora.
 6. **`CallerRunsPolicy` en el pool asíncrono de Incentivos** (`AsyncConfig`, pool 2/10/500; el mismo default está en `CommonAsyncAutoConfiguration`). `[INFERRED]` Con la cola llena, la publicación AMQP corre en el hilo que la pidió y sus errores solo dejan un `warn` (`IncentivosEventosPublisher`). Contradice el objetivo de no bloquear al llamador.
-7. **Traza AMQP solo de ida.** Donaciones envía `X-Trace-Id` en sus publicaciones (`DonacionesEventPublisher`, `ProveedorLogisticaAmqp`) y en el pedido HTTP (`ProveedorLogisticaHttp`). Ningún listener lo restaura en el MDC, y Logística e Incentivos no lo envían. Contradice `docs/arquitectura/eventos-amqp.md` (restauración en el consumidor) y deja a medias el ADR de trazabilidad distribuida.
+7. **Traza AMQP solo de ida.** Donaciones envía `X-Trace-Id` en sus publicaciones (`DonacionesEventPublisher`, `ProveedorLogisticaAmqp`) y en el pedido HTTP (`ProveedorLogisticaHttp`). `[OBSERVED] partial` desde HB-19 (2026-11-09): Logística envía `X-Trace-Id` en sus cinco eventos de vuelta (`LogisticaEventPublisher.identidad()`, si hay un traceId en el MDC) y lo restaura en el MDC al consumir la cancelación (`EntregaSolicitadaEventListener.onEntregaCancelada`). Falta: restaurarlo en los demás listeners (el pedido de entrega en Logística, todos los de Donaciones y Notificaciones), e Incentivos no lo envía. Contradice `docs/arquitectura/eventos-amqp.md` (restauración en el consumidor) y deja a medias el ADR de trazabilidad distribuida.
 8. **Tests JPA de Notificaciones excluidos de CI.** Surefire excluye `**/RepositoriosJpaTest.java` (`pom.xml`, sección `excludes`): el test de repositorios JPA de Notificaciones no corre en `mvn verify` ni en CI. Sí corren `RepositoriosLogisticaJpaTest`, `RepositoriosIncentivosJpaTest` y `ServicesSobrePostgresTest`. El ADR multi-schema cita `RepositoriosJpaTest` como evidencia de validación. **Resuelto (2026-10-28, RM-02):** se quitó la exclusión del `pom.xml` raíz; `mvn verify -pl notificaciones-service -am` corre `RepositoriosJpaTest` con 6 tests, 0 fallas y 0 salteados.
 9. **Reglas ArchUnit faltantes.** El ADR 20260906 declara dos reglas que no están codificadas: dependencias permitidas de los controllers (`onlyDependOnClassesThat`) y dominio sin `jakarta.persistence` en todos los servicios (hoy solo en Logística). Ninguna regla impide que `services` dependa de `infrastructure`. Fugas observadas: Donaciones (`OutboxStore`; `ProcesadorDeDonaciones`, DTI-02), Incentivos (`IN8nClient` e `INotificacionesClient`, puertos ubicados en `infrastructure/`) y Logística (`RutaMapper` → `GeneradorDeURLSeguimiento`). El dominio de Donaciones importa `NecesidadDTO`, por eso su regla omite `dto..`. Además, las reglas de dominio solo inspeccionan `models.entities..`: no cubren `models.algoritmos`, `normalizacion`, `segmentacion`, `ports` ni `storage` (hoy sin imports de `dto`, `controllers` ni `infrastructure` en esos paquetes).
 10. **Notificaciones recibe hechos que no procesa** (`RabbitMQConfig` de Notificaciones liga `notificaciones.donaciones` con `donacion.#` y `donante.#`; su mapeo de tipos y `DonacionEventListener` no cubren `donacion.segmentada.v1` ni `donante.dado-de-baja.v1`, que Donaciones publica para Incentivos). `[INFERRED]` La conversión falla, el mensaje se rechaza sin requeue y termina en `notificaciones.donaciones.dlq`; no verificado con ejecución. Llena la DLQ de mensajes legítimos y confunde la revisión manual. Se cierra con bindings explícitos por clave o con un descarte controlado de los tipos ajenos. **Resuelto (2026-10-14):** bindings explícitos, una clave por handler (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`); `RabbitMQConfigTest` verifica que coincidan con el mapeo de tipos. En un broker ya provisionado, los bindings `donacion.#` y `donante.#` previos persisten hasta borrarlos a mano o recrear la cola.
@@ -441,19 +441,20 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 
 | Campo | Valor |
 |---|---|
-| ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) |
-| Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `CambioEstadoEntregaRequestDTO` no acepta remito ni reporte; `EntregaResponseDTO` no los devuelve; `DonacionIndependienteResponseDTO` no devuelve `necesidadId`. El prototipo de Raíces ya pide el remito al confirmar |
+| ADR | [20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones](./20261102-contrato-de-entregas-para-la-entidad-remito-reporte-y-datos-de-donaciones.md) y su ajuste [20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md) |
+| Decision status | `proposed` (los dos) |
+| Implementation status | `[OBSERVED] partial` (HB-17, 2026-11-08) — ítems 1 a 3 implementados: `numeroRemito` y `reporte` en la confirmación y en `EntregaResponseDTO` (Flyway V7 de Logística, también en Mongo), `reporte` en `entrega.exitosa`, `necesidadId` en `DonacionIndependienteResponseDTO`, y Donaciones cuenta lo recibido (Flyway V14). Excluir de las destacadas las entregas con reporte (HB-01): implementado en el PR #954, la pertenencia (HB-13) y conectar la pantalla |
 | Target | `logistica-service` (`Entrega`, DTOs de entregas, `entrega.exitosa`) · `donaciones-service` (`DonacionIndependienteResponseDTO`) · `openapi-logistica.yaml`, `openapi-donaciones.yaml` y `schemas/evento-entrega-exitosa.schema.json` |
 | Cuándo se saldará | Cuando `cliente-liviano` consuma Logística para Confirmar recepción (RF-12). Pide antes HB-13 (pertenencia) |
 
 1. **Remito.** `numeroRemito` en la confirmación (`ENTREGADA`) y en `EntregaResponseDTO`; fuera de las respuestas públicas y de los eventos.
-2. **Reporte.** `reporte` opcional en la confirmación (`motivo`, `detalle`, `cantidadRecibida`), guardado en la entrega y como campo opcional de `entrega.exitosa`. Falta decidir qué hace Donaciones con una cantidad recibida menor (por ejemplo, cuánto cuenta para el período).
+2. **Reporte.** `reporte` opcional en la confirmación (`motivo`, `detalle`, `cantidadRecibida`), guardado en la entrega y como campo opcional de `entrega.exitosa`. Decidido el 2026-11-08 ([ajuste](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md), `proposed`): la necesidad cuenta lo que llegó.
 3. **`necesidadId`** como campo opcional de `DonacionIndependienteResponseDTO`.
 4. **Pantalla "Llegó con un problema":** diseñada y dibujada en el prototipo (2026-11-07,
    [ficha](../interfaz/flujos/raices-llego-con-un-problema.md)). Por decisión del usuario, las fotos
    de una entrega con reporte no se publican en la portada ni en el mapa; el ADR dice que la foto
-   llega igual a la portada. Se ajusta con un ADR sucesor al implementar este ítem.
+   llega igual a la portada. Ajustado en el [ADR de entregas con problema](./20261108-entregas-con-problema-fotos-privadas-y-cantidad-recibida.md)
+   (`proposed`, 2026-11-08); lo implementa HB-01.
 
 ---
 
@@ -464,9 +465,9 @@ Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siem
 |---|---|
 | ADR | [20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato](./donaciones-service/20261102-ciclo-de-vida-de-la-necesidad-en-el-contrato.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `NecesidadDTO` (`id, tipo, idEntidad, idSubcategoria, cantidadNecesitada, descripcion, estaSatisfecha, fechaInicio, fechaFin`); `GET /api/necesidades` sin filtro por estado y con las dadas de baja; período de cualquier largo; el cambio de cantidad vale desde el próximo período. El prototipo de Raíces ya muestra lo decidido |
+| Implementation status | `[OBSERVED] implemented` en el [PR #957](https://github.com/tsorren/DonaTrack-TP-DDS/pull/957) (HB-18): los siete puntos, Flyway V17 y OpenAPI de Donaciones 1.5.0, con la migración del contrato del ajuste del 2026-11-09 del ADR. Queda abierto: lo recibido no descuenta la cantidad no recibida hasta que se integre HB-17 (PR #951) |
 | Target | `donaciones-service` (`NecesidadDTO`, `NecesidadesService`, `NecesidadRecurrente`, `Subcategoria`, consulta de lo recibido) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
-| Cuándo se saldará | Cuando `cliente-liviano` consuma Donaciones para Necesidades (RF-10). Los dos cambios incompatibles se coordinan con `integration-tests` y Postman |
+| Cuándo se saldará | Con el merge de HB-18 a `ENTREGA_6`; el descuento de lo no recibido, al integrar #951. Los consumidores del repo (`integration-tests` y Postman) se migraron en el mismo PR |
 
 1. **`estado`** calculado (`VIGENTE`, `CUMPLIDA`, `TERMINADA`, `DADA_DE_BAJA`) y filtro `?estado=`; corregir "Listar necesidades activas" en la OpenAPI.
 2. **`version`** en la salida y en el `PUT` (`409` si no coincide).
@@ -486,9 +487,9 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 | Campo | Valor |
 |---|---|
 | ADR | [20261102-baja-de-una-necesidad-con-entregas-en-curso](./20261102-baja-de-una-necesidad-con-entregas-en-curso.md) |
-| ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) |
+| ADR complementario | [20261007-broker-de-integracion-con-logistica](./20261007-broker-de-integracion-con-logistica.md) · cómo se implementa: [20261109-cancelacion-de-entregas-que-no-salieron](./20261109-cancelacion-de-entregas-que-no-salieron.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `NecesidadesService.eliminar` solo llama a `desactivar()`; Logística no tiene cancelación (`EstadoEntrega` sin `CANCELADA`); la asignación por `PATCH` no consulta si la necesidad sigue activa |
+| Implementation status | `[OBSERVED] partial` — HB-19 ([PR #958](https://github.com/tsorren/DonaTrack-TP-DDS/pull/958)) implementa los ítems 1 a 5. Queda pendiente lo de abajo |
 | Target | `donaciones-service` (baja, broker, procesador de eventos de vuelta) · `logistica-service` (`Entrega.cancelar`, listener del comando, salida de la ruta) · `schemas/` (comando `entrega.cancelada.<proveedorId>.v1` y evento `entrega.cancelada`) |
 | Cuándo se saldará | Antes de habilitar la baja de necesidades en el cliente con datos reales |
 
@@ -497,6 +498,17 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 3. **Vuelta** a `EN_DEPOSITO` sin destino al recibir el evento.
 4. **Guarda `NECESIDAD_INACTIVA`** en la asignación por `PATCH`.
 5. **Proveedores HTTP** sin cancelación: la entrega sigue y se loguea.
+
+Pendiente después de HB-19 (ADR 20261109, "Trabajo futuro" y "Consecuencias negativas"):
+
+- Si la confirmación `entrega.cancelada` se pierde (se publica después del commit, sin outbox), la donación queda con `cancelacionPedida` hasta que se repite la baja.
+- Si el proveedor no tiene la entrega (el pedido se descartó por inválido) no confirma, y si el pedido termina `FALLIDA` después de la baja la cancelación se descarta con un log `error`: en los dos casos la donación queda asignada y con la marca hasta una revisión manual, como cualquier solicitud `FALLIDA` del broker.
+- El seguimiento por entidad de Logística devuelve también las entregas `CANCELADA` (historia); la pantalla decide si las muestra.
+- Si el pedido todavía no salió y RabbitMQ lo devuelve, el broker puede pasarlo a un proveedor HTTP después de la baja: la cancelación termina `FALLIDO` por error de contrato y la marca queda hasta que la entrega sale (`ruta.iniciada`).
+- El ADR `proposed` [referencias a donaciones sin clave foránea](./logistica-service/20261007-referencias-a-donaciones-sin-clave-foranea.md) sigue describiendo `UNIQUE (id_donacion)`; el ajuste a una entrega activa por donación está en el ADR 20261109 (no se edita el ADR anterior).
+- Una ruta que queda sin paradas sigue `PENDIENTE` y no se puede iniciar; camión y chofer no se liberan.
+- No hay aviso al donante de que su donación va a otra entidad.
+- Una base Mongo persistente conserva el índice único viejo `idDonacion` de `entregas`: hay que borrarlo a mano.
 
 ---
 
@@ -507,15 +519,15 @@ Refina el ADR aceptado de [gestión de necesidades y períodos](./donaciones-ser
 |---|---|
 | ADR | [20261102-nombre-visible-del-donante-y-constancia-de-los-legales](./20261102-nombre-visible-del-donante-y-constancia-de-los-legales.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `Donante` sin preferencia; `DonanteResumenDTO` devuelve la persona entera (documento, dirección, contactos); sin términos ni constancia de aceptación. El prototipo de Raíces ya muestra el nombre, la opción en Mi perfil, los legales en el pie y la casilla en la ficha |
-| Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `POST /api/personas`, `GET /api/personas/me`) · `openapi-donaciones.yaml` · `cambios-incompatibles-aceptados.txt` |
-| Cuándo se saldará | Con el registro y el perfil reales (RF-03, RI-AUTH-02, HB-11) |
+| Implementation status | `[OBSERVED] partial` (HB-20, 2026-11-10, [PR #960](https://github.com/tsorren/DonaTrack-TP-DDS/pull/960), Donaciones V19 y OpenAPI 1.7.0) — hechos los ítems 1, 2, 3 (ajustado) y 5; pendientes el 4 (texto) y el 6 (categoría, del lado del cliente). Cliente liviano conectado el 2026-11-10 (corrida `conexion-pantallas`, [SPEC-08](../specs/active/SPEC-08-conexion-de-pantallas.md), `[OBSERVED]` en las ramas `E6_conexion_*`, sin mergear): el registro anota la constancia con `PUT /api/personas/{id}/legales`, Mi perfil del donante cambia el nombre visible con `PATCH /api/donantes/{id}/preferencias`, y Recibidas y Confirmar recepción leen `quienDono` en lugar de `/api/donaciones/{id}`. Sigue sin cliente la categoría con el nombre oculto (ítem 6) |
+| Target | `donaciones-service` (`Donante`, `QuienDonoDTO`, `PATCH /api/donantes/{id}/preferencias`, `AceptacionLegales`, `GET` y `PUT /api/personas/{id}/legales`) · `openapi-donaciones.yaml` · `cliente-liviano` (registro, Mi perfil, Recibidas). Desde el ajuste A2 (2026-11-10) no toca `POST /api/personas` ni `cambios-incompatibles-aceptados.txt`; `GET /api/personas/me` queda con HB-11 |
+| Cuándo se saldará | Con el merge de los PRs de la conexión de pantallas (por rol) y el registro y el perfil con login real (RF-03, RI-AUTH-02, HB-11) |
 
-1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias.
-2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`.
-3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Incompatible.**
+1. **`mostrarNombre`** en `Donante` y su endpoint de preferencias. **Hecho** (`PATCH /api/donantes/{id}/preferencias`).
+2. **`QuienDonoDTO`** en las respuestas que lee la entidad, en lugar de `DonanteResumenDTO`. **Hecho** como `quienDono` en `DonacionIndependienteResponseDTO`, el listado que lee la entidad; `DonanteResumenDTO` no lo leía la entidad.
+3. **`AceptacionLegales`** (persona, versión y fecha) y `legalesAceptados` obligatorio en el alta. **Hecho con ajuste**: la constancia va en `GET` y `PUT /api/personas/{id}/legales`, y el alta no la exige (aditivo). El sitio la pide al completar el perfil. Riesgo abierto: la constancia es de la persona (la organización), no de cada miembro invitado.
 4. **Texto de los legales:** lo escribe el equipo.
-5. **`mostrarNombre` en la donación** (opcional; solo oculta) para "Esta vez, sin mi nombre" al registrarla (review de Sofía, 2026-11-02).
+5. **`mostrarNombre` en la donación** (opcional; solo oculta) para "Esta vez, sin mi nombre" al registrarla (review de Sofía, 2026-11-02). **Hecho** en `DonacionInputDTO` (columna `donacion.nombre_oculto`).
 6. **Categoría del ranking** con el nombre oculto (en el prototipo, dato fijo de la maqueta; `cliente-liviano` no tiene todavía un cliente de Incentivos): el cliente liviano la pide a Incentivos (`GET /api/incentivos/donantes/{donanteId}`, `DonantePerfilDTO.categoria`) con el `donanteId`, que `QuienDonoDTO` suma también con el nombre oculto; el cliente liviano lo usa en el servidor y a la entidad le muestra solo la categoría, nunca el id. Falta decidir con qué credencial lo pide el cliente liviano (`[INFERRED]` el perfil de incentivos es del propio donante, no de la entidad).
 
 Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de-usuarios.md): ocultar el nombre no reemplaza la anonimización.
@@ -527,16 +539,17 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 
 | Campo | Valor |
 |---|---|
-| ADR | Sin ADR propio. Si el contacto termina en un servicio nuevo o en un canal nuevo entre servicios, lo pide (AGENTS.md §9.1) |
+| ADR | [20261110-recepcion-de-mensajes-de-contacto-en-notificaciones](./notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md) (HB-21) |
 | Decision status | `proposed` |
-| Decidido por | Usuario (2026-11-02, pregunta 17 del artifact de Raíces): formulario dentro de DonaTrack |
-| Implementation status | `[OBSERVED] deferred` — ningún servicio tiene mensajes de contacto. El prototipo de Raíces tiene la pantalla de Contacto, y los avisos de error enlazan a ella con el código del error |
-| Target | Por decidir: `notificaciones-service` (ya tiene una bandeja de notificaciones) o `donaciones-service` |
+| Decidido por | Usuario (2026-11-02, pregunta 17 del artifact de Raíces): formulario dentro de DonaTrack. Usuario (2026-11-10, HB-21): Notificaciones como dueño, sobre la matriz del ADR |
+| Implementation status | `[OBSERVED] partial` (2026-11-10, rama `E6_HB21_contacto`) — **hecho:** `notificaciones-service` recibe `POST /api/contacto` (tabla `mensaje_contacto` con `clave_envio` UNIQUE en `V4__mensajes_de_contacto.sql`, número de una identidad, límite contado en la tabla y en configuración, `429` con `ERR-EST-903`, aviso a la persona Administración), lista y lee (`GET /api/contacto`, `GET /api/contacto/{numero}`) y responde por correo con `NotificacionRouter` (`RESPONDIDO` o `ENVIO_FALLIDO`); OpenAPI 1.1.0 y ruta pública `POST /api/contacto` en el gateway. Desde 2026-11-11 (E2-01, PR 962) el envío es la ruta pública de Notificaciones y leer y responder piden `ADMIN` cuando `NOTIFICACIONES_SEGURIDAD_HABILITADA=true` (apagada por defecto, M-07 de la matriz). **Pendiente:** (a) con sesión, tomar la persona del token e ignorar el `correo` del cuerpo, como pide el ADR; (b) la retención: borrar la IP a las 24 horas y anonimizar correo y texto a los 180 días de cerrados (sin tarea programada todavía); (c) el cifrado del correo y el texto (crypto-shredding, ADR `proposed`), que Notificaciones tampoco aplica a la réplica de personas; (d) el asunto del correo (`CorreoAdapter.enviarMail` no lo recibe); (e) la pantalla del admin. Lo del cliente liviano (el campo trampa `sitio` y la clave de envío en un campo oculto, que se repite si se reenvía el formulario) está hecho en la rama `E6_conexion_publico` (conexión de pantallas, SPEC-08); `codigoError` se valida con el formato de los códigos de los avisos (12 a 32 caracteres hexadecimales) |
+| Target | `notificaciones-service` (`POST /api/contacto`, `GET /api/contacto`, `GET /api/contacto/{numero}`, `POST /api/contacto/{numero}/respuesta`, tabla con Flyway, OpenAPI) · `api-gateway` (ruta pública) · `cliente-liviano` (clave de envío, campo trampa e IP del navegador) |
 | Cuándo se saldará | Antes de publicar el sitio. Hasta entonces, la pantalla es maqueta |
 
-1. **Dueño.** Decidir qué servicio recibe el mensaje (`POST /api/contacto`: tema, mensaje, código de error opcional, y correo si no hay sesión) y dónde lo lee el administrador.
-2. **Abuso y repetidos.** Límite de envíos por persona o dirección, porque el formulario es público; y detectar el mismo mensaje enviado dos veces (la pantalla sin conexión pide mandarlo de nuevo).
-3. **Respuesta.** Por correo, desde Notificaciones, con el número del mensaje.
+1. **Dueño.** Decidido: Notificaciones recibe `POST /api/contacto` (tema, texto, código de error opcional, correo si no hay sesión y clave de envío) y responde con el número del mensaje. El administrador recibe un aviso en su bandeja (persona Administración de id fijo) y lee los mensajes en `GET /api/contacto`, solo con `ADMIN` desde HB-13.
+2. **Abuso y repetidos.** Decidido: una clave de envío única por formulario devuelve el mismo número si se reenvía (el caso "sin conexión"); un límite contado en la tabla (5 por hora por correo y 20 por día por IP, configurables) responde `429`; campo trampa y largo máximo. El límite en el gateway y el CAPTCHA quedan descartados.
+3. **Respuesta.** Decidido: `POST /api/contacto/{numero}/respuesta` la manda por correo con `NotificacionRouter` y "Respuesta a tu mensaje Nº …"; estados `RECIBIDO`, `RESPONDIDO` y `ENVIO_FALLIDO`. Sin acuse de recibo por correo.
+4. **Pendiente del grupo.** Confirmar los 180 días de retención de los mensajes de personas sin cuenta.
 
 ## DTI-34 — El cliente liviano no tiene catálogo, tokens de movimiento ni cerco de componentes
 <a id="dti-34"></a>
@@ -553,16 +566,16 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 1. **Base y cerco (fase 0).** Tokens y primitivas de movimiento, `@layer`, composición y utilidades, Alpine CSP, catálogo y reglas nuevas de `InterfazFitnessTest`.
 2. **Migración.** Movimiento suelto (fase 1), componentes compartidos (fase 2) y hojas de pantalla reducidas a disposición (fase 3); el tope de clases de un solo uso solo baja.
 
-## DTI-35 — El seguimiento no tiene posición del camión y los textos del cliente todavía dicen "ubicación aproximada"
+## DTI-35 — El cliente no muestra la posición del camión y sus textos todavía dicen "ubicación aproximada"
 <a id="dti-35"></a>
 
 | Campo | Valor |
 |---|---|
 | ADR | [ADR-E6-07 — Posición del camión: fuente, privacidad y actualización](./20261106-posicion-del-camion-fuente-privacidad-y-actualizacion.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `Camion` no tiene posición; no existen `PosicionCamion` ni `FuentePosicionCamion`; `SeguimientoEntregaResponseDTO` no tiene `posicionCamion`; el cliente liviano no tiene el fragmento con polling. Las plantillas `donante-seguimiento`, `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-confirmar-recepcion`, `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es aproximada |
+| Implementation status | `[OBSERVED] partial` — **Logística (puntos 1 y 2), hecho el 2026-11-08 (HB-05 y HB-06):** `PosicionCamion` en `Camion` con `registrarPosicion` idempotente, puerto `FuentePosicionCamion` con `FuentePosicionCamionSimulada` y `ActualizadorPosicionCamiones` cada 30 s sobre las rutas `EN_TRASLADO` (el ADR las llama `EN_CURSO`), persistencia en Mongo, JPA (`V6__camion_posicion.sql`) y memoria, y `posicionCamion` en `SeguimientoEntregaResponseDTO` y en `openapi-logistica.yaml` 1.3.0. **Cliente, avance del 2026-11-10 (corrida `conexion-pantallas`, `[OBSERVED]`):** `donante-seguimiento` lee `posicionCamion` de Logística y muestra la última actualización. **Pendiente:** el cliente liviano no tiene el fragmento con polling (punto 3) y las plantillas `donante-seguimiento`, `entidad-seguimiento-confirmar`, `publico-mapa`, `publico-legales` y `viaje-datos`, y las fichas `raices-seguir-entregas`, `raices-confirmar-recepcion`, `raices-publico-navegable`, `raices-legales` y `raices-ab-huecos-backend`, dicen que la ubicación es aproximada |
 | Target | `logistica-service` (`Camion`, puerto y adaptador simulado, `SeguimientoEntregaResponseDTO`, `openapi-logistica.yaml`) · `cliente-liviano` (fragmento del marcador y textos de ubicación) · `docs/interfaz/flujos/` |
-| Cuándo se saldará | Entrega 6: tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06) para Logística; los textos, con la sesión que conecte el cliente a Logística |
+| Cuándo se saldará | Entrega 6: la parte de Logística quedó hecha con la tarea 6 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-05 y HB-06, 2026-11-08); el fragmento y los textos, con la sesión que conecte el cliente a Logística |
 
 1. **Posición del camión.** Value object `PosicionCamion(latitud, longitud, registradaEn)` en `Camion`, puerto `FuentePosicionCamion` y adaptador simulado que avanza cada 30 s; descarta la posición más vieja que la guardada.
 2. **Seguimiento.** Campo aditivo `posicionCamion` en `SeguimientoEntregaResponseDTO` y en el contrato OpenAPI.
@@ -576,12 +589,12 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 |---|---|
 | ADR | [Réplicas por evento: fotos de recepción en Donaciones y donante en la entrega](./20261106-replicas-por-evento-fotos-de-recepcion-y-donante-de-la-entrega.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06); los records `EventoEntregaExitosa` y `EventoEntregaSolicitadaV1` de los dos servicios, `Entrega`, `EntregaDocument` y `CrearEntregaRequestDTO` todavía no |
+| Implementation status | `[OBSERVED] partial` — los schemas de `entrega.exitosa` y `entrega.solicitada.v1` ya tienen los campos opcionales (contrato primero, 2026-11-06). **Donante (punto 2), hecho el 2026-11-08 (HB-16):** `EventoEntregaSolicitadaV1` de los dos servicios, `DatosEntregaLogistica`, el pedido HTTP, `Entrega`, `EntregaDocument`, `EntregaEntity` (`V5__entrega_donante_id.sql`) y `CrearEntregaRequestDTO` llevan `donanteId`, y `GET /api/entregas/seguimiento/donantes/{donanteId}` lista las activas. **Fotos (punto 1), hecho el 2026-11-08 (HB-01, PR #954):** `EntregaConfirmada` y `EventoEntregaExitosa` de Logística llevan `fotosRecepcion`; Donaciones las guarda en la donación (V15) y sirve `GET /api/donaciones/destacadas` |
 | Target | `logistica-service` (`EventoEntregaExitosa`, `EventoEntregaSolicitadaV1`, `Entrega`, `EntregaDocument`, `CrearEntregaRequestDTO`, `openapi-logistica.yaml`) · `donaciones-service` (los dos records, `ProveedorLogisticaAmqp`, `ProcesadorEventosLogistica`, la donación independiente) |
-| Cuándo se saldará | Entrega 6: tareas 5 (HB-16) y 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md); la URL estable de las fotos depende de ADR-E6-08 (HB-10) |
+| Cuándo se saldará | Entrega 6: tarea 7 (HB-01) del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md), la que queda; la URL estable de las fotos depende de ADR-E6-08 (HB-10). La tarea 5 (HB-16) quedó hecha el 2026-11-08 |
 
-1. **Fotos.** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
-2. **Donante.** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
+1. **Fotos (pendiente).** Logística publica `fotosRecepcion` en `entrega.exitosa`; Donaciones las guarda al pasar a `ENTREGADA` y su `EventoEntregaExitosa` declara `@JsonIgnoreProperties(ignoreUnknown = true)`.
+2. **Donante (hecho, 2026-11-08).** El broker manda `donanteId` (de `Donacion.donanteId`); Logística lo guarda en `Entrega` y en `EntregaDocument` con índice, y lo acepta también en `POST /api/entregas`.
 3. **Datos viejos.** Sin backfill: las entregas y donaciones previas no aparecen en el listado por donante ni en destacadas.
 
 ## DTI-37 — Logística no recibe fotos: solo acepta URLs, sin validar tipo, tamaño ni metadatos
@@ -591,13 +604,37 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 |---|---|
 | ADR | [ADR-E6-08 — Fotos de recepción en almacenamiento de objetos](./logistica-service/20261106-fotos-de-recepcion-en-almacenamiento-de-objetos.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `PATCH /api/entregas/{id}/fotos` y la confirmación reciben URLs sin validar; `logistica-service/pom.xml` no tiene `io.minio`; no hay bucket ni usuario de MinIO para Logística. `FotoRecepcionSubdocument.clave` ya está previsto para la clave del objeto |
-| Target | `logistica-service` (puerto `AlmacenFotosRecepcion` y adaptador MinIO, validador de fotos, `EntregasController`, `openapi-logistica.yaml`, `pom.xml`) · `persistencia/minio/init-usuarios.sh` y los compose (usuario `logistica-service`) |
+| Implementation status | `[VERIFIED] partial` (HB-10, PR #952, 2026-11-08) — ítems 1 a 3 hechos: `FotosRecepcionController` (`POST` multipart y `GET` con `302`), `LimpiadorFotoRecepcion` (5 MB, magic bytes, re-codificación con `ImageIO`), puerto `AlmacenFotosRecepcion` con `MinioAlmacenFotosRecepcion` y `AlmacenFotosEnMemoria`, `io.minio:minio:8.5.17`, usuario `logistica-service` en `init-usuarios.sh` y los dos compose. Tests: `LimpiadorFotoRecepcionTest`, `FotosRecepcionControllerTest` y `MinioAlmacenFotosRecepcionIntegracionTest` (MinIO por Testcontainers). Faltan los ítems 4 (huérfanas) y 5 (orientación). **Para validar por un humano, fuera del ADR:** (a) tope de 24 megapíxeles leído del encabezado antes de decodificar, con `413` (un PNG chico en bytes puede ocupar gigas en memoria y Logística corre con `-Xmx384m`); (b) subir a una entrega `ENTREGADA` da `409`; (c) el `GET` busca la clave con `.jpg` y después con `.png` (`statObject`), sin guardar nada en la entrega, así que no hay migración; (d) la URL estable se arma sobre `logistica.fotos.url-publica-base` (el gateway, `http://localhost:8086` en el compose; en preprod, que no tiene gateway, `http://logistica-service:8083`); (e) la entrega no se toca al subir: guarda la URL estable que llega en `fotosRecepcion` al confirmar (en Mongo, en el campo `clave` de `FotoRecepcionSubdocument`, como cualquier URL), no la clave del objeto. Queda para F5 la ruta `GET /api/entregas/*/fotos/*` en la allowlist del gateway: hoy la allowlist solo admite rutas literales |
+| Target | `logistica-service` (puerto `AlmacenFotosRecepcion` y adaptador MinIO, validador de fotos, `FotosRecepcionController`, `openapi-logistica.yaml`, `pom.xml`) · `persistencia/minio/init-usuarios.sh` y los compose (usuario `logistica-service`) |
 | Cuándo se saldará | Entrega 6: tarea 8 del [plan E6 sin auth](../requerimientos/plan-e6-trabajo-sin-auth.md) (HB-10). Coordinar los compose con A1-01 de SPEC-06 (PR #927) |
 
 1. **Subida.** `POST /api/entregas/{id}/fotos` multipart: tope de 5 MB, JPEG o PNG por magic bytes, re-codificación sin metadatos y clave `entregas/<idEntrega>/<fotoId>.<ext>` en `logistica-fotos-recepcion`.
 2. **Lectura.** `GET /api/entregas/{id}/fotos/{fotoId}` con `302` hacia una URL firmada de 5 minutos.
 3. **Infraestructura.** `io.minio:minio:8.5.17`, usuario `logistica-service` con política `logistica-*` y endpoint público para firmar.
 4. **Huérfanas.** Regla de ciclo de vida para fotos de entregas que nunca se confirman.
+5. **Orientación.** Al re-codificar se pierde el tag EXIF `Orientation`: una foto vertical de celular guardada como píxeles apaisados (Orientation 6 u 8) se muestra girada. Falta leer el tag y rotar los píxeles antes de codificar. `[INFERRED]` de la auditoría de cierre de HB-10; sin test todavía.
 
 ---
+
+---
+
+## DTI-38 — Lo que deja abierto el cierre de E6: `EN_PUERTA`, avisos sin enlace y token del cliente
+<a id="dti-38"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [Estado `EN_PUERTA` de la entrega](./logistica-service/20261111-estado-en-puerta-de-la-entrega.md) (HB-22) |
+| Decision status | `proposed` |
+| Decidido por | Usuario (2026-11-11): estado nuevo contra la recomendación de la matriz ([SPEC-09](../specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md) §3.1) |
+| Implementation status | `[OBSERVED] partial` (2026-11-11, rama `E6_cierre_control`) — **hecho:** `EN_PUERTA` en Logística (V9, OpenAPI 1.9.0) y en Donaciones (V20, OpenAPI 1.8.0), `tipoEvento` y `referenciaId` en Notificaciones (V5, OpenAPI 1.2.0), `donacionIndependienteId` en los eventos de Donaciones y el token del usuario hacia las cuatro APIs. **Falta:** los ítems de abajo |
+| Target | `logistica-service` · `donaciones-service` · `notificaciones-service` · `cliente-liviano` (`ClientesHttp`) · `integration-tests` y `postman` (del grupo, PR 969) |
+| Cuándo se saldará | Antes de publicar el sitio; el ítem 3 con el Gate 3 del grupo |
+
+1. **Quién marca `EN_PUERTA`.** El `PATCH` a `EN_PUERTA` pasa por el permiso `CONFIRMAR_SU_ENTREGA`: la entidad podría marcar su propia entrega en la puerta. El cliente no lo hace (consecuencias del ADR).
+2. **Proveedores externos.** Un proveedor que no publica `entrega.en-puerta` (n8n) deja sus entregas en "En camino"; se confirman igual desde `EN_TRASLADO`. Una carrera entre `ruta.iniciada` y `entrega.en-puerta` (colas distintas) deja la donación "En camino" hasta la confirmación.
+3. **Pruebas de integración y Postman.** `LogisticaIntegrationIT`, `FullDistributedDonationE2EIT` y los flujos de `postman/` esperan un historial exacto sin `EN_PUERTA`: con la simulación de posición (30 s por tramo) puede aparecer en el medio. Fuera de la zona del cierre (PR 969); opciones: `logistica.posicion.simulada.habilitada=false` en el Gate 3 o aceptar `EN_PUERTA` opcional. Gate 3 `[DEFERRED_NO_DOCKER]`.
+4. **Mongo persistente.** Una base que ya tenía el índice `uq_entrega_donacion_activa` lo conserva (redundante con el nuevo); se borra a mano.
+5. **Diagramas.** Los `.puml` y el Lucidchart de clases de Donaciones y Logística no dibujan `EnPuerta`, `Entrega.llegarAPuerta` ni `entregasAlcanzadas`; `docs/generated/contracts-summary.json` no se regeneró.
+6. **Avisos.** El aviso a la entidad "llegó a tu puerta" no existe (la maqueta tiene el tema "En tu puerta"). Las notificaciones anteriores a la V5 y las de un emisor que no manda el id quedan en "Otras novedades" o sin enlace al detalle.
+7. **Token del cliente.** El cliente no distingue un endpoint público de uno privado: sin sesión llama sin token y deja que la API conteste 401 o 200 (`ErroresHttp` convierte el 401 en "Ingresar").
+8. **Pantallas de F2.** El Mapa muestra lugares y no entidades (Logística no dice qué entidad recibió y Donaciones no da el lugar de las entregas: falta un id de entrega o de donación en el DTO público); `MisionDTO` no trae la unidad del avance ni la donación que completó cada misión; Misiones no está en el menú de la persona fuera de maqueta (decidir de dónde sale que la cuenta es `HUMANA` sin una llamada por pantalla) y su escena de huerta a 360 px tiene enlaces de 22 a 45 px (escena de 46 rem con desplazamiento propio o lista de las 8 macetas: decisión de diseño).

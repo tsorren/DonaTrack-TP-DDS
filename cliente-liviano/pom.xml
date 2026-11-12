@@ -18,7 +18,7 @@
         <pico.version>2.1.1</pico.version>
         <!-- Alpine.js, build CSP (D31): sin eval, expresiones solo con nombres. Sin plugins. -->
         <alpine.version>3.17.5</alpine.version>
-        <!-- MapLibre GL solo en las pantallas con mapa (D21). static/js/mapa.js carga la misma versión desde unpkg si el WebJar no responde: al cambiarla, cambiar las dos. -->
+        <!-- MapLibre GL solo en las pantallas con mapa (D21). static/js/mapa.js la carga solo desde el WebJar (sin CDN, ADR-E6-06). -->
         <maplibre.version>5.9.0</maplibre.version>
         <!-- La misma versión que usa axe-core-playwright. -->
         <playwright.version>1.63.0</playwright.version>
@@ -69,6 +69,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.webjars.npm</groupId>
@@ -107,6 +115,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-client-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

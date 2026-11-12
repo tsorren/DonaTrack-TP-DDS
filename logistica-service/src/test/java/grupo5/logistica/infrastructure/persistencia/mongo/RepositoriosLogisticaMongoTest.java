@@ -23,6 +23,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.mappers.SolicitudPlani
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -31,6 +32,7 @@ import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.CamionMother;
@@ -220,6 +222,37 @@ class RepositoriosLogisticaMongoTest {
   }
 
   @Test
+  void unaEntregaEnLaPuerta_seLeeEnLaPuertaYBloqueaOtraActivaDeLaMismaDonacion() {
+    UUID idDonacion = UUID.randomUUID();
+    Entrega enPuerta = entregaDeLaDonacion(idDonacion);
+    enPuerta.iniciarRuta("Chofer");
+    enPuerta.llegarAPuerta("SIMULADOR");
+    entregas.save(enPuerta);
+
+    assertEquals(
+        EstadoEntrega.EN_PUERTA,
+        entregas.findById(enPuerta.getId()).orElseThrow().getEstadoActual());
+    Entrega otraActiva = entregaDeLaDonacion(idDonacion);
+    assertThrows(DuplicateKeyException.class, () -> entregas.save(otraActiva));
+  }
+
+  @Test
+  void unaEntregaCancelada_noBloqueaOtraActivaDeLaMismaDonacion() {
+    UUID idDonacion = UUID.randomUUID();
+    Entrega cancelada = entregaDeLaDonacion(idDonacion);
+    cancelada.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    entregas.save(cancelada);
+
+    Entrega nueva = entregas.save(entregaDeLaDonacion(idDonacion));
+
+    assertEquals(nueva.getId(), entregas.findByIdDonacion(idDonacion).orElseThrow().getId());
+    assertTrue(entregas.existsByIdDonacion(idDonacion));
+    assertEquals(1, entregas.findCanceladasByIdDonacion(idDonacion).size());
+    Entrega otraActiva = entregaDeLaDonacion(idDonacion);
+    assertThrows(DuplicateKeyException.class, () -> entregas.save(otraActiva));
+  }
+
+  @Test
   void dosCamionesConLaMismaPatente_violanElIndiceUnico() {
     camiones.save(new Camion("AA111AA", 20f, 5000f, 3f));
     Camion repetido = new Camion("AA111AA", 20f, 5000f, 3f);
@@ -296,5 +329,26 @@ class RepositoriosLogisticaMongoTest {
 
   private static Entrega entregaDeLaDonacion(UUID idDonacion) {
     return new Entrega(idDonacion, UUID.randomUUID(), EntregaMother.direccion(), 10f, 2f);
+  }
+
+  @Test
+  void laPosicionDelCamionSeGuardaYSeLee() {
+    Camion camion = camiones.save(CamionMother.disponible());
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6037, -58.3816, java.time.Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+    camiones.save(camion);
+
+    assertEquals(posicion, camiones.findById(camion.getId()).orElseThrow().getPosicion());
+  }
+
+  @Test
+  void findByEstado_devuelveSoloLasRutasEnEseEstado() {
+    Ruta enTraslado = rutaEnTrasladoCon(UUID.randomUUID(), UUID.randomUUID());
+    rutas.save(rutaCon(UUID.randomUUID(), UUID.randomUUID()));
+
+    List<Ruta> resultado = rutas.findByEstado(EstadoRuta.EN_TRASLADO);
+
+    assertEquals(List.of(enTraslado.getId()), resultado.stream().map(Ruta::getId).toList());
   }
 }

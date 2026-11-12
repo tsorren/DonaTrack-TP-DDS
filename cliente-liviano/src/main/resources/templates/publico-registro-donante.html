@@ -7,6 +7,8 @@
        resumen; sin JavaScript, los del servidor. Es un formulario real
        (POST) que, en la maqueta, lleva al inicio del donante (Distribuidora Ejemplo SA). Estados:
        ?tipo=persona, ?escenario=lento y error; el error de datos es publico-registro-donante-error.
+       Con una sesión sin perfil (completarPerfil, de #955) pide solo lo que la cuenta no tiene: sin
+       la sección Acceso, guarda en esta misma dirección y conserva lo escrito si falla (fallo).
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -28,12 +30,13 @@
     <nav th:replace="~{componentes/registro :: tipos(${persona} ? 'persona' : 'empresa')}"></nav>
 
     <div class="registro-cuerpo">
-      <nav th:replace="~{componentes/registro :: indice(${ {
-          {id: 'datos', titulo: 'Tus datos', detalle: 'Quién se registra'},
+      <nav th:replace="~{componentes/registro :: indice(${completarPerfil ? { {id: 'datos', titulo: 'Tus datos', detalle: 'Quién se registra'},
+          {id: 'confirmar', titulo: 'Confirmar', detalle: 'Guardar el perfil'} } : { {id: 'datos', titulo: 'Tus datos', detalle: 'Quién se registra'},
           {id: 'acceso', titulo: 'Acceso', detalle: 'Con qué entrás'},
           {id: 'confirmar', titulo: 'Confirmar', detalle: 'Crear la cuenta'} } })}"></nav>
 
-      <form class="tarjeta registro-formulario" action="/donante-inicio" th:action="@{/donante-inicio}"
+      <form class="tarjeta registro-formulario" action="/donante-inicio"
+            th:action="${completarPerfil} ? @{/publico-registro-donante(tipo=${persona ? 'persona' : null})} : @{/donante-inicio}"
             method="post" data-enviando="Creando tu cuenta…" data-validar
             th:aria-busy="${escenario == 'lento'} ? 'true' : null">
         <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1" autofocus
@@ -44,6 +47,10 @@
             <li><a href="#correo">El correo no parece completo: falta la @</a></li>
             <li><a href="#terminos">Para crear tu cuenta, aceptá los términos y la política de privacidad</a></li>
           </ul>
+        </section>
+        <section th:if="${fallo}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus>
+          <h2>No pudimos guardar tu perfil.</h2>
+          <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo en unos minutos.</p>
         </section>
         <th:block th:if="${escenario == 'error'}">
           <section th:replace="~{datos-publicos :: avisoError('No pudimos crear tu cuenta.',
@@ -61,33 +68,43 @@
               <p th:if="${conError}" id="empresa-error" class="campo-error">Falta el nombre de la empresa.</p>
               <input id="empresa" name="empresa" type="text" required autocomplete="organization"
                      data-falta="Falta el nombre de la empresa."
-                     th:value="${escrito and !conError} ? 'Distribuidora Ejemplo SA' : null"
+                     th:value="${completarPerfil} ? ${param.empresa} : (${escrito and !conError} ? 'Distribuidora Ejemplo SA' : null)"
                      th:attr="aria-describedby=${conError} ? 'empresa-error empresa-ayuda' : 'empresa-ayuda',aria-invalid=${conError} ? 'true' : null"
                      placeholder="Por ejemplo: Distribuidora Ejemplo SA">
+            </div>
+            <div class="campo">
+              <label for="rubro">Rubro</label>
+              <small id="rubro-ayuda">A qué se dedica la empresa.</small>
+              <input id="rubro" name="rubro" type="text" required aria-describedby="rubro-ayuda"
+                     data-falta="Falta el rubro de la empresa."
+                     th:value="${completarPerfil} ? ${param.rubro} : (${escrito} ? 'Distribución de alimentos' : null)">
             </div>
             <div class="campo">
               <label for="nombre">Tu nombre y apellido</label>
               <small id="nombre-ayuda">Quien usa la cuenta en nombre de la empresa.</small>
               <input id="nombre" name="nombre" type="text" required autocomplete="name" aria-describedby="nombre-ayuda"
                      data-falta="Falta tu nombre y apellido."
-                     th:value="${escrito} ? 'Ana Ejemplo' : null">
+                     pattern="\S+(\s+\S+)+" title="Escribí el nombre y el apellido."
+                     th:value="${completarPerfil} ? ${param.nombre} : (${escrito} ? 'Ana Ejemplo' : null)">
             </div>
           </th:block>
           <div th:if="${persona}" class="campos-par">
             <div class="campo">
               <label for="nombre">Nombre</label>
               <input id="nombre" name="nombre" type="text" required autocomplete="given-name"
-                     data-falta="Falta tu nombre.">
+                     data-falta="Falta tu nombre."
+                     th:value="${completarPerfil} ? ${param.nombre}">
             </div>
             <div class="campo">
               <label for="apellido">Apellido</label>
               <input id="apellido" name="apellido" type="text" required autocomplete="family-name"
-                     data-falta="Falta tu apellido.">
+                     data-falta="Falta tu apellido."
+                     th:value="${completarPerfil} ? ${param.apellido}">
             </div>
           </div>
         </section>
 
-        <section class="registro-seccion" id="acceso" aria-labelledby="acceso-titulo">
+        <section class="registro-seccion" id="acceso" aria-labelledby="acceso-titulo" th:unless="${completarPerfil}">
           <h2 id="acceso-titulo">Acceso</h2>
           <p>Con tu correo y tu contraseña entrás a ver tus donaciones.</p>
           <div class="campo" th:data-estado="${conError} ? 'error'">
@@ -123,6 +140,7 @@
             <p th:if="${conError}" id="terminos-error" class="campo-error">Para crear tu cuenta, aceptá los términos
               y la política de privacidad.</p>
             <label class="casilla" for="terminos"><input id="terminos" name="terminos" type="checkbox" required
+                   th:checked="${completarPerfil and param.terminos != null}"
                    data-falta="Para crear tu cuenta, aceptá los términos y la política de privacidad."
                    th:attr="aria-describedby=${conError} ? 'terminos-error' : null,aria-invalid=${conError} ? 'true' : null"><span>Leí
               y acepto los <a href="/publico-legales" th:href="@{/publico-legales}" target="_blank"
@@ -130,16 +148,17 @@
               pestaña)</span></a> (versión 1).</span></label>
           </div>
           <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
-                  th:text="${escenario == 'lento'} ? 'Creando tu cuenta…' : 'Crear mi cuenta'">Crear mi cuenta</button>
+                  th:text="${escenario == 'lento'} ? 'Creando tu cuenta…' : (${completarPerfil} ? 'Guardar mi perfil' : 'Crear mi cuenta')">Crear mi cuenta</button>
           <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Creando tu cuenta…</p>
-          <p th:if="${persona}" class="nota">En la maqueta, después de crear la cuenta seguís con la cuenta de
+          <p th:if="${persona and !completarPerfil}" class="nota">En la maqueta, después de crear la cuenta seguís con la cuenta de
             ejemplo de una empresa.</p>
         </section>
       </form>
     </div>
 
-    <p class="registro-salida">¿Ya tenés cuenta? <a href="/publico-ingresar"
+    <p class="registro-salida" th:unless="${completarPerfil}">¿Ya tenés cuenta? <a href="/publico-ingresar"
        th:href="@{/publico-ingresar}">Ingresar</a></p>
+    <div class="registro-salida" th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></div>
   </div>
 </th:block>
 </body>

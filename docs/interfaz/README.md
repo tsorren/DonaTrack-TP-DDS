@@ -43,6 +43,14 @@ se ve en `/<pantalla>`. Tiene el recorrido público, el del donante y el de la e
 del admin ([mapa del sitio](mapa-del-sitio.md)). Las identidades anteriores se retiraron el
 2026-11-03 ([ADR aceptado](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md));
 sus documentos están en el [archivo histórico](historico/README.md), que no es guía para diseñar.
+Desde el 2026-11-08 el sitio usa la piel y la composición de la variante K, "Huerta con abejas"
+([brief](identidad/brief.md); [ADR `proposed`](../adr/cliente-liviano/20261110-piel-huerta-con-abejas-como-identidad-del-cliente-liviano.md),
+pendiente de aceptación del grupo). Los SVG originales de sus ilustraciones están en
+[`identidad/fuentes/`](identidad/fuentes/README.md).
+
+**Rondas de ajustes del 2026-11-09.** Los pedidos por pantalla y las pruebas A/B/C de ese día, con
+lo que se hizo en cada parte: [ronda de la mañana](plan-ronda-2026-11-09.md) y
+[ronda de la tarde](plan-ronda-2026-11-09-tarde.md).
 
 La voz, el tono de cada pantalla, los nombres de los estados y las cifras están en
 [tono y comunicación](tono-y-comunicacion.md).

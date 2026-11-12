@@ -14,7 +14,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <header th:fragment="cabeza" class="registro-cabeza">
-  <p class="huerta-rotulo">Sumate a DonaTrack</p>
+  <p class="huerta-rotulo" th:text="${completarPerfil} ? 'Completá tu perfil' : 'Sumate a DonaTrack'">Sumate a DonaTrack</p>
   <h1>Creá tu <em>cuenta</em></h1>
   <p class="huerta-bajada">Elegí cómo vas a participar. Después completás tus datos en una sola página.</p>
 </header>

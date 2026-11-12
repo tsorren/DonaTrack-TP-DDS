@@ -10,16 +10,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Las variantes de prueba están en src/test/resources: prueba-a (estilo) y prueba-b (estructura).
  */
-@WebMvcTest
-@Import(MaquetaConfig.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("maqueta")
 class VariantesInterceptorTest {
 

@@ -6,7 +6,8 @@
        ruta de las abejas y el árbol del final; bajo tierra, las raíces hasta cada tipo de entidad; lo
        que ya dio frutos, las cifras en árboles y las entregas del mes con su foto; quién participa;
        las preguntas y el cierre. Las piezas son del componente huerta (componentes/huerta.html).
-       ponytail: datos fijos del caso de ejemplo; cuando haya backend, salen del modelo. Textos según
+       Las cifras (cifrasDePortada) las da PublicoPuerto; las entregas del mes siguen fijas en
+       componentes/huerta :: mes, que es compartido (pendiente de la conexión). Textos según
        el tono común (docs/interfaz/tono-y-comunicacion.md). Los estados de la maqueta
        (?escenario=vacio, error o lento) se ven en las dos partes con datos: las cifras y las entregas
        del mes. */-->
@@ -46,10 +47,7 @@
   <section th:replace="~{componentes/huerta :: raices}"></section>
 
   <div class="centro pila">
-    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${ {
-        {n: '1.284', t: 'Entregas confirmadas'},
-        {n: '46', t: 'Entidades en el mapa'},
-        {n: '32', t: 'Donaciones en camino ahora'} } })}"></section>
+    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDePortada})}"></section>
 
     <section th:replace="~{componentes/huerta :: mes(${estado})}"></section>
 

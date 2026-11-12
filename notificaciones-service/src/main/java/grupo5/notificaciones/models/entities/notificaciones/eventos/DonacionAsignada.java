@@ -1,5 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 
@@ -23,5 +24,10 @@ public class DonacionAsignada extends EventoDeDonacion {
         + getPersona().getDenominacion()
         + ". Contiene: "
         + getDetalleDonacion();
+  }
+
+  @Override
+  public TipoEvento tipoEvento() {
+    return TipoEvento.DONACION_ASIGNADA;
   }
 }

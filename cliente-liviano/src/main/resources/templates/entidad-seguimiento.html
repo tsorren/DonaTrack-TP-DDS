@@ -10,7 +10,9 @@
        lado; cada cifra lleva a la primera entrega de su estado. El
        dibujo es fijo para las 5 del ejemplo (en el sistema, MapLibre, D21) y va oculto a los
        lectores: la lista dice todo, con el mismo número (RF-CL-06). Las donaciones salen de
-       piezas-entidad.html (datos), las mismas de Inicio y Donaciones recibidas.
+       piezas-entidad.html (datos), las mismas de Inicio y Donaciones recibidas; la última noticia de
+       cada una, del controller (noticiasDeEntregas: de la maqueta o de Logística). Fuera de la
+       maqueta el dibujo sigue siendo el del ejemplo.
        ?escenario=vacio, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento', ~{::contenido})}">
@@ -25,16 +27,15 @@
 <th:block th:fragment="cuerpo"
     th:with="vienen=${asignadas.?[grupo != 'recibida']},
              conDatos=${escenario == '' and !#lists.isEmpty(vienen)},
-             noticias=${ {aceite: 'Última noticia: 14 de octubre, 16:40.',
-                          arroz: 'El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 18:25.'} }">
+             noticias=${noticiasDeEntregas}">
   <header class="cabecera-entidad">
     <p class="rotulo" th:text="${seccion}">Seguir entregas</p>
     <h1>Lo que viene a tu puerta</h1>
     <p>Las entregas asignadas al <th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block>,
       desde que salen del depósito hasta que confirmás la recepción. Tu dirección es exacta; la del
-      camión, aproximada. Al 15 de octubre de 2026, 18:30.</p>
-    <th:block th:if="${conDatos}">
-      <a th:replace="~{piezas-entidad :: novedades(3)}"></a>
+      camión, aproximada. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
+    <th:block th:if="${conDatos and sinLeer > 0}">
+      <a th:replace="~{piezas-entidad :: novedades(${sinLeer})}"></a>
     </th:block>
   </header>
 
@@ -44,7 +45,8 @@
              '/entidad-seguimiento')}"></section>
   </th:block>
 
-  <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+  <section th:if="${escenario == 'vacio' or (escenario == '' and #lists.isEmpty(vienen))}" class="vacio"
+           aria-labelledby="vacio-titulo">
     <h2 id="vacio-titulo">No tenés entregas por recibir.</h2>
     <p>Cuando se asigne una donación a tu entidad, vas a ver acá por dónde viene y cuándo llega a tu
       puerta.</p>
@@ -92,7 +94,7 @@
            sello junto a ella. 3 (aceite), con problema: impresa hasta donde se cortó. 4 (arroz), en
            camino: impresa hasta la abeja, a mitad de camino. 5 (leche), pendiente: punteada, con su
            sello junto al depósito. Los números son los de la lista. */-->
-    <figure class="mapa-dibujo tierra-impresa" aria-hidden="true">
+    <figure th:if="${dibujoDeEjemplo}" class="mapa-dibujo tierra-impresa" aria-hidden="true">
       <svg class="dibujo" viewBox="0 0 900 590" aria-hidden="true" focusable="false">
         <path class="dibujo-tierra" d="M0 80H900"/>
 
@@ -193,9 +195,9 @@
                 class="nodo-numero" x="21" y="29" th:text="${vuelta.count}">1</text></svg>
             <div>
               <h3 th:text="${d.nombre}">Lentejas secas</h3>
-              <p><svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <p><svg th:if="${d.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                   <use href="#cat-alimentos" th:href="|#${d.categoria}|"/></svg>
-                <th:block th:text="|${d.categoriaNombre} · ${d.cuanto} · Donó ${d.dono}|">Alimentos · 15 kg · Donó
+                <th:block th:text="|${d.categoriaNombre != null ? d.categoriaNombre + ' · ' : ''}${d.cuanto} · Donó ${d.dono}|">Alimentos · 15 kg · Donó
                 Distribuidora Ejemplo SA</th:block></p>
             </div>
           </header>
@@ -208,7 +210,7 @@
           <a th:if="${d.grupo == 'puerta'}" class="boton" data-tono="principal"
              href="/entidad-seguimiento-confirmar?entrega=lentejas"
              th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
-            recepción<span class="solo-lectores" th:text="|: ${d.pedidoNombre}|">: lentejas secas</span></a>
+            recepción<span class="solo-lectores" th:text="${d.pedidoNombre == null} ? '' : |: ${d.pedidoNombre}|">: lentejas secas</span></a>
           <a th:if="${d.grupo == 'problema'}" class="boton" data-tono="secundario"
              href="/entidad-necesidades?necesidad=aceite"
              th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>

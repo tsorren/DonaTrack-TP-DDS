@@ -12,6 +12,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface SpringDataRutaMongoRepository extends MongoRepository<RutaDocument, UUID> {
   List<RutaDocument> findByFecha(LocalDate fecha);
 
+  List<RutaDocument> findByEstado(EstadoRuta estado);
+
   List<RutaDocument> findByIdCamion(UUID idCamion);
 
   List<RutaDocument> findByIdCamionAndFecha(UUID idCamion, LocalDate fecha);

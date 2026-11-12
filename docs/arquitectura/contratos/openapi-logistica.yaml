@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.1.0
+  version: 1.9.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -74,7 +74,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/SeguimientoEntregaResponseDTO'
         '404':
-          description: No existe entrega registrada para la donación indicada
+          description: >-
+            La donación no tiene una entrega activa: nunca tuvo entrega o solo tiene entregas
+            CANCELADA (HB-19)
   /api/entregas/seguimiento/beneficiarios/{idBeneficiaria}:
     get:
       summary: Listar seguimiento de entregas por ID de beneficiario (RF-14)
@@ -90,6 +92,27 @@ paths:
       responses:
         '200':
           description: Listado de seguimientos de entregas del beneficiario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeguimientoEntregaResponseDTO'
+  /api/entregas/seguimiento/donantes/{donanteId}:
+    get:
+      summary: Listar seguimiento de las entregas activas de un donante (RF-09, HB-16)
+      description: Retorna las entregas pendientes o en traslado del donante, con el mismo DTO que el seguimiento por beneficiario. Las entregas creadas sin donanteId no aparecen. Sin autenticación el donante llega por parámetro; con HB-13 se filtrará por la persona del token.
+      operationId: listarSeguimientoPorDonante
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Listado de seguimientos de las entregas activas del donante (vacío si no tiene)
           content:
             application/json:
               schema:
@@ -119,7 +142,12 @@ paths:
   /api/entregas/{id}/estado:
     patch:
       summary: Cambiar estado de una entrega
-      description: Transiciona el estado de la entrega. Para pasar a ENTREGADA (RF-12) es obligatorio enviar al menos una referencia fotográfica válida en fotosRecepcion (o fotoRecepcionUrl por compatibilidad).
+      description: >-
+        Transiciona el estado de la entrega. Para pasar a ENTREGADA (RF-12) es obligatorio enviar al
+        menos una referencia fotográfica válida en fotosRecepcion (o fotoRecepcionUrl por
+        compatibilidad). EN_PUERTA (HB-22, desde 1.9.0) la informa quien mueve el camión al llegar
+        al destino: solo desde EN_TRASLADO, idempotente si ya está en la puerta, y publica
+        entrega.en-puerta. ENTREGADA y NO_RECIBIDA se aceptan desde EN_TRASLADO o EN_PUERTA.
       operationId: cambiarEstadoEntrega
       parameters:
         - name: id
@@ -173,6 +201,88 @@ paths:
           description: Referencias inválidas o entrega fuera de estado ENTREGADA
         '404':
           description: Entrega no encontrada
+    post:
+      summary: Subir fotos de recepción (multipart a MinIO, sin metadatos)
+      description: >-
+        HB-10, ADR-E6-08. Cada parte `foto` es un JPEG o un PNG de hasta 5 MB y 24 megapíxeles; el
+        tipo se valida por magic bytes, no por la extensión ni el Content-Type. Logística re-codifica
+        la imagen (quita EXIF, GPS y XMP) y la guarda en un bucket privado. Valida todas las fotos
+        antes de guardar la primera. No modifica la entrega: la entidad confirma después con
+        `PATCH /api/entregas/{id}/estado` (`ENTREGADA`) y las URLs devueltas en `fotosRecepcion`.
+      operationId: subirFotosRecepcion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - foto
+              properties:
+                foto:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Fotos guardadas, una entrada por foto en el orden recibido
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FotoRecepcionSubidaDTO'
+        '400':
+          description: Sin partes `foto`, una parte vacía o una imagen que no se puede decodificar
+        '404':
+          description: Entrega no encontrada
+        '409':
+          description: La entrega ya está ENTREGADA
+        '413':
+          description: Una foto supera los 5 MB (o el pedido, los 25 MB) o los 24 megapíxeles
+        '415':
+          description: Una foto no es JPEG ni PNG
+  /api/entregas/{id}/fotos/{fotoId}:
+    get:
+      summary: Leer una foto de recepción (redirige a una URL firmada)
+      description: >-
+        URL estable de la foto (ADR-E6-08, RNF-PRIV-03). Responde 302 hacia una URL firmada de
+        MinIO que vence a los 5 minutos. Es la URL que devuelve la subida y la que viaja en
+        `entrega.exitosa`.
+      operationId: leerFotoRecepcion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: fotoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '302':
+          description: Redirección a la URL firmada de la foto
+          headers:
+            Location:
+              description: URL firmada de lectura, válida 5 minutos
+              schema:
+                type: string
+                format: uri
+        '404':
+          description: No hay una foto con ese id en esa entrega
   /api/entregas/{id}/historial:
     get:
       summary: Consultar historial de cambios de estado de una entrega
@@ -332,7 +442,17 @@ paths:
           description: Datos inválidos
     get:
       summary: Listar camiones
+      description: >-
+        Sin incluirDeshabilitados, o en false, sin los DESHABILITADO (como siempre). Con
+        incluirDeshabilitados=true, todos los camiones (HB-23).
       operationId: listarCamiones
+      parameters:
+        - name: incluirDeshabilitados
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Listado de camiones
@@ -627,6 +747,10 @@ components:
         volumenTotalM3:
           type: number
           exclusiveMinimum: 0
+        donanteId:
+          type: string
+          format: uuid
+          description: Opcional. Donante de la donación original, para listar sus entregas activas (HB-16)
     CambioEstadoEntregaRequestDTO:
       type: object
       required:
@@ -635,9 +759,14 @@ components:
       properties:
         estado:
           type: string
+          description: >-
+            Estado destino. CANCELADA no se acepta por esta vía (400): la cancelación entra solo por el
+            comando entrega.cancelada.<instancia>.v1 del broker de Donaciones (HB-19).
+            EN_PUERTA (HB-22) marca que el camión llegó al destino.
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
@@ -659,6 +788,51 @@ components:
           type: string
           nullable: true
           description: Campo de compatibilidad para envío de una única referencia fotográfica.
+        numeroRemito:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 40
+          pattern: '\S'
+          description: Número de remito al pasar a ENTREGADA (HB-17, DTI-29). Opcional durante la migración; no se publica en el mapa ni en los eventos.
+        reporte:
+          type: object
+          nullable: true
+          description: Problema contado al pasar a ENTREGADA (HB-17). La entrega queda ENTREGADA igual; el reporte viaja en entrega.exitosa.
+          required:
+            - motivo
+          properties:
+            motivo:
+              type: string
+              enum:
+                - INCOMPLETA
+                - DANADA
+                - OTRO
+            detalle:
+              type: string
+              nullable: true
+              maxLength: 500
+              description: Obligatorio con OTRO.
+            cantidadRecibida:
+              type: number
+              nullable: true
+              exclusiveMinimum: true
+              minimum: 0
+              description: En la unidad de la donación. Obligatoria con INCOMPLETA.
+    FotoRecepcionSubidaDTO:
+      type: object
+      description: Foto de recepción ya subida (HB-10, ADR-E6-08)
+      required:
+        - fotoId
+        - url
+      properties:
+        fotoId:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+          description: URL estable de la foto (GET /api/entregas/{id}/fotos/{fotoId}, a través del gateway)
     AdjuntarFotoRecepcionRequestDTO:
       type: object
       properties:
@@ -695,12 +869,19 @@ components:
           $ref: '#/components/schemas/DireccionDTO'
         estadoActual:
           type: string
+          description: >-
+            CANCELADA (HB-19) es final: la entrega no salió y su necesidad se dio de baja. Queda como
+            historia; la donación puede tener después otra entrega activa.
+            EN_PUERTA (HB-22, valor nuevo en 1.9.0) es activo: el camión llegó al destino y la
+            entidad todavía no confirmó.
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         horaSalida:
           type: string
           format: date-time
@@ -725,6 +906,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CambioEstadoEntregaResponseDTO'
+        numeroRemito:
+          type: string
+          nullable: true
+          description: Remito cargado al confirmar (HB-17); nulo si no se cargó.
+        reporte:
+          type: object
+          nullable: true
+          description: Problema contado al confirmar (HB-17); nulo si llegó bien.
+          required:
+            - motivo
+          properties:
+            motivo:
+              type: string
+              enum:
+                - INCOMPLETA
+                - DANADA
+                - OTRO
+            detalle:
+              type: string
+              nullable: true
+              maxLength: 500
+              description: Obligatorio con OTRO.
+            cantidadRecibida:
+              type: number
+              nullable: true
+              exclusiveMinimum: true
+              minimum: 0
+              description: En la unidad de la donación. Obligatoria con INCOMPLETA.
     EntregaMapaPublicoResponseDTO:
       type: object
       required:
@@ -780,9 +989,11 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         esEntregaConsultada:
           type: boolean
         horaArribo:
@@ -812,9 +1023,11 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         rutaAsignada:
           type: boolean
         idRuta:
@@ -866,6 +1079,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ParadaSeguimientoDTO'
+        posicionCamion:
+          type: object
+          nullable: true
+          description: Última posición conocida del camión (PosicionCamionDTO), con coordenadas exactas (ADR-E6-07). Es null cuando la ruta no está EN_TRASLADO o todavía no hay posición. Campo aditivo desde 1.3.0.
+          required:
+            - latitud
+            - longitud
+            - registradaEn
+          properties:
+            latitud:
+              type: number
+              format: double
+              minimum: -90
+              maximum: 90
+            longitud:
+              type: number
+              format: double
+              minimum: -180
+              maximum: 180
+            registradaEn:
+              type: string
+              format: date-time
+              description: Hora de origen del dato; es la "última actualización" del marcador.
     CambioEstadoEntregaResponseDTO:
       type: object
       required:
@@ -879,17 +1115,21 @@ components:
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         estadoNuevo:
           type: string
           enum:
             - PENDIENTE
             - EN_TRASLADO
+            - EN_PUERTA
             - ENTREGADA
             - NO_RECIBIDA
             - REVISION
+            - CANCELADA
         timestamp:
           type: string
           format: date-time

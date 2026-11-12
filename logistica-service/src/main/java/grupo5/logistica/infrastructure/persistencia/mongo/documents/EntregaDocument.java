@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +34,30 @@ public class EntregaDocument {
 
   private DireccionSubdocument destino;
 
-  @Indexed(unique = true)
+  // Una entrega activa por donación (HB-19): las CANCELADA quedan fuera del índice. HB-22 suma
+  // EN_PUERTA con otro nombre: mismo nombre y otro filtro chocaría con el índice de una base
+  // existente. El viejo ("uq_entrega_donacion_activa", y antes "idDonacion") se borra a mano.
+  @Indexed(
+      name = "uq_entrega_donacion_en_curso",
+      unique = true,
+      partialFilter =
+          "{ 'estado': { '$in': ['PENDIENTE', 'EN_TRASLADO', 'EN_PUERTA', 'ENTREGADA',"
+              + " 'NO_RECIBIDA', 'REVISION'] } }")
   private UUID idDonacion;
 
   @Indexed private UUID idBeneficiaria;
+
+  @Indexed private UUID donanteId;
 
   @Indexed private EstadoEntrega estado;
 
   private Instant horaArribo;
   private Instant horaSalida;
   @Builder.Default private List<FotoRecepcionSubdocument> fotosRecepcion = new ArrayList<>();
+  private String numeroRemito;
+  private MotivoReporte reporteMotivo;
+  private String reporteDetalle;
+  private Double reporteCantidadRecibida;
   private Double volumenTotalM3;
   private Double pesoTotalKg;
 

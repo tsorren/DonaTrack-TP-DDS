@@ -28,7 +28,8 @@
     </header>
 
     <form class="formulario" action="/admin-entidades-registrada" th:action="@{/admin-entidades-registrada}"
-          method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+          method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null" hx-boost="true"
+          hx-indicator="#enviando-admin-entidades-registrar" hx-select-oob="#avisos">
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá 1 dato para seguir.</h2>
@@ -112,6 +113,7 @@
         <a class="boton" data-tono="secundario" href="/admin-entidades" th:href="@{/admin-entidades}">Cancelar</a>
       </div>
       <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la entidad…</p>
+      <p th:replace="~{envio :: indicador('enviando-admin-entidades-registrar', 'Registrando la entidad…')}"></p>
     </form>
   </div>
 </th:block>

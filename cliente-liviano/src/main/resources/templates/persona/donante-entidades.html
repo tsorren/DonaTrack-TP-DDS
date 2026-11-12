@@ -11,7 +11,7 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{datos-publicos :: datos(~{::pantalla})}"></th:block>
+  <th:block th:replace="~{persona/datos-persona :: persona(~{::cuerpo})}"></th:block>
 </th:block>
 
 <th:block th:fragment="pantalla" th:with="yaDonadas=${ {'comedor', 'escuela', 'merendero'} }">

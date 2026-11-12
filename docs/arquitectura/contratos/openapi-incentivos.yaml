@@ -359,6 +359,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EntradaRankingDTO'
+        calculadoEn:
+          type: string
+          format: date-time
+          nullable: true
+          description: Cuándo se calculó el ranking; null en los calculados antes de que existiera el dato.
+          example: '2026-10-01T02:59:00Z'
     EntradaRankingDTO:
       type: object
       properties:

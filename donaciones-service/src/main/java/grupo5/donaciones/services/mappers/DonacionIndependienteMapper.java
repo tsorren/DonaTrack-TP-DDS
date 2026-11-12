@@ -6,17 +6,26 @@ import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CategoriaResumenDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.QuienDonoDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.SubcategoriaResumenDTO;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.IFotosBienesService;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,14 +34,23 @@ public class DonacionIndependienteMapper {
   private final ISubcategoriasRepository subcategoriasRepository;
   private final ICategoriasRepository categoriasRepository;
   private final IFotosBienesService fotosBienes;
+  private final IDonacionesRepository donaciones;
+  private final IDonantesRepository donantes;
+  private final IPersonasRepository personas;
 
   public DonacionIndependienteMapper(
       ISubcategoriasRepository subcategoriasRepository,
       ICategoriasRepository categoriasRepository,
-      IFotosBienesService fotosBienes) {
+      IFotosBienesService fotosBienes,
+      IDonacionesRepository donaciones,
+      IDonantesRepository donantes,
+      IPersonasRepository personas) {
     this.subcategoriasRepository = subcategoriasRepository;
     this.categoriasRepository = categoriasRepository;
     this.fotosBienes = fotosBienes;
+    this.donaciones = donaciones;
+    this.donantes = donantes;
+    this.personas = personas;
   }
 
   public DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
@@ -53,7 +71,32 @@ public class DonacionIndependienteMapper {
         donacion.getFechaRegistro(),
         historialMapped,
         itemsMapped,
-        donacion.getCantidad());
+        donacion.getCantidad(),
+        donacion.getEntidadBeneficiariaId(),
+        donacion.getNecesidadId(),
+        donacion.isCancelacionPedida(),
+        quienDono(donacion.getDonacionOriginalId()));
+  }
+
+  // ponytail: tres lecturas por fila, como las de categorías de este mapper; por lote si el
+  // listado de la entidad crece.
+  private QuienDonoDTO quienDono(UUID donacionOriginalId) {
+    if (donacionOriginalId == null) {
+      return null;
+    }
+    Donacion donacion = donaciones.findById(donacionOriginalId).orElse(null);
+    if (donacion == null) {
+      return null;
+    }
+    UUID donanteId = donacion.getDonanteId();
+    Persona persona = personas.findById(donanteId).orElse(null);
+    Donante donante = donantes.findById(donanteId).orElse(null);
+    if (persona == null || donante == null) {
+      return null;
+    }
+    String tipo = persona.getTipoPersona() == TipoPersona.JURIDICA ? "EMPRESA" : "PERSONA";
+    boolean visible = donacion.muestraNombreDe(donante) && !persona.estaAnonimizada();
+    return new QuienDonoDTO(tipo, visible ? persona.getNombreCompleto() : null, donanteId);
   }
 
   private List<ItemDonacionIndependienteResponseDTO> mapItems(

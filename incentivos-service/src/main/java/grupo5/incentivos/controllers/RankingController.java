@@ -1,5 +1,10 @@
 package grupo5.incentivos.controllers;
 
+import static grupo5.incentivos.seguridad.Acceso.ADMIN;
+import static grupo5.incentivos.seguridad.Acceso.ADMIN_O_SERVICIO;
+import static grupo5.incentivos.seguridad.Acceso.VER_RANKING;
+import static grupo5.incentivos.seguridad.Acceso.VER_SUS_INCENTIVOS;
+
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.RankingMensualDTO;
@@ -12,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/incentivos/ranking")
 @Validated
 public class RankingController implements IRankingController {
@@ -32,6 +39,7 @@ public class RankingController implements IRankingController {
   }
 
   @Override
+  @PreAuthorize(VER_RANKING)
   @GetMapping("/ultimo")
   public ResponseEntity<RankingMensualDTO> obtenerUltimoRanking() {
     return rankingService
@@ -41,12 +49,14 @@ public class RankingController implements IRankingController {
   }
 
   @Override
+  @PreAuthorize(VER_RANKING)
   @GetMapping("/historial")
   public ResponseEntity<List<RankingMensualDTO>> obtenerHistorial() {
     return ResponseEntity.ok(rankingService.obtenerHistorial());
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping("/calcular")
   public ResponseEntity<RankingMensualDTO> calcularRanking(
       @RequestParam(required = false)
@@ -60,6 +70,7 @@ public class RankingController implements IRankingController {
   }
 
   @Override
+  @PreAuthorize(VER_SUS_INCENTIVOS)
   @GetMapping("/posicion/{donanteId}")
   public ResponseEntity<Integer> obtenerPosicionDonante(
       @PathVariable UUID donanteId,
@@ -76,6 +87,7 @@ public class RankingController implements IRankingController {
   }
 
   @Override
+  @PreAuthorize(VER_RANKING)
   @GetMapping("/{periodo}")
   public ResponseEntity<RankingMensualDTO> obtenerRankingPorPeriodo(
       @PathVariable

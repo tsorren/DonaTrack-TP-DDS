@@ -65,6 +65,9 @@ public class DonacionMapper {
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
     Donacion donacion = new Donacion(donanteId, deposito, dto.descripcion(), dto.fecha());
+    if (Boolean.FALSE.equals(dto.mostrarNombre())) {
+      donacion.ocultarNombre();
+    }
 
     if (dto.items() != null) {
       dto.items().forEach(item -> donacion.agregarItem(toItemEntity(item)));

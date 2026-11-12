@@ -185,6 +185,20 @@ Filtro de tono:
 - Palabras que no van (brief de Raíces): "eco", "huella verde", "florecer", "regá", "cosechá" y
   "sostenible" puesto de adorno.
 
+### Textos de la conexión con las APIs
+
+Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Siguen
+`docs/interfaz/tono-y-comunicacion.md`: lo pendiente se dice pendiente, sin culpa ni urgencia, y no se
+promete lo que el sistema no hace. Solo aparecen fuera de la maqueta.
+
+#### Donante
+
+| Dónde | Texto | Cuándo |
+|---|---|---|
+| Noticia de una entrega en camino (lista y globo del mapa), con datos reales | "Posición aproximada, actualizada hoy a las 16:20." (otro día: "Posición aproximada, actualizada el 14 de octubre, 16:20.") | Logística da `posicionCamion.registradaEn`; no dice "por la mitad del camino" |
+| Noticia de una entrega que no pudo llegar, con datos reales | "<Motivo>. Última noticia: 11 de octubre, 16:10." | El motivo es la justificación del cambio a `EntregaFallida`; la nueva salida no existe en la API |
+| Bajada | "… Posiciones aproximadas, actualizadas hoy, 7 de noviembre, a las 19:40." | La hora es la de la lectura de la pantalla |
+
 ## 7. Accesibilidad
 
 - Zonas: el enlace para saltar al contenido, la navegación del donante (`nav` con nombre), el
@@ -206,7 +220,7 @@ Filtro de tono:
 
 | # | Heurística | Cómo la cumple | Riesgo que queda |
 |---|---|---|---|
-| 1 | Visibilidad del estado | Cada entrega con su estado, su nota y su última noticia; arriba, cuándo se actualizó todo | El simulador de posición todavía no existe (HB-05). "Actualizadas…" cambia al recargar la página: si se refresca sola depende de D22 (pendiente) |
+| 1 | Visibilidad del estado | Cada entrega con su estado, su nota y su última noticia; arriba, cuándo se actualizó todo | El simulador de posición ya existe en Logística (HB-05, 2026-11-08), pero esta pantalla todavía no lo consume. "Actualizadas…" cambia al recargar la página: si se refresca sola depende de D22 (pendiente) |
 | 2 | Lenguaje del usuario | Entrega, depósito, en camino, espera destino; sin códigos de seguimiento | — |
 | 3 | Control y libertad | Solo consulta; menú y Atrás siempre disponibles | — |
 | 4 | Consistencia | Los mismos estados, datos y enlaces que la pantalla del primer prototipo; el sello de estado de la portada de Raíces | No hay catálogo de componentes: el sello se compara a ojo con el de la portada |
@@ -285,3 +299,10 @@ Partes que se deciden con A/B, en este orden:
    tarjeta").
 
 Preguntas abiertas: ninguna.
+
+## Ajuste de HB-22 (cierre E6, 2026-11-11)
+
+Pendiente de OK del usuario (cierre E6, 2026-11-11). La entrega que llegó a la puerta de la entidad
+(`EN_PUERTA`, [ADR del estado EN_PUERTA](../../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)) sigue activa para el donante: se ve como "En camino", con la última posición del
+camión, hasta que la entidad confirma. Sin textos nuevos en esta pantalla; los de Mis donaciones van en
+la lista de textos pendientes del cierre.

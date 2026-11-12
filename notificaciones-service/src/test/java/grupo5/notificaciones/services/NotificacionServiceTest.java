@@ -108,7 +108,8 @@ class NotificacionServiceTest {
             "ropa",
             admin.getId(),
             "Nadie respondió",
-            true);
+            true,
+            null);
 
     EventoNotificable evento =
         new EntregaFallida(
@@ -134,6 +135,23 @@ class NotificacionServiceTest {
     assertEquals(notificacion.getId(), resultado.get(0).id());
     assertEquals("Hola, tenés novedades", resultado.get(0).mensaje());
     assertEquals(EstadoNotificacion.PENDIENTE.name(), resultado.get(0).estado());
+  }
+
+  @Test
+  void obtenerPorPersona_devuelveTipoEventoYReferenciaYNuloEnLasAnteriores() {
+    Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    UUID donacionId = UUID.randomUUID();
+    Notificacion conTipo = NotificacionMother.pendiente(persona, "Salió");
+    conTipo.etiquetar("DONACION_EN_CAMINO", donacionId);
+    Notificacion anterior = NotificacionMother.pendiente(persona, "Vieja");
+    when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(conTipo, anterior));
+
+    List<NotificacionDTO> resultado = service.obtenerPorPersona(persona.getId());
+
+    assertEquals("DONACION_EN_CAMINO", resultado.get(0).tipoEvento());
+    assertEquals(donacionId, resultado.get(0).referenciaId());
+    assertNull(resultado.get(1).tipoEvento());
+    assertNull(resultado.get(1).referenciaId());
   }
 
   @Test
@@ -231,6 +249,26 @@ class NotificacionServiceTest {
     serviceConDb.procesarPersonaSincronizada(dto, UUID.randomUUID().toString());
 
     verify(personasService, never()).sincronizar(any());
+  }
+
+  // ==================== Dueño de la notificación (pertenencia) ====================
+
+  @Test
+  void personaDe_cuandoExiste_deberiaDevolverLaPersonaDestinataria() {
+    UUID notifId = UUID.randomUUID();
+    Persona destinataria = personaConCorreoQueSiempreEnvia("Juan");
+    when(repository.findById(notifId))
+        .thenReturn(Optional.of(NotificacionMother.pendiente(destinataria)));
+
+    assertEquals(Optional.of(destinataria.getId()), service.personaDe(notifId));
+  }
+
+  @Test
+  void personaDe_cuandoNoExiste_deberiaDevolverVacio() {
+    UUID notifId = UUID.randomUUID();
+    when(repository.findById(notifId)).thenReturn(Optional.empty());
+
+    assertTrue(service.personaDe(notifId).isEmpty());
   }
 
   // ==================== Ciclo de Lectura In-App ====================
@@ -362,5 +400,18 @@ class NotificacionServiceTest {
 
     verifyNoInteractions(jdbcTemplate);
     verify(repository).saveAll(any());
+  }
+
+  @Test
+  void notificarPersona_guardaUnaNotificacionPendienteYPublicaNotificacionCreada() {
+    UUID adminId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    service.notificarPersona(adminId, "Nuevo mensaje de contacto Nº 7, sobre una entrega.");
+
+    ArgumentCaptor<Notificacion> guardada = ArgumentCaptor.forClass(Notificacion.class);
+    verify(repository).save(guardada.capture());
+    assertEquals(adminId, guardada.getValue().getPersonaId());
+    assertEquals(EstadoNotificacion.PENDIENTE, guardada.getValue().getEstadoNotificacion());
+    verify(eventPublisher).publishEvent(any(NotificacionCreada.class));
   }
 }

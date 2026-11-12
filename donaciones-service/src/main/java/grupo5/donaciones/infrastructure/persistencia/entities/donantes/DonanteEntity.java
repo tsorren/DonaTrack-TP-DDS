@@ -18,4 +18,7 @@ public class DonanteEntity {
 
   @Column(name = "activo", nullable = false)
   private boolean activo;
+
+  @Column(name = "mostrar_nombre", nullable = false)
+  private boolean mostrarNombre = true;
 }

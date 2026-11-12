@@ -16,6 +16,7 @@ import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnDeposito;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EnPuerta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnTraslado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EntregaFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.Entregada;
@@ -306,5 +307,97 @@ class DonacionIndependienteEstadosTest {
 
     assertEquals(cantidadEnElSnapshot, snapshot.size());
     assertDoesNotThrow(() -> snapshot.forEach(e -> {}));
+  }
+
+  // ===================== Cancelación por baja de la necesidad (HB-19) =====================
+
+  @Test
+  void pedirCancelacion_soloEnLoQueNoSalio_yLaMarcaSeLimpiaAlSalir() {
+    assertThrows(BusinessStateException.class, donacion::pedirCancelacion);
+
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.pedirCancelacion();
+    assertTrue(donacion.isCancelacionPedida());
+
+    donacion.planificarRuta(ACTOR);
+    assertTrue(donacion.isCancelacionPedida());
+
+    donacion.iniciarRecorrido(ACTOR);
+    assertFalse(donacion.isCancelacionPedida());
+    assertThrows(BusinessStateException.class, donacion::pedirCancelacion);
+  }
+
+  @Test
+  void liberarPorCancelacion_desdeListaParaEntregar_vuelveAlDepositoSinDestinoNiMarca() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.planificarRuta(ACTOR);
+    donacion.pedirCancelacion();
+
+    donacion.liberarPorCancelacion("logistica-service");
+
+    assertInstanceOf(EnDeposito.class, donacion.getEstadoActual());
+    assertNull(donacion.getNecesidadId());
+    assertNull(donacion.getPeriodoId());
+    assertNull(donacion.getEntidadBeneficiariaId());
+    assertFalse(donacion.isCancelacionPedida());
+  }
+
+  @Test
+  void liberarPorCancelacion_desdeEnTrasladoOEnDeposito_esTransicionInvalida() {
+    assertThrows(BusinessStateException.class, () -> donacion.liberarPorCancelacion(ACTOR));
+
+    DonacionIndependiente enCamino = DonacionIndependienteMother.enTraslado(1, receptor);
+    assertThrows(BusinessStateException.class, () -> enCamino.liberarPorCancelacion(ACTOR));
+  }
+
+  @Test
+  void elPatchAEnDeposito_sigueSinPoderLiberarUnaAsignada() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+
+    assertThrows(
+        BusinessStateException.class,
+        () ->
+            donacion.cambiarEstado(
+                new SolicitudCambioEstadoDonacionIndependiente(
+                    TipoEstadoDonacion.EN_DEPOSITO, ACTOR)));
+  }
+
+  // ===================== EN_PUERTA (HB-22) =====================
+
+  @Test
+  void llegarAPuerta_desdeEnTraslado_pasaAEnPuertaYDesdeAhiSeConfirma() {
+    DonacionIndependiente enCamino = DonacionIndependienteMother.enTraslado(1, receptor);
+
+    enCamino.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(TipoEstadoDonacion.EN_PUERTA, ACTOR));
+
+    assertInstanceOf(EnPuerta.class, enCamino.getEstadoActual());
+    assertEquals(TipoEstadoDonacion.EN_PUERTA, enCamino.getEstadoActual().getTipo());
+    assertEquals(
+        TipoEstadoDonacion.EN_PUERTA, enCamino.getHistorial().getLast().getEstadoNuevo().getTipo());
+    enCamino.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR));
+    assertInstanceOf(Entregada.class, enCamino.getEstadoActual());
+  }
+
+  @Test
+  void desdeEnPuerta_seRegistraLaFalla() {
+    DonacionIndependiente enCamino = DonacionIndependienteMother.enTraslado(1, receptor);
+    enCamino.llegarAPuerta(ACTOR);
+
+    enCamino.registrarFalla("No era lo pedido", ACTOR);
+
+    assertInstanceOf(EntregaFallida.class, enCamino.getEstadoActual());
+  }
+
+  @Test
+  void llegarAPuerta_fueraDeEnTraslado_esTransicionInvalida() {
+    assertThrows(BusinessStateException.class, () -> donacion.llegarAPuerta(ACTOR));
+
+    DonacionIndependiente enPuerta = DonacionIndependienteMother.enTraslado(1, receptor);
+    enPuerta.llegarAPuerta(ACTOR);
+    assertThrows(BusinessStateException.class, () -> enPuerta.llegarAPuerta(ACTOR));
+    assertFalse(enPuerta.esCancelable());
   }
 }

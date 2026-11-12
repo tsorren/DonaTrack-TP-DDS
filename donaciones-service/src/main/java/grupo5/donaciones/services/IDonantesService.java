@@ -13,6 +13,9 @@ public interface IDonantesService {
 
   DonanteOutputDTO obtenerPorId(UUID id);
 
+  /** Si la entidad ve su nombre (HB-20). Vale desde ya para todas sus donaciones. */
+  DonanteOutputDTO actualizarPreferencias(UUID id, boolean mostrarNombre);
+
   /**
    * Registra a la persona como donante solo si nunca lo fue. Si ya lo era (activo o de baja) no
    * modifica nada, y devuelve cuál de los casos se dio.

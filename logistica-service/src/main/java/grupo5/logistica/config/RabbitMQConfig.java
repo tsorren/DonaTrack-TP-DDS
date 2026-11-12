@@ -1,5 +1,8 @@
 package grupo5.logistica.config;
 
+import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
+import grupo5.logistica.dto.eventos.EventoEntregaCanceladaV1;
+import grupo5.logistica.dto.eventos.EventoEntregaEnPuerta;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
@@ -30,6 +33,9 @@ public class RabbitMQConfig {
   /** Alias fijo de __TypeId__ del comando, independiente de la routing key de cada instancia. */
   public static final String TYPE_ID_ENTREGA_SOLICITADA = "entrega.solicitada.v1";
 
+  /** Alias fijo de __TypeId__ del comando de cancelación (HB-19). */
+  public static final String TYPE_ID_ENTREGA_CANCELADA = "entrega.cancelada.v1";
+
   /**
    * Identidad con la que esta instancia firma los eventos que publica en logistica.exchange: su id
    * de proveedor y el token acordado con Donaciones ({@code logistica.token-vuelta}). Donaciones
@@ -43,6 +49,8 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_RUTA_INICIADA = "ruta.iniciada";
   public static final String ROUTING_KEY_ENTREGA_EXITOSA = "entrega.exitosa";
   public static final String ROUTING_KEY_ENTREGA_FALLIDA = "entrega.fallida";
+  public static final String ROUTING_KEY_ENTREGA_CANCELADA = "entrega.cancelada";
+  public static final String ROUTING_KEY_ENTREGA_EN_PUERTA = "entrega.en-puerta";
 
   private final String instanciaId;
 
@@ -83,18 +91,37 @@ public class RabbitMQConfig {
         .with(routingKeyEntregaSolicitada());
   }
 
+  /**
+   * La cancelación entra por la misma cola que el pedido (HB-19): con un solo consumidor, RabbitMQ
+   * la entrega después del pedido que cancela.
+   */
+  public String routingKeyEntregaCancelada() {
+    return "entrega.cancelada." + instanciaId + ".v1";
+  }
+
+  @Bean
+  public Binding bindingEntregasCanceladas(
+      Queue queueEntregasSolicitadas, TopicExchange donacionesExchange) {
+    return BindingBuilder.bind(queueEntregasSolicitadas)
+        .to(donacionesExchange)
+        .with(routingKeyEntregaCancelada());
+  }
+
   @Bean
   public DefaultClassMapper classMapper() {
     DefaultClassMapper classMapper = new DefaultClassMapper();
     classMapper.setTrustedPackages("*");
     Map<String, Class<?>> idClassMapping = new HashMap<>();
     idClassMapping.put(TYPE_ID_ENTREGA_SOLICITADA, EventoEntregaSolicitadaV1.class);
+    idClassMapping.put(TYPE_ID_ENTREGA_CANCELADA, EventoEntregaCanceladaV1.class);
     // Alias de los eventos que Logística publica: el tipo viaja como la routing key (no como el
     // nombre de la clase), que es lo que esperan los consumidores en sus propios mapeos.
     idClassMapping.put(ROUTING_KEY_RUTA_ASIGNADA, EventoRutaAsignada.class);
     idClassMapping.put(ROUTING_KEY_RUTA_INICIADA, EventoRutaIniciada.class);
     idClassMapping.put(ROUTING_KEY_ENTREGA_EXITOSA, EventoEntregaExitosa.class);
     idClassMapping.put(ROUTING_KEY_ENTREGA_FALLIDA, EventoEntregaFallida.class);
+    idClassMapping.put(ROUTING_KEY_ENTREGA_CANCELADA, EventoEntregaCancelada.class);
+    idClassMapping.put(ROUTING_KEY_ENTREGA_EN_PUERTA, EventoEntregaEnPuerta.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }

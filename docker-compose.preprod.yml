@@ -166,11 +166,20 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      # Fotos de recepción en MinIO (ADR-E6-08, HB-10)
+      - LOGISTICA_MINIO_ENABLED=true
+      - LOGISTICA_MINIO_ENDPOINT=http://minio:9000
+      - LOGISTICA_MINIO_PUBLIC_ENDPOINT=http://minio:9000
+      - LOGISTICA_MINIO_ACCESS_KEY=logistica-service
+      - LOGISTICA_MINIO_SECRET_KEY=${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
+      - LOGISTICA_FOTOS_URL_PUBLICA_BASE=http://logistica-service:8083
     depends_on:
       mongodb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 5s
@@ -238,6 +247,7 @@ services:
       INCENTIVOS_DB_PASSWORD: ${INCENTIVOS_DB_PASSWORD:?ver .env.example}
       LOGISTICA_DB_PASSWORD: ${LOGISTICA_DB_PASSWORD:?ver .env.example}
       DONACIONES_DB_PASSWORD: ${DONACIONES_DB_PASSWORD:?ver .env.example}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?ver .env.example}
     volumes:
       - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
     healthcheck:
@@ -246,6 +256,60 @@ services:
       timeout: 3s
       retries: 10
       start_period: 5s
+    networks:
+      - preprod-network
+
+  keycloak:
+    # IdP de DonaTrack (SPEC-06 E2-12): misma imagen que docker-compose.yml, con el realm y el tema ya
+    # construidos (kc.sh build). La etiqueta es donatrack/auth-service:preprod porque así la deja
+    # scripts/resolver-imagenes-ghcr.sh (el nombre del servicio en CI es el de su carpeta).
+    # Ningún otro servicio depende todavía de Keycloak: lo valida el gateway en E2-01.
+    image: donatrack/auth-service:preprod
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    # Solo en loopback (como rabbitmq): en preprod nadie de afuera lo necesita.
+    ports:
+      - "127.0.0.1:8180:8080"
+    environment:
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_USERNAME=keycloak_user
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD:?ver .env.example}
+      # Admin de la consola de Keycloak (no es el ADMIN de DonaTrack). Solo se crea con la base vacía.
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME:?ver .env.example}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:?ver .env.example}
+      - KC_HOSTNAME=${KC_HOSTNAME:?ver .env.example}
+      - KC_HTTP_ENABLED=${KC_HTTP_ENABLED:-true}
+      - KC_HEALTH_ENABLED=${KC_HEALTH_ENABLED:-true}
+      # Los lee el realm al importarse (${...} en auth-service/realm/donatrack-realm.json), solo con la base vacía.
+      - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
+      - CLIENTE_LIVIANO_BASE_URL=${CLIENTE_LIVIANO_BASE_URL:?ver .env.example}
+      - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL:?ver .env.example}
+      - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD:?ver .env.example}
+      # Google como identity provider (RX-01). Opcionales: vacías, el botón de Google no anda y lo demás sí (RX-13).
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # La salud sale por el puerto de gestión (9000), que no se publica en el host: el 9000 del host
+    # es de MinIO. La imagen no trae curl, así que se abre el socket con bash (/dev/tcp) y se exige
+    # un 200 en /health/ready.
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          read -r estado <&3 &&
+          case "$$estado" in *' 200 '*) exit 0;; *) exit 1;; esac
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+      start_interval: 2s
     networks:
       - preprod-network
 
@@ -300,7 +364,7 @@ services:
       - preprod-network
 
   minio-init:
-    # Crea un usuario de MinIO por servicio (incentivos-service, donaciones-service) con acceso solo
+    # Crea un usuario de MinIO por servicio (incentivos, donaciones y logistica-service) con acceso solo
     # a sus buckets. Misma imagen que minio: trae sh y mc. Corre en cada `up` y termina.
     image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
     entrypoint: ["sh", "/opt/donatrack/minio/init-usuarios.sh"]
@@ -309,6 +373,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?ver .env.example}
       INCENTIVOS_MINIO_PASSWORD: ${INCENTIVOS_MINIO_PASSWORD:?ver .env.example}
       DONACIONES_MINIO_PASSWORD: ${DONACIONES_MINIO_PASSWORD:?ver .env.example}
+      LOGISTICA_MINIO_PASSWORD: ${LOGISTICA_MINIO_PASSWORD:?ver .env.example}
     volumes:
       - ./persistencia/minio:/opt/donatrack/minio:ro
     depends_on:

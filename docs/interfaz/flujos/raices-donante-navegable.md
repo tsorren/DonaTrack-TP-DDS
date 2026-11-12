@@ -304,8 +304,10 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Filtro | "Estado" (Todos · Pendiente · En camino · Entregada · Con problema) · "Categoría" (Todas · Alimentos · Ropa · Útiles escolares) · "Filtrar" · "Sacar los filtros" | Nombre accesible del formulario: "Filtrar donaciones". Los estados, con el texto de `EstadoEntrega` |
 | Número | "N.º 7" | Para el lector: "Donación número 7" |
 | Para quién | "Para Comedor Barrio Ejemplo" · "Todavía sin destino" | — |
+| Para quién, entidad sin nombre (con datos reales) | "Para una entidad" (y en las noticias, "… a una necesidad de una entidad.") | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). La donación tiene entidad, pero no está entre las públicas (dada de baja) o Donaciones no respondió esa lista: el donante no puede leer una entidad por id |
 | Fecha | "Donada el 12 de octubre de 2026" | — |
 | Estado y nota | El sello y la nota de `viaje-datos`; en las entregadas, "Entrega confirmada el 5 de octubre, con foto de la entidad" en lugar de "Llegó el 5 de octubre" | Lo confirmado dice qué lo respalda |
+| Estado y nota con datos reales | En depósito: "En el depósito, espera destino" · Asignada: "Asignada, espera el camión" · Lista para entregar: "Lista para entregar, espera el camión" (las tres, sello Pendiente) · En camino: "Salió el 15 de octubre, 14:30" · Entregada: "Entrega confirmada el 5 de octubre" · No pudo llegar: "No pudo llegar el 11 de octubre" · Vencida: "Venció en el depósito el 1 de octubre" (las dos, sello Con problema) | Aprobadas por el usuario el 2026-11-07, al conectar la pantalla con Donaciones (`DonacionesRest`). La fecha es la del último cambio a ese estado. Sin "con foto de la entidad": el listado no dice si la entrega tiene foto |
 | Pie | "Las que están en curso también se ven en Seguimiento, con dónde va el camión." · "Ver seguimiento" | — |
 
 ### donante-donaciones-detalle
@@ -324,6 +326,7 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Datos | "Donación" (N.º 5) · "Qué" · "Cuánto" · "Categoría" · "Para" · "Donada" · "Entregada" (si llegó) · "Figura como": "Distribuidora Ejemplo SA" con "Cambialo en Mi perfil" | "Figura como" es lo que ve la entidad (HB-20) |
 | Noticias: título | Noticias de esta donación | "De la más nueva a la primera" |
 | Acción | "Ver dónde está" → `donante-seguimiento` | Solo en curso (con destino y sin entregar) |
+| Con datos reales | Noticias, una por cambio de estado: "Recibimos tu donación en el depósito." · "Asignamos tu donación a una necesidad de <entidad>." · "Tu donación quedó lista para entregar." · "El camión salió a entregar tu donación a <entidad>." · "<Entidad> confirmó que recibió tu donación y sumó una foto." (sin foto, "<Entidad> confirmó que recibió tu donación.") · "El camión no pudo llegar a <entidad>: <motivo>." · "Tu donación venció en el depósito." Aviso: "No pudo llegar a <entidad>." con "<Motivo>. Última noticia: 11 de octubre, 16:10.", o "Venció en el depósito.". Entregada sin foto (o con Logística sin responder): "<Entidad> confirmó la entrega el 5 de octubre.". Alt de la foto: "Foto de la entrega que subió <entidad>" Etapas: "11 de octubre: no pudo llegar" · "1 de octubre: venció" | Aprobados por el usuario el 2026-11-07, al conectar el detalle con Donaciones y Logística. Las noticias salen del historial de la donación (Notificaciones no dice a qué donación es cada aviso, HB-09); el motivo, de la justificación del cambio; la nueva salida no existe en la API. "Figura como" no se muestra hasta HB-20. Una donación de otro donante dice "No encontramos esa donación" |
 
 ### donante-entidades
 
@@ -339,6 +342,8 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Lo que pide | El mismo texto de cada pedido de la ficha pública: "Lentejas secas · Faltan 30 de 40 kg este mes · Se repite cada mes" · en uno de una sola vez: "Aceite de girasol · Faltan 20 litros · Hasta el 20 de octubre". Más de 3: "Ver los 5 pedidos" · "Ver menos" | Nombre accesible de la lista: "Lo que pide <entidad>". La barra, si hay, repite el texto |
 | Sin necesidades | "Hoy no pide nada." | — |
 | Paginado | "Página siguiente" · "Página anterior" | Nombre accesible: "Páginas de entidades" |
+| Lo que pide, con datos reales | "Piden 40 kg · Hasta el 20 de octubre" · sin fecha: "Piden 20 unidades · Sin fecha de cierre" · sin unidad: "Piden 20" | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Lo recibido de cada necesidad no existe en la API (HB-18): no se dice cuánto falta y el renglón va sin barra ni porcentaje. Un pedido cuya categoría no es de las cuatro del sprite no se muestra en ningún grupo |
+| Cuenta, una sola entidad | "1 entidad activa. Página 1 de 1." | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10) |
 | Cómo donar: título | Cómo llega tu donación | — |
 | Cómo donar | "Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una entidad. Desde que la registran, ves cada paso en Mis donaciones." · "Depósito Central Ejemplo · Calle Ejemplo 1234, Ciudad Ejemplo · Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h" · "Ver Mis donaciones" | RF-15 y RF-17. Los datos del depósito, sintéticos (los del primer prototipo) |
 
@@ -372,6 +377,9 @@ en las páginas siguientes).
 | Cada aviso | "Sin leer" o "Leída" · el sello del estado actual de su donación · el texto, enlace al detalle (`?donacion=<clave>`) · la fecha ("Hoy, 14:30", "Ayer, 17:00", "11 de octubre, 16:10") · "Lentejas secas, 15 kg" | — |
 | Sin leer | Las cuatro del 14 y el 15 de octubre: lentejas salió (hoy, 14:30) · arroz recibido en el depósito (ayer, 17:00) · leche asignada a Merendero Ejemplo Sur (ayer, 12:15) · lentejas lista para entregar (ayer, 9:10) | — |
 | Leídas | Las otras trece cartas de `viaje-datos`, de la más nueva a la más vieja | La de recepción dice "<Entidad> confirmó que recibió tu <donación> y sumó una foto." |
+| Categoría "Otras novedades" (con datos reales) | "Otras novedades" | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Notificaciones no dice el tipo de aviso (HB-09): la categoría se deduce del texto, y un aviso que no es de ninguna (un ascenso, una misión) va acá. El menú de Categoría muestra solo las que tienen avisos |
+| Mensaje de un aviso con datos reales | El texto que arma Notificaciones, enlace a Mis donaciones (o a Entidades, si es de una necesidad) | Pendiente de OK del usuario (corrida conexion-pantallas, 2026-11-10). Sin el id de la donación (HB-09) no se puede enlazar al detalle |
+| Aviso al marcar (con datos reales) | "Listo: marcaste todas como leídas." · "Listo: marcaste la notificación como leída." · "Listo: marcaste la notificación como no leída." | Los mismos de `donante-notificaciones-leidas`, en la región de avisos |
 
 Ayudas por flujo crítico: ninguna de estas pantallas envía datos de la donación; la única acción,
 "Marcar todas como leídas", es reversible en el contrato (`PATCH /{id}/leida`). La ayuda está en las

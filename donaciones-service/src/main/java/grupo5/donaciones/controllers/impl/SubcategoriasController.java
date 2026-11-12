@@ -1,5 +1,8 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+import static grupo5.donaciones.seguridad.Acceso.CON_SESION;
+
 import grupo5.donaciones.controllers.ISubcategoriasController;
 import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/subcategorias")
 public class SubcategoriasController implements ISubcategoriasController {
 
@@ -52,6 +57,7 @@ public class SubcategoriasController implements ISubcategoriasController {
   }
 
   @Override
+  @PreAuthorize(CON_SESION)
   @GetMapping
   public ResponseEntity<List<SubcategoriaOutputDTO>> obtenerTodas() {
     List<SubcategoriaOutputDTO> lista = subcategoriasService.obtenerTodas();
@@ -59,6 +65,7 @@ public class SubcategoriasController implements ISubcategoriasController {
   }
 
   @Override
+  @PreAuthorize(CON_SESION)
   @GetMapping("/{id}")
   public ResponseEntity<SubcategoriaOutputDTO> obtener(@PathVariable UUID id) {
     SubcategoriaOutputDTO obtenida = subcategoriasService.obtener(id);

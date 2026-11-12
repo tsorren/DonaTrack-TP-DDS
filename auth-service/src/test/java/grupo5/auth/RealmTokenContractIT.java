@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -24,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +60,24 @@ class RealmTokenContractIT {
   private static final String POLITICA_EMAIL = "politica.contrato@example.com";
   private static final String REGISTRO_EMAIL = "registro.contrato@example.com";
   private static final String ADMIN_DONATRACK_EMAIL = "admin.contrato@example.com";
+  private static final String MIEMBRO_EMAIL = "miembro.contrato@example.com";
+  private static final String CUENTA_EMAIL = "cuenta.contrato@example.com";
+  private static final String ALTA_POR_SERVICIO_EMAIL = "alta.servicio.contrato@example.com";
+  // Id fijo en el realm: la cuenta de servicio no tiene view-clients para buscarlo.
+  private static final String API_CLIENT_UUID = "7f3c2a9e-5b1d-4e8a-9c6f-2d4b8a1e0c53";
+  private static final String PERSONA_ID = UUID.randomUUID().toString();
+  private static final String OTRA_PERSONA_ID = UUID.randomUUID().toString();
+  private static final String GOOGLE_CLIENT_ID = "google-de-prueba-" + UUID.randomUUID();
+  // OPERADOR_ENTIDAD (matriz de permisos, §3) más VER_RUTAS suelto, que la plantilla no trae.
+  private static final Set<String> PERMISOS_DEL_OPERADOR_CON_RUTAS =
+      Set.of(
+          "CONFIRMAR_RECEPCION",
+          "GESTIONAR_NECESIDADES",
+          "VER_DONACIONES",
+          "VER_ENTREGAS",
+          "VER_NECESIDADES",
+          "VER_NOTIFICACIONES",
+          "VER_RUTAS");
   private static final String SIN_MENSAJE = "(sin mensaje en la página)";
   private static final List<String> CLAIMS_CON_PII =
       List.of("email", "email_verified", "name", "given_name", "family_name", "preferred_username");
@@ -77,6 +97,7 @@ class RealmTokenContractIT {
   private static final String USER_PASSWORD = "usr-" + UUID.randomUUID();
   private static final String CLAVE_INCORRECTA = "mal-" + UUID.randomUUID();
   private static final String ADMIN_DONATRACK_CLAVE = "adm-app-" + UUID.randomUUID();
+  private static final String GOOGLE_CLIENT_SECRET = "ggl-" + UUID.randomUUID();
 
   private static final ObjectMapper JSON = new ObjectMapper();
   private static final HttpClient HTTP = HttpClient.newHttpClient();
@@ -107,6 +128,8 @@ class RealmTokenContractIT {
             .withEnv("CLIENTE_LIVIANO_BASE_URL", BASE_URL_CLIENTE)
             .withEnv("AUTH_ADMIN_EMAIL", ADMIN_DONATRACK_EMAIL)
             .withEnv("AUTH_ADMIN_PASSWORD", ADMIN_DONATRACK_CLAVE)
+            .withEnv("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID)
+            .withEnv("GOOGLE_CLIENT_SECRET", GOOGLE_CLIENT_SECRET)
             .withCommand("start-dev", "--import-realm")
             .withExposedPorts(8080)
             .waitingFor(
@@ -185,7 +208,8 @@ class RealmTokenContractIT {
     assertTrue(cliente.get("standardFlowEnabled").asBoolean());
     assertFalse(cliente.get("directAccessGrantsEnabled").asBoolean());
     assertFalse(cliente.get("implicitFlowEnabled").asBoolean());
-    assertFalse(cliente.get("serviceAccountsEnabled").asBoolean());
+    // La cuenta de servicio da el token técnico SERVICIO (client credentials).
+    assertTrue(cliente.get("serviceAccountsEnabled").asBoolean());
   }
 
   @Test
@@ -335,6 +359,118 @@ class RealmTokenContractIT {
     verificarTema(abrirPantalla(HTTP, "create").body());
   }
 
+  @Test
+  void laPantallaDeLoginOfreceEntrarConGoogle() throws Exception {
+    assertTrue(abrirPantalla(HTTP, null).body().contains("/broker/google/login"));
+  }
+
+  @Test
+  void googleEsProveedorDeIdentidadConLasCredencialesDeLasVariables() throws Exception {
+    JsonNode google = admin("/admin/realms/" + REALM + "/identity-provider/instances/google");
+    assertEquals("google", google.get("providerId").asText());
+    assertTrue(google.get("enabled").asBoolean());
+    assertEquals(GOOGLE_CLIENT_ID, google.get("config").get("clientId").asText());
+    // D4: el flujo por defecto pide la clave para vincular Google con una cuenta que ya existe.
+    assertEquals("first broker login", google.get("firstBrokerLoginFlowAlias").asText());
+  }
+
+  // Keycloak crea default-roles-donatrack con offline_access antes de leer el JSON, y el import
+  // solo suma composites: el rol queda. Lo que se garantiza es que el cliente no pueda pedirlo.
+  @Test
+  void elClienteNoPuedePedirTokensOffline() throws Exception {
+    JsonNode cliente = admin("/admin/realms/" + REALM + "/clients?clientId=" + CLIENT_ID).get(0);
+    String base = "/admin/realms/" + REALM + "/clients/" + cliente.get("id").asText();
+    for (String tipo : List.of("/default-client-scopes", "/optional-client-scopes")) {
+      List<String> scopes = nombresDeRoles(admin(base + tipo));
+      assertFalse(scopes.contains("offline_access"), tipo + " " + scopes);
+    }
+  }
+
+  @Test
+  void unDonanteSinPlantillaNiPersonaNoLlevaEsosClaims() {
+    assertFalse(accessToken.has("permisos"));
+    assertFalse(accessToken.has("personaId"));
+  }
+
+  // RX-05 y RX-06: los permisos salen planos de la plantilla más los sueltos, y personaId sale del
+  // atributo de la cuenta. El nombre de la plantilla no viaja: no es un permiso.
+  @Test
+  void losTokensLlevanLosPermisosDeLaPlantillaMasLosSueltosYElPersonaId() throws Exception {
+    String admin = tokenDeAdmin();
+    String id = crearUsuario(admin, MIEMBRO_EMAIL, USER_PASSWORD, "ENTIDAD");
+    asignarRolesDeLaApi(admin, id, List.of("OPERADOR_ENTIDAD", "VER_RUTAS"));
+    assertEquals(204, editarAtributo(admin, id, "personaId", PERSONA_ID).statusCode());
+
+    JsonNode login = iniciarSesionYCanjearElCodigo(MIEMBRO_EMAIL, USER_PASSWORD);
+    for (String tipo : List.of("access_token", "id_token")) {
+      JsonNode token = claims(login.get(tipo).asText());
+      Set<String> permisos = Set.copyOf(valores(token.get("permisos")));
+      assertEquals(PERMISOS_DEL_OPERADOR_CON_RUTAS, permisos, tipo);
+      assertEquals(PERSONA_ID, token.get("personaId").asText(), tipo);
+      // Además trae DONANTE: la Admin API le da el rol por defecto a toda cuenta que crea.
+      assertTrue(valores(token.get("roles")).contains("ENTIDAD"), tipo);
+    }
+    JsonNode access = claims(login.get("access_token").asText());
+    assertEquals(List.of(API_AUDIENCE), valores(access.get("aud")));
+  }
+
+  @Test
+  void laCuentaDeServicioObtieneUnTokenConElRolServicio() throws Exception {
+    JsonNode access = claims(tokenDeServicio());
+    assertEquals(List.of("SERVICIO"), valores(access.get("roles")));
+    assertTrue(valores(access.get("aud")).contains(API_AUDIENCE), access.toString());
+    assertFalse(access.has("permisos"));
+    assertFalse(access.has("personaId"));
+  }
+
+  // Lo que necesita el alta de perfil: crear la cuenta, buscarla y editarle personaId y roles.
+  @Test
+  void laCuentaDeServicioCreaBuscaYEditaUsuarios() throws Exception {
+    String servicio = tokenDeServicio();
+    String id = crearUsuario(servicio, ALTA_POR_SERVICIO_EMAIL, USER_PASSWORD, null);
+    asignarRolesDeLaApi(servicio, id, List.of("DONANTE_PERSONA"));
+
+    String email = URLEncoder.encode(ALTA_POR_SERVICIO_EMAIL, StandardCharsets.UTF_8);
+    String busqueda = baseUrl + "/admin/realms/" + REALM + "/users?exact=true&email=" + email;
+    HttpResponse<String> encontrados = get(busqueda, servicio);
+    assertEquals(200, encontrados.statusCode(), encontrados.body());
+    assertEquals(id, JSON.readTree(encontrados.body()).get(0).get("id").asText());
+
+    assertEquals(204, editarAtributo(servicio, id, "personaId", PERSONA_ID).statusCode());
+    assertEquals(PERSONA_ID, atributoDelUsuario(id, "personaId"));
+  }
+
+  @Test
+  void laCuentaDeServicioNoAdministraElRealm() throws Exception {
+    String servicio = tokenDeServicio();
+    HttpResponse<String> roles = get(baseUrl + "/admin/realms/" + REALM + "/roles", servicio);
+    assertEquals(403, roles.statusCode(), roles.body());
+    String urlProveedores = baseUrl + "/admin/realms/" + REALM + "/identity-provider/instances";
+    HttpResponse<String> proveedores = get(urlProveedores, servicio);
+    assertEquals(403, proveedores.statusCode(), proveedores.body());
+  }
+
+  // El usuario edita su cuenta por la Account API de Keycloak: personaId no se toca desde ahí.
+  @Test
+  void unUsuarioNoPuedeCambiarSuPersonaId() throws Exception {
+    String admin = tokenDeAdmin();
+    String id = crearUsuario(admin, CUENTA_EMAIL, USER_PASSWORD);
+    assertEquals(204, editarAtributo(admin, id, "personaId", PERSONA_ID).statusCode());
+
+    String propio = tokenDeLaCuenta(CUENTA_EMAIL, USER_PASSWORD);
+    String urlCuenta = baseUrl + "/realms/" + REALM + "/account";
+    HttpResponse<String> cuenta = get(urlCuenta, propio);
+    assertEquals(200, cuenta.statusCode(), cuenta.body());
+    ObjectNode cambio = (ObjectNode) JSON.readTree(cuenta.body());
+    cambio.putObject("attributes").putArray("personaId").add(OTRA_PERSONA_ID);
+
+    HttpResponse<String> intento = postJson(urlCuenta, propio, cambio.toString());
+    int estado = intento.statusCode();
+    // Que la Account API haya atendido el pedido: si no, el test pasaría sin probar nada.
+    assertTrue(estado != 401 && estado != 403, estado + " " + intento.body());
+    assertEquals(PERSONA_ID, atributoDelUsuario(id, "personaId"));
+  }
+
   // ---- Cliente HTTP mínimo: sin librerías nuevas ----
 
   private static String urlDeToken(String realm) {
@@ -390,6 +526,17 @@ class RealmTokenContractIT {
     return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
   }
 
+  private static HttpResponse<String> get(String url, String token)
+      throws IOException, InterruptedException {
+    HttpRequest peticion =
+        HttpRequest.newBuilder(URI.create(url))
+            .header("Authorization", "Bearer " + token)
+            .header("Accept", "application/json")
+            .GET()
+            .build();
+    return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
+  }
+
   private static JsonNode admin(String ruta) throws IOException, InterruptedException {
     HttpRequest peticion =
         HttpRequest.newBuilder(URI.create(baseUrl + ruta))
@@ -414,9 +561,83 @@ class RealmTokenContractIT {
     return JSON.readTree(respuesta.body()).get("access_token").asText();
   }
 
+  // Client credentials del cliente liviano: el token técnico SERVICIO.
+  private static String tokenDeServicio() throws IOException, InterruptedException {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "client_credentials");
+    campos.put("client_id", CLIENT_ID);
+    campos.put("client_secret", CLIENT_SECRET);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertEquals(200, respuesta.statusCode(), respuesta.body());
+    return JSON.readTree(respuesta.body()).get("access_token").asText();
+  }
+
+  // Token del propio usuario para la Account API, por admin-cli del realm: el cliente liviano no
+  // tiene password grant ni los roles del cliente account en su scope.
+  private static String tokenDeLaCuenta(String email, String clave)
+      throws IOException, InterruptedException {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "password");
+    campos.put("client_id", "admin-cli");
+    campos.put("username", email);
+    campos.put("password", clave);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertEquals(200, respuesta.statusCode(), respuesta.body());
+    return JSON.readTree(respuesta.body()).get("access_token").asText();
+  }
+
+  // Lee la cuenta y la vuelve a guardar con el atributo cambiado: un PUT parcial borraría el resto.
+  private static HttpResponse<String> editarAtributo(
+      String token, String id, String nombre, String valor)
+      throws IOException, InterruptedException {
+    String url = baseUrl + "/admin/realms/" + REALM + "/users/" + id;
+    HttpResponse<String> actual = get(url, token);
+    assertEquals(200, actual.statusCode(), actual.body());
+    ObjectNode usuario = (ObjectNode) JSON.readTree(actual.body());
+    ObjectNode atributos =
+        usuario.has("attributes")
+            ? (ObjectNode) usuario.get("attributes")
+            : usuario.putObject("attributes");
+    atributos.putArray(nombre).add(valor);
+    return putJson(url, token, usuario.toString());
+  }
+
+  private static String atributoDelUsuario(String id, String nombre)
+      throws IOException, InterruptedException {
+    JsonNode atributos = admin("/admin/realms/" + REALM + "/users/" + id).get("attributes");
+    assertNotNull(atributos, "la cuenta no tiene atributos");
+    assertNotNull(atributos.get(nombre), "la cuenta no tiene " + nombre);
+    return atributos.get(nombre).get(0).asText();
+  }
+
+  // Plantillas y permisos sueltos: roles del cliente donatrack-api. Se leen de los disponibles
+  // para la cuenta (pide view-users), no de /clients/{id}/roles (pide view-clients).
+  private static void asignarRolesDeLaApi(String token, String id, List<String> nombres)
+      throws IOException, InterruptedException {
+    String urlRealm = baseUrl + "/admin/realms/" + REALM;
+    String urlMapeo = urlRealm + "/users/" + id + "/role-mappings/clients/" + API_CLIENT_UUID;
+    HttpResponse<String> disponibles = get(urlMapeo + "/available", token);
+    assertEquals(200, disponibles.statusCode(), disponibles.body());
+    List<JsonNode> roles = new ArrayList<>();
+    for (JsonNode rol : JSON.readTree(disponibles.body())) {
+      if (nombres.contains(rol.get("name").asText())) {
+        roles.add(rol);
+      }
+    }
+    assertEquals(nombres.size(), roles.size(), "no están disponibles todos los roles " + nombres);
+    HttpResponse<String> asignado = postJson(urlMapeo, token, JSON.writeValueAsString(roles));
+    assertEquals(204, asignado.statusCode(), asignado.body());
+  }
+
   // Con nombre y email cargados, para que la ausencia de esos claims en el token sea significativa.
   // Con clave == null se crea sin credenciales (para probar la política de clave).
   private static String crearUsuario(String tokenAdmin, String email, String clave)
+      throws IOException, InterruptedException {
+    return crearUsuario(tokenAdmin, email, clave, "DONANTE");
+  }
+
+  private static String crearUsuario(
+      String tokenAdmin, String email, String clave, String rolDelRealm)
       throws IOException, InterruptedException {
     Map<String, Object> usuario = new LinkedHashMap<>();
     usuario.put("username", email);
@@ -435,9 +656,13 @@ class RealmTokenContractIT {
     assertEquals(201, creado.statusCode(), creado.body());
     String ubicacion = creado.headers().firstValue("Location").orElseThrow();
     String id = ubicacion.substring(ubicacion.lastIndexOf('/') + 1);
+    if (rolDelRealm == null) {
+      return id;
+    }
 
     HttpRequest pedirRol =
-        HttpRequest.newBuilder(URI.create(baseUrl + "/admin/realms/" + REALM + "/roles/DONANTE"))
+        HttpRequest.newBuilder(
+                URI.create(baseUrl + "/admin/realms/" + REALM + "/roles/" + rolDelRealm))
             .header("Authorization", "Bearer " + tokenAdmin)
             .GET()
             .build();
@@ -550,8 +775,7 @@ class RealmTokenContractIT {
     assertTrue(accion.find(), "no se encontró el formulario en la pantalla de Keycloak");
     String urlFormulario = accion.group(1).replace("&amp;", "&");
 
-    HttpResponse<String> envio =
-        post(navegador, urlFormulario, form(campos), galletas(pantalla));
+    HttpResponse<String> envio = post(navegador, urlFormulario, form(campos), galletas(pantalla));
     return new ResultadoDeLogin(envio, galletasRecibidas(pantalla));
   }
 

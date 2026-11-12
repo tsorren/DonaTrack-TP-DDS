@@ -283,6 +283,20 @@ figure.mapa-dibujo {
   border-top: 1px solid var(--color-filete);
 }
 
+/* Piso de toque de 48 px: los botones de zoom (29 px en la biblioteca) y los enlaces de la atribución
+   (14 px de alto). La atribución sigue visible (D21); solo crece el alto del enlace. El !important
+   es solo de los botones: la hoja de MapLibre va sin capa y le gana a esta, que está en `bloques`. */
+.mapa-real [class~="maplibregl-ctrl-group"] button {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
 .mapa-real [class~="maplibregl-popup-content"] {
   padding: 0.875rem 1rem;
   border: 2px solid var(--color-tinta);

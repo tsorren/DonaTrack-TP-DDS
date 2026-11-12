@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-entrega-en-puerta.schema.json",
+  "title": "EventoEntregaEnPuerta",
+  "description": "Evento AMQP de vuelta que un proveedor de logística publica en logistica.exchange con routing key entrega.en-puerta (alias __TypeId__ entrega.en-puerta) cuando el camión llega al destino de la entrega y la entidad todavía no confirmó (HB-22, ADR 20261111-estado-en-puerta-de-la-entrega). Va firmado con X-Proveedor-Id y X-Proveedor-Token como los otros eventos de vuelta. Es opcional: un proveedor que no lo publica sigue confirmando desde EN_TRASLADO.",
+  "type": "object",
+  "properties": {
+    "entregaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Entrega que llegó; con la donación, clave de idempotencia en Donaciones"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "fechaLlegada": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["entregaId", "donacionIndependienteId", "fechaLlegada"],
+  "additionalProperties": true
+}

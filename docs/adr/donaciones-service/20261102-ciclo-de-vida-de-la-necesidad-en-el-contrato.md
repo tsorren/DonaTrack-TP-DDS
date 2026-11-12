@@ -12,6 +12,10 @@
 >
 > **Ajuste del 2026-11-02 (review de Sofía Deane, la diseñadora del grupo):** el cambio de cantidad
 > (punto 5) suma un aviso para quienes administran la necesidad. La regla no cambia.
+>
+> **Ajuste del 2026-11-09 (HB-18, decidido por el usuario antes de implementar):** cómo se migra el
+> contrato, qué pasa con los datos ya guardados y con una necesidad vencida. Ver la sección
+> [Migración del contrato](#migración-del-contrato-ajuste-del-2026-11-09).
 
 ## Contexto y Problema
 
@@ -194,6 +198,51 @@ por el usuario el 2026-11-02.
   catálogo. **U2.** Pro: sin cambios en el modelo. Contra: obliga a partir las categorías por
   unidad. **U3.** Pro: lo más flexible. Contra: dos pedidos de lo mismo pueden quedar en unidades
   distintas y el algoritmo de asignación ya no puede sumarlos.
+
+## Migración del contrato (ajuste del 2026-11-09)
+
+Decidido por el usuario el 2026-11-09, antes de implementar HB-18. No hay decisión arquitectónica
+nueva (Gate A de AGENTS.md §9.1): se aplica la
+[política de evolución de contratos](../20261028-politica-de-evolucion-de-contratos-entre-servicios.md)
+(`accepted`). Por eso es un ajuste de este ADR y no un ADR aparte.
+
+**Consumidores** `[OBSERVED]`: `integration-tests` (`NecesidadTestDataBuilder`), los flujos 2, 4, 8 y
+9 de Postman (en `postman/` y `docs/testing/postman/`) y el gateway, que solo deja pasar la ruta. El
+cliente liviano todavía no llama a la API. Ningún evento AMQP ni otro servicio lee la necesidad.
+
+Pesos: política aceptada 25 · riesgo para los consumidores antes del corte del 13/11 25 · costo 20 ·
+claridad del contrato 20 · reversibilidad 10. Puntajes `[INFERRED]`.
+
+| Alternativa | Pol. | Riesgo | Costo | Claridad | Rev. | **Total** |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| **M1. Corte coordinado en un PR:** contrato nuevo, consumidores del repo migrados en el mismo PR y los cambios registrados en `cambios-incompatibles-aceptados.txt` | 5 | 4 | 4 | 5 | 3 | **4,35** |
+| M2. Ciclo de deprecación: campos opcionales con aviso y obligatorios en un segundo PR | 4 | 5 | 2 | 3 | 5 | 3,75 |
+| M3. Versionar el endpoint (`/api/v2/necesidades`, expandir y contraer) | 3 | 5 | 1 | 2 | 4 | 3,0 |
+| M4. Campos opcionales, sin romper | — | — | — | — | — | `[REJECTED]` por F1 y L1 |
+
+Se elige **M1**. La política reserva expandir y contraer (M3) para un consumidor que no llega a migrar
+antes del corte, y acá todos están en el repo. M2 duplica el trabajo y, mientras dura, el contrato
+dice lo contrario que este ADR.
+
+Reglas que completan la decisión:
+
+1. **Datos ya guardados, sin completar.** Una extraordinaria sin `fechaLimite` queda `VIGENTE` y
+   sigue recibiendo asignaciones: la fecha se exige solo al crear. Una recurrente con un largo que no
+   es de los tres conserva su `Period` y devuelve `periodicidad: null`. Se descartó llevarla al largo
+   más cercano: cambiaría sus períodos sin avisar.
+2. **`fechaFin` y `fechaInicio`.** `fechaFin` se ignora como entrada. `fechaInicio` sigue como hoy en
+   una recurrente: opcional (si falta, hoy) y nunca futura.
+3. **Una necesidad `TERMINADA` deja de recibir asignaciones:** el algoritmo no la toma, una propuesta
+   hacia ella no se aprueba (`NECESIDAD_INACTIVA`) y sale de `/api/necesidades/publicas`.
+4. **Lo recibido** suma las donaciones `ENTREGADA`. Cuando se integre la cantidad no recibida de
+   HB-17 (PR #951), lo recibido la descuenta.
+5. **Errores nuevos:** `FECHA_LIMITE_NULA` (`ERR-VAL-524`) y `FECHA_LIMITE_NO_FUTURA`
+   (`ERR-VAL-525`). Una recurrente sin `periodicidad` responde `NECESIDAD_RECURRENTE_SIN_PERIODO`
+   (`ERR-VAL-512`).
+6. **OpenAPI.** La spec no documentaba el body de `POST` y `PUT /api/necesidades`. Ahora lo documenta
+   (`NecesidadDTO`), y oasdiff lo marca como "added required request body". Las dos líneas quedan en
+   `cambios-incompatibles-aceptados.txt`. Las reglas condicionales (`fechaLimite` según el tipo) van
+   en la descripción, porque OAS 3.0 no las expresa sin partir el schema.
 
 ## Trabajo futuro
 
