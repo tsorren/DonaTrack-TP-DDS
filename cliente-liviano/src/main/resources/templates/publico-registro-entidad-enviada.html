@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--/* Raíces, sitio A: Solicitud enviada (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.7):
-       el sello de recibido, qué pasa ahora y "Cómo sigue" con el paso 2 como actual. Sin plazo de
-       revisión: no hay uno acordado. */-->
+       el sello de recibido, qué pasa ahora y "Cómo sigue" con el paso 2 como actual. R11-08: dice
+       cuánto suele tardar la revisión ("unos días hábiles", sin cifra fija: no hay un plazo acordado)
+       y que mientras tanto puede recorrer lo público. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
 <head>
@@ -18,9 +19,10 @@
       <p class="recibido-sello">Solicitud recibida</p>
     </div>
     <h1>Recibimos la solicitud <em>de tu entidad</em></h1>
-    <p class="lectura-bajada">El equipo de DonaTrack la revisa antes de sumarla. Te escribimos al correo que
-      dejaste cuando esté aprobada; desde ese día podés ingresar y publicar lo que le hace falta a tu
-      entidad.</p>
+    <p class="lectura-bajada">El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar
+      unos días hábiles. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés
+      ingresar y publicar lo que le hace falta a tu entidad.</p>
+    <p>Mientras tanto, podés recorrer el sitio: la portada, las entidades y lo que piden.</p>
     <section th:replace="~{publico-registro-entidad :: comoSigue(2)}"></section>
     <div class="salidas">
       <a class="boton" data-tono="principal" href="/publico-entidades"
