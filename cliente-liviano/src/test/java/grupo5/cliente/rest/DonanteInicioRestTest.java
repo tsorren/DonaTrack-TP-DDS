@@ -246,7 +246,9 @@ class DonanteInicioRestTest {
             withSuccess(
                 "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",
                 MediaType.APPLICATION_JSON));
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
     DonanteTableroVista tablero = adaptador.tablero(DONANTE, 1, 2, 1);
