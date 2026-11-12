@@ -87,4 +87,47 @@ class DonanteEntidadesSinMaquetaTest {
         .andExpect(content().string(not(containsString("Depósito Central Ejemplo"))))
         .andExpect(content().string(not(containsString("Calle Ejemplo"))));
   }
+
+  /**
+   * R11-13: la búsqueda la resuelve Donaciones sin tildes; la pantalla no vuelve a filtrar la
+   * página por nombre ("direccion" muestra "Dirección…"), cuenta todas las que coinciden y el
+   * paginador conserva la búsqueda.
+   */
+  @Test
+  void laBusquedaDelServicioNoSeVuelveAFiltrarConTildesYElPaginadorLaConserva() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(menu.de(any()))
+        .thenReturn(Optional.of(new CuentaVista("Distribuidora Ejemplo SA", "Empresa donante")));
+    when(entidades.entidades(DONANTE, "direccion", 1))
+        .thenReturn(
+            new DonanteEntidadesVista(
+                List.of(
+                    new DonanteEntidadesVista.Entidad(
+                        "Dirección de Desarrollo Social Ejemplo",
+                        List.of(),
+                        List.of(
+                            new DonanteEntidadesVista.Pedido(
+                                "Arroz",
+                                "cat-alimentos",
+                                "Piden 10 kg",
+                                "Sin fecha de cierre",
+                                null,
+                                10)))),
+                7,
+                2,
+                2,
+                "hoy, 7 de noviembre, 19:40"));
+
+    mvc.perform(get("/donante-entidades?nombre=direccion").with(user("donante")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Dirección de Desarrollo Social Ejemplo")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "7 entidades activas tienen «direccion» en el nombre. Página 1 de 2.")))
+        .andExpect(
+            content().string(containsString("/donante-entidades?pagina=2&amp;nombre=direccion")))
+        .andExpect(content().string(not(containsString("Ninguna entidad activa se llama así."))));
+  }
 }

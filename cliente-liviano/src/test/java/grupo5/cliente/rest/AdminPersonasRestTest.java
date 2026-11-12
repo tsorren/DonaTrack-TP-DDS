@@ -1,7 +1,9 @@
 package grupo5.cliente.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -487,7 +489,7 @@ class AdminPersonasRestTest {
                     + "/filas-con-error?page=0&size=20"))
         .andRespond(
             withSuccess(
-                "[{\"linea\": 15, \"motivo\": \"Falta el apellido.\", \"codigo\": \"ERR-VAL-1\"}]",
+                "[{\"linea\": 15, \"motivo\": \"DATOS_INVALIDOS\", \"codigo\": \"ERR-VAL-1\"}]",
                 MediaType.APPLICATION_JSON));
 
     Importacion resultado = adaptador.importacion(ARCHIVO, null, "importado", 1);
@@ -501,7 +503,9 @@ class AdminPersonasRestTest {
     assertEquals(126, resultado.filas().total());
     assertEquals(7, resultado.filas().paginas());
     assertEquals("Fila 15", resultado.filas().filas().get(0).fila());
-    assertEquals("Falta el apellido.", resultado.filas().filas().get(0).que());
+    assertEquals(
+        "Hay un dato que no pudimos leer: el tipo de persona, el documento o la fecha.",
+        resultado.filas().filas().get(0).que());
   }
 
   @Test
@@ -523,13 +527,39 @@ class AdminPersonasRestTest {
                     + "/api/donantes/archivos/"
                     + ARCHIVO
                     + "/filas-con-error?page=1&size=20"))
-        .andRespond(withSuccess("[{\"linea\": 1021, \"motivo\": \"Sin correo.\"}]", JSON));
+        .andRespond(withSuccess("[{\"linea\": 1021, \"motivo\": \"FORMATO_INVALIDO\"}]", JSON));
 
     Importacion resultado = adaptador.importacion(ARCHIVO, null, "importado", 5);
 
     assertEquals(2, resultado.filas().pagina());
     assertEquals("Fila 1.021", resultado.filas().filas().get(0).fila());
+    assertEquals(
+        "La fila no tiene las mismas columnas que el encabezado.",
+        resultado.filas().filas().get(0).que());
     donaciones.verify();
+  }
+
+  /** R11-02: ningún código del servicio llega a la columna «Qué pasó». */
+  @Test
+  void cadaMotivoDeUnaFilaConErrorSeLeeEnPalabrasYUnoDesconocidoComoElInesperado() {
+    for (String motivo :
+        List.of(
+            "FORMATO_INVALIDO",
+            "DATOS_INVALIDOS",
+            "DONANTE_DADO_DE_BAJA",
+            "PERSONA_DUPLICADA_EN_CONFLICTO",
+            "ERROR_INESPERADO",
+            "OTRO_NUEVO")) {
+      String que = AdminPersonasRest.queFallo(motivo);
+      assertFalse(que.contains("_"), motivo + " -> " + que);
+      assertTrue(que.endsWith("."), que);
+    }
+    assertEquals(
+        "El correo ya es de otro donante, con otro documento.",
+        AdminPersonasRest.queFallo("PERSONA_DUPLICADA_EN_CONFLICTO"));
+    assertEquals(
+        AdminPersonasRest.queFallo("ERROR_INESPERADO"), AdminPersonasRest.queFallo("OTRO_NUEVO"));
+    assertEquals(AdminPersonasRest.queFallo("ERROR_INESPERADO"), AdminPersonasRest.queFallo(null));
   }
 
   @Test

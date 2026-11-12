@@ -222,7 +222,7 @@ public class ImportadorService implements IImportadorService {
           juridica.getRazonSocial(),
           juridica.getTipo(),
           juridica.getRubro(),
-          List.of());
+          juridica.getRepresentantes().stream().map(ImportadorService::representante).toList());
     } else if (persona instanceof Humana humana) {
       return new HumanaInputDTO(
           TipoPersona.HUMANA,
@@ -238,5 +238,22 @@ public class ImportadorService implements IImportadorService {
       throw new IllegalArgumentException(
           "El tipo de persona en el CSV no coincide con el objeto Persona procesado.");
     }
+  }
+
+  /**
+   * El representante que armó el mapeo de la fila (el CSV no lo trae: va el de relleno de {@link
+   * PersonaMapper#mapToPersona}). Sin él, {@code Juridica} rechaza el alta (ERR-VAL-104, R11-03).
+   */
+  private static HumanaInputDTO representante(Humana humana) {
+    return new HumanaInputDTO(
+        TipoPersona.HUMANA,
+        humana.getTipoDocumento(),
+        humana.getDocumento(),
+        null,
+        List.of(),
+        humana.getNombre(),
+        humana.getApellido(),
+        humana.getGenero(),
+        humana.getFechaNacimiento());
   }
 }

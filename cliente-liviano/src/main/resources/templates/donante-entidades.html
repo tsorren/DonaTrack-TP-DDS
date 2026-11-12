@@ -33,8 +33,7 @@
              pagina=${param.pagina != null and param.pagina[0].matches('[1-9][0-9]{0,3}')
                     and #conversions.convert(param.pagina[0], 'java.lang.Integer') <= misEntidades.paginas
                     ? #conversions.convert(param.pagina[0], 'java.lang.Integer') : 1},
-             porNombre=${busca == '' ? entidades : entidades.?[#strings.containsIgnoreCase(nombre, #root.busca)]},
-             porYa=${soloYa ? porNombre.?[!ya.isEmpty()] : porNombre},
+             porYa=${soloYa ? entidades.?[!ya.isEmpty()] : entidades},
              lista=${categoria == '' ? porYa : porYa.?[!pide.?[cat == 'cat-' + #root.categoria].isEmpty()]},
              dibujada=${pagina <= misEntidades.dibujadas},
              activas=|${misEntidades.total} ${misEntidades.total == 1 ? 'entidad activa' : 'entidades activas'}|">
@@ -89,7 +88,7 @@
       <p class="resultado" role="status"
          th:text="${soloYa and categoria == ''} ? (${lista.isEmpty()} ? 'En esta página no hay entidades a las que hayas donado.' : |En esta página, ${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad a la que' : 'entidades a las que'} ya donaste.|)
                  : (${filtrado} ? (${lista.isEmpty()} ? 'Ninguna entidad coincide con lo que elegiste.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad coincide' : 'entidades coinciden'} con lo que elegiste.|)
-                 : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre.|)
+                 : (${busca != ''} ? (${lista.isEmpty()} ? 'Ninguna entidad activa se llama así.' : |${misEntidades.total} ${misEntidades.total == 1 ? 'entidad activa tiene' : 'entidades activas tienen'} «${busca}» en el nombre. Página ${pagina} de ${misEntidades.paginas}.|)
                  : |${activas}. Página ${pagina} de ${misEntidades.paginas}.|))">46
         entidades activas. Página 1 de 8.</p>
 
@@ -139,10 +138,12 @@
         </th:block>
       </th:block>
 
-      <!--/* El paginador conserva la categoría y "Ya doné"; los que no se eligieron no se escriben (la
-             categoría sale de la lista fija de arriba). */-->
-      <nav th:if="${busca == ''}" class="paginas" aria-label="Páginas de entidades"
-           th:with="filtros=${(categoria == '' ? '' : '&categoria=' + categoria) + (soloYa ? '&ya=si' : '')}">
+      <!--/* El paginador conserva la búsqueda, la categoría y "Ya doné"; los que no se eligieron no se
+             escriben (la categoría sale de la lista fija de arriba). La búsqueda la resuelve
+             Donaciones, sin tildes y sobre todas las activas (R11-13): la pantalla no vuelve a
+             filtrar por nombre. */-->
+      <nav class="paginas" aria-label="Páginas de entidades"
+           th:with="filtros=${(busca == '' ? '' : '&nombre=' + #uris.escapeQueryParam(busca)) + (categoria == '' ? '' : '&categoria=' + categoria) + (soloYa ? '&ya=si' : '')}">
         <a th:if="${pagina > 1}" class="boton" data-tono="secundario" href="/donante-entidades"
            hx-boost="true" th:href="@{${'/donante-entidades?pagina=' + (pagina - 1) + filtros}}">Página anterior</a>
         <a th:if="${pagina < misEntidades.paginas}" class="boton" data-tono="secundario" href="/donante-entidades?pagina=2"

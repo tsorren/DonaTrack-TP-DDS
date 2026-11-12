@@ -4,15 +4,18 @@ import grupo5.cliente.puertos.DonanteEntidadesPuerto;
 import grupo5.cliente.vistas.DonanteEntidadesVista;
 import grupo5.cliente.vistas.DonanteEntidadesVista.Entidad;
 import grupo5.cliente.vistas.DonanteEntidadesVista.Pedido;
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * La primera página de entidades de ejemplo, la que escribía la plantilla: seis de 46, en 8
- * páginas, con lo que pide cada una y si la empresa ya le donó. La búsqueda y los filtros los
- * aplica la pantalla sobre esta página.
+ * páginas, con lo que pide cada una y si la empresa ya le donó. La búsqueda por nombre la hace este
+ * puerto (sin tildes, como Donaciones) sobre esa página; los filtros de categoría y "Ya doné" los
+ * aplica la pantalla.
  */
 @Component
 @ConditionalOnProperty(
@@ -126,6 +129,23 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
 
   @Override
   public DonanteEntidadesVista entidades(UUID donante, String nombre, int pagina) {
-    return ENTIDADES;
+    if (nombre == null || nombre.isBlank()) {
+      return ENTIDADES;
+    }
+    String buscado = sinTildes(nombre.strip());
+    List<Entidad> coinciden =
+        ENTIDADES.entidades().stream()
+            .filter(e -> sinTildes(e.nombre()).contains(buscado))
+            .toList();
+    return new DonanteEntidadesVista(coinciden, coinciden.size(), 1, 1, ENTIDADES.actualizado());
+  }
+
+  /**
+   * Como la búsqueda de Donaciones: sin tildes ni mayúsculas ("direccion" encuentra "Dirección").
+   */
+  private static String sinTildes(String texto) {
+    return Normalizer.normalize(texto, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "")
+        .toLowerCase(Locale.ROOT);
   }
 }

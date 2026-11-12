@@ -211,6 +211,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No encontramos esa donación.")));
     mvc.perform(get("/donante-entidades?nombre=zzz"))
         .andExpect(content().string(containsString("Ninguna entidad activa se llama así.")));
+    // Sin tildes ni mayúsculas, como la búsqueda de Donaciones (R11-13).
+    mvc.perform(get("/donante-entidades?nombre=CLÚB"))
+        .andExpect(content().string(containsString("Club Ejemplo Norte")))
+        .andExpect(content().string(containsString("1 entidad activa tiene «CLÚB» en el nombre.")));
     mvc.perform(get("/donante-entidades?escenario=error"))
         .andExpect(content().string(containsString("role=\"alert\"")))
         .andExpect(content().string(containsString("Cómo llega tu donación")));

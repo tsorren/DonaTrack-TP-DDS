@@ -1,6 +1,7 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -14,6 +15,8 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
+import grupo5.donaciones.dto.personas.JuridicaInputDTO;
+import grupo5.donaciones.dto.personas.JuridicaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
@@ -23,6 +26,7 @@ import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.donantes.FilaConError;
 import grupo5.donaciones.models.entities.donantes.MotivoErrorFila;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
@@ -118,6 +122,61 @@ class ImportadorServiceTest {
     assertEquals(1, archivo.getCreadas());
     assertEquals(1, archivo.getProcesadas());
     verify(archivoRepository, never()).guardarFilasConError(any());
+  }
+
+  /**
+   * R11-03: el CSV no trae representante y {@code Juridica} exige uno (ERR-VAL-104). El alta de una
+   * empresa nueva lleva el de relleno del mapeo y pasa por el mismo mapeo que usa {@code
+   * PersonasService.crearPersona}.
+   */
+  @Test
+  void procesarImportacionAsincronica_conEmpresaNueva_laCreaConSuRepresentanteDeRelleno() {
+    UUID archivoId = UUID.randomUUID();
+    Archivo archivo = nuevoArchivoEnStorage();
+    when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
+    Map<String, String> fila =
+        Map.of(
+            "TipoPersona", "JURIDICA",
+            "Nombre/Razón Social", "Distribuidora Ejemplo S.A.",
+            "TipoDoc", "CUIT",
+            "Documento", "30000000001",
+            "Email", "contacto@ejemplo.test");
+    when(lectorCSV.cargarDonantes(any(InputStream.class)))
+        .thenReturn(List.of(new FilaPadron(2, fila)));
+    when(validadorDuplicados.buscarDuplicado(any(Persona.class))).thenReturn(Optional.empty());
+    UUID creadaId = UUID.randomUUID();
+    when(personaService.crearPersona(any(PersonaInputDTO.class)))
+        .thenAnswer(
+            pedido -> {
+              Persona entidad = personaMapper.toEntity(pedido.getArgument(0));
+              Juridica juridica = (Juridica) entidad;
+              return new JuridicaOutputDTO(
+                  TipoPersona.JURIDICA,
+                  creadaId,
+                  juridica.getTipoDocumento(),
+                  juridica.getDocumento(),
+                  null,
+                  List.of(),
+                  juridica.getRazonSocial(),
+                  juridica.getTipo(),
+                  juridica.getRubro(),
+                  List.of());
+            });
+
+    service.procesarImportacionAsincronica(archivoId);
+
+    ArgumentCaptor<PersonaInputDTO> alta = ArgumentCaptor.captor();
+    verify(personaService).crearPersona(alta.capture());
+    JuridicaInputDTO empresa = assertInstanceOf(JuridicaInputDTO.class, alta.getValue());
+    assertEquals("Distribuidora Ejemplo S.A.", empresa.razonSocial());
+    assertEquals(1, empresa.representantes().size());
+    assertEquals("Representante", empresa.representantes().getFirst().nombre());
+    assertEquals("Legal", empresa.representantes().getFirst().apellido());
+    verify(donantesService).crearDonante(new DonanteInputDTO(creadaId));
+    verify(archivoRepository, never()).guardarFilasConError(any());
+    assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
+    assertEquals(1, archivo.getCreadas());
+    assertEquals(0, archivo.getConError());
   }
 
   @Test

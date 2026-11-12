@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
@@ -64,6 +65,16 @@ class AdminPersonasRest implements AdminPersonasPuerto {
 
   private static final int FILAS_POR_PAGINA = 20;
   private static final int ULTIMOS = 5;
+  private static final String MOTIVO_INESPERADO =
+      "No pudimos cargar esta fila por un problema nuestro. Probá subirla de nuevo.";
+  private static final Map<String, String> MOTIVOS =
+      Map.of(
+          "FORMATO_INVALIDO", "La fila no tiene las mismas columnas que el encabezado.",
+          "DATOS_INVALIDOS",
+              "Hay un dato que no pudimos leer: el tipo de persona, el documento o la fecha.",
+          "DONANTE_DADO_DE_BAJA", "Es de un donante dado de baja: no lo cambiamos.",
+          "PERSONA_DUPLICADA_EN_CONFLICTO", "El correo ya es de otro donante, con otro documento.",
+          "ERROR_INESPERADO", MOTIVO_INESPERADO);
 
   private final DonacionesApi donaciones;
   private final Clock reloj;
@@ -299,7 +310,7 @@ class AdminPersonasRest implements AdminPersonasPuerto {
           conError == 0
               ? List.of()
               : donaciones.filasConError(id, mostrada - 1, FILAS_POR_PAGINA).stream()
-                  .map(f -> new FilaConError("Fila " + numero(f.linea()), f.motivo()))
+                  .map(f -> new FilaConError("Fila " + numero(f.linea()), queFallo(f.motivo())))
                   .toList();
       filas = new Tramo<>(deLaPagina, conError, mostrada, paginas);
     }
@@ -371,5 +382,13 @@ class AdminPersonasRest implements AdminPersonasPuerto {
 
   private static int entero(Integer valor) {
     return valor == null ? 0 : valor;
+  }
+
+  /**
+   * Qué pasó con la fila, en palabras (R11-02): Donaciones manda el motivo como código
+   * (openapi-donaciones, {@code FilaConError.motivo}). Uno que no conocemos va como el inesperado.
+   */
+  static String queFallo(String motivo) {
+    return MOTIVOS.getOrDefault(motivo == null ? "" : motivo, MOTIVO_INESPERADO);
   }
 }
