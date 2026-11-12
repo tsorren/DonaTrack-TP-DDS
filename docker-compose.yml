@@ -16,6 +16,11 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PASS=${RABBITMQ_PASS:?ver .env.example}
+      # Correo de cuenta (SPEC-06 E2-06): solo se manda un enlace que apunte a nuestro Keycloak.
+      - KEYCLOAK_ENLACES_PREFIJO=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack/login-actions/
+      # SOLO en el compose local: el adaptador de correo simulado imprime el mensaje (con el enlace de cuenta) a nivel DEBUG,
+      # para poder completar la recuperación de clave a mano. El preprod no lo habilita: el enlace da acceso a la cuenta.
+      - LOGGING_LEVEL_GRUPO5_NOTIFICACIONES_INFRASTRUCTURE_ADAPTERS=DEBUG
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
@@ -282,6 +287,11 @@ services:
       - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
       - KC_DB_USERNAME=keycloak_user
       - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD:?ver .env.example}
+      # El correo de la cuenta (recuperar la clave, verificar el email) sale por RabbitMQ y lo manda
+      # notificaciones-service (SPEC-06 E2-06). El proveedor se elige al construir la imagen; acá, solo la conexión.
+      - KC_SPI_EMAIL_TEMPLATE__DONATRACK_AMQP__HOST=rabbitmq
+      - KC_SPI_EMAIL_TEMPLATE__DONATRACK_AMQP__USER=donatrack
+      - KC_SPI_EMAIL_TEMPLATE__DONATRACK_AMQP__PASSWORD=${RABBITMQ_PASS:?ver .env.example}
       # Admin de la consola de Keycloak (no es el ADMIN de DonaTrack). Solo se crea con la base vacía.
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME:?ver .env.example}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:?ver .env.example}

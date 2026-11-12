@@ -62,6 +62,17 @@ El cliente solo recibe el scope `basic` (que trae `sub`): no se le asignan `prof
 - **Registro (D11, R14):** la cuenta se crea en Keycloak y el sitio pide "Completá tu perfil". Toda cuenta creada por la Admin API recibe el rol por defecto (`DONANTE`): una cuenta de entidad pendiente tiene `DONANTE` pero ningún permiso.
 - **Google:** identity provider `google` con `${GOOGLE_CLIENT_ID}` y `${GOOGLE_CLIENT_SECRET}` (opcionales en el compose: vacías, todo anda menos "Continuar con Google"). El primer ingreso usa el flujo `first broker login`, que pide la clave para vincular una cuenta existente (D4).
 
+## Correo de cuenta: el SPI `donatrack-amqp` (E2-06)
+
+El correo de recuperar la clave y el de verificar el email **no salen por SMTP**: un SPI de Keycloak (`spi/`) publica el evento `cuenta.enlace-solicitado.v1` en RabbitMQ y `notificaciones-service` manda el correo. Ver el [ADR](../docs/adr/auth-service/20261112-correo-de-cuenta-por-rabbitmq-con-spi-de-keycloak.md) y el [catálogo de eventos](../docs/arquitectura/eventos-amqp.md).
+
+- **Proyecto autónomo** en `auth-service/spi/` (su propio `pom.xml`, sin el pom raíz): el `Dockerfile` lo compila en una etapa de Maven, porque su contexto es solo `auth-service/`. Se prueba con `mvn -f auth-service/spi/pom.xml spotless:check verify` (lo corre el CI).
+- **El proveedor se elige al construir la imagen** (`KC_SPI_EMAIL_TEMPLATE__PROVIDER` en el `Dockerfile`), no al arrancar: con `start --optimized` Keycloak se niega a iniciar si ese valor cambia después del build. La conexión a RabbitMQ (`KC_SPI_EMAIL_TEMPLATE__DONATRACK_AMQP__HOST`, `__USER`, `__PASSWORD`) sí es de ejecución y la pasa el compose.
+- **`emailTemplate` es un SPI interno** de Keycloak ("puede cambiar sin aviso"). Al actualizar Keycloak hay que reconstruir y correr `scripts/e2e_correo_de_cuenta.py`.
+- **Si RabbitMQ no está, la persona no ve un error** (Keycloak muestra la misma página, a propósito, para no revelar qué cuentas existen). La única señal es el log de Keycloak: `KC-SERVICES0026`. Conviene alertar sobre eso.
+- El enlace y el email **no se escriben en ningún log del SPI**. Ojo: el logger de eventos de Keycloak sí imprime el `username` (acá, el email) cuando falla el envío.
+- **Prueba de punta a punta** contra el stack del compose local levantado, parado en la raíz del repo: `python scripts/e2e_correo_de_cuenta.py` (en Windows, `py scripts\e2e_correo_de_cuenta.py`). Lee las credenciales del `.env` y no hace falta exportar nada. Necesita la API de administración de RabbitMQ (puerto 15672), que la imagen del compose local trae y la del preprod no.
+
 ## Cuenta de pruebas `donatrack-pruebas` (E2-07)
 
 Cliente confidencial con **solo client credentials** y una cuenta de servicio con el rol `ADMIN` y nada más (sin el rol por defecto, sin roles de `realm-management`). La usan `integration-tests`, k6 y Postman para llamar a los servicios cuando la seguridad está encendida (`run-preprod-tests.sh --auth`). Su token lleva `roles` = `ADMIN` y `aud` con `donatrack-api`, y no tiene `permisos` ni `personaId`. Su secreto sale de `PRUEBAS_CLIENT_SECRET`.

@@ -1,8 +1,9 @@
 # Demo punta a punta: el sitio con Keycloak y los servicios por el gateway
 
 > **Estado:** guía de SPEC-06 E2-12b y de SPEC-09 F6. `[OBSERVED]` Lo que describe sale del código y de los
-> compose. El equipo informó (2026-11-12) que corrigió los problemas del cliente en el compose; **la sesión en
-> PostgreSQL y el recorrido con Playwright todavía no se probaron**. Si algo de acá no pasa como dice, es un
+> compose. El equipo informó (2026-11-12) que corrigió los problemas del cliente en el compose y comprobó que la
+> sesión queda en PostgreSQL (una fila en `cliente.spring_session`); **el recorrido con Playwright y el cambio
+> entre dos instancias todavía no se probaron**. Si algo de acá no pasa como dice, es un
 > hallazgo: avisalo.
 
 El cliente liviano (`cliente-liviano`) corre en el compose junto con Keycloak, el gateway y los cuatro
@@ -76,6 +77,16 @@ Admin API y armar el enlace a "Mi cuenta", así que una URL distinta para el ser
 
 Si el sitio no arranca o el ingreso falla: `docker compose logs cliente-liviano` tiene que mostrar
 `Emisor único: 127.0.0.1:8180 -> keycloak:8080`. Si no aparece, falta `KEYCLOAK_LOCAL_FORWARD_TO`.
+
+## Recuperar la clave (y ver el correo)
+
+En el login, "¿Olvidaste tu contraseña?" pide el email. Keycloak no manda el correo: publica un evento en RabbitMQ y `notificaciones-service` lo manda con su adaptador de correo **simulado**, que no entrega nada de verdad. En el compose local ese adaptador imprime el contenido del mensaje (con el enlace) en el log de Notificaciones, y solo ahí; el preprod no lo hace, porque el enlace da acceso a la cuenta:
+
+```
+docker compose logs notificaciones-service | grep "SENDGRID-MOCK"
+```
+
+Abrí el enlace del log (vale 30 minutos y se puede usar una vez), elegí la clave nueva y volvé a entrar. Una cuenta que no existe ve la misma pantalla, pero no genera ningún correo. Si el correo no llega, mirá el log de Keycloak: con RabbitMQ caído la persona no ve ningún error, y la señal es `KC-SERVICES0026`. La prueba automática de todo este recorrido es `scripts/e2e_correo_de_cuenta.py`.
 
 ## La sesión en PostgreSQL
 

@@ -1,7 +1,7 @@
 # Contratos y Esquema de Eventos AMQP (RabbitMQ) — DonaTrack
 
 > **Catálogo Canónico de Mensajería Asíncrona, Topología de Colas y Schemas de Eventos**  
-> **Productores:** `logistica-service`, `donaciones-service`, `incentivos-service`  
+> **Productores:** `logistica-service`, `donaciones-service`, `incentivos-service`, `auth-service` (SPI de correo de Keycloak)  
 > **Consumidores:** `donaciones-service`, `notificaciones-service`, `incentivos-service`, `logistica-service`  
 > **ADRs de Referencia:** [`20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](../adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) · [`20261007-broker-de-integracion-con-logistica.md`](../adr/20261007-broker-de-integracion-con-logistica.md)
 
@@ -47,6 +47,13 @@ incentivos-service
                              ▼
                      [notificaciones.dlx] ────► [notificaciones.incentivos.dlq]
 
+auth-service (SPI de correo de Keycloak, SPEC-06 E2-06)
+[auth.exchange]       ──(cuenta.enlace-solicitado.v1)─► [notificaciones.auth]           ──► Notificaciones (Inbox, no persiste)
+   (TopicExchange)           │
+                      (x-dead-letter)
+                             ▼
+                     [notificaciones.dlx] ────► [notificaciones.auth.dlq]
+
 logistica-service
 [logistica.exchange]  ──(ruta.#)───────────────► [donaciones.ruta.asignada / iniciada] ──► LogisticaEventListener
    (TopicExchange)    ──(entrega.#)────────────► [donaciones.entrega.exitosa / fallida / cancelada / en-puerta]
@@ -58,6 +65,7 @@ logistica-service
 |---|---|---|---|
 | **`donaciones.exchange`** | `TopicExchange` (Durable) | `donaciones-service` | Eventos de dominio de donaciones, donantes y sincronización de personas |
 | **`incentivos.exchange`** | `TopicExchange` (Durable) | `incentivos-service` | Eventos de dominio de gamificación, misiones, categorías e inactividad |
+| **`auth.exchange`** | `TopicExchange` (Durable) | `auth-service` (SPI de correo de Keycloak) | Eventos de cuenta: los enlaces de un solo uso para recuperar la clave y verificar el email. Lo declara el SPI al publicar |
 | **`logistica.exchange`** | `TopicExchange` (Durable) | `logistica-service` | Eventos del ciclo logístico de entregas y rutas de transporte |
 | **`notificaciones.dlx`** | `TopicExchange` (Durable) | `notificaciones-service` | Dead Letter Exchange para aislamiento de poison pills y fallos terminales |
 
@@ -92,6 +100,7 @@ logistica-service
 | 8 | Misión Cumplida | `incentivos-service` | `incentivos.exchange` | `incentivo.mision-cumplida.v1` | `incentivo.mision-cumplida.v1` | `notificaciones.incentivos` | [`evento-incentivo-mision-cumplida-v1.schema.json`](./contratos/schemas/evento-incentivo-mision-cumplida-v1.schema.json) |
 | 9 | Subió de Categoría | `incentivos-service` | `incentivos.exchange` | `incentivo.subio-categoria.v1` | `incentivo.subio-categoria.v1` | `notificaciones.incentivos` | [`evento-incentivo-subio-categoria-v1.schema.json`](./contratos/schemas/evento-incentivo-subio-categoria-v1.schema.json) |
 | 10 | Donante Inactivo | `incentivos-service` | `incentivos.exchange` | `incentivo.donante-inactivo.v1` | `incentivo.donante-inactivo.v1` | `notificaciones.incentivos` | [`evento-incentivo-donante-inactivo-v1.schema.json`](./contratos/schemas/evento-incentivo-donante-inactivo-v1.schema.json) |
+| 11 | Enlace de Cuenta Solicitado | `auth-service` (SPI de Keycloak) | `auth.exchange` | `cuenta.enlace-solicitado.v1` | `cuenta.enlace-solicitado.v1` | `notificaciones.auth` | [`evento-cuenta-enlace-solicitado-v1.schema.json`](./contratos/schemas/evento-cuenta-enlace-solicitado-v1.schema.json) |
 
 > **`donacionIndependienteId` (opcional, cierre de E6, HB-09):** `donacion.en-camino.v1`, `donacion.recibida.v1`, `donacion.entrega-fallida.v1` y `donacion.vencida.v1` llevan el id de la donación independiente al final del payload, como `donacion.asignada.v1`, que ya lo traía obligatorio. Donaciones lo completa desde el evento interno; `notificaciones-service` lo guarda como `referenciaId` de la notificación para enlazar el aviso con el detalle de la donación. Aditivo: los schemas lo declaran opcional (`additionalProperties` sigue en `true`) e Incentivos ignora los campos que no conoce.
 
@@ -126,6 +135,7 @@ Todo proveedor de logística informa el avance de una entrega publicando en `log
 |---|---|---|---|---|
 | `notificaciones.donaciones` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.donaciones.dlq` | `notificaciones.donaciones.dlq` |
 | `notificaciones.incentivos` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.incentivos.dlq` | `notificaciones.incentivos.dlq` |
+| `notificaciones.auth` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.auth.dlq` | `notificaciones.auth.dlq` |
 
 ---
 
@@ -227,6 +237,20 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "nombreViejaCategoria": "Bronce"
 }
 ```
+
+#### Enlace de Cuenta Solicitado (`cuenta.enlace-solicitado.v1`)
+```json
+{
+  "tipo": "RECUPERAR_CLAVE",
+  "cuentaId": "8b754922-eff7-4b15-9d38-d91515e5363b",
+  "destinatario": "ana@example.com",
+  "enlace": "http://localhost:8180/realms/donatrack/login-actions/action-token?key=…&client_id=cliente-liviano&tab_id=…",
+  "venceEnMinutos": 30,
+  "idioma": "es",
+  "fecha": "2026-11-12T02:07:56Z"
+}
+```
+`tipo` es `RECUPERAR_CLAVE` o `VERIFICAR_EMAIL`. **Es un caso aparte entre los eventos:** lleva un secreto (el enlace, que da acceso a la cuenta mientras vale) y un dato personal (el destinatario), y la cuenta puede no tener todavía una `Persona`, así que no alcanza con un `personaId`. Por eso `notificaciones-service` **no lo persiste** (no genera una `Notificacion`), no lo escribe en ningún log y solo manda el correo si el enlace apunta a nuestro Keycloak (`notificaciones.cuentas.prefijo-de-enlaces`). El mensaje AMQP lleva `expiration` igual al vencimiento del enlace. Ver el [ADR](../adr/auth-service/20261112-correo-de-cuenta-por-rabbitmq-con-spi-de-keycloak.md).
 
 #### Entrega Solicitada (`entrega.solicitada.<proveedorId>.v1`)
 ```json
@@ -359,9 +383,9 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
        ```
      * Si la fila no se inserta (retorna 0 filas afectadas), significa que el evento ya fue procesado con anterioridad; el servicio descarta el mensaje de forma silenciosa e idempotente emitiendo un `ACK` al broker.
 2. **Trazabilidad Distribuida:**
-   * El emisor extrae el `traceId` activo del contexto de logging (MDC) y lo inyecta como header `X-Trace-Id` en las propiedades del mensaje RabbitMQ.
+   * El emisor extrae el `traceId` activo del contexto de logging (MDC) y lo inyecta como header `X-Trace-Id` en las propiedades del mensaje RabbitMQ. El SPI de Keycloak genera uno propio (un UUID sin guiones), porque el pedido nace en el navegador y no hay un `traceId` previo.
    * El consumidor lee `X-Trace-Id` y lo restablece en su propio MDC antes de procesar el evento, garantizando correlación de logs de extremo a extremo entre productores y consumidores.
 3. **Manejo de Poison Pills y Clúster Dead Letter:**
-   * Las colas `notificaciones.donaciones` y `notificaciones.incentivos` están configuradas con `x-dead-letter-exchange: notificaciones.dlx`.
+   * Las colas `notificaciones.donaciones`, `notificaciones.incentivos` y `notificaciones.auth` están configuradas con `x-dead-letter-exchange: notificaciones.dlx`. En la de cuentas, un correo rechazado o un enlace que no es de Keycloak también termina en su cola muerta, donde se ve que una cuenta no recibió su correo.
    * Si un mensaje no puede deserializarse o agota los reintentos transitorios por errores irreparables, RabbitMQ lo enruta hacia `notificaciones.dlx` y de allí a su cola muerta correspondiente (`notificaciones.donaciones.dlq` o `notificaciones.incentivos.dlq`).
    * Esto previene poison pills, redelivery loops infinitos y garantiza que una falla en un bounded context no degrade el procesamiento de los demás.

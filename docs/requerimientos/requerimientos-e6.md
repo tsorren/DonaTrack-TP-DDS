@@ -126,10 +126,10 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | RF-AUTH-10 | Publicar las claves públicas (JWKS) | Endpoint JWKS estándar, consumido por el gateway y los servicios | D2 |
 | RF-AUTH-11 | Cerrar sesión | Revoca el refresh en el IdP, invalida la sesión del cliente y cierra la sesión SSO (OIDC *RP-initiated logout*) | — |
 | RF-AUTH-12 | Cambiar la contraseña con la sesión iniciada | Pide la contraseña actual; invalida las otras sesiones del usuario | — |
-| RF-AUTH-13 | Recuperar la contraseña por email | Link de un solo uso con vencimiento (sugerido: 30 min); la respuesta es la misma exista o no el email. El mecanismo de envío está pendiente (D8) | D8 ⏸️ |
+| RF-AUTH-13 | Recuperar la contraseña por email | Link de un solo uso con vencimiento (sugerido: 30 min); la respuesta es la misma exista o no el email. El mecanismo de envío está resuelto (D8): SPI de Keycloak → RabbitMQ → notificaciones. El realm lo permite (`resetPasswordAllowed`) y el enlace vale 30 minutos | D8 ⏸️ |
 | RF-AUTH-14 | Alta de usuarios para donantes importados por CSV y registrados en el depósito | La consigna pide *enviarles sus credenciales de acceso* y un *correo de bienvenida*; el mecanismo está pendiente de consulta (D12) | UI/UX 20, D12 🎓 |
 | RF-AUTH-15 | Alta en lote eficiente | Más de 10.000 usuarios por archivo, en lotes y sin bloquear la importación del negocio | UI/UX 20 |
-| RF-AUTH-16 | Verificación del email en el autorregistro `[PROPOSED]` | La cuenta no opera hasta confirmar el email; usa el mismo mecanismo que RF-AUTH-13 | D8 ⏸️ |
+| RF-AUTH-16 | Verificación del email en el autorregistro `[PROPOSED]` | La cuenta no opera hasta confirmar el email; usa el mismo mecanismo que RF-AUTH-13 (soportado por el SPI, pero `verifyEmail` sigue apagado en el realm: activarlo cambia el registro y es una decisión de producto) | D8 ⏸️ |
 | RF-AUTH-17 | Client credentials para procesos sin usuario | Un cliente OAuth2 por proceso (n8n, proveedor externo, jobs) con los permisos mínimos | D15, D25 |
 
 ### 4.2 No funcionales
@@ -597,7 +597,7 @@ Composición, utilidades, bloques (un componente por hoja y fragmento, con slots
   2. Ver con cuánto tiempo cuenta el equipo hasta la fecha de entrega de E6.
 - **Lo que no cambia con ninguna de las dos:** RNF-AUTH-08 (claim `roles` plano) y D9 hacen que cambiar de IdP cueste poco. *(Enmienda 2026-11-10: con el `personaId` en el IdP, D9 ya no aporta el desacople que se contó acá; ver el [ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md).)*
 
-### D8 — Envío del email de recuperación (y de verificación) ⏸️ · ADR-E6-01
+### D8 — Envío del email de recuperación (y de verificación) ✅ · ADR-E6-01
 Ya está decidido que el email sale por **notificaciones-service**. Falta el cómo, que depende de la D1:
 
 | Alternativa | Cómo funciona | A favor | En contra |
@@ -611,8 +611,8 @@ Con SAS, la primera opción es natural: el propio servicio publica el evento.
 - **Recomendación:** event listener → RabbitMQ → notificaciones. Es la única que cumple lo decidido sin duplicar lo que trae el IdP.
 - **Para cerrarla hace falta:**
   1. ~~Cerrar la D1.~~ Cerrada el 2026-11-04 (Keycloak): la opción es el SPI.
-  2. Si queda Keycloak, probar que el SPI se empaqueta en la imagen del IdP y que el evento llega a notificaciones con su `traceId`.
-  3. Definir el evento nuevo (`EnlaceDeCuentaSolicitado` o similar) en el [catálogo de eventos](../arquitectura/eventos-amqp.md).
+  2. ~~Si queda Keycloak, probar que el SPI se empaqueta en la imagen del IdP y que el evento llega a notificaciones con su `traceId`.~~ Hecho el 2026-11-12: el SPI `donatrack-amqp` se compila en una etapa del `Dockerfile` de `auth-service` y se probó contra un Keycloak 26.8.1 y un RabbitMQ reales ([ADR](../adr/auth-service/20261112-correo-de-cuenta-por-rabbitmq-con-spi-de-keycloak.md)).
+  3. ~~Definir el evento nuevo en el [catálogo de eventos](../arquitectura/eventos-amqp.md).~~ Hecho: `cuenta.enlace-solicitado.v1`. **Desvío de esta decisión:** no queda en el historial de notificaciones, porque el enlace da acceso a la cuenta mientras vale.
 
 ### D12 — Acceso de los donantes importados por CSV y del alta en depósito 🎓 · ADR-E6-01
 **Choque detectado** `[DOCUMENTED]`:

@@ -502,6 +502,10 @@ jobs:
       - name: Verificar formato (Spotless) de auth-service
         run: mvn -B -f auth-service/pom.xml spotless:check
 
+      # SPI de correo de Keycloak (SPEC-06 E2-06): proyecto Maven autónomo, con su propio formato y sus tests.
+      - name: Formato y tests del SPI de correo (auth-service/spi)
+        run: mvn -B -f auth-service/spi/pom.xml spotless:check verify
+
       - name: Contrato del realm (Testcontainers sobre la imagen del Dockerfile)
         run: mvn -B -f auth-service/pom.xml -Pcontrato-auth verify
 
