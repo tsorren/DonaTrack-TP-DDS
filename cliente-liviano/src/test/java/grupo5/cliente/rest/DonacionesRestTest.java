@@ -7,6 +7,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.DonacionesPuerto.Consulta;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.MisDonacionesVista;
 import grupo5.cliente.vistas.MisDonacionesVista.Categoria;
@@ -31,6 +32,8 @@ class DonacionesRestTest {
   private static final UUID DONANTE = UUID.fromString("6f1c2c1e-0000-4000-8000-0000000000aa");
   private static final String ENTIDAD = "6f1c2c1e-0000-4000-8000-0000000000e1";
   private static final String ALIMENTOS = "6f1c2c1e-0000-4000-8000-0000000000c1";
+  private static final String PRIMERA =
+      "http://donaciones/donaciones-independientes?donanteId=" + DONANTE + "&page=0&size=12";
 
   /**
    * Tres donaciones desordenadas, dos para la misma entidad. Los estados llegan como los escribe el
@@ -65,8 +68,15 @@ class DonacionesRestTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
-        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \""
+                    + ALIMENTOS
+                    + "\", \"nombre\": \"Alimentos\", \"unidad\": \"KILOGRAMO\"}]",
+                MediaType.APPLICATION_JSON));
+    // Una página: la primera, de 12; sin X-Total-Count, el total es lo que vino.
+    donaciones.expect(requestTo(PRIMERA)).andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
     // El donante no puede leer una entidad por id: una sola llamada a las públicas, para todas.
     donaciones
         .expect(once(), requestTo("http://donaciones/api/entidades/publicas"))
@@ -75,14 +85,6 @@ class DonacionesRestTest {
                 "[{\"id\": \""
                     + ENTIDAD
                     + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\", \"rubro\": \"x\"}]",
-                MediaType.APPLICATION_JSON));
-    donaciones
-        .expect(requestTo("http://donaciones/api/categorias"))
-        .andRespond(
-            withSuccess(
-                "[{\"id\": \""
-                    + ALIMENTOS
-                    + "\", \"nombre\": \"Alimentos\", \"unidad\": \"KILOGRAMO\"}]",
                 MediaType.APPLICATION_JSON));
     Clock hoy = Clock.fixed(Instant.parse("2026-10-15T19:25:00Z"), ZoneOffset.UTC);
     DonacionesRest adaptador =
@@ -122,21 +124,30 @@ class DonacionesRestTest {
   }
 
   @Test
-  void lasDeUnMesSeLasPideFiltradasADonaciones() {
+  void elMesElEstadoLaCategoriaYLaPaginaLosResuelveDonacionesYElTotalVieneDeLaCabecera() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \""
+                    + ALIMENTOS
+                    + "\", \"nombre\": \"Alimentos\", \"unidad\": \"KILOGRAMO\"}]",
+                MediaType.APPLICATION_JSON));
+    // 25 en octubre, en curso y de alimentos: la página 2 de 12 trae las 13 a 24.
     donaciones
         .expect(
             requestTo(
                 "http://donaciones/donaciones-independientes?donanteId="
                     + DONANTE
-                    + "&desde=2026-10-01&hasta=2026-10-31"))
-        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
+                    + "&desde=2026-10-01&hasta=2026-10-31&estado=EN_TRASLADO&estado=EN_PUERTA"
+                    + "&categoriaId="
+                    + ALIMENTOS
+                    + "&page=1&size=12"))
+        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON).header("X-Total-Count", "25"));
     donaciones
         .expect(requestTo("http://donaciones/api/entidades/publicas"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
-    donaciones
-        .expect(requestTo("http://donaciones/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     Clock hoy = Clock.fixed(Instant.parse("2026-10-15T19:25:00Z"), ZoneOffset.UTC);
     DonacionesRest adaptador =
@@ -145,11 +156,50 @@ class DonacionesRestTest {
             ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
             hoy);
 
-    MisDonacionesVista vista = adaptador.misDonaciones(DONANTE, YearMonth.of(2026, 10));
+    MisDonacionesVista vista =
+        adaptador.misDonaciones(
+            DONANTE, new Consulta(YearMonth.of(2026, 10), EstadoEntrega.EN_CAMINO, ALIMENTOS, 2));
 
     donaciones.verify();
-    assertEquals(3, vista.donaciones().size());
+    assertEquals(25, vista.total());
+    assertEquals(2, vista.pagina());
+    assertEquals(3, vista.paginas());
     assertEquals("Arroz largo fino", vista.donaciones().getFirst().titulo());
+    // El número sigue la posición entre las 25: la página 2 empieza en la 13.ª más reciente.
+    assertEquals(
+        List.of(13L, 12L, 11L), vista.donaciones().stream().map(Donacion::numero).toList());
+  }
+
+  @Test
+  void unaCategoriaQueNoEstaNoFiltraYUnaPaginaDeMasPideLaUltima() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(PRIMERA.replace("page=0", "page=8")))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header("X-Total-Count", "15"));
+    donaciones
+        .expect(requestTo(PRIMERA.replace("page=0", "page=1")))
+        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON).header("X-Total-Count", "15"));
+    donaciones
+        .expect(requestTo("http://donaciones/api/entidades/publicas"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    DonacionesRest adaptador =
+        new DonacionesRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+            Clock.systemUTC());
+
+    MisDonacionesVista vista =
+        adaptador.misDonaciones(DONANTE, new Consulta(null, null, "no-es-una-categoria", 9));
+
+    donaciones.verify();
+    assertEquals(15, vista.total());
+    assertEquals(2, vista.pagina());
+    assertEquals(2, vista.paginas());
+    assertEquals(3, vista.donaciones().size());
   }
 
   /** Los otros cuatro estados, sin historial, sin ítems y con un ítem sin bien: ninguno falla. */
@@ -176,11 +226,11 @@ class DonacionesRestTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
-        .andRespond(withSuccess(CUATRO, MediaType.APPLICATION_JSON));
-    donaciones
         .expect(requestTo("http://donaciones/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(PRIMERA))
+        .andRespond(withSuccess(CUATRO, MediaType.APPLICATION_JSON));
     DonacionesRest adaptador =
         new DonacionesRest(
             ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
@@ -212,14 +262,12 @@ class DonacionesRestTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?donanteId=" + DONANTE))
-        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(PRIMERA)).andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON));
     donaciones
         .expect(requestTo("http://donaciones/api/entidades/publicas"))
         .andRespond(withStatus(HttpStatus.FORBIDDEN));
-    donaciones
-        .expect(requestTo("http://donaciones/api/categorias"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     DonacionesRest adaptador =
         new DonacionesRest(
             ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),

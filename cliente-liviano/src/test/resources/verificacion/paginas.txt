@@ -134,6 +134,8 @@
 /donante-donaciones?escenario=vacio
 /donante-donaciones?escenario=error
 /donante-donaciones?escenario=lento
+/donante-donaciones?mes=2026-10
+/donante-donaciones?pagina=2
 /donante-donaciones-detalle
 /donante-donaciones-detalle?donacion=arroz
 /donante-donaciones-detalle?donacion=utiles
@@ -249,6 +251,12 @@
 /donante-misiones?cuenta=persona&escenario=error
 /donante-misiones?cuenta=empresa
 /donante-donaciones?cuenta=persona
+# p0-persona (R11-06): las pantallas de persona. La cuenta queda en la sesión: al final, la empresa.
+/donante-inicio?cuenta=persona
+/donante-inicio?cuenta=persona&escenario=vacio
+/donante-perfil?cuenta=persona
+/donante-entidades?cuenta=persona&ya=si
+/donante-inicio?cuenta=empresa
 /entidad-seguimiento
 /entidad-seguimiento?escenario=vacio
 /entidad-seguimiento?escenario=lento

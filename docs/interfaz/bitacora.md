@@ -31,6 +31,18 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-11 · donante · Mis donaciones de a una página, con los filtros en el servidor
+
+- **Decisión:** Mis donaciones pide a Donaciones una página de 12 con el mes, el estado y la
+  categoría, y cuenta el total con `X-Total-Count`. Debajo de las láminas, un paginador provisorio
+  (anterior, "Página N de M", siguiente) que conserva el mes y los filtros.
+- **Alternativas:** dejar las páginas para `p1-donante-listas` (descartada: "Ver todas las de
+  octubre (25)" llevaba a 20 sin aviso); usar ya el paginador de `p1-paginador` (todavía no existe).
+- **Por qué:** reglas 1 y 2 del backlog: ninguna lista completa, y "Ver todas" lleva al listado
+  completo paginado.
+- **Costo:** el paginador numerado lo pone `p1-paginador`.
+- **Quién decidió:** equipo (arreglos de la revisión de p0-persona, ronda 2).
+
 ### 2026-11-11 · donante · El año de la persona, de a 3 por mes y con las cifras como números
 
 - **Decisión:** en el inicio de la persona, cada mes muestra sus 3 donaciones más recientes y

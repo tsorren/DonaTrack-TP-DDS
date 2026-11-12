@@ -156,7 +156,11 @@ Cambios respecto de la versión de la maqueta, y por qué:
   (`DonanteAnioVista`) y no la lista entera del inicio de la empresa.
 - **Mis donaciones con `?mes=`:** dice "Estás viendo las registradas en octubre de 2026." con "Ver
   todas tus donaciones"; el filtro de estado y categoría conserva el mes. Un mes mal escrito se
-  ignora. Las páginas de Mis donaciones son de `p1-donante-listas`, que tiene que conservar `mes`.
+  ignora. **Arreglos de la ronda 2:** Mis donaciones se pide de a una página (12) a Donaciones, con
+  el mes, el estado y la categoría resueltos en el servidor, y el total de `X-Total-Count`. La
+  bajada cuenta el total ("25 donaciones…"), no la página. Debajo de las láminas, el paginador
+  provisorio ("Página anterior", "Página 2 de 3", "Página siguiente") conserva el mes, el estado y
+  la categoría; una página de más muestra la última. Lo reemplaza el componente de `p1-paginador`.
 
 ### Inicio de la empresa (`donante-inicio`)
 
@@ -236,6 +240,7 @@ Cambios, y por qué:
 | Inicio persona | Mes con más de 3 | Las 3 más recientes y el enlace | "Ver todas las de octubre (7)" |
 | Mis donaciones | Filtrada por mes | La frase arriba y el enlace | "Estás viendo las registradas en octubre de 2026." / "Ver todas tus donaciones" |
 | Mis donaciones | Mes sin donaciones | Caja vacía | "No hay donaciones registradas en septiembre de 2026." |
+| Mis donaciones | Más de una página | Paginador debajo de las láminas | "Página anterior" / "Página 2 de 3" / "Página siguiente" |
 | Inicio empresa | Con datos | El tablero de siempre, sin huerta ni "¿Qué planta sos vos?" | — |
 | Perfil persona | Con datos | Nombre, renglón de cuenta, cómo te ven, datos, avisos, términos | "Persona donante · ana@correo-ejemplo.test" |
 | Perfil persona | Datos que faltan | El campo vacío, sin texto de ejemplo adentro | (el campo, vacío) |

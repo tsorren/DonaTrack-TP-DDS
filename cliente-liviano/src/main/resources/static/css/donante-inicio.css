@@ -277,7 +277,8 @@
   display: -webkit-box;
   flex: 1 1 100%;
   order: 1;
-  min-height: 0;
+  /* 48 px de toque aunque la noticia entre en una línea (piso del gate visual). */
+  min-height: 3rem;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;

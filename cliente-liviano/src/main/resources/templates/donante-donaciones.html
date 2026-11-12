@@ -7,7 +7,10 @@
        Los datos vienen del controller (misDonaciones: de la maqueta o de Donaciones), no de
        viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento.
        Con ?mes=2026-10 ("Ver todas" de un mes del inicio de la persona), las de ese mes: lo dice
-       arriba, con el enlace para ver todas; el filtro de estado y categoría lo conserva. */-->
+       arriba, con el enlace para ver todas; el filtro de estado y categoría lo conserva. El mes, el
+       estado, la categoría y la página (?pagina=2) los resuelve el servidor (R11-01): acá llega una
+       página y el total. Paginador provisorio (anterior, "Página N de M" y siguiente) hasta el
+       componente de p1-paginador; conserva el mes y los filtros. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones', ~{::contenido})}">
 <head>
@@ -25,9 +28,14 @@
              categorias=${misDonaciones.categorias},
              fCategoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
              filtrado=${fEstado != '' or fCategoria != ''},
-             vacia=${escenario == 'vacio' or misDonaciones.donaciones.isEmpty()},
-             lista=${misDonaciones.donaciones.?[(#root.fEstado == '' or estado.tono == #root.fEstado)
-                     and (#root.fCategoria == '' or categoria == #root.fCategoria)]}">
+             total=${misDonaciones.total},
+             vacia=${escenario == 'vacio' or (!filtrado and total == 0)},
+             lista=${misDonaciones.donaciones},
+             pagina=${misDonaciones.pagina},
+             paginas=${misDonaciones.paginas},
+             conservar=${(mesClave != null ? '&mes=' + mesClave : '')
+                       + (fEstado != '' ? '&estado=' + fEstado : '')
+                       + (fCategoria != '' ? '&categoria=' + fCategoria : '')}">
   <div class="donaciones">
     <header>
       <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
@@ -87,13 +95,13 @@
     </th:block>
 
     <th:block th:if="${escenario == '' and !vacia}">
-      <p th:unless="${filtrado and lista.isEmpty()}" class="bajada" role="status"
+      <p th:unless="${filtrado and total == 0}" class="bajada" role="status"
          th:text="${filtrado}
-           ? |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'} con esos filtros.|
-           : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'}, de la más reciente a la primera. Actualizado ${misDonaciones.actualizado}.|">7
+           ? |${total} ${total == 1 ? 'donación' : 'donaciones'} con esos filtros.|
+           : |${total} ${total == 1 ? 'donación' : 'donaciones'}, de la más reciente a la primera. Actualizado ${misDonaciones.actualizado}.|">7
         donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.</p>
 
-      <section th:if="${filtrado and lista.isEmpty()}" class="vacio" role="status"
+      <section th:if="${filtrado and total == 0}" class="vacio" role="status"
                aria-labelledby="sin-resultados">
         <h2 id="sin-resultados">No hay donaciones con esos filtros.</h2>
         <p>Probá con otro estado o con otra categoría.</p>
@@ -111,6 +119,17 @@
               categoria: d.icono, categoriaTexto: d.categoriaTexto, destino: d.destino, nota: d.nota, estado: d.estado} })}"></li>
         </th:block>
       </ul>
+
+      <nav th:if="${paginas > 1}" class="paginas" aria-label="Páginas de tus donaciones">
+        <a th:if="${pagina > 1}" class="boton" data-tono="secundario" rel="prev" hx-boost="true"
+           href="/donante-donaciones"
+           th:href="@{${'/donante-donaciones?pagina=' + (pagina - 1) + conservar}}">Página anterior</a>
+        <p aria-current="page"
+           th:text="|Página ${pagina} de ${paginas}|">Página 1 de 2</p>
+        <a th:if="${pagina < paginas}" class="boton" data-tono="secundario" rel="next" hx-boost="true"
+           href="/donante-donaciones?pagina=2"
+           th:href="@{${'/donante-donaciones?pagina=' + (pagina + 1) + conservar}}">Página siguiente</a>
+      </nav>
 
       <div class="donaciones-pie">
         <p>Las que están en curso también se ven en Seguimiento, con dónde va el camión.</p>

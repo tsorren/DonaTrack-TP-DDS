@@ -1,6 +1,7 @@
 package grupo5.cliente.seguridad;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.puertos.DonacionesPuerto;
+import grupo5.cliente.puertos.DonacionesPuerto.Consulta;
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.MisDonacionesVista;
 import grupo5.cliente.vistas.RecibidasVista;
@@ -65,7 +67,7 @@ class CuentaDelTokenTest {
 
   @Test
   void conSesionLaCuentaEsLaDelTokenYUnDonanteEnElPedidoNoLaCambia() throws Exception {
-    when(donaciones.misDonaciones(any()))
+    when(donaciones.misDonaciones(any(), any(Consulta.class)))
         .thenReturn(new MisDonacionesVista(List.of(), List.of(), ""));
 
     mvc.perform(get("/donante-donaciones").param("donante", OTRA.toString()).with(donante()))
@@ -74,9 +76,9 @@ class CuentaDelTokenTest {
             get("/donante-donaciones-detalle").param("donante", OTRA.toString()).with(donante()))
         .andExpect(status().isOk());
 
-    verify(donaciones).misDonaciones(PERSONA);
+    verify(donaciones).misDonaciones(eq(PERSONA), any(Consulta.class));
     verify(donaciones).detalle(PERSONA, null);
-    verify(donaciones, never()).misDonaciones(OTRA);
+    verify(donaciones, never()).misDonaciones(eq(OTRA), any(Consulta.class));
     verify(donaciones, never()).detalle(OTRA, null);
   }
 

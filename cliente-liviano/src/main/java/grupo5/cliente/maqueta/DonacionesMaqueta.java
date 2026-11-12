@@ -302,6 +302,12 @@ class DonacionesMaqueta implements DonacionesPuerto {
     return DONACIONES;
   }
 
+  /** Con 4 por página, las siete de ejemplo ocupan dos y el paginador se ve y se comprueba. */
+  @Override
+  public int porPagina() {
+    return 4;
+  }
+
   @Override
   public Optional<DetalleDonacionVista> detalle(UUID donante, String clave) {
     return Optional.ofNullable(DETALLES.get(clave == null ? LENTEJAS : clave));

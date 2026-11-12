@@ -19,6 +19,7 @@ import static grupo5.cliente.rest.Comun.icono;
 import static grupo5.cliente.rest.Comun.normalizado;
 
 import grupo5.cliente.puertos.DonacionesPuerto;
+import grupo5.cliente.puertos.DonacionesPuerto.Consulta;
 import grupo5.cliente.rest.DonacionesApi.Cambio;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
 import grupo5.cliente.vistas.DetalleDonacionVista;
@@ -32,7 +33,6 @@ import grupo5.cliente.vistas.PasoRecorrido.Avance;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -43,16 +43,18 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 
 /**
- * Mis donaciones y su detalle desde Donaciones: la lista del donante, las categorías del filtro y
- * el nombre de cada entidad (de las públicas) para el destino. El número de cada donación es su
- * posición, de la primera a la última. El detalle busca la donación en la lista del donante (otra
- * no se muestra), arma las etapas y las noticias con su historial y, si se entregó, trae la foto de
+ * Mis donaciones y su detalle desde Donaciones: una página de las del donante (filtros, página y
+ * total en el servidor), las categorías del filtro y el nombre de cada entidad (de las públicas)
+ * para el destino. El número de cada donación es su posición, de la primera a la última, entre las
+ * que cumplen los filtros. El detalle busca la donación en la lista del donante (otra no se
+ * muestra), arma las etapas y las noticias con su historial y, si se entregó, trae la foto de
  * Logística.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
@@ -64,6 +66,18 @@ class DonacionesRest implements DonacionesPuerto {
   /** Las cinco etapas, en orden, con el estado de Donaciones que las abre. */
   private static final List<String> ETAPAS =
       List.of("ENDEPOSITO", ASIGNADA, LISTA, TRASLADO, ENTREGADA);
+
+  /** Los estados de Donaciones que forman cada estado del filtro de Mis donaciones. */
+  private static final Map<EstadoEntrega, List<String>> ESTADOS =
+      Map.of(
+          EstadoEntrega.PENDIENTE,
+          List.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR"),
+          EstadoEntrega.EN_CAMINO,
+          List.of("EN_TRASLADO", "EN_PUERTA"),
+          EstadoEntrega.ENTREGADA,
+          List.of("ENTREGADA"),
+          EstadoEntrega.CON_PROBLEMA,
+          List.of("ENTREGA_FALLIDA", "VENCIDA"));
 
   private static final List<String> NOMBRES_ETAPAS =
       List.of("En depósito", "Asignada", "Lista para entregar", "En camino", "Entregada");
@@ -83,36 +97,84 @@ class DonacionesRest implements DonacionesPuerto {
 
   @Override
   public MisDonacionesVista misDonaciones(UUID donante) {
-    return libro(ordenadas(donante));
+    return misDonaciones(donante, Consulta.primera());
   }
 
-  /** Las del mes, filtradas por Donaciones por la fecha de registro (desde y hasta inclusivos). */
+  /**
+   * Una página, con los filtros resueltos por Donaciones (R11-01): el mes por la fecha de registro
+   * (desde y hasta inclusivos), el estado como los estados de Donaciones que lo forman y la
+   * categoría solo si es una de las del filtro. El total, de {@code X-Total-Count}. Una página más
+   * allá de la última pide la última.
+   */
   @Override
-  public MisDonacionesVista misDonaciones(UUID donante, YearMonth mes) {
-    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
-    filtros.add("donanteId", donante.toString());
-    filtros.add("desde", mes.atDay(1).toString());
-    filtros.add("hasta", mes.atEndOfMonth().toString());
-    return libro(
-        api.buscar(filtros).stream()
-            .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
-            .toList());
-  }
-
-  private MisDonacionesVista libro(List<DonacionesApi.Donacion> lista) {
-    Map<UUID, String> entidades = entidades(lista);
-    List<Donacion> donaciones =
-        IntStream.range(0, lista.size())
-            .mapToObj(i -> donacion(lista.get(i), (long) lista.size() - i, entidades))
-            .toList();
+  public MisDonacionesVista misDonaciones(UUID donante, Consulta consulta) {
     List<MisDonacionesVista.Categoria> categorias =
         api.categorias().stream()
             .map(c -> new MisDonacionesVista.Categoria(c.id().toString(), c.nombre()))
             .toList();
+    boolean conCategoria =
+        categorias.stream().anyMatch(c -> c.valor().equals(consulta.categoria()));
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("donanteId", donante.toString());
+    if (consulta.mes() != null) {
+      filtros.add("desde", consulta.mes().atDay(1).toString());
+      filtros.add("hasta", consulta.mes().atEndOfMonth().toString());
+    }
+    if (consulta.estado() != null) {
+      ESTADOS.get(consulta.estado()).forEach(e -> filtros.add("estado", e));
+    }
+    if (conCategoria) {
+      filtros.add("categoriaId", consulta.categoria());
+    }
+    int pagina = consulta.pagina();
+    ResponseEntity<List<DonacionesApi.Donacion>> respuesta = pedirPagina(filtros, pagina);
+    long total = total(respuesta);
+    int paginas = (int) Math.max(1, (total + Consulta.POR_PAGINA - 1) / Consulta.POR_PAGINA);
+    if (pagina > paginas) {
+      pagina = paginas;
+      respuesta = pedirPagina(filtros, pagina);
+      total = total(respuesta);
+    }
+    // Donaciones ya las ordena de la más reciente a la primera; se reordena la página por las
+    // dudas.
+    List<DonacionesApi.Donacion> lista =
+        respuesta.getBody() == null
+            ? List.of()
+            : respuesta.getBody().stream()
+                .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
+                .toList();
+    Map<UUID, String> entidades = entidades(lista);
+    long primero = total - (long) (pagina - 1) * Consulta.POR_PAGINA;
+    List<Donacion> donaciones =
+        IntStream.range(0, lista.size())
+            .mapToObj(i -> donacion(lista.get(i), primero - i, entidades))
+            .toList();
     return new MisDonacionesVista(
         donaciones,
         categorias,
-        "hoy, " + LocalDateTime.now(reloj.withZone(ARGENTINA)).format(DIA_Y_HORA));
+        "hoy, " + LocalDateTime.now(reloj.withZone(ARGENTINA)).format(DIA_Y_HORA),
+        total,
+        pagina,
+        paginas);
+  }
+
+  private ResponseEntity<List<DonacionesApi.Donacion>> pedirPagina(
+      MultiValueMap<String, String> filtros, int pagina) {
+    MultiValueMap<String, String> conPagina = new LinkedMultiValueMap<>(filtros);
+    conPagina.set("page", String.valueOf(pagina - 1));
+    conPagina.set("size", String.valueOf(Consulta.POR_PAGINA));
+    return api.pagina(conPagina);
+  }
+
+  /** El total de {@code X-Total-Count}; sin la cabecera, lo que vino en la página. */
+  private static long total(ResponseEntity<List<DonacionesApi.Donacion>> respuesta) {
+    int enLaPagina = respuesta.getBody() == null ? 0 : respuesta.getBody().size();
+    String total = respuesta.getHeaders().getFirst("X-Total-Count");
+    try {
+      return total == null ? enLaPagina : Long.parseLong(total);
+    } catch (NumberFormatException malEscrito) {
+      return enLaPagina;
+    }
   }
 
   @Override
