@@ -60,10 +60,12 @@ public class Pantallas {
 
   /**
    * Pantallas que son parte de una sección aunque su nombre no empiece con el de ella: la pestaña
-   * Importaciones es de Donantes (R11-20).
+   * Importaciones es de Donantes (R11-20) y la pestaña Actividad, de Administradores (R11-26).
    */
   private static final Map<String, String> EN_LA_SECCION =
-      Map.of("admin-importaciones", "admin-donantes");
+      Map.of(
+          "admin-importaciones", "admin-donantes",
+          "admin-actividad", "admin-administradores");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
@@ -268,7 +270,7 @@ public class Pantallas {
                         || deLaSeccion.startsWith(seccion.pantalla() + "-"))
             .findFirst()
             .orElse(null);
-    String fueraDelMenu = FUERA_DEL_MENU.get(pantalla.substring(prefijo.length() + 1));
+    String fueraDelMenu = FUERA_DEL_MENU.get(deLaSeccion.substring(prefijo.length() + 1));
     boolean sinDibujar = area.isPresent() && (actual != null || fueraDelMenu != null);
     if (!dibujada && !sinDibujar) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);

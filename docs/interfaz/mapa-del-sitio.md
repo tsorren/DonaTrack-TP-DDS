@@ -57,6 +57,7 @@ flowchart LR
     IA --> RK[Ranking]
     IA --> PA[Mi perfil]
     IA --> AD[Administradores] --> AN[Dar de alta un administrador]
+    AD --> AC[Actividad]
     DOa --> IM[Importaciones]
   end
 ```
@@ -102,6 +103,7 @@ flowchart LR
 | Donantes → Importaciones (`/admin-importaciones`: en curso e históricas, con búsqueda y filtros) | Admin | 2 → 3 | RF-20 | [r11-p1-importaciones](flujos/r11-p1-importaciones.md) | E6 |
 | Mi perfil del admin (`/admin-perfil`, desde el menú de la cuenta) | Admin | 2 | RI-AUTH-02, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
 | Administradores → dar de alta (`/admin-administradores`, desde el menú de la cuenta; la ventana o, sin JavaScript, `/admin-administradores-nuevo`; el resultado con la contraseña provisoria, `/admin-administradores-alta`) | Admin | 2 → 3 | RF-AUTH-07, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
+| Administradores → Actividad (`/admin-actividad`: quién hizo qué y cuándo, de a 20, con búsqueda por administrador y filtros Quién, Acción y Fecha; "Ver su actividad" en cada cuenta y "Ver mi actividad" en Mi perfil) | Admin | 2 | R11-26, RI-SVC-04 | [r11-p2-actividad](flujos/r11-p2-actividad.md) | E6 (R11, P2) |
 
 ## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
 

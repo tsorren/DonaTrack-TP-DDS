@@ -231,6 +231,20 @@ interface DonacionesApi {
   @GetExchange("/api/donantes/archivos")
   ResponseEntity<List<Archivo>> archivos(@RequestParam MultiValueMap<String, String> filtros);
 
+  // --- Actividad de administración (R11-26) ---------------------------------------------------
+
+  /**
+   * Solo ADMIN: de a una página, de la más reciente a la más vieja, con {@code autor} y {@code
+   * accion} (repetibles), {@code desde}, {@code hasta}, {@code page} y {@code size}; el total, en
+   * {@code X-Total-Count}.
+   */
+  @GetExchange("/api/actividad")
+  ResponseEntity<List<Actividad>> actividad(@RequestParam MultiValueMap<String, String> filtros);
+
+  /** Solo ADMIN: anota una acción hecha fuera de Donaciones, a nombre del token. */
+  @PostExchange("/api/actividad")
+  void anotarActividad(@RequestBody AnotacionActividad anotacion);
+
   @GetExchange("/api/donantes/archivos/{id}")
   Archivo archivo(@PathVariable UUID id);
 
@@ -601,4 +615,18 @@ interface DonacionesApi {
   record Ejecucion(UUID id, LocalDateTime fechaEjecucion, Integer cantidadPropuestasGeneradas) {}
 
   record Decision(String estado, String justificacion) {}
+
+  /**
+   * Una acción del registro de actividad (R11-26); {@code objetoId} y {@code detalle}, nullable.
+   */
+  record Actividad(
+      UUID id,
+      LocalDateTime ocurrioEn,
+      String autor,
+      String accion,
+      String objetoId,
+      String detalle) {}
+
+  /** Lo que el sitio anota: una de las cinco acciones del sitio; el autor lo pone Donaciones. */
+  record AnotacionActividad(String accion, String objetoId, String detalle) {}
 }

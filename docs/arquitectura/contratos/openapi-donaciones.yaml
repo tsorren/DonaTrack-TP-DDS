@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.10.0
+  version: 1.11.0
   description: >-
     API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
     1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
@@ -19,6 +19,9 @@ info:
     Desde 1.10.0 (R11-12), `GET /api/entidades/publicas` acepta `categoriaId` (opcional) y
     `GET /api/donantes/{id}/entidades` da las entidades activas vistas por un donante, con el
     filtro "solo a las que doné" y la marca `yaLeDono`.
+    Desde 1.11.0 (R11-26) hay un registro de actividad de administración: `GET /api/actividad`
+    lo lista de a una página y `POST /api/actividad` anota lo que pasa fuera de Donaciones;
+    `POST /api/entidades` acepta `origen` (opcional).
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -727,6 +730,11 @@ paths:
         La jurídica debe existir, no ser EMPRESA y tener dirección. Si ya era entidad no se
         duplica; si estaba de baja se reactiva (sus necesidades no se reactivan).
       operationId: registrarEntidadBeneficiaria
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntidadBeneficiariaInput'
       responses:
         '201':
           description: Entidad creada. La respuesta incluye `activo`.
@@ -1249,6 +1257,98 @@ paths:
           description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
         '404':
           description: Archivo no encontrado
+  /api/actividad:
+    get:
+      summary: Listar el registro de actividad de administración (solo ADMIN)
+      description: >
+        Desde 1.11.0 (R11-26). Quién hizo qué y cuándo: una fila por acción de una persona de
+        administración, de la más reciente a la más vieja (desempata por id), de a una página; el
+        total de las que cumplen los filtros va en `X-Total-Count`. Sin `page` ni `size`, la página
+        0 de 20. Una página fuera de rango devuelve un arreglo vacío con el total real. El autor es
+        el `sub` del token de quien hizo la acción; el nombre se lee del proveedor de ingreso al
+        mostrarlo.
+      operationId: listarActividad
+      parameters:
+        - name: autor
+          in: query
+          required: false
+          description: >
+            El `sub` de una cuenta (hasta 64 caracteres), repitiendo el parámetro para varias
+            (hasta 20). Sin `autor`, todas.
+          style: form
+          explode: true
+          schema:
+            type: array
+            maxItems: 20
+            items: { type: string, maxLength: 64 }
+        - name: accion
+          in: query
+          required: false
+          description: Una o varias acciones, repitiendo el parámetro. Sin `accion`, todas.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AccionDeAdministracion'
+        - name: desde
+          in: query
+          required: false
+          description: Primer día (AAAA-MM-DD, inclusivo), en la hora de Buenos Aires.
+          schema: { type: string, format: date }
+        - name: hasta
+          in: query
+          required: false
+          description: Último día (AAAA-MM-DD, inclusivo), en la hora de Buenos Aires.
+          schema: { type: string, format: date }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Una página del registro
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActividadResponse'
+        '400':
+          description: >
+            `page`, `size`, `autor`, `accion` o una fecha inválidos, más de 20 `autor`, o `desde`
+            posterior a `hasta` (ERR-CSR-003)
+        '401': { description: Sin token }
+        '403': { description: El token no es de ADMIN }
+    post:
+      summary: Anotar una acción de administración hecha fuera de Donaciones (solo ADMIN)
+      description: >
+        Desde 1.11.0 (R11-26). Solo para lo que pasa por Keycloak o Logística: dar de alta un
+        administrador, generar otra contraseña provisoria y agregar, deshabilitar o volver a
+        habilitar un camión. Las acciones que pasan por Donaciones las registra Donaciones y no se
+        aceptan acá. El autor (el `sub` del token) y la hora los pone Donaciones: el cuerpo no los
+        trae. No es idempotente: el sitio llama una vez por acción hecha.
+      operationId: anotarActividad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnotacionActividad'
+      responses:
+        '201':
+          description: La acción anotada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActividadResponse'
+        '400':
+          description: >
+            Otra `accion` (una de las que registra Donaciones), falta `objetoId`, un largo excedido
+            o un `detalle` para una cuenta (ERR-CSR-003)
+        '401': { description: Sin token }
+        '403': { description: El token no es de ADMIN }
   /api/categorias:
     get:
       summary: Listar categorías de donación
@@ -1686,6 +1786,87 @@ components:
         type: integer
         minimum: 0
   schemas:
+    AccionDeAdministracion:
+      type: string
+      description: >
+        Desde 1.11.0 (R11-26). Las nueve primeras las registra Donaciones; las cinco últimas las
+        anota el sitio con `POST /api/actividad`.
+      enum:
+        - PROPUESTA_APROBADA
+        - PROPUESTA_DESCARTADA
+        - ASIGNACION_CORRIDA
+        - DONACION_REGISTRADA
+        - DONACION_VENCIDA
+        - DONANTE_REGISTRADO
+        - IMPORTACION_SUBIDA
+        - ORGANIZACION_APROBADA
+        - ORGANIZACION_REGISTRADA
+        - ADMINISTRADOR_DADO_DE_ALTA
+        - CONTRASENA_PROVISORIA_NUEVA
+        - CAMION_AGREGADO
+        - CAMION_DESHABILITADO
+        - CAMION_HABILITADO
+    ActividadResponse:
+      type: object
+      description: >
+        Una acción de administración (R11-26). `detalle` es un rótulo sin datos de una persona
+        humana: la razón social de la organización (propuestas y organizaciones) o del donante
+        persona jurídica, el nombre del archivo importado, la patente del camión o la cantidad de
+        propuestas nuevas de una asignación.
+      required: [id, ocurrioEn, autor, accion]
+      properties:
+        id: { type: string, format: uuid }
+        ocurrioEn:
+          type: string
+          format: date-time
+          description: Hora local de Argentina, sin zona (como `fechaAlta`).
+        autor:
+          type: string
+          description: El `sub` del token de quien hizo la acción.
+        accion:
+          $ref: '#/components/schemas/AccionDeAdministracion'
+        objetoId:
+          type: string
+          nullable: true
+          description: >
+            Lo que tocó: la propuesta, la donación, el donante, el archivo, la organización, el
+            `sub` de la cuenta o el id del camión. Nulo en `ASIGNACION_CORRIDA`.
+        detalle:
+          type: string
+          nullable: true
+          maxLength: 200
+    AnotacionActividad:
+      type: object
+      required: [accion, objetoId]
+      properties:
+        accion:
+          type: string
+          enum:
+            - ADMINISTRADOR_DADO_DE_ALTA
+            - CONTRASENA_PROVISORIA_NUEVA
+            - CAMION_AGREGADO
+            - CAMION_DESHABILITADO
+            - CAMION_HABILITADO
+        objetoId:
+          type: string
+          maxLength: 64
+          description: El `sub` de la cuenta o el id del camión.
+        detalle:
+          type: string
+          maxLength: 20
+          description: Para los camiones, la patente. Para las cuentas, no se acepta.
+    EntidadBeneficiariaInput:
+      type: object
+      required: [juridicaId]
+      properties:
+        juridicaId: { type: string, format: uuid }
+        origen:
+          type: string
+          enum: [SOLICITUD, ADMIN]
+          description: >
+            Desde 1.11.0 (R11-26), opcional: `SOLICITUD` al aprobar la solicitud de una
+            organización; `ADMIN` (por defecto) al registrarla la administración. Solo cambia la
+            acción que queda en el registro de actividad.
     PropuestaDTO:
       type: object
       description: Propuesta de asignación de donaciones a una necesidad.

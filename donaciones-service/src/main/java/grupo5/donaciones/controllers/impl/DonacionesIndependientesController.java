@@ -8,6 +8,9 @@ import grupo5.donaciones.controllers.IDonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.ParametrosListado;
 import jakarta.validation.Valid;
@@ -29,9 +32,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DonacionesIndependientesController implements IDonacionesIndependientesController {
 
   private final IDonacionesIndependientesService service;
+  private final IActividadService actividad;
 
-  public DonacionesIndependientesController(IDonacionesIndependientesService service) {
+  public DonacionesIndependientesController(
+      IDonacionesIndependientesService service, IActividadService actividad) {
     this.service = service;
+    this.actividad = actividad;
   }
 
   @Override
@@ -59,6 +65,11 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
       @PathVariable UUID id,
       @Valid @RequestBody CambioEstadoDonacionIndependienteRequestDTO request,
       @RequestHeader("X-Actor") String actor) {
-    return ResponseEntity.ok(service.cambiarEstado(id, request, actor));
+    DonacionIndependienteResponseDTO cambiada = service.cambiarEstado(id, request, actor);
+    // R11-26: el autor del registro es el sub del token, no X-Actor (RI-SVC-04).
+    if (request.estado() == TipoEstadoDonacion.VENCIDA) {
+      actividad.registrar(AccionDeAdministracion.DONACION_VENCIDA, id.toString(), null);
+    }
+    return ResponseEntity.ok(cambiada);
   }
 }

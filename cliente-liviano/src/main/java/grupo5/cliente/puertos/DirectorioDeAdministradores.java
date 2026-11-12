@@ -43,6 +43,13 @@ public interface DirectorioDeAdministradores {
   /** La página {@code pagina} (desde 1) de las cuentas, de a {@link #POR_PAGINA}, por correo. */
   List<Administrador> pagina(int pagina);
 
+  /**
+   * Las cuentas de administración cuyo nombre, apellido o correo contienen {@code texto}, como
+   * mucho {@code max} (R11-26: la búsqueda por administrador del registro de actividad pide 21 para
+   * saber si son más de 20). Nunca la lista entera.
+   */
+  List<Administrador> buscar(String texto, int max);
+
   /** La cuenta por su id; vacío si no existe o no es de administración. */
   Optional<Administrador> cuenta(String id);
 

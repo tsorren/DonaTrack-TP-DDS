@@ -31,6 +31,31 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-12 · admin · Registro de actividad: pestaña de Administradores, sin detalle propio
+
+- **Decisión:** la actividad de administración (R11-26, lote `p2-actividad`) es la pestaña
+  "Actividad" de Administradores (`Cuentas · Actividad`), una tabla de la más reciente a la más
+  vieja, de a 20, con una frase en pasado por acción; el nombre de cada fila filtra por esa cuenta y
+  "Ver la donación" o "Ver la importación" llevan a la pantalla de lo que tocó. Acción en seis
+  grupos (no 14 tipos), sin pastilla de orden; quién se busca por nombre en Keycloak (hasta 20
+  cuentas) o con "Solo lo mío". Lo de antes del lote no se inventa: solo entran las propuestas
+  decididas con autor (V22).
+- **Alternativas:** una entrada nueva en el menú principal o en el de la cuenta; un detalle por
+  acción; un desplegable con todas las cuentas o con los 14 tipos; guardar el nombre del admin en
+  cada fila.
+- **Por qué:** es la sección de las cuentas; una fila dice todo; traer todas las cuentas rompe la
+  regla 1 y el nombre de una cuenta es un dato personal que envejece (ficha §9).
+- **Costo:** en el celular es la tabla apilada (`.tabla` con `data-rotulo`) y no una lista `ol`; el
+  nombre como enlace va en un párrafo (así lo mide el piso de toque) y el texto para el lector es
+  "Bruno Díaz: ver solo sus acciones", no "Ver solo lo de Bruno Díaz" (axe pide que el nombre
+  visible esté en el accesible). "Registró una donación en el depósito" no lleva a la donación (el
+  registro guarda la donación original). Pendientes en
+  [DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 2.
+- **Quién decidió:** el usuario (sección 3 del backlog y aprobación automática de la ficha con las
+  opciones recomendadas); los detalles de construcción, el agente constructor del lote.
+- **Evidencia:** `cliente-liviano/target/capturas/admin-actividad-*.png` (12 rutas, 360, 1280 y
+  1920 px); [ficha r11-p2-actividad](flujos/r11-p2-actividad.md).
+
 ### 2026-11-12 · público · Portada con sesión: la cuenta se ve en todo lo público, no solo en la portada
 
 - **Decisión:** con la sesión iniciada, la portada y todas las públicas que usan `layout-publico`

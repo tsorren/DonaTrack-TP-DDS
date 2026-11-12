@@ -22,6 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.puertos.AdminActividadPuerto;
+import grupo5.cliente.puertos.AdminActividadPuerto.AccionDelSitio;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Alta;
@@ -75,6 +77,7 @@ class AdministradoresConIngresoTest {
       new Administrador("cuenta-bruno", "Bruno", "Díaz", "bruno.diaz@ejemplo.org", CREADA, false);
 
   @MockitoBean private DirectorioDeAdministradores directorio;
+  @MockitoBean private AdminActividadPuerto actividad;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 
@@ -156,6 +159,7 @@ class AdministradoresConIngresoTest {
   // C1
   @Test
   void elAltaQuedaANombreDeLaSesionYMuestraLaContrasenaUnaSolaVez() throws Exception {
+    when(directorio.alta(any(), anyString(), anyString())).thenReturn("cuenta-nueva");
     MvcResult alta =
         mvc.perform(
                 post("/admin-administradores")
@@ -172,6 +176,8 @@ class AdministradoresConIngresoTest {
         .alta(
             eq(new Alta("Bruno", "Díaz", "bruno.diaz@ejemplo.org")), contrasena.capture(), eq(ANA));
     assertThat(contrasena.getValue().replace("-", "")).hasSize(16);
+    // R11-26, C13: el alta que salió bien queda anotada con la cuenta nueva
+    verify(actividad).anotar(AccionDelSitio.ADMINISTRADOR_DADO_DE_ALTA, "cuenta-nueva", null);
 
     mvc.perform(
             get("/admin-administradores-alta").with(como("ADMIN")).flashAttrs(alta.getFlashMap()))
@@ -332,6 +338,7 @@ class AdministradoresConIngresoTest {
     mvc.perform(
             get("/admin-administradores-alta").with(como("ADMIN")).flashAttrs(otra.getFlashMap()))
         .andExpect(content().string(containsString("Nueva contraseña provisoria para Bruno Díaz")));
+    verify(actividad).anotar(AccionDelSitio.CONTRASENA_PROVISORIA_NUEVA, "cuenta-bruno", null);
 
     mvc.perform(
             post("/admin-administradores-contrasena")
@@ -345,6 +352,7 @@ class AdministradoresConIngresoTest {
                     "avisoDelServidor",
                     "Ana Pérez ya eligió su contraseña: no hace falta otra. Si la olvidó,"
                         + " escribinos desde Contacto."));
+    verify(actividad, never()).anotar(AccionDelSitio.CONTRASENA_PROVISORIA_NUEVA, ANA, null);
   }
 
   // C9

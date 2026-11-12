@@ -22,6 +22,7 @@ import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ResumenAdminDTO;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDate;
@@ -79,6 +80,10 @@ class DonacionesControllerTest extends AbstractDonacionesWebMvcTest {
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated())
         .andExpect(header().exists("X-Trace-Id"));
+
+    // R11-26: la donación registrada queda en el registro (si el token es de ADMIN).
+    verify(actividadService)
+        .registrar(AccionDeAdministracion.DONACION_REGISTRADA, output.id().toString(), null);
   }
 
   @Test

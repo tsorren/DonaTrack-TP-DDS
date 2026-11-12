@@ -22,6 +22,8 @@
 <body>
 <th:block th:fragment="contenido">
   <div class="mesa">
+    <nav th:replace="~{admin-actividad :: pestanas('cuentas')}"></nav>
+
     <header class="mesa-cabecera">
       <div>
         <p class="rotulo">Administración</p>
@@ -69,7 +71,12 @@
         <tbody>
           <tr th:each="c : ${filas}">
             <th scope="row"><th:block th:text="${c.nombre} ?: 'Sin nombre cargado'">Ana Pérez</th:block><th:block
-                th:if="${c.propia}"> · Vos</th:block></th>
+                th:if="${c.propia}"> · Vos</th:block>
+              <p class="texto-chico"><a href="/admin-actividad?autor=cuenta-ana"
+                 th:href="${c.propia} ? @{/admin-actividad(autor='yo')} : @{/admin-actividad(autor=${c.id})}"
+                 ><th:block th:text="${c.propia} ? 'Ver mi actividad' : 'Ver su actividad'">Ver mi
+                actividad</th:block><span th:unless="${c.propia}" class="solo-lectores"
+                th:text="| (de ${c.nombre ?: c.correo})|"> (de Bruno Díaz)</span></a></p></th>
             <td data-rotulo="Correo" th:text="${c.correo}">ana.perez@ejemplo.org</td>
             <td data-rotulo="Estado">
               <th:block th:text="${c.entro} ? 'Activa' : 'Todavía no entró'">Activa</th:block>

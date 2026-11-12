@@ -1,6 +1,6 @@
 # Flujo: el registro de actividad de administración (R11-26)
 
-> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
+> **Estado:** construida (lote `p2-actividad`, 2026-11-12) · antes aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p2-actividad` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, tanda 1, ruta
 > CONTRATO). La decisión del usuario ("Cuentas de administración", sección 3 del backlog: cuenta y

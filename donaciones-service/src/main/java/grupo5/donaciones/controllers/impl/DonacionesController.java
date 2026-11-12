@@ -11,6 +11,8 @@ import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ResumenAdminDTO;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IDonacionesService;
 import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.impl.ContadoresPublicosService;
@@ -36,14 +38,17 @@ public class DonacionesController implements IDonacionesController {
   private final IDonacionesService service;
   private final ContadoresPublicosService contadoresPublicosService;
   private final ResumenAdminService resumenAdminService;
+  private final IActividadService actividad;
 
   public DonacionesController(
       IDonacionesService service,
       ContadoresPublicosService contadoresPublicosService,
-      ResumenAdminService resumenAdminService) {
+      ResumenAdminService resumenAdminService,
+      IActividadService actividad) {
     this.service = service;
     this.contadoresPublicosService = contadoresPublicosService;
     this.resumenAdminService = resumenAdminService;
+    this.actividad = actividad;
   }
 
   @Override
@@ -53,7 +58,11 @@ public class DonacionesController implements IDonacionesController {
   @PostMapping
   public ResponseEntity<DonacionOutputDTO> cargarDonacion(
       @Valid @RequestBody DonacionInputDTO dto) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(service.cargarDonacion(dto));
+    DonacionOutputDTO registrada = service.cargarDonacion(dto);
+    // R11-26: solo la que registra la administración; la del donante sobre sí mismo no entra.
+    actividad.registrar(
+        AccionDeAdministracion.DONACION_REGISTRADA, String.valueOf(registrada.id()), null);
+    return ResponseEntity.status(HttpStatus.CREATED).body(registrada);
   }
 
   @Override

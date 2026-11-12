@@ -16,6 +16,8 @@ import grupo5.donaciones.dto.donantes.FiltroArchivos;
 import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
@@ -49,14 +51,17 @@ public class DonantesController implements IDonantesController {
   private final IDonantesService donantesService;
   private final IArchivoDonantesService archivoDonantesService;
   private final IEntidadBeneficiariaService entidadesService;
+  private final IActividadService actividad;
 
   public DonantesController(
       IDonantesService donantesService,
       IArchivoDonantesService archivoDonantesService,
-      IEntidadBeneficiariaService entidadesService) {
+      IEntidadBeneficiariaService entidadesService,
+      IActividadService actividad) {
     this.donantesService = donantesService;
     this.archivoDonantesService = archivoDonantesService;
     this.entidadesService = entidadesService;
+    this.actividad = actividad;
   }
 
   @Override
@@ -64,6 +69,10 @@ public class DonantesController implements IDonantesController {
   @PostMapping
   public ResponseEntity<DonanteOutputDTO> crearDonante(@Valid @RequestBody DonanteInputDTO dto) {
     ResultadoRegistro<DonanteOutputDTO> resultado = donantesService.crearDonante(dto);
+    if (resultado.creado()) {
+      // R11-26: con un token de ADMIN; el registro desde el sitio (token de servicio), no.
+      actividad.donanteRegistrado(resultado.recurso());
+    }
     HttpStatus status = resultado.creado() ? HttpStatus.CREATED : HttpStatus.OK;
     return ResponseEntity.status(status).body(resultado.recurso());
   }
@@ -125,6 +134,10 @@ public class DonantesController implements IDonantesController {
           archivoDonantesService.cargarArchivoDonantes(
               new ArchivoDonantesSubido(
                   archivo.getOriginalFilename(), archivo.getSize(), contenido));
+      actividad.registrar(
+          AccionDeAdministracion.IMPORTACION_SUBIDA,
+          String.valueOf(responseBody.id()),
+          responseBody.nombre());
       return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
     }
   }

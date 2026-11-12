@@ -378,6 +378,23 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
         .actualizarEstado(propuesta, EstadoPropuesta.APROBADA, SUB_DE_ANA);
   }
 
+  // R11-26: el registro de actividad es solo del admin, para leerlo y para anotar
+  @Test
+  void elRegistroDeActividad_esSoloDelAdmin() throws Exception {
+    when(actividadService.listar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
+    String anotacion = "{\"accion\":\"CAMION_AGREGADO\",\"objetoId\":\"c-1\"}";
+
+    pedir(get("/api/actividad"), null).andExpect(status().isUnauthorized());
+    pedir(get("/api/actividad"), "servicio").andExpect(status().isForbidden());
+    pedir(get("/api/actividad"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/actividad"), "entidad").andExpect(status().isForbidden());
+    pedir(get("/api/actividad"), "admin-ana").andExpect(status().isOk());
+    pedir(post("/api/actividad").contentType(APPLICATION_JSON).content(anotacion), "servicio")
+        .andExpect(status().isForbidden());
+    pedir(post("/api/actividad").contentType(APPLICATION_JSON).content(anotacion), null)
+        .andExpect(status().isUnauthorized());
+  }
+
   @Test
   void decidirUnaPropuesta_esSoloDelAdmin() throws Exception {
     pedir(

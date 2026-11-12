@@ -205,6 +205,19 @@
 /admin-importaciones?escenario=vacia
 /admin-importaciones?escenario=sin-resultados
 /admin-importaciones?escenario=con-viejas
+# R11-26: el registro de actividad de administración y sus estados (ficha r11-p2-actividad §5).
+/admin-actividad
+/admin-actividad?escenario=muchas
+/admin-actividad?escenario=muchas&pagina=3
+/admin-actividad?escenario=vacia
+/admin-actividad?escenario=sin-resultados&accion=camiones
+/admin-actividad?escenario=sin-nombres
+/admin-actividad?autor=yo
+/admin-actividad?autor=cuenta-bruno
+/admin-actividad?buscar=zoe
+/admin-actividad?fecha=ayer&accion=otra
+/admin-administradores
+/admin-perfil
 /admin-entidades
 /admin-entidades?ver=pendientes
 /admin-entidades?ver=inactivas

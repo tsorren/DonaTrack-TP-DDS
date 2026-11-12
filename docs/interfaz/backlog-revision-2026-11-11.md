@@ -193,7 +193,7 @@ portada con sesión ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1). Todo lo
 | ID | Hallazgo | Qué se hace | Dónde · depende de |
 |---|---|---|---|
 | R11-25 | El tablero del inicio de la empresa (Ya llegó, En camino o por salir, Para tener en cuenta) crece sin límite. | Rediseño completo con el boceto A (sección 8): tres columnas, como máximo 3 donaciones por columna y paginación por columna. | `donante-inicio.html:113-170` · R11-11 |
-| R11-26 | No hay registro de actividad de administración. | Pantalla con quién hizo qué y cuándo. | R11-10 |
+| R11-26 | No hay registro de actividad de administración. | Pantalla con quién hizo qué y cuándo. **Construida** (`p2-actividad`, 2026-11-12): `/admin-actividad`, pestaña de Administradores, y `GET`/`POST /api/actividad` (Donaciones V25, OpenAPI 1.11.0); ficha [r11-p2-actividad](flujos/r11-p2-actividad.md), [ADR `proposed`](../adr/donaciones-service/20261112-registro-de-actividad-de-administracion-en-donaciones.md); pendientes en [DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 2. | R11-10 |
 | R11-27 | Entidades (donante) agrupa por categoría: una entidad aparece partida en varios renglones. | Una tarjeta por entidad, de igual alto; categoría como filtro. | `donante-entidades.html:41-144` · R11-12 |
 | R11-28 | "Cómo llega tu donación" se confunde con las tarjetas de la lista. | Franja de ayuda con otro fondo e ícono, arriba de la lista. | `donante-entidades.html:147-157` · R11-09 |
 | R11-29 | La campanita lleva directo a la pantalla de notificaciones. | Desplegable con las 5 últimas sin leer y "Ver todas". | `layout-privado.html:62-76` · R11-14 |

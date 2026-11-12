@@ -98,6 +98,22 @@ class AdministradoresKeycloakTest {
     keycloak.verify();
   }
 
+  // R11-26, C11: la búsqueda por administrador, acotada a la marca y con max; nunca la lista entera
+  @Test
+  void buscarPideLasMarcadasQueCoincidenConMaxYDescartaLasQueNoSonDeAdministracion() {
+    keycloak
+        .expect(
+            requestTo(
+                BASE + "/users?q=administracion:si&search=bruno&max=21&briefRepresentation=false"))
+        .andExpect(method(GET))
+        .andRespond(withSuccess("[" + BRUNO + "," + DONANTE + "]", APPLICATION_JSON));
+
+    List<Administrador> encontradas = directorio.buscar("bruno", 21);
+
+    assertThat(encontradas).extracting(Administrador::id).containsExactly("cuenta-bruno");
+    keycloak.verify();
+  }
+
   @Test
   void laCuentaSeBuscaPorSuIdYSoloSiEsDeAdministracion() {
     keycloak

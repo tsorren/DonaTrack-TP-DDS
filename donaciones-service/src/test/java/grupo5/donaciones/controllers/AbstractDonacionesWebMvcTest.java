@@ -2,6 +2,7 @@ package grupo5.donaciones.controllers;
 
 import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.logging.LoggingAutoConfiguration;
+import grupo5.donaciones.controllers.impl.ActividadController;
 import grupo5.donaciones.controllers.impl.CategoriasController;
 import grupo5.donaciones.controllers.impl.DonacionesController;
 import grupo5.donaciones.controllers.impl.DonacionesIndependientesController;
@@ -14,6 +15,7 @@ import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
 import grupo5.donaciones.controllers.impl.SubcategoriasController;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.ICategoriasService;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
@@ -39,6 +41,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({
+  ActividadController.class,
   CategoriasController.class,
   DonacionesController.class,
   DonacionesIndependientesController.class,
@@ -88,4 +91,6 @@ public abstract class AbstractDonacionesWebMvcTest {
   @MockitoBean protected ContadoresPublicosService contadoresPublicosService;
 
   @MockitoBean protected ResumenAdminService resumenAdminService;
+
+  @MockitoBean protected IActividadService actividadService;
 }

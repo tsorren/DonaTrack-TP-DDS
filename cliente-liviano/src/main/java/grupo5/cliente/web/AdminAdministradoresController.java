@@ -1,6 +1,8 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.cuentas.ContrasenaProvisoria;
+import grupo5.cliente.puertos.AdminActividadPuerto;
+import grupo5.cliente.puertos.AdminActividadPuerto.AccionDelSitio;
 import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
@@ -85,16 +87,19 @@ public class AdminAdministradoresController {
   private final DirectorioDeAdministradores directorio;
   private final AdministradorActual actual;
   private final Pantallas pantallas;
+  private final AdminActividadPuerto actividad;
   private final boolean maqueta;
 
   AdminAdministradoresController(
       DirectorioDeAdministradores directorio,
       AdministradorActual actual,
       Pantallas pantallas,
+      AdminActividadPuerto actividad,
       Environment entorno) {
     this.directorio = directorio;
     this.actual = actual;
     this.pantallas = pantallas;
+    this.actividad = actividad;
     this.maqueta = entorno.acceptsProfiles(Profiles.of("maqueta"));
   }
 
@@ -151,7 +156,9 @@ public class AdminAdministradoresController {
               DatosDeAdministrador.limpio(correo));
       String contrasena = ContrasenaProvisoria.nueva();
       try {
-        directorio.alta(datos, contrasena, propia);
+        String nueva = directorio.alta(datos, contrasena, propia);
+        // R11-26: queda en el registro de actividad; si no se puede anotar, el alta sigue hecha.
+        actividad.anotar(AccionDelSitio.ADMINISTRADOR_DADO_DE_ALTA, nueva, null);
         atributos.addFlashAttribute(
             PROVISORIA,
             new Provisoria(
@@ -226,6 +233,7 @@ public class AdminAdministradoresController {
                 + " Contacto.",
             atributos);
       }
+      actividad.anotar(AccionDelSitio.CONTRASENA_PROVISORIA_NUEVA, cuenta, null);
       atributos.addFlashAttribute(
           PROVISORIA, new Provisoria(nombre, elegida.correo(), contrasena, true));
       return "redirect:/" + ALTA;

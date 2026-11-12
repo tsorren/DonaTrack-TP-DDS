@@ -99,6 +99,29 @@ class AdministradoresKeycloak implements DirectorioDeAdministradores {
         : usuarios.stream().map(Usuario::comoAdministrador).toList();
   }
 
+  /**
+   * {@code search} busca en el nombre, el apellido, el usuario y el correo; {@code q} acota a las
+   * marcadas. Por si esta versión de Keycloak no combina los dos, se vuelve a filtrar por la marca.
+   */
+  @Override
+  public List<Administrador> buscar(String texto, int max) {
+    List<Usuario> usuarios =
+        keycloak
+            .get()
+            .uri(
+                "/users?" + CONSULTA + "&search={texto}&max={max}&briefRepresentation=false",
+                texto,
+                max)
+            .retrieve()
+            .body(USUARIOS);
+    return usuarios == null
+        ? List.of()
+        : usuarios.stream()
+            .filter(Usuario::esDeAdministracion)
+            .map(Usuario::comoAdministrador)
+            .toList();
+  }
+
   @Override
   public Optional<Administrador> cuenta(String id) {
     return usuario(id).filter(Usuario::esDeAdministracion).map(Usuario::comoAdministrador);
