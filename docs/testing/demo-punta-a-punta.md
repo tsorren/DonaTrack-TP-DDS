@@ -1,8 +1,9 @@
 # Demo punta a punta: el sitio con Keycloak y los servicios por el gateway
 
 > **Estado:** guía de SPEC-06 E2-12b y de SPEC-09 F6. `[OBSERVED]` Lo que describe sale del código y de los
-> compose; **todavía no se corrió el stack completo** (la sesión que la escribió no tenía Docker). Si algo
-> de acá no pasa como dice, es un hallazgo: avisalo.
+> compose. El equipo informó (2026-11-12) que corrigió los problemas del cliente en el compose; **la sesión en
+> PostgreSQL y el recorrido con Playwright todavía no se probaron**. Si algo de acá no pasa como dice, es un
+> hallazgo: avisalo.
 
 El cliente liviano (`cliente-liviano`) corre en el compose junto con Keycloak, el gateway y los cuatro
 servicios. Las personas ingresan por Keycloak y el sitio habla con los servicios **solo por el gateway**
@@ -24,9 +25,10 @@ docker compose up -d --build --wait
 ```
 
 El `.env` versionado trae valores de desarrollo para todo (`CLIENTE_LIVIANO_SECRET`, `AUTH_ADMIN_*`,
-`PRUEBAS_CLIENT_SECRET`). Si ya tenías Keycloak levantado de antes, el realm no se vuelve a importar con la
-base existente: `docker compose down -v` y de nuevo. La primera vez construye las imágenes desde el código,
-así que tarda.
+`PRUEBAS_CLIENT_SECRET`, `CLIENTE_DB_PASSWORD`). **Si ya tenías el stack levantado de antes, hacé
+`docker compose down -v`:** el realm de Keycloak y la base `cliente` (con su rol) solo se crean con el volumen
+de Postgres vacío, y sin ellas el sitio no arranca. La primera vez construye las imágenes desde el código, así
+que tarda.
 
 **El ingreso del sitio usa Keycloak siempre; la validación del token en los servicios y el gateway viene
 apagada.** Para que ellos también exijan token, exportá antes `GATEWAY_SEGURIDAD_HABILITADA`,
@@ -75,10 +77,25 @@ Admin API y armar el enlace a "Mi cuenta", así que una URL distinta para el ser
 Si el sitio no arranca o el ingreso falla: `docker compose logs cliente-liviano` tiene que mostrar
 `Emisor único: 127.0.0.1:8180 -> keycloak:8080`. Si no aparece, falta `KEYCLOAK_LOCAL_FORWARD_TO`.
 
+## La sesión en PostgreSQL
+
+El navegador solo lleva un id de sesión (cookie `SESSION`, no `JSESSIONID`); los tokens quedan en el servidor,
+en las tablas `spring_session` y `spring_session_attributes` del esquema `cliente` de la base `cliente`, a la
+que solo entra `cliente_user`. Se enciende con `CLIENTE_SESIONES_JDBC_HABILITADO=true` (el compose lo hace);
+apagada, la sesión vive en memoria y el sitio no necesita base de datos, que es lo que usan la maqueta y los
+tests. La sesión vence a los 30 minutos sin uso (`CLIENTE_SESIONES_INACTIVIDAD_MINUTOS`).
+
+Cada pestaña y cada instancia leen la misma sesión, así que con dos instancias detrás de un mismo dominio una
+persona puede pasar de una a otra sin volver a ingresar (RNF-CL-04). En el compose el puerto 8090 está fijo y no
+se puede escalar con `--scale`. **El cambio de instancia no está automatizado ni probado todavía.** Una forma
+de probarlo a mano sería levantar una segunda copia del sitio en otro puerto, con la misma red y las mismas
+variables, iniciar sesión en una y copiar la cookie `SESSION` al navegador de la otra.
+
 ## Límites conocidos
 
-- Las sesiones del sitio viven en memoria (E2-02, Spring Session, queda para la iteración 7): reiniciar el
-  sitio cierra todas.
+- La sesión del sitio (E2-02, D5) vive en PostgreSQL, en la base `cliente`: reiniciar el sitio **no** cierra
+  las sesiones. Con una instancia, se prueba iniciando sesión, corriendo `docker compose restart cliente-liviano`
+  y recargando la página: sigue adentro. Con dos instancias, ver la sección siguiente.
 - Una alternativa sin `socat` sería armar el registro del cliente OAuth2 a mano desde el descubrimiento,
   pidiéndolo por `keycloak:8080` y con `hostname-backchannel-dynamic` en Keycloak. Es más correcta pero toca
   código de seguridad de Spring; se eligió el reenvío por ser la que menos cambia.

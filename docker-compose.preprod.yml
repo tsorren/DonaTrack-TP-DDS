@@ -270,12 +270,19 @@ services:
       - CLIENTE_LIVIANO_SECRET=${CLIENTE_LIVIANO_SECRET:?ver .env.example}
       - KEYCLOAK_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
       - KEYCLOAK_LOCAL_FORWARD_TO=keycloak:8080
+      # La sesión en PostgreSQL (SPEC-06 E2-02, D5): base `cliente`, rol `cliente_user`. Ver SesionesJdbcConfig.
+      - CLIENTE_SESIONES_JDBC_HABILITADO=true
+      - CLIENTE_SESIONES_JDBC_URL=jdbc:postgresql://postgres:5432/cliente?currentSchema=cliente
+      - CLIENTE_SESIONES_JDBC_USUARIO=cliente_user
+      - CLIENTE_SESIONES_JDBC_CLAVE=${CLIENTE_DB_PASSWORD:?ver .env.example}
       - DONACIONES_URL=http://api-gateway:8086
       - NOTIFICACIONES_URL=http://api-gateway:8086
       - INCENTIVOS_URL=http://api-gateway:8086
       - LOGISTICA_URL=http://api-gateway:8086
       - SPRING_MAIN_BANNER_MODE=off
     depends_on:
+      postgres:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
       api-gateway:
@@ -348,6 +355,7 @@ services:
       LOGISTICA_DB_PASSWORD: ${LOGISTICA_DB_PASSWORD:?ver .env.example}
       DONACIONES_DB_PASSWORD: ${DONACIONES_DB_PASSWORD:?ver .env.example}
       KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?ver .env.example}
+      CLIENTE_DB_PASSWORD: ${CLIENTE_DB_PASSWORD:?ver .env.example}
     volumes:
       - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
     healthcheck:

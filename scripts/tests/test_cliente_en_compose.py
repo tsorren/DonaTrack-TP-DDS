@@ -125,6 +125,23 @@ class ComposeTests(unittest.TestCase):
         base = re.search(r"(?m)^CLIENTE_LIVIANO_BASE_URL=(\S+)$", leer(".env.example")).group(1)
         self.assertEqual(base, "http://localhost:8090")
 
+    def test_todos_los_servicios_de_cada_compose_estan_en_la_misma_red(self):
+        # Un servicio sin `networks` cae en la red `default` y no ve a los demás por su nombre: el cliente
+        # no encontraba a `keycloak` y el reenvío cerraba la conexión ("Unexpected end of file").
+        for compose in COMPOSES:
+            texto = leer(compose)
+            seccion = re.search(r"(?ms)^services:\s*\n(.*?)(?=^[a-z]+:|\Z)", texto).group(1)
+            servicios = re.findall(r"(?m)^  ([a-z0-9-]+):\s*$", seccion)
+            self.assertIn("cliente-liviano", servicios, compose)
+            redes = {}
+            for servicio in servicios:
+                m = re.search(r"    networks:\n((?:      - .*\n)+)", bloque(compose, servicio) + "\n")
+                redes[servicio] = tuple(l.strip()[2:] for l in m.group(1).splitlines()) if m else ()
+            self.assertTrue(redes["cliente-liviano"], "%s: el cliente no declara red" % compose)
+            sin_red = [x for x, r in redes.items() if not r]
+            self.assertEqual(sin_red, [], "%s: servicios sin red (caen en `default`): %s" % (compose, sin_red))
+            self.assertEqual(len(set(redes.values())), 1, "%s: servicios en redes distintas: %s" % (compose, redes))
+
     def test_el_runner_local_exige_el_jar_del_cliente(self):
         self.assertIn('"cliente-liviano/target/cliente-liviano-1.0.jar"', leer("run-preprod-tests.sh"))
 
