@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 56" role="img" aria-labelledby="titulo-logo">
-  <title id="titulo-logo">DonaTrack</title>
-  <!-- PROVISORIO (variante para modo oscuro, con el texto claro): reemplazar por el logo de la diseñadora -->
-  <rect x="0" y="4" width="48" height="48" rx="12" fill="#2e7d32"/>
-  <path d="M24 12C36 14 40 26 34 36C30 42 22 42 18 36C12 26 16 14 24 12Z" fill="#ffffff"/>
-  <path d="M24 18V40" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <text x="60" y="38" font-family="system-ui, 'Segoe UI', Roboto, Arial, sans-serif" font-size="28" font-weight="700" fill="#f3f6f3">DonaTrack</text>
-</svg>
