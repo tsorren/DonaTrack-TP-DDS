@@ -64,6 +64,30 @@
   }
 }
 
+/* La barra queda fija mientras se recorre su listado (R11-33, regla general 5; ficha
+   r11-p2-armazon): pegada debajo de lo fijo de arriba (la cabecera desde la tableta; nada en el
+   celular), sobre papel y con el filete abajo. Se va con la sección que la contiene al terminar la
+   lista (sticky dentro de su contenedor, sin JavaScript). En el celular, solo si la ventana mide al
+   menos 45 em de alto (no en uno de 360 × 640: taparía más de un tercio); desde la tableta, si mide
+   al menos 37,5 em. El papel sube un poco por encima de la barra para que entre la cabecera y la
+   barra nunca se vea la lista. Vale también para el formulario anterior, `form.filtro`, salvo el del
+   Mapa público, que ya deja fijo el mapa (decisión 6 de la ficha). */
+@media (min-height: 45em), (min-width: 37.5em) and (min-height: 37.5em) {
+  .filtros-barra,
+  form.filtro:not([action$="/publico-mapa"]) {
+    position: sticky;
+    top: var(--medida-cabecera-fija);
+    z-index: var(--capa-filtros-fijos);
+    background: var(--color-papel);
+    box-shadow: 0 -0.375rem 0 var(--color-papel);
+  }
+
+  .filtros-barra {
+    padding-block: var(--espacio-2);
+    border-bottom: 1px solid var(--color-filete);
+  }
+}
+
 .filtros {
   display: flex;
   flex-wrap: wrap;

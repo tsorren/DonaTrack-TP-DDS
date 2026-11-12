@@ -500,7 +500,7 @@
     grid-column: 2;
     grid-row: 2;
     position: sticky;
-    top: 1.5rem;
+    top: calc(var(--medida-cabecera-fija) + 1.5rem);
   }
 
   .cuenta--entidad > .formulario {

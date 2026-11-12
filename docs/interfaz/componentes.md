@@ -62,6 +62,23 @@ Hoja: `static/css/utilidades.css`, capa `utilidades`. Una por token de uso.
 | `.texto-chico`, `.texto-base`, `.texto-grande` | `--tamano-chico`, `--tamano-base`, `--tamano-grande` | Cambiar el tamaño del texto de un elemento |
 | `.solo-lectores` (en `app.css`) | — | Un texto que solo leen los lectores de pantalla: el nombre de un control con ícono |
 | `data-tono="suave"`, `"acento"`, `"exito"`, `"aviso"`, `"error"` | `--color-texto-suave`, `--color-acento`, `--color-exito-texto`, `--color-advertencia-texto`, `--color-error-texto` | El color del texto según lo que dice. Siempre con palabras: el color solo no alcanza |
+| `data-fijo="celular"` (en `app.css`; desde el 2026-11-12, R11-33, lote `p2-armazon`, ficha [`r11-p2-armazon`](flujos/r11-p2-armazon.md)) | `--medida-menu-celular`, `--medida-boton-fijo`, `--capa-fijo-pantalla` | La envoltura del botón principal de un formulario largo cuyo botón está al final (y de su indicador de envío): en el celular queda pegada abajo, encima del menú, sobre papel con el filete arriba, hasta llegar al final del formulario; desde la tableta no arma caja (`display: contents`) y sus hijos quedan como estaban. La envoltura tiene que ser hija del formulario (o de una caja con `display: contents` en el celular) para quedar fija mientras se recorre todo el formulario. No va en inicios ni listados: tapa filas y el paginador. Hoy, solo Confirmar recepción |
+
+Lo que queda fijo al desplazarse (R11-33, regla general 5; sin clase propia): desde la tableta y
+con la ventana de al menos 37,5 em de alto, la cabecera (`.armazon` y `.raices-cabecera`, en
+`app.css`) queda pegada arriba; en el celular arriba no queda nada y el menú sigue siendo la barra
+fija de abajo (`.navegacion`). La barra de búsqueda y filtros (`.filtros-barra` y `form.filtro`, en
+`componentes/filtros.css`) queda pegada debajo mientras se recorre su listado, salvo la del Mapa
+público. `--medida-cabecera-fija` y `--medida-filtros-fijos` (`tokens.css` y `app.css`) dicen
+cuánto ocupa lo fijo, y `html` lo deja libre con `scroll-padding` para que el foco no quede tapado.
+Las capas van de `--capa-fijo-pantalla` a `--capa-carga` (`tokens.css`). Una pieza de una pantalla
+que se queda quieta al bajar usa `top: calc(var(--medida-cabecera-fija) + …)`.
+
+La pantalla de carga (R11-40, sin clase propia): `body::before` de `app.css`, el papel con la
+marca. Oculta en reposo; la animación `pantalla-de-carga` la muestra 0,3 s y la funde en 0,2 s.
+Sin animaciones, con "reducir movimiento" o al imprimir no aparece. Las letras se precargan en
+`interaccion :: cargar` y tienen respaldo ajustado en `tokens.css` (`Archivo respaldo` y
+`DM Sans respaldo`).
 
 `--tamano-titulo-portada` y `--tamano-bajada-portada` (B3-01) no tienen utilidad: son el tamaño del título y
 de la bajada de la portada, que crecen con el ancho de la pantalla, y los usan `.hero h1` y `.hero-bajada` de

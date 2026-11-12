@@ -163,7 +163,7 @@
 
   [data-pantalla="asignaciones"] [data-parte="panel"] {
     position: sticky;
-    top: var(--espacio-4);
+    top: calc(var(--medida-cabecera-fija) + var(--espacio-4));
   }
 
   /* Dos tarjetas por fila. */
@@ -198,8 +198,11 @@
 
   :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro-ficha {
     position: sticky;
-    top: var(--espacio-4);
-    max-height: calc(100vh - 2 * var(--espacio-4));
+    /* Debajo de la cabecera y de la barra de filtros fijas (R11-33). */
+    top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos) + var(--espacio-4));
+    max-height: calc(
+      100vh - 2 * var(--espacio-4) - var(--medida-cabecera-fija) - var(--medida-filtros-fijos)
+    );
     overflow-y: auto;
   }
 
