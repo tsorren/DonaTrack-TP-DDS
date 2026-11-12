@@ -76,8 +76,8 @@ public record ConsultaDonaciones(
   }
 
   /**
-   * La dirección de la lista con estos filtros, sin la elegida ni la página: la base de cada
-   * renglón ({@code &donacion=} se suma al final).
+   * La dirección de la lista con estos filtros, sin la elegida ni la página. La base de cada
+   * renglón es {@link #renglon(int)}, que suma la página.
    */
   public String direccion() {
     StringBuilder d = new StringBuilder("/admin-donaciones?");
@@ -89,6 +89,16 @@ public record ConsultaDonaciones(
     sumar(d, "registrada", registrada);
     sumar(d, "donante", donante);
     return d.toString();
+  }
+
+  /**
+   * La base de cada renglón de la bandeja y de "Cerrar la ficha" (R11-34, ficha
+   * r11-p2-admin-bandeja §4): los filtros, el orden y la página {@code pagina} que se ve (la
+   * primera no se escribe); {@code donacion=} se suma al final.
+   */
+  public String renglon(int pagina) {
+    String d = direccion();
+    return pagina > 1 ? d + "pagina=" + pagina + "&" : d;
   }
 
   /** Desde y hasta del período de registro elegido (días inclusivos); null si no hay período. */

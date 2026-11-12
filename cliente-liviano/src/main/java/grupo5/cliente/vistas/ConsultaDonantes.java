@@ -51,7 +51,7 @@ public record ConsultaDonantes(
 
   /**
    * La dirección de la lista con esta búsqueda y estos filtros, sin la página ni el elegido
-   * (R11-34): la base de cada renglón de la bandeja ({@code donante=} se suma al final).
+   * (R11-34). La base de cada renglón es {@link #renglon(int)}, que suma la página.
    */
   public String direccion() {
     StringBuilder d = new StringBuilder("/admin-donantes?");
@@ -62,6 +62,16 @@ public record ConsultaDonantes(
     sumar(d, "alta", alta);
     sumar(d, "orden", orden);
     return d.toString();
+  }
+
+  /**
+   * La base de cada renglón de la bandeja y de "Cerrar la ficha" (R11-34, ficha
+   * r11-p2-admin-bandeja §4): la búsqueda, los filtros, el orden y la página {@code pagina} que se
+   * ve (la primera no se escribe); {@code donante=} se suma al final.
+   */
+  public String renglon(int pagina) {
+    String d = direccion();
+    return pagina > 1 ? d + "pagina=" + pagina + "&" : d;
   }
 
   private static void sumar(StringBuilder d, String nombre, String valor) {

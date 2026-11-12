@@ -198,8 +198,14 @@
         <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Ver todos</a>
       </section>
       <!--/* La bandeja (R11-34). Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con
-             HTMX, hx-get pide la misma dirección sin el ancla. */-->
-      <ul th:if="${conDatos and n > 0}" class="maestro" role="list" th:with="base=${c.direccion()}">
+             HTMX, hx-get pide la misma dirección sin el ancla. Cada renglón y "Cerrar la ficha" conservan la búsqueda, los filtros, el orden y la página.
+             Si el pedido no está en la página (llega de un enlace), su ficha o el aviso de que no está
+             van antes de los renglones: en el celular, arriba; desde la tableta, en su columna. */-->
+      <ul th:if="${conDatos and n > 0}" class="maestro" role="list" th:with="base=${c.renglon(tramo.pagina)}">
+        <li th:if="${fichaAviso != null}"><section
+            th:replace="~{admin-donantes :: ficha-aviso(${fichaAviso})}"></section></li>
+        <li th:if="${donanteFuera != null}"><section
+            th:replace="~{admin-donantes :: ficha(${donanteFuera}, ${base})}"></section></li>
         <li th:each="d : ${tramo.filas}" th:id="|donante-${d.clave}|"
             th:attr="data-elegido=${d.clave == donanteElegido and donantePartida} ? 'partida' : null">
           <a href="#" th:href="@{|${base}donante=${d.clave}|} + |#donante-${d.clave}|"
@@ -212,67 +218,8 @@
                 th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
                 th:text="${estados[d.estado]}">Activo</th:block></span>
           </a>
-          <section th:if="${d.clave == donanteElegido}" id="ficha" class="tarjeta maestro-ficha"
-                   aria-labelledby="ficha-titulo">
-            <div data-parte="identidad">
-              <div>
-                <h3 id="ficha-titulo" th:text="${d.nombre}">Ana Ejemplo</h3>
-                <p th:text="${d.tipoTexto}">Persona</p>
-              </div>
-              <dl>
-                <div><dt>Documento:</dt> <dd th:text="${d.documento}">DNI 20.000.001</dd></div>
-                <div th:if="${d.donaTexto != null}"><dt>Qué dona:</dt> <dd th:text="${d.donaTexto}">Alimentos</dd></div>
-                <div th:if="${d.alta != null}"><dt>Alta:</dt> <dd th:text="${d.alta}">14 de octubre</dd></div>
-              </dl>
-            </div>
-            <div data-parte="resumen">
-              <p><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
-                  th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
-                  th:text="${estados[d.estado]}">Activo</th:block></span></p>
-              <p th:if="${d.estado == 'baja'}">Dado de baja. Sus donaciones registradas se siguen viendo.</p>
-            </div>
-            <!--/* El contacto (R11-34): los medios que tenga y la dirección; lo ve solo administración. */-->
-            <div th:if="${d.contacto != null}" data-parte="contacto" class="pila" data-espacio="2"
-                 th:with="k=${d.contacto}">
-              <h4>Contacto</h4>
-              <dl>
-                <div th:if="${k.correo != null}"><dt>Correo:</dt> <dd th:text="${k.correo}">ana@ejemplo.test</dd></div>
-                <div th:if="${k.telefono != null}"><dt>Teléfono:</dt> <dd th:text="${k.telefono}">11 5555-0000</dd></div>
-                <div th:if="${k.direccion != null}"><dt>Dirección:</dt> <dd th:text="${k.direccion}">Calle Ejemplo
-                  123, CABA</dd></div>
-              </dl>
-              <p th:if="${k.sinMedios()}">Sin correo ni teléfono cargados.</p>
-              <p th:if="${k.ocultaNombre}">Pidió que su nombre no se muestre a las organizaciones.</p>
-            </div>
-            <!--/* Sus donaciones (R11-34): las 3 más recientes y el total, un número de Donaciones. */-->
-            <div th:if="${susDonaciones != null}" data-parte="donaciones" class="pila" data-espacio="2"
-                 th:with="s=${susDonaciones}">
-              <h4 th:if="${s.cargaron and s.total > 0}"
-                  th:text="${s.total == 1} ? 'Sus donaciones · 1 registrada' : |Sus donaciones · ${#numbers.formatInteger(s.total, 1, 'POINT')} registradas|">Sus
-                donaciones · 3 registradas</h4>
-              <h4 th:unless="${s.cargaron and s.total > 0}">Sus donaciones</h4>
-              <p th:unless="${s.cargaron}">No pudimos cargar sus donaciones.</p>
-              <p th:if="${s.cargaron and s.total == 0}">Todavía no tiene donaciones registradas.</p>
-              <ul th:if="${s.cargaron and !#lists.isEmpty(s.recientes)}" class="lista pila" data-espacio="1"
-                  role="list">
-                <li th:each="r : ${s.recientes}"><a href="/admin-donaciones?donante=ana"
-                    th:href="@{/admin-donaciones(donante=${d.clave},donacion=${r.clave})}"
-                    th:text="|${r.que} — ${palabras[r.estado]} — ${r.registrada}|">Arroz · 25 kg — En el depósito —
-                  11 de octubre</a></li>
-              </ul>
-            </div>
-            <div data-parte="acciones" class="racimo">
-              <a th:if="${susDonaciones == null or !susDonaciones.cargaron or susDonaciones.total > 0}"
-                 class="boton" data-tono="secundario" href="/admin-donaciones?donante=ana"
-                 th:href="@{/admin-donaciones(donante=${d.clave})}"
-                 th:text="${susDonaciones == null or !susDonaciones.cargaron} ? 'Ver sus donaciones' : (${susDonaciones.total == 1} ? 'Ver su donación' : |Ver sus ${#numbers.formatInteger(susDonaciones.total, 1, 'POINT')} donaciones|)">Ver
-                sus 3 donaciones</a>
-              <a class="boton" data-tono="secundario" href="/admin-donaciones-registrar?donante=ana"
-                 th:href="@{/admin-donaciones-registrar(donante=${d.clave})}">Registrar una donación</a>
-              <a class="boton" data-tono="secundario" data-parte="cerrar" href="/admin-donantes"
-                 th:href="@{${base}} + |#donante-${d.clave}|">Cerrar la ficha</a>
-            </div>
-          </section>
+          <th:block th:if="${d.clave == donanteElegido}"><section
+              th:replace="~{admin-donantes :: ficha(${d}, ${base})}"></section></th:block>
         </li>
       </ul>
       <p th:if="${conDatos and n > 0}"
@@ -287,6 +234,84 @@
     </section>
   </div>
 </th:block>
+
+<!--/* La ficha de un donante en la bandeja (R11-34): identidad, contacto, sus donaciones y las
+       acciones. "Cerrar la ficha" solo se ve en el celular: vuelve a la lista, en la misma página. */-->
+<section th:fragment="ficha(d, base)" id="ficha" class="tarjeta maestro-ficha" aria-labelledby="ficha-titulo"
+         th:with="estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
+                  palabras=${ {deposito: 'En el depósito', asignada: 'Asignada', camino: 'En camino',
+                               entregada: 'Entregada', vencida: 'Vencida'} },
+                  sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} }">
+  <div data-parte="identidad">
+    <div>
+      <h3 id="ficha-titulo" th:text="${d.nombre}">Ana Ejemplo</h3>
+      <p th:text="${d.tipoTexto}">Persona</p>
+    </div>
+    <dl>
+      <div><dt>Documento:</dt> <dd th:text="${d.documento}">DNI 20.000.001</dd></div>
+      <div th:if="${d.donaTexto != null}"><dt>Qué dona:</dt> <dd th:text="${d.donaTexto}">Alimentos</dd></div>
+      <div th:if="${d.alta != null}"><dt>Alta:</dt> <dd th:text="${d.alta}">14 de octubre</dd></div>
+    </dl>
+  </div>
+  <div data-parte="resumen">
+    <p><span class="estado" th:data-estado="|cuenta-${d.estado}|"><svg
+        th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
+        th:text="${estados[d.estado]}">Activo</th:block></span></p>
+    <p th:if="${d.estado == 'baja'}">Dado de baja. Sus donaciones registradas se siguen viendo.</p>
+  </div>
+  <!--/* El contacto (R11-34): los medios que tenga y la dirección; lo ve solo administración. */-->
+  <div th:if="${d.contacto != null}" data-parte="contacto" class="pila" data-espacio="2"
+       th:with="k=${d.contacto}">
+    <h4>Contacto</h4>
+    <dl>
+      <div th:if="${k.correo != null}"><dt>Correo:</dt> <dd th:text="${k.correo}">ana@ejemplo.test</dd></div>
+      <div th:if="${k.telefono != null}"><dt>Teléfono:</dt> <dd th:text="${k.telefono}">11 5555-0000</dd></div>
+      <div th:if="${k.direccion != null}"><dt>Dirección:</dt> <dd th:text="${k.direccion}">Calle Ejemplo
+        123, CABA</dd></div>
+    </dl>
+    <p th:if="${k.sinMedios()}">Sin correo ni teléfono cargados.</p>
+    <p th:if="${k.ocultaNombre}">Pidió que su nombre no se muestre a las organizaciones.</p>
+  </div>
+  <!--/* Sus donaciones (R11-34): las 3 más recientes y el total, un número de Donaciones. */-->
+  <div th:if="${susDonaciones != null}" data-parte="donaciones" class="pila" data-espacio="2"
+       th:with="s=${susDonaciones}">
+    <h4 th:if="${s.cargaron and s.total > 0}"
+        th:text="${s.total == 1} ? 'Sus donaciones · 1 registrada' : |Sus donaciones · ${#numbers.formatInteger(s.total, 1, 'POINT')} registradas|">Sus
+      donaciones · 3 registradas</h4>
+    <h4 th:unless="${s.cargaron and s.total > 0}">Sus donaciones</h4>
+    <p th:unless="${s.cargaron}">No pudimos cargar sus donaciones.</p>
+    <p th:if="${s.cargaron and s.total == 0}">Todavía no tiene donaciones registradas.</p>
+    <ul th:if="${s.cargaron and !#lists.isEmpty(s.recientes)}" class="lista pila" data-espacio="1"
+        role="list">
+      <li th:each="r : ${s.recientes}"><a href="/admin-donaciones?donante=ana"
+          th:href="@{/admin-donaciones(donante=${d.clave},donacion=${r.clave})}"
+          th:text="|${r.que} — ${palabras[r.estado]} — ${r.registrada}|">Arroz · 25 kg — En el depósito —
+        11 de octubre</a></li>
+    </ul>
+  </div>
+  <div data-parte="acciones" class="racimo">
+    <a th:if="${susDonaciones == null or !susDonaciones.cargaron or susDonaciones.total > 0}"
+       class="boton" data-tono="secundario" href="/admin-donaciones?donante=ana"
+       th:href="@{/admin-donaciones(donante=${d.clave})}"
+       th:text="${susDonaciones == null or !susDonaciones.cargaron} ? 'Ver sus donaciones' : (${susDonaciones.total == 1} ? 'Ver su donación' : |Ver sus ${#numbers.formatInteger(susDonaciones.total, 1, 'POINT')} donaciones|)">Ver
+      sus 3 donaciones</a>
+    <a class="boton" data-tono="secundario" href="/admin-donaciones-registrar?donante=ana"
+       th:href="@{/admin-donaciones-registrar(donante=${d.clave})}">Registrar una donación</a>
+    <a class="boton" data-tono="secundario" data-parte="cerrar" href="/admin-donantes"
+       th:href="@{${base}} + |#donante-${d.clave}|">Cerrar la ficha</a>
+  </div>
+</section>
+
+<!--/* En el lugar de la ficha (R11-34, ficha r11-p2-admin-bandeja §5): el donante pedido no existe
+       (no-existe) o no se pudo leer (no-cargo). La lista queda. */-->
+<section th:fragment="ficha-aviso(cual)" id="ficha" class="tarjeta maestro-ficha" data-parte="aviso"
+         aria-labelledby="ficha-titulo">
+  <h3 id="ficha-titulo"
+      th:text="${cual == 'no-existe'} ? 'No encontramos ese donante.' : 'No pudimos cargar la ficha de este donante.'">No
+    encontramos ese donante.</h3>
+  <p th:text="${cual == 'no-existe'} ? 'Puede que el enlace esté mal; elegí uno de la lista.' : 'La lista sigue a mano; probá elegirlo de nuevo.'">Puede
+    que el enlace esté mal; elegí uno de la lista.</p>
+</section>
 
 <!--/* La página de avance de una importación (R11-02), sin la lista de donantes. #avance es lo que se
        vuelve a pedir solo mientras importa: no contiene el foco ni una región que se lea sola. */-->

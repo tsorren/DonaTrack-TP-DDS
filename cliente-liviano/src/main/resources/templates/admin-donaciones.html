@@ -156,12 +156,20 @@
 
       <!--/* La bandeja (R11-34): el renglón elige su donación en la misma página y su ficha va dentro
              del renglón. Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con HTMX,
-             hx-get pide la misma dirección sin el ancla. */-->
+             hx-get pide la misma dirección sin el ancla. Cada renglón y "Cerrar la ficha" conservan los
+             filtros, el orden y la página. La ficha de una pedida que no está en la página, o el aviso
+             de que no está o no cargó, van antes de los renglones: en el celular, arriba; desde la
+             tableta, en su columna. */-->
       <p th:if="${conDatos and !#lists.isEmpty(donaciones)}" class="solo-lectores"
          th:text="${pronto and datos.conVence and orden == ''} ? 'Las del depósito que vencen en los próximos 7 días, la más próxima primero.' : (${pronto} ? (${datos.conVence} ? 'Las del depósito que vencen en los próximos 7 días. ' : 'Las del depósito. ') : '') + ${criterios.^[valor == #root.orden].caption}">Primero,
         las registradas más recientemente.</p>
       <ul th:if="${conDatos and !#lists.isEmpty(donaciones)}" class="maestro" role="list"
-          th:with="elegida=${datos.elegida}, base=${c.direccion()}">
+          th:with="elegida=${datos.elegida}, base=${c.renglon(tramo.pagina)}">
+        <li th:if="${fichaAviso != null}"
+            th:attr="data-elegido=${fichaAvisoPartida} ? 'partida' : null"><section
+            th:replace="~{admin-donaciones :: ficha-aviso(${fichaAviso})}"></section></li>
+        <li th:if="${datos.elegidaFuera()}"><section
+            th:replace="~{admin-donaciones :: ficha(${elegida}, ${base})}"></section></li>
         <li th:each="x : ${donaciones}" th:id="|donacion-${x.clave}|"
             th:attr="data-elegido=${elegida != null and elegida.clave == x.clave and datos.partida} ? 'partida' : null">
           <a href="#" th:href="@{|${base}donacion=${x.clave}|} + |#donacion-${x.clave}|"
@@ -179,8 +187,6 @@
           <th:block th:if="${elegida != null and elegida.clave == x.clave}"><section
               th:replace="~{admin-donaciones :: ficha(${elegida}, ${base})}"></section></th:block>
         </li>
-        <li th:if="${datos.elegidaFuera()}"><section
-            th:replace="~{admin-donaciones :: ficha(${elegida}, ${base})}"></section></li>
       </ul>
       <p th:if="${conDatos and !#lists.isEmpty(donaciones)}"
          th:with="cuantas=${#lists.size(donaciones)},
@@ -295,6 +301,17 @@
     <a class="boton" data-tono="secundario" data-parte="cerrar" href="/admin-donaciones"
        th:href="@{${base}} + |#donacion-${d.clave}|">Cerrar la ficha</a>
   </div>
+</section>
+
+<!--/* En el lugar de la ficha (R11-34, ficha r11-p2-admin-bandeja §5): la donación pedida no existe
+       (no-existe) o no se pudo leer (no-cargo). La lista queda. */-->
+<section th:fragment="ficha-aviso(cual)" id="ficha" class="tarjeta maestro-ficha" data-parte="aviso"
+         aria-labelledby="ficha-titulo">
+  <h3 id="ficha-titulo"
+      th:text="${cual == 'no-existe'} ? 'No encontramos esa donación.' : 'No pudimos cargar la ficha de esta donación.'">No
+    encontramos esa donación.</h3>
+  <p th:text="${cual == 'no-existe'} ? 'Puede que el enlace esté mal; elegí una de la lista.' : 'La lista sigue a mano; probá elegirla de nuevo.'">Puede
+    que el enlace esté mal; elegí una de la lista.</p>
 </section>
 
 <table th:fragment="bienes(d)" class="tabla"

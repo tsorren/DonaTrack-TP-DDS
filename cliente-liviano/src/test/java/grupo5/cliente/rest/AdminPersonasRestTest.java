@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.cuentas.SolicitudesDeEntidad;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -560,6 +562,36 @@ class AdminPersonasRestTest {
     assertEquals("00000000-0000-4000-8000-0000000000d1", suyas.recientes().getFirst().clave());
     assertEquals("deposito", suyas.recientes().getFirst().estado());
     assertTrue(suyas.recientes().getFirst().que().startsWith("Arroz · "));
+    donaciones.verify();
+  }
+
+  // R11-34 (ficha r11-p2-admin-bandeja §4 y §5): el donante que no está en la página, por su clave
+  @Test
+  void unDonantePorSuClaveConSuContactoYNullSiNoExiste() {
+    UUID ana = UUID.fromString("00000000-0000-4000-8000-000000000001");
+    UUID nadie = UUID.fromString("00000000-0000-4000-8000-000000000009");
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes/" + ana))
+        .andRespond(
+            withSuccess(
+                """
+                {"idDonante": "00000000-0000-4000-8000-000000000001", "activo": false,
+                 "persona": {"tipo": "HUMANA", "nombre": "Ana", "apellido": "Ejemplo",
+                             "mediosDeContacto": [{"tipo": "CORREO",
+                                                   "direccionCorreo": "ana@ejemplo.test"}]}}
+                """,
+                JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes/" + nadie))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+    AdminDonantesVista.Donante encontrado = adaptador.donante(ana.toString());
+
+    assertEquals(ana.toString(), encontrado.clave());
+    assertEquals("baja", encontrado.estado());
+    assertEquals("ana@ejemplo.test", encontrado.contacto().correo());
+    assertNull(adaptador.donante(nadie.toString()));
+    assertNull(adaptador.donante("no-es-un-id"));
     donaciones.verify();
   }
 

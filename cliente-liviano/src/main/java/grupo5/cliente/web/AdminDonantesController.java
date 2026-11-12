@@ -3,6 +3,7 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.vistas.AdminDonantesVista;
+import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.ConsultaDonantes;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -59,6 +61,9 @@ public class AdminDonantesController {
   private static final String MODELO = "adminDonantes";
   private static final String IMPORTAR_ERROR = "importar-error";
 
+  /** El aviso en el lugar de la ficha (R11-34): {@code no-existe} o {@code no-cargo}. */
+  static final String FICHA_AVISO = "fichaAviso";
+
   /** Lo que se guarda en la sesión: el archivo y el nombre con que se subió. */
   record DeLaSesion(UUID archivo, String nombre) implements Serializable {}
 
@@ -92,21 +97,46 @@ public class AdminDonantesController {
   }
 
   /**
-   * La bandeja (R11-34): {@code donanteElegido}, la clave del donante cuya ficha se abre (el pedido
-   * con {@code ?donante=} si está en la página; si no, el primero, de partida) y {@code
-   * donantePartida}, si es el de partida (en el celular su ficha no se abre sola). La ficha usa el
-   * renglón y pide aparte sus 3 donaciones más recientes con el total ({@code susDonaciones}); si
-   * Donaciones no responde, la ficha lo dice y el resto se muestra igual.
+   * La bandeja (R11-34, ficha r11-p2-admin-bandeja §4 y §5): {@code donanteElegido}, la clave del
+   * donante cuya ficha se abre, y {@code donantePartida}, si es el de partida (sin {@code
+   * ?donante=}: el primero de la página; en el celular su ficha no se abre sola). Si el pedido no
+   * está en la página, se lee por su clave y va en {@code donanteFuera} (su ficha, antes de los
+   * renglones; ninguno queda marcado); si no existe o no se pudo leer, {@code fichaAviso} dice
+   * {@code no-existe} o {@code no-cargo} y la pantalla lo avisa en el lugar de la ficha. La ficha
+   * pide aparte sus 3 donaciones más recientes con el total ({@code susDonaciones}); si Donaciones
+   * no responde, la ficha lo dice y el resto se muestra igual.
    */
   private void elegido(AdminDonantesVista datos, String pedido, Model model) {
-    if (datos.donantes() == null || datos.donantes().filas().isEmpty()) {
+    List<Donante> filas = datos.donantes() == null ? List.of() : datos.donantes().filas();
+    if (pedido == null || pedido.isBlank()) {
+      if (!filas.isEmpty()) {
+        ficha(filas.getFirst().clave(), true, model);
+      }
       return;
     }
-    boolean enLaPagina =
-        pedido != null && datos.donantes().filas().stream().anyMatch(d -> d.clave().equals(pedido));
-    String clave = enLaPagina ? pedido : datos.donantes().filas().getFirst().clave();
+    if (filas.stream().anyMatch(d -> d.clave().equals(pedido))) {
+      ficha(pedido, false, model);
+      return;
+    }
+    Donante fuera;
+    try {
+      fuera = personas.donante(pedido);
+    } catch (RestClientException noRespondio) {
+      LOG.warn("No se pudo leer el donante {}", pedido, noRespondio);
+      model.addAttribute(FICHA_AVISO, "no-cargo");
+      return;
+    }
+    if (fuera == null) {
+      model.addAttribute(FICHA_AVISO, "no-existe");
+      return;
+    }
+    model.addAttribute("donanteFuera", fuera);
+    ficha(fuera.clave(), false, model);
+  }
+
+  private void ficha(String clave, boolean dePartida, Model model) {
     model.addAttribute("donanteElegido", clave);
-    model.addAttribute("donantePartida", !enLaPagina);
+    model.addAttribute("donantePartida", dePartida);
     SusDonaciones suyas;
     try {
       suyas = personas.donacionesDe(clave);

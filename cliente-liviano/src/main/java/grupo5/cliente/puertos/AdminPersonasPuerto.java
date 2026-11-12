@@ -25,6 +25,13 @@ public interface AdminPersonasPuerto {
   AdminDonantesVista donantes(ConsultaDonantes consulta);
 
   /**
+   * Un donante por su {@code clave}, con su contacto, para la ficha de la bandeja cuando no está en
+   * la página que se ve (R11-34, ficha r11-p2-admin-bandeja §4): una lectura por clave, nunca la
+   * lista. null si no existe (o la clave no es de un donante).
+   */
+  AdminDonantesVista.Donante donante(String clave);
+
+  /**
    * Las 3 donaciones más recientes del donante {@code clave} y cuántas registró, para su ficha
    * (R11-34): una página de 3 con su total, nunca la lista entera. Una clave que no es de un
    * donante da 0 y ninguna.

@@ -77,7 +77,7 @@ public record AdminDonacionesVista(
 
   /**
    * Si la elegida no está en la página que se muestra (se pidió por su clave desde otra página o
-   * desde otra pantalla): su ficha va al final de la lista.
+   * desde otra pantalla): su ficha va antes de los renglones.
    */
   public boolean elegidaFuera() {
     return elegida != null

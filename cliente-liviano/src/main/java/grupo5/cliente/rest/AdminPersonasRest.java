@@ -43,6 +43,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -325,6 +326,22 @@ class AdminPersonasRest implements AdminPersonasPuerto {
     return direccion.localidad() == null || direccion.localidad().isBlank()
         ? calle
         : calle + ", " + direccion.localidad();
+  }
+
+  @Override
+  public Donante donante(String clave) {
+    UUID id;
+    try {
+      id = UUID.fromString(clave == null ? "" : clave.strip());
+    } catch (IllegalArgumentException noEsUnId) {
+      return null;
+    }
+    try {
+      DonacionesApi.Donante encontrado = donaciones.donante(id);
+      return encontrado == null ? null : donante(encontrado);
+    } catch (HttpClientErrorException.NotFound noExiste) {
+      return null;
+    }
   }
 
   @Override

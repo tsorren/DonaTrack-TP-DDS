@@ -226,6 +226,78 @@ class AdminDonantesControllerTest {
     verify(personas).donantes(new ConsultaDonantes("ana", null, null, null, null, 2));
   }
 
+  // R11-34 (ficha r11-p2-admin-bandeja §4): elegir un renglón de la página 2 la conserva
+  @Test
+  void elegirUnRenglonDeLaPagina2NoVuelveALaPrimera() throws Exception {
+    doAnswer(i -> lista(i.getArgument(0), 41, 3)).when(personas).donantes(any());
+    mvc.perform(get("/admin-donantes?buscar=ana&pagina=2&donante=d1").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donantes?buscar=ana&amp;pagina=2&amp;donante=d1#donante-d1\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "hx-get=\"/admin-donantes?buscar=ana&amp;pagina=2&amp;donante=d1\"")))
+        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donantes?buscar=ana&amp;pagina=2&amp;#donante-d1\"")));
+    verify(personas).donantes(new ConsultaDonantes("ana", null, null, null, null, 2));
+    verify(personas, never()).donante(any());
+  }
+
+  // R11-34 (§4): el pedido que no está en la página se lee por su clave y su ficha va igual
+  @Test
+  void unDonanteQueNoEstaEnLaPaginaMuestraSuFichaYNoLaDelPrimero() throws Exception {
+    when(personas.donante("d9"))
+        .thenReturn(
+            new Donante(
+                "d9",
+                "Bruno Ejemplo",
+                "persona",
+                "Persona",
+                "DNI 20000009",
+                null,
+                "activo",
+                null,
+                null));
+    mvc.perform(get("/admin-donantes?donante=d9").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("id=\"ficha-titulo\">Bruno Ejemplo</h3>")))
+        .andExpect(content().string(not(containsString("id=\"ficha-titulo\">Ana Ejemplo</h3>"))))
+        .andExpect(content().string(not(containsString("aria-current=\"true\""))))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    verify(personas).donacionesDe("d9");
+  }
+
+  // R11-34 (§5): el que no existe o no se pudo leer se avisa en el lugar de la ficha
+  @Test
+  void unDonanteQueNoExisteONoCargaSeAvisaEnElLugarDeLaFicha() throws Exception {
+    mvc.perform(get("/admin-donantes?donante=nadie").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos ese donante.")))
+        .andExpect(
+            content()
+                .string(containsString("Puede que el enlace esté mal; elegí uno de la lista.")))
+        .andExpect(content().string(containsString("Ana Ejemplo")))
+        .andExpect(content().string(not(containsString("id=\"ficha-titulo\">Ana Ejemplo</h3>"))));
+    when(personas.donante("caido")).thenThrow(new ResourceAccessException("caído"));
+    mvc.perform(get("/admin-donantes?donante=caido").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar la ficha de este donante.")))
+        .andExpect(
+            content().string(containsString("La lista sigue a mano; probá elegirlo de nuevo.")))
+        .andExpect(content().string(containsString("Ana Ejemplo")));
+    verify(personas, never()).donacionesDe(any());
+  }
+
   @Test
   void elAvanceNoCargaLaListaYSeVuelveAPedirSolo() throws Exception {
     when(personas.importacion(ARCHIVO, "donantes.csv", "importando", 1))

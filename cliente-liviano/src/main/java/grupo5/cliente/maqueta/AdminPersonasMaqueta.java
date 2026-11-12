@@ -312,6 +312,16 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
     return !dia.isBefore(desde) && !dia.isAfter(hasta);
   }
 
+  /** El donante de ejemplo con esa clave y su contacto; null si no es uno de ellos. */
+  @Override
+  public Donante donante(String clave) {
+    return DONANTES.stream()
+        .filter(d -> d.clave().equals(clave))
+        .findFirst()
+        .map(d -> d.conContacto(CONTACTOS.getOrDefault(d.clave(), SIN_CONTACTO)))
+        .orElse(null);
+  }
+
   /** Las donaciones de ejemplo del donante (las de Ana, en la maqueta de Donaciones). */
   @Override
   public SusDonaciones donacionesDe(String clave) {
